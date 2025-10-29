@@ -590,6 +590,23 @@ try {
         }
     });
 
+      // Hitta productPopup och lägg till lyssnare
+    const productPopup = document.getElementById('productPopup');
+
+    if (productPopup) {
+        // Lyssnare för att stänga vid klick på bakgrunden eller X-knappen
+        productPopup.addEventListener('click', (e) => {
+            // Kontrollera om klicket var på bakgrunden (modalen) ELLER om det var stängningsknappen (X)
+            if (e.target === productPopup || e.target.classList.contains('close-btn')) {
+                productPopup.style.display = 'none';
+                document.getElementById('productIframe').src = ''; // Rensa iframe
+            }
+        });
+    }
+
+    // OBS: Du kan ta bort den gamla lyssnaren för productPopup om den existerar!
+    // document.getElementById('productPopup').addEventListener('click', (e) => { ... })
+
     // Ny lyssnare för stängning av CONFIRMATION-modalen
     confirmationModal.addEventListener('click', (e) => {
         if(e.target.classList.contains('modal')) {
@@ -708,6 +725,7 @@ try {
     }, 10);
 }
 // <-- FILEN MÅSTE SLUTA HÄR. INGEN EXTRA KLAMMERPARENTES (})
+
 
 
 
