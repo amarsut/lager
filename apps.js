@@ -1,11 +1,11 @@
-// apps.js
+// apps.js - Detta är det kompletta innehållet i din JavaScript-fil
         
 // Import Firebase v9 Syntax via CDN
 import { initializeApp } from 'https://www.gstatic.com/firebase/9.6.1/firebase-app.js';
 import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot } from 'https://www.gstatic.com/firebase/9.6.1/firebase-firestore.js';
 
 // ----------------------------------------------------------------------
-// 2.1. FIREBASE KONFIGURATION (ERSÄTT DESSA VÄRDEN MED DINA EGNA)
+// 2.1. FIREBASE KONFIGURATION (ERSÄTT DESSA VÄRDEN)
 // ----------------------------------------------------------------------
 const firebaseConfig = {
   // OBS: Kontrollera att dessa är DINA riktiga nycklar
@@ -23,19 +23,6 @@ try {
     const db = getFirestore(app);
     const INVENTORY_COLLECTION = 'lager';
     
-    // Lyssna på "online"-händelsen för att uppdatera status tidigt
-    const syncStatusElement = document.getElementById('sync-status');
-    window.addEventListener('online', () => syncStatusElement.textContent = 'Återansluter...');
-    window.addEventListener('offline', () => syncStatusElement.textContent = 'OFFLINE');
-    
-    // ----------------------------------------------------------------------
-    // 2.2. GLOBALA VARIABLER OCH DOM-ELEMENT
-    // ----------------------------------------------------------------------
-    
-    let inventory = []; 
-    let selectedItemId = null;
-    let currentSort = { column: 'service_filter', direction: 'asc' };
-
     // Fånga DOM-element HÄR
     const inventoryList = document.getElementById('inventory-list');
     const searchInput = document.getElementById('search-input');
@@ -45,8 +32,19 @@ try {
     const editModal = document.getElementById('editModal');
     const editForm = document.getElementById('edit-article-form');
     const confirmationModal = document.getElementById('confirmationModal');
-    // syncStatusElement flyttad upp
+    const syncStatusElement = document.getElementById('sync-status');
     
+    // Lyssna på "online"-händelsen för att uppdatera status tidigt
+    window.addEventListener('online', () => syncStatusElement.textContent = 'Återansluter...');
+    window.addEventListener('offline', () => syncStatusElement.textContent = 'OFFLINE');
+
+    // ----------------------------------------------------------------------
+    // 2.2. GLOBALA VARIABLER OCH DOM-ELEMENT
+    // ----------------------------------------------------------------------
+    
+    let inventory = []; 
+    let selectedItemId = null;
+    let currentSort = { column: 'service_filter', direction: 'asc' };
     let confirmCallback = null; 
 
     // ----------------------------------------------------------------------
@@ -68,17 +66,16 @@ try {
     function setupRealtimeListener() {
         const q = collection(db, INVENTORY_COLLECTION);
         
-        // Timeout för att upptäcka misslyckad anslutning
+        // Timeout för att upptäcka misslyckad anslutning (Som vi lade till tidigare)
         const timeout = setTimeout(() => {
             if (syncStatusElement.textContent === 'Ansluter...') {
                 syncStatusElement.textContent = 'FEL: Timeout vid anslutning!';
-                showCustomAlert('Kunde inte ansluta till realtidsdatabasen inom tidsgränsen. Kontrollera dina Firebase-regler (allow read, write: if true) och nätverksanslutning.', 'Allvarligt Fel');
+                showCustomAlert('Kunde inte ansluta till realtidsdatabasen inom tidsgränsen. Kontrollera nätverksanslutning.', 'Allvarligt Fel');
             }
         }, 15000); // 15 sekunders tidsgräns
 
         onSnapshot(q, (querySnapshot) => {
             clearTimeout(timeout); // Rensa timeout vid lyckad anslutning
-
             const tempInventory = [];
             querySnapshot.forEach((doc) => {
                 tempInventory.push(doc.data());
@@ -97,7 +94,7 @@ try {
             clearTimeout(timeout); // Rensa timeout vid fel
             console.error("Realtime listener error: ", error);
             syncStatusElement.textContent = `FEL: Se konsolen`;
-            // Bättre felmeddelande för säkerhetsfel
+            // Bättre felmeddelande för säkerhetsfel (Som vi lade till tidigare)
             if (error.code === 'permission-denied') {
                  showCustomAlert('Kunde inte läsa data. Detta beror nästan alltid på felaktiga **Firebase Security Rules** (Måste vara allow read: if true;).', 'Säkerhetsfel');
             } else {
@@ -170,7 +167,6 @@ try {
             linkText = 'Trodo'; 
         }
 
-        // Här används onclick som kräver global exponering (window.handleEdit osv)
         const linkContent = linkToUse
             ? `<button class="lank-knapp" onclick="openProductPopup('${linkToUse}'); event.stopPropagation();">${linkText}</button>`
             : `<span style="text-align:center; color:#999; font-style: italic;">(Saknas)</span>`;
@@ -392,7 +388,7 @@ try {
             selectedItemId = null; 
         } catch (e) {
             // Felhantering sker i setupRealtimeListener
-        
+        }
     }
 
     async function adjustQuantity(id, change) {
@@ -426,7 +422,7 @@ try {
         );
     }
     
-    // OBS! Dessa funktioner MÅSTE vara definierade HÄR
+    // OBS! Dessa två funktioner har vi gjort globala med 'window.' ovanför!
     window.copyToClipboard = function(id, text) {
         navigator.clipboard.writeText(text).then(() => {
             showCustomAlert(`Artikelnummer **${text}** kopierat!`, 'Kopiering Lyckades');
@@ -675,7 +671,7 @@ try {
     window.handleEdit = handleEdit;
     window.handleDelete = handleDelete;
     window.adjustQuantity = adjustQuantity;
-    // copyToClipboard och openProductPopup är redan globalt exponerade ovanför
+    // copyToClipboard och openProductPopup är redan globalt exponerade via 'window.' ovan.
     window.closeEditModal = closeEditModal;
     window.closeConfirmationModal = closeConfirmationModal;
     window.showCustomConfirmation = showCustomConfirmation;
@@ -691,4 +687,3 @@ try {
     if(statusElement) statusElement.textContent = "FEL: Konfigurationsfel i Firebase!";
     window.showCustomAlert('Det gick inte att ansluta till Firebase. Kontrollera att din "firebaseConfig" är korrekt.', 'Kritiskt Fel');
 }
-
