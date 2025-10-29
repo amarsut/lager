@@ -1,6 +1,3 @@
-// apps.js - Detta är det kompletta innehållet i din JavaScript-fil (REN JS)
-        
-// Import Firebase v9 Syntax via CDN
 import { initializeApp } from 'https://www.gstatic.com/firebase/9.6.1/firebase-app.js';
 import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot } from 'https://www.gstatic.com/firebase/9.6.1/firebase-firestore.js';
 
@@ -678,3 +675,4 @@ try {
     window.showCustomAlert('Det gick inte att ansluta till Firebase. Kontrollera att din "firebaseConfig" är korrekt.', 'Kritiskt Fel');
 } 
 // <-- FILEN MÅSTE SLUTA HÄR. INGEN EXTRA KLAMMERPARENTES (})
+
