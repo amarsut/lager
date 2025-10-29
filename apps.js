@@ -678,3 +678,14 @@ inventoryList.addEventListener('click', (e) => {
 });
 
 
+window.handleEdit = handleEdit;
+window.handleDelete = handleDelete;
+window.adjustQuantity = adjustQuantity;
+window.copyToClipboard = copyToClipboard;
+window.openProductPopup = openProductPopup; // Se till att den finns!
+window.closeEditModal = closeEditModal;
+window.closeConfirmationModal = closeConfirmationModal;
+window.showCustomConfirmation = showCustomConfirmation;
+window.showCustomAlert = showCustomAlert;
+window.downloadJson = downloadJson;
+window.uploadJson = uploadJson;
