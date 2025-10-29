@@ -178,6 +178,34 @@
         .json-controls button, .json-controls label { width: 100%; text-align: center; }
         #sync-status { border-left: none; padding-left: 0; text-align: center; }
     }
+        .search-btn {
+        background: #eef1f5;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        cursor: pointer;
+        color: var(--primary-color);
+        font-size: 0.9em;
+        padding: 3px 5px;
+        line-height: 1;
+        opacity: 0.9;
+        transition: opacity 0.2s, transform 0.1s, background 0.2s;
+        flex-shrink: 0;
+        margin-right: 5px; /* Skapar lite avstånd till kopieringsknappen */
+    }
+    .search-btn:hover { 
+        opacity: 1; 
+        transform: scale(1.05); 
+        background: var(--primary-color); 
+        color: white; 
+        border-color: var(--primary-color); 
+    }
+    /* SVG för förstoringsglaset */
+    .search-btn svg {
+        fill: currentColor;
+        vertical-align: middle;
+        width: 14px;
+        height: 14px;
+    }
     </style>
 </head>
 <body>
@@ -325,3 +353,4 @@
 
 </body>
 </html>
+
