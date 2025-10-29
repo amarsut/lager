@@ -392,7 +392,7 @@ try {
             selectedItemId = null; 
         } catch (e) {
             // Felhantering sker i setupRealtimeListener
-        }
+        
     }
 
     async function adjustQuantity(id, change) {
@@ -691,3 +691,4 @@ try {
     if(statusElement) statusElement.textContent = "FEL: Konfigurationsfel i Firebase!";
     window.showCustomAlert('Det gick inte att ansluta till Firebase. Kontrollera att din "firebaseConfig" är korrekt.', 'Kritiskt Fel');
 }
+
