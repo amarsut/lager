@@ -82,10 +82,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         function generateTrodoLink(serviceFilter) {
-            if (!serviceFilter) return null;
-            const cleanedFilter = serviceFilter.replace(/\s/g, '+').replace(/[^a-zA-Z0-9+]/g, '');
-            return `https://www.trodo.se/catalogsearch/result/?q=${cleanedFilter}`;
-        }
+    if (!serviceFilter) return null;
+    const cleanedFilter = serviceFilter.replace(/\s/g, '+').replace(/[^a-zA-Z0-9+]/g, '');
+    // Lägger till filtrering för "Premium" kvalitet. Parametern är antagligen "filter[quality_group]=1"
+    // eller liknande baserat på Trodo:s URL-struktur för Premium-filter.
+    // Vi använder '?q=' för sökningen och lägger till '&filter[quality_group]=1' för Premium.
+    return `https://www.trodo.se/catalogsearch/result/?q=${cleanedFilter}&filter[quality_group]=1`;
+}
         
         function toggleAddForm() {
             const isCurrentlyOpen = addFormWrapper.classList.contains('open');
@@ -410,5 +413,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
+
 
 
