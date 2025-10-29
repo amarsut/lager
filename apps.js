@@ -581,6 +581,28 @@ try {
         editForm.addEventListener('submit', handleEditSubmit);
         searchInput.addEventListener('input', applySearchFilter);
 
+      // Inuti function initializeListeners() { ...
+
+    // Ny lyssnare för stängning av EDIT-modalen
+    editModal.addEventListener('click', (e) => {
+        if(e.target.classList.contains('modal')) {
+            closeEditModal();
+        }
+    });
+
+    // Ny lyssnare för stängning av CONFIRMATION-modalen
+    confirmationModal.addEventListener('click', (e) => {
+        if(e.target.classList.contains('modal')) {
+             // Detta är logiken som fanns i den gamla onclick
+            if (!e.target.classList.contains('alert-mode') && confirmCallback) {
+                 confirmCallback(false);
+            }
+            closeConfirmationModal();
+        }
+    });
+
+// ... resten av initializeListeners()
+
         document.getElementById('productPopup').addEventListener('click', (e) => {
             if (e.target.id === 'productPopup' || e.target.classList.contains('close-btn')) {
                 e.target.closest('#productPopup').style.display = 'none';
@@ -675,4 +697,5 @@ try {
     window.showCustomAlert('Det gick inte att ansluta till Firebase. Kontrollera att din "firebaseConfig" är korrekt.', 'Kritiskt Fel');
 } 
 // <-- FILEN MÅSTE SLUTA HÄR. INGEN EXTRA KLAMMERPARENTES (})
+
 
