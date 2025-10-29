@@ -173,60 +173,51 @@
         h1 { font-size: 2em; margin-bottom: 25px; }
         h2 { font-size: 1.4em; margin-top: 30px; }
 
-        /* --- START PÅ FIXEN --- */
-
-        /* * FIX 1: 
-         * Vi delar upp reglerna för .controls-bar och .controls-bar.top-controls
-         * och sätter båda till 'align-items: flex-start' (vänsterjusterat)
-         * istället för 'stretch'.
+        /* * DETTA ÄR DEN VIKTIGA FIXEN:
+         * Vi ändrar 'align-items: stretch' (som fanns i din lager.html) 
+         * till 'align-items: flex-start' (som fanns i din lager-backup.html).
+         * Detta gör att elementen blir vänsterjusterade och får sin naturliga höjd.
          */
-        .controls-bar {
-            flex-direction: column;
-            align-items: flex-start; /* Vänsterjustera (som i din gamla fil) */
-            gap: 15px;
-        }
-        
-        .controls-bar.top-controls {
-            flex-direction: column;
-            align-items: flex-start; /* Vänsterjustera (som i din gamla fil) */
-            gap: 15px;
+        .controls-bar, 
+        .controls-bar.top-controls { 
+            flex-direction: column; 
+            align-items: flex-start; /* <--- HÄR ÄR ÄNDRINGEN */
+            gap: 15px; 
         }
 
-        /* * FIX 2: 
-         * Tvinga "Lägg till"-knappen, JSON-gruppen och Sync-status
-         * att ta 100% bredd, precis som i din gamla fil.
+        /* * Detta tvingar knapparna och JSON-kontrollerna att ta 100% bredd 
+         * och stackas snyggt, precis som i din gamla fil.
          */
         .controls-bar.top-controls > button,
         .controls-bar.top-controls .json-controls,
         .controls-bar.top-controls #sync-status {
             width: 100%;
-            box-sizing: border-box; /* Förhindrar problem med padding */
+            box-sizing: border-box; /* Bra att ha för att undvika padding-problem */
         }
         
-        /* Denna regel ser bra ut men vi ser till att den också har 100% bredd */
         .json-controls { 
             flex-direction: column; 
-            width: 100%;
+            width: 100%; /* Se till att denna grupp också tar full bredd */
         }
-        .json-controls button, .json-controls label { 
+        
+        .json-controls button, 
+        .json-controls label { 
             width: 100%; 
             text-align: center; 
-            box-sizing: border-box; /* Förhindrar problem med padding */
         }
 
-        /* Denna regel fanns redan och är korrekt */
-        #search-input { width: 100%; margin-top: 15px; }
-        
-        /* * FIX 3: 
-         * Vänsterjustera sync-status-texten istället för att centrera den.
-         */
+        /* Detta vänsterjusterar sync-texten, istället för att centrera den */
         #sync-status { 
             border-left: none; 
             padding-left: 0; 
-            text-align: left; /* Ändrad från 'center' */
+            text-align: left; /* <--- HÄR ÄR ÄNDRINGEN */
         }
-        
-        /* --- SLUT PÅ FIXEN --- */
+
+        /* Sökfältet tar redan 100% bredd, vilket är korrekt */
+        #search-input { 
+            width: 100%; 
+            margin-top: 15px; 
+        }
     }
         .search-btn {
         background: #eef1f5;
@@ -403,5 +394,6 @@
 
 </body>
 </html>
+
 
 
