@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamisk Lagerförteckning</title>
+    <style>
+    /* Importerar Google Font "Inter" */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+
+    :root {
+        /* Ny, fräschare färgpalett */
+        --primary-color: #5a7dff; /* En livligare, mer modern blå */
+        --primary-dark: #3a57e8;
+        --success-color: #00c853; /* Levande grön */
+        --danger-color: #ff3d00; /* Stark röd */
+        --warning-color: #ffab00; /* Djupare gul/orange */
+        --bg-light: #f4f6f9; /* Mycket ljusgrå bakgrund */
+        --text-dark: #1f2937; /* Nästan svart text */
+        --border-color: #e5e7eb; /* Ren grå kant */
+        --card-bg: #ffffff; /* Vit bakgrund för "kort" */
+        --card-shadow: 0 6px 16px rgba(0, 0, 0, 0.08); /* Tydligare skugga */
+    }
+
+    * {
+        box-sizing: border-box;
+        font-family: 'Inter', sans-serif;
+    }
+
+    body {
+        margin: 0;
+        background-color: var(--bg-light);
+        color: var(--text-dark);
+        padding: 40px;
+    }
+
+    .lager-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        background-color: var(--card-bg);
+        border-radius: 12px;
+        box-shadow: var(--card-shadow);
+        overflow: hidden;
+        padding: 30px;
+    }
+
+    h1 {
+        color: var(--text-dark);
+        font-weight: 700;
+        margin-bottom: 30px;
+        font-size: 2em;
+    }
+
+    /* ------------------------ TOPP-LAYOUT (ÅTGÄRDAD) ------------------------ */
+
+    #controls-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center; /* Centrera vertikalt */
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+
+    #search-controls {
+        display: flex;
+        gap: 15px; /* Ökat gap för att separera status */
+        align-items: center;
+        flex-grow: 1; /* Låt sök-kontrollen växa */
+    }
+    
+    #sync-status {
+        /* Se till att statusen inte tar upp för mycket plats */
+        flex-shrink: 0;
+    }
+    
+    /* NY DESIGN FÖR SÖKRUTA */
+    #search-input {
+        width: 350px;
+        font-size: 1em;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        transition: all 0.2s ease-in-out; 
+        
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23888' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: 15px center; 
+        background-size: 16px 16px; 
+        
+        padding: 12px 20px 12px 45px; 
+        
+        background-color: var(--bg-light); 
+        box-shadow: none; 
+    }
+
+    #search-input:focus {
+        border-color: var(--primary-color); 
+        box-shadow: 0 0 0 4px rgba(90, 125, 255, 0.2);
+        outline: none; 
+        background-color: white; 
+    }
+
+    #header-buttons {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+        flex-shrink: 0; /* Förhindra att knapparna krymper */
+    }
+
+    .primary-btn, .action-btn, .lank-knapp, .qty-btn, .edit-btn, .delete-btn, .copy-btn {
+        padding: 10px 18px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: background-color 0.2s, box-shadow 0.2s;
+        font-size: 0.85em;
+    }
+
+    .primary-btn {
+        background-color: var(--primary-color);
+        color: white;
+    }
+
+    .primary-btn:hover {
+        background-color: var(--primary-dark);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .action-btn {
+        background-color: var(--card-bg);
+        color: var(--text-dark);
+        border: 1px solid var(--border-color);
+    }
+    
+    .action-btn:hover {
+        background-color: #ebebeb;
+    }
+
+    /* ------------------------ FORMULÄR ------------------------ */
+    
+    #add-article-form-container {
+        background-color: var(--bg-light);
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        display: none; 
+        transition: height 0.3s ease;
+        overflow: hidden;
+    }
+
+    #add-article-form {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        align-items: flex-end;
+    }
+
+    #add-article-form label {
+        display: block;
+        font-weight: 500;
+        margin-bottom: 5px;
+        font-size: 0.9em;
+        color: #4b5563;
+    }
+
+    #add-article-form input, #add-article-form select, #add-article-form textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        background-color: white;
+        transition: border-color 0.2s;
+    }
+
+    #add-article-form input:focus, #add-article-form select:focus, #add-article-form textarea:focus {
+        border-color: var(--primary-color);
+        outline: none;
+    }
+    
+    #form-submit-button-container {
+        grid-column: 1 / -1; 
+        display: flex;
+        justify-content: flex-end;
+        padding-top: 10px;
+    }
+    
+    #form-submit-button {
+        padding: 12px 25px;
+        font-size: 1em;
+    }
+
+
+    /* ------------------------ LISTVY OCH TABELL ------------------------ */
+
+    #inventory-list {
+        margin-top: 20px;
+        border-top: 1px solid var(--border-color);
+    }
+
+    .header, .artikel-rad {
+        grid-template-columns: 180px 200px 100px 80px 80px minmax(150px, 1.5fr) 80px 160px; 
+        padding: 10px 20px; 
+        align-items: center;
+        font-size: 0.85em; 
+        display: grid; 
+    }
+
+    .header {
+        background-color: var(--bg-light);
+        font-weight: 700;
+        color: #4b5563;
+        border-bottom: 2px solid var(--border-color);
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+    }
+    
+    .header > span {
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+    }
+
+    .header > span:hover {
+        color: var(--text-dark);
+    }
+
+    .header .sort-icon {
+        margin-left: 5px;
+        opacity: 0.5;
+        transition: opacity 0.2s;
+    }
+    
+    .header .sort-icon.active {
+        opacity: 1;
+    }
+
+
+    .artikel-rad {
+        border-bottom: 1px solid #f9f9f9;
+        cursor: pointer;
+        transition: background-color 0.1s;
+    }
+
+    .artikel-rad:hover {
+        background-color: #fafafa;
+    }
+    
+    .artikel-rad.selected {
+        background-color: #e6ebff; /* Ljusare blå färg för vald rad */
+        border-left: 4px solid var(--primary-color);
+        padding-left: 16px; /* Flytta in innehållet 4px */
+    }
+
+    /* ------------------------ SPECIELLA CELLER ------------------------ */
+    
+    /* Art.nr-cell */
+    .service-filter-cell {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        white-space: nowrap; 
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    .service-filter-text {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* Kopieringsknappen och nya Sök-knappen (delar stil) */
+    .copy-btn {
+        padding: 6px 8px;
+        background-color: var(--bg-light);
+        border: 1px solid var(--border-color);
+        color: var(--text-dark);
+        font-size: 1.1em;
+        line-height: 1;
+        width: 30px; 
+        height: 30px; 
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .copy-btn:hover {
+        background-color: #e0e0e0;
+    }
+    
+    /* Antal-cell */
+    .quantity-cell {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 5px;
+    }
+    
+    .quantity-cell span {
+        font-weight: 600;
+        display: inline-block;
+        min-width: 20px;
+        text-align: center;
+    }
+
+    .qty-btn {
+        padding: 5px 10px;
+        background-color: #fff;
+        border: 1px solid var(--border-color);
+        color: var(--text-dark);
+        font-size: 1em;
+        line-height: 1;
+    }
+
+    .qty-btn:hover {
+        background-color: #e0e0e0;
+    }
+    
+    /* Status-cell */
+    .i-lager, .slut {
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-weight: 600;
+        font-size: 0.75em;
+        text-transform: uppercase;
+        display: inline-block;
+        white-space: nowrap;
+    }
+
+    .i-lager {
+        background-color: #e6fff1;
+        color: var(--success-color);
+    }
+
+    .slut {
+        background-color: #ffe6e6;
+        color: var(--danger-color);
+    }
+    
+    /* Anteckningar-cell */
+    .notes-cell {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%; 
+    }
+    
+    /* Länk-knapp */
+    .lank-knapp {
+        background-color: #f0f4ff;
+        color: var(--primary-color);
+        padding: 6px 12px;
+        font-size: 0.8em;
+    }
+    
+    .lank-knapp:hover {
+        background-color: #e6ebff;
+    }
+    
+    /* Åtgärder-cell */
+    .action-buttons {
+        display: flex;
+        gap: 5px;
+        justify-content: flex-end;
+        white-space: nowrap;
+    }
+
+    .edit-btn {
+        background-color: #fff8e1;
+        color: var(--warning-color);
+        padding: 6px 10px;
+        font-size: 0.8em;
+    }
+    
+    .order-btn {
+        background-color: #c8e6c9; 
+        color: #388e3c;
+    }
+
+    .delete-btn {
+        background-color: #ffcdd2;
+        color: var(--danger-color);
+        padding: 6px 10px;
+        font-size: 0.8em;
+    }
+
+    /* ------------------------ MODAL (Redigering) ------------------------ */
+
+    .modal {
+        display: none; 
+        position: fixed; 
+        z-index: 20; 
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0,0,0,0.4); 
+    }
+
+    .modal-content {
+        background-color: var(--card-bg);
+        margin: 10% auto;
+        padding: 30px;
+        border-radius: 10px;
+        max-width: 600px;
+        box-shadow: var(--card-shadow);
+        animation-name: animatetop;
+        animation-duration: 0.4s
+    }
+
+    @keyframes animatetop {
+        from {top: -300px; opacity: 0} 
+        to {top: 0; opacity: 1}
+    }
+
+    .close-btn {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+    }
+
+    .close-btn:hover,
+    .close-btn:focus {
+        color: #000;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .modal-content h2 {
+        margin-top: 0;
+        color: var(--primary-color);
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+    }
+    
+    .modal-content form label {
+        margin-top: 10px;
+    }
+    
+    .modal-content form input, .modal-content form textarea {
+        margin-bottom: 15px;
+    }
+    
+    /* ------------------------ BEKRÄFTELSE/ALERT MODAL ------------------------ */
+    
+    #confirmationModal .modal-content {
+        max-width: 400px;
+        text-align: center;
+    }
+    
+    #confirmationModal .modal-buttons {
+        display: flex;
+        justify-content: space-around;
+        gap: 10px;
+        margin-top: 20px;
+    }
+    
+    #confirmYes, #confirmNo {
+        padding: 10px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        width: 100%;
+    }
+    
+    #confirmYes {
+        background-color: var(--danger-color);
+        color: white;
+    }
+    
+    #confirmYes:hover {
+        background-color: #d32f2f;
+    }
+    
+    #confirmNo {
+        background-color: #f0f4ff;
+        color: var(--primary-color);
+        border: 1px solid var(--primary-color);
+    }
+    
+    #confirmNo:hover {
+        background-color: #e6ebff;
+    }
+    
+    #confirmationModal.alert-mode #confirmNo {
+        display: none;
+    }
+    
+    #confirmationModal.alert-mode #confirmYes {
+        background-color: var(--primary-color);
+        color: white;
+        width: 100%;
+    }
+    
+    #confirmationModal.alert-mode #confirmYes:hover {
+        background-color: var(--primary-dark);
+    }
+
+    /* ------------------------ PRODUKT POPUP ------------------------ */
+    
+    #productPopup {
+        display: none;
+        position: fixed;
+        z-index: 30;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.7);
+    }
+    
+    #productPopup iframe {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 90%; 
+        height: 90%;
+        border: 2px solid var(--primary-color);
+        border-radius: 10px;
+        background-color: white;
+    }
+
+
+    /* ------------------------ MEDIA QUERIES ------------------------ */
+
+    @media (max-width: 1400px) {
+        .lager-container {
+            padding: 20px;
+        }
+    }
+    
+    @media (max-width: 1200px) {
+        .header, .artikel-rad {
+            grid-template-columns: 140px 140px 80px 70px 70px minmax(120px, 1fr) 60px 140px; 
+            padding: 10px 15px; 
+            font-size: 0.8em;
+        }
+        
+        body {
+            padding: 20px;
+        }
+    }
+    
+    @media (max-width: 900px) {
+        #controls-header {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 15px;
+        }
+        
+        #search-controls {
+            order: 1;
+            align-self: flex-start;
+        }
+        
+        #search-input {
+            width: 100%;
+        }
+        
+        #header-buttons {
+            order: 2;
+            justify-content: flex-start;
+        }
+
+        .header, .artikel-rad {
+            grid-template-columns: 120px 120px 80px 70px 70px 120px; 
+            gap: 10px;
+            padding: 10px;
+        }
+        
+        /* Dölj Länk och Anteckningar på små skärmar */
+        .header > span:nth-child(6), .artikel-rad > span:nth-child(6),
+        .header > span:nth-child(7), .artikel-rad > span:nth-child(7) {
+            display: none;
+        }
+    }
+
+    </style>
+</head>
+<body>
+
+    <div class="lager-container">
+        <h1>Lagerförteckning (Synkroniserad med Firebase)</h1>
+
+        <div id="controls-header">
+            <div id="search-controls">
+                <input type="text" id="search-input" placeholder="Sök efter artikelnummer eller namn...">
+                
+                <span id="sync-status" style="font-style: italic; color: var(--primary-color); font-size: 0.9em; white-space: nowrap;">Ansluter...</span>
+            </div>
+
+            <div id="header-buttons">
+                <button class="primary-btn" id="toggle-add-form-btn">Lägg till artikel</button>
+                <label class="action-btn" for="upload-json">Ladda Upp JSON (Backup)</label>
+                <input type="file" id="upload-json" style="display: none;" accept=".json" onchange="uploadJson(event)">
+                <button class="action-btn" onclick="downloadJson()">Ladda Ner JSON (Backup)</button>
+            </div>
+        </div>
+
+        <div id="add-article-form-container">
+            <form id="add-article-form">
+                <div>
+                    <label for="service_filter">Artikelnummer</label>
+                    <input type="text" id="add-service_filter" name="service_filter" required>
+                </div>
+                <div>
+                    <label for="name">Namn/Beskrivning</label>
+                    <input type="text" id="add-name" name="name" required>
+                </div>
+                <div>
+                    <label for="price">Pris (kr)</label>
+                    <input type="number" id="add-price" name="price" step="0.01" value="0.00" required>
+                </div>
+                <div>
+                    <label for="quantity">Antal</label>
+                    <input type="number" id="add-quantity" name="quantity" value="1" required>
+                </div>
+                 <div>
+                    <label for="category">Kategori</label>
+                    <select id="add-category" name="category" required>
+                        <option value="Övrigt">Övrigt</option>
+                        <option value="Filter">Filter</option>
+                        <option value="Bromsar">Bromsar</option>
+                        <option value="Motorolja">Motorolja</option>
+                        <option value="Tändstift">Tändstift</option>
+                    </select>
+                </div>
+                <div style="grid-column: span 2;">
+                    <label for="notes">Anteckningar (max 250 tecken)</label>
+                    <textarea id="add-notes" name="notes" maxlength="250"></textarea>
+                </div>
+                <div>
+                    <label for="link">Produktsida Länk (URL)</label>
+                    <input type="url" id="add-link" name="link">
+                </div>
+                <div id="form-submit-button-container">
+                    <button type="submit" class="primary-btn" id="form-submit-button">Lägg till artikel</button>
+                </div>
+            </form>
+        </div>
+
+        <div id="inventory-list-container">
+            <div class="header">
+                <span data-sort="service_filter">Art. nr <span class="sort-icon"></span></span>
+                <span data-sort="name">Namn <span class="sort-icon"></span></span>
+                <span data-sort="price">Pris <span class="sort-icon"></span></span>
+                <span data-sort="quantity">Antal <span class="sort-icon"></span></span>
+                <span>Status</span>
+                <span data-sort="notes">Anteckningar <span class="sort-icon"></span></span>
+                <span data-sort="link">Länk</span>
+                <span style="text-align: right;">Åtgärder</span>
+            </div>
+            <div id="inventory-list">
+                </div>
+        </div>
+    </div>
+
+    <div id="editModal" class="modal" onclick="if(event.target.classList.contains('modal')) closeEditModal()">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeEditModal()">&times;</span>
+            <h2>Redigera Artikel</h2>
+            <form id="edit-article-form">
+                <input type="hidden" id="edit-id" name="id">
+                <input type="hidden" id="edit-service_filter_hidden" name="service_filter">
+
+                <div>
+                    <label for="edit-service_filter">Artikelnummer</label>
+                    <input type="text" id="edit-service_filter" disabled title="Artikelnummer kan inte ändras">
+                </div>
+                <div>
+                    <label for="edit-name">Namn/Beskrivning</label>
+                    <input type="text" id="edit-name" name="name" required>
+                </div>
+                <div>
+                    <label for="edit-price">Pris (kr)</label>
+                    <input type="number" id="edit-price" name="price" step="0.01" required>
+                </div>
+                <div>
+                    <label for="edit-quantity">Antal</label>
+                    <input type="number" id="edit-quantity" name="quantity" required>
+                </div>
+                <div>
+                    <label for="edit-category">Kategori</label>
+                    <select id="edit-category" name="category" required>
+                        <option value="Övrigt">Övrigt</option>
+                        <option value="Filter">Filter</option>
+                        <option value="Bromsar">Bromsar</option>
+                        <option value="Motorolja">Motorolja</option>
+                        <option value="Tändstift">Tändstift</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="edit-link">Produktsida Länk (URL)</label>
+                    <input type="url" id="edit-link" name="link">
+                </div>
+                <div>
+                    <label for="edit-notes">Anteckningar</label>
+                    <textarea id="edit-notes" name="notes" maxlength="250"></textarea>
+                </div>
+
+                <div style="text-align: right; margin-top: 20px;">
+                    <button type="submit" class="primary-btn">Spara Ändringar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="confirmationModal" class="modal" onclick="if(event.target.classList.contains('modal')) { if (!event.target.classList.contains('alert-mode')) confirmCallback(false); else closeConfirmationModal(); }">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeConfirmationModal()">&times;</span>
+            <h2 id="confirmationTitle">Bekräfta Åtgärd</h2>
+            <p id="confirmationMessage">Är du säker på att du vill utföra denna åtgärd?</p>
+            <div class="modal-buttons">
+                <button id="confirmYes">Ja</button>
+                <button id="confirmNo">Nej</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="productPopup">
+        <iframe id="productIframe" src="" frameborder="0"></iframe>
+    </div>
+
+<script type="module" src="app.js"></script>
+
+</body>
+</html>
