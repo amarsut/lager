@@ -631,5 +631,50 @@
         }
     </script>
 
+// ----------------------------------------------------------------------
+// 4. HÄNDELSEDELEGATION (HANTERAR ALLA KNAPPTRYCK DYNAMISKT)
+// ----------------------------------------------------------------------
+
+inventoryList.addEventListener('click', (e) => {
+    // Gå uppåt tills vi hittar knappen/elementet med data-action
+    const target = e.target.closest('[data-action]');
+    if (!target) return;
+
+    e.stopPropagation(); // Stoppa bubblande till radval
+
+    const action = target.getAttribute('data-action');
+    const id = parseInt(target.getAttribute('data-id'), 10);
+    const item = inventory.find(i => i.id === id);
+
+    if (!item && action !== 'open-link') return; // Måste ha en artikel
+
+    switch (action) {
+        case 'adjust':
+            const change = parseInt(target.getAttribute('data-change'), 10);
+            adjustQuantity(id, change);
+            break;
+
+        case 'edit':
+            const isOrderMode = item.quantity <= 0;
+            handleEdit(id, isOrderMode);
+            break;
+
+        case 'delete':
+            handleDelete(id);
+            break;
+            
+        case 'copy-artnr':
+            copyToClipboard(id, item.service_filter);
+            break;
+
+        case 'open-link':
+             // För länkknappen som är i artikel-raden
+            const lankButton = target.closest('.artikel-rad').querySelector('.lank-knapp');
+            if (lankButton) {
+                openProductPopup(lankButton.getAttribute('data-url'));
+            }
+            break;
+    }
+});
 
 
