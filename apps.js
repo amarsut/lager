@@ -122,8 +122,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const editButton = isOutOfStock ? `<button class="edit-btn order-btn" onclick="handleEdit(${item.id}, true); event.stopPropagation();">Beställ</button>` : `<button class="edit-btn" onclick="handleEdit(${item.id}); event.stopPropagation();">Ändra</button>`;
             const notesCell = `<span class="notes-cell" title="${item.notes || ''}">${item.notes || ''}</span>`;
             
+            // Förstoringsglas-knappen
+            const searchButton = linkToUse ? 
+                `<button class="search-btn" onclick="window.open('${linkToUse}', '_blank'); event.stopPropagation();" title="Sök på ${linkText}">
+                    <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>
+                </button>` : 
+                '';
+
             const serviceFilterCell = `
                 <span class="service-filter-cell">
+                    ${searchButton}
                     <button class="copy-btn" onclick="copyToClipboard('${item.service_filter.replace(/'/g, "\\'")}'); event.stopPropagation();" title="Kopiera Artikelnummer">&#x1F4CB;</button>
                     <span class="service-filter-text">${item.service_filter}</span>
                 </span>
@@ -402,4 +410,5 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
+
 
