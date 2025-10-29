@@ -86,18 +86,18 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Tar bort alla mellanslag för att få en ren artikelnummer-sträng för sökningen.
     const searchFilter = serviceFilter.replace(/\s/g, ''); 
+    const searchQuery = encodeURIComponent(searchFilter);
     
-    // Vi behåller eventuella andra specialtecken som inte är bokstäver/siffror
-    // för att vara på den säkra sidan, men tar bort mellanslag.
-    // Trodo söker oftast bäst med en ren sträng.
+    // Ny parameter: Testa med en trolig filterparameter för kvalitet/märkesnivå.
+    // Ofta används en parameter som "quality" eller en unik filterkod. Vi testar den mest sannolika alternativa koden.
+    // Om din gamla länk t.ex. innehöll "&filter[quality_group][0]=PREMIUM", är detta en förenklad version.
     
-    // NOTE: Den gamla koden ersatte mellanslag med '+' och tog bort andra specialtecken.
-    // Den nya logiken blir att *ta bort* alla mellanslag och sedan koda resten.
-    // Vi ändrar den "cleanedFilter" variabeln till "searchQuery" för tydlighet.
+    // Försök med en renare filter-parameter. Om '&filter[quality_group]=1' inte fungerar, 
+    // kan '&f_quality_group=1' vara den nya parametern, eller så kan ID:t vara annorlunda.
+    // Det mest troliga är att det är en filterparameter som motsvarar "kvalitet".
     
-    const searchQuery = encodeURIComponent(searchFilter); // Använd encodeURIComponent för URL-säkerhet
-    
-    return `https://www.trodo.se/catalogsearch/result/?q=${searchQuery}&filter[quality_group]=1`;
+    // Försök med '&f_quality_group=premium' eller en numerisk ID som '2'. Vi testar ID:t '2' som är vanligt för en högre kvalitetsnivå:
+    return `https://www.trodo.se/catalogsearch/result/?q=${searchQuery}&filter[quality_group]=2`;
 }
         
         function toggleAddForm() {
@@ -423,6 +423,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
+
 
 
 
