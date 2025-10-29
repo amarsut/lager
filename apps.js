@@ -83,11 +83,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
         function generateTrodoLink(serviceFilter) {
     if (!serviceFilter) return null;
-    const cleanedFilter = serviceFilter.replace(/\s/g, '+').replace(/[^a-zA-Z0-9+]/g, '');
-    // Lägger till filtrering för "Premium" kvalitet. Parametern är antagligen "filter[quality_group]=1"
-    // eller liknande baserat på Trodo:s URL-struktur för Premium-filter.
-    // Vi använder '?q=' för sökningen och lägger till '&filter[quality_group]=1' för Premium.
-    return `https://www.trodo.se/catalogsearch/result/?q=${cleanedFilter}&filter[quality_group]=1`;
+    
+    // Tar bort alla mellanslag för att få en ren artikelnummer-sträng för sökningen.
+    const searchFilter = serviceFilter.replace(/\s/g, ''); 
+    
+    // Vi behåller eventuella andra specialtecken som inte är bokstäver/siffror
+    // för att vara på den säkra sidan, men tar bort mellanslag.
+    // Trodo söker oftast bäst med en ren sträng.
+    
+    // NOTE: Den gamla koden ersatte mellanslag med '+' och tog bort andra specialtecken.
+    // Den nya logiken blir att *ta bort* alla mellanslag och sedan koda resten.
+    // Vi ändrar den "cleanedFilter" variabeln till "searchQuery" för tydlighet.
+    
+    const searchQuery = encodeURIComponent(searchFilter); // Använd encodeURIComponent för URL-säkerhet
+    
+    return `https://www.trodo.se/catalogsearch/result/?q=${searchQuery}&filter[quality_group]=1`;
 }
         
         function toggleAddForm() {
@@ -413,6 +423,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
+
 
 
 
