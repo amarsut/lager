@@ -680,10 +680,18 @@ try {
     window.uploadJson = uploadJson;
 
 
-} catch (e) {
+// RAD 391 (ungefär): Här stänger det stora TRY-blocket som startade nära toppen av filen
+} 
+// RAD 392: (Där felet pekar!) HÄR BÖRJAR CATCH-blocket
+catch (e) {
     // Fångar fel vid själva initialiseringen (t.ex. felaktig config)
     console.error("Firebase Initialization Error:", e);
     const statusElement = document.getElementById('sync-status');
     if(statusElement) statusElement.textContent = "FEL: Konfigurationsfel i Firebase!";
     window.showCustomAlert('Det gick inte att ansluta till Firebase. Kontrollera att din "firebaseConfig" är korrekt.', 'Kritiskt Fel');
+// HÄR STÄNGER CATCH-blocket (Detta är sista tecknet i filen)
 }
+// FILEN SKA SLUTA HÄR. DET FÅR INTE FINNAS NÅGOT MER NEDANFÖR.
+
+// OM DU HAR DETTA TECKEN PÅ RAD 392, MÅSTE DU TA BORT DET:
+// }  <-- EXTRA KLAMMERPARENTES SOM ORSAKAR FELET!
