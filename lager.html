@@ -9,17 +9,17 @@
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
 
     :root {
-        /* Ny, fräschare färgpalett */
-        --primary-color: #5a7dff; /* En livligare, mer modern blå */
+        /* Färgpalett från din gamla fil */
+        --primary-color: #5a7dff;
         --primary-dark: #3a57e8;
-        --success-color: #00c853; /* Levande grön */
-        --danger-color: #ff3d00; /* Stark röd */
-        --warning-color: #ffab00; /* Djupare gul/orange */
-        --bg-light: #f4f6f9; /* Mycket ljusgrå bakgrund */
-        --text-dark: #1f2937; /* Nästan svart text */
-        --border-color: #e5e7eb; /* Ren grå kant */
-        --card-bg: #ffffff; /* Vit bakgrund för "kort" */
-        --card-shadow: 0 6px 16px rgba(0, 0, 0, 0.08); /* Tydligare skugga */
+        --success-color: #00c853;
+        --danger-color: #ff3d00;
+        --warning-color: #ffab00;
+        --bg-light: #f4f6f9;
+        --text-dark: #1f2937;
+        --border-color: #e5e7eb;
+        --card-bg: #ffffff;
+        --card-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
         --container-width: 1400px;
     }
 
@@ -39,6 +39,14 @@
         width: 100%;
         max-width: var(--container-width);
     }
+
+    h1 { 
+        color: var(--primary-dark); 
+        margin-bottom: 35px; 
+        text-align: center;
+        font-weight: 800;
+        font-size: 2.8em;
+    }
     h2 { 
         color: var(--text-dark); 
         padding-bottom: 5px;
@@ -49,78 +57,127 @@
         border-left: 5px solid var(--primary-color);
         padding-left: 15px;
     }
-    #add-article-form-container { display: none; }
     
-    .controls-bar {
-        display: flex;
+    h3.collapsible-header {
+        cursor: pointer;
+        display: flex; 
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 20px;
-        width: 100%;
-        gap: 20px;
-    }
-    
-    #search-input {
-        width: 350px;
-        font-size: 1em;
-        padding: 12px 20px;
-        border-radius: 8px;
-        border: 1px solid var(--border-color);
-    }
-
-    /* All annan CSS från din tidigare fil är här... */
-    /* Behåll all din CSS som den var */
-    .lager-container {
-        background-color: var(--card-bg);
-        border-radius: 16px;
-        box-shadow: var(--card-shadow);
-        border: 1px solid var(--border-color);
-        max-height: 500px;
-        overflow-y: auto;
-        min-width: min-content;
-    }
-    .header, .artikel-rad {
-        display: grid;
-        grid-template-columns: 180px 200px 100px 120px 80px minmax(150px, 1.5fr) 80px 160px;
-        padding: 10px 20px;
-        align-items: center;
-        font-size: 0.85em;
-    }
-    .header {
-        position: sticky;
-        top: 0;
-        z-index: 10;
+        padding-right: 15px; 
+        transition: background-color: 0.1s;
+        color: var(--text-dark);
+        margin-top: 30px;
+        margin-bottom: 15px;
+        font-size: 1.3em;
         font-weight: 700;
-        background-color: #eef1f5;
         border-bottom: 2px solid var(--border-color);
+        padding-bottom: 5px;
+        padding-left: 5px;
     }
-    .header span[data-sort] { cursor: pointer; }
-    .sort-icon { margin-left: 5px; }
-    .artikel-rad { border-bottom: 1px solid #f0f0f0; }
-    .artikel-rad.selected { background-color: #dbeaff; }
-    .quantity-cell { display: flex; align-items: center; gap: 8px; }
-    .qty-btn { padding: 4px 8px; cursor: pointer; }
-    .i-lager { color: green; }
-    .slut { color: red; }
-    .action-buttons { display: flex; gap: 8px; }
-    .btn-primary { padding: 12px 20px; background-color: var(--primary-color); color: white; border: none; border-radius: 8px; cursor: pointer; }
-    .btn-secondary { padding: 10px 15px; background-color: #f0f0f0; border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; }
-    .json-controls { display: flex; gap: 10px; }
-    .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); justify-content: center; align-items: center; }
-    .modal-content { background-color: #fff; padding: 30px; border-radius: 12px; width: 90%; max-width: 500px; }
-    .close-btn { float: right; font-size: 28px; cursor: pointer; }
-    #add-article-form { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 25px; background-color: var(--card-bg); border-radius: 16px; box-shadow: var(--card-shadow); margin-top: 20px; }
-    #add-article-form input, #add-article-form select { width: 100%; padding: 10px; box-sizing: border-box; }
-    #add-article-form button { grid-column: 1 / -1; }
-    .out-of-stock-title { color: var(--danger-color); border-left: 5px solid var(--danger-color); padding-left: 15px; }
-    #sync-status { font-weight: 600; font-size: 0.9em; }
-    .collapsible-header { cursor: pointer; display: flex; justify-content: space-between; align-items: center; padding: 10px; background-color: #f0f0f0; border-radius: 5px; margin-top: 20px; }
-    .toggle-icon { transition: transform 0.2s; }
+    h3.collapsible-header:hover { background-color: #eef1f5; border-radius: 5px; }
+
+    .toggle-icon { display: inline-block; transition: transform 0.2s ease-in-out; font-size: 0.8em; font-weight: 900; line-height: 1; color: var(--primary-color); }
     .collapsible-header[data-state="closed"] .toggle-icon { transform: rotate(-90deg); }
-    .lager-wrapper.collapsed { display: none; }
+    .lager-wrapper.collapsed { display: none !important; }
+
+    #add-form-wrapper { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-out, opacity 0.4s ease-out; opacity: 0; margin-bottom: 0; }
+    #add-form-wrapper.open { max-height: 1000px; opacity: 1; }
+    #toggle-add-form-btn #toggle-icon-form { display: inline-block; transition: transform 0.3s ease-in-out; margin-left: 8px; font-size: 1.1em; line-height: 1; }
+    #toggle-add-form-btn.open #toggle-icon-form { transform: rotate(180deg); }
+
+    #add-article-form {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 25px;
+        padding: 35px;
+        background-color: var(--card-bg);
+        border-radius: 16px; 
+        box-shadow: var(--card-shadow);
+        margin-bottom: 30px;
+    }
+    #add-article-form input, #add-article-form select { padding: 14px; border: 1px solid var(--border-color); border-radius: 8px; background-color: var(--bg-light); transition: border-color 0.2s, box-shadow 0.2s; font-size: 1em; width: 100%; box-sizing: border-box; }
+    #add-article-form input:focus, #add-article-form select:focus { border-color: var(--primary-color); box-shadow: 0 0 0 4px rgba(90, 125, 255, 0.2); background-color: white; outline: none; }
+    #add-article-form button { grid-column: 1 / -1; background-color: var(--success-color); }
+    #add-article-form button:hover { background-color: #009a44; }
+
+    .btn-primary { padding: 15px 25px; background-color: var(--primary-color); color: white; border: none; border-radius: 8px; cursor: pointer; transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); }
+    .btn-primary:hover { background-color: var(--primary-dark); transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15); }
+    .btn-secondary { padding: 12px 20px; background-color: #f0f0f0; color: var(--text-dark); border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; font-size: 0.9em; }
+    .btn-secondary:hover { background-color: #e0e0e0; transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); }
+
+    .controls-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; width: 100%; }
+    .controls-bar.top-controls { margin-top: 40px; margin-bottom: 30px; justify-content: flex-start; gap: 20px; align-items: center; }
+    .json-controls { display: flex; gap: 10px; align-items: center; }
+    #sync-status { font-weight: 600; font-size: 0.9em; padding-left: 20px; border-left: 1px solid var(--border-color); margin-left: 10px; }
+
+    #search-input { width: 350px; font-size: 1em; border-radius: 8px; border: 1px solid var(--border-color); transition: all 0.2s ease-in-out; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23888' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: 15px center; background-size: 16px 16px; padding: 12px 20px 12px 45px; background-color: var(--bg-light); box-shadow: none; }
+    #search-input:focus { border-color: var(--primary-color); box-shadow: 0 0 0 4px rgba(90, 125, 255, 0.2); outline: none; background-color: white; }
+
+    .lager-wrapper { overflow-x: auto; margin-bottom: 25px; }
+    .lager-container { background-color: var(--card-bg); border-radius: 16px; box-shadow: var(--card-shadow); margin-bottom: 40px; border: 1px solid var(--border-color); position: relative; max-height: 450px; overflow-y: auto; min-width: min-content; }
+    
+    .header, .artikel-rad { grid-template-columns: 180px 200px 100px 80px 80px minmax(150px, 1.5fr) 80px 160px; padding: 10px 20px; align-items: center; font-size: 0.85em; display: grid; }
+    .header { position: sticky; top: 0; z-index: 100; font-weight: 700; background-color: #eef1f5; color: var(--text-dark); border-bottom: 2px solid var(--border-color); text-transform: uppercase; letter-spacing: 0.5px; }
+    .header span[data-sort] { cursor: pointer; user-select: none; }
+    .header > span { display: flex; align-items: center; min-height: 1.8em; padding-right: 15px; }
+    .header > span, .artikel-rad > span, .artikel-rad > div { padding-right: 10px; }
+
+    .artikel-rad { transition: background-color 0.2s, box-shadow 0.2s; border-bottom: 1px solid #f0f0f0; cursor: pointer; }
+    .artikel-rad:hover { background-color: #f8faff; box-shadow: inset 3px 0 0 var(--primary-color); }
+    .artikel-rad:last-child { border-bottom: none; }
+    .artikel-rad.selected { background-color: #dbeaff; box-shadow: inset 3px 0 0 var(--primary-dark); }
+    .artikel-rad.selected:hover { background-color: #d1e0ff; }
+    
+    .i-lager, .slut { padding: 3px 6px; border-radius: 12px; font-size: 0.7em; min-width: 55px; }
+    .i-lager { background-color: #e8f5e9; color: #388e3c; } 
+    .slut { background-color: #ffebee; color: #d32f2f; } 
+    
+    .quantity-cell { display: flex; align-items: center; justify-content: space-between; width: 70px; border: 1px solid var(--border-color); border-radius: 6px; overflow: hidden; }
+    .quantity-cell span { flex-grow: 1; text-align: center; font-weight: 600; padding: 0 5px; border-right: none; }
+    .qty-btn { background: #f0f4f8; color: var(--text-dark); border: none; padding: 4px 8px; cursor: pointer; font-weight: 700; font-size: 0.9em; line-height: 1; transition: background 0.2s; min-width: 28px; }
+    .qty-btn:hover { background: #ced4da; }
+
+    .service-filter-cell { display: flex; align-items: center; gap: 5px; overflow: hidden; width: 100%; }
+    .service-filter-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex-grow: 1; }
+    .notes-cell { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: help; }
+    .copy-btn { background: #eef1f5; border: 1px solid var(--border-color); border-radius: 4px; cursor: pointer; color: var(--primary-dark); font-size: 0.9em; padding: 3px 5px; line-height: 1; opacity: 0.9; transition: opacity 0.2s, transform 0.1s, background 0.2s; flex-shrink: 0; }
+    .copy-btn:hover { opacity: 1; transform: scale(1.05); background: var(--primary-color); color: white; border-color: var(--primary-color); }
+
+    .action-buttons { display: flex; gap: 8px; justify-content: flex-start; }
+    .lank-knapp, .edit-btn, .delete-btn, .order-btn { padding: 6px 10px; border: 1px solid transparent; border-radius: 6px; cursor: pointer; font-size: 0.8em; font-weight: 600; transition: all 0.2s; text-align: center; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); }
+    .lank-knapp { background-color: white; color: var(--primary-color); border: 1px solid var(--primary-color); }
+    .lank-knapp:hover { background-color: var(--primary-color); color: white; }
+    .edit-btn, .order-btn { background-color: var(--primary-color); color: white; }
+    .edit-btn:hover, .order-btn:hover { background-color: var(--primary-dark); }
+    .delete-btn { background-color: white; color: var(--danger-color); border: 1px solid var(--danger-color); }
+    .delete-btn:hover { background-color: var(--danger-color); color: white; }
+    
+    .out-of-stock-title { font-size: 1.6em; font-weight: 700; margin-top: 50px; margin-bottom: 20px; padding: 5px 0; color: var(--danger-color); border-left: 5px solid var(--danger-color); padding-left: 15px; }
+    #slut-i-lager-lista .artikel-rad { opacity: 0.8; background-color: #fff9f9; }
+    
+    .modal { position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; }
+    .modal-content { background-color: var(--card-bg); padding: 40px; border-radius: 12px; width: 90%; max-width: 500px; box-shadow: 0 20px 50px rgba(0,0,0,0.4); animation: fadeIn 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55); }
+    @keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+    .modal-content h3 { color: var(--primary-dark); border-bottom: 2px solid var(--border-color); padding-bottom: 10px; margin-top: 0; font-size: 1.5em; }
+    .modal-content label { display: block; margin-top: 15px; margin-bottom: 8px; font-weight: 600; color: var(--text-dark); font-size: 0.9em; }
+    .modal-content input, .modal-content select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+    .modal-content button { margin-top: 30px; width: 100%; }
+    .close-btn { float: right; font-size: 28px; cursor: pointer; font-weight: bold; }
+    
     #productPopup { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; }
     #productPopup iframe { width: 90%; height: 90%; position: absolute; top: 5%; left: 5%; border: 2px solid white; border-radius: 10px; }
     #productPopup .close-btn { position: absolute; top: 15px; right: 35px; color: white; font-size: 40px; cursor: pointer; }
+
+    @media (max-width: 768px) {
+        body { padding: 20px 10px; }
+        h1 { font-size: 2em; margin-bottom: 25px; }
+        h2 { font-size: 1.4em; margin-top: 30px; }
+        .controls-bar, .controls-bar.top-controls { flex-direction: column; align-items: stretch; gap: 15px; }
+        #search-input { width: 100%; margin-top: 15px; }
+        .json-controls { flex-direction: column; }
+        .json-controls button, .json-controls label { width: 100%; text-align: center; }
+        #sync-status { border-left: none; padding-left: 0; text-align: center; }
+    }
     </style>
 </head>
 <body>
@@ -128,8 +185,10 @@
     <div class="main-content">
         <h1>Lagerförteckning (Firebase)</h1>
 
-        <div class="controls-bar">
-            <button id="toggle-add-form-btn" class="btn-primary">Lägg till artikel</button>
+        <div class="controls-bar top-controls">
+            <button id="toggle-add-form-btn" class="btn-primary" type="button">
+                Lägg till ny artikel <span id="toggle-icon-form">▼</span>
+            </button>
             <div class="json-controls">
                 <button class="btn-secondary" id="download-json-btn">Ladda ner JSON</button>
                 <label for="upload-json-input" class="btn-secondary">Ladda upp JSON</label>
@@ -138,25 +197,27 @@
             <span id="sync-status">Ansluter...</span>
         </div>
 
-        <div id="add-article-form-container">
+        <div id="add-form-wrapper">
             <form id="add-article-form">
-                <input type="text" name="service_filter" placeholder="Artikelnummer" required>
+                <input type="text" name="service_filter" placeholder="Artikelnummer" required oninput="this.value = this.value.toUpperCase()">
                 <input type="text" name="name" placeholder="Namn" required>
                 <input type="number" name="price" placeholder="Pris" step="0.01" required>
                 <input type="number" name="quantity" id="add-quantity" value="1" placeholder="Antal" required>
                 <select name="category" required>
+                    <option value="" disabled selected>Välj Kategori</option>
                     <option value="Service">Service</option>
                     <option value="Motor/Chassi">Motor/Chassi</option>
                     <option value="Övrigt">Övrigt</option>
                 </select>
                 <input type="text" name="notes" placeholder="Anteckningar">
-                <input type="text" name="link" placeholder="Länk">
+                <input type="text" name="link" placeholder="Länk (URL)">
                 <button type="submit" class="btn-primary">Spara Artikel</button>
             </form>
         </div>
         
         <div class="controls-bar">
-            <input type="text" id="search-input" placeholder="Sök artikelnummer eller namn...">
+            <h2>Artiklar i Lager</h2>
+            <input type="text" id="search-input" placeholder="Sök artikelnummer, namn...">
         </div>
 
         <h3 id="service-artiklar-titel" class="collapsible-header" data-state="open">
@@ -184,7 +245,7 @@
         <div id="motor-chassi-artiklar-wrapper" class="lager-wrapper">
             <div class="lager-container">
                 <div class="header">
-                     <span data-sort="service_filter">Art. nr <span class="sort-icon"></span></span>
+                    <span data-sort="service_filter">Art. nr <span class="sort-icon"></span></span>
                     <span data-sort="name">Namn <span class="sort-icon"></span></span>
                     <span data-sort="price">Pris <span class="sort-icon"></span></span>
                     <span data-sort="quantity">Antal <span class="sort-icon"></span></span>
@@ -218,27 +279,26 @@
     <div id="editModal" class="modal">
         <div class="modal-content">
             <span class="close-btn">&times;</span>
-            <h2>Redigera Artikel</h2>
+            <h3>Redigera Artikel</h3>
             <form id="edit-article-form">
                 <input type="hidden" id="edit-id">
-                <input type="hidden" id="edit-service_filter_hidden">
-                <label>Artikelnummer (kan ej ändras)</label>
-                <input type="text" id="edit-service_filter" disabled>
-                <label>Namn</label>
-                <input type="text" name="name" id="edit-name">
-                <label>Pris</label>
-                <input type="number" name="price" id="edit-price" step="0.01">
-                <label>Antal</label>
-                <input type="number" name="quantity" id="edit-quantity">
-                <label>Kategori</label>
-                <select name="category" id="edit-category">
+                <label for="edit-service_filter">Artikelnummer</label>
+                <input type="text" name="service_filter" id="edit-service_filter" required oninput="this.value = this.value.toUpperCase()">
+                <label for="edit-name">Namn</label>
+                <input type="text" name="name" id="edit-name" required>
+                <label for="edit-price">Pris</label>
+                <input type="number" name="price" id="edit-price" step="0.01" required>
+                <label for="edit-quantity">Antal</label>
+                <input type="number" name="quantity" id="edit-quantity" required>
+                <label for="edit-category">Kategori</label>
+                <select name="category" id="edit-category" required>
                     <option value="Service">Service</option>
                     <option value="Motor/Chassi">Motor/Chassi</option>
                     <option value="Övrigt">Övrigt</option>
                 </select>
-                <label>Anteckningar</label>
+                <label for="edit-notes">Anteckningar</label>
                 <input type="text" name="notes" id="edit-notes">
-                <label>Länk</label>
+                <label for="edit-link">Länk</label>
                 <input type="text" name="link" id="edit-link">
                 <button type="submit" class="btn-primary">Spara Ändringar</button>
             </form>
@@ -248,8 +308,8 @@
     <div id="confirmationModal" class="modal">
         <div class="modal-content">
             <h3 id="confirmationTitle">Bekräfta</h3>
-            <p id="confirmationMessage"></p>
-            <div class="action-buttons" style="justify-content: flex-end;">
+            <p id="confirmationMessage" style="margin-top: 20px; margin-bottom: 30px; font-size: 1.1em;"></p>
+            <div class="action-buttons" style="justify-content: flex-end; gap: 15px;">
                 <button id="confirmNo" class="btn-secondary">Avbryt</button>
                 <button id="confirmYes" class="btn-primary">Ja</button>
             </div>
