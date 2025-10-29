@@ -172,11 +172,61 @@
         body { padding: 20px 10px; }
         h1 { font-size: 2em; margin-bottom: 25px; }
         h2 { font-size: 1.4em; margin-top: 30px; }
-        .controls-bar, .controls-bar.top-controls { flex-direction: column; align-items: stretch; gap: 15px; }
+
+        /* --- START PÅ FIXEN --- */
+
+        /* * FIX 1: 
+         * Vi delar upp reglerna för .controls-bar och .controls-bar.top-controls
+         * och sätter båda till 'align-items: flex-start' (vänsterjusterat)
+         * istället för 'stretch'.
+         */
+        .controls-bar {
+            flex-direction: column;
+            align-items: flex-start; /* Vänsterjustera (som i din gamla fil) */
+            gap: 15px;
+        }
+        
+        .controls-bar.top-controls {
+            flex-direction: column;
+            align-items: flex-start; /* Vänsterjustera (som i din gamla fil) */
+            gap: 15px;
+        }
+
+        /* * FIX 2: 
+         * Tvinga "Lägg till"-knappen, JSON-gruppen och Sync-status
+         * att ta 100% bredd, precis som i din gamla fil.
+         */
+        .controls-bar.top-controls > button,
+        .controls-bar.top-controls .json-controls,
+        .controls-bar.top-controls #sync-status {
+            width: 100%;
+            box-sizing: border-box; /* Förhindrar problem med padding */
+        }
+        
+        /* Denna regel ser bra ut men vi ser till att den också har 100% bredd */
+        .json-controls { 
+            flex-direction: column; 
+            width: 100%;
+        }
+        .json-controls button, .json-controls label { 
+            width: 100%; 
+            text-align: center; 
+            box-sizing: border-box; /* Förhindrar problem med padding */
+        }
+
+        /* Denna regel fanns redan och är korrekt */
         #search-input { width: 100%; margin-top: 15px; }
-        .json-controls { flex-direction: column; }
-        .json-controls button, .json-controls label { width: 100%; text-align: center; }
-        #sync-status { border-left: none; padding-left: 0; text-align: center; }
+        
+        /* * FIX 3: 
+         * Vänsterjustera sync-status-texten istället för att centrera den.
+         */
+        #sync-status { 
+            border-left: none; 
+            padding-left: 0; 
+            text-align: left; /* Ändrad från 'center' */
+        }
+        
+        /* --- SLUT PÅ FIXEN --- */
     }
         .search-btn {
         background: #eef1f5;
@@ -353,4 +403,5 @@
 
 </body>
 </html>
+
 
