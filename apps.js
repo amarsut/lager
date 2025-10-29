@@ -105,17 +105,22 @@ try {
     }
     
     function toggleAddForm() {
-        const isVisible = addFormContainer.style.display !== 'none';
-        if (isVisible) {
-            addFormContainer.style.display = 'none';
-            localStorage.setItem('addFormCollapsed', 'true');
-            toggleBtn.textContent = 'Lägg till artikel';
-        } else {
-            addFormContainer.style.display = 'block';
-            localStorage.setItem('addFormCollapsed', 'false');
-            toggleBtn.textContent = 'Dölj formulär';
+            const isCurrentlyOpen = formWrapper.classList.contains('open');
+            
+            if (isCurrentlyOpen) {
+                // Om den är öppen, stäng den
+                formWrapper.classList.remove('open');
+                toggleBtn.classList.remove('open');
+                toggleBtn.innerHTML = 'Lägg till ny artikel <span id="toggle-icon-form">▼</span>';
+                localStorage.setItem('add_form_open_state', 'closed');
+            } else {
+                // Om den är stängd, öppna den
+                formWrapper.classList.add('open');
+                toggleBtn.classList.add('open');
+                toggleBtn.innerHTML = 'Dölj formulär <span id="toggle-icon-form">▼</span>';
+                localStorage.setItem('add_form_open_state', 'open');
+            }
         }
-    }
     
     function initializeAddFormState() {
         const isCollapsed = localStorage.getItem('addFormCollapsed') === 'true';
@@ -740,6 +745,7 @@ try {
     }, 10);
 }
 // <-- FILEN MÅSTE SLUTA HÄR. INGEN EXTRA KLAMMERPARENTES (})
+
 
 
 
