@@ -82,23 +82,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         function generateTrodoLink(serviceFilter) {
-    if (!serviceFilter) return null;
-    
-    // Tar bort alla mellanslag för att få en ren artikelnummer-sträng för sökningen.
-    const searchFilter = serviceFilter.replace(/\s/g, ''); 
-    const searchQuery = encodeURIComponent(searchFilter);
-    
-    // Ny parameter: Testa med en trolig filterparameter för kvalitet/märkesnivå.
-    // Ofta används en parameter som "quality" eller en unik filterkod. Vi testar den mest sannolika alternativa koden.
-    // Om din gamla länk t.ex. innehöll "&filter[quality_group][0]=PREMIUM", är detta en förenklad version.
-    
-    // Försök med en renare filter-parameter. Om '&filter[quality_group]=1' inte fungerar, 
-    // kan '&f_quality_group=1' vara den nya parametern, eller så kan ID:t vara annorlunda.
-    // Det mest troliga är att det är en filterparameter som motsvarar "kvalitet".
-    
-    // Försök med '&f_quality_group=premium' eller en numerisk ID som '2'. Vi testar ID:t '2' som är vanligt för en högre kvalitetsnivå:
-    return `https://www.trodo.se/catalogsearch/result/?q=${searchQuery}&filter[quality_group]=2`;
-}
+            if (!serviceFilter) return null;
+            
+            // Tar bort alla mellanslag och bindestreck för att få en ren artikelnummer-sträng.
+            const searchFilter = serviceFilter.replace(/[\s-]/g, ''); 
+            const searchQuery = encodeURIComponent(searchFilter);
+            
+            // Denna länk är baserad på "PREMIUM"-exemplet från din bild.
+            // Den lägger till /premium/ i sökvägen, sorterar efter pris (asc)
+            // och sätter filter[quality_group]=2.
+            return `https://www.trodo.se/catalogsearch/result/premium?filter[quality_group]=2&product_list_dir=asc&product_list_order=price&q=${searchQuery}`;
+        }
         
         function toggleAddForm() {
             const isCurrentlyOpen = addFormWrapper.classList.contains('open');
@@ -423,6 +417,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
+
 
 
 
