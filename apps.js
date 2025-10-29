@@ -694,8 +694,13 @@ try {
     console.error("Firebase Initialization Error:", e);
     const statusElement = document.getElementById('sync-status');
     if(statusElement) statusElement.textContent = "FEL: Konfigurationsfel i Firebase!";
-    window.showCustomAlert('Det gick inte att ansluta till Firebase. Kontrollera att din "firebaseConfig" är korrekt.', 'Kritiskt Fel');
-} 
+    
+    // NY ÅTGÄRD: Använd setTimeout för att säkerställa att funktionen har definierats
+    setTimeout(() => {
+        window.showCustomAlert('Det gick inte att ansluta till Firebase. Kontrollera att din "firebaseConfig" är korrekt.', 'Kritiskt Fel');
+    }, 10);
+}
 // <-- FILEN MÅSTE SLUTA HÄR. INGEN EXTRA KLAMMERPARENTES (})
+
 
 
