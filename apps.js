@@ -671,17 +671,16 @@ try {
     // ----------------------------------------------------------------------
     // DESSA MÅSTE FINNAS HÄR FÖR ATT ONCLICK I HTML SKA FUNGERA INUTI MODULEN
     window.handleEdit = handleEdit;
-    window.handleDelete = handleDelete;
-    window.adjustQuantity = adjustQuantity;
-    window.copyToClipboard = copyToClipboard;
-    window.openProductPopup = openProductPopup; 
-    window.closeEditModal = closeEditModal;
-    window.closeConfirmationModal = closeConfirmationModal;
-    window.showCustomConfirmation = showCustomConfirmation;
-    window.showCustomAlert = showCustomAlert;
-    window.downloadJson = downloadJson;
-    window.uploadJson = uploadJson;
-
+window.handleDelete = handleDelete;
+window.adjustQuantity = adjustQuantity;
+window.copyToClipboard = copyToClipboard;
+window.openProductPopup = openProductPopup; 
+window.closeEditModal = closeEditModal;
+window.closeConfirmationModal = closeConfirmationModal;
+window.showCustomConfirmation = showCustomConfirmation;
+window.showCustomAlert = showCustomAlert;
+window.downloadJson = downloadJson;
+window.uploadJson = uploadJson;
 
 } catch (e) {
     // Fångar fel vid själva initialiseringen (t.ex. felaktig config)
@@ -690,3 +689,4 @@ try {
     if(statusElement) statusElement.textContent = "FEL: Konfigurationsfel i Firebase!";
     window.showCustomAlert('Det gick inte att ansluta till Firebase. Kontrollera att din "firebaseConfig" är korrekt.', 'Kritiskt Fel');
 }
+
