@@ -14,7 +14,8 @@ const firebaseConfig = {
   projectId: "lagerdata-a9b39",
   storageBucket: "lagerdata-a9b39.firebasestorage.app",
   messagingSenderId: "615646392577",
-  appId: "1:615646392577:web:fd816443728e88b218eb00"
+  appId: "1:615646392577:web:fd816443728e88b218eb00",
+  measurementId: "G-R1XTJQ3ZFZ"
 };
 
 // Initialisera Firebase och Firestore
@@ -689,3 +690,4 @@ try {
     if(statusElement) statusElement.textContent = "FEL: Konfigurationsfel i Firebase!";
     window.showCustomAlert('Det gick inte att ansluta till Firebase. Kontrollera att din "firebaseConfig" är korrekt.', 'Kritiskt Fel');
 }
+
