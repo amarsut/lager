@@ -630,3 +630,19 @@
             window.showCustomAlert('Det gick inte att ansluta till Firebase. Kontrollera att din "firebaseConfig" är korrekt och att du har nätverksåtkomst.', 'Kritiskt Fel');
         }
     </script>
+
+// ----------------------------------------------------------------------
+// 3. EXPONERA FUNKTIONER TILL HTML (LÖSER SCOPE-PROBLEMET)
+// ----------------------------------------------------------------------
+
+window.handleEdit = handleEdit;
+window.handleDelete = handleDelete;
+window.adjustQuantity = adjustQuantity;
+window.copyToClipboard = copyToClipboard;
+window.openProductPopup = openProductPopup;
+window.closeEditModal = closeEditModal;
+window.closeConfirmationModal = closeConfirmationModal;
+window.showCustomConfirmation = showCustomConfirmation;
+window.showCustomAlert = showCustomAlert;
+window.downloadJson = downloadJson;
+window.uploadJson = uploadJson;
