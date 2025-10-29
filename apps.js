@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // GLOBALA VARIABLER
         let inventory = []; 
         let selectedItemId = null;
-        let currentSort = { column: 'service_filter', direction: 'asc' };
+        let currentSort = { column: 'name', direction: 'desc' };
         let confirmCallback = null; 
 
         // ----------------------------------------------------------------------
@@ -402,3 +402,4 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
+
