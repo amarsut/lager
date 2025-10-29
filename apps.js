@@ -1,9 +1,7 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js';
 import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
 
-// ----------------------------------------------------------------------
-// 1. FIREBASE KONFIGURATION (Ligger kvar globalt)
-// ----------------------------------------------------------------------
+// FIREBASE KONFIGURATION
 const firebaseConfig = {
   apiKey: "AIzaSyAC4SLwVEzP3CPO4lLfDeZ71iU0xdr49sw", 
   authDomain: "lagerdata-a9b39.firebaseapp.com",
@@ -13,19 +11,14 @@ const firebaseConfig = {
   appId: "1:615646392577:web:fd816443728e88b218eb00"
 };
 
-
-// SLUTLIG APP-START:
-// All logik flyttas in i denna lyssnare för att garantera att HTML-sidan har laddats klart.
 document.addEventListener('DOMContentLoaded', () => {
     try {
-        // Initialisera Firebase och Firestore (flyttad in hit)
+        // Initialisera Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const INVENTORY_COLLECTION = 'lager';
         
-        // ----------------------------------------------------------------------
-        // 2. DOM-ELEMENT (HÄMTAS NU NÄR SIDAN ÄR GARANTERAT LADDAD)
-        // ----------------------------------------------------------------------
+        // DOM-ELEMENT
         const serviceArtiklarLista = document.getElementById('service-artiklar-lista');
         const motorChassiArtiklarLista = document.getElementById('motor-chassi-artiklar-lista');
         const slutILagerLista = document.getElementById('slut-i-lager-lista');
@@ -33,23 +26,21 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const searchInput = document.getElementById('search-input');
         const toggleBtn = document.getElementById('toggle-add-form-btn');
-        const addFormContainer = document.getElementById('add-article-form-container');
+        const addFormWrapper = document.getElementById('add-form-wrapper');
         const addForm = document.getElementById('add-article-form');
         const editModal = document.getElementById('editModal');
         const editForm = document.getElementById('edit-article-form');
         const confirmationModal = document.getElementById('confirmationModal');
         const syncStatusElement = document.getElementById('sync-status');
         
-        // ----------------------------------------------------------------------
-        // 3. GLOBALA VARIABLER (flyttade in hit)
-        // ----------------------------------------------------------------------
+        // GLOBALA VARIABLER
         let inventory = []; 
         let selectedItemId = null;
         let currentSort = { column: 'service_filter', direction: 'asc' };
         let confirmCallback = null; 
 
         // ----------------------------------------------------------------------
-        // 4. ALLA FUNKTIONER FLYTTAS IN HIT
+        // FUNKTIONER
         // ----------------------------------------------------------------------
         
         async function saveInventoryItem(itemData) {
@@ -75,19 +66,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 const now = new Date();
                 syncStatusElement.textContent = `Synkroniserad ${now.toLocaleTimeString('sv-SE')}`;
+                syncStatusElement.style.color = 'var(--success-color)';
             }, (error) => {
                 console.error("Realtime listener error: ", error);
                 syncStatusElement.textContent = `FEL: Se konsolen`;
-                if (error.code === 'permission-denied') {
-                     showCustomAlert('Kunde inte läsa data. Kontrollera dina Firebase Security Rules.', 'Säkerhetsfel');
-                } else {
-                     showCustomAlert('Kunde inte ansluta till databasen.', 'Nätverksfel');
-                }
+                syncStatusElement.style.color = 'var(--danger-color)';
             });
         }
 
         function formatPrice(price) {
-            return parseFloat(price).toFixed(2).replace('.', ',');
+            return new Intl.NumberFormat('sv-SE', { 
+                minimumFractionDigits: 2, 
+                maximumFractionDigits: 2 
+            }).format(price);
         }
 
         function generateTrodoLink(serviceFilter) {
@@ -97,26 +88,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         function toggleAddForm() {
-            const isVisible = addFormContainer.style.display !== 'none';
-            if (isVisible) {
-                addFormContainer.style.display = 'none';
-                localStorage.setItem('addFormCollapsed', 'true');
-                toggleBtn.textContent = 'Lägg till artikel';
-            } else {
-                addFormContainer.style.display = 'block';
-                localStorage.setItem('addFormCollapsed', 'false');
-                toggleBtn.textContent = 'Dölj formulär';
-            }
+            const isCurrentlyOpen = addFormWrapper.classList.contains('open');
+            const newState = isCurrentlyOpen ? 'closed' : 'open';
+            addFormWrapper.classList.toggle('open');
+            toggleBtn.classList.toggle('open');
+            localStorage.setItem('add_form_open_state', newState);
         }
         
         function initializeAddFormState() {
-            const isCollapsed = localStorage.getItem('addFormCollapsed') === 'true';
-            if (isCollapsed) {
-                addFormContainer.style.display = 'none';
-                toggleBtn.textContent = 'Lägg till artikel';
-            } else {
-                addFormContainer.style.display = 'block';
-                toggleBtn.textContent = 'Dölj formulär';
+            const storedState = localStorage.getItem('add_form_open_state');
+            if (storedState === 'open') {
+                 addFormWrapper.classList.add('open');
+                 toggleBtn.classList.add('open');
             }
         }
 
@@ -133,21 +116,28 @@ document.addEventListener('DOMContentLoaded', () => {
             let linkToUse = item.link || generateTrodoLink(item.service_filter);
             let linkText = item.link ? 'Länk' : 'Trodo';
 
-            const linkContent = linkToUse ? `<button class="btn-secondary" onclick="openProductPopup('${linkToUse}'); event.stopPropagation();">${linkText}</button>` : `<span>(Saknas)</span>`;
+            const linkContent = linkToUse ? `<button class="lank-knapp" onclick="window.open('${linkToUse}', '_blank'); event.stopPropagation();">${linkText}</button>` : `<span>(Saknas)</span>`;
 
             const quantityCell = `<div class="quantity-cell"><button class="qty-btn" onclick="adjustQuantity(${item.id}, -1); event.stopPropagation();">-</button><span>${item.quantity}</span><button class="qty-btn" onclick="adjustQuantity(${item.id}, 1); event.stopPropagation();">+</button></div>`;
-            const editButton = isOutOfStock ? `<button class="btn-primary" onclick="handleEdit(${item.id}, true); event.stopPropagation();">Beställ</button>` : `<button class="btn-primary" onclick="handleEdit(${item.id}); event.stopPropagation();">Ändra</button>`;
+            const editButton = isOutOfStock ? `<button class="edit-btn order-btn" onclick="handleEdit(${item.id}, true); event.stopPropagation();">Beställ</button>` : `<button class="edit-btn" onclick="handleEdit(${item.id}); event.stopPropagation();">Ändra</button>`;
             const notesCell = `<span class="notes-cell" title="${item.notes || ''}">${item.notes || ''}</span>`;
+            
+            const serviceFilterCell = `
+                <span class="service-filter-cell">
+                    <button class="copy-btn" onclick="copyToClipboard('${item.service_filter.replace(/'/g, "\\'")}'); event.stopPropagation();" title="Kopiera Artikelnummer">&#x1F4CB;</button>
+                    <span class="service-filter-text">${item.service_filter}</span>
+                </span>
+            `;
 
             row.innerHTML = `
-                <span><button class="btn-secondary" onclick="copyToClipboard('${item.service_filter}'); event.stopPropagation();">&#x1F4CB;</button> ${item.service_filter}</span>
+                ${serviceFilterCell}
                 <span>${item.name}</span>
                 <span>${formatPrice(item.price)} kr</span>
                 ${quantityCell}
-                <span><span class="${statusClass}">${statusText}</span></span>
+                <span style="display: flex; align-items: center;"><span class="${statusClass}">${statusText}</span></span>
                 ${notesCell}
                 <span class="action-cell">${linkContent}</span>
-                <div class="action-buttons">${editButton}<button class="btn-secondary" onclick="handleDelete(${item.id}); event.stopPropagation();">Ta bort</button></div>`;
+                <div class="action-buttons">${editButton}<button class="delete-btn" onclick="handleDelete(${item.id}); event.stopPropagation();">Ta bort</button></div>`;
             return row;
         }
 
@@ -179,7 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 let bVal = b[currentSort.column];
 
                 if (typeof aVal === 'string' && typeof bVal === 'string') {
-                    return currentSort.direction === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+                    return currentSort.direction === 'asc' ? aVal.localeCompare(bVal, 'sv') : bVal.localeCompare(aVal, 'sv');
                 } else {
                     return currentSort.direction === 'asc' ? (aVal || 0) - (bVal || 0) : (bVal || 0) - (aVal || 0);
                 }
@@ -187,7 +177,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const searchTerm = searchInput.value.toLowerCase().trim();
             const filteredInventory = sortedInventory.filter(item => {
-                return (item.service_filter?.toLowerCase().includes(searchTerm) || item.name?.toLowerCase().includes(searchTerm));
+                 const text = `${item.service_filter} ${item.name} ${item.notes} ${item.category}`.toLowerCase();
+                 const searchWords = searchTerm.split(/\s+/).filter(word => word.length > 0);
+                 return searchWords.every(word => text.includes(word));
             });
             
             renderInventory(filteredInventory);
@@ -212,7 +204,9 @@ document.addEventListener('DOMContentLoaded', () => {
             };
             await saveInventoryItem(newItem);
             addForm.reset();
-            toggleAddForm(); 
+            if (addFormWrapper.classList.contains('open')) {
+                toggleAddForm(); 
+            }
         }
         
         function handleRowSelect(id, row) {
@@ -225,13 +219,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // Exponera funktioner till globala scopet så onclick="" fungerar
         window.handleEdit = function(id, isOrderMode = false) {
             const item = inventory.find(i => i.id === id);
             if (item) {
                 editForm.querySelector('#edit-id').value = item.id;
                 editForm.querySelector('#edit-service_filter').value = item.service_filter;
-                editForm.querySelector('#edit-service_filter_hidden').value = item.service_filter;
                 editForm.querySelector('#edit-name').value = item.name;
                 editForm.querySelector('#edit-price').value = item.price;
                 editForm.querySelector('#edit-quantity').value = isOrderMode ? 1 : item.quantity;
@@ -239,12 +231,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 editForm.querySelector('#edit-notes').value = item.notes;
                 editForm.querySelector('#edit-link').value = item.link;
                 
-                const submitBtn = editForm.querySelector('.primary-btn');
+                const submitBtn = editForm.querySelector('.btn-primary');
+                const title = editModal.querySelector('h3');
                 if (isOrderMode) {
-                    editModal.querySelector('h2').textContent = 'Beställ Artikel';
+                    title.textContent = 'Beställ Artikel';
                     submitBtn.textContent = 'Markera som Beställd';
                 } else {
-                    editModal.querySelector('h2').textContent = 'Redigera Artikel';
+                    title.textContent = 'Redigera Artikel';
                     submitBtn.textContent = 'Spara Ändringar';
                 }
                 editModal.style.display = 'flex';
@@ -258,6 +251,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const updatedItem = {
                 ...originalItem,
+                service_filter: editForm.querySelector('#edit-service_filter').value.trim().toUpperCase(),
                 name: editForm.querySelector('#edit-name').value.trim(),
                 price: parseFloat(editForm.querySelector('#edit-price').value) || 0.00,
                 quantity: parseInt(editForm.querySelector('#edit-quantity').value, 10) || 0,
@@ -281,7 +275,7 @@ document.addEventListener('DOMContentLoaded', () => {
         window.handleDelete = function(id) {
             const item = inventory.find(i => i.id === id);
             showCustomConfirmation(
-                `Är du säker på att du vill ta bort **${item.service_filter}**?`,
+                `Är du säker på att du vill ta bort <strong>${item.name} (${item.service_filter})</strong>?`,
                 async (result) => {
                     if (result) {
                         await deleteInventoryItem(id);
@@ -290,11 +284,7 @@ document.addEventListener('DOMContentLoaded', () => {
             );
         }
         
-        window.copyToClipboard = (text) => navigator.clipboard.writeText(text).then(() => showCustomAlert(`'${text}' kopierat!`));
-        window.openProductPopup = (url) => {
-            document.getElementById('productIframe').src = url;
-            document.getElementById('productPopup').style.display = 'block';
-        };
+        window.copyToClipboard = (text) => navigator.clipboard.writeText(text).then(() => showCustomAlert(`'${text}' har kopierats!`));
         
         function closeEditModal() { editModal.style.display = 'none'; }
         function closeConfirmationModal() { confirmationModal.style.display = 'none'; confirmCallback = null; }
@@ -308,7 +298,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         function showCustomAlert(message, title = 'Meddelande') {
-            showCustomConfirmation(message, (result) => { if(result) closeConfirmationModal() }, title);
+            showCustomConfirmation(message, () => closeConfirmationModal(), title);
             confirmationModal.querySelector('#confirmNo').style.display = 'none';
         }
 
@@ -318,15 +308,16 @@ document.addEventListener('DOMContentLoaded', () => {
             searchInput.addEventListener('input', applySearchFilter);
             toggleBtn.addEventListener('click', toggleAddForm);
 
-            [editModal, confirmationModal, document.getElementById('productPopup')].forEach(modal => {
+            // Modal stängningslogik
+            [editModal, confirmationModal].forEach(modal => {
                 modal.addEventListener('click', (e) => {
                     if (e.target === modal || e.target.classList.contains('close-btn')) {
                         modal.style.display = 'none';
-                        if (modal.id === 'productPopup') document.getElementById('productIframe').src = '';
                     }
                 });
             });
             
+            // Sortering
             document.querySelectorAll('.header span[data-sort]').forEach(header => {
                 header.addEventListener('click', () => {
                     const column = header.getAttribute('data-sort');
@@ -336,18 +327,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             });
             
+            // Bekräftelsemodal-knappar
             document.getElementById('confirmYes').addEventListener('click', () => { if (confirmCallback) confirmCallback(true); closeConfirmationModal(); });
             document.getElementById('confirmNo').addEventListener('click', () => { if (confirmCallback) confirmCallback(false); closeConfirmationModal(); });
 
+            // Fällbara sektioner
             document.querySelectorAll('.collapsible-header').forEach(header => {
                 header.addEventListener('click', () => {
                     const wrapper = document.getElementById(header.id.replace('-titel', '-wrapper'));
                     const isClosed = header.getAttribute('data-state') === 'closed';
-                    header.setAttribute('data-state', isClosed ? 'open' : 'closed');
+                    const newState = isClosed ? 'open' : 'closed';
+                    header.setAttribute('data-state', newState);
                     wrapper.classList.toggle('collapsed', !isClosed);
+                    localStorage.setItem(header.id, newState);
                 });
             });
 
+            // JSON-hantering
             document.getElementById('download-json-btn').addEventListener('click', () => {
                 const dataStr = JSON.stringify(inventory, null, 2);
                 const blob = new Blob([dataStr], {type: "application/json"});
@@ -358,16 +354,42 @@ document.addEventListener('DOMContentLoaded', () => {
                 const file = event.target.files[0]; if (!file) return;
                 const reader = new FileReader();
                 reader.onload = async (e) => {
-                    const uploadedInventory = JSON.parse(e.target.result);
-                    for (const item of uploadedInventory) { await saveInventoryItem(item); }
-                    showCustomAlert(`${uploadedInventory.length} artiklar uppladdade!`);
+                    try {
+                        const uploadedInventory = JSON.parse(e.target.result);
+                        if(Array.isArray(uploadedInventory)) {
+                            showCustomConfirmation(`Detta kommer att skriva över ${inventory.length} befintliga artiklar med ${uploadedInventory.length} artiklar från filen. Vill du fortsätta?`, async (result) => {
+                                if (result) {
+                                    // Ta bort allt gammalt först
+                                    for (const item of inventory) { await deleteInventoryItem(item.id); }
+                                    // Spara det nya
+                                    for (const item of uploadedInventory) { await saveInventoryItem(item); }
+                                    showCustomAlert(`${uploadedInventory.length} artiklar uppladdade!`);
+                                }
+                            }, 'Skriv över lager?');
+                        } else {
+                            showCustomAlert('Fel: JSON-filen är inte en giltig lista (array).');
+                        }
+                    } catch(err) {
+                        showCustomAlert('Kunde inte läsa filen. Kontrollera att det är en giltig JSON-fil.');
+                    }
                 };
                 reader.readAsText(file); event.target.value = '';
+            });
+        }
+        
+        function initializeCollapseState() {
+            document.querySelectorAll('.collapsible-header').forEach(header => {
+                const savedState = localStorage.getItem(header.id);
+                if (savedState === 'closed') {
+                    header.setAttribute('data-state', 'closed');
+                    document.getElementById(header.id.replace('-titel', '-wrapper')).classList.add('collapsed');
+                }
             });
         }
 
         // KÖR ALLT I ORDNING
         initializeAddFormState(); 
+        initializeCollapseState();
         initializeListeners(); 
         setupRealtimeListener();
 
@@ -376,6 +398,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const statusElement = document.getElementById('sync-status');
         if (statusElement) {
            statusElement.textContent = "FEL: Initieringsfel!";
+           statusElement.style.color = 'var(--danger-color)';
         }
     }
 });
