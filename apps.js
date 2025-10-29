@@ -590,6 +590,21 @@ try {
         }
     });
 
+      // Lägg till efter att du har definierat dina DOM-element
+    const downloadJsonBtn = document.getElementById('download-json-btn');
+    // ...
+
+    function initializeListeners() {
+        // ... (befintlig logik)
+
+        // NY LYSSNARE FÖR JSON NEDLADDNING
+        if (downloadJsonBtn) {
+            downloadJsonBtn.addEventListener('click', downloadJson);
+        }
+
+        // ... (resten av logiken)
+    }
+
       // Hitta productPopup och lägg till lyssnare
     const productPopup = document.getElementById('productPopup');
 
@@ -725,6 +740,7 @@ try {
     }, 10);
 }
 // <-- FILEN MÅSTE SLUTA HÄR. INGEN EXTRA KLAMMERPARENTES (})
+
 
 
 
