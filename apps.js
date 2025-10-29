@@ -2,10 +2,9 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase
 import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
 
 // ----------------------------------------------------------------------
-// 2.1. FIREBASE KONFIGURATION (ERSÄTT DESSA VÄRDEN)
+// 1. FIREBASE KONFIGURATION (Ligger kvar globalt)
 // ----------------------------------------------------------------------
 const firebaseConfig = {
-  // OBS: Kontrollera att dessa är DINA riktiga nycklar
   apiKey: "AIzaSyAC4SLwVEzP3CPO4lLfDeZ71iU0xdr49sw", 
   authDomain: "lagerdata-a9b39.firebaseapp.com",
   projectId: "lagerdata-a9b39",
@@ -14,742 +13,369 @@ const firebaseConfig = {
   appId: "1:615646392577:web:fd816443728e88b218eb00"
 };
 
-// Initialisera Firebase och Firestore
-try {
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const INVENTORY_COLLECTION = 'lager';
-    
-    // Fånga DOM-element HÄR
-    const inventoryList = document.getElementById('inventory-list');
-    const searchInput = document.getElementById('search-input');
-    const toggleBtn = document.getElementById('toggle-add-form-btn');
-    const addFormContainer = document.getElementById('add-article-form-container');
-    const addForm = document.getElementById('add-article-form');
-    const editModal = document.getElementById('editModal');
-    const editForm = document.getElementById('edit-article-form');
-    const confirmationModal = document.getElementById('confirmationModal');
-    const syncStatusElement = document.getElementById('sync-status');
-    
-    // Lyssna på "online"-händelsen för att uppdatera status tidigt
-    window.addEventListener('online', () => syncStatusElement.textContent = 'Återansluter...');
-    window.addEventListener('offline', () => syncStatusElement.textContent = 'OFFLINE');
 
-    // ----------------------------------------------------------------------
-    // 2.2. GLOBALA VARIABLER OCH DOM-ELEMENT
-    // ----------------------------------------------------------------------
-    
-    let inventory = []; 
-    let selectedItemId = null;
-    let currentSort = { column: 'service_filter', direction: 'asc' };
-    let confirmCallback = null; 
-
-    // ----------------------------------------------------------------------
-    // 2.3. FIREBASE DATABAS LOGIK
-    // ----------------------------------------------------------------------
-    
-    async function saveInventoryItem(itemData) {
-        const itemRef = doc(db, INVENTORY_COLLECTION, String(itemData.id));
-        await setDoc(itemRef, itemData);
-        console.log("Artikel sparad/uppdaterad i Firebase:", itemData.id);
-    }
-    
-    async function deleteInventoryItem(itemId) {
-        const itemRef = doc(db, INVENTORY_COLLECTION, String(itemId));
-        await deleteDoc(itemRef);
-        console.log("Artikel borttagen från Firebase:", itemId);
-    }
-    
-    function setupRealtimeListener() {
-        const q = collection(db, INVENTORY_COLLECTION);
+// SLUTLIG APP-START:
+// All logik flyttas in i denna lyssnare för att garantera att HTML-sidan har laddats klart.
+document.addEventListener('DOMContentLoaded', () => {
+    try {
+        // Initialisera Firebase och Firestore (flyttad in hit)
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const INVENTORY_COLLECTION = 'lager';
         
-        onSnapshot(q, (querySnapshot) => {
-            const tempInventory = [];
-            querySnapshot.forEach((doc) => {
-                tempInventory.push(doc.data());
+        // ----------------------------------------------------------------------
+        // 2. DOM-ELEMENT (HÄMTAS NU NÄR SIDAN ÄR GARANTERAT LADDAD)
+        // ----------------------------------------------------------------------
+        const serviceArtiklarLista = document.getElementById('service-artiklar-lista');
+        const motorChassiArtiklarLista = document.getElementById('motor-chassi-artiklar-lista');
+        const slutILagerLista = document.getElementById('slut-i-lager-lista');
+        const slutILagerSektion = document.getElementById('slut-i-lager-sektion');
+        
+        const searchInput = document.getElementById('search-input');
+        const toggleBtn = document.getElementById('toggle-add-form-btn');
+        const addFormContainer = document.getElementById('add-article-form-container');
+        const addForm = document.getElementById('add-article-form');
+        const editModal = document.getElementById('editModal');
+        const editForm = document.getElementById('edit-article-form');
+        const confirmationModal = document.getElementById('confirmationModal');
+        const syncStatusElement = document.getElementById('sync-status');
+        
+        // ----------------------------------------------------------------------
+        // 3. GLOBALA VARIABLER (flyttade in hit)
+        // ----------------------------------------------------------------------
+        let inventory = []; 
+        let selectedItemId = null;
+        let currentSort = { column: 'service_filter', direction: 'asc' };
+        let confirmCallback = null; 
+
+        // ----------------------------------------------------------------------
+        // 4. ALLA FUNKTIONER FLYTTAS IN HIT
+        // ----------------------------------------------------------------------
+        
+        async function saveInventoryItem(itemData) {
+            const itemRef = doc(db, INVENTORY_COLLECTION, String(itemData.id));
+            await setDoc(itemRef, itemData);
+        }
+        
+        async function deleteInventoryItem(itemId) {
+            const itemRef = doc(db, INVENTORY_COLLECTION, String(itemId));
+            await deleteDoc(itemRef);
+        }
+        
+        function setupRealtimeListener() {
+            const q = collection(db, INVENTORY_COLLECTION);
+            
+            onSnapshot(q, (querySnapshot) => {
+                const tempInventory = [];
+                querySnapshot.forEach((doc) => {
+                    tempInventory.push(doc.data());
+                });
+                inventory = tempInventory;
+                applySearchFilter();
+                
+                const now = new Date();
+                syncStatusElement.textContent = `Synkroniserad ${now.toLocaleTimeString('sv-SE')}`;
+            }, (error) => {
+                console.error("Realtime listener error: ", error);
+                syncStatusElement.textContent = `FEL: Se konsolen`;
+                if (error.code === 'permission-denied') {
+                     showCustomAlert('Kunde inte läsa data. Kontrollera dina Firebase Security Rules.', 'Säkerhetsfel');
+                } else {
+                     showCustomAlert('Kunde inte ansluta till databasen.', 'Nätverksfel');
+                }
+            });
+        }
+
+        function formatPrice(price) {
+            return parseFloat(price).toFixed(2).replace('.', ',');
+        }
+
+        function generateTrodoLink(serviceFilter) {
+            if (!serviceFilter) return null;
+            const cleanedFilter = serviceFilter.replace(/\s/g, '+').replace(/[^a-zA-Z0-9+]/g, '');
+            return `https://www.trodo.se/catalogsearch/result/?q=${cleanedFilter}`;
+        }
+        
+        function toggleAddForm() {
+            const isVisible = addFormContainer.style.display !== 'none';
+            if (isVisible) {
+                addFormContainer.style.display = 'none';
+                localStorage.setItem('addFormCollapsed', 'true');
+                toggleBtn.textContent = 'Lägg till artikel';
+            } else {
+                addFormContainer.style.display = 'block';
+                localStorage.setItem('addFormCollapsed', 'false');
+                toggleBtn.textContent = 'Dölj formulär';
+            }
+        }
+        
+        function initializeAddFormState() {
+            const isCollapsed = localStorage.getItem('addFormCollapsed') === 'true';
+            if (isCollapsed) {
+                addFormContainer.style.display = 'none';
+                toggleBtn.textContent = 'Lägg till artikel';
+            } else {
+                addFormContainer.style.display = 'block';
+                toggleBtn.textContent = 'Dölj formulär';
+            }
+        }
+
+        function createInventoryRow(item, isOutOfStock) {
+            const row = document.createElement('div');
+            row.className = 'artikel-rad';
+            row.setAttribute('data-id', item.id);
+            row.onclick = () => handleRowSelect(item.id, row);
+            if (selectedItemId === item.id) row.classList.add('selected');
+
+            const statusClass = item.quantity > 0 ? 'i-lager' : 'slut';
+            const statusText = item.quantity > 0 ? 'I lager' : 'Slut';
+            
+            let linkToUse = item.link || generateTrodoLink(item.service_filter);
+            let linkText = item.link ? 'Länk' : 'Trodo';
+
+            const linkContent = linkToUse ? `<button class="btn-secondary" onclick="openProductPopup('${linkToUse}'); event.stopPropagation();">${linkText}</button>` : `<span>(Saknas)</span>`;
+
+            const quantityCell = `<div class="quantity-cell"><button class="qty-btn" onclick="adjustQuantity(${item.id}, -1); event.stopPropagation();">-</button><span>${item.quantity}</span><button class="qty-btn" onclick="adjustQuantity(${item.id}, 1); event.stopPropagation();">+</button></div>`;
+            const editButton = isOutOfStock ? `<button class="btn-primary" onclick="handleEdit(${item.id}, true); event.stopPropagation();">Beställ</button>` : `<button class="btn-primary" onclick="handleEdit(${item.id}); event.stopPropagation();">Ändra</button>`;
+            const notesCell = `<span class="notes-cell" title="${item.notes || ''}">${item.notes || ''}</span>`;
+
+            row.innerHTML = `
+                <span><button class="btn-secondary" onclick="copyToClipboard('${item.service_filter}'); event.stopPropagation();">&#x1F4CB;</button> ${item.service_filter}</span>
+                <span>${item.name}</span>
+                <span>${formatPrice(item.price)} kr</span>
+                ${quantityCell}
+                <span><span class="${statusClass}">${statusText}</span></span>
+                ${notesCell}
+                <span class="action-cell">${linkContent}</span>
+                <div class="action-buttons">${editButton}<button class="btn-secondary" onclick="handleDelete(${item.id}); event.stopPropagation();">Ta bort</button></div>`;
+            return row;
+        }
+
+        function renderInventory(data) {
+            serviceArtiklarLista.innerHTML = '';
+            motorChassiArtiklarLista.innerHTML = '';
+            slutILagerLista.innerHTML = '';
+            
+            const iLager = data.filter(item => item.quantity > 0);
+            const slutILager = data.filter(item => item.quantity <= 0);
+
+            const serviceArtiklar = iLager.filter(item => item.category === 'Service');
+            const motorChassiArtiklar = iLager.filter(item => item.category === 'Motor/Chassi' || item.category === 'Övrigt' || !item.category);
+            
+            serviceArtiklar.forEach(item => serviceArtiklarLista.appendChild(createInventoryRow(item, false)));
+            motorChassiArtiklar.forEach(item => motorChassiArtiklarLista.appendChild(createInventoryRow(item, false)));
+            slutILager.forEach(item => slutILagerLista.appendChild(createInventoryRow(item, true)));
+
+            document.getElementById('service-artiklar-titel').style.display = serviceArtiklar.length > 0 ? 'flex' : 'none';
+            document.getElementById('service-artiklar-wrapper').style.display = serviceArtiklar.length > 0 ? 'block' : 'none';
+            document.getElementById('motor-chassi-artiklar-titel').style.display = motorChassiArtiklar.length > 0 ? 'flex' : 'none';
+            document.getElementById('motor-chassi-artiklar-wrapper').style.display = motorChassiArtiklar.length > 0 ? 'block' : 'none';
+            slutILagerSektion.style.display = slutILager.length > 0 ? 'block' : 'none';
+        }
+
+        function sortAndRender() {
+            const sortedInventory = [...inventory].sort((a, b) => {
+                let aVal = a[currentSort.column];
+                let bVal = b[currentSort.column];
+
+                if (typeof aVal === 'string' && typeof bVal === 'string') {
+                    return currentSort.direction === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+                } else {
+                    return currentSort.direction === 'asc' ? (aVal || 0) - (bVal || 0) : (bVal || 0) - (aVal || 0);
+                }
+            });
+
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            const filteredInventory = sortedInventory.filter(item => {
+                return (item.service_filter?.toLowerCase().includes(searchTerm) || item.name?.toLowerCase().includes(searchTerm));
             });
             
-            inventory = tempInventory;
-            
-            sortInventory(currentSort.column, currentSort.direction);
-            applySearchFilter();
-            
-            // Uppdatera synkroniseringsstatus
-            const now = new Date();
-            syncStatusElement.textContent = `Synkroniserad ${now.toLocaleTimeString('sv-SE', {hour: '2-digit', minute:'2-digit', second:'2-digit'})}`;
-
-        }, (error) => {
-            console.error("Realtime listener error: ", error);
-            syncStatusElement.textContent = `FEL: Se konsolen`;
-            // Bättre felmeddelande för säkerhetsfel
-            if (error.code === 'permission-denied') {
-                 showCustomAlert('Kunde inte läsa data. Detta beror nästan alltid på felaktiga **Firebase Security Rules** (Måste vara allow read: if true;).', 'Säkerhetsfel');
-            } else {
-                 showCustomAlert('Kunde inte ansluta till realtidsdatabasen. Kontrollera nätverket.', 'Nätverksfel');
-            }
-        });
-    }
-
-    // ----------------------------------------------------------------------
-    // 2.4. HJÄLPFUNKTIONER 
-    // ----------------------------------------------------------------------
-
-    function formatPrice(price) {
-        return parseFloat(price).toFixed(2).replace('.', ',');
-    }
-
-    function generateTrodoLink(serviceFilter) {
-        if (!serviceFilter) return null;
-        const cleanedFilter = serviceFilter.replace(/\s/g, '+').replace(/[^a-zA-Z0-9+]/g, '');
-        return `https://www.trodo.se/catalogsearch/result/?q=${cleanedFilter}`;
-    }
-    
-    function toggleAddForm() {
-            const isCurrentlyOpen = formWrapper.classList.contains('open');
-            
-            if (isCurrentlyOpen) {
-                // Om den är öppen, stäng den
-                formWrapper.classList.remove('open');
-                toggleBtn.classList.remove('open');
-                toggleBtn.innerHTML = 'Lägg till ny artikel <span id="toggle-icon-form">▼</span>';
-                localStorage.setItem('add_form_open_state', 'closed');
-            } else {
-                // Om den är stängd, öppna den
-                formWrapper.classList.add('open');
-                toggleBtn.classList.add('open');
-                toggleBtn.innerHTML = 'Dölj formulär <span id="toggle-icon-form">▼</span>';
-                localStorage.setItem('add_form_open_state', 'open');
-            }
-        }
-    
-    function initializeAddFormState() {
-        const isCollapsed = localStorage.getItem('addFormCollapsed') === 'true';
-        if (isCollapsed) {
-            addFormContainer.style.display = 'none';
-            toggleBtn.textContent = 'Lägg till artikel';
-        } else {
-            addFormContainer.style.display = 'block';
-            toggleBtn.textContent = 'Dölj formulär';
-        }
-    }
-    
-    // ----------------------------------------------------------------------
-    // 2.5. UI/RENDERING LOGIK
-    // ----------------------------------------------------------------------
-
-    function createInventoryRow(item, isOutOfStock) {
-        const row = document.createElement('div');
-        row.className = 'artikel-rad';
-        row.setAttribute('data-id', item.id);
-        
-        row.onclick = () => handleRowSelect(item.id, row);
-        
-        if (selectedItemId === item.id) {
-            row.classList.add('selected');
-        }
-        
-        const statusClass = item.quantity > 0 ? 'i-lager' : 'slut';
-        const statusText = item.quantity > 0 ? 'I lager' : 'Slut';
-        
-        let linkToUse = item.link;
-        let linkText = 'Länk';
-        
-        if (!linkToUse || linkToUse.length === 0) {
-            linkToUse = generateTrodoLink(item.service_filter);
-            linkText = 'Trodo'; 
+            renderInventory(filteredInventory);
         }
 
-        const linkContent = linkToUse
-            ? `<button class="lank-knapp" onclick="openProductPopup('${linkToUse}'); event.stopPropagation();">${linkText}</button>`
-            : `<span style="text-align:center; color:#999; font-style: italic;">(Saknas)</span>`;
-
-        const quantityCell = `
-            <div class="quantity-cell">
-                <button class="qty-btn" onclick="adjustQuantity(${item.id}, -1); event.stopPropagation();">-</button>
-                <span>${item.quantity}</span>
-                <button class="qty-btn" onclick="adjustQuantity(${item.id}, 1); event.stopPropagation();">+</button>
-            </div>
-        `;
-        
-        let editButton;
-        if (isOutOfStock) {
-            editButton = `<button class="edit-btn order-btn" onclick="handleEdit(${item.id}, true); event.stopPropagation();">Beställ</button>`;
-        } else {
-            editButton = `<button class="edit-btn" onclick="handleEdit(${item.id}); event.stopPropagation();">Ändra</button>`;
+        function applySearchFilter() {
+             sortAndRender();
         }
-        
-        const searchLinkButton = linkToUse
-            ? `<button 
-                class="copy-btn" 
-                onclick="openProductPopup('${linkToUse}'); event.stopPropagation();" 
-                title="Öppna länk (samma som Länk/Trodo-knapp)">
-                &#128269;
-               </button>` 
-            : `<button 
-                class="copy-btn" 
-                disabled 
-                style="cursor: not-allowed; opacity: 0.5;"
-                title="Ingen länk tillgänglig">
-                &#128269;
-               </button>`;
-        
-        
-        const serviceFilterCell = `
-            <span class="service-filter-cell">
-                ${searchLinkButton} 
-                <button class="copy-btn" onclick="copyToClipboard(${item.id}, '${item.service_filter.replace(/'/g, "\\'")
-                }'); event.stopPropagation();" title="Kopiera Artikelnummer">
-                    &#x1F4CB; </button>
-                <span class="service-filter-text">${item.service_filter}</span>
-            </span>
-        `;
 
-        const notesCell = `<span class="notes-cell" title="${item.notes.replace(/"/g, '&quot;')}">${item.notes}</span>`;
-
-
-        row.innerHTML = `
-            ${serviceFilterCell}
-            <span>${item.name}</span>
-            <span>${formatPrice(item.price)} kr</span>
-            ${quantityCell}
-            <span style="display: flex; align-items: center;"><span class="${statusClass}">${statusText}</span></span>
-            ${notesCell}
-            <span class="action-cell">${linkContent}</span>
-            <div class="action-buttons">
-                ${editButton}
-                <button class="delete-btn" onclick="handleDelete(${item.id}); event.stopPropagation();">Ta bort</button>
-            </div>
-        `;
-
-        return row;
-    }
-
-
-    function renderInventory(data) {
-        inventoryList.innerHTML = '';
-        
-        const searchTerm = searchInput.value.toLowerCase().trim();
-        
-        data.filter(item => {
-            if (!item.service_filter || !item.name) return false;
-            const matchesSearch = item.service_filter.toLowerCase().includes(searchTerm) || 
-                                  item.name.toLowerCase().includes(searchTerm);
-            return matchesSearch;
-        })
-        .forEach(item => {
-            const isOutOfStock = item.quantity <= 0;
-            const row = createInventoryRow(item, isOutOfStock);
-            inventoryList.appendChild(row);
-        });
-    }
-
-    function sortInventory(column, direction) {
-        currentSort = { column, direction };
-        
-        document.querySelectorAll('.header .sort-icon').forEach(icon => {
-            icon.classList.remove('active');
-            icon.innerHTML = '';
-        });
-
-        const header = document.querySelector(`.header span[data-sort="${column}"]`);
-        if (header) {
-            const icon = header.querySelector('.sort-icon');
-            icon.classList.add('active');
-            icon.innerHTML = direction === 'asc' ? '&#9650;' : '&#9660;';
-        }
-        
-        const sortedInventory = [...inventory].sort((a, b) => {
-            let aVal = a[column];
-            let bVal = b[column];
-
-            if (column === 'quantity' || column === 'price') {
-                aVal = parseFloat(aVal) || 0;
-                bVal = parseFloat(bVal) || 0;
-                return direction === 'asc' ? aVal - bVal : bVal - aVal;
-            } 
-            
-            if (typeof aVal === 'string' && typeof bVal === 'string') {
-                aVal = aVal.toLowerCase();
-                bVal = bVal.toLowerCase();
-                return direction === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
-            }
-
-            return 0;
-        });
-
-        renderInventory(sortedInventory);
-    }
-
-    function applySearchFilter() {
-         sortInventory(currentSort.column, currentSort.direction);
-    }
-
-    // ----------------------------------------------------------------------
-    // 2.6. HÄNDELSEHANTERARE (ASYNKRONA FÖR FIREBASE)
-    // ----------------------------------------------------------------------
-
-    async function handleFormSubmit(event) {
-        event.preventDefault();
-
-        const formData = new FormData(addForm);
-        const newItem = {
-            id: Date.now(), 
-            service_filter: (formData.get('service_filter') || '').trim().toUpperCase(),
-            name: (formData.get('name') || '').trim(),
-            price: parseFloat(formData.get('price')) || 0.00,
-            quantity: parseInt(formData.get('quantity'), 10) || 0,
-            category: formData.get('category') || 'Övrigt',
-            notes: (formData.get('notes') || '').trim(),
-            link: (formData.get('link') || '').trim(),
-        };
-        
-        try {
+        async function handleFormSubmit(event) {
+            event.preventDefault();
+            const formData = new FormData(addForm);
+            const newItem = {
+                id: Date.now(), 
+                service_filter: (formData.get('service_filter') || '').trim().toUpperCase(),
+                name: (formData.get('name') || '').trim(),
+                price: parseFloat(formData.get('price')) || 0.00,
+                quantity: parseInt(formData.get('quantity'), 10) || 0,
+                category: formData.get('category') || 'Övrigt',
+                notes: (formData.get('notes') || '').trim(),
+                link: (formData.get('link') || '').trim(),
+            };
             await saveInventoryItem(newItem);
             addForm.reset();
-            document.getElementById('add-quantity').value = 1; 
             toggleAddForm(); 
-        } catch (e) {
-            // Felhantering sker i setupRealtimeListener
         }
-    }
-    
-    function handleRowSelect(id, row) {
-        document.querySelectorAll('.artikel-rad').forEach(r => r.classList.remove('selected'));
-        if (selectedItemId === id) {
-            selectedItemId = null;
-        } else {
-            selectedItemId = id;
-            row.classList.add('selected');
-        }
-    }
-
-    function handleEdit(id, isOrderMode = false) {
-        const item = inventory.find(i => i.id === id);
-        if (item) {
-            document.getElementById('edit-id').value = item.id;
-            document.getElementById('edit-service_filter').value = item.service_filter;
-            document.getElementById('edit-service_filter_hidden').value = item.service_filter;
-            document.getElementById('edit-name').value = item.name;
-            document.getElementById('edit-price').value = item.price;
-            document.getElementById('edit-quantity').value = item.quantity;
-            document.getElementById('edit-category').value = item.category;
-            document.getElementById('edit-notes').value = item.notes;
-            document.getElementById('edit-link').value = item.link;
-
-            const submitBtn = editForm.querySelector('.primary-btn');
-            if (isOrderMode) {
-                editModal.querySelector('h2').textContent = 'Beställ Artikel';
-                submitBtn.textContent = 'Markera som Beställd (Öka Antal)';
-                document.getElementById('edit-quantity').value = 1;
-                document.getElementById('edit-quantity').focus();
+        
+        function handleRowSelect(id, row) {
+            document.querySelectorAll('.artikel-rad').forEach(r => r.classList.remove('selected'));
+            if (selectedItemId === id) {
+                selectedItemId = null;
             } else {
-                editModal.querySelector('h2').textContent = 'Redigera Artikel';
-                submitBtn.textContent = 'Spara Ändringar';
+                selectedItemId = id;
+                row.classList.add('selected');
             }
-
-            editModal.style.display = 'block';
-        }
-    }
-
-    async function handleEditSubmit(event) {
-        event.preventDefault();
-        
-        const formData = new FormData(editForm);
-        
-        const originalItem = inventory.find(i => i.id === parseInt(formData.get('id'), 10));
-        if (!originalItem) {
-            showCustomAlert('Kunde inte hitta artikeln för redigering.', 'Fel');
-            return;
         }
 
-        const updatedItem = {
-            ...originalItem,
-            id: parseInt(formData.get('id'), 10),
-            service_filter: (formData.get('service_filter_hidden') || '').trim().toUpperCase(),
-            name: (formData.get('name') || '').trim(),
-            price: parseFloat(formData.get('price')) || 0.00,
-            quantity: parseInt(formData.get('quantity'), 10) || 0,
-            category: formData.get('category') || 'Övrigt',
-            notes: (formData.get('notes') || '').trim(),
-            link: (formData.get('link') || '').trim(),
-        };
+        // Exponera funktioner till globala scopet så onclick="" fungerar
+        window.handleEdit = function(id, isOrderMode = false) {
+            const item = inventory.find(i => i.id === id);
+            if (item) {
+                editForm.querySelector('#edit-id').value = item.id;
+                editForm.querySelector('#edit-service_filter').value = item.service_filter;
+                editForm.querySelector('#edit-service_filter_hidden').value = item.service_filter;
+                editForm.querySelector('#edit-name').value = item.name;
+                editForm.querySelector('#edit-price').value = item.price;
+                editForm.querySelector('#edit-quantity').value = isOrderMode ? 1 : item.quantity;
+                editForm.querySelector('#edit-category').value = item.category;
+                editForm.querySelector('#edit-notes').value = item.notes;
+                editForm.querySelector('#edit-link').value = item.link;
+                
+                const submitBtn = editForm.querySelector('.primary-btn');
+                if (isOrderMode) {
+                    editModal.querySelector('h2').textContent = 'Beställ Artikel';
+                    submitBtn.textContent = 'Markera som Beställd';
+                } else {
+                    editModal.querySelector('h2').textContent = 'Redigera Artikel';
+                    submitBtn.textContent = 'Spara Ändringar';
+                }
+                editModal.style.display = 'flex';
+            }
+        }
 
-        try {
+        async function handleEditSubmit(event) {
+            event.preventDefault();
+            const id = parseInt(editForm.querySelector('#edit-id').value, 10);
+            const originalItem = inventory.find(i => i.id === id);
+            
+            const updatedItem = {
+                ...originalItem,
+                name: editForm.querySelector('#edit-name').value.trim(),
+                price: parseFloat(editForm.querySelector('#edit-price').value) || 0.00,
+                quantity: parseInt(editForm.querySelector('#edit-quantity').value, 10) || 0,
+                category: editForm.querySelector('#edit-category').value,
+                notes: editForm.querySelector('#edit-notes').value.trim(),
+                link: editForm.querySelector('#edit-link').value.trim(),
+            };
             await saveInventoryItem(updatedItem);
             closeEditModal();
-            selectedItemId = null; 
-        } catch (e) {
-            // Felhantering sker i setupRealtimeListener
         }
-    }
-
-    async function adjustQuantity(id, change) {
-        const item = inventory.find(i => i.id === id);
-        if (item) {
-            const updatedItem = {...item, quantity: item.quantity + change }; // Skapa en kopia
-            if (updatedItem.quantity < 0) updatedItem.quantity = 0; 
-            
-            try {
+        
+        window.adjustQuantity = async function(id, change) {
+            const item = inventory.find(i => i.id === id);
+            if (item) {
+                const newQuantity = Math.max(0, item.quantity + change);
+                const updatedItem = {...item, quantity: newQuantity };
                 await saveInventoryItem(updatedItem);
-            } catch (e) {
-                // Felhantering sker i setupRealtimeListener
             }
         }
-    }
-
-    function handleDelete(id) {
-        showCustomConfirmation(
-            `Är du säker på att du vill ta bort artikel **${inventory.find(i => i.id === id)?.service_filter}** permanent?`,
-            async (result) => {
-                if (result) {
-                    try {
+        
+        window.handleDelete = function(id) {
+            const item = inventory.find(i => i.id === id);
+            showCustomConfirmation(
+                `Är du säker på att du vill ta bort **${item.service_filter}**?`,
+                async (result) => {
+                    if (result) {
                         await deleteInventoryItem(id);
-                        selectedItemId = null; 
-                    } catch (e) {
-                        // Felhantering sker i setupRealtimeListener
                     }
-                }
-            },
-            'Bekräfta Borttagning'
-        );
-    }
-    
-    // OBS! Dessa två funktioner har vi gjort globala med 'window.' ovanför!
-    window.copyToClipboard = function(id, text) {
-        navigator.clipboard.writeText(text).then(() => {
-            showCustomAlert(`Artikelnummer **${text}** kopierat!`, 'Kopiering Lyckades');
-        }).catch(err => {
-            showCustomAlert('Kunde inte kopiera text: ' + err, 'Fel');
-        });
-    }
-    
-    window.openProductPopup = function(url) {
-        const productIframe = document.getElementById('productIframe');
-        productIframe.src = url;
-        document.getElementById('productPopup').style.display = 'block';
-    }
-    
-    // ----------------------------------------------------------------------
-    // 2.7. MODAL/ALERT LOGIK
-    // ----------------------------------------------------------------------
-    
-    window.closeEditModal = function() {
-        editModal.style.display = 'none';
-    }
-    
-    window.closeConfirmationModal = function() {
-        confirmationModal.style.display = 'none';
-        confirmationModal.classList.remove('alert-mode');
-        confirmCallback = null;
-    }
-
-    window.showCustomConfirmation = function(message, callback, title = 'Bekräfta Åtgärd', yesText = 'Ja', noText = 'Avbryt') {
-        document.getElementById('confirmationTitle').innerHTML = title;
-        document.getElementById('confirmationMessage').innerHTML = message;
-        document.getElementById('confirmYes').textContent = yesText;
-        document.getElementById('confirmNo').textContent = noText;
+                }, 'Bekräfta Borttagning'
+            );
+        }
         
-        confirmationModal.classList.remove('alert-mode');
-        confirmationModal.style.display = 'block';
-        confirmCallback = callback;
-    }
-    
-    window.showCustomAlert = function(message, title = 'Meddelande', buttonText = 'OK') {
-        document.getElementById('confirmationTitle').innerHTML = title;
-        document.getElementById('confirmationMessage').innerHTML = message;
-        document.getElementById('confirmYes').textContent = buttonText;
-        
-        confirmationModal.classList.add('alert-mode');
-        confirmationModal.style.display = 'block';
-        confirmCallback = (result) => { if (result) closeConfirmationModal(); };
-    }
-    
-    // ----------------------------------------------------------------------
-    // 2.8. JSON BACKUP/ÅTERSTÄLLNING (Anpassad för Firebase)
-    // ----------------------------------------------------------------------
-
-    window.downloadJson = function() {
-        const backupData = {
-            lastModified: new Date().toISOString(),
-            inventory: inventory
+        window.copyToClipboard = (text) => navigator.clipboard.writeText(text).then(() => showCustomAlert(`'${text}' kopierat!`));
+        window.openProductPopup = (url) => {
+            document.getElementById('productIframe').src = url;
+            document.getElementById('productPopup').style.display = 'block';
         };
         
-        const jsonString = JSON.stringify(backupData, null, 2);
-        const blob = new Blob([jsonString], { type: 'application/json' });
-        
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `lager_backup_${new Date().toISOString().slice(0, 10)}.json`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        
-        showCustomAlert('Lagerbackup nedladdad! Filen innehåller en snapshot av molnets data.', 'Backup Skapad');
-    };
+        function closeEditModal() { editModal.style.display = 'none'; }
+        function closeConfirmationModal() { confirmationModal.style.display = 'none'; confirmCallback = null; }
 
-    window.uploadJson = function(event) {
-        const file = event.target.files[0];
-        const fileInput = event.target;
-        
-        if (!file) {
-            fileInput.value = '';
-            showCustomAlert('Ingen fil vald.', 'Fel');
-            return;
-        }
-
-        const reader = new FileReader();
-        reader.onload = async function(e) { // Gör onload ASYNC
-            try {
-                const uploadedData = JSON.parse(e.target.result);
-                
-                let uploadedInventory;
-                
-                if (uploadedData.inventory) {
-                    uploadedInventory = uploadedData.inventory;
-                } else if (Array.isArray(uploadedData)) {
-                    uploadedInventory = uploadedData;
-                } else {
-                    throw new Error('Okänt filformat.');
-                }
-                
-                if (!Array.isArray(uploadedInventory)) {
-                     throw new Error('Inventariedatan i filen är inte en lista (array).');
-                }
-
-                showCustomConfirmation(
-                    `<strong>VARNING:</strong> Du håller på att ladda upp **${uploadedInventory.length}** artiklar från en fil. Detta kommer att **lägga till/skriva över** artiklar i molnet. Detta bör endast användas för återställning.`,
-                    async (result) => { // Gör callback ASYNC
-                        if (result) {
-                            await processUploadToFirebase(uploadedInventory, fileInput);
-                        } else {
-                            fileInput.value = '';
-                        }
-                    },
-                    'Bekräfta Återställning',
-                    'Ja, Fortsätt',
-                    'Avbryt'
-                );
-                
-            } catch (error) {
-                showCustomAlert(`Kunde inte läsa JSON-filen. Kontrollera att filen är korrekt formaterad.`, 'Fel vid uppladdning');
-                console.error('JSON Parse Error:', error);
-                fileInput.value = '';
-            }
-        };
-        
-        reader.onerror = function() {
-            showCustomAlert('Ett okänt fel uppstod vid läsning av filen.', 'Fel');
-        };
-
-        reader.readAsText(file);
-    };
-    
-    async function processUploadToFirebase(uploadedInventory, fileInputElement) {
-        let successCount = 0;
-        let errorCount = 0;
-        
-        for (const item of uploadedInventory) {
-            const sanitizedItem = {
-                id: item.id && !isNaN(parseInt(item.id)) ? parseInt(item.id, 10) : Date.now() + Math.floor(Math.random() * 1000000),
-                service_filter: (item.service_filter || '').trim().toUpperCase(),
-                name: (item.name || '').trim(),
-                price: parseFloat(item.price) || 0.00,
-                quantity: parseInt(item.quantity, 10) || 0,
-                category: item.category || 'Övrigt',
-                notes: (item.notes || '').trim(),
-                link: (item.link || '').trim(),
-            };
-            
-            try {
-                await saveInventoryItem(sanitizedItem);
-                successCount++;
-            } catch (e) {
-                errorCount++;
-            }
+        function showCustomConfirmation(message, callback, title = 'Bekräfta') {
+            confirmationModal.querySelector('#confirmationTitle').innerHTML = title;
+            confirmationModal.querySelector('#confirmationMessage').innerHTML = message;
+            confirmationModal.querySelector('#confirmNo').style.display = 'inline-block';
+            confirmationModal.style.display = 'flex';
+            confirmCallback = callback;
         }
         
-        showCustomAlert(`Återställning slutförd! ${successCount} artiklar lades till/uppdaterades i molnet. ${errorCount > 0 ? `(${errorCount} fel uppstod.)` : ''}`, 'Återställning Klar');
-        
-        if (fileInputElement) {
-            fileInputElement.value = '';
-        }
-    }
-
-    // ----------------------------------------------------------------------
-    // 2.9. INITIERING OCH HÄNDELSELYSSNARE
-    // ----------------------------------------------------------------------
-
-    function initializeListeners() {
-        addForm.addEventListener('submit', handleFormSubmit);
-        editForm.addEventListener('submit', handleEditSubmit);
-        searchInput.addEventListener('input', applySearchFilter);
-
-      // Inuti function initializeListeners() { ...
-
-    // Ny lyssnare för stängning av EDIT-modalen
-    editModal.addEventListener('click', (e) => {
-        if(e.target.classList.contains('modal')) {
-            closeEditModal();
-        }
-    });
-
-      // Lägg till efter att du har definierat dina DOM-element
-    const downloadJsonBtn = document.getElementById('download-json-btn');
-    // ...
-
-    function initializeListeners() {
-        // ... (befintlig logik)
-
-        // NY LYSSNARE FÖR JSON NEDLADDNING
-        if (downloadJsonBtn) {
-            downloadJsonBtn.addEventListener('click', downloadJson);
+        function showCustomAlert(message, title = 'Meddelande') {
+            showCustomConfirmation(message, (result) => { if(result) closeConfirmationModal() }, title);
+            confirmationModal.querySelector('#confirmNo').style.display = 'none';
         }
 
-        // ... (resten av logiken)
-    }
+        function initializeListeners() {
+            addForm.addEventListener('submit', handleFormSubmit);
+            editForm.addEventListener('submit', handleEditSubmit);
+            searchInput.addEventListener('input', applySearchFilter);
+            toggleBtn.addEventListener('click', toggleAddForm);
 
-      // Hitta productPopup och lägg till lyssnare
-    const productPopup = document.getElementById('productPopup');
-
-    if (productPopup) {
-        // Lyssnare för att stänga vid klick på bakgrunden eller X-knappen
-        productPopup.addEventListener('click', (e) => {
-            // Kontrollera om klicket var på bakgrunden (modalen) ELLER om det var stängningsknappen (X)
-            if (e.target === productPopup || e.target.classList.contains('close-btn')) {
-                productPopup.style.display = 'none';
-                document.getElementById('productIframe').src = ''; // Rensa iframe
-            }
-        });
-    }
-
-    // OBS: Du kan ta bort den gamla lyssnaren för productPopup om den existerar!
-    // document.getElementById('productPopup').addEventListener('click', (e) => { ... })
-
-    // Ny lyssnare för stängning av CONFIRMATION-modalen
-    confirmationModal.addEventListener('click', (e) => {
-        if(e.target.classList.contains('modal')) {
-             // Detta är logiken som fanns i den gamla onclick
-            if (!e.target.classList.contains('alert-mode') && confirmCallback) {
-                 confirmCallback(false);
-            }
-            closeConfirmationModal();
-        }
-    });
-
-      // Hitta stängningsknappen för Redigeringsmodalen
-    const editModalCloseBtn = editModal.querySelector('.close-btn');
-
-    if (editModalCloseBtn) {
-        editModalCloseBtn.addEventListener('click', closeEditModal);
-    }
-
-// ... resten av initializeListeners()
-
-        document.getElementById('productPopup').addEventListener('click', (e) => {
-            if (e.target.id === 'productPopup' || e.target.classList.contains('close-btn')) {
-                e.target.closest('#productPopup').style.display = 'none';
-                document.getElementById('productIframe').src = ''; // Rensa iframe
-            }
-        });
-        
-        // Modal-stängning via Escape-tangenten
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                if (editModal.style.display === 'block') closeEditModal();
-                if (confirmationModal.style.display === 'block') closeConfirmationModal();
-                if (document.getElementById('productPopup').style.display === 'block') document.getElementById('productPopup').style.display = 'none';
-            }
-        });
-
-        document.querySelectorAll('.header span[data-sort]').forEach(header => {
-            header.addEventListener('click', (e) => {
-                let target = e.target;
-                while (target && !target.hasAttribute('data-sort')) {
-                    target = target.parentNode;
-                    if (target.className === 'header' || target.className === 'lager-container') break; 
-                }
-                if (!target || !target.hasAttribute('data-sort')) return;
-
-                const column = target.getAttribute('data-sort');
-                let direction = 'asc';
-
-                if (currentSort.column === column) {
-                    direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
-                } else if (column === 'quantity' || column === 'price') {
-                    direction = 'desc'; 
-                }
-
-                currentSort = { column, direction };
-                sortInventory(column, direction);
+            [editModal, confirmationModal, document.getElementById('productPopup')].forEach(modal => {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal || e.target.classList.contains('close-btn')) {
+                        modal.style.display = 'none';
+                        if (modal.id === 'productPopup') document.getElementById('productIframe').src = '';
+                    }
+                });
             });
-        });
-        
-        toggleBtn.addEventListener('click', toggleAddForm);
-        
-        document.getElementById('confirmYes').addEventListener('click', () => {
-            if (confirmationModal.classList.contains('alert-mode')) {
-                // Alert-läge
-                closeConfirmationModal();
-                if (confirmCallback) confirmCallback(true);
-            } else {
-                // Confirmation-läge
-                if (confirmCallback) confirmCallback(true);
-                closeConfirmationModal();
-            }
-        });
-        
-        document.getElementById('confirmNo').addEventListener('click', () => {
-            if (!confirmationModal.classList.contains('alert-mode') && confirmCallback) {
-                confirmCallback(false);
-            }
-            closeConfirmationModal();
-        });
-    }
+            
+            document.querySelectorAll('.header span[data-sort]').forEach(header => {
+                header.addEventListener('click', () => {
+                    const column = header.getAttribute('data-sort');
+                    const direction = (currentSort.column === column && currentSort.direction === 'asc') ? 'desc' : 'asc';
+                    currentSort = { column, direction };
+                    applySearchFilter();
+                });
+            });
+            
+            document.getElementById('confirmYes').addEventListener('click', () => { if (confirmCallback) confirmCallback(true); closeConfirmationModal(); });
+            document.getElementById('confirmNo').addEventListener('click', () => { if (confirmCallback) confirmCallback(false); closeConfirmationModal(); });
 
-    // SLUTLIG APP-START:
-    document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.collapsible-header').forEach(header => {
+                header.addEventListener('click', () => {
+                    const wrapper = document.getElementById(header.id.replace('-titel', '-wrapper'));
+                    const isClosed = header.getAttribute('data-state') === 'closed';
+                    header.setAttribute('data-state', isClosed ? 'open' : 'closed');
+                    wrapper.classList.toggle('collapsed', !isClosed);
+                });
+            });
+
+            document.getElementById('download-json-btn').addEventListener('click', () => {
+                const dataStr = JSON.stringify(inventory, null, 2);
+                const blob = new Blob([dataStr], {type: "application/json"});
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a'); a.href = url; a.download = "lager_backup.json"; a.click(); URL.revokeObjectURL(url);
+            });
+            document.getElementById('upload-json-input').addEventListener('change', (event) => {
+                const file = event.target.files[0]; if (!file) return;
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    const uploadedInventory = JSON.parse(e.target.result);
+                    for (const item of uploadedInventory) { await saveInventoryItem(item); }
+                    showCustomAlert(`${uploadedInventory.length} artiklar uppladdade!`);
+                };
+                reader.readAsText(file); event.target.value = '';
+            });
+        }
+
+        // KÖR ALLT I ORDNING
         initializeAddFormState(); 
         initializeListeners(); 
-        syncStatusElement.textContent = 'Ansluter...'; // Sätt status innan lyssnaren startar
         setupRealtimeListener();
-    });
 
-
-    // ----------------------------------------------------------------------
-    // 3. GLOBALA EXPONERINGAR (FÖR ONCLICK)
-    // ----------------------------------------------------------------------
-    // DESSA MÅSTE FINNAS HÄR FÖR ATT ONCLICK I HTML SKA FUNGERA INUTI MODULEN
-    window.handleEdit = handleEdit;
-    window.handleDelete = handleDelete;
-    window.adjustQuantity = adjustQuantity;
-    // copyToClipboard och openProductPopup är redan globalt exponerade via 'window.' ovan.
-    window.closeEditModal = closeEditModal;
-    window.closeConfirmationModal = closeConfirmationModal;
-    window.showCustomConfirmation = showCustomConfirmation;
-    window.showCustomAlert = showCustomAlert;
-    window.downloadJson = downloadJson;
-    window.uploadJson = uploadJson;
-
-
-} catch (e) {
-    // Fångar fel vid själva initialiseringen (t.ex. felaktig config)
-    console.error("Firebase Initialization Error:", e);
-    const statusElement = document.getElementById('sync-status');
-    if(statusElement) statusElement.textContent = "FEL: Konfigurationsfel i Firebase!";
-    
-    // NY ÅTGÄRD: Använd setTimeout för att säkerställa att funktionen har definierats
-    setTimeout(() => {
-        window.showCustomAlert('Det gick inte att ansluta till Firebase. Kontrollera att din "firebaseConfig" är korrekt.', 'Kritiskt Fel');
-    }, 10);
-}
-// <-- FILEN MÅSTE SLUTA HÄR. INGEN EXTRA KLAMMERPARENTES (})
-
-
-
-
-
-
-
-
+    } catch (e) {
+        console.error("App Initialization Error:", e);
+        const statusElement = document.getElementById('sync-status');
+        if (statusElement) {
+           statusElement.textContent = "FEL: Initieringsfel!";
+        }
+    }
+});
