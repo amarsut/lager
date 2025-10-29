@@ -1,21 +1,20 @@
 // apps.js
-// Obs: Denna fil ska ligga i samma mapp som lager.html
         
 // Import Firebase v9 Syntax via CDN
 import { initializeApp } from 'https://www.gstatic.com/firebase/9.6.1/firebase-app.js';
 import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot } from 'https://www.gstatic.com/firebase/9.6.1/firebase-firestore.js';
 
 // ----------------------------------------------------------------------
-// 2.1. FIREBASE KONFIGURATION (ERSÄTT DESSA VÄRDEN)
+// 2.1. FIREBASE KONFIGURATION (ERSÄTT DESSA VÄRDEN MED DINA EGNA)
 // ----------------------------------------------------------------------
 const firebaseConfig = {
-  apiKey: "AIzaSyAC4SLwVEzP3CPO4lLfDeZ71iU0xdr49sw",
+  // OBS: Kontrollera att dessa är DINA riktiga nycklar
+  apiKey: "AIzaSyAC4SLwVEzP3CPO4lLfDeZ71iU0xdr49sw", 
   authDomain: "lagerdata-a9b39.firebaseapp.com",
   projectId: "lagerdata-a9b39",
   storageBucket: "lagerdata-a9b39.firebasestorage.app",
   messagingSenderId: "615646392577",
-  appId: "1:615646392577:web:fd816443728e88b218eb00",
-  measurementId: "G-R1XTJQ3ZFZ"
+  appId: "1:615646392577:web:fd816443728e88b218eb00"
 };
 
 // Initialisera Firebase och Firestore
@@ -670,6 +669,7 @@ try {
     // ----------------------------------------------------------------------
     // 3. GLOBALA EXPONERINGAR (FÖR ONCLICK)
     // ----------------------------------------------------------------------
+    // DESSA MÅSTE FINNAS HÄR FÖR ATT ONCLICK I HTML SKA FUNGERA INUTI MODULEN
     window.handleEdit = handleEdit;
     window.handleDelete = handleDelete;
     window.adjustQuantity = adjustQuantity;
@@ -690,4 +690,3 @@ try {
     if(statusElement) statusElement.textContent = "FEL: Konfigurationsfel i Firebase!";
     window.showCustomAlert('Det gick inte att ansluta till Firebase. Kontrollera att din "firebaseConfig" är korrekt.', 'Kritiskt Fel');
 }
-
