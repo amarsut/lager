@@ -152,28 +152,28 @@
                 }
 
                 const linkContent = linkToUse
-                    ? `<button class="lank-knapp" onclick="openProductPopup('${linkToUse}'); event.stopPropagation();">${linkText}</button>`
+                    ? `<button class="lank-knapp" data-action="open-link"="openProductPopup('${linkToUse}'); event.stopPropagation();">${linkText}</button>`
                     : `<span style="text-align:center; color:#999; font-style: italic;">(Saknas)</span>`;
 
                 const quantityCell = `
                     <div class="quantity-cell">
-                        <button class="qty-btn" onclick="adjustQuantity(${item.id}, -1); event.stopPropagation();">-</button>
+                        <button class="qty-btn" data-action="adjust" data-change="-1"="adjustQuantity(${item.id}, -1); event.stopPropagation();">-</button>
                         <span>${item.quantity}</span>
-                        <button class="qty-btn" onclick="adjustQuantity(${item.id}, 1); event.stopPropagation();">+</button>
+                        <button class="qty-btn" data-action="adjust" data-change="-1"="adjustQuantity(${item.id}, 1); event.stopPropagation();">+</button>
                     </div>
                 `;
                 
                 let editButton;
                 if (isOutOfStock) {
-                    editButton = `<button class="edit-btn order-btn" onclick="handleEdit(${item.id}, true); event.stopPropagation();">Beställ</button>`;
+                    editButton = `<button class="edit-btn order-btn" data-action="edit"="handleEdit(${item.id}, true); event.stopPropagation();">Beställ</button>`;
                 } else {
-                    editButton = `<button class="edit-btn" onclick="handleEdit(${item.id}); event.stopPropagation();">Ändra</button>`;
+                    editButton = `<button class="edit-btn" data-action="edit"="handleEdit(${item.id}); event.stopPropagation();">Ändra</button>`;
                 }
                 
                 const searchLinkButton = linkToUse
                     ? `<button 
                          class="copy-btn" 
-                         onclick="openProductPopup('${linkToUse}'); event.stopPropagation();" 
+                         data-action="open-link"="openProductPopup('${linkToUse}'); event.stopPropagation();" 
                          title="Öppna länk (samma som Länk/Trodo-knapp)">
                          &#128269;
                        </button>` 
@@ -189,7 +189,7 @@
                 const serviceFilterCell = `
                     <span class="service-filter-cell">
                         ${searchLinkButton} 
-                        <button class="copy-btn" onclick="copyToClipboard(${item.id}, '${item.service_filter.replace(/'/g, "\\'")
+                        <button class="copy-btn" data-action="copy-artnr"="copyToClipboard(${item.id}, '${item.service_filter.replace(/'/g, "\\'")
                         }'); event.stopPropagation();" title="Kopiera Artikelnummer">
                             &#x1F4CB; </button>
                         <span class="service-filter-text">${item.service_filter}</span>
@@ -209,7 +209,7 @@
                     <span class="action-cell">${linkContent}</span>
                     <div class="action-buttons">
                         ${editButton}
-                        <button class="delete-btn" onclick="handleDelete(${item.id}); event.stopPropagation();">Ta bort</button>
+                        <button class="delete-btn" data-action="delete"="handleDelete(${item.id}); event.stopPropagation();">Ta bort</button>
                     </div>
                 `;
 
@@ -630,5 +630,6 @@
             window.showCustomAlert('Det gick inte att ansluta till Firebase. Kontrollera att din "firebaseConfig" är korrekt och att du har nätverksåtkomst.', 'Kritiskt Fel');
         }
     </script>
+
 
 
