@@ -130,89 +130,95 @@
             // ----------------------------------------------------------------------
 
             function createInventoryRow(item, isOutOfStock) {
-                const row = document.createElement('div');
-                row.className = 'artikel-rad';
-                row.setAttribute('data-id', item.id);
-                
-                row.onclick = () => handleRowSelect(item.id, row);
-                
-                if (selectedItemId === item.id) {
-                    row.classList.add('selected');
-                }
-                
-                const statusClass = item.quantity > 0 ? 'i-lager' : 'slut';
-                const statusText = item.quantity > 0 ? 'I lager' : 'Slut';
-                
-                let linkToUse = item.link;
-                let linkText = 'Länk';
-                
-                if (!linkToUse || linkToUse.length === 0) {
-                    linkToUse = generateTrodoLink(item.service_filter);
-                    linkText = 'Trodo'; 
-                }
+    const row = document.createElement('div');
+    row.className = 'artikel-rad';
+    row.setAttribute('data-id', item.id);
+    
+    row.onclick = () => handleRowSelect(item.id, row);
+    
+    if (selectedItemId === item.id) {
+        row.classList.add('selected');
+    }
+    
+    const statusClass = item.quantity > 0 ? 'i-lager' : 'slut';
+    const statusText = item.quantity > 0 ? 'I lager' : 'Slut';
+    
+    let linkToUse = item.link;
+    let linkText = 'Länk';
+    
+    if (!linkToUse || linkToUse.length === 0) {
+        linkToUse = generateTrodoLink(item.service_filter);
+        linkText = 'Trodo'; 
+    }
 
-                const linkContent = linkToUse
-                ? `<button class="lank-knapp" onclick="openProductPopup('${linkToUse}'); event.stopPropagation();">${linkText}</button>`                    : `<span style="text-align:center; color:#999; font-style: italic;">(Saknas)</span>`;
+    // KORRIGERAT: BARA onclick används
+    const linkContent = linkToUse
+        ? `<button class="lank-knapp" onclick="openProductPopup('${linkToUse}'); event.stopPropagation();">${linkText}</button>`
+        : `<span style="text-align:center; color:#999; font-style: italic;">(Saknas)</span>`;
 
-                const quantityCell = `
-                    <div class="quantity-cell">
-                        <button class="qty-btn" onclick="adjustQuantity(${item.id}, -1); event.stopPropagation();">-</button>
-                        <span>${item.quantity}</span>
-                        <button class="qty-btn" onclick="adjustQuantity(${item.id}, 1); event.stopPropagation();">+</button>
-                    </div>
-                `;
-                
-                let editButton;
-                if (isOutOfStock) {
-                        editButton = `<button class="edit-btn order-btn" onclick="handleEdit(${item.id}, true); event.stopPropagation();">Beställ</button>`;
-                } else {
-                        editButton = `<button class="edit-btn" onclick="handleEdit(${item.id}); event.stopPropagation();">Ändra</button>`;                }
-                
-                const searchLinkButton = linkToUse
-                    ? `<button 
-                         class="copy-btn" 
-                         data-action="open-link"="openProductPopup('${linkToUse}'); event.stopPropagation();" 
-                         title="Öppna länk (samma som Länk/Trodo-knapp)">
-                         &#128269;
-                       </button>` 
-                    : `<button 
-                         class="copy-btn" 
-                         disabled 
-                         style="cursor: not-allowed; opacity: 0.5;"
-                         title="Ingen länk tillgänglig">
-                         &#128269;
-                       </button>`;
-                
-                
-                const serviceFilterCell = `
-                    <span class="service-filter-cell">
-                        ${searchLinkButton} 
-                        <button class="copy-btn" onclick="copyToClipboard(${item.id}, '${item.service_filter.replace(/'/g, "\\'")
-                        }'); event.stopPropagation();" title="Kopiera Artikelnummer">
-                            &#x1F4CB; </button>
-                        <span class="service-filter-text">${item.service_filter}</span>
-                    </span>
-                `;
+    const quantityCell = `
+        <div class="quantity-cell">
+            <button class="qty-btn" onclick="adjustQuantity(${item.id}, -1); event.stopPropagation();">-</button>
+            <span>${item.quantity}</span>
+            <button class="qty-btn" onclick="adjustQuantity(${item.id}, 1); event.stopPropagation();">+</button>
+        </div>
+    `;
+    
+    let editButton;
+    if (isOutOfStock) {
+        // KORRIGERAT: BARA onclick används
+        editButton = `<button class="edit-btn order-btn" onclick="handleEdit(${item.id}, true); event.stopPropagation();">Beställ</button>`;
+    } else {
+        // KORRIGERAT: BARA onclick används
+        editButton = `<button class="edit-btn" onclick="handleEdit(${item.id}); event.stopPropagation();">Ändra</button>`;
+    }
+    
+    // KORRIGERAT: BARA onclick används, och den inkorrekta data-action togs bort
+    const searchLinkButton = linkToUse
+        ? `<button 
+            class="copy-btn" 
+            onclick="openProductPopup('${linkToUse}'); event.stopPropagation();" 
+            title="Öppna länk (samma som Länk/Trodo-knapp)">
+            &#128269;
+           </button>` 
+        : `<button 
+            class="copy-btn" 
+            disabled 
+            style="cursor: not-allowed; opacity: 0.5;"
+            title="Ingen länk tillgänglig">
+            &#128269;
+           </button>`;
+    
+    
+    const serviceFilterCell = `
+        <span class="service-filter-cell">
+            ${searchLinkButton} 
+            <button class="copy-btn" onclick="copyToClipboard(${item.id}, '${item.service_filter.replace(/'/g, "\\'")
+            }'); event.stopPropagation();" title="Kopiera Artikelnummer">
+                &#x1F4CB; </button>
+            <span class="service-filter-text">${item.service_filter}</span>
+        </span>
+    `;
 
-                const notesCell = `<span class="notes-cell" title="${item.notes.replace(/"/g, '&quot;')}">${item.notes}</span>`;
+    const notesCell = `<span class="notes-cell" title="${item.notes.replace(/"/g, '&quot;')}">${item.notes}</span>`;
 
 
-                row.innerHTML = `
-                    ${serviceFilterCell}
-                    <span>${item.name}</span>
-                    <span>${formatPrice(item.price)} kr</span>
-                    ${quantityCell}
-                    <span style="display: flex; align-items: center;"><span class="${statusClass}">${statusText}</span></span>
-                    ${notesCell}
-                    <span class="action-cell">${linkContent}</span>
-                    <div class="action-buttons">
-                        ${editButton}
-                        <button class="delete-btn" data-action="delete"="handleDelete(${item.id}); event.stopPropagation();">Ta bort</button>
-                    </div>
-                `;
+    row.innerHTML = `
+        ${serviceFilterCell}
+        <span>${item.name}</span>
+        <span>${formatPrice(item.price)} kr</span>
+        ${quantityCell}
+        <span style="display: flex; align-items: center;"><span class="${statusClass}">${statusText}</span></span>
+        ${notesCell}
+        <span class="action-cell">${linkContent}</span>
+        <div class="action-buttons">
+            ${editButton}
+            <button class="delete-btn" onclick="handleDelete(${item.id}); event.stopPropagation();">Ta bort</button>
+        </div>
+    `;
 
-                return row;
-            }
+    return row;
+}
 
 
             function renderInventory(data) {
@@ -687,4 +693,5 @@ window.showCustomConfirmation = showCustomConfirmation;
 window.showCustomAlert = showCustomAlert;
 window.downloadJson = downloadJson;
 window.uploadJson = uploadJson;
+
 
