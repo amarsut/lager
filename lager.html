@@ -663,7 +663,7 @@
         </div>
     </div>
 
-    <div id="editModal" class="modal" onclick="if(event.target.classList.contains('modal')) closeEditModal()">
+    <div id="editModal" class="modal">
         <div class="modal-content">
             <span class="close-btn" onclick="closeEditModal()">&times;</span>
             <h2>Redigera Artikel</h2>
@@ -713,7 +713,7 @@
         </div>
     </div>
 
-    <div id="confirmationModal" class="modal" onclick="if(event.target.classList.contains('modal')) { if (!event.target.classList.contains('alert-mode')) confirmCallback(false); else closeConfirmationModal(); }">
+    <div id="confirmationModal" class="modal">
         <div class="modal-content">
             <span class="close-btn" onclick="closeConfirmationModal()">&times;</span>
             <h2 id="confirmationTitle">Bekräfta Åtgärd</h2>
@@ -733,3 +733,4 @@
 <script type="module" src="apps.js"></script>
 </body>
 </html>
+
