@@ -1,5 +1,4 @@
-<script type="module">
-        // Import Firebase v9 Syntax via CDN
+// Import Firebase v9 Syntax via CDN
         import { initializeApp } from 'https://www.gstatic.com/firebase/9.6.1/firebase-app.js';
         import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot } from 'https://www.gstatic.com/firebase/9.6.1/firebase-firestore.js';
 
@@ -626,6 +625,24 @@
                 setupRealtimeListener();
             });
 
+
+            // ----------------------------------------------------------------------
+            // 3. GLOBALA EXPONERINGAR (FÖR ONCLICK)
+            // ----------------------------------------------------------------------
+            // Dessa måste ligga sist i modulen
+            window.handleEdit = handleEdit;
+            window.handleDelete = handleDelete;
+            window.adjustQuantity = adjustQuantity;
+            window.copyToClipboard = copyToClipboard;
+            window.openProductPopup = openProductPopup; 
+            window.closeEditModal = closeEditModal;
+            window.closeConfirmationModal = closeConfirmationModal;
+            window.showCustomConfirmation = showCustomConfirmation;
+            window.showCustomAlert = showCustomAlert;
+            window.downloadJson = downloadJson;
+            window.uploadJson = uploadJson;
+
+
         } catch (e) {
             // Fångar fel vid själva initialiseringen (t.ex. felaktig config)
             console.error("Firebase Initialization Error:", e);
@@ -633,65 +650,3 @@
             if(statusElement) statusElement.textContent = "FEL: Konfigurationsfel i Firebase!";
             window.showCustomAlert('Det gick inte att ansluta till Firebase. Kontrollera att din "firebaseConfig" är korrekt och att du har nätverksåtkomst.', 'Kritiskt Fel');
         }
-    </script>
-
-// ----------------------------------------------------------------------
-// 4. HÄNDELSEDELEGATION (HANTERAR ALLA KNAPPTRYCK DYNAMISKT)
-// ----------------------------------------------------------------------
-
-inventoryList.addEventListener('click', (e) => {
-    // Gå uppåt tills vi hittar knappen/elementet med data-action
-    const target = e.target.closest('[data-action]');
-    if (!target) return;
-
-    e.stopPropagation(); // Stoppa bubblande till radval
-
-    const action = target.getAttribute('data-action');
-    const id = parseInt(target.getAttribute('data-id'), 10);
-    const item = inventory.find(i => i.id === id);
-
-    if (!item && action !== 'open-link') return; // Måste ha en artikel
-
-    switch (action) {
-        case 'adjust':
-            const change = parseInt(target.getAttribute('data-change'), 10);
-            adjustQuantity(id, change);
-            break;
-
-        case 'edit':
-            const isOrderMode = item.quantity <= 0;
-            handleEdit(id, isOrderMode);
-            break;
-
-        case 'delete':
-            handleDelete(id);
-            break;
-            
-        case 'copy-artnr':
-            copyToClipboard(id, item.service_filter);
-            break;
-
-        case 'open-link':
-             // För länkknappen som är i artikel-raden
-            const lankButton = target.closest('.artikel-rad').querySelector('.lank-knapp');
-            if (lankButton) {
-                openProductPopup(lankButton.getAttribute('data-url'));
-            }
-            break;
-    }
-});
-
-
-window.handleEdit = handleEdit;
-window.handleDelete = handleDelete;
-window.adjustQuantity = adjustQuantity;
-window.copyToClipboard = copyToClipboard;
-window.openProductPopup = openProductPopup; // Se till att den finns!
-window.closeEditModal = closeEditModal;
-window.closeConfirmationModal = closeConfirmationModal;
-window.showCustomConfirmation = showCustomConfirmation;
-window.showCustomAlert = showCustomAlert;
-window.downloadJson = downloadJson;
-window.uploadJson = uploadJson;
-
-
