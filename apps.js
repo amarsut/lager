@@ -24,6 +24,7 @@ try {
     const INVENTORY_COLLECTION = 'lager';
     
     // Lyssna på "online"-händelsen för att uppdatera status tidigt
+    const syncStatusElement = document.getElementById('sync-status');
     window.addEventListener('online', () => syncStatusElement.textContent = 'Återansluter...');
     window.addEventListener('offline', () => syncStatusElement.textContent = 'OFFLINE');
     
@@ -44,7 +45,7 @@ try {
     const editModal = document.getElementById('editModal');
     const editForm = document.getElementById('edit-article-form');
     const confirmationModal = document.getElementById('confirmationModal');
-    const syncStatusElement = document.getElementById('sync-status');
+    // syncStatusElement flyttad upp
     
     let confirmCallback = null; 
 
@@ -169,7 +170,7 @@ try {
             linkText = 'Trodo'; 
         }
 
-        // KORRIGERAT: BARA onclick används
+        // Här används onclick som kräver global exponering (window.handleEdit osv)
         const linkContent = linkToUse
             ? `<button class="lank-knapp" onclick="openProductPopup('${linkToUse}'); event.stopPropagation();">${linkText}</button>`
             : `<span style="text-align:center; color:#999; font-style: italic;">(Saknas)</span>`;
@@ -425,6 +426,7 @@ try {
         );
     }
     
+    // OBS! Dessa funktioner MÅSTE vara definierade HÄR
     window.copyToClipboard = function(id, text) {
         navigator.clipboard.writeText(text).then(() => {
             showCustomAlert(`Artikelnummer **${text}** kopierat!`, 'Kopiering Lyckades');
@@ -671,16 +673,16 @@ try {
     // ----------------------------------------------------------------------
     // DESSA MÅSTE FINNAS HÄR FÖR ATT ONCLICK I HTML SKA FUNGERA INUTI MODULEN
     window.handleEdit = handleEdit;
-window.handleDelete = handleDelete;
-window.adjustQuantity = adjustQuantity;
-window.copyToClipboard = copyToClipboard;
-window.openProductPopup = openProductPopup; 
-window.closeEditModal = closeEditModal;
-window.closeConfirmationModal = closeConfirmationModal;
-window.showCustomConfirmation = showCustomConfirmation;
-window.showCustomAlert = showCustomAlert;
-window.downloadJson = downloadJson;
-window.uploadJson = uploadJson;
+    window.handleDelete = handleDelete;
+    window.adjustQuantity = adjustQuantity;
+    // copyToClipboard och openProductPopup är redan globalt exponerade ovanför
+    window.closeEditModal = closeEditModal;
+    window.closeConfirmationModal = closeConfirmationModal;
+    window.showCustomConfirmation = showCustomConfirmation;
+    window.showCustomAlert = showCustomAlert;
+    window.downloadJson = downloadJson;
+    window.uploadJson = uploadJson;
+
 
 } catch (e) {
     // Fångar fel vid själva initialiseringen (t.ex. felaktig config)
@@ -689,4 +691,3 @@ window.uploadJson = uploadJson;
     if(statusElement) statusElement.textContent = "FEL: Konfigurationsfel i Firebase!";
     window.showCustomAlert('Det gick inte att ansluta till Firebase. Kontrollera att din "firebaseConfig" är korrekt.', 'Kritiskt Fel');
 }
-
