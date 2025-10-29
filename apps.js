@@ -1,5 +1,5 @@
-import { initializeApp } from 'https://www.gstatic.com/firebase/9.6.1/firebase-app.js';
-import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot } from 'https://www.gstatic.com/firebase/9.6.1/firebase-firestore.js';
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js';
+import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
 
 // ----------------------------------------------------------------------
 // 2.1. FIREBASE KONFIGURATION (ERSÄTT DESSA VÄRDEN)
@@ -740,6 +740,7 @@ try {
     }, 10);
 }
 // <-- FILEN MÅSTE SLUTA HÄR. INGEN EXTRA KLAMMERPARENTES (})
+
 
 
 
