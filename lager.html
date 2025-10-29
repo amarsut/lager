@@ -20,721 +20,1638 @@
         --border-color: #e5e7eb; /* Ren grå kant */
         --card-bg: #ffffff; /* Vit bakgrund för "kort" */
         --card-shadow: 0 6px 16px rgba(0, 0, 0, 0.08); /* Tydligare skugga */
-    }
-
-    * {
-        box-sizing: border-box;
-        font-family: 'Inter', sans-serif;
+        --container-width: 1400px;
     }
 
     body {
+        font-family: 'Inter', sans-serif;
         margin: 0;
+        padding: 40px 20px;
         background-color: var(--bg-light);
         color: var(--text-dark);
-        padding: 40px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        line-height: 1.5;
+    }
+    
+    .main-content {
+        width: 100%;
+        max-width: var(--container-width);
     }
 
-    .lager-container {
-        max-width: 1400px;
-        margin: 0 auto;
-        background-color: var(--card-bg);
-        border-radius: 12px;
-        box-shadow: var(--card-shadow);
-        overflow: hidden;
-        padding: 30px;
+    /* --- Globala Rubriker --- */
+    h1 { 
+        color: var(--primary-dark); 
+        margin-bottom: 35px; 
+        text-align: center;
+        font-weight: 800;
+        font-size: 2.8em;
     }
-
-    h1 {
-        color: var(--text-dark);
+    h2 { 
+        color: var(--text-dark); 
+        padding-bottom: 5px;
+        margin-top: 40px;
+        margin-bottom: 20px;
+        font-size: 1.6em;
         font-weight: 700;
-        margin-bottom: 30px;
-        font-size: 2em;
+        border-left: 5px solid var(--primary-color);
+        padding-left: 15px;
+    }
+    
+    /* ****************************************************** */
+    /* Styling för klickbara fällbara rubriker (h3)           */
+    /* ****************************************************** */
+    h3.collapsible-header {
+        cursor: pointer;
+        display: flex; 
+        justify-content: space-between;
+        align-items: center;
+        padding-right: 15px; 
+        transition: background-color: 0.1s;
+        
+        color: var(--text-dark);
+        margin-top: 30px;
+        margin-bottom: 15px;
+        font-size: 1.3em;
+        font-weight: 700;
+        border-bottom: 2px solid var(--border-color);
+        padding-bottom: 5px;
+        padding-left: 5px;
     }
 
-    /* ------------------------ TOPP-LAYOUT (ÅTGÄRDAD) ------------------------ */
+    h3.collapsible-header:hover {
+        background-color: #eef1f5; 
+        border-radius: 5px;
+    }
 
-    #controls-header {
+    /* Stil för pilikonen */
+    .toggle-icon {
+        display: inline-block;
+        transition: transform 0.2s ease-in-out;
+        font-size: 0.8em;
+        font-weight: 900;
+        line-height: 1;
+        color: var(--primary-color);
+    }
+
+    /* Roterar pilen när den är stängd */
+    .collapsible-header[data-state="closed"] .toggle-icon {
+        transform: rotate(-90deg); 
+    }
+
+    /* Gömmer innehållet när rubriken är stängd */
+    .lager-wrapper.collapsed {
+        display: none !important; 
+    }
+    /* ****************************************************** */
+    
+    
+    /* ****************************************************** */
+    /* Styling för Lägg till artikel-dropdown                 */
+    /* ****************************************************** */
+    #add-form-wrapper {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.4s ease-out, opacity 0.4s ease-out;
+        opacity: 0;
+        margin-bottom: 0; 
+    }
+
+    #add-form-wrapper.open {
+        max-height: 1000px; 
+        opacity: 1;
+    }
+
+    /* Stil för pilen i knappen */
+    #toggle-add-form-btn #toggle-icon-form {
+        display: inline-block;
+        transition: transform 0.3s ease-in-out;
+        margin-left: 8px;
+        font-size: 1.1em;
+        line-height: 1;
+    }
+
+    #toggle-add-form-btn.open #toggle-icon-form {
+        transform: rotate(180deg); 
+    }
+    /* ****************************************************** */
+
+    
+    /* --- Formulär (Card Style) --- */
+    #add-form {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 25px;
+        padding: 35px;
+        background-color: var(--card-bg);
+        border-radius: 16px; 
+        box-shadow: var(--card-shadow);
+        margin-bottom: 30px;
+    }
+    
+    #add-form input, #add-form select {
+        padding: 14px;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        background-color: var(--bg-light);
+        transition: border-color 0.2s, box-shadow 0.2s;
+        font-size: 1em;
+    }
+    #add-form input:focus, #add-form select:focus { 
+        border-color: var(--primary-color); 
+        box-shadow: 0 0 0 4px rgba(90, 125, 255, 0.2);
+        background-color: white; 
+        outline: none; 
+    }
+    
+    /* --- Primär Knappstil --- */
+    .btn-primary {
+        padding: 15px 25px; 
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    .btn-primary:hover { 
+        background-color: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    /* --- SEKUNDÄR Knappstil --- */
+    .btn-secondary {
+        padding: 12px 20px; /* Mindre än primär */
+        background-color: #f0f0f0;
+        color: var(--text-dark);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        font-size: 0.9em;
+    }
+    .btn-secondary:hover {
+        background-color: #e0e0e0;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+
+    #add-form button {
+        grid-column: 1 / -1; 
+        background-color: var(--success-color);
+    }
+    #add-form button:hover { background-color: #009a44; }
+
+
+    /* --- Kontroller och Sökfält --- */
+    .controls-bar {
         display: flex;
         justify-content: space-between;
-        align-items: center; /* Centrera vertikalt */
+        align-items: center;
         margin-bottom: 20px;
-        flex-wrap: wrap;
+        width: 100%;
+    }
+    /* JUSTERAT: Top controls för JSON-knapparna och ny status */
+    .controls-bar.top-controls {
+        margin-top: 40px; 
+        margin-bottom: 30px; 
+        justify-content: flex-start; /* Börjar från vänster */
+        gap: 20px; /* Mellanslag mellan elementen */
+        align-items: center; /* Centrera vertikalt */
+    }
+    
+    /* NYTT: Wrapper för JSON-knapparna */
+    .json-controls {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+    
+    /* NY STIL: Backup Status (knapp-liknande) */
+    .backup-info {
+        font-size: 0.85em;
+        display: flex;
+        align-items: center;
+        gap: 15px; 
+        padding-left: 20px; 
+        border-left: 1px solid var(--border-color);
+    }
+    .status-indicator {
+        padding: 12px 20px; /* Matchar knapparnas padding */
+        border-radius: 8px;
+        font-weight: 600; /* Matchar knapparnas font-weight */
+        white-space: nowrap;
+        transition: background-color 0.3s, border 0.3s;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.9em;
+        border: 1px solid transparent; 
+        display: flex; /* För att centrer text vertikalt */
+        align-items: center;
+        justify-content: center;
+        min-width: 80px; /* Sätter en minsta bredd */
+    }
+    .status-indicator.ok {
+        background-color: #e6ffed; 
+        color: var(--success-color);
+        border-color: var(--success-color);
+    }
+    .status-indicator.dirty {
+        background-color: #fff3e0; 
+        color: var(--warning-color);
+        border-color: var(--warning-color); /* Lade till kant för att matcha knapparna */
+    }
+    .status-indicator.not-ok {
+        background-color: #ffe8e8; /* Mycket ljus röd */
+        color: var(--danger-color);
+        border-color: var(--danger-color);
+    }
+    /* Tydligare tidstext */
+    #last-download {
+        font-size: 0.9em; 
+        color: #444; 
     }
 
-    #search-controls {
-        display: flex;
-        gap: 15px; /* Ökat gap för att separera status */
-        align-items: center;
-        flex-grow: 1; /* Låt sök-kontrollen växa */
-    }
-    
-    #sync-status {
-        /* Se till att statusen inte tar upp för mycket plats */
-        flex-shrink: 0;
-    }
-    
-    /* NY DESIGN FÖR SÖKRUTA */
+
     #search-input {
+        /* Behåller grundläggande form och storlek */
         width: 350px;
         font-size: 1em;
         border-radius: 8px;
         border: 1px solid var(--border-color);
-        transition: all 0.2s ease-in-out; 
+        transition: all 0.2s ease-in-out; /* Mjukare transition */
         
+        /* --- NY DESIGN --- */
+        
+        /* 1. Sök-ikon inuti fältet (grå lupp) */
         background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23888' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z'/%3E%3C/svg%3E");
         background-repeat: no-repeat;
-        background-position: 15px center; 
-        background-size: 16px 16px; 
+        background-position: 15px center; /* Positionerar ikonen 15px från vänster */
+        background-size: 16px 16px; /* Ikonens storlek */
         
+        /* 2. Justerad padding för att ge plats åt ikonen */
         padding: 12px 20px 12px 45px; 
         
+        /* 3. Subtilare standard-look (matchar "Lägg till"-formuläret) */
         background-color: var(--bg-light); 
-        box-shadow: none; 
+        box-shadow: none; /* Tar bort standard-skuggan för en plattare look */
     }
-
     #search-input:focus {
+        /* Behåller den snygga blåa fokus-ramen (gjorde den 1px större) */
         border-color: var(--primary-color); 
         box-shadow: 0 0 0 4px rgba(90, 125, 255, 0.2);
         outline: none; 
+        
+        /* --- NY DESIGN --- */
+        /* Poppar tillbaka till vit bakgrund vid fokus */
         background-color: white; 
     }
-
-    #header-buttons {
-        display: flex;
-        gap: 10px;
-        align-items: center;
-        flex-wrap: wrap;
-        flex-shrink: 0; /* Förhindra att knapparna krymper */
-    }
-
-    .primary-btn, .action-btn, .lank-knapp, .qty-btn, .edit-btn, .delete-btn, .copy-btn {
-        padding: 10px 18px;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        font-weight: 600;
-        transition: background-color 0.2s, box-shadow 0.2s;
-        font-size: 0.85em;
-    }
-
-    .primary-btn {
-        background-color: var(--primary-color);
-        color: white;
-    }
-
-    .primary-btn:hover {
-        background-color: var(--primary-dark);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    
+    /* --- Lagerlista (Clean Table Style) --- */
+    .lager-wrapper {
+        overflow-x: auto; 
+        margin-bottom: 25px; 
     }
     
-    .action-btn {
+    /* FIX: Scrollflyttad till denna behållare */
+    .lager-container {
+        /* ... (alla andra regler) ... */
         background-color: var(--card-bg);
-        color: var(--text-dark);
+        border-radius: 16px;
+        box-shadow: var(--card-shadow);
+        margin-bottom: 40px;
         border: 1px solid var(--border-color);
+        position: relative; 
+        
+        max-height: 450px;
+        overflow-y: auto;  
+        
+        /* NY RAD FÖR ATT FIXA KLICK-YTAN PÅ MOBILEN */
+        min-width: min-content; 
     }
     
-    .action-btn:hover {
-        background-color: #ebebeb;
-    }
-
-    /* ------------------------ FORMULÄR ------------------------ */
     
-    #add-article-form-container {
-        background-color: var(--bg-light);
-        padding: 20px;
-        border-radius: 8px;
-        margin-bottom: 20px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-        display: none; 
-        transition: height 0.3s ease;
-        overflow: hidden;
-    }
-
-    #add-article-form {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 15px;
-        align-items: flex-end;
-    }
-
-    #add-article-form label {
-        display: block;
-        font-weight: 500;
-        margin-bottom: 5px;
-        font-size: 0.9em;
-        color: #4b5563;
-    }
-
-    #add-article-form input, #add-article-form select, #add-article-form textarea {
-        width: 100%;
-        padding: 10px;
-        border: 1px solid var(--border-color);
-        border-radius: 6px;
-        background-color: white;
-        transition: border-color 0.2s;
-    }
-
-    #add-article-form input:focus, #add-article-form select:focus, #add-article-form textarea:focus {
-        border-color: var(--primary-color);
-        outline: none;
-    }
-    
-    #form-submit-button-container {
-        grid-column: 1 / -1; 
-        display: flex;
-        justify-content: flex-end;
-        padding-top: 10px;
-    }
-    
-    #form-submit-button {
-        padding: 12px 25px;
-        font-size: 1em;
-    }
-
-
-    /* ------------------------ LISTVY OCH TABELL ------------------------ */
-
-    #inventory-list {
-        margin-top: 20px;
-        border-top: 1px solid var(--border-color);
-    }
-
     .header, .artikel-rad {
+        /* JUSTERAT: Art.nr ökad till 180px för att rymma två knappar */
         grid-template-columns: 180px 200px 100px 80px 80px minmax(150px, 1.5fr) 80px 160px; 
         padding: 10px 20px; 
         align-items: center;
         font-size: 0.85em; 
         display: grid; 
     }
-
+    
     .header {
-        background-color: var(--bg-light);
-        font-weight: 700;
-        color: #4b5563;
-        border-bottom: 2px solid var(--border-color);
         position: sticky;
-        top: 0;
-        z-index: 10;
-        box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+        top: 0; 
+        z-index: 100; 
+        font-weight: 700;
+        background-color: #eef1f5; 
+        color: var(--text-dark);
+        border-bottom: 2px solid var(--border-color);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
+    .header span[data-sort] { cursor: pointer; user-select: none; }
     
     .header > span {
-        cursor: pointer;
-        display: flex;
-        align-items: center;
+    	display: flex; 
+    	align-items: center; 
+    	min-height: 1.8em; 
+    	padding-right: 15px;
     }
 
-    .header > span:hover {
-        color: var(--text-dark);
-    }
-
-    .header .sort-icon {
-        margin-left: 5px;
-        opacity: 0.5;
-        transition: opacity 0.2s;
-    }
-    
-    .header .sort-icon.active {
-        opacity: 1;
+    .header > span, .artikel-rad > span, .artikel-rad > div {
+        padding-right: 10px;
     }
 
 
     .artikel-rad {
-        border-bottom: 1px solid #f9f9f9;
-        cursor: pointer;
-        transition: background-color 0.1s;
+        transition: background-color 0.2s, box-shadow 0.2s; 
+        border-bottom: 1px solid #f0f0f0; 
+        cursor: pointer; /* NYTT: Indikerar att raden är klickbar */
     }
-
-    .artikel-rad:hover {
-        background-color: #fafafa;
+    .artikel-rad:hover { 
+        background-color: #f8faff; 
+        box-shadow: inset 3px 0 0 var(--primary-color); 
     }
+    .artikel-rad:last-child { border-bottom: none; }
     
+    /* NY STIL: Markerad rad (MÖRKARE) */
     .artikel-rad.selected {
-        background-color: #e6ebff; /* Ljusare blå färg för vald rad */
-        border-left: 4px solid var(--primary-color);
-        padding-left: 16px; /* Flytta in innehållet 4px */
+        background-color: #dbeaff; /* ÄNNU TYDLIGARE LJUSBLÅ */
+        box-shadow: inset 3px 0 0 var(--primary-dark); /* Tydligare markering */
+    }
+    .artikel-rad.selected:hover {
+            background-color: #d1e0ff; /* Något mörkare vid hover på markerad rad */
     }
 
-    /* ------------------------ SPECIELLA CELLER ------------------------ */
-    
-    /* Art.nr-cell */
-    .service-filter-cell {
-        display: flex;
-        align-items: center;
-        gap: 5px;
-        white-space: nowrap; 
-        overflow: hidden;
-        text-overflow: ellipsis;
+    /* Visuell Feedback vid lyckad kopiering */
+    .artikel-rad.copied-success {
+        background-color: #e6ffed !important; 
+        box-shadow: inset 3px 0 0 var(--success-color); 
     }
     
-    .service-filter-text {
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
+    /* Status Etiketter (Badges) */
+    .i-lager, .slut {
+        padding: 3px 6px; 
+        border-radius: 12px; 
+        font-size: 0.7em; 
+        min-width: 55px; 
     }
-
-    /* Kopieringsknappen och nya Sök-knappen (delar stil) */
-    .copy-btn {
-        padding: 6px 8px;
-        background-color: var(--bg-light);
-        border: 1px solid var(--border-color);
-        color: var(--text-dark);
-        font-size: 1.1em;
-        line-height: 1;
-        width: 30px; 
-        height: 30px; 
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .copy-btn:hover {
-        background-color: #e0e0e0;
-    }
+    .i-lager { background-color: #e8f5e9; color: #388e3c; } 
+    .slut { background-color: #ffebee; color: #d32f2f; } 
     
-    /* Antal-cell */
+    /* Antal och Justeringsknappar (+/-) */
     .quantity-cell {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 5px;
-    }
-    
-    .quantity-cell span {
-        font-weight: 600;
-        display: inline-block;
-        min-width: 20px;
-        text-align: center;
-    }
-
-    .qty-btn {
-        padding: 5px 10px;
-        background-color: #fff;
+        width: 70px; /* Anpassad bredd för att passa 80px kolumn */
         border: 1px solid var(--border-color);
-        color: var(--text-dark);
-        font-size: 1em;
-        line-height: 1;
+        border-radius: 6px;
+        overflow: hidden;
     }
-
-    .qty-btn:hover {
-        background-color: #e0e0e0;
-    }
-    
-    /* Status-cell */
-    .i-lager, .slut {
-        padding: 4px 8px;
-        border-radius: 4px;
+    .quantity-cell span {
+        flex-grow: 1;
+        text-align: center;
         font-weight: 600;
-        font-size: 0.75em;
-        text-transform: uppercase;
-        display: inline-block;
-        white-space: nowrap;
+        padding: 0 5px;
+        border-right: none; 
     }
-
-    .i-lager {
-        background-color: #e6fff1;
-        color: var(--success-color);
+    .qty-btn {
+        background: #f0f4f8;
+        color: var(--text-dark);
+        border: none;
+        padding: 4px 8px; 
+        cursor: pointer;
+        font-weight: 700;
+        font-size: 0.9em;
+        line-height: 1;
+        transition: background 0.2s;
+        min-width: 28px;
     }
+    .qty-btn:hover { background: #ced4da; }
 
-    .slut {
-        background-color: #ffe6e6;
-        color: var(--danger-color);
+    /* Artikelnummer cellen med kopieringsknapp */
+    .service-filter-cell {
+        display: flex; 
+        align-items: center;
+        gap: 5px; 
+        overflow: hidden; 
+        width: 100%; 
+    }
+    .service-filter-text {
+        white-space: nowrap; 
+        overflow: hidden; 
+        text-overflow: ellipsis; 
+        min-width: 0; 
+        flex-grow: 1; 
     }
     
-    /* Anteckningar-cell */
+    /* Anteckningsfältet */
     .notes-cell {
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        max-width: 100%; 
+        cursor: help; 
     }
-    
-    /* Länk-knapp */
-    .lank-knapp {
-        background-color: #f0f4ff;
-        color: var(--primary-color);
-        padding: 6px 12px;
-        font-size: 0.8em;
+
+    /* Stil för Kopieringsknappen */
+    .copy-btn {
+        background: #eef1f5; 
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        cursor: pointer;
+        color: var(--primary-dark); 
+        font-size: 0.9em; 
+        padding: 3px 5px; 
+        line-height: 1;
+        opacity: 0.9; 
+        transition: opacity 0.2s, transform 0.1s, background 0.2s;
+        flex-shrink: 0; 
     }
-    
-    .lank-knapp:hover {
-        background-color: #e6ebff;
+    .copy-btn:hover {
+        opacity: 1;
+        transform: scale(1.05);
+        background: var(--primary-color);
+        color: white; 
+        border-color: var(--primary-color);
     }
-    
-    /* Åtgärder-cell */
+
+    /* --- Åtgärdsknappar (Flat & Ikon-liknande) --- */
     .action-buttons {
         display: flex;
-        gap: 5px;
-        justify-content: flex-end;
-        white-space: nowrap;
-    }
-
-    .edit-btn {
-        background-color: #fff8e1;
-        color: var(--warning-color);
-        padding: 6px 10px;
-        font-size: 0.8em;
+        gap: 8px; 
+        justify-content: flex-start;
     }
     
-    .order-btn {
-        background-color: #c8e6c9; 
-        color: #388e3c;
-    }
-
-    .delete-btn {
-        background-color: #ffcdd2;
-        color: var(--danger-color);
+    .lank-knapp, .edit-btn, .delete-btn, .order-btn {
         padding: 6px 10px;
-        font-size: 0.8em;
+        border: 1px solid transparent;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.8em; 
+        font-weight: 600;
+        transition: all 0.2s;
+        text-align: center;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+    
+    /* Länkknapp */
+    .lank-knapp { 
+        background-color: white; 
+        color: var(--primary-color);
+        border: 1px solid var(--primary-color);
+    }
+    .lank-knapp:hover { 
+        background-color: var(--primary-color); 
+        color: white; 
     }
 
-    /* ------------------------ MODAL (Redigering) ------------------------ */
-
+    /* Ändra/Beställ-knapp */
+    .edit-btn, .order-btn { 
+        background-color: var(--primary-color); 
+        color: white; 
+    }
+    .edit-btn:hover, .order-btn:hover { background-color: var(--primary-dark); }
+    
+    /* Ta bort-knapp */
+    .delete-btn { 
+        background-color: white; 
+        color: var(--danger-color); 
+        border: 1px solid var(--danger-color);
+    }
+    .delete-btn:hover { 
+        background-color: var(--danger-color); 
+        color: white; 
+    }
+    
+    /* --- Slut i lager sektion --- */
+    .out-of-stock-title {
+        font-size: 1.6em;
+        font-weight: 700;
+        margin-top: 50px;
+        margin-bottom: 20px;
+        padding: 5px 0;
+        color: var(--danger-color);
+        border-left: 5px solid var(--danger-color); 
+        padding-left: 15px;
+    }
+    
+    #slut-i-lager-lista .artikel-rad {
+        opacity: 0.8; 
+        background-color: #fff9f9;
+    }
+    
+    /* --- Modal Styling (FÖR MODALER & BEKRÄFTELSER) --- */
     .modal {
-        display: none; 
-        position: fixed; 
-        z-index: 20; 
+        position: fixed;
+        z-index: 1000;
         left: 0;
         top: 0;
         width: 100%;
         height: 100%;
         overflow: auto;
-        background-color: rgba(0,0,0,0.4); 
+        background-color: rgba(0,0,0,0.6); 
+        display: none;
+        justify-content: center;
+        align-items: center;
     }
-
     .modal-content {
         background-color: var(--card-bg);
-        margin: 10% auto;
+        padding: 40px;
+        border-radius: 12px;
+        width: 90%;
+        max-width: 500px;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+        animation: fadeIn 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55); 
+    }
+    
+    /* För bekräftelsemodalen */
+    .modal-content.small-modal {
+        max-width: 400px; 
         padding: 30px;
-        border-radius: 10px;
-        max-width: 600px;
-        box-shadow: var(--card-shadow);
-        animation-name: animatetop;
-        animation-duration: 0.4s
     }
 
-    @keyframes animatetop {
-        from {top: -300px; opacity: 0} 
-        to {top: 0; opacity: 1}
+    /* För alert-läge i bekräftelsemodalen */
+    #confirmationModal.alert-mode .modal-content.small-modal div {
+         justify-content: center !important; /* Centrera OK-knappen i alert-läge */
+    }
+    #confirmationModal.alert-mode #confirm-cancel-btn {
+        display: none;
     }
 
-    .close-btn {
-        color: #aaa;
-        float: right;
-        font-size: 28px;
-        font-weight: bold;
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: scale(0.9); }
+        to { opacity: 1; transform: scale(1); }
     }
 
-    .close-btn:hover,
-    .close-btn:focus {
-        color: #000;
-        text-decoration: none;
-        cursor: pointer;
+    .modal-content h3 {
+         color: var(--primary-dark);
+         border-bottom: 2px solid var(--border-color);
+         padding-bottom: 10px;
+         margin-top: 0;
+         font-size: 1.5em;
     }
 
-    .modal-content h2 {
+    .modal-content label {
+        display: block;
+        margin-top: 15px;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: var(--text-dark);
+        font-size: 0.9em;
+    }
+    .modal-content input, .modal-content select {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        box-sizing: border-box; 
+    }
+    /* Knappar i modalen */
+    .modal-content button {
+        margin-top: 30px;
+        width: 100%;
+    }
+    /* Justering för bekräftelseknappar */
+    .modal-content.small-modal button {
         margin-top: 0;
-        color: var(--primary-color);
-        border-bottom: 1px solid var(--border-color);
-        padding-bottom: 10px;
-        margin-bottom: 20px;
     }
-    
-    .modal-content form label {
-        margin-top: 10px;
-    }
-    
-    .modal-content form input, .modal-content form textarea {
-        margin-bottom: 15px;
-    }
-    
-    /* ------------------------ BEKRÄFTELSE/ALERT MODAL ------------------------ */
-    
-    #confirmationModal .modal-content {
-        max-width: 400px;
-        text-align: center;
-    }
-    
-    #confirmationModal .modal-buttons {
-        display: flex;
-        justify-content: space-around;
-        gap: 10px;
+
+    /* STIL FÖR ÅTERSTÄLLNINGSKNAPP */
+    .reset-btn {
         margin-top: 20px;
-    }
-    
-    #confirmYes, #confirmNo {
-        padding: 10px 20px;
+        margin-bottom: 60px;
+        padding: 12px 25px;
+        background-color: var(--danger-color);
+        color: white;
+        border: none;
         border-radius: 8px;
         cursor: pointer;
         font-weight: 600;
-        width: 100%;
+        font-size: 0.9em;
+        transition: background-color 0.2s, transform 0.1s;
+        box-shadow: 0 4px 8px rgba(255, 61, 0, 0.2);
+        align-self: flex-start; 
+        display: block; 
     }
-    
-    #confirmYes {
-        background-color: var(--danger-color);
-        color: white;
-    }
-    
-    #confirmYes:hover {
-        background-color: #d32f2f;
-    }
-    
-    #confirmNo {
-        background-color: #f0f4ff;
-        color: var(--primary-color);
-        border: 1px solid var(--primary-color);
-    }
-    
-    #confirmNo:hover {
-        background-color: #e6ebff;
-    }
-    
-    #confirmationModal.alert-mode #confirmNo {
-        display: none;
-    }
-    
-    #confirmationModal.alert-mode #confirmYes {
-        background-color: var(--primary-color);
-        color: white;
-        width: 100%;
-    }
-    
-    #confirmationModal.alert-mode #confirmYes:hover {
-        background-color: var(--primary-dark);
+    .reset-btn:hover {
+        background-color: #cc3000;
+        transform: translateY(-1px);
     }
 
-    /* ------------------------ PRODUKT POPUP ------------------------ */
-    
-    #productPopup {
-        display: none;
-        position: fixed;
-        z-index: 30;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.7);
+    /* Mjukare varningsbanner för osparade ändringar */
+    #dirty-warning-banner {
+        background-color: #fffbeb; /* Mycket mjukare gul */
+        color: #5c4500; /* Mörk, dov gul-brun text för läsbarhet */
+        border: 1px solid #ffe58f; /* Tunn, matchande kant */
+        padding: 12px 20px; /* Något mindre padding */
+        border-radius: 8px;
+        margin: 25px auto; /* Centrerar och sätter marginal */
+        max-width: 750px; 
+        font-weight: 500; /* Normal till halvfet vikt */
+        font-size: 0.95em; /* Något mindre text */
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* En mycket subtil skugga */
+        display: flex; /* Använder flexbox för att justera ikon och text */
+        align-items: center;
+        justify-content: center;
+        gap: 10px; /* Mellanrum mellan ikon och text */
     }
-    
-    #productPopup iframe {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 90%; 
-        height: 90%;
-        border: 2px solid var(--primary-color);
-        border-radius: 10px;
-        background-color: white;
+
+    #dirty-warning-banner::before {
+        content: '⚠️'; /* Varnings-emoji som en enkel ikon */
+        font-size: 1.2em;
     }
 
 
-    /* ------------------------ MEDIA QUERIES ------------------------ */
-
-    @media (max-width: 1400px) {
-        .lager-container {
-            padding: 20px;
-        }
-    }
-    
-    @media (max-width: 1200px) {
-        .header, .artikel-rad {
-            grid-template-columns: 140px 140px 80px 70px 70px minmax(120px, 1fr) 60px 140px; 
-            padding: 10px 15px; 
-            font-size: 0.8em;
-        }
-        
+    /* --- Responsivitet (Anpassning för mindre skärmar) --- */
+    @media (max-width: 768px) {
         body {
-            padding: 20px;
+            padding: 20px 10px;
         }
-    }
-    
-    @media (max-width: 900px) {
-        #controls-header {
+        h1 {
+            font-size: 2em;
+            margin-bottom: 25px;
+        }
+        h2 {
+            font-size: 1.4em;
+            margin-top: 30px;
+        }
+        .controls-bar {
             flex-direction: column;
-            align-items: stretch;
+            align-items: flex-start;
+        }
+        .controls-bar h2 {
+            margin-top: 0;
+        }
+        .controls-bar.top-controls {
+            flex-direction: column;
+            align-items: flex-start;
             gap: 15px;
         }
-        
-        #search-controls {
-            order: 1;
-            align-self: flex-start;
+        .controls-bar.top-controls button, 
+        .controls-bar.top-controls .json-controls,
+        .controls-bar.top-controls .backup-info {
+             width: 100%; /* Låter elementen ta full bredd */
+             margin-left: 0 !important;
+        }
+        .json-controls {
+            flex-direction: column;
+        }
+        .json-controls button, 
+        .json-controls label {
+            width: 100%;
+            margin-left: 0 !important;
+            text-align: center;
+        }
+        .backup-info {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 5px;
+            padding-left: 0;
+            border-left: none;
         }
         
         #search-input {
             width: 100%;
+            margin-top: 15px;
         }
-        
-        #header-buttons {
-            order: 2;
-            justify-content: flex-start;
+        .lager-wrapper {
+            overflow-x: auto; 
         }
-
-        .header, .artikel-rad {
-            grid-template-columns: 120px 120px 80px 70px 70px 120px; 
-            gap: 10px;
-            padding: 10px;
-        }
-        
-        /* Dölj Länk och Anteckningar på små skärmar */
-        .header > span:nth-child(6), .artikel-rad > span:nth-child(6),
-        .header > span:nth-child(7), .artikel-rad > span:nth-child(7) {
-            display: none;
+        .reset-btn {
+            width: 100%;
         }
     }
-
-    </style>
+</style>
 </head>
 <body>
 
-    <div class="lager-container">
-        <h1>Lagerförteckning (Synkroniserad med Firebase)</h1>
-
-        <div id="controls-header">
-            <div id="search-controls">
-                <input type="text" id="search-input" placeholder="Sök efter artikelnummer eller namn...">
-                
-                <span id="sync-status" style="font-style: italic; color: var(--primary-color); font-size: 0.9em; white-space: nowrap;">Ansluter...</span>
+    <div class="main-content">
+        <div class="controls-bar top-controls">
+             <button id="toggle-add-form-btn" class="btn-primary" type="button">
+                Lägg till ny artikel <span id="toggle-icon-form">▼</span>
+            </button>
+            <div class="json-controls">
+                <button class="btn-secondary" onclick="downloadJson()">Ladda ner JSON-backup</button>
+                <label for="upload-json-input" class="btn-secondary" style="cursor: pointer; margin-left: 10px;">Ladda upp JSON-backup</label>
+                <input type="file" id="upload-json-input" accept=".json" style="display: none;" onchange="uploadJson(event)">
             </div>
-
-            <div id="header-buttons">
-                <button class="primary-btn" id="toggle-add-form-btn">Lägg till artikel</button>
-                <label class="action-btn" for="upload-json">Ladda Upp JSON (Backup)</label>
-                <input type="file" id="upload-json" style="display: none;" accept=".json" onchange="uploadJson(event)">
-                <button id="download-json-btn" class="action-btn">Ladda Ner JSON (Backup)</button>
+            
+            <div class="backup-info">
+                <span id="backup-status" class="status-indicator"></span>
+                <span id="last-download"></span>
             </div>
         </div>
-
-        <div id="add-article-form-container">
-            <form id="add-article-form">
-                <div>
-                    <label for="service_filter">Artikelnummer</label>
-                    <input type="text" id="add-service_filter" name="service_filter" required>
-                </div>
-                <div>
-                    <label for="name">Namn/Beskrivning</label>
-                    <input type="text" id="add-name" name="name" required>
-                </div>
-                <div>
-                    <label for="price">Pris (kr)</label>
-                    <input type="number" id="add-price" name="price" step="0.01" value="0.00" required>
-                </div>
-                <div>
-                    <label for="quantity">Antal</label>
-                    <input type="number" id="add-quantity" name="quantity" value="1" required>
-                </div>
-                 <div>
-                    <label for="category">Kategori</label>
-                    <select id="add-category" name="category" required>
-                        <option value="Övrigt">Övrigt</option>
-                        <option value="Filter">Filter</option>
-                        <option value="Bromsar">Bromsar</option>
-                        <option value="Motorolja">Motorolja</option>
-                        <option value="Tändstift">Tändstift</option>
-                    </select>
-                </div>
-                <div style="grid-column: span 2;">
-                    <label for="notes">Anteckningar (max 250 tecken)</label>
-                    <textarea id="add-notes" name="notes" maxlength="250"></textarea>
-                </div>
-                <div>
-                    <label for="link">Produktsida Länk (URL)</label>
-                    <input type="url" id="add-link" name="link">
-                </div>
-                <div id="form-submit-button-container">
-                    <button type="submit" class="primary-btn" id="form-submit-button">Lägg till artikel</button>
-                </div>
+        
+        <div id="add-form-wrapper">
+            <form id="add-form">
+                <input type="text" id="service_filter" placeholder="Artikelnummer" required oninput="this.value = this.value.toUpperCase()">
+                <input type="text" id="name" placeholder="Namn (t.ex. DSG FILTER)" required>
+                <input type="number" id="price" placeholder="Pris (kr)" required min="0" step="0.01">
+                <input type="number" id="quantity" placeholder="Antal" required min="0"> 
+                
+                <select id="category" required>
+                    <option value="" disabled selected>Kategori</option>
+                    <option value="Service">Service</option>
+                    <option value="Motor/Chassi">Motor/Chassi</option>
+                </select>
+                
+                <input type="text" id="notes" placeholder="Anteckningar">
+                <input type="url" id="link" placeholder="Produktlänk (URL)"> 
+                <button type="submit" class="btn-primary">Lägg till i lager</text-dark></button>
             </form>
         </div>
 
-        <div id="inventory-list-container">
-            <div class="header">
-                <span data-sort="service_filter">Art. nr <span class="sort-icon"></span></span>
-                <span data-sort="name">Namn <span class="sort-icon"></span></span>
-                <span data-sort="price">Pris <span class="sort-icon"></span></span>
-                <span data-sort="quantity">Antal <span class="sort-icon"></span></span>
-                <span>Status</span>
-                <span data-sort="notes">Anteckningar <span class="sort-icon"></span></span>
-                <span data-sort="link">Länk</span>
-                <span style="text-align: right;">Åtgärder</span>
-            </div>
-            <div id="inventory-list">
-                </div>
+        <div id="dirty-warning-banner" style="display: none;">
+             <span></span>
         </div>
-    </div>
+        
+        <div class="controls-bar">
+            <h2>Artiklar i Lager</h2>
+            <input type="text" id="search-input" placeholder="Sök artikelnummer, namn...">
+        </div>
 
+        <h3 id="service-artiklar-titel" class="collapsible-header" data-target="service-artiklar-wrapper" data-state="open">
+            Service <span class="toggle-icon">▼</span>
+        </h3>
+        <div class="lager-wrapper" id="service-artiklar-wrapper">
+            <div class="lager-container"> 
+                <div class="header" id="inventory-header-service">
+                    <span data-sort="service_filter">Art. nr <span class="sort-icon" data-col="service_filter"></span></span>
+                    <span data-sort="name">Namn <span class="sort-icon" data-col="name"></span></span>
+                    <span data-sort="price">Pris (kr) <span class="sort-icon" data-col="price"></span></span>
+                    <span data-sort="quantity">Antal <span class="sort-icon" data-col="quantity"></span></span>
+                    <span>Status</span>
+                    <span data-sort="notes">Anteckningar <span class="sort-icon" data-col="notes"></span></span>
+                    <span>Länk</span>
+                    <span>Åtgärder</span>
+                </div>
+
+                <div id="service-artiklar-lista">
+                </div>
+            </div>
+        </div>
+        
+        <h3 id="motor-chassi-artiklar-titel" class="collapsible-header" data-target="motor-chassi-artiklar-wrapper" data-state="open">
+            Motor/Chassi <span class="toggle-icon">▼</span>
+        </h3>
+        <div class="lager-wrapper" id="motor-chassi-artiklar-wrapper">
+            <div class="lager-container">
+                <div class="header" id="inventory-header-motor">
+                    <span data-sort="service_filter">Art. nr <span class="sort-icon" data-col="service_filter"></span></span>
+                    <span data-sort="name">Namn <span class="sort-icon" data-col="name"></span></span>
+                    <span data-sort="price">Pris (kr) <span class="sort-icon" data-col="price"></span></span>
+                    <span data-sort="quantity">Antal <span class="sort-icon" data-col="quantity"></span></span>
+                    <span>Status</span>
+                    <span data-sort="notes">Anteckningar <span class="sort-icon" data-col="notes"></span></span>
+                    <span>Länk</span>
+                    <span>Åtgärder</span>
+                </div>
+
+                <div id="motor-chassi-artiklar-lista">
+                </div>
+            </div>
+        </div>
+
+
+        <div id="slut-i-lager-sektion" style="display: none;" class="main-content">
+             <h2 class="out-of-stock-title">Slut i Lager</h2>
+             <div class="lager-wrapper">
+                <div class="lager-container">
+                    <div class="header">
+                        <span>Art. nr</span>
+                        <span>Namn</span>
+                        <span>Pris (kr)</span>
+                        <span>Antal</span>
+                        <span>Status</span>
+                        <span>Anteckningar</span>
+                        <span>Länk</span>
+                        <span>Åtgärder</span>
+                    </div>
+                    <div id="slut-i-lager-lista">
+                        </div>
+                </div>
+            </div>
+        </div>
+        
+        <button class="reset-btn" onclick="resetToCodeInventory()">Återställ till Kodens Lagerlista (Rensar sparad data)</button>
+
+    </div> 
+    
     <div id="editModal" class="modal">
         <div class="modal-content">
-            <span class="close-btn edit-modal-close">&times;</span>
-            <h2>Redigera Artikel</h2>
-            <form id="edit-article-form">
-                <input type="hidden" id="edit-id" name="id">
-                <input type="hidden" id="edit-service_filter_hidden" name="service_filter">
+            <span class="close-btn" onclick="closeModal()" style="float: right; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
+            <h3>Redigera Artikel</h3>
+            <form id="edit-form">
+                <input type="hidden" id="edit-id">
+                
+                <label for="edit-service_filter">Artikelnummer</label>
+                <input type="text" id="edit-service_filter" required oninput="this.value = this.value.toUpperCase()">
+                
+                <label for="edit-name">Namn</label>
+                <input type="text" id="edit-name" required>
+                
+                <label for="edit-price">Pris (kr)</label>
+                <input type="number" id="edit-price" required min="0" step="0.01">
+                
+                <label for="edit-quantity">Antal</label>
+                <input type="number" id="edit-quantity" required min="0"> 
+                
+                <label for="edit-category">Kategori</label>
+                <select id="edit-category" required>
+                    <option value="Service">Service</option>
+                    <option value="Motor/Chassi">Motor/Chassi </option>
+                </select>
+                
+                <label for="edit-notes">Anteckningar</label>
+                <input type="text" id="edit-notes">
+                
+                <label for="edit-link">Produktlänk (URL)</label>
+                <input type="url" id="edit-link">
 
-                <div>
-                    <label for="edit-service_filter">Artikelnummer</label>
-                    <input type="text" id="edit-service_filter" disabled title="Artikelnummer kan inte ändras">
-                </div>
-                <div>
-                    <label for="edit-name">Namn/Beskrivning</label>
-                    <input type="text" id="edit-name" name="name" required>
-                </div>
-                <div>
-                    <label for="edit-price">Pris (kr)</label>
-                    <input type="number" id="edit-price" name="price" step="0.01" required>
-                </div>
-                <div>
-                    <label for="edit-quantity">Antal</label>
-                    <input type="number" id="edit-quantity" name="quantity" required>
-                </div>
-                <div>
-                    <label for="edit-category">Kategori</label>
-                    <select id="edit-category" name="category" required>
-                        <option value="Övrigt">Övrigt</option>
-                        <option value="Filter">Filter</option>
-                        <option value="Bromsar">Bromsar</option>
-                        <option value="Motorolja">Motorolja</option>
-                        <option value="Tändstift">Tändstift</option>
-                    </select>
-                </div>
-                <div>
-                    <label for="edit-link">Produktsida Länk (URL)</label>
-                    <input type="url" id="edit-link" name="link">
-                </div>
-                <div>
-                    <label for="edit-notes">Anteckningar</label>
-                    <textarea id="edit-notes" name="notes" maxlength="250"></textarea>
-                </div>
-
-                <div style="text-align: right; margin-top: 20px;">
-                    <button type="submit" class="primary-btn">Spara Ändringar</button>
-                </div>
+                <button type="submit" class="btn-primary">Spara Ändringar</button>
             </form>
         </div>
     </div>
-
+    
     <div id="confirmationModal" class="modal">
-        <div class="modal-content">
-            <span class="close-btn">&times;</span>
-            <h2 id="confirmationTitle">Bekräfta Åtgärd</h2>
-            <p id="confirmationMessage">Är du säker på att du vill utföra denna åtgärd?</p>
-            <div class="modal-buttons">
-                <button id="confirmYes">Ja</button>
-                <button id="confirmNo">Nej</button>
+        <div class="modal-content small-modal">
+            <h3 id="confirm-title">Bekräfta Åtgärd</h3>
+            <p id="confirm-message" style="margin-top: 20px; margin-bottom: 30px; font-size: 1.1em; line-height: 1.4;"></p>
+            <div style="display: flex; gap: 15px; justify-content: flex-end;">
+                <button id="confirm-cancel-btn" class="btn-secondary" type="button">Avbryt</button>
+                <button id="confirm-ok-btn" class="btn-primary" type="button">Bekräfta</button>
             </div>
         </div>
     </div>
 
-    <div id="productPopup">
-    <iframe id="productIframe" src="" frameborder="0"></iframe>
-    <span class="close-btn popup-close">&times;</span>
-</div>
+    <script>
+        const form = document.getElementById('add-form');
+        const serviceArtiklarLista = document.getElementById('service-artiklar-lista');
+        const motorChassiArtiklarLista = document.getElementById('motor-chassi-artiklar-lista');
+        const slutILagerLista = document.getElementById('slut-i-lager-lista');
+        
+        const slutILagerSektion = document.getElementById('slut-i-lager-sektion');
+        const searchInput = document.getElementById('search-input');
+        const editModal = document.getElementById('editModal');
+        const editForm = document.getElementById('edit-form');
+        
+        const formWrapper = document.getElementById('add-form-wrapper');
+        const toggleBtn = document.getElementById('toggle-add-form-btn');
+        const formToggleIcon = document.getElementById('toggle-icon-form');
+        
+        const confirmationModal = document.getElementById('confirmationModal');
+        const confirmTitle = document.getElementById('confirm-title');
+        const confirmMessage = document.getElementById('confirm-message');
+        const confirmOkBtn = document.getElementById('confirm-ok-btn');
+        const confirmCancelBtn = document.getElementById('confirm-cancel-btn');
 
-<script type="module" src="apps.js"></script>
+
+        let inventory = [];
+        let currentSort = { column: 'name', direction: 'desc' };
+        
+        let confirmCallback = null; 
+        let isDataDirty = false; // Spårar ändringar sedan senaste JSON-download
+        let lastDownloadTime = localStorage.getItem('lastDownloadTime') || null;
+        let selectedItemId = null; // NY VARIABEL: Spårar ID för markerad rad
+
+
+        // --- Hjälpfunktioner ---
+
+        function formatPrice(number) {
+            return new Intl.NumberFormat('sv-SE', { 
+                minimumFractionDigits: 2, 
+                maximumFractionDigits: 2 
+            }).format(number);
+        }
+
+        function generateTrodoLink(articleNumber) {
+            const cleanNumber = articleNumber.trim().replace(/-/g, '');
+            const encodedNumber = encodeURIComponent(cleanNumber);
+            
+            if (encodedNumber.length > 0) {
+                return `https://www.trodo.se/catalogsearch/result/premium?product_list_dir=asc&product_list_order=price&q=${encodedNumber}&quality%5B%5D=premium&searchby=number`;
+            }
+            return null;
+        }
+
+        // --- Modal & Redigering ---
+
+        window.closeModal = function() {
+            editModal.style.display = 'none';
+        }
+        
+        window.showCustomConfirmation = function(message, callback, title = 'Bekräfta Åtgärd', okText = 'Bekräfta', cancelText = 'Avbryt') {
+            confirmTitle.textContent = title;
+            confirmMessage.innerHTML = message;
+            confirmOkBtn.textContent = okText;
+            confirmCancelBtn.textContent = cancelText;
+            
+            confirmationModal.classList.remove('alert-mode');
+            confirmCancelBtn.style.display = 'inline-block';
+            document.getElementById('confirm-ok-btn').style.width = 'auto'; 
+
+            confirmCallback = callback;
+            confirmationModal.style.display = 'flex';
+        }
+
+        window.showCustomAlert = function(message, title = 'Meddelande') {
+            confirmTitle.textContent = title;
+            confirmMessage.innerHTML = message;
+            confirmOkBtn.textContent = 'OK';
+            
+            confirmationModal.classList.add('alert-mode');
+            confirmCancelBtn.style.display = 'none';
+            document.getElementById('confirm-ok-btn').style.width = '100%'; 
+
+            confirmCallback = () => { confirmationModal.style.display = 'none'; };
+            confirmationModal.style.display = 'flex';
+        }
+        
+        window.updateBackupStatus = function(downloadedNow = false) {
+            const dirtyWarningBanner = document.getElementById('dirty-warning-banner');
+            const bannerTextSpan = dirtyWarningBanner.querySelector('span'); // Hämta SPAN
+
+            if (isDataDirty) {
+                dirtyWarningBanner.style.display = 'flex';
+                // FIX: Sätter texten i span-elementet
+                bannerTextSpan.textContent = "Du har osparade ändringar. Tryck på 'Ladda ner JSON-backup' för att spara."; 
+            }
+        }
+
+
+        window.copyToClipboard = function(id, text) {
+            const row = document.querySelector(`.artikel-rad[data-id="${id}"]`);
+            
+            navigator.clipboard.writeText(text).then(() => {
+                if (row) {
+                    row.classList.add('copied-success');
+                    setTimeout(() => {
+                        row.classList.remove('copied-success');
+                    }, 500);
+                }
+            }).catch(err => {
+                console.error('Kunde inte kopiera text:', err);
+                const tempInput = document.createElement('input');
+                tempInput.value = text;
+                document.body.appendChild(tempInput);
+                tempInput.select();
+                try {
+                    document.execCommand('copy');
+                    if (row) {
+                        row.classList.add('copied-success');
+                        setTimeout(() => {
+                            row.classList.remove('copied-success');
+                        }, 500);
+                    }
+                } catch(e) {
+                    showCustomAlert('Kopiering misslyckades. Webbläsaren blockerar automatisk kopiering.');
+                }
+                document.body.removeChild(tempInput);
+            });
+        };
+
+        function openModal(item, setQuantityToOne = false) {
+            document.getElementById('edit-id').value = item.id;
+            document.getElementById('edit-service_filter').value = item.service_filter;
+            document.getElementById('edit-name').value = item.name;
+            document.getElementById('edit-price').value = item.price;
+            document.getElementById('edit-quantity').value = setQuantityToOne ? 1 : item.quantity;
+            document.getElementById('edit-notes').value = item.notes;
+            document.getElementById('edit-link').value = item.link;
+            document.getElementById('edit-category').value = item.category || 'Övrigt'; 
+            
+            editModal.style.display = 'flex';
+        }
+        
+        // --- Datahantering (Load & Save) ---
+        
+        window.resetToCodeInventory = function() {
+            showCustomConfirmation(
+                '<strong>VARNING:</strong> Är du säker på att du vill återställa lagret? All lagrad data (ändringar du gjort) kommer att raderas och ersättas med lagret som finns i HTML-koden.',
+                (result) => {
+                    if (result) {
+                        localStorage.removeItem('inventory');
+                        localStorage.removeItem('collapse_state_service-artiklar-wrapper');
+                        localStorage.removeItem('collapse_state_motor-chassi-artiklar-wrapper');
+                        localStorage.removeItem('add_form_open_state');
+                        localStorage.removeItem('lastDownloadTime'); 
+                        localStorage.removeItem('isDataDirty'); 
+                        
+                        window.location.reload(); 
+                    }
+                },
+                'Återställ Lagerdata', 
+                'Återställ', 
+                'Avbryt' 
+            );
+        };
+
+
+        function loadInventory() {
+            const storedInventory = localStorage.getItem('inventory');
+            if (storedInventory) {
+                inventory = JSON.parse(storedInventory);
+                isDataDirty = localStorage.getItem('isDataDirty') === 'true'; // Läs in dirty-status
+            } else {
+                // START INVENTARIELISTA (oförändrad från förra steget)
+                inventory = [
+                    { id: 116, service_filter: 'P 68 033', name: 'BROMSBELÄGG FRAM', price: 344.00, quantity: 1, notes: 'DACIA, LADA, MERCEDES-BENZ, NISSAN, RENAULT, SU', link: '', category: 'Bromsar' },
+                    { id: 117, service_filter: 'P 24 078', name: 'BROMSBELÄGG BAK', price: 419.00, quantity: 1, notes: 'FORD, LAND ROVER, VOLVO', link: '', category: 'Bromsar' },
+                    { id: 118, service_filter: '3B0 698 451 A', name: 'BROMSBELÄGG BAK', price: 373.00, quantity: 1, notes: 'AUDI A3-A6, CITROËN, FORD, OPEL, PEUGEOT, RENAULT', link: '', category: 'Bromsar' },
+                    { id: 119, service_filter: '5Q0 698 451 P', name: 'BROMSBELÄGG BAK', price: 462.00, quantity: 1, notes: 'AUDI(A3), SEAT, SKODA, VW(Golf 7, Tiguan, Passat, Arteon)', link: '', category: 'Bromsar' },
+                    { id: 120, service_filter: '65-9093', name: 'BROMSBELÄGG BAK', price: 209.00, quantity: 1, notes: 'VW, Skoda, Seat, Audi, Ford, Peugeot, Renault, Citroen', link: '', category: 'Bromsar' },
+                    { id: 121, service_filter: '8K0 698 151 L', name: 'BROMSBELÄGG FRAM', price: 1456.00, quantity: 1, notes: 'AUDI A6, A7, Q5', link: '', category: 'Bromsar' },
+                    { id: 122, service_filter: '8R0 615 301 F', name: 'BROMSSKIVOR FRAM', price: 1298.00, quantity: 2, notes: 'AUDI A4, A5, A6, A7, Q5', link: '', category: 'Bromsar' },
+                    { id: 123, service_filter: '1K0 615 601 M', name: 'BROMSSKIVOR BAK', price: 400.00, quantity: 2, notes: 'MICHEL BILMO', link: '', category: 'Bromsar' },
+                    { id: 124, service_filter: '3Q0 615 423 B', name: 'BROMSOK HÖGER BAK EL', price: 2000.00, quantity: 1, notes: 'AUDI Q3, TARRACO, KODIAQ, SUPERB, VW TIGUAN, ARTEON', link: '', category: 'Bromsar' },
+                    { id: 125, service_filter: '3Q0 615 423 B', name: 'BROMSOK VÄNSTER BAK EL', price: 2000.00, quantity: 1, notes: 'AUDI Q3, TARRACO, KODIAQ, SUPERB, VW TIGUAN, ARTEON', link: '', category: 'Bromsar' },
+                    { id: 126, service_filter: '04L 198 119F', name: 'KAMREMSSATS', price: 2394.00, quantity: 1, notes: 'CUAA 2.0 TDI Skoda Kodiaq, VW', link: '', category: 'Motor/Chassi' },
+                    { id: 127, service_filter: '06F 906 036', name: 'INSPRUTNINGSVENTIL BENSIN', price: 2435.00, quantity: 2, notes: 'Anteckningar', link: '', category: 'Motor/Chassi' },
+                    { id: 128, service_filter: '06F 906 036 A', name: 'INSPRUTNINGSVENTIL BENSIN', price: 2646.00, quantity: 2, notes: 'Anteckningar', link: '', category: 'Motor/Chassi' },
+                    { id: 129, service_filter: '04E 906 036 AT', name: 'INSPRUTNINGSVENTIL BENSIN', price: 0.00, quantity: 1, notes: 'Anteckningar', link: '', category: 'Motor/Chassi' }, 
+                    { id: 130, service_filter: '03C 906 036 A', name: 'INSPRUTNINGSVENTIL 1.6 FSI', price: 2522.00, quantity: 1, notes: 'Anteckningar', link: '', category: 'Motor/Chassi' },
+                    { id: 131, service_filter: '04L 130 277 AE', name: 'BRÄNSLESYSTEM', price: 5055.00, quantity: 4, notes: '2.0 TDI VW(Passat B8), Audi, Seat', link: '', category: 'Motor/Chassi' },
+                    { id: 132, service_filter: '03L 130 277 J/Q', name: 'INSPRUTNINGSENHET', price: 4292.00, quantity: 3, notes: '2.0 TDI, VW(Passat B7), Audi, Se', link: '', category: 'Motor/Chassi' },
+                    { id: 133, service_filter: '03L 130 277 S', name: 'INSPRUTNINGSENHET', price: 4500.00, quantity: 1, notes: '1.6 TDI, PASSAT B6, B7, CADI', link: '', category: 'Motor/Chassi' },
+                    { id: 134, service_filter: '04L 130 755 D', name: 'HÖGTRYCKSPUMP', price: 11866.00, quantity: 1, notes: 'AUDI, SEAT, SKODA, VW', link: '', category: 'Motor/Chassi' },
+                    { id: 135, service_filter: '03N 130 755 A', name: 'HÖGTRYCKSPUMP', price: 13868.00, quantity: 1, notes: 'CUAA, 2.0 TDI Skoda Kodiaq', link: '', category: 'Motor/Chassi' },
+                    { id: 136, service_filter: '04L 907 805 ER', name: 'NOX SENSOR', price: 3436.00, quantity: 1, notes: '2.0 TDI Skoda Superb III, VW Golf', link: '', category: 'Motor/Chassi' },
+                    { id: 137, service_filter: '04L 907 807 GL', name: 'NOX SENSOR', price: 5552.00, quantity: 1, notes: '15/16-2020 AUDI Q3, SEAT T.', link: '', category: 'Motor/Chassi' },
+                    { id: 138, service_filter: '03L 103 469 R', name: 'VENTILKÅPA', price: 1617.00, quantity: 1, notes: '1.6TDI/2.0 TDI, 08-18, AUDI,', link: '', category: 'Motor/Chassi' },
+                    { id: 139, service_filter: '1H0 201 511 A', name: 'BRÄNSLEFILTER', price: 195.00, quantity: 1, notes: 'AUDI, BMW, CITROËN, FIAT, FORD, LANCIA, MERCEDES', link: '', category: 'Service' },
+                    { id: 140, service_filter: '23433668', name: 'BRÄNSLEFILTER', price: 130.00, quantity: 1, notes: 'CITROËN, FIAT, FORD, LANCIA, PEUGEOT, VOLVO', link: '', category: 'Service' },
+                    { id: 141, service_filter: 'N 6457', name: 'BRÄNSLEFILTER', price: 389.00, quantity: 1, notes: 'BMW, MINI', link: '', category: 'Service' },
+                    { id: 142, service_filter: '0AQ 907 554 J', name: 'HALDEX STYRDON', price: 4000.00, quantity: 1, notes: 'AUDI A1 15-18, T/G 12-18, SH', link: '', category: 'Motor/Chassi' },
+                    { id: 143, service_filter: '1K0 411 105 AK', name: 'FJÄDRAR FRAM', price: 443.00, quantity: 2, notes: 'GOLF V, VI, AUDI A3', link: '', category: 'Motor/Chassi' },
+                    { id: 144, service_filter: '1K0 411 105 AJ', name: 'FJÄDER', price: 487.00, quantity: 1, notes: 'AUDI A3. OCTAVIA. VW GOLF', link: '', category: 'Motor/Chassi' },
+                    { id: 145, service_filter: '8F5 815 0040', name: 'FJÄDERBENSLAGR. PASSAT B7', price: 392.00, quantity: 1, notes: 'AUDI, SEAT, SKODA, VW', link: '', category: 'Motor/Chassi' },
+                    { id: 146, service_filter: '0 250 403 009 EAF', name: 'GLÖDSTIFT', price: 254.00, quantity: 1, notes: 'AUDI, SEAT, SKODA, VW', link: '', category: 'Motor/Chassi' },
+                    { id: 147, service_filter: '04L 963 319 E', name: 'GLÖDSTIFT', price: 255.00, quantity: 4, notes: 'VW, AUDI, SEAT, SKODA', link: '', category: 'Motor/Chassi' },
+                    { id: 148, service_filter: 'N 105 916 03', name: 'TÄND/GLÖDSTIFT', price: 203.00, quantity: 3, notes: 'AUDI, CHRYSLER, SEAT, SKODA, VW', link: '', category: 'Motor/Chassi' },
+                    { id: 149, service_filter: '101 905 617', name: 'TÄNDSTIFT', price: 198.00, quantity: 1, notes: 'SEAT IBIZA, SKODA FABIA, VW LUPO, POLO', link: '', category: 'Motor/Chassi' },
+                    { id: 150, service_filter: '06H 905 601 A', name: 'TÄNDSTIFT', price: 239.00, quantity: 4, notes: 'AUDI, SEAT, SKODA, VW + FLER...', link: '', category: 'Motor/Chassi' },
+                    { id: 151, service_filter: 'TF 6512', name: 'OLJEFILTER', price: 104.00, quantity: 1, notes: 'ALFA R, DACIA, FIAT, HONDA, JEEP, NISSAN, OPEL, RENAULT', link: '', category: 'Service' },
+                    { id: 152, service_filter: 'P 3355', name: 'OLJEFILTER', price: 100.00, quantity: 1, notes: 'CITROËN, FIAT, LANCIA, OPEL, PEUGEOT, SUZUKI, TOYOTA', link: '', category: 'Service' },
+                    { id: 153, service_filter: '22430798', name: 'OLJEFILTER', price: 190.00, quantity: 1, notes: 'BMW, FIAT, FORD, VOLVO', link: '', category: 'Service' },
+                    { id: 154, service_filter: 'RIDEX 709992', name: 'OLJEFILTER', price: 81.00, quantity: 1, notes: 'KIA, HYUNDAI', link: '', category: 'Service' },
+                    { id: 155, service_filter: 'V42-30-1213', name: 'KUPEFILTER', price: 206.00, quantity: 1, notes: 'CITROEN, PEUGEOT', link: '', category: 'Service' },
+                    { id: 156, service_filter: '1 987 435 065', name: 'KUPEFILTER', price: 186.00, quantity: 1, notes: 'BMW X5 (E70), X5 (F15, F85), X6 (E71, E72), X6 (F16, F86', link: '', category: 'Service' },
+                    { id: 157, service_filter: 'LX 1572', name: 'LUFTFILTER', price: 234.00, quantity: 1, notes: 'FORD FOCUS. VOLVO S40, V50, C30', link: '', category: 'Service' },
+                    { id: 158, service_filter: 'HH90 180Q34510', name: 'LUFTFILTER', price: 155.00, quantity: 1, notes: 'CITROËN C5. PEUGEOT 407, 508', link: '', category: 'Service' },
+                    { id: 101, service_filter: '02E 305 051 C', name: 'DSG FILTER', price: 300.00, quantity: 1, notes: 'DSG FILTER, AUDI VW SEAT SKODA', link: '', category: 'Service' },
+                    { id: 102, service_filter: '5Q0 819 669', name: 'KUPEFILTER', price: 281.00, quantity: 1, notes: 'AUDI, FORD, SEAT, SKODA, VW', link: '', category: 'Service' },
+                    { id: 103, service_filter: '6R0 819 653', name: 'KUPEFILTER', price: 240.00, quantity: 1, notes: 'POLO WJC 872', link: '', category: 'Service' },
+                    { id: 104, service_filter: '2Q0 819 653', name: 'KUPEFILTER', price: 293.00, quantity: 3, notes: '1.0 & 1.5 TSI AUDI, SEAT, SKODA, VW', link: '', category: 'Service' },
+                    { id: 105, service_filter: '04E 129 620', name: 'LUFTFILTER', price: 260.00, quantity: 1, notes: 'POLO WJC 872', link: '', category: 'Service' },
+                    { id: 106, service_filter: '8K0 133 843 M', name: 'LUFTFILTER', price: 272.00, quantity: 2, notes: 'AUDI A4, A5, Q5', link: '', category: 'Service' },
+                    { id: 107, service_filter: '03E 129 620', name: 'LUFTFILTER', price: 230.00, quantity: 1, notes: 'SEAT IBIZA, SKODA FABIA, SKODA ROOMSTER, VW POLO', link: '', category: 'Service' },
+                    { id: 108, service_filter: '1H0 129 620', name: 'LUFTFILTER', price: 197.00, quantity: 1, notes: 'VW GOLF', link: '', category: 'Service' },
+                    { id: 109, service_filter: '1K0 129 620 G', name: 'LUFTFILTER', price: 206.00, quantity: 1, notes: 'AUDI, SEAT, SKODA, VW', link: '', category: 'Service' },
+                    { id: 110, service_filter: '03L 115 562', name: 'OLJEFILTER', price: 200.00, quantity: 3, notes: 'Anteckningar', link: '', category: 'Service' },
+                    { id: 111, service_filter: '06J 115 403 Q', name: 'OLJEFILTER', price: 279.00, quantity: 1, notes: 'AUDI, SEAT, SKODA, VW', link: '', category: 'Service' },
+                    { id: 112, service_filter: '05L 115 562 A', name: 'OLJEFILTER', price: 183.00, quantity: 1, notes: 'AUDI A3, Q2, Q3, FORD, SEAT, SKODA, VW Passat B8,', link: '', category: 'Service' },
+                    { id: 113, service_filter: '06D 115 562', name: 'OLJEFILTER BOSCH', price: 193.00, quantity: 1, notes: 'AUDI, SEAT, SKODA, VW, CUPRA', link: '', category: 'Service' },
+                    { id: 114, service_filter: 'N 906 605 02', name: 'DRÄNERINGSSKRUV', price: 15.50, quantity: 2, notes: 'VAG standard', link: 'https://www.vw.se', category: 'Service' },
+                    { id: 115, service_filter: '1K0 253 141 B', name: 'AVGASKLAMMA', price: 55.00, quantity: 0, notes: 'Mutter & skruv', link: '', category: 'Motor/Chassi' }, 
+                    { id: 159, service_filter: 'BRÄNSLESYSTEM (JYZ258, 800mil)', name: 'BRÄNSLESYSTEM', price: 10000.00, quantity: 1, notes: '2.0 TDI VW(Passat B8), Audi, Seat, Bör kontrolleras', link: '', category: 'Motor/Chassi' },
+                    { id: 160, service_filter: 'BRÄNSLESYSTEM (DFX871, Passat B7)', name: 'BRÄNSLESYSTEM', price: 10000.00, quantity: 1, notes: '2.0 TDI, VW(Passat B7), Audi, Sea, Bör kontrolleras', link: '', category: 'Motor/Chassi' },
+                    { id: 161, service_filter: '5Q0 907 561 N', name: 'ACC RADAR', price: 2500.00, quantity: 1, notes: '2013-2020 Audi A3, VW Golf, I lager', link: '', category: 'Motor/Chassi' },
+                ];
+                // SLUT INVENTARIELISTA
+            }
+            inventory.forEach(item => {
+                if (!item.id) item.id = Date.now() + Math.floor(Math.random() * 10000); 
+                item.quantity = parseInt(item.quantity, 10);
+                item.price = parseFloat(item.price);
+                if (!item.category) item.category = 'Övrigt';
+            }); 
+            sortInventory(currentSort.column, currentSort.direction);
+        }
+
+        function saveInventory() {
+            localStorage.setItem('inventory', JSON.stringify(inventory));
+            
+            if (!isDataDirty) { 
+                isDataDirty = true;
+                localStorage.setItem('isDataDirty', 'true');
+            }
+            
+            updateBackupStatus();
+        }
+
+        window.downloadJson = function() {
+            const jsonString = JSON.stringify(inventory, null, 2);
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'lager-backup.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            isDataDirty = false;
+            localStorage.setItem('isDataDirty', 'false');
+            lastDownloadTime = new Date();
+            localStorage.setItem('lastDownloadTime', lastDownloadTime.toISOString());
+
+            updateBackupStatus();
+            showCustomAlert('Lagret har sparats till din dator som **lager-backup.json**.', 'JSON Nedladdning Lyckades');
+        }
+
+        window.uploadJson = function(event) {
+            const file = event.target.files[0];
+            if (!file) {
+                showCustomAlert('Ingen fil vald.', 'Fel');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const uploadedData = JSON.parse(e.target.result);
+                    if (!Array.isArray(uploadedData)) {
+                        showCustomAlert('Den uppladdade filen är ogiltig. Den måste innehålla en lista (array) av artiklar.', 'Fel vid uppladdning');
+                        return;
+                    }
+                    
+                    const sanitizedData = uploadedData.map(item => {
+                        const id = item.id && !isNaN(parseInt(item.id)) ? parseInt(item.id, 10) : Date.now() + Math.floor(Math.random() * 10000);
+                        const quantity = parseInt(item.quantity, 10) || 0;
+                        const price = parseFloat(item.price) || 0.00;
+                        
+                        return {
+                            id: id,
+                            service_filter: (item.service_filter || '').trim().toUpperCase(),
+                            name: (item.name || '').trim(),
+                            price: price,
+                            quantity: quantity,
+                            category: item.category || 'Övrigt',
+                            notes: (item.notes || '').trim(),
+                            link: (item.link || '').trim(),
+                        };
+                    });
+                    
+                    inventory = sanitizedData;
+                    saveInventory(); 
+                    sortInventory(currentSort.column, currentSort.direction);
+                    
+                    showCustomAlert(`Lagret har uppdaterats med **${inventory.length}** artiklar från den uppladdade filen.`, 'JSON Uppladdning Lyckades');
+                    
+                } catch (error) {
+                    showCustomAlert(`Kunde inte läsa JSON-filen. Kontrollera att filen är korrekt formaterad.`, 'Fel vid uppladdning');
+                    console.error('JSON Parse Error:', error);
+                }
+            };
+            
+            reader.onerror = function() {
+                showCustomAlert('Ett okänt fel uppstod vid läsning av filen.', 'Fel');
+            };
+
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+        
+        // --- Formulär-toggle logik ---
+        
+        function toggleAddForm() {
+            const isCurrentlyOpen = formWrapper.classList.contains('open');
+            
+            if (isCurrentlyOpen) {
+                // Om den är öppen, stäng den
+                formWrapper.classList.remove('open');
+                toggleBtn.classList.remove('open');
+                toggleBtn.innerHTML = 'Lägg till ny artikel <span id="toggle-icon-form">▼</span>';
+                localStorage.setItem('add_form_open_state', 'closed');
+            } else {
+                // Om den är stängd, öppna den
+                formWrapper.classList.add('open');
+                toggleBtn.classList.add('open');
+                toggleBtn.innerHTML = 'Dölj formulär <span id="toggle-icon-form">▼</span>';
+                localStorage.setItem('add_form_open_state', 'open');
+            }
+        }
+
+        function initializeAddFormState() {
+            const storedState = localStorage.getItem('add_form_open_state');
+            
+            if (storedState === 'open') {
+                 formWrapper.classList.add('open');
+                 toggleBtn.classList.add('open');
+            }
+        }
+        
+        window.toggleCollapse = function(headerElement) {
+            const targetId = headerElement.getAttribute('data-target');
+            const targetWrapper = document.getElementById(targetId);
+            
+            if (!targetWrapper) return;
+            
+            const isCurrentlyOpen = headerElement.getAttribute('data-state') === 'open';
+            const newState = isCurrentlyOpen ? 'closed' : 'open';
+
+            headerElement.setAttribute('data-state', newState);
+            targetWrapper.classList.toggle('collapsed', isCurrentlyOpen);
+            localStorage.setItem(`collapse_state_${targetId}`, newState);
+        };
+        
+        function initializeCollapseState() {
+            document.querySelectorAll('.collapsible-header').forEach(header => {
+                const targetId = header.getAttribute('data-target');
+                const storedState = localStorage.getItem(`collapse_state_${targetId}`);
+                
+                let initialState = storedState || 'open'; // Default to open
+                
+                header.setAttribute('data-state', initialState);
+                
+                if(initialState === 'closed') {
+                     document.getElementById(targetId).classList.add('collapsed');
+                }
+                
+                header.addEventListener('click', () => toggleCollapse(header));
+            });
+        }
+
+
+        // --- Sortering och Rendering ---
+        function sortInventory(column, direction) {
+            inventory.sort((a, b) => {
+                let valA = a[column];
+                let valB = b[column];
+
+                if (column === 'price' || column === 'quantity') {
+                    valA = parseFloat(valA);
+                    valB = parseFloat(valB);
+                } else if (typeof valA === 'string') {
+                    valA = valA.toUpperCase();
+                    valB = valB.toUpperCase();
+                }
+
+                if (valA < valB) return direction === 'asc' ? -1 : 1;
+                if (valA > valB) return direction === 'asc' ? 1 : -1;
+                return 0;
+            });
+            renderInventory(inventory);
+        }
+
+        function updateSortIcons() {
+            document.querySelectorAll('.sort-icon').forEach(icon => {
+                icon.innerHTML = ''; 
+            });
+            
+            let iconElementService = document.querySelector(`#inventory-header-service .sort-icon[data-col="${currentSort.column}"]`);
+            if (iconElementService) {
+                 iconElementService.innerHTML = currentSort.direction === 'asc' ? ' &uarr;' : ' &darr;'; 
+            }
+            let iconElementMotor = document.querySelector(`#inventory-header-motor .sort-icon[data-col="${currentSort.column}"]`);
+            if (iconElementMotor) {
+                 iconElementMotor.innerHTML = currentSort.direction === 'asc' ? ' &uarr;' : ' &darr;'; 
+            }
+        }
+
+        function renderInventory(list) {
+            serviceArtiklarLista.innerHTML = '';
+            motorChassiArtiklarLista.innerHTML = '';
+            slutILagerLista.innerHTML = '';
+            
+            const searchTerm = searchInput.value.toLowerCase();
+            const filteredList = list.filter(item => {
+                const text = `${item.service_filter} ${item.name} ${item.notes} ${item.category}`.toLowerCase();
+                const searchWords = searchTerm.split(/\s+/).filter(word => word.length > 0);
+                return searchWords.every(word => text.includes(word));
+            });
+
+            const iLager = filteredList.filter(item => item.quantity > 0);
+            const slutILager = filteredList.filter(item => item.quantity === 0);
+            
+            const serviceArtiklar = iLager.filter(item => item.category === 'Service' || item.category === 'Bromsar');
+            const motorChassiArtiklar = iLager.filter(item => item.category === 'Motor/Chassi' || item.category === 'Övrigt');
+            
+            const serviceHeader = document.getElementById('service-artiklar-titel');
+            const serviceWrapper = document.getElementById('service-artiklar-wrapper');
+            
+            serviceArtiklar.forEach(item => {
+                serviceArtiklarLista.appendChild(createInventoryRow(item, false));
+            });
+
+            // Förenklad logik för Service-sektionen
+            if (serviceArtiklar.length > 0) {
+                serviceHeader.style.display = 'flex';
+                serviceWrapper.style.display = 'block';
+            } else {
+                serviceHeader.style.display = 'none';
+                serviceWrapper.style.display = 'none';
+            }
+
+            const motorHeader = document.getElementById('motor-chassi-artiklar-titel');
+            const motorWrapper = document.getElementById('motor-chassi-artiklar-wrapper');
+
+            motorChassiArtiklar.forEach(item => {
+                motorChassiArtiklarLista.appendChild(createInventoryRow(item, false));
+            });
+
+            // Förenklad logik för Motor/Chassi-sektionen
+            if (motorChassiArtiklar.length > 0) {
+                motorHeader.style.display = 'flex';
+                motorWrapper.style.display = 'block';
+            } else {
+                motorHeader.style.display = 'none';
+                motorWrapper.style.display = 'none';
+            }
+
+            if (slutILager.length > 0) {
+                slutILagerSektion.style.display = 'block';
+                slutILager.forEach(item => {
+                    slutILagerLista.appendChild(createInventoryRow(item, true));
+                });
+            } else {
+                 slutILagerSektion.style.display = 'none';
+            }
+
+            updateSortIcons();
+        }
+        
+        function createInventoryRow(item, isOutOfStock) {
+            const row = document.createElement('div');
+            row.className = 'artikel-rad';
+            row.setAttribute('data-id', item.id);
+            
+            row.onclick = () => handleRowSelect(item.id, row);
+            
+            if (selectedItemId === item.id) {
+                row.classList.add('selected');
+            }
+            
+            const statusClass = item.quantity > 0 ? 'i-lager' : 'slut';
+            const statusText = item.quantity > 0 ? 'I lager' : 'Slut';
+            
+            // Logik för att bestämma länk (flyttad hit i förra steget)
+            let linkToUse = item.link;
+            let linkText = 'Länk';
+            
+            if (!linkToUse || linkToUse.length === 0) {
+                linkToUse = generateTrodoLink(item.service_filter);
+                linkText = 'Trodo'; 
+            }
+
+            const linkContent = linkToUse
+                ? `<button class="lank-knapp" onclick="openProductPopup('${linkToUse}'); event.stopPropagation();">${linkText}</button>`
+                : `<span style="text-align:center; color:#999; font-style: italic;">(Saknas)</span>`;
+
+
+            const quantityCell = `
+                <div class="quantity-cell">
+                    <button class="qty-btn" onclick="adjustQuantity(${item.id}, -1); event.stopPropagation();">-</button>
+                    <span>${item.quantity}</span>
+                    <button class="qty-btn" onclick="adjustQuantity(${item.id}, 1); event.stopPropagation();">+</button>
+                </div>
+            `;
+            
+            let editButton;
+            if (isOutOfStock) {
+                editButton = `<button class="edit-btn order-btn" onclick="handleEdit(${item.id}, true); event.stopPropagation();">Beställ</button>`;
+            } else {
+                editButton = `<button class="edit-btn" onclick="handleEdit(${item.id}); event.stopPropagation();">Ändra</button>`;
+            }
+            
+            // Skapa förstoringsglasknappen
+            const searchLinkButton = linkToUse
+                ? `<button 
+                     class="copy-btn" 
+                     onclick="openProductPopup('${linkToUse}'); event.stopPropagation();" 
+                     title="Öppna länk (samma som Länk/Trodo-knapp)">
+                     &#128269;
+                   </button>` // 🔍 Ikon
+                : `<button 
+                     class="copy-btn" 
+                     disabled 
+                     style="cursor: not-allowed; opacity: 0.5;"
+                     title="Ingen länk tillgänglig">
+                     &#128269;
+                   </button>`;
+            
+            
+            // --- UPPDATERAD CELL (JUSTERAD ORDNING) ---
+            // 'searchLinkButton' ligger nu FÖRE kopieringsknappen.
+            const serviceFilterCell = `
+                <span class="service-filter-cell">
+                    ${searchLinkButton} 
+                    <button class="copy-btn" onclick="copyToClipboard(${item.id}, '${item.service_filter.replace(/'/g, "\\'")
+                    }'); event.stopPropagation();" title="Kopiera Artikelnummer">
+                        &#x1F4CB; </button>
+                    <span class="service-filter-text">${item.service_filter}</span>
+                </span>
+            `;
+            // --- SLUT PÅ UPPDATERAD CELL ---
+
+            const notesCell = `<span class="notes-cell" title="${item.notes.replace(/"/g, '&quot;')}">${item.notes}</span>`;
+
+
+            row.innerHTML = `
+                ${serviceFilterCell}
+                <span>${item.name}</span>
+                <span>${formatPrice(item.price)} kr</span>
+                ${quantityCell}
+                <span style="display: flex; align-items: center;"><span class="${statusClass}">${statusText}</span></span>
+                ${notesCell}
+                <span class="action-cell">${linkContent}</span>
+                <div class="action-buttons">
+                    ${editButton}
+                    <button class="delete-btn" onclick="handleDelete(${item.id}); event.stopPropagation();">Ta bort</button>
+                </div>
+            `;
+
+            return row;
+        }
+
+        
+        window.handleRowSelect = function(id, rowElement) {
+            selectedItemId = id; 
+            
+            const currentSelected = document.querySelector('.artikel-rad.selected');
+            if (currentSelected) {
+                currentSelected.classList.remove('selected');
+            }
+            
+            if (rowElement) {
+                    rowElement.classList.add('selected');
+            }
+        }
+
+        window.adjustQuantity = function(id, delta) {
+            const item = inventory.find(i => i.id === id);
+            if (item) {
+                const newQuantity = item.quantity + delta;
+                
+                if (newQuantity >= 0) {
+                    item.quantity = newQuantity;
+                    saveInventory(); 
+                    sortInventory(currentSort.column, currentSort.direction);
+                }
+            }
+        }
+        
+        window.openProductPopup = function(url) {
+            if (url && url.length > 0) {
+                 window.open(url, '_blank');
+            } else {
+                console.error("Ingen produktlänk sparad.");
+            }
+        }
+
+        window.handleDelete = function(id) {
+            showCustomConfirmation(
+                'Är du säker på att du vill ta bort denna artikel permanent?',
+                (result) => {
+                    if (result) {
+                        inventory = inventory.filter(item => item.id !== id);
+                        saveInventory();
+                        renderInventory(inventory);
+                        showCustomAlert('Artikeln är borttagen.', 'Borttagen');
+                    }
+                }
+            );
+        }
+        
+        window.handleEdit = function(id, isOrdering = false) {
+            const item = inventory.find(item => item.id === id);
+            if (item) {
+                openModal(item, isOrdering);
+            }
+        }
+
+
+        // --- Event Listeners ---
+        
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const newItem = {
+                id: Date.now(),
+                service_filter: document.getElementById('service_filter').value.trim().toUpperCase(), 
+                name: document.getElementById('name').value.trim(),
+                price: parseFloat(document.getElementById('price').value),
+                quantity: parseInt(document.getElementById('quantity').value, 10),
+                category: document.getElementById('category').value, 
+                notes: document.getElementById('notes').value.trim(),
+                link: document.getElementById('link').value.trim() 
+            };
+
+            inventory.push(newItem);
+            sortInventory(currentSort.column, currentSort.direction);
+            saveInventory();
+            
+            if (formWrapper.classList.contains('open')) {
+                 toggleAddForm(); 
+            }
+            form.reset();
+            
+            showCustomAlert('Ny artikel har lagts till i lagret.', 'Artikel Tillagd');
+        });
+        
+        searchInput.addEventListener('input', () => {
+            renderInventory(inventory); 
+        });
+        
+        editForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const id = parseInt(document.getElementById('edit-id').value, 10);
+            const itemIndex = inventory.findIndex(item => item.id === id);
+
+            if (itemIndex > -1) {
+                inventory[itemIndex].service_filter = document.getElementById('edit-service_filter').value.trim().toUpperCase();
+                inventory[itemIndex].name = document.getElementById('edit-name').value.trim();
+                inventory[itemIndex].price = parseFloat(document.getElementById('edit-price').value);
+                inventory[itemIndex].quantity = parseInt(document.getElementById('edit-quantity').value, 10);
+                inventory[itemIndex].category = document.getElementById('edit-category').value; 
+                inventory[itemIndex].notes = document.getElementById('edit-notes').value.trim();
+                inventory[itemIndex].link = document.getElementById('edit-link').value.trim();
+                
+                sortInventory(currentSort.column, currentSort.direction);
+                saveInventory();
+                closeModal(); 
+            }
+        });
+
+        window.onclick = function(event) {
+            if (event.target == editModal) {
+                closeModal();
+            }
+            if (event.target == confirmationModal) {
+                confirmationModal.style.display = 'none';
+                if (confirmCallback && !confirmationModal.classList.contains('alert-mode')) {
+                    confirmCallback(false);
+                }
+            }
+        }
+        
+        confirmOkBtn.onclick = function() {
+            confirmationModal.style.display = 'none';
+            if (confirmCallback) {
+                if (!confirmationModal.classList.contains('alert-mode')) {
+                    confirmCallback(true);
+                } else {
+                    confirmCallback(); 
+                }
+            }
+        };
+
+        confirmCancelBtn.onclick = function() {
+            confirmationModal.style.display = 'none';
+            if (confirmCallback && !confirmationModal.classList.contains('alert-mode')) {
+                confirmCallback(false);
+            }
+        };
+
+
+        document.querySelectorAll('.header span[data-sort]').forEach(header => {
+            header.addEventListener('click', (e) => {
+                let target = e.target;
+                while (target && !target.hasAttribute('data-sort')) {
+                    target = target.parentNode;
+                    if (target.className === 'header' || target.className === 'lager-container') break; 
+                }
+                if (!target || !target.hasAttribute('data-sort')) return;
+
+                const column = target.getAttribute('data-sort');
+                let direction = 'asc';
+
+                if (currentSort.column === column) {
+                    direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+                } else if (column === 'quantity' || column === 'price') {
+                    direction = 'desc'; 
+                }
+
+                currentSort = { column, direction };
+                sortInventory(column, direction);
+            });
+        });
+        
+        toggleBtn.addEventListener('click', toggleAddForm);
+
+        // Starta applikationen
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeCollapseState(); 
+            initializeAddFormState(); 
+            loadInventory();
+            updateBackupStatus(); 
+        });
+    </script>
+
 </body>
 </html>
-
-
-
-
-
