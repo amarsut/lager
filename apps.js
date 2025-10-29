@@ -1,5 +1,5 @@
-// apps.js - Detta är det kompletta innehållet i din JavaScript-fil
-        
+// apps.js - Detta är en REN JavaScript Module fil. INGA HTML <script>-taggar här.
+
 // Import Firebase v9 Syntax via CDN
 import { initializeApp } from 'https://www.gstatic.com/firebase/9.6.1/firebase-app.js';
 import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot } from 'https://www.gstatic.com/firebase/9.6.1/firebase-firestore.js';
@@ -8,8 +8,7 @@ import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot } from 'ht
 // 2.1. FIREBASE KONFIGURATION (ERSÄTT DESSA VÄRDEN)
 // ----------------------------------------------------------------------
 const firebaseConfig = {
-  // OBS: Kontrollera att dessa är DINA riktiga nycklar
-  apiKey: "AIzaSyAC4SLwVEzP3CPO4lLfDeZ71iU0xdr49sw", 
+  apiKey: "AIzaSyAC4SLwVEzP3CPO4lLfDeZ71iU0xdr49sw",
   authDomain: "lagerdata-a9b39.firebaseapp.com",
   projectId: "lagerdata-a9b39",
   storageBucket: "lagerdata-a9b39.firebasestorage.app",
@@ -66,16 +65,7 @@ try {
     function setupRealtimeListener() {
         const q = collection(db, INVENTORY_COLLECTION);
         
-        // Timeout för att upptäcka misslyckad anslutning (Som vi lade till tidigare)
-        const timeout = setTimeout(() => {
-            if (syncStatusElement.textContent === 'Ansluter...') {
-                syncStatusElement.textContent = 'FEL: Timeout vid anslutning!';
-                showCustomAlert('Kunde inte ansluta till realtidsdatabasen inom tidsgränsen. Kontrollera nätverksanslutning.', 'Allvarligt Fel');
-            }
-        }, 15000); // 15 sekunders tidsgräns
-
         onSnapshot(q, (querySnapshot) => {
-            clearTimeout(timeout); // Rensa timeout vid lyckad anslutning
             const tempInventory = [];
             querySnapshot.forEach((doc) => {
                 tempInventory.push(doc.data());
@@ -91,10 +81,9 @@ try {
             syncStatusElement.textContent = `Synkroniserad ${now.toLocaleTimeString('sv-SE', {hour: '2-digit', minute:'2-digit', second:'2-digit'})}`;
 
         }, (error) => {
-            clearTimeout(timeout); // Rensa timeout vid fel
             console.error("Realtime listener error: ", error);
             syncStatusElement.textContent = `FEL: Se konsolen`;
-            // Bättre felmeddelande för säkerhetsfel (Som vi lade till tidigare)
+            // Bättre felmeddelande för säkerhetsfel
             if (error.code === 'permission-denied') {
                  showCustomAlert('Kunde inte läsa data. Detta beror nästan alltid på felaktiga **Firebase Security Rules** (Måste vara allow read: if true;).', 'Säkerhetsfel');
             } else {
@@ -680,18 +669,10 @@ try {
     window.uploadJson = uploadJson;
 
 
-// RAD 391 (ungefär): Här stänger det stora TRY-blocket som startade nära toppen av filen
-} 
-// RAD 392: (Där felet pekar!) HÄR BÖRJAR CATCH-blocket
-catch (e) {
+} catch (e) {
     // Fångar fel vid själva initialiseringen (t.ex. felaktig config)
     console.error("Firebase Initialization Error:", e);
     const statusElement = document.getElementById('sync-status');
     if(statusElement) statusElement.textContent = "FEL: Konfigurationsfel i Firebase!";
     window.showCustomAlert('Det gick inte att ansluta till Firebase. Kontrollera att din "firebaseConfig" är korrekt.', 'Kritiskt Fel');
-// HÄR STÄNGER CATCH-blocket (Detta är sista tecknet i filen)
 }
-// FILEN SKA SLUTA HÄR. DET FÅR INTE FINNAS NÅGOT MER NEDANFÖR.
-
-// OM DU HAR DETTA TECKEN PÅ RAD 392, MÅSTE DU TA BORT DET:
-// }  <-- EXTRA KLAMMERPARENTES SOM ORSAKAR FELET!
