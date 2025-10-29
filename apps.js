@@ -1,5 +1,5 @@
-// apps.js - Detta är en REN JavaScript Module fil. INGA HTML <script>-taggar här.
-
+// apps.js - Detta är det kompletta innehållet i din JavaScript-fil (REN JS)
+        
 // Import Firebase v9 Syntax via CDN
 import { initializeApp } from 'https://www.gstatic.com/firebase/9.6.1/firebase-app.js';
 import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot } from 'https://www.gstatic.com/firebase/9.6.1/firebase-firestore.js';
@@ -8,7 +8,8 @@ import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot } from 'ht
 // 2.1. FIREBASE KONFIGURATION (ERSÄTT DESSA VÄRDEN)
 // ----------------------------------------------------------------------
 const firebaseConfig = {
-  apiKey: "AIzaSyAC4SLwVEzP3CPO4lLfDeZ71iU0xdr49sw",
+  // OBS: Kontrollera att dessa är DINA riktiga nycklar
+  apiKey: "AIzaSyAC4SLwVEzP3CPO4lLfDeZ71iU0xdr49sw", 
   authDomain: "lagerdata-a9b39.firebaseapp.com",
   projectId: "lagerdata-a9b39",
   storageBucket: "lagerdata-a9b39.firebasestorage.app",
@@ -675,4 +676,5 @@ try {
     const statusElement = document.getElementById('sync-status');
     if(statusElement) statusElement.textContent = "FEL: Konfigurationsfel i Firebase!";
     window.showCustomAlert('Det gick inte att ansluta till Firebase. Kontrollera att din "firebaseConfig" är korrekt.', 'Kritiskt Fel');
-}
+} 
+// <-- FILEN MÅSTE SLUTA HÄR. INGEN EXTRA KLAMMERPARENTES (})
