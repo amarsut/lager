@@ -601,6 +601,13 @@ try {
         }
     });
 
+      // Hitta stängningsknappen för Redigeringsmodalen
+    const editModalCloseBtn = editModal.querySelector('.close-btn');
+
+    if (editModalCloseBtn) {
+        editModalCloseBtn.addEventListener('click', closeEditModal);
+    }
+
 // ... resten av initializeListeners()
 
         document.getElementById('productPopup').addEventListener('click', (e) => {
@@ -701,6 +708,7 @@ try {
     }, 10);
 }
 // <-- FILEN MÅSTE SLUTA HÄR. INGEN EXTRA KLAMMERPARENTES (})
+
 
 
 
