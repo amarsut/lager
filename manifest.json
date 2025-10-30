@@ -1,0 +1,27 @@
+{
+    "name": "Lagerhantering",
+    "short_name": "Lager",
+    "description": "Dynamisk lagerförteckning med realtidsuppdatering.",
+    "start_url": "./lager.html",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#5a7dff",
+    "icons": [
+        {
+            "src": "images/icon-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "images/icon-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        },
+        {
+            "src": "images/icon-maskable.png",
+            "sizes": "196x196",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ]
+}
