@@ -43,13 +43,40 @@ document.addEventListener('DOMContentLoaded', () => {
         // FUNKTIONER
         // ----------------------------------------------------------------------
 
-      // --- NY FUNKTION FÖR LÄNKEN I MODAL ---
-        window.openProductPopup = function(url) {
+      // Funktion för att använda modalen som en länkbekräftelse
+        window.confirmLinkOpen = function(url, source) {
             const popup = document.getElementById('productPopup');
-            const iframe = document.getElementById('productIframe');
-            iframe.src = url;
+            const popupContent = popup.querySelector('.modal-content');
+
+            // Ändra innehållet i modalen (använder befintlig stäng-knapp/iframe-struktur)
+            popupContent.innerHTML = `
+                <span class="close-btn" onclick="closeProductPopup()">&times;</span>
+                <h3>Öppna Extern Länk</h3>
+                <p style="margin: 20px 0;">Vill du öppna **${source}**-länken i en ny flik?</p>
+                <div style="font-size: 0.8em; margin-bottom: 20px; color: #666;">
+                    **URL:** ${url}
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                    <button class="btn-secondary" onclick="closeProductPopup()">Avbryt</button>
+                    <button class="btn-primary" onclick="window.open('${url.replace(/'/g, "\\'")}', '_blank'); closeProductPopup();">Öppna i Ny Flik</button>
+                </div>
+            `;
+            
             popup.style.display = 'block';
         };
+
+        // Funktion för att stänga modalen
+        window.closeProductPopup = function() {
+            document.getElementById('productPopup').style.display = 'none';
+        };
+
+        // Lägg till händelselyssnare för att stänga popupen när man klickar utanför
+        document.getElementById('productPopup').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('productPopup')) {
+                closeProductPopup();
+            }
+        });
+
         // --------------------------------------
         
         // ... (Lägg till händelselyssnare för att stänga popupen) ...
@@ -140,10 +167,14 @@ document.addEventListener('DOMContentLoaded', () => {
             let linkToUse = item.link || generateTrodoLink(item.service_filter);
             let linkText = item.link ? 'Länk' : 'Trodo';
 
-            // --- NYTT: Använd window.open istället för att kalla den nya funktionen ---
+            // --- ÅTERSTÄLLD OCH FÖRBÄTTRAD LÄNKHANTERING ---
+            // Istället för att öppna direkt, anropa en funktion som hanterar bekräftelse/länk
             const linkContent = linkToUse 
-                ? `<button class="lank-knapp" onclick="openProductPopup('${linkToUse.replace(/'/g, "\\'")}'); event.stopPropagation();">${linkText}</button>` 
+                ? `<button class="lank-knapp" onclick="confirmLinkOpen('${linkToUse.replace(/'/g, "\\'")}', '${linkText}'); event.stopPropagation();">${linkText}</button>` 
                 : `<span>(Saknas)</span>`;
+            // ---------------------------------------------------
+
+            // ... resten av funktionen förblir densamma ...
 
             const quantityCell = `<div class="quantity-cell"><button class="qty-btn" onclick="adjustQuantity(${item.id}, -1); event.stopPropagation();">-</button><span>${item.quantity}</span><button class="qty-btn" onclick="adjustQuantity(${item.id}, 1); event.stopPropagation();">+</button></div>`;
             const editButton = isOutOfStock ? `<button class="edit-btn order-btn" onclick="handleEdit(${item.id}, true); event.stopPropagation();">Beställ</button>` : `<button class="edit-btn" onclick="handleEdit(${item.id}); event.stopPropagation();">Ändra</button>`;
@@ -437,6 +468,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
+
 
 
 
