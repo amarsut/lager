@@ -8,7 +8,7 @@ const urlsToCache = [
     'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js',
     './images/icon-192x192.png',
     './images/icon-512x512.png',
-    './images/icon-maskable.png',
+    './images/icon-maskable.png'
     // Lägg till URL:er för dina ikoner här när du har laddat upp dem:
     // './images/icon-192x192.png',
     // './images/icon-512x512.png'
