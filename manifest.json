@@ -2,7 +2,7 @@
     "name": "Lagerhantering",
     "short_name": "Lager",
     "description": "Dynamisk lagerförteckning med realtidsuppdatering.",
-    "start_url": "./lager.html",
+    "start_url": "https://amarsut.github.io/lager/lager.html",
     "display": "standalone",
     "background_color": "#ffffff",
     "theme_color": "#5a7dff",
