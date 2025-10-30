@@ -181,7 +181,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const serviceArtiklar = iLager.filter(item => item.category === 'Service');
             const motorChassiArtiklar = iLager.filter(item => item.category === 'Motor/Chassi' || item.category === 'Övrigt' || !item.category);
-            // KORRIGERING: Ändra filtret till att matcha HTML-värdet "Andra Märken"
+            // KORRIGERING: Använd konsekvent "Andra Märken" med stor bokstav 'M'
             const andraMarkenArtiklar = iLager.filter(item => item.category === 'Andra Märken');
 
             
@@ -190,13 +190,20 @@ document.addEventListener('DOMContentLoaded', () => {
             andraMarkenArtiklar.forEach(item => andraMarkenArtiklarLista.appendChild(createInventoryRow(item, false)));
             slutILager.forEach(item => slutILagerLista.appendChild(createInventoryRow(item, true)));
 
+            // Uppdaterar display-logiken för alla rubriker baserat på innehåll
             document.getElementById('service-artiklar-titel').style.display = serviceArtiklar.length > 0 ? 'flex' : 'none';
             document.getElementById('service-artiklar-wrapper').style.display = serviceArtiklar.length > 0 ? 'block' : 'none';
             document.getElementById('motor-chassi-artiklar-titel').style.display = motorChassiArtiklar.length > 0 ? 'flex' : 'none';
             document.getElementById('motor-chassi-artiklar-wrapper').style.display = motorChassiArtiklar.length > 0 ? 'block' : 'none';
-            // KORRIGERING: Uppdatera ID för att matcha h3-taggen i HTML
-            document.getElementById('andra-marken-artiklar-titel').style.display = andraMarkenArtiklar.length > 0 ? 'flex' : 'none';
-            document.getElementById('andra-marken-artiklar-wrapper').style.display = andraMarkenArtiklar.length > 0 ? 'block' : 'none';
+            // Här måste vi vara försiktiga. Om listan är tom döljer vi sektionen.
+            // Men om den ska synas (har artiklar), måste vi kontrollera det fällbara läget separat
+            const andraMarkenHasItems = andraMarkenArtiklar.length > 0;
+            const andraMarkenTitle = document.getElementById('andra-marken-artiklar-titel');
+            const andraMarkenWrapper = document.getElementById('andra-marken-artiklar-wrapper');
+
+            andraMarkenTitle.style.display = andraMarkenHasItems ? 'flex' : 'none';
+            // OBS! Vi DÖLJER INTE WRAPPERN här, vi använder `collapsed` klassen som sätts i `initializeCollapseState`
+
             slutILagerSektion.style.display = slutILager.length > 0 ? 'block' : 'none';
         }
 
@@ -235,7 +242,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 name: (formData.get('name') || '').trim(),
                 price: parseFloat(formData.get('price')) || 0.00,
                 quantity: parseInt(formData.get('quantity'), 10) || 0,
-                category: formData.get('category') || 'Övrigt',
+                // OBS: category värdet är "Andra Märken" (med stort 'M') för att matcha filtret
+                category: formData.get('category') || 'Övrigt', 
                 notes: (formData.get('notes') || '').trim(),
                 link: (formData.get('link') || '').trim(),
             };
@@ -340,26 +348,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         function initializeListeners() {
-            // ... (befintlig kod)
-            
-            // Fällbara sektioner
-            document.querySelectorAll('.collapsible-header').forEach(header => {
-                header.addEventListener('click', () => {
-                    // Fixar så att 'andra-marken-titel' matchas mot 'andra-marken-wrapper'
-                    const wrapperId = header.id.replace('-titel', '-wrapper');
-                    const wrapper = document.getElementById(wrapperId); 
-                    
-                    if (!wrapper) {
-                         // Lägger till en kontroll för att undvika fel om ID-namn inte matchar mönstret
-                         console.error(`Kunde inte hitta wrapper för header: ${header.id}`);
-                         return;
-                    }
-                    
-                    const isClosed = header.getAttribute('data-state') === 'closed';
-                    const newState = isClosed ? 'open' : 'closed';
-                    header.setAttribute('data-state', newState);
-                    wrapper.classList.toggle('collapsed', !isClosed);
-                    localStorage.setItem(header.id, newState);
+            addForm.addEventListener('submit', handleFormSubmit);
+            editForm.addEventListener('submit', handleEditSubmit);
+            searchInput.addEventListener('input', applySearchFilter);
+            toggleBtn.addEventListener('click', toggleAddForm);
+
+          document.querySelectorAll('.lager-container').forEach(container => {
+                container.addEventListener('scroll', () => {
+                    // Lägg till 'scrolled' klassen om vi har scrollat mer än 1px
+                    container.classList.toggle('scrolled', container.scrollTop > 1);
                 });
             });
 
@@ -386,10 +383,15 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('confirmYes').addEventListener('click', () => { if (confirmCallback) confirmCallback(true); closeConfirmationModal(); });
             document.getElementById('confirmNo').addEventListener('click', () => { if (confirmCallback) confirmCallback(false); closeConfirmationModal(); });
 
-            // Fällbara sektioner
+            // Fällbara sektioner - KORRIGERING: Gör logiken för att hämta wrapper-ID mer robust
             document.querySelectorAll('.collapsible-header').forEach(header => {
                 header.addEventListener('click', () => {
-                    const wrapper = document.getElementById(header.id.replace('-titel', '-wrapper'));
+                    // Antar att wrapper-ID:t är header-ID:t + '-wrapper'
+                    const wrapperId = header.id.replace('-titel', '-wrapper');
+                    const wrapper = document.getElementById(wrapperId); 
+                    
+                    if (!wrapper) return; // Avbryt om wrapper inte hittas
+                    
                     const isClosed = header.getAttribute('data-state') === 'closed';
                     const newState = isClosed ? 'open' : 'closed';
                     header.setAttribute('data-state', newState);
@@ -432,17 +434,21 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
         
+        // KORRIGERING: Hantera det fällbara läget mer robust
         function initializeCollapseState() {
             document.querySelectorAll('.collapsible-header').forEach(header => {
                 const savedState = localStorage.getItem(header.id);
+                const wrapperId = header.id.replace('-titel', '-wrapper');
+                const wrapper = document.getElementById(wrapperId);
+
+                // Vi använder bara localStorage om det finns en sparad state
                 if (savedState === 'closed') {
                     header.setAttribute('data-state', 'closed');
-                    // KORRIGERING: Se till att ID-namnet för wrapper är korrekt här också
-                    const wrapper = document.getElementById(header.id.replace('-titel', '-wrapper'));
                     if (wrapper) {
                         wrapper.classList.add('collapsed');
                     }
-                }
+                } 
+                // Om savedState INTE finns, eller om det är "open", gör vi ingenting (låter den vara öppen som standard)
             });
         }
 
@@ -461,11 +467,3 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
-
-
-
-
-
-
-
-
