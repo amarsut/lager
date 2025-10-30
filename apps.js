@@ -181,7 +181,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const serviceArtiklar = iLager.filter(item => item.category === 'Service');
             const motorChassiArtiklar = iLager.filter(item => item.category === 'Motor/Chassi' || item.category === 'Övrigt' || !item.category);
-            const andraMarkenArtiklar = iLager.filter(item => item.category === 'Andra märken');
+            const andraMarkenArtiklar = iLager.filter(item => item.category === 'Andra Märken');
 
             
             serviceArtiklar.forEach(item => serviceArtiklarLista.appendChild(createInventoryRow(item, false)));
@@ -444,6 +444,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
+
 
 
 
