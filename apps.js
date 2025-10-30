@@ -34,6 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // DOM-ELEMENT
         const serviceArtiklarLista = document.getElementById('service-artiklar-lista');
         const motorChassiArtiklarLista = document.getElementById('motor-chassi-artiklar-lista');
+        const andraMarkenArtiklarLista = document.getElementById('andra-marken-artiklar-lista');
         const slutILagerLista = document.getElementById('slut-i-lager-lista');
         const slutILagerSektion = document.getElementById('slut-i-lager-sektion');
         
@@ -172,6 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
         function renderInventory(data) {
             serviceArtiklarLista.innerHTML = '';
             motorChassiArtiklarLista.innerHTML = '';
+            andraMarkenArtiklarLista.innerHTML = '';
             slutILagerLista.innerHTML = '';
             
             const iLager = data.filter(item => item.quantity > 0);
@@ -179,15 +181,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const serviceArtiklar = iLager.filter(item => item.category === 'Service');
             const motorChassiArtiklar = iLager.filter(item => item.category === 'Motor/Chassi' || item.category === 'Övrigt' || !item.category);
+            const andraMarkenArtiklar = iLager.filter(item => item.category === 'Andra märken');
+
             
             serviceArtiklar.forEach(item => serviceArtiklarLista.appendChild(createInventoryRow(item, false)));
             motorChassiArtiklar.forEach(item => motorChassiArtiklarLista.appendChild(createInventoryRow(item, false)));
+            andraMarkenArtiklar.forEach(item => andraMarkenArtiklarLista.appendChild(createInventoryRow(item, false)));
             slutILager.forEach(item => slutILagerLista.appendChild(createInventoryRow(item, true)));
 
             document.getElementById('service-artiklar-titel').style.display = serviceArtiklar.length > 0 ? 'flex' : 'none';
             document.getElementById('service-artiklar-wrapper').style.display = serviceArtiklar.length > 0 ? 'block' : 'none';
             document.getElementById('motor-chassi-artiklar-titel').style.display = motorChassiArtiklar.length > 0 ? 'flex' : 'none';
             document.getElementById('motor-chassi-artiklar-wrapper').style.display = motorChassiArtiklar.length > 0 ? 'block' : 'none';
+            document.getElementById('andra-marken-artiklar-titel').style.display = andraMarkenArtiklar.length > 0 ? 'flex' : 'none';
+            document.getElementById('andra-marken-artiklar-wrapper').style.display = andraMarkenArtiklar.length > 0 ? 'block' : 'none';
             slutILagerSektion.style.display = slutILager.length > 0 ? 'block' : 'none';
         }
 
@@ -437,6 +444,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
+
 
 
 
