@@ -52,6 +52,10 @@ document.addEventListener('DOMContentLoaded', () => {
         let selectedItemId = null;
         let currentSort = { column: 'name', direction: 'desc' };
         let confirmCallback = null; 
+        
+        // KORRIGERING: Definiera stoppord för naturligt språk-sökning (svenska)
+        const stopWords = ['till', 'för', 'en', 'ett', 'och', 'eller', 'med', 'på', 'i', 'av', 'det', 'den', 'som', 'att', 'är', 'har', 'kan', 'ska', 'vill', 'sig', 'här', 'nu', 'från', 'man', 'vi', 'du', 'ni'];
+
 
         // ----------------------------------------------------------------------
         // FUNKTIONER
@@ -76,6 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     tempInventory.push(doc.data());
                 });
                 inventory = tempInventory;
+                // Använd den nya smarta filter-funktionen
                 applySearchFilter();
                 
                 const now = new Date();
@@ -176,12 +181,14 @@ document.addEventListener('DOMContentLoaded', () => {
             andraMarkenArtiklarLista.innerHTML = '';
             slutILagerLista.innerHTML = '';
             
+            // I detta steg har datan redan filtrerats och sorterats av sortAndRender
             const iLager = data.filter(item => item.quantity > 0);
             const slutILager = data.filter(item => item.quantity <= 0);
 
             const serviceArtiklar = iLager.filter(item => item.category === 'Service');
+            // OBS: I det smarta sökfallet kommer alla artiklar att finnas i 'data' listan.
+            // För att visa alla matchande artiklar under de rätta rubrikerna måste vi filtrera BARA iLager.
             const motorChassiArtiklar = iLager.filter(item => item.category === 'Motor/Chassi' || item.category === 'Övrigt' || !item.category);
-            // KORRIGERING: Använd konsekvent "Andra Märken" med stor bokstav 'M'
             const andraMarkenArtiklar = iLager.filter(item => item.category === 'Andra Märken');
 
             
@@ -195,42 +202,121 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('service-artiklar-wrapper').style.display = serviceArtiklar.length > 0 ? 'block' : 'none';
             document.getElementById('motor-chassi-artiklar-titel').style.display = motorChassiArtiklar.length > 0 ? 'flex' : 'none';
             document.getElementById('motor-chassi-artiklar-wrapper').style.display = motorChassiArtiklar.length > 0 ? 'block' : 'none';
-            // Här måste vi vara försiktiga. Om listan är tom döljer vi sektionen.
-            // Men om den ska synas (har artiklar), måste vi kontrollera det fällbara läget separat
             const andraMarkenHasItems = andraMarkenArtiklar.length > 0;
             const andraMarkenTitle = document.getElementById('andra-marken-artiklar-titel');
             const andraMarkenWrapper = document.getElementById('andra-marken-artiklar-wrapper');
 
             andraMarkenTitle.style.display = andraMarkenHasItems ? 'flex' : 'none';
-            // OBS! Vi DÖLJER INTE WRAPPERN här, vi använder `collapsed` klassen som sätts i `initializeCollapseState`
+            andraMarkenWrapper.style.display = andraMarkenHasItems ? 'block' : 'none';
 
             slutILagerSektion.style.display = slutILager.length > 0 ? 'block' : 'none';
         }
 
+        // KORRIGERING: Ny logik för Viktad Nyckelordssökning
+        function calculateRelevance(item, searchWords) {
+            let score = 0;
+            
+            // Konvertera artikelns text till en sträng för matchning
+            const serviceFilter = (item.service_filter || '').toLowerCase();
+            const name = (item.name || '').toLowerCase();
+            const notes = (item.notes || '').toLowerCase();
+            const category = (item.category || '').toLowerCase();
+            
+            searchWords.forEach(word => {
+                // Ta bort icke-alfanumeriska tecken för att få bättre matchningar på artikelnummer
+                const cleanWord = word.replace(/[^a-z0-9]/g, '');
+
+                // 1. Högst Prioritet: Artikelnummer (service_filter)
+                if (serviceFilter.includes(cleanWord)) {
+                    score += 5; 
+                }
+                
+                // 2. Hög Prioritet: Namn
+                if (name.includes(cleanWord)) {
+                    score += 3;
+                }
+                
+                // 3. Mellan Prioritet: Kategori
+                if (category.includes(cleanWord)) {
+                    score += 2;
+                }
+
+                // 4. Låg Prioritet: Anteckningar
+                if (notes.includes(cleanWord)) {
+                    score += 1;
+                }
+                
+                // Exakt matchning på hela artikeln
+                if (serviceFilter === cleanWord || name === cleanWord) {
+                     score += 5;
+                }
+            });
+
+            return score;
+        }
+
+
         function sortAndRender() {
-            const sortedInventory = [...inventory].sort((a, b) => {
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            
+            if (searchTerm === '') {
+                 // Om sökfältet är tomt, sortera hela lagret enligt standard
+                const sortedInventory = [...inventory].sort((a, b) => {
+                    let aVal = a[currentSort.column];
+                    let bVal = b[currentSort.column];
+
+                    if (typeof aVal === 'string' && typeof bVal === 'string') {
+                        return currentSort.direction === 'asc' ? aVal.localeCompare(bVal, 'sv') : bVal.localeCompare(aVal, 'sv');
+                    } else {
+                        return currentSort.direction === 'asc' ? (aVal || 0) - (bVal || 0) : (bVal || 0) - (aVal || 0);
+                    }
+                });
+                renderInventory(sortedInventory);
+                return;
+            }
+
+            // STEG 1: Rensa sökfrågan (Natural Language Processing light)
+            const searchWords = searchTerm.split(/\s+/)
+                                          .filter(word => word.length > 1 && !stopWords.includes(word));
+            
+            // Lägg till sökordet som det är, för att få exakta fraser och nummer med i beräkningen
+            if (searchWords.length === 0 && searchTerm.length > 0) {
+                 searchWords.push(searchTerm);
+            }
+
+            // STEG 2: Beräkna relevanspoäng och filtrera
+            const scoredInventory = inventory
+                .map(item => ({
+                    ...item,
+                    relevanceScore: calculateRelevance(item, searchWords)
+                }))
+                .filter(item => item.relevanceScore > 0);
+            
+            // STEG 3: Sortera - Högst Poäng FÖRST, sedan enligt användarens val (currentSort)
+            const sortedAndFilteredInventory = scoredInventory.sort((a, b) => {
+                // Sortera PRIMÄRT efter relevans (fallande)
+                if (b.relevanceScore !== a.relevanceScore) {
+                    return b.relevanceScore - a.relevanceScore;
+                }
+                
+                // Sortera SEKUNDÄRT efter den valda kolumnen (t.ex. 'name' eller 'price')
                 let aVal = a[currentSort.column];
                 let bVal = b[currentSort.column];
-
+                
                 if (typeof aVal === 'string' && typeof bVal === 'string') {
                     return currentSort.direction === 'asc' ? aVal.localeCompare(bVal, 'sv') : bVal.localeCompare(aVal, 'sv');
                 } else {
                     return currentSort.direction === 'asc' ? (aVal || 0) - (bVal || 0) : (bVal || 0) - (aVal || 0);
                 }
             });
-
-            const searchTerm = searchInput.value.toLowerCase().trim();
-            const filteredInventory = sortedInventory.filter(item => {
-                 const text = `${item.service_filter} ${item.name} ${item.notes} ${item.category}`.toLowerCase();
-                 const searchWords = searchTerm.split(/\s+/).filter(word => word.length > 0);
-                 return searchWords.every(word => text.includes(word));
-            });
             
-            renderInventory(filteredInventory);
+            renderInventory(sortedAndFilteredInventory);
         }
 
         function applySearchFilter() {
-             sortAndRender();
+             // Lägg in en liten debounce (fördröjning) för bättre prestanda (se tips #22)
+             clearTimeout(window.searchTimeout);
+             window.searchTimeout = setTimeout(sortAndRender, 150);
         }
 
         async function handleFormSubmit(event) {
@@ -242,7 +328,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 name: (formData.get('name') || '').trim(),
                 price: parseFloat(formData.get('price')) || 0.00,
                 quantity: parseInt(formData.get('quantity'), 10) || 0,
-                // OBS: category värdet är "Andra Märken" (med stort 'M') för att matcha filtret
                 category: formData.get('category') || 'Övrigt', 
                 notes: (formData.get('notes') || '').trim(),
                 link: (formData.get('link') || '').trim(),
@@ -350,7 +435,8 @@ document.addEventListener('DOMContentLoaded', () => {
         function initializeListeners() {
             addForm.addEventListener('submit', handleFormSubmit);
             editForm.addEventListener('submit', handleEditSubmit);
-            searchInput.addEventListener('input', applySearchFilter);
+            // KORRIGERING: Använd den nya debounced-funktionen
+            searchInput.addEventListener('input', applySearchFilter); 
             toggleBtn.addEventListener('click', toggleAddForm);
 
           document.querySelectorAll('.lager-container').forEach(container => {
@@ -375,7 +461,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     const column = header.getAttribute('data-sort');
                     const direction = (currentSort.column === column && currentSort.direction === 'asc') ? 'desc' : 'asc';
                     currentSort = { column, direction };
-                    applySearchFilter();
+                    // Använd den nya smarta sorteringsfunktionen
+                    applySearchFilter(); 
                 });
             });
             
