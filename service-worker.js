@@ -6,6 +6,9 @@ const urlsToCache = [
     'https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap',
     'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js',
     'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js',
+    './images/icon-192x192.png',
+    './images/icon-512x512.png',
+    './images/icon-maskable.png',
     // Lägg till URL:er för dina ikoner här när du har laddat upp dem:
     // './images/icon-192x192.png',
     // './images/icon-512x512.png'
