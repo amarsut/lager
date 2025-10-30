@@ -1,17 +1,19 @@
-const CACHE_NAME = 'lager-cache-v2';
+const CACHE_NAME = 'lager-cache-v4'; // Öka versionsnumret för att tvinga fram en ny installation
 const urlsToCache = [
+    // BASFILER (Dessa måste ligga i samma mapp)
     './lager.html',
     './apps.js',
     './manifest.json',
-    'https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap',
-    'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js',
-    'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js',
+    
+    // IKONER (Dubbelkolla att mappen heter images/ med litet i och att filnamnen är exakta)
     './images/192x192.png',
     './images/512x512.png',
-    './images/maskable.png'
-    // Lägg till URL:er för dina ikoner här när du har laddat upp dem:
-    // './images/icon-192x192.png',
-    // './images/icon-512x512.png'
+    './images/maskable.png',
+
+    // EXTERNA RESURSER (Måste vara fullständiga och korrekta URL:er)
+    'https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap',
+    'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js',
+    'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js'
 ];
 
 // Installation: Cacha app-skalet (app shell)
