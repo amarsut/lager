@@ -323,6 +323,13 @@ document.addEventListener('DOMContentLoaded', () => {
             searchInput.addEventListener('input', applySearchFilter);
             toggleBtn.addEventListener('click', toggleAddForm);
 
+          document.querySelectorAll('.lager-container').forEach(container => {
+                container.addEventListener('scroll', () => {
+                    // Lägg till 'scrolled' klassen om vi har scrollat mer än 1px
+                    container.classList.toggle('scrolled', container.scrollTop > 1);
+                });
+            });
+
             // Modal stängningslogik
             [editModal, confirmationModal].forEach(modal => {
                 modal.addEventListener('click', (e) => {
@@ -417,4 +424,5 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
+
 
