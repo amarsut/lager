@@ -42,6 +42,23 @@ document.addEventListener('DOMContentLoaded', () => {
         // ----------------------------------------------------------------------
         // FUNKTIONER
         // ----------------------------------------------------------------------
+
+      // --- NY FUNKTION FÖR LÄNKEN I MODAL ---
+        window.openProductPopup = function(url) {
+            const popup = document.getElementById('productPopup');
+            const iframe = document.getElementById('productIframe');
+            iframe.src = url;
+            popup.style.display = 'block';
+        };
+        // --------------------------------------
+        
+        // ... (Lägg till händelselyssnare för att stänga popupen) ...
+        document.getElementById('productPopup').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('productPopup') || e.target.classList.contains('close-btn')) {
+                document.getElementById('productPopup').style.display = 'none';
+                document.getElementById('productIframe').src = ''; // Rensa URL
+            }
+        });
         
         async function saveInventoryItem(itemData) {
             const itemRef = doc(db, INVENTORY_COLLECTION, String(itemData.id));
@@ -123,7 +140,10 @@ document.addEventListener('DOMContentLoaded', () => {
             let linkToUse = item.link || generateTrodoLink(item.service_filter);
             let linkText = item.link ? 'Länk' : 'Trodo';
 
-            const linkContent = linkToUse ? `<button class="lank-knapp" onclick="window.open('${linkToUse}', '_blank'); event.stopPropagation();">${linkText}</button>` : `<span>(Saknas)</span>`;
+            // --- NYTT: Använd window.open istället för att kalla den nya funktionen ---
+            const linkContent = linkToUse 
+                ? `<button class="lank-knapp" onclick="openProductPopup('${linkToUse.replace(/'/g, "\\'")}'); event.stopPropagation();">${linkText}</button>` 
+                : `<span>(Saknas)</span>`;
 
             const quantityCell = `<div class="quantity-cell"><button class="qty-btn" onclick="adjustQuantity(${item.id}, -1); event.stopPropagation();">-</button><span>${item.quantity}</span><button class="qty-btn" onclick="adjustQuantity(${item.id}, 1); event.stopPropagation();">+</button></div>`;
             const editButton = isOutOfStock ? `<button class="edit-btn order-btn" onclick="handleEdit(${item.id}, true); event.stopPropagation();">Beställ</button>` : `<button class="edit-btn" onclick="handleEdit(${item.id}); event.stopPropagation();">Ändra</button>`;
@@ -417,6 +437,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
+
 
 
 
