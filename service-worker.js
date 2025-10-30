@@ -1,4 +1,4 @@
-const CACHE_NAME = 'lager-cache-v1';
+const CACHE_NAME = 'lager-cache-v2';
 const urlsToCache = [
     './lager.html',
     './apps.js',
