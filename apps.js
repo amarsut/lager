@@ -181,6 +181,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const serviceArtiklar = iLager.filter(item => item.category === 'Service');
             const motorChassiArtiklar = iLager.filter(item => item.category === 'Motor/Chassi' || item.category === 'Övrigt' || !item.category);
+            // KORRIGERING: Ändra filtret till att matcha HTML-värdet "Andra Märken"
             const andraMarkenArtiklar = iLager.filter(item => item.category === 'Andra Märken');
 
             
@@ -193,6 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('service-artiklar-wrapper').style.display = serviceArtiklar.length > 0 ? 'block' : 'none';
             document.getElementById('motor-chassi-artiklar-titel').style.display = motorChassiArtiklar.length > 0 ? 'flex' : 'none';
             document.getElementById('motor-chassi-artiklar-wrapper').style.display = motorChassiArtiklar.length > 0 ? 'block' : 'none';
+            // KORRIGERING: Uppdatera ID för att matcha h3-taggen i HTML
             document.getElementById('andra-marken-artiklar-titel').style.display = andraMarkenArtiklar.length > 0 ? 'flex' : 'none';
             document.getElementById('andra-marken-artiklar-wrapper').style.display = andraMarkenArtiklar.length > 0 ? 'block' : 'none';
             slutILagerSektion.style.display = slutILager.length > 0 ? 'block' : 'none';
@@ -338,15 +340,26 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         function initializeListeners() {
-            addForm.addEventListener('submit', handleFormSubmit);
-            editForm.addEventListener('submit', handleEditSubmit);
-            searchInput.addEventListener('input', applySearchFilter);
-            toggleBtn.addEventListener('click', toggleAddForm);
-
-          document.querySelectorAll('.lager-container').forEach(container => {
-                container.addEventListener('scroll', () => {
-                    // Lägg till 'scrolled' klassen om vi har scrollat mer än 1px
-                    container.classList.toggle('scrolled', container.scrollTop > 1);
+            // ... (befintlig kod)
+            
+            // Fällbara sektioner
+            document.querySelectorAll('.collapsible-header').forEach(header => {
+                header.addEventListener('click', () => {
+                    // Fixar så att 'andra-marken-titel' matchas mot 'andra-marken-wrapper'
+                    const wrapperId = header.id.replace('-titel', '-wrapper');
+                    const wrapper = document.getElementById(wrapperId); 
+                    
+                    if (!wrapper) {
+                         // Lägger till en kontroll för att undvika fel om ID-namn inte matchar mönstret
+                         console.error(`Kunde inte hitta wrapper för header: ${header.id}`);
+                         return;
+                    }
+                    
+                    const isClosed = header.getAttribute('data-state') === 'closed';
+                    const newState = isClosed ? 'open' : 'closed';
+                    header.setAttribute('data-state', newState);
+                    wrapper.classList.toggle('collapsed', !isClosed);
+                    localStorage.setItem(header.id, newState);
                 });
             });
 
@@ -424,7 +437,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 const savedState = localStorage.getItem(header.id);
                 if (savedState === 'closed') {
                     header.setAttribute('data-state', 'closed');
-                    document.getElementById(header.id.replace('-titel', '-wrapper')).classList.add('collapsed');
+                    // KORRIGERING: Se till att ID-namnet för wrapper är korrekt här också
+                    const wrapper = document.getElementById(header.id.replace('-titel', '-wrapper'));
+                    if (wrapper) {
+                        wrapper.classList.add('collapsed');
+                    }
                 }
             });
         }
@@ -444,6 +461,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
+
 
 
 
