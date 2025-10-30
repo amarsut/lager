@@ -11,6 +11,19 @@ const firebaseConfig = {
   appId: "1:615646392577:web:fd816443728e88b218eb00"
 };
 
+// --- REGISTRERA SERVICE WORKER FÖR PWA INSTALLATION ---
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./service-worker.js')
+            .then(registration => {
+                console.log('Service Worker registrerad framgångsrikt med scope:', registration.scope);
+            })
+            .catch(error => {
+                console.log('Service Worker registrering misslyckades:', error);
+            });
+    });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     try {
         // Initialisera Firebase
@@ -424,5 +437,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
+
 
 
