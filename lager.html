@@ -372,6 +372,42 @@
         width: 14px;
         height: 14px;
     }
+        /* --- LÄGG TILL DESSA REGLER --- */
+
+/* Fixar att den horisontella scrollen blir smidigare på touch-enheter */
+.lager-wrapper { 
+    -webkit-overflow-scrolling: touch; 
+    overflow-x: auto; 
+    margin-bottom: 25px; 
+}
+
+/* 1. Definiera åtgärds-kolumnerna som sticky */
+.header > span:last-child, 
+.artikel-rad > div:last-child {
+    position: sticky;
+    right: 0; /* Lås den till högerkant */
+    z-index: 50; /* Lägre än Sticky Header, högre än resten av innehållet */
+    padding-right: 20px; /* Lägg till extra padding för att det ska se snyggt ut */
+    background-color: inherit; /* Viktigt: så att den döljer innehållet när man scrollar */
+}
+
+/* 2. Fixa bakgrundsfärgen på header-kolumnen */
+.header > span:last-child {
+    background-color: #eef1f5; /* Samma färg som header-raden */
+    border-left: 1px solid var(--border-color); /* Visuell separation */
+}
+
+/* 3. Fixa bakgrundsfärgen på artikel-raden */
+.artikel-rad > div:last-child {
+    background-color: var(--card-bg); /* Samma färg som artikelradens bakgrund */
+}
+
+/* 4. Fixa hover-effekten */
+.artikel-rad:hover > div:last-child {
+    background-color: #f8faff; /* Samma hover-färg som raden */
+}
+
+/* ------------------------------- */
     </style>
 <link rel="manifest" href="./manifest.json">
     
@@ -549,5 +585,6 @@
 
 </body>
 </html>
+
 
 
