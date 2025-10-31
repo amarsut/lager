@@ -59,41 +59,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
         // ----------------------------------------------------------------------
-        // FUNKTIONER
+        // LÄNK-FUNKTIONER
         // ----------------------------------------------------------------------
         
-        async function saveInventoryItem(itemData) {
-            const itemRef = doc(db, INVENTORY_COLLECTION, String(itemData.id));
-            await setDoc(itemRef, itemData);
-        }
-        
-        async function deleteInventoryItem(itemId) {
-            const itemRef = doc(db, INVENTORY_COLLECTION, String(itemId));
-            await deleteDoc(itemRef);
-        }
-        
-        function setupRealtimeListener() {
-            const q = collection(db, INVENTORY_COLLECTION);
-            
-            onSnapshot(q, (querySnapshot) => {
-                const tempInventory = [];
-                querySnapshot.forEach((doc) => {
-                    tempInventory.push(doc.data());
-                });
-                inventory = tempInventory;
-                // Använd den nya smarta filter-funktionen
-                applySearchFilter();
-                
-                const now = new Date();
-                syncStatusElement.textContent = `Synkroniserad ${now.toLocaleTimeString('sv-SE')}`;
-                syncStatusElement.style.color = 'var(--success-color)';
-            }, (error) => {
-                console.error("Realtime listener error: ", error);
-                syncStatusElement.textContent = `FEL: Se konsolen`;
-                syncStatusElement.style.color = 'var(--danger-color)';
-            });
-        }
-
         function formatPrice(price) {
             return new Intl.NumberFormat('sv-SE', { 
                 minimumFractionDigits: 2, 
@@ -101,55 +69,56 @@ document.addEventListener('DOMContentLoaded', () => {
             }).format(price);
         }
 
-        // NY FUNKTION: Genererar Aero M-länken (OBS: Antagen URL-struktur)
         function generateAeroMLink(serviceFilter) {
             if (!serviceFilter) return null;
-            
             const searchFilter = serviceFilter.replace(/[\s-]/g, ''); 
             const searchQuery = encodeURIComponent(searchFilter);
-            
-            // Antagen URL för Aero M
             return `https://www.aerom.se/search?q=${searchQuery}`; 
         }
 
         function generateTrodoLink(serviceFilter) {
             if (!serviceFilter) return null;
-            
-            // Tar bort alla mellanslag och bindestreck för att få en ren artikelnummer-sträng.
             const searchFilter = serviceFilter.replace(/[\s-]/g, ''); 
             const searchQuery = encodeURIComponent(searchFilter);
-            
-            // Trodo länk
             return `https://www.trodo.se/catalogsearch/result/premium?filter[quality_group]=2&product_list_dir=asc&product_list_order=price&q=${searchQuery}`;
         }
         
-        // Befintlig funktion: Genererar Thansen-länken
         function generateThansenLink(serviceFilter) {
             if (!serviceFilter) return null;
-            
-            // Tar bort alla mellanslag och bindestreck för att få en ren artikelnummer-sträng.
             const searchFilter = serviceFilter.replace(/[\s-]/g, ''); 
             const searchQuery = encodeURIComponent(searchFilter);
-            
-            // Thansen länkformat
             return `https://www.thansen.se/bil/reservdelar/sok?query=${searchQuery}`;
         }
         
-        function toggleAddForm() {
-            const isCurrentlyOpen = addFormWrapper.classList.contains('open');
-            const newState = isCurrentlyOpen ? 'closed' : 'open';
-            addFormWrapper.classList.toggle('open');
-            toggleBtn.classList.toggle('open');
-            localStorage.setItem('add_form_open_state', newState);
-        }
-        
-        function initializeAddFormState() {
-            const storedState = localStorage.getItem('add_form_open_state');
-            if (storedState === 'open') {
-                 addFormWrapper.classList.add('open');
-                 toggleBtn.classList.add('open');
+        // Global funktion för att hantera dropdowns (MÅSTE vara global för att funka i onclick)
+        window.toggleDropdown = function(dropdownId) {
+            const dropdown = document.getElementById(dropdownId);
+            if (!dropdown) return;
+            
+            // Stäng alla andra öppna dropdowns
+            document.querySelectorAll('.dropdown-menu.visible').forEach(openDropdown => {
+                if (openDropdown.id !== dropdownId) {
+                    openDropdown.classList.remove('visible');
+                }
+            });
+
+            // Växla synligheten för den valda dropdownen
+            dropdown.classList.toggle('visible');
+        };
+
+        // Lyssnare för att stänga dropdowns när man klickar utanför (globalt i dokumentet)
+        document.addEventListener('click', (event) => {
+            // Kontrollera om klicket var inuti en 'link-dropdown-container' eller inte
+            if (!event.target.closest('.link-dropdown-container')) {
+                document.querySelectorAll('.dropdown-menu.visible').forEach(dropdown => {
+                    dropdown.classList.remove('visible');
+                });
             }
-        }
+        });
+
+        // ----------------------------------------------------------------------
+        // GRÄNSSNITT OCH HUVUDFUNKTIONER
+        // ----------------------------------------------------------------------
 
         function createInventoryRow(item, isOutOfStock) {
             const row = document.createElement('div');
@@ -165,40 +134,73 @@ document.addEventListener('DOMContentLoaded', () => {
             const editButton = isOutOfStock ? `<button class="edit-btn order-btn" onclick="handleEdit(${item.id}, true); event.stopPropagation();">Beställ</button>` : `<button class="edit-btn" onclick="handleEdit(${item.id}); event.stopPropagation();">Ändra</button>`;
             const notesCell = `<span class="notes-cell" title="${item.notes || ''}">${item.notes || ''}</span>`;
             
-            // NY LOGIK: Generera alla länknappar i en container
-            const aeroMLink = generateAeroMLink(item.service_filter); 
+            // Generera alla länkar
             const trodoLink = generateTrodoLink(item.service_filter);
+            const aeroMLink = generateAeroMLink(item.service_filter); 
             const thansenLink = generateThansenLink(item.service_filter);
+            const egenLink = item.link; // Användardefinierad länk
             
-            let linkButtonsHTML = '';
-            
-            // 1. Användar-angiven Länk ("Egen Länk")
-            if (item.link) {
-                linkButtonsHTML += `<button class="lank-knapp" onclick="window.open('${item.link}', '_blank'); event.stopPropagation();">Egen Länk</button>`;
-            }
-            
-            // 2. NYTT: Aero M-knapp (återställd och använder .aero-m-btn stilen)
-            if (aeroMLink) {
-                linkButtonsHTML += `<button class="lank-knapp aero-m-btn" onclick="window.open('${aeroMLink}', '_blank'); event.stopPropagation();">Aero M</button>`;
-            }
-            
-            // 3. Trodo-knapp (standardstil, kan stajlas med .trodo-btn om önskas)
-            if (trodoLink) {
-                // Jag lägger till 'trodo-btn' här så att du kan ge den en unik stil i CSS om du vill
-                linkButtonsHTML += `<button class="lank-knapp trodo-btn" onclick="window.open('${trodoLink}', '_blank'); event.stopPropagation();">Trodo</button>`;
-            }
-            
-            // 4. Thansen-knapp
-            if (thansenLink) {
-                linkButtonsHTML += `<button class="lank-knapp thansen-btn" onclick="window.open('${thansenLink}', '_blank'); event.stopPropagation();">Thansen</button>`;
-            }
-            
-            // Kolumnens innehåll
-            const linkCellContent = linkButtonsHTML ? `<div class="link-buttons">${linkButtonsHTML}</div>` : `<span>(Saknas)</span>`;
+            let primaryButtonHTML = '';
+            let moreButtonsHTML = '';
+            let linkCellContent = '';
 
-            // UPPDATERING: Den primära sökikonen (förstoringsglaset) på artikelnumret ska länka till den mest relevanta/första länken.
-            const primarySearchLink = item.link || aeroMLink || trodoLink;
-            const primarySearchText = item.link ? 'Egen Länk' : (aeroMLink ? 'Aero M' : 'Trodo');
+            // 1. Primär länk: Trodo
+            if (trodoLink) {
+                primaryButtonHTML = `<button class="lank-knapp trodo-btn" onclick="window.open('${trodoLink}', '_blank'); event.stopPropagation();">Trodo</button>`;
+            }
+
+            // 2. Sekundära länkar (läggs i Mer-menyn)
+            if (aeroMLink) {
+                moreButtonsHTML += `<button class="lank-knapp aero-m-btn" onclick="window.open('${aeroMLink}', '_blank'); event.stopPropagation();">Aero M</button>`;
+            }
+            if (thansenLink) {
+                moreButtonsHTML += `<button class="lank-knapp thansen-btn" onclick="window.open('${thansenLink}', '_blank'); event.stopPropagation();">Thansen</button>`;
+            }
+            if (egenLink) {
+                // Lägg den egna länken i Mer-menyn. Jag lägger till klassen 'egen-lank-btn' för unik CSS.
+                moreButtonsHTML += `<button class="lank-knapp egen-lank-btn" onclick="window.open('${egenLink}', '_blank'); event.stopPropagation();">Egen Länk</button>`;
+            }
+
+            
+            // Bygg länkcellens innehåll
+            if (primaryButtonHTML) {
+                linkCellContent += primaryButtonHTML;
+            }
+
+            if (moreButtonsHTML.length > 0) {
+                // Skapa Mer-knappen med dropdown-funktionalitet
+                const dropdownId = `link-dropdown-${item.id}`;
+                
+                // Mer-knappen (använder en enkel knapp med text '...' eller 'Mer')
+                const moreButton = `<button class="lank-knapp more-btn" onclick="toggleDropdown('${dropdownId}'); event.stopPropagation();">Mer</button>`;
+                
+                // Dropdown-menyn (innehåller alla sekundära länkar)
+                const dropdownMenu = `
+                    <div id="${dropdownId}" class="dropdown-menu">
+                        ${moreButtonsHTML}
+                    </div>
+                `;
+                
+                linkCellContent += `
+                    <div class="link-dropdown-container">
+                        ${moreButton}
+                        ${dropdownMenu}
+                    </div>
+                `;
+            }
+            
+            // Fallback om inga länkar finns
+            if (!linkCellContent) {
+                linkCellContent = '<span>(Saknas)</span>';
+            }
+
+            // Kolumnens innehåll
+            const finalLinkCellContent = `<div class="link-buttons">${linkCellContent}</div>`;
+
+
+            // UPPDATERING: Den primära sökikonen (förstoringsglaset) på artikelnumret ska länka till den mest relevanta/första länken (Trodo)
+            const primarySearchLink = trodoLink || aeroMLink || egenLink;
+            const primarySearchText = trodoLink ? 'Trodo' : (aeroMLink ? 'Aero M' : (egenLink ? 'Egen Länk' : ''));
 
             const searchButton = primarySearchLink ? 
                 `<button class="search-btn" onclick="window.open('${primarySearchLink}', '_blank'); event.stopPropagation();" title="Sök på ${primarySearchText}">
@@ -221,11 +223,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 ${quantityCell}
                 <span style="display: flex; align-items: center;"><span class="${statusClass}">${statusText}</span></span>
                 ${notesCell}
-                <span class="action-cell">${linkCellContent}</span>
+                <span class="action-cell">${finalLinkCellContent}</span>
                 <div class="action-buttons">${editButton}<button class="delete-btn" onclick="handleDelete(${item.id}); event.stopPropagation();">Ta bort</button></div>`;
             return row;
         }
 
+        // --- Resten av funktionerna (renderInventory, calculateRelevance, sortAndRender, m.fl.) är desamma ---
+        
         function renderInventory(data) {
             serviceArtiklarLista.innerHTML = '';
             motorChassiArtiklarLista.innerHTML = '';
@@ -237,8 +241,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const slutILager = data.filter(item => item.quantity <= 0);
 
             const serviceArtiklar = iLager.filter(item => item.category === 'Service');
-            // OBS: I det smarta sökfallet kommer alla artiklar att finnas i 'data' listan.
-            // För att visa alla matchande artiklar under de rätta rubrikerna måste vi filtrera BARA iLager.
             const motorChassiArtiklar = iLager.filter(item => item.category === 'Motor/Chassi' || item.category === 'Övrigt' || !item.category);
             const andraMarkenArtiklar = iLager.filter(item => item.category === 'Andra Märken');
 
@@ -263,46 +265,21 @@ document.addEventListener('DOMContentLoaded', () => {
             slutILagerSektion.style.display = slutILager.length > 0 ? 'block' : 'none';
         }
 
-        // KORRIGERING: Ny logik för Viktad Nyckelordssökning
         function calculateRelevance(item, searchWords) {
             let score = 0;
-            
-            // Konvertera artikelns text till en sträng för matchning
             const serviceFilter = (item.service_filter || '').toLowerCase();
             const name = (item.name || '').toLowerCase();
             const notes = (item.notes || '').toLowerCase();
             const category = (item.category || '').toLowerCase();
             
             searchWords.forEach(word => {
-                // Ta bort icke-alfanumeriska tecken för att få bättre matchningar på artikelnummer
                 const cleanWord = word.replace(/[^a-z0-9]/g, '');
-
-                // 1. Högst Prioritet: Artikelnummer (service_filter)
-                if (serviceFilter.includes(cleanWord)) {
-                    score += 5; 
-                }
-                
-                // 2. Hög Prioritet: Namn
-                if (name.includes(cleanWord)) {
-                    score += 3;
-                }
-                
-                // 3. Mellan Prioritet: Kategori
-                if (category.includes(cleanWord)) {
-                    score += 2;
-                }
-
-                // 4. Låg Prioritet: Anteckningar
-                if (notes.includes(cleanWord)) {
-                    score += 1;
-                }
-                
-                // Exakt matchning på hela artikeln
-                if (serviceFilter === cleanWord || name === cleanWord) {
-                     score += 5;
-                }
+                if (serviceFilter.includes(cleanWord)) { score += 5; }
+                if (name.includes(cleanWord)) { score += 3; }
+                if (category.includes(cleanWord)) { score += 2; }
+                if (notes.includes(cleanWord)) { score += 1; }
+                if (serviceFilter === cleanWord || name === cleanWord) { score += 5; }
             });
-
             return score;
         }
 
@@ -311,11 +288,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const searchTerm = searchInput.value.toLowerCase().trim();
             
             if (searchTerm === '') {
-                 // Om sökfältet är tomt, sortera hela lagret enligt standard
                 const sortedInventory = [...inventory].sort((a, b) => {
                     let aVal = a[currentSort.column];
                     let bVal = b[currentSort.column];
-
                     if (typeof aVal === 'string' && typeof bVal === 'string') {
                         return currentSort.direction === 'asc' ? aVal.localeCompare(bVal, 'sv') : bVal.localeCompare(aVal, 'sv');
                     } else {
@@ -326,16 +301,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // STEG 1: Rensa sökfrågan (Natural Language Processing light)
             const searchWords = searchTerm.split(/\s+/)
                                           .filter(word => word.length > 1 && !stopWords.includes(word));
             
-            // Lägg till sökordet som det är, för att få exakta fraser och nummer med i beräkningen
             if (searchWords.length === 0 && searchTerm.length > 0) {
                  searchWords.push(searchTerm);
             }
 
-            // STEG 2: Beräkna relevanspoäng och filtrera
             const scoredInventory = inventory
                 .map(item => ({
                     ...item,
@@ -343,14 +315,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 }))
                 .filter(item => item.relevanceScore > 0);
             
-            // STEG 3: Sortera - Högst Poäng FÖRST, sedan enligt användarens val (currentSort)
             const sortedAndFilteredInventory = scoredInventory.sort((a, b) => {
-                // Sortera PRIMÄRT efter relevans (fallande)
                 if (b.relevanceScore !== a.relevanceScore) {
                     return b.relevanceScore - a.relevanceScore;
                 }
-                
-                // Sortera SEKUNDÄRT efter den valda kolumnen (t.ex. 'name' eller 'price')
                 let aVal = a[currentSort.column];
                 let bVal = b[currentSort.column];
                 
@@ -365,9 +333,55 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         function applySearchFilter() {
-             // Lägg in en liten debounce (fördröjning) för bättre prestanda (se tips #22)
              clearTimeout(window.searchTimeout);
              window.searchTimeout = setTimeout(sortAndRender, 150);
+        }
+        
+        async function saveInventoryItem(itemData) {
+            const itemRef = doc(db, INVENTORY_COLLECTION, String(itemData.id));
+            await setDoc(itemRef, itemData);
+        }
+        
+        async function deleteInventoryItem(itemId) {
+            const itemRef = doc(db, INVENTORY_COLLECTION, String(itemId));
+            await deleteDoc(itemRef);
+        }
+        
+        function setupRealtimeListener() {
+            const q = collection(db, INVENTORY_COLLECTION);
+            
+            onSnapshot(q, (querySnapshot) => {
+                const tempInventory = [];
+                querySnapshot.forEach((doc) => {
+                    tempInventory.push(doc.data());
+                });
+                inventory = tempInventory;
+                applySearchFilter();
+                
+                const now = new Date();
+                syncStatusElement.textContent = `Synkroniserad ${now.toLocaleTimeString('sv-SE')}`;
+                syncStatusElement.style.color = 'var(--success-color)';
+            }, (error) => {
+                console.error("Realtime listener error: ", error);
+                syncStatusElement.textContent = `FEL: Se konsolen`;
+                syncStatusElement.style.color = 'var(--danger-color)';
+            });
+        }
+        
+        function toggleAddForm() {
+            const isCurrentlyOpen = addFormWrapper.classList.contains('open');
+            const newState = isCurrentlyOpen ? 'closed' : 'open';
+            addFormWrapper.classList.toggle('open');
+            toggleBtn.classList.toggle('open');
+            localStorage.setItem('add_form_open_state', newState);
+        }
+        
+        function initializeAddFormState() {
+            const storedState = localStorage.getItem('add_form_open_state');
+            if (storedState === 'open') {
+                 addFormWrapper.classList.add('open');
+                 toggleBtn.classList.add('open');
+            }
         }
 
         async function handleFormSubmit(event) {
@@ -389,7 +403,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 link: (formData.get('link') || '').trim(),
             };
             
-            await saveInventoryItem(newItem); // Väntar på att sparandet ska bli klart
+            await saveInventoryItem(newItem);
             
             addForm.reset();
             
@@ -440,10 +454,9 @@ document.addEventListener('DOMContentLoaded', () => {
             event.preventDefault();
 
             const submitBtn = editForm.querySelector('button[type="submit"]');
-            const originalText = submitBtn.textContent; // Spara originaltexten
+            const originalText = submitBtn.textContent;
             submitBtn.disabled = true;
             submitBtn.textContent = 'Sparar...';
-            // -------------------------
 
             const id = parseInt(editForm.querySelector('#edit-id').value, 10);
             const originalItem = inventory.find(i => i.id === id);
@@ -459,10 +472,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 link: editForm.querySelector('#edit-link').value.trim(),
             };
 
-            await saveInventoryItem(updatedItem); // Väntar på att sparandet ska bli klart
+            await saveInventoryItem(updatedItem);
             
             submitBtn.disabled = false;
-            submitBtn.textContent = originalText; // Återställ till det den var (t.ex. "Spara Ändringar" eller "Markera som Beställd")
+            submitBtn.textContent = originalText;
 
             closeEditModal();
         }
@@ -478,12 +491,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         window.capitalizeWords = function(inputElement) {
             let value = inputElement.value;
-            
-            // Detta tar varje ord, gör första bokstaven stor och behåller resten
             let transformedValue = value.split(' ').map(word => 
-                word.charAt(0).toUpperCase() + word.slice(1) // Notera: slice(1) lämnar resten av ordet som det är
+                word.charAt(0).toUpperCase() + word.slice(1)
             ).join(' ');
-            
             inputElement.value = transformedValue;
         }
         
@@ -520,35 +530,30 @@ document.addEventListener('DOMContentLoaded', () => {
         function initializeListeners() {
             addForm.addEventListener('submit', handleFormSubmit);
             editForm.addEventListener('submit', handleEditSubmit);
-            // KORRIGERING: Använd den nya debounced-funktionen
             searchInput.addEventListener('input', applySearchFilter); 
             toggleBtn.addEventListener('click', toggleAddForm);
 
-          // Hanterar synligheten av "X"-knappen i sökfältet
             searchInput.addEventListener('input', () => {
-    if (searchInput.value.length > 0) {
-        clearSearchBtn.style.display = 'block';
-    } else {
-        clearSearchBtn.style.display = 'none';
-    }
-});
+                if (searchInput.value.length > 0) {
+                    clearSearchBtn.style.display = 'block';
+                } else {
+                    clearSearchBtn.style.display = 'none';
+                }
+            });
 
-// Hanterar klick på "X"-knappen
-clearSearchBtn.addEventListener('click', () => {
-    searchInput.value = ''; // Töm fältet
-    clearSearchBtn.style.display = 'none'; // Göm knappen
-    applySearchFilter(); // Uppdatera listan (med tom sökning)
-    searchInput.focus(); // Sätt fokus tillbaka i sökfältet
-});
+            clearSearchBtn.addEventListener('click', () => {
+                searchInput.value = '';
+                clearSearchBtn.style.display = 'none';
+                applySearchFilter();
+                searchInput.focus();
+            });
 
-          document.querySelectorAll('.lager-container').forEach(container => {
+            document.querySelectorAll('.lager-container').forEach(container => {
                 container.addEventListener('scroll', () => {
-                    // Lägg till 'scrolled' klassen om vi har scrollat mer än 1px
                     container.classList.toggle('scrolled', container.scrollTop > 1);
                 });
             });
 
-            // Modal stängningslogik
             [editModal, confirmationModal].forEach(modal => {
                 modal.addEventListener('click', (e) => {
                     if (e.target === modal || e.target.classList.contains('close-btn')) {
@@ -557,29 +562,24 @@ clearSearchBtn.addEventListener('click', () => {
                 });
             });
             
-            // Sortering
             document.querySelectorAll('.header span[data-sort]').forEach(header => {
                 header.addEventListener('click', () => {
                     const column = header.getAttribute('data-sort');
                     const direction = (currentSort.column === column && currentSort.direction === 'asc') ? 'desc' : 'asc';
                     currentSort = { column, direction };
-                    // Använd den nya smarta sorteringsfunktionen
                     applySearchFilter(); 
                 });
             });
             
-            // Bekräftelsemodal-knappar
             document.getElementById('confirmYes').addEventListener('click', () => { if (confirmCallback) confirmCallback(true); closeConfirmationModal(); });
             document.getElementById('confirmNo').addEventListener('click', () => { if (confirmCallback) confirmCallback(false); closeConfirmationModal(); });
 
-            // Fällbara sektioner - KORRIGERING: Gör logiken för att hämta wrapper-ID mer robust
             document.querySelectorAll('.collapsible-header').forEach(header => {
                 header.addEventListener('click', () => {
-                    // Antar att wrapper-ID:t är header-ID:t + '-wrapper'
                     const wrapperId = header.id.replace('-titel', '-wrapper');
                     const wrapper = document.getElementById(wrapperId); 
                     
-                    if (!wrapper) return; // Avbryt om wrapper inte hittas
+                    if (!wrapper) return;
                     
                     const isClosed = header.getAttribute('data-state') === 'closed';
                     const newState = isClosed ? 'open' : 'closed';
@@ -589,7 +589,6 @@ clearSearchBtn.addEventListener('click', () => {
                 });
             });
 
-            // JSON-hantering
             document.getElementById('download-json-btn').addEventListener('click', () => {
                 const dataStr = JSON.stringify(inventory, null, 2);
                 const blob = new Blob([dataStr], {type: "application/json"});
@@ -605,9 +604,7 @@ clearSearchBtn.addEventListener('click', () => {
                         if(Array.isArray(uploadedInventory)) {
                             showCustomConfirmation(`Detta kommer att skriva över ${inventory.length} befintliga artiklar med ${uploadedInventory.length} artiklar från filen. Vill du fortsätta?`, async (result) => {
                                 if (result) {
-                                    // Ta bort allt gammalt först
                                     for (const item of inventory) { await deleteInventoryItem(item.id); }
-                                    // Spara det nya
                                     for (const item of uploadedInventory) { await saveInventoryItem(item); }
                                     showCustomAlert(`${uploadedInventory.length} artiklar uppladdade!`);
                                 }
@@ -623,21 +620,18 @@ clearSearchBtn.addEventListener('click', () => {
             });
         }
         
-        // KORRIGERING: Hantera det fällbara läget mer robust
         function initializeCollapseState() {
             document.querySelectorAll('.collapsible-header').forEach(header => {
                 const savedState = localStorage.getItem(header.id);
                 const wrapperId = header.id.replace('-titel', '-wrapper');
                 const wrapper = document.getElementById(wrapperId);
 
-                // Vi använder bara localStorage om det finns en sparad state
                 if (savedState === 'closed') {
                     header.setAttribute('data-state', 'closed');
                     if (wrapper) {
                         wrapper.classList.add('collapsed');
                     }
                 } 
-                // Om savedState INTE finns, eller om det är "open", gör vi ingenting (låter den vara öppen som standard)
             });
         }
 
