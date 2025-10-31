@@ -433,7 +433,7 @@
         <div id="add-form-wrapper">
             <form id="add-article-form">
                 <input type="text" name="service_filter" placeholder="Artikelnummer" required oninput="this.value = this.value.toUpperCase()">
-                <input type="text" name="name" placeholder="Namn" required oninput="capitalizeWords(this)">
+                <input type="text" name="name" placeholder="Namn" required oninput="this.value = this.value.toUpperCase()">
                 <input type="number" name="price" placeholder="Pris" step="0.01" required>
                 <input type="number" name="quantity" id="add-quantity" value="1" placeholder="Antal" required>
                 <select name="category" required>
@@ -583,6 +583,7 @@
 
 </body>
 </html>
+
 
 
 
