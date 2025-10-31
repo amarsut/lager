@@ -267,6 +267,9 @@
         transition: all 0.2s; 
         text-align: center; 
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); 
+        /* NYTT: För att <a>-taggar ska se ut som knappar */
+        text-decoration: none;
+        display: inline-block;
     }
     .lank-knapp:hover { 
         background-color: var(--primary-color); 
@@ -532,6 +535,100 @@
     background-color: #CC8400;
     border-color: #CC8400;
 }
+
+    /* --- STILAR FÖR NY GLOBAL SÖKRUTA --- */
+    .global-search-container {
+        background-color: var(--card-bg);
+        border-radius: 16px;
+        box-shadow: var(--card-shadow);
+        padding: 30px 35px;
+        margin-bottom: 40px;
+        border: 1px solid var(--border-color);
+    }
+    .global-search-container h3 {
+        margin-top: 0;
+        margin-bottom: 10px;
+        color: var(--primary-dark);
+        font-size: 1.5em;
+        font-weight: 700;
+    }
+    .global-search-container p {
+        margin-top: 0;
+        margin-bottom: 25px;
+        font-size: 0.95em;
+        color: var(--text-dark);
+    }
+    .global-search-wrapper {
+        display: flex;
+        gap: 15px;
+        width: 100%;
+    }
+    #global-search-input {
+        flex-grow: 1; /* Tar upp mestadels av platsen */
+        font-size: 1.1em; /* Större text */
+        padding: 16px 20px; /* Större padding */
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        background-color: var(--bg-light);
+        transition: all 0.2s;
+        box-sizing: border-box;
+    }
+    #global-search-input:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 4px rgba(90, 125, 255, 0.2);
+        background-color: white;
+        outline: none;
+    }
+    #global-search-btn {
+        padding: 16px 30px; /* Matcha höjden på input */
+        font-size: 1em;
+        flex-shrink: 0; /* Förhindra att knappen krymper */
+    }
+    .global-search-results-wrapper {
+        margin-top: 25px;
+        padding-top: 20px;
+        border-top: 2px solid var(--border-color);
+        position: relative;
+    }
+    .global-search-results-links {
+        display: flex;
+        flex-wrap: wrap; /* För mobil */
+        gap: 15px;
+    }
+    /* Återanvänd 'lank-knapp' stilen men gör den större och applicera färgerna */
+    .global-search-results-links .lank-knapp {
+        padding: 12px 20px;
+        font-size: 0.9em;
+        font-weight: 700;
+    }
+    #global-search-close-btn {
+        position: absolute;
+        top: 15px;
+        right: 0px;
+        background: none;
+        border: none;
+        font-size: 2em;
+        color: #999;
+        cursor: pointer;
+        line-height: 1;
+        padding: 0 5px;
+    }
+    #global-search-close-btn:hover {
+        color: var(--text-dark);
+    }
+    /* Media query för global sök */
+    @media (max-width: 768px) {
+        .global-search-container {
+             padding: 20px;
+        }
+        .global-search-wrapper {
+            flex-direction: column;
+        }
+        #global-search-btn {
+            width: 100%;
+        }
+    }
+    /* --- SLUT STILAR FÖR NY GLOBAL SÖKRUTA --- */
     </style>
 <link rel="manifest" href="./manifest.json">
     
@@ -544,6 +641,16 @@
     <div class="main-content">
         <h1>Lagerdata (Firebase)</h1>
 
+        <div class="global-search-container">
+            <h3>Jämför priser externt</h3>
+            <p>Skriv in ett artikelnummer för att generera sök-länkar till externa leverantörer.</p>
+            <div class="global-search-wrapper">
+                <input type="text" id="global-search-input" placeholder="Ange artikelnummer (t.ex. 12345-ABC)">
+                <button id="global-search-btn" class="btn-primary">Jämför</button>
+            </div>
+            <div id="global-search-results" class="global-search-results-wrapper" style="display: none;">
+                </div>
+        </div>
         <div class="controls-bar top-controls">
             <button id="toggle-add-form-btn" class="btn-primary" type="button">
                 Lägg till ny artikel <span id="toggle-icon-form">▼</span>
@@ -709,8 +816,3 @@
 
 </body>
 </html>
-
-
-
-
-
