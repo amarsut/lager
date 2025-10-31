@@ -448,6 +448,42 @@ document.addEventListener('DOMContentLoaded', () => {
                 }, 'Bekräfta Borttagning'
             );
         }
+
+      async function handleResetAllData() {
+            // Steg 1: Visa en strikt bekräftelse
+            showCustomConfirmation(
+                `
+                <strong style="color: var(--danger-color); font-size: 1.3em;">VARNING: Du håller på att radera all data permanent!</strong>
+                <br><br>
+                Vill du verkligen ta bort **${inventory.length}** artiklar från Firebase och rensa alla lokala inställningar (som sparat formulärläge och fällbara sektioner)?
+                `,
+                async (result) => {
+                    if (result) {
+                        try {
+                            // Steg 2: Ta bort alla dokument i Firebase
+                            const deletePromises = inventory.map(item => deleteDoc(doc(db, INVENTORY_COLLECTION, String(item.id))));
+                            await Promise.all(deletePromises);
+                            
+                            // Steg 3: Rensa LocalStorage
+                            localStorage.clear();
+                            
+                            // Steg 4: Slutmeddelande och siduppdatering
+                            showCustomAlert(`All data raderad och lokala inställningar rensade. Sidan kommer att ladda om...`, 'Återställning Klar');
+                            
+                            // Ge användaren tid att läsa meddelandet innan omladdning
+                            setTimeout(() => {
+                                window.location.reload(); 
+                            }, 2000); 
+
+                        } catch (error) {
+                            console.error("FEL vid återställning av data:", error);
+                            showCustomAlert(`Ett fel uppstod: ${error.message}`, 'Fel!');
+                        }
+                    }
+                }, 
+                'BEKRÄFTA ÅTERSTÄLLNING AV DATA' // Tydlig titel
+            );
+        }
         
         window.copyToClipboard = (text) => navigator.clipboard.writeText(text).then(() => showCustomAlert(`'${text}' har kopierats!`));
         
@@ -473,9 +509,10 @@ document.addEventListener('DOMContentLoaded', () => {
             // KORRIGERING: Använd den nya debounced-funktionen
             searchInput.addEventListener('input', applySearchFilter); 
             toggleBtn.addEventListener('click', toggleAddForm);
+            resetAllDataBtn.addEventListener('click', handleResetAllData); 
 
           // Hanterar synligheten av "X"-knappen i sökfältet
-searchInput.addEventListener('input', () => {
+            searchInput.addEventListener('input', () => {
     if (searchInput.value.length > 0) {
         clearSearchBtn.style.display = 'block';
     } else {
@@ -497,6 +534,16 @@ clearSearchBtn.addEventListener('click', () => {
                     container.classList.toggle('scrolled', container.scrollTop > 1);
                 });
             });
+
+          document.addEventListener('keydown', (e) => {
+            // Observera: 'e.code === "KeyR"' är pålitligare än e.key
+            if (e.ctrlKey && e.shiftKey && e.code === "KeyR") {
+                e.preventDefault(); // Förhindra webbläsarens standardomladdning
+                
+                // Anropa återställningsfunktionen
+                handleResetAllData();
+            }
+        });
 
             // Modal stängningslogik
             [editModal, confirmationModal].forEach(modal => {
@@ -606,6 +653,7 @@ clearSearchBtn.addEventListener('click', () => {
         }
     }
 });
+
 
 
 
