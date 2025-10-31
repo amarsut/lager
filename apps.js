@@ -101,6 +101,17 @@ document.addEventListener('DOMContentLoaded', () => {
             }).format(price);
         }
 
+        // NY FUNKTION: Genererar Aero M-länken (OBS: Antagen URL-struktur)
+        function generateAeroMLink(serviceFilter) {
+            if (!serviceFilter) return null;
+            
+            const searchFilter = serviceFilter.replace(/[\s-]/g, ''); 
+            const searchQuery = encodeURIComponent(searchFilter);
+            
+            // Antagen URL för Aero M
+            return `https://www.aerom.se/search?q=${searchQuery}`; 
+        }
+
         function generateTrodoLink(serviceFilter) {
             if (!serviceFilter) return null;
             
@@ -112,7 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return `https://www.trodo.se/catalogsearch/result/premium?filter[quality_group]=2&product_list_dir=asc&product_list_order=price&q=${searchQuery}`;
         }
         
-        // NY FUNKTION: Genererar Thansen-länken
+        // Befintlig funktion: Genererar Thansen-länken
         function generateThansenLink(serviceFilter) {
             if (!serviceFilter) return null;
             
@@ -120,7 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const searchFilter = serviceFilter.replace(/[\s-]/g, ''); 
             const searchQuery = encodeURIComponent(searchFilter);
             
-            // Thansen länkformat: https://www.thansen.se/bil/reservdelar/sok?query=ARTIKELNUMMER
+            // Thansen länkformat
             return `https://www.thansen.se/bil/reservdelar/sok?query=${searchQuery}`;
         }
         
@@ -155,6 +166,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const notesCell = `<span class="notes-cell" title="${item.notes || ''}">${item.notes || ''}</span>`;
             
             // NY LOGIK: Generera alla länknappar i en container
+            const aeroMLink = generateAeroMLink(item.service_filter); 
             const trodoLink = generateTrodoLink(item.service_filter);
             const thansenLink = generateThansenLink(item.service_filter);
             
@@ -165,13 +177,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 linkButtonsHTML += `<button class="lank-knapp" onclick="window.open('${item.link}', '_blank'); event.stopPropagation();">Egen Länk</button>`;
             }
             
-            // 2. Trodo-knapp (baserat på service_filter)
-            if (trodoLink) {
-                // Vi använder 'aero-m-btn' här som en placeholder/befintlig stil för att få den att sticka ut
-                linkButtonsHTML += `<button class="lank-knapp aero-m-btn" onclick="window.open('${trodoLink}', '_blank'); event.stopPropagation();">Trodo</button>`;
+            // 2. NYTT: Aero M-knapp (återställd och använder .aero-m-btn stilen)
+            if (aeroMLink) {
+                linkButtonsHTML += `<button class="lank-knapp aero-m-btn" onclick="window.open('${aeroMLink}', '_blank'); event.stopPropagation();">Aero M</button>`;
             }
             
-            // 3. NYTT: Thansen-knapp (baserat på service_filter)
+            // 3. Trodo-knapp (standardstil, kan stajlas med .trodo-btn om önskas)
+            if (trodoLink) {
+                // Jag lägger till 'trodo-btn' här så att du kan ge den en unik stil i CSS om du vill
+                linkButtonsHTML += `<button class="lank-knapp trodo-btn" onclick="window.open('${trodoLink}', '_blank'); event.stopPropagation();">Trodo</button>`;
+            }
+            
+            // 4. Thansen-knapp
             if (thansenLink) {
                 linkButtonsHTML += `<button class="lank-knapp thansen-btn" onclick="window.open('${thansenLink}', '_blank'); event.stopPropagation();">Thansen</button>`;
             }
@@ -180,8 +197,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const linkCellContent = linkButtonsHTML ? `<div class="link-buttons">${linkButtonsHTML}</div>` : `<span>(Saknas)</span>`;
 
             // UPPDATERING: Den primära sökikonen (förstoringsglaset) på artikelnumret ska länka till den mest relevanta/första länken.
-            const primarySearchLink = item.link || trodoLink;
-            const primarySearchText = item.link ? 'Länk' : 'Trodo';
+            const primarySearchLink = item.link || aeroMLink || trodoLink;
+            const primarySearchText = item.link ? 'Egen Länk' : (aeroMLink ? 'Aero M' : 'Trodo');
 
             const searchButton = primarySearchLink ? 
                 `<button class="search-btn" onclick="window.open('${primarySearchLink}', '_blank'); event.stopPropagation();" title="Sök på ${primarySearchText}">
