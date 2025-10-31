@@ -191,7 +191,11 @@
         /* Sökfältet tar redan 100% bredd, vilket är korrekt */
         #search-input { 
             width: 100%; 
-            margin-top: 15px; 
+            /* margin-top: 15px; */ /* <-- TA BORT DENNA */
+        }
+        .search-wrapper { 
+            width: 100%;
+            margin-top: 15px; /* <-- LÄGG TILL DENNA */
         }
     }
         
@@ -333,10 +337,11 @@
         /* Sökfältet tar redan 100% bredd, vilket är korrekt */
         #search-input { 
             width: 100%; 
-            margin-top: 15px; 
+            /* margin-top: 15px; */ /* <-- DENNA ÄR BORTTAGEN */
         }
         .search-wrapper { 
-            width: 100%; 
+            width: 100%;
+            margin-top: 15px; /* <-- OCH FLYTTAD HIT */
         }
     }
         .search-btn {
@@ -544,13 +549,3 @@
 
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
