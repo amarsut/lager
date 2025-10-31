@@ -322,6 +322,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         async function handleFormSubmit(event) {
             event.preventDefault();
+            
+            const submitBtn = addForm.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Sparar...';
+
             const formData = new FormData(addForm);
             const newItem = {
                 id: Date.now(), 
@@ -333,8 +338,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 notes: (formData.get('notes') || '').trim(),
                 link: (formData.get('link') || '').trim(),
             };
-            await saveInventoryItem(newItem);
+            
+            await saveInventoryItem(newItem); // Väntar på att sparandet ska bli klart
+            
             addForm.reset();
+            
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Spara Artikel';
+
             if (addFormWrapper.classList.contains('open')) {
                 toggleAddForm(); 
             }
@@ -377,6 +388,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         async function handleEditSubmit(event) {
             event.preventDefault();
+
+            const submitBtn = editForm.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent; // Spara originaltexten
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Sparar...';
+            // -------------------------
+
             const id = parseInt(editForm.querySelector('#edit-id').value, 10);
             const originalItem = inventory.find(i => i.id === id);
             
@@ -390,7 +408,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 notes: editForm.querySelector('#edit-notes').value.trim(),
                 link: editForm.querySelector('#edit-link').value.trim(),
             };
-            await saveInventoryItem(updatedItem);
+
+            await saveInventoryItem(updatedItem); // Väntar på att sparandet ska bli klart
+            
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText; // Återställ till det den var (t.ex. "Spara Ändringar" eller "Markera som Beställd")
+
             closeEditModal();
         }
         
@@ -572,4 +595,5 @@ clearSearchBtn.addEventListener('click', () => {
         }
     }
 });
+
 
