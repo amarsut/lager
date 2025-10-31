@@ -2,7 +2,7 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebas
 import { getAuth, signInAnonymously, signInWithCustomToken } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
 import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection, query, setLogLevel, getDoc } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
-// Globala variabler för Canvas-miljön
+// Globala variabler för Canvas-miljön (MÅSTE ANVÄNDAS)
 const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
 const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
@@ -21,11 +21,10 @@ let userId = null;
 
 /**
  * Hämtar den korrekta sökvägen till Firestore-samlingen för inventering.
- * Använder en offentlig sökväg för enkelhet i detta exempel.
+ * Använder en offentlig sökväg: /artifacts/{appId}/public/data/inventory
  * @returns {object} Firestore Collection Reference
  */
 const getInventoryCollection = () => {
-    // Sökväg för offentlig delning: /artifacts/{appId}/public/data/inventory
     return collection(db, 'artifacts', appId, 'public', 'data', 'inventory');
 };
 
@@ -103,7 +102,7 @@ const convertToCSV = (data) => {
             item.notes || '',
             item.link || ''
         ];
-        // Ersätt semikolon i strängar för att undvika problem (enkla citattecken behövs i en riktig CSV-lösning)
+        // Ersätt semikolon i strängar för att undvika problem
         csvRows.push(values.map(val => (typeof val === 'string' ? val.replace(/;/g, ',') : val)).join(';'));
     }
 
@@ -123,11 +122,10 @@ const createProductListItem = (product) => {
         ? `<button class="action-btn link-btn" onclick="window.open('${link}', '_blank')">Länk</button>`
         : '';
 
-    // Länk till Trodo: ersätter ALLT utom siffror och bokstäver med bindestreck.
-    const trodoLink = `https://www.trodo.se/catalogsearch/result/?q=${articleNumber.replace(/[^a-zA-Z0-9]/g, '-')}`;
-    
-    // Länk till Aero M (Exempelartikel 06J115403A):
-    const aeroMLink = `https://www.aero-m.se/search/?q=${articleNumber.replace(/[^a-zA-Z0-9]/g, '-')}`;
+    // Sanera artikelnummer: ersätter ALLT utom siffror och bokstäver med bindestreck.
+    const safeArticleNumber = articleNumber.replace(/[^a-zA-Z0-9]/g, '-');
+    const trodoLink = `https://www.trodo.se/catalogsearch/result/?q=${safeArticleNumber}`;
+    const aeroMLink = `https://www.aero-m.se/search/?q=${safeArticleNumber}`;
 
     // Visa popup-knappen används för att visa detaljer
     const showDetailsButton = `<button class="action-btn" data-id="${id}" onclick="showProductPopup('${id}')">Detaljer</button>`;
@@ -197,7 +195,7 @@ const renderInventory = () => {
 
         html += `
             <div class="category-wrapper">
-                <h2 id="${categoryId}-titel" class="collapsible-header" data-state="${isCollapsed ? 'closed' : 'open'}">
+                <h2 id="${categoryId}-titel" class="collapsible-header" data-state="${isCollapsed ? 'closed' : 'open'}" onclick="toggleCollapsible(this)">
                     ${categoryName} (${categoryProducts.length})
                     <span id="${categoryId}-icon">${arrow}</span>
                 </h2>
@@ -212,6 +210,32 @@ const renderInventory = () => {
 
     container.innerHTML = html;
 };
+
+// Global funktion för att hantera collapse (anropas direkt från HTML)
+window.toggleCollapsible = (header) => {
+    const wrapperId = header.id.replace('-titel', '-wrapper');
+    const wrapper = document.getElementById(wrapperId);
+    const icon = header.querySelector('span');
+
+    if (!wrapper || !icon) return;
+    
+    const isClosed = wrapper.classList.contains('collapsed');
+
+    if (isClosed) {
+        // Öppna
+        wrapper.classList.remove('collapsed');
+        icon.innerHTML = '^';
+        header.setAttribute('data-state', 'open');
+        localStorage.setItem(header.id, 'open');
+    } else {
+        // Stäng
+        wrapper.classList.add('collapsed');
+        icon.innerHTML = '&#9660;';
+        header.setAttribute('data-state', 'closed');
+        localStorage.setItem(header.id, 'closed');
+    }
+}
+
 
 /**
  * Filterfunktion som körs vid sökning/kategorifiltrering.
@@ -233,7 +257,7 @@ const filterProducts = () => {
     });
     
     // Sortera resultaten efter namn
-    filteredProducts.sort((a, b) => a.name.localeCompare(b.name, 'sv'));
+    filteredProducts.sort((a, b) => a.name.name.localeCompare(b.name, 'sv'));
 
     if (filteredProducts.length > 0) {
         searchResults.innerHTML = `
@@ -418,8 +442,7 @@ const initializeListeners = () => {
             link: form.link.value.trim()
         };
         
-        // Generera ett nytt ID (Firestore genererar ID automatiskt vid addDoc, men vi använder setDoc/doc i detta fall)
-        // Vi skapar ID't här om det behövs
+        // Generera ett nytt ID
         const newId = doc(getInventoryCollection()).id; 
         
         await saveProduct(newId, productData);
@@ -464,43 +487,16 @@ const initializeListeners = () => {
         }
     });
 
-    // 4. Fällbara Paneler (Collapse)
-    document.querySelectorAll('.collapsible-header').forEach(header => {
-        header.addEventListener('click', (e) => {
-            const wrapperId = header.id.replace('-titel', '-wrapper');
-            const wrapper = document.getElementById(wrapperId);
-            const icon = header.querySelector('span');
-
-            if (!wrapper || !icon) return;
-            
-            const isClosed = wrapper.classList.contains('collapsed');
-
-            if (isClosed) {
-                // Öppna
-                wrapper.classList.remove('collapsed');
-                icon.innerHTML = '^';
-                header.setAttribute('data-state', 'open');
-                localStorage.setItem(header.id, 'open');
-            } else {
-                // Stäng
-                wrapper.classList.add('collapsed');
-                icon.innerHTML = '&#9660;';
-                header.setAttribute('data-state', 'closed');
-                localStorage.setItem(header.id, 'closed');
-            }
-        });
-    });
-
-    // 5. Sök och Filtrering
+    // 4. Sök och Filtrering
     document.getElementById('searchQuery').addEventListener('input', filterProducts);
     document.getElementById('filterCategory').addEventListener('change', filterProducts);
 
-    // 6. Import/Export
+    // 5. Import/Export
     document.getElementById('exportData').addEventListener('click', () => {
         // Hämta alla produkter
         const dataToExport = Object.values(products);
 
-        // Lägg till userId i exporten för att spara kontext
+        // Lägg till metadata i exporten
         const exportObject = {
             metadata: {
                 timestamp: new Date().toISOString(),
@@ -535,7 +531,7 @@ const initializeListeners = () => {
         reader.onload = async (e) => {
             try {
                 const importContent = JSON.parse(e.target.result);
-                let importedProducts = importContent.data || importContent; // Stödjer både den nya strukturen och den gamla (endast data-array)
+                let importedProducts = importContent.data || importContent; 
                 
                 if (!Array.isArray(importedProducts)) {
                     throw new Error("Importerad fil är inte en giltig produktlista.");
@@ -572,9 +568,11 @@ const initializeListeners = () => {
  * Initialiserar det fällbara läget för paneler (från localStorage).
  */
 const initializeCollapseState = () => {
+    // VIKTIGT: Lägg till klicklyssnare för att hantera collapse HÄR, eftersom de genereras dynamiskt av renderInventory()
+    // Detta hanteras nu av window.toggleCollapsible som anropas via onclick i renderInventory, vilket är mer robust.
+    
     document.querySelectorAll('.collapsible-header').forEach(header => {
-        const categoryId = header.id.replace('-titel', '');
-        const wrapperId = `${categoryId}-wrapper`;
+        const wrapperId = header.id.replace('-titel', '-wrapper');
         const wrapper = document.getElementById(wrapperId);
 
         const savedState = localStorage.getItem(header.id);
@@ -587,7 +585,6 @@ const initializeCollapseState = () => {
                 if (icon) icon.innerHTML = '&#9660;';
             }
         } 
-        // Annars är den 'open' som standard (eller vid ingen sparad state)
     });
 };
 
@@ -638,10 +635,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (initialAuthToken) {
             await signInWithCustomToken(auth, initialAuthToken);
         } else {
+            // Använder anonym inloggning om ingen token finns
             await signInAnonymously(auth);
         }
         
         // Hämta användar-ID efter inloggning
+        // Används för att skapa en unik sökväg till datan
         userId = auth.currentUser?.uid || crypto.randomUUID();
         
         // KÖR ALLT I ORDNING
@@ -652,6 +651,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     } catch (e) {
         console.error("App Initialization Error:", e);
-        showStatus("FEL: Initieringsfel! Kontrollera konsolen.", 'var(--danger-color)');
+        showStatus("FEL: Initieringsfel! Kontrollera konsolen för detaljer.", 'var(--danger-color)');
     }
 });
