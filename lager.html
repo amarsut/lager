@@ -406,8 +406,30 @@
 .artikel-rad:hover > div:last-child {
     background-color: #f8faff; /* Samma hover-färg som raden */
 }
-
-/* ------------------------------- */
+        /* Ny stil för Återställ-knappen (baserad på din bild) */
+    .btn-reset {
+        padding: 15px 25px;
+        background-color: var(--danger-color); /* Använder röd färg från :root */
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        box-sizing: border-box; 
+        font-size: 1.1em; /* Gör den lite större som i bilden */
+        margin-top: 40px; /* Separerar den från andra element */
+    }
+    .btn-reset:hover {
+        background-color: #d32f2f; /* Mörkare röd */
+        transform: translateY(-1px);
+    }
+    .btn-reset:active {
+        transform: translateY(1px);
+    }
     </style>
 <link rel="manifest" href="./manifest.json">
     
@@ -581,10 +603,15 @@
         <iframe id="productIframe" src="" frameborder="0"></iframe>
     </div>
 
+        <button id="reset-all-data-btn" class="btn-reset" type="button" style="width: 100%; max-width: 500px; margin-left: auto; margin-right: auto; display: block;">
+            Återställ till Kodens Lagerlista (Rensar all sparad data)
+        </button>
+
     <script type="module" src="apps.js"></script>
 
 </body>
 </html>
+
 
 
 
