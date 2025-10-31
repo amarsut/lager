@@ -425,6 +425,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 await saveInventoryItem(updatedItem);
             }
         }
+
+        window.capitalizeWords = function(inputElement) {
+            let value = inputElement.value;
+            
+            // Detta tar varje ord, gör första bokstaven stor och behåller resten
+            let transformedValue = value.split(' ').map(word => 
+                word.charAt(0).toUpperCase() + word.slice(1) // Notera: slice(1) lämnar resten av ordet som det är
+            ).join(' ');
+            
+            inputElement.value = transformedValue;
+        }
         
         window.handleDelete = function(id) {
             const item = inventory.find(i => i.id === id);
@@ -595,5 +606,6 @@ clearSearchBtn.addEventListener('click', () => {
         }
     }
 });
+
 
 
