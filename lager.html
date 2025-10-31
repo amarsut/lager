@@ -429,6 +429,80 @@
 .artikel-rad:hover > div:last-child {
     background-color: #f8faff; /* Samma hover-färg som raden */
 }
+        /* --- LÄNK-KNAPPAR OCH DROPDOWN STYLING --- */
+
+/* Container för Mer-knappen (Måste vara relative för att positionera dropdownen) */
+.link-dropdown-container {
+    position: relative;
+    display: inline-block;
+    margin-left: 5px; /* Litet avstånd från Trodo-knappen */
+}
+
+/* Stilen för Dropdown-menyn */
+.dropdown-menu {
+    display: none; /* Döljs som standard */
+    position: absolute;
+    right: 0; /* Positionera till höger om "Mer"-knappen */
+    top: 100%; /* Positionera under "Mer"-knappen */
+    z-index: 10;
+    min-width: 120px;
+    background-color: var(--card-bg); /* Vit bakgrund */
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+    padding: 5px;
+    margin-top: 5px; /* Litet mellanrum till Mer-knappen */
+    flex-direction: column; /* Knappar ska ligga vertikalt */
+}
+
+/* Visar menyn när klassen 'visible' läggs till av JS */
+.dropdown-menu.visible {
+    display: flex;
+}
+
+/* Styla knapparna inuti dropdownen */
+.dropdown-menu .lank-knapp {
+    width: 100%;
+    margin-bottom: 3px;
+    text-align: left;
+    padding: 8px 12px;
+    font-size: 0.85em;
+    border: none; /* Inga ramar inuti menyn */
+    transition: background-color 0.1s;
+}
+
+/* Färger för länkknapparna inuti dropdownen (använd samma färger som du hade) */
+.dropdown-menu .aero-m-btn { background-color: #4CAF50; color: white; }
+.dropdown-menu .aero-m-btn:hover { background-color: #388E3C; }
+
+.dropdown-menu .thansen-btn { background-color: #008080; color: white; }
+.dropdown-menu .thansen-btn:hover { background-color: #006060; }
+
+.dropdown-menu .egen-lank-btn { background-color: #5a7dff; color: white; } /* Primärfärg för egen länk */
+.dropdown-menu .egen-lank-btn:hover { background-color: #3a57e8; }
+
+
+/* Stil för Mer-knappen */
+.more-btn {
+    background-color: #e0e0e0;
+    color: var(--text-dark);
+    font-size: 0.8em;
+    padding: 6px 10px;
+}
+.more-btn:hover {
+    background-color: #cccccc;
+}
+
+/* Standardstilen för Trodo-knappen (visas direkt) */
+.trodo-btn {
+    background-color: #FFA500;
+    color: white;
+    border: 1px solid #FFA500;
+}
+.trodo-btn:hover {
+    background-color: #CC8400;
+    border-color: #CC8400;
+}
     </style>
 <link rel="manifest" href="./manifest.json">
     
@@ -606,5 +680,6 @@
 
 </body>
 </html>
+
 
 
