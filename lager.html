@@ -399,7 +399,7 @@
         <div id="add-form-wrapper">
             <form id="add-article-form">
                 <input type="text" name="service_filter" placeholder="Artikelnummer" required oninput="this.value = this.value.toUpperCase()">
-                <input type="text" name="name" placeholder="Namn" required>
+                <input type="text" name="name" placeholder="Namn" required oninput="capitalizeWords(this)">
                 <input type="number" name="price" placeholder="Pris" step="0.01" required>
                 <input type="number" name="quantity" id="add-quantity" value="1" placeholder="Antal" required>
                 <select name="category" required>
@@ -509,7 +509,7 @@
                 <label for="edit-service_filter">Artikelnummer</label>
                 <input type="text" name="service_filter" id="edit-service_filter" required oninput="this.value = this.value.toUpperCase()">
                 <label for="edit-name">Namn</label>
-                <input type="text" name="name" id="edit-name" required>
+                <input type="text" name="name" id="edit-name" required oninput="capitalizeWords(this)">
                 <label for="edit-price">Pris</label>
                 <input type="number" name="price" id="edit-price" step="0.01" required>
                 <label for="edit-quantity">Antal</label>
@@ -549,4 +549,5 @@
 
 </body>
 </html>
+
 
