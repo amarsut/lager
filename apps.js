@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const editForm = document.getElementById('edit-article-form');
         const confirmationModal = document.getElementById('confirmationModal');
         const syncStatusElement = document.getElementById('sync-status');
-        const clearSearchBtn = document.getElementById('clear-search-btn'); // <-- LÄGG TILL DENNA RAD
+        const clearSearchBtn = document.getElementById('clear-search-btn'); 
         
         // GLOBALA VARIABLER
         let inventory = []; 
@@ -108,27 +108,22 @@ document.addEventListener('DOMContentLoaded', () => {
             const searchFilter = serviceFilter.replace(/[\s-]/g, ''); 
             const searchQuery = encodeURIComponent(searchFilter);
             
-            // Denna länk är baserad på "PREMIUM"-exemplet från din bild.
-            // Den lägger till /premium/ i sökvägen, sorterar efter pris (asc)
-            // och sätter filter[quality_group]=2.
+            // Trodo länk
             return `https://www.trodo.se/catalogsearch/result/premium?filter[quality_group]=2&product_list_dir=asc&product_list_order=price&q=${searchQuery}`;
         }
         
-        // --- NY FUNKTION FÖR AEROMOTORS LÄNK ---
-        function generateAeroMLink(serviceFilter) {
+        // NY FUNKTION: Genererar Thansen-länken
+        function generateThansenLink(serviceFilter) {
             if (!serviceFilter) return null;
-
+            
             // Tar bort alla mellanslag och bindestreck för att få en ren artikelnummer-sträng.
             const searchFilter = serviceFilter.replace(/[\s-]/g, ''); 
+            const searchQuery = encodeURIComponent(searchFilter);
             
-            // Använder länkmönstret från användarens exempel:
-            // https://aeromotors.se/sok?s=06J115403A&layered_id_feature_1586%5B8%5D=3&sort_by=price.asc
-            const baseUrl = `https://aeromotors.se/sok?`;
-            const staticParams = `layered_id_feature_1586%5B8%5D=3&sort_by=price.asc`;
-
-            return `${baseUrl}s=${searchFilter}&${staticParams}`;
+            // Thansen länkformat: https://www.thansen.se/bil/reservdelar/sok?query=ARTIKELNUMMER
+            return `https://www.thansen.se/bil/reservdelar/sok?query=${searchQuery}`;
         }
-
+        
         function toggleAddForm() {
             const isCurrentlyOpen = addFormWrapper.classList.contains('open');
             const newState = isCurrentlyOpen ? 'closed' : 'open';
@@ -155,37 +150,41 @@ document.addEventListener('DOMContentLoaded', () => {
             const statusClass = item.quantity > 0 ? 'i-lager' : 'slut';
             const statusText = item.quantity > 0 ? 'I lager' : 'Slut';
             
-            // Hämta AeroM-länk
-            const aeroMLink = generateAeroMLink(item.service_filter);
-            
-            // Hantera den primära länken (antingen custom link, eller Trodo som fallback)
-            let primaryLinkToUse = item.link || generateTrodoLink(item.service_filter);
-            let primaryLinkText = item.link ? 'Länk' : 'Trodo';
-
-            // Skapa HTML för den primära länken
-            const primaryLinkContent = primaryLinkToUse ? 
-                `<button class="lank-knapp" onclick="window.open('${primaryLinkToUse}', '_blank'); event.stopPropagation();">${primaryLinkText}</button>` : 
-                `<span>(Saknas)</span>`;
-            
-            // Skapa HTML för AeroM-knappen
-            const aeroMLinkContent = aeroMLink ? 
-                `<button class="lank-knapp aero-m-btn" onclick="window.open('${aeroMLink}', '_blank'); event.stopPropagation();">AeroM</button>` : 
-                ''; // Visa inte knappen om ingen artikelnummer finns
-                
-            // Kombinera länkarna i en container för att säkerställa att de visas bredvid varandra
-            const linkContainer = `<span class="link-buttons">${primaryLinkContent}${aeroMLinkContent}</span>`;
-
             const quantityCell = `<div class="quantity-cell"><button class="qty-btn" onclick="adjustQuantity(${item.id}, -1); event.stopPropagation();">-</button><span>${item.quantity}</span><button class="qty-btn" onclick="adjustQuantity(${item.id}, 1); event.stopPropagation();">+</button></div>`;
             const editButton = isOutOfStock ? `<button class="edit-btn order-btn" onclick="handleEdit(${item.id}, true); event.stopPropagation();">Beställ</button>` : `<button class="edit-btn" onclick="handleEdit(${item.id}); event.stopPropagation();">Ändra</button>`;
             const notesCell = `<span class="notes-cell" title="${item.notes || ''}">${item.notes || ''}</span>`;
             
-            // Hantera vilken länk förstoringsglaset ska använda (Trodo-länk om ingen custom länk finns)
-            let searchLinkToUse = primaryLinkToUse; 
-            let searchLinkText = primaryLinkToUse ? primaryLinkText : ''; 
+            // NY LOGIK: Generera alla länknappar i en container
+            const trodoLink = generateTrodoLink(item.service_filter);
+            const thansenLink = generateThansenLink(item.service_filter);
+            
+            let linkButtonsHTML = '';
+            
+            // 1. Användar-angiven Länk ("Egen Länk")
+            if (item.link) {
+                linkButtonsHTML += `<button class="lank-knapp" onclick="window.open('${item.link}', '_blank'); event.stopPropagation();">Egen Länk</button>`;
+            }
+            
+            // 2. Trodo-knapp (baserat på service_filter)
+            if (trodoLink) {
+                // Vi använder 'aero-m-btn' här som en placeholder/befintlig stil för att få den att sticka ut
+                linkButtonsHTML += `<button class="lank-knapp aero-m-btn" onclick="window.open('${trodoLink}', '_blank'); event.stopPropagation();">Trodo</button>`;
+            }
+            
+            // 3. NYTT: Thansen-knapp (baserat på service_filter)
+            if (thansenLink) {
+                linkButtonsHTML += `<button class="lank-knapp thansen-btn" onclick="window.open('${thansenLink}', '_blank'); event.stopPropagation();">Thansen</button>`;
+            }
+            
+            // Kolumnens innehåll
+            const linkCellContent = linkButtonsHTML ? `<div class="link-buttons">${linkButtonsHTML}</div>` : `<span>(Saknas)</span>`;
 
-            // Förstoringsglas-knappen (använder primaryLinkToUse, vilket är item.link ELLER Trodo-länken)
-            const searchButton = searchLinkToUse ? 
-                `<button class="search-btn" onclick="window.open('${searchLinkToUse}', '_blank'); event.stopPropagation();" title="Sök på ${searchLinkText}">
+            // UPPDATERING: Den primära sökikonen (förstoringsglaset) på artikelnumret ska länka till den mest relevanta/första länken.
+            const primarySearchLink = item.link || trodoLink;
+            const primarySearchText = item.link ? 'Länk' : 'Trodo';
+
+            const searchButton = primarySearchLink ? 
+                `<button class="search-btn" onclick="window.open('${primarySearchLink}', '_blank'); event.stopPropagation();" title="Sök på ${primarySearchText}">
                     <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>
                 </button>` : 
                 '';
@@ -205,7 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 ${quantityCell}
                 <span style="display: flex; align-items: center;"><span class="${statusClass}">${statusText}</span></span>
                 ${notesCell}
-                <span class="action-cell">${linkContainer}</span> 
+                <span class="action-cell">${linkCellContent}</span>
                 <div class="action-buttons">${editButton}<button class="delete-btn" onclick="handleDelete(${item.id}); event.stopPropagation();">Ta bort</button></div>`;
             return row;
         }
@@ -640,4 +639,3 @@ clearSearchBtn.addEventListener('click', () => {
         }
     }
 });
-
