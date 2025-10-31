@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const searchFilter = serviceFilter.replace(/[\s-]/g, ''); 
             // Observera 'sök' i URL:en och inte 'search'.
             // Den här strukturen baseras på dina exempellänkar.
-            return `https://aeromotors.se/sok?s=${searchFilter}&layered_id_feature_1586%5B%5D=&sort_by=price.asc`; 
+            return `https://aeromotors.se/sok?s=${searchFilter}&layered_id_feature_1586%5B%5D=3&sort_by=price.asc`; 
         }
 
         function generateTrodoLink(serviceFilter) {
@@ -662,5 +662,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
+
 
 
