@@ -48,6 +48,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const syncStatusElement = document.getElementById('sync-status');
         const clearSearchBtn = document.getElementById('clear-search-btn'); 
         
+        // NYA DOM-ELEMENT FÖR GLOBAL SÖK
+        const globalSearchInput = document.getElementById('global-search-input');
+        const globalSearchBtn = document.getElementById('global-search-btn');
+        const globalSearchResults = document.getElementById('global-search-results');
+        
         // GLOBALA VARIABLER
         let inventory = []; 
         let selectedItemId = null;
@@ -121,6 +126,61 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
+
+        // ----------------------------------------------------------------------
+        // NY GLOBAL PRISJÄMFÖRELSE-FUNKTION
+        // ----------------------------------------------------------------------
+        function handleGlobalSearch() {
+            const searchTerm = globalSearchInput.value.trim().toUpperCase();
+            if (searchTerm === '') {
+                globalSearchResults.innerHTML = '';
+                globalSearchResults.style.display = 'none';
+                return;
+            }
+            
+            // Använd samma länk-logik som i createInventoryRow
+            const trodoLink = generateTrodoLink(searchTerm);
+            const aeroMLink = generateAeroMLink(searchTerm); 
+            const thansenLink = generateThansenLink(searchTerm);
+            
+            let resultsHTML = '<div class="global-search-results-links">';
+            let hasLinks = false;
+
+            if (trodoLink) {
+                resultsHTML += `<a href="${trodoLink}" target="_blank" class="lank-knapp trodo-btn">Sök på Trodo</a>`;
+                hasLinks = true;
+            }
+            if (aeroMLink) {
+                resultsHTML += `<a href="${aeroMLink}" target="_blank" class="lank-knapp aero-m-btn">Sök på Aero M</a>`;
+                hasLinks = true;
+            }
+            if (thansenLink) {
+                resultsHTML += `<a href="${thansenLink}" target="_blank" class="lank-knapp thansen-btn">Sök på Thansen</a>`;
+                hasLinks = true;
+            }
+            
+            resultsHTML += '</div>';
+            
+            // Lägg till en stängningsknapp
+            resultsHTML += '<button id="global-search-close-btn" title="Stäng resultat">&times;</button>';
+            
+            if (hasLinks) {
+                globalSearchResults.innerHTML = resultsHTML;
+                globalSearchResults.style.display = 'block';
+                
+                // Lägg till event listener för den nya stängningsknappen
+                document.getElementById('global-search-close-btn').addEventListener('click', () => {
+                    globalSearchResults.innerHTML = '';
+                    globalSearchResults.style.display = 'none';
+                    // globalSearchInput.value = ''; // Avkommentera om du vill rensa fältet
+                });
+            } else {
+                // Om inga länkar kunde genereras
+                globalSearchResults.innerHTML = '';
+                globalSearchResults.style.display = 'none';
+            }
+        }
+
         // ----------------------------------------------------------------------
         // GRÄNSSNITT OCH HUVUDFUNKTIONER
         // ----------------------------------------------------------------------
@@ -151,8 +211,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // 1. Primär länk: Trodo (visas direkt)
             if (trodoLink) {
-                // Notera den nya klassen 'trodo-main-btn' för att få rätt design
-                primaryButtonHTML = `<button class="lank-knapp trodo-main-btn" onclick="window.open('${trodoLink}', '_blank'); event.stopPropagation();">Trodo</button>`;
+                // Notera den nya klassen 'trodo-btn' (inte 'trodo-main-btn' som var fel i din fil)
+                primaryButtonHTML = `<button class="lank-knapp trodo-btn" onclick="window.open('${trodoLink}', '_blank'); event.stopPropagation();">Trodo</button>`;
             }
 
             // 2. Sekundära länkar (läggs i Mer-menyn)
@@ -545,6 +605,16 @@ document.addEventListener('DOMContentLoaded', () => {
             searchInput.addEventListener('input', applySearchFilter); 
             toggleBtn.addEventListener('click', toggleAddForm);
 
+            // NYA LYSSNARE FÖR GLOBAL SÖK
+            globalSearchBtn.addEventListener('click', handleGlobalSearch);
+            globalSearchInput.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter') {
+                    event.preventDefault(); // Förhindra formulär-submit
+                    handleGlobalSearch();
+                }
+            });
+            // SLUT NYA LYSSNARE
+
             searchInput.addEventListener('input', () => {
                 if (searchInput.value.length > 0) {
                     clearSearchBtn.style.display = 'block';
@@ -662,6 +732,3 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
-
-
-
