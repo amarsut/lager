@@ -116,6 +116,16 @@ document.addEventListener('DOMContentLoaded', () => {
             dropdown.classList.toggle('visible');
         };
 
+        // --- 1. NY FUNKTION HÄR ---
+        // NY global funktion för att stänga en specifik dropdown
+        window.closeDropdown = function(dropdownId) {
+            const dropdown = document.getElementById(dropdownId);
+            if (dropdown) {
+                dropdown.classList.remove('visible');
+            }
+        };
+        // --- SLUT NY FUNKTION ---
+
         // Lyssnare för att stänga dropdowns när man klickar utanför (globalt i dokumentet)
         document.addEventListener('click', (event) => {
             // Kontrollera om klicket var inuti en 'link-dropdown-container' eller inte
@@ -146,16 +156,17 @@ document.addEventListener('DOMContentLoaded', () => {
             let resultsHTML = '<div class="global-search-results-links">';
             let hasLinks = false;
 
+            // Knapparna har nu bara "lank-knapp" klassen för neutral stil
             if (trodoLink) {
                 resultsHTML += `<a href="${trodoLink}" target="_blank" class="lank-knapp">Sök på Trodo</a>`;
                 hasLinks = true;
             }
             if (aeroMLink) {
-                resultsHTML += `<a href="${aeroMLink}" target="_blank" class="lank-knapp aero-m-btn">Sök på Aero M</a>`;
+                resultsHTML += `<a href="${aeroMLink}" target="_blank" class="lank-knapp">Sök på Aero M</a>`;
                 hasLinks = true;
             }
             if (thansenLink) {
-                resultsHTML += `<a href="${thansenLink}" target="_blank" class="lank-knapp thansen-btn">Sök på Thansen</a>`;
+                resultsHTML += `<a href="${thansenLink}" target="_blank" class="lank-knapp">Sök på Thansen</a>`;
                 hasLinks = true;
             }
             
@@ -206,44 +217,42 @@ document.addEventListener('DOMContentLoaded', () => {
             const egenLink = item.link; // Användardefinierad länk
             
             let primaryButtonHTML = '';
-            let secondaryButtonsHTML = '';
             let linkCellContent = '';
 
-            // 1. Primär länk: Trodo (visas direkt)
+            // 1. Primär länk: Trodo (visas direkt, nu med neutral "lank-knapp" stil)
             if (trodoLink) {
-                // Notera den nya klassen 'trodo-btn' (inte 'trodo-main-btn' som var fel i din fil)
                 primaryButtonHTML = `<button class="lank-knapp" onclick="window.open('${trodoLink}', '_blank'); event.stopPropagation();">Trodo</button>`;
             }
 
-            // 2. Sekundära länkar (läggs i Mer-menyn)
-            let hasSecondaryLinks = false;
-            if (aeroMLink) {
-                // Notera klassen 'aero-m-btn' för styling
-                secondaryButtonsHTML += `<button class="lank-knapp aero-m-btn" onclick="window.open('${aeroMLink}', '_blank'); event.stopPropagation();">Aero M</button>`;
-                hasSecondaryLinks = true;
-            }
-            if (thansenLink) {
-                // Notera klassen 'thansen-btn' för styling
-                secondaryButtonsHTML += `<button class="lank-knapp thansen-btn" onclick="window.open('${thansenLink}', '_blank'); event.stopPropagation();">Thansen</button>`;
-                hasSecondaryLinks = true;
-            }
-            if (egenLink) {
-                // Notera klassen 'egen-lank-btn' för styling
-                secondaryButtonsHTML += `<button class="lank-knapp egen-lank-btn" onclick="window.open('${egenLink}', '_blank'); event.stopPropagation();">Egen Länk</button>`;
-                hasSecondaryLinks = true;
-            }
-
+            
+            // --- 2. UPPDATERAD LOGIK HÄR ---
             
             // Bygg länkcellens innehåll
             if (primaryButtonHTML) {
                 linkCellContent += primaryButtonHTML;
             }
 
+            // Kontrollera om det finns några sekundära länkar
+            const hasSecondaryLinks = aeroMLink || thansenLink || egenLink;
+
             if (hasSecondaryLinks) {
-                // Skapa Mer-knappen med dropdown-funktionalitet
+                // Skapa ID:t FÖRST
                 const dropdownId = `link-dropdown-${item.id}`;
                 
-                // Mer-knappen (använder en enkel knapp med text 'Mer')
+                // Bygg de sekundära knapparna NU, med ID:t
+                // Notera tillägget av closeDropdown('${dropdownId}') i varje onclick
+                let secondaryButtonsHTML = '';
+                if (aeroMLink) {
+                    secondaryButtonsHTML += `<button class="lank-knapp aero-m-btn" onclick="window.open('${aeroMLink}', '_blank'); closeDropdown('${dropdownId}'); event.stopPropagation();">Aero M</button>`;
+                }
+                if (thansenLink) {
+                    secondaryButtonsHTML += `<button class="lank-knapp thansen-btn" onclick="window.open('${thansenLink}', '_blank'); closeDropdown('${dropdownId}'); event.stopPropagation();">Thansen</button>`;
+                }
+                if (egenLink) {
+                    secondaryButtonsHTML += `<button class="lank-knapp egen-lank-btn" onclick="window.open('${egenLink}', '_blank'); closeDropdown('${dropdownId}'); event.stopPropagation();">Egen Länk</button>`;
+                }
+                
+                // Mer-knappen (med neutral "lank-knapp" stil)
                 const moreButton = `<button class="lank-knapp" onclick="toggleDropdown('${dropdownId}'); event.stopPropagation();">Mer</button>`;
                 
                 // Dropdown-menyn (innehåller alla sekundära länkar)
@@ -265,6 +274,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!linkCellContent) {
                 linkCellContent = '<span>(Saknas)</span>';
             }
+
+            // --- SLUT UPPDATERAD LOGIK ---
+
 
             // Kolumnens innehåll
             const finalLinkCellContent = `<div class="link-buttons">${linkCellContent}</div>`;
@@ -732,5 +744,3 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
-
-
