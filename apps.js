@@ -147,7 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
             let hasLinks = false;
 
             if (trodoLink) {
-                resultsHTML += `<a href="${trodoLink}" target="_blank" class="lank-knapp trodo-btn">Sök på Trodo</a>`;
+                resultsHTML += `<a href="${trodoLink}" target="_blank" class="lank-knapp">Sök på Trodo</a>`;
                 hasLinks = true;
             }
             if (aeroMLink) {
@@ -732,3 +732,4 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
+
