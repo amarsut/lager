@@ -212,7 +212,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // 1. Primär länk: Trodo (visas direkt)
             if (trodoLink) {
                 // Notera den nya klassen 'trodo-btn' (inte 'trodo-main-btn' som var fel i din fil)
-                primaryButtonHTML = `<button class="lank-knapp trodo-btn" onclick="window.open('${trodoLink}', '_blank'); event.stopPropagation();">Trodo</button>`;
+                primaryButtonHTML = `<button class="lank-knapp" onclick="window.open('${trodoLink}', '_blank'); event.stopPropagation();">Trodo</button>`;
             }
 
             // 2. Sekundära länkar (läggs i Mer-menyn)
@@ -244,7 +244,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const dropdownId = `link-dropdown-${item.id}`;
                 
                 // Mer-knappen (använder en enkel knapp med text 'Mer')
-                const moreButton = `<button class="lank-knapp more-btn" onclick="toggleDropdown('${dropdownId}'); event.stopPropagation();">Mer</button>`;
+                const moreButton = `<button class="lank-knapp" onclick="toggleDropdown('${dropdownId}'); event.stopPropagation();">Mer</button>`;
                 
                 // Dropdown-menyn (innehåller alla sekundära länkar)
                 const dropdownMenu = `
@@ -732,4 +732,5 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
+
 
