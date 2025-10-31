@@ -1,4 +1,4 @@
-const CACHE_NAME = 'lager-cache-v9'; // Öka versionsnumret för att tvinga fram en ny installation
+const CACHE_NAME = 'lager-cache-v10'; // Öka versionsnumret för att tvinga fram en ny installation
 const urlsToCache = [
     // BASFILER (Dessa måste ligga i samma mapp)
     './lager.html',
