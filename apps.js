@@ -535,16 +535,6 @@ clearSearchBtn.addEventListener('click', () => {
                 });
             });
 
-          document.addEventListener('keydown', (e) => {
-            // Observera: 'e.code === "KeyR"' är pålitligare än e.key
-            if (e.ctrlKey && e.shiftKey && e.code === "KeyR") {
-                e.preventDefault(); // Förhindra webbläsarens standardomladdning
-                
-                // Anropa återställningsfunktionen
-                handleResetAllData();
-            }
-        });
-
             // Modal stängningslogik
             [editModal, confirmationModal].forEach(modal => {
                 modal.addEventListener('click', (e) => {
@@ -653,6 +643,7 @@ clearSearchBtn.addEventListener('click', () => {
         }
     }
 });
+
 
 
 
