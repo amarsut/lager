@@ -592,8 +592,10 @@
     }
     .global-search-results-links {
         display: flex;
-        flex-wrap: wrap; /* För mobil */
-        gap: 15px;
+        flex-wrap: wrap; /* Låter knapparna flöda till nästa rad i mobilen */
+        gap: 10px;
+        /* Öka marginalen nedtill om knappen X ligger under */
+        margin-bottom: 20px; /* Ger utrymme om 'X' ligger under knapparna i flödet */
     }
     /* Återanvänd 'lank-knapp' stilen men gör den större och applicera färgerna */
     .global-search-results-links .lank-knapp {
@@ -603,15 +605,30 @@
     }
     #global-search-close-btn {
         position: absolute;
-        top: 15px;
-        right: 0px;
+        top: 8px; /* Flytta ner från översta kanten */
+        right: 10px; /* Flytta in från högra kanten */
         background: none;
         border: none;
-        font-size: 2em;
-        color: #999;
+        font-size: 24px;
+        color: var(--text-dark);
         cursor: pointer;
-        line-height: 1;
-        padding: 0 5px;
+        line-height: 1; /* Säkerställ att den tar minimal höjd */
+        padding: 0;
+        width: 30px; /* Ger ett bra klickområde */
+        height: 30px;
+        text-align: center;
+        z-index: 1001; /* Säkerställ att den ligger över knapparna */
+    }
+        /* 4. MOBIL SPECIFIK JUSTERING (om nödvändig) */
+    /* Använd en media query för att finjustera på små skärmar */
+    @media (max-width: 600px) {
+        .global-search-results-links {
+            padding-right: 40px; /* Skapar utrymme till höger för 'X'-knappen */
+        }
+        #global-search-close-btn {
+            top: 5px; 
+            right: 5px; 
+        }
     }
     #global-search-close-btn:hover {
         color: var(--text-dark);
@@ -816,3 +833,4 @@
 
 </body>
 </html>
+
