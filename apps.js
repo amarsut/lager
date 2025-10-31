@@ -68,12 +68,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 maximumFractionDigits: 2 
             }).format(price);
         }
-
+        
+        // --- UPPDATERAD LÄNKGENERERING FÖR AERO M ---
         function generateAeroMLink(serviceFilter) {
             if (!serviceFilter) return null;
+            // Tar bort alla mellanslag och bindestreck för att få en ren artikelnummer-sträng.
             const searchFilter = serviceFilter.replace(/[\s-]/g, ''); 
-            const searchQuery = encodeURIComponent(searchFilter);
-            return `https://www.aerom.se/search?q=${searchQuery}`; 
+            // Observera 'sök' i URL:en och inte 'search'.
+            // Den här strukturen baseras på dina exempellänkar.
+            return `https://aeromotors.se/sok?s=${searchFilter}&layered_id_feature_1586%5B58%5D=&sort_by=price.asc`; 
         }
 
         function generateTrodoLink(serviceFilter) {
@@ -83,10 +86,12 @@ document.addEventListener('DOMContentLoaded', () => {
             return `https://www.trodo.se/catalogsearch/result/premium?filter[quality_group]=2&product_list_dir=asc&product_list_order=price&q=${searchQuery}`;
         }
         
+        // --- UPPDATERAD LÄNKGENERERING FÖR THANSEN ---
         function generateThansenLink(serviceFilter) {
             if (!serviceFilter) return null;
             const searchFilter = serviceFilter.replace(/[\s-]/g, ''); 
             const searchQuery = encodeURIComponent(searchFilter);
+            // Observera den uppdaterade sökvägen /bil/reservdelar/sok?query=
             return `https://www.thansen.se/bil/reservdelar/sok?query=${searchQuery}`;
         }
         
@@ -141,24 +146,31 @@ document.addEventListener('DOMContentLoaded', () => {
             const egenLink = item.link; // Användardefinierad länk
             
             let primaryButtonHTML = '';
-            let moreButtonsHTML = '';
+            let secondaryButtonsHTML = '';
             let linkCellContent = '';
 
-            // 1. Primär länk: Trodo
+            // 1. Primär länk: Trodo (visas direkt)
             if (trodoLink) {
-                primaryButtonHTML = `<button class="lank-knapp trodo-btn" onclick="window.open('${trodoLink}', '_blank'); event.stopPropagation();">Trodo</button>`;
+                // Notera den nya klassen 'trodo-main-btn' för att få rätt design
+                primaryButtonHTML = `<button class="lank-knapp trodo-main-btn" onclick="window.open('${trodoLink}', '_blank'); event.stopPropagation();">Trodo</button>`;
             }
 
             // 2. Sekundära länkar (läggs i Mer-menyn)
+            let hasSecondaryLinks = false;
             if (aeroMLink) {
-                moreButtonsHTML += `<button class="lank-knapp aero-m-btn" onclick="window.open('${aeroMLink}', '_blank'); event.stopPropagation();">Aero M</button>`;
+                // Notera klassen 'aero-m-btn' för styling
+                secondaryButtonsHTML += `<button class="lank-knapp aero-m-btn" onclick="window.open('${aeroMLink}', '_blank'); event.stopPropagation();">Aero M</button>`;
+                hasSecondaryLinks = true;
             }
             if (thansenLink) {
-                moreButtonsHTML += `<button class="lank-knapp thansen-btn" onclick="window.open('${thansenLink}', '_blank'); event.stopPropagation();">Thansen</button>`;
+                // Notera klassen 'thansen-btn' för styling
+                secondaryButtonsHTML += `<button class="lank-knapp thansen-btn" onclick="window.open('${thansenLink}', '_blank'); event.stopPropagation();">Thansen</button>`;
+                hasSecondaryLinks = true;
             }
             if (egenLink) {
-                // Lägg den egna länken i Mer-menyn. Jag lägger till klassen 'egen-lank-btn' för unik CSS.
-                moreButtonsHTML += `<button class="lank-knapp egen-lank-btn" onclick="window.open('${egenLink}', '_blank'); event.stopPropagation();">Egen Länk</button>`;
+                // Notera klassen 'egen-lank-btn' för styling
+                secondaryButtonsHTML += `<button class="lank-knapp egen-lank-btn" onclick="window.open('${egenLink}', '_blank'); event.stopPropagation();">Egen Länk</button>`;
+                hasSecondaryLinks = true;
             }
 
             
@@ -167,17 +179,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 linkCellContent += primaryButtonHTML;
             }
 
-            if (moreButtonsHTML.length > 0) {
+            if (hasSecondaryLinks) {
                 // Skapa Mer-knappen med dropdown-funktionalitet
                 const dropdownId = `link-dropdown-${item.id}`;
                 
-                // Mer-knappen (använder en enkel knapp med text '...' eller 'Mer')
+                // Mer-knappen (använder en enkel knapp med text 'Mer')
                 const moreButton = `<button class="lank-knapp more-btn" onclick="toggleDropdown('${dropdownId}'); event.stopPropagation();">Mer</button>`;
                 
                 // Dropdown-menyn (innehåller alla sekundära länkar)
                 const dropdownMenu = `
                     <div id="${dropdownId}" class="dropdown-menu">
-                        ${moreButtonsHTML}
+                        ${secondaryButtonsHTML}
                     </div>
                 `;
                 
@@ -198,7 +210,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const finalLinkCellContent = `<div class="link-buttons">${linkCellContent}</div>`;
 
 
-            // UPPDATERING: Den primära sökikonen (förstoringsglaset) på artikelnumret ska länka till den mest relevanta/första länken (Trodo)
+            // Den primära sökikonen (förstoringsglaset) på artikelnumret länkar till Trodo, eller den första tillgängliga länken.
             const primarySearchLink = trodoLink || aeroMLink || egenLink;
             const primarySearchText = trodoLink ? 'Trodo' : (aeroMLink ? 'Aero M' : (egenLink ? 'Egen Länk' : ''));
 
