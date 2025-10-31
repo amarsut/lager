@@ -543,7 +543,7 @@
                 <label for="edit-service_filter">Artikelnummer</label>
                 <input type="text" name="service_filter" id="edit-service_filter" required oninput="this.value = this.value.toUpperCase()">
                 <label for="edit-name">Namn</label>
-                <input type="text" name="name" id="edit-name" required oninput="capitalizeWords(this)">
+                <input type="text" name="name" id="edit-name" required oninput="this.value = this.value.toUpperCase()">
                 <label for="edit-price">Pris</label>
                 <input type="number" name="price" id="edit-price" step="0.01" required>
                 <label for="edit-quantity">Antal</label>
@@ -583,6 +583,7 @@
 
 </body>
 </html>
+
 
 
 
