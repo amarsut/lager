@@ -169,7 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Skapa HTML för AeroM-knappen
             const aeroMLinkContent = aeroMLink ? 
-                `<button class="lank-knapp aero-m-btn" onclick="window.open('${aeroMLink}', '_blank'); event.stopPropagation();">Aero M</button>` : 
+                `<button class="lank-knapp aero-m-btn" onclick="window.open('${aeroMLink}', '_blank'); event.stopPropagation();">AeroM</button>` : 
                 ''; // Visa inte knappen om ingen artikelnummer finns
                 
             // Kombinera länkarna i en container för att säkerställa att de visas bredvid varandra
@@ -640,3 +640,4 @@ clearSearchBtn.addEventListener('click', () => {
         }
     }
 });
+
