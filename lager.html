@@ -254,8 +254,25 @@
         border-color: #006060;
     }
     .lank-knapp, .edit-btn, .delete-btn, .order-btn { padding: 6px 10px; border: 1px solid transparent; border-radius: 6px; cursor: pointer; font-size: 0.8em; font-weight: 600; transition: all 0.2s; text-align: center; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); }
-    .lank-knapp { background-color: white; color: var(--primary-color); border: 1px solid var(--primary-color); }
-    .lank-knapp:hover { background-color: var(--primary-color); color: white; }
+    .lank-knapp { 
+        /* Detta är din standardstil: Vit bakgrund, blå/primär färg */
+        background-color: white; 
+        color: var(--primary-color); 
+        border: 1px solid var(--primary-color);
+        padding: 6px 10px; 
+        border-radius: 6px; 
+        cursor: pointer; 
+        font-size: 0.8em; 
+        font-weight: 600; 
+        transition: all 0.2s; 
+        text-align: center; 
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); 
+    }
+    .lank-knapp:hover { 
+        background-color: var(--primary-color); 
+        color: white; 
+        border-color: var(--primary-color); /* För att förhindra hopp vid hover */
+    }
     .edit-btn, .order-btn { background-color: var(--primary-color); color: white; }
     .edit-btn:hover, .order-btn:hover { background-color: var(--primary-dark); }
     .delete-btn { background-color: white; color: var(--danger-color); border: 1px solid var(--danger-color); }
@@ -440,19 +457,20 @@
 
 /* Stilen för Dropdown-menyn */
 .dropdown-menu {
-    display: none; /* Döljs som standard */
+    display: none; 
     position: absolute;
-    right: 0; /* Positionera till höger om "Mer"-knappen */
-    top: 100%; /* Positionera under "Mer"-knappen */
+    right: 0; 
+    top: 100%; 
     z-index: 10;
     min-width: 120px;
-    background-color: var(--card-bg); /* Vit bakgrund */
+    background-color: var(--card-bg); 
     border: 1px solid var(--border-color);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     border-radius: 8px;
     padding: 5px;
-    margin-top: 5px; /* Litet mellanrum till Mer-knappen */
-    flex-direction: column; /* Knappar ska ligga vertikalt */
+    margin-top: 5px; 
+    flex-direction: column; 
+    white-space: nowrap;
 }
 
 /* Visar menyn när klassen 'visible' läggs till av JS */
@@ -463,12 +481,21 @@
 /* Styla knapparna inuti dropdownen */
 .dropdown-menu .lank-knapp {
     width: 100%;
-    margin-bottom: 3px;
-    text-align: left;
+    margin: 3px 0;
+    text-align: center;
     padding: 8px 12px;
-    font-size: 0.85em;
-    border: none; /* Inga ramar inuti menyn */
-    transition: background-color 0.1s;
+    font-size: 0.8em; 
+    box-shadow: none; /* Ta bort skuggor inuti menyn */
+    
+    /* OBS: Tvingar dropdown-knapparna att ÄVEN vara standard vit/blå: */
+    background-color: white !important;
+    color: var(--primary-color) !important; 
+    border: 1px solid var(--primary-color) !important;
+}
+        
+.dropdown-menu .lank-knapp:hover {
+    background-color: var(--primary-color) !important; 
+    color: white !important; 
 }
 
 /* Färger för länkknapparna inuti dropdownen (använd samma färger som du hade) */
@@ -682,6 +709,7 @@
 
 </body>
 </html>
+
 
 
 
