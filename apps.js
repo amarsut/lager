@@ -114,6 +114,21 @@ document.addEventListener('DOMContentLoaded', () => {
             return `https://www.trodo.se/catalogsearch/result/premium?filter[quality_group]=2&product_list_dir=asc&product_list_order=price&q=${searchQuery}`;
         }
         
+        // --- NY FUNKTION FÖR AEROMOTORS LÄNK ---
+        function generateAeroMLink(serviceFilter) {
+            if (!serviceFilter) return null;
+
+            // Tar bort alla mellanslag och bindestreck för att få en ren artikelnummer-sträng.
+            const searchFilter = serviceFilter.replace(/[\s-]/g, ''); 
+            
+            // Använder länkmönstret från användarens exempel:
+            // https://aeromotors.se/sok?s=06J115403A&layered_id_feature_1586%5B8%5D=3&sort_by=price.asc
+            const baseUrl = `https://aeromotors.se/sok?`;
+            const staticParams = `layered_id_feature_1586%5B8%5D=3&sort_by=price.asc`;
+
+            return `${baseUrl}s=${searchFilter}&${staticParams}`;
+        }
+
         function toggleAddForm() {
             const isCurrentlyOpen = addFormWrapper.classList.contains('open');
             const newState = isCurrentlyOpen ? 'closed' : 'open';
@@ -140,18 +155,37 @@ document.addEventListener('DOMContentLoaded', () => {
             const statusClass = item.quantity > 0 ? 'i-lager' : 'slut';
             const statusText = item.quantity > 0 ? 'I lager' : 'Slut';
             
-            let linkToUse = item.link || generateTrodoLink(item.service_filter);
-            let linkText = item.link ? 'Länk' : 'Trodo';
+            // Hämta AeroM-länk
+            const aeroMLink = generateAeroMLink(item.service_filter);
+            
+            // Hantera den primära länken (antingen custom link, eller Trodo som fallback)
+            let primaryLinkToUse = item.link || generateTrodoLink(item.service_filter);
+            let primaryLinkText = item.link ? 'Länk' : 'Trodo';
 
-            const linkContent = linkToUse ? `<button class="lank-knapp" onclick="window.open('${linkToUse}', '_blank'); event.stopPropagation();">${linkText}</button>` : `<span>(Saknas)</span>`;
+            // Skapa HTML för den primära länken
+            const primaryLinkContent = primaryLinkToUse ? 
+                `<button class="lank-knapp" onclick="window.open('${primaryLinkToUse}', '_blank'); event.stopPropagation();">${primaryLinkText}</button>` : 
+                `<span>(Saknas)</span>`;
+            
+            // Skapa HTML för AeroM-knappen
+            const aeroMLinkContent = aeroMLink ? 
+                `<button class="lank-knapp aero-m-btn" onclick="window.open('${aeroMLink}', '_blank'); event.stopPropagation();">Aero M</button>` : 
+                ''; // Visa inte knappen om ingen artikelnummer finns
+                
+            // Kombinera länkarna i en container för att säkerställa att de visas bredvid varandra
+            const linkContainer = `<span class="link-buttons">${primaryLinkContent}${aeroMLinkContent}</span>`;
 
             const quantityCell = `<div class="quantity-cell"><button class="qty-btn" onclick="adjustQuantity(${item.id}, -1); event.stopPropagation();">-</button><span>${item.quantity}</span><button class="qty-btn" onclick="adjustQuantity(${item.id}, 1); event.stopPropagation();">+</button></div>`;
             const editButton = isOutOfStock ? `<button class="edit-btn order-btn" onclick="handleEdit(${item.id}, true); event.stopPropagation();">Beställ</button>` : `<button class="edit-btn" onclick="handleEdit(${item.id}); event.stopPropagation();">Ändra</button>`;
             const notesCell = `<span class="notes-cell" title="${item.notes || ''}">${item.notes || ''}</span>`;
             
-            // Förstoringsglas-knappen
-            const searchButton = linkToUse ? 
-                `<button class="search-btn" onclick="window.open('${linkToUse}', '_blank'); event.stopPropagation();" title="Sök på ${linkText}">
+            // Hantera vilken länk förstoringsglaset ska använda (Trodo-länk om ingen custom länk finns)
+            let searchLinkToUse = primaryLinkToUse; 
+            let searchLinkText = primaryLinkToUse ? primaryLinkText : ''; 
+
+            // Förstoringsglas-knappen (använder primaryLinkToUse, vilket är item.link ELLER Trodo-länken)
+            const searchButton = searchLinkToUse ? 
+                `<button class="search-btn" onclick="window.open('${searchLinkToUse}', '_blank'); event.stopPropagation();" title="Sök på ${searchLinkText}">
                     <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>
                 </button>` : 
                 '';
@@ -171,7 +205,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 ${quantityCell}
                 <span style="display: flex; align-items: center;"><span class="${statusClass}">${statusText}</span></span>
                 ${notesCell}
-                <span class="action-cell">${linkContent}</span>
+                <span class="action-cell">${linkContainer}</span> 
                 <div class="action-buttons">${editButton}<button class="delete-btn" onclick="handleDelete(${item.id}); event.stopPropagation();">Ta bort</button></div>`;
             return row;
         }
