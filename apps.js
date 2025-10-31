@@ -1,648 +1,596 @@
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
-import { getAuth, signInAnonymously, signInWithCustomToken } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
-import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection, query, setLogLevel, getDoc } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js';
+import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
 
-// Globala variabler för Canvas-miljön (MÅSTE ANVÄNDAS)
-const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-
-// FIREBASE INITIERING
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
-// setLogLevel('debug'); // Avkommentera för att se Firebase-loggar
-
-// Globalt objekt för att hålla alla produkter
-let products = {};
-let userId = null;
-
-// --- BAS FUNKTIONER FÖR DATABASEN ---
-
-/**
- * Hämtar den korrekta sökvägen till Firestore-samlingen för inventering.
- * Använder en offentlig sökväg: /artifacts/{appId}/public/data/inventory
- * @returns {object} Firestore Collection Reference
- */
-const getInventoryCollection = () => {
-    return collection(db, 'artifacts', appId, 'public', 'data', 'inventory');
+// FIREBASE KONFIGURATION
+const firebaseConfig = {
+  apiKey: "AIzaSyAC4SLwVEzP3CPO4lLfDeZ71iU0xdr49sw", 
+  authDomain: "lagerdata-a9b39.firebaseapp.com",
+  projectId: "lagerdata-a9b39",
+  storageBucket: "lagerdata-a9b39.firebasestorage.app",
+  messagingSenderId: "615646392577",
+  appId: "1:615646392577:web:fd816443728e88b218eb00"
 };
 
-/**
- * Sparar eller uppdaterar en produkt.
- * @param {string} id - Dokument-ID.
- * @param {object} productData - Produktdata att spara.
- */
-const saveProduct = async (id, productData) => {
-    try {
-        const docRef = doc(getInventoryCollection(), id);
-        // Använd setDoc med merge: true för att uppdatera eller skapa
-        await setDoc(docRef, productData, { merge: true });
-        // Status uppdateras via onSnapshot, inget behov av att uppdatera UI direkt här
-    } catch (e) {
-        console.error("Fel vid sparande av produkt: ", e);
-        showStatus("FEL: Kunde inte spara produkt!", 'var(--danger-color)');
-    }
-};
-
-/**
- * Raderar en produkt.
- * @param {string} id - Dokument-ID.
- */
-const deleteProduct = async (id) => {
-    try {
-        const docRef = doc(getInventoryCollection(), id);
-        await deleteDoc(docRef);
-        // Status uppdateras via onSnapshot
-    } catch (e) {
-        console.error("Fel vid radering av produkt: ", e);
-        showStatus("FEL: Kunde inte radera produkt!", 'var(--danger-color)');
-    }
-};
-
-
-// --- UI OCH HJÄLPFUNKTIONER ---
-
-/**
- * Visar statusmeddelanden.
- * @param {string} message - Meddelandetext.
- * @param {string} color - CSS färg.
- */
-const showStatus = (message, color = 'var(--text-dark)') => {
-    const statusElement = document.getElementById('sync-status');
-    if (statusElement) {
-        statusElement.textContent = message;
-        statusElement.style.color = color;
-    }
-};
-
-/**
- * Konverterar en array av produktdata till en CSV-sträng.
- * @param {Array<object>} data - Listan med produkter.
- * @returns {string} CSV-data.
- */
-const convertToCSV = (data) => {
-    if (data.length === 0) return '';
-    
-    const headers = ["ID", "Namn", "Artikelnummer", "Antal", "Plats", "Kategori", "Anteckningar", "Länk"];
-    const csvRows = [];
-    
-    // Lägg till headers
-    csvRows.push(headers.join(';'));
-    
-    // Lägg till datarader
-    for (const item of data) {
-        const values = [
-            item.id || '',
-            item.name || '',
-            item.articleNumber || '',
-            item.count !== undefined ? item.count : '',
-            item.location || '',
-            item.category || '',
-            item.notes || '',
-            item.link || ''
-        ];
-        // Ersätt semikolon i strängar för att undvika problem
-        csvRows.push(values.map(val => (typeof val === 'string' ? val.replace(/;/g, ',') : val)).join(';'));
-    }
-
-    return csvRows.join('\n');
-};
-
-/**
- * Renderar en enskild produkt som ett <li>-element.
- * @param {object} product - Produktobjektet.
- * @returns {string} HTML-sträng.
- */
-const createProductListItem = (product) => {
-    const { id, name, articleNumber, count, location, notes, link } = product;
-    
-    // Skapa en länk-knapp om det finns en länk
-    const linkButton = link
-        ? `<button class="action-btn link-btn" onclick="window.open('${link}', '_blank')">Länk</button>`
-        : '';
-
-    // Sanera artikelnummer: ersätter ALLT utom siffror och bokstäver med bindestreck.
-    const safeArticleNumber = articleNumber.replace(/[^a-zA-Z0-9]/g, '-');
-    const trodoLink = `https://www.trodo.se/catalogsearch/result/?q=${safeArticleNumber}`;
-    const aeroMLink = `https://www.aero-m.se/search/?q=${safeArticleNumber}`;
-
-    // Visa popup-knappen används för att visa detaljer
-    const showDetailsButton = `<button class="action-btn" data-id="${id}" onclick="showProductPopup('${id}')">Detaljer</button>`;
-
-    return `
-        <li data-id="${id}">
-            <div class="item-info">
-                <span class="item-name" title="${name}">${name}</span>
-                <span class="item-count">${count} st</span>
-                <span class="item-notes" title="${notes}">${notes || '—'}</span>
-                <span class="item-notes" title="${location}">${location}</span>
-            </div>
-            <div class="item-actions">
-                ${showDetailsButton}
-                ${linkButton}
-                <button class="external-link-btn trodo-btn" onclick="openExternalLink('${trodoLink}')">Trodo</button>
-                <button class="external-link-btn aero-m-btn" onclick="openExternalLink('${aeroMLink}')">Aero M</button>
-            </div>
-        </li>
-    `;
-};
-// Lägg till openExternalLink i globalt scope för att kunna kallas från onclick i HTML
-window.openExternalLink = (url) => {
-    window.open(url, '_blank');
-};
-
-
-/**
- * Uppdaterar lagerlistorna baserat på det globala products-objektet.
- * Renderar produkterna i sina respektive kategorier.
- */
-const renderInventory = () => {
-    const container = document.getElementById('inventoryContainer');
-    if (!container) return;
-
-    // Gruppera produkter efter kategori
-    const categories = {
-        'Service': [],
-        'Motor/Chassi': [],
-        'Andra Märken': []
-    };
-
-    Object.values(products).forEach(product => {
-        if (categories[product.category]) {
-            categories[product.category].push(product);
-        } else {
-            // Fallback för okända kategorier, läggs till i "Andra Märken"
-            categories['Andra Märken'].push(product);
-        }
+// --- REGISTRERA SERVICE WORKER FÖR PWA INSTALLATION ---
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./service-worker.js')
+            .then(registration => {
+                console.log('Service Worker registrerad framgångsrikt med scope:', registration.scope);
+            })
+            .catch(error => {
+                console.log('Service Worker registrering misslyckades:', error);
+            });
     });
-    
-    // Sortera produkterna i varje kategori efter namn
-    Object.keys(categories).forEach(cat => {
-        categories[cat].sort((a, b) => a.name.localeCompare(b.name, 'sv'));
-    });
-
-    let html = '';
-    // Skapa HTML-struktur för varje kategori
-    Object.keys(categories).forEach(categoryName => {
-        const categoryProducts = categories[categoryName];
-        const categoryId = categoryName.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
-
-        // Hämta sparad collapse state
-        const isCollapsed = localStorage.getItem(`${categoryId}-titel`) === 'closed';
-        const collapseClass = isCollapsed ? 'collapsed' : '';
-        const arrow = isCollapsed ? '&#9660;' : '^';
-
-        html += `
-            <div class="category-wrapper">
-                <h2 id="${categoryId}-titel" class="collapsible-header" data-state="${isCollapsed ? 'closed' : 'open'}" onclick="toggleCollapsible(this)">
-                    ${categoryName} (${categoryProducts.length})
-                    <span id="${categoryId}-icon">${arrow}</span>
-                </h2>
-                <div id="${categoryId}-wrapper" class="collapsible-wrapper ${collapseClass}">
-                    <ul class="item-list">
-                        ${categoryProducts.map(createProductListItem).join('')}
-                    </ul>
-                </div>
-            </div>
-        `;
-    });
-
-    container.innerHTML = html;
-};
-
-// Global funktion för att hantera collapse (anropas direkt från HTML)
-window.toggleCollapsible = (header) => {
-    const wrapperId = header.id.replace('-titel', '-wrapper');
-    const wrapper = document.getElementById(wrapperId);
-    const icon = header.querySelector('span');
-
-    if (!wrapper || !icon) return;
-    
-    const isClosed = wrapper.classList.contains('collapsed');
-
-    if (isClosed) {
-        // Öppna
-        wrapper.classList.remove('collapsed');
-        icon.innerHTML = '^';
-        header.setAttribute('data-state', 'open');
-        localStorage.setItem(header.id, 'open');
-    } else {
-        // Stäng
-        wrapper.classList.add('collapsed');
-        icon.innerHTML = '&#9660;';
-        header.setAttribute('data-state', 'closed');
-        localStorage.setItem(header.id, 'closed');
-    }
 }
 
-
-/**
- * Filterfunktion som körs vid sökning/kategorifiltrering.
- */
-const filterProducts = () => {
-    const query = document.getElementById('searchQuery').value.toLowerCase();
-    const category = document.getElementById('filterCategory').value;
-    const searchResults = document.getElementById('searchResults');
-
-    if (!query && !category) {
-        searchResults.innerHTML = '';
-        return;
-    }
-
-    const filteredProducts = Object.values(products).filter(product => {
-        const matchesQuery = !query || product.name.toLowerCase().includes(query) || product.articleNumber.toLowerCase().includes(query);
-        const matchesCategory = !category || product.category === category;
-        return matchesQuery && matchesCategory;
-    });
-    
-    // Sortera resultaten efter namn
-    filteredProducts.sort((a, b) => a.name.name.localeCompare(b.name, 'sv'));
-
-    if (filteredProducts.length > 0) {
-        searchResults.innerHTML = `
-            <div class="collapsible-header" style="background-color: #333; margin-top: 0; border-top-left-radius: 8px; border-top-right-radius: 8px;">
-                Sökresultat (${filteredProducts.length})
-            </div>
-            ${filteredProducts.map(createProductListItem).join('')}
-        `;
-    } else {
-        searchResults.innerHTML = `
-            <div class="collapsible-header" style="background-color: #333; margin-top: 0; border-top-left-radius: 8px; border-top-right-radius: 8px;">
-                Inget resultat hittades
-            </div>
-        `;
-    }
-};
-
-/**
- * Visar/döljer en modal.
- * @param {string} modalId - ID för modalen.
- * @param {boolean} show - Sant för att visa, falskt för att dölja.
- */
-const toggleModal = (modalId, show) => {
-    const modal = document.getElementById(modalId);
-    if (modal) {
-        modal.style.display = show ? 'block' : 'none';
-    }
-};
-
-/**
- * Visar bekräftelsedialogrutan.
- * @param {string} message - Meddelande att visa.
- * @returns {Promise<boolean>} Löser true vid "Ja", false vid "Avbryt".
- */
-const showConfirmation = (message) => {
-    return new Promise(resolve => {
-        const modal = document.getElementById('confirmationModal');
-        const msgEl = document.getElementById('confirmationMessage');
-        const confirmYes = document.getElementById('confirmYes');
-        const confirmNo = document.getElementById('confirmNo');
-
-        msgEl.textContent = message;
-        toggleModal('confirmationModal', true);
-
-        // Rensa gamla lyssnare
-        confirmYes.onclick = null;
-        confirmNo.onclick = null;
-
-        confirmYes.onclick = () => {
-            toggleModal('confirmationModal', false);
-            resolve(true);
-        };
-        confirmNo.onclick = () => {
-            toggleModal('confirmationModal', false);
-            resolve(false);
-        };
-        
-        // Stäng även vid klick utanför eller på X
-        modal.onclick = (event) => {
-            if (event.target === modal) {
-                toggleModal('confirmationModal', false);
-                resolve(false);
-            }
-        };
-    });
-};
-
-/**
- * Visar pop-up med detaljer för en produkt och sätter upp lyssnare för redigering/radering.
- * @param {string} id - Produkt-ID.
- */
-window.showProductPopup = (id) => {
-    const product = products[id];
-    if (!product) return;
-
-    document.getElementById('popup-name').textContent = product.name;
-    document.getElementById('popup-articleNumber').textContent = product.articleNumber;
-    document.getElementById('popup-count').textContent = product.count;
-    document.getElementById('popup-location').textContent = product.location;
-    document.getElementById('popup-category').textContent = product.category;
-    document.getElementById('popup-notes').textContent = product.notes || 'Inga anteckningar';
-    document.getElementById('popup-link').textContent = product.link || 'Ingen länk';
-
-    // Rensa gamla lyssnare och sätt nya för Edit/Delete
-    const editBtn = document.getElementById('popup-edit');
-    const deleteBtn = document.getElementById('popup-delete');
-
-    editBtn.onclick = () => {
-        toggleModal('productPopup', false);
-        openEditModal(id);
-    };
-
-    deleteBtn.onclick = async () => {
-        toggleModal('productPopup', false);
-        const confirmed = await showConfirmation(`Är du säker på att du vill radera produkten "${product.name}"?`);
-        if (confirmed) {
-            await deleteProduct(id);
-            showStatus(`Produkten "${product.name}" raderades.`);
-        }
-    };
-    
-    // Visa modalen
-    toggleModal('productPopup', true);
-};
-
-/**
- * Öppnar redigeringsmodalen med förifyllda data.
- * @param {string} id - Produkt-ID.
- */
-const openEditModal = (id) => {
-    const product = products[id];
-    if (!product) return;
-
-    document.getElementById('edit-id').value = id;
-    document.getElementById('edit-name').value = product.name;
-    document.getElementById('edit-articleNumber').value = product.articleNumber;
-    document.getElementById('edit-count').value = product.count;
-    document.getElementById('edit-location').value = product.location;
-    document.getElementById('edit-category').value = product.category;
-    document.getElementById('edit-notes').value = product.notes;
-    document.getElementById('edit-link').value = product.link;
-
-    toggleModal('editModal', true);
-};
-
-// --- INITIERING OCH LYSSNARE ---
-
-/**
- * Ställer in realtidslyssnare på Firestore.
- */
-const setupRealtimeListener = () => {
-    if (!userId) {
-         showStatus("FEL: Användar-ID saknas.", 'var(--danger-color)');
-         return;
-    }
-    
-    showStatus("Ansluter till lagerdatabasen...");
-    
-    // Använd onSnapshot för att få realtidsuppdateringar
-    const q = query(getInventoryCollection());
-    
-    onSnapshot(q, (snapshot) => {
-        snapshot.docChanges().forEach((change) => {
-            const data = change.doc.data();
-            const id = change.doc.id;
-            
-            // Hantera alla CRUD-operationer
-            if (change.type === "added" || change.type === "modified") {
-                products[id] = { id, ...data };
-            } else if (change.type === "removed") {
-                delete products[id];
-            }
-        });
-
-        // Återrenderera UI efter varje ändring
-        renderInventory();
-        filterProducts(); // Uppdatera sökresultat om de visas
-        showStatus(`Synkroniserad: ${Object.keys(products).length} produkter.`, 'var(--success-color)');
-    }, (error) => {
-        console.error("Firestore lyssnarfel: ", error);
-        showStatus("FEL: Det gick inte att ansluta till databasen.", 'var(--danger-color)');
-    });
-};
-
-/**
- * Hanterar alla händelselyssnare.
- */
-const initializeListeners = () => {
-    // 1. Lägg till Produkt Formulär
-    document.getElementById('addProductForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const form = e.target;
-        
-        // Hämta formulärdata
-        const productData = {
-            name: form.name.value.trim(),
-            articleNumber: form.articleNumber.value.trim().toUpperCase(),
-            count: parseInt(form.count.value, 10),
-            location: form.location.value.trim(),
-            category: form.category.value,
-            notes: form.notes.value.trim(),
-            link: form.link.value.trim()
-        };
-        
-        // Generera ett nytt ID
-        const newId = doc(getInventoryCollection()).id; 
-        
-        await saveProduct(newId, productData);
-        form.reset(); // Rensa formuläret
-        localStorage.removeItem('addProductForm'); // Rensa sparad state
-        showStatus(`Produkten "${productData.name}" lades till!`);
-    });
-
-    // 2. Redigera Produkt Formulär
-    document.getElementById('editProductForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const form = e.target;
-        const id = form['edit-id'].value;
-        
-        const updatedData = {
-            name: form['edit-name'].value.trim(),
-            articleNumber: form['edit-articleNumber'].value.trim().toUpperCase(),
-            count: parseInt(form['edit-count'].value, 10),
-            location: form['edit-location'].value.trim(),
-            category: form['edit-category'].value,
-            notes: form['edit-notes'].value.trim(),
-            link: form['edit-link'].value.trim()
-        };
-
-        await saveProduct(id, updatedData);
-        toggleModal('editModal', false);
-        showStatus(`Produkten "${updatedData.name}" uppdaterades.`);
-    });
-    
-    // 3. Modaler: Stäng vid klick på 'x' eller utanför
-    document.querySelectorAll('.close-modal').forEach(span => {
-        span.addEventListener('click', () => {
-            toggleModal('editModal', false);
-            toggleModal('confirmationModal', false);
-            toggleModal('productPopup', false);
-        });
-    });
-
-    window.addEventListener('click', (event) => {
-        if (event.target.classList.contains('modal')) {
-            event.target.style.display = 'none';
-        }
-    });
-
-    // 4. Sök och Filtrering
-    document.getElementById('searchQuery').addEventListener('input', filterProducts);
-    document.getElementById('filterCategory').addEventListener('change', filterProducts);
-
-    // 5. Import/Export
-    document.getElementById('exportData').addEventListener('click', () => {
-        // Hämta alla produkter
-        const dataToExport = Object.values(products);
-
-        // Lägg till metadata i exporten
-        const exportObject = {
-            metadata: {
-                timestamp: new Date().toISOString(),
-                userId: userId,
-                appId: appId
-            },
-            data: dataToExport
-        };
-
-        const jsonString = JSON.stringify(exportObject, null, 2);
-        const blob = new Blob([jsonString], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `lagerdata_export_${new Date().toLocaleDateString('sv-SE')}.json`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        showStatus("Data exporterad som JSON.");
-    });
-    
-    document.getElementById('importButton').addEventListener('click', () => {
-        document.getElementById('importFile').click();
-    });
-
-    document.getElementById('importFile').addEventListener('change', (event) => {
-        const file = event.target.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-            try {
-                const importContent = JSON.parse(e.target.result);
-                let importedProducts = importContent.data || importContent; 
-                
-                if (!Array.isArray(importedProducts)) {
-                    throw new Error("Importerad fil är inte en giltig produktlista.");
-                }
-
-                const confirmed = await showConfirmation(`Vill du importera ${importedProducts.length} produkter? Detta kommer att lägga till nya produkter och kan skriva över befintliga med samma ID.`);
-                
-                if (confirmed) {
-                    let count = 0;
-                    for (const product of importedProducts) {
-                        // Säkerställ att vi har ett ID att spara mot
-                        const id = product.id || doc(getInventoryCollection()).id;
-                        // Ta bort ID-fältet från datat som sparas (det finns i doc-referensen)
-                        const { id: _, ...dataToSave } = product; 
-                        await saveProduct(id, dataToSave);
-                        count++;
-                    }
-                    showStatus(`Importerade ${count} produkter framgångsrikt.`);
-                } else {
-                    showStatus("Import avbruten.");
-                }
-
-            } catch (error) {
-                console.error("Fel vid import av JSON: ", error);
-                showStatus(`FEL vid import: ${error.message}`, 'var(--danger-color)');
-            }
-        };
-        reader.readAsText(file); 
-        event.target.value = ''; // Rensa filväljaren
-    });
-};
-
-/**
- * Initialiserar det fällbara läget för paneler (från localStorage).
- */
-const initializeCollapseState = () => {
-    // VIKTIGT: Lägg till klicklyssnare för att hantera collapse HÄR, eftersom de genereras dynamiskt av renderInventory()
-    // Detta hanteras nu av window.toggleCollapsible som anropas via onclick i renderInventory, vilket är mer robust.
-    
-    document.querySelectorAll('.collapsible-header').forEach(header => {
-        const wrapperId = header.id.replace('-titel', '-wrapper');
-        const wrapper = document.getElementById(wrapperId);
-
-        const savedState = localStorage.getItem(header.id);
-
-        if (savedState === 'closed') {
-            header.setAttribute('data-state', 'closed');
-            if (wrapper) {
-                wrapper.classList.add('collapsed');
-                const icon = header.querySelector('span');
-                if (icon) icon.innerHTML = '&#9660;';
-            }
-        } 
-    });
-};
-
-/**
- * Återställer sparad formulärdata om den finns.
- */
-const initializeAddFormState = () => {
-    const addForm = document.getElementById('addProductForm');
-    if (!addForm) return;
-
+document.addEventListener('DOMContentLoaded', () => {
     try {
-        const savedState = localStorage.getItem('addProductForm');
-        if (savedState) {
-            const state = JSON.parse(savedState);
-            Object.keys(state).forEach(key => {
-                const element = addForm.elements.namedItem(key);
-                if (element) {
-                    element.value = state[key];
-                }
+        // Initialisera Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const INVENTORY_COLLECTION = 'lager';
+        
+        // DOM-ELEMENT
+        const serviceArtiklarLista = document.getElementById('service-artiklar-lista');
+        const motorChassiArtiklarLista = document.getElementById('motor-chassi-artiklar-lista');
+        const andraMarkenArtiklarLista = document.getElementById('andra-marken-artiklar-lista');
+        const slutILagerLista = document.getElementById('slut-i-lager-lista');
+        const slutILagerSektion = document.getElementById('slut-i-lager-sektion');
+        
+        const searchInput = document.getElementById('search-input');
+        const toggleBtn = document.getElementById('toggle-add-form-btn');
+        const addFormWrapper = document.getElementById('add-form-wrapper');
+        const addForm = document.getElementById('add-article-form');
+        const editModal = document.getElementById('editModal');
+        const editForm = document.getElementById('edit-article-form');
+        const confirmationModal = document.getElementById('confirmationModal');
+        const syncStatusElement = document.getElementById('sync-status');
+        const clearSearchBtn = document.getElementById('clear-search-btn'); // <-- LÄGG TILL DENNA RAD
+        
+        // GLOBALA VARIABLER
+        let inventory = []; 
+        let selectedItemId = null;
+        let currentSort = { column: 'name', direction: 'desc' };
+        let confirmCallback = null; 
+        
+        // KORRIGERING: Definiera stoppord för naturligt språk-sökning (svenska)
+        const stopWords = ['till', 'för', 'en', 'ett', 'och', 'eller', 'med', 'på', 'i', 'av', 'det', 'den', 'som', 'att', 'är', 'har', 'kan', 'ska', 'vill', 'sig', 'här', 'nu', 'från', 'man', 'vi', 'du', 'ni'];
+
+
+        // ----------------------------------------------------------------------
+        // FUNKTIONER
+        // ----------------------------------------------------------------------
+        
+        async function saveInventoryItem(itemData) {
+            const itemRef = doc(db, INVENTORY_COLLECTION, String(itemData.id));
+            await setDoc(itemRef, itemData);
+        }
+        
+        async function deleteInventoryItem(itemId) {
+            const itemRef = doc(db, INVENTORY_COLLECTION, String(itemId));
+            await deleteDoc(itemRef);
+        }
+        
+        function setupRealtimeListener() {
+            const q = collection(db, INVENTORY_COLLECTION);
+            
+            onSnapshot(q, (querySnapshot) => {
+                const tempInventory = [];
+                querySnapshot.forEach((doc) => {
+                    tempInventory.push(doc.data());
+                });
+                inventory = tempInventory;
+                // Använd den nya smarta filter-funktionen
+                applySearchFilter();
+                
+                const now = new Date();
+                syncStatusElement.textContent = `Synkroniserad ${now.toLocaleTimeString('sv-SE')}`;
+                syncStatusElement.style.color = 'var(--success-color)';
+            }, (error) => {
+                console.error("Realtime listener error: ", error);
+                syncStatusElement.textContent = `FEL: Se konsolen`;
+                syncStatusElement.style.color = 'var(--danger-color)';
             });
         }
-    } catch (e) {
-        console.error("Kunde inte återställa formulärstate:", e);
-        localStorage.removeItem('addProductForm');
-    }
-    
-    // Spara formulärdata vid ändring
-    addForm.addEventListener('input', () => {
-        const state = {
-            name: addForm.name.value,
-            articleNumber: addForm.articleNumber.value,
-            count: addForm.count.value,
-            location: addForm.location.value,
-            category: addForm.category.value,
-            notes: addForm.notes.value,
-            link: addForm.link.value
-        };
-        localStorage.setItem('addProductForm', JSON.stringify(state));
-    });
-};
 
+        function formatPrice(price) {
+            return new Intl.NumberFormat('sv-SE', { 
+                minimumFractionDigits: 2, 
+                maximumFractionDigits: 2 
+            }).format(price);
+        }
 
-// Huvudfunktion för att starta appen
-document.addEventListener('DOMContentLoaded', async () => {
-    try {
-        showStatus("Autentiserar...");
-        // Autentisering: Använd custom token om det finns, annars anonym inloggning
-        if (initialAuthToken) {
-            await signInWithCustomToken(auth, initialAuthToken);
-        } else {
-            // Använder anonym inloggning om ingen token finns
-            await signInAnonymously(auth);
+        function generateTrodoLink(serviceFilter) {
+            if (!serviceFilter) return null;
+            
+            // Tar bort alla mellanslag och bindestreck för att få en ren artikelnummer-sträng.
+            const searchFilter = serviceFilter.replace(/[\s-]/g, ''); 
+            const searchQuery = encodeURIComponent(searchFilter);
+            
+            // Denna länk är baserad på "PREMIUM"-exemplet från din bild.
+            // Den lägger till /premium/ i sökvägen, sorterar efter pris (asc)
+            // och sätter filter[quality_group]=2.
+            return `https://www.trodo.se/catalogsearch/result/premium?filter[quality_group]=2&product_list_dir=asc&product_list_order=price&q=${searchQuery}`;
         }
         
-        // Hämta användar-ID efter inloggning
-        // Används för att skapa en unik sökväg till datan
-        userId = auth.currentUser?.uid || crypto.randomUUID();
+        function toggleAddForm() {
+            const isCurrentlyOpen = addFormWrapper.classList.contains('open');
+            const newState = isCurrentlyOpen ? 'closed' : 'open';
+            addFormWrapper.classList.toggle('open');
+            toggleBtn.classList.toggle('open');
+            localStorage.setItem('add_form_open_state', newState);
+        }
         
+        function initializeAddFormState() {
+            const storedState = localStorage.getItem('add_form_open_state');
+            if (storedState === 'open') {
+                 addFormWrapper.classList.add('open');
+                 toggleBtn.classList.add('open');
+            }
+        }
+
+        function createInventoryRow(item, isOutOfStock) {
+            const row = document.createElement('div');
+            row.className = 'artikel-rad';
+            row.setAttribute('data-id', item.id);
+            row.onclick = () => handleRowSelect(item.id, row);
+            if (selectedItemId === item.id) row.classList.add('selected');
+
+            const statusClass = item.quantity > 0 ? 'i-lager' : 'slut';
+            const statusText = item.quantity > 0 ? 'I lager' : 'Slut';
+            
+            let linkToUse = item.link || generateTrodoLink(item.service_filter);
+            let linkText = item.link ? 'Länk' : 'Trodo';
+
+            const linkContent = linkToUse ? `<button class="lank-knapp" onclick="window.open('${linkToUse}', '_blank'); event.stopPropagation();">${linkText}</button>` : `<span>(Saknas)</span>`;
+
+            const quantityCell = `<div class="quantity-cell"><button class="qty-btn" onclick="adjustQuantity(${item.id}, -1); event.stopPropagation();">-</button><span>${item.quantity}</span><button class="qty-btn" onclick="adjustQuantity(${item.id}, 1); event.stopPropagation();">+</button></div>`;
+            const editButton = isOutOfStock ? `<button class="edit-btn order-btn" onclick="handleEdit(${item.id}, true); event.stopPropagation();">Beställ</button>` : `<button class="edit-btn" onclick="handleEdit(${item.id}); event.stopPropagation();">Ändra</button>`;
+            const notesCell = `<span class="notes-cell" title="${item.notes || ''}">${item.notes || ''}</span>`;
+            
+            // Förstoringsglas-knappen
+            const searchButton = linkToUse ? 
+                `<button class="search-btn" onclick="window.open('${linkToUse}', '_blank'); event.stopPropagation();" title="Sök på ${linkText}">
+                    <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>
+                </button>` : 
+                '';
+
+            const serviceFilterCell = `
+                <span class="service-filter-cell">
+                    ${searchButton}
+                    <button class="copy-btn" onclick="copyToClipboard('${item.service_filter.replace(/'/g, "\\'")}'); event.stopPropagation();" title="Kopiera Artikelnummer">&#x1F4CB;</button>
+                    <span class="service-filter-text">${item.service_filter}</span>
+                </span>
+            `;
+
+            row.innerHTML = `
+                ${serviceFilterCell}
+                <span>${item.name}</span>
+                <span>${formatPrice(item.price)} kr</span>
+                ${quantityCell}
+                <span style="display: flex; align-items: center;"><span class="${statusClass}">${statusText}</span></span>
+                ${notesCell}
+                <span class="action-cell">${linkContent}</span>
+                <div class="action-buttons">${editButton}<button class="delete-btn" onclick="handleDelete(${item.id}); event.stopPropagation();">Ta bort</button></div>`;
+            return row;
+        }
+
+        function renderInventory(data) {
+            serviceArtiklarLista.innerHTML = '';
+            motorChassiArtiklarLista.innerHTML = '';
+            andraMarkenArtiklarLista.innerHTML = '';
+            slutILagerLista.innerHTML = '';
+            
+            // I detta steg har datan redan filtrerats och sorterats av sortAndRender
+            const iLager = data.filter(item => item.quantity > 0);
+            const slutILager = data.filter(item => item.quantity <= 0);
+
+            const serviceArtiklar = iLager.filter(item => item.category === 'Service');
+            // OBS: I det smarta sökfallet kommer alla artiklar att finnas i 'data' listan.
+            // För att visa alla matchande artiklar under de rätta rubrikerna måste vi filtrera BARA iLager.
+            const motorChassiArtiklar = iLager.filter(item => item.category === 'Motor/Chassi' || item.category === 'Övrigt' || !item.category);
+            const andraMarkenArtiklar = iLager.filter(item => item.category === 'Andra Märken');
+
+            
+            serviceArtiklar.forEach(item => serviceArtiklarLista.appendChild(createInventoryRow(item, false)));
+            motorChassiArtiklar.forEach(item => motorChassiArtiklarLista.appendChild(createInventoryRow(item, false)));
+            andraMarkenArtiklar.forEach(item => andraMarkenArtiklarLista.appendChild(createInventoryRow(item, false)));
+            slutILager.forEach(item => slutILagerLista.appendChild(createInventoryRow(item, true)));
+
+            // Uppdaterar display-logiken för alla rubriker baserat på innehåll
+            document.getElementById('service-artiklar-titel').style.display = serviceArtiklar.length > 0 ? 'flex' : 'none';
+            document.getElementById('service-artiklar-wrapper').style.display = serviceArtiklar.length > 0 ? 'block' : 'none';
+            document.getElementById('motor-chassi-artiklar-titel').style.display = motorChassiArtiklar.length > 0 ? 'flex' : 'none';
+            document.getElementById('motor-chassi-artiklar-wrapper').style.display = motorChassiArtiklar.length > 0 ? 'block' : 'none';
+            const andraMarkenHasItems = andraMarkenArtiklar.length > 0;
+            const andraMarkenTitle = document.getElementById('andra-marken-artiklar-titel');
+            const andraMarkenWrapper = document.getElementById('andra-marken-artiklar-wrapper');
+
+            andraMarkenTitle.style.display = andraMarkenHasItems ? 'flex' : 'none';
+            andraMarkenWrapper.style.display = andraMarkenHasItems ? 'block' : 'none';
+
+            slutILagerSektion.style.display = slutILager.length > 0 ? 'block' : 'none';
+        }
+
+        // KORRIGERING: Ny logik för Viktad Nyckelordssökning
+        function calculateRelevance(item, searchWords) {
+            let score = 0;
+            
+            // Konvertera artikelns text till en sträng för matchning
+            const serviceFilter = (item.service_filter || '').toLowerCase();
+            const name = (item.name || '').toLowerCase();
+            const notes = (item.notes || '').toLowerCase();
+            const category = (item.category || '').toLowerCase();
+            
+            searchWords.forEach(word => {
+                // Ta bort icke-alfanumeriska tecken för att få bättre matchningar på artikelnummer
+                const cleanWord = word.replace(/[^a-z0-9]/g, '');
+
+                // 1. Högst Prioritet: Artikelnummer (service_filter)
+                if (serviceFilter.includes(cleanWord)) {
+                    score += 5; 
+                }
+                
+                // 2. Hög Prioritet: Namn
+                if (name.includes(cleanWord)) {
+                    score += 3;
+                }
+                
+                // 3. Mellan Prioritet: Kategori
+                if (category.includes(cleanWord)) {
+                    score += 2;
+                }
+
+                // 4. Låg Prioritet: Anteckningar
+                if (notes.includes(cleanWord)) {
+                    score += 1;
+                }
+                
+                // Exakt matchning på hela artikeln
+                if (serviceFilter === cleanWord || name === cleanWord) {
+                     score += 5;
+                }
+            });
+
+            return score;
+        }
+
+
+        function sortAndRender() {
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            
+            if (searchTerm === '') {
+                 // Om sökfältet är tomt, sortera hela lagret enligt standard
+                const sortedInventory = [...inventory].sort((a, b) => {
+                    let aVal = a[currentSort.column];
+                    let bVal = b[currentSort.column];
+
+                    if (typeof aVal === 'string' && typeof bVal === 'string') {
+                        return currentSort.direction === 'asc' ? aVal.localeCompare(bVal, 'sv') : bVal.localeCompare(aVal, 'sv');
+                    } else {
+                        return currentSort.direction === 'asc' ? (aVal || 0) - (bVal || 0) : (bVal || 0) - (aVal || 0);
+                    }
+                });
+                renderInventory(sortedInventory);
+                return;
+            }
+
+            // STEG 1: Rensa sökfrågan (Natural Language Processing light)
+            const searchWords = searchTerm.split(/\s+/)
+                                          .filter(word => word.length > 1 && !stopWords.includes(word));
+            
+            // Lägg till sökordet som det är, för att få exakta fraser och nummer med i beräkningen
+            if (searchWords.length === 0 && searchTerm.length > 0) {
+                 searchWords.push(searchTerm);
+            }
+
+            // STEG 2: Beräkna relevanspoäng och filtrera
+            const scoredInventory = inventory
+                .map(item => ({
+                    ...item,
+                    relevanceScore: calculateRelevance(item, searchWords)
+                }))
+                .filter(item => item.relevanceScore > 0);
+            
+            // STEG 3: Sortera - Högst Poäng FÖRST, sedan enligt användarens val (currentSort)
+            const sortedAndFilteredInventory = scoredInventory.sort((a, b) => {
+                // Sortera PRIMÄRT efter relevans (fallande)
+                if (b.relevanceScore !== a.relevanceScore) {
+                    return b.relevanceScore - a.relevanceScore;
+                }
+                
+                // Sortera SEKUNDÄRT efter den valda kolumnen (t.ex. 'name' eller 'price')
+                let aVal = a[currentSort.column];
+                let bVal = b[currentSort.column];
+                
+                if (typeof aVal === 'string' && typeof bVal === 'string') {
+                    return currentSort.direction === 'asc' ? aVal.localeCompare(bVal, 'sv') : bVal.localeCompare(aVal, 'sv');
+                } else {
+                    return currentSort.direction === 'asc' ? (aVal || 0) - (bVal || 0) : (bVal || 0) - (aVal || 0);
+                }
+            });
+            
+            renderInventory(sortedAndFilteredInventory);
+        }
+
+        function applySearchFilter() {
+             // Lägg in en liten debounce (fördröjning) för bättre prestanda (se tips #22)
+             clearTimeout(window.searchTimeout);
+             window.searchTimeout = setTimeout(sortAndRender, 150);
+        }
+
+        async function handleFormSubmit(event) {
+            event.preventDefault();
+            
+            const submitBtn = addForm.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Sparar...';
+
+            const formData = new FormData(addForm);
+            const newItem = {
+                id: Date.now(), 
+                service_filter: (formData.get('service_filter') || '').trim().toUpperCase(),
+                name: (formData.get('name') || '').trim(),
+                price: parseFloat(formData.get('price')) || 0.00,
+                quantity: parseInt(formData.get('quantity'), 10) || 0,
+                category: formData.get('category') || 'Övrigt', 
+                notes: (formData.get('notes') || '').trim(),
+                link: (formData.get('link') || '').trim(),
+            };
+            
+            await saveInventoryItem(newItem); // Väntar på att sparandet ska bli klart
+            
+            addForm.reset();
+            
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Spara Artikel';
+
+            if (addFormWrapper.classList.contains('open')) {
+                toggleAddForm(); 
+            }
+        }
+        
+        function handleRowSelect(id, row) {
+            document.querySelectorAll('.artikel-rad').forEach(r => r.classList.remove('selected'));
+            if (selectedItemId === id) {
+                selectedItemId = null;
+            } else {
+                selectedItemId = id;
+                row.classList.add('selected');
+            }
+        }
+
+        window.handleEdit = function(id, isOrderMode = false) {
+            const item = inventory.find(i => i.id === id);
+            if (item) {
+                editForm.querySelector('#edit-id').value = item.id;
+                editForm.querySelector('#edit-service_filter').value = item.service_filter;
+                editForm.querySelector('#edit-name').value = item.name;
+                editForm.querySelector('#edit-price').value = item.price;
+                editForm.querySelector('#edit-quantity').value = isOrderMode ? 1 : item.quantity;
+                editForm.querySelector('#edit-category').value = item.category;
+                editForm.querySelector('#edit-notes').value = item.notes;
+                editForm.querySelector('#edit-link').value = item.link;
+                
+                const submitBtn = editForm.querySelector('.btn-primary');
+                const title = editModal.querySelector('h3');
+                if (isOrderMode) {
+                    title.textContent = 'Beställ Artikel';
+                    submitBtn.textContent = 'Markera som Beställd';
+                } else {
+                    title.textContent = 'Redigera Artikel';
+                    submitBtn.textContent = 'Spara Ändringar';
+                }
+                editModal.style.display = 'flex';
+            }
+        }
+
+        async function handleEditSubmit(event) {
+            event.preventDefault();
+
+            const submitBtn = editForm.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent; // Spara originaltexten
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Sparar...';
+            // -------------------------
+
+            const id = parseInt(editForm.querySelector('#edit-id').value, 10);
+            const originalItem = inventory.find(i => i.id === id);
+            
+            const updatedItem = {
+                ...originalItem,
+                service_filter: editForm.querySelector('#edit-service_filter').value.trim().toUpperCase(),
+                name: editForm.querySelector('#edit-name').value.trim(),
+                price: parseFloat(editForm.querySelector('#edit-price').value) || 0.00,
+                quantity: parseInt(editForm.querySelector('#edit-quantity').value, 10) || 0,
+                category: editForm.querySelector('#edit-category').value,
+                notes: editForm.querySelector('#edit-notes').value.trim(),
+                link: editForm.querySelector('#edit-link').value.trim(),
+            };
+
+            await saveInventoryItem(updatedItem); // Väntar på att sparandet ska bli klart
+            
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText; // Återställ till det den var (t.ex. "Spara Ändringar" eller "Markera som Beställd")
+
+            closeEditModal();
+        }
+        
+        window.adjustQuantity = async function(id, change) {
+            const item = inventory.find(i => i.id === id);
+            if (item) {
+                const newQuantity = Math.max(0, item.quantity + change);
+                const updatedItem = {...item, quantity: newQuantity };
+                await saveInventoryItem(updatedItem);
+            }
+        }
+
+        window.capitalizeWords = function(inputElement) {
+            let value = inputElement.value;
+            
+            // Detta tar varje ord, gör första bokstaven stor och behåller resten
+            let transformedValue = value.split(' ').map(word => 
+                word.charAt(0).toUpperCase() + word.slice(1) // Notera: slice(1) lämnar resten av ordet som det är
+            ).join(' ');
+            
+            inputElement.value = transformedValue;
+        }
+        
+        window.handleDelete = function(id) {
+            const item = inventory.find(i => i.id === id);
+            showCustomConfirmation(
+                `Är du säker på att du vill ta bort <strong>${item.name} (${item.service_filter})</strong>?`,
+                async (result) => {
+                    if (result) {
+                        await deleteInventoryItem(id);
+                    }
+                }, 'Bekräfta Borttagning'
+            );
+        }
+        
+        window.copyToClipboard = (text) => navigator.clipboard.writeText(text).then(() => showCustomAlert(`'${text}' har kopierats!`));
+        
+        function closeEditModal() { editModal.style.display = 'none'; }
+        function closeConfirmationModal() { confirmationModal.style.display = 'none'; confirmCallback = null; }
+
+        function showCustomConfirmation(message, callback, title = 'Bekräfta') {
+            confirmationModal.querySelector('#confirmationTitle').innerHTML = title;
+            confirmationModal.querySelector('#confirmationMessage').innerHTML = message;
+            confirmationModal.querySelector('#confirmNo').style.display = 'inline-block';
+            confirmationModal.style.display = 'flex';
+            confirmCallback = callback;
+        }
+        
+        function showCustomAlert(message, title = 'Meddelande') {
+            showCustomConfirmation(message, () => closeConfirmationModal(), title);
+            confirmationModal.querySelector('#confirmNo').style.display = 'none';
+        }
+
+        function initializeListeners() {
+            addForm.addEventListener('submit', handleFormSubmit);
+            editForm.addEventListener('submit', handleEditSubmit);
+            // KORRIGERING: Använd den nya debounced-funktionen
+            searchInput.addEventListener('input', applySearchFilter); 
+            toggleBtn.addEventListener('click', toggleAddForm);
+
+          // Hanterar synligheten av "X"-knappen i sökfältet
+            searchInput.addEventListener('input', () => {
+    if (searchInput.value.length > 0) {
+        clearSearchBtn.style.display = 'block';
+    } else {
+        clearSearchBtn.style.display = 'none';
+    }
+});
+
+// Hanterar klick på "X"-knappen
+clearSearchBtn.addEventListener('click', () => {
+    searchInput.value = ''; // Töm fältet
+    clearSearchBtn.style.display = 'none'; // Göm knappen
+    applySearchFilter(); // Uppdatera listan (med tom sökning)
+    searchInput.focus(); // Sätt fokus tillbaka i sökfältet
+});
+
+          document.querySelectorAll('.lager-container').forEach(container => {
+                container.addEventListener('scroll', () => {
+                    // Lägg till 'scrolled' klassen om vi har scrollat mer än 1px
+                    container.classList.toggle('scrolled', container.scrollTop > 1);
+                });
+            });
+
+            // Modal stängningslogik
+            [editModal, confirmationModal].forEach(modal => {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal || e.target.classList.contains('close-btn')) {
+                        modal.style.display = 'none';
+                    }
+                });
+            });
+            
+            // Sortering
+            document.querySelectorAll('.header span[data-sort]').forEach(header => {
+                header.addEventListener('click', () => {
+                    const column = header.getAttribute('data-sort');
+                    const direction = (currentSort.column === column && currentSort.direction === 'asc') ? 'desc' : 'asc';
+                    currentSort = { column, direction };
+                    // Använd den nya smarta sorteringsfunktionen
+                    applySearchFilter(); 
+                });
+            });
+            
+            // Bekräftelsemodal-knappar
+            document.getElementById('confirmYes').addEventListener('click', () => { if (confirmCallback) confirmCallback(true); closeConfirmationModal(); });
+            document.getElementById('confirmNo').addEventListener('click', () => { if (confirmCallback) confirmCallback(false); closeConfirmationModal(); });
+
+            // Fällbara sektioner - KORRIGERING: Gör logiken för att hämta wrapper-ID mer robust
+            document.querySelectorAll('.collapsible-header').forEach(header => {
+                header.addEventListener('click', () => {
+                    // Antar att wrapper-ID:t är header-ID:t + '-wrapper'
+                    const wrapperId = header.id.replace('-titel', '-wrapper');
+                    const wrapper = document.getElementById(wrapperId); 
+                    
+                    if (!wrapper) return; // Avbryt om wrapper inte hittas
+                    
+                    const isClosed = header.getAttribute('data-state') === 'closed';
+                    const newState = isClosed ? 'open' : 'closed';
+                    header.setAttribute('data-state', newState);
+                    wrapper.classList.toggle('collapsed', !isClosed);
+                    localStorage.setItem(header.id, newState);
+                });
+            });
+
+            // JSON-hantering
+            document.getElementById('download-json-btn').addEventListener('click', () => {
+                const dataStr = JSON.stringify(inventory, null, 2);
+                const blob = new Blob([dataStr], {type: "application/json"});
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a'); a.href = url; a.download = "lager_backup.json"; a.click(); URL.revokeObjectURL(url);
+            });
+            document.getElementById('upload-json-input').addEventListener('change', (event) => {
+                const file = event.target.files[0]; if (!file) return;
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    try {
+                        const uploadedInventory = JSON.parse(e.target.result);
+                        if(Array.isArray(uploadedInventory)) {
+                            showCustomConfirmation(`Detta kommer att skriva över ${inventory.length} befintliga artiklar med ${uploadedInventory.length} artiklar från filen. Vill du fortsätta?`, async (result) => {
+                                if (result) {
+                                    // Ta bort allt gammalt först
+                                    for (const item of inventory) { await deleteInventoryItem(item.id); }
+                                    // Spara det nya
+                                    for (const item of uploadedInventory) { await saveInventoryItem(item); }
+                                    showCustomAlert(`${uploadedInventory.length} artiklar uppladdade!`);
+                                }
+                            }, 'Skriv över lager?');
+                        } else {
+                            showCustomAlert('Fel: JSON-filen är inte en giltig lista (array).');
+                        }
+                    } catch(err) {
+                        showCustomAlert('Kunde inte läsa filen. Kontrollera att det är en giltig JSON-fil.');
+                    }
+                };
+                reader.readAsText(file); event.target.value = '';
+            });
+        }
+        
+        // KORRIGERING: Hantera det fällbara läget mer robust
+        function initializeCollapseState() {
+            document.querySelectorAll('.collapsible-header').forEach(header => {
+                const savedState = localStorage.getItem(header.id);
+                const wrapperId = header.id.replace('-titel', '-wrapper');
+                const wrapper = document.getElementById(wrapperId);
+
+                // Vi använder bara localStorage om det finns en sparad state
+                if (savedState === 'closed') {
+                    header.setAttribute('data-state', 'closed');
+                    if (wrapper) {
+                        wrapper.classList.add('collapsed');
+                    }
+                } 
+                // Om savedState INTE finns, eller om det är "open", gör vi ingenting (låter den vara öppen som standard)
+            });
+        }
+
         // KÖR ALLT I ORDNING
         initializeAddFormState(); 
         initializeCollapseState();
@@ -651,6 +599,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     } catch (e) {
         console.error("App Initialization Error:", e);
-        showStatus("FEL: Initieringsfel! Kontrollera konsolen för detaljer.", 'var(--danger-color)');
+        const statusElement = document.getElementById('sync-status');
+        if (statusElement) {
+           statusElement.textContent = "FEL: Initieringsfel!";
+           statusElement.style.color = 'var(--danger-color)';
+        }
     }
 });
