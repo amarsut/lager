@@ -92,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const searchFilter = serviceFilter.replace(/[\s-]/g, ''); 
             const searchQuery = encodeURIComponent(searchFilter);
             // Observera den uppdaterade sökvägen /bil/reservdelar/sok?query=
-            return `https://www.thansen.se/bil/reservdelar/sok?query=${searchQuery}`;
+            return `https://www.thansen.se/search/?query=${searchQuery}`;
         }
         
         // Global funktion för att hantera dropdowns (MÅSTE vara global för att funka i onclick)
@@ -662,4 +662,5 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
+
 
