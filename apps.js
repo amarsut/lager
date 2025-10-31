@@ -46,6 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const editForm = document.getElementById('edit-article-form');
         const confirmationModal = document.getElementById('confirmationModal');
         const syncStatusElement = document.getElementById('sync-status');
+        const clearSearchBtn = document.getElementById('clear-search-btn'); // <-- LÄGG TILL DENNA RAD
         
         // GLOBALA VARIABLER
         let inventory = []; 
@@ -439,6 +440,23 @@ document.addEventListener('DOMContentLoaded', () => {
             searchInput.addEventListener('input', applySearchFilter); 
             toggleBtn.addEventListener('click', toggleAddForm);
 
+          // Hanterar synligheten av "X"-knappen i sökfältet
+searchInput.addEventListener('input', () => {
+    if (searchInput.value.length > 0) {
+        clearSearchBtn.style.display = 'block';
+    } else {
+        clearSearchBtn.style.display = 'none';
+    }
+});
+
+// Hanterar klick på "X"-knappen
+clearSearchBtn.addEventListener('click', () => {
+    searchInput.value = ''; // Töm fältet
+    clearSearchBtn.style.display = 'none'; // Göm knappen
+    applySearchFilter(); // Uppdatera listan (med tom sökning)
+    searchInput.focus(); // Sätt fokus tillbaka i sökfältet
+});
+
           document.querySelectorAll('.lager-container').forEach(container => {
                 container.addEventListener('scroll', () => {
                     // Lägg till 'scrolled' klassen om vi har scrollat mer än 1px
@@ -554,3 +572,4 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
+
