@@ -206,7 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 hasLinks = true;
             }
             if (bildelsbasenLink) {
-                resultsHTML += `<a href="${bildelsbasenLink}" target="_blank" class="lank-knapp2">Sök på Bildelsbasen</a>`;
+                resultsHTML += `<a href="${bildelsbasenLink}" target="_blank" class="lank-knapp">Sök på Bildelsbasen<span class="orange-asterisk">*</span></a>`;
                 hasLinks = true;
             }
             if (skruvatLink) {
@@ -800,6 +800,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
+
 
 
 
