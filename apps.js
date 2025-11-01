@@ -52,6 +52,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const globalSearchInput = document.getElementById('global-search-input');
         const globalSearchBtn = document.getElementById('global-search-btn');
         const globalSearchResults = document.getElementById('global-search-results');
+
+        const HISTORY_KEY = 'globalSearchHistory';
+        const MAX_HISTORY_ITEMS = 5;
         
         // GLOBALA VARIABLER
         let inventory = []; 
@@ -66,7 +69,68 @@ document.addEventListener('DOMContentLoaded', () => {
         // ----------------------------------------------------------------------
         // LÄNK-FUNKTIONER
         // ----------------------------------------------------------------------
-        
+
+        // Funktion för att spara en sökterm till localStorage
+function saveSearchToHistory(term) {
+    if (!term) return;
+    
+    let history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+    
+    // Filtrera bort den nuvarande termen för att undvika dubletter
+    history = history.filter(h => h !== term);
+    
+    // Lägg till den nya termen först
+    history.unshift(term);
+    
+    // Begränsa till MAX_HISTORY_ITEMS
+    if (history.length > MAX_HISTORY_ITEMS) {
+        history = history.slice(0, MAX_HISTORY_ITEMS);
+    }
+    
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+    
+    // Uppdatera visningen direkt
+    renderSearchHistory();
+}
+
+// Funktion för att rita ut historikknapparna
+function renderSearchHistory() {
+    const historyContainer = document.getElementById('global-search-history');
+    if (!historyContainer) return;
+    
+    const history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+    
+    if (history.length === 0) {
+        historyContainer.innerHTML = '';
+        return;
+    }
+
+    let historyHTML = '';
+    history.forEach(term => {
+        // Lägg till en knapp för varje historik-term
+        historyHTML += `<span class="history-item" data-term="${term}">${term}</span>`;
+    });
+    
+    historyContainer.innerHTML = historyHTML;
+    
+    // Lägg till EventListeners på de nya knapparna
+    document.querySelectorAll('.history-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+            const term = e.target.getAttribute('data-term');
+            const globalSearchInput = document.getElementById('global-search-input');
+            
+            // 1. Fyll i sökfältet
+            globalSearchInput.value = term;
+            
+            // 2. Kör sökningen (använder den nya 'override'-funktionen)
+            handleGlobalSearch(term);
+            
+            // 3. Scrolla upp till resultat
+            document.querySelector('.global-search-container').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        });
+    });
+}
+      
         function formatPrice(price) {
             return new Intl.NumberFormat('sv-SE', { 
                 minimumFractionDigits: 2, 
@@ -775,6 +839,7 @@ function handleGlobalSearch(searchTermOverride) {
         initializeAddFormState(); 
         initializeCollapseState();
         initializeListeners(); 
+        renderSearchHistory();
         setupRealtimeListener();
 
     } catch (e) {
@@ -786,6 +851,7 @@ function handleGlobalSearch(searchTermOverride) {
         }
     }
 });
+
 
 
 
