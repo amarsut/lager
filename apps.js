@@ -199,7 +199,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 hasLinks = true;
             }
             if (aeroMLink) {
-                resultsHTML += `<a href="${aeroMLink}" target="_blank" class="lank-knapp">${searchIconSVG}Aero M</a>`;
+                resultsHTML += `<a href="${aeroMLink}" target="_blank" class="lank-knapp">${searchIconSVG}AeroMotors</a>`;
                 hasLinks = true;
             }
             if (thansenLink) {
@@ -215,7 +215,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 hasLinks = true;
             }
             if (vortoLink) {
-                resultsHTML += `<a href="${vortoLink}" target="_blank" class="lank-knapp">${searchIconSVG}Vorto</a>`;
+                resultsHTML += `<a href="${vortoLink}" target="_blank" class="lank-knapp">${searchIconSVG}Vorto.se</a>`;
                 hasLinks = true;
             }
             if (autodocLink) {
@@ -801,6 +801,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
+
 
 
 
