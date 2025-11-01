@@ -276,6 +276,29 @@
         color: white; 
         border-color: var(--primary-color); /* För att förhindra hopp vid hover */
     }
+    .lank-knapp2, .edit-btn, .delete-btn, .order-btn { padding: 6px 10px; border: 1px solid transparent; border-radius: 6px; cursor: pointer; font-size: 0.8em; font-weight: 600; transition: all 0.2s; text-align: center; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); }
+    .lank-knapp2 { 
+        /* Detta är din standardstil: Vit bakgrund, blå/primär färg */
+        background-color: white; 
+        color: var(--primary-color); 
+        border: 1px solid var(orange);
+        padding: 6px 10px; 
+        border-radius: 6px; 
+        cursor: pointer; 
+        font-size: 0.8em; 
+        font-weight: 600; 
+        transition: all 0.2s; 
+        text-align: center; 
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); 
+        /* NYTT: För att <a>-taggar ska se ut som knappar */
+        text-decoration: none;
+        display: inline-block;
+    }
+    .lank-knapp2:hover { 
+        background-color: var(--primary-color); 
+        color: white; 
+        border-color: var(--primary-color); /* För att förhindra hopp vid hover */
+    }
     .edit-btn, .order-btn { background-color: var(--primary-color); color: white; }
     .edit-btn:hover, .order-btn:hover { background-color: var(--primary-dark); }
     .delete-btn { background-color: white; color: var(--danger-color); border: 1px solid var(--danger-color); }
@@ -833,4 +856,5 @@
 
 </body>
 </html>
+
 
