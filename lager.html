@@ -603,22 +603,38 @@
         font-size: 0.9em;
         font-weight: 700;
     }
-    #global-search-close-btn {
-        position: absolute;
-        top: 8px; /* Flytta ner från översta kanten */
-        right: 10px; /* Flytta in från högra kanten */
-        background: none;
-        border: none;
-        font-size: 24px;
-        color: var(--text-dark);
-        cursor: pointer;
-        line-height: 1; /* Säkerställ att den tar minimal höjd */
-        padding: 0;
-        width: 30px; /* Ger ett bra klickområde */
-        height: 30px;
-        text-align: center;
-        z-index: 1001; /* Säkerställ att den ligger över knapparna */
+    #global-search-results {
+        position: relative; /* VIKTIGT: Fäster X-knappen här */
+        top: 100%; 
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        box-shadow: var(--card-shadow);
+        padding: 15px;
+        border-radius: 8px;
+        display: none; 
+    
+        /* Ger utrymme till höger i rutan så att knappen 'X' kan ligga där */
+        padding-right: 45px; 
     }
+    #global-search-close-btn {
+    position: absolute; /* Tas ut ur det normala flödet */
+    top: 8px; /* Flytta ner från toppen */
+    right: 10px; /* Flytta in från höger */
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: var(--text-dark);
+    cursor: pointer;
+    line-height: 1; 
+    padding: 0;
+    width: 30px; 
+    height: 30px;
+    text-align: center;
+    z-index: 1001; /* Säkerställer att den ligger över länkarna */
+}
         /* 4. MOBIL SPECIFIK JUSTERING (om nödvändig) */
     /* Använd en media query för att finjustera på små skärmar */
     @media (max-width: 600px) {
@@ -842,6 +858,7 @@
 
 </body>
 </html>
+
 
 
 
