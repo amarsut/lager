@@ -205,6 +205,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 resultsHTML += `<a href="${thansenLink}" target="_blank" class="lank-knapp">Sök på Thansen</a>`;
                 hasLinks = true;
             }
+            if (bildelsbasenLink) {
+                resultsHTML += `<a href="${bildelsbasenLink}" target="_blank" class="lank-knapp">Sök på Bildelsbasen</a>`;
+                hasLinks = true;
+            }
             if (skruvatLink) {
                 resultsHTML += `<a href="${skruvatLink}" target="_blank" class="lank-knapp">Sök på Skruvat</a>`;
                 hasLinks = true;
@@ -215,10 +219,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (autodocLink) {
                 resultsHTML += `<a href="${autodocLink}" target="_blank" class="lank-knapp">Sök på Autodoc</a>`;
-                hasLinks = true;
-            }
-            if (bildelsbasenLink) {
-                resultsHTML += `<a href="${bildelsbasenLink}" target="_blank" class="lank-knapp">Sök på Bildelsbasen</a>`;
                 hasLinks = true;
             }
             if (reservdelar24Link) {
@@ -800,4 +800,5 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
+
 
