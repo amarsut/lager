@@ -237,11 +237,11 @@ function renderSearchHistory() {
         // ----------------------------------------------------------------------
         const externalSearchProviders = [
     { name: "Trodo", linkGenerator: generateTrodoLink, icon: "https://www.trodo.se/media/favicon/default/favicon-96x96.png" },
-    { name: "Aero M", linkGenerator: generateAeroMLink, icon: "https://aerom.se/wp-content/uploads/2021/08/cropped-favicon-32x32.png" }, // Bytt till PNG då ICO är svårt ibland
-    { name: "Thansen", linkGenerator: generateThansenLink, icon: "https://www.thansen.se/favicon.ico" },
+    { name: "Aero M", linkGenerator: generateAeroMLink, icon: "https://aeromotors.se/img/favicon.ico?1678367017" }, // Bytt till PNG då ICO är svårt ibland
+    { name: "Thansen", linkGenerator: generateThansenLink, icon: "https://cdn.thg.dk/DAT/dom/img/logo-thg.ico" },
     { name: "Skruvat", linkGenerator: generateSkruvatLink, icon: "https://www.skruvat.se/favicon.ico" },
     { name: "Vorto", linkGenerator: generateVortoLink, icon: "https://www.vorto.se/favicon.ico" },
-    { name: "Autodoc", linkGenerator: generateAutodocLink, icon: "https://www.autodoc.se/favicon.ico" },
+    { name: "Autodoc", linkGenerator: generateAutodocLink, icon: "https://autodoc.se/assets/54eb94/images/favicon-196x196.png" },
     { name: "Bildelsbasen*", linkGenerator: generateBildelsbasenLink, icon: "https://www.bildelsbasen.se/favicon.ico" },
     { name: "Reservdelar24", linkGenerator: generateReservdelar24Link, icon: "https://www.reservdelar24.se/favicon.ico" },
 ];
@@ -851,6 +851,7 @@ function handleGlobalSearch(searchTermOverride) {
         }
     }
 });
+
 
 
 
