@@ -597,11 +597,19 @@
         /* Öka marginalen nedtill om knappen X ligger under */
         margin-bottom: 20px; /* Ger utrymme om 'X' ligger under knapparna i flödet */
     }
+    .btn-search-icon {
+        width: 1em; /* Anpassar storleken till knappens textstorlek */
+        height: 1em;
+        margin-right: 8px; /* Avstånd mellan ikon och text */
+        vertical-align: middle;
+        position: relative;
+        top: -1px; 
+    }
     /* Återanvänd 'lank-knapp' stilen men gör den större och applicera färgerna */
     .global-search-results-links .lank-knapp {
-        padding: 12px 20px;
-        font-size: 0.9em;
-        font-weight: 700;
+        display: inline-flex; 
+        align-items: center; 
+        justify-content: center; 
     }
     #global-search-results {
         position: relative; /* VIKTIGT: Fäster X-knappen här */
@@ -858,6 +866,7 @@
 
 </body>
 </html>
+
 
 
 
