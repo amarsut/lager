@@ -598,18 +598,31 @@
         margin-bottom: 20px; /* Ger utrymme om 'X' ligger under knapparna i flödet */
     }
     .btn-search-icon {
-        width: 1em; /* Anpassar storleken till knappens textstorlek */
-        height: 1em;
+        /* NYCKELN: Sätter storleken till 1.1 gånger textstorleken */
+        width: 1.1em; 
+        height: 1.1em;
+    
         margin-right: 8px; /* Avstånd mellan ikon och text */
+        color: currentColor; /* Använder knappens textfärg */
+    
+        /* Justering för att centrera ikonen vertikalt */
         vertical-align: middle;
         position: relative;
         top: -1px; 
     }
     /* Återanvänd 'lank-knapp' stilen men gör den större och applicera färgerna */
     .global-search-results-links .lank-knapp {
-        display: inline-flex; 
-        align-items: center; 
-        justify-content: center; 
+        display: inline-flex; /* NYCKELN: Tvingar fram horisontell justering */
+        align-items: center; /* Centrerar vertikalt */
+        justify-content: center; /* Centrerar horisontellt */
+    
+        /* Dina befintliga stilar för länk-knappen: */
+        padding: 10px 15px;
+        font-size: 0.95em;
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: background-color 0.15s;
     }
     #global-search-results {
         position: relative; /* VIKTIGT: Fäster X-knappen här */
@@ -866,6 +879,7 @@
 
 </body>
 </html>
+
 
 
 
