@@ -764,10 +764,18 @@
 }
 
 /* Ta bort understrykning från logotyp-länken */
-#header-logo-link {
-    text-decoration: none;
-    /* Centrera bilden i headern om din header använder flexbox/grid */
-    display: inline-block; 
+#header-logo-link h1 {
+    font-size: 2.5rem; /* Större och mer framträdande */
+    font-weight: 800; /* Extra fet stil */
+    color: var(--text-dark); /* Huvudfärgen för text */
+    margin: 0; /* Ta bort standardmarginaler */
+    text-decoration: none; /* Säkerställ att texten inte är understruken om den är en länk */
+}
+
+.subtitle {
+    font-size: 1.5rem; /* Mindre storlek för undertiteln */
+    font-weight: 400; /* Lättare typsnittsvikt */
+    color: var(--primary-color); /* Använder din primärfärg för kontrast */
 }
 
 /* Säkerställ att headern är centrerad (om du vill ha bilden centrerad på sidan) */
@@ -786,7 +794,7 @@ header {
 
     <div class="main-content">
         <a href="index.html" id="header-logo-link">
-            <img src="images/background.png" alt="Lagerdata - Powered by Firebase - @SUT" id="header-logo-img">
+            <h1>Lagerdata <span class="subtitle">(Firebase)</span></h1>
         </a>
 
         <div class="global-search-container">
@@ -965,6 +973,7 @@ header {
 
 </body>
 </html>
+
 
 
 
