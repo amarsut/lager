@@ -756,11 +756,19 @@
     }
         /* Ny stil för logotypbilden */
 #header-logo-img {
-    /* Gör bilden responsiv och se till att den inte är för stor */
-    max-width: 700px; /* Justera detta värde tills det ser bra ut */
-    height: auto;
-    /* Tar bort eventuella linjer under bilden om den är inuti en länk */
-    display: block; 
+    /* Basstorlek för Desktop */
+    max-width: 450px; /* Välj en maxbredd som passar på stora skärmar (t.ex. 400px - 500px) */
+    width: 100%;      /* Tvingar bilden att ta upp 100% av det tillgängliga utrymmet, upp till max-width */
+    height: auto;     /* Säkerställer att höjden skalas korrekt */
+    display: block;   /* Används för att ta bort extra marginaler under bilden */
+    
+    /* Centrera bilden i Headern */
+    margin-left: auto;
+    margin-right: auto;
+
+    /* Lite luft runt omkring */
+    padding-top: 15px; 
+    padding-bottom: 15px; 
 }
 
 /* Säkerställ att headern är centrerad (om du vill ha bilden centrerad på sidan) */
@@ -778,7 +786,7 @@ header {
 <body>
 
     <div class="main-content">
-        <h1>📦Lagerdata <span class="subtitle">(Firebase)</span></h1>
+        <img src="images/background.png" alt="Lagerdata & Prisjämförelse" id="header-logo-img">
         
         <div class="global-search-container">
         <p>Skriv in ett artikelnummer för att generera sök-länkar till externa leverantörer.</p>
@@ -956,6 +964,7 @@ header {
 
 </body>
 </html>
+
 
 
 
