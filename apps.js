@@ -723,16 +723,6 @@ function handleGlobalSearch(searchTermOverride) {
             searchInput.addEventListener('input', applySearchFilter); 
             toggleBtn.addEventListener('click', toggleAddForm);
 
-            // NYA LYSSNARE FÖR GLOBAL SÖK
-            globalSearchBtn.addEventListener('click', handleGlobalSearch);
-            globalSearchInput.addEventListener('keydown', (event) => {
-                if (event.key === 'Enter') {
-                    event.preventDefault(); // Förhindra formulär-submit
-                    handleGlobalSearch();
-                }
-            });
-            // SLUT NYA LYSSNARE
-
             searchInput.addEventListener('input', () => {
                 if (searchInput.value.length > 0) {
                     clearSearchBtn.style.display = 'block';
@@ -835,6 +825,14 @@ function handleGlobalSearch(searchTermOverride) {
             });
         }
 
+        globalSearchBtn.addEventListener('click', handleGlobalSearch);
+          globalSearchInput.addEventListener('keydown', (event) => {
+              if (event.key === 'Enter') {
+                  event.preventDefault(); // Förhindra formulär-submit
+                  handleGlobalSearch();
+              }
+          });
+
         // KÖR ALLT I ORDNING
         initializeAddFormState(); 
         initializeCollapseState();
@@ -851,6 +849,7 @@ function handleGlobalSearch(searchTermOverride) {
         }
     }
 });
+
 
 
 
