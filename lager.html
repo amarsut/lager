@@ -599,10 +599,10 @@
     }
     .btn-search-icon {
         /* NYCKELN: Sätter storleken till 1.1 gånger textstorleken */
-        width: 1.1em; 
-        height: 1.1em;
+        width: 1.0em; 
+        height: 1.0em;
     
-        margin-right: 8px; /* Avstånd mellan ikon och text */
+        margin-right: 6px; /* Avstånd mellan ikon och text */
         color: currentColor; /* Använder knappens textfärg */
     
         /* Justering för att centrera ikonen vertikalt */
@@ -612,13 +612,15 @@
     }
     /* Återanvänd 'lank-knapp' stilen men gör den större och applicera färgerna */
     .global-search-results-links .lank-knapp {
-        display: inline-flex; /* NYCKELN: Tvingar fram horisontell justering */
-        align-items: center; /* Centrerar vertikalt */
-        justify-content: center; /* Centrerar horisontellt */
+        display: inline-flex;
+        align-items: center; 
+        justify-content: center; 
     
-        /* Dina befintliga stilar för länk-knappen: */
-        padding: 10px 15px;
-        font-size: 0.95em;
+        /* --- ÄNDRING HÄR --- */
+        padding: 8px 12px; /* Minskar höjden och bredden */
+        font-size: 0.9em;  /* Gör texten lite mindre */
+        /* ------------------- */
+    
         border-radius: 6px;
         text-decoration: none;
         font-weight: 600;
@@ -879,6 +881,7 @@
 
 </body>
 </html>
+
 
 
 
