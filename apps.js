@@ -236,7 +236,7 @@ function renderSearchHistory() {
         // NY GLOBAL PRISJÄMFÖRELSE-FUNKTION
         // ----------------------------------------------------------------------
         const externalSearchProviders = [
-    { name: "Trodo", linkGenerator: generateTrodoLink, icon: "https://www.trodo.se/favicon.ico" },
+    { name: "Trodo", linkGenerator: generateTrodoLink, icon: "https://www.trodo.se/media/favicon/default/favicon-96x96.png" },
     { name: "Aero M", linkGenerator: generateAeroMLink, icon: "https://aerom.se/wp-content/uploads/2021/08/cropped-favicon-32x32.png" }, // Bytt till PNG då ICO är svårt ibland
     { name: "Thansen", linkGenerator: generateThansenLink, icon: "https://www.thansen.se/favicon.ico" },
     { name: "Skruvat", linkGenerator: generateSkruvatLink, icon: "https://www.skruvat.se/favicon.ico" },
@@ -851,6 +851,7 @@ function handleGlobalSearch(searchTermOverride) {
         }
     }
 });
+
 
 
 
