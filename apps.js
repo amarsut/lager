@@ -171,83 +171,68 @@ document.addEventListener('DOMContentLoaded', () => {
         // ----------------------------------------------------------------------
         // NY GLOBAL PRISJÄMFÖRELSE-FUNKTION
         // ----------------------------------------------------------------------
-        function handleGlobalSearch() {
-            const searchTerm = globalSearchInput.value.trim().toUpperCase();
-            if (searchTerm === '') {
-                globalSearchResults.innerHTML = '';
-                globalSearchResults.style.display = 'none';
-                return;
-            }
-            
-            // Använd samma länk-logik som i createInventoryRow
-            const trodoLink = generateTrodoLink(searchTerm);
-            const aeroMLink = generateAeroMLink(searchTerm); 
-            const thansenLink = generateThansenLink(searchTerm);
-            const skruvatLink = generateSkruvatLink(searchTerm);
-            const vortoLink = generateVortoLink(searchTerm);
-            const autodocLink = generateAutodocLink(searchTerm);
-            const bildelsbasenLink = generateBildelsbasenLink(searchTerm);
-            const reservdelar24Link = generateReservdelar24Link(searchTerm);
-            const searchIconSVG = `<svg class="btn-search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path fill="currentColor" d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>`;
-            
-            let resultsHTML = '<div class="global-search-results-links">';
-            let hasLinks = false;
+        const externalSearchProviders = [
+    { name: "Trodo", linkGenerator: generateTrodoLink, icon: "https://www.trodo.se/favicon.ico" },
+    { name: "Aero M", linkGenerator: generateAeroMLink, icon: "https://aerom.se/wp-content/uploads/2021/08/cropped-favicon-32x32.png" }, // Bytt till PNG då ICO är svårt ibland
+    { name: "Thansen", linkGenerator: generateThansenLink, icon: "https://www.thansen.se/favicon.ico" },
+    { name: "Skruvat", linkGenerator: generateSkruvatLink, icon: "https://www.skruvat.se/favicon.ico" },
+    { name: "Vorto", linkGenerator: generateVortoLink, icon: "https://www.vorto.se/favicon.ico" },
+    { name: "Autodoc", linkGenerator: generateAutodocLink, icon: "https://www.autodoc.se/favicon.ico" },
+    { name: "Bildelsbasen*", linkGenerator: generateBildelsbasenLink, icon: "https://www.bildelsbasen.se/favicon.ico" },
+    { name: "Reservdelar24", linkGenerator: generateReservdelar24Link, icon: "https://www.reservdelar24.se/favicon.ico" },
+];
 
-            // Knapparna har nu bara "lank-knapp" klassen för neutral stil
-            if (trodoLink) {
-                resultsHTML += `<a href="${trodoLink}" target="_blank" class="lank-knapp">${searchIconSVG}Trodo</a>`;
-                hasLinks = true;
-            }
-            if (aeroMLink) {
-                resultsHTML += `<a href="${aeroMLink}" target="_blank" class="lank-knapp">${searchIconSVG}AeroMotors</a>`;
-                hasLinks = true;
-            }
-            if (thansenLink) {
-                resultsHTML += `<a href="${thansenLink}" target="_blank" class="lank-knapp">${searchIconSVG}Thansen</a>`;
-                hasLinks = true;
-            }
-            if (bildelsbasenLink) {
-                resultsHTML += `<a href="${bildelsbasenLink}" target="_blank" class="lank-knapp">${searchIconSVG}Bildelsbasen<span class="orange-asterisk">*</span></a>`;
-                hasLinks = true;
-            }
-            if (skruvatLink) {
-                resultsHTML += `<a href="${skruvatLink}" target="_blank" class="lank-knapp">${searchIconSVG}Skruvat</a>`;
-                hasLinks = true;
-            }
-            if (vortoLink) {
-                resultsHTML += `<a href="${vortoLink}" target="_blank" class="lank-knapp">${searchIconSVG}Vorto.se</a>`;
-                hasLinks = true;
-            }
-            if (autodocLink) {
-                resultsHTML += `<a href="${autodocLink}" target="_blank" class="lank-knapp">${searchIconSVG}Autodoc</a>`;
-                hasLinks = true;
-            }
-            if (reservdelar24Link) {
-                resultsHTML += `<a href="${reservdelar24Link}" target="_blank" class="lank-knapp">${searchIconSVG}Reservdelar24</a>`;
-                hasLinks = true;
-            }
+
+function handleGlobalSearch(searchTermOverride) {
+    // Använd override (från historiken) om den finns, annars hämta från inputfältet
+    const searchTerm = searchTermOverride ? searchTermOverride.trim().toUpperCase() : globalSearchInput.value.trim().toUpperCase();
+
+    if (searchTerm === '') {
+        globalSearchResults.innerHTML = '';
+        globalSearchResults.style.display = 'none';
+        return;
+    }
+
+    // SPARA SÖKTERM TILL HISTORIKEN (NYTT!)
+    saveSearchToHistory(searchTerm); 
+
+    const searchIconSVG = `<svg class="btn-search-icon" ... > ... </svg>`; // Behåll din befintliga SVG här.
+
+    let resultsHTML = '<div class="global-search-results-links">';
+    let hasLinks = false;
+
+    externalSearchProviders.forEach(provider => {
+        const link = provider.linkGenerator(searchTerm);
+        if (link) {
+            // Använd favicon och namnet i knappen (NYTT!)
+            const iconHTML = `<img src="${provider.icon}" alt="${provider.name}" class="link-favicon">`;
             
-            resultsHTML += '</div>';
-            
-            // Lägg till en stängningsknapp
-            resultsHTML += '<button id="global-search-close-btn" title="Stäng resultat">&times;</button>';
-            
-            if (hasLinks) {
-                globalSearchResults.innerHTML = resultsHTML;
-                globalSearchResults.style.display = 'block';
-                
-                // Lägg till event listener för den nya stängningsknappen
-                document.getElementById('global-search-close-btn').addEventListener('click', () => {
-                    globalSearchResults.innerHTML = '';
-                    globalSearchResults.style.display = 'none';
-                    // globalSearchInput.value = ''; // Avkommentera om du vill rensa fältet
-                });
-            } else {
-                // Om inga länkar kunde genereras
-                globalSearchResults.innerHTML = '';
-                globalSearchResults.style.display = 'none';
-            }
+            resultsHTML += `<a href="${link}" target="_blank" class="lank-knapp">${iconHTML}${provider.name}</a>`;
+            hasLinks = true;
         }
+    });
+
+    resultsHTML += '</div>';
+    
+    // Lägg till footer för Bildelsbasen om den är med
+    if (searchTerm.length > 0) {
+        resultsHTML += '<div class="search-disclaimer-text">* Bildelsbasen söker primärt efter begagnade delar.</div>';
+    }
+
+    if (hasLinks) {
+        globalSearchResults.innerHTML = resultsHTML;
+        globalSearchResults.style.display = 'block';
+    } else {
+        globalSearchResults.innerHTML = '';
+        globalSearchResults.style.display = 'none';
+    }
+    
+    // Stäng-knapp (om du har den, annars ignorera)
+    document.getElementById('global-search-close-btn').addEventListener('click', () => {
+        globalSearchResults.innerHTML = '';
+        globalSearchResults.style.display = 'none';
+    });
+}
 
         // ----------------------------------------------------------------------
         // GRÄNSSNITT OCH HUVUDFUNKTIONER
@@ -801,6 +786,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
+
 
 
 
