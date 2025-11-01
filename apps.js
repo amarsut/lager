@@ -1,4 +1,12 @@
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js';
+if (globalSearchBtn) {
+    globalSearchBtn.addEventListener('click', (event) => {
+        // Förhindra standardformulärbeteende om knappen ligger i ett formulär
+        event.preventDefault(); 
+        
+        // Anropa din sökfunktion
+        handleGlobalSearch();
+    });
+}import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js';
 import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
 
 // FIREBASE KONFIGURATION
@@ -825,6 +833,16 @@ function handleGlobalSearch(searchTermOverride) {
             });
         }
 
+        if (globalSearchBtn) {
+            globalSearchBtn.addEventListener('click', (event) => {
+            // Förhindra standardformulärbeteende om knappen ligger i ett formulär
+            event.preventDefault(); 
+        
+            // Anropa din sökfunktion
+            handleGlobalSearch();
+          });
+        }
+
         globalSearchBtn.addEventListener('click', handleGlobalSearch);
           globalSearchInput.addEventListener('keydown', (event) => {
               if (event.key === 'Enter') {
@@ -849,6 +867,7 @@ function handleGlobalSearch(searchTermOverride) {
         }
     }
 });
+
 
 
 
