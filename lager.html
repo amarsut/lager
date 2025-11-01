@@ -591,11 +591,10 @@
         position: relative;
     }
     .global-search-results-links {
-        display: flex;
-        flex-wrap: wrap; /* Låter knapparna flöda till nästa rad i mobilen */
+        display: grid;                 /* ÄNDRA FRÅN flex TILL grid */
+        grid-template-columns: repeat(2, 1fr); /* Tvinga till 2 jämna kolumner */
         gap: 10px;
-        /* Öka marginalen nedtill om knappen X ligger under */
-        margin-bottom: 20px; /* Ger utrymme om 'X' ligger under knapparna i flödet */
+        margin-bottom: 20px; 
     }
     .btn-search-icon {
         /* NYCKELN: Sätter storleken till 1.1 gånger textstorleken */
@@ -881,6 +880,7 @@
 
 </body>
 </html>
+
 
 
 
