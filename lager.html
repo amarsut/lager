@@ -703,6 +703,29 @@
         display: inline-block;
     }
     /* --- SLUT STILAR FÖR NY GLOBAL SÖKRUTA --- */
+    .search-history-container {
+        margin-top: 5px;
+        margin-bottom: 5px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        font-size: 0.9em;
+    }
+
+    .history-item {
+        padding: 4px 10px;
+        background-color: var(--border-color); /* Lätt grå */
+        color: var(--text-dark);
+        border-radius: 20px;
+        cursor: pointer;
+        transition: background-color 0.15s, transform 0.15s;
+        font-weight: 500;
+    }
+
+    .history-item:hover {
+        background-color: #d1d5db; /* Mörkare grå vid hovring */
+        transform: translateY(-1px);
+    }
     </style>
 <link rel="manifest" href="./manifest.json">
     
@@ -724,6 +747,16 @@
             </div>
             <div id="global-search-results" class="global-search-results-wrapper" style="display: none;">
                 </div>
+        </div>
+        <div class="global-search-container">
+        <div class="search-input-group">
+            <input type="text" id="global-search-input" placeholder="Jämför priser externt (Artikelnummer)" accesskey="j">
+            <button id="global-search-btn" class="btn-primary" title="Sök">Jämför</button>
+        </div>
+        <div id="global-search-history" class="search-history-container">
+            </div>
+                <div id="global-search-results" class="global-search-results-box">
+            </div>
         </div>
         <div class="controls-bar top-controls">
             <button id="toggle-add-form-btn" class="btn-primary" type="button">
@@ -890,6 +923,7 @@
 
 </body>
 </html>
+
 
 
 
