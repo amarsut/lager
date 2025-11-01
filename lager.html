@@ -590,9 +590,15 @@
         border-top: 2px solid var(--border-color);
         position: relative;
     }
+    /*.global-search-results-links {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        margin-bottom: 20px; 
+    }*/
     .global-search-results-links {
-        display: grid;                 /* ÄNDRA FRÅN flex TILL grid */
-        grid-template-columns: repeat(2, 1fr); /* Tvinga till 2 jämna kolumner */
+        display: flex;
+        flex-wrap: wrap; /* Låter knapparna flöda på datorn */
         gap: 10px;
         margin-bottom: 20px; 
     }
@@ -681,6 +687,10 @@
         }
         #global-search-btn {
             width: 100%;
+        }
+        .global-search-results-links {
+            display: grid;                 
+            grid-template-columns: repeat(2, 1fr); /* Tvinga till 2 kolumner */
         }
     }
     .orange-asterisk {
@@ -880,6 +890,7 @@
 
 </body>
 </html>
+
 
 
 
