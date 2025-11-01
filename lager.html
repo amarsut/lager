@@ -754,6 +754,27 @@
         vertical-align: middle;
         border-radius: 2px; /* Kan ge en snyggare look */
     }
+        /* Ny stil för logotypbilden */
+#header-logo-img {
+    /* Gör bilden responsiv och se till att den inte är för stor */
+    max-width: 350px; /* Justera detta värde tills det ser bra ut */
+    height: auto;
+    /* Tar bort eventuella linjer under bilden om den är inuti en länk */
+    display: block; 
+}
+
+/* Ta bort understrykning från logotyp-länken */
+#header-logo-link {
+    text-decoration: none;
+    /* Centrera bilden i headern om din header använder flexbox/grid */
+    display: inline-block; 
+}
+
+/* Säkerställ att headern är centrerad (om du vill ha bilden centrerad på sidan) */
+header {
+    text-align: center; 
+    padding: 20px 0; /* Justera padding efter behov */
+}
     </style>
 <link rel="manifest" href="./manifest.json">
     
@@ -764,7 +785,9 @@
 <body>
 
     <div class="main-content">
-        <h1>Lagerdata (Firebase)</h1>
+        <a href="index.html" id="header-logo-link">
+            <img src="/images/background.png" alt="Lagerdata - Powered by Firebase - @SUT" id="header-logo-img">
+        </a>
 
         <div class="global-search-container">
         <p>Skriv in ett artikelnummer för att generera sök-länkar till externa leverantörer.</p>
@@ -942,6 +965,7 @@
 
 </body>
 </html>
+
 
 
 
