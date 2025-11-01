@@ -171,82 +171,38 @@ document.addEventListener('DOMContentLoaded', () => {
         // ----------------------------------------------------------------------
         // NY GLOBAL PRISJÄMFÖRELSE-FUNKTION
         // ----------------------------------------------------------------------
-        function handleGlobalSearch() {
-            const searchTerm = globalSearchInput.value.trim().toUpperCase();
-            if (searchTerm === '') {
-                globalSearchResults.innerHTML = '';
-                globalSearchResults.style.display = 'none';
-                return;
-            }
-            
-            // Använd samma länk-logik som i createInventoryRow
-            const trodoLink = generateTrodoLink(searchTerm);
-            const aeroMLink = generateAeroMLink(searchTerm); 
-            const thansenLink = generateThansenLink(searchTerm);
-            const skruvatLink = generateSkruvatLink(searchTerm);
-            const vortoLink = generateVortoLink(searchTerm);
-            const autodocLink = generateAutodocLink(searchTerm);
-            const bildelsbasenLink = generateBildelsbasenLink(searchTerm);
-            const reservdelar24Link = generateReservdelar24Link(searchTerm);
-            
-            let resultsHTML = '<div class="global-search-results-links">';
-            let hasLinks = false;
+        function handleGlobalSearch(articleNumber) {
+    const resultsContainer = document.getElementById('global-search-results');
+    const globalSearchInput = document.getElementById('global-search-input');
+    
+    if (articleNumber.trim() === '') {
+        resultsContainer.style.display = 'none';
+        return;
+    }
 
-            // Knapparna har nu bara "lank-knapp" klassen för neutral stil
-            if (trodoLink) {
-                resultsHTML += `<a href="${trodoLink}" target="_blank" class="lank-knapp">Sök på Trodo</a>`;
-                hasLinks = true;
-            }
-            if (aeroMLink) {
-                resultsHTML += `<a href="${aeroMLink}" target="_blank" class="lank-knapp">Sök på Aero M</a>`;
-                hasLinks = true;
-            }
-            if (thansenLink) {
-                resultsHTML += `<a href="${thansenLink}" target="_blank" class="lank-knapp">Sök på Thansen</a>`;
-                hasLinks = true;
-            }
-            if (bildelsbasenLink) {
-                resultsHTML += `<a href="${bildelsbasenLink}" target="_blank" class="lank-knapp">Sök på Bildelsbasen<span class="orange-asterisk">*</span></a>`;
-                hasLinks = true;
-            }
-            if (skruvatLink) {
-                resultsHTML += `<a href="${skruvatLink}" target="_blank" class="lank-knapp">Sök på Skruvat</a>`;
-                hasLinks = true;
-            }
-            if (vortoLink) {
-                resultsHTML += `<a href="${vortoLink}" target="_blank" class="lank-knapp">Sök på Vorto</a>`;
-                hasLinks = true;
-            }
-            if (autodocLink) {
-                resultsHTML += `<a href="${autodocLink}" target="_blank" class="lank-knapp">Sök på Autodoc</a>`;
-                hasLinks = true;
-            }
-            if (reservdelar24Link) {
-                resultsHTML += `<a href="${reservdelar24Link}" target="_blank" class="lank-knapp">Sök på Reservdelar24</a>`;
-                hasLinks = true;
-            }
-            
-            resultsHTML += '</div>';
-            
-            // Lägg till en stängningsknapp
-            resultsHTML += '<button id="global-search-close-btn" title="Stäng resultat">&times;</button>';
-            
-            if (hasLinks) {
-                globalSearchResults.innerHTML = resultsHTML;
-                globalSearchResults.style.display = 'block';
-                
-                // Lägg till event listener för den nya stängningsknappen
-                document.getElementById('global-search-close-btn').addEventListener('click', () => {
-                    globalSearchResults.innerHTML = '';
-                    globalSearchResults.style.display = 'none';
-                    // globalSearchInput.value = ''; // Avkommentera om du vill rensa fältet
-                });
-            } else {
-                // Om inga länkar kunde genereras
-                globalSearchResults.innerHTML = '';
-                globalSearchResults.style.display = 'none';
-            }
-        }
+    // Samla alla länkknappar i en separat variabel
+    const linkButtonsHTML = `
+        <a href="https://www.trodo.se/catalogsearch/result/?q=${articleNumber}" target="_blank" class="lank-knapp trodo-btn">Trodo</a>
+        <a href="https://www.bildelsbasen.se/?link=search&searchmode=1&query=${articleNumber}" target="_blank" class="lank-knapp">Sök på Bildelsbasen<span class="orange-asterisk">*</span></a>
+        <a href="https://www.aero-m.se/search/?search=${articleNumber}" target="_blank" class="lank-knapp aero-m-btn">Aero M</a>
+        <a href="https://www.thansen.se/search/?q=${articleNumber}" target="_blank" class="lank-knapp thansen-btn">Thansen</a>
+        <a href="https://www.google.com/search?q=${articleNumber}" target="_blank" class="lank-knapp egen-lank-btn">Egen Sökning</a>
+    `;
+
+    // Bygg den slutliga HTML-strukturen med stängningsknapp och flex-behållare
+    resultsContainer.innerHTML = `
+        <button id="global-search-close-btn">&times;</button>
+        <div class="global-search-results-links">${linkButtonsHTML}</div>
+    `;
+
+    resultsContainer.style.display = 'block';
+
+    // Lägg till eventlyssnare för den nya stängningsknappen för att stänga rutan och rensa sökningen
+    document.getElementById('global-search-close-btn').addEventListener('click', () => {
+        resultsContainer.style.display = 'none';
+        globalSearchInput.value = '';
+    });
+}
 
         // ----------------------------------------------------------------------
         // GRÄNSSNITT OCH HUVUDFUNKTIONER
@@ -800,6 +756,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
+
 
 
 
