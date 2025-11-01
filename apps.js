@@ -188,41 +188,42 @@ document.addEventListener('DOMContentLoaded', () => {
             const autodocLink = generateAutodocLink(searchTerm);
             const bildelsbasenLink = generateBildelsbasenLink(searchTerm);
             const reservdelar24Link = generateReservdelar24Link(searchTerm);
+            const searchIconSVG = `<svg class="btn-search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path fill="currentColor" d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>`;
             
             let resultsHTML = '<div class="global-search-results-links">';
             let hasLinks = false;
 
             // Knapparna har nu bara "lank-knapp" klassen för neutral stil
             if (trodoLink) {
-                resultsHTML += `<a href="${trodoLink}" target="_blank" class="lank-knapp">Sök på Trodo</a>`;
+                resultsHTML += `<a href="${trodoLink}" target="_blank" class="lank-knapp">${searchIconSVG}Trodo</a>`;
                 hasLinks = true;
             }
             if (aeroMLink) {
-                resultsHTML += `<a href="${aeroMLink}" target="_blank" class="lank-knapp">Sök på Aero M</a>`;
+                resultsHTML += `<a href="${aeroMLink}" target="_blank" class="lank-knapp">${searchIconSVG}Aero M</a>`;
                 hasLinks = true;
             }
             if (thansenLink) {
-                resultsHTML += `<a href="${thansenLink}" target="_blank" class="lank-knapp">Sök på Thansen</a>`;
+                resultsHTML += `<a href="${thansenLink}" target="_blank" class="lank-knapp">${searchIconSVG}Thansen</a>`;
                 hasLinks = true;
             }
             if (bildelsbasenLink) {
-                resultsHTML += `<a href="${bildelsbasenLink}" target="_blank" class="lank-knapp">Sök på Bildelsbasen<span class="orange-asterisk">*</span></a>`;
+                resultsHTML += `<a href="${bildelsbasenLink}" target="_blank" class="lank-knapp">${searchIconSVG}Bildelsbasen<span class="orange-asterisk">*</span></a>`;
                 hasLinks = true;
             }
             if (skruvatLink) {
-                resultsHTML += `<a href="${skruvatLink}" target="_blank" class="lank-knapp">Sök på Skruvat</a>`;
+                resultsHTML += `<a href="${skruvatLink}" target="_blank" class="lank-knapp">${searchIconSVG}Skruvat</a>`;
                 hasLinks = true;
             }
             if (vortoLink) {
-                resultsHTML += `<a href="${vortoLink}" target="_blank" class="lank-knapp">Sök på Vorto</a>`;
+                resultsHTML += `<a href="${vortoLink}" target="_blank" class="lank-knapp">${searchIconSVG}Vorto</a>`;
                 hasLinks = true;
             }
             if (autodocLink) {
-                resultsHTML += `<a href="${autodocLink}" target="_blank" class="lank-knapp">Sök på Autodoc</a>`;
+                resultsHTML += `<a href="${autodocLink}" target="_blank" class="lank-knapp">${searchIconSVG}Autodoc</a>`;
                 hasLinks = true;
             }
             if (reservdelar24Link) {
-                resultsHTML += `<a href="${reservdelar24Link}" target="_blank" class="lank-knapp">Sök på Reservdelar24</a>`;
+                resultsHTML += `<a href="${reservdelar24Link}" target="_blank" class="lank-knapp">${searchIconSVG}Reservdelar24</a>`;
                 hasLinks = true;
             }
             
@@ -800,6 +801,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
+
 
 
 
