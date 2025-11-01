@@ -564,20 +564,26 @@
         width: 100%;
     }
     #global-search-input {
-        flex-grow: 1; /* Tar upp mestadels av platsen */
-        font-size: 1.1em; /* Större text */
-        padding: 16px 20px; /* Större padding */
-        border-radius: 8px;
+        /* Dina befintliga stilar (padding, border, etc.) */
+        padding: 10px 15px;
         border: 1px solid var(--border-color);
-        background-color: var(--bg-light);
-        transition: all 0.2s;
-        box-sizing: border-box;
+        border-radius: 6px;
+        font-size: 1em;
+    
+        /* DEN VIKTIGA ÄNDRINGEN HÄR: */
+        flex-grow: 1; /* Gör att fältet tar upp allt tillgängligt utrymme */
+        /* Slut på ändringen */
     }
     #global-search-input:focus {
         border-color: var(--primary-color);
         box-shadow: 0 0 0 4px rgba(90, 125, 255, 0.2);
         background-color: white;
         outline: none;
+    }
+    .search-input-group {
+        display: flex; /* Aktivera flexbox för att justera input och knapp */
+        gap: 10px;    /* Litet mellanrum mellan fält och knapp */
+        margin-bottom: 10px; /* Separera från historiken/resultaten */
     }
     #global-search-btn {
         padding: 16px 30px; /* Matcha höjden på input */
@@ -920,6 +926,7 @@
 
 </body>
 </html>
+
 
 
 
