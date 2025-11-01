@@ -99,6 +99,37 @@ document.addEventListener('DOMContentLoaded', () => {
             // Observera den uppdaterade sökvägen /bil/reservdelar/sok?query=
             return `https://www.thansen.se/search/?query=${searchQuery}`;
         }
+
+        function generateSkruvatLink(serviceFilter) {
+            if (!serviceFilter) return null;
+            const searchFilter = encodeURIComponent(serviceFilter.replace(/[\s-]/g, ''));
+            return `https://skruvat.se/search?q=${searchFilter}`;
+        }
+        
+        function generateVortoLink(serviceFilter) {
+            if (!serviceFilter) return null;
+            const searchFilter = encodeURIComponent(serviceFilter.replace(/[\s-]/g, ''));
+            return `https://vorto.se/sok?search=${searchFilter}`;
+        }
+
+        function generateAutodocLink(serviceFilter) {
+            if (!serviceFilter) return null;
+            const searchFilter = encodeURIComponent(serviceFilter.replace(/[\s-]/g, ''));
+            return `https://autodoc.se/search?keyword=${searchFilter}`;
+        }
+        
+        function generateBildelsbasenLink(serviceFilter) {
+            if (!serviceFilter) return null;
+            const searchFilter = encodeURIComponent(serviceFilter.replace(/[\s-]/g, ''));
+            // Bildelsbasen använder formatet /OEM/ARTIKELNUMMER
+            return `https://bildelsbasen.se/sv-se/OEM/${searchFilter}`; 
+        }
+
+        function generateReservdelar24Link(serviceFilter) {
+            if (!serviceFilter) return null;
+            const searchFilter = encodeURIComponent(serviceFilter.replace(/[\s-]/g, ''));
+            return `https://reservdelar24.se/suche.html?keyword=${searchFilter}`;
+        }
         
         // Global funktion för att hantera dropdowns (MÅSTE vara global för att funka i onclick)
         window.toggleDropdown = function(dropdownId) {
@@ -152,6 +183,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const trodoLink = generateTrodoLink(searchTerm);
             const aeroMLink = generateAeroMLink(searchTerm); 
             const thansenLink = generateThansenLink(searchTerm);
+            const skruvatLink = generateSkruvatLink(searchTerm);
+            const vortoLink = generateVortoLink(searchTerm);
+            const autodocLink = generateAutodocLink(searchTerm);
+            const bildelsbasenLink = generateBildelsbasenLink(searchTerm);
+            const reservdelar24Link = generateReservdelar24Link(searchTerm);
             
             let resultsHTML = '<div class="global-search-results-links">';
             let hasLinks = false;
@@ -167,6 +203,26 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (thansenLink) {
                 resultsHTML += `<a href="${thansenLink}" target="_blank" class="lank-knapp">Sök på Thansen</a>`;
+                hasLinks = true;
+            }
+            if (skruvatLink) {
+                resultsHTML += `<a href="${skruvatLink}" target="_blank" class="lank-knapp">Sök på Skruvat</a>`;
+                hasLinks = true;
+            }
+            if (vortoLink) {
+                resultsHTML += `<a href="${vortoLink}" target="_blank" class="lank-knapp">Sök på Vorto</a>`;
+                hasLinks = true;
+            }
+            if (autodocLink) {
+                resultsHTML += `<a href="${autodocLink}" target="_blank" class="lank-knapp">Sök på Autodoc</a>`;
+                hasLinks = true;
+            }
+            if (bildelsbasenLink) {
+                resultsHTML += `<a href="${bildelsbasenLink}" target="_blank" class="lank-knapp">Sök på Bildelsbasen</a>`;
+                hasLinks = true;
+            }
+            if (reservdelar24Link) {
+                resultsHTML += `<a href="${reservdelar24Link}" target="_blank" class="lank-knapp">Sök på Reservdelar24</a>`;
                 hasLinks = true;
             }
             
@@ -744,3 +800,4 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
+
