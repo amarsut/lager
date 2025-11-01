@@ -698,6 +698,21 @@
             display: grid;                 
             grid-template-columns: repeat(2, 1fr); /* Tvinga till 2 kolumner */
         }
+        /* NY REGEL FÖR ATT FIXA BREDDEN PÅ MOBILEN */
+    .search-input-group {
+        width: 100%; /* Se till att hela gruppen tar 100% */
+        box-sizing: border-box; 
+    }
+    
+    #global-search-input {
+        flex-grow: 1; /* Tvinga sökrutan att ta allt utrymme bredvid knappen */
+    }
+    
+    /* VALFRITT: Gör knappen lite mindre på mobilen för att spara plats */
+    #global-search-btn {
+        padding: 10px 15px; /* Mindre padding */
+        font-size: 0.9em;
+    }
     }
     .orange-asterisk {
         color: var(--warning-color); /* Använder din definierade orange/varningsfärg */
@@ -926,6 +941,7 @@
 
 </body>
 </html>
+
 
 
 
