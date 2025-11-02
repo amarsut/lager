@@ -426,6 +426,11 @@ function handleGlobalSearch(searchTermOverride) {
                 </span>
             `;
 
+          const copyBtn = `<button class="copy-btn" onclick="navigator.clipboard.writeText('${item.service_filter.replace(/'/g, "\\'")}')
+    .then(() => window.showToastNotification('Artikelnummer ${item.service_filter} kopierat!'))
+    .catch(err => console.error('Kunde inte kopiera text: ', err));
+    event.stopPropagation();">Kopiera</button>`;
+
             row.innerHTML = `
                 ${serviceFilterCell}
                 <span>${item.name}</span>
@@ -720,10 +725,6 @@ function handleGlobalSearch(searchTermOverride) {
         }
         
         window.copyToClipboard = (text) => navigator.clipboard.writeText(text).then(() => showCustomAlert(`'${text}' har kopierats!`));
-        const copyBtn = `<button class="copy-btn" onclick="navigator.clipboard.writeText('${item.service_filter.replace(/'/g, "\\'")}')
-    .then(() => window.showToastNotification('Artikelnummer ${item.service_filter} kopierat!'))
-    .catch(err => console.error('Kunde inte kopiera text: ', err));
-    event.stopPropagation();">Kopiera</button>`;
       
         function closeEditModal() { editModal.style.display = 'none'; }
         function closeConfirmationModal() { confirmationModal.style.display = 'none'; confirmCallback = null; }
@@ -883,4 +884,5 @@ function handleGlobalSearch(searchTermOverride) {
         }
     }
 });
+
 
