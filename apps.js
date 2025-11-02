@@ -735,6 +735,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
 
+            // --- NYTT: Lyssna på den nya toolbar-knappen ---
+            const toolbarAddBtn = document.getElementById('toolbar-add-btn');
+            if (toolbarAddBtn) {
+                toolbarAddBtn.addEventListener('click', () => {
+                    if (!addFormWrapper.classList.contains('open')) {
+                        toggleAddForm();
+                    }
+                    // Skrolla till formuläret och fokusera
+                    addFormWrapper.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    setTimeout(() => document.getElementById('add_service_filter').focus(), 400); // Liten fördröjning för scroll
+                });
+            }
+
             searchInput.addEventListener('input', () => { clearSearchBtn.style.display = searchInput.value.length > 0 ? 'block' : 'none'; });
             clearSearchBtn.addEventListener('click', () => { searchInput.value = ''; clearSearchBtn.style.display = 'none'; applySearchFilter(); searchInput.focus(); });
             document.querySelectorAll('.lager-container').forEach(c => { c.addEventListener('scroll', () => c.classList.toggle('scrolled', c.scrollTop > 1)); });
