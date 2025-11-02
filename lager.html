@@ -22,148 +22,84 @@
         --bg-light: #f4f6f9;
         --bg-medium: #eef1f5;
         --bg-dark: #dfe3e8;
-        --text-color: #1f2937;
-        --text-secondary: #4b5563;
-        --card-bg: #ffffff;
-        --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        --input-bg: #ffffff;
+        --text-dark: #1f2937;
+        --text-light: #6b7280;
         --border-color: #e5e7eb;
-        --header-bg: #ffffff;
-        --fab-bg: var(--primary-color);
-        --fab-text: #ffffff;
-        --link-trodo: #ffffff; /* NYTT: Vit Trodo-knapp */
-        --link-trodo-bg: #ff3d00; /* Orange bakgrund */
+        --card-bg: #ffffff;
+        --card-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+        --container-width: 1400px;
+        
+        /* Glassmorphism Ljus */
+        --glass-bg: rgba(255, 255, 255, 0.7);
+        --glass-border: rgba(255, 255, 255, 0.2);
     }
-
-    /* Dark Mode */
-    body[data-theme="dark"] {
-        --primary-color: #4b5563;
-        --primary-dark: #6b7280;
-        --success-color: #388e3c;
-        --danger-color: #d32f2f;
-        --warning-color: #fbc02d;
-        --info-color: #1976d2;
-        --bg-light: #1f2937;
-        --bg-medium: #111827;
-        --bg-dark: #374151;
-        --text-color: #f3f4f6;
-        --text-secondary: #9ca3af;
+    
+    [data-theme="dark"] {
+        --primary-color: #6a8dff;
+        --primary-dark: #5a7dff;
+        --success-color: #00e676;
+        --danger-color: #ff5252;
+        --warning-color: #ffab40;
+        --info-color: #40c4ff;
+        --bg-light: #1f2937; 
+        --bg-medium: #374151; 
+        --bg-dark: #4b5563; 
+        --text-dark: #f3f4f6; 
+        --text-light: #9ca3af; 
+        --border-color: #4b5563;
         --card-bg: #374151;
-        --shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
-        --input-bg: #4b5563;
-        --border-color: #374151;
-        --header-bg: #374151;
-        --fab-bg: var(--primary-color);
-        --fab-text: #1f2937;
-        --link-trodo: #f3f4f6; /* NYTT: Vit Trodo-knapp */
-        --link-trodo-bg: #ff3d00;
+        --card-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+        
+        /* Glassmorphism Mörk */
+        --glass-bg: rgba(55, 65, 81, 0.7); /* --bg-medium */
+        --glass-border: rgba(75, 85, 99, 0.2); /* --bg-dark */
     }
 
-    * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-        font-family: 'Inter', sans-serif;
-        transition: color 0.2s, background-color 0.2s, border-color 0.2s;
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    @keyframes subtleFadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    
+    @keyframes toastSlideIn { from { transform: translateX(110%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    @keyframes toastSlideOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(110%); opacity: 0; } }
+    
+    @keyframes highlight-flash {
+      0% { background-color: rgba(255, 220, 0, 0.6); }
+      70% { background-color: rgba(255, 220, 0, 0.6); }
+      100% { background-color: transparent; }
     }
+    .artikel-rad.highlight {
+      animation: highlight-flash 1.8s ease-out;
+    }
+    
+    @keyframes slideInRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
+    @keyframes slideOutRight { from { transform: translateX(0); } to { transform: translateX(100%); } }
+    @keyframes simpleFadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes simpleFadeOut { from { opacity: 0; } to { opacity: 1; } }
+    
+    /* NYTT: Skak-animation för validering */
+    @keyframes shake-horizontal {
+      0%, 100% { transform: translateX(0); }
+      10%, 30%, 50%, 70% { transform: translateX(-5px); }
+      20%, 40%, 60%, 80% { transform: translateX(5px); }
+    }
+    .has-error.shake {
+      animation: shake-horizontal 0.5s cubic-bezier(0.45, 0.05, 0.55, 0.95);
+    }
+    /* --- SLUT NYTT --- */
 
     body {
+        font-family: 'Inter', sans-serif;
+        margin: 0;
+        padding: 40px 20px;
         background-color: var(--bg-light);
-        color: var(--text-color);
-        padding-top: 60px; /* För fast header */
-        min-height: 100vh;
-    }
-
-    /* TYPOGRAFI */
-    h1 { font-size: 1.5em; font-weight: 700; }
-    h2 { font-size: 1.3em; font-weight: 600; color: var(--text-secondary); }
-    h3 { font-size: 1.2em; font-weight: 600; }
-    h4 { font-size: 1em; font-weight: 600; }
-    p { font-size: 0.95em; line-height: 1.6; }
-
-    /* KNAPPAR */
-    button, .btn {
-        padding: 8px 15px;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        font-weight: 600;
-        font-size: 0.9em;
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        transition: background-color 0.2s, opacity 0.2s;
-        white-space: nowrap;
-        text-decoration: none;
-    }
-
-    .btn-primary {
-        background-color: var(--primary-color);
-        color: white;
-    }
-    .btn-primary:hover:not(:disabled) { background-color: var(--primary-dark); }
-    
-    .btn-secondary {
-        background-color: var(--bg-medium);
-        color: var(--text-secondary);
-        border: 1px solid var(--border-color);
-    }
-    .btn-secondary:hover:not(:disabled) { background-color: var(--bg-dark); }
-    .btn-secondary.active {
-        background-color: var(--primary-color);
-        color: white;
-        border-color: var(--primary-color);
-    }
-
-    .btn-danger {
-        background-color: var(--danger-color);
-        color: white;
-    }
-    .btn-danger:hover:not(:disabled) { background-color: #d32f2f; }
-    
-    button:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-    }
-
-    /* FORMULÄR */
-    .form-group {
+        color: var(--text-dark);
         display: flex;
         flex-direction: column;
-        margin-bottom: 15px;
-        position: relative;
-    }
-
-    label {
-        font-size: 0.85em;
-        font-weight: 500;
-        margin-bottom: 5px;
-        color: var(--text-secondary);
-    }
-
-    input[type="text"], input[type="number"], input[type="url"], select, textarea {
-        padding: 10px 12px;
-        border: 1px solid var(--border-color);
-        border-radius: 8px;
-        background-color: var(--input-bg);
-        color: var(--text-color);
-        font-size: 1em;
-        width: 100%;
-        transition: border-color 0.2s, box-shadow 0.2s;
+        align-items: center;
+        line-height: 1.5;
+        transition: background-color 0.3s, color 0.3s;
     }
     
-    input:focus, select:focus, textarea:focus {
-        border-color: var(--primary-color);
-        outline: none;
-        box-shadow: 0 0 0 3px rgba(90, 125, 255, 0.2);
-    }
-    
-    .form-group.has-error input, .form-group.has-error select {
-        border-color: var(--danger-color);
-        animation: shake 0.5s;
-    }
-
-    /* IKONER */
     .icon-span {
         font-family: 'Material Symbols Outlined';
         font-weight: normal;
@@ -176,1251 +112,1265 @@
         white-space: nowrap;
         word-wrap: normal;
         direction: ltr;
-        -webkit-font-feature-settings: 'liga';
         -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+        -moz-osx-font-smoothing: grayscale;
+        font-feature-settings: 'liga';
+        vertical-align: middle;
     }
-    .icon-only { font-size: 1.2em; }
+    
+    .btn-primary .icon-span, .btn-danger .icon-span, .btn-secondary .icon-span, .btn-success .icon-span {
+        margin-right: 8px;
+        font-size: 1.2em;
+        position: relative;
+        top: -1px;
+    }
+    /* NYTT: .btn-success */
+    .btn-success { padding: 15px 25px; background-color: var(--success-color); color: white; border: none; border-radius: 8px; cursor: pointer; transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; }
+    .btn-success:hover { background-color: #009a44; }
 
-    /* HEADER / TOP BAR */
-    .header-bar {
+
+    .main-content {
+        width: 100%;
+        max-width: var(--container-width);
+        position: relative; 
+    }
+    
+    #initial-loader {
         position: fixed;
         top: 0;
         left: 0;
         width: 100%;
-        height: 60px;
-        background-color: var(--header-bg);
-        box-shadow: var(--shadow);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 0 15px;
-        z-index: 1000;
-    }
-
-    .app-title {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 1.2em;
-        font-weight: 700;
-        white-space: nowrap;
-    }
-
-    .search-wrapper {
-        display: flex;
-        flex-grow: 1;
-        max-width: 400px;
-        margin: 0 15px;
-        position: relative;
-    }
-
-    .search-wrapper input {
-        width: 100%;
-        padding-left: 40px;
-        padding-right: 40px;
-        border-radius: 20px;
-        border: 1px solid var(--border-color);
-        background-color: var(--bg-medium);
-        font-size: 0.95em;
-    }
-
-    .search-wrapper .icon-span {
-        position: absolute;
-        left: 10px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: var(--text-secondary);
-    }
-    
-    #clear-search-btn {
-        position: absolute;
-        right: 5px;
-        top: 50%;
-        transform: translateY(-50%);
-        background: none;
-        color: var(--text-secondary);
-        font-size: 1.2em;
-        width: 30px;
-        height: 30px;
-        padding: 0;
-        display: none;
-    }
-
-    .toolbar-actions {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-    
-    .toolbar-btn {
-        background: none;
-        color: var(--text-color);
-        padding: 5px 8px;
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(5px);
+        z-index: 9998;
         display: flex;
         justify-content: center;
         align-items: center;
-    }
-    .toolbar-btn:hover {
-        background-color: var(--bg-medium);
-    }
-    
-    .filter-badge {
-        display: none;
-        background-color: var(--danger-color);
-        color: white;
-        padding: 2px 8px;
-        border-radius: 4px;
-        font-size: 0.65em;
-        font-weight: 700;
-        margin-left: 5px;
-    }
-
-    /* HUVUDINNEHÅLL OCH LAYOUT */
-    .content-wrapper {
-        padding: 20px 20px 80px 20px;
-        max-width: 1400px;
-        margin: 0 auto;
-    }
-    
-    .inventory-layout {
-        display: flex;
         flex-direction: column;
-        gap: 20px;
-    }
-
-    /* KATEGORIFILTER */
-    #category-filter-bar {
-        display: flex;
-        gap: 10px;
-        padding-bottom: 15px;
-        border-bottom: 1px solid var(--border-color);
-        overflow-x: auto;
-        white-space: nowrap;
-        scrollbar-width: none; /* Firefox */
-    }
-    #category-filter-bar::-webkit-scrollbar { /* Chrome, Safari */
-        display: none;
-    }
-    
-    #category-filter-bar button {
-        flex-shrink: 0;
-    }
-    
-    /* ADD FORM */
-    .add-form-wrapper {
-        background-color: var(--card-bg);
-        border-radius: 12px;
-        box-shadow: var(--shadow);
-        padding: 20px;
-        margin-bottom: 20px;
-        transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
-        max-height: 0;
-        opacity: 0;
-        overflow: hidden;
-    }
-    
-    .add-form-wrapper.open {
-        max-height: 500px; 
-        opacity: 1;
-    }
-    
-    .add-form-title {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 15px;
-    }
-
-    .add-form-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
         gap: 15px;
+        transition: opacity 0.3s;
     }
-    
-    .add-form-actions {
-        margin-top: 20px;
-        display: flex;
-        justify-content: space-between; /* NYTT: För att separera knapparna */
-        gap: 10px;
-    }
-    
-    .add-form-actions .btn-primary,
-    .add-form-actions .btn-secondary {
-        width: auto;
-        flex-grow: 1;
-        max-width: 250px;
-    }
-
-    /* NYTT: Layout för Artikelnummer och Klistra i */
-    .artnr-input-group {
-        display: flex;
-        gap: 5px;
-    }
-
-    .artnr-input-group input {
-        flex-grow: 1;
-    }
-
-    .artnr-input-group button {
-        flex-shrink: 0;
-        padding: 0 10px;
-        width: 40px;
-        height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 8px;
-        background-color: var(--bg-medium);
-        color: var(--text-color);
-    }
-    .artnr-input-group button:hover {
-        background-color: var(--bg-dark);
-    }
-
-    .add-form-warning {
-        color: var(--danger-color);
-        font-size: 0.8em;
-        margin-top: 5px;
-    }
-    
-    .quick-category-buttons {
-        display: flex;
-        gap: 5px;
-        margin-bottom: 5px;
-    }
-    
-    .quick-category-buttons button {
-        padding: 5px 10px;
-        font-size: 0.8em;
-        border-radius: 6px;
-        background-color: var(--bg-medium);
-        color: var(--text-secondary);
-    }
-    .quick-category-buttons button:hover {
-        background-color: var(--bg-dark);
-    }
-    
-
-    /* INVENTORY LIST */
-    .lager-sektion {
-        background-color: var(--card-bg);
-        border-radius: 12px;
-        box-shadow: var(--shadow);
-        overflow: hidden;
-    }
-
-    .lager-container {
-        overflow-x: auto;
-        width: 100%;
-        padding-bottom: 1px; /* För att fixa rullist-bugg */
-    }
-
-    .lager-lista {
-        min-width: 800px;
-        padding: 0 20px 10px 20px;
-    }
-    
-    .collapsible-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 20px;
-        cursor: pointer;
-        background-color: var(--bg-medium);
-        border-bottom: 1px solid var(--border-color);
-        transition: background-color 0.2s;
-    }
-    .collapsible-header:hover { background-color: var(--bg-dark); }
-    
-    .collapsible-header h3 {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-    
-    .collapsible-header .collapse-icon {
-        transition: transform 0.2s;
-    }
-
-    .collapsible-header[data-state="closed"] .collapse-icon {
-        transform: rotate(-90deg);
-    }
-
-    .lager-lista-wrapper.collapsed .lager-lista {
-        display: none;
-    }
-    
-    .lager-lista-wrapper.collapsed .header {
-        display: none;
-    }
-
-    .header {
-        display: grid;
-        grid-template-columns: 1.5fr 3fr 1fr 1fr 1fr 2fr 300px;
-        padding: 10px 0;
-        font-weight: 600;
-        color: var(--text-secondary);
-        font-size: 0.85em;
-        text-transform: uppercase;
-        border-bottom: 1px solid var(--border-color);
-        position: sticky;
-        top: 0;
-        background-color: var(--card-bg);
-        z-index: 10;
-    }
-
-    .header span {
-        display: flex;
-        align-items: center;
-        padding: 0 5px;
-    }
-    
-    .header span[data-sort] {
-        cursor: pointer;
-        user-select: none;
-    }
-    
-    .header span[data-sort].active {
-        color: var(--primary-color);
-    }
-
-    .artikel-rad {
-        display: grid;
-        grid-template-columns: 1.5fr 3fr 1fr 1fr 1fr 2fr 300px;
-        padding: 15px 0;
-        border-bottom: 1px dashed var(--border-color);
-        align-items: center;
-        font-size: 0.9em;
-        cursor: pointer;
-        transition: background-color 0.1s, box-shadow 0.1s;
-    }
-    
-    .artikel-rad:last-child {
-        border-bottom: none;
-    }
-    
-    .artikel-rad:hover {
-        background-color: var(--bg-medium);
-    }
-    
-    .artikel-rad.selected {
-        background-color: var(--bg-dark);
-        box-shadow: inset 3px 0 0 var(--primary-color);
-    }
-    
-    .artikel-rad.highlight {
-        animation: highlightPulse 1.5s ease-out;
-    }
-
-    @keyframes highlightPulse {
-        0% { background-color: rgba(90, 125, 255, 0.3); }
-        50% { background-color: rgba(90, 125, 255, 0.1); }
-        100% { background-color: transparent; }
-    }
-
-    .artikel-rad > span, .artikel-rad > div {
-        padding: 0 5px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    /* QTY HANDLERS */
-    .quantity-cell {
-        display: flex;
-        align-items: center;
-        gap: 5px;
-    }
-
-    .quantity-cell span {
-        min-width: 25px;
-        text-align: center;
-        font-weight: 700;
-        font-size: 1.1em;
-    }
-
-    .qty-btn {
-        width: 30px;
-        height: 30px;
-        padding: 0;
+    .loader-spinner {
+        width: 50px;
+        height: 50px;
+        border: 5px solid var(--border-color);
+        border-top-color: var(--primary-color);
         border-radius: 50%;
-        font-size: 1.2em;
-        line-height: 1;
-        background-color: var(--bg-medium);
-        color: var(--text-color);
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        animation: spin 1s linear infinite;
     }
-    .qty-btn:hover { background-color: var(--bg-dark); }
-
-    /* STATUS */
-    .i-lager {
-        color: var(--success-color);
+    #initial-loader p {
         font-weight: 600;
+        font-size: 1.1em;
+        color: var(--text-dark);
     }
+    
+    header { width: 100%; text-align: center; margin-bottom: 30px; }
+    h1 { color: var(--primary-dark); margin-top: 15px; margin-bottom: 0; text-align: center; font-weight: 800; font-size: 2.8em; }
+    h2 { color: var(--text-dark); padding-bottom: 5px; margin-top: 40px; margin-bottom: 20px; font-size: 1.6em; font-weight: 700; border-left: 5px solid var(--primary-color); padding-left: 15px; }
+    
+    h3.collapsible-header { cursor: pointer; display: flex; justify-content: space-between; align-items: center; padding-right: 15px; transition: background-color: 0.1s; color: var(--text-dark); margin-top: 30px; margin-bottom: 15px; font-size: 1.3em; font-weight: 700; border-bottom: 2px solid var(--border-color); padding-bottom: 5px; padding-left: 5px; }
+    h3.collapsible-header:hover { background-color: var(--bg-medium); border-radius: 5px; }
 
-    .slut {
-        color: var(--danger-color);
-        font-weight: 600;
-    }
-    
-    .notes-cell {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        max-width: 100%;
-        display: block;
-    }
-    
-    /* ACTIONS & LINKS */
-    .action-cell {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-    
-    .action-buttons {
-        display: flex;
-        gap: 8px;
-        justify-content: flex-end;
-    }
-
-    .action-buttons button, .lank-knapp {
+    .category-badge {
         font-size: 0.8em;
-        padding: 5px 10px;
-        border-radius: 6px;
-    }
-
-    .edit-btn {
-        background-color: var(--info-color);
-        color: white;
-    }
-
-    .delete-btn {
-        background-color: var(--danger-color);
-        color: white;
-    }
-
-    .order-btn { /* NYTT: För att skilja från edit */
-        background-color: var(--warning-color);
-        color: var(--text-color);
-    }
-    
-    .link-buttons {
-        display: flex;
-        align-items: center;
-        gap: 5px;
-    }
-
-    .lank-knapp {
-        font-size: 0.75em;
-    }
-    
-    .trodo-btn {
-        background-color: var(--link-trodo-bg); 
-        color: var(--link-trodo); /* NYTT: Vit text */
-    }
-    
-    .aero-m-btn {
-        background-color: #007bff;
-        color: white;
-    }
-    
-    .thansen-btn {
-        background-color: #555555;
-        color: white;
-    }
-    
-    .egen-lank-btn {
-        background-color: var(--success-color);
-        color: white;
-    }
-
-    .more-btn {
+        font-weight: 600;
+        padding: 3px 10px;
+        border-radius: 20px;
         background-color: var(--bg-medium);
-        color: var(--text-secondary);
+        color: var(--text-light);
+        margin-left: 10px;
+        transition: background-color 0.3s;
+        min-width: 40px; /* Se till att de har liknande bredd */
+        text-align: center;
+    }
+    .category-badge:hover {
+        background-color: var(--bg-dark);
+        color: var(--text-dark);
+    }
+    .collapsible-header div { display: flex; align-items: center; }
+
+    .toggle-icon { display: inline-block; transition: transform 0.2s ease-in-out; font-size: 0.8em; font-weight: 900; line-height: 1; color: var(--primary-color); }
+    .collapsible-header[data-state="closed"] .toggle-icon { transform: rotate(-90deg); }
+    .lager-wrapper.collapsed { display: none !important; }
+
+    #add-form-wrapper { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-out, opacity 0.4s ease-out; opacity: 0; margin-bottom: 0; }
+    #add-form-wrapper.open { max-height: 1000px; opacity: 1; }
+    #toggle-add-form-btn #toggle-icon-form { display: inline-block; transition: transform 0.3s ease-in-out; margin-left: 8px; font-size: 1.1em; line-height: 1; }
+    #toggle-add-form-btn.open #toggle-icon-form { transform: rotate(180deg); }
+    
+    #add-article-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; padding: 35px; background-color: var(--card-bg); border-radius: 16px; box-shadow: var(--card-shadow); margin-bottom: 30px; transition: background-color 0.3s; }
+    #add-article-form > div { display: flex; flex-direction: column; }
+    #add-article-form label { margin-bottom: 6px; font-weight: 600; font-size: 0.85em; color: var(--text-dark); }
+    #add-article-form input, #add-article-form select { padding: 14px; border: 1px solid var(--border-color); border-radius: 8px; background-color: var(--bg-light); transition: border-color 0.2s, box-shadow 0.2s, background-color 0.3s; font-size: 1em; width: 100%; box-sizing: border-box; color: var(--text-dark); }
+    #add-article-form input:focus, #add-article-form select:focus { border-color: var(--primary-color); box-shadow: 0 0 0 4px rgba(90, 125, 255, 0.2); background-color: var(--card-bg); outline: none; }
+    
+    #add-article-form .has-error input,
+    #add-article-form .has-error select,
+    #edit-article-form .has-error input,
+    #edit-article-form .has-error select {
+        border-color: var(--danger-color) !important;
+        box-shadow: 0 0 0 4px rgba(255, 61, 0, 0.2) !important;
     }
     
-    .link-dropdown-container {
-        position: relative;
+    /* --- NYTT: Formulärvarning & Klistra in-knapp --- */
+    .form-input-wrapper { position: relative; }
+    .form-warning {
+        font-size: 0.85em;
+        color: var(--warning-color);
+        font-weight: 600;
+        margin-top: 5px;
+        height: 1.2em;
     }
-
-    .dropdown-menu {
+    .form-paste-btn {
         position: absolute;
-        bottom: 100%;
-        right: 0;
-        background-color: var(--card-bg);
-        border-radius: 8px;
-        box-shadow: var(--shadow);
-        overflow: hidden;
-        display: none;
-        padding: 5px 0;
-        z-index: 500;
-        min-width: 100px;
-    }
-
-    .dropdown-menu.visible {
-        display: block;
-    }
-
-    .dropdown-menu button {
-        display: block;
-        width: 100%;
-        padding: 8px 15px;
-        text-align: left;
+        top: 31px; /* Justera efter label */
+        right: 8px;
         background: none;
         border: none;
-        color: var(--text-color);
-        font-size: 0.9em;
-        border-radius: 0;
+        color: var(--text-light);
+        cursor: pointer;
+        padding: 5px;
+        border-radius: 4px;
+        transition: color 0.2s, background-color 0.2s;
     }
-    .dropdown-menu button:hover {
+    .form-paste-btn:hover {
+        color: var(--text-dark);
+        background-color: var(--bg-dark);
+    }
+    .form-paste-btn .icon-span { font-size: 20px; }
+    /* --- SLUT NYTT --- */
+    
+    /* --- NYTT: Snabb-kategori knappar --- */
+    .quick-category-wrapper {
+        display: flex;
+        gap: 8px;
+        margin-top: 8px;
+    }
+    .quick-category-btn {
+        flex-grow: 1;
+        font-size: 0.8em;
+        font-weight: 600;
+        padding: 6px 5px;
+        border: 1px solid var(--border-color);
+        background-color: var(--bg-light);
+        color: var(--text-dark);
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+    }
+    .quick-category-btn:hover {
         background-color: var(--bg-medium);
+        border-color: var(--primary-color);
+        color: var(--primary-dark);
+    }
+    /* --- SLUT NYTT --- */
+
+    #add-article-form .submit-button-wrapper { 
+        grid-column: 1 / -1; 
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        align-items: center;
+        margin-top: 10px;
+    }
+    #add-article-form button[type="submit"] { background-color: var(--success-color); color: white; width: 100%; } 
+    #add-article-form button[type="submit"]:hover { background-color: #009a44; }
+    #add-article-form #add-form-cancel-btn {
+        width: 100%;
+        text-align: center;
+        margin: 0;
+        padding: 15px 25px;
     }
 
-    /* Copy funktionen */
+    .btn-primary { padding: 15px 25px; background-color: var(--primary-color); color: white; border: none; border-radius: 8px; cursor: pointer; transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; }
+    .btn-secondary { padding: 12px 20px; background-color: var(--card-bg); color: var(--text-dark); border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; transition: background-color 0.2s, transform 0.1s, color 0.3s, border-color 0.3s; font-weight: 600; text-align: center; font-size: 0.9em; box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; }
+    .btn-secondary:hover { background-color: var(--bg-medium); }
+
+    .btn-danger {
+        background-color: var(--danger-color);
+        color: white;
+        border-color: var(--danger-color);
+    }
+    .btn-danger:hover {
+        background-color: #c53030;
+        border-color: #c53030;
+    }
+
+    .controls-bar { display: flex; justify-content: flex-end; align-items: center; margin-bottom: 20px; width: 100%; }
+    .controls-bar.top-controls { display: none; }
+    
+    .json-controls { display: flex; gap: 10px; align-items: center; }
+    
+    #sync-status { font-weight: 600; font-size: 0.9em; padding: 6px 12px 6px 10px; border-radius: 20px; display: flex; align-items: center; gap: 8px; transition: all 0.3s ease; }
+    #sync-status .icon { width: 14px; height: 14px; display: inline-block; border-radius: 50%; }
+    #sync-status.sync-connecting { color: var(--text-light); background-color: var(--bg-medium); }
+    #sync-status.sync-connecting .icon { background-color: var(--warning-color); animation: pulse 1.5s infinite ease-in-out; }
+    #sync-status.sync-ok { color: #006a31; background-color: #e0f8e9; }
+    #sync-status.sync-ok .icon { background-color: var(--success-color); }
+    [data-theme="dark"] #sync-status.sync-ok { color: #dbfff0; background-color: #0c4b24; }
+    #sync-status.sync-error { color: #b71c1c; background-color: #ffebee; }
+    #sync-status.sync-error .icon { background-color: var(--danger-color); }
+    [data-theme="dark"] #sync-status.sync-error { color: #ffdbdb; background-color: #6a0f0f; }
+
+    #search-input { width: 100%; font-size: 1em; border-radius: 8px; border: 1px solid var(--border-color); transition: all 0.2s ease-in-out; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' width='16' height='16'%3E%3Cpath fill='%236B7280' d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: 15px center; background-size: 16px 16px; padding: 12px 40px 12px 45px; background-color: var(--bg-light); box-shadow: none; box-sizing: border-box; color: var(--text-dark); }
+    #search-input:focus { border-color: var(--primary-color); box-shadow: 0 0 0 4px rgba(90, 125, 255, 0.2); outline: none; background-color: var(--card-bg); }
+
+    .search-wrapper { position: relative; width: 350px; }
+    #clear-search-btn { position: absolute; top: 50%; right: 1px; transform: translateY(-50%); background: none; border: none; font-size: 1.8em; color: #888; cursor: pointer; padding: 0 12px; line-height: 1; display: none; z-index: 5; }
+    #clear-search-btn:hover { color: var(--text-dark); }
+        
+    .lager-wrapper { overflow-x: auto; margin-bottom: 25px; -webkit-overflow-scrolling: touch; }
+    .lager-container { background-color: var(--card-bg); border-radius: 16px; box-shadow: var(--card-shadow); margin-bottom: 40px; border: 1px solid var(--border-color); position: relative; max-height: 450px; overflow-y: auto; min-width: min-content; transition: background-color 0.3s, border-color 0.3s; }
+    
+    .header, .artikel-rad { grid-template-columns: 180px 200px 100px 80px 80px minmax(150px, 1.5fr) 140px 160px; padding: 10px 20px; align-items: center; font-size: 0.85em; display: grid; }    
+    .header { position: sticky; top: 0; z-index: 100; font-weight: 700; background-color: var(--bg-medium); color: var(--text-dark); border-bottom: 2px solid var(--border-color); text-transform: uppercase; letter-spacing: 0.5px; transition: background-color 0.3s, border-color 0.3s; }
+    .header span[data-sort] { cursor: pointer; user-select: none; }
+    .header > span { display: flex; align-items: center; min-height: 1.8em; padding-right: 15px; }
+    .header > span, .artikel-rad > span, .artikel-rad > div { padding-right: 10px; }
+
+    .sort-icon { font-size: 0.9em; margin-left: 4px; color: var(--primary-color); width: 1em; display: inline-block; }
+    .header span[data-sort]:not(.active) .sort-icon { opacity: 0.3; }
+    .header span[data-sort]:hover .sort-icon { opacity: 0.7; }
+    .header span[data-sort].active { color: var(--primary-dark); }
+    [data-theme="dark"] .header span[data-sort].active { color: var(--primary-color); }
+
+    .artikel-rad { transition: background-color 0.2s, box-shadow 0.2s; border-bottom: 1px solid var(--border-color); cursor: pointer; }
+    .artikel-rad:hover { background-color: var(--bg-medium); box-shadow: inset 3px 0 0 var(--primary-color); }
+    .artikel-rad:last-child { border-bottom: none; }
+    .artikel-rad.selected { background-color: rgba(90, 125, 255, 0.2); box-shadow: inset 3px 0 0 var(--primary-dark); }
+    .artikel-rad.selected:hover { background-color: rgba(90, 125, 255, 0.3); }
+    
+    .i-lager, .slut { padding: 3px 6px; border-radius: 12px; font-size: 0.7em; min-width: 55px; }
+    .i-lager { background-color: #e8f5e9; color: #388e3c; } 
+    .slut { background-color: #ffebee; color: #d32f2f; } 
+    [data-theme="dark"] .i-lager { background-color: #0c4b24; color: #dbfff0; }
+    [data-theme="dark"] .slut { background-color: #6a0f0f; color: #ffdbdb; }
+    
+    .quantity-cell { display: flex; align-items: center; justify-content: space-between; width: 70px; border: 1px solid var(--border-color); border-radius: 6px; overflow: hidden; }
+    .quantity-cell span { flex-grow: 1; text-align: center; font-weight: 600; padding: 0 5px; border-right: none; }
+    .qty-btn { background: var(--bg-medium); color: var(--text-dark); border: none; padding: 4px 8px; cursor: pointer; font-weight: 700; font-size: 0.9em; line-height: 1; transition: background 0.2s; min-width: 28px; }
+    .qty-btn:hover { background: var(--bg-dark); }
+
+    /* --- ÄNDRAD: Cell för artikel-nr och namn (med kopieringsknappar) --- */
     .cell-copy-wrapper {
         display: flex;
         align-items: center;
         gap: 5px;
-    }
-    .cell-copy-wrapper .copy-btn, .search-btn {
-        background: none;
-        color: var(--text-secondary);
-        padding: 0;
-        width: 20px;
-        height: 20px;
-        font-size: 0.9em;
-        margin-left: 0;
-        border-radius: 4px;
-        transition: background-color 0.1s;
-    }
-    .cell-copy-wrapper .copy-btn:hover, .cell-copy-wrapper .search-btn:hover {
-        background-color: var(--bg-medium);
-        color: var(--primary-color);
+        overflow: hidden;
+        width: 100%;
     }
     .cell-copy-text {
+        white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        white-space: nowrap;
-        max-width: calc(100% - 40px);
+        min-width: 0;
+        flex-grow: 1;
     }
-    .cell-copy-wrapper svg {
-        width: 14px;
-        height: 14px;
-        fill: currentColor;
+    /* --- SLUT ÄNDRING --- */
+    
+    .notes-cell { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: help; }
+    .copy-btn { background: var(--bg-medium); border: 1px solid var(--border-color); border-radius: 4px; cursor: pointer; color: var(--primary-dark); font-size: 0.9em; padding: 3px 5px; line-height: 1; opacity: 0.9; transition: opacity 0.2s, transform 0.1s, background 0.2s, color 0.2s; flex-shrink: 0; min-width: 26px; text-align: center; }
+    .copy-btn:hover { opacity: 1; transform: scale(1.05); background: var(--primary-color); color: white; border-color: var(--primary-color); }
+    .copy-btn:disabled { color: var(--success-color); cursor: default; }
+    .copy-btn:disabled:hover { transform: none; background: var(--bg-medium); border-color: var(--border-color); }
+
+    .action-buttons { display: flex; gap: 8px; justify-content: flex-start; }
+    .link-buttons { display: flex; gap: 8px; align-items: center; width: 100%; }
+    .aero-m-btn { background-color: #4CAF50; color: white; border: 1px solid #4CAF50; }
+    .aero-m-btn:hover { background-color: #388E3C; border-color: #388E3C; }
+    .thansen-btn { background-color: #008080; color: white; border: 1px solid #008080; }
+    .thansen-btn:hover { background-color: #006060; border-color: #006060; }
+    
+    /* --- ÄNDRAD: "Beställ"-knapp återställd --- */
+    .lank-knapp, .edit-btn, .delete-btn, .order-btn { padding: 6px 10px; border: 1px solid transparent; border-radius: 6px; cursor: pointer; font-size: 0.8em; font-weight: 600; transition: all 0.2s; text-align: center; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); }
+    .lank-knapp { background-color: var(--card-bg); color: var(--primary-color); border: 1px solid var(--primary-color); }
+    .lank-knapp:hover { background-color: var(--primary-color); color: white; border-color: var(--primary-color); }
+    [data-theme="dark"] .lank-knapp { background-color: var(--bg-medium); }
+    [data-theme="dark"] .lank-knapp:hover { background-color: var(--primary-color); }
+    .edit-btn { background-color: var(--primary-color); color: white; }
+    .edit-btn:hover { background-color: var(--primary-dark); }
+    /* NYTT: .order-btn (för "Beställ") */
+    .order-btn { background-color: var(--success-color); color: white; }
+    .order-btn:hover { background-color: #009a44; }
+    
+    .delete-btn { background-color: var(--card-bg); color: var(--danger-color); border: 1px solid var(--danger-color); }
+    .delete-btn:hover { background-color: var(--danger-color); color: white; }
+    [data-theme="dark"] .delete-btn { background-color: var(--bg-medium); }
+    [data-theme="dark"] .delete-btn:hover { background-color: var(--danger-color); }
+    
+    .out-of-stock-title { font-size: 1.6em; font-weight: 700; margin-top: 50px; margin-bottom: 20px; padding: 5px 0; color: var(--danger-color); border-left: 5px solid var(--danger-color); padding-left: 15px; }
+    #slut-i-lager-lista .artikel-rad { opacity: 0.8; background-color: rgba(255, 61, 0, 0.05); }
+    [data-theme="dark"] #slut-i-lager-lista .artikel-rad { background-color: rgba(255, 82, 82, 0.1); }
+    
+    .modal { position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); backdrop-filter: blur(5px); display: none; justify-content: center; align-items: center; }
+    
+    .modal-content {
+        background-color: var(--glass-bg);
+        backdrop-filter: blur(15px);
+        border: 1px solid var(--glass-border);
+        padding: 40px; 
+        border-radius: 12px; 
+        width: 90%; 
+        max-width: 500px; 
+        box-shadow: 0 20px 50px rgba(0,0,0,0.4); 
+        animation: fadeIn 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55); 
+        max-height: 90vh; 
+        overflow-y: auto; 
+        position: relative; 
+        transition: background-color 0.3s; 
     }
     
+    @keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+    .modal-content h3 { color: var(--primary-dark); border-bottom: 2px solid var(--border-color); padding-bottom: 10px; margin-top: 0; font-size: 1.5em; display: flex; align-items: center; }
+    .modal-content h3 .icon-span { font-size: 1.2em; margin-right: 10px; color: var(--primary-color); }
+    #confirmationModal .icon-span { font-size: 1.3em; margin-right: 12px; }
+    [data-theme="dark"] .modal-content h3 { color: var(--primary-color); }
+    .modal-content label { display: block; margin-top: 15px; margin-bottom: 8px; font-weight: 600; color: var(--text-dark); font-size: 0.9em; }
+    .modal-content input, .modal-content select { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 6px; box-sizing: border-box; background-color: var(--bg-light); color: var(--text-dark); }
+    .modal-content input:focus, .modal-content select:focus { border-color: var(--primary-color); box-shadow: 0 0 0 4px rgba(90, 125, 255, 0.2); background-color: var(--card-bg); outline: none; }
+    .modal-content button { margin-top: 30px; width: 100%; }
+    .close-btn { position: absolute; top: 15px; right: 15px; font-size: 28px; cursor: pointer; font-weight: bold; z-index: 10; color: var(--text-light); }    
+    .close-btn:hover { color: var(--text-dark); }
+
+    #productPopup { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 2000; }
+    #productPopup iframe { width: 90%; height: 90%; position: absolute; top: 5%; left: 5%; border: 2px solid white; border-radius: 10px; }
+    #productPopup .close-btn { position: absolute; top: 15px; right: 35px; color: white; font-size: 40px; cursor: pointer; }
+
+    .search-btn { background: var(--bg-medium); border: 1px solid var(--border-color); border-radius: 4px; cursor: pointer; color: var(--primary-color); font-size: 0.9em; padding: 3px 5px; line-height: 1; opacity: 0.9; transition: opacity 0.2s, transform 0.1s, background 0.2s; flex-shrink: 0; margin-right: 5px; }
+    .search-btn:hover { opacity: 1; transform: scale(1.05); background: var(--primary-color); color: white; border-color: var(--primary-color); }
+    .search-btn svg { fill: currentColor; vertical-align: middle; width: 14px; height: 14px; }
     
-    /* EMPTY STATES */
-    .empty-state {
-        display: none; /* Styrs av JS */
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-        padding: 50px 20px;
-        background-color: var(--bg-medium);
-        border-radius: 0 0 12px 12px;
-        border-top: 1px solid var(--border-color);
-    }
+    .header > span:last-child, .artikel-rad > div:last-child { position: sticky; right: 0; z-index: 50; padding-right: 20px; background-color: inherit; }
+    .header > span:last-child { background-color: var(--bg-medium); border-left: 1px solid var(--border-color); }
+    .artikel-rad > div:last-child { background-color: var(--card-bg); }
+    .artikel-rad:hover > div:last-child { background-color: var(--bg-medium); }
+    
+    .link-dropdown-container { position: relative; display: inline-block; margin-left: 5px; }
+    .dropdown-menu { display: none; position: absolute; right: 0; top: 100%; z-index: 10; min-width: 120px; background-color: var(--card-bg); border: 1px solid var(--border-color); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); border-radius: 8px; padding: 5px; margin-top: 5px; flex-direction: column; white-space: nowrap; }
+    .dropdown-menu.visible { display: flex; }
+    .dropdown-menu .lank-knapp { width: 100%; margin: 3px 0; text-align: center; padding: 8px 12px; font-size: 0.8em; box-shadow: none; background-color: var(--card-bg) !important; color: var(--primary-color) !important; border: 1px solid var(--primary-color) !important; }
+    .dropdown-menu .lank-knapp:hover { background-color: var(--primary-color) !important; color: white !important; }
+    .dropdown-menu .aero-m-btn { background-color: #4CAF50; color: white; }
+    .dropdown-menu .aero-m-btn:hover { background-color: #388E3C; }
+    .dropdown-menu .thansen-btn { background-color: #008080; color: white; }
+    .dropdown-menu .thansen-btn:hover { background-color: #006060; }
+    .dropdown-menu .egen-lank-btn { background-color: #5a7dff; color: white; }
+    .dropdown-menu .egen-lank-btn:hover { background-color: #3a57e8; }
+    .more-btn { background-color: var(--bg-dark); color: var(--text-dark); border: 1px solid var(--border-color); padding: 6px 10px; font-size: 0.8em; }
+    .more-btn:hover { background-color: var(--bg-dark); opacity: 0.8; }
+    .trodo-btn { background-color: #FFA500; color: white; border: 1px solid #FFA500; }
+    .trodo-btn:hover { background-color: #CC8400; border-color: #CC8400; }
 
-    #full-empty-state {
-        display: none; /* Styrs av JS */
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-        padding: 50px;
-        margin-top: 20px;
-        background-color: var(--card-bg);
-        border-radius: 12px;
-        box-shadow: var(--shadow);
-    }
-    #full-empty-state h2 { color: var(--text-color); margin-bottom: 10px; }
-
-    /* FAB */
-    #fab-add-btn {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        width: 56px;
-        height: 56px;
+    .global-search-container { background-color: var(--card-bg); border-radius: 16px; box-shadow: var(--card-shadow); padding: 30px 35px; margin-bottom: 40px; border: 1px solid var(--border-color); transition: background-color 0.3s, border-color 0.3s; }
+    .global-search-container h3 { margin-top: 0; margin-bottom: 10px; color: var(--primary-dark); font-size: 1.5em; font-weight: 700; }
+    .global-search-container p { margin-top: 0; margin-bottom: 25px; font-size: 0.95em; color: var(--text-light); }
+    
+    /* --- ÄNDRAD: Global sök (skanna-knapp borttagen) --- */
+    .global-search-wrapper { display: flex; gap: 15px; width: 100%; }
+    #global-search-input { padding: 10px 15px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 1em; flex-grow: 1; background-color: var(--bg-light); color: var(--text-dark); }
+    #global-search-input:focus { border-color: var(--primary-color); box-shadow: 0 0 0 4px rgba(90, 125, 255, 0.2); background-color: var(--card-bg); outline: none; }
+    
+    #global-search-btn { padding: 16px 30px; font-size: 1em; flex-shrink: 0; }
+    #global-search-btn .icon-span { font-size: 1.4em; }
+    #global-search-btn .search-spinner {
+        width: 1.2em;
+        height: 1.2em;
+        border: 2px solid rgba(255,255,255,0.3);
+        border-top-color: #fff;
         border-radius: 50%;
-        background-color: var(--fab-bg);
-        color: var(--fab-text);
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-        font-size: 1.5em;
-        z-index: 100;
-        transition: opacity 0.3s, visibility 0.3s;
+        animation: spin 0.8s linear infinite;
+        margin-right: 8px;
+        display: none; 
+    }
+    #global-search-btn:disabled { opacity: 0.7; cursor: wait; }
+    #global-search-btn:disabled .icon-span { display: none; }
+    #global-search-btn:disabled .search-spinner { display: inline-block; }
+    
+    #global-search-results { 
+        position: relative; 
+        background-color: transparent;
+        border: none;
+        box-shadow: none;
+        padding: 0;
+        display: none;
+        margin-top: 25px;
+    }
+    #global-search-close-btn { position: absolute; top: -10px; right: -5px; background: var(--bg-medium); border-radius: 50%; width: 30px; height: 30px; border: none; font-size: 24px; color: var(--text-light); cursor: pointer; line-height: 1; z-index: 1001; }
+    #global-search-close-btn:hover { color: var(--text-dark); background: var(--bg-dark); }
+    
+    .search-results-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 10px;
+    }
+    .search-results-header h4 {
+        margin: 0;
+        font-size: 1.2em;
+        font-weight: 700;
+        color: var(--text-dark);
     }
     
-    #fab-add-btn:hover {
+    #export-search-links-container .btn-secondary {
+        font-size: 0.85em;
+        padding: 6px 12px;
+    }
+    #export-search-links-container .icon-span { font-size: 1.1em; }
+    #export-search-links-container .dropdown-menu {
+        min-width: 150px;
+    }
+    #export-search-links-container .lank-knapp {
+        font-size: 0.85em;
+        text-transform: none;
+        letter-spacing: 0;
+        font-weight: 600;
+        justify-content: center;
+    }
+
+    #internal-results-container { margin-bottom: 25px; }
+    .internal-search-title { font-size: 1.1em; font-weight: 700; color: var(--primary-dark); margin-top: 0; margin-bottom: 12px; }
+    [data-theme="dark"] .internal-search-title { color: var(--primary-color); }
+    .internal-result-item { display: block; padding: 12px 15px; border-radius: 8px; text-decoration: none; color: var(--text-dark); background-color: var(--bg-light); margin-bottom: 8px; transition: background-color 0.2s, box-shadow 0.2s; border: 1px solid var(--border-color); }
+    .internal-result-item:hover { background-color: var(--bg-medium); box-shadow: inset 3px 0 0 var(--primary-color); }
+    .internal-result-item strong { color: var(--primary-color); }
+    .internal-result-item span { float: right; font-weight: 600; font-size: 0.9em; color: var(--text-dark); }
+    #quick-add-from-search {
+        margin-top: 10px;
+        width: 100%;
+        background-color: var(--success-color);
+        border-color: var(--success-color);
+        color: white;
+    }
+    #quick-add-from-search:hover {
+        background-color: #009a44;
+    }
+    
+    #external-results-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+    }
+    .provider-card {
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 15px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .provider-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--card-shadow);
+    }
+    .provider-card.disabled {
+        opacity: 0.5;
+        background-color: var(--bg-medium);
+    }
+    .provider-card-logo {
+        width: 32px;
+        height: 32px;
+        border-radius: 6px;
+        background-color: var(--bg-light);
+        padding: 4px;
+        box-sizing: border-box;
+        object-fit: contain;
+        flex-shrink: 0;
+    }
+    .provider-card-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        gap: 10px;
+    }
+    .provider-card-name {
+        font-weight: 600;
+        font-size: 0.95em;
+        color: var(--text-dark);
+    }
+    .btn-provider-search {
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 6px 12px;
+        font-size: 0.8em;
+        font-weight: 700;
+        text-transform: uppercase;
+        text-decoration: none;
+        transition: background-color 0.2s;
+        flex-shrink: 0;
+    }
+    .btn-provider-search:hover {
         background-color: var(--primary-dark);
     }
+    .provider-card.disabled .btn-provider-search {
+        background-color: var(--bg-dark);
+        color: var(--text-light);
+        cursor: not-allowed;
+    }
 
-    /* TOASTS */
+    .search-disclaimer-text { font-size: 0.85em; color: var(--text-light); margin-top: 15px; padding-top: 10px; border-top: 1px dashed var(--border-color); }
+    
+    .orange-asterisk { color: var(--warning-color); font-weight: 700; font-size: 1.1em; margin-left: 3px; vertical-align: top; line-height: 1; display: inline-block; }
+    .search-history-container { margin-top: 5px; margin-bottom: 5px; display: flex; flex-wrap: wrap; gap: 8px; font-size: 0.9em; }
+    .history-item { padding: 4px 10px; background-color: var(--border-color); color: var(--text-dark); border-radius: 20px; transition: background-color 0.15s, transform 0.15s; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; }
+    .history-item:hover { background-color: var(--bg-dark); transform: translateY(-1px); }
+    .history-item .history-term { cursor: pointer; }
+    .history-item .delete-history {
+        font-style: normal;
+        font-weight: 700;
+        color: var(--text-light);
+        font-size: 1.1em;
+        line-height: 1;
+        opacity: 0.7;
+        cursor: pointer;
+    }
+    .history-item .delete-history:hover {
+        color: var(--danger-color);
+        opacity: 1;
+    }
+
+    .link-favicon { width: 16px; height: 16px; margin-right: 8px; vertical-align: middle; border-radius: 2px; }
+    
+    #header-logo-img { max-width: 450px; width: 100%; display: block; margin-left: auto; margin-right: auto; padding-bottom: 0; }
+    [data-theme="dark"] #header-logo-img { filter: invert(1) hue-rotate(180deg); }
+
+    .dashboard-container { 
+        display: grid; 
+        grid-template-columns: 1fr;
+        gap: 15px;
+        margin-bottom: 20px;
+        animation: subtleFadeIn 0.5s ease-out; 
+    }
+    .dashboard-stat { 
+        background-color: var(--card-bg); 
+        border: 1px solid var(--border-color); 
+        border-radius: 12px; 
+        padding: 20px 25px; 
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); 
+        transition: background-color 0.3s, border-color 0.3s, transform 0.2s, box-shadow 0.2s; 
+        position: relative; 
+        overflow: hidden;
+        cursor: pointer;
+    }
+    .dashboard-stat:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.08);
+    }
+    .dashboard-stat h4 { margin: 0 0 8px 0; font-size: 0.95em; font-weight: 600; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; }
+    .dashboard-stat span { font-size: 2.2em; font-weight: 700; color: var(--primary-dark); display: block; z-index: 2; position: relative; }
+    [data-theme="dark"] .dashboard-stat span { color: var(--primary-color); }
+    .dashboard-stat#stat-out-of-stock-wrapper span { color: var(--danger-color); }
+    .dashboard-stat .icon-span {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 64px;
+        color: var(--border-color);
+        opacity: 0.5;
+        z-index: 1;
+        transition: color 0.3s, opacity 0.3s;
+    }
+    [data-theme="dark"] .dashboard-stat .icon-span { opacity: 0.2; }
+    .dashboard-stat:hover .icon-span {
+        color: var(--primary-color);
+        opacity: 0.1;
+    }
+    [data-theme="dark"] .dashboard-stat:hover .icon-span { opacity: 0.3; }
+    .dashboard-stat#stat-out-of-stock-wrapper:hover .icon-span { color: var(--danger-color); }
+    
+    #recent-items-container {
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 25px 30px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        margin-bottom: 40px;
+        animation: subtleFadeIn 0.5s ease-out; 
+    }
+    #recent-items-container h3 {
+        margin-top: 0;
+        margin-bottom: 20px;
+        font-size: 1.3em;
+        font-weight: 700;
+        color: var(--text-dark);
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 10px;
+    }
+    #recent-items-list {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    .recent-item {
+        display: block;
+        padding: 10px 12px;
+        border-radius: 8px;
+        text-decoration: none;
+        color: var(--text-dark);
+        background-color: var(--bg-light);
+        transition: background-color 0.2s, box-shadow 0.2s;
+        cursor: pointer;
+        font-size: 0.9em;
+    }
+    .recent-item:hover {
+        background-color: var(--bg-medium);
+        box-shadow: inset 3px 0 0 var(--primary-color);
+    }
+    .recent-item strong {
+        color: var(--primary-color);
+        display: block;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .recent-item span {
+        display: block;
+        color: var(--text-light);
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    /* NYTT: Kategori-märke i "Senast Hanterade" */
+    .recent-item-category {
+        float: right;
+        font-size: 0.85em;
+        font-weight: 600;
+        color: var(--text-light);
+        background-color: var(--bg-medium);
+        padding: 2px 6px;
+        border-radius: 4px;
+        margin-left: 5px;
+    }
+
+    .empty-state { display: none; flex-direction: column; align-items: center; justify-content: center; padding: 50px 20px; text-align: center; min-height: 200px; animation: subtleFadeIn 0.3s; }
+    .empty-state svg { width: 60px; height: 60px; color: var(--border-color); margin-bottom: 20px; }
+    .empty-state h4 { font-size: 1.3em; font-weight: 700; color: var(--text-dark); margin: 0 0 10px 0; }
+    .empty-state p { font-size: 1em; color: var(--text-light); margin: 0; max-width: 300px; }
+    
+    #full-empty-state {
+        display: none;
+        padding: 60px 30px;
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        box-shadow: var(--card-shadow);
+        margin-top: 40px;
+    }
+    #full-empty-state h4 { font-size: 1.5em; }
+    #full-empty-state p { max-width: 400px; }
+    /* NYTT: Tomt-läge knapp */
+    #empty-state-add-btn {
+        margin-top: 25px;
+        padding: 12px 20px;
+    }
+
+    #back-to-top-btn { position: fixed; bottom: 25px; right: 25px; width: 50px; height: 50px; background-color: var(--primary-color); color: white; border: none; border-radius: 50%; cursor: pointer; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); z-index: 1009; display: none; transition: background-color 0.2s, transform 0.2s, opacity 0.3s; padding: 0; align-items: center; justify-content: center; opacity: 0.8; }
+    #back-to-top-btn:hover { background-color: var(--primary-dark); transform: scale(1.05); opacity: 1; }
+    #back-to-top-btn svg { width: 24px; height: 24px; }
+    
+    .theme-switcher { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+    .theme-switcher-label { font-weight: 600; font-size: 0.9em; color: var(--text-light); }
+    .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--bg-dark); transition: .3s; border-radius: 34px; }
+    .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
+    input:checked + .slider { background-color: var(--primary-color); }
+    input:focus + .slider { box-shadow: 0 0 1px var(--primary-color); }
+    input:checked + .slider:before { transform: translateX(24px); }
+    
+    #pwa-install-btn {
+        background-color: transparent;
+        color: var(--text-dark);
+        border: 1px solid var(--border-color);
+        padding: 6px 14px;
+        display: none;
+        font-size: 0.9em;
+        font-weight: 600;
+        text-transform: none;
+        letter-spacing: 0;
+        box-shadow: none;
+    }
+    #pwa-install-btn:hover {
+        background-color: var(--bg-medium);
+    }
+    [data-theme="dark"] #pwa-install-btn {
+        color: var(--text-dark);
+    }
+    #pwa-install-btn .icon-span {
+        font-size: 1.2em;
+        margin-right: 6px;
+        color: var(--success-color);
+    }
+    
+    #category-filter-bar {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+    #category-filter-bar .btn-secondary {
+        font-size: 0.85em;
+        padding: 8px 15px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    #category-filter-bar .btn-secondary.active {
+        background-color: var(--primary-color);
+        color: white;
+        border-color: var(--primary-color);
+    }
+    
     #toast-container {
         position: fixed;
-        bottom: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        z-index: 2000;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
         display: flex;
         flex-direction: column;
         gap: 10px;
-        align-items: center;
     }
-
     .toast {
-        background-color: var(--text-color);
-        color: white;
-        padding: 12px 20px;
-        border-radius: 8px;
-        box-shadow: var(--shadow);
-        opacity: 1;
-        transition: opacity 0.3s, transform 0.3s;
         display: flex;
         align-items: center;
-        gap: 10px;
+        padding: 15px 20px;
+        border-radius: 8px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        min-width: 250px;
+        color: white;
+        font-weight: 600;
+        animation: toastSlideIn 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
     }
-
+    .toast.exiting {
+        animation: toastSlideOut 0.3s cubic-bezier(0.55, 0.09, 0.68, 0.53) forwards;
+    }
+    .toast-icon { margin-right: 12px; font-size: 1.2em; }
     .toast.success { background-color: var(--success-color); }
     .toast.error { background-color: var(--danger-color); }
     .toast.info { background-color: var(--info-color); }
     
-    .toast.exiting {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-
-    /* MODALS */
-    .modal {
+    #fab-add-btn {
         position: fixed;
-        z-index: 2000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.4);
-        display: none;
-        justify-content: center;
-        align-items: center;
-        padding: 20px;
-    }
-
-    .modal-content {
-        background-color: var(--card-bg);
-        padding: 25px;
-        border-radius: 12px;
-        box-shadow: var(--shadow);
-        width: 100%;
-        max-width: 500px;
-        position: relative;
-        animation: fadeIn 0.3s;
-    }
-    
-    .modal-content h3 {
+        bottom: 25px;
+        left: 25px;
+        width: 56px;
+        height: 56px;
+        background-color: var(--success-color);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        z-index: 1010;
         display: flex;
         align-items: center;
-        gap: 10px;
-        border-bottom: 1px solid var(--border-color);
-        padding-bottom: 10px;
-        margin-bottom: 15px;
+        justify-content: center;
+        font-size: 28px;
+        line-height: 1;
+        transition: background-color 0.2s, transform 0.2s, opacity 0.3s, visibility 0.3s;
+    }
+    #fab-add-btn:hover {
+        background-color: #009a44;
+        transform: scale(1.05);
+    }
+    #fab-add-btn .icon-span { font-size: 32px; }
+    
+    @media print {
+        body { padding: 0; background-color: white; color: black; }
+        .main-content { max-width: 100%; }
+        header, .dashboard-container, .global-search-container, .controls-bar, .action-buttons, 
+        .lank-knapp, .qty-btn, .copy-btn, .search-btn, #fab-add-btn, #back-to-top-btn, 
+        #toggle-add-form-btn, .json-controls, #sync-status, .theme-switcher, #pwa-install-btn,
+        #category-filter-bar, .modal, .search-wrapper, .notes-cell, .link-buttons, .action-cell,
+        .top-toolbar, #recent-items-container, #app-menu-modal {
+            display: none !important;
+        }
+        h1, h2, h3 { color: black; border: none; }
+        h3.collapsible-header { margin-top: 20px; border-bottom: 2px solid black; }
+        .lager-wrapper, .lager-container {
+            overflow: visible;
+            max-height: none;
+            box-shadow: none;
+            border: none;
+            margin-bottom: 10px;
+        }
+        .artikel-rad, .header {
+            display: grid;
+            grid-template-columns: 1.5fr 2fr 1fr 0.5fr 0.5fr; /* Anpassad för print */
+            border-bottom: 1px solid #ccc;
+        }
+        .header { background-color: #eee; }
+        .artikel-rad span, .artikel-rad div, .header span {
+            padding-right: 5px;
+        }
     }
 
-    .modal .close-btn {
-        position: absolute;
-        top: 15px;
-        right: 20px;
-        color: var(--text-secondary);
-        font-size: 1.5em;
-        font-weight: bold;
+    .top-toolbar {
+        width: 100%;
+        background-color: var(--card-bg);
+        box-shadow: var(--card-shadow);
+        padding: 15px 25px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        box-sizing: border-box;
+        border: 1px solid var(--border-color);
+        transition: background-color 0.3s, border-color 0.3s;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+    
+    .toolbar-title {
+        font-size: 1.4em;
+        font-weight: 800;
+        color: var(--primary-dark);
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        display: flex; /* NYTT */
+        align-items: center; /* NYTT */
+        gap: 10px; /* NYTT */
+    }
+    /* NYTT: Aktivt filter-märke i titel */
+    #toolbar-filter-badge {
+        font-size: 0.6em;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 20px;
+        background-color: var(--primary-color);
+        color: white;
+        display: none; /* Dold som standard */
+    }
+    
+    [data-theme="dark"] .toolbar-title {
+        color: var(--primary-color);
+    }
+    
+    .toolbar-controls {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+    
+    .toolbar-add-button, .toolbar-icon-button {
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        font-size: 24px;
+        font-weight: 700;
+        line-height: 1;
         cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background-color 0.2s, transform 0.2s;
+        padding: 0;
+        position: relative;
     }
-    .modal .close-btn:hover { color: var(--text-color); }
-
-    /* APP MENU MODAL */
-    .app-menu-modal-overlay {
+    .toolbar-add-button .icon-span, .toolbar-icon-button .icon-span { font-size: 26px; }
+    
+    .toolbar-add-button:hover, .toolbar-icon-button:hover {
+        background-color: var(--primary-dark);
+        transform: scale(1.05);
+    }
+    
+    .toolbar-icon-button {
+        background-color: var(--bg-medium);
+        color: var(--text-dark);
+    }
+    .toolbar-icon-button:hover {
+        background-color: var(--bg-dark);
+    }
+    
+    header, .main-content > h1 { 
+        display: none; 
+    }
+    
+    #app-menu-overlay {
         position: fixed;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-        background-color: rgba(0, 0, 0, 0.4);
-        z-index: 1001;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1040;
         display: none;
-        opacity: 1;
-        transition: opacity 0.2s;
+        animation: simpleFadeIn 0.3s forwards;
     }
-    .app-menu-modal-overlay.closing { opacity: 0; }
-
     #app-menu-modal {
         position: fixed;
         top: 0;
         right: 0;
-        width: 300px;
+        width: 100%;
+        max-width: 450px;
         height: 100%;
-        background-color: var(--card-bg);
-        box-shadow: -4px 0 10px rgba(0, 0, 0, 0.2);
-        z-index: 1002;
+        background-color: var(--glass-bg);
+        backdrop-filter: blur(15px);
+        border-left: 1px solid var(--glass-border);
+        box-shadow: -10px 0 30px rgba(0,0,0,0.2);
+        z-index: 1050;
         display: none;
         flex-direction: column;
-        transform: translateX(0);
-        transition: transform 0.2s;
-        padding: 20px;
-        overflow-y: auto;
+        animation: slideInRight 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
     }
-    #app-menu-modal.closing { transform: translateX(300px); }
-
+    #app-menu-modal.closing, #app-menu-overlay.closing {
+        animation-duration: 0.2s;
+    }
+    #app-menu-modal.closing { animation-name: slideOutRight; }
+    #app-menu-overlay.closing { animation-name: simpleFadeOut; }
+    
     .app-menu-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 25px;
-        padding-bottom: 10px;
+        padding: 20px 25px;
         border-bottom: 1px solid var(--border-color);
+        flex-shrink: 0;
     }
-    
-    .menu-section {
-        margin-bottom: 25px;
-    }
-    .menu-section h4 {
-        margin-bottom: 10px;
-        color: var(--primary-color);
-    }
-
-    .menu-section-content {
-        background-color: var(--bg-medium);
-        padding: 15px;
-        border-radius: 8px;
-    }
-    
-    /* DASHBOARD STATS */
-    .dashboard-container {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 10px;
-    }
-    .dashboard-stat {
-        background-color: var(--card-bg);
-        padding: 15px;
-        border-radius: 8px;
-        text-align: center;
-        cursor: pointer;
-        border: 1px solid var(--border-color);
-        transition: box-shadow 0.2s;
-    }
-    .dashboard-stat:hover {
-        box-shadow: 0 0 0 3px rgba(90, 125, 255, 0.2);
-    }
-    .stat-value {
-        font-size: 2em;
+    .app-menu-header h2 {
+        margin: 0;
+        font-size: 1.3em;
         font-weight: 700;
-        margin-bottom: 5px;
-        color: var(--primary-dark);
+        color: var(--text-dark);
+        border: none;
+        padding: 0;
     }
-    .stat-label {
-        font-size: 0.9em;
-        color: var(--text-secondary);
-    }
-    
-    .stat-out-of-stock .stat-value {
-        color: var(--danger-color);
-    }
-    
-    /* RECENT ITEMS */
-    #recent-items-list {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-    }
-    .recent-item {
-        display: flex;
-        flex-direction: column;
-        padding: 8px 10px;
-        background-color: var(--card-bg);
-        border-radius: 6px;
-        text-decoration: none;
-        color: var(--text-color);
-        border-left: 3px solid var(--primary-color);
-        transition: background-color 0.2s;
-    }
-    .recent-item:hover { background-color: var(--bg-dark); }
-    .recent-item strong { font-size: 1em; }
-    .recent-item span { font-size: 0.85em; color: var(--text-secondary); }
-    .recent-item-category { font-size: 0.7em !important; font-weight: 600; color: var(--primary-color) !important; margin-bottom: 2px; }
-
-    /* EXPORTERA */
-    .export-buttons {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-    }
-    .export-buttons button { width: 100%; justify-content: flex-start; }
-
-    /* GLOBAL SEARCH MODAL */
-    #global-search-results {
-        position: fixed;
-        top: 60px;
-        left: 0;
-        width: 100%;
-        height: calc(100% - 60px);
-        background-color: var(--bg-light);
-        z-index: 999;
-        display: none;
-        padding: 20px;
-        overflow-y: auto;
-    }
-    
-    .global-search-container {
-        max-width: 800px;
-        margin: 0 auto;
-    }
-    
-    .global-search-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-    }
-
-    #global-search-input {
-        flex-grow: 1;
-        margin-right: 10px;
-        padding-left: 15px !important;
-        padding-right: 15px !important;
-        border-radius: 8px !important;
-        background-color: var(--card-bg) !important;
-    }
-    
-    .global-search-section {
-        background-color: var(--card-bg);
-        padding: 15px;
-        border-radius: 12px;
-        box-shadow: var(--shadow);
-        margin-bottom: 20px;
-    }
-    
-    .global-search-title {
-        color: var(--primary-color);
-        margin-bottom: 15px;
-        padding-bottom: 5px;
-        border-bottom: 1px solid var(--border-color);
-    }
-    
-    /* Interna resultat */
-    #internal-results-container {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-    }
-    
-    .internal-result-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 10px 15px;
-        border: 1px solid var(--border-color);
-        border-radius: 8px;
-        text-decoration: none;
-        color: var(--text-color);
-        transition: background-color 0.2s;
-    }
-    .internal-result-item:hover {
-        background-color: var(--bg-medium);
-    }
-    .internal-result-item span {
-        font-size: 0.9em;
-        color: var(--text-secondary);
-    }
-    #quick-add-from-search {
-        margin-top: 10px;
-        justify-content: center;
-        width: 100%;
-    }
-
-    /* Externa resultat */
-    #external-results-container {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* NYTT: Responsiv grid */
-        gap: 10px;
-    }
-    
-    .provider-card {
-        display: flex;
-        align-items: center;
-        padding: 10px 15px;
-        border: 1px solid var(--border-color);
-        border-radius: 8px;
-        background-color: var(--bg-light);
-        gap: 10px;
-    }
-    
-    .provider-card-logo {
+    #app-menu-close-btn {
+        background: var(--bg-medium);
+        border: none;
+        border-radius: 50%;
         width: 32px;
         height: 32px;
-        object-fit: contain;
+        cursor: pointer;
+        color: var(--text-dark);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background-color 0.2s;
     }
+    #app-menu-close-btn:hover { background-color: var(--bg-dark); }
     
-    .provider-card-content {
+    .app-menu-content {
+        padding: 25px;
+        overflow-y: auto;
         flex-grow: 1;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
     }
-
-    .provider-card-name {
-        font-weight: 600;
-        font-size: 0.95em;
-        color: var(--text-color);
-    }
-
-    .btn-provider-search {
-        padding: 5px 10px;
-        font-size: 0.8em;
-        background-color: var(--primary-color);
-        color: white;
-        border-radius: 6px;
-        text-decoration: none;
-        white-space: nowrap;
-    }
+    .app-menu-content .dashboard-container { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+    .app-menu-content #recent-items-container { margin-bottom: 20px; }
+    .app-menu-content h3 { font-size: 1.3em; }
     
-    .provider-card.disabled {
-        opacity: 0.5;
+    /* --- NYTT: Exportera-sektion --- */
+    #export-container {
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px dashed var(--border-color);
     }
-    
-    #search-disclaimer {
-        margin-top: 15px;
-        font-size: 0.85em;
-        color: var(--text-secondary);
-        padding-left: 10px;
-        border-left: 3px solid var(--warning-color);
-    }
-    
-    /* Export links dropdown (Global Search) */
-    #export-search-links-container {
-        position: relative;
-        display: none;
-    }
-    
-    .global-search-header .link-dropdown-container {
-        position: static;
-    }
-
-    .global-search-header .dropdown-menu {
-        top: 100%;
-        margin-top: 5px;
-        right: 0;
-        left: auto;
-    }
-    
-    /* Search History */
-    #global-search-history {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        margin-bottom: 20px;
-    }
-    
-    .history-item {
-        background-color: var(--bg-medium);
-        color: var(--text-secondary);
-        padding: 5px 10px;
-        border-radius: 15px;
-        font-size: 0.8em;
-        display: flex;
-        align-items: center;
-        gap: 5px;
-    }
-    .history-term {
-        cursor: pointer;
-    }
-    .delete-history {
-        cursor: pointer;
+    #export-container h3 {
+        margin-top: 0;
+        margin-bottom: 15px;
+        font-size: 1.3em;
         font-weight: 700;
-        color: var(--danger-color);
+        color: var(--text-dark);
     }
-
-    /* PWA Install */
-    #pwa-install-btn {
-        display: none;
-        background-color: var(--success-color);
-        color: white;
-    }
-
-    /* SYNC STATUS */
-    #sync-status {
-        position: fixed;
-        bottom: 5px;
-        left: 5px;
-        font-size: 0.7em;
-        color: var(--text-secondary);
+    .export-buttons {
         display: flex;
-        align-items: center;
-        gap: 5px;
-        z-index: 50;
+        gap: 15px;
     }
-
-    .sync-status-dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
+    .export-buttons .btn-secondary {
+        width: 100%;
+        font-weight: 700;
     }
-
-    .sync-connecting .sync-status-dot { background-color: var(--warning-color); }
-    .sync-ok .sync-status-dot { background-color: var(--success-color); }
-    .sync-error .sync-status-dot { background-color: var(--danger-color); }
-
-    /* RESPONSIVITET */
-    @media (min-width: 768px) {
-        /* Bättre grid för datorer */
-        .inventory-layout {
-            gap: 30px;
-        }
-        
-        .dashboard-container {
-            grid-template-columns: repeat(3, 1fr);
-        }
-
-        .header-bar {
-            padding: 0 30px;
-        }
-        
-        .add-form-actions {
-            justify-content: flex-start;
-        }
-        
-        .add-form-actions .btn-primary,
-        .add-form-actions .btn-secondary {
-            max-width: 200px;
-        }
-        
-        #global-search-results {
-            top: 70px;
-            height: calc(100% - 70px);
-        }
+    .export-buttons .icon-span {
+        color: var(--primary-color);
     }
+    /* --- SLUT NYTT --- */
 
-    /* SPECIFIKT FÖR MOBIL */
-    @media (max-width: 767px) {
-        .app-title {
-            display: none; /* Dölj titel på mobil */
-        }
+    @media (max-width: 768px) {
+        body { padding: 20px 10px; }
+        h1 { font-size: 2em; margin-bottom: 25px; }
+        h2 { font-size: 1.4em; margin-top: 30px; }
         
-        .search-wrapper {
-            margin: 0;
-            flex-grow: 1;
-        }
+        .controls-bar { flex-direction: column; align-items: flex-start; gap: 15px; }
+        .search-wrapper { width: 100%; margin-top: 0; }
+        #search-input { width: 100%; }
         
-        .toolbar-actions {
+        .global-search-container { padding: 20px; }
+        .global-search-wrapper { flex-direction: column; }
+        #global-search-btn { width: 100%; }
+        #external-results-container { grid-template-columns: 1fr; }
+        
+        #fab-add-btn { bottom: 15px; left: 15px; }
+        #back-to-top-btn { bottom: 15px; right: 15px; }
+        
+        #toast-container { top: 10px; right: 10px; left: 10px; width: auto; }
+
+        .top-toolbar {
+            padding: 12px 15px;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+        .toolbar-title {
+            font-size: 1.1em;
+            flex-basis: 100%;
+            text-align: center;
+            justify-content: center; /* Centrera märke */
+        }
+        #toolbar-filter-badge { font-size: 0.55em; }
+        
+        .toolbar-controls {
+            gap: 10px;
+            flex-basis: 100%;
+            justify-content: space-between;
+        }
+        #sync-status {
+            font-size: 0.8em;
+            padding: 4px 8px 4px 6px;
             gap: 5px;
         }
+        #sync-status .icon { width: 10px; height: 10px; }
         
-        .toolbar-btn {
-            width: 36px;
-            height: 36px;
-        }
-        
-        .header {
-            /* Förenklat grid för mobil */
-            grid-template-columns: 2fr 2fr 1fr 1fr 1.5fr; 
+        #pwa-install-btn {
+            padding: 4px 8px;
             font-size: 0.8em;
         }
         
-        .artikel-rad {
-            /* Förenklat grid för mobil */
-            grid-template-columns: 2fr 2fr 1fr 1fr 1.5fr; 
-            padding: 10px 0;
+        #add-article-form .submit-button-wrapper {
+            grid-template-columns: 1fr;
+        }
+        #add-article-form #add-form-cancel-btn {
+            order: 2;
         }
         
-        .artikel-rad > span:nth-child(3), /* Pris */
-        .header span:nth-child(3),
-        .artikel-rad > span:nth-child(5), /* Status */
-        .header span:nth-child(5),
-        .artikel-rad > span:nth-child(6), /* Anteckningar */
-        .header span:nth-child(6) {
-            display: none; /* Dölj Pris, Status, Anteckningar */
-        }
-        
-        .artikel-rad > div:nth-child(7), /* Länkar/Action Cell */
-        .header span:nth-child(7) {
-             /* Flytta till slutet */
-            grid-column: 5;
-            grid-row: 1;
-        }
-        
-        .action-buttons {
-            flex-direction: column;
-            gap: 5px;
-        }
-        
-        .link-buttons {
-            flex-wrap: wrap;
-        }
-        
-        .link-dropdown-container .dropdown-menu {
-            bottom: auto;
-            top: 100%;
-            left: 0;
-            right: auto;
-        }
-        
-        .action-buttons button {
-            width: 100%;
-            justify-content: center;
-        }
-        
-        .modal-content {
-            margin: 10px;
-            padding: 15px;
-        }
-        
-        .app-menu-modal-overlay {
-            background-color: rgba(0, 0, 0, 0.7); /* Mörkare overlay på mobil */
-        }
-        
-        #app-menu-modal {
-            width: 80%;
-        }
-        #app-menu-modal.closing { transform: translateX(80%); }
+        #app-menu-modal { max-width: 320px; }
+        .app-menu-content .dashboard-container { grid-template-columns: 1fr; }
+        .app-menu-content .dashboard-stat span { font-size: 1.8em; }
+        .app-menu-content .dashboard-stat .icon-span { display: none; }
+        .app-menu-content #recent-items-list { grid-template-columns: 1fr; }
     }
     
-    /* ANIMATIONER */
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(-20px); }
-        to { opacity: 1; transform: translateY(0); }
+    @media (max-width: 600px) {
+        #global-search-close-btn { top: -5px; right: -5px; }
     }
-    @keyframes shake {
-        0%, 100% { transform: translateX(0); }
-        20%, 60% { transform: translateX(-5px); }
-        40%, 80% { transform: translateX(5px); }
-    }
-    
+
     </style>
-</head>
-<body data-theme="light">
+<link rel="manifest" href="./manifest.json">
     
-    <div id="initial-loader">
-        <div class="loader-content">
-            <div class="spinner"></div>
-            <p>Laddar lagerdata...</p>
-        </div>
+    <link rel="apple-touch-icon" href="images/192x192.png">
+    
+    <meta name="theme-color" content="#5a7dff"/> </head>
+<body data-theme="light"> <div id="initial-loader">
+        <div class="loader-spinner"></div>
+        <p>Hämtar lagerdata...</p>
     </div>
     
-    <header class="header-bar">
-        <span class="app-title">
-            <span class="icon-span">warehouse</span> 
-            LagerData <span id="toolbar-filter-badge" class="filter-badge"></span>
-        </span>
-        
-        <div class="search-wrapper">
-            <span class="icon-span">search</span>
-            <input type="text" id="search-input" placeholder="Sök artikel, namn, pris>200...">
-            <button id="clear-search-btn" class="toolbar-btn" title="Rensa sökning">
-                &times;
+    <div id="toast-container"></div>
+    
+    <div id="app-menu-overlay"></div>
+    <div id="app-menu-modal">
+        <div class="app-menu-header">
+            <h2>Översikt</h2>
+            <button id="app-menu-close-btn" title="Stäng menyn">
+                <span class="icon-span">close</span>
             </button>
         </div>
-        
-        <div class="toolbar-actions">
-            <button id="global-search-btn" class="toolbar-btn" title="Global Sök">
-                <span class="icon-span">travel_explore</span>
-            </button>
+        <div class="app-menu-content">
+            <div class="dashboard-container">
+                <div class="dashboard-stat" data-filter-target="Alla" title="Klicka för att visa alla artiklar i lager">
+                    <h4>Artiklar i Lager</h4>
+                    <span id="stat-total-items">0</span>
+                    <span class="icon-span">inventory_2</span>
+                </div>
+                <div class="dashboard-stat" data-filter-target="Alla" title="Klicka för att visa alla artiklar i lager">
+                    <h4>Totalt Antal Enheter</h4>
+                    <span id="stat-total-units">0</span>
+                    <span class="icon-span">all_inbox</span>
+                </div>
+                <div class="dashboard-stat" id="stat-out-of-stock-wrapper" data-filter-target="Slut" title="Klicka för att filtrera på 'Slut i Lager'">
+                    <h4>Artiklar Slut</h4>
+                    <span id="stat-out-of-stock">0</span>
+                    <span class="icon-span">production_quantity_limits</span>
+                </div>
+            </div>
             
-            <button id="toolbar-add-btn" class="btn-primary" title="Lägg till ny artikel">
-                <span class="icon-span">add</span>
-            </button>
-
-            <button id="app-menu-btn" class="toolbar-btn" title="Appmeny">
-                <span class="icon-span">menu</span>
-            </button>
+            <div id="recent-items-container">
+                <h3>Senast Hanterade</h3>
+                <div id="recent-items-list">
+                    <p id="recent-items-empty" style="color: var(--text-light); font-size: 0.9em;">Inga nyligen hanterade artiklar.</p>
+                </div>
+            </div>
+            
+            <div id="export-container">
+                <h3>Exportera</h3>
+                <div class="export-buttons">
+                    <button id="export-csv-btn" class="btn-secondary">
+                        <span class="icon-span">description</span>Exportera CSV
+                    </button>
+                    <button id="export-json-btn" class="btn-secondary">
+                        <span class="icon-span">data_object</span>Exportera JSON
+                    </button>
+                </div>
+            </div>
         </div>
-    </header>
-
-    <main class="content-wrapper">
+    </div>
+    <div class="main-content">
         
-        <div id="add-form-wrapper" class="add-form-wrapper">
-            <div class="add-form-title">
-                <h3><span class="icon-span">add_circle</span> Lägg till Ny Artikel</h3>
-                <button id="add-form-cancel-btn" class="toolbar-btn" title="Stäng formulär">
-                    <span class="icon-span">close</span>
+        <div class="top-toolbar">
+            <div class="toolbar-title">
+                LAGERDATABAS
+                <span id="toolbar-filter-badge"></span> </div>
+            <div class="toolbar-controls">
+                <button id="pwa-install-btn" class="btn-primary" type="button">
+                    <span class="icon-span">install_desktop</span>
+                    Installera App
+                </button>
+                <div id="sync-status" class="sync-connecting" title="Ansluter...">
+                    <span class="icon"></span>
+                    <span class="text">Ansluter...</span>
+                </div>
+                <div class="theme-switcher">
+                    <span class="theme-switcher-label">Ljust / Mörkt</span>
+                    <label class="switch">
+                        <input type="checkbox" id="theme-toggle-cb">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <button id="toolbar-add-btn" class="toolbar-add-button" title="Lägg till ny artikel">
+                    <span class="icon-span">add</span>
+                </button>
+                <button id="app-menu-btn" class="toolbar-icon-button" title="Visa översikt">
+                    <span class="icon-span">menu</span>
                 </button>
             </div>
-
-            <form id="add-article-form">
-                <div class="add-form-grid">
+        </div>
+        
+        <div class="global-search-container">
+            <p>Skriv in ett artikelnummer för att jämföra priser. Prova `k:Service`, `p>100` eller `q=0`.</p>
+            <div class="global-search-wrapper">
+                <input type="text" id="global-search-input" placeholder="Ange artikelnummer (exempel: 03L 115 562)">
+                <button id="global-search-btn" class="btn-primary" title="Sök">
+                    <span class="search-spinner"></span> <span class="icon-span">compare_arrows</span>
+                    Jämför
+                </button>
+            </div>
+            <div style="margin-top: 15px; margin-bottom: 5px;">
+                <span style="font-size: 0.9em; font-weight: 600; color: var(--text-dark); display: flex; align-items: center; gap: 5px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 16px; height: 16px; color: var(--primary-color);">
+                        <path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25ZM12.75 6a.75.75 0 0 0-1.5 0v6c0 .414.336.75.75.75h4.5a.75.75 0 0 0 0-1.5h-3.75V6Z" clip-rule="evenodd" />
+                    </svg>
+                  Tidigare sökningar:
+                </span>
+                <div id="global-search-history" class="search-history-container"></div>
+                
+                <div id="global-search-results" class="global-search-results-box">
+                    <button id="global-search-close-btn" title="Stäng">&times;</button>
                     
-                    <div class="form-group">
-                        <label for="add_service_filter">Artikelnummer *</label>
-                        <div class="artnr-input-group">
-                            <input type="text" id="add_service_filter" name="service_filter" required placeholder="T.ex. 1234567-8">
-                            <button type="button" id="paste-artnr-btn" title="Klistra in artikelnummer och namn">
-                                <span class="icon-span">content_paste</span>
+                    <div id="internal-results-container">
+                        </div>
+                    
+                    <div class="search-results-header">
+                        <h4 class="external-search-title">Externa leverantörer</h4>
+                        <div class="link-dropdown-container" id="export-search-links-container" style="display: none;">
+                            <button id="export-links-btn" class="btn-secondary" onclick="toggleDropdown('export-links-menu'); event.stopPropagation();">
+                                <span class="icon-span">download</span>Exportera
                             </button>
+                            <div id="export-links-menu" class="dropdown-menu">
+                                <button id="btn-copy-all-links-text" class="lank-knapp">Kopiera som text</button>
+                                <button id="btn-copy-all-links-json" class="lank-knapp">Kopiera som JSON</button>
+                            </div>
                         </div>
-                        <span id="add-form-artnr-warning" class="add-form-warning"></span>
                     </div>
-
-                    <div class="form-group">
-                        <label for="add_name">Namn/Beskrivning *</label>
-                        <input type="text" id="add_name" name="name" required placeholder="T.ex. Oljefilter">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="add_price">Pris (kr)</label>
-                        <input type="number" id="add_price" name="price" step="0.01" min="0" placeholder="0.00">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="add_quantity">Antal i Lager *</label>
-                        <input type="number" id="add_quantity" name="quantity" required min="0" value="1">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="add_category">Kategori *</label>
-                        <div class="quick-category-buttons">
-                            <button type="button" class="quick-category-btn" data-category="Service">Service</button>
-                            <button type="button" class="quick-category-btn" data-category="Motor/Chassi">Motor/Chassi</button>
-                            <button type="button" class="quick-category-btn" data-category="Andra Märken">Andra Märken</button>
+                    
+                    <div id="external-results-container">
                         </div>
-                        <select id="add_category" name="category" required>
-                            <option value="Service">Service</option>
-                            <option value="Motor/Chassi">Motor/Chassi</option>
-                            <option value="Andra Märken">Andra Märken</option>
-                            <option value="Övrigt">Övrigt</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="add_notes">Anteckningar</label>
-                        <input type="text" id="add_notes" name="notes" placeholder="Plats, fordon, övrigt...">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="add_link">Länk (Tillverkare/Leverantör)</label>
-                        <input type="url" id="add_link" name="link" placeholder="https://...">
+                    
+                    <div id="search-disclaimer" class="search-disclaimer-text" style="display: none;">
+                        * Bildelsbasen söker primärt efter begagnade delar.
                     </div>
                 </div>
-
-                <div class="add-form-actions">
+            </div>
+        </div>
+        
+        <div id="add-form-wrapper">
+            <form id="add-article-form">
+                <div>
+                    <label for="add_service_filter">Artikelnummer <span class="orange-asterisk">*</span></label>
+                    <div class="form-input-wrapper">
+                        <input type="text" id="add_service_filter" name="service_filter" placeholder="Artikelnummer" required oninput="this.value = this.value.toUpperCase()">
+                        <button type="button" id="paste-artnr-btn" class="form-paste-btn" title="Klistra in & Fyll i">
+                            <span class="icon-span">content_paste</span>
+                        </button>
+                    </div>
+                    <div id="add-form-artnr-warning" class="form-warning"></div>
+                </div>
+                <div>
+                    <label for="add_name">Namn <span class="orange-asterisk">*</span></label>
+                    <input type="text" id="add_name" name="name" placeholder="Namn" required oninput="this.value = this.value.toUpperCase()">
+                    <div class="form-warning"></div>
+                </div>
+                <div>
+                    <label for="add_price">Pris <span class="orange-asterisk">*</span></label>
+                    <input type="number" id="add_price" name="price" placeholder="Pris" step="0.01" required>
+                    <div class="form-warning"></div>
+                </div>
+                <div>
+                    <label for="add_quantity">Antal <span class="orange-asterisk">*</span></label>
+                    <input type="number" name="quantity" id="add-quantity" value="1" placeholder="Antal" required>
+                    <div class="form-warning"></div>
+                </div>
+                <div>
+                    <label for="add_category">Kategori <span class="orange-asterisk">*</span></label>
+                    <select name="category" id="add_category" required>
+                        <option value="" disabled selected>Välj Kategori</option>
+                        <option value="Service">Service</option>
+                        <option value="Motor/Chassi">Motor/Chassi</option>
+                        <option value="Andra Märken">Andra Märken</option>
+                    </select>
+                    <div class="quick-category-wrapper">
+                        <button type="button" class="quick-category-btn" data-category="Service">Service</button>
+                        <button type="button" class="quick-category-btn" data-category="Motor/Chassi">Motor/Chassi</button>
+                        <button type="button" class="quick-category-btn" data-category="Andra Märken">Andra Märken</button>
+                    </div>
+                    <div class="form-warning"></div>
+                </div>
+                <div>
+                    <label for="add_notes">Anteckningar</label>
+                    <input type="text" id="add_notes" name="notes" placeholder="Anteckningar">
+                    <div class="form-warning"></div>
+                </div>
+                <div>
+                    <label for="add_link">Länk (URL)</label>
+                    <input type="text" id="add_link" name="link" placeholder="Länk (URL)">
+                    <div class="form-warning"></div>
+                </div>
+                <div class="submit-button-wrapper">
+                    <button type="button" id="add-form-cancel-btn" class="btn-secondary">Avbryt</button>
                     <button type="submit" class="btn-primary">
-                        <span class="icon-span">save</span> Spara Artikel
-                    </button>
-                    <button type="button" id="add-form-cancel-btn-bottom" class="btn-secondary" onclick="document.getElementById('add-form-cancel-btn').click()">
-                        <span class="icon-span">close</span> Avbryt
+                        <span class="icon-span">save</span>
+                        Spara Artikel
                     </button>
                 </div>
             </form>
         </div>
         
-        <div id="full-empty-state">
-            <h2>Välkommen till LagerData</h2>
-            <p>Ditt lager är tomt. Börja med att lägga till din första artikel!</p>
-            <button id="empty-state-add-btn" class="btn-primary" style="margin-top: 20px;">
-                <span class="icon-span">add_circle</span> Lägg till Artikel
-            </button>
+        <div class="controls-bar">
+            <div class="search-wrapper">
+                <input type="text" id="search-input" placeholder="Sök... (ex: 'k:Service' eller 'p>100')">
+                <button type="button" id="clear-search-btn" title="Rensa sökning">&times;</button>
+            </div>
         </div>
 
         <div id="category-filter-bar">
@@ -1430,276 +1380,162 @@
             <button class="btn-secondary" data-filter="Andra Märken">Andra Märken</button>
             <button class="btn-secondary" data-filter="Slut">Slut i Lager</button>
         </div>
+        
+        <svg id="empty-state-svg" style="display: none;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M3.375 4.5C2.339 4.5 1.5 5.34 1.5 6.375V17.625c0 1.036.84 1.875 1.875 1.875h17.25c1.035 0 1.875-.84 1.875-1.875V6.375c0-1.036-.84-1.875-1.875-1.875H3.375ZM12.75 7.5a.75.75 0 0 0-1.5 0v2.25H9a.75.75 0 0 0 0 1.5h2.25V13.5a.75.75 0 0 0 1.5 0V11.25H15a.75.75 0 0 0 0-1.5h-2.25V7.5Z" />
+        </svg>
 
-        <div class="inventory-layout">
+        <div id="full-empty-state" class="empty-state">
+            <svg viewBox="0 0 24 24" fill="currentColor"><use href="#empty-state-svg"></use></svg>
+            <h4>Ditt lager är tomt</h4>
+            <p>Börja med att lägga till din första artikel.</p>
+            <button id="empty-state-add-btn" class="btn-success">
+                <span class="icon-span">add</span>
+                Lägg till första artikeln
+            </button>
+        </div>
 
-            <div id="service-artiklar-sektion" class="lager-sektion">
-                <div id="service-artiklar-titel" class="collapsible-header" data-state="open">
-                    <h3>Service Artiklar <span id="badge-service" class="badge"></span></h3>
-                    <span class="icon-span collapse-icon">expand_more</span>
+        <h3 id="service-artiklar-titel" class="collapsible-header" data-state="open">
+            <div>Service <span class="category-badge" id="badge-service">0</span></div>
+            <span class="toggle-icon">▼</span>
+        </h3>
+        <div id="service-artiklar-wrapper" class="lager-wrapper">
+            <div class="lager-container">
+                <div class="header">
+                    <span data-sort="service_filter">Art. nr <span class="sort-icon"></span></span>
+                    <span data-sort="name">Namn <span class="sort-icon"></span></span>
+                    <span data-sort="price">Pris <span class="sort-icon"></span></span>
+                    <span data-sort="quantity">Antal <span class="sort-icon"></span></span>
+                    <span>Status</span>
+                    <span data-sort="notes">Anteckningar <span class="sort-icon"></span></span>
+                    <span>Länk</span>
+                    <span>Åtgärder</span>
                 </div>
-                <div id="service-artiklar-wrapper" class="lager-lista-wrapper">
-                    <div class="lager-container">
-                        <div class="lager-lista">
-                            <div class="header">
-                                <span data-sort="service_filter">Art.nr <span class="sort-icon"></span></span>
-                                <span data-sort="name">Namn <span class="sort-icon"></span></span>
-                                <span data-sort="price">Pris <span class="sort-icon"></span></span>
-                                <span data-sort="quantity" class="active desc">Antal <span class="sort-icon"></span></span>
-                                <span>Status</span>
-                                <span>Anteckningar</span>
-                                <span>Länkar / Actions</span>
-                            </div>
-                            <div id="service-artiklar-lista">
-                                </div>
-                        </div>
-                    </div>
-                    <div id="service-empty-state" class="empty-state">
-                        <span class="icon-span" style="font-size: 3em; color: var(--text-secondary);">inbox</span>
-                        <h4>Inga serviceartiklar</h4>
-                        <p>Inga artiklar hittades. Prova ändra filtret eller lägg till en ny artikel.</p>
-                    </div>
+                <div class="empty-state" id="service-empty-state" style="display: none;">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><use href="#empty-state-svg"></use></svg>
+                    <h4>Inga serviceartiklar</h4>
+                    <p>Din sökning gav inga träffar, eller så har du inte lagt till några artiklar i denna kategori.</p>
                 </div>
+                <div id="service-artiklar-lista"></div>
             </div>
+        </div>
 
-            <div id="motor-chassi-artiklar-sektion" class="lager-sektion">
-                <div id="motor-chassi-artiklar-titel" class="collapsible-header" data-state="open">
-                    <h3>Motor/Chassi & Övrigt <span id="badge-motor-chassi" class="badge"></span></h3>
-                    <span class="icon-span collapse-icon">expand_more</span>
+        <h3 id="motor-chassi-artiklar-titel" class="collapsible-header" data-state="open">
+            <div>Motor/Chassi <span class="category-badge" id="badge-motor-chassi">0</span></div>
+            <span class="toggle-icon">▼</span>
+        </h3>
+        <div id="motor-chassi-artiklar-wrapper" class="lager-wrapper">
+            <div class="lager-container">
+                <div class="header">
+                    <span data-sort="service_filter">Art. nr <span class="sort-icon"></span></span>
+                    <span data-sort="name">Namn <span class="sort-icon"></span></span>
+                    <span data-sort="price">Pris <span class="sort-icon"></span></span>
+                    <span data-sort="quantity">Antal <span class="sort-icon"></span></span>
+                    <span>Status</span>
+                    <span data-sort="notes">Anteckningar <span class="sort-icon"></span></span>
+                    <span>Länk</span>
+                    <span>Åtgärder</span>
                 </div>
-                <div id="motor-chassi-artiklar-wrapper" class="lager-lista-wrapper">
-                    <div class="lager-container">
-                        <div class="lager-lista">
-                            <div class="header">
-                                <span data-sort="service_filter">Art.nr <span class="sort-icon"></span></span>
-                                <span data-sort="name">Namn <span class="sort-icon"></span></span>
-                                <span data-sort="price">Pris <span class="sort-icon"></span></span>
-                                <span data-sort="quantity" class="active desc">Antal <span class="sort-icon"></span></span>
-                                <span>Status</span>
-                                <span>Anteckningar</span>
-                                <span>Länkar / Actions</span>
-                            </div>
-                            <div id="motor-chassi-artiklar-lista">
-                                </div>
-                        </div>
-                    </div>
-                    <div id="motor-chassi-empty-state" class="empty-state">
-                        <span class="icon-span" style="font-size: 3em; color: var(--text-secondary);">inbox</span>
-                        <h4>Inga motor/chassi-artiklar</h4>
-                        <p>Inga artiklar hittades. Prova ändra filtret eller lägg till en ny artikel.</p>
-                    </div>
+                <div class="empty-state" id="motor-chassi-empty-state" style="display: none;">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><use href="#empty-state-svg"></use></svg>
+                    <h4>Inga motor/chassi-artiklar</h4>
+                    <p>Din sökning gav inga träffar, eller så har du inte lagt till några artiklar i denna kategori.</p>
                 </div>
+                <div id="motor-chassi-artiklar-lista"></div>
             </div>
+        </div>
 
-            <div id="andra-marken-artiklar-sektion" class="lager-sektion">
-                <div id="andra-marken-artiklar-titel" class="collapsible-header" data-state="open">
-                    <h3>Andra Märken <span id="badge-andra-marken" class="badge"></span></h3>
-                    <span class="icon-span collapse-icon">expand_more</span>
+       <h3 id="andra-marken-artiklar-titel" class="collapsible-header" data-state="open">
+            <div>Andra Märken <span class="category-badge" id="badge-andra-marken">0</span></div>
+            <span class="toggle-icon">▼</span>
+        </h3>
+        <div id="andra-marken-artiklar-wrapper" class="lager-wrapper">
+            <div class="lager-container">
+                <div class="header">
+                    <span data-sort="service_filter">Art. nr <span class="sort-icon"></span></span>
+                    <span data-sort="name">Namn <span class="sort-icon"></span></span>
+                    <span data-sort="price">Pris <span class="sort-icon"></span></span>
+                    <span data-sort="quantity">Antal <span class="sort-icon"></span></span>
+                    <span>Status</span>
+                    <span data-sort="notes">Anteckningar <span class="sort-icon"></span></span>
+                    <span>Länk</span>
+                    <span>Åtgärder</span>
                 </div>
-                <div id="andra-marken-artiklar-wrapper" class="lager-lista-wrapper">
-                    <div class="lager-container">
-                        <div class="lager-lista">
-                            <div class="header">
-                                <span data-sort="service_filter">Art.nr <span class="sort-icon"></span></span>
-                                <span data-sort="name">Namn <span class="sort-icon"></span></span>
-                                <span data-sort="price">Pris <span class="sort-icon"></span></span>
-                                <span data-sort="quantity" class="active desc">Antal <span class="sort-icon"></span></span>
-                                <span>Status</span>
-                                <span>Anteckningar</span>
-                                <span>Länkar / Actions</span>
-                            </div>
-                            <div id="andra-marken-artiklar-lista">
-                                </div>
-                        </div>
-                    </div>
-                    <div id="andra-marken-empty-state" class="empty-state">
-                        <span class="icon-span" style="font-size: 3em; color: var(--text-secondary);">inbox</span>
-                        <h4>Inga artiklar för andra märken</h4>
-                        <p>Inga artiklar hittades. Prova ändra filtret eller lägg till en ny artikel.</p>
-                    </div>
+                <div class="empty-state" id="andra-marken-empty-state" style="display: none;">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><use href="#empty-state-svg"></use></svg>
+                    <h4>Inga artiklar för andra märken</h4>
+                    <p>Din sökning gav inga träffar, eller så har du inte lagt till några artiklar i denna kategori.</p>
                 </div>
+                <div id="andra-marken-artiklar-lista"></div>
             </div>
-            
-            <div id="slut-i-lager-sektion" class="lager-sektion">
-                <div id="slut-i-lager-titel" class="collapsible-header" data-state="open">
-                    <h3 style="color: var(--danger-color);"><span class="icon-span">production_quantity_limits</span> Slut i Lager</h3>
-                    <span class="icon-span collapse-icon">expand_more</span>
-                </div>
-                <div id="slut-i-lager-wrapper" class="lager-lista-wrapper">
-                    <div class="lager-container">
-                        <div class="lager-lista">
-                            <div class="header">
-                                <span data-sort="service_filter">Art.nr <span class="sort-icon"></span></span>
-                                <span data-sort="name">Namn <span class="sort-icon"></span></span>
-                                <span data-sort="price">Pris <span class="sort-icon"></span></span>
-                                <span data-sort="quantity" class="active desc">Antal <span class="sort-icon"></span></span>
-                                <span>Status</span>
-                                <span>Anteckningar</span>
-                                <span>Länkar / Actions</span>
-                            </div>
-                            <div id="slut-i-lager-lista">
-                                </div>
-                        </div>
+        </div>
+        
+        <div id="slut-i-lager-sektion" style="display: none;">
+            <h2 class="out-of-stock-title">Slut i Lager</h2>
+            <div class="lager-wrapper">
+                <div class="lager-container">
+                    <div class="header">
+                        <span data-sort="service_filter">Art. nr <span class="sort-icon"></span></span>
+                        <span data-sort="name">Namn <span class="sort-icon"></span></span>
+                        <span data-sort="price">Pris <span class="sort-icon"></span></span>
+                        <span data-sort="quantity">Antal <span class="sort-icon"></span></span>
+                        <span>Status</span>
+                        <span data-sort="notes">Anteckningar <span class="sort-icon"></span></span>
+                        <span>Länk</span>
+                        <span>Åtgärder</span>
                     </div>
-                    <div id="slut-i-lager-empty-state" class="empty-state">
-                        <span class="icon-span" style="font-size: 3em; color: var(--text-secondary);">inventory</span>
+                    <div class="empty-state" id="slut-i-lager-empty-state" style="display: none;">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><use href="#empty-state-svg"></use></svg>
                         <h4>Inga artiklar slut i lager</h4>
-                        <p>Inget behöver beställas just nu!</p>
+                        <p>Allt finns i lager, eller så gav din sökning inga träffar.</p>
                     </div>
+                    <div id="slut-i-lager-lista"></div>
                 </div>
             </div>
-            
         </div>
-    </main>
+    </div> 
     
-    <div id="app-menu-modal-overlay" class="app-menu-modal-overlay"></div>
-    <div id="app-menu-modal" class="app-menu-modal">
-        <div class="app-menu-header">
-            <h3><span class="icon-span">menu</span> Appmeny</h3>
-            <button id="app-menu-close-btn" class="toolbar-btn close-btn"><span class="icon-span">close</span></button>
-        </div>
-
-        <div class="menu-section">
-            <h4><span class="icon-span">dashboard</span> Dashboard Översikt</h4>
-            <div id="dashboard-container" class="dashboard-container">
-                <div class="dashboard-stat" data-filter-target="Alla">
-                    <div id="stat-total-items" class="stat-value">0</div>
-                    <div class="stat-label">Artiklar i lager</div>
-                </div>
-                <div class="dashboard-stat" data-filter-target="Alla">
-                    <div id="stat-total-units" class="stat-value">0</div>
-                    <div class="stat-label">Totala enheter</div>
-                </div>
-                <div class="dashboard-stat stat-out-of-stock" data-filter-target="Slut">
-                    <div id="stat-out-of-stock" class="stat-value">0</div>
-                    <div class="stat-label">Slut i lager</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="menu-section">
-            <h4><span class="icon-span">history</span> Senast Hanterade</h4>
-            <div id="recent-items-content">
-                <div id="recent-items-list">
-                    </div>
-                <div id="recent-items-empty" style="font-size: 0.9em; color: var(--text-secondary); text-align: center; padding: 10px;">Ingen nylig aktivitet.</div>
-            </div>
-        </div>
-        
-        <div class="menu-section">
-            <h4><span class="icon-span">download</span> Datahantering</h4>
-            <div class="export-buttons menu-section-content">
-                <button id="export-csv-btn" class="btn-secondary">
-                    <span class="icon-span">file_download</span> Exportera till CSV
-                </button>
-                <button id="export-json-btn" class="btn-secondary">
-                    <span class="icon-span">data_object</span> Exportera till JSON
-                </button>
-            </div>
-        </div>
-        
-        <div class="menu-section">
-            <h4><span class="icon-span">settings</span> Inställningar</h4>
-            <div class="menu-section-content" style="display: flex; flex-direction: column; gap: 15px;">
-                <label class="switch-container">
-                    Mörkt läge (Dark Mode)
-                    <input type="checkbox" id="theme-toggle-cb">
-                    <span class="slider round"></span>
-                </label>
-                <button id="pwa-install-btn" class="btn-primary" style="justify-content: center;">
-                    <span class="icon-span">install_mobile</span> Installera som App
-                </button>
-            </div>
-        </div>
-    </div>
-    
-    <div id="global-search-results">
-        <div class="global-search-container">
-            <div class="global-search-header">
-                <input type="text" id="global-search-input" placeholder="Sök artikelnummer eller fritext..." />
-                <button id="global-search-btn" class="btn-primary" title="Sök">
-                    <span class="icon-span">search</span> Sök
-                </button>
-                <div id="export-search-links-container" class="link-dropdown-container">
-                    <button class="lank-knapp more-btn" onclick="toggleDropdown('export-links-menu'); event.stopPropagation();" title="Kopiera alla externa länkar">
-                        <span class="icon-span">link</span> Länkar
-                    </button>
-                    <div id="export-links-menu" class="dropdown-menu">
-                        <button id="btn-copy-all-links-text" type="button">Kopiera som text</button>
-                        <button id="btn-copy-all-links-json" type="button">Kopiera som JSON</button>
-                    </div>
-                </div>
-                <button id="global-search-close-btn" class="toolbar-btn close-btn" title="Stäng sökning">
-                    <span class="icon-span">close</span>
-                </button>
-            </div>
-            
-            <div id="global-search-history">
-                </div>
-            
-            <div class="global-search-section">
-                <div id="internal-results-container">
-                    </div>
-            </div>
-
-            <div class="global-search-section">
-                <h4 class="global-search-title">Sök hos Leverantörer</h4>
-                <div id="external-results-container">
-                    </div>
-                <p id="search-disclaimer" style="display:none;">*Bildelsbasen söker primärt på OEM-nummer.</p>
-            </div>
-        </div>
-    </div>
-
     <div id="editModal" class="modal">
         <div class="modal-content">
-            <h3><span class="icon-span">edit</span> Redigera Artikel</h3>
             <span class="close-btn">&times;</span>
+            <h3><span class="icon-span">edit</span>Redigera Artikel</h3>
             <form id="edit-article-form">
-                <input type="hidden" id="edit-id" name="id">
-
-                <div class="form-group">
-                    <label for="edit-service_filter">Artikelnummer *</label>
-                    <input type="text" id="edit-service_filter" name="service_filter" required>
+                <input type="hidden" id="edit-id">
+                <div>
+                    <label for="edit-service_filter">Artikelnummer</label>
+                    <input type="text" name="service_filter" id="edit-service_filter" required oninput="this.value = this.value.toUpperCase()">
                 </div>
-
-                <div class="form-group">
-                    <label for="edit-name">Namn/Beskrivning *</label>
-                    <input type="text" id="edit-name" name="name" required>
+                <div>
+                    <label for="edit-name">Namn</label>
+                    <input type="text" name="name" id="edit-name" required oninput="this.value = this.value.toUpperCase()">
                 </div>
-                
-                <div class="form-group">
-                    <label for="edit-price">Pris (kr)</label>
-                    <input type="number" id="edit-price" name="price" step="0.01" min="0">
+                <div>
+                    <label for="edit-price">Pris</label>
+                    <input type="number" name="price" id="edit-price" step="0.01" required>
                 </div>
-
-                <div class="form-group">
-                    <label for="edit-quantity">Antal i Lager *</label>
-                    <input type="number" id="edit-quantity" name="quantity" required min="0">
+                <div>
+                    <label for="edit-quantity">Antal</label>
+                    <input type="number" name="quantity" id="edit-quantity" required>
                 </div>
-
-                <div class="form-group">
-                    <label for="edit-category">Kategori *</label>
-                    <select id="edit-category" name="category" required>
+                <div>
+                    <label for="edit-category">Kategori</label>
+                    <select name="category" id="edit-category" required>
                         <option value="Service">Service</option>
                         <option value="Motor/Chassi">Motor/Chassi</option>
                         <option value="Andra Märken">Andra Märken</option>
-                        <option value="Övrigt">Övrigt</option>
                     </select>
                 </div>
-
-                <div class="form-group">
+                <div>
                     <label for="edit-notes">Anteckningar</label>
-                    <input type="text" id="edit-notes" name="notes">
+                    <input type="text" name="notes" id="edit-notes">
                 </div>
-
-                <div class="form-group">
-                    <label for="edit-link">Länk (Tillverkare/Leverantör)</label>
-                    <input type="url" id="edit-link" name="link">
+                <div>
+                    <label for="edit-link">Länk</label>
+                    <input type="text" name="link" id="edit-link">
                 </div>
-
-                <button type="submit" class="btn-primary" style="width: 100%; justify-content: center; margin-top: 15px;">
-                    <span class="icon-span">save</span> Spara Ändringar
+                <button type="submit" class="btn-primary">
+                    <span class="icon-span">save</span>
+                    Spara Ändringar
                 </button>
             </form>
         </div>
@@ -1726,16 +1562,11 @@
     
     <button id="back-to-top-btn" title="Tillbaka till toppen" style="display: none;">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M10 18a.75.75 0 0 1-.75-.75V4.66L7.38 6.53a.75.75 0 0 1-1.16-.94l3-3a.75.75 0 0 1 1.16 0l3 3a.75.75 0 0 1-1.16.94L10.75 4.66v12.59c0 .414-.336.75-.75.75z" clip-rule="evenodd"/>
+            <path fill-rule="evenodd" d="M10 17a.75.75 0 01-.75-.75V5.612L5.03 10.03a.75.75 0 01-1.06-1.06l5.25-5.25a.75.75 0 011.06 0l5.25 5.25a.75.75 0 11-1.06 1.06L10.75 5.612V16.25A.75.75 0 0110 17z" clip-rule="evenodd" />
         </svg>
     </button>
     
-    <div id="toast-container"></div>
-    <div id="sync-status">
-        <span class="sync-status-dot"></span>
-        <span class="text">Ansluter...</span>
-    </div>
-    
-    <script type="module" src="./apps.js"></script>
+    <script type="module" src="apps.js"></script>
+
 </body>
 </html>
