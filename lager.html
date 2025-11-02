@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dynamisk Lagerförteckning med Firebase</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet" />
+    
     <style>
     /* Importerar Google Font "Inter" */
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
@@ -27,7 +30,6 @@
         --container-width: 1400px;
     }
     
-    /* --- NYTT: MÖRKT LÄGE --- */
     [data-theme="dark"] {
         --primary-color: #6a8dff;
         --primary-dark: #5a7dff;
@@ -44,7 +46,6 @@
         --card-bg: #374151;
         --card-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
     }
-    /* --- SLUT NYTT --- */
 
     @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
@@ -63,16 +64,43 @@
         flex-direction: column;
         align-items: center;
         line-height: 1.5;
-        transition: background-color 0.3s, color 0.3s; /* --- NYTT: Mjuk övergång vid temabyte --- */
+        transition: background-color 0.3s, color 0.3s;
     }
     
+    /* --- NYTT: Helper-klass för ikoner --- */
+    .icon-span {
+        font-family: 'Material Symbols Outlined';
+        font-weight: normal;
+        font-style: normal;
+        font-size: 20px; /* Standardstorlek */
+        line-height: 1;
+        letter-spacing: normal;
+        text-transform: none;
+        display: inline-block;
+        white-space: nowrap;
+        word-wrap: normal;
+        direction: ltr;
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+        -moz-osx-font-smoothing: grayscale;
+        font-feature-settings: 'liga';
+        vertical-align: middle; /* Justerar ikoner med text */
+    }
+    
+    .btn-primary .icon-span, .btn-danger .icon-span, .btn-secondary .icon-span {
+        margin-right: 8px; /* Avstånd mellan ikon och text i knappar */
+        font-size: 1.2em; /* Något större i knappar */
+        position: relative;
+        top: -1px; /* Finjustering */
+    }
+    /* --- SLUT NYTT --- */
+
     .main-content {
         width: 100%;
         max-width: var(--container-width);
         position: relative; 
     }
     
-    /* --- NYTT: Global Laddningsskärm --- */
     #initial-loader {
         position: fixed;
         top: 0;
@@ -102,7 +130,6 @@
         font-size: 1.1em;
         color: var(--text-dark);
     }
-    /* --- SLUT NYTT --- */
     
     header { width: 100%; text-align: center; margin-bottom: 30px; }
     h1 { color: var(--primary-dark); margin-top: 15px; margin-bottom: 0; text-align: center; font-weight: 800; font-size: 2.8em; }
@@ -111,7 +138,6 @@
     h3.collapsible-header { cursor: pointer; display: flex; justify-content: space-between; align-items: center; padding-right: 15px; transition: background-color: 0.1s; color: var(--text-dark); margin-top: 30px; margin-bottom: 15px; font-size: 1.3em; font-weight: 700; border-bottom: 2px solid var(--border-color); padding-bottom: 5px; padding-left: 5px; }
     h3.collapsible-header:hover { background-color: var(--bg-medium); border-radius: 5px; }
 
-    /* --- NYTT: Kategorietiketter (Count & Value) --- */
     .category-badge {
         font-size: 0.75em;
         font-weight: 600;
@@ -127,7 +153,6 @@
         color: var(--text-dark);
     }
     .collapsible-header div { display: flex; align-items: center; } /* Wrapper för titel + badges */
-    /* --- SLUT NYTT --- */
 
     .toggle-icon { display: inline-block; transition: transform 0.2s ease-in-out; font-size: 0.8em; font-weight: 900; line-height: 1; color: var(--primary-color); }
     .collapsible-header[data-state="closed"] .toggle-icon { transform: rotate(-90deg); }
@@ -144,7 +169,6 @@
     #add-article-form input, #add-article-form select { padding: 14px; border: 1px solid var(--border-color); border-radius: 8px; background-color: var(--bg-light); transition: border-color 0.2s, box-shadow 0.2s, background-color 0.3s; font-size: 1em; width: 100%; box-sizing: border-box; color: var(--text-dark); }
     #add-article-form input:focus, #add-article-form select:focus { border-color: var(--primary-color); box-shadow: 0 0 0 4px rgba(90, 125, 255, 0.2); background-color: var(--card-bg); outline: none; }
     
-    /* --- NYTT: Form validerings-styling --- */
     #add-article-form .has-error input,
     #add-article-form .has-error select,
     #edit-article-form .has-error input,
@@ -152,17 +176,30 @@
         border-color: var(--danger-color) !important;
         box-shadow: 0 0 0 4px rgba(255, 61, 0, 0.2) !important;
     }
+
+    /* --- NYTT: Justerad submit-wrapper för två knappar --- */
+    #add-article-form .submit-button-wrapper { 
+        grid-column: 1 / -1; 
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        align-items: center;
+        margin-top: 10px;
+    }
+    #add-article-form button[type="submit"] { background-color: var(--success-color); color: white; width: 100%; } 
+    #add-article-form button[type="submit"]:hover { background-color: #009a44; }
+    #add-article-form #add-form-cancel-btn {
+        width: 100%;
+        text-align: center;
+        margin: 0; /* Ta bort eventuell standard-margin */
+        padding: 15px 25px; /* Matcha primär knapp */
+    }
     /* --- SLUT NYTT --- */
 
-    #add-article-form .submit-button-wrapper { grid-column: 1 / -1; } 
-    #add-article-form button { background-color: var(--success-color); color: white; width: 100%; } 
-    #add-article-form button:hover { background-color: #009a44; }
-
-    .btn-primary { padding: 15px 25px; background-color: var(--primary-color); color: white; border: none; border-radius: 8px; cursor: pointer; transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); box-sizing: border-box; }
-    .btn-secondary { padding: 12px 20px; background-color: var(--card-bg); color: var(--text-dark); border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; transition: background-color 0.2s, transform 0.1s, color 0.3s, border-color 0.3s; font-weight: 600; text-align: center; font-size: 0.9em; box-sizing: border-box; }
+    .btn-primary { padding: 15px 25px; background-color: var(--primary-color); color: white; border: none; border-radius: 8px; cursor: pointer; transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; }
+    .btn-secondary { padding: 12px 20px; background-color: var(--card-bg); color: var(--text-dark); border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; transition: background-color 0.2s, transform 0.1s, color 0.3s, border-color 0.3s; font-weight: 600; text-align: center; font-size: 0.9em; box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; }
     .btn-secondary:hover { background-color: var(--bg-medium); }
 
-    /* --- NYTT: Farlig knapp-styling --- */
     .btn-danger {
         background-color: var(--danger-color);
         color: white;
@@ -172,10 +209,10 @@
         background-color: #c53030;
         border-color: #c53030;
     }
-    /* --- SLUT NYTT --- */
 
-    .controls-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; width: 100%; }
-    .controls-bar.top-controls { margin-top: 40px; margin-bottom: 30px; justify-content: flex-start; gap: 20px; align-items: center; flex-wrap: wrap; }
+    .controls-bar { display: flex; justify-content: flex-end; align-items: center; margin-bottom: 20px; width: 100%; } /* ÄNDRAD: Tog bort H2, justerar till höger */
+    .controls-bar.top-controls { display: none; } /* NYTT: Denna sektion är nu tom, döljs helt */
+    
     .json-controls { display: flex; gap: 10px; align-items: center; }
     
     #sync-status { font-weight: 600; font-size: 0.9em; padding: 6px 12px 6px 10px; border-radius: 20px; display: flex; align-items: center; gap: 8px; transition: all 0.3s ease; }
@@ -231,8 +268,10 @@
     .service-filter-cell { display: flex; align-items: center; gap: 5px; overflow: hidden; width: 100%; }
     .service-filter-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex-grow: 1; }
     .notes-cell { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: help; }
-    .copy-btn { background: var(--bg-medium); border: 1px solid var(--border-color); border-radius: 4px; cursor: pointer; color: var(--primary-dark); font-size: 0.9em; padding: 3px 5px; line-height: 1; opacity: 0.9; transition: opacity 0.2s, transform 0.1s, background 0.2s; flex-shrink: 0; }
+    .copy-btn { background: var(--bg-medium); border: 1px solid var(--border-color); border-radius: 4px; cursor: pointer; color: var(--primary-dark); font-size: 0.9em; padding: 3px 5px; line-height: 1; opacity: 0.9; transition: opacity 0.2s, transform 0.1s, background 0.2s, color 0.2s; flex-shrink: 0; min-width: 26px; text-align: center; } /* NYTT: min-width */
     .copy-btn:hover { opacity: 1; transform: scale(1.05); background: var(--primary-color); color: white; border-color: var(--primary-color); }
+    .copy-btn:disabled { color: var(--success-color); cursor: default; } /* NYTT: Stil för klickad knapp */
+    .copy-btn:disabled:hover { transform: none; background: var(--bg-medium); border-color: var(--border-color); }
 
     .action-buttons { display: flex; gap: 8px; justify-content: flex-start; }
     .link-buttons { display: flex; gap: 8px; align-items: center; width: 100%; }
@@ -241,7 +280,7 @@
     .thansen-btn { background-color: #008080; color: white; border: 1px solid #008080; }
     .thansen-btn:hover { background-color: #006060; border-color: #006060; }
     .lank-knapp, .edit-btn, .delete-btn, .order-btn { padding: 6px 10px; border: 1px solid transparent; border-radius: 6px; cursor: pointer; font-size: 0.8em; font-weight: 600; transition: all 0.2s; text-align: center; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); }
-    .lank-knapp { background-color: var(--card-bg); color: var(--primary-color); border: 1px solid var(--primary-color); /* --- ÄNDRAD --- */ }
+    .lank-knapp { background-color: var(--card-bg); color: var(--primary-color); border: 1px solid var(--primary-color); }
     .lank-knapp:hover { background-color: var(--primary-color); color: white; border-color: var(--primary-color); }
     [data-theme="dark"] .lank-knapp { background-color: var(--bg-medium); }
     [data-theme="dark"] .lank-knapp:hover { background-color: var(--primary-color); }
@@ -259,7 +298,11 @@
     .modal { position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); backdrop-filter: blur(5px); display: none; justify-content: center; align-items: center; }
     .modal-content { background-color: var(--card-bg); padding: 40px; border-radius: 12px; width: 90%; max-width: 500px; box-shadow: 0 20px 50px rgba(0,0,0,0.4); animation: fadeIn 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55); max-height: 90vh; overflow-y: auto; position: relative; transition: background-color 0.3s; }
     @keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
-    .modal-content h3 { color: var(--primary-dark); border-bottom: 2px solid var(--border-color); padding-bottom: 10px; margin-top: 0; font-size: 1.5em; }
+    /* --- NYTT: Modal-titel med ikon --- */
+    .modal-content h3 { color: var(--primary-dark); border-bottom: 2px solid var(--border-color); padding-bottom: 10px; margin-top: 0; font-size: 1.5em; display: flex; align-items: center; }
+    .modal-content h3 .icon-span { font-size: 1.2em; margin-right: 10px; color: var(--primary-color); }
+    #confirmationModal .icon-span { font-size: 1.3em; margin-right: 12px; }
+    /* --- SLUT NYTT --- */
     [data-theme="dark"] .modal-content h3 { color: var(--primary-color); }
     .modal-content label { display: block; margin-top: 15px; margin-bottom: 8px; font-weight: 600; color: var(--text-dark); font-size: 0.9em; }
     .modal-content input, .modal-content select { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 6px; box-sizing: border-box; background-color: var(--bg-light); color: var(--text-dark); }
@@ -305,6 +348,7 @@
     #global-search-input:focus { border-color: var(--primary-color); box-shadow: 0 0 0 4px rgba(90, 125, 255, 0.2); background-color: var(--card-bg); outline: none; }
     .search-input-group { display: flex; gap: 10px; margin-bottom: 10px; }
     #global-search-btn { padding: 16px 30px; font-size: 1em; flex-shrink: 0; }
+    #global-search-btn .icon-span { font-size: 1.4em; } /* NYTT: Ikon i global sök-knapp */
     
     #global-search-results { position: relative; top: 0; left: 0; right: 0; z-index: 1000; background-color: var(--card-bg); border: 1px solid var(--border-color); box-shadow: var(--card-shadow); padding: 20px; border-radius: 8px; display: none; padding-right: 45px; margin-top: 25px; border-top: 2px solid var(--border-color); }
     #global-search-close-btn { position: absolute; top: 8px; right: 10px; background: none; border: none; font-size: 24px; color: var(--text-light); cursor: pointer; line-height: 1; padding: 0; width: 30px; height: 30px; text-align: center; z-index: 1001; }
@@ -325,19 +369,59 @@
     
     .orange-asterisk { color: var(--warning-color); font-weight: 700; font-size: 1.1em; margin-left: 3px; vertical-align: top; line-height: 1; display: inline-block; }
     .search-history-container { margin-top: 5px; margin-bottom: 5px; display: flex; flex-wrap: wrap; gap: 8px; font-size: 0.9em; }
-    .history-item { padding: 4px 10px; background-color: var(--border-color); color: var(--text-dark); border-radius: 20px; cursor: pointer; transition: background-color 0.15s, transform 0.15s; font-weight: 500; }
+    .history-item { padding: 4px 10px; background-color: var(--border-color); color: var(--text-dark); border-radius: 20px; cursor: pointer; transition: background-color 0.15s, transform 0.15s; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; }
     .history-item:hover { background-color: var(--bg-dark); transform: translateY(-1px); }
+    /* --- NYTT: Raderingsknapp för sökhistorik --- */
+    .history-item .delete-history {
+        font-style: normal;
+        font-weight: 700;
+        color: var(--text-light);
+        font-size: 1.1em;
+        line-height: 1;
+        opacity: 0.7;
+    }
+    .history-item .delete-history:hover {
+        color: var(--danger-color);
+        opacity: 1;
+    }
+    /* --- SLUT NYTT --- */
+
     .link-favicon { width: 16px; height: 16px; margin-right: 8px; vertical-align: middle; border-radius: 2px; }
     
     #header-logo-img { max-width: 450px; width: 100%; display: block; margin-left: auto; margin-right: auto; padding-bottom: 0; }
     [data-theme="dark"] #header-logo-img { filter: invert(1) hue-rotate(180deg); } /* Inverterar loggan i mörkt läge */
 
-    .dashboard-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 40px; animation: subtleFadeIn 0.5s ease-out; }
-    .dashboard-stat { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px 25px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); transition: background-color 0.3s, border-color 0.3s; }
+    /* --- FÖRBÄTTRAD: Dashboard --- */
+    .dashboard-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 40px; animation: subtleFadeIn 0.5s ease-out; }
+    .dashboard-stat { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px 25px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); transition: background-color 0.3s, border-color 0.3s, transform 0.2s, box-shadow 0.2s; position: relative; overflow: hidden; }
+    .dashboard-stat:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.08);
+    }
     .dashboard-stat h4 { margin: 0 0 8px 0; font-size: 0.95em; font-weight: 600; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; }
-    .dashboard-stat span { font-size: 2.2em; font-weight: 700; color: var(--primary-dark); display: block; }
+    .dashboard-stat span { font-size: 2.2em; font-weight: 700; color: var(--primary-dark); display: block; z-index: 2; position: relative; }
     [data-theme="dark"] .dashboard-stat span { color: var(--primary-color); }
     .dashboard-stat#stat-out-of-stock-wrapper span { color: var(--danger-color); }
+    /* Ikoner i dashboard */
+    .dashboard-stat .icon-span {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 64px;
+        color: var(--border-color);
+        opacity: 0.5;
+        z-index: 1;
+        transition: color 0.3s, opacity 0.3s;
+    }
+    [data-theme="dark"] .dashboard-stat .icon-span { opacity: 0.2; }
+    .dashboard-stat:hover .icon-span {
+        color: var(--primary-color);
+        opacity: 0.1;
+    }
+    [data-theme="dark"] .dashboard-stat:hover .icon-span { opacity: 0.3; }
+    .dashboard-stat#stat-out-of-stock-wrapper:hover .icon-span { color: var(--danger-color); }
+    /* --- SLUT FÖRBÄTTRAD --- */
 
     .empty-state { display: none; flex-direction: column; align-items: center; justify-content: center; padding: 50px 20px; text-align: center; min-height: 200px; animation: subtleFadeIn 0.3s; }
     .empty-state svg { width: 60px; height: 60px; color: var(--border-color); margin-bottom: 20px; }
@@ -348,7 +432,6 @@
     #back-to-top-btn:hover { background-color: var(--primary-dark); transform: scale(1.05); opacity: 1; }
     #back-to-top-btn svg { width: 24px; height: 24px; }
     
-    /* --- NYTT: Temaknapp (Toggle Switch) --- */
     .theme-switcher { display: flex; align-items: center; gap: 10px; margin-left: auto; }
     .theme-switcher-label { font-weight: 600; font-size: 0.9em; color: var(--text-light); }
     .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
@@ -358,21 +441,33 @@
     input:checked + .slider { background-color: var(--primary-color); }
     input:focus + .slider { box-shadow: 0 0 1px var(--primary-color); }
     input:checked + .slider:before { transform: translateX(24px); }
-    /* --- SLUT NYTT --- */
-
-    /* --- NYTT: PWA Installationsknapp --- */
+    
+    /* --- NYTT: PWA-knapp (flyttad till toolbar) --- */
     #pwa-install-btn {
-        background-color: var(--success-color);
-        color: white;
-        padding: 10px 20px; /* Mindre än primär knapp */
+        background-color: transparent;
+        color: var(--text-dark);
+        border: 1px solid var(--border-color);
+        padding: 6px 14px;
         display: none; /* Dold som standard */
+        font-size: 0.9em;
+        font-weight: 600;
+        text-transform: none;
+        letter-spacing: 0;
+        box-shadow: none;
     }
     #pwa-install-btn:hover {
-        background-color: #009a44;
+        background-color: var(--bg-medium);
+    }
+    [data-theme="dark"] #pwa-install-btn {
+        color: var(--text-dark);
+    }
+    #pwa-install-btn .icon-span {
+        font-size: 1.2em;
+        margin-right: 6px;
+        color: var(--success-color);
     }
     /* --- SLUT NYTT --- */
     
-    /* --- NYTT: Kategorifilter-knappar --- */
     #category-filter-bar {
         display: flex;
         gap: 10px;
@@ -390,9 +485,7 @@
         color: white;
         border-color: var(--primary-color);
     }
-    /* --- SLUT NYTT --- */
     
-    /* --- NYTT: Toast Notis-container --- */
     #toast-container {
         position: fixed;
         top: 20px;
@@ -420,9 +513,7 @@
     .toast.success { background-color: var(--success-color); }
     .toast.error { background-color: var(--danger-color); }
     .toast.info { background-color: var(--info-color); }
-    /* --- SLUT NYTT --- */
     
-    /* --- NYTT: "Snabblägg-till"-knapp (FAB) --- */
     #fab-add-btn {
         position: fixed;
         bottom: 25px;
@@ -436,20 +527,19 @@
         cursor: pointer;
         box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         z-index: 1010; /* Under back-to-top */
-        display: flex;
+        display: flex; /* ÄNDRAD: Döljs/visas med JS */
         align-items: center;
         justify-content: center;
         font-size: 28px;
         line-height: 1;
-        transition: background-color 0.2s, transform 0.2s;
+        transition: background-color 0.2s, transform 0.2s, opacity 0.3s, display 0.3s;
     }
     #fab-add-btn:hover {
         background-color: #009a44;
         transform: scale(1.05);
     }
-    /* --- SLUT NYTT --- */
+    #fab-add-btn .icon-span { font-size: 32px; } /* NYTT: Ikon i FAB */
     
-    /* --- NYTT: Print-vänliga stilar --- */
     @media print {
         body { padding: 0; background-color: white; color: black; }
         .main-content { max-width: 100%; }
@@ -457,7 +547,7 @@
         .lank-knapp, .qty-btn, .copy-btn, .search-btn, #fab-add-btn, #back-to-top-btn, 
         #toggle-add-form-btn, .json-controls, #sync-status, .theme-switcher, #pwa-install-btn,
         #category-filter-bar, .modal, .search-wrapper, .notes-cell, .link-buttons, .action-cell,
-        .top-toolbar /* --- NYTT: Dölj vid print --- */ {
+        .top-toolbar {
             display: none !important;
         }
         h1, h2, h3 { color: black; border: none; }
@@ -479,14 +569,12 @@
             padding-right: 5px;
         }
     }
-    /* --- SLUT NYTT --- */
 
-    /* --- NYTT: Stil för Topp-toolbar (från bild) --- */
+    /* --- FÖRBÄTTRAD: Topp-toolbar --- */
     .top-toolbar {
         width: 100%;
         background-color: var(--card-bg);
         box-shadow: var(--card-shadow);
-        /* border-radius: 12px; -- BORTTAGEN ENLIGT ÖNSKEMÅL -- */
         padding: 15px 25px;
         display: flex;
         justify-content: space-between;
@@ -495,6 +583,8 @@
         box-sizing: border-box;
         border: 1px solid var(--border-color);
         transition: background-color 0.3s, border-color 0.3s;
+        flex-wrap: wrap; /* Tillåt wrapping på mindre skärmar */
+        gap: 15px; /* Avstånd om den wrappar */
     }
     
     .toolbar-title {
@@ -512,6 +602,7 @@
         display: flex;
         align-items: center;
         gap: 20px;
+        flex-wrap: wrap; /* Tillåt wrapping av kontroller */
     }
     
     .toolbar-add-button {
@@ -529,52 +620,31 @@
         align-items: center;
         justify-content: center;
         transition: background-color 0.2s, transform 0.2s;
-        padding-bottom: 2px; /* Justera plus-tecknet */
+        padding: 0; /* ÄNDRAD: Ta bort padding-bottom */
     }
+    .toolbar-add-button .icon-span { font-size: 26px; } /* NYTT: Ikon i knappen */
     
     .toolbar-add-button:hover {
         background-color: var(--primary-dark);
         transform: scale(1.05);
     }
     
-    /* Dölj den gamla <header> helt och H1 */
     header, .main-content > h1 { 
         display: none; 
     }
     
-    /* Vi flyttade theme-switcher, så vi döljer labeln inuti den för att matcha bilden */
-    /*
-    .toolbar-controls .theme-switcher-label {
-        display: none; -- BORTTAGEN FÖR ATT GÖRA DEN SYNLIG/TYDLIGARE --
-    }
-    */
-    
-    /* Flytta upp dashboarden lite eftersom nya headern är mindre */
     .dashboard-container {
         margin-top: 0px;
     }
-    /* --- SLUT NYTT --- */
+    /* --- SLUT FÖRBÄTTRAD --- */
 
     @media (max-width: 768px) {
         body { padding: 20px 10px; }
         h1 { font-size: 2em; margin-bottom: 25px; }
         h2 { font-size: 1.4em; margin-top: 30px; }
         
-        .controls-bar, .controls-bar.top-controls { flex-direction: column; align-items: flex-start; gap: 15px; }
-        .controls-bar.top-controls > button,
-        .controls-bar.top-controls .json-controls,
-        /* .controls-bar.top-controls #sync-status, -- FLYTTAD -- */
-        /* .controls-bar.top-controls .theme-switcher, -- BORTFLYTTAD -- */
-        .controls-bar.top-controls #pwa-install-btn { /* --- NYTT --- */
-            width: 100%;
-            box-sizing: border-box; 
-        }
-        /* .theme-switcher { margin-left: 0; justify-content: space-between; } -- BORTFLYTTAD -- */
-        .json-controls { flex-direction: column; width: 100%; }
-        .json-controls button, .json-controls label { width: 100%; text-align: center; }
-        /* #sync-status { border-left: none; padding-left: 10px; text-align: left; justify-content: center; } -- FLYTTAD -- */
-
-        .search-wrapper { width: 100%; margin-top: 15px; }
+        .controls-bar { flex-direction: column; align-items: flex-start; gap: 15px; }
+        .search-wrapper { width: 100%; margin-top: 0; } /* ÄNDRAD: Ta bort margin-top */
         #search-input { width: 100%; }
         
         .global-search-container { padding: 20px; }
@@ -587,36 +657,49 @@
         
         .dashboard-container { grid-template-columns: 1fr; gap: 15px; }
         .dashboard-stat span { font-size: 1.8em; }
+        /* NYTT: Dölj dashboard-ikoner på mobil för att spara plats */
+        .dashboard-stat .icon-span { display: none; }
         
-        /* --- NYTT: Justera FAB/Back-to-Top för mobil --- */
         #fab-add-btn { bottom: 15px; left: 15px; }
         #back-to-top-btn { bottom: 15px; right: 15px; }
         
-        /* --- NYTT: Toasts på mobil --- */
         #toast-container { top: 10px; right: 10px; left: 10px; width: auto; }
 
-        /* --- NYTT: Toolbar på mobil --- */
         .top-toolbar {
             padding: 12px 15px;
             margin-bottom: 20px;
-            flex-wrap: wrap; /* --- NYTT: Tillåt wrapping --- */
-            gap: 10px; /* --- NYTT: Mellanrum vid wrapping --- */
+            gap: 10px;
         }
         .toolbar-title {
             font-size: 1.1em;
+            flex-basis: 100%; /* NYTT: Titel tar full bredd */
+            text-align: center; /* Centrera titel */
         }
         .toolbar-controls {
             gap: 15px;
-            flex-basis: 100%; /* --- NYTT: Ta full bredd på liten skärm --- */
-            justify-content: space-between; /* --- NYTT: Sprid ut kontroller --- */
+            flex-basis: 100%;
+            justify-content: space-between;
         }
-        /* --- NYTT: Justera sync-status för mobil --- */
         #sync-status {
             font-size: 0.8em;
             padding: 4px 8px 4px 6px;
             gap: 5px;
         }
         #sync-status .icon { width: 10px; height: 10px; }
+        
+        /* NYTT: Mindre PWA-knapp på mobil */
+        #pwa-install-btn {
+            padding: 4px 8px;
+            font-size: 0.8em;
+        }
+        
+        /* NYTT: Formulärknappar på mobil */
+        #add-article-form .submit-button-wrapper {
+            grid-template-columns: 1fr; /* Stapla knappar */
+        }
+        #add-article-form #add-form-cancel-btn {
+            order: 2; /* Avbryt-knappen under Spara */
+        }
     }
     
     @media (max-width: 600px) {
@@ -642,6 +725,10 @@
         <div class="top-toolbar">
             <div class="toolbar-title">LAGERDATABAS</div>
             <div class="toolbar-controls">
+                <button id="pwa-install-btn" class="btn-primary" type="button">
+                    <span class="icon-span">install_desktop</span>
+                    Installera App
+                </button>
                 <div id="sync-status" class="sync-connecting" title="Ansluter...">
                     <span class="icon"></span>
                     <span class="text">Ansluter...</span>
@@ -653,21 +740,31 @@
                         <span class="slider"></span>
                     </label>
                 </div>
-                <button id="toolbar-add-btn" class="toolbar-add-button" title="Lägg till ny artikel">+</button>
+                <button id="toolbar-add-btn" class="toolbar-add-button" title="Lägg till ny artikel">
+                    <span class="icon-span">add</span> </button>
             </div>
         </div>
+        
         <div class="dashboard-container">
             <div class="dashboard-stat">
                 <h4>Totalt Värde</h4>
                 <span id="stat-total-value">0 kr</span>
+                <span class="icon-span">account_balance_wallet</span>
             </div>
             <div class="dashboard-stat">
                 <h4>Artiklar i Lager</h4>
                 <span id="stat-total-items">0</span>
+                <span class="icon-span">inventory_2</span>
+            </div>
+            <div class="dashboard-stat">
+                <h4>Totalt Antal Enheter</h4>
+                <span id="stat-total-units">0</span>
+                <span class="icon-span">all_inbox</span>
             </div>
             <div class="dashboard-stat" id="stat-out-of-stock-wrapper">
                 <h4>Artiklar Slut</h4>
                 <span id="stat-out-of-stock">0</span>
+                <span class="icon-span">production_quantity_limits</span>
             </div>
         </div>
         
@@ -675,7 +772,9 @@
             <p>Skriv in ett artikelnummer för att generera sök-länkar till externa leverantörer. Sökningen letar även i ditt interna lager.</p>
             <div class="global-search-wrapper">
                 <input type="text" id="global-search-input" placeholder="Ange artikelnummer (exempel: 03L 115 562)">
-                <button id="global-search-btn" class="btn-primary" title="Sök">Jämför</button>
+                <button id="global-search-btn" class="btn-primary" title="Sök">
+                    <span class="icon-span">compare_arrows</span> Jämför
+                </button>
             </div>
             <div style="margin-top: 15px; margin-bottom: 5px;">
                 <span style="font-size: 0.9em; font-weight: 600; color: var(--text-dark); display: flex; align-items: center; gap: 5px;">
@@ -690,13 +789,7 @@
                 </div>
             </div>
         </div>
-        <div class="controls-bar top-controls">
-            <button id="pwa-install-btn" class="btn-primary" type="button">
-                Installera App
-            </button>
-            
-            </div>
-
+        
         <div id="add-form-wrapper">
             <form id="add-article-form">
                 <div>
@@ -733,13 +826,15 @@
                     <input type="text" id="add_link" name="link" placeholder="Länk (URL)">
                 </div>
                 <div class="submit-button-wrapper">
-                    <button type="submit" class="btn-primary">Spara Artikel</button>
+                    <button type="button" id="add-form-cancel-btn" class="btn-secondary">Avbryt</button>
+                    <button type="submit" class="btn-primary">
+                        <span class="icon-span">save</span> Spara Artikel
+                    </button>
                 </div>
             </form>
         </div>
         
         <div class="controls-bar">
-            <h2>Artiklar i Lager</h2>
             <div class="search-wrapper">
                 <input type="text" id="search-input" placeholder="Sök artikelnummer, namn...">
                 <button type="button" id="clear-search-btn" title="Rensa sökning">&times;</button>
@@ -755,7 +850,7 @@
         </div>
         
         <svg id="empty-state-svg" style="display: none;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-            <path fill-rule="evenodd" d="M10.5 3.75a6.75 6.75 0 1 0 0 13.5 6.75 6.75 0 0 0 0-13.5ZM2.25 10.5a8.25 8.25 0 1 1 14.59 5.28l4.69 4.69a.75.75 0 1 1-1.06 1.06l-4.69-4.69A8.25 8.25 0 0 1 2.25 10.5Z" clip-rule="evenodd" />
+            <path d="M3.375 4.5C2.339 4.5 1.5 5.34 1.5 6.375V17.625c0 1.036.84 1.875 1.875 1.875h17.25c1.035 0 1.875-.84 1.875-1.875V6.375c0-1.036-.84-1.875-1.875-1.875H3.375ZM12.75 7.5a.75.75 0 0 0-1.5 0v2.25H9a.75.75 0 0 0 0 1.5h2.25V13.5a.75.75 0 0 0 1.5 0V11.25H15a.75.75 0 0 0 0-1.5h-2.25V7.5Z" />
         </svg>
 
         <h3 id="service-artiklar-titel" class="collapsible-header" data-state="open">
@@ -859,7 +954,7 @@
     </div> <div id="editModal" class="modal">
         <div class="modal-content">
             <span class="close-btn">&times;</span>
-            <h3>Redigera Artikel</h3>
+            <h3><span class="icon-span">edit</span>Redigera Artikel</h3>
             <form id="edit-article-form">
                 <input type="hidden" id="edit-id">
                 <div>
@@ -894,14 +989,16 @@
                     <label for="edit-link">Länk</label>
                     <input type="text" name="link" id="edit-link">
                 </div>
-                <button type="submit" class="btn-primary">Spara Ändringar</button>
+                <button type="submit" class="btn-primary">
+                    <span class="icon-span">save</span> Spara Ändringar
+                </button>
             </form>
         </div>
     </div>
 
     <div id="confirmationModal" class="modal">
         <div class="modal-content">
-            <h3 id="confirmationTitle">Bekräfta</h3>
+            <h3><span class="icon-span" id="confirmationIcon"></span><span id="confirmationTitle">Bekräfta</span></h3>
             <p id="confirmationMessage" style="margin-top: 20px; margin-bottom: 30px; font-size: 1.1em;"></p>
             <div class="action-buttons" style="justify-content: flex-end; gap: 15px;">
                 <button id="confirmNo" class="btn-secondary">Avbryt</button>
@@ -915,8 +1012,7 @@
     </div>
         
     <button id="fab-add-btn" title="Lägg till ny artikel">
-        +
-    </button>
+        <span class="icon-span">add</span> </button>
     
     <button id="back-to-top-btn" title="Tillbaka till toppen" style="display: none;">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -928,4 +1024,3 @@
 
 </body>
 </html>
-
