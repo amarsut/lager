@@ -65,6 +65,26 @@ document.addEventListener('DOMContentLoaded', () => {
         // KORRIGERING: Definiera stoppord för naturligt språk-sökning (svenska)
         const stopWords = ['till', 'för', 'en', 'ett', 'och', 'eller', 'med', 'på', 'i', 'av', 'det', 'den', 'som', 'att', 'är', 'har', 'kan', 'ska', 'vill', 'sig', 'här', 'nu', 'från', 'man', 'vi', 'du', 'ni'];
 
+        window.showToastNotification = function(message) {
+            const toast = document.getElementById('toast-notification');
+            if (!toast) return;
+
+            // Sätt meddelandet
+            toast.textContent = message;
+
+            // Rensa eventuell pågående timer innan vi visar rutan igen
+            if (window.toastTimeout) {
+                clearTimeout(window.toastTimeout);
+            }
+
+            // Lägg till 'show' klassen för att visa den
+            toast.classList.add('show');
+
+            // Ta bort 'show' klassen efter 3 sekunder (3000ms)
+            window.toastTimeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
 
         // ----------------------------------------------------------------------
         // LÄNK-FUNKTIONER
@@ -700,7 +720,11 @@ function handleGlobalSearch(searchTermOverride) {
         }
         
         window.copyToClipboard = (text) => navigator.clipboard.writeText(text).then(() => showCustomAlert(`'${text}' har kopierats!`));
-        
+        const copyBtn = `<button class="copy-btn" onclick="navigator.clipboard.writeText('${item.service_filter.replace(/'/g, "\\'")}')
+    .then(() => window.showToastNotification('Artikelnummer ${item.service_filter} kopierat!'))
+    .catch(err => console.error('Kunde inte kopiera text: ', err));
+    event.stopPropagation();">Kopiera</button>`;
+      
         function closeEditModal() { editModal.style.display = 'none'; }
         function closeConfirmationModal() { confirmationModal.style.display = 'none'; confirmCallback = null; }
 
@@ -859,3 +883,4 @@ function handleGlobalSearch(searchTermOverride) {
         }
     }
 });
+
