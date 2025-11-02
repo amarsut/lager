@@ -200,7 +200,18 @@
     .lager-container { background-color: var(--card-bg); border-radius: 16px; box-shadow: var(--card-shadow); margin-bottom: 40px; border: 1px solid var(--border-color); position: relative; max-height: 450px; overflow-y: auto; min-width: min-content; transition: background-color 0.3s, border-color 0.3s; }
     
     .header, .artikel-rad { grid-template-columns: 180px 200px 100px 80px 80px minmax(150px, 1.5fr) 140px 160px; padding: 10px 20px; align-items: center; font-size: 0.85em; display: grid; }    
-    .header { position: sticky; top: 0; z-index: 100; font-weight: 700; background-color: var(--bg-medium); color: var(--text-dark); border-bottom: 2px solid var(--border-color); text-transform: uppercase; letter-spacing: 0.5px; transition: background-color 0.3s, border-color 0.3s; }
+    .header { 
+        position: sticky; 
+        top: 88px; /* ÄNDRAD: Fäster under den nya fästa toolbaren (20px + 66px + 2px buffer) */ 
+        z-index: 100; 
+        font-weight: 700; 
+        background-color: var(--bg-medium); 
+        color: var(--text-dark); 
+        border-bottom: 2px solid var(--border-color); 
+        text-transform: uppercase; 
+        letter-spacing: 0.5px; 
+        transition: background-color 0.3s, border-color 0.3s; 
+    }
     .header span[data-sort] { cursor: pointer; user-select: none; }
     .header > span { display: flex; align-items: center; min-height: 1.8em; padding-right: 15px; }
     .header > span, .artikel-rad > span, .artikel-rad > div { padding-right: 10px; }
@@ -441,7 +452,8 @@
         justify-content: center;
         font-size: 28px;
         line-height: 1;
-        transition: background-color 0.2s, transform 0.2s;
+        opacity: 1; /* ÄNDRAD: Lade till opacity för övergång */
+        transition: background-color 0.2s, transform 0.2s, opacity 0.3s; /* ÄNDRAD: Lade till opacity */
     }
     #fab-add-btn:hover {
         background-color: #009a44;
@@ -485,8 +497,14 @@
     .top-toolbar {
         width: 100%;
         background-color: var(--card-bg);
-        box-shadow: var(--card-shadow);
-        /* border-radius: 12px; -- BORTTAGEN ENLIGT ÖNSKEMÅL -- */
+        
+        /* --- ÄNDRINGAR FÖR FÄST/STICKY TOOLBAR --- */
+        position: sticky;
+        top: 20px; /* Fäster 20px från toppen (för att matcha body-padding) */
+        z-index: 1001; /* Säkerställer att den ligger överst */
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Mjukare, mer "poppande" skugga */
+        /* --- SLUT ÄNDRINGAR --- */
+        
         padding: 15px 25px;
         display: flex;
         justify-content: space-between;
@@ -495,6 +513,10 @@
         box-sizing: border-box;
         border: 1px solid var(--border-color);
         transition: background-color 0.3s, border-color 0.3s;
+    }
+    /* --- NYTT: Mörk skugga för mörkt läge --- */
+    [data-theme="dark"] .top-toolbar {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     }
     
     .toolbar-title {
@@ -542,13 +564,6 @@
         display: none; 
     }
     
-    /* Vi flyttade theme-switcher, så vi döljer labeln inuti den för att matcha bilden */
-    /*
-    .toolbar-controls .theme-switcher-label {
-        display: none; -- BORTTAGEN FÖR ATT GÖRA DEN SYNLIG/TYDLIGARE --
-    }
-    */
-    
     /* Flytta upp dashboarden lite eftersom nya headern är mindre */
     .dashboard-container {
         margin-top: 0px;
@@ -563,16 +578,12 @@
         .controls-bar, .controls-bar.top-controls { flex-direction: column; align-items: flex-start; gap: 15px; }
         .controls-bar.top-controls > button,
         .controls-bar.top-controls .json-controls,
-        /* .controls-bar.top-controls #sync-status, -- FLYTTAD -- */
-        /* .controls-bar.top-controls .theme-switcher, -- BORTFLYTTAD -- */
         .controls-bar.top-controls #pwa-install-btn { /* --- NYTT --- */
             width: 100%;
             box-sizing: border-box; 
         }
-        /* .theme-switcher { margin-left: 0; justify-content: space-between; } -- BORTFLYTTAD -- */
         .json-controls { flex-direction: column; width: 100%; }
         .json-controls button, .json-controls label { width: 100%; text-align: center; }
-        /* #sync-status { border-left: none; padding-left: 10px; text-align: left; justify-content: center; } -- FLYTTAD -- */
 
         .search-wrapper { width: 100%; margin-top: 15px; }
         #search-input { width: 100%; }
@@ -601,6 +612,7 @@
             margin-bottom: 20px;
             flex-wrap: wrap; /* --- NYTT: Tillåt wrapping --- */
             gap: 10px; /* --- NYTT: Mellanrum vid wrapping --- */
+            top: 10px; /* ÄNDRAD: Mindre top-offset på mobil */
         }
         .toolbar-title {
             font-size: 1.1em;
@@ -617,6 +629,11 @@
             gap: 5px;
         }
         #sync-status .icon { width: 10px; height: 10px; }
+
+        /* ÄNDRAD: Justera tabell-header för mobil sticky toolbar */
+        .header {
+            top: 130px; /* Ungefärlig höjd för den wrappade toolbaren */
+        }
     }
     
     @media (max-width: 600px) {
