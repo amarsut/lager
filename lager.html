@@ -456,7 +456,8 @@
         header, .dashboard-container, .global-search-container, .controls-bar, .action-buttons, 
         .lank-knapp, .qty-btn, .copy-btn, .search-btn, #fab-add-btn, #back-to-top-btn, 
         #toggle-add-form-btn, .json-controls, #sync-status, .theme-switcher, #pwa-install-btn,
-        #category-filter-bar, .modal, .search-wrapper, .notes-cell, .link-buttons, .action-cell {
+        #category-filter-bar, .modal, .search-wrapper, .notes-cell, .link-buttons, .action-cell,
+        .top-toolbar /* --- NYTT: Dölj vid print --- */ {
             display: none !important;
         }
         h1, h2, h3 { color: black; border: none; }
@@ -480,6 +481,78 @@
     }
     /* --- SLUT NYTT --- */
 
+    /* --- NYTT: Stil för Topp-toolbar (från bild) --- */
+    .top-toolbar {
+        width: 100%;
+        background-color: var(--card-bg);
+        box-shadow: var(--card-shadow);
+        border-radius: 12px;
+        padding: 15px 25px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        box-sizing: border-box;
+        border: 1px solid var(--border-color);
+        transition: background-color 0.3s, border-color 0.3s;
+    }
+    
+    .toolbar-title {
+        font-size: 1.4em;
+        font-weight: 800;
+        color: var(--primary-dark);
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+    }
+    [data-theme="dark"] .toolbar-title {
+        color: var(--primary-color);
+    }
+    
+    .toolbar-controls {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+    
+    .toolbar-add-button {
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        font-size: 24px;
+        font-weight: 700;
+        line-height: 1;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background-color 0.2s, transform 0.2s;
+        padding-bottom: 2px; /* Justera plus-tecknet */
+    }
+    
+    .toolbar-add-button:hover {
+        background-color: var(--primary-dark);
+        transform: scale(1.05);
+    }
+    
+    /* Dölj den gamla <header> helt och H1 */
+    header, .main-content > h1 { 
+        display: none; 
+    }
+    
+    /* Vi flyttade theme-switcher, så vi döljer labeln inuti den för att matcha bilden */
+    .toolbar-controls .theme-switcher-label {
+        display: none;
+    }
+    
+    /* Flytta upp dashboarden lite eftersom nya headern är mindre */
+    .dashboard-container {
+        margin-top: 0px;
+    }
+    /* --- SLUT NYTT --- */
+
     @media (max-width: 768px) {
         body { padding: 20px 10px; }
         h1 { font-size: 2em; margin-bottom: 25px; }
@@ -489,12 +562,12 @@
         .controls-bar.top-controls > button,
         .controls-bar.top-controls .json-controls,
         .controls-bar.top-controls #sync-status,
-        .controls-bar.top-controls .theme-switcher, /* --- NYTT --- */
+        /* .controls-bar.top-controls .theme-switcher, -- BORTFLYTTAD -- */
         .controls-bar.top-controls #pwa-install-btn { /* --- NYTT --- */
             width: 100%;
             box-sizing: border-box; 
         }
-        .theme-switcher { margin-left: 0; justify-content: space-between; } /* --- NYTT --- */
+        /* .theme-switcher { margin-left: 0; justify-content: space-between; } -- BORTFLYTTAD -- */
         .json-controls { flex-direction: column; width: 100%; }
         .json-controls button, .json-controls label { width: 100%; text-align: center; }
         #sync-status { border-left: none; padding-left: 10px; text-align: left; justify-content: center; }
@@ -519,6 +592,18 @@
         
         /* --- NYTT: Toasts på mobil --- */
         #toast-container { top: 10px; right: 10px; left: 10px; width: auto; }
+
+        /* --- NYTT: Toolbar på mobil --- */
+        .top-toolbar {
+            padding: 12px 15px;
+            margin-bottom: 20px;
+        }
+        .toolbar-title {
+            font-size: 1.1em;
+        }
+        .toolbar-controls {
+            gap: 15px;
+        }
     }
     
     @media (max-width: 600px) {
@@ -541,11 +626,19 @@
 
     <div class="main-content">
         
-        <header>
-            <img src="images/background.png" alt="Lagerdata & Prisjämförelse" id="header-logo-img">
-            <h1>Lagerdata & Prisjämförelse</h1>
-        </header>
-        
+        <div class="top-toolbar">
+            <div class="toolbar-title">LAGERDATABAS</div>
+            <div class="toolbar-controls">
+                <div class="theme-switcher">
+                    <span class="theme-switcher-label">Ljust / Mörkt</span>
+                    <label class="switch">
+                        <input type="checkbox" id="theme-toggle-cb">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <button id="toolbar-add-btn" class="toolbar-add-button" title="Lägg till ny artikel">+</button>
+            </div>
+        </div>
         <div class="dashboard-container">
             <div class="dashboard-stat">
                 <h4>Totalt Värde</h4>
@@ -599,15 +692,7 @@
                 <span class="text">Ansluter...</span>
             </div>
             
-            <div class="theme-switcher">
-                <span class="theme-switcher-label">Ljust / Mörkt</span>
-                <label class="switch">
-                    <input type="checkbox" id="theme-toggle-cb">
-                    <span class="slider"></span>
-                </label>
             </div>
-            
-        </div>
 
         <div id="add-form-wrapper">
             <form id="add-article-form">
