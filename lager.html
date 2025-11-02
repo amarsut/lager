@@ -486,7 +486,7 @@
         width: 100%;
         background-color: var(--card-bg);
         box-shadow: var(--card-shadow);
-        border-radius: 12px;
+        /* border-radius: 12px; -- BORTTAGEN ENLIGT ÖNSKEMÅL -- */
         padding: 15px 25px;
         display: flex;
         justify-content: space-between;
@@ -543,9 +543,11 @@
     }
     
     /* Vi flyttade theme-switcher, så vi döljer labeln inuti den för att matcha bilden */
+    /*
     .toolbar-controls .theme-switcher-label {
-        display: none;
+        display: none; -- BORTTAGEN FÖR ATT GÖRA DEN SYNLIG/TYDLIGARE --
     }
+    */
     
     /* Flytta upp dashboarden lite eftersom nya headern är mindre */
     .dashboard-container {
@@ -561,7 +563,7 @@
         .controls-bar, .controls-bar.top-controls { flex-direction: column; align-items: flex-start; gap: 15px; }
         .controls-bar.top-controls > button,
         .controls-bar.top-controls .json-controls,
-        .controls-bar.top-controls #sync-status,
+        /* .controls-bar.top-controls #sync-status, -- FLYTTAD -- */
         /* .controls-bar.top-controls .theme-switcher, -- BORTFLYTTAD -- */
         .controls-bar.top-controls #pwa-install-btn { /* --- NYTT --- */
             width: 100%;
@@ -570,7 +572,7 @@
         /* .theme-switcher { margin-left: 0; justify-content: space-between; } -- BORTFLYTTAD -- */
         .json-controls { flex-direction: column; width: 100%; }
         .json-controls button, .json-controls label { width: 100%; text-align: center; }
-        #sync-status { border-left: none; padding-left: 10px; text-align: left; justify-content: center; }
+        /* #sync-status { border-left: none; padding-left: 10px; text-align: left; justify-content: center; } -- FLYTTAD -- */
 
         .search-wrapper { width: 100%; margin-top: 15px; }
         #search-input { width: 100%; }
@@ -597,13 +599,24 @@
         .top-toolbar {
             padding: 12px 15px;
             margin-bottom: 20px;
+            flex-wrap: wrap; /* --- NYTT: Tillåt wrapping --- */
+            gap: 10px; /* --- NYTT: Mellanrum vid wrapping --- */
         }
         .toolbar-title {
             font-size: 1.1em;
         }
         .toolbar-controls {
             gap: 15px;
+            flex-basis: 100%; /* --- NYTT: Ta full bredd på liten skärm --- */
+            justify-content: space-between; /* --- NYTT: Sprid ut kontroller --- */
         }
+        /* --- NYTT: Justera sync-status för mobil --- */
+        #sync-status {
+            font-size: 0.8em;
+            padding: 4px 8px 4px 6px;
+            gap: 5px;
+        }
+        #sync-status .icon { width: 10px; height: 10px; }
     }
     
     @media (max-width: 600px) {
@@ -629,6 +642,10 @@
         <div class="top-toolbar">
             <div class="toolbar-title">LAGERDATABAS</div>
             <div class="toolbar-controls">
+                <div id="sync-status" class="sync-connecting" title="Ansluter...">
+                    <span class="icon"></span>
+                    <span class="text">Ansluter...</span>
+                </div>
                 <div class="theme-switcher">
                     <span class="theme-switcher-label">Ljust / Mörkt</span>
                     <label class="switch">
@@ -674,23 +691,9 @@
             </div>
         </div>
         <div class="controls-bar top-controls">
-            <button id="toggle-add-form-btn" class="btn-primary" type="button">
-                Lägg till ny artikel <span id="toggle-icon-form">▼</span>
-            </button>
-            
             <button id="pwa-install-btn" class="btn-primary" type="button">
                 Installera App
             </button>
-            
-            <div class="json-controls">
-                <button class="btn-secondary" id="download-json-btn">Ladda ner JSON</button>
-                <label for="upload-json-input" class="btn-secondary">Ladda upp JSON</label>
-                <input type="file" id="upload-json-input" accept=".json" style="display: none;">
-            </div>
-            <div id="sync-status" class="sync-connecting" title="Ansluter...">
-                <span class="icon"></span>
-                <span class="text">Ansluter...</span>
-            </div>
             
             </div>
 
