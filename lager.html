@@ -775,6 +775,32 @@ header {
     text-align: center; 
     padding: 20px 0; /* Justera padding efter behov */
 }
+        /* --- Ny stil för diskret kopierings-meddelande (Toast) --- */
+    #toast-notification {
+        visibility: hidden; /* Dölj som standard */
+        min-width: 280px;
+        background-color: var(--primary-dark); /* Använder din mörkblå primärfärg */
+        color: #fff; /* Vit text */
+        text-align: center;
+        border-radius: 8px;
+        padding: 14px 20px;
+        position: fixed;
+        z-index: 5000; /* Högt z-index för att vara över allt */
+        bottom: 30px; /* Visa längst ner */
+        left: 50%;
+        transform: translateX(-50%);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
+        opacity: 0;
+        transition: opacity 0.5s, visibility 0s 0.5s;
+        font-weight: 600;
+        font-size: 1.0em;
+    }
+
+    #toast-notification.show {
+        visibility: visible;
+        opacity: 1;
+        transition: opacity 0.5s;
+    }
     </style>
 <link rel="manifest" href="./manifest.json">
     
@@ -965,9 +991,12 @@ header {
         <span class="close-btn">&times;</span>
         <iframe id="productIframe" src="" frameborder="0"></iframe>
     </div>
+
+    <div id="toast-notification">Artikelnummer kopierat!</div>
         
     <script type="module" src="apps.js"></script>
 
 </body>
 </html>
+
 
