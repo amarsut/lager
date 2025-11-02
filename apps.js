@@ -536,9 +536,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const quantityCell = `<div class="quantity-cell"><button class="qty-btn" onclick="adjustQuantity(${item.id}, -1); event.stopPropagation();">-</button><span>${item.quantity}</span><button class="qty-btn" onclick="adjustQuantity(${item.id}, 1); event.stopPropagation();">+</button></div>`;
             
             // --- ÅTERSTÄLLD: "Beställ"-knapp ---
-            const editButton = isOutOfStock 
+            const editButton = isOutOfStock
+                ? `` // Tom sträng istället för Beställ-knappen
                 : `<button class="edit-btn" onclick="handleEdit(${item.id}); event.stopPropagation();">Ändra</button>`;
-            
+          
             const notesCell = `<span class="notes-cell" title="${item.notes || ''}">${item.notes || ''}</span>`;
             const trodoLink = generateTrodoLink(item.service_filter); const aeroMLink = generateAeroMLink(item.service_filter); const thansenLink = generateThansenLink(item.service_filter); const egenLink = item.link;
             let primaryButtonHTML = ''; let linkCellContent = '';
@@ -1312,4 +1313,5 @@ document.addEventListener('DOMContentLoaded', () => {
         if(initialLoader) initialLoader.querySelector('p').textContent = 'Kritiskt fel vid initiering.';
     }
 });
+
 
