@@ -537,7 +537,6 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // --- ÅTERSTÄLLD: "Beställ"-knapp ---
             const editButton = isOutOfStock 
-                ? `<button class="order-btn" onclick="handleEdit(${item.id}, true); event.stopPropagation();">Beställ</button>` 
                 : `<button class="edit-btn" onclick="handleEdit(${item.id}); event.stopPropagation();">Ändra</button>`;
             
             const notesCell = `<span class="notes-cell" title="${item.notes || ''}">${item.notes || ''}</span>`;
@@ -1313,3 +1312,4 @@ document.addEventListener('DOMContentLoaded', () => {
         if(initialLoader) initialLoader.querySelector('p').textContent = 'Kritiskt fel vid initiering.';
     }
 });
+
