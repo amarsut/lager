@@ -28,6 +28,10 @@
         --card-bg: #ffffff;
         --card-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
         --container-width: 1400px;
+        
+        /* NYTT: Glassmorphism Ljus */
+        --glass-bg: rgba(255, 255, 255, 0.7);
+        --glass-border: rgba(255, 255, 255, 0.2);
     }
     
     [data-theme="dark"] {
@@ -45,6 +49,10 @@
         --border-color: #4b5563;
         --card-bg: #374151;
         --card-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+        
+        /* NYTT: Glassmorphism Mörk */
+        --glass-bg: rgba(55, 65, 81, 0.7); /* --bg-medium */
+        --glass-border: rgba(75, 85, 99, 0.2); /* --bg-dark */
     }
 
     @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
@@ -54,7 +62,7 @@
     @keyframes toastSlideIn { from { transform: translateX(110%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
     @keyframes toastSlideOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(110%); opacity: 0; } }
     
-    /* --- NYTT: Animation för att markera en rad --- */
+    /* --- Animation för att markera en rad --- */
     @keyframes highlight-flash {
       0% { background-color: rgba(255, 220, 0, 0.6); }
       70% { background-color: rgba(255, 220, 0, 0.6); }
@@ -63,11 +71,13 @@
     .artikel-rad.highlight {
       animation: highlight-flash 1.8s ease-out;
     }
-    [data-theme="dark"] .artikel-rad.highlight {
-        animation: highlight-flash 1.8s ease-out;
-    }
-    /* --- SLUT NYTT --- */
     
+    /* --- NYTT: Animationer för sidopanel/modal --- */
+    @keyframes slideInRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
+    @keyframes slideOutRight { from { transform: translateX(0); } to { transform: translateX(100%); } }
+    @keyframes simpleFadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes simpleFadeOut { from { opacity: 0; } to { opacity: 1; } }
+
     body {
         font-family: 'Inter', sans-serif;
         margin: 0;
@@ -150,7 +160,6 @@
     h3.collapsible-header { cursor: pointer; display: flex; justify-content: space-between; align-items: center; padding-right: 15px; transition: background-color: 0.1s; color: var(--text-dark); margin-top: 30px; margin-bottom: 15px; font-size: 1.3em; font-weight: 700; border-bottom: 2px solid var(--border-color); padding-bottom: 5px; padding-left: 5px; }
     h3.collapsible-header:hover { background-color: var(--bg-medium); border-radius: 5px; }
 
-    /* --- ÄNDRAD: Kategorimärke (endast antal) --- */
     .category-badge {
         font-size: 0.8em;
         font-weight: 600;
@@ -177,6 +186,44 @@
     #add-form-wrapper.open { max-height: 1000px; opacity: 1; }
     #toggle-add-form-btn #toggle-icon-form { display: inline-block; transition: transform 0.3s ease-in-out; margin-left: 8px; font-size: 1.1em; line-height: 1; }
     #toggle-add-form-btn.open #toggle-icon-form { transform: rotate(180deg); }
+    
+    /* --- NYTT: Varning för formulär & skanna-knapp --- */
+    #add-article-form .input-wrapper {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+    }
+    .form-warning {
+        font-size: 0.85em;
+        color: var(--warning-color);
+        font-weight: 600;
+        margin-top: 5px;
+        height: 1.2em;
+    }
+    .scan-btn {
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        bottom: 2px;
+        background-color: var(--bg-medium);
+        border: none;
+        border-radius: 7px;
+        color: var(--text-light);
+        cursor: pointer;
+        padding: 0 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background-color 0.2s, color 0.2s;
+    }
+    .scan-btn:hover {
+        background-color: var(--bg-dark);
+        color: var(--text-dark);
+    }
+    #add-article-form input#add_service_filter {
+        padding-right: 45px; /* Ge plats för knappen */
+    }
+    /* --- SLUT NYTT --- */
 
     #add-article-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; padding: 35px; background-color: var(--card-bg); border-radius: 16px; box-shadow: var(--card-shadow); margin-bottom: 30px; transition: background-color 0.3s; }
     #add-article-form > div { display: flex; flex-direction: column; }
@@ -292,13 +339,20 @@
     .aero-m-btn:hover { background-color: #388E3C; border-color: #388E3C; }
     .thansen-btn { background-color: #008080; color: white; border: 1px solid #008080; }
     .thansen-btn:hover { background-color: #006060; border-color: #006060; }
-    .lank-knapp, .edit-btn, .delete-btn, .order-btn { padding: 6px 10px; border: 1px solid transparent; border-radius: 6px; cursor: pointer; font-size: 0.8em; font-weight: 600; transition: all 0.2s; text-align: center; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); }
+    
+    /* --- ÄNDRAD: "Beställ"-knapp har blivit "Lägg i lista" --- */
+    .lank-knapp, .edit-btn, .delete-btn, .order-list-btn { padding: 6px 10px; border: 1px solid transparent; border-radius: 6px; cursor: pointer; font-size: 0.8em; font-weight: 600; transition: all 0.2s; text-align: center; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); }
     .lank-knapp { background-color: var(--card-bg); color: var(--primary-color); border: 1px solid var(--primary-color); }
     .lank-knapp:hover { background-color: var(--primary-color); color: white; border-color: var(--primary-color); }
     [data-theme="dark"] .lank-knapp { background-color: var(--bg-medium); }
     [data-theme="dark"] .lank-knapp:hover { background-color: var(--primary-color); }
-    .edit-btn, .order-btn { background-color: var(--primary-color); color: white; }
-    .edit-btn:hover, .order-btn:hover { background-color: var(--primary-dark); }
+    .edit-btn { background-color: var(--primary-color); color: white; }
+    .edit-btn:hover { background-color: var(--primary-dark); }
+    /* NYTT: .order-list-btn */
+    .order-list-btn { background-color: var(--success-color); color: white; }
+    .order-list-btn:hover { background-color: #009a44; }
+    .order-list-btn .icon-span { font-size: 1.1em; margin-right: 5px; }
+    
     .delete-btn { background-color: var(--card-bg); color: var(--danger-color); border: 1px solid var(--danger-color); }
     .delete-btn:hover { background-color: var(--danger-color); color: white; }
     [data-theme="dark"] .delete-btn { background-color: var(--bg-medium); }
@@ -309,7 +363,24 @@
     [data-theme="dark"] #slut-i-lager-lista .artikel-rad { background-color: rgba(255, 82, 82, 0.1); }
     
     .modal { position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); backdrop-filter: blur(5px); display: none; justify-content: center; align-items: center; }
-    .modal-content { background-color: var(--card-bg); padding: 40px; border-radius: 12px; width: 90%; max-width: 500px; box-shadow: 0 20px 50px rgba(0,0,0,0.4); animation: fadeIn 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55); max-height: 90vh; overflow-y: auto; position: relative; transition: background-color 0.3s; }
+    
+    /* --- ÄNDRAD: Modal-innehåll med Glassmorphism --- */
+    .modal-content {
+        background-color: var(--glass-bg); /* NYTT */
+        backdrop-filter: blur(15px); /* NYTT */
+        border: 1px solid var(--glass-border); /* NYTT */
+        padding: 40px; 
+        border-radius: 12px; 
+        width: 90%; 
+        max-width: 500px; 
+        box-shadow: 0 20px 50px rgba(0,0,0,0.4); 
+        animation: fadeIn 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55); 
+        max-height: 90vh; 
+        overflow-y: auto; 
+        position: relative; 
+        transition: background-color 0.3s; 
+    }
+    
     @keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
     .modal-content h3 { color: var(--primary-dark); border-bottom: 2px solid var(--border-color); padding-bottom: 10px; margin-top: 0; font-size: 1.5em; display: flex; align-items: center; }
     .modal-content h3 .icon-span { font-size: 1.2em; margin-right: 10px; color: var(--primary-color); }
@@ -351,17 +422,26 @@
     .trodo-btn { background-color: #FFA500; color: white; border: 1px solid #FFA500; }
     .trodo-btn:hover { background-color: #CC8400; border-color: #CC8400; }
 
-    /* --- FÖRBÄTTRAD: Global Search / Prisjämförelse --- */
     .global-search-container { background-color: var(--card-bg); border-radius: 16px; box-shadow: var(--card-shadow); padding: 30px 35px; margin-bottom: 40px; border: 1px solid var(--border-color); transition: background-color 0.3s, border-color 0.3s; }
     .global-search-container h3 { margin-top: 0; margin-bottom: 10px; color: var(--primary-dark); font-size: 1.5em; font-weight: 700; }
     .global-search-container p { margin-top: 0; margin-bottom: 25px; font-size: 0.95em; color: var(--text-light); }
-    .global-search-wrapper { display: flex; gap: 15px; width: 100%; position: relative; }
-    #global-search-input { padding: 10px 15px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 1em; flex-grow: 1; background-color: var(--bg-light); color: var(--text-dark); }
+    
+    /* --- ÄNDRAD: Global sök med skanna-knapp --- */
+    .global-search-wrapper { display: flex; gap: 15px; width: 100%; }
+    .search-input-group { display: flex; flex-grow: 1; position: relative; }
+    #global-search-input { padding: 10px 45px 10px 15px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 1em; flex-grow: 1; background-color: var(--bg-light); color: var(--text-dark); }
     #global-search-input:focus { border-color: var(--primary-color); box-shadow: 0 0 0 4px rgba(90, 125, 255, 0.2); background-color: var(--card-bg); outline: none; }
-    .search-input-group { display: flex; gap: 10px; margin-bottom: 10px; }
+    .search-input-group .scan-btn {
+        top: 50%;
+        transform: translateY(-50%);
+        right: 8px;
+        height: calc(100% - 10px);
+        border-radius: 4px;
+    }
+    /* --- SLUT ÄNDRING --- */
+    
     #global-search-btn { padding: 16px 30px; font-size: 1em; flex-shrink: 0; }
     #global-search-btn .icon-span { font-size: 1.4em; }
-    /* Ny spinner i sök-knappen */
     #global-search-btn .search-spinner {
         width: 1.2em;
         height: 1.2em;
@@ -370,26 +450,19 @@
         border-radius: 50%;
         animation: spin 0.8s linear infinite;
         margin-right: 8px;
-        display: none; /* Dölj som standard */
+        display: none; 
     }
-    #global-search-btn:disabled {
-        opacity: 0.7;
-        cursor: wait;
-    }
-    #global-search-btn:disabled .icon-span {
-        display: none; /* Dölj "compare_arrows" vid laddning */
-    }
-    #global-search-btn:disabled .search-spinner {
-        display: inline-block; /* Visa spinner vid laddning */
-    }
+    #global-search-btn:disabled { opacity: 0.7; cursor: wait; }
+    #global-search-btn:disabled .icon-span { display: none; }
+    #global-search-btn:disabled .search-spinner { display: inline-block; }
     
     #global-search-results { 
         position: relative; 
-        background-color: transparent; /* Bakgrunden tas bort */
-        border: none; /* Border tas bort */
-        box-shadow: none; /* Skugga tas bort */
-        padding: 0; /* Padding tas bort */
-        display: none; /* Dold som standard */
+        background-color: transparent;
+        border: none;
+        box-shadow: none;
+        padding: 0;
+        display: none;
         margin-top: 25px;
     }
     #global-search-close-btn { position: absolute; top: -10px; right: -5px; background: var(--bg-medium); border-radius: 50%; width: 30px; height: 30px; border: none; font-size: 24px; color: var(--text-light); cursor: pointer; line-height: 1; z-index: 1001; }
@@ -409,11 +482,24 @@
         font-weight: 700;
         color: var(--text-dark);
     }
-    #btn-copy-all-links {
+    
+    /* --- NYTT: Exportera-knapp ersätter "Kopiera alla" --- */
+    #export-search-links-container .btn-secondary {
         font-size: 0.85em;
         padding: 6px 12px;
     }
-    #btn-copy-all-links .icon-span { font-size: 1.1em; }
+    #export-search-links-container .icon-span { font-size: 1.1em; }
+    #export-search-links-container .dropdown-menu {
+        min-width: 150px;
+    }
+    #export-search-links-container .lank-knapp {
+        font-size: 0.85em;
+        text-transform: none;
+        letter-spacing: 0;
+        font-weight: 600;
+        justify-content: center;
+    }
+    /* --- SLUT NYTT --- */
 
     #internal-results-container { margin-bottom: 25px; }
     .internal-search-title { font-size: 1.1em; font-weight: 700; color: var(--primary-dark); margin-top: 0; margin-bottom: 12px; }
@@ -422,6 +508,17 @@
     .internal-result-item:hover { background-color: var(--bg-medium); box-shadow: inset 3px 0 0 var(--primary-color); }
     .internal-result-item strong { color: var(--primary-color); }
     .internal-result-item span { float: right; font-weight: 600; font-size: 0.9em; color: var(--text-dark); }
+    /* --- NYTT: "Snabb-lägg till"-knapp --- */
+    #quick-add-from-search {
+        margin-top: 10px;
+        width: 100%;
+        background-color: var(--success-color);
+        border-color: var(--success-color);
+        color: white;
+    }
+    #quick-add-from-search:hover {
+        background-color: #009a44;
+    }
     
     #external-results-container {
         display: grid;
@@ -492,7 +589,6 @@
     }
 
     .search-disclaimer-text { font-size: 0.85em; color: var(--text-light); margin-top: 15px; padding-top: 10px; border-top: 1px dashed var(--border-color); }
-    /* --- SLUT FÖRBÄTTRAD --- */
     
     .orange-asterisk { color: var(--warning-color); font-weight: 700; font-size: 1.1em; margin-left: 3px; vertical-align: top; line-height: 1; display: inline-block; }
     .search-history-container { margin-top: 5px; margin-bottom: 5px; display: flex; flex-wrap: wrap; gap: 8px; font-size: 0.9em; }
@@ -518,15 +614,25 @@
     #header-logo-img { max-width: 450px; width: 100%; display: block; margin-left: auto; margin-right: auto; padding-bottom: 0; }
     [data-theme="dark"] #header-logo-img { filter: invert(1) hue-rotate(180deg); }
 
-    /* --- FÖRBÄTTRAD: Dashboard (Värde borttaget) --- */
+    /* --- ÄNDRAD: Dashboard (finns nu i sidopanel) --- */
     .dashboard-container { 
         display: grid; 
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); /* Behåller 3 kolumner */
-        gap: 20px; 
-        margin-bottom: 20px; /* Mindre marginal */
+        grid-template-columns: 1fr; /* Blev 1 kolumn för sidopanel */
+        gap: 15px; /* Mindre gap */
+        margin-bottom: 20px;
         animation: subtleFadeIn 0.5s ease-out; 
     }
-    .dashboard-stat { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px 25px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); transition: background-color 0.3s, border-color 0.3s, transform 0.2s, box-shadow 0.2s; position: relative; overflow: hidden; }
+    .dashboard-stat { 
+        background-color: var(--card-bg); 
+        border: 1px solid var(--border-color); 
+        border-radius: 12px; 
+        padding: 20px 25px; 
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); 
+        transition: background-color 0.3s, border-color 0.3s, transform 0.2s, box-shadow 0.2s; 
+        position: relative; 
+        overflow: hidden;
+        cursor: pointer; /* NYTT: Klickbar */
+    }
     .dashboard-stat:hover {
         transform: translateY(-3px);
         box-shadow: 0 8px 15px rgba(0, 0, 0, 0.08);
@@ -553,9 +659,8 @@
     }
     [data-theme="dark"] .dashboard-stat:hover .icon-span { opacity: 0.3; }
     .dashboard-stat#stat-out-of-stock-wrapper:hover .icon-span { color: var(--danger-color); }
-    /* --- SLUT FÖRBÄTTRAD --- */
     
-    /* --- NYTT: Senast Tillagda-sektion --- */
+    /* --- ÄNDRAD: Senast Tillagda (finns nu i sidopanel) --- */
     #recent-items-container {
         background-color: var(--card-bg);
         border: 1px solid var(--border-color);
@@ -576,7 +681,7 @@
     }
     #recent-items-list {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        grid-template-columns: 1fr; /* Blev 1 kolumn för sidopanel */
         gap: 12px;
     }
     .recent-item {
@@ -609,12 +714,24 @@
         overflow: hidden;
         text-overflow: ellipsis;
     }
-    /* --- SLUT NYTT --- */
 
     .empty-state { display: none; flex-direction: column; align-items: center; justify-content: center; padding: 50px 20px; text-align: center; min-height: 200px; animation: subtleFadeIn 0.3s; }
     .empty-state svg { width: 60px; height: 60px; color: var(--border-color); margin-bottom: 20px; }
     .empty-state h4 { font-size: 1.3em; font-weight: 700; color: var(--text-dark); margin: 0 0 10px 0; }
     .empty-state p { font-size: 1em; color: var(--text-light); margin: 0; max-width: 300px; }
+    
+    /* --- NYTT: Tomt läge för hela sidan --- */
+    #full-empty-state {
+        display: none;
+        padding: 60px 30px;
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        box-shadow: var(--card-shadow);
+        margin-top: 40px;
+    }
+    #full-empty-state h4 { font-size: 1.5em; }
+    #full-empty-state p { max-width: 400px; }
 
     #back-to-top-btn { position: fixed; bottom: 25px; right: 25px; width: 50px; height: 50px; background-color: var(--primary-color); color: white; border: none; border-radius: 50%; cursor: pointer; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); z-index: 1009; display: none; transition: background-color 0.2s, transform 0.2s, opacity 0.3s; padding: 0; align-items: center; justify-content: center; opacity: 0.8; }
     #back-to-top-btn:hover { background-color: var(--primary-dark); transform: scale(1.05); opacity: 1; }
@@ -733,7 +850,7 @@
         .lank-knapp, .qty-btn, .copy-btn, .search-btn, #fab-add-btn, #back-to-top-btn, 
         #toggle-add-form-btn, .json-controls, #sync-status, .theme-switcher, #pwa-install-btn,
         #category-filter-bar, .modal, .search-wrapper, .notes-cell, .link-buttons, .action-cell,
-        .top-toolbar, #recent-items-container /* NYTT: Dölj vid print */ {
+        .top-toolbar, #recent-items-container, #app-menu-modal, #order-list-modal /* NYTT: Dölj vid print */ {
             display: none !important;
         }
         h1, h2, h3 { color: black; border: none; }
@@ -756,6 +873,7 @@
         }
     }
 
+    /* --- ÄNDRAD: Top Toolbar med nya knappar --- */
     .top-toolbar {
         width: 100%;
         background-color: var(--card-bg);
@@ -790,7 +908,7 @@
         flex-wrap: wrap;
     }
     
-    .toolbar-add-button {
+    .toolbar-add-button, .toolbar-icon-button {
         background-color: var(--primary-color);
         color: white;
         border: none;
@@ -806,21 +924,186 @@
         justify-content: center;
         transition: background-color 0.2s, transform 0.2s;
         padding: 0;
+        position: relative; /* För badge */
     }
-    .toolbar-add-button .icon-span { font-size: 26px; }
+    .toolbar-add-button .icon-span, .toolbar-icon-button .icon-span { font-size: 26px; }
     
-    .toolbar-add-button:hover {
+    .toolbar-add-button:hover, .toolbar-icon-button:hover {
         background-color: var(--primary-dark);
         transform: scale(1.05);
+    }
+    
+    /* NYTT: Meny- och Kundvagnsknapp */
+    .toolbar-icon-button {
+        background-color: var(--bg-medium);
+        color: var(--text-dark);
+    }
+    .toolbar-icon-button:hover {
+        background-color: var(--bg-dark);
+    }
+    
+    /* NYTT: Badge för kundvagn */
+    #cart-badge {
+        position: absolute;
+        top: -5px;
+        right: -8px;
+        background-color: var(--danger-color);
+        color: white;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        font-size: 0.7em;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+        transform: scale(0.9);
+        transition: transform 0.2s;
+        display: none; /* Dold som standard */
+    }
+    #cart-badge.visible {
+        display: flex;
+        transform: scale(1);
     }
     
     header, .main-content > h1 { 
         display: none; 
     }
     
-    .dashboard-container {
-        margin-top: 0px;
+    /* --- NYTT: Sidopanel/App-meny (för dashboard) --- */
+    #app-menu-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1040;
+        display: none;
+        animation: simpleFadeIn 0.3s forwards;
     }
+    #app-menu-modal {
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: 100%;
+        max-width: 450px;
+        height: 100%;
+        background-color: var(--glass-bg);
+        backdrop-filter: blur(15px);
+        border-left: 1px solid var(--glass-border);
+        box-shadow: -10px 0 30px rgba(0,0,0,0.2);
+        z-index: 1050;
+        display: none;
+        flex-direction: column;
+        animation: slideInRight 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    }
+    #app-menu-modal.closing, #app-menu-overlay.closing {
+        animation-duration: 0.2s;
+    }
+    #app-menu-modal.closing { animation-name: slideOutRight; }
+    #app-menu-overlay.closing { animation-name: simpleFadeOut; }
+    
+    .app-menu-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 25px;
+        border-bottom: 1px solid var(--border-color);
+        flex-shrink: 0;
+    }
+    .app-menu-header h2 {
+        margin: 0;
+        font-size: 1.3em;
+        font-weight: 700;
+        color: var(--text-dark);
+        border: none;
+        padding: 0;
+    }
+    #app-menu-close-btn {
+        background: var(--bg-medium);
+        border: none;
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        cursor: pointer;
+        color: var(--text-dark);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background-color 0.2s;
+    }
+    #app-menu-close-btn:hover { background-color: var(--bg-dark); }
+    
+    .app-menu-content {
+        padding: 25px;
+        overflow-y: auto;
+        flex-grow: 1;
+    }
+    .app-menu-content .dashboard-container { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+    .app-menu-content #recent-items-container { margin-bottom: 20px; }
+    .app-menu-content h3 { font-size: 1.3em; }
+    
+    /* --- NYTT: Beställningslista Modal --- */
+    #order-list-modal .modal-content {
+        max-width: 600px;
+    }
+    #order-list-container {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 20px;
+        max-height: 40vh;
+        overflow-y: auto;
+        padding: 5px;
+        background-color: var(--bg-light);
+        border-radius: 8px;
+    }
+    .order-list-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 15px;
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+    }
+    .order-list-item div {
+        display: flex;
+        flex-direction: column;
+    }
+    .order-list-item strong {
+        font-weight: 600;
+        color: var(--text-dark);
+    }
+    .order-list-item span {
+        font-size: 0.9em;
+        color: var(--text-light);
+    }
+    .order-list-item .delete-btn {
+        padding: 4px 8px;
+        font-size: 0.75em;
+    }
+    #order-list-empty {
+        text-align: center;
+        padding: 30px;
+        color: var(--text-light);
+    }
+    #order-list-modal .action-buttons {
+        display: flex;
+        gap: 15px;
+        margin-top: 30px;
+    }
+    #order-list-modal .action-buttons .btn-secondary {
+        width: auto;
+        margin-top: 0;
+    }
+    #order-list-modal .action-buttons .btn-primary {
+        width: 100%;
+        margin-top: 0;
+    }
+    /* --- SLUT NYTT --- */
 
     @media (max-width: 768px) {
         body { padding: 20px 10px; }
@@ -833,15 +1116,9 @@
         
         .global-search-container { padding: 20px; }
         .global-search-wrapper { flex-direction: column; }
+        .search-input-group { width: 100%; }
         #global-search-btn { width: 100%; }
-        #external-results-container { grid-template-columns: 1fr; } /* NYTT: En kolumn på mobil */
-        .search-input-group { width: 100%; box-sizing: border-box; }
-        #global-search-input { flex-grow: 1; }
-        #global-search-btn { padding: 10px 15px; font-size: 0.9em; }
-        
-        .dashboard-container { grid-template-columns: 1fr; gap: 15px; }
-        .dashboard-stat span { font-size: 1.8em; }
-        .dashboard-stat .icon-span { display: none; }
+        #external-results-container { grid-template-columns: 1fr; }
         
         #fab-add-btn { bottom: 15px; left: 15px; }
         #back-to-top-btn { bottom: 15px; right: 15px; }
@@ -859,7 +1136,7 @@
             text-align: center;
         }
         .toolbar-controls {
-            gap: 15px;
+            gap: 10px; /* Mindre gap */
             flex-basis: 100%;
             justify-content: space-between;
         }
@@ -882,9 +1159,12 @@
             order: 2;
         }
         
-        /* NYTT: Senast tillagda på mobil */
-        #recent-items-container { padding: 20px; }
-        #recent-items-list { grid-template-columns: 1fr; }
+        /* NYTT: Sidopanel på mobil */
+        #app-menu-modal { max-width: 320px; }
+        .app-menu-content .dashboard-container { grid-template-columns: 1fr; }
+        .app-menu-content .dashboard-stat span { font-size: 1.8em; }
+        .app-menu-content .dashboard-stat .icon-span { display: none; }
+        .app-menu-content #recent-items-list { grid-template-columns: 1fr; }
     }
     
     @media (max-width: 600px) {
@@ -903,7 +1183,42 @@
     </div>
     
     <div id="toast-container"></div>
-
+    
+    <div id="app-menu-overlay"></div>
+    <div id="app-menu-modal">
+        <div class="app-menu-header">
+            <h2>Översikt</h2>
+            <button id="app-menu-close-btn" title="Stäng menyn">
+                <span class="icon-span">close</span>
+            </button>
+        </div>
+        <div class="app-menu-content">
+            <div class="dashboard-container">
+                <div class="dashboard-stat" data-filter-target="Alla" title="Klicka för att visa alla artiklar i lager">
+                    <h4>Artiklar i Lager</h4>
+                    <span id="stat-total-items">0</span>
+                    <span class="icon-span">inventory_2</span>
+                </div>
+                <div class="dashboard-stat" data-filter-target="Alla" title="Klicka för att visa alla artiklar i lager">
+                    <h4>Totalt Antal Enheter</h4>
+                    <span id="stat-total-units">0</span>
+                    <span class="icon-span">all_inbox</span>
+                </div>
+                <div class="dashboard-stat" id="stat-out-of-stock-wrapper" data-filter-target="Slut" title="Klicka för att filtrera på 'Slut i Lager'">
+                    <h4>Artiklar Slut</h4>
+                    <span id="stat-out-of-stock">0</span>
+                    <span class="icon-span">production_quantity_limits</span>
+                </div>
+            </div>
+            
+            <div id="recent-items-container">
+                <h3>Senast Tillagda</h3>
+                <div id="recent-items-list">
+                    <p id="recent-items-empty" style="color: var(--text-light); font-size: 0.9em;">Inga nyligen tillagda artiklar.</p>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="main-content">
         
         <div class="top-toolbar">
@@ -927,13 +1242,25 @@
                 <button id="toolbar-add-btn" class="toolbar-add-button" title="Lägg till ny artikel">
                     <span class="icon-span">add</span>
                 </button>
+                <button id="cart-btn" class="toolbar-icon-button" title="Beställningslista">
+                    <span class="icon-span">shopping_cart</span>
+                    <span id="cart-badge">0</span>
+                </button>
+                <button id="app-menu-btn" class="toolbar-icon-button" title="Visa översikt">
+                    <span class="icon-span">menu</span>
+                </button>
             </div>
         </div>
         
         <div class="global-search-container">
-            <p>Skriv in ett artikelnummer för att generera sök-länkar till externa leverantörer. Sökningen letar även i ditt interna lager.</p>
+            <p>Skriv in ett artikelnummer för att jämföra priser. Sökningen letar även i ditt interna lager. Prova `k:Service` för att filtrera.</p>
             <div class="global-search-wrapper">
-                <input type="text" id="global-search-input" placeholder="Ange artikelnummer (exempel: 03L 115 562)">
+                <div class="search-input-group">
+                    <input type="text" id="global-search-input" placeholder="Ange artikelnummer (exempel: 03L 115 562)">
+                    <button type="button" id="scan-global-btn" class="scan-btn" title="Skanna">
+                        <span class="icon-span">qr_code_scanner</span>
+                    </button>
+                </div>
                 <button id="global-search-btn" class="btn-primary" title="Sök">
                     <span class="search-spinner"></span> <span class="icon-span">compare_arrows</span>
                     Jämför
@@ -956,9 +1283,15 @@
                     
                     <div class="search-results-header">
                         <h4 class="external-search-title">Externa leverantörer</h4>
-                        <button id="btn-copy-all-links" class="btn-secondary" style="display: none;">
-                            <span class="icon-span">link</span>Kopiera alla länkar
-                        </button>
+                        <div class="link-dropdown-container" id="export-search-links-container" style="display: none;">
+                            <button id="export-links-btn" class="btn-secondary" onclick="toggleDropdown('export-links-menu'); event.stopPropagation();">
+                                <span class="icon-span">download</span>Exportera
+                            </button>
+                            <div id="export-links-menu" class="dropdown-menu">
+                                <button id="btn-copy-all-links-text" class="lank-knapp">Kopiera som text</button>
+                                <button id="btn-copy-all-links-json" class="lank-knapp">Kopiera som JSON</button>
+                            </div>
+                        </div>
                     </div>
                     
                     <div id="external-results-container">
@@ -971,48 +1304,29 @@
             </div>
         </div>
         
-        <div class="dashboard-container">
-            <div class="dashboard-stat">
-                <h4>Artiklar i Lager</h4>
-                <span id="stat-total-items">0</span>
-                <span class="icon-span">inventory_2</span>
-            </div>
-            <div class="dashboard-stat">
-                <h4>Totalt Antal Enheter</h4>
-                <span id="stat-total-units">0</span>
-                <span class="icon-span">all_inbox</span>
-            </div>
-            <div class="dashboard-stat" id="stat-out-of-stock-wrapper">
-                <h4>Artiklar Slut</h4>
-                <span id="stat-out-of-stock">0</span>
-                <span class="icon-span">production_quantity_limits</span>
-            </div>
-        </div>
-        
-        <div id="recent-items-container">
-            <h3>Senast Tillagda</h3>
-            <div id="recent-items-list">
-                <p id="recent-items-empty" style="color: var(--text-light); font-size: 0.9em;">Inga nyligen tillagda artiklar.</p>
-            </div>
-        </div>
-
         <div id="add-form-wrapper">
             <form id="add-article-form">
-                <div>
+                <div class="input-wrapper">
                     <label for="add_service_filter">Artikelnummer <span class="orange-asterisk">*</span></label>
                     <input type="text" id="add_service_filter" name="service_filter" placeholder="Artikelnummer" required oninput="this.value = this.value.toUpperCase()">
+                    <button type="button" id="scan-add-btn" class="scan-btn" title="Skanna">
+                        <span class="icon-span">qr_code_scanner</span>
+                    </button>
+                    <div id="add-form-artnr-warning" class="form-warning"></div>
                 </div>
                 <div>
                     <label for="add_name">Namn <span class="orange-asterisk">*</span></label>
                     <input type="text" id="add_name" name="name" placeholder="Namn" required oninput="this.value = this.value.toUpperCase()">
-                </div>
+                    <div class="form-warning"></div> </div>
                 <div>
                     <label for="add_price">Pris <span class="orange-asterisk">*</span></label>
                     <input type="number" id="add_price" name="price" placeholder="Pris" step="0.01" required>
+                    <div class="form-warning"></div>
                 </div>
                 <div>
                     <label for="add_quantity">Antal <span class="orange-asterisk">*</span></label>
                     <input type="number" name="quantity" id="add-quantity" value="1" placeholder="Antal" required>
+                    <div class="form-warning"></div>
                 </div>
                 <div>
                     <label for="add_category">Kategori <span class="orange-asterisk">*</span></label>
@@ -1022,14 +1336,17 @@
                         <option value="Motor/Chassi">Motor/Chassi</option>
                         <option value="Andra Märken">Andra Märken</option>
                     </select>
+                    <div class="form-warning"></div>
                 </div>
                 <div>
                     <label for="add_notes">Anteckningar</label>
                     <input type="text" id="add_notes" name="notes" placeholder="Anteckningar">
+                    <div class="form-warning"></div>
                 </div>
                 <div>
                     <label for="add_link">Länk (URL)</label>
                     <input type="text" id="add_link" name="link" placeholder="Länk (URL)">
+                    <div class="form-warning"></div>
                 </div>
                 <div class="submit-button-wrapper">
                     <button type="button" id="add-form-cancel-btn" class="btn-secondary">Avbryt</button>
@@ -1043,7 +1360,7 @@
         
         <div class="controls-bar">
             <div class="search-wrapper">
-                <input type="text" id="search-input" placeholder="Sök artikelnummer, namn...">
+                <input type="text" id="search-input" placeholder="Sök artikel, namn... (ex: 'k:Service')">
                 <button type="button" id="clear-search-btn" title="Rensa sökning">&times;</button>
             </div>
         </div>
@@ -1059,6 +1376,12 @@
         <svg id="empty-state-svg" style="display: none;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
             <path d="M3.375 4.5C2.339 4.5 1.5 5.34 1.5 6.375V17.625c0 1.036.84 1.875 1.875 1.875h17.25c1.035 0 1.875-.84 1.875-1.875V6.375c0-1.036-.84-1.875-1.875-1.875H3.375ZM12.75 7.5a.75.75 0 0 0-1.5 0v2.25H9a.75.75 0 0 0 0 1.5h2.25V13.5a.75.75 0 0 0 1.5 0V11.25H15a.75.75 0 0 0 0-1.5h-2.25V7.5Z" />
         </svg>
+
+        <div id="full-empty-state" class="empty-state">
+            <svg viewBox="0 0 24 24" fill="currentColor"><use href="#empty-state-svg"></use></svg>
+            <h4>Ditt lager är tomt</h4>
+            <p>Börja med att lägga till din första artikel med knappen <span class="icon-span" style="font-size: 1.2em; vertical-align: bottom; color: var(--success-color);">add_circle</span> eller plus-knappen uppe till höger.</p>
+        </div>
 
         <h3 id="service-artiklar-titel" class="collapsible-header" data-state="open">
             <div>Service <span class="category-badge" id="badge-service">0</span></div>
@@ -1216,6 +1539,24 @@
         </div>
     </div>
 
+    <div id="order-list-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h3><span class="icon-span">shopping_cart</span>Beställningslista</h3>
+            <p style="margin-top: 5px; color: var(--text-light); font-size: 0.9em;">Artiklar som är slut i lager och behöver beställas.</p>
+            
+            <div id="order-list-container">
+                <div id="order-list-empty">Din beställningslista är tom.</div>
+                </div>
+            
+            <div class="action-buttons">
+                <button id="order-list-close-btn" class="btn-secondary">Stäng</button>
+                <button id="order-list-clear-btn" class="btn-danger" style="margin-left: auto;">
+                    <span class="icon-span">delete_sweep</span>Rensa Lista
+                </button>
+            </div>
+        </div>
+    </div>
     <div id="productPopup">
         <span class="close-btn">&times;</span>
         <iframe id="productIframe" src="" frameborder="0"></iframe>
