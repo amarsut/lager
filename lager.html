@@ -21,9 +21,9 @@
         --info-color: #00b0ff;
         --bg-light: #f4f6f9;
         --bg-medium: #eef1f5;
-        --bg-dark: #dfe3e8; /* --- NY --- */
+        --bg-dark: #dfe3e8;
         --text-dark: #1f2937;
-        --text-light: #6b7280; /* --- NY --- */
+        --text-light: #6b7280;
         --border-color: #e5e7eb;
         --card-bg: #ffffff;
         --card-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
@@ -37,11 +37,11 @@
         --danger-color: #ff5252;
         --warning-color: #ffab40;
         --info-color: #40c4ff;
-        --bg-light: #1f2937; /* Mörkaste bakgrunden */
-        --bg-medium: #374151; /* Lite ljusare (för kort) */
-        --bg-dark: #4b5563; /* Ljusast (för hover etc) */
-        --text-dark: #f3f4f6; /* Ljus text */
-        --text-light: #9ca3af; /* Grå text */
+        --bg-light: #1f2937; 
+        --bg-medium: #374151; 
+        --bg-dark: #4b5563; 
+        --text-dark: #f3f4f6; 
+        --text-light: #9ca3af; 
         --border-color: #4b5563;
         --card-bg: #374151;
         --card-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
@@ -53,6 +53,20 @@
     
     @keyframes toastSlideIn { from { transform: translateX(110%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
     @keyframes toastSlideOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(110%); opacity: 0; } }
+    
+    /* --- NYTT: Animation för att markera en rad --- */
+    @keyframes highlight-flash {
+      0% { background-color: rgba(255, 220, 0, 0.6); }
+      70% { background-color: rgba(255, 220, 0, 0.6); }
+      100% { background-color: transparent; }
+    }
+    .artikel-rad.highlight {
+      animation: highlight-flash 1.8s ease-out;
+    }
+    [data-theme="dark"] .artikel-rad.highlight {
+        animation: highlight-flash 1.8s ease-out;
+    }
+    /* --- SLUT NYTT --- */
     
     body {
         font-family: 'Inter', sans-serif;
@@ -67,12 +81,11 @@
         transition: background-color 0.3s, color 0.3s;
     }
     
-    /* --- NYTT: Helper-klass för ikoner --- */
     .icon-span {
         font-family: 'Material Symbols Outlined';
         font-weight: normal;
         font-style: normal;
-        font-size: 20px; /* Standardstorlek */
+        font-size: 20px;
         line-height: 1;
         letter-spacing: normal;
         text-transform: none;
@@ -84,16 +97,15 @@
         text-rendering: optimizeLegibility;
         -moz-osx-font-smoothing: grayscale;
         font-feature-settings: 'liga';
-        vertical-align: middle; /* Justerar ikoner med text */
+        vertical-align: middle;
     }
     
     .btn-primary .icon-span, .btn-danger .icon-span, .btn-secondary .icon-span {
-        margin-right: 8px; /* Avstånd mellan ikon och text i knappar */
-        font-size: 1.2em; /* Något större i knappar */
+        margin-right: 8px;
+        font-size: 1.2em;
         position: relative;
-        top: -1px; /* Finjustering */
+        top: -1px;
     }
-    /* --- SLUT NYTT --- */
 
     .main-content {
         width: 100%;
@@ -107,7 +119,7 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background-color: rgba(0, 0, 0, 0.5); /* Mörkare för att täcka allt */
+        background-color: rgba(0, 0, 0, 0.5);
         backdrop-filter: blur(5px);
         z-index: 9998;
         display: flex;
@@ -138,21 +150,24 @@
     h3.collapsible-header { cursor: pointer; display: flex; justify-content: space-between; align-items: center; padding-right: 15px; transition: background-color: 0.1s; color: var(--text-dark); margin-top: 30px; margin-bottom: 15px; font-size: 1.3em; font-weight: 700; border-bottom: 2px solid var(--border-color); padding-bottom: 5px; padding-left: 5px; }
     h3.collapsible-header:hover { background-color: var(--bg-medium); border-radius: 5px; }
 
+    /* --- ÄNDRAD: Kategorimärke (endast antal) --- */
     .category-badge {
-        font-size: 0.75em;
+        font-size: 0.8em;
         font-weight: 600;
-        padding: 4px 10px;
+        padding: 3px 10px;
         border-radius: 20px;
         background-color: var(--bg-medium);
         color: var(--text-light);
         margin-left: 10px;
         transition: background-color 0.3s;
+        min-width: 40px; /* Se till att de har liknande bredd */
+        text-align: center;
     }
     .category-badge:hover {
         background-color: var(--bg-dark);
         color: var(--text-dark);
     }
-    .collapsible-header div { display: flex; align-items: center; } /* Wrapper för titel + badges */
+    .collapsible-header div { display: flex; align-items: center; }
 
     .toggle-icon { display: inline-block; transition: transform 0.2s ease-in-out; font-size: 0.8em; font-weight: 900; line-height: 1; color: var(--primary-color); }
     .collapsible-header[data-state="closed"] .toggle-icon { transform: rotate(-90deg); }
@@ -177,7 +192,6 @@
         box-shadow: 0 0 0 4px rgba(255, 61, 0, 0.2) !important;
     }
 
-    /* --- NYTT: Justerad submit-wrapper för två knappar --- */
     #add-article-form .submit-button-wrapper { 
         grid-column: 1 / -1; 
         display: grid;
@@ -191,10 +205,9 @@
     #add-article-form #add-form-cancel-btn {
         width: 100%;
         text-align: center;
-        margin: 0; /* Ta bort eventuell standard-margin */
-        padding: 15px 25px; /* Matcha primär knapp */
+        margin: 0;
+        padding: 15px 25px;
     }
-    /* --- SLUT NYTT --- */
 
     .btn-primary { padding: 15px 25px; background-color: var(--primary-color); color: white; border: none; border-radius: 8px; cursor: pointer; transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; }
     .btn-secondary { padding: 12px 20px; background-color: var(--card-bg); color: var(--text-dark); border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; transition: background-color 0.2s, transform 0.1s, color 0.3s, border-color 0.3s; font-weight: 600; text-align: center; font-size: 0.9em; box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; }
@@ -210,8 +223,8 @@
         border-color: #c53030;
     }
 
-    .controls-bar { display: flex; justify-content: flex-end; align-items: center; margin-bottom: 20px; width: 100%; } /* ÄNDRAD: Tog bort H2, justerar till höger */
-    .controls-bar.top-controls { display: none; } /* NYTT: Denna sektion är nu tom, döljs helt */
+    .controls-bar { display: flex; justify-content: flex-end; align-items: center; margin-bottom: 20px; width: 100%; }
+    .controls-bar.top-controls { display: none; }
     
     .json-controls { display: flex; gap: 10px; align-items: center; }
     
@@ -268,9 +281,9 @@
     .service-filter-cell { display: flex; align-items: center; gap: 5px; overflow: hidden; width: 100%; }
     .service-filter-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex-grow: 1; }
     .notes-cell { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: help; }
-    .copy-btn { background: var(--bg-medium); border: 1px solid var(--border-color); border-radius: 4px; cursor: pointer; color: var(--primary-dark); font-size: 0.9em; padding: 3px 5px; line-height: 1; opacity: 0.9; transition: opacity 0.2s, transform 0.1s, background 0.2s, color 0.2s; flex-shrink: 0; min-width: 26px; text-align: center; } /* NYTT: min-width */
+    .copy-btn { background: var(--bg-medium); border: 1px solid var(--border-color); border-radius: 4px; cursor: pointer; color: var(--primary-dark); font-size: 0.9em; padding: 3px 5px; line-height: 1; opacity: 0.9; transition: opacity 0.2s, transform 0.1s, background 0.2s, color 0.2s; flex-shrink: 0; min-width: 26px; text-align: center; }
     .copy-btn:hover { opacity: 1; transform: scale(1.05); background: var(--primary-color); color: white; border-color: var(--primary-color); }
-    .copy-btn:disabled { color: var(--success-color); cursor: default; } /* NYTT: Stil för klickad knapp */
+    .copy-btn:disabled { color: var(--success-color); cursor: default; }
     .copy-btn:disabled:hover { transform: none; background: var(--bg-medium); border-color: var(--border-color); }
 
     .action-buttons { display: flex; gap: 8px; justify-content: flex-start; }
@@ -298,11 +311,9 @@
     .modal { position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); backdrop-filter: blur(5px); display: none; justify-content: center; align-items: center; }
     .modal-content { background-color: var(--card-bg); padding: 40px; border-radius: 12px; width: 90%; max-width: 500px; box-shadow: 0 20px 50px rgba(0,0,0,0.4); animation: fadeIn 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55); max-height: 90vh; overflow-y: auto; position: relative; transition: background-color 0.3s; }
     @keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
-    /* --- NYTT: Modal-titel med ikon --- */
     .modal-content h3 { color: var(--primary-dark); border-bottom: 2px solid var(--border-color); padding-bottom: 10px; margin-top: 0; font-size: 1.5em; display: flex; align-items: center; }
     .modal-content h3 .icon-span { font-size: 1.2em; margin-right: 10px; color: var(--primary-color); }
     #confirmationModal .icon-span { font-size: 1.3em; margin-right: 12px; }
-    /* --- SLUT NYTT --- */
     [data-theme="dark"] .modal-content h3 { color: var(--primary-color); }
     .modal-content label { display: block; margin-top: 15px; margin-bottom: 8px; font-weight: 600; color: var(--text-dark); font-size: 0.9em; }
     .modal-content input, .modal-content select { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 6px; box-sizing: border-box; background-color: var(--bg-light); color: var(--text-dark); }
@@ -340,38 +351,154 @@
     .trodo-btn { background-color: #FFA500; color: white; border: 1px solid #FFA500; }
     .trodo-btn:hover { background-color: #CC8400; border-color: #CC8400; }
 
+    /* --- FÖRBÄTTRAD: Global Search / Prisjämförelse --- */
     .global-search-container { background-color: var(--card-bg); border-radius: 16px; box-shadow: var(--card-shadow); padding: 30px 35px; margin-bottom: 40px; border: 1px solid var(--border-color); transition: background-color 0.3s, border-color 0.3s; }
     .global-search-container h3 { margin-top: 0; margin-bottom: 10px; color: var(--primary-dark); font-size: 1.5em; font-weight: 700; }
     .global-search-container p { margin-top: 0; margin-bottom: 25px; font-size: 0.95em; color: var(--text-light); }
-    .global-search-wrapper { display: flex; gap: 15px; width: 100%; }
+    .global-search-wrapper { display: flex; gap: 15px; width: 100%; position: relative; }
     #global-search-input { padding: 10px 15px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 1em; flex-grow: 1; background-color: var(--bg-light); color: var(--text-dark); }
     #global-search-input:focus { border-color: var(--primary-color); box-shadow: 0 0 0 4px rgba(90, 125, 255, 0.2); background-color: var(--card-bg); outline: none; }
     .search-input-group { display: flex; gap: 10px; margin-bottom: 10px; }
     #global-search-btn { padding: 16px 30px; font-size: 1em; flex-shrink: 0; }
-    #global-search-btn .icon-span { font-size: 1.4em; } /* NYTT: Ikon i global sök-knapp */
+    #global-search-btn .icon-span { font-size: 1.4em; }
+    /* Ny spinner i sök-knappen */
+    #global-search-btn .search-spinner {
+        width: 1.2em;
+        height: 1.2em;
+        border: 2px solid rgba(255,255,255,0.3);
+        border-top-color: #fff;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        margin-right: 8px;
+        display: none; /* Dölj som standard */
+    }
+    #global-search-btn:disabled {
+        opacity: 0.7;
+        cursor: wait;
+    }
+    #global-search-btn:disabled .icon-span {
+        display: none; /* Dölj "compare_arrows" vid laddning */
+    }
+    #global-search-btn:disabled .search-spinner {
+        display: inline-block; /* Visa spinner vid laddning */
+    }
     
-    #global-search-results { position: relative; top: 0; left: 0; right: 0; z-index: 1000; background-color: var(--card-bg); border: 1px solid var(--border-color); box-shadow: var(--card-shadow); padding: 20px; border-radius: 8px; display: none; padding-right: 45px; margin-top: 25px; border-top: 2px solid var(--border-color); }
-    #global-search-close-btn { position: absolute; top: 8px; right: 10px; background: none; border: none; font-size: 24px; color: var(--text-light); cursor: pointer; line-height: 1; padding: 0; width: 30px; height: 30px; text-align: center; z-index: 1001; }
-    #global-search-close-btn:hover { color: var(--text-dark); }
+    #global-search-results { 
+        position: relative; 
+        background-color: transparent; /* Bakgrunden tas bort */
+        border: none; /* Border tas bort */
+        box-shadow: none; /* Skugga tas bort */
+        padding: 0; /* Padding tas bort */
+        display: none; /* Dold som standard */
+        margin-top: 25px;
+    }
+    #global-search-close-btn { position: absolute; top: -10px; right: -5px; background: var(--bg-medium); border-radius: 50%; width: 30px; height: 30px; border: none; font-size: 24px; color: var(--text-light); cursor: pointer; line-height: 1; z-index: 1001; }
+    #global-search-close-btn:hover { color: var(--text-dark); background: var(--bg-dark); }
+    
+    .search-results-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 10px;
+    }
+    .search-results-header h4 {
+        margin: 0;
+        font-size: 1.2em;
+        font-weight: 700;
+        color: var(--text-dark);
+    }
+    #btn-copy-all-links {
+        font-size: 0.85em;
+        padding: 6px 12px;
+    }
+    #btn-copy-all-links .icon-span { font-size: 1.1em; }
 
-    .global-search-results-links { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
-    .btn-search-icon { width: 1.0em; height: 1.0em; margin-right: 6px; color: currentColor; vertical-align: middle; position: relative; top: -1px; }
-    .global-search-results-links .lank-knapp { display: inline-flex; align-items: center; justify-content: center; padding: 4px 8px; font-size: 0.80em; border-radius: 6px; text-decoration: none; font-weight: 600; transition: background-color 0.15s; }
-    
-    .internal-search-title { font-size: 1.1em; font-weight: 700; color: var(--primary-dark); margin-top: 0; margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; }
+    #internal-results-container { margin-bottom: 25px; }
+    .internal-search-title { font-size: 1.1em; font-weight: 700; color: var(--primary-dark); margin-top: 0; margin-bottom: 12px; }
     [data-theme="dark"] .internal-search-title { color: var(--primary-color); }
-    .internal-result-item { display: block; padding: 10px 12px; border-radius: 6px; text-decoration: none; color: var(--text-dark); background-color: var(--bg-light); margin-bottom: 8px; transition: background-color 0.2s, box-shadow 0.2s; }
+    .internal-result-item { display: block; padding: 12px 15px; border-radius: 8px; text-decoration: none; color: var(--text-dark); background-color: var(--bg-light); margin-bottom: 8px; transition: background-color 0.2s, box-shadow 0.2s; border: 1px solid var(--border-color); }
     .internal-result-item:hover { background-color: var(--bg-medium); box-shadow: inset 3px 0 0 var(--primary-color); }
     .internal-result-item strong { color: var(--primary-color); }
     .internal-result-item span { float: right; font-weight: 600; font-size: 0.9em; color: var(--text-dark); }
-    .external-search-title { font-size: 1.1em; font-weight: 700; color: var(--text-dark); margin-top: 20px; margin-bottom: 12px; }
+    
+    #external-results-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+    }
+    .provider-card {
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 15px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .provider-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--card-shadow);
+    }
+    .provider-card.disabled {
+        opacity: 0.5;
+        background-color: var(--bg-medium);
+    }
+    .provider-card-logo {
+        width: 32px;
+        height: 32px;
+        border-radius: 6px;
+        background-color: var(--bg-light);
+        padding: 4px;
+        box-sizing: border-box;
+        object-fit: contain;
+        flex-shrink: 0;
+    }
+    .provider-card-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        gap: 10px;
+    }
+    .provider-card-name {
+        font-weight: 600;
+        font-size: 0.95em;
+        color: var(--text-dark);
+    }
+    .btn-provider-search {
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 6px 12px;
+        font-size: 0.8em;
+        font-weight: 700;
+        text-transform: uppercase;
+        text-decoration: none;
+        transition: background-color 0.2s;
+        flex-shrink: 0;
+    }
+    .btn-provider-search:hover {
+        background-color: var(--primary-dark);
+    }
+    .provider-card.disabled .btn-provider-search {
+        background-color: var(--bg-dark);
+        color: var(--text-light);
+        cursor: not-allowed;
+    }
+
     .search-disclaimer-text { font-size: 0.85em; color: var(--text-light); margin-top: 15px; padding-top: 10px; border-top: 1px dashed var(--border-color); }
+    /* --- SLUT FÖRBÄTTRAD --- */
     
     .orange-asterisk { color: var(--warning-color); font-weight: 700; font-size: 1.1em; margin-left: 3px; vertical-align: top; line-height: 1; display: inline-block; }
     .search-history-container { margin-top: 5px; margin-bottom: 5px; display: flex; flex-wrap: wrap; gap: 8px; font-size: 0.9em; }
-    .history-item { padding: 4px 10px; background-color: var(--border-color); color: var(--text-dark); border-radius: 20px; cursor: pointer; transition: background-color 0.15s, transform 0.15s; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; }
+    .history-item { padding: 4px 10px; background-color: var(--border-color); color: var(--text-dark); border-radius: 20px; transition: background-color 0.15s, transform 0.15s; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; }
     .history-item:hover { background-color: var(--bg-dark); transform: translateY(-1px); }
-    /* --- NYTT: Raderingsknapp för sökhistorik --- */
+    .history-item .history-term { cursor: pointer; }
     .history-item .delete-history {
         font-style: normal;
         font-weight: 700;
@@ -379,20 +506,26 @@
         font-size: 1.1em;
         line-height: 1;
         opacity: 0.7;
+        cursor: pointer;
     }
     .history-item .delete-history:hover {
         color: var(--danger-color);
         opacity: 1;
     }
-    /* --- SLUT NYTT --- */
 
     .link-favicon { width: 16px; height: 16px; margin-right: 8px; vertical-align: middle; border-radius: 2px; }
     
     #header-logo-img { max-width: 450px; width: 100%; display: block; margin-left: auto; margin-right: auto; padding-bottom: 0; }
-    [data-theme="dark"] #header-logo-img { filter: invert(1) hue-rotate(180deg); } /* Inverterar loggan i mörkt läge */
+    [data-theme="dark"] #header-logo-img { filter: invert(1) hue-rotate(180deg); }
 
-    /* --- FÖRBÄTTRAD: Dashboard --- */
-    .dashboard-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 40px; animation: subtleFadeIn 0.5s ease-out; }
+    /* --- FÖRBÄTTRAD: Dashboard (Värde borttaget) --- */
+    .dashboard-container { 
+        display: grid; 
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); /* Behåller 3 kolumner */
+        gap: 20px; 
+        margin-bottom: 20px; /* Mindre marginal */
+        animation: subtleFadeIn 0.5s ease-out; 
+    }
     .dashboard-stat { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px 25px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); transition: background-color 0.3s, border-color 0.3s, transform 0.2s, box-shadow 0.2s; position: relative; overflow: hidden; }
     .dashboard-stat:hover {
         transform: translateY(-3px);
@@ -402,7 +535,6 @@
     .dashboard-stat span { font-size: 2.2em; font-weight: 700; color: var(--primary-dark); display: block; z-index: 2; position: relative; }
     [data-theme="dark"] .dashboard-stat span { color: var(--primary-color); }
     .dashboard-stat#stat-out-of-stock-wrapper span { color: var(--danger-color); }
-    /* Ikoner i dashboard */
     .dashboard-stat .icon-span {
         position: absolute;
         right: 15px;
@@ -422,6 +554,62 @@
     [data-theme="dark"] .dashboard-stat:hover .icon-span { opacity: 0.3; }
     .dashboard-stat#stat-out-of-stock-wrapper:hover .icon-span { color: var(--danger-color); }
     /* --- SLUT FÖRBÄTTRAD --- */
+    
+    /* --- NYTT: Senast Tillagda-sektion --- */
+    #recent-items-container {
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 25px 30px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        margin-bottom: 40px;
+        animation: subtleFadeIn 0.5s ease-out; 
+    }
+    #recent-items-container h3 {
+        margin-top: 0;
+        margin-bottom: 20px;
+        font-size: 1.3em;
+        font-weight: 700;
+        color: var(--text-dark);
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 10px;
+    }
+    #recent-items-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 12px;
+    }
+    .recent-item {
+        display: block;
+        padding: 10px 12px;
+        border-radius: 8px;
+        text-decoration: none;
+        color: var(--text-dark);
+        background-color: var(--bg-light);
+        transition: background-color 0.2s, box-shadow 0.2s;
+        cursor: pointer;
+        font-size: 0.9em;
+    }
+    .recent-item:hover {
+        background-color: var(--bg-medium);
+        box-shadow: inset 3px 0 0 var(--primary-color);
+    }
+    .recent-item strong {
+        color: var(--primary-color);
+        display: block;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .recent-item span {
+        display: block;
+        color: var(--text-light);
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    /* --- SLUT NYTT --- */
 
     .empty-state { display: none; flex-direction: column; align-items: center; justify-content: center; padding: 50px 20px; text-align: center; min-height: 200px; animation: subtleFadeIn 0.3s; }
     .empty-state svg { width: 60px; height: 60px; color: var(--border-color); margin-bottom: 20px; }
@@ -442,13 +630,12 @@
     input:focus + .slider { box-shadow: 0 0 1px var(--primary-color); }
     input:checked + .slider:before { transform: translateX(24px); }
     
-    /* --- NYTT: PWA-knapp (flyttad till toolbar) --- */
     #pwa-install-btn {
         background-color: transparent;
         color: var(--text-dark);
         border: 1px solid var(--border-color);
         padding: 6px 14px;
-        display: none; /* Dold som standard */
+        display: none;
         font-size: 0.9em;
         font-weight: 600;
         text-transform: none;
@@ -466,7 +653,6 @@
         margin-right: 6px;
         color: var(--success-color);
     }
-    /* --- SLUT NYTT --- */
     
     #category-filter-bar {
         display: flex;
@@ -526,19 +712,19 @@
         border-radius: 50%;
         cursor: pointer;
         box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        z-index: 1010; /* Under back-to-top */
-        display: flex; /* ÄNDRAD: Döljs/visas med JS */
+        z-index: 1010;
+        display: flex;
         align-items: center;
         justify-content: center;
         font-size: 28px;
         line-height: 1;
-        transition: background-color 0.2s, transform 0.2s, opacity 0.3s, display 0.3s;
+        transition: background-color 0.2s, transform 0.2s, opacity 0.3s, visibility 0.3s;
     }
     #fab-add-btn:hover {
         background-color: #009a44;
         transform: scale(1.05);
     }
-    #fab-add-btn .icon-span { font-size: 32px; } /* NYTT: Ikon i FAB */
+    #fab-add-btn .icon-span { font-size: 32px; }
     
     @media print {
         body { padding: 0; background-color: white; color: black; }
@@ -547,7 +733,7 @@
         .lank-knapp, .qty-btn, .copy-btn, .search-btn, #fab-add-btn, #back-to-top-btn, 
         #toggle-add-form-btn, .json-controls, #sync-status, .theme-switcher, #pwa-install-btn,
         #category-filter-bar, .modal, .search-wrapper, .notes-cell, .link-buttons, .action-cell,
-        .top-toolbar {
+        .top-toolbar, #recent-items-container /* NYTT: Dölj vid print */ {
             display: none !important;
         }
         h1, h2, h3 { color: black; border: none; }
@@ -570,7 +756,6 @@
         }
     }
 
-    /* --- FÖRBÄTTRAD: Topp-toolbar --- */
     .top-toolbar {
         width: 100%;
         background-color: var(--card-bg);
@@ -583,8 +768,8 @@
         box-sizing: border-box;
         border: 1px solid var(--border-color);
         transition: background-color 0.3s, border-color 0.3s;
-        flex-wrap: wrap; /* Tillåt wrapping på mindre skärmar */
-        gap: 15px; /* Avstånd om den wrappar */
+        flex-wrap: wrap;
+        gap: 15px;
     }
     
     .toolbar-title {
@@ -602,7 +787,7 @@
         display: flex;
         align-items: center;
         gap: 20px;
-        flex-wrap: wrap; /* Tillåt wrapping av kontroller */
+        flex-wrap: wrap;
     }
     
     .toolbar-add-button {
@@ -620,9 +805,9 @@
         align-items: center;
         justify-content: center;
         transition: background-color 0.2s, transform 0.2s;
-        padding: 0; /* ÄNDRAD: Ta bort padding-bottom */
+        padding: 0;
     }
-    .toolbar-add-button .icon-span { font-size: 26px; } /* NYTT: Ikon i knappen */
+    .toolbar-add-button .icon-span { font-size: 26px; }
     
     .toolbar-add-button:hover {
         background-color: var(--primary-dark);
@@ -636,7 +821,6 @@
     .dashboard-container {
         margin-top: 0px;
     }
-    /* --- SLUT FÖRBÄTTRAD --- */
 
     @media (max-width: 768px) {
         body { padding: 20px 10px; }
@@ -644,20 +828,19 @@
         h2 { font-size: 1.4em; margin-top: 30px; }
         
         .controls-bar { flex-direction: column; align-items: flex-start; gap: 15px; }
-        .search-wrapper { width: 100%; margin-top: 0; } /* ÄNDRAD: Ta bort margin-top */
+        .search-wrapper { width: 100%; margin-top: 0; }
         #search-input { width: 100%; }
         
         .global-search-container { padding: 20px; }
         .global-search-wrapper { flex-direction: column; }
         #global-search-btn { width: 100%; }
-        .global-search-results-links { display: grid; grid-template-columns: repeat(2, 1fr); }
+        #external-results-container { grid-template-columns: 1fr; } /* NYTT: En kolumn på mobil */
         .search-input-group { width: 100%; box-sizing: border-box; }
         #global-search-input { flex-grow: 1; }
         #global-search-btn { padding: 10px 15px; font-size: 0.9em; }
         
         .dashboard-container { grid-template-columns: 1fr; gap: 15px; }
         .dashboard-stat span { font-size: 1.8em; }
-        /* NYTT: Dölj dashboard-ikoner på mobil för att spara plats */
         .dashboard-stat .icon-span { display: none; }
         
         #fab-add-btn { bottom: 15px; left: 15px; }
@@ -672,8 +855,8 @@
         }
         .toolbar-title {
             font-size: 1.1em;
-            flex-basis: 100%; /* NYTT: Titel tar full bredd */
-            text-align: center; /* Centrera titel */
+            flex-basis: 100%;
+            text-align: center;
         }
         .toolbar-controls {
             gap: 15px;
@@ -687,24 +870,25 @@
         }
         #sync-status .icon { width: 10px; height: 10px; }
         
-        /* NYTT: Mindre PWA-knapp på mobil */
         #pwa-install-btn {
             padding: 4px 8px;
             font-size: 0.8em;
         }
         
-        /* NYTT: Formulärknappar på mobil */
         #add-article-form .submit-button-wrapper {
-            grid-template-columns: 1fr; /* Stapla knappar */
+            grid-template-columns: 1fr;
         }
         #add-article-form #add-form-cancel-btn {
-            order: 2; /* Avbryt-knappen under Spara */
+            order: 2;
         }
+        
+        /* NYTT: Senast tillagda på mobil */
+        #recent-items-container { padding: 20px; }
+        #recent-items-list { grid-template-columns: 1fr; }
     }
     
     @media (max-width: 600px) {
-        .global-search-results-links { padding-right: 40px; }
-        #global-search-close-btn { top: 5px; right: 5px; }
+        #global-search-close-btn { top: -5px; right: -5px; }
     }
 
     </style>
@@ -741,16 +925,53 @@
                     </label>
                 </div>
                 <button id="toolbar-add-btn" class="toolbar-add-button" title="Lägg till ny artikel">
-                    <span class="icon-span">add</span> </button>
+                    <span class="icon-span">add</span>
+                </button>
+            </div>
+        </div>
+        
+        <div class="global-search-container">
+            <p>Skriv in ett artikelnummer för att generera sök-länkar till externa leverantörer. Sökningen letar även i ditt interna lager.</p>
+            <div class="global-search-wrapper">
+                <input type="text" id="global-search-input" placeholder="Ange artikelnummer (exempel: 03L 115 562)">
+                <button id="global-search-btn" class="btn-primary" title="Sök">
+                    <span class="search-spinner"></span> <span class="icon-span">compare_arrows</span>
+                    Jämför
+                </button>
+            </div>
+            <div style="margin-top: 15px; margin-bottom: 5px;">
+                <span style="font-size: 0.9em; font-weight: 600; color: var(--text-dark); display: flex; align-items: center; gap: 5px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 16px; height: 16px; color: var(--primary-color);">
+                        <path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25ZM12.75 6a.75.75 0 0 0-1.5 0v6c0 .414.336.75.75.75h4.5a.75.75 0 0 0 0-1.5h-3.75V6Z" clip-rule="evenodd" />
+                    </svg>
+                  Tidigare sökningar:
+                </span>
+                <div id="global-search-history" class="search-history-container"></div>
+                
+                <div id="global-search-results" class="global-search-results-box">
+                    <button id="global-search-close-btn" title="Stäng">&times;</button>
+                    
+                    <div id="internal-results-container">
+                        </div>
+                    
+                    <div class="search-results-header">
+                        <h4 class="external-search-title">Externa leverantörer</h4>
+                        <button id="btn-copy-all-links" class="btn-secondary" style="display: none;">
+                            <span class="icon-span">link</span>Kopiera alla länkar
+                        </button>
+                    </div>
+                    
+                    <div id="external-results-container">
+                        </div>
+                    
+                    <div id="search-disclaimer" class="search-disclaimer-text" style="display: none;">
+                        * Bildelsbasen söker primärt efter begagnade delar.
+                    </div>
+                </div>
             </div>
         </div>
         
         <div class="dashboard-container">
-            <div class="dashboard-stat">
-                <h4>Totalt Värde</h4>
-                <span id="stat-total-value">0 kr</span>
-                <span class="icon-span">account_balance_wallet</span>
-            </div>
             <div class="dashboard-stat">
                 <h4>Artiklar i Lager</h4>
                 <span id="stat-total-items">0</span>
@@ -768,28 +989,13 @@
             </div>
         </div>
         
-        <div class="global-search-container">
-            <p>Skriv in ett artikelnummer för att generera sök-länkar till externa leverantörer. Sökningen letar även i ditt interna lager.</p>
-            <div class="global-search-wrapper">
-                <input type="text" id="global-search-input" placeholder="Ange artikelnummer (exempel: 03L 115 562)">
-                <button id="global-search-btn" class="btn-primary" title="Sök">
-                    <span class="icon-span">compare_arrows</span> Jämför
-                </button>
-            </div>
-            <div style="margin-top: 15px; margin-bottom: 5px;">
-                <span style="font-size: 0.9em; font-weight: 600; color: var(--text-dark); display: flex; align-items: center; gap: 5px;">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 16px; height: 16px; color: var(--primary-color);">
-                        <path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25ZM12.75 6a.75.75 0 0 0-1.5 0v6c0 .414.336.75.75.75h4.5a.75.75 0 0 0 0-1.5h-3.75V6Z" clip-rule="evenodd" />
-                    </svg>
-                  Tidigare sökningar:
-                </span>
-                <div id="global-search-history" class="search-history-container"></div>
-                <div id="global-search-results" class="global-search-results-box">
-                    <button id="global-search-close-btn" title="Stäng">&times;</button>
-                </div>
+        <div id="recent-items-container">
+            <h3>Senast Tillagda</h3>
+            <div id="recent-items-list">
+                <p id="recent-items-empty" style="color: var(--text-light); font-size: 0.9em;">Inga nyligen tillagda artiklar.</p>
             </div>
         </div>
-        
+
         <div id="add-form-wrapper">
             <form id="add-article-form">
                 <div>
@@ -828,7 +1034,8 @@
                 <div class="submit-button-wrapper">
                     <button type="button" id="add-form-cancel-btn" class="btn-secondary">Avbryt</button>
                     <button type="submit" class="btn-primary">
-                        <span class="icon-span">save</span> Spara Artikel
+                        <span class="icon-span">save</span>
+                        Spara Artikel
                     </button>
                 </div>
             </form>
@@ -951,7 +1158,9 @@
                 </div>
             </div>
         </div>
-    </div> <div id="editModal" class="modal">
+    </div> 
+    
+    <div id="editModal" class="modal">
         <div class="modal-content">
             <span class="close-btn">&times;</span>
             <h3><span class="icon-span">edit</span>Redigera Artikel</h3>
@@ -990,7 +1199,8 @@
                     <input type="text" name="link" id="edit-link">
                 </div>
                 <button type="submit" class="btn-primary">
-                    <span class="icon-span">save</span> Spara Ändringar
+                    <span class="icon-span">save</span>
+                    Spara Ändringar
                 </button>
             </form>
         </div>
@@ -1012,7 +1222,8 @@
     </div>
         
     <button id="fab-add-btn" title="Lägg till ny artikel">
-        <span class="icon-span">add</span> </button>
+        <span class="icon-span">add</span>
+    </button>
     
     <button id="back-to-top-btn" title="Tillbaka till toppen" style="display: none;">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
