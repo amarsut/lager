@@ -91,7 +91,7 @@
         overflow: hidden; 
         transition: max-height 0.4s ease-out, opacity 0.4s ease-out; 
         opacity: 0; 
-        margin-top: -10px; /* Lyft upp lite */
+        margin-top: -10px; 
         margin-bottom: 0; 
     }
     #settings-wrapper.open { 
@@ -109,7 +109,6 @@
     #toggle-settings-btn.open #toggle-icon-settings { 
         transform: rotate(180deg); 
     }
-    /* Anpassa befintlig .json-controls för att passa inuti settings-wrapper */
     .json-controls { 
         display: block; 
     }
@@ -189,23 +188,23 @@
         /* Ny wrapper för sökfältet */
 .search-wrapper {
     position: relative;
-    width: 350px; /* Samma bredd som sökfältet hade innan */
+    width: 350px; 
 }
 
 /* "X"-knappen inuti sökfältet */
 #clear-search-btn {
     position: absolute;
     top: 50%;
-    right: 1px; /* Justera för att passa snyggt */
+    right: 1px; 
     transform: translateY(-50%);
     background: none;
     border: none;
-    font-size: 1.8em; /* Storlek på '×' */
+    font-size: 1.8em; 
     color: #888;
     cursor: pointer;
     padding: 0 12px;
     line-height: 1;
-    display: none; /* Dold som standard */
+    display: none; 
 }
 #clear-search-btn:hover {
     color: var(--text-dark);
@@ -228,7 +227,7 @@
             border-left: none;
             padding-left: 0;
             margin-left: 0;
-            order: 3; /* Tvingar statusen längst ner */
+            order: 3; 
         }
         .search-wrapper { 
             width: 100%;
@@ -260,13 +259,13 @@
         margin-left: 5px;
         border-left: 4px solid transparent;
         border-right: 4px solid transparent;
-        opacity: 0.3; /* Svag som standard */
+        opacity: 0.3; 
         transition: opacity 0.2s;
-        transform: translateY(1px); /* Liten justering */
+        transform: translateY(1px); 
     }
 
     .header span[data-sort]:hover .sort-icon {
-        opacity: 0.6; /* Tydligare vid hovring */
+        opacity: 0.6; 
     }
 
     /* Pil uppåt för DESC (Standard: mest relevant/högst värde först) */
@@ -304,57 +303,67 @@
     .service-filter-cell { display: flex; align-items: center; gap: 5px; overflow: hidden; width: 100%; }
     .service-filter-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex-grow: 1; }
     .notes-cell { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: help; }
-    .copy-btn { background: #eef1f5; border: 1px solid var(--border-color); border-radius: 4px; cursor: pointer; color: var(--primary-dark); font-size: 0.9em; padding: 3px 5px; line-height: 1; opacity: 0.9; transition: opacity 0.2s, transform 0.1s, background 0.2s; flex-shrink: 0; }
-    .copy-btn:hover { opacity: 1; transform: scale(1.05); background: var(--primary-color); color: white; border-color: var(--primary-color); }
-
+    /* UPPDATERAT: Kopieringsknappen använder nu en Ikon i stället för text */
+    .copy-btn { 
+        background: #eef1f5; 
+        border: 1px solid var(--border-color); 
+        border-radius: 4px; 
+        cursor: pointer; 
+        color: var(--primary-dark); 
+        font-size: 0.9em; 
+        padding: 3px 5px; 
+        line-height: 1; 
+        opacity: 0.9; 
+        transition: opacity 0.2s, transform 0.1s, background 0.2s; 
+        flex-shrink: 0; 
+        
+        /* NYTT: För att visa artikelnumret och kopieringsikonen */
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 8px; /* Lite mer padding */
+    }
+    .copy-btn:hover { opacity: 1; transform: scale(1.02); background: #dce3eb; border-color: #dce3eb; }
+    
     .action-buttons { display: flex; gap: 8px; justify-content: flex-start; }
     .link-buttons { 
         display: flex; 
-        gap: 8px; /* Avstånd mellan knapparna */
+        flex-wrap: wrap; /* Låter knapparna radbryta */
+        gap: 8px; 
         align-items: center;
         width: 100%;
     }
     .aero-m-btn {
-        background-color: #4CAF50; /* Ny distinkt färg för Aero M, t.ex. grön */
-        color: white;
+        background-color: white; 
+        color: #4CAF50; 
         border: 1px solid #4CAF50;
     }
     .aero-m-btn:hover {
-        background-color: #388E3C;
-        border-color: #388E3C;
+        background-color: #4CAF50;
+        color: white;
     }
     .thansen-btn {
-        background-color: #008080; /* En turkos färg för Thansen */
-        color: white;
+        background-color: white; 
+        color: #008080; 
         border: 1px solid #008080;
     }
     .thansen-btn:hover {
-        background-color: #006060;
-        border-color: #006060;
+        background-color: #008080;
+        color: white;
     }
-    .lank-knapp, .edit-btn, .delete-btn, .order-btn { padding: 6px 10px; border: 1px solid transparent; border-radius: 6px; cursor: pointer; font-size: 0.8em; font-weight: 600; transition: all 0.2s; text-align: center; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); }
-    .lank-knapp { 
-        /* Detta är din standardstil: Vit bakgrund, blå/primär färg */
+    /* ÅTERSTÄLLT: Trodo-knappen använder nu standard stilen igen */
+    .trodo-btn {
         background-color: white; 
         color: var(--primary-color); 
         border: 1px solid var(--primary-color);
-        padding: 6px 10px; 
-        border-radius: 6px; 
-        cursor: pointer; 
-        font-size: 0.8em; 
-        font-weight: 600; 
-        transition: all 0.2s; 
-        text-align: center; 
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); 
-        /* NYTT: För att <a>-taggar ska se ut som knappar */
-        text-decoration: none;
-        display: inline-block;
     }
-    .lank-knapp:hover { 
+    .trodo-btn:hover {
         background-color: var(--primary-color); 
         color: white; 
-        border-color: var(--primary-color); /* För att förhindra hopp vid hover */
     }
+
+    .lank-knapp, .edit-btn, .delete-btn, .order-btn { padding: 6px 10px; border: 1px solid transparent; border-radius: 6px; cursor: pointer; font-size: 0.8em; font-weight: 600; transition: all 0.2s; text-align: center; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); text-decoration: none; display: inline-block; box-sizing: border-box; }
+    
     .edit-btn, .order-btn { background-color: var(--primary-color); color: white; }
     .edit-btn:hover, .order-btn:hover { background-color: var(--primary-dark); }
     .delete-btn { background-color: white; color: var(--danger-color); border: 1px solid var(--danger-color); }
@@ -370,7 +379,7 @@
         top: 0; 
         width: 100%; 
         height: 100%; 
-        overflow: auto; /* Detta är viktigt för att användaren ska kunna scrolla om innehållet är för långt */
+        overflow: auto; 
         background-color: rgba(0,0,0,0.6); 
         display: none; 
         justify-content: center; 
@@ -386,9 +395,8 @@
         box-shadow: 0 20px 50px rgba(0,0,0,0.4); 
         animation: fadeIn 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55); 
         
-        /* --- NYTT: Begränsa maximal höjd på modalen --- */
-        max-height: 90vh; /* Sätt maxhöjden till 90% av viewport-höjden */
-        overflow-y: auto; /* Gör att modalkontent kan scrolla om den är för hög */
+        max-height: 90vh; 
+        overflow-y: auto; 
         position: relative;
     }
     @keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
@@ -420,57 +428,6 @@
         .modal-content { padding: 30px 20px; }
     }
     
-    .search-btn { background: #eef1f5; border: 1px solid var(--border-color); border-radius: 4px; cursor: pointer; color: var(--primary-color); font-size: 0.9em; padding: 3px 5px; line-height: 1; opacity: 0.9; transition: opacity 0.2s, transform 0.1s, background 0.2s; flex-shrink: 0; margin-right: 5px; /* Skapar lite avstånd till kopieringsknappen */ }
-    .search-btn:hover { opacity: 1; transform: scale(1.05); background: var(--primary-color); color: white; border-color: var(--primary-color); }
-    /* SVG för förstoringsglaset */
-    .search-btn svg { fill: currentColor; vertical-align: middle; width: 14px; height: 14px; }
-    
-    /* Fixar att den horisontella scrollen blir smidigare på touch-enheter */
-    .lager-wrapper { -webkit-overflow-scrolling: touch; overflow-x: auto; margin-bottom: 25px; }
-    /* 1. Definiera åtgärds-kolumnerna som sticky */
-    .header > span:last-child, .artikel-rad > div:last-child { position: sticky; right: 0; /* Lås den till högerkant */ z-index: 50; /* Lägre än Sticky Header, högre än resten av innehållet */ padding-right: 20px; /* Lägg till extra padding för att det ska se snyggt ut */ background-color: inherit; /* Viktigt: så att den döljer innehållet när man scrollar */ }
-    /* 2. Fixa bakgrundsfärgen på header-kolumnen */
-    .header > span:last-child { background-color: #eef1f5; /* Samma som header-bakgrund */ }
-    /* Fixa bakgrunden för alla rader */
-    .artikel-rad > div:last-child { background-color: var(--card-bg); }
-    .artikel-rad:hover > div:last-child { background-color: #f8faff; }
-    .artikel-rad.selected > div:last-child { background-color: #dbeaff; }
-    .artikel-rad.selected:hover > div:last-child { background-color: #d1e0ff; }
-    
-    /* Dropdown menyn */
-    .link-dropdown-container { position: relative; display: inline-block; }
-    .dropdown-menu {
-        position: absolute;
-        right: 0; /* Placerar menyn till höger */
-        top: 100%; /* Låter den hamna under knappen */
-        background-color: white;
-        min-width: 160px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        z-index: 200;
-        padding: 8px;
-        display: none; /* Dold som standard */
-        margin-top: 5px; /* Lite avstånd från knappen */
-    }
-    .dropdown-menu.visible { display: flex; flex-direction: column; gap: 8px; }
-    .dropdown-menu .lank-knapp { width: 100%; padding: 8px 12px; font-size: 0.8em; box-shadow: none; /* Ta bort skuggor inuti menyn */ background-color: white !important; color: var(--primary-color) !important; border: 1px solid var(--primary-color) !important; }
-    .dropdown-menu .lank-knapp:hover { background-color: var(--primary-color) !important; color: white !important; } 
-    /* Färger för länkknapparna inuti dropdownen (använd samma färger som du hade) */
-    .dropdown-menu .aero-m-btn { background-color: #4CAF50; color: white; }
-    .dropdown-menu .aero-m-btn:hover { background-color: #388E3C; }
-    .dropdown-menu .thansen-btn { background-color: #008080; color: white; }
-    .dropdown-menu .thansen-btn:hover { background-color: #006060; }
-    .dropdown-menu .egen-lank-btn { background-color: #5a7dff; color: white; } /* Primärfärg för egen länk */
-    .dropdown-menu .egen-lank-btn:hover { background-color: #3a57e8; } 
-    /* Stil för Mer-knappen */
-    .more-btn { background-color: #f0f0f0; /* Ljusgrå bakgrund */ color: var(--text-dark); border: 1px solid #c0c0c0; padding: 6px 10px; font-size: 0.8em; }
-    .more-btn:hover { background-color: #cccccc; color: var(--text-dark); }
-    /* Standardstilen för Trodo-knappen (visas direkt) */
-    .trodo-btn { background-color: #FFA500; color: white; border: 1px solid #FFA500; }
-    .trodo-btn:hover { background-color: #e69500; }
-
-    /* Stil för global sökning */
     .global-search-container {
         padding: 25px;
         background-color: var(--card-bg);
