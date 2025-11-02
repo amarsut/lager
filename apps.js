@@ -1,9 +1,12 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js';
-// Auth och Storage är borttagna
-import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot, query, orderBy } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
+// ÅTERSTÄLLD: Auth och Storage-moduler är nu inkluderade
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js';
+import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot, query, orderBy, getDocs } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
+import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-storage.js';
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-analytics.js";
 
-// FIREBASE KONFIGURATION (Inga ändringar gjorda här, men Auth/Storage-moduler används inte)
+
+// FIREBASE KONFIGURATION (Oförändrad)
 const firebaseConfig = {
   apiKey: "AIzaSyAC4SLwVEzP3CPO4lLfDeZ71iU0xdr49sw", 
   authDomain: "lagerdata-a9b39.firebaseapp.com",
@@ -15,18 +18,19 @@ const firebaseConfig = {
 
 // --- GLOBALA VARIABLER ---
 const app = initializeApp(firebaseConfig);
+const auth = getAuth(app); // ÅTERSTÄLLD
 const db = getFirestore(app);
+const storage = getStorage(app); // ÅTERSTÄLLD
 const analytics = getAnalytics(app);
 
-let allArticles = []; // Lagrar den kompletta, ofiltrerade datan
+let allArticles = []; 
+let allAuditLogs = []; // ÅTERSTÄLLD
 let currentSortColumn = 'name';
 let currentSortDirection = 'asc';
+let currentCategoryFilter = '';
 let currentSearchQuery = '';
-let currentFilters = {
-    category: [],
-    location: []
-};
-let isSearchMode = false;
+let currentUser = null; // ÅTERSTÄLLD
+const IMAGE_MAX_SIZE = 2 * 1024 * 1024; // 2MB
 
 // --- DOM ELEMENT CACHE ---
 const listContainer = document.getElementById('lager-list-container');
@@ -38,16 +42,21 @@ const searchInput = document.getElementById('search-input');
 const clearSearchBtn = document.getElementById('clear-search-btn');
 const initialLoader = document.getElementById('initial-loader');
 const mainContent = document.getElementById('main-app-content');
+const appNavbar = document.getElementById('app-navbar');
+
+const loginOverlay = document.getElementById('login-overlay'); // ÅTERSTÄLLD
+const loginForm = document.getElementById('login-form'); // ÅTERSTÄLLD
+const loginError = document.getElementById('login-error'); // ÅTERSTÄLLD
+const logoutBtn = document.getElementById('logout-btn'); // ÅTERSTÄLLD
+const userEmailDisplay = document.getElementById('user-email-display'); // ÅTERSTÄLLD
+const themeToggle = document.getElementById('theme-toggle'); // NYTT
+
 const editModal = document.getElementById('editModal');
 const viewModal = document.getElementById('viewModal');
 const confirmModal = document.getElementById('confirmationModal');
 const confirmYesBtn = document.getElementById('confirmYes');
 
 const categoryFilter = document.getElementById('category-filter');
-const locationFilter = document.getElementById('location-filter');
-const resetFiltersBtn = document.getElementById('reset-filters-btn');
-const locationSuggestionsDatalist = document.getElementById('location-suggestions');
-const emptyStateContainer = document.getElementById('empty-state-container');
 
 // --- PWA SERVICE WORKER ---
 if ('serviceWorker' in navigator) {
@@ -64,12 +73,6 @@ if ('serviceWorker' in navigator) {
 
 // --- VERKTYG & HJÄLPFUNKTIONER ---
 
-/**
- * Visar ett toast-meddelande.
- * @param {string} message 
- * @param {'success'|'error'|'info'} type 
- * @param {number} duration 
- */
 function showToast(message, type = 'info', duration = 3000) {
     const container = document.getElementById('toast-container');
     const toast = document.createElement('div');
@@ -89,32 +92,18 @@ function showToast(message, type = 'info', duration = 3000) {
     }, duration);
 }
 
-/**
- * Öppnar en modal.
- * @param {HTMLElement} modalElement 
- */
 function openModal(modalElement) {
     modalElement.classList.add('is-open');
 }
 
-/**
- * Stänger en modal.
- * @param {HTMLElement} modalElement 
- */
 function closeModal(modalElement) {
     modalElement.classList.remove('is-open');
 }
 
-/**
- * Visar en bekräftelsedialog.
- * @param {string} title 
- * @param {string} message 
- * @returns {Promise<boolean>}
- */
 function showConfirmation(title, message) {
     return new Promise(resolve => {
         document.getElementById('confirmationTitle').textContent = title;
-        document.getElementById('confirmationMessage').textContent = message;
+        document.getElementById('confirmationMessage').innerHTML = message;
         openModal(confirmModal);
 
         const handleConfirm = () => {
@@ -132,8 +121,7 @@ function showConfirmation(title, message) {
         };
 
         confirmYesBtn.textContent = "Ja, Fortsätt";
-        confirmYesBtn.classList.remove('btn-primary');
-        confirmYesBtn.classList.add('btn-danger'); // Gör knappen röd för borttagning
+        confirmYesBtn.classList.add('btn-danger'); 
         confirmYesBtn.addEventListener('click', handleConfirm);
         document.getElementById('confirmNo').addEventListener('click', handleCancel);
     });
@@ -164,18 +152,12 @@ async function deleteDocument(collectionName, docId) {
 
 // --- TEMA/LOKAL LAGRING ---
 
-/**
- * Laddar och applicerar det sparade temat från localStorage.
- */
 function initializeTheme() {
     const savedTheme = localStorage.getItem('theme') || 'light';
     document.body.setAttribute('data-theme', savedTheme);
-    document.getElementById('theme-toggle').checked = (savedTheme === 'dark');
+    themeToggle.checked = (savedTheme === 'dark'); // NYTT: Använder checkbox
 }
 
-/**
- * Växlar tema och sparar till localStorage.
- */
 function toggleTheme() {
     const body = document.body;
     const isDark = body.getAttribute('data-theme') === 'dark';
@@ -184,9 +166,6 @@ function toggleTheme() {
     localStorage.setItem('theme', newTheme);
 }
 
-/**
- * Initierar och sparar tillstånd för formuläret.
- */
 function initializeAddFormState() {
     const isOpen = localStorage.getItem('addFormOpen') === 'true';
     if (isOpen) {
@@ -195,112 +174,258 @@ function initializeAddFormState() {
     }
 }
 
-/**
- * Växlar formulär-tillståndet och sparar till localStorage.
- */
 function toggleAddForm() {
     const isOpen = addFormWrapper.classList.toggle('open');
     toggleAddFormBtn.classList.toggle('open');
     localStorage.setItem('addFormOpen', isOpen);
 }
 
-// --- LOKAL FILTERHANTERING ---
+
+// --- ÅTERSTÄLLD: FIREBASE AUTH ---
 
 /**
- * Laddar sparade filter från localStorage.
+ * Hanterar inloggning med e-post och lösenord.
  */
-function loadFiltersFromStorage() {
-    const storedFilters = JSON.parse(localStorage.getItem('currentFilters'));
-    if (storedFilters) {
-        currentFilters.category = storedFilters.category || [];
-        currentFilters.location = storedFilters.location || [];
+async function handleLogin(e) {
+    e.preventDefault();
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+    
+    loginError.style.display = 'none';
+
+    try {
+        await signInWithEmailAndPassword(auth, email, password);
+        // onAuthStateChanged tar över här
+    } catch (error) {
+        console.error("Inloggningsfel:", error.code, error.message);
+        loginError.textContent = "Felaktigt användarnamn eller lösenord.";
+        loginError.style.display = 'block';
     }
-    // Uppdatera UI
-    updateFilterUI();
 }
 
 /**
- * Sparar aktuella filter till localStorage.
+ * Hanterar utloggning.
  */
-function saveFiltersToStorage() {
-    localStorage.setItem('currentFilters', JSON.stringify(currentFilters));
+async function handleLogout() {
+    try {
+        await signOut(auth);
+        showToast("Du är utloggad.", 'info');
+    } catch (error) {
+        console.error("Utloggningsfel:", error);
+        showToast("Kunde inte logga ut.", 'error');
+    }
 }
 
 /**
- * Återställer alla filter och UI.
+ * Hanterar appens tillstånd baserat på inloggningsstatus.
  */
-function resetFilters() {
-    currentFilters.category = [];
-    currentFilters.location = [];
-    saveFiltersToStorage();
-    updateFilterUI();
-    filterAndRenderArticles();
-    showToast("Filter återställda.", 'info');
+function setupAuthListener() {
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            // Inloggad
+            currentUser = user;
+            userEmailDisplay.textContent = user.email;
+            loginOverlay.style.display = 'none';
+            appNavbar.style.display = 'flex';
+            mainContent.classList.add('visible');
+            initialLoader.style.display = 'flex'; // Visa laddare medan data hämtas
+            
+            // Starta datalyssnare
+            setupRealtimeListener();
+            setupAuditLogListener(); // ÅTERSTÄLLD
+            
+        } else {
+            // Utloggad
+            currentUser = null;
+            loginOverlay.style.display = 'flex';
+            appNavbar.style.display = 'none';
+            mainContent.classList.remove('visible');
+            initialLoader.style.display = 'none';
+            allArticles = [];
+            listContainer.innerHTML = '';
+        }
+    });
+}
+// --- SLUT ÅTERSTÄLLD: FIREBASE AUTH ---
+
+
+// --- ÅTERSTÄLLD: FIREBASE STORAGE / BILDHANTERING ---
+
+/**
+ * Laddar upp en fil till Firebase Storage.
+ * @param {File} file 
+ * @param {string} articleId 
+ * @returns {Promise<string>} URL till den uppladdade bilden
+ */
+async function handleImageUpload(file, articleId) {
+    if (!file) return null;
+    if (file.size > IMAGE_MAX_SIZE) {
+        throw new Error(`Filstorleken får inte överstiga ${IMAGE_MAX_SIZE / 1024 / 1024}MB.`);
+    }
+
+    const storageRef = ref(storage, `artikelbilder/${articleId}/${file.name}`);
+    
+    // Hårdkodad metadata som krävs för att kunna visa bilden i webbläsaren
+    const metadata = { contentType: file.type }; 
+    
+    const snapshot = await uploadBytes(storageRef, file, metadata);
+    const url = await getDownloadURL(snapshot.ref);
+    return url;
 }
 
 /**
- * Uppdaterar filter-selects i UI baserat på `currentFilters`.
+ * Tar bort bilden från Firebase Storage om en bild-URL finns.
+ * @param {string} imageUrl 
  */
-function updateFilterUI() {
-    // Kategori-filter
-    Array.from(categoryFilter.options).forEach(option => {
-        option.selected = currentFilters.category.includes(option.value);
-    });
+async function deleteImage(imageUrl) {
+    if (!imageUrl) return;
 
-    // Plats-filter (hanteras dynamiskt i `updateLocationFilterOptions`)
-    Array.from(locationFilter.options).forEach(option => {
-        option.selected = currentFilters.location.includes(option.value);
+    try {
+        const imageRef = ref(storage, imageUrl);
+        await deleteObject(imageRef);
+    } catch (error) {
+        // Ignorera om filen inte hittas (ofta p.g.a. säkerhetsregler eller redan borttagen)
+        if (error.code !== 'storage/object-not-found') {
+            console.warn("Kunde inte ta bort gammal bild:", error.message);
+        }
+    }
+}
+
+/**
+ * Återställer bildförhandsvisningen för ett givet formulär.
+ * @param {string} formPrefix 'new' eller 'edit'
+ * @param {string|null} imageUrl 
+ */
+function updateImagePreview(formPrefix, imageUrl) {
+    const previewEl = document.getElementById(`${formPrefix}-image-preview`);
+    const clearBtn = document.getElementById(`${formPrefix}-clear-image-btn`);
+    
+    if (imageUrl) {
+        previewEl.style.backgroundImage = `url('${imageUrl}')`;
+        previewEl.classList.add('has-image');
+        clearBtn.style.display = 'inline-block';
+    } else {
+        previewEl.style.backgroundImage = 'none';
+        previewEl.classList.remove('has-image');
+        clearBtn.style.display = 'none';
+    }
+}
+// --- SLUT ÅTERSTÄLLD: FIREBASE STORAGE / BILDHANTERING ---
+
+
+// --- ÅTERSTÄLLD: AUDIT LOG ---
+
+/**
+ * Lägger till en loggpost för en åtgärd.
+ * @param {string} articleId 
+ * @param {string} action 'CREATE' | 'UPDATE' | 'DELETE'
+ * @param {object} changes 
+ */
+async function handleLogEntry(articleId, action, changes) {
+    if (!currentUser) return;
+
+    const logEntry = {
+        itemId: articleId,
+        timestamp: new Date().toISOString(),
+        action: action,
+        user: currentUser.email,
+        details: changes
+    };
+
+    try {
+        const docId = `log-${Date.now()}-${articleId}`;
+        await saveDocument('loggar', docId, logEntry);
+    } catch (error) {
+        console.error("Kunde inte skapa loggpost:", error);
+    }
+}
+
+/**
+ * Ritar ut granskningsloggen i View Modal.
+ * @param {string} articleId 
+ */
+function renderAuditLog(articleId) {
+    const logContainer = document.getElementById('audit-log-container');
+    const logs = allAuditLogs
+        .filter(log => log.itemId === articleId)
+        .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+    if (logs.length === 0) {
+        logContainer.innerHTML = `<p style="text-align: center; color: var(--text-light); margin: 0;">Ingen historik för denna artikel.</p>`;
+        return;
+    }
+
+    logContainer.innerHTML = '';
+    logs.forEach(log => {
+        const logEl = document.createElement('div');
+        logEl.className = `log-entry log-${log.action.toLowerCase()}`;
+        
+        const date = new Date(log.timestamp).toLocaleString('sv-SE', {
+             year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+        });
+        
+        let actionText = '';
+        if (log.action === 'CREATE') {
+            actionText = 'skapade artikeln';
+        } else if (log.action === 'UPDATE') {
+            actionText = 'uppdaterade';
+            
+            // NYTT: Visa specifika ändringar
+            const changes = log.details || {};
+            const changeList = Object.keys(changes)
+                .filter(key => key !== 'lastModified')
+                .map(key => `${key}: <strong>${changes[key].oldValue}</strong> &rarr; <strong>${changes[key].newValue}</strong>`);
+            
+            if (changeList.length > 0) {
+                 actionText += ` (Ändringar: ${changeList.join('; ')})`;
+            }
+        } else if (log.action === 'DELETE') {
+            actionText = 'TOG BORT artikeln';
+        }
+        
+        logEl.innerHTML = `
+            <span><strong>${log.user.split('@')[0]}</strong> ${actionText}</span>
+            <span class="log-timestamp">${date}</span>
+        `;
+        logContainer.appendChild(logEl);
     });
 }
 
 /**
- * Fyller Plats-filtret och datalisten baserat på all data.
+ * Lyssnar på alla loggposter i realtid.
  */
-function updateLocationOptions(articles) {
-    const locations = new Set(articles.map(a => a.location).filter(Boolean));
-    const sortedLocations = Array.from(locations).sort();
+function setupAuditLogListener() {
+    const q = query(collection(db, "loggar"), orderBy("timestamp", "desc"));
 
-    // Uppdatera Platsfilter-select
-    locationFilter.innerHTML = '<option value="">Alla Platser</option>';
-    sortedLocations.forEach(loc => {
-        const option = document.createElement('option');
-        option.value = loc;
-        option.textContent = loc;
-        locationFilter.appendChild(option);
-    });
-    // Återapplicera sparade val
-    updateFilterUI();
-
-    // Uppdatera Datalist för formulären (autoslutförande)
-    locationSuggestionsDatalist.innerHTML = '';
-    sortedLocations.forEach(loc => {
-        const option = document.createElement('option');
-        option.value = loc;
-        locationSuggestionsDatalist.appendChild(option);
+    onSnapshot(q, (snapshot) => {
+        allAuditLogs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        // Loggarna kommer att användas i View Modal
+    }, (error) => {
+        console.error("Audit Log realtidsfel:", error);
     });
 }
+// --- SLUT ÅTERSTÄLLD: AUDIT LOG ---
+
 
 // --- DATABASHANTERING (CRUD) ---
 
 /**
  * Lägger till en ny artikel i Firestore.
- * @param {Event} e 
  */
 async function handleAddArticle(e) {
     e.preventDefault();
 
     const formData = new FormData(addForm);
     const data = Object.fromEntries(formData.entries());
-
-    // NYTT: Automatisk konvertering av Plats till versaler
-    data.location = (data.location || '').toUpperCase().trim();
+    const imageFile = document.getElementById('new-image-file').files[0];
+    
+    data.id = data.id.trim();
 
     // Validering
     if (!data.id || !data.name || !data.location || !data.quantity || !data.category) {
         showToast("Alla obligatoriska fält måste fyllas i.", 'error');
         return;
     }
-
     if (allArticles.some(a => a.id === data.id)) {
         showToast(`ID ${data.id} finns redan. Välj ett unikt ID.`, 'error');
         document.getElementById('new-id').closest('div').classList.add('has-error');
@@ -309,22 +434,33 @@ async function handleAddArticle(e) {
         document.getElementById('new-id').closest('div').classList.remove('has-error');
     }
 
-    data.quantity = parseInt(data.quantity);
-    data.price = parseFloat(data.price || 0) || 0;
-    data.notes = data.notes || '';
-    data.link = data.link || '';
-    data.lastModified = new Date().toISOString();
-    
-    // NYTT: Spara skapande-datum och den som skapade (hårdkodad då auth är borttagen)
-    data.dateCreated = new Date().toISOString();
-    data.createdBy = "Systemanvändare"; 
-
     try {
-        // ID är redan unikt (används som docId)
+        let imageUrl = '';
+        if (imageFile) {
+            imageUrl = await handleImageUpload(imageFile, data.id);
+        }
+        
+        data.imageUrl = imageUrl;
+        data.quantity = parseInt(data.quantity);
+        data.price = parseFloat(data.price || 0) || 0;
+        data.notes = data.notes || '';
+        data.link = data.link || '';
+        data.lastModified = new Date().toISOString();
+        data.dateCreated = new Date().toISOString();
+        data.createdBy = currentUser.email;
+
         await saveDocument('lager', data.id, data);
+        
+        // ÅTERSTÄLLD: Logga händelse
+        await handleLogEntry(data.id, 'CREATE', { 
+            name: { newValue: data.name }, 
+            location: { newValue: data.location }, 
+            quantity: { newValue: data.quantity } 
+        });
+
         showToast(`Artikel "${data.name}" lades till.`, 'success');
         addForm.reset();
-        // Stäng formuläret efter lyckad inmatning
+        updateImagePreview('new', null); // Rensa förhandsvisningen
         toggleAddForm(); 
     } catch (error) {
         console.error("Fel vid tillägg av artikel:", error);
@@ -349,8 +485,10 @@ function openEditModal(articleId) {
     document.getElementById('edit-category').value = article.category || 'Service';
     document.getElementById('edit-notes').value = article.notes || '';
     document.getElementById('edit-link').value = article.link || '';
-    // NYTT: Visar original ID (hårdkodat till nuvarande ID)
-    document.getElementById('edit-original-id-display').textContent = article.id; 
+    document.getElementById('edit-image-url-hidden').value = article.imageUrl || '';
+    
+    // ÅTERSTÄLLD: Uppdatera bildförhandsvisning
+    updateImagePreview('edit', article.imageUrl);
 
     openModal(editModal);
 }
@@ -365,18 +503,68 @@ async function handleEditArticle(e) {
     const formData = new FormData(editForm);
     const id = document.getElementById('edit-id-hidden').value;
     const data = Object.fromEntries(formData.entries());
+    const imageFile = document.getElementById('edit-image-file').files[0];
+    const oldArticle = allArticles.find(a => a.id === id);
+    const oldImageUrl = document.getElementById('edit-image-url-hidden').value;
     
-    // NYTT: Automatisk konvertering av Plats till versaler
-    data.location = (data.location || '').toUpperCase().trim();
-
-    data.quantity = parseInt(data.quantity);
-    data.price = parseFloat(data.price || 0) || 0;
-    data.notes = data.notes || '';
-    data.link = data.link || '';
-    data.lastModified = new Date().toISOString();
-
+    let newImageUrl = oldImageUrl;
+    
     try {
+        // Steg 1: Hantera bild
+        const imagePreviewEl = document.getElementById('edit-image-preview');
+        const isImageCleared = !imagePreviewEl.classList.contains('has-image') && !imageFile;
+        
+        if (imageFile) {
+            // Ladda upp ny fil, ta bort gammal om den finns
+            if (oldImageUrl) await deleteImage(oldImageUrl);
+            newImageUrl = await handleImageUpload(imageFile, id);
+        } else if (isImageCleared && oldImageUrl) {
+            // Rensa bild knappen trycktes, ta bort från storage
+            await deleteImage(oldImageUrl);
+            newImageUrl = '';
+        }
+
+        // Steg 2: Förbered data och logga ändringar
+        const changes = {};
+
+        // Jämför fält för Audit Log
+        const fields = ['name', 'location', 'quantity', 'price', 'category', 'notes', 'link'];
+        fields.forEach(field => {
+            const oldValue = oldArticle[field] || '';
+            let newValue = data[field];
+            
+            // Typkonvertering för jämförelse
+            if (field === 'quantity') {
+                newValue = parseInt(newValue);
+            } else if (field === 'price') {
+                newValue = parseFloat(newValue || 0) || 0;
+            }
+
+            if (oldValue !== newValue) {
+                changes[field] = { oldValue, newValue };
+            }
+        });
+        
+        // Jämför bild-URL
+        if (oldImageUrl !== newImageUrl) {
+             changes['imageUrl'] = { oldValue: oldImageUrl, newValue: newImageUrl };
+        }
+
+        // Steg 3: Spara i databasen
+        data.imageUrl = newImageUrl;
+        data.quantity = parseInt(data.quantity);
+        data.price = parseFloat(data.price || 0) || 0;
+        data.notes = data.notes || '';
+        data.link = data.link || '';
+        data.lastModified = new Date().toISOString();
+        data.createdBy = oldArticle.createdBy; // Behåll skaparen
+
         await saveDocument('lager', id, data);
+        
+        if (Object.keys(changes).length > 0) {
+            await handleLogEntry(id, 'UPDATE', changes);
+        }
+
         showToast(`Artikel "${data.name}" uppdaterades.`, 'success');
         closeModal(editModal);
     } catch (error) {
@@ -391,6 +579,8 @@ async function handleEditArticle(e) {
  * @param {string} articleName 
  */
 async function handleDeleteArticle(articleId, articleName) {
+    const article = allArticles.find(a => a.id === articleId);
+
     const confirmed = await showConfirmation(
         "Bekräfta Borttagning",
         `Är du säker på att du vill ta bort artikeln <strong>${articleName} (${articleId})</strong> permanent?`
@@ -398,9 +588,18 @@ async function handleDeleteArticle(articleId, articleName) {
 
     if (confirmed) {
         try {
+            // Steg 1: Ta bort bild från Storage
+            if (article.imageUrl) {
+                await deleteImage(article.imageUrl);
+            }
+            
+            // Steg 2: Ta bort artikel från Firestore
             await deleteDocument('lager', articleId);
+            
+            // Steg 3: ÅTERSTÄLLD: Skapa loggpost (med tomma ändringar)
+            await handleLogEntry(articleId, 'DELETE', {});
+
             showToast(`Artikel "${articleName}" togs bort.`, 'success');
-            // Stäng view modal om den är öppen
             if (viewModal.classList.contains('is-open')) {
                 closeModal(viewModal);
             }
@@ -415,7 +614,7 @@ async function handleDeleteArticle(articleId, articleName) {
  * Öppnar detaljmodalen.
  * @param {string} articleId 
  */
-function openViewModal(articleId) {
+async function openViewModal(articleId) {
     const article = allArticles.find(a => a.id === articleId);
     if (!article) return showToast("Artikel hittades inte.", 'error');
 
@@ -437,8 +636,22 @@ function openViewModal(articleId) {
     } else {
         linkEl.href = '#';
         linkEl.textContent = 'Ingen länk angiven';
-        linkContainerEl.style.display = 'block'; // Visa fältet ändå
+        linkContainerEl.style.display = 'block'; 
     }
+    
+    // ÅTERSTÄLLD: Bildhantering i View Modal
+    const imgPlaceholder = document.getElementById('view-image-placeholder');
+    imgPlaceholder.innerHTML = '';
+    if (article.imageUrl) {
+        imgPlaceholder.style.backgroundImage = `url('${article.imageUrl}')`;
+        imgPlaceholder.textContent = '';
+    } else {
+        imgPlaceholder.style.backgroundImage = 'none';
+        imgPlaceholder.textContent = 'Ingen Bild';
+    }
+    
+    // ÅTERSTÄLLD: Fyll i Audit Log
+    renderAuditLog(articleId);
 
     // Lägg till eventlyssnare på knapparna i modalen
     document.getElementById('view-edit-btn').onclick = () => {
@@ -449,62 +662,27 @@ function openViewModal(articleId) {
         closeModal(viewModal);
         handleDeleteArticle(article.id, article.name);
     };
-    document.getElementById('view-duplicate-btn').onclick = () => {
-        closeModal(viewModal);
-        handleDuplicateArticle(article);
-    };
 
     openModal(viewModal);
-}
-
-/**
- * NYTT: Skapar en kopia av en befintlig artikel och öppnar lägg-till formuläret.
- * @param {object} articleToDuplicate 
- */
-function handleDuplicateArticle(articleToDuplicate) {
-    // Sätt ID till "Kopia-ID" och Plats till originalet
-    const newId = `KOPIA-${articleToDuplicate.id}`; 
-    
-    // Försök hitta ett ledigt ID i fall KOPIA-ID redan finns
-    let finalId = newId;
-    let counter = 1;
-    while(allArticles.some(a => a.id === finalId)) {
-        finalId = `${newId}-${counter++}`;
-    }
-
-    // Öppna formuläret om det är stängt
-    if (!addFormWrapper.classList.contains('open')) {
-        toggleAddForm();
-    }
-    
-    // Fyll i formuläret med kopierad data
-    document.getElementById('new-id').value = finalId;
-    document.getElementById('new-name').value = articleToDuplicate.name || '';
-    document.getElementById('new-location').value = articleToDuplicate.location || '';
-    document.getElementById('new-quantity').value = articleToDuplicate.quantity || 1;
-    document.getElementById('new-price').value = articleToDuplicate.price || 0;
-    document.getElementById('new-category').value = articleToDuplicate.category || 'Service';
-    document.getElementById('new-notes').value = `(KOPIA från ${articleToDuplicate.id}) ${articleToDuplicate.notes || ''}`.trim();
-    document.getElementById('new-link').value = articleToDuplicate.link || '';
-    
-    showToast(`Förbereder dubblering av ${articleToDuplicate.id}. Ändra ID och spara.`, 'info', 5000);
-
-    // Skrolla upp till formuläret
-    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 
 // --- DATAHANTERING & RENDERING ---
 
 /**
- * Filterar artiklar baserat på söksträng och aktiva filter.
+ * Filterar artiklar baserat på söksträng och kategori.
  * @returns {object[]} Filterad och sorterad lista
  */
 function filterAndSortArticles() {
     let filtered = allArticles;
     const query = currentSearchQuery.toLowerCase();
     
-    // 1. Sökning
+    // 1. Kategori-filter
+    if (currentCategoryFilter) {
+        filtered = filtered.filter(article => article.category === currentCategoryFilter);
+    }
+    
+    // 2. Sökning
     if (query) {
         filtered = filtered.filter(article =>
             article.id.toLowerCase().includes(query) ||
@@ -512,26 +690,9 @@ function filterAndSortArticles() {
             article.location.toLowerCase().includes(query) ||
             article.notes.toLowerCase().includes(query)
         );
-        isSearchMode = true;
-    } else {
-        isSearchMode = false;
     }
 
-    // 2. Kategori-filter (Många val är tillåtna)
-    if (currentFilters.category.length > 0) {
-        filtered = filtered.filter(article => 
-            currentFilters.category.includes(article.category)
-        );
-    }
-
-    // 3. Plats-filter (Många val är tillåtna)
-    if (currentFilters.location.length > 0) {
-        filtered = filtered.filter(article => 
-            currentFilters.location.includes(article.location)
-        );
-    }
-
-    // 4. Sortering
+    // 3. Sortering
     filtered.sort((a, b) => {
         const valA = a[currentSortColumn];
         const valB = b[currentSortColumn];
@@ -558,72 +719,49 @@ function filterAndRenderArticles() {
 }
 
 /**
- * Ritar ut listan av artiklar i kategorier eller som en platt lista vid sökning/filtrering.
+ * Ritar ut listan av artiklar i kategorier.
  * @param {object[]} articles 
  */
 function renderArticles(articles) {
     listContainer.innerHTML = '';
     
     if (articles.length === 0) {
-        // Visa tomt tillstånd
-        emptyStateContainer.style.display = 'block';
-        if (currentSearchQuery) {
-            document.getElementById('empty-state-title').textContent = "Inga sökresultat.";
-            document.getElementById('empty-state-message').textContent = `Hittade inga artiklar som matchade "${currentSearchQuery}".`;
-        } else if (currentFilters.category.length > 0 || currentFilters.location.length > 0) {
-             document.getElementById('empty-state-title').textContent = "Inga artiklar matchar filtren.";
-             document.getElementById('empty-state-message').textContent = `Justera dina Kategori- eller Plats-filter.`;
-        } else {
-             document.getElementById('empty-state-title').textContent = "Lagerdatabasen är tom.";
-             document.getElementById('empty-state-message').textContent = `Börja med att lägga till din första artikel.`;
-        }
+        listContainer.innerHTML = '<p style="text-align: center; color: var(--text-light); padding: 50px;">Inga artiklar hittades som matchar dina filter/sökning.</p>';
         return;
     }
     
-    emptyStateContainer.style.display = 'none';
+    // Gruppera efter Kategori
+    const grouped = articles.reduce((acc, article) => {
+        const key = article.category || 'Övrigt';
+        if (!acc[key]) acc[key] = [];
+        acc[key].push(article);
+        return acc;
+    }, {});
 
-    // Bestäm om artiklarna ska grupperas
-    const shouldGroup = !isSearchMode && currentFilters.category.length === 0 && currentFilters.location.length === 0;
+    Object.keys(grouped).sort().forEach(category => {
+        const categoryWrapper = document.createElement('div');
+        const wrapperId = `category-wrapper-${category.replace(/[^a-zA-Z0-9]/g, '-')}`;
+        categoryWrapper.id = wrapperId;
+        categoryWrapper.className = 'lager-wrapper';
 
-    if (shouldGroup) {
-        // Gruppera efter Kategori
-        const grouped = articles.reduce((acc, article) => {
-            const key = article.category || 'Övrigt';
-            if (!acc[key]) acc[key] = [];
-            acc[key].push(article);
-            return acc;
-        }, {});
-
-        Object.keys(grouped).sort().forEach(category => {
-            const categoryWrapper = document.createElement('div');
-            const wrapperId = `category-wrapper-${category.replace(/[^a-zA-Z0-9]/g, '-')}`;
-            categoryWrapper.id = wrapperId;
-            categoryWrapper.className = 'lager-wrapper';
-
-            // Skapa rubrik
-            const header = document.createElement('h3');
-            header.className = 'collapsible-header';
-            header.setAttribute('data-target', wrapperId);
-            header.setAttribute('data-state', 'open'); // NYTT: Standard "open"
-            header.innerHTML = `<div>${category} <span class="category-badge">${grouped[category].length} artiklar</span></div><span class="toggle-icon">▼</span>`;
-            listContainer.appendChild(header);
-            
-            // Skapa tabellinnehåll
-            const container = createTableContainer(grouped[category]);
-            categoryWrapper.appendChild(container);
-            listContainer.appendChild(categoryWrapper);
-        });
-    } else {
-        // Platt lista vid sökning/filtrering
-        const container = createTableContainer(articles);
-        const wrapper = document.createElement('div');
-        wrapper.className = 'lager-wrapper';
-        wrapper.appendChild(container);
-        listContainer.appendChild(wrapper);
-    }
-    
-    // Uppdatera sorteringsikoner efter rendering
-    updateSortIcons();
+        // Skapa rubrik
+        const header = document.createElement('h3');
+        header.className = 'collapsible-header';
+        header.setAttribute('data-target', wrapperId);
+        header.setAttribute('data-state', localStorage.getItem(wrapperId) || 'open'); 
+        header.innerHTML = `<div>${category} <span class="category-badge">${grouped[category].length} artiklar</span></div><span class="toggle-icon">${header.getAttribute('data-state') === 'open' ? '▼' : '►'}</span>`;
+        listContainer.appendChild(header);
+        
+        // Skapa tabellinnehåll
+        const container = createTableContainer(grouped[category]);
+        categoryWrapper.appendChild(container);
+        listContainer.appendChild(categoryWrapper);
+        
+        // Dölj om stängt
+        if (header.getAttribute('data-state') === 'closed') {
+             categoryWrapper.classList.add('collapsed');
+        }
+    });
 }
 
 /**
@@ -635,11 +773,11 @@ function createTableContainer(articles) {
     const container = document.createElement('div');
     container.className = 'lager-container';
 
-    // Header
+    // Header (ÅTERSTÄLLD med bildkolumn)
     const header = document.createElement('div');
     header.className = 'header';
-    // NYTT: Kolumn för bild borttagen
     header.innerHTML = `
+        <span class="image-cell">BILD</span>
         <span data-sort="id">ID <span class="sort-icon"></span></span>
         <span data-sort="name">Namn <span class="sort-icon"></span></span>
         <span data-sort="location">Plats <span class="sort-icon"></span></span>
@@ -655,15 +793,17 @@ function createTableContainer(articles) {
     articles.forEach(article => {
         const row = document.createElement('div');
         row.className = 'artikel-rad';
+        row.setAttribute('data-id', article.id);
         
-        // Formatera sista modifieringsdatum
-        const date = article.lastModified ? new Date(article.lastModified) : new Date(article.dateCreated);
-        const dateStr = date.toLocaleDateString('sv-SE', { year: 'numeric', month: 'short', day: 'numeric' });
-        
-        // NYTT: Antal-färg
+        // ÅTERSTÄLLD: Antal-färg
         const quantityClass = article.quantity > 0 ? 'i-lager' : 'slut-i-lager';
+        
+        // ÅTERSTÄLLD: Bildcell
+        const imageStyle = article.imageUrl ? `background-image: url('${article.imageUrl}')` : '';
+        const imageContent = article.imageUrl ? '' : '🖼️';
 
         row.innerHTML = `
+            <span class="image-cell" style="${imageStyle}">${imageContent}</span>
             <span class="id-cell">${article.id}</span>
             <span class="name-cell">${article.name || ''}</span>
             <span class="location-cell">${article.location || ''}</span>
@@ -672,7 +812,6 @@ function createTableContainer(articles) {
             <span class="notes-cell">${article.notes || '-'}</span>
             <span class="category-cell">${article.category || '-'}</span>
             <div class="button-group">
-                <button class="btn-secondary btn-action" data-action="view" data-id="${article.id}" title="Visa detaljer">👁️</button>
                 <button class="btn-secondary btn-action" data-action="edit" data-id="${article.id}" title="Redigera">✎</button>
                 <button class="btn-danger btn-action" data-action="delete" data-id="${article.id}" title="Ta bort">🗑️</button>
             </div>
@@ -684,17 +823,15 @@ function createTableContainer(articles) {
                 e.stopPropagation();
                 const id = btn.dataset.id;
                 const action = btn.dataset.action;
-                if (action === 'view') {
-                    openViewModal(id);
-                } else if (action === 'edit') {
+                if (action === 'edit') {
                     openEditModal(id);
                 } else if (action === 'delete') {
-                    handleDeleteArticle(id, allArticles.find(a => a.id === id)?.name);
+                    handleDeleteArticle(id, article.name);
                 }
             });
         });
         
-        // Klick på raden öppnar View Modal (NYTT: ersätter den gamla popup-funktionen)
+        // Klick på raden öppnar View Modal (ÅTERSTÄLLD)
         row.addEventListener('click', () => openViewModal(article.id));
         
         container.appendChild(row);
@@ -736,7 +873,7 @@ function updateSortIcons() {
         const column = header.dataset.sort;
         
         header.classList.remove('active');
-        icon.innerHTML = ''; // Rensa ikonen
+        icon.innerHTML = ''; 
 
         if (column === currentSortColumn) {
             header.classList.add('active');
@@ -746,7 +883,7 @@ function updateSortIcons() {
 }
 
 /**
- * Initierar realtidslyssnare på Firestore.
+ * Lyssnar på Firestore-data i realtid.
  */
 function setupRealtimeListener() {
     const q = query(collection(db, "lager"), orderBy("name", "asc"));
@@ -759,21 +896,15 @@ function setupRealtimeListener() {
             statusElement.innerHTML = `<span class="icon"></span> Synkroniserad`;
         }
         
-        // Hämta all data
         allArticles = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         
-        // Dölj laddningsskärm och visa innehåll
         initialLoader.style.display = 'none';
-        mainContent.classList.add('visible');
 
-        // Fyll i Plats-alternativen
-        updateLocationOptions(allArticles);
-        
-        // Rendera filtrerad/sorterad data
         filterAndRenderArticles();
 
     }, (error) => {
         console.error("Firestore realtidsfel:", error);
+        const statusElement = document.getElementById('sync-status');
         if (statusElement) {
             statusElement.className = 'sync-status sync-error';
             statusElement.innerHTML = `<span class="icon"></span> FEL: ${error.code.toUpperCase()}`;
@@ -781,29 +912,81 @@ function setupRealtimeListener() {
     });
 }
 
+
 // --- INITIALISERING ---
 
 document.addEventListener('DOMContentLoaded', () => {
     try {
-        // 1. Läs in Tema/Sortering/Filter
+        // 1. Läs in Tema/Sortering/Formulärstatus
         initializeTheme();
         initializeAddFormState();
         currentSortColumn = localStorage.getItem('currentSortColumn') || 'name';
         currentSortDirection = localStorage.getItem('currentSortDirection') || 'asc';
-        loadFiltersFromStorage();
+        currentCategoryFilter = localStorage.getItem('currentCategoryFilter') || '';
+        categoryFilter.value = currentCategoryFilter;
         
-        // 2. Visa laddningsskärm
-        initialLoader.style.display = 'flex';
-
-        // 3. Händelselyssnare
+        // 2. ÅTERSTÄLLD: Händelselyssnare
+        
+        // Auth
+        loginForm.addEventListener('submit', handleLogin);
+        logoutBtn.addEventListener('click', handleLogout);
+        setupAuthListener(); 
+        
+        // Formulär och UI
         toggleAddFormBtn.addEventListener('click', toggleAddForm);
-        document.getElementById('theme-toggle').addEventListener('change', toggleTheme);
+        themeToggle.addEventListener('change', toggleTheme); // NYTT
+
         addForm.addEventListener('submit', handleAddArticle);
         editForm.addEventListener('submit', handleEditArticle);
         
-        // 4. Sök- och Filterlyssnare
-        
-        // Sökning
+        // Bildhantering (ÅTERSTÄLLD)
+        document.getElementById('new-image-preview').addEventListener('click', () => {
+            document.getElementById('new-image-file').click();
+        });
+        document.getElementById('new-image-file').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                if (file.size > IMAGE_MAX_SIZE) {
+                    showToast("Bilden är för stor (Max 2MB).", 'error');
+                    e.target.value = null; 
+                    updateImagePreview('new', null);
+                    return;
+                }
+                const url = URL.createObjectURL(file);
+                updateImagePreview('new', url);
+            } else {
+                updateImagePreview('new', null);
+            }
+        });
+        document.getElementById('new-clear-image-btn').addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('new-image-file').value = null;
+            updateImagePreview('new', null);
+        });
+
+        document.getElementById('edit-image-preview').addEventListener('click', () => {
+            document.getElementById('edit-image-file').click();
+        });
+        document.getElementById('edit-image-file').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                 if (file.size > IMAGE_MAX_SIZE) {
+                    showToast("Bilden är för stor (Max 2MB).", 'error');
+                    e.target.value = null;
+                    return;
+                }
+                const url = URL.createObjectURL(file);
+                updateImagePreview('edit', url);
+            }
+        });
+        document.getElementById('edit-clear-image-btn').addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('edit-image-file').value = null;
+            document.getElementById('edit-image-url-hidden').value = ''; // Rensa URL
+            updateImagePreview('edit', null);
+        });
+
+        // Sökning och Filter
         const handleSearch = () => {
             currentSearchQuery = searchInput.value.trim();
             clearSearchBtn.style.display = currentSearchQuery ? 'block' : 'none';
@@ -816,25 +999,37 @@ document.addEventListener('DOMContentLoaded', () => {
             handleSearch();
         });
         
-        // Filter
-        const handleFilterChange = () => {
-            // Hämta valda kategorier (flervalsstöd)
-            currentFilters.category = Array.from(categoryFilter.options)
-                .filter(option => option.selected && option.value !== "")
-                .map(option => option.value);
-
-            // Hämta valda platser (flervalsstöd)
-            currentFilters.location = Array.from(locationFilter.options)
-                .filter(option => option.selected && option.value !== "")
-                .map(option => option.value);
-            
-            saveFiltersToStorage();
+        categoryFilter.addEventListener('change', () => {
+            currentCategoryFilter = categoryFilter.value;
+            localStorage.setItem('currentCategoryFilter', currentCategoryFilter);
             filterAndRenderArticles();
-        };
+        });
+        
+        // Utskrift (ÅTERSTÄLLD)
+        document.getElementById('print-list-btn').addEventListener('click', () => {
+            window.print();
+        });
 
-        categoryFilter.addEventListener('change', handleFilterChange);
-        locationFilter.addEventListener('change', handleFilterChange);
-        resetFiltersBtn.addEventListener('click', resetFilters);
+        // Kollapsa/Expandera kategorier (ÅTERSTÄLLD)
+        listContainer.addEventListener('click', (e) => {
+            if (e.target.classList.contains('collapsible-header') || e.target.closest('.collapsible-header')) {
+                const header = e.target.closest('.collapsible-header');
+                const targetId = header.getAttribute('data-target');
+                const targetWrapper = document.getElementById(targetId);
+                const currentState = header.getAttribute('data-state');
+                const newState = currentState === 'open' ? 'closed' : 'open';
+                
+                header.setAttribute('data-state', newState);
+                header.querySelector('.toggle-icon').textContent = newState === 'open' ? '▼' : '►';
+                
+                if (targetWrapper) {
+                    targetWrapper.classList.toggle('collapsed');
+                }
+                
+                // Spara tillstånd lokalt
+                localStorage.setItem(targetId, newState);
+            }
+        });
         
         // Hantera Esc för att stänga modal
         document.addEventListener('keydown', (e) => {
@@ -844,9 +1039,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 closeModal(confirmModal);
             }
         });
-        
-        // 5. Initiera Realtidslyssnare
-        setupRealtimeListener();
 
     } catch (e) {
         console.error("App Initialization Error:", e);
