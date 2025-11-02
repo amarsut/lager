@@ -526,22 +526,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         
-        // --- ÄNDRAD: Ser till att formuläret ALLTID är stängt vid laddning ---
         function initializeAddFormState() {
-            // Ta bort sparad status för att säkerställa att den är stängd
-            localStorage.removeItem('add_form_open_state');
-            
-            // Se till att klasserna är korrekt borttagna (ifall de fastnat)
-            if (addFormWrapper.classList.contains('open')) {
-                addFormWrapper.classList.remove('open');
-            }
-            /*
-            // Den gamla koden behöll statusen:
             const storedState = localStorage.getItem('add_form_open_state');
             if (storedState === 'open') { 
                 addFormWrapper.classList.add('open'); 
+                // toggleBtn.classList.add('open'); // -- BORTTAGEN --
             }
-            */
         }
         
         // --- NYTT: Laddar sparad sortering och filter ---
@@ -807,10 +797,8 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             // --- JSON-KNAPPAR BORTTAGNA ---
-            // const downloadBtn = document.getElementById('download-json-btn');
-            // if (downloadBtn) downloadBtn.addEventListener('click', ... );
-            // const uploadInput = document.getElementById('upload-json-input');
-            // if (uploadInput) uploadInput.addEventListener('change', ... );
+            // document.getElementById('download-json-btn').addEventListener('click', ... );
+            // document.getElementById('upload-json-input').addEventListener('change', ... );
 
             // Global sök-knappar (oförändrad)
             if (globalSearchBtn) { globalSearchBtn.addEventListener('click', (e) => { e.preventDefault(); handleGlobalSearch(); }); }
@@ -819,15 +807,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Back-to-top (oförändrad)
             const backToTopBtn = document.getElementById('back-to-top-btn');
             if (backToTopBtn) {
-                window.addEventListener('scroll', () => { 
-                    const isVisible = window.scrollY > 300;
-                    backToTopBtn.style.display = isVisible ? 'flex' : 'none'; 
-                    
-                    // --- NYTT: Tona ut FAB-knappen när scroll-knappen syns ---
-                    if (fabAddBtn) {
-                        fabAddBtn.style.opacity = isVisible ? '0.5' : '1';
-                    }
-                });
+                window.addEventListener('scroll', () => { backToTopBtn.style.display = window.scrollY > 300 ? 'flex' : 'none'; });
                 backToTopBtn.addEventListener('click', () => { window.scrollTo({ top: 0, behavior: 'smooth' }); });
             }
             
@@ -873,7 +853,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // KÖR ALLT I ORDNING
         checkTheme(); // --- NYTT: Sätt tema FÖRST
         updateSyncStatus('connecting', 'Ansluter...'); 
-        initializeAddFormState(); // <-- ÄNDRAD FÖR ATT ALLTID STÄNGA
+        initializeAddFormState(); 
         initializeCollapseState();
         loadPersistentState(); // --- NYTT: Ladda sparade filter
         initializeListeners(); 
