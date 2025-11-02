@@ -1,6 +1,5 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js';
-// ÅTERSTÄLLD: Auth och Storage-moduler är nu inkluderade
-import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js';
+// HAR TAGIT BORT: getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut
 import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot, query, orderBy, getDocs } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
 import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-storage.js';
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-analytics.js";
@@ -18,19 +17,20 @@ const firebaseConfig = {
 
 // --- GLOBALA VARIABLER ---
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app); // ÅTERSTÄLLD
+// HAR TAGIT BORT: const auth = getAuth(app); 
 const db = getFirestore(app);
-const storage = getStorage(app); // ÅTERSTÄLLD
+const storage = getStorage(app); 
 const analytics = getAnalytics(app);
 
 let allArticles = []; 
-let allAuditLogs = []; // ÅTERSTÄLLD
+let allAuditLogs = []; 
 let currentSortColumn = 'name';
 let currentSortDirection = 'asc';
 let currentCategoryFilter = '';
 let currentSearchQuery = '';
-let currentUser = null; // ÅTERSTÄLLD
+// HAR TAGIT BORT: let currentUser = null; 
 const IMAGE_MAX_SIZE = 2 * 1024 * 1024; // 2MB
+const CURRENT_USER_PLACEHOLDER = 'ANONYMOUS_USER'; // Används för loggar
 
 // --- DOM ELEMENT CACHE ---
 const listContainer = document.getElementById('lager-list-container');
@@ -44,12 +44,8 @@ const initialLoader = document.getElementById('initial-loader');
 const mainContent = document.getElementById('main-app-content');
 const appNavbar = document.getElementById('app-navbar');
 
-const loginOverlay = document.getElementById('login-overlay'); // ÅTERSTÄLLD
-const loginForm = document.getElementById('login-form'); // ÅTERSTÄLLD
-const loginError = document.getElementById('login-error'); // ÅTERSTÄLLD
-const logoutBtn = document.getElementById('logout-btn'); // ÅTERSTÄLLD
-const userEmailDisplay = document.getElementById('user-email-display'); // ÅTERSTÄLLD
-const themeToggle = document.getElementById('theme-toggle'); // NYTT
+// HAR TAGIT BORT: loginOverlay, loginForm, loginError, logoutBtn, userEmailDisplay
+const themeToggle = document.getElementById('theme-toggle'); 
 
 const editModal = document.getElementById('editModal');
 const viewModal = document.getElementById('viewModal');
@@ -155,7 +151,7 @@ async function deleteDocument(collectionName, docId) {
 function initializeTheme() {
     const savedTheme = localStorage.getItem('theme') || 'light';
     document.body.setAttribute('data-theme', savedTheme);
-    themeToggle.checked = (savedTheme === 'dark'); // NYTT: Använder checkbox
+    themeToggle.checked = (savedTheme === 'dark'); 
 }
 
 function toggleTheme() {
@@ -181,75 +177,10 @@ function toggleAddForm() {
 }
 
 
-// --- ÅTERSTÄLLD: FIREBASE AUTH ---
-
-/**
- * Hanterar inloggning med e-post och lösenord.
- */
-async function handleLogin(e) {
-    e.preventDefault();
-    const email = document.getElementById('login-email').value;
-    const password = document.getElementById('login-password').value;
-    
-    loginError.style.display = 'none';
-
-    try {
-        await signInWithEmailAndPassword(auth, email, password);
-        // onAuthStateChanged tar över här
-    } catch (error) {
-        console.error("Inloggningsfel:", error.code, error.message);
-        loginError.textContent = "Felaktigt användarnamn eller lösenord.";
-        loginError.style.display = 'block';
-    }
-}
-
-/**
- * Hanterar utloggning.
- */
-async function handleLogout() {
-    try {
-        await signOut(auth);
-        showToast("Du är utloggad.", 'info');
-    } catch (error) {
-        console.error("Utloggningsfel:", error);
-        showToast("Kunde inte logga ut.", 'error');
-    }
-}
-
-/**
- * Hanterar appens tillstånd baserat på inloggningsstatus.
- */
-function setupAuthListener() {
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            // Inloggad
-            currentUser = user;
-            userEmailDisplay.textContent = user.email;
-            loginOverlay.style.display = 'none';
-            appNavbar.style.display = 'flex';
-            mainContent.classList.add('visible');
-            initialLoader.style.display = 'flex'; // Visa laddare medan data hämtas
-            
-            // Starta datalyssnare
-            setupRealtimeListener();
-            setupAuditLogListener(); // ÅTERSTÄLLD
-            
-        } else {
-            // Utloggad
-            currentUser = null;
-            loginOverlay.style.display = 'flex';
-            appNavbar.style.display = 'none';
-            mainContent.classList.remove('visible');
-            initialLoader.style.display = 'none';
-            allArticles = [];
-            listContainer.innerHTML = '';
-        }
-    });
-}
-// --- SLUT ÅTERSTÄLLD: FIREBASE AUTH ---
+// --- HAR TAGIT BORT: FIREBASE AUTH FUNKTIONER ---
 
 
-// --- ÅTERSTÄLLD: FIREBASE STORAGE / BILDHANTERING ---
+// --- FIREBASE STORAGE / BILDHANTERING ---
 
 /**
  * Laddar upp en fil till Firebase Storage.
@@ -263,9 +194,10 @@ async function handleImageUpload(file, articleId) {
         throw new Error(`Filstorleken får inte överstiga ${IMAGE_MAX_SIZE / 1024 / 1024}MB.`);
     }
 
-    const storageRef = ref(storage, `artikelbilder/${articleId}/${file.name}`);
+    // Unikt filnamn för att undvika konflikter
+    const fileName = `${Date.now()}-${file.name}`; 
+    const storageRef = ref(storage, `artikelbilder/${articleId}/${fileName}`);
     
-    // Hårdkodad metadata som krävs för att kunna visa bilden i webbläsaren
     const metadata = { contentType: file.type }; 
     
     const snapshot = await uploadBytes(storageRef, file, metadata);
@@ -284,7 +216,7 @@ async function deleteImage(imageUrl) {
         const imageRef = ref(storage, imageUrl);
         await deleteObject(imageRef);
     } catch (error) {
-        // Ignorera om filen inte hittas (ofta p.g.a. säkerhetsregler eller redan borttagen)
+        // Ignorera om filen inte hittas
         if (error.code !== 'storage/object-not-found') {
             console.warn("Kunde inte ta bort gammal bild:", error.message);
         }
@@ -310,10 +242,9 @@ function updateImagePreview(formPrefix, imageUrl) {
         clearBtn.style.display = 'none';
     }
 }
-// --- SLUT ÅTERSTÄLLD: FIREBASE STORAGE / BILDHANTERING ---
 
 
-// --- ÅTERSTÄLLD: AUDIT LOG ---
+// --- AUDIT LOG ---
 
 /**
  * Lägger till en loggpost för en åtgärd.
@@ -322,13 +253,11 @@ function updateImagePreview(formPrefix, imageUrl) {
  * @param {object} changes 
  */
 async function handleLogEntry(articleId, action, changes) {
-    if (!currentUser) return;
-
     const logEntry = {
         itemId: articleId,
         timestamp: new Date().toISOString(),
         action: action,
-        user: currentUser.email,
+        user: CURRENT_USER_PLACEHOLDER, // Använder placeholder istället för inloggad användare
         details: changes
     };
 
@@ -365,26 +294,31 @@ function renderAuditLog(articleId) {
         });
         
         let actionText = '';
+        const userDisplay = log.user === CURRENT_USER_PLACEHOLDER ? 'Användare' : log.user.split('@')[0];
+
         if (log.action === 'CREATE') {
             actionText = 'skapade artikeln';
         } else if (log.action === 'UPDATE') {
             actionText = 'uppdaterade';
             
-            // NYTT: Visa specifika ändringar
             const changes = log.details || {};
             const changeList = Object.keys(changes)
-                .filter(key => key !== 'lastModified')
-                .map(key => `${key}: <strong>${changes[key].oldValue}</strong> &rarr; <strong>${changes[key].newValue}</strong>`);
+                .filter(key => key !== 'lastModified' && changes[key].oldValue !== changes[key].newValue) // Filtrera bort oförändrade fält
+                .map(key => {
+                     const oldValue = String(changes[key].oldValue).length > 20 ? `${String(changes[key].oldValue).substring(0, 17)}...` : changes[key].oldValue;
+                     const newValue = String(changes[key].newValue).length > 20 ? `${String(changes[key].newValue).substring(0, 17)}...` : changes[key].newValue;
+                     return `${key}: <strong>${oldValue}</strong> &rarr; <strong>${newValue}</strong>`;
+                });
             
             if (changeList.length > 0) {
-                 actionText += ` (Ändringar: ${changeList.join('; ')})`;
+                 actionText += ` (${changeList.join('; ')})`;
             }
         } else if (log.action === 'DELETE') {
             actionText = 'TOG BORT artikeln';
         }
         
         logEl.innerHTML = `
-            <span><strong>${log.user.split('@')[0]}</strong> ${actionText}</span>
+            <span><strong>${userDisplay}</strong> ${actionText}</span>
             <span class="log-timestamp">${date}</span>
         `;
         logContainer.appendChild(logEl);
@@ -399,12 +333,11 @@ function setupAuditLogListener() {
 
     onSnapshot(q, (snapshot) => {
         allAuditLogs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        // Loggarna kommer att användas i View Modal
+        // Eftersom vi inte har View Modal öppen som standard, behöver vi inte rendera loggar här.
     }, (error) => {
         console.error("Audit Log realtidsfel:", error);
     });
 }
-// --- SLUT ÅTERSTÄLLD: AUDIT LOG ---
 
 
 // --- DATABASHANTERING (CRUD) ---
@@ -447,11 +380,12 @@ async function handleAddArticle(e) {
         data.link = data.link || '';
         data.lastModified = new Date().toISOString();
         data.dateCreated = new Date().toISOString();
-        data.createdBy = currentUser.email;
+        // Använder placeholder istället för inloggad användare
+        data.createdBy = CURRENT_USER_PLACEHOLDER; 
 
         await saveDocument('lager', data.id, data);
         
-        // ÅTERSTÄLLD: Logga händelse
+        // Logga händelse
         await handleLogEntry(data.id, 'CREATE', { 
             name: { newValue: data.name }, 
             location: { newValue: data.location }, 
@@ -487,7 +421,6 @@ function openEditModal(articleId) {
     document.getElementById('edit-link').value = article.link || '';
     document.getElementById('edit-image-url-hidden').value = article.imageUrl || '';
     
-    // ÅTERSTÄLLD: Uppdatera bildförhandsvisning
     updateImagePreview('edit', article.imageUrl);
 
     openModal(editModal);
@@ -530,7 +463,7 @@ async function handleEditArticle(e) {
         // Jämför fält för Audit Log
         const fields = ['name', 'location', 'quantity', 'price', 'category', 'notes', 'link'];
         fields.forEach(field => {
-            const oldValue = oldArticle[field] || '';
+            const oldValue = oldArticle[field] || (field === 'price' || field === 'quantity' ? 0 : '');
             let newValue = data[field];
             
             // Typkonvertering för jämförelse
@@ -547,7 +480,7 @@ async function handleEditArticle(e) {
         
         // Jämför bild-URL
         if (oldImageUrl !== newImageUrl) {
-             changes['imageUrl'] = { oldValue: oldImageUrl, newValue: newImageUrl };
+             changes['imageUrl'] = { oldValue: oldImageUrl || 'Ingen bild', newValue: newImageUrl || 'Ingen bild' };
         }
 
         // Steg 3: Spara i databasen
@@ -596,8 +529,8 @@ async function handleDeleteArticle(articleId, articleName) {
             // Steg 2: Ta bort artikel från Firestore
             await deleteDocument('lager', articleId);
             
-            // Steg 3: ÅTERSTÄLLD: Skapa loggpost (med tomma ändringar)
-            await handleLogEntry(articleId, 'DELETE', {});
+            // Steg 3: Skapa loggpost 
+            await handleLogEntry(articleId, 'DELETE', { name: { oldValue: articleName, newValue: 'BORTTAGEN' } });
 
             showToast(`Artikel "${articleName}" togs bort.`, 'success');
             if (viewModal.classList.contains('is-open')) {
@@ -639,7 +572,7 @@ async function openViewModal(articleId) {
         linkContainerEl.style.display = 'block'; 
     }
     
-    // ÅTERSTÄLLD: Bildhantering i View Modal
+    // Bildhantering i View Modal
     const imgPlaceholder = document.getElementById('view-image-placeholder');
     imgPlaceholder.innerHTML = '';
     if (article.imageUrl) {
@@ -650,7 +583,7 @@ async function openViewModal(articleId) {
         imgPlaceholder.textContent = 'Ingen Bild';
     }
     
-    // ÅTERSTÄLLD: Fyll i Audit Log
+    // Fyll i Audit Log
     renderAuditLog(articleId);
 
     // Lägg till eventlyssnare på knapparna i modalen
@@ -716,6 +649,7 @@ function filterAndSortArticles() {
 function filterAndRenderArticles() {
     const filteredArticles = filterAndSortArticles();
     renderArticles(filteredArticles);
+    updateSortIcons();
 }
 
 /**
@@ -795,10 +729,10 @@ function createTableContainer(articles) {
         row.className = 'artikel-rad';
         row.setAttribute('data-id', article.id);
         
-        // ÅTERSTÄLLD: Antal-färg
+        // Antal-färg
         const quantityClass = article.quantity > 0 ? 'i-lager' : 'slut-i-lager';
         
-        // ÅTERSTÄLLD: Bildcell
+        // Bildcell
         const imageStyle = article.imageUrl ? `background-image: url('${article.imageUrl}')` : '';
         const imageContent = article.imageUrl ? '' : '🖼️';
 
@@ -831,7 +765,7 @@ function createTableContainer(articles) {
             });
         });
         
-        // Klick på raden öppnar View Modal (ÅTERSTÄLLD)
+        // Klick på raden öppnar View Modal
         row.addEventListener('click', () => openViewModal(article.id));
         
         container.appendChild(row);
@@ -886,6 +820,9 @@ function updateSortIcons() {
  * Lyssnar på Firestore-data i realtid.
  */
 function setupRealtimeListener() {
+    // Visa laddare
+    initialLoader.style.display = 'flex'; 
+
     const q = query(collection(db, "lager"), orderBy("name", "asc"));
 
     onSnapshot(q, (snapshot) => {
@@ -909,6 +846,7 @@ function setupRealtimeListener() {
             statusElement.className = 'sync-status sync-error';
             statusElement.innerHTML = `<span class="icon"></span> FEL: ${error.code.toUpperCase()}`;
         }
+        initialLoader.style.display = 'none';
     });
 }
 
@@ -925,21 +863,16 @@ document.addEventListener('DOMContentLoaded', () => {
         currentCategoryFilter = localStorage.getItem('currentCategoryFilter') || '';
         categoryFilter.value = currentCategoryFilter;
         
-        // 2. ÅTERSTÄLLD: Händelselyssnare
-        
-        // Auth
-        loginForm.addEventListener('submit', handleLogin);
-        logoutBtn.addEventListener('click', handleLogout);
-        setupAuthListener(); 
+        // 2. Händelselyssnare
         
         // Formulär och UI
         toggleAddFormBtn.addEventListener('click', toggleAddForm);
-        themeToggle.addEventListener('change', toggleTheme); // NYTT
+        themeToggle.addEventListener('change', toggleTheme); 
 
         addForm.addEventListener('submit', handleAddArticle);
         editForm.addEventListener('submit', handleEditArticle);
         
-        // Bildhantering (ÅTERSTÄLLD)
+        // Bildhantering 
         document.getElementById('new-image-preview').addEventListener('click', () => {
             document.getElementById('new-image-file').click();
         });
@@ -1005,12 +938,12 @@ document.addEventListener('DOMContentLoaded', () => {
             filterAndRenderArticles();
         });
         
-        // Utskrift (ÅTERSTÄLLD)
+        // Utskrift
         document.getElementById('print-list-btn').addEventListener('click', () => {
             window.print();
         });
 
-        // Kollapsa/Expandera kategorier (ÅTERSTÄLLD)
+        // Kollapsa/Expandera kategorier
         listContainer.addEventListener('click', (e) => {
             if (e.target.classList.contains('collapsible-header') || e.target.closest('.collapsible-header')) {
                 const header = e.target.closest('.collapsible-header');
@@ -1039,6 +972,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 closeModal(confirmModal);
             }
         });
+        
+        // 3. Starta datalyssnare direkt (ingen inloggning krävs)
+        setupAuditLogListener(); 
+        setupRealtimeListener();
 
     } catch (e) {
         console.error("App Initialization Error:", e);
@@ -1048,5 +985,6 @@ document.addEventListener('DOMContentLoaded', () => {
            statusElement.textContent = "FEL: Initieringsfel!";
            statusElement.className = 'sync-status sync-error';
         }
+        initialLoader.style.display = 'none';
     }
 });
