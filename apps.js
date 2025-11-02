@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const slutILagerSektion = document.getElementById('slut-i-lager-sektion');
         
         const searchInput = document.getElementById('search-input');
-        const toggleBtn = document.getElementById('toggle-add-form-btn');
+        // const toggleBtn = document.getElementById('toggle-add-form-btn'); // -- BORTTAGEN --
         const addFormWrapper = document.getElementById('add-form-wrapper');
         const addForm = document.getElementById('add-article-form');
         const editModal = document.getElementById('editModal');
@@ -517,7 +517,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const isCurrentlyOpen = addFormWrapper.classList.contains('open');
             const newState = isCurrentlyOpen ? 'closed' : 'open';
             addFormWrapper.classList.toggle('open');
-            toggleBtn.classList.toggle('open');
+            // toggleBtn.classList.toggle('open'); // -- BORTTAGEN --
             localStorage.setItem('add_form_open_state', newState);
             
             if (newState === 'open') {
@@ -528,7 +528,10 @@ document.addEventListener('DOMContentLoaded', () => {
         
         function initializeAddFormState() {
             const storedState = localStorage.getItem('add_form_open_state');
-            if (storedState === 'open') { addFormWrapper.classList.add('open'); toggleBtn.classList.add('open'); }
+            if (storedState === 'open') { 
+                addFormWrapper.classList.add('open'); 
+                // toggleBtn.classList.add('open'); // -- BORTTAGEN --
+            }
         }
         
         // --- NYTT: Laddar sparad sortering och filter ---
@@ -722,7 +725,7 @@ document.addEventListener('DOMContentLoaded', () => {
             addForm.addEventListener('submit', handleFormSubmit);
             editForm.addEventListener('submit', handleEditSubmit);
             searchInput.addEventListener('input', applySearchFilter); 
-            toggleBtn.addEventListener('click', toggleAddForm);
+            // toggleBtn.addEventListener('click', toggleAddForm); // -- BORTTAGEN --
 
             // --- NYTT: FAB-knapp ---
             if (fabAddBtn) {
@@ -793,31 +796,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             });
 
-            // JSON-knappar (oförändrad, men använder nu Toast)
-            document.getElementById('download-json-btn').addEventListener('click', () => {
-                const dataStr = JSON.stringify(inventory, null, 2); const blob = new Blob([dataStr], {type: "application/json"});
-                const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = "lager_backup.json"; a.click(); URL.revokeObjectURL(url);
-                showToast('Lagerdata nedladdad!', 'success');
-            });
-            document.getElementById('upload-json-input').addEventListener('change', (event) => {
-                const file = event.target.files[0]; if (!file) return;
-                const reader = new FileReader();
-                reader.onload = async (e) => {
-                    try {
-                        const uploadedInventory = JSON.parse(e.target.result);
-                        if(Array.isArray(uploadedInventory)) {
-                            showCustomConfirmation(`Detta kommer att skriva över ${inventory.length} befintliga artiklar med ${uploadedInventory.length} artiklar från filen. Vill du fortsätta?`, async (result) => {
-                                if (result) {
-                                    for (const item of inventory) { await deleteInventoryItem(item.id); }
-                                    for (const item of uploadedInventory) { await saveInventoryItem(item); }
-                                    showToast(`${uploadedInventory.length} artiklar uppladdade!`, 'success');
-                                }
-                            }, 'Skriv över lager?', true);
-                        } else { showToast('Fel: JSON-filen är inte en giltig lista (array).', 'error'); }
-                    } catch(err) { showToast('Kunde inte läsa filen. Ogiltig JSON.', 'error'); }
-                };
-                reader.readText(file); event.target.value = '';
-            });
+            // --- JSON-KNAPPAR BORTTAGNA ---
+            // document.getElementById('download-json-btn').addEventListener('click', ... );
+            // document.getElementById('upload-json-input').addEventListener('change', ... );
 
             // Global sök-knappar (oförändrad)
             if (globalSearchBtn) { globalSearchBtn.addEventListener('click', (e) => { e.preventDefault(); handleGlobalSearch(); }); }
