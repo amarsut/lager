@@ -56,6 +56,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // NYA DOM-ELEMENT FÖR INSTÄLLNINGAR
         const toggleSettingsBtn = document.getElementById('toggle-settings-btn');
         const settingsWrapper = document.getElementById('settings-wrapper');
+        const downloadJsonBtn = document.getElementById('download-json-btn');
+        const uploadJsonInput = document.getElementById('upload-json-input');
 
         const HISTORY_KEY = 'globalSearchHistory';
         const MAX_HISTORY_ITEMS = 5;
@@ -63,7 +65,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // GLOBALA VARIABLER
         let inventory = []; 
         let selectedItemId = null;
-        let currentSort = { column: 'name', direction: 'desc' }; // Standard sortering
+        // Standard sortering är nu på "name" (A-Ö)
+        let currentSort = { column: 'name', direction: 'asc' }; 
         let confirmCallback = null; 
         
         // KORRIGERING: Definiera stoppord för naturligt språk-sökning (svenska)
@@ -71,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
         // ----------------------------------------------------------------------
-        // NY FUNKTION: UPPDATERA SORTERINGS-IKONER
+        // ÖNSKAD ÄNDRING: UPPDATERA SORTERINGS-IKONER
         // ----------------------------------------------------------------------
 
         /**
@@ -94,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
         // ----------------------------------------------------------------------
-        // NYA FUNKTIONER: INSTÄLLNINGAR
+        // ÖNSKAD ÄNDRING: INSTÄLLNINGAR
         // ----------------------------------------------------------------------
         
         /**
@@ -118,7 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       
         // ----------------------------------------------------------------------
-        // LÄNK-FUNKTIONER (OÄNDRADE)
+        // LÄNK-FUNKTIONER
         // ----------------------------------------------------------------------
 
         // Funktion för att spara en sökterm till localStorage
@@ -173,7 +176,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     // 1. Fyll i sökfältet
                     globalSearchInput.value = term;
                     
-                    // 2. Kör sökningen (använder den nya 'override'-funktionen)
+                    // 2. Kör sökningen
                     handleGlobalSearch(term);
                     
                     // 3. Scrolla upp till resultat
@@ -189,13 +192,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }).format(price);
         }
         
-        // --- UPPDATERAD LÄNKGENERERING FÖR AERO M ---
+        // --- ÅTERSTÄLLDA LÄNKGENERATORER ---
         function generateAeroMLink(serviceFilter) {
             if (!serviceFilter) return null;
-            // Tar bort alla mellanslag och bindestreck för att få en ren artikelnummer-sträng.
             const searchFilter = serviceFilter.replace(/[\s-]/g, ''); 
-            // Observera 'sök' i URL:en och inte 'search'.
-            // Den här strukturen baseras på dina exempellänkar.
             return `https://aeromotors.se/sok?s=${searchFilter}&layered_id_feature_1586%5B%5D=3&sort_by=price.asc`; 
         }
 
@@ -206,12 +206,10 @@ document.addEventListener('DOMContentLoaded', () => {
             return `https://www.trodo.se/catalogsearch/result/premium?filter[quality_group]=2&product_list_dir=asc&product_list_order=price&q=${searchQuery}`;
         }
         
-        // --- UPPDATERAD LÄNKGENERERING FÖR THANSEN ---
         function generateThansenLink(serviceFilter) {
             if (!serviceFilter) return null;
             const searchFilter = serviceFilter.replace(/[\s-]/g, ''); 
             const searchQuery = encodeURIComponent(searchFilter);
-            // Observera den uppdaterade sökvägen /bil/reservdelar/sok?query=
             return `https://www.thansen.se/search/?query=${searchQuery}`;
         }
 
@@ -236,7 +234,6 @@ document.addEventListener('DOMContentLoaded', () => {
         function generateBildelsbasenLink(serviceFilter) {
             if (!serviceFilter) return null;
             const searchFilter = encodeURIComponent(serviceFilter.replace(/[\s-]/g, ''));
-            // Bildelsbasen använder formatet /OEM/ARTIKELNUMMER
             return `https://bildelsbasen.se/sv-se/OEM/${searchFilter}`; 
         }
 
@@ -246,47 +243,12 @@ document.addEventListener('DOMContentLoaded', () => {
             return `https://reservdelar24.se/suche.html?keyword=${searchFilter}`;
         }
         
-        // Global funktion för att hantera dropdowns (MÅSTE vara global för att funka i onclick)
-        window.toggleDropdown = function(dropdownId) {
-            const dropdown = document.getElementById(dropdownId);
-            if (!dropdown) return;
-            
-            // Stäng alla andra öppna dropdowns
-            document.querySelectorAll('.dropdown-menu.visible').forEach(openDropdown => {
-                if (openDropdown.id !== dropdownId) {
-                    openDropdown.classList.remove('visible');
-                }
-            });
-
-            // Växla synligheten för den valda dropdownen
-            dropdown.classList.toggle('visible');
-        };
-
-        // NY global funktion för att stänga en specifik dropdown
-        window.closeDropdown = function(dropdownId) {
-            const dropdown = document.getElementById(dropdownId);
-            if (dropdown) {
-                dropdown.classList.remove('visible');
-            }
-        };
-
-        // Lyssnare för att stänga dropdowns när man klickar utanför (globalt i dokumentet)
-        document.addEventListener('click', (event) => {
-            // Kontrollera om klicket var inuti en 'link-dropdown-container' eller inte
-            if (!event.target.closest('.link-dropdown-container')) {
-                document.querySelectorAll('.dropdown-menu.visible').forEach(dropdown => {
-                    dropdown.classList.remove('visible');
-                });
-            }
-        });
-
-
         // ----------------------------------------------------------------------
-        // NY GLOBAL PRISJÄMFÖRELSE-FUNKTION (OÄNDRAD)
+        // GLOBAL PRISJÄMFÖRELSE-FUNKTION
         // ----------------------------------------------------------------------
         const externalSearchProviders = [
             { name: "Trodo", linkGenerator: generateTrodoLink, icon: "https://www.trodo.se/media/favicon/default/favicon-96x96.png" },
-            { name: "AeroMotors", linkGenerator: generateAeroMLink, icon: "https://aeromotors.se/img/favicon.ico?1678367017" }, // Bytt till PNG då ICO är svårt ibland
+            { name: "AeroMotors", linkGenerator: generateAeroMLink, icon: "https://aeromotors.se/img/favicon.ico?1678367017" }, 
             { name: "Thansen", linkGenerator: generateThansenLink, icon: "https://cdn.thg.dk/DAT/dom/img/logo-thg.ico" },
             { name: "Skruvat", linkGenerator: generateSkruvatLink, icon: "https://www.skruvat.se/favicon.ico" },
             { name: "Vorto.se", linkGenerator: generateVortoLink, icon: "https://www.vorto.se/favicon.ico" },
@@ -306,10 +268,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // SPARA SÖKTERM TILL HISTORIKEN (NYTT!)
+            // SPARA SÖKTERM TILL HISTORIKEN (ÖNSKAD ÄNDRING)
             saveSearchToHistory(searchTerm); 
-
-            const searchIconSVG = `<svg class="btn-search-icon" ... > ... </svg>`; // Behåll din befintliga SVG här.
 
             let resultsHTML = '<div class="global-search-results-links">';
             let hasLinks = false;
@@ -317,7 +277,6 @@ document.addEventListener('DOMContentLoaded', () => {
             externalSearchProviders.forEach(provider => {
                 const link = provider.linkGenerator(searchTerm);
                 if (link) {
-                    // Använd favicon och namnet i knappen (NYTT!)
                     const iconHTML = `<img src="${provider.icon}" alt="${provider.name}" class="link-favicon">`;
                     
                     resultsHTML += `<a href="${link}" target="_blank" class="lank-knapp">${iconHTML}${provider.name}</a>`;
@@ -340,7 +299,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 globalSearchResults.style.display = 'none';
             }
             
-            // Stäng-knapp (om du har den, annars ignorera)
+            // Stäng-knapp
             document.getElementById('global-search-close-btn').addEventListener('click', () => {
                 globalSearchResults.innerHTML = '';
                 globalSearchResults.style.display = 'none';
@@ -348,7 +307,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // ----------------------------------------------------------------------
-        // GRÄNSSNITT OCH HUVUDFUNKTIONER (OÄNDRADE)
+        // GRÄNSSNITT OCH HUVUDFUNKTIONER
         // ----------------------------------------------------------------------
 
         function createInventoryRow(item, isOutOfStock) {
@@ -371,55 +330,37 @@ document.addEventListener('DOMContentLoaded', () => {
             const thansenLink = generateThansenLink(item.service_filter);
             const egenLink = item.link; // Användardefinierad länk
             
-            let primaryButtonHTML = '';
-            let linkCellContent = '';
+            let linkCellContent = '<div class="link-buttons">'; 
 
-            // 1. Primär länk: Trodo (visas direkt, nu med neutral "lank-knapp" stil)
+            // Trodo (ÅTERSTÄLLD TILL NORMAL LÄNKKNAPP)
             if (trodoLink) {
-                primaryButtonHTML = `<button class="lank-knapp trodo-btn" onclick="window.open('${trodoLink}', '_blank'); event.stopPropagation();">Trodo</button>`;
+                linkCellContent += `<a href="${trodoLink}" target="_blank" class="lank-knapp trodo-btn" onclick="event.stopPropagation();">Trodo</a>`;
             }
-
-            // --- 2. UPPDATERAD LOGIK HÄR ---
-            // Bygg länkcellens innehåll
-            if (primaryButtonHTML) {
-                linkCellContent += primaryButtonHTML;
+            // Aero M
+            if (aeroMLink) {
+                linkCellContent += `<a href="${aeroMLink}" target="_blank" class="lank-knapp aero-m-btn" onclick="event.stopPropagation();">Aero M</a>`;
             }
-
-            // Kontrollera om det finns några sekundära länkar
-            const hasSecondaryLinks = aeroMLink || thansenLink || egenLink;
-
-            if (hasSecondaryLinks) {
-                // Skapa ID:t FÖRST
-                const dropdownId = `link-dropdown-${item.id}`;
-
-                // Bygg de sekundära knapparna NU, med ID:t
-                // Notera tillägget av closeDropdown('${dropdownId}') i varje onclick
-                let secondaryButtonsHTML = '';
-                if (aeroMLink) {
-                    secondaryButtonsHTML += `<button class="lank-knapp aero-m-btn" onclick="window.open('${aeroMLink}', '_blank'); closeDropdown('${dropdownId}'); event.stopPropagation();">Aero M</button>`;
-                }
-                if (thansenLink) {
-                    secondaryButtonsHTML += `<button class="lank-knapp thansen-btn" onclick="window.open('${thansenLink}', '_blank'); closeDropdown('${dropdownId}'); event.stopPropagation();">Thansen</button>`;
-                }
-                if (egenLink) {
-                    secondaryButtonsHTML += `<button class="lank-knapp egen-lank-btn" onclick="window.open('${egenLink}', '_blank'); closeDropdown('${dropdownId}'); event.stopPropagation();">Egen Länk</button>`;
-                }
-
-                // Skapa dropdown-behållaren
-                const dropdownContainer = `
-                    <div class="link-dropdown-container">
-                        <button class="lank-knapp more-btn" onclick="toggleDropdown('${dropdownId}'); event.stopPropagation();">Mer...</button>
-                        <div id="${dropdownId}" class="dropdown-menu">
-                            ${secondaryButtonsHTML}
-                        </div>
-                    </div>
-                `;
-                
-                // Lägg till dropdown-behållaren
-                linkCellContent += dropdownContainer;
+            // Thansen
+            if (thansenLink) {
+                linkCellContent += `<a href="${thansenLink}" target="_blank" class="lank-knapp thansen-btn" onclick="event.stopPropagation();">Thansen</a>`;
+            }
+            // Egen länk
+            if (egenLink) {
+                linkCellContent += `<a href="${egenLink}" target="_blank" class="lank-knapp" onclick="event.stopPropagation();">Egen Länk</a>`;
             }
             
-            const serviceFilterCell = `<span style="display: flex; align-items: center;"><span class="copy-btn" onclick="copyToClipboard('${item.service_filter}'); event.stopPropagation();" title="Kopiera artikelnummer">${item.service_filter}</span></span>`;
+            linkCellContent += '</div>';
+
+            // ARTIKELNUMMER HAR NU BARA KOPY-KNAPP OCH ÄR INTE KUCKBART I ÖVRIGT (ÅTERSTÄLLT TILL FÖRSTA TIPET)
+            const serviceFilterCell = `
+                <span style="display: flex; align-items: center; cursor: default;">
+                    <span class="copy-btn" onclick="copyToClipboard('${item.service_filter}'); event.stopPropagation();" title="Kopiera artikelnummer">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 14px; height: 14px;">
+                            <path d="M7.5 7.5a2.25 2.25 0 0 0 2.25 2.25h1.5a2.25 2.25 0 0 0 2.25-2.25v-.94l-3.375.375a3.75 3.75 0 0 1-3.375-3.75V1.5H9.75a3 3 0 0 1 3-3V.75h-.375c-.621 0-1.125.504-1.125 1.125v2.25c0 .621.504 1.125 1.125 1.125H18a2.25 2.25 0 0 0 2.25-2.25V5.5l1.683 1.683A2.25 2.25 0 0 1 22.5 9.172V17.25c0 3.038-2.462 5.5-5.5 5.5H6.75a3.75 3.75 0 0 1-3.75-3.75V13.5h1.5a.75.75 0 0 0 .75-.75V10.5h1.5a.75.75 0 0 0 .75-.75V8.25Z" />
+                        </svg>
+                        ${item.service_filter}
+                    </span>
+                </span>`;
 
             // Den sista div:en innehåller åtgärderna, som är den sticky-kolumnen
             row.innerHTML = `
@@ -435,8 +376,6 @@ document.addEventListener('DOMContentLoaded', () => {
             
             return row;
         }
-
-        // --- Resten av funktionerna (renderInventory, calculateRelevance, m.fl.) är desamma ---
 
         function renderInventory(data) {
             serviceArtiklarLista.innerHTML = '';
@@ -584,11 +523,12 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
         
-        // ... (handleRowSelect, copyToClipboard, closeConfirmationModal, handleAddSubmit, etc. - oändrade)
-        
         function handleRowSelect(id, row) {
             if (selectedItemId) {
-                document.querySelector(`.artikel-rad[data-id="${selectedItemId}"]`).classList.remove('selected');
+                const prevSelected = document.querySelector(`.artikel-rad[data-id="${selectedItemId}"]`);
+                if (prevSelected) {
+                    prevSelected.classList.remove('selected');
+                }
             }
             if (selectedItemId === id) {
                 selectedItemId = null;
@@ -763,17 +703,20 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         
-        // --- FILHANTERING (OÄNDRADE) ---
+        // --- FILHANTERING (NU INUTI INSTÄLLNINGAR) ---
         function handleDownloadJson() {
             const dataStr = JSON.stringify(inventory, null, 2);
             const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
 
             const exportFileDefaultName = 'lager_export.json';
 
-            const linkElement = document.getElementById('download-json-btn');
+            const linkElement = document.createElement('a');
             linkElement.setAttribute('href', dataUri);
             linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.style.display = 'none'; // Dölj elementet
+            document.body.appendChild(linkElement);
             linkElement.click();
+            document.body.removeChild(linkElement); // Ta bort det efter klick
         }
 
         function handleUploadJson(event) {
@@ -832,14 +775,14 @@ document.addEventListener('DOMContentLoaded', () => {
             editForm.addEventListener('submit', handleEditSubmit);
             toggleBtn.addEventListener('click', toggleAddForm);
             
-            // Lyssna på Inställningar-knappen (NYTT!)
+            // Lyssna på Inställningar-knappen
             if (toggleSettingsBtn) {
                 toggleSettingsBtn.addEventListener('click', toggleSettings);
             }
             
             // Lyssna på JSON-knapparna (nu flyttade till Inställningar)
-            document.getElementById('download-json-btn').addEventListener('click', handleDownloadJson);
-            document.getElementById('upload-json-input').addEventListener('change', handleUploadJson);
+            downloadJsonBtn.addEventListener('click', handleDownloadJson);
+            uploadJsonInput.addEventListener('change', handleUploadJson);
 
             // Sökfilter-lyssnare
             searchInput.addEventListener('input', applySearchFilter);
@@ -861,15 +804,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             });
 
-            // Sorteringslyssnare (UPPDATERAD!)
+            // Sorteringslyssnare (ÖNSKAD ÄNDRING)
             document.querySelectorAll('.header span[data-sort]').forEach(header => {
                 header.addEventListener('click', () => {
                     const column = header.getAttribute('data-sort');
-                    // Om vi klickar på samma kolumn, byt riktning. Annars sätt till standard DESC.
-                    const direction = (currentSort.column === column && currentSort.direction === 'desc') ? 'asc' : 'desc'; 
+                    // Om vi klickar på samma kolumn, byt riktning. Annars sätt till standard DESC (vanligast).
+                    const direction = (currentSort.column === column && currentSort.direction === 'asc') ? 'desc' : 'asc'; 
                     currentSort = { column, direction };
                     
-                    // 1. Uppdatera ikonerna (NYTT!)
+                    // 1. Uppdatera ikonerna
                     updateSortIcons(); 
 
                     // 2. Filtrera/sortera och rendera
@@ -921,7 +864,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
             
-            // Uppdatera sorteringsikonerna vid laddning (NYTT!)
+            // Uppdatera sorteringsikonerna vid laddning
             updateSortIcons();
         }
 
@@ -943,7 +886,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // KÖR ALLT I ORDNING
         initializeAddFormState(); 
-        initializeSettingsState(); // NYTT!
+        initializeSettingsState(); 
         initializeCollapseState();
         initializeListeners(); 
         renderSearchHistory();
