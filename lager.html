@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dynamisk Lagerförteckning med Firebase</title>
+    <title>Dynamisk Lagerförteckning</title>
     <style>
     /* Importerar Google Font "Inter" */
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
@@ -159,33 +159,6 @@
     input:checked ~ .sun-icon { opacity: 0; }
     input:checked ~ .moon-icon { opacity: 1; }
     /* --- SLUT NYTT TEMAVÄXLARE --- */
-
-    /* --- NYTT: Användar-Info/Logout --- */
-    .user-info-container {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-    #user-email-display {
-        font-size: 0.9em;
-        font-weight: 600;
-        color: var(--text-dark);
-        max-width: 120px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-    #logout-btn {
-        padding: 8px 15px;
-        font-size: 0.9em;
-        background-color: var(--danger-color);
-        color: white;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-    }
-    #logout-btn:hover { background-color: #c53030; }
-    /* --- SLUT NYTT --- */
     
     .main-content {
         width: 100%;
@@ -201,60 +174,7 @@
         opacity: 1;
     }
     
-    /* --- ÅTERSTÄLLD: Inloggningsskärm --- */
-    #login-box {
-        background-color: var(--card-bg);
-        padding: 40px 50px;
-        border-radius: 16px;
-        box-shadow: var(--card-shadow);
-        width: 100%;
-        max-width: 400px;
-        text-align: center;
-    }
-    #login-box h2 {
-        margin-top: 0;
-        margin-bottom: 25px;
-        color: var(--primary-dark);
-    }
-    [data-theme="dark"] #login-box h2 { color: var(--primary-color); }
-    .login-input-group {
-        text-align: left;
-        margin-bottom: 20px;
-    }
-    .login-input-group label {
-        display: block;
-        margin-bottom: 8px;
-        font-weight: 600;
-        font-size: 0.9em;
-    }
-    .login-input-group input {
-        width: 100%;
-        padding: 14px;
-        border: 1px solid var(--border-color);
-        border-radius: 8px;
-        background-color: var(--bg-light);
-        font-size: 1em;
-        box-sizing: border-box;
-        color: var(--text-dark);
-    }
-    .login-input-group input:focus {
-        border-color: var(--primary-color);
-        box-shadow: 0 0 0 4px rgba(90, 125, 255, 0.2);
-        background-color: var(--card-bg);
-        outline: none;
-    }
-    #login-btn {
-        width: 100%;
-        padding: 16px;
-        font-size: 1.1em;
-    }
-    #login-error {
-        color: var(--danger-color);
-        font-size: 0.9em;
-        margin-top: 15px;
-        display: none; 
-    }
-    /* --- SLUT ÅTERSTÄLLD: Inloggningsskärm --- */
+    /* HAR TAGIT BORT ALL INLOGGNINGSSTYLING */
 
     #initial-loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(5px); z-index: 9998; display: flex; justify-content: center; align-items: center; flex-direction: column; gap: 15px; transition: opacity 0.3s; }
     .loader-spinner { width: 50px; height: 50px; border: 5px solid var(--border-color); border-top-color: var(--primary-color); border-radius: 50%; animation: spin 1s linear infinite; }
@@ -495,7 +415,7 @@
     .detail-link a { color: var(--primary-color); text-decoration: none; word-break: break-all; }
     .detail-link a:hover { text-decoration: underline; }
     
-    /* --- ÅTERSTÄLLD: Audit Log styling --- */
+    /* --- ÅTERSTÄLLD: Audit Log styling (behölls för att bibehålla din begärda funktion) --- */
     .audit-log-container { 
         margin-top: 30px; 
         max-height: 200px; 
@@ -538,14 +458,19 @@
     </style>
 </head>
 <body data-theme="light"> 
+    
+    <div id="initial-loader" style="display: none;">
+        <div class="loader-spinner"></div>
+        <p>Laddar data...</p>
+    </div>
 
-    <nav class="navbar" id="app-navbar" style="display: none;">
+    <nav class="navbar" id="app-navbar"> 
         <div class="navbar-content">
             <div class="navbar-left">
                 <div class="logo-container">
                     <h1>LAGERDATABAS</h1>
                 </div>
-                </div>
+            </div>
             <div class="navbar-right">
                  <div id="theme-switcher" title="Växla Ljust/Mörkt läge">
                     <label class="switch">
@@ -556,11 +481,6 @@
                     <span class="slider-icon moon-icon">🌙</span>
                 </div>
 
-                <div class="user-info-container">
-                    <span id="user-email-display"></span>
-                    <button id="logout-btn">Logga ut</button>
-                </div>
-
                 <button id="toggle-add-form-btn" class="nav-icon-btn" title="Lägg till ny artikel">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M11 11V5H13V11H19V13H13V19H11V13H5V11H11Z" />
@@ -569,12 +489,7 @@
             </div>
         </div>
     </nav>
-    <div id="initial-loader" style="display: none;">
-        <div class="loader-spinner"></div>
-        <p>Laddar data...</p>
-    </div>
-
-    <div class="main-content" id="main-app-content">
+    <div class="main-content visible" id="main-app-content"> 
         
         <div id="add-form-wrapper">
             <form id="add-article-form">
@@ -783,4 +698,3 @@
 
 </body>
 </html>
-
