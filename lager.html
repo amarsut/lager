@@ -84,35 +84,6 @@
     #add-form-wrapper.open { max-height: 1000px; opacity: 1; }
     #toggle-add-form-btn #toggle-icon-form { display: inline-block; transition: transform 0.3s ease-in-out; margin-left: 8px; font-size: 1.1em; line-height: 1; }
     #toggle-add-form-btn.open #toggle-icon-form { transform: rotate(180deg); }
-    
-    /* NY CSS för Inställningar */
-    #settings-wrapper { 
-        max-height: 0; 
-        overflow: hidden; 
-        transition: max-height 0.4s ease-out, opacity 0.4s ease-out; 
-        opacity: 0; 
-        margin-top: -10px; 
-        margin-bottom: 0; 
-    }
-    #settings-wrapper.open { 
-        max-height: 1000px; 
-        opacity: 1; 
-        margin-top: 20px;
-    }
-    #toggle-settings-btn #toggle-icon-settings { 
-        display: inline-block; 
-        transition: transform 0.3s ease-in-out; 
-        margin-left: 8px; 
-        font-size: 1.1em; 
-        line-height: 1; 
-    }
-    #toggle-settings-btn.open #toggle-icon-settings { 
-        transform: rotate(180deg); 
-    }
-    .json-controls { 
-        display: block; 
-    }
-    /* Slut NY CSS för Inställningar */
 
     #add-article-form {
         display: grid;
@@ -141,6 +112,7 @@
     letter-spacing: 0.5px;
     text-transform: uppercase;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    /* LÄGG TILL DENNA RAD */
     box-sizing: border-box; 
 }
     .btn-secondary {
@@ -154,16 +126,16 @@
     font-weight: 600;
     text-align: center;
     font-size: 0.9em;
+    /* LÄGG TILL DENNA RAD */
     box-sizing: border-box; 
 }
-    .btn-secondary:hover {
-        background-color: #f0f0f0;
-    }
 
     .controls-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; width: 100%; }
     .controls-bar.top-controls { margin-top: 40px; margin-bottom: 30px; justify-content: flex-start; gap: 20px; align-items: center; }
-    
+    .json-controls { display: flex; gap: 10px; align-items: center; }
     #sync-status { font-weight: 600; font-size: 0.9em; padding-left: 20px; border-left: 1px solid var(--border-color); margin-left: 10px; }
+
+    /* ... befintlig CSS ... */
 
     #search-input {
         width: 100%;
@@ -177,6 +149,7 @@
         background-repeat: no-repeat;
         background-position: 15px center; 
         background-size: 16px 16px; 
+        /* UPDATERA DENNA RAD: Öka vänster-padding för att ge plats åt ikonen */
         padding: 12px 40px 12px 45px;
         
         background-color: var(--bg-light); 
@@ -188,99 +161,48 @@
         /* Ny wrapper för sökfältet */
 .search-wrapper {
     position: relative;
-    width: 350px; 
+    width: 350px; /* Samma bredd som sökfältet hade innan */
 }
 
 /* "X"-knappen inuti sökfältet */
 #clear-search-btn {
     position: absolute;
     top: 50%;
-    right: 1px; 
+    right: 1px; /* Justera för att passa snyggt */
     transform: translateY(-50%);
     background: none;
     border: none;
-    font-size: 1.8em; 
+    font-size: 1.8em; /* Storlek på '×' */
     color: #888;
     cursor: pointer;
     padding: 0 12px;
     line-height: 1;
-    display: none; 
+    display: none; /* Dold som standard */
 }
 #clear-search-btn:hover {
     color: var(--text-dark);
 }
         
+    /* ... befintlig CSS ... */
+    
     @media (max-width: 768px) {
-        .controls-bar.top-controls {
-            flex-wrap: wrap;
-            justify-content: space-between;
-        }
-        #toggle-add-form-btn, #toggle-settings-btn {
-            width: calc(50% - 10px);
-            font-size: 0.9em;
-            padding: 12px 15px;
-        }
-        #sync-status {
-            width: 100%;
-            margin-top: 15px;
-            text-align: center;
-            border-left: none;
-            padding-left: 0;
-            margin-left: 0;
-            order: 3; 
+        /* ... befintlig media-query CSS ... */
+
+        /* Sökfältet tar redan 100% bredd, vilket är korrekt */
+        #search-input { 
+            width: 100%; 
+            /* margin-top: 15px; */ /* <-- TA BORT DENNA */
         }
         .search-wrapper { 
             width: 100%;
-            margin-top: 15px;
+            margin-top: 15px; /* <-- LÄGG TILL DENNA */
         }
     }
         
     .lager-wrapper { overflow-x: auto; margin-bottom: 25px; }
     .lager-container { background-color: var(--card-bg); border-radius: 16px; box-shadow: var(--card-shadow); margin-bottom: 40px; border: 1px solid var(--border-color); position: relative; max-height: 450px; overflow-y: auto; min-width: min-content; }
     
-    .header, .artikel-rad { grid-template-columns: 180px 200px 100px 80px 80px minmax(150px, 1.5fr) 140px 160px; padding: 10px 20px; align-items: center; font-size: 0.85em; display: grid; }
-    .header { 
-        position: sticky; 
-        top: 0; 
-        z-index: 100; 
-        font-weight: 700; 
-        background-color: #eef1f5; 
-        color: var(--text-dark); 
-        border-bottom: 2px solid var(--border-color); 
-        text-transform: uppercase; 
-        letter-spacing: 0.5px; 
-    }
-    
-    /* NYA STYLAR FÖR SORTERING */
-    .sort-icon {
-        display: inline-block;
-        width: 0;
-        height: 0;
-        margin-left: 5px;
-        border-left: 4px solid transparent;
-        border-right: 4px solid transparent;
-        opacity: 0.3; 
-        transition: opacity 0.2s;
-        transform: translateY(1px); 
-    }
-
-    .header span[data-sort]:hover .sort-icon {
-        opacity: 0.6; 
-    }
-
-    /* Pil uppåt för DESC (Standard: mest relevant/högst värde först) */
-    .sort-icon.desc {
-        border-top: 4px solid var(--text-dark); 
-        opacity: 1; 
-    }
-
-    /* Pil nedåt för ASC */
-    .sort-icon.asc {
-        border-bottom: 4px solid var(--text-dark); 
-        opacity: 1; 
-    }
-    /* SLUT NYA STYLAR FÖR SORTERING */
-
+    .header, .artikel-rad { grid-template-columns: 180px 200px 100px 80px 80px minmax(150px, 1.5fr) 140px 160px; padding: 10px 20px; align-items: center; font-size: 0.85em; display: grid; }    .header { position: sticky; top: 0; z-index: 100; font-weight: 700; background-color: #eef1f5; color: var(--text-dark); border-bottom: 2px solid var(--border-color); text-transform: uppercase; letter-spacing: 0.5px; }
     .header span[data-sort] { cursor: pointer; user-select: none; }
     .header > span { display: flex; align-items: center; min-height: 1.8em; padding-right: 15px; }
     .header > span, .artikel-rad > span, .artikel-rad > div { padding-right: 10px; }
@@ -303,67 +225,57 @@
     .service-filter-cell { display: flex; align-items: center; gap: 5px; overflow: hidden; width: 100%; }
     .service-filter-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex-grow: 1; }
     .notes-cell { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: help; }
-    /* UPPDATERAT: Kopieringsknappen använder nu en Ikon i stället för text */
-    .copy-btn { 
-        background: #eef1f5; 
-        border: 1px solid var(--border-color); 
-        border-radius: 4px; 
-        cursor: pointer; 
-        color: var(--primary-dark); 
-        font-size: 0.9em; 
-        padding: 3px 5px; 
-        line-height: 1; 
-        opacity: 0.9; 
-        transition: opacity 0.2s, transform 0.1s, background 0.2s; 
-        flex-shrink: 0; 
-        
-        /* NYTT: För att visa artikelnumret och kopieringsikonen */
-        display: flex;
-        align-items: center;
-        gap: 5px;
-        padding: 5px 8px; /* Lite mer padding */
-    }
-    .copy-btn:hover { opacity: 1; transform: scale(1.02); background: #dce3eb; border-color: #dce3eb; }
-    
+    .copy-btn { background: #eef1f5; border: 1px solid var(--border-color); border-radius: 4px; cursor: pointer; color: var(--primary-dark); font-size: 0.9em; padding: 3px 5px; line-height: 1; opacity: 0.9; transition: opacity 0.2s, transform 0.1s, background 0.2s; flex-shrink: 0; }
+    .copy-btn:hover { opacity: 1; transform: scale(1.05); background: var(--primary-color); color: white; border-color: var(--primary-color); }
+
     .action-buttons { display: flex; gap: 8px; justify-content: flex-start; }
     .link-buttons { 
         display: flex; 
-        flex-wrap: wrap; /* Låter knapparna radbryta */
-        gap: 8px; 
+        gap: 8px; /* Avstånd mellan knapparna */
         align-items: center;
         width: 100%;
     }
     .aero-m-btn {
-        background-color: white; 
-        color: #4CAF50; 
+        background-color: #4CAF50; /* Ny distinkt färg för Aero M, t.ex. grön */
+        color: white;
         border: 1px solid #4CAF50;
     }
     .aero-m-btn:hover {
-        background-color: #4CAF50;
-        color: white;
+        background-color: #388E3C;
+        border-color: #388E3C;
     }
     .thansen-btn {
-        background-color: white; 
-        color: #008080; 
+        background-color: #008080; /* En turkos färg för Thansen */
+        color: white;
         border: 1px solid #008080;
     }
     .thansen-btn:hover {
-        background-color: #008080;
-        color: white;
+        background-color: #006060;
+        border-color: #006060;
     }
-    /* ÅTERSTÄLLT: Trodo-knappen använder nu standard stilen igen */
-    .trodo-btn {
+    .lank-knapp, .edit-btn, .delete-btn, .order-btn { padding: 6px 10px; border: 1px solid transparent; border-radius: 6px; cursor: pointer; font-size: 0.8em; font-weight: 600; transition: all 0.2s; text-align: center; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); }
+    .lank-knapp { 
+        /* Detta är din standardstil: Vit bakgrund, blå/primär färg */
         background-color: white; 
         color: var(--primary-color); 
         border: 1px solid var(--primary-color);
+        padding: 6px 10px; 
+        border-radius: 6px; 
+        cursor: pointer; 
+        font-size: 0.8em; 
+        font-weight: 600; 
+        transition: all 0.2s; 
+        text-align: center; 
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); 
+        /* NYTT: För att <a>-taggar ska se ut som knappar */
+        text-decoration: none;
+        display: inline-block;
     }
-    .trodo-btn:hover {
+    .lank-knapp:hover { 
         background-color: var(--primary-color); 
         color: white; 
+        border-color: var(--primary-color); /* För att förhindra hopp vid hover */
     }
-
-    .lank-knapp, .edit-btn, .delete-btn, .order-btn { padding: 6px 10px; border: 1px solid transparent; border-radius: 6px; cursor: pointer; font-size: 0.8em; font-weight: 600; transition: all 0.2s; text-align: center; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); text-decoration: none; display: inline-block; box-sizing: border-box; }
-    
     .edit-btn, .order-btn { background-color: var(--primary-color); color: white; }
     .edit-btn:hover, .order-btn:hover { background-color: var(--primary-dark); }
     .delete-btn { background-color: white; color: var(--danger-color); border: 1px solid var(--danger-color); }
@@ -379,7 +291,7 @@
         top: 0; 
         width: 100%; 
         height: 100%; 
-        overflow: auto; 
+        overflow: auto; /* Detta är viktigt för att användaren ska kunna scrolla om innehållet är för långt */
         background-color: rgba(0,0,0,0.6); 
         display: none; 
         justify-content: center; 
@@ -395,170 +307,509 @@
         box-shadow: 0 20px 50px rgba(0,0,0,0.4); 
         animation: fadeIn 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55); 
         
-        max-height: 90vh; 
-        overflow-y: auto; 
+        /* --- NYTT: Begränsa maximal höjd på modalen --- */
+        max-height: 90vh; /* Sätt maxhöjden till 90% av viewport-höjden */
+        overflow-y: auto; /* Gör att modalkontent kan scrolla om den är för hög */
         position: relative;
     }
     @keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
-    .modal-content h3 { color: var(--text-dark); margin-bottom: 25px; font-weight: 700; font-size: 1.5em; }
+    .modal-content h3 { color: var(--primary-dark); border-bottom: 2px solid var(--border-color); padding-bottom: 10px; margin-top: 0; font-size: 1.5em; }
     .modal-content label { display: block; margin-top: 15px; margin-bottom: 8px; font-weight: 600; color: var(--text-dark); font-size: 0.9em; }
     .modal-content input, .modal-content select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
     .modal-content button { margin-top: 30px; width: 100%; }
     .close-btn { 
-        position: absolute; 
-        top: 15px; 
-        right: 15px; 
+        /* float: right; */ /* Ta bort float för bättre flexibilitet */
+        position: absolute; /* VIKTIGT: Positionera den absolut inuti modal-content */
+        top: 15px; /* Avstånd från toppen */
+        right: 15px; /* Avstånd från höger */
         font-size: 28px; 
         cursor: pointer; 
         font-weight: bold; 
-        z-index: 10; 
-        color: var(--text-dark); 
-    }
+        z-index: 10; /* Se till att den ligger över allt annat */
+        color: var(--text-dark); /* Ändra färg för att synas bättre */
+    }    
     #productPopup { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; }
     #productPopup iframe { width: 90%; height: 90%; position: absolute; top: 5%; left: 5%; border: 2px solid white; border-radius: 10px; }
     #productPopup .close-btn { position: absolute; top: 15px; right: 35px; color: white; font-size: 40px; cursor: pointer; }
-    @media (max-width: 768px) { 
-        body { padding: 20px 10px; } 
+
+    @media (max-width: 768px) {
+        body { padding: 20px 10px; }
         h1 { font-size: 2em; margin-bottom: 25px; }
-        .controls-bar.top-controls { margin-top: 20px; margin-bottom: 20px; }
-        .header, .artikel-rad { grid-template-columns: 140px 150px 80px 70px 70px 100px 100px 120px; font-size: 0.8em; padding: 8px 15px; }
-        .action-buttons { gap: 4px; }
-        .link-buttons { gap: 4px; }
-        .lager-container { overflow-x: scroll; }
-        .modal-content { padding: 30px 20px; }
+        h2 { font-size: 1.4em; margin-top: 30px; }
+
+        /* * DETTA ÄR DEN VIKTIGA FIXEN:
+         * Vi ändrar 'align-items: stretch' (som fanns i din lager.html) 
+         * till 'align-items: flex-start' (som fanns i din lager-backup.html).
+         * Detta gör att elementen blir vänsterjusterade och får sin naturliga höjd.
+         */
+        .controls-bar, 
+        .controls-bar.top-controls { 
+            flex-direction: column; 
+            align-items: flex-start; /* <--- HÄR ÄR ÄNDRINGEN */
+            gap: 15px; 
+        }
+
+        /* * Detta tvingar knapparna och JSON-kontrollerna att ta 100% bredd 
+         * och stackas snyggt, precis som i din gamla fil.
+         */
+        .controls-bar.top-controls > button,
+        .controls-bar.top-controls .json-controls,
+        .controls-bar.top-controls #sync-status {
+            width: 100%;
+            box-sizing: border-box; /* Bra att ha för att undvika padding-problem */
+        }
+        
+        .json-controls { 
+            flex-direction: column; 
+            width: 100%; /* Se till att denna grupp också tar full bredd */
+        }
+        
+        .json-controls button, 
+        .json-controls label { 
+            width: 100%; 
+            text-align: center; 
+        }
+
+        /* Detta vänsterjusterar sync-texten, istället för att centrera den */
+        #sync-status { 
+            border-left: none; 
+            padding-left: 0; 
+            text-align: left; /* <--- HÄR ÄR ÄNDRINGEN */
+        }
+
+        /* Sökfältet tar redan 100% bredd, vilket är korrekt */
+        #search-input { 
+            width: 100%; 
+            /* margin-top: 15px; */ /* <-- DENNA ÄR BORTTAGEN */
+        }
+        .search-wrapper { 
+            width: 100%;
+            margin-top: 15px; /* <-- OCH FLYTTAD HIT */
+        }
     }
+        .search-btn {
+        background: #eef1f5;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        cursor: pointer;
+        color: var(--primary-color);
+        font-size: 0.9em;
+        padding: 3px 5px;
+        line-height: 1;
+        opacity: 0.9;
+        transition: opacity 0.2s, transform 0.1s, background 0.2s;
+        flex-shrink: 0;
+        margin-right: 5px; /* Skapar lite avstånd till kopieringsknappen */
+    }
+    .search-btn:hover { 
+        opacity: 1; 
+        transform: scale(1.05); 
+        background: var(--primary-color); 
+        color: white; 
+        border-color: var(--primary-color); 
+    }
+    /* SVG för förstoringsglaset */
+    .search-btn svg {
+        fill: currentColor;
+        vertical-align: middle;
+        width: 14px;
+        height: 14px;
+    }
+        /* --- LÄGG TILL DESSA REGLER --- */
+
+/* Fixar att den horisontella scrollen blir smidigare på touch-enheter */
+.lager-wrapper { 
+    -webkit-overflow-scrolling: touch; 
+    overflow-x: auto; 
+    margin-bottom: 25px; 
+}
+
+/* 1. Definiera åtgärds-kolumnerna som sticky */
+.header > span:last-child, 
+.artikel-rad > div:last-child {
+    position: sticky;
+    right: 0; /* Lås den till högerkant */
+    z-index: 50; /* Lägre än Sticky Header, högre än resten av innehållet */
+    padding-right: 20px; /* Lägg till extra padding för att det ska se snyggt ut */
+    background-color: inherit; /* Viktigt: så att den döljer innehållet när man scrollar */
+}
+
+/* 2. Fixa bakgrundsfärgen på header-kolumnen */
+.header > span:last-child {
+    background-color: #eef1f5; /* Samma färg som header-raden */
+    border-left: 1px solid var(--border-color); /* Visuell separation */
+}
+
+/* 3. Fixa bakgrundsfärgen på artikel-raden */
+.artikel-rad > div:last-child {
+    background-color: var(--card-bg); /* Samma färg som artikelradens bakgrund */
+}
+
+/* 4. Fixa hover-effekten */
+.artikel-rad:hover > div:last-child {
+    background-color: #f8faff; /* Samma hover-färg som raden */
+}
+        /* --- LÄNK-KNAPPAR OCH DROPDOWN STYLING --- */
+
+/* Container för Mer-knappen (Måste vara relative för att positionera dropdownen) */
+.link-dropdown-container {
+    position: relative;
+    display: inline-block;
+    margin-left: 5px; /* Litet avstånd från Trodo-knappen */
+}
+
+/* Stilen för Dropdown-menyn */
+.dropdown-menu {
+    display: none; 
+    position: absolute;
+    right: 0; 
+    top: 100%; 
+    z-index: 10;
+    min-width: 120px;
+    background-color: var(--card-bg); 
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+    padding: 5px;
+    margin-top: 5px; 
+    flex-direction: column; 
+    white-space: nowrap;
+}
+
+/* Visar menyn när klassen 'visible' läggs till av JS */
+.dropdown-menu.visible {
+    display: flex;
+}
+
+/* Styla knapparna inuti dropdownen */
+.dropdown-menu .lank-knapp {
+    width: 100%;
+    margin: 3px 0;
+    text-align: center;
+    padding: 8px 12px;
+    font-size: 0.8em; 
+    box-shadow: none; /* Ta bort skuggor inuti menyn */
     
+    /* OBS: Tvingar dropdown-knapparna att ÄVEN vara standard vit/blå: */
+    background-color: white !important;
+    color: var(--primary-color) !important; 
+    border: 1px solid var(--primary-color) !important;
+}
+        
+.dropdown-menu .lank-knapp:hover {
+    background-color: var(--primary-color) !important; 
+    color: white !important; 
+}
+
+/* Färger för länkknapparna inuti dropdownen (använd samma färger som du hade) */
+.dropdown-menu .aero-m-btn { background-color: #4CAF50; color: white; }
+.dropdown-menu .aero-m-btn:hover { background-color: #388E3C; }
+
+.dropdown-menu .thansen-btn { background-color: #008080; color: white; }
+.dropdown-menu .thansen-btn:hover { background-color: #006060; }
+
+.dropdown-menu .egen-lank-btn { background-color: #5a7dff; color: white; } /* Primärfärg för egen länk */
+.dropdown-menu .egen-lank-btn:hover { background-color: #3a57e8; }
+
+
+/* Stil för Mer-knappen */
+.more-btn {
+    background-color: #f0f0f0; /* Ljusgrå bakgrund */
+    color: var(--text-dark);
+    border: 1px solid #c0c0c0;
+    padding: 6px 10px;
+    font-size: 0.8em;
+}
+.more-btn:hover {
+    background-color: #cccccc;
+    color: var(--text-dark);
+}
+
+/* Standardstilen för Trodo-knappen (visas direkt) */
+.trodo-btn {
+    background-color: #FFA500;
+    color: white;
+    border: 1px solid #FFA500;
+}
+.trodo-btn:hover {
+    background-color: #CC8400;
+    border-color: #CC8400;
+}
+
+    /* --- STILAR FÖR NY GLOBAL SÖKRUTA --- */
     .global-search-container {
-        padding: 25px;
         background-color: var(--card-bg);
-        border-radius: 16px; 
+        border-radius: 16px;
         box-shadow: var(--card-shadow);
+        padding: 30px 35px;
         margin-bottom: 40px;
         border: 1px solid var(--border-color);
     }
-    .global-search-container p { margin-top: 0; font-size: 0.95em; color: #4b5563; }
-    .global-search-inputs { display: flex; gap: 10px; align-items: center; }
-    #global-search-input { 
-        padding: 12px; 
-        border: 1px solid var(--border-color); 
-        border-radius: 8px; 
-        flex-grow: 1;
+    .global-search-container h3 {
+        margin-top: 0;
+        margin-bottom: 10px;
+        color: var(--primary-dark);
+        font-size: 1.5em;
+        font-weight: 700;
+    }
+    .global-search-container p {
+        margin-top: 0;
+        margin-bottom: 25px;
+        font-size: 0.95em;
+        color: var(--text-dark);
+    }
+    .global-search-wrapper {
+        display: flex;
+        gap: 15px;
+        width: 100%;
+    }
+    #global-search-input {
+        /* Dina befintliga stilar (padding, border, etc.) */
+        padding: 10px 15px;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
         font-size: 1em;
-        transition: border-color 0.2s, box-shadow 0.2s;
-    }
-    #global-search-input:focus { border-color: var(--primary-color); box-shadow: 0 0 0 4px rgba(90, 125, 255, 0.2); outline: none; }
     
-    @media (max-width: 600px) {
-        .global-search-inputs {
-            flex-direction: column;
-            gap: 15px;
-        }
-        #global-search-input {
-            width: 100%;
-            flex-grow: 0;
-        }
-        #global-search-btn { 
-            width: 100%; 
-        }
+        /* DEN VIKTIGA ÄNDRINGEN HÄR: */
+        flex-grow: 1; /* Gör att fältet tar upp allt tillgängligt utrymme */
+        /* Slut på ändringen */
     }
+    #global-search-input:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 4px rgba(90, 125, 255, 0.2);
+        background-color: white;
+        outline: none;
+    }
+    .search-input-group {
+        display: flex; /* Aktivera flexbox för att justera input och knapp */
+        gap: 10px;    /* Litet mellanrum mellan fält och knapp */
+        margin-bottom: 10px; /* Separera från historiken/resultaten */
+    }
+    #global-search-btn {
+        padding: 16px 30px; /* Matcha höjden på input */
+        font-size: 1em;
+        flex-shrink: 0; /* Förhindra att knappen krymper */
+    }
+    .global-search-results-wrapper {
+        margin-top: 25px;
+        padding-top: 20px;
+        border-top: 2px solid var(--border-color);
+        position: relative;
+    }
+    /*.global-search-results-links {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        margin-bottom: 20px; 
+    }*/
+    .global-search-results-links {
+        display: flex;
+        flex-wrap: wrap; /* Låter knapparna flöda på datorn */
+        gap: 10px;
+        margin-bottom: 20px; 
+    }
+    .btn-search-icon {
+        /* NYCKELN: Sätter storleken till 1.1 gånger textstorleken */
+        width: 1.0em; 
+        height: 1.0em;
     
-    .global-search-results-links { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
-    .btn-search-icon { width: 1.0em; height: 1.0em; margin-right: 6px; color: currentColor; vertical-align: middle; position: relative; top: -1px; }
+        margin-right: 6px; /* Avstånd mellan ikon och text */
+        color: currentColor; /* Använder knappens textfärg */
+    
+        /* Justering för att centrera ikonen vertikalt */
+        vertical-align: middle;
+        position: relative;
+        top: -1px; 
+    }
     /* Återanvänd 'lank-knapp' stilen men gör den större och applicera färgerna */
-    .global-search-results-links .lank-knapp { 
-        display: inline-flex; 
+    .global-search-results-links .lank-knapp {
+        display: inline-flex;
         align-items: center; 
         justify-content: center; 
-        padding: 4px 8px; 
-        font-size: 0.80em; 
-        border-radius: 6px; 
-        text-decoration: none; 
-        font-weight: 600; 
-        transition: background-color 0.15s; 
+    
+        /* --- ÄNDRING HÄR --- */
+        padding: 4px 8px; /* Minskar höjden och bredden */
+        font-size: 0.80em;  /* Gör texten lite mindre */
+        /* ------------------- */
+    
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: background-color 0.15s;
     }
-    #global-search-results { 
-        position: relative; 
+    #global-search-results {
+        position: relative; /* VIKTIGT: Fäster X-knappen här */
         top: 100%; 
-        left: 0; 
-        right: 0; 
-        z-index: 1000; 
-        background-color: var(--card-bg); 
-        border: 1px solid var(--border-color); 
-        box-shadow: var(--card-shadow); 
-        padding: 15px; 
-        border-radius: 8px; 
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        box-shadow: var(--card-shadow);
+        padding: 15px;
+        border-radius: 8px;
         display: none; 
+    
+        /* Ger utrymme till höger i rutan så att knappen 'X' kan ligga där */
         padding-right: 45px; 
     }
-    #global-search-close-btn { position: absolute; top: 8px; right: 10px; font-size: 2em; cursor: pointer; color: #888; }
-    #global-search-close-btn:hover { color: var(--text-dark); }
-    .search-disclaimer-text { font-size: 0.8em; color: #6b7280; margin-top: -10px; }
-    .orange-asterisk { color: var(--warning-color); font-weight: 700; font-size: 1.1em; margin-left: 3px; vertical-align: top; line-height: 1; display: inline-block; } 
+    #global-search-close-btn {
+    position: absolute; /* Tas ut ur det normala flödet */
+    top: 8px; /* Flytta ner från toppen */
+    right: 10px; /* Flytta in från höger */
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: var(--text-dark);
+    cursor: pointer;
+    line-height: 1; 
+    padding: 0;
+    width: 30px; 
+    height: 30px;
+    text-align: center;
+    z-index: 1001; /* Säkerställer att den ligger över länkarna */
+}
+        /* 4. MOBIL SPECIFIK JUSTERING (om nödvändig) */
+    /* Använd en media query för att finjustera på små skärmar */
+    @media (max-width: 600px) {
+        .global-search-results-links {
+            padding-right: 40px; /* Skapar utrymme till höger för 'X'-knappen */
+        }
+        #global-search-close-btn {
+            top: 5px; 
+            right: 5px; 
+        }
+    }
+    #global-search-close-btn:hover {
+        color: var(--text-dark);
+    }
+    /* Media query för global sök */
+    @media (max-width: 768px) {
+        .global-search-container {
+             padding: 20px;
+        }
+        .global-search-wrapper {
+            flex-direction: column;
+        }
+        #global-search-btn {
+            width: 100%;
+        }
+        .global-search-results-links {
+            display: grid;                 
+            grid-template-columns: repeat(2, 1fr); /* Tvinga till 2 kolumner */
+        }
+        /* NY REGEL FÖR ATT FIXA BREDDEN PÅ MOBILEN */
+    .search-input-group {
+        width: 100%; /* Se till att hela gruppen tar 100% */
+        box-sizing: border-box; 
+    }
     
-    .search-history-container { margin-top: 5px; margin-bottom: 5px; display: flex; flex-wrap: wrap; gap: 8px; font-size: 0.9em; }
-    .history-item { padding: 4px 10px; background-color: var(--border-color); /* Lätt grå */ color: var(--text-dark); border-radius: 20px; cursor: pointer; transition: background-color 0.15s, transform 0.15s; font-weight: 500; }
-    .history-item:hover { background-color: #d1d5db; /* Mörkare grå vid hovring */ transform: translateY(-1px); }
-    .link-favicon { width: 16px; height: 16px; margin-right: 8px; vertical-align: middle; border-radius: 2px; /* Kan ge en snyggare look */ } 
+    #global-search-input {
+        flex-grow: 1; /* Tvinga sökrutan att ta allt utrymme bredvid knappen */
+    }
     
-    /* Ny stil för logotypbilden */
-    #header-logo-img { 
-        max-width: 450px; 
-        width: 100%; 
-        display: block; 
-        margin-left: auto; 
-        margin-right: auto; 
-        padding-bottom: 15px; 
-    } 
-    header { text-align: center; padding: 20px 0; /* Justera padding efter behov */ } 
+    /* VALFRITT: Gör knappen lite mindre på mobilen för att spara plats */
+    #global-search-btn {
+        padding: 10px 15px; /* Mindre padding */
+        font-size: 0.9em;
+    }
+    }
+    .orange-asterisk {
+        color: var(--warning-color); /* Använder din definierade orange/varningsfärg */
+        font-weight: 700; /* Gör den extra synlig */
+        font-size: 1.1em; /* Gör den lite större än texten */
+        margin-left: 3px; /* Skapar lite avstånd från texten */
+        vertical-align: top; 
+        line-height: 1;
+        display: inline-block;
+    }
+    /* --- SLUT STILAR FÖR NY GLOBAL SÖKRUTA --- */
+    .search-history-container {
+        margin-top: 5px;
+        margin-bottom: 5px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        font-size: 0.9em;
+    }
+
+    .history-item {
+        padding: 4px 10px;
+        background-color: var(--border-color); /* Lätt grå */
+        color: var(--text-dark);
+        border-radius: 20px;
+        cursor: pointer;
+        transition: background-color 0.15s, transform 0.15s;
+        font-weight: 500;
+    }
+
+    .history-item:hover {
+        background-color: #d1d5db; /* Mörkare grå vid hovring */
+        transform: translateY(-1px);
+    }
+    .link-favicon {
+        width: 16px;
+        height: 16px;
+        margin-right: 8px;
+        vertical-align: middle;
+        border-radius: 2px; /* Kan ge en snyggare look */
+    }
+        /* Ny stil för logotypbilden */
+#header-logo-img {
+    /* Basstorlek för Desktop */
+    max-width: 450px; /* Välj en maxbredd som passar på stora skärmar (t.ex. 400px - 500px) */
+    width: 100%;      /* Tvingar bilden att ta upp 100% av det tillgängliga utrymmet, upp till max-width */
+    /* height: auto; Säkerställer att höjden skalas korrekt */
+    display: block;   /* Används för att ta bort extra marginaler under bilden */
+    
+    /* Centrera bilden i Headern */
+    margin-left: auto;
+    margin-right: auto;
+
+    /* Lite luft runt omkring */
+    padding-bottom: 15px; 
+}
+
+/* Säkerställ att headern är centrerad (om du vill ha bilden centrerad på sidan) */
+header {
+    text-align: center; 
+    padding: 20px 0; /* Justera padding efter behov */
+}
     </style>
-    <link rel="manifest" href="./manifest.json">
+<link rel="manifest" href="./manifest.json">
+    
     <link rel="apple-touch-icon" href="images/192x192.png">
+    
     <meta name="theme-color" content="#5a7dff"/>
 </head>
 <body>
+
     <div class="main-content">
         <img src="images/background.png" alt="Lagerdata & Prisjämförelse" id="header-logo-img">
-
+        
         <div class="global-search-container">
-            <p>Skriv in ett artikelnummer för att generera sök-länkar till externa leverantörer.</p>
-            <div class="global-search-inputs">
-                <input type="text" id="global-search-input" placeholder="Artikelnummer för prisjämförelse" oninput="this.value = this.value.toUpperCase()">
-                <button id="global-search-btn" class="btn-primary">JÄMFÖR</button>
-            </div>
-            
-            <div style="margin-top: 15px; margin-bottom: 5px;">
-                <span style="font-size: 0.9em; font-weight: 600; color: var(--text-dark); display: flex; align-items: center; gap: 5px;">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 16px; height: 16px; color: var(--primary-color);">
-                        <path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25ZM12.75 6a.75.75 0 0 0-1.5 0v6c0 .414.336.75.75.75h4.5a.75.75 0 0 0 0-1.5h-3.75V6Z" clip-rule="evenodd" />
-                    </svg>
-                    Tidigare sökningar:
-                </span>
-                <div id="global-search-history" class="search-history-container">
-                    </div>
-            </div>
-
-            <div id="global-search-results">
-                <span id="global-search-close-btn">&times;</span>
-                </div>
+        <p>Skriv in ett artikelnummer för att generera sök-länkar till externa leverantörer.</p>
+        <div class="global-search-wrapper">
+            <input type="text" id="global-search-input" placeholder="Ange artikelnummer (exempel: 03L 115 562)">
+            <button id="global-search-btn" class="btn-primary" title="Sök">Jämför</button>
         </div>
-
+        <div id="global-search-history" class="search-history-container">
+            </div>
+                <div id="global-search-results" class="global-search-results-box">
+            </div>
+        </div>
         <div class="controls-bar top-controls">
-            <button id="toggle-add-form-btn" class="btn-primary">Lägg till ny artikel <span id="toggle-icon-form">▼</span></button>
-            <button id="toggle-settings-btn" class="btn-secondary" style="padding: 15px 25px; font-weight: 700;">Inställningar <span id="toggle-icon-settings">▼</span></button>
+            <button id="toggle-add-form-btn" class="btn-primary" type="button">
+                Lägg till ny artikel <span id="toggle-icon-form">▼</span>
+            </button>
+            <div class="json-controls">
+                <button class="btn-secondary" id="download-json-btn">Ladda ner JSON</button>
+                <label for="upload-json-input" class="btn-secondary">Ladda upp JSON</label>
+                <input type="file" id="upload-json-input" accept=".json" style="display: none;">
+            </div>
             <span id="sync-status">Ansluter...</span>
         </div>
-        
-        <div id="settings-wrapper">
-            <div class="json-controls" style="padding: 15px; background: var(--card-bg); border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 20px;">
-                <label style="font-weight: 600; margin-bottom: 10px; display: block; color: var(--text-dark); font-size: 1.1em;">Datahantering:</label>
-                <div style="display: flex; gap: 10px;">
-                    <label for="download-json-btn" class="btn-secondary" style="flex-grow: 1; text-align: center;">Ladda ner JSON</label>
-                    <button id="download-json-btn" class="btn-secondary" style="display: none;"></button>
-                    <label for="upload-json-input" class="btn-secondary" style="flex-grow: 1; text-align: center;">Ladda upp JSON</label>
-                    <input type="file" id="upload-json-input" accept=".json" style="display: none;">
-                </div>
-            </div>
-        </div>
+
         <div id="add-form-wrapper">
             <form id="add-article-form">
                 <input type="text" name="service_filter" placeholder="Artikelnummer" required oninput="this.value = this.value.toUpperCase()">
@@ -576,14 +827,15 @@
                 <button type="submit" class="btn-primary">Spara Artikel</button>
             </form>
         </div>
-
+        
         <div class="controls-bar">
-            <h2>Artiklar i Lager</h2>
-            <div class="search-wrapper">
-                <input type="text" id="search-input" placeholder="Sök artikelnummer, namn...">
-                <button type="button" id="clear-search-btn" title="Rensa sökning">&times;</button>
-            </div>
-        </div>
+    <h2>Artiklar i Lager</h2>
+
+    <div class="search-wrapper">
+        <input type="text" id="search-input" placeholder="Sök artikelnummer, namn...">
+        <button type="button" id="clear-search-btn" title="Rensa sökning">&times;</button>
+    </div>
+    </div>
 
         <h3 id="service-artiklar-titel" class="collapsible-header" data-state="open">
             Service <span class="toggle-icon">▼</span>
@@ -595,93 +847,97 @@
                     <span data-sort="name">Namn <span class="sort-icon"></span></span>
                     <span data-sort="price">Pris <span class="sort-icon"></span></span>
                     <span data-sort="quantity">Antal <span class="sort-icon"></span></span>
-                    <span data-sort="status">Status <span class="sort-icon"></span></span>
+                    <span>Status</span>
                     <span data-sort="notes">Anteckningar <span class="sort-icon"></span></span>
                     <span>Länk</span>
-                    <div>Åtgärder</div>
+                    <span>Åtgärder</span>
                 </div>
-                <div id="service-artiklar-lista">
-                    </div>
+                <div id="service-artiklar-lista"></div>
             </div>
         </div>
 
-        <h3 id="motor-chassi-artiklar-titel" class="collapsible-header" data-state="closed">
+        <h3 id="motor-chassi-artiklar-titel" class="collapsible-header" data-state="open">
             Motor/Chassi <span class="toggle-icon">▼</span>
         </h3>
-        <div id="motor-chassi-artiklar-wrapper" class="lager-wrapper collapsed">
+        <div id="motor-chassi-artiklar-wrapper" class="lager-wrapper">
             <div class="lager-container">
                 <div class="header">
                     <span data-sort="service_filter">Art. nr <span class="sort-icon"></span></span>
                     <span data-sort="name">Namn <span class="sort-icon"></span></span>
                     <span data-sort="price">Pris <span class="sort-icon"></span></span>
                     <span data-sort="quantity">Antal <span class="sort-icon"></span></span>
-                    <span data-sort="status">Status <span class="sort-icon"></span></span>
+                    <span>Status</span>
                     <span data-sort="notes">Anteckningar <span class="sort-icon"></span></span>
                     <span>Länk</span>
-                    <div>Åtgärder</div>
+                    <span>Åtgärder</span>
                 </div>
-                <div id="motor-chassi-artiklar-lista">
-                    </div>
+                <div id="motor-chassi-artiklar-lista"></div>
             </div>
         </div>
 
-        <h3 id="andra-marken-artiklar-titel" class="collapsible-header" data-state="closed">
+       <h3 id="andra-marken-artiklar-titel" class="collapsible-header" data-state="open">
             Andra Märken <span class="toggle-icon">▼</span>
         </h3>
-        <div id="andra-marken-artiklar-wrapper" class="lager-wrapper collapsed">
+        <div id="andra-marken-artiklar-wrapper" class="lager-wrapper">
             <div class="lager-container">
                 <div class="header">
                     <span data-sort="service_filter">Art. nr <span class="sort-icon"></span></span>
                     <span data-sort="name">Namn <span class="sort-icon"></span></span>
                     <span data-sort="price">Pris <span class="sort-icon"></span></span>
                     <span data-sort="quantity">Antal <span class="sort-icon"></span></span>
-                    <span data-sort="status">Status <span class="sort-icon"></span></span>
+                    <span>Status</span>
                     <span data-sort="notes">Anteckningar <span class="sort-icon"></span></span>
                     <span>Länk</span>
-                    <div>Åtgärder</div>
+                    <span>Åtgärder</span>
                 </div>
-                <div id="andra-marken-artiklar-lista">
-                    </div>
+                <div id="andra-marken-artiklar-lista"></div>
             </div>
         </div>
+        
+        <div id="slut-i-lager-sektion" style="display: none;">
+    <h2 class="out-of-stock-title">Slut i Lager</h2>
 
-        <h2 id="slut-i-lager-sektion" class="out-of-stock-title" style="display: none;">Slut i Lager</h2>
-        <div id="slut-i-lager-lista" class="lager-wrapper">
+    <div class="lager-wrapper">
+        <div class="lager-container">
+            <div class="header">
+                <span data-sort="service_filter">Art. nr <span class="sort-icon"></span></span>
+                <span data-sort="name">Namn <span class="sort-icon"></span></span>
+                <span data-sort="price">Pris <span class="sort-icon"></span></span>
+                <span data-sort="quantity">Antal <span class="sort-icon"></span></span>
+                <span>Status</span>
+                <span data-sort="notes">Anteckningar <span class="sort-icon"></span></span>
+                <span>Länk</span>
+                <span>Åtgärder</span>
             </div>
+            <div id="slut-i-lager-lista"></div>
+        </div>
+    </div>
+    </div>
 
-    </div> <div id="editModal" class="modal">
-        <span class="close-btn">&times;</span>
+    <div id="editModal" class="modal">
         <div class="modal-content">
+            <span class="close-btn">&times;</span>
             <h3>Redigera Artikel</h3>
             <form id="edit-article-form">
-                <input type="hidden" id="edit-id" name="id">
-
+                <input type="hidden" id="edit-id">
                 <label for="edit-service_filter">Artikelnummer</label>
                 <input type="text" name="service_filter" id="edit-service_filter" required oninput="this.value = this.value.toUpperCase()">
-
                 <label for="edit-name">Namn</label>
                 <input type="text" name="name" id="edit-name" required oninput="this.value = this.value.toUpperCase()">
-
                 <label for="edit-price">Pris</label>
                 <input type="number" name="price" id="edit-price" step="0.01" required>
-
                 <label for="edit-quantity">Antal</label>
                 <input type="number" name="quantity" id="edit-quantity" required>
-
                 <label for="edit-category">Kategori</label>
                 <select name="category" id="edit-category" required>
                     <option value="Service">Service</option>
                     <option value="Motor/Chassi">Motor/Chassi</option>
                     <option value="Andra Märken">Andra Märken</option>
-                    <option value="Övrigt">Övrigt</option>
                 </select>
-
                 <label for="edit-notes">Anteckningar</label>
                 <input type="text" name="notes" id="edit-notes">
-
                 <label for="edit-link">Länk</label>
                 <input type="text" name="link" id="edit-link">
-
                 <button type="submit" class="btn-primary">Spara Ändringar</button>
             </form>
         </div>
@@ -700,9 +956,10 @@
 
     <div id="productPopup">
         <span class="close-btn">&times;</span>
-        <iframe id="productIframe" src=""></iframe>
+        <iframe id="productIframe" src="" frameborder="0"></iframe>
     </div>
-
+        
     <script type="module" src="apps.js"></script>
+
 </body>
 </html>
