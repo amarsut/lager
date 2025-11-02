@@ -392,7 +392,9 @@
     }
     /* ... resten av CSS stilar... */
     </style>
-    </head>
+    <link rel="stylesheet" href="style.css"> 
+    <meta name="theme-color" content="#5a7dff">
+</head>
 <body>
     
     <div class="top-toolbar">
@@ -444,12 +446,192 @@
     <div class="main-content">
         <header>
             <h1>Lagerförteckning</h1>
-            </header>
+            <div class="dashboard-stats">
+                <div class="stat-card">
+                    <span class="stat-label">Totalt värde</span>
+                    <span class="stat-value" id="stat-total-value">0.00 kr</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Artiklar i lager</span>
+                    <span class="stat-value" id="stat-total-items">0</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Slut i lager</span>
+                    <span class="stat-value" id="stat-out-of-stock">0</span>
+                </div>
+            </div>
 
+            <div class="global-search-wrapper" style="margin-top: 20px;">
+                <div class="global-search-container">
+                    <input type="text" id="global-search-input" placeholder="Global sökning (Artikelnummer/Namn)..." style="width: 100%;">
+                    <button id="global-search-btn" class="btn-primary" style="padding: 12px 25px; margin-left: 10px;">Sök externt</button>
+                </div>
+                <div id="global-search-history" style="margin-top: 10px;"></div>
+                <div id="global-search-results" style="margin-top: 20px; display: none;"></div>
+            </div>
+            
+        </header>
+
+        <div id="add-form-wrapper">
+            <form id="add-article-form">
+                <div>
+                    <label for="add_service_filter">Art.nr</label>
+                    <input type="text" id="add_service_filter" name="service_filter" required>
+                </div>
+                <div>
+                    <label for="add_name">Namn</label>
+                    <input type="text" id="add_name" name="name" required>
+                </div>
+                <div>
+                    <label for="add_quantity">Antal</label>
+                    <input type="number" id="add_quantity" name="quantity" min="0" required>
+                </div>
+                <div>
+                    <label for="add_price">Pris (kr)</label>
+                    <input type="number" id="add_price" name="price" min="0" step="0.01" required>
+                </div>
+                <div>
+                    <label for="add_category">Kategori</label>
+                    <select id="add_category" name="category" required>
+                        <option value="Service">Service</option>
+                        <option value="Motor/Chassi">Motor/Chassi</option>
+                        <option value="Andra Märken">Andra Märken</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="add_location">Plats (Valfri)</label>
+                    <input type="text" id="add_location" name="location">
+                </div>
+                <div>
+                    <label for="add_link">Länk (Valfri)</label>
+                    <input type="url" id="add_link" name="link">
+                </div>
+                <div class="submit-button-wrapper">
+                    <button type="submit" class="btn-primary" style="background-color: var(--success-color);">Lägg till artikel</button>
+                </div>
+            </form>
         </div>
 
+        <div id="lager-listor">
+            <h3 id="service-artiklar-titel" class="collapsible-header" data-state="open" data-target="service-artiklar-wrapper">
+                <div>Service & Filter <span class="category-badge" id="badge-service">0</span></div> 
+                <span class="toggle-icon">▼</span>
+            </h3>
+            <div id="service-artiklar-wrapper" class="lager-wrapper">
+                <div class="lager-container">
+                    <div id="service-artiklar-lista">
+                        <p id="service-empty-state" class="empty-state" style="padding: 20px; text-align: center;">Inga artiklar i denna kategori.</p>
+                    </div>
+                </div>
+            </div>
+
+            <h3 id="motor-chassi-titel" class="collapsible-header" data-state="open" data-target="motor-chassi-artiklar-wrapper">
+                <div>Motor & Chassi <span class="category-badge" id="badge-motor-chassi">0</span></div>
+                <span class="toggle-icon">▼</span>
+            </h3>
+            <div id="motor-chassi-artiklar-wrapper" class="lager-wrapper">
+                <div class="lager-container">
+                    <div id="motor-chassi-artiklar-lista">
+                        <p id="motor-chassi-empty-state" class="empty-state" style="padding: 20px; text-align: center;">Inga artiklar i denna kategori.</p>
+                    </div>
+                </div>
+            </div>
+
+            <h3 id="andra-marken-titel" class="collapsible-header" data-state="open" data-target="andra-marken-artiklar-wrapper">
+                <div>Andra Märken <span class="category-badge" id="badge-andra-marken">0</span></div>
+                <span class="toggle-icon">▼</span>
+            </h3>
+            <div id="andra-marken-artiklar-wrapper" class="lager-wrapper">
+                <div class="lager-container">
+                    <div id="andra-marken-artiklar-lista">
+                        <p id="andra-marken-empty-state" class="empty-state" style="padding: 20px; text-align: center;">Inga artiklar i denna kategori.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <h3 id="slut-i-lager-titel" class="collapsible-header" data-state="closed" data-target="slut-i-lager-wrapper">
+                <div>Slut i lager (0)</div>
+                <span class="toggle-icon">▼</span>
+            </h3>
+            <div id="slut-i-lager-wrapper" class="lager-wrapper collapsed">
+                <div class="lager-container" style="max-height: 300px;">
+                    <div id="slut-i-lager-lista">
+                        <p id="slut-i-lager-empty-state" class="empty-state" style="padding: 20px; text-align: center;">Här visas artiklar som är slut i lager (antal = 0).</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <h3>Redigera Artikel</h3>
+            <form id="edit-article-form">
+                <input type="hidden" id="edit-id" name="id">
+                <div>
+                    <label for="edit-service_filter">Art.nr</label>
+                    <input type="text" name="service_filter" id="edit-service_filter" required>
+                </div>
+                <div>
+                    <label for="edit-name">Namn</label>
+                    <input type="text" name="name" id="edit-name" required>
+                </div>
+                <div>
+                    <label for="edit-quantity">Antal</label>
+                    <input type="number" name="quantity" id="edit-quantity" min="0" required>
+                </div>
+                <div>
+                    <label for="edit-price">Pris (kr)</label>
+                    <input type="number" name="price" id="edit-price" min="0" step="0.01" required>
+                </div>
+                <div>
+                    <label for="edit-category">Kategori</label>
+                    <select id="edit-category" name="category" required>
+                        <option value="Service">Service</option>
+                        <option value="Motor/Chassi">Motor/Chassi</option>
+                        <option value="Andra Märken">Andra Märken</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="edit-location">Plats (Valfri)</label>
+                    <input type="text" name="location" id="edit-location">
+                </div>
+                <div>
+                    <label for="edit-link">Länk (Valfri)</label>
+                    <input type="url" name="link" id="edit-link">
+                </div>
+                <button type="submit" class="btn-primary">Spara Ändringar</button>
+                <button type="button" class="btn-danger" id="delete-article-btn" style="margin-top: 15px;">Radera Artikel</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="confirmationModal" class="modal">
+        <div class="modal-content">
+            <h3 id="confirmationTitle">Bekräfta</h3>
+            <p id="confirmationMessage" style="margin-top: 20px; margin-bottom: 30px; font-size: 1.1em;"></p>
+            <div class="action-buttons" style="justify-content: flex-end; gap: 15px;">
+                <button id="confirmNo" class="btn-secondary">Avbryt</button>
+                <button id="confirmYes" class="btn-primary">Ja</button> </div>
+        </div>
+    </div>
+
+    <div id="productPopup">
+        <span class="close-btn">&times;</span>
+        <iframe id="productIframe" src="" frameborder="0"></iframe>
+    </div>
+        
     <div id="toast-container"></div>
     <div id="backdrop"></div>
     
-    </body>
+    <button id="back-to-top-btn" title="Tillbaka till toppen" style="display: none;">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 18a.75.75 0 0 1-.75-.75V5.56L6.53 8.353a.75.75 0 0 1-1.06-1.06l4.25-4.25a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1-1.06 1.06L10.75 5.56v11.69a.75.75 0 0 1-.75.75Z" clip-rule="evenodd" />
+        </svg>
+    </button>
+    
+
+    <script type="module" src="./apps.js"></script>
+</body>
 </html>
