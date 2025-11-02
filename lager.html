@@ -200,10 +200,32 @@
     #toggle-add-form-btn #toggle-icon-form { display: inline-block; transition: transform 0.3s ease-in-out; margin-left: 8px; font-size: 1.1em; line-height: 1; }
     #toggle-add-form-btn.open #toggle-icon-form { transform: rotate(180deg); }
     
-    #add-article-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; padding: 35px; background-color: var(--card-bg); border-radius: 16px; box-shadow: var(--card-shadow); margin-bottom: 30px; transition: background-color 0.3s; }
+    /* ÄNDRAD: Formulär (Request 3) */
+    #add-article-form { 
+        display: grid; 
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); /* ÄNDRAD: minmax(240px, 1fr) */
+        gap: 15px; /* ÄNDRAD: 15px */
+        padding: 25px; /* ÄNDRAD: 25px */
+        background-color: var(--card-bg); 
+        border-radius: 16px; 
+        box-shadow: var(--card-shadow); 
+        margin-bottom: 30px; 
+        transition: background-color 0.3s; 
+    }
     #add-article-form > div { display: flex; flex-direction: column; }
     #add-article-form label { margin-bottom: 6px; font-weight: 600; font-size: 0.85em; color: var(--text-dark); }
-    #add-article-form input, #add-article-form select { padding: 14px; border: 1px solid var(--border-color); border-radius: 8px; background-color: var(--bg-light); transition: border-color 0.2s, box-shadow 0.2s, background-color 0.3s; font-size: 1em; width: 100%; box-sizing: border-box; color: var(--text-dark); }
+    /* ÄNDRAD: Formulär (Request 3) */
+    #add-article-form input, #add-article-form select { 
+        padding: 12px; /* ÄNDRAD: 12px */
+        border: 1px solid var(--border-color); 
+        border-radius: 8px; 
+        background-color: var(--bg-light); 
+        transition: border-color 0.2s, box-shadow 0.2s, background-color 0.3s; 
+        font-size: 1em; 
+        width: 100%; 
+        box-sizing: border-box; 
+        color: var(--text-dark); 
+    }
     #add-article-form input:focus, #add-article-form select:focus { border-color: var(--primary-color); box-shadow: 0 0 0 4px rgba(90, 125, 255, 0.2); background-color: var(--card-bg); outline: none; }
     
     #add-article-form .has-error input,
@@ -214,7 +236,7 @@
         box-shadow: 0 0 0 4px rgba(255, 61, 0, 0.2) !important;
     }
     
-    /* --- NYTT: Formulärvarning & Klistra in-knapp --- */
+    /* --- ÄNDRAD: Formulärvarning & Klistra in-knapp (Request 2) --- */
     .form-input-wrapper { position: relative; }
     .form-warning {
         font-size: 0.85em;
@@ -225,8 +247,9 @@
     }
     .form-paste-btn {
         position: absolute;
-        top: 31px; /* Justera efter label */
-        right: 8px;
+        top: 50%; /* ÄNDRAD */
+        transform: translateY(-50%); /* ÄNDRAD */
+        right: 8px; /* ÄNDRAD */
         background: none;
         border: none;
         color: var(--text-light);
@@ -240,9 +263,9 @@
         background-color: var(--bg-dark);
     }
     .form-paste-btn .icon-span { font-size: 20px; }
-    /* --- SLUT NYTT --- */
+    /* --- SLUT ÄNDRING --- */
     
-    /* --- NYTT: Snabb-kategori knappar --- */
+    /* --- ÄNDRAD: Snabb-kategori knappar (Request 7) --- */
     .quick-category-wrapper {
         display: flex;
         gap: 8px;
@@ -252,7 +275,7 @@
         flex-grow: 1;
         font-size: 0.8em;
         font-weight: 600;
-        padding: 6px 5px;
+        padding: 8px 5px; /* ÄNDRAD: 8px */
         border: 1px solid var(--border-color);
         background-color: var(--bg-light);
         color: var(--text-dark);
@@ -265,7 +288,7 @@
         border-color: var(--primary-color);
         color: var(--primary-dark);
     }
-    /* --- SLUT NYTT --- */
+    /* --- SLUT ÄNDRING --- */
 
     #add-article-form .submit-button-wrapper { 
         grid-column: 1 / -1; 
@@ -324,7 +347,14 @@
     .lager-wrapper { overflow-x: auto; margin-bottom: 25px; -webkit-overflow-scrolling: touch; }
     .lager-container { background-color: var(--card-bg); border-radius: 16px; box-shadow: var(--card-shadow); margin-bottom: 40px; border: 1px solid var(--border-color); position: relative; max-height: 450px; overflow-y: auto; min-width: min-content; transition: background-color 0.3s, border-color 0.3s; }
     
-    .header, .artikel-rad { grid-template-columns: 180px 200px 100px 80px 80px minmax(150px, 1.5fr) 140px 160px; padding: 10px 20px; align-items: center; font-size: 0.85em; display: grid; }    
+    /* ÄNDRAD: Tabell-layout (Request 7) */
+    .header, .artikel-rad { 
+        grid-template-columns: 160px 200px 90px 70px 70px minmax(120px, 1fr) 120px 140px; /* ÄNDRAD */
+        padding: 10px 20px; 
+        align-items: center; 
+        font-size: 0.85em; 
+        display: grid; 
+    }    
     .header { position: sticky; top: 0; z-index: 100; font-weight: 700; background-color: var(--bg-medium); color: var(--text-dark); border-bottom: 2px solid var(--border-color); text-transform: uppercase; letter-spacing: 0.5px; transition: background-color 0.3s, border-color 0.3s; }
     .header span[data-sort] { cursor: pointer; user-select: none; }
     .header > span { display: flex; align-items: center; min-height: 1.8em; padding-right: 15px; }
@@ -383,7 +413,7 @@
     .thansen-btn { background-color: #008080; color: white; border: 1px solid #008080; }
     .thansen-btn:hover { background-color: #006060; border-color: #006060; }
     
-    /* --- ÄNDRAD: "Beställ"-knapp återställd --- */
+    /* --- ÄNDRAD: "Beställ"-knapp borttagen (Request 5) --- */
     .lank-knapp, .edit-btn, .delete-btn, .order-btn { padding: 6px 10px; border: 1px solid transparent; border-radius: 6px; cursor: pointer; font-size: 0.8em; font-weight: 600; transition: all 0.2s; text-align: center; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); }
     .lank-knapp { background-color: var(--card-bg); color: var(--primary-color); border: 1px solid var(--primary-color); }
     .lank-knapp:hover { background-color: var(--primary-color); color: white; border-color: var(--primary-color); }
@@ -406,10 +436,10 @@
     
     .modal { position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); backdrop-filter: blur(5px); display: none; justify-content: center; align-items: center; }
     
+    /* ÄNDRAD: Modal (Request 4) */
     .modal-content {
-        background-color: var(--glass-bg);
-        backdrop-filter: blur(15px);
-        border: 1px solid var(--glass-border);
+        background-color: var(--card-bg); /* ÄNDRAD */
+        border: 1px solid var(--border-color); /* ÄNDRAD */
         padding: 40px; 
         border-radius: 12px; 
         width: 90%; 
@@ -460,10 +490,21 @@
     .dropdown-menu .egen-lank-btn:hover { background-color: #3a57e8; }
     .more-btn { background-color: var(--bg-dark); color: var(--text-dark); border: 1px solid var(--border-color); padding: 6px 10px; font-size: 0.8em; }
     .more-btn:hover { background-color: var(--bg-dark); opacity: 0.8; }
-    .trodo-btn { background-color: #FFA500; color: white; border: 1px solid #FFA500; }
-    .trodo-btn:hover { background-color: #CC8400; border-color: #CC8400; }
+    
+    /* ÄNDRAD: Trodo-knapp (Request 6) */
+    /* .trodo-btn ... (Regel borttagen) */
+    /* .trodo-btn:hover ... (Regel borttagen) */
 
-    .global-search-container { background-color: var(--card-bg); border-radius: 16px; box-shadow: var(--card-shadow); padding: 30px 35px; margin-bottom: 40px; border: 1px solid var(--border-color); transition: background-color 0.3s, border-color 0.3s; }
+    /* ÄNDRAD: Global sök (Request 7) */
+    .global-search-container { 
+        background-color: var(--card-bg); 
+        border-radius: 16px; 
+        box-shadow: var(--card-shadow); 
+        padding: 25px; /* ÄNDRAD: 25px */
+        margin-bottom: 40px; 
+        border: 1px solid var(--border-color); 
+        transition: background-color 0.3s, border-color 0.3s; 
+    }
     .global-search-container h3 { margin-top: 0; margin-bottom: 10px; color: var(--primary-dark); font-size: 1.5em; font-weight: 700; }
     .global-search-container p { margin-top: 0; margin-bottom: 25px; font-size: 0.95em; color: var(--text-light); }
     
@@ -583,17 +624,25 @@
         object-fit: contain;
         flex-shrink: 0;
     }
+    /* ÄNDRAD: Leverantörs-layout (Request 1) */
     .provider-card-content {
         display: flex;
         justify-content: space-between;
         align-items: center;
         width: 100%;
         gap: 10px;
+        flex-grow: 1; /* ÄNDRAD */
+        min-width: 0; /* ÄNDRAD */
     }
     .provider-card-name {
         font-weight: 600;
         font-size: 0.95em;
         color: var(--text-dark);
+        flex-grow: 1; /* ÄNDRAD */
+        min-width: 0; /* ÄNDRAD */
+        white-space: nowrap; /* ÄNDRAD */
+        overflow: hidden; /* ÄNDRAD */
+        text-overflow: ellipsis; /* ÄNDRAD */
     }
     .btn-provider-search {
         background-color: var(--primary-color);
@@ -669,18 +718,19 @@
     .dashboard-stat span { font-size: 2.2em; font-weight: 700; color: var(--primary-dark); display: block; z-index: 2; position: relative; }
     [data-theme="dark"] .dashboard-stat span { color: var(--primary-color); }
     .dashboard-stat#stat-out-of-stock-wrapper span { color: var(--danger-color); }
+    /* ÄNDRAD: Dashboard-ikoner (Request 7) */
     .dashboard-stat .icon-span {
         position: absolute;
         right: 15px;
         top: 50%;
         transform: translateY(-50%);
-        font-size: 64px;
+        font-size: 56px; /* ÄNDRAD */
         color: var(--border-color);
-        opacity: 0.5;
+        opacity: 0.3; /* ÄNDRAD */
         z-index: 1;
         transition: color 0.3s, opacity 0.3s;
     }
-    [data-theme="dark"] .dashboard-stat .icon-span { opacity: 0.2; }
+    [data-theme="dark"] .dashboard-stat .icon-span { opacity: 0.15; } /* ÄNDRAD */
     .dashboard-stat:hover .icon-span {
         color: var(--primary-color);
         opacity: 0.1;
@@ -960,7 +1010,8 @@
         display: flex;
         align-items: center;
         gap: 20px;
-        flex-wrap: wrap;
+        flex-wrap: wrap; /* ÄNDRAD */
+        justify-content: flex-end; /* ÄNDRAD */
     }
     
     .toolbar-add-button, .toolbar-icon-button {
@@ -1011,6 +1062,7 @@
         display: none;
         animation: simpleFadeIn 0.3s forwards;
     }
+    /* ÄNDRAD: App-meny (Request 4) */
     #app-menu-modal {
         position: fixed;
         top: 0;
@@ -1018,9 +1070,8 @@
         width: 100%;
         max-width: 450px;
         height: 100%;
-        background-color: var(--glass-bg);
-        backdrop-filter: blur(15px);
-        border-left: 1px solid var(--glass-border);
+        background-color: var(--card-bg); /* ÄNDRAD */
+        border-left: 1px solid var(--border-color); /* ÄNDRAD */
         box-shadow: -10px 0 30px rgba(0,0,0,0.2);
         z-index: 1050;
         display: none;
@@ -1310,7 +1361,7 @@
                     <label for="add_service_filter">Artikelnummer <span class="orange-asterisk">*</span></label>
                     <div class="form-input-wrapper">
                         <input type="text" id="add_service_filter" name="service_filter" placeholder="Artikelnummer" required oninput="this.value = this.value.toUpperCase()">
-                        <button type="button" id="paste-artnr-btn" class="form-paste-btn" title="Klistra in & Fyll i">
+                        <button type="button" id="paste-artnr-btn" class="form-paste-btn" title="Klistra in">
                             <span class="icon-span">content_paste</span>
                         </button>
                     </div>
