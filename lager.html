@@ -1396,7 +1396,7 @@
   }
 }
 
-/* --- Autosuggest dropdown styling --- */
+/* Autosuggest dropdown styling */
 .suggestions-list {
   position: absolute;
   top: 100%;
@@ -1405,22 +1405,25 @@
   background: var(--card-bg);
   border: 1px solid var(--border-color);
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.12);
   z-index: 5000;
   display: none;
-  max-height: 300px;
+  max-height: 320px;
   overflow-y: auto;
 }
 .suggestion-item {
-  padding: 10px 15px;
+  padding: 10px 14px;
   cursor: pointer;
   border-bottom: 1px solid var(--border-color);
+  font-size: 0.95em;
 }
-.suggestion-item:hover {
+.suggestion-item:last-child { border-bottom: none; }
+.suggestion-item:hover, .suggestion-item:focus {
   background: var(--bg-medium);
+  outline: none;
 }
 .highlighted-row {
-  background-color: rgba(0, 120, 255, 0.15);
+  background-color: rgba(90,125,255,0.15) !important;
   transition: background-color 0.3s ease;
 }
 @media (max-width: 768px) {
@@ -1431,7 +1434,6 @@
   }
 }
 </style>
-
 
 
 
@@ -1509,7 +1511,7 @@
             <div class="toolbar-controls">
                 <div class="search-wrapper">
                     <input type="text" id="search-input" placeholder="Sök i lagret... (ex: 'k:Service')">
-<div id=\"search-suggestions\" class=\"suggestions-list\"></div>
+<div id="search-suggestions" class="suggestions-list" aria-live="polite"></div>
                     <button type="button" id="clear-search-btn" title="Rensa sökning">&times;</button>
                 </div>
                 
@@ -1843,3 +1845,5 @@
 
 </body>
 </html>
+
+
