@@ -400,17 +400,20 @@
     }
     /* --- SLUT ÄNDRING --- */
     
-    /* --- ÄNDRAD: Anteckningscell för att tillåta wrap --- */
+    /* --- ÄNDRAD: Anteckningscell (återställd till en rad) --- */
     .notes-cell { 
-        white-space: normal; /* ÄNDRAD */
-        overflow: visible; /* ÄNDRAD */
+        display: flex; 
+        align-items: center; 
+        gap: 4px; /* Mellanrum mellan text och taggar */
+        
+        /* För att förhindra radbrytning och visa "..." */
+        white-space: nowrap; 
+        overflow: hidden; 
         text-overflow: ellipsis; 
-        cursor: help; 
-        display: flex; /* NYTT */
-        flex-wrap: wrap; /* NYTT */
-        align-items: center; /* NYTT */
-        gap: 2px; /* NYTT */
-        line-height: 1.8; /* NYTT */
+        cursor: help;
+        
+        /* Säkerställ att cellen inte kan bli högre än en rad */
+        /* (Detta uppnås främst via nowrap ovan) */
     }
     
     /* --- NYTT: Registreringsskylt-taggar (Uppdaterad) --- */
@@ -1676,4 +1679,5 @@
 
 </body>
 </html>
+
 
