@@ -122,7 +122,6 @@ document.addEventListener('DOMContentLoaded', () => {
         let confirmCallback = null; 
         let deferredInstallPrompt = null;
         let currentExternalLinks = [];
-        let lastScrollY = 0;
         
         const stopWords = ['till', 'för', 'en', 'ett', 'och', 'eller', 'med', 'på', 'i', 'av', 'det', 'den', 'som', 'att', 'är', 'har', 'kan', 'ska', 'vill', 'sig', 'här', 'nu', 'från', 'man', 'vi', 'du', 'ni'];
 
@@ -1299,28 +1298,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             });
 
-            window.addEventListener('scroll', () => {
-            const currentScrollY = window.scrollY;
-    
-            // Använd bara logiken om du har en dynamisk sök-area definierad
-            if (dynamicSearchArea) {
-                if (currentScrollY > 100) { // Börja fästa/dölja först efter 100px scroll
-            if (currentScrollY < lastScrollY) {
-                // Scrollar UP - VISA sökfältet
-                dynamicSearchArea.classList.remove('scrolled-down');
-            } else {
-                // Scrollar NER - DÖLJ sökfältet
-                dynamicSearchArea.classList.add('scrolled-down');
-            }
-            } else {
-               // Helt i toppen, visa det normalt
-               dynamicSearchArea.classList.remove('scrolled-down');
-              }
-            }
-    
-            lastScrollY = currentScrollY;
-            });
-
             // BORTTAGEN: Skanna-knappar
 
             const backToTopBtn = document.getElementById('back-to-top-btn');
@@ -1381,4 +1358,5 @@ document.addEventListener('DOMContentLoaded', () => {
         if(initialLoader) initialLoader.querySelector('p').textContent = 'Kritiskt fel vid initiering.';
     }
 });
+
 
