@@ -1358,3 +1358,67 @@ document.addEventListener('DOMContentLoaded', () => {
         if(initialLoader) initialLoader.querySelector('p').textContent = 'Kritiskt fel vid initiering.';
     }
 });
+
+
+
+
+
+// --- Autosuggest dropdown functionality ---
+document.addEventListener('DOMContentLoaded', () => {
+  const searchField = document.getElementById('search-input');
+  const suggestionsList = document.getElementById('search-suggestions');
+
+  function clearHighlights() {
+    document.querySelectorAll('.highlighted-row').forEach(row => {
+      row.classList.remove('highlighted-row');
+    });
+  }
+
+  searchField.addEventListener('input', () => {
+    const query = searchField.value.trim().toLowerCase();
+    suggestionsList.innerHTML = '';
+    if (!query) {
+      suggestionsList.style.display = 'none';
+      clearHighlights();
+      return;
+    }
+
+    // Access the inventory from global scope (populated after Firebase load)
+    const matches = (window.inventory || []).filter(item =>
+      Object.values(item).some(val => String(val).toLowerCase().includes(query))
+    );
+
+    if (matches.length === 0) {
+      suggestionsList.innerHTML = '<div class="suggestion-item">Inga träffar</div>';
+    } else {
+      matches.forEach(match => {
+        const div = document.createElement('div');
+        div.classList.add('suggestion-item');
+        div.textContent = match.namn || match.name || 'Okänd artikel';
+        div.addEventListener('click', () => {
+          suggestionsList.style.display = 'none';
+          searchField.value = match.namn || match.name || '';
+          clearHighlights();
+
+          // Hitta raden i tabellen
+          const rows = document.querySelectorAll('#inventory-table tbody tr');
+          rows.forEach(row => {
+            if (row.textContent.toLowerCase().includes(searchField.value.toLowerCase())) {
+              row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              row.classList.add('highlighted-row');
+            }
+          });
+        });
+        suggestionsList.appendChild(div);
+      });
+    }
+    suggestionsList.style.display = 'block';
+  });
+
+  // Close suggestions when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('#search-suggestions') && e.target !== searchField) {
+      suggestionsList.style.display = 'none';
+    }
+  });
+});
