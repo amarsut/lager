@@ -263,7 +263,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 biluppgifterResultContainer.innerHTML = `
                     <h4 class="internal-search-title">Fordonsuppslag:</h4>
                     <div class="provider-card">
-                        <img src="https://biluppgifter.se/favicon-32x32.png" alt="Biluppgifter.se" class="provider-card-logo">
+                        <img src="https://biluppgifter.se/favicon/favicon.ico" alt="Biluppgifter.se" class="provider-card-logo">
                         <div class="provider-card-content">
                             <span class="provider-card-name">${cleanRegNr}</span>
                             <a href="${biluppgifterLink}" target="_blank" class="btn-provider-search">Visa Fordon</a>
@@ -1560,3 +1560,4 @@ document.addEventListener('DOMContentLoaded', () => {
         if(initialLoader) initialLoader.querySelector('p').textContent = 'Kritiskt fel vid initiering.';
     }
 });
+
