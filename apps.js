@@ -966,7 +966,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // --- NYTT: Rendera sök-dropdown ---
             // Om syntax användes, visa den filtrerade listan. Annars, visa den ofiltrerade.
             const resultsForDropdown = syntaxFilterUsed ? processedInventory : dropdownResults;
-            renderSearchDropdown(generalSearchTerm, resultsForDropdown);
+            //renderSearchDropdown(generalSearchTerm, resultsForDropdown);
 
             // --- Slut Huvud-filtrering ---
 
@@ -1684,3 +1684,4 @@ document.addEventListener('DOMContentLoaded', () => {
         if(initialLoader) initialLoader.querySelector('p').textContent = 'Kritiskt fel vid initiering.';
     }
 });
+
