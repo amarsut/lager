@@ -1046,7 +1046,7 @@ document.addEventListener('DOMContentLoaded', () => {
             mobileSearchResults.style.display = 'none';
             // Återställ till Alla filter vid rensning, om inte syntaxfilter användes
             if (currentFilter !== 'Alla') {
-                document.getElementById('filter-alla').click();
+                document.querySelector('#category-filter-bar button[data-filter="Alla"]').click();
             } else {
                  sortAndRender(''); // Återrender utan sökterm
             }
@@ -1696,6 +1696,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if(initialLoader) initialLoader.querySelector('p').textContent = 'Kritiskt fel vid initiering.';
     }
 });
+
 
 
 
