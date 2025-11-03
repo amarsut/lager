@@ -844,15 +844,18 @@ document.addEventListener('DOMContentLoaded', () => {
             let html = '';
             // Visa max 10 resultat i dropdown
             results.slice(0, 10).forEach(item => {
-                html += `<a href="#" class="search-result-item" data-id="${item.id}">
-                            <div>
-                                <strong>${escapeHTML(item.service_filter)}</strong>
-                                <span>${escapeHTML(item.name)}</span>
-                            </div>
-                            <span class="quantity-tag ${item.quantity > 0 ? 'in-stock' : 'out-of-stock'}">
-                                ${item.quantity} st
-                            </span>
-                         </a>`;
+            // Hämta de formaterade anteckningarna (reg-nr)
+            const notesHTML = parseNotes(item.notes || '');
+        
+            html += `<a href="#" class="search-result-item" data-id="${item.id}">
+                        <div>
+                            <strong>${escapeHTML(item.service_filter)}</strong>
+                            <span>${escapeHTML(item.name)} ${notesHTML}</span> 
+                        </div>
+                        <span class="quantity-tag ${item.quantity > 0 ? 'in-stock' : 'out-of-stock'}">
+                            ${item.quantity} st
+                        </span>
+                     </a>`;
             });
 
             // Visa i båda dropdowns
@@ -1696,6 +1699,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if(initialLoader) initialLoader.querySelector('p').textContent = 'Kritiskt fel vid initiering.';
     }
 });
+
 
 
 
