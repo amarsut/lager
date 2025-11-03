@@ -196,21 +196,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             });
         }
-
-            function escapeHTML(str) {
-            // För att skydda mot att str inte är en sträng (ex. null, number)
-            if (typeof str !== 'string') return String(str || ''); 
-            
-            return str.replace(/[&<>"']/g, function(m) {
-                return ({
-                    '&': '&amp;',
-                    '<': '&lt;',
-                    '>': '&gt;',
-                    '"': '&quot;',
-                    "'": '&#039;'
-                }[m]);
-            });
-        }
       
         function formatPrice(price) { return new Intl.NumberFormat('sv-SE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(price); }
         function generateAeroMLink(f) { if (!f) return null; const s = f.replace(/[\s-]/g, ''); return `https://aeromotors.se/sok?s=${s}&layered_id_feature_1586%5B%5D=3&sort_by=price.asc`; }
@@ -626,35 +611,48 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // --- NYTT: Funktion för att parsa anteckningar och skapa skyltar ---
+        // --- UPPGRADERAD OCH FELSÖKNINGSVERSION AV parseNotes ---
         function parseNotes(notesText) {
-            // --- FIX: Se till att notesText alltid är en sträng ---
-            const safeNotesText = String(notesText || '');
-            // --- SLUT FIX ---
-
-            if (!safeNotesText) return ''; // Kontrollera den säkra strängen
-            
-            // Regex för att hitta [ABC123] eller [ABC 123]
-            const plateRegex = /\[([A-ZÅÄÖ0-9]{1,3}[\s]?[A-ZÅÄÖ0-9]{1,3})\]/gi;
-            
-            // Dela upp strängen baserat på regex, men behåll delarna
-            const parts = safeNotesText.split(plateRegex); // <-- Använd den säkra strängen
-            let html = '';
-
-            for (let i = 0; i < parts.length; i++) {
-                if (i % 2 === 1) {
-                    // Detta är en matchad reg-skylt (det som var INUTI parentesen)
-                    const plateContent = parts[i].toUpperCase();
-                    html += `<span class="plate-tag">
-                                <span class="plate-eu-s">S</span>
-                                <span class="plate-text">${escapeHTML(plateContent)}</span>
-                             </span>`;
-                } else if (parts[i]) {
-                    // Detta är vanlig text
-                    html += escapeHTML(parts[i]);
+            try {
+                // Steg 1: Säkerställ strängkonvertering
+                const safeNotesText = String(notesText || '');
+                if (!safeNotesText.trim()) {
+                    return '';
                 }
+                
+                // Regex för att hitta [ABC123] eller [ABC 123]
+                const plateRegex = /\[([A-ZÅÄÖ0-9]{1,3}[\s]?[A-ZÅÄÖ0-9]{1,3})\]/gi;
+                
+                // Steg 2: Dela upp strängen
+                const parts = safeNotesText.split(plateRegex);
+                let html = '';
+        
+                // Steg 3: Bygg HTML
+                for (let i = 0; i < parts.length; i++) {
+                    if (i % 2 === 1) {
+                        // Detta är en matchad reg-skylt
+                        const plateContent = parts[i].toUpperCase().trim();
+                        if (plateContent) { // Förhindra tomma skyltar om RegEx matchar whitespace
+                            html += `<span class="plate-tag">
+                                        <span class="plate-eu-s">S</span>
+                                        <span class="plate-text">${escapeHTML(plateContent)}</span>
+                                     </span>`;
+                        }
+                    } else if (parts[i]) {
+                        // Detta är vanlig text
+                        html += escapeHTML(parts[i]);
+                    }
+                }
+                return html;
+        
+            } catch (error) {
+                // VIKTIGT: Om ett fel inträffar i denna funktion, logga det och returnera en tom sträng.
+                // Detta förhindrar att hela appen kraschar under laddningen.
+                console.error("Fel vid parsning av anteckningar:", notesText, "Fel:", error);
+                return '';
             }
-            return html;
         }
+        // --- SLUT parseNotes ---
 
         function createInventoryRow(item, isOutOfStock) {
             const row = document.createElement('div'); row.className = 'artikel-rad'; row.setAttribute('data-id', item.id);
@@ -1703,6 +1701,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if(initialLoader) initialLoader.querySelector('p').textContent = 'Kritiskt fel vid initiering.';
     }
 });
+
 
 
 
