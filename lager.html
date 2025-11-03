@@ -321,7 +321,10 @@
         border-color: #c53030;
     }
 
-    .controls-bar { display: flex; justify-content: flex-end; align-items: center; margin-bottom: 20px; width: 100%; }
+    /* --- ÄNDRAD: Sökfält flyttat till toolbar, denna bar döljs --- */
+    .controls-bar { 
+        display: none; 
+    }
     .controls-bar.top-controls { display: none; }
     
     .json-controls { display: flex; gap: 10px; align-items: center; }
@@ -1023,6 +1026,7 @@
         }
     }
 
+    /* --- ÄNDRAD: Toolbar gjord sticky --- */
     .top-toolbar {
         width: 100%;
         background-color: var(--card-bg);
@@ -1037,6 +1041,11 @@
         transition: background-color 0.3s, border-color 0.3s;
         flex-wrap: wrap;
         gap: 15px;
+        
+        /* NYTT: Gör toolbaren klistrad */
+        position: sticky;
+        top: 40px; /* Matchar body-padding på desktop */
+        z-index: 1020;
     }
     
     .toolbar-title {
@@ -1070,6 +1079,14 @@
         gap: 20px;
         flex-wrap: wrap; /* ÄNDRAD */
         justify-content: flex-end; /* ÄNDRAD */
+        flex-grow: 1; /* NYTT: Gör att den kan växa och hålla sökfältet */
+    }
+    
+    /* NYTT: Styling för sökfältet i toolbaren */
+    .toolbar-controls .search-wrapper {
+        width: 350px;
+        flex-grow: 1; /* Tillåt den att växa om det finns plats */
+        max-width: 450px; /* Men inte för mycket */
     }
     
     .toolbar-add-button, .toolbar-icon-button {
@@ -1089,6 +1106,7 @@
         transition: background-color 0.2s, transform 0.2s;
         padding: 0;
         position: relative;
+        flex-shrink: 0; /* NYTT: Hindra ikoner från att krympa */
     }
     .toolbar-add-button .icon-span, .toolbar-icon-button .icon-span { font-size: 26px; }
     
@@ -1213,9 +1231,10 @@
         h1 { font-size: 2em; margin-bottom: 25px; }
         h2 { font-size: 1.4em; margin-top: 30px; }
         
-        .controls-bar { flex-direction: column; align-items: flex-start; gap: 15px; }
-        .search-wrapper { width: 100%; margin-top: 0; }
-        #search-input { width: 100%; }
+        /* --- BORTTAGEN: Gamla sök-regler --- */
+        /* .controls-bar { ... } */
+        /* .search-wrapper { ... } */
+        /* #search-input { ... } */
         
         .global-search-container { padding: 20px; }
         .global-search-wrapper { flex-direction: column; }
@@ -1227,10 +1246,12 @@
         
         #toast-container { top: 10px; right: 10px; left: 10px; width: auto; }
 
+        /* --- ÄNDRAD: Mobil-toolbar --- */
         .top-toolbar {
             padding: 12px 15px;
             margin-bottom: 20px;
             gap: 10px;
+            top: 20px; /* Matchar body-padding på mobil */
         }
         .toolbar-title {
             font-size: 1.1em;
@@ -1245,6 +1266,20 @@
             flex-basis: 100%;
             justify-content: space-between;
         }
+        
+        /* NYTT: Sökfältet i toolbaren på mobil */
+        .toolbar-controls .search-wrapper {
+            width: 100%;
+            order: 10; /* Läggs sist i toolbaren */
+            flex-grow: 1;
+            max-width: none;
+        }
+        .toolbar-controls .search-wrapper #search-input {
+            width: 100%;
+            padding-top: 10px; /* Lite mindre padding */
+            padding-bottom: 10px;
+        }
+        
         #sync-status {
             font-size: 0.8em;
             padding: 4px 8px 4px 6px;
@@ -1342,6 +1377,11 @@
                 LAGERDATABAS
                 <span id="toolbar-filter-badge"></span> </div>
             <div class="toolbar-controls">
+                <div class="search-wrapper">
+                    <input type="text" id="search-input" placeholder="Sök i lagret... (ex: 'k:Service')">
+                    <button type="button" id="clear-search-btn" title="Rensa sökning">&times;</button>
+                </div>
+                
                 <button id="pwa-install-btn" class="btn-primary" type="button">
                     <span class="icon-span">install_desktop</span>
                     Installera App
@@ -1475,13 +1515,6 @@
             </form>
         </div>
         
-        <div class="controls-bar">
-            <div class="search-wrapper">
-                <input type="text" id="search-input" placeholder="Sök... (ex: 'k:Service' eller 'p>100')">
-                <button type="button" id="clear-search-btn" title="Rensa sökning">&times;</button>
-            </div>
-        </div>
-
         <div id="category-filter-bar">
             <button class="btn-secondary active" data-filter="Alla">Alla</button>
             <button class="btn-secondary" data-filter="Service">Service</button>
@@ -1679,5 +1712,3 @@
 
 </body>
 </html>
-
-
