@@ -1362,7 +1362,23 @@
     width: 100%;
   }
 }
+
+/* --- Döljer dubbla sökfält: behåll sticky på mobil, original på desktop --- */
+@media (max-width: 768px) {
+  .top-toolbar .search-wrapper {
+    display: none !important;
+  }
+  #sticky-search-bar {
+    display: block !important;
+  }
+}
+@media (min-width: 769px) {
+  #sticky-search-bar {
+    display: none !important;
+  }
+}
 </style>
+
 
 <link rel="manifest" href="./manifest.json">
     
