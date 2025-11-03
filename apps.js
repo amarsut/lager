@@ -115,7 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const MAX_HISTORY_ITEMS = 5;
         
         // GLOBALA VARIABLER
-        let inventory = []; 
+        window.inventory = []; let inventory = window.inventory; 
         let selectedItemId = null;
         let currentSort = { column: 'name', direction: 'desc' };
         let currentFilter = 'Alla';
@@ -1362,63 +1362,96 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
+// --- Autosuggest dropdown (uses window.inventory) ---
+(function(){
+  function initAutosuggest() {
+    const searchField = document.getElementById('search-input');
+    const suggestionsList = document.getElementById('search-suggestions');
+    if (!searchField || !suggestionsList) return;
 
-// --- Autosuggest dropdown functionality ---
-document.addEventListener('DOMContentLoaded', () => {
-  const searchField = document.getElementById('search-input');
-  const suggestionsList = document.getElementById('search-suggestions');
+    function clearHighlights() {
+      document.querySelectorAll('.highlighted-row').forEach(row => row.classList.remove('highlighted-row'));
+    }
 
-  function clearHighlights() {
-    document.querySelectorAll('.highlighted-row').forEach(row => {
-      row.classList.remove('highlighted-row');
+    function renderSuggestions(query) {
+      suggestionsList.innerHTML = '';
+      if (!query) {
+        suggestionsList.style.display = 'none';
+        clearHighlights();
+        return;
+      }
+      const data = window.inventory || [];
+      const q = query.toLowerCase();
+      const matches = data.filter(item => {
+        // check key fields for match
+        const fields = [item.service_filter, item.name, item.artnr, item.notes].map(v => String(v||'').toLowerCase());
+        return fields.some(f => f.includes(q));
+      });
+
+      if (matches.length === 0) {
+        const no = document.createElement('div');
+        no.className = 'suggestion-item';
+        no.textContent = 'Inga träffar';
+        suggestionsList.appendChild(no);
+      } else {
+        matches.forEach(m => {
+          const div = document.createElement('div');
+          div.className = 'suggestion-item';
+          div.tabIndex = 0;
+          div.innerHTML = `<strong>${(m.service_filter||m.artnr||'').toString()}</strong> — ${(m.name||'').toString()}`;
+          div.addEventListener('click', () => {
+            performSelect(m);
+          });
+          div.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') performSelect(m);
+          });
+          suggestionsList.appendChild(div);
+        });
+      }
+      suggestionsList.style.display = 'block';
+    }
+
+    function performSelect(item) {
+      const val = item.name || item.service_filter || item.artnr || '';
+      searchField.value = val;
+      suggestionsList.style.display = 'none';
+      clearHighlights();
+      // Find matching element(s) in DOM - use data-id attribute
+      const selector = `[data-id="${item.id}"]`;
+      let el = document.querySelector(selector);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.classList.add('highlighted-row');
+        setTimeout(() => el.classList.remove('highlighted-row'), 2500);
+      } else {
+        // fallback: find by text content
+        const rows = Array.from(document.querySelectorAll('.artikel-rad'));
+        for (const row of rows) {
+          if (row.textContent.toLowerCase().includes(val.toLowerCase())) {
+            row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            row.classList.add('highlighted-row');
+            setTimeout(() => row.classList.remove('highlighted-row'), 2500);
+            break;
+          }
+        }
+      }
+    }
+
+    searchField.addEventListener('input', (e) => {
+      renderSuggestions(e.target.value);
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('#search-suggestions') && e.target !== searchField) {
+        suggestionsList.style.display = 'none';
+      }
     });
   }
 
-  searchField.addEventListener('input', () => {
-    const query = searchField.value.trim().toLowerCase();
-    suggestionsList.innerHTML = '';
-    if (!query) {
-      suggestionsList.style.display = 'none';
-      clearHighlights();
-      return;
-    }
-
-    // Access the inventory from global scope (populated after Firebase load)
-    const matches = (window.inventory || []).filter(item =>
-      Object.values(item).some(val => String(val).toLowerCase().includes(query))
-    );
-
-    if (matches.length === 0) {
-      suggestionsList.innerHTML = '<div class="suggestion-item">Inga träffar</div>';
-    } else {
-      matches.forEach(match => {
-        const div = document.createElement('div');
-        div.classList.add('suggestion-item');
-        div.textContent = match.namn || match.name || 'Okänd artikel';
-        div.addEventListener('click', () => {
-          suggestionsList.style.display = 'none';
-          searchField.value = match.namn || match.name || '';
-          clearHighlights();
-
-          // Hitta raden i tabellen
-          const rows = document.querySelectorAll('#inventory-table tbody tr');
-          rows.forEach(row => {
-            if (row.textContent.toLowerCase().includes(searchField.value.toLowerCase())) {
-              row.scrollIntoView({ behavior: 'smooth', block: 'center' });
-              row.classList.add('highlighted-row');
-            }
-          });
-        });
-        suggestionsList.appendChild(div);
-      });
-    }
-    suggestionsList.style.display = 'block';
-  });
-
-  // Close suggestions when clicking outside
-  document.addEventListener('click', (e) => {
-    if (!e.target.closest('#search-suggestions') && e.target !== searchField) {
-      suggestionsList.style.display = 'none';
-    }
-  });
-});
+  // Wait until DOMContentLoaded, then try init (apps.js main also runs on DOMContentLoaded)
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAutosuggest);
+  } else {
+    initAutosuggest();
+  }
+})();
