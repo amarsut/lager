@@ -400,7 +400,62 @@
     }
     /* --- SLUT ÄNDRING --- */
     
-    .notes-cell { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: help; }
+    /* --- ÄNDRAD: Anteckningscell för att tillåta wrap --- */
+    .notes-cell { 
+        white-space: normal; /* ÄNDRAD */
+        overflow: visible; /* ÄNDRAD */
+        text-overflow: ellipsis; 
+        cursor: help; 
+        display: flex; /* NYTT */
+        flex-wrap: wrap; /* NYTT */
+        align-items: center; /* NYTT */
+        gap: 2px; /* NYTT */
+        line-height: 1.8; /* NYTT */
+    }
+    
+    /* --- NYTT: Registreringsskylt-taggar --- */
+    .plate-tag {
+        display: inline-flex;
+        align-items: center;
+        background-color: var(--card-bg);
+        border: 2px solid var(--bg-dark);
+        border-radius: 4px;
+        font-family: "Lucida Console", "Courier New", monospace;
+        font-weight: 700;
+        margin: 2px 4px 2px 0;
+        overflow: hidden;
+        font-size: 0.9em;
+        line-height: 1.2;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        flex-shrink: 0;
+    }
+    .plate-eu-s {
+        background-color: #003399; /* EU Blå */
+        color: white;
+        padding: 4px 5px;
+        font-size: 0.9em;
+        font-weight: 900;
+        margin-right: 6px;
+        align-self: stretch;
+        display: flex;
+        align-items: center;
+    }
+    .plate-text {
+        padding: 4px 6px 4px 2px;
+        color: var(--text-dark);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    [data-theme="dark"] .plate-tag {
+        background-color: var(--bg-medium);
+        border-color: var(--bg-dark);
+    }
+    [data-theme="dark"] .plate-text {
+        color: var(--text-dark);
+    }
+    /* --- SLUT NYTT --- */
+
     .copy-btn { background: var(--bg-medium); border: 1px solid var(--border-color); border-radius: 4px; cursor: pointer; color: var(--primary-dark); font-size: 0.9em; padding: 3px 5px; line-height: 1; opacity: 0.9; transition: opacity 0.2s, transform 0.1s, background 0.2s, color 0.2s; flex-shrink: 0; min-width: 26px; text-align: center; }
     .copy-btn:hover { opacity: 1; transform: scale(1.05); background: var(--primary-color); color: white; border-color: var(--primary-color); }
     .copy-btn:disabled { color: var(--success-color); cursor: default; }
@@ -1399,7 +1454,7 @@
                 </div>
                 <div>
                     <label for="add_notes">Anteckningar</label>
-                    <input type="text" id="add_notes" name="notes" placeholder="Anteckningar">
+                    <input type="text" id="add_notes" name="notes" placeholder="Anteckningar (ex: [ABC123])">
                     <div class="form-warning"></div>
                 </div>
                 <div>
@@ -1578,7 +1633,7 @@
                 </div>
                 <div>
                     <label for="edit-notes">Anteckningar</label>
-                    <input type="text" name="notes" id="edit-notes">
+                    <input type="text" name="notes" id="edit-notes" placeholder="Anteckningar (ex: [ABC123])">
                 </div>
                 <div>
                     <label for="edit-link">Länk</label>
