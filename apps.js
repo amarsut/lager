@@ -196,6 +196,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             });
         }
+
+            function escapeHTML(str) {
+            // För att skydda mot att str inte är en sträng (ex. null, number)
+            if (typeof str !== 'string') return String(str || ''); 
+            
+            return str.replace(/[&<>"']/g, function(m) {
+                return ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#039;'
+                }[m]);
+            });
+        }
       
         function formatPrice(price) { return new Intl.NumberFormat('sv-SE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(price); }
         function generateAeroMLink(f) { if (!f) return null; const s = f.replace(/[\s-]/g, ''); return `https://aeromotors.se/sok?s=${s}&layered_id_feature_1586%5B%5D=3&sort_by=price.asc`; }
@@ -1688,6 +1703,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if(initialLoader) initialLoader.querySelector('p').textContent = 'Kritiskt fel vid initiering.';
     }
 });
+
 
 
 
