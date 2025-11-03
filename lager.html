@@ -1340,7 +1340,23 @@
         #global-search-close-btn { top: -5px; right: -5px; }
     }
 
-    </style>
+    
+/* --- MOBILANPASSNING: Endast sökfält sticky --- */
+@media (max-width: 768px) {
+  .toolbar {
+    position: static !important;
+  }
+  .mobile-sticky-search {
+    position: sticky;
+    top: 0;
+    z-index: 999;
+    background: var(--card-bg);
+    padding: 10px;
+    border-bottom: 1px solid var(--border-color);
+  }
+}
+</style>
+
 <link rel="manifest" href="./manifest.json">
     
     <link rel="apple-touch-icon" href="images/192x192.png">
@@ -1742,5 +1758,3 @@
 
 </body>
 </html>
-
-
