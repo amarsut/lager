@@ -1365,12 +1365,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-// --- Autosuggest dropdown with dynamic positioning ---
+
+
+// --- Autosuggest dropdown: dual-field & click fix ---
 (function(){
   function initAutosuggest() {
-    const searchField = document.getElementById('search-input');
+    // Detect active search input (mobile sticky or desktop)
+    const inputs = Array.from(document.querySelectorAll('#search-input'));
+    const searchField = inputs.find(i => i.offsetParent !== null) || inputs[0];
     const suggestionsList = document.getElementById('search-suggestions');
     if (!searchField || !suggestionsList) return;
+
+    // Ensure visibility and click functionality
+    suggestionsList.style.pointerEvents = 'auto';
+    suggestionsList.style.zIndex = '99999';
 
     function clearHighlights() {
       document.querySelectorAll('.highlighted-row').forEach(row => row.classList.remove('highlighted-row'));
@@ -1390,7 +1398,6 @@ document.addEventListener('DOMContentLoaded', () => {
         clearHighlights();
         return;
       }
-
       const data = window.inventory || [];
       const q = query.toLowerCase();
       const matches = data.filter(item =>
@@ -1407,7 +1414,8 @@ document.addEventListener('DOMContentLoaded', () => {
           const div = document.createElement('div');
           div.className = 'suggestion-item';
           div.innerHTML = `<strong>${m.namn || m.name || 'Okänd'}</strong>`;
-          div.addEventListener('click', () => {
+          div.addEventListener('mousedown', (e) => {
+            e.preventDefault(); // prevent blur before click
             searchField.value = m.namn || m.name || '';
             suggestionsList.style.display = 'none';
             clearHighlights();
