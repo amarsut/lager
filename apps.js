@@ -40,7 +40,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const fullEmptyState = document.getElementById('full-empty-state');
         const emptyStateAddBtn = document.getElementById('empty-state-add-btn'); // NYTT
         
-        const searchInput = document.getElementById('search-input');
+        // --- ÄNDRAD: Unika ID:n för sökfälten ---
+        const desktopSearchInput = document.getElementById('desktop-search-input');
+        const mobileSearchInput = document.getElementById('mobile-search-input');
+        const desktopClearSearchBtn = document.getElementById('desktop-clear-search-btn');
+        const mobileClearSearchBtn = document.getElementById('mobile-clear-search-btn');
+        const desktopSearchResults = document.getElementById('desktop-search-results');
+        const mobileSearchResults = document.getElementById('mobile-search-results');
+        // --- SLUT ÄNDRING ---
+        
         const dynamicSearchArea = document.getElementById('dynamic-search-area');
         const addFormWrapper = document.getElementById('add-form-wrapper');
         const addForm = document.getElementById('add-article-form');
@@ -49,7 +57,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const editForm = document.getElementById('edit-article-form');
         const confirmationModal = document.getElementById('confirmationModal');
         const syncStatusElement = document.getElementById('sync-status');
-        const clearSearchBtn = document.getElementById('clear-search-btn'); 
         
         // Global sök
         const globalSearchInput = document.getElementById('global-search-input');
@@ -197,7 +204,21 @@ document.addEventListener('DOMContentLoaded', () => {
         
         window.toggleDropdown = function(id) { const d = document.getElementById(id); if (!d) return; document.querySelectorAll('.dropdown-menu.visible').forEach(o => { if (o.id !== id) o.classList.remove('visible'); }); d.classList.toggle('visible'); };
         window.closeDropdown = function(id) { const d = document.getElementById(id); if (d) d.classList.remove('visible'); };
-        document.addEventListener('click', (e) => { if (!e.target.closest('.link-dropdown-container')) { document.querySelectorAll('.dropdown-menu.visible').forEach(d => d.classList.remove('visible')); } });
+        
+        // --- ÄNDRAD: Eventlyssnare för att stänga dropdowns ---
+        document.addEventListener('click', (e) => {
+            // Stäng sök-dropdowns
+            if (!e.target.closest('.search-wrapper') && !e.target.closest('#sticky-search-bar')) {
+                desktopSearchResults.style.display = 'none';
+                mobileSearchResults.style.display = 'none';
+            }
+            
+            // Stäng länk-dropdowns
+            if (!e.target.closest('.link-dropdown-container')) {
+                document.querySelectorAll('.dropdown-menu.visible').forEach(d => d.classList.remove('visible'));
+            }
+        });
+        // --- SLUT ÄNDRING ---
 
 
         // ----------------------------------------------------------------------
@@ -672,11 +693,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 fullEmptyState.style.display = 'none';
             }
 
-            if (searchInput.value.length > 0) {
+            // --- ÄNDRAD: Använder desktopSearchInput som källa ---
+            const currentSearchTerm = desktopSearchInput.value;
+            if (currentSearchTerm.length > 0) {
                 Object.values(emptyStates).forEach(el => {
                     if (el.style.display === 'flex') {
                         el.querySelector('h4').textContent = 'Inga träffar';
-                        el.querySelector('p').textContent = `Din sökning på "${searchInput.value}" gav inga resultat.`;
+                        el.querySelector('p').textContent = `Din sökning på "${currentSearchTerm}" gav inga resultat.`;
                     }
                 });
             } else {
@@ -698,8 +721,74 @@ document.addEventListener('DOMContentLoaded', () => {
             }); return score;
         }
 
-        function sortAndRender() {
-            let searchTerm = searchInput.value.toLowerCase().trim();
+        // --- NYTT: Funktion för att rendera sök-dropdown ---
+        function renderSearchDropdown(searchTerm, results) {
+            if (searchTerm.length < 1 || results.length === 0) {
+                desktopSearchResults.innerHTML = '';
+                mobileSearchResults.innerHTML = '';
+                desktopSearchResults.style.display = 'none';
+                mobileSearchResults.style.display = 'none';
+                return;
+            }
+
+            let html = '';
+            // Visa max 10 resultat i dropdown
+            results.slice(0, 10).forEach(item => {
+                html += `<a href="#" class="search-result-item" data-id="${item.id}">
+                            <div><strong>${escapeHTML(item.service_filter)}</strong></div>
+                            <span>${escapeHTML(item.name)}</span>
+                         </a>`;
+            });
+
+            desktopSearchResults.innerHTML = html;
+            mobileSearchResults.innerHTML = html;
+            desktopSearchResults.style.display = 'block';
+            mobileSearchResults.style.display = 'block';
+
+            addDropdownListeners();
+        }
+
+        // --- NYTT: Funktion för att rensa sökfält och dölja dropdowns ---
+        function clearAndHideSearch() {
+            desktopSearchInput.value = '';
+            mobileSearchInput.value = '';
+            
+            desktopSearchResults.innerHTML = '';
+            mobileSearchResults.innerHTML = '';
+            desktopSearchResults.style.display = 'none';
+            mobileSearchResults.style.display = 'none';
+            
+            desktopClearSearchBtn.style.display = 'none';
+            mobileClearSearchBtn.style.display = 'none';
+            
+            // Kör en tom sökning för att återställa listan
+            applySearchFilter('');
+        }
+
+        // --- NYTT: Funktion för att binda lyssnare till dropdown-resultat ---
+        function addDropdownListeners() {
+            document.querySelectorAll('.search-result-item').forEach(item => {
+                // Ta bort gamla lyssnare för att undvika dubletter
+                item.replaceWith(item.cloneNode(true));
+            });
+            
+            document.querySelectorAll('.search-result-item').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const itemId = e.currentTarget.getAttribute('data-id');
+                    
+                    // Rensa sökfälten och dölj listan
+                    clearAndHideSearch();
+                    
+                    // Scrolla och markera
+                    scrollToAndHighlight(itemId);
+                });
+            });
+        }
+        
+        // --- ÄNDRAD: sortAndRender tar nu emot söktermen ---
+        function sortAndRender(searchTermOverride) {
+            let searchTerm = (searchTermOverride !== undefined ? searchTermOverride : desktopSearchInput.value).toLowerCase().trim();
             let processedInventory = [...inventory];
             let syntaxFilterUsed = false;
             let generalSearchTerm = '';
@@ -770,6 +859,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
+            // --- ÄNDRAD: Spara en ofiltrerad lista för dropdown ---
+            let dropdownResults = [];
+
             if (generalSearchTerm !== '') {
                 const searchWords = generalSearchTerm.split(/\s+/).filter(word => word.length > 1 && !stopWords.includes(word));
                 if (searchWords.length === 0 && generalSearchTerm.length > 0) { searchWords.push(generalSearchTerm); }
@@ -778,6 +870,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     .map(item => ({ ...item, relevanceScore: calculateRelevance(item, searchWords) }))
                     .filter(item => item.relevanceScore > 0)
                     .sort((a, b) => b.relevanceScore - a.relevanceScore);
+                
+                // --- NYTT: Spara resultaten *innan* kategorifiltret applicerats (om man inte använde syntax)
+                if (!syntaxFilterUsed) {
+                    dropdownResults = [...processedInventory];
+                }
+                
             } 
             else {
                 processedInventory.sort((a, b) => {
@@ -790,6 +888,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
             
+            // --- NYTT: Rendera sök-dropdown ---
+            // Om syntax användes, visa den filtrerade listan. Annars, visa den ofiltrerade.
+            const resultsForDropdown = syntaxFilterUsed ? processedInventory : dropdownResults;
+            renderSearchDropdown(generalSearchTerm, resultsForDropdown);
+
+            // --- Slut Huvud-filtrering ---
             renderInventory(processedInventory);
 
             document.querySelectorAll('.header span[data-sort]').forEach(span => {
@@ -813,9 +917,10 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem('app_filter', currentFilter);
         }
 
-        function applySearchFilter() {
+        // --- ÄNDRAD: applySearchFilter tar nu emot söktermen ---
+        function applySearchFilter(term) {
              clearTimeout(window.searchTimeout);
-             window.searchTimeout = setTimeout(sortAndRender, 150);
+             window.searchTimeout = setTimeout(() => sortAndRender(term), 150);
         }
         
         async function saveInventoryItem(itemData) { const itemRef = doc(db, INVENTORY_COLLECTION, String(itemData.id)); await setDoc(itemRef, itemData); }
@@ -829,7 +934,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 querySnapshot.forEach((doc) => { tempInventory.push(doc.data()); });
                 inventory = tempInventory;
                 
-                applySearchFilter(); 
+                applySearchFilter(desktopSearchInput.value); // Kör en sökning med nuvarande värde
                 renderDashboard(inventory); 
                 updateCategoryBadges(inventory);
                 renderRecentItems(inventory);
@@ -914,6 +1019,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         function scrollToAndHighlight(itemId) {
+            // Konvertera till sträng om det är ett nummer, då data-id är en sträng
             const row = document.querySelector(`.artikel-rad[data-id="${itemId}"]`);
             if (row) {
                 row.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -1140,7 +1246,39 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             
             editForm.addEventListener('submit', handleEditSubmit);
-            searchInput.addEventListener('input', applySearchFilter); 
+            
+            // --- ÄNDRAD: Lyssnare för sökfälten ---
+            const handleSearchInput = (e) => {
+                const term = e.target.value;
+                // Synkronisera det andra sökfältet
+                if (e.target.id === 'desktop-search-input') {
+                    mobileSearchInput.value = term;
+                } else {
+                    desktopSearchInput.value = term;
+                }
+                
+                // Visa/dölj båda rensa-knapparna
+                const showClear = term.length > 0;
+                desktopClearSearchBtn.style.display = showClear ? 'block' : 'none';
+                mobileClearSearchBtn.style.display = showClear ? 'block' : 'none';
+                
+                // Anropa sökfunktionen
+                applySearchFilter(term);
+            };
+
+            desktopSearchInput.addEventListener('input', handleSearchInput);
+            mobileSearchInput.addEventListener('input', handleSearchInput);
+            
+            // --- ÄNDRAD: Lyssnare för rensa-knapparna ---
+            const handleClearSearch = () => {
+                clearAndHideSearch(); // Använd den nya hjälpfunktionen
+                desktopSearchInput.focus(); // Fokusera på desktop-sökfältet som standard
+            };
+
+            desktopClearSearchBtn.addEventListener('click', handleClearSearch);
+            mobileClearSearchBtn.addEventListener('click', handleClearSearch);
+            // --- SLUT ÄNDRINGAR SÖK ---
+
 
             addForm.querySelector('#add_service_filter').addEventListener('input', (e) => {
                 const value = e.target.value.trim().toUpperCase();
@@ -1182,9 +1320,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     setTimeout(() => document.getElementById('add_service_filter').focus(), 400);
                 });
             }
-
-            searchInput.addEventListener('input', () => { clearSearchBtn.style.display = searchInput.value.length > 0 ? 'block' : 'none'; });
-            clearSearchBtn.addEventListener('click', () => { searchInput.value = ''; clearSearchBtn.style.display = 'none'; applySearchFilter(); searchInput.focus(); });
+            
+            // BORTTAGEN: Gamla sök-lyssnare
+            // searchInput.addEventListener('input', () => { clearSearchBtn.style.display = searchInput.value.length > 0 ? 'block' : 'none'; });
+            // clearSearchBtn.addEventListener('click', () => { searchInput.value = ''; clearSearchBtn.style.display = 'none'; applySearchFilter(); searchInput.focus(); });
+            
             document.querySelectorAll('.lager-container').forEach(c => { c.addEventListener('scroll', () => c.classList.toggle('scrolled', c.scrollTop > 1)); });
 
             [editModal, confirmationModal].forEach(modal => { // BORTTAGEN: orderListModal
@@ -1204,16 +1344,22 @@ document.addEventListener('DOMContentLoaded', () => {
                     if(globalSearchResults.style.display === 'block') {
                         globalSearchResults.style.display = 'none';
                     }
+                    // --- NYTT: Dölj sök-dropdowns ---
+                    desktopSearchResults.style.display = 'none';
+                    mobileSearchResults.style.display = 'none';
                 }
             });
             
             document.querySelectorAll('.header span[data-sort]').forEach(header => {
                 header.addEventListener('click', () => {
                     const column = header.getAttribute('data-sort');
-                    if (searchInput.value !== '') { searchInput.value = ''; }
+                    // --- ÄNDRAD: Rensa sökfältet med nya funktionen ---
+                    if (desktopSearchInput.value !== '') { 
+                        clearAndHideSearch();
+                    }
                     const direction = (currentSort.column === column && currentSort.direction === 'asc') ? 'desc' : 'asc';
                     currentSort = { column, direction };
-                    applySearchFilter(); 
+                    applySearchFilter(''); // Kör tom sökning
                 });
             });
             
@@ -1271,7 +1417,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         categoryFilterBar.querySelectorAll('.btn-secondary').forEach(btn => {
                             btn.classList.toggle('active', btn.getAttribute('data-filter') === currentFilter);
                         });
-                        applySearchFilter();
+                        applySearchFilter(desktopSearchInput.value); // Behåll söktermen
                         closeAppMenu();
                     }
                 });
@@ -1322,12 +1468,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         const filter = e.target.getAttribute('data-filter');
                         if (filter) {
                             currentFilter = filter;
-                            // Rensa sökfältet vid filterbyte
-                            if(searchInput.value) {
-                                searchInput.value = '';
-                                clearSearchBtn.style.display = 'none';
+                            // --- ÄNDRAD: Rensa sökfältet med nya funktionen ---
+                            if(desktopSearchInput.value) {
+                                clearAndHideSearch();
                             }
-                            applySearchFilter();
+                            applySearchFilter(''); // Kör tom sökning
                         }
                     }
                 });
