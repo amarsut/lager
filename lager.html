@@ -466,6 +466,22 @@
     }
     /* --- SLUT NYTT --- */
 
+    /* NYTT: Justering för plate-tag i sök-dropdown */
+    .search-result-item span .plate-tag {
+        font-size: 0.9em; /* Gör den lite mindre för att passa */
+        vertical-align: middle;
+        margin: 0 4px;
+        position: relative;
+        top: -1px; /* Justera vertikal linjering */
+    }
+    .search-result-item span .plate-eu-s {
+        padding: 2px 4px;
+    }
+    .search-result-item span .plate-text {
+        padding: 2px 5px 2px 4px;
+    }
+    /* --- SLUT NYTT --- */
+    
     .copy-btn { background: var(--bg-medium); border: 1px solid var(--border-color); border-radius: 4px; cursor: pointer; color: var(--primary-dark); font-size: 0.9em; padding: 3px 5px; line-height: 1; opacity: 0.9; transition: opacity 0.2s, transform 0.1s, background 0.2s, color 0.2s; flex-shrink: 0; min-width: 26px; text-align: center; }
     .copy-btn:hover { opacity: 1; transform: scale(1.05); background: var(--primary-color); color: white; border-color: var(--primary-color); }
     .copy-btn:disabled { color: var(--success-color); cursor: default; }
@@ -499,7 +515,7 @@
     #slut-i-lager-lista .artikel-rad { opacity: 0.8; background-color: rgba(255, 61, 0, 0.05); }
     [data-theme="dark"] #slut-i-lager-lista .artikel-rad { background-color: rgba(255, 82, 82, 0.1); }
     
-    .modal { position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); backdrop-filter: blur(5px); display: none; justify-content: center; align-items: center; }
+    .modal { position: fixed; z-index: 10000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); backdrop-filter: blur(5px); display: none; justify-content: center; align-items: center; }
     
     /* ÄNDRAD: Modal (Request 4) */
     .modal-content {
@@ -529,7 +545,7 @@
     .close-btn { position: absolute; top: 15px; right: 15px; font-size: 28px; cursor: pointer; font-weight: bold; z-index: 10; color: var(--text-light); }    
     .close-btn:hover { color: var(--text-dark); }
 
-    #productPopup { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 2000; }
+    #productPopup { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 10010; }
     #productPopup iframe { width: 90%; height: 90%; position: absolute; top: 5%; left: 5%; border: 2px solid white; border-radius: 10px; }
     #productPopup .close-btn { position: absolute; top: 15px; right: 35px; color: white; font-size: 40px; cursor: pointer; }
 
@@ -958,7 +974,7 @@
         position: fixed;
         top: 20px;
         right: 20px;
-        z-index: 9999;
+        z-index: 11000;
         display: flex;
         flex-direction: column;
         gap: 10px;
@@ -1178,7 +1194,7 @@
         width: 100%;
         height: 100%;
         background-color: rgba(0, 0, 0, 0.5);
-        z-index: 1040;
+        z-index: 9000;
         display: none;
         animation: simpleFadeIn 0.3s forwards;
     }
@@ -1193,7 +1209,7 @@
         background-color: var(--card-bg); /* ÄNDRAD */
         border-left: 1px solid var(--border-color); /* ÄNDRAD */
         box-shadow: -10px 0 30px rgba(0,0,0,0.2);
-        z-index: 1050;
+        z-index: 9010;
         display: none;
         flex-direction: column;
         animation: slideInRight 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
@@ -1537,7 +1553,12 @@
         </div>
         
         <div class="global-search-container">
-            <p>Skriv in ett artikelnummer för att jämföra priser eller ett [ABC123] för fordonsuppgifter.</p>
+            <p>Skriv in ett artikelnummer för att jämföra priser eller ett 
+                <span class="plate-tag" style="display: inline-flex; vertical-align: middle; margin-left: 4px; margin-right: 4px;">
+                    <span class="plate-eu-s">S</span>
+                    <span class="plate-text">ABC123</span>
+                </span> 
+            för fordonsuppgifter.</p>
             <div class="global-search-wrapper">
                 <input type="text" id="global-search-input" placeholder="Ange artikelnummer (exempel: 03L 115 562)">
                 <button id="global-search-btn" class="btn-primary" title="Sök">
@@ -1845,4 +1866,3 @@
 
 </body>
 </html>
-
