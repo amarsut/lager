@@ -1340,36 +1340,7 @@
         #global-search-close-btn { top: -5px; right: -5px; }
     }
 
-    
-/* --- Autosuggest dropdown styling --- */
-.suggestions-list {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  background: var(--card-bg);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  z-index: 3000;
-  display: none;
-  max-height: 300px;
-  overflow-y: auto;
-}
-.suggestion-item {
-  padding: 10px 15px;
-  cursor: pointer;
-  border-bottom: 1px solid var(--border-color);
-}
-.suggestion-item:hover {
-  background: var(--bg-medium);
-}
-.highlighted-row {
-  background-color: rgba(0, 120, 255, 0.15);
-  transition: background-color 0.3s ease;
-}
-</style>
-
+    </style>
 <link rel="manifest" href="./manifest.json">
     
     <link rel="apple-touch-icon" href="images/192x192.png">
@@ -1438,7 +1409,6 @@
             <div class="toolbar-controls">
                 <div class="search-wrapper">
                     <input type="text" id="search-input" placeholder="Sök i lagret... (ex: 'k:Service')">
-<div id=\"search-suggestions\" class=\"suggestions-list\"></div>
                     <button type="button" id="clear-search-btn" title="Rensa sökning">&times;</button>
                 </div>
                 
@@ -1772,5 +1742,3 @@
 
 </body>
 </html>
-
-
