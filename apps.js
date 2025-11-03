@@ -614,41 +614,36 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- UPPGRADERAD OCH FELSÖKNINGSVERSION AV parseNotes ---
         function parseNotes(notesText) {
             try {
-                // Steg 1: Säkerställ strängkonvertering
-                const safeNotesText = String(notesText || '');
-                if (!safeNotesText.trim()) {
-                    return '';
-                }
+                // RAD 1: Tvinga fram strängkonvertering (Lösning på felet)
+                const safeNotesText = String(notesText || ''); 
+        
+                if (!safeNotesText.trim()) return ''; 
                 
-                // Regex för att hitta [ABC123] eller [ABC 123]
                 const plateRegex = /\[([A-ZÅÄÖ0-9]{1,3}[\s]?[A-ZÅÄÖ0-9]{1,3})\]/gi;
                 
-                // Steg 2: Dela upp strängen
-                const parts = safeNotesText.split(plateRegex);
+                // RAD 729: Använd safeNotesText
+                const parts = safeNotesText.split(plateRegex); 
                 let html = '';
         
-                // Steg 3: Bygg HTML
                 for (let i = 0; i < parts.length; i++) {
                     if (i % 2 === 1) {
-                        // Detta är en matchad reg-skylt
                         const plateContent = parts[i].toUpperCase().trim();
-                        if (plateContent) { // Förhindra tomma skyltar om RegEx matchar whitespace
+                        if (plateContent) { 
                             html += `<span class="plate-tag">
                                         <span class="plate-eu-s">S</span>
                                         <span class="plate-text">${escapeHTML(plateContent)}</span>
                                      </span>`;
                         }
                     } else if (parts[i]) {
-                        // Detta är vanlig text
                         html += escapeHTML(parts[i]);
                     }
                 }
                 return html;
         
             } catch (error) {
-                // VIKTIGT: Om ett fel inträffar i denna funktion, logga det och returnera en tom sträng.
-                // Detta förhindrar att hela appen kraschar under laddningen.
-                console.error("Fel vid parsning av anteckningar:", notesText, "Fel:", error);
+                // Om den mot förmodan fortfarande kraschar, logga felet och returnera tom sträng
+                // så att resten av sidan kan laddas.
+                console.error("KRITISKT FEL I parseNotes:", error, "Data:", notesText);
                 return '';
             }
         }
@@ -1701,6 +1696,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if(initialLoader) initialLoader.querySelector('p').textContent = 'Kritiskt fel vid initiering.';
     }
 });
+
 
 
 
