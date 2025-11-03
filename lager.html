@@ -1340,6 +1340,29 @@
         #global-search-close-btn { top: -5px; right: -5px; }
     }
 
+    /* Anta att #dynamic-search-area ligger under din huvud-header/titel-toolbar */
+    #dynamic-search-area {
+        position: fixed; /* Fäst elementet */
+        top: 60px; /* Justera detta baserat på höjden på din huvud-header */
+        width: 100%;
+        z-index: 100;
+        background-color: var(--bg-light); /* Eller den färg du vill ha */
+        transition: transform 0.3s ease-in-out;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Regeln som döljer sökfältet när användaren scrollar NER */
+    #dynamic-search-area.scrolled-down {
+        transform: translateY(-100%); /* Skjuter ut den uppåt */
+        /* Du kan lägga till opacity: 0; om du vill */
+    }
+    
+    /* Se till att innehållet nedanför #dynamic-search-area har tillräckligt med padding
+       så att det inte döljs av den fixeda sökarean. */
+    .main-content {
+        padding-top: 130px; /* Justera tillräckligt så att allt syns */
+    }
+
     </style>
 <link rel="manifest" href="./manifest.json">
     
@@ -1742,3 +1765,4 @@
 
 </body>
 </html>
+
