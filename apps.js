@@ -528,6 +528,46 @@ document.addEventListener('DOMContentLoaded', () => {
             if (textEl) textEl.textContent = message;
         }
 
+        // --- NYTT: Helper för att escapa HTML ---
+        function escapeHTML(str) {
+            return str.replace(/[&<>"']/g, function(match) {
+                return {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#39;'
+                }[match];
+            });
+        }
+
+        // --- NYTT: Funktion för att parsa anteckningar och skapa skyltar ---
+        function parseNotes(notesText) {
+            if (!notesText) return '';
+            
+            // Regex för att hitta [ABC123] eller [ABC 123]
+            const plateRegex = /\[([A-ZÅÄÖ0-9]{1,3}[\s]?[A-ZÅÄÖ0-9]{1,3})\]/gi;
+            
+            // Dela upp strängen baserat på regex, men behåll delarna
+            const parts = notesText.split(plateRegex);
+            let html = '';
+
+            for (let i = 0; i < parts.length; i++) {
+                if (i % 2 === 1) {
+                    // Detta är en matchad reg-skylt (det som var INUTI parentesen)
+                    const plateContent = parts[i].toUpperCase();
+                    html += `<span class="plate-tag">
+                                <span class="plate-eu-s">S</span>
+                                <span class="plate-text">${escapeHTML(plateContent)}</span>
+                             </span>`;
+                } else if (parts[i]) {
+                    // Detta är vanlig text
+                    html += escapeHTML(parts[i]);
+                }
+            }
+            return html;
+        }
+
         function createInventoryRow(item, isOutOfStock) {
             const row = document.createElement('div'); row.className = 'artikel-rad'; row.setAttribute('data-id', item.id);
             row.onclick = () => handleRowSelect(item.id, row);
@@ -540,7 +580,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 ? `` // Tom sträng istället för Beställ-knappen
                 : `<button class="edit-btn" onclick="handleEdit(${item.id}); event.stopPropagation();">Ändra</button>`;
           
-            const notesCell = `<span class="notes-cell" title="${item.notes || ''}">${item.notes || ''}</span>`;
+            // --- ÄNDRAD: Använder parseNotes() för att formatera anteckningar ---
+            const formattedNotes = parseNotes(item.notes || '');
+            const notesCell = `<span class="notes-cell" title="${item.notes || ''}">${formattedNotes}</span>`;
+            // --- SLUT ÄNDRING ---
+            
             const trodoLink = generateTrodoLink(item.service_filter); const aeroMLink = generateAeroMLink(item.service_filter); const thansenLink = generateThansenLink(item.service_filter); const egenLink = item.link;
             let primaryButtonHTML = ''; let linkCellContent = '';
             if (trodoLink) { primaryButtonHTML = `<button class="lank-knapp trodo-btn" onclick="window.open('${trodoLink}', '_blank'); event.stopPropagation();">Trodo</button>`; }
@@ -1313,5 +1357,3 @@ document.addEventListener('DOMContentLoaded', () => {
         if(initialLoader) initialLoader.querySelector('p').textContent = 'Kritiskt fel vid initiering.';
     }
 });
-
-
