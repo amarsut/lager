@@ -827,7 +827,7 @@ document.addEventListener('DOMContentLoaded', () => {
             onSnapshot(q, (querySnapshot) => {
                 const tempInventory = [];
                 querySnapshot.forEach((doc) => { tempInventory.push(doc.data()); });
-                inventory = tempInventory;
+                window.inventory = tempInventory; inventory = window.inventory;
                 
                 applySearchFilter(); 
                 renderDashboard(inventory); 
