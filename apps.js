@@ -1361,3 +1361,62 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
+
+
+// --- Autosuggest search dropdown ---
+document.addEventListener('DOMContentLoaded', () => {
+  const searchField = document.getElementById('search-input');
+  const suggestionsList = document.getElementById('search-suggestions');
+  const tableRows = document.querySelectorAll('#inventory-table tbody tr');
+
+  function clearHighlights() {
+    document.querySelectorAll('.highlighted-row').forEach(row => {
+      row.classList.remove('highlighted-row');
+    });
+  }
+
+  searchField.addEventListener('input', () => {
+    const query = searchField.value.trim().toLowerCase();
+    suggestionsList.innerHTML = '';
+    if (!query) {
+      suggestionsList.style.display = 'none';
+      clearHighlights();
+      return;
+    }
+    let matches = [];
+    tableRows.forEach(row => {
+      const text = row.textContent.toLowerCase();
+      if (text.includes(query)) {
+        matches.push({
+          name: row.cells[0]?.innerText || 'Okänd artikel',
+          element: row
+        });
+      }
+    });
+    if (matches.length === 0) {
+      suggestionsList.innerHTML = '<div class="suggestion-item">Inga träffar</div>';
+    } else {
+      matches.forEach(match => {
+        const div = document.createElement('div');
+        div.classList.add('suggestion-item');
+        div.textContent = match.name;
+        div.addEventListener('click', () => {
+          suggestionsList.style.display = 'none';
+          searchField.value = match.name;
+          clearHighlights();
+          match.element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          match.element.classList.add('highlighted-row');
+        });
+        suggestionsList.appendChild(div);
+      });
+    }
+    suggestionsList.style.display = 'block';
+  });
+
+  // Close suggestions when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('#search-suggestions') && e.target !== searchField) {
+      suggestionsList.style.display = 'none';
+    }
+  });
+});
