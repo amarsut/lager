@@ -1377,7 +1377,26 @@
     display: none !important;
   }
 }
+
+/* --- Förbättrad sticky sökruta: full bredd på mobil och tablet --- */
+@media (max-width: 1024px) {
+  #sticky-search-bar {
+    width: 100vw;
+    left: 0;
+    right: 0;
+    margin: 0;
+    box-sizing: border-box;
+  }
+  #sticky-search-bar .search-wrapper {
+    max-width: var(--container-width);
+    margin: 0 auto;
+  }
+  body {
+    overflow-x: hidden;
+  }
+}
 </style>
+
 
 
 <link rel="manifest" href="./manifest.json">
