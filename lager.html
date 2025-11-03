@@ -1342,17 +1342,24 @@
 
     
 /* --- MOBILANPASSNING: Endast sökfält sticky --- */
+#sticky-search-bar {
+  display: none;
+}
 @media (max-width: 768px) {
-  .toolbar {
+  .top-toolbar {
     position: static !important;
   }
-  .mobile-sticky-search {
+  #sticky-search-bar {
     position: sticky;
     top: 0;
-    z-index: 999;
+    z-index: 1020;
+    display: block;
     background: var(--card-bg);
-    padding: 10px;
+    padding: 10px 15px;
     border-bottom: 1px solid var(--border-color);
+  }
+  #sticky-search-bar .search-wrapper {
+    width: 100%;
   }
 }
 </style>
@@ -1362,7 +1369,13 @@
     <link rel="apple-touch-icon" href="images/192x192.png">
     
     <meta name="theme-color" content="#5a7dff"/> </head>
-<body data-theme="light"> <div id="initial-loader">
+<body data-theme="light">
+<div id='sticky-search-bar'>
+  <div class='search-wrapper'>
+    <input type='text' id='search-input' placeholder='Sök i lager...' />
+    <button id='clear-search-btn'>&times;</button>
+  </div>
+</div> <div id="initial-loader">
         <div class="loader-spinner"></div>
         <p>Hämtar lagerdata...</p>
     </div>
