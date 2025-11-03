@@ -1367,16 +1367,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-// --- Autosuggest dropdown: dual-field & click fix ---
+
+
+// --- Autosuggest dropdown: full click + scroll sync + article number display ---
 (function(){
   function initAutosuggest() {
-    // Detect active search input (mobile sticky or desktop)
     const inputs = Array.from(document.querySelectorAll('#search-input'));
     const searchField = inputs.find(i => i.offsetParent !== null) || inputs[0];
     const suggestionsList = document.getElementById('search-suggestions');
     if (!searchField || !suggestionsList) return;
 
-    // Ensure visibility and click functionality
     suggestionsList.style.pointerEvents = 'auto';
     suggestionsList.style.zIndex = '99999';
 
@@ -1391,13 +1391,25 @@ document.addEventListener('DOMContentLoaded', () => {
       suggestionsList.style.width = rect.width + 'px';
     }
 
+    let animationFrame;
+    function followScroll() {
+      if (suggestionsList.style.display === 'block') {
+        positionList();
+        animationFrame = requestAnimationFrame(followScroll);
+      } else {
+        cancelAnimationFrame(animationFrame);
+      }
+    }
+
     function renderSuggestions(query) {
       suggestionsList.innerHTML = '';
       if (!query) {
         suggestionsList.style.display = 'none';
         clearHighlights();
+        cancelAnimationFrame(animationFrame);
         return;
       }
+
       const data = window.inventory || [];
       const q = query.toLowerCase();
       const matches = data.filter(item =>
@@ -1413,36 +1425,40 @@ document.addEventListener('DOMContentLoaded', () => {
         matches.forEach(m => {
           const div = document.createElement('div');
           div.className = 'suggestion-item';
-          div.innerHTML = `<strong>${m.namn || m.name || 'Okänd'}</strong>`;
-          div.addEventListener('mousedown', (e) => {
-            e.preventDefault(); // prevent blur before click
-            searchField.value = m.namn || m.name || '';
-            suggestionsList.style.display = 'none';
+          const artnr = m.artnr || m.article_number || '';
+          const namn = m.namn || m.name || 'Okänd artikel';
+          div.innerHTML = artnr ? `<strong>[${artnr}]</strong> ${namn}` : `<strong>${namn}</strong>`;
+          div.addEventListener('click', () => {
+            const searchValue = namn;
+            searchField.value = searchValue;
             clearHighlights();
             const rows = document.querySelectorAll('#inventory-table tbody tr');
+            let found = false;
             rows.forEach(row => {
-              if (row.textContent.toLowerCase().includes(searchField.value.toLowerCase())) {
-                row.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                row.classList.add('highlighted-row');
-                setTimeout(() => row.classList.remove('highlighted-row'), 2500);
+              if (row.textContent.toLowerCase().includes(searchValue.toLowerCase())) {
+                found = true;
+                setTimeout(() => {
+                  row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  row.classList.add('highlighted-row');
+                  setTimeout(() => row.classList.remove('highlighted-row'), 3000);
+                }, 100);
               }
             });
+            if (!found) console.log("Ingen rad hittades för:", searchValue);
+            setTimeout(() => { suggestionsList.style.display = 'none'; }, 150);
           });
           suggestionsList.appendChild(div);
         });
       }
       positionList();
       suggestionsList.style.display = 'block';
+      cancelAnimationFrame(animationFrame);
+      animationFrame = requestAnimationFrame(followScroll);
     }
 
-    searchField.addEventListener('input', e => {
-      renderSuggestions(e.target.value);
-    });
-
+    searchField.addEventListener('input', e => renderSuggestions(e.target.value));
     window.addEventListener('resize', positionList);
-    window.addEventListener('scroll', positionList, true);
-
-    document.addEventListener('click', (e) => {
+    document.addEventListener('click', e => {
       if (!e.target.closest('#search-suggestions') && e.target !== searchField) {
         suggestionsList.style.display = 'none';
       }
