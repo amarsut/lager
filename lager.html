@@ -467,17 +467,17 @@
     /* --- SLUT NYTT --- */
 
     /* NYTT: Justering för plate-tag i sök-dropdown */
-    .search-result-item span .plate-tag {
+    .search-result-item div .plate-tag {
         font-size: 0.9em; /* Gör den lite mindre för att passa */
         vertical-align: middle;
         margin: 0 4px;
         position: relative;
         top: -1px; /* Justera vertikal linjering */
     }
-    .search-result-item span .plate-eu-s {
+    .search-result-item div .plate-eu-s {
         padding: 2px 4px;
     }
-    .search-result-item span .plate-text {
+    .search-result-item div .plate-text {
         padding: 2px 5px 2px 4px;
     }
     /* --- SLUT NYTT --- */
@@ -1520,8 +1520,9 @@
         
         <div class="top-toolbar">
             <div class="toolbar-title">
-                LAGERDATABAS
-                <span id="toolbar-filter-badge"></span> </div>
+                <a href="#" onclick="window.location.reload(); return false;" style="text-decoration: none; color: inherit;">LAGERDATABAS</a>
+                <span id="toolbar-filter-badge"></span> 
+            </div>
             <div class="toolbar-controls">
                 <div class="search-wrapper">
                     <input type="text" id="desktop-search-input" placeholder="Sök i lagret... (ex: 'k:Service')" autocomplete="off">
