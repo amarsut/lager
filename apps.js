@@ -115,7 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const MAX_HISTORY_ITEMS = 5;
         
         // GLOBALA VARIABLER
-        window.inventory = []; let inventory = window.inventory; 
+        let inventory = []; 
         let selectedItemId = null;
         let currentSort = { column: 'name', direction: 'desc' };
         let currentFilter = 'Alla';
@@ -827,9 +827,7 @@ document.addEventListener('DOMContentLoaded', () => {
             onSnapshot(q, (querySnapshot) => {
                 const tempInventory = [];
                 querySnapshot.forEach((doc) => { tempInventory.push(doc.data()); });
-                window.inventory = tempInventory;
-  inventory = window.inventory;
-  console.log("Inventory uppdaterad:", window.inventory.length);
+                inventory = tempInventory;
                 
                 applySearchFilter(); 
                 renderDashboard(inventory); 
@@ -846,10 +844,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     setTimeout(() => initialLoader.style.display = 'none', 300);
                 }
                 
-            
-                // Initialize autosuggest now that inventory is updated
-                initializeIntegratedAutosuggest();
-}, (error) => {
+            }, (error) => {
                 console.error("Realtime listener error: ", error);
                 updateSyncStatus('error', 'Synk-fel: Se konsolen');
                 if (initialLoader) {
@@ -1363,247 +1358,3 @@ document.addEventListener('DOMContentLoaded', () => {
         if(initialLoader) initialLoader.querySelector('p').textContent = 'Kritiskt fel vid initiering.';
     }
 });
-
-
-
-
-
-
-
-
-
-// --- Autosuggest dropdown: full click + scroll sync + article number display ---
-(function(){
-  function initAutosuggest() {
-    const inputs = Array.from(document.querySelectorAll('#search-input'));
-    const searchField = inputs.find(i => i.offsetParent !== null) || inputs[0];
-    const suggestionsList = document.getElementById('search-suggestions');
-    if (!searchField || !suggestionsList) return;
-
-    suggestionsList.style.pointerEvents = 'auto';
-    suggestionsList.style.zIndex = '99999';
-
-    function clearHighlights() {
-      document.querySelectorAll('.highlighted-row').forEach(row => row.classList.remove('highlighted-row'));
-    }
-
-    function positionList() {
-      const rect = searchField.getBoundingClientRect();
-      suggestionsList.style.top = rect.bottom + window.scrollY + 'px';
-      suggestionsList.style.left = rect.left + window.scrollX + 'px';
-      suggestionsList.style.width = rect.width + 'px';
-    }
-
-    let animationFrame;
-    function followScroll() {
-      if (suggestionsList.style.display === 'block') {
-        positionList();
-        animationFrame = requestAnimationFrame(followScroll);
-      } else {
-        cancelAnimationFrame(animationFrame);
-      }
-    }
-
-    function renderSuggestions(query) {
-      suggestionsList.innerHTML = '';
-      if (!query) {
-        suggestionsList.style.display = 'none';
-        clearHighlights();
-        cancelAnimationFrame(animationFrame);
-        return;
-      }
-
-      const data = window.inventory || [];
-      const q = query.toLowerCase();
-      const matches = data.filter(item =>
-        Object.values(item).some(val => String(val).toLowerCase().includes(q))
-      );
-
-      if (matches.length === 0) {
-        const no = document.createElement('div');
-        no.className = 'suggestion-item';
-        no.textContent = 'Inga träffar';
-        suggestionsList.appendChild(no);
-      } else {
-        matches.forEach(m => {
-          const div = document.createElement('div');
-          div.className = 'suggestion-item';
-          const artnr = m.artnr || m.article_number || '';
-          const namn = m.namn || m.name || 'Okänd artikel';
-          div.innerHTML = artnr ? `<strong>[${artnr}]</strong> ${namn}` : `<strong>${namn}</strong>`;
-          div.addEventListener('click', () => {
-            const searchValue = namn;
-            searchField.value = searchValue;
-            clearHighlights();
-            const rows = document.querySelectorAll('#inventory-table tbody tr');
-            let found = false;
-            rows.forEach(row => {
-              if (row.textContent.toLowerCase().includes(searchValue.toLowerCase())) {
-                found = true;
-                setTimeout(() => {
-                  row.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                  row.classList.add('highlighted-row');
-                  setTimeout(() => row.classList.remove('highlighted-row'), 3000);
-                }, 100);
-              }
-            });
-            if (!found) console.log("Ingen rad hittades för:", searchValue);
-            setTimeout(() => { suggestionsList.style.display = 'none'; }, 150);
-          });
-          suggestionsList.appendChild(div);
-        });
-      }
-      positionList();
-      suggestionsList.style.display = 'block';
-      cancelAnimationFrame(animationFrame);
-      animationFrame = requestAnimationFrame(followScroll);
-    }
-
-    searchField.addEventListener('input', e => renderSuggestions(e.target.value));
-    window.addEventListener('resize', positionList);
-    document.addEventListener('click', e => {
-      if (!e.target.closest('#search-suggestions') && e.target !== searchField) {
-        suggestionsList.style.display = 'none';
-      }
-    });
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initAutosuggest);
-  } else {
-    initAutosuggest();
-  }
-})();
-
-
-// --- Integrated autosuggest (injected to run when inventory is loaded) ---
-function initializeIntegratedAutosuggest() {
-  // create global suggestions container if not exists
-  let suggestionsList = document.getElementById('search-suggestions');
-  if (!suggestionsList) {
-    suggestionsList = document.createElement('div');
-    suggestionsList.id = 'search-suggestions';
-    suggestionsList.className = 'suggestions-list';
-    suggestionsList.setAttribute('aria-live', 'polite');
-    document.body.appendChild(suggestionsList);
-  }
-
-  // helper to find active search input (visible one)
-  function activeSearchInput() {
-    const inputs = Array.from(document.querySelectorAll('#search-input'));
-    return inputs.find(i => i.offsetParent !== null) || inputs[0];
-  }
-
-  // position the fixed suggestions under the element
-  function positionListFor(inputEl, listEl) {
-    if (!inputEl) return;
-    const rect = inputEl.getBoundingClientRect();
-    const left = rect.left + window.scrollX;
-    const top = rect.bottom + window.scrollY;
-    listEl.style.position = 'fixed';
-    listEl.style.left = left + 'px';
-    listEl.style.top = top + 'px';
-    listEl.style.width = rect.width + 'px';
-  }
-
-  // clear highlight helper uses same class as compare-search (uses .highlight)
-  function clearAllHighlights() {
-    document.querySelectorAll('.artikel-rad.highlight').forEach(r => r.classList.remove('highlight'));
-    document.querySelectorAll('.highlighted-row').forEach(r => r.classList.remove('highlighted-row'));
-  }
-
-  // render suggestions based on query
-  let rafId = null;
-  function followPosition(listEl, inputEl) {
-    if (listEl.style.display === 'block') {
-      positionListFor(inputEl, listEl);
-      rafId = requestAnimationFrame(() => followPosition(listEl, inputEl));
-    } else if (rafId) {
-      cancelAnimationFrame(rafId);
-      rafId = null;
-    }
-  }
-
-  function renderSuggestions(query) {
-    const inputEl = activeSearchInput();
-    const listEl = suggestionsList;
-    listEl.innerHTML = '';
-    if (!query) { listEl.style.display = 'none'; cancelAnimationFrame(rafId); return; }
-    const q = query.toLowerCase();
-    const data = window.inventory || [];
-    const matches = data.filter(item => {
-      return ['service_filter','name','namn','artnr','notes'].some(k => String(item[k]||'').toLowerCase().includes(q));
-    });
-
-    if (matches.length === 0) {
-      const no = document.createElement('div');
-      no.className = 'suggestion-item';
-      no.textContent = 'Inga träffar';
-      listEl.appendChild(no);
-    } else {
-      matches.forEach(m => {
-        const div = document.createElement('div');
-        div.className = 'suggestion-item';
-        const artnr = m.artnr || m.service_filter || m.article_number || '';
-        const namn = m.namn || m.name || '';
-        div.innerHTML = artnr ? `<strong>[${artnr}]</strong> ${namn}` : `<strong>${namn}</strong>`;
-        div.addEventListener('click', (e) => {
-          // use same highlight behavior as scrollToAndHighlight (uses .highlight)
-          const searchValue = namn || m.service_filter || '';
-          const rows = Array.from(document.querySelectorAll('.artikel-rad'));
-          let found = false;
-          clearAllHighlights();
-          for (const row of rows) {
-            if (row.textContent.toLowerCase().includes(String(searchValue).toLowerCase()) || row.getAttribute('data-id')==String(m.id)) {
-              found = true;
-              // scroll and apply same highlight class used in scrollToAndHighlight
-              row.scrollIntoView({ behavior: 'smooth', block: 'center' });
-              // remove existing highlights
-              document.querySelectorAll('.artikel-rad.highlight').forEach(r => r.classList.remove('highlight'));
-              row.classList.add('highlight');
-              // remove after 3s
-              setTimeout(() => row.classList.remove('highlight'), 3000);
-              break;
-            }
-          }
-          // close suggestions shortly after click to allow scroll
-          setTimeout(() => { listEl.style.display = 'none'; }, 160);
-        });
-        listEl.appendChild(div);
-      });
-    }
-    positionListFor(inputEl, listEl);
-    listEl.style.display = 'block';
-    // follow scrolling so it stays under the input
-    cancelAnimationFrame(rafId);
-    rafId = requestAnimationFrame(() => followPosition(listEl, inputEl));
-  }
-
-  // wire events
-  const inputWatcher = () => {
-    const inputEl = activeSearchInput();
-    if (!inputEl) return;
-    // remove previous handlers by replacing element with a clone (clean slate)
-    const cleaned = inputEl.cloneNode(true);
-    inputEl.parentNode.replaceChild(cleaned, inputEl);
-    cleaned.addEventListener('input', (e) => {
-      renderSuggestions(e.target.value);
-    });
-    // clear on outside click
-    document.addEventListener('click', (e) => {
-      if (!e.target.closest('#search-suggestions') && e.target.id !== 'search-input') {
-        suggestionsList.style.display = 'none';
-      }
-    });
-    // reposition on resize
-    window.addEventListener('resize', () => {
-      if (suggestionsList.style.display === 'block') {
-        positionListFor(cleaned, suggestionsList);
-      }
-    });
-  };
-
-  inputWatcher();
-}
-
-// end initializeIntegratedAutosuggest
