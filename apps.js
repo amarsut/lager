@@ -612,13 +612,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // --- NYTT: Funktion för att parsa anteckningar och skapa skyltar ---
         function parseNotes(notesText) {
-            if (!notesText) return '';
+            // --- FIX: Se till att notesText alltid är en sträng ---
+            const safeNotesText = String(notesText || '');
+            // --- SLUT FIX ---
+
+            if (!safeNotesText) return ''; // Kontrollera den säkra strängen
             
             // Regex för att hitta [ABC123] eller [ABC 123]
             const plateRegex = /\[([A-ZÅÄÖ0-9]{1,3}[\s]?[A-ZÅÄÖ0-9]{1,3})\]/gi;
             
             // Dela upp strängen baserat på regex, men behåll delarna
-            const parts = notesText.split(plateRegex);
+            const parts = safeNotesText.split(plateRegex); // <-- Använd den säkra strängen
             let html = '';
 
             for (let i = 0; i < parts.length; i++) {
@@ -1684,5 +1688,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if(initialLoader) initialLoader.querySelector('p').textContent = 'Kritiskt fel vid initiering.';
     }
 });
+
 
 
