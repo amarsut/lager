@@ -1395,26 +1395,6 @@
     overflow-x: hidden;
   }
 }
-
-/* Autosuggest dropdown styles */
-.suggestions-list {
-  display: none;
-  position: fixed;
-  background: var(--card-bg);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.12);
-  z-index: 99999;
-  max-height: 360px;
-  overflow-y: auto;
-}
-.suggestion-item {
-  padding: 10px 14px;
-  border-bottom: 1px solid var(--border-color);
-  cursor: pointer;
-}
-.suggestion-item:last-child { border-bottom: none; }
-.suggestion-item:hover { background: var(--bg-medium); }
 </style>
 
 
@@ -1824,9 +1804,5 @@
     
     <script type="module" src="apps.js"></script>
 
-
-<div id="search-suggestions" class="suggestions-list" aria-live="polite"></div>
 </body>
 </html>
-
-
