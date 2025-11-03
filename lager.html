@@ -340,12 +340,12 @@
     #sync-status.sync-error .icon { background-color: var(--danger-color); }
     [data-theme="dark"] #sync-status.sync-error { color: #ffdbdb; background-color: #6a0f0f; }
 
-    #search-input { width: 100%; font-size: 1em; border-radius: 8px; border: 1px solid var(--border-color); transition: all 0.2s ease-in-out; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' width='16' height='16'%3E%3Cpath fill='%236B7280' d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: 15px center; background-size: 16px 16px; padding: 12px 40px 12px 45px; background-color: var(--bg-light); box-shadow: none; box-sizing: border-box; color: var(--text-dark); }
-    #search-input:focus { border-color: var(--primary-color); box-shadow: 0 0 0 4px rgba(90, 125, 255, 0.2); outline: none; background-color: var(--card-bg); }
+    #desktop-search-input, #mobile-search-input { width: 100%; font-size: 1em; border-radius: 8px; border: 1px solid var(--border-color); transition: all 0.2s ease-in-out; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' width='16' height='16'%3E%3Cpath fill='%236B7280' d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: 15px center; background-size: 16px 16px; padding: 12px 40px 12px 45px; background-color: var(--bg-light); box-shadow: none; box-sizing: border-box; color: var(--text-dark); }
+    #desktop-search-input:focus, #mobile-search-input:focus { border-color: var(--primary-color); box-shadow: 0 0 0 4px rgba(90, 125, 255, 0.2); outline: none; background-color: var(--card-bg); }
 
     .search-wrapper { position: relative; width: 350px; }
-    #clear-search-btn { position: absolute; top: 50%; right: 1px; transform: translateY(-50%); background: none; border: none; font-size: 1.8em; color: #888; cursor: pointer; padding: 0 12px; line-height: 1; display: none; z-index: 5; }
-    #clear-search-btn:hover { color: var(--text-dark); }
+    #desktop-clear-search-btn, #mobile-clear-search-btn { position: absolute; top: 50%; right: 1px; transform: translateY(-50%); background: none; border: none; font-size: 1.8em; color: #888; cursor: pointer; padding: 0 12px; line-height: 1; display: none; z-index: 5; }
+    #desktop-clear-search-btn:hover, #mobile-clear-search-btn:hover { color: var(--text-dark); }
         
     .lager-wrapper { overflow-x: auto; margin-bottom: 25px; -webkit-overflow-scrolling: touch; }
     .lager-container { background-color: var(--card-bg); border-radius: 16px; box-shadow: var(--card-shadow); margin-bottom: 40px; border: 1px solid var(--border-color); position: relative; max-height: 450px; overflow-y: auto; min-width: min-content; transition: background-color 0.3s, border-color 0.3s; }
@@ -1002,6 +1002,36 @@
     }
     #fab-add-btn .icon-span { font-size: 32px; }
     
+    /* --- NYTT: Sök-resultat dropdown --- */
+    .search-results-dropdown {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-top: none;
+        border-radius: 0 0 8px 8px;
+        box-shadow: var(--card-shadow);
+        max-height: 300px;
+        overflow-y: auto;
+        z-index: 1019; /* Just below toolbar z-index */
+    }
+    .search-result-item {
+        padding: 10px 15px;
+        cursor: pointer;
+        border-bottom: 1px solid var(--border-color);
+        display: block;
+        text-decoration: none;
+        color: var(--text-dark);
+    }
+    .search-result-item:last-child { border-bottom: none; }
+    .search-result-item:hover { background-color: var(--bg-medium); }
+    .search-result-item strong { color: var(--primary-color); }
+    .search-result-item span { font-size: 0.9em; color: var(--text-light); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    /* --- SLUT NYTT --- */
+
     @media print {
         body { padding: 0; background-color: white; color: black; }
         .main-content { max-width: 100%; }
@@ -1009,7 +1039,7 @@
         .lank-knapp, .qty-btn, .copy-btn, .search-btn, #fab-add-btn, #back-to-top-btn, 
         #toggle-add-form-btn, .json-controls, #sync-status, .theme-switcher, #pwa-install-btn,
         #category-filter-bar, .modal, .search-wrapper, .notes-cell, .link-buttons, .action-cell,
-        .top-toolbar, #recent-items-container, #app-menu-modal {
+        .top-toolbar, #recent-items-container, #app-menu-modal, .search-results-dropdown { /* NYTT: .search-results-dropdown */
             display: none !important;
         }
         h1, h2, h3 { color: black; border: none; }
@@ -1282,7 +1312,7 @@
             flex-grow: 1;
             max-width: none;
         }
-        .toolbar-controls .search-wrapper #search-input {
+        .toolbar-controls .search-wrapper #desktop-search-input { /* ÄNDRAD: #desktop-search-input */
             width: 100%;
             padding-top: 10px; /* Lite mindre padding */
             padding-bottom: 10px;
@@ -1407,9 +1437,9 @@
 <body data-theme="light">
 <div id='sticky-search-bar'>
   <div class='search-wrapper'>
-    <input type='text' id='search-input' placeholder='Sök i lager...' />
-    <button id='clear-search-btn'>&times;</button>
-  </div>
+    <input type='text' id='mobile-search-input' placeholder='Sök i lager...' />
+    <button id='mobile-clear-search-btn'>&times;</button>
+    <div id="mobile-search-results" class="search-results-dropdown"></div> </div>
 </div> <div id="initial-loader">
         <div class="loader-spinner"></div>
         <p>Hämtar lagerdata...</p>
@@ -1472,9 +1502,9 @@
                 <span id="toolbar-filter-badge"></span> </div>
             <div class="toolbar-controls">
                 <div class="search-wrapper">
-                    <input type="text" id="search-input" placeholder="Sök i lagret... (ex: 'k:Service')">
-                    <button type="button" id="clear-search-btn" title="Rensa sökning">&times;</button>
-                </div>
+                    <input type="text" id="desktop-search-input" placeholder="Sök i lagret... (ex: 'k:Service')">
+                    <button type="button" id="desktop-clear-search-btn" title="Rensa sökning">&times;</button>
+                    <div id="desktop-search-results" class="search-results-dropdown"></div> </div>
                 
                 <button id="pwa-install-btn" class="btn-primary" type="button">
                     <span class="icon-span">install_desktop</span>
