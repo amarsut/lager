@@ -403,22 +403,26 @@
     }
     /* --- SLUT ÄNDRING --- */
     
-    /* --- ÄNDRAD: Anteckningscell (återställd till en rad) --- */
+    /* --- ÄNDRAD: Anteckningscell (fix för ellipsis) --- */
     .notes-cell { 
         display: flex; 
         align-items: center; 
-        gap: 4px; /* Mellanrum mellan text och taggar */
-        
-        /* För att förhindra radbrytning och visa "..." */
+        gap: 4px; 
         white-space: nowrap; 
         overflow: hidden; 
         text-overflow: ellipsis; 
         cursor: help;
-        
-        /* Säkerställ att cellen inte kan bli högre än en rad */
-        /* (Detta uppnås främst via nowrap ovan) */
+        min-width: 0; /* <-- NYTT: Tvingar cellen att respektera sin grid-kolumnsbredd */
     }
     
+    /* --- NYTT: Textdelar inuti anteckningscell (fix för ellipsis) --- */
+    .notes-text-part {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        min-width: 0; /* För att flexbox ska kunna krympa den */
+    }
+
     /* --- NYTT: Registreringsskylt-taggar (Uppdaterad) --- */
     .plate-tag {
         display: inline-flex;
@@ -549,8 +553,10 @@
     .dropdown-menu .thansen-btn:hover { background-color: #006060; }
     .dropdown-menu .egen-lank-btn { background-color: #5a7dff; color: white; }
     .dropdown-menu .egen-lank-btn:hover { background-color: #3a57e8; }
-    .more-btn { background-color: var(--bg-dark); color: var(--text-dark); border: 1px solid var(--border-color); padding: 6px 10px; font-size: 0.8em; }
-    .more-btn:hover { background-color: var(--bg-dark); opacity: 0.8; }
+    
+    /* --- BORTTAGEN: Styling för .more-btn (använder .lank-knapp nu) --- */
+    /* .more-btn { ... } */
+    /* .more-btn:hover { ... } */
     
     /* ÄNDRAD: Trodo-knapp (Request 6) */
     /* .trodo-btn ... (Regel borttagen) */
@@ -1038,13 +1044,13 @@
         margin-bottom: 30px;
         box-sizing: border-box;
         border: 1px solid var(--border-color);
-        transition: background-color 0.3s, border-color 0.3s;
+        transition: background-color 0.3s, border-color 0.3s, padding 0.3s ease-out; /* NYTT: transition */
         flex-wrap: wrap;
         gap: 15px;
         
         /* NYTT: Gör toolbaren klistrad */
         position: sticky;
-        top: 40px; /* Matchar body-padding på desktop */
+        top: 0; /* ÄNDRAD: Fäst högst upp */
         z-index: 1020;
     }
     
@@ -1054,9 +1060,10 @@
         color: var(--primary-dark);
         letter-spacing: 0.5px;
         text-transform: uppercase;
-        display: flex; /* NYTT */
-        align-items: center; /* NYTT */
-        gap: 10px; /* NYTT */
+        display: flex; 
+        align-items: center; 
+        gap: 10px; 
+        transition: display 0.3s; /* NYTT: Mjuk övergång */
     }
     /* NYTT: Aktivt filter-märke i titel */
     #toolbar-filter-badge {
@@ -1077,9 +1084,10 @@
         display: flex;
         align-items: center;
         gap: 20px;
-        flex-wrap: wrap; /* ÄNDRAD */
-        justify-content: flex-end; /* ÄNDRAD */
-        flex-grow: 1; /* NYTT: Gör att den kan växa och hålla sökfältet */
+        flex-wrap: wrap; 
+        justify-content: flex-end; 
+        flex-grow: 1; 
+        transition: gap 0.3s; /* NYTT: Mjuk övergång */
     }
     
     /* NYTT: Styling för sökfältet i toolbaren */
@@ -1251,7 +1259,7 @@
             padding: 12px 15px;
             margin-bottom: 20px;
             gap: 10px;
-            top: 20px; /* Matchar body-padding på mobil */
+            top: 0; /* ÄNDRAD: Fäst högst upp */
         }
         .toolbar-title {
             font-size: 1.1em;
@@ -1291,6 +1299,28 @@
             padding: 4px 8px;
             font-size: 0.8em;
         }
+        
+        /* --- NYTT: Mobil scroll-effekt --- */
+        .top-toolbar.mobile-scrolled {
+            padding-top: 10px;
+            padding-bottom: 10px;
+            gap: 0;
+        }
+        .top-toolbar.mobile-scrolled .toolbar-title {
+            display: none;
+        }
+        .top-toolbar.mobile-scrolled .toolbar-controls {
+            gap: 0;
+        }
+        .top-toolbar.mobile-scrolled .search-wrapper {
+            width: 100%;
+            order: 1; /* Tvinga den att vara först */
+        }
+        /* Göm allt annat i controls */
+        .top-toolbar.mobile-scrolled .toolbar-controls > *:not(.search-wrapper) {
+            display: none;
+        }
+        /* --- SLUT NYTT --- */
         
         #add-article-form .submit-button-wrapper {
             grid-template-columns: 1fr;
