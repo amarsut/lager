@@ -827,7 +827,7 @@ document.addEventListener('DOMContentLoaded', () => {
             onSnapshot(q, (querySnapshot) => {
                 const tempInventory = [];
                 querySnapshot.forEach((doc) => { tempInventory.push(doc.data()); });
-                window.inventory = tempInventory; inventory = window.inventory;
+                inventory = tempInventory;
                 
                 applySearchFilter(); 
                 renderDashboard(inventory); 
@@ -1362,7 +1362,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-// --- Autosuggest dropdown (uses window.inventory) ---
+
+// --- Autosuggest dropdown with dynamic positioning ---
 (function(){
   function initAutosuggest() {
     const searchField = document.getElementById('search-input');
@@ -1373,6 +1374,13 @@ document.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('.highlighted-row').forEach(row => row.classList.remove('highlighted-row'));
     }
 
+    function positionList() {
+      const rect = searchField.getBoundingClientRect();
+      suggestionsList.style.top = rect.bottom + window.scrollY + 'px';
+      suggestionsList.style.left = rect.left + window.scrollX + 'px';
+      suggestionsList.style.width = rect.width + 'px';
+    }
+
     function renderSuggestions(query) {
       suggestionsList.innerHTML = '';
       if (!query) {
@@ -1380,13 +1388,12 @@ document.addEventListener('DOMContentLoaded', () => {
         clearHighlights();
         return;
       }
+
       const data = window.inventory || [];
       const q = query.toLowerCase();
-      const matches = data.filter(item => {
-        // check key fields for match
-        const fields = [item.service_filter, item.name, item.artnr, item.notes].map(v => String(v||'').toLowerCase());
-        return fields.some(f => f.includes(q));
-      });
+      const matches = data.filter(item =>
+        Object.values(item).some(val => String(val).toLowerCase().includes(q))
+      );
 
       if (matches.length === 0) {
         const no = document.createElement('div');
@@ -1397,49 +1404,33 @@ document.addEventListener('DOMContentLoaded', () => {
         matches.forEach(m => {
           const div = document.createElement('div');
           div.className = 'suggestion-item';
-          div.tabIndex = 0;
-          div.innerHTML = `<strong>${(m.service_filter||m.artnr||'').toString()}</strong> — ${(m.name||'').toString()}`;
+          div.innerHTML = `<strong>${m.namn || m.name || 'Okänd'}</strong>`;
           div.addEventListener('click', () => {
-            performSelect(m);
-          });
-          div.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') performSelect(m);
+            searchField.value = m.namn || m.name || '';
+            suggestionsList.style.display = 'none';
+            clearHighlights();
+            const rows = document.querySelectorAll('#inventory-table tbody tr');
+            rows.forEach(row => {
+              if (row.textContent.toLowerCase().includes(searchField.value.toLowerCase())) {
+                row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                row.classList.add('highlighted-row');
+                setTimeout(() => row.classList.remove('highlighted-row'), 2500);
+              }
+            });
           });
           suggestionsList.appendChild(div);
         });
       }
+      positionList();
       suggestionsList.style.display = 'block';
     }
 
-    function performSelect(item) {
-      const val = item.name || item.service_filter || item.artnr || '';
-      searchField.value = val;
-      suggestionsList.style.display = 'none';
-      clearHighlights();
-      // Find matching element(s) in DOM - use data-id attribute
-      const selector = `[data-id="${item.id}"]`;
-      let el = document.querySelector(selector);
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        el.classList.add('highlighted-row');
-        setTimeout(() => el.classList.remove('highlighted-row'), 2500);
-      } else {
-        // fallback: find by text content
-        const rows = Array.from(document.querySelectorAll('.artikel-rad'));
-        for (const row of rows) {
-          if (row.textContent.toLowerCase().includes(val.toLowerCase())) {
-            row.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            row.classList.add('highlighted-row');
-            setTimeout(() => row.classList.remove('highlighted-row'), 2500);
-            break;
-          }
-        }
-      }
-    }
-
-    searchField.addEventListener('input', (e) => {
+    searchField.addEventListener('input', e => {
       renderSuggestions(e.target.value);
     });
+
+    window.addEventListener('resize', positionList);
+    window.addEventListener('scroll', positionList, true);
 
     document.addEventListener('click', (e) => {
       if (!e.target.closest('#search-suggestions') && e.target !== searchField) {
@@ -1448,7 +1439,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Wait until DOMContentLoaded, then try init (apps.js main also runs on DOMContentLoaded)
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initAutosuggest);
   } else {
