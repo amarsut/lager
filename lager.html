@@ -1341,76 +1341,41 @@
     }
 
     
-/* --- MOBILANPASSNING: Endast sökfält sticky --- */
-#sticky-search-bar {
+/* --- Autosuggest dropdown styling --- */
+.suggestions-list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  z-index: 3000;
   display: none;
+  max-height: 300px;
+  overflow-y: auto;
 }
-@media (max-width: 768px) {
-  .top-toolbar {
-    position: static !important;
-  }
-  #sticky-search-bar {
-    position: sticky;
-    top: 0;
-    z-index: 1020;
-    display: block;
-    background: var(--card-bg);
-    padding: 10px 15px;
-    border-bottom: 1px solid var(--border-color);
-  }
-  #sticky-search-bar .search-wrapper {
-    width: 100%;
-  }
+.suggestion-item {
+  padding: 10px 15px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border-color);
 }
-
-/* --- Döljer dubbla sökfält: behåll sticky på mobil, original på desktop --- */
-@media (max-width: 768px) {
-  .top-toolbar .search-wrapper {
-    display: none !important;
-  }
-  #sticky-search-bar {
-    display: block !important;
-  }
+.suggestion-item:hover {
+  background: var(--bg-medium);
 }
-@media (min-width: 769px) {
-  #sticky-search-bar {
-    display: none !important;
-  }
-}
-
-/* --- Förbättrad sticky sökruta: full bredd på mobil och tablet --- */
-@media (max-width: 1024px) {
-  #sticky-search-bar {
-    width: 100vw;
-    left: 0;
-    right: 0;
-    margin: 0;
-    box-sizing: border-box;
-  }
-  #sticky-search-bar .search-wrapper {
-    max-width: var(--container-width);
-    margin: 0 auto;
-  }
-  body {
-    overflow-x: hidden;
-  }
+.highlighted-row {
+  background-color: rgba(0, 120, 255, 0.15);
+  transition: background-color 0.3s ease;
 }
 </style>
-
-
 
 <link rel="manifest" href="./manifest.json">
     
     <link rel="apple-touch-icon" href="images/192x192.png">
     
     <meta name="theme-color" content="#5a7dff"/> </head>
-<body data-theme="light">
-<div id='sticky-search-bar'>
-  <div class='search-wrapper'>
-    <input type='text' id='search-input' placeholder='Sök i lager...' />
-    <button id='clear-search-btn'>&times;</button>
-  </div>
-</div> <div id="initial-loader">
+<body data-theme="light"> <div id="initial-loader">
         <div class="loader-spinner"></div>
         <p>Hämtar lagerdata...</p>
     </div>
@@ -1473,6 +1438,7 @@
             <div class="toolbar-controls">
                 <div class="search-wrapper">
                     <input type="text" id="search-input" placeholder="Sök i lagret... (ex: 'k:Service')">
+<div id=\"search-suggestions\" class=\"suggestions-list\"></div>
                     <button type="button" id="clear-search-btn" title="Rensa sökning">&times;</button>
                 </div>
                 
@@ -1806,3 +1772,5 @@
 
 </body>
 </html>
+
+
