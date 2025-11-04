@@ -711,13 +711,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span class="cell-copy-text">${escapeHTML(item.service_filter)}</span>
                 </span>
 
-                <span class="cell-copy-wrapper">
-                    <button class="copy-btn" onclick="copyToClipboard(this, '${safeName}'); event.stopPropagation();" title="Kopiera Namn">
-                        <span class="icon-span" style="font-size: 14px;">title</span>
-                    </button>
-                    <span class="cell-copy-text">${escapeHTML(item.name)}</span>
-                </span>
-
                 <span>${formatPrice(item.price)} kr</span>
 
                 <div class="quantity-cell">
@@ -1688,5 +1681,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if(initialLoader) initialLoader.querySelector('p').textContent = 'Kritiskt fel vid initiering.';
     }
 });
+
 
 
