@@ -658,44 +658,10 @@
         vertical-align: middle;
     }
     /* --- SLUT NYTT --- */
-
-    .link-buttons { display: flex; gap: 8px; align-items: center; width: 100%; }
-    .aero-m-btn { background-color: #4CAF50; color: white; border: 1px solid #4CAF50; }
-    .aero-m-btn:hover { background-color: #388E3C; border-color: #388E3C; }
-    .thansen-btn { background-color: #008080; color: white; border: 1px solid #008080; }
-    .thansen-btn:hover { background-color: #006060; border-color: #006060; }
     
     .lank-knapp, .edit-btn, .delete-btn, .order-btn { padding: 6px 10px; border: 1px solid transparent; border-radius: 6px; cursor: pointer; font-size: 0.8em; font-weight: 600; transition: all 0.2s; text-align: center; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); }
-    .lank-knapp { background-color: var(--card-bg); color: var(--primary-color); border: 1px solid var(--primary-color); }
-    .lank-knapp:hover { background-color: var(--primary-color); color: white; border-color: var(--primary-color); }
-    [data-theme="dark"] .lank-knapp { background-color: var(--bg-medium); }
-    [data-theme="dark"] .lank-knapp:hover { background-color: var(--primary-color); }
-    .edit-btn { background-color: var(--primary-color); color: white; }
-    .edit-btn:hover { background-color: var(--primary-dark); }
-    .order-btn { background-color: var(--success-color); color: white; }
-    .order-btn:hover { background-color: #0d9488; }
     
-    .delete-btn { background-color: var(--card-bg); color: var(--danger-color); border: 1px solid var(--danger-color); }
-    .delete-btn:hover { background-color: var(--danger-color); color: white; }
-    [data-theme="dark"] .delete-btn { background-color: var(--bg-medium); }
-    [data-theme="dark"] .delete-btn:hover { background-color: var(--danger-color); }
-    
-    /* --- ÄNDRAD: Modern "Slut i lager"-titel --- */
-    .out-of-stock-title {
-        font-size: 1.3em; /* Mindre */
-        font-weight: 700;
-        margin-top: 50px;
-        margin-bottom: 20px;
-        padding: 8px 15px; /* Badge-padding */
-        color: var(--danger-dark);
-        background-color: var(--danger-light);
-        border: 1px solid var(--danger-color);
-        border-radius: 8px; /* Mjuka hörn */
-        display: inline-block; /* Inte full bredd */
-    }
-    [data-theme="dark"] .out-of-stock-title {
-        border-color: var(--danger-light);
-    }
+    /* --- BORTTAGET: .out-of-stock-title --- */
     
     #slut-i-lager-lista .artikel-rad { opacity: 0.8; background-color: rgba(239, 68, 68, 0.05); } 
     [data-theme="dark"] #slut-i-lager-lista .artikel-rad { background-color: rgba(248, 113, 113, 0.1); }
@@ -760,82 +726,74 @@
     .modal-content button { margin-top: 30px; width: 100%; }
     .close-btn { position: absolute; top: 15px; right: 15px; font-size: 28px; cursor: pointer; font-weight: bold; z-index: 10; color: var(--text-light); }    
     .close-btn:hover { color: var(--text-dark); }
+    
+    /* --- BORTTAGET: #actionsModal CSS --- */
 
-    /* --- NYTT: Stil för Åtgärdsmodal (Stiligare) --- */
-    #actionsModal .modal-content {
-        max-width: 380px; /* Smalare modal */
-        padding: 30px;
+    /* --- NYTT: Stil för Åtgärds-Popover --- */
+    .popover-overlay {
+        display: none;
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: transparent;
+        z-index: 1000;
     }
-    #actionsModalSubtitle {
-        font-size: 1.1em;
-        font-weight: 600;
-        color: var(--text-dark);
-        margin-top: -15px;
-        margin-bottom: 15px;
-        border-bottom: 1px solid var(--border-color);
-        padding-bottom: 15px;
-        word-break: break-all;
+    .actions-popover {
+        display: none;
+        position: absolute;
+        z-index: 1010;
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        width: 220px;
+        padding: 8px;
+        animation: subtleFadeIn 0.15s ease-out;
     }
-    #actionsModalButtons {
+    #actionsPopoverContent {
         display: flex;
         flex-direction: column;
-        gap: 5px; /* Tunnare mellanrum, mer list-likt */
+        gap: 4px;
     }
-    .action-modal-btn {
+    .popover-btn {
         display: flex;
         align-items: center;
-        width: 100%;
-        padding: 12px 15px;
+        gap: 10px;
+        padding: 10px 12px;
         border: none;
-        background-color: transparent;
-        color: var(--text-dark);
-        font-size: 0.95em;
-        font-weight: 600;
-        border-radius: 8px;
+        background: transparent;
+        border-radius: 6px;
         cursor: pointer;
-        transition: background-color 0.2s, color 0.2s, transform 0.1s ease-out;
+        font-size: 0.9em;
+        font-weight: 500;
+        color: var(--text-dark);
         text-align: left;
-        margin: 0;
     }
-    .action-modal-btn .icon-span {
-        margin-right: 12px;
-        font-size: 1.3em;
-        color: var(--text-light);
-        transition: color 0.2s;
-    }
-    .action-modal-btn:hover {
+    .popover-btn:hover {
         background-color: var(--bg-medium);
         color: var(--primary-dark);
-        transform: scale(1.02);
     }
-    .action-modal-btn:hover .icon-span {
+    .popover-btn .icon-span {
+        font-size: 1.2em;
+        color: var(--text-light);
+    }
+    .popover-btn:hover .icon-span {
         color: var(--primary-color);
     }
-    /* Specifika färger vid hover */
-    .action-modal-btn.link-trodo:hover { color: #007bff; }
-    .action-modal-btn.link-trodo:hover .icon-span { color: #007bff; }
-    .action-modal-btn.link-aero:hover { color: #4CAF50; }
-    .action-modal-btn.link-aero:hover .icon-span { color: #4CAF50; }
-    .action-modal-btn.link-thansen:hover { color: #008080; }
-    .action-modal-btn.link-thansen:hover .icon-span { color: #008080; }
-    .action-modal-btn.link-egen:hover { color: #5a7dff; }
-    .action-modal-btn.link-egen:hover .icon-span { color: #5a7dff; }
-
-    /* Danger-knapp (Ta bort) */
-    .action-modal-btn.danger {
+    .popover-btn.danger {
         color: var(--danger-color);
     }
-    .action-modal-btn.danger .icon-span {
-        color: var(--danger-color);
-    }
-    .action-modal-btn.danger:hover {
+    .popover-btn.danger:hover {
         background-color: var(--danger-light);
         color: var(--danger-dark);
     }
-    .action-modal-btn.danger:hover .icon-span {
+    .popover-btn.danger .icon-span {
+        color: var(--danger-color);
+    }
+    .popover-btn.danger:hover .icon-span {
         color: var(--danger-dark);
     }
     /* --- SLUT NYTT --- */
+
 
     #productPopup { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 10010; }
     #productPopup iframe { width: 90%; height: 90%; position: absolute; top: 5%; left: 5%; border: 2px solid white; border-radius: 10px; }
@@ -873,12 +831,6 @@
     }
     .dropdown-menu .lank-knapp { width: 100%; margin: 3px 0; text-align: center; padding: 8px 12px; font-size: 0.8em; box-shadow: none; background-color: var(--card-bg) !important; color: var(--primary-color) !important; border: 1px solid var(--primary-color) !important; }
     .dropdown-menu .lank-knapp:hover { background-color: var(--primary-color) !important; color: white !important; }
-    .dropdown-menu .aero-m-btn { background-color: #4CAF50; color: white; }
-    .dropdown-menu .aero-m-btn:hover { background-color: #388E3C; }
-    .dropdown-menu .thansen-btn { background-color: #008080; color: white; }
-    .dropdown-menu .thansen-btn:hover { background-color: #006060; }
-    .dropdown-menu .egen-lank-btn { background-color: #5a7dff; color: white; }
-    .dropdown-menu .egen-lank-btn:hover { background-color: #3a57e8; }
     
     .global-search-container { 
         background-color: var(--card-bg); 
@@ -1658,6 +1610,20 @@
     .app-menu-content #recent-items-container { margin-bottom: 20px; }
     .app-menu-content h3 { font-size: 1.3em; }
     
+    /* --- NYTT: Container för knappar i sidomenyn --- */
+    #stock-actions-container {
+        margin-top: 20px;
+    }
+    #stock-actions-container .btn-secondary {
+        width: 100%;
+        font-weight: 700;
+        justify-content: center;
+    }
+    #stock-actions-container .icon-span {
+        color: var(--danger-color);
+    }
+    /* --- SLUT NYTT --- */
+    
     #export-container {
         margin-top: 30px;
         padding-top: 20px;
@@ -1764,12 +1730,6 @@
         }
         #add-article-form #add-form-cancel-btn {
             order: 2;
-        }
-        
-        /* --- ÄNDRAD: Mobil "Slut i lager"-titel --- */
-        .out-of-stock-title {
-            font-size: 1.1em;
-            padding: 6px 12px;
         }
         
         #app-menu-modal { max-width: 320px; }
@@ -1884,18 +1844,19 @@
                     <span id="stat-total-units">0</span>
                     <span class="icon-span">all_inbox</span>
                 </div>
-                <div class="dashboard-stat" id="stat-out-of-stock-wrapper" data-filter-target="Slut" title="Klicka för att filtrera på 'Slut i Lager'">
-                    <h4>Artiklar Slut</h4>
-                    <span id="stat-out-of-stock">0</span>
-                    <span class="icon-span">production_quantity_limits</span>
                 </div>
-            </div>
             
             <div id="recent-items-container">
                 <h3>Senast Hanterade</h3>
                 <div id="recent-items-list">
                     <p id="recent-items-empty" style="color: var(--text-light); font-size: 0.9em;">Inga nyligen hanterade artiklar.</p>
                 </div>
+            </div>
+            
+            <div id="stock-actions-container">
+                <button id="show-out-of-stock-btn" class="btn-secondary">
+                    <span class="icon-span">production_quantity_limits</span>Visa Slut i Lager (<span id="stat-out-of-stock">0</span>)
+                </button>
             </div>
             
             <div id="export-container">
@@ -2073,7 +2034,7 @@
             <button class="btn-secondary" data-filter="Service">Service</button>
             <button class="btn-secondary" data-filter="Motor/Chassi">Motor/Chassi</button>
             <button class="btn-secondary" data-filter="Andra Märken">Andra Märken</button>
-            <button class="btn-secondary" data-filter="Slut">Slut i Lager</button>
+            <button class="btn-secondary" data-filter="Slut" style="display: none;">Slut i Lager</button>
         </div>
         
         <svg id="empty-state-svg" style="display: none;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
@@ -2162,29 +2123,7 @@
             </div>
         </div>
         
-        <div id="slut-i-lager-sektion" style="display: none;">
-            <h2 class="out-of-stock-title">Slut i Lager</h2>
-            <div class="lager-wrapper">
-                <div class="lager-container">
-                    <div class="header">
-                        <span data-sort="service_filter">Art. nr <span class="sort-icon"></span></span>
-                        <span data-sort="name">Namn <span class="sort-icon"></span></span>
-                        <span data-sort="price">Pris <span class="sort-icon"></span></span>
-                        <span data-sort="quantity">Antal <span class="sort-icon"></span></span>
-                        <span>Status</span>
-                        <span data-sort="notes">Anteckningar <span class="sort-icon"></span></span>
-                        <span>Åtgärder</span>
-                    </div>
-                    <div class="empty-state" id="slut-i-lager-empty-state" style="display: none;">
-                        <svg viewBox="0 0 24 24" fill="currentColor"><use href="#empty-state-svg"></use></svg>
-                        <h4>Inga artiklar slut i lager</h4>
-                        <p>Allt finns i lager, eller så gav din sökning inga träffar.</p>
-                    </div>
-                    <div id="slut-i-lager-lista"></div>
-                </div>
-            </div>
-        </div>
-    </div> 
+        </div> 
     
     <div id="editModal" class="modal">
         <div class="modal-content">
@@ -2241,14 +2180,27 @@
                 <button id="confirmYes" class="btn-primary">Ja</button> </div>
         </div>
     </div>
-
-    <div id="actionsModal" class="modal">
-        <div class="modal-content">
+    
+    <div id="outOfStockModal" class="modal">
+        <div class="modal-content" style="max-width: 90%; max-height: 85vh; width: 1200px;">
             <span class="close-btn">&times;</span>
-            <h3 id="actionsModalTitle"><span class="icon-span">settings</span>Åtgärder</h3>
-            <p id="actionsModalSubtitle"></p>
-            <div id="actionsModalButtons">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin-bottom: 0;"><span class="icon-span">production_quantity_limits</span>Artiklar Slut i Lager</h3>
+                <div class="search-wrapper" style="width: 300px;">
+                    <input type="text" id="out-of-stock-search" placeholder="Sök i listan..." style="padding: 10px 15px 10px 40px;">
                 </div>
+            </div>
+            <div id="out-of-stock-modal-wrapper" class="lager-wrapper" style="margin-top: 0; margin-bottom: 0;">
+                <div id="out-of-stock-modal-container" class="lager-container" style="max-height: 65vh; box-shadow: none; border: 1px solid var(--border-color); margin-bottom: 0;">
+                    </div>
+                <div class="empty-state" id="out-of-stock-empty-state" style="display: none; min-height: 200px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 60px; height: 60px; color: var(--success-color); opacity: 0.5;">
+                        <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm13.36-1.814a.75.75 0 1 0-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 0 0-1.06 1.06l2.25 2.25a.75.75 0 0 0 1.14-.094l3.75-5.25Z" clip-rule="evenodd" />
+                    </svg>
+                    <h4>Bra jobbat!</h4>
+                    <p>Det finns inga artiklar som är slut i lager.</p>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -2266,6 +2218,12 @@
             <path fill-rule="evenodd" d="M10 17a.75.75 0 01-.75-.75V5.612L5.03 10.03a.75.75 0 01-1.06-1.06l5.25-5.25a.75.75 0 011.06 0l5.25 5.25a.75.75 0 11-1.06 1.06L10.75 5.612V16.25A.75.75 0 0110 17z" clip-rule="evenodd" />
         </svg>
     </button>
+    
+    <div id="actionsPopoverOverlay" class="popover-overlay"></div>
+    <div id="actionsPopover" class="actions-popover">
+        <div id="actionsPopoverContent">
+            </div>
+    </div>
     
     <script type="module" src="apps.js"></script>
 
