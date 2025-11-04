@@ -449,18 +449,24 @@
     #desktop-clear-search-btn:hover, #mobile-clear-search-btn:hover { color: var(--text-dark); }
         
     .lager-wrapper { overflow-x: auto; margin-bottom: 25px; -webkit-overflow-scrolling: touch; }
-    /* --- ÄNDRAD: Högre tabell på desktop --- */
+    
     .lager-container { 
         background-color: var(--card-bg); 
         border-radius: 16px; 
         box-shadow: var(--card-shadow); 
         margin-bottom: 40px; 
         border: 1px solid var(--border-color); 
-        position: relative; 
-        max-height: 60vh; /* ÄNDRAD: 450px -> 60vh (skalar med skärmen) */
+        position: relative; /* --- BUGGFIX: Krävs för z-index --- */
+        max-height: 60vh; 
         overflow-y: auto; 
         min-width: min-content; 
-        transition: background-color 0.3s, border-color 0.3s; 
+        transition: background-color 0.3s, border-color 0.3s; /* Ta bort overflow från transition */
+    }
+    
+    /* --- BUGGFIX: Tillfälligt stänga av overflow när menyn är öppen --- */
+    .lager-container.is-showing-dropdown {
+        overflow-y: visible;
+        z-index: 101; /* Lyft hela containern så menyn kan flöda över nästa kategori */
     }
     
     /* --- ÄNDRING 2: KOLUMNER --- */
@@ -753,7 +759,7 @@
         bottom: 100%; 
         margin-bottom: 8px;
         /* --- SLUT ÄNDRING --- */
-        z-index: 10; 
+        z-index: 60; /* --- BUGGFIX: Högre än sticky cell (50) --- */
         min-width: 180px; /* Bredare för ikoner */
         background-color: var(--card-bg); 
         border: 1px solid var(--border-color); 
@@ -2027,7 +2033,7 @@
         </div>
         
         <svg id="empty-state-svg" style="display: none;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M3.375 4.5C2.339 4.5 1.5 5.34 1.5 6.375V17.625c0 1.036.84 1.875 1.875 1.875h17.25c1.035 0 1.875-.84 1.875-1.875V6.375c0-1.036-.84-1.875-1.875-1.875H3.375ZM12.75 7.5a.75.75 0 0 0-1.5 0v2.25H9a.75.75 0 0 0 0 1.5h2.25V13.5a.75.75 0 0 0 1.5 0V11.25H15a.75.75 0 0 0 0-1.5h-2.25V7.5Z" />
+            <path d="M3.375 4.5C2.339 4.5 1.5 5.34 1.5 6.375V17.625c0 1.036.84 1.875 1.875 1.875h17.25c1.035 0 1.875-.84 1.875-1.875V6.375c0 -1.036-.84-1.875-1.875-1.875H3.375ZM12.75 7.5a.75.75 0 0 0-1.5 0v2.25H9a.75.75 0 0 0 0 1.5h2.25V13.5a.75.75 0 0 0 1.5 0V11.25H15a.75.75 0 0 0 0-1.5h-2.25V7.5Z" />
         </svg>
 
         <div id="full-empty-state" class="empty-state">
