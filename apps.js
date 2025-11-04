@@ -207,8 +207,44 @@ document.addEventListener('DOMContentLoaded', () => {
         function generateBildelsbasenLink(f) { if (!f) return null; const s = encodeURIComponent(f.replace(/[\s-]/g, '')); return `https://bildelsbasen.se/sv-se/OEM/${s}`; }
         function generateReservdelar24Link(f) { if (!f) return null; const s = encodeURIComponent(f.replace(/[\s-]/g, '')); return `https://reservdelar24.se/suche.html?keyword=${s}`; }
         
-        window.toggleDropdown = function(id) { const d = document.getElementById(id); if (!d) return; document.querySelectorAll('.dropdown-menu.visible').forEach(o => { if (o.id !== id) o.classList.remove('visible'); }); d.classList.toggle('visible'); };
-        window.closeDropdown = function(id) { const d = document.getElementById(id); if (d) d.classList.remove('visible'); };
+        // --- BUGGFIX: Uppdaterad Dropdown-logik ---
+        window.toggleDropdown = function(id, event) { 
+            const d = document.getElementById(id); 
+            if (!d) return; 
+            
+            const btn = event.currentTarget;
+            const container = btn.closest('.lager-container');
+            
+            // Stäng alla andra
+            document.querySelectorAll('.dropdown-menu.visible').forEach(o => { 
+                if (o.id !== id) {
+                    o.classList.remove('visible');
+                } 
+            });
+            document.querySelectorAll('.lager-container.is-showing-dropdown').forEach(c => {
+                if (c !== container) {
+                    c.classList.remove('is-showing-dropdown');
+                }
+            });
+
+            // Växla aktuell
+            d.classList.toggle('visible'); 
+            if (container) {
+                container.classList.toggle('is-showing-dropdown', d.classList.contains('visible'));
+            }
+        };
+        
+        window.closeDropdown = function(id) { 
+            const d = document.getElementById(id); 
+            if (d) {
+                d.classList.remove('visible');
+                const container = d.closest('.lager-container');
+                if (container) {
+                    container.classList.remove('is-showing-dropdown');
+                }
+            } 
+        };
+        // --- SLUT BUGGFIX ---
         
         // --- ÄNDRAD: Eventlyssnare för att stänga dropdowns ---
         document.addEventListener('click', (e) => {
@@ -221,6 +257,10 @@ document.addEventListener('DOMContentLoaded', () => {
             // Stäng länk-dropdowns
             if (!e.target.closest('.link-dropdown-container')) {
                 document.querySelectorAll('.dropdown-menu.visible').forEach(d => d.classList.remove('visible'));
+                // --- BUGGFIX: Återställ alla containers ---
+                document.querySelectorAll('.lager-container.is-showing-dropdown').forEach(c => {
+                    c.classList.remove('is-showing-dropdown');
+                });
             }
         });
         // --- SLUT ÄNDRING ---
@@ -736,7 +776,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 <div class="action-cell">
                     <div class="link-dropdown-container">
-                        <button class="btn-action-menu" onclick="toggleDropdown('${dropdownId}'); event.stopPropagation();" title="Visa åtgärder">
+                        <button class="btn-action-menu" onclick="toggleDropdown('${dropdownId}', event); event.stopPropagation();" title="Visa åtgärder">
                             <span class="icon-span">more_vert</span>
                         </button>
                         <div id="${dropdownId}" class="dropdown-menu">
@@ -1532,6 +1572,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     // --- NYTT: Dölj sök-dropdowns ---
                     desktopSearchResults.style.display = 'none';
                     mobileSearchResults.style.display = 'none';
+                    
+                    // --- BUGGFIX: Återställ alla dropdown-containers ---
+                    document.querySelectorAll('.lager-container.is-showing-dropdown').forEach(c => {
+                        c.classList.remove('is-showing-dropdown');
+                    });
+                    document.querySelectorAll('.dropdown-menu.visible').forEach(d => {
+                        d.classList.remove('visible');
+                    });
                 }
             });
             
