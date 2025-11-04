@@ -218,7 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 mobileSearchResults.style.display = 'none';
             }
             
-            // Stäng länk-dropdowns (inkl. den nya meny-dropdownen)
+            // Stäng länk-dropdowns
             if (!e.target.closest('.link-dropdown-container')) {
                 document.querySelectorAll('.dropdown-menu.visible').forEach(d => d.classList.remove('visible'));
             }
@@ -240,7 +240,7 @@ document.addEventListener('DOMContentLoaded', () => {
             { name: "Reservdelar24", linkGenerator: generateReservdelar24Link, icon: "https://www.reservdelar24.se/favicon.ico" },
         ];
 
-        // --- ÄNDRAD: handleGlobalSearch känner igen reg-nr och lägger till Car.info ---
+        // --- ÄNDRAD: handleGlobalSearch känner nu igen reg-nr ---
         async function handleGlobalSearch(searchTermOverride) {
             const searchTerm = (searchTermOverride ? searchTermOverride.trim().toUpperCase() : globalSearchInput.value.trim().toUpperCase());
             if (searchTerm === '') {
@@ -259,23 +259,14 @@ document.addEventListener('DOMContentLoaded', () => {
             if (regNrRegex.test(searchTerm) || (cleanRegNr.length === 6 && regNrRegex.test(cleanRegNr))) {
                 
                 const biluppgifterLink = `https://biluppgifter.se/fordon/${cleanRegNr}#vehicle-data`;
-                // --- NY LÄNK TILL CAR.INFO ---
-                const carInfoLink = `https://car.info/sv-se/license-plate/S/${cleanRegNr}#attributes`;
                 
                 biluppgifterResultContainer.innerHTML = `
-                    <h4 class="internal-search-title">Fordonsuppslag: ${cleanRegNr}</h4>
+                    <h4 class="internal-search-title">Fordonsuppslag:</h4>
                     <div class="provider-card">
                         <img src="https://biluppgifter.se/favicon/favicon.ico" alt="Biluppgifter.se" class="provider-card-logo">
                         <div class="provider-card-content">
-                            <span class="provider-card-name">Biluppgifter.se</span>
+                            <span class="provider-card-name">${cleanRegNr}</span>
                             <a href="${biluppgifterLink}" target="_blank" class="btn-provider-search">Visa Fordon</a>
-                        </div>
-                    </div>
-                    <div class="provider-card">
-                        <img src="https://car.info/favicon.ico" alt="Car.info" class="provider-card-logo">
-                        <div class="provider-card-content">
-                            <span class="provider-card-name">Car.info</span>
-                            <a href="${carInfoLink}" target="_blank" class="btn-provider-search">Visa Attribut</a>
                         </div>
                     </div>
                 `;
@@ -627,7 +618,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // --- ÄNDRAD: parseNotes för att troncera text ---
+        // --- NYTT: Funktion för att parsa anteckningar och skapa skyltar ---
         function parseNotes(notesText) {
             if (!notesText) return '';
             
@@ -647,8 +638,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <span class="plate-text">${escapeHTML(plateContent)}</span>
                              </span>`;
                 } else if (parts[i]) {
-                    // --- ÄNDRING: Omslut text i en span för CSS-trunksion ---
-                    html += `<span class="notes-text-part">${escapeHTML(parts[i])}</span>`;
+                    // Detta är vanlig text
+                    html += escapeHTML(parts[i]);
                 }
             }
             return html;
@@ -673,7 +664,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return html;
         }
 
-        // --- ÄNDRAD: createInventoryRow för att lägga till data-label för mobil-kortvyn ---
         function createInventoryRow(item, isOutOfStock) {
             const row = document.createElement('div');
             row.className = 'artikel-rad';
@@ -688,6 +678,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const statusText = item.quantity > 0 ? 'I lager' : 'Slut';
             const formattedNotes = parseNotes(item.notes || '');
             const safeServiceFilter = escapeHTML(item.service_filter).replace(/'/g, "\\'");
+            const safeName = escapeHTML(item.name).replace(/'/g, "\\'");
 
             // Länkar
             const trodoLink = generateTrodoLink(item.service_filter);
@@ -697,14 +688,12 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const primarySearchLink = trodoLink || aeroMLink || egenLink;
             const primarySearchText = trodoLink ? 'Trodo' : (aeroMLink ? 'AeroMotors' : (egenLink ? 'Egen Länk' : ''));
-            
-            const menuDropdownId = `main-menu-${item.id}`;
-            const hasLinks = trodoLink || aeroMLink || thansenLink || egenLink;
+            const dropdownId = `link-dropdown-${item.id}`;
+            const hasSecondaryLinks = aeroMLink || thansenLink || egenLink;
 
-
-            // --- Moderniserad Template Literal med data-label attribut ---
+            // --- Moderniserad Template Literal ---
             row.innerHTML = `
-                <div data-label="Art. nr" class="cell-copy-wrapper">
+                <span class="cell-copy-wrapper">
                     ${primarySearchLink ? `
                         <button class="search-btn" onclick="window.open('${primarySearchLink}', '_blank'); event.stopPropagation();" title="Sök på ${primarySearchText}">
                             <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>
@@ -712,47 +701,49 @@ document.addEventListener('DOMContentLoaded', () => {
                     ` : ''}
                     <button class="copy-btn" onclick="copyToClipboard(this, '${safeServiceFilter}'); event.stopPropagation();" title="Kopiera Artikelnummer">&#x1F4CB;</button>
                     <span class="cell-copy-text">${escapeHTML(item.service_filter)}</span>
-                </div>
+                </span>
 
-                <span data-label="Namn" class="cell-copy-text">${escapeHTML(item.name)}</span>
+                <span class="cell-copy-wrapper">
+                    <button class="copy-btn" onclick="copyToClipboard(this, '${safeName}'); event.stopPropagation();" title="Kopiera Namn">
+                        <span class="icon-span" style="font-size: 14px;">title</span>
+                    </button>
+                    <span class="cell-copy-text">${escapeHTML(item.name)}</span>
+                </span>
 
-                <span data-label="Pris">${formatPrice(item.price)} kr</span>
+                <span>${formatPrice(item.price)} kr</span>
 
-                <div data-label="Antal" class="quantity-cell">
+                <div class="quantity-cell">
                     <button class="qty-btn" onclick="adjustQuantity(${item.id}, -1); event.stopPropagation();">-</button>
                     <span>${item.quantity}</span>
                     <button class="qty-btn" onclick="adjustQuantity(${item.id}, 1); event.stopPropagation();">+</button>
                 </div>
 
-                <span data-label="Status">
+                <span style="display: flex; align-items: center;">
                     <span class="${statusClass}">${statusText}</span>
                 </span>
 
-                <span data-label="Anteckningar" class="notes-cell" title="${escapeHTML(item.notes || '')}">${formattedNotes}</span>
+                <span class="notes-cell" title="${escapeHTML(item.notes || '')}">${formattedNotes}</span>
 
-                <div class="action-menu-cell">
-                    <div class="link-dropdown-container">
-                        <button class="lank-knapp more-btn" onclick="toggleDropdown('${menuDropdownId}'); event.stopPropagation();" title="Meny">
-                            <span class="icon-span">menu</span>
-                        </button>
-                        <div id="${menuDropdownId}" class="dropdown-menu">
-                            ${hasLinks ? `
-                                <span class="dropdown-header">Länkar</span>
-                                ${trodoLink ? `<button class="lank-knapp trodo-btn" onclick="window.open('${trodoLink}', '_blank'); closeDropdown('${menuDropdownId}'); event.stopPropagation();">Trodo</button>` : ''}
-                                ${aeroMLink ? `<button class="lank-knapp aero-m-btn" onclick="window.open('${aeroMLink}', '_blank'); closeDropdown('${menuDropdownId}'); event.stopPropagation();">AeroMotors</button>` : ''}
-                                ${thansenLink ? `<button class="lank-knapp thansen-btn" onclick="window.open('${thansenLink}', '_blank'); closeDropdown('${menuDropdownId}'); event.stopPropagation();">Thansen</button>` : ''}
-                                ${egenLink ? `<button class="lank-knapp egen-lank-btn" onclick="window.open('${egenLink}', '_blank'); closeDropdown('${menuDropdownId}'); event.stopPropagation();">Egen Länk</button>` : ''}
-                                <div class="dropdown-divider"></div>
-                            ` : ''}
-                            <span class="dropdown-header">Åtgärder</span>
-                            <button class="lank-knapp edit-btn" onclick="handleEdit(${item.id}); closeDropdown('${menuDropdownId}'); event.stopPropagation();">
-                                <span class="icon-span">edit</span>Ändra
-                            </button>
-                            <button class="lank-knapp delete-btn" onclick="handleDelete(${item.id}); closeDropdown('${menuDropdownId}'); event.stopPropagation();">
-                                <span class="icon-span">delete</span>Ta bort
-                            </button>
-                        </div>
+                <span class="action-cell">
+                    <div class="link-buttons">
+                        ${trodoLink ? `<button class="lank-knapp trodo-btn" onclick="window.open('${trodoLink}', '_blank'); event.stopPropagation();">Trodo</button>` : ''}
+                        ${hasSecondaryLinks ? `
+                            <div class="link-dropdown-container">
+                                <button class="lank-knapp more-btn" onclick="toggleDropdown('${dropdownId}'); event.stopPropagation();">Mer</button>
+                                <div id="${dropdownId}" class="dropdown-menu">
+                                    ${aeroMLink ? `<button class="lank-knapp aero-m-btn" onclick="window.open('${aeroMLink}', '_blank'); closeDropdown('${dropdownId}'); event.stopPropagation();">AeroMotors</button>` : ''}
+                                    ${thansenLink ? `<button class="lank-knapp thansen-btn" onclick="window.open('${thansenLink}', '_blank'); closeDropdown('${dropdownId}'); event.stopPropagation();">Thansen</button>` : ''}
+                                    ${egenLink ? `<button class="lank-knapp egen-lank-btn" onclick="window.open('${egenLink}', '_blank'); closeDropdown('${dropdownId}'); event.stopPropagation();">Egen Länk</button>` : ''}
+                                </div>
+                            </div>
+                        ` : ''}
+                        ${!trodoLink && !hasSecondaryLinks ? '<span>(Saknas)</span>' : ''}
                     </div>
+                </span>
+
+                <div class="action-buttons">
+                    <button class="edit-btn" onclick="handleEdit(${item.id}); event.stopPropagation();">Ändra</button>
+                    <button class="delete-btn" onclick="handleDelete(${item.id}); event.stopPropagation();">Ta bort</button>
                 </div>
             `;
             
@@ -1313,18 +1304,10 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => scrollToAndHighlight(updatedItem.id), 300);
         }
         
-        // --- ÄNDRAD: Haptisk feedback (Surprise!) ---
         window.adjustQuantity = async function(id, change) {
             const item = inventory.find(i => i.id === id);
             if (item) {
                 const newQuantity = Math.max(0, item.quantity + change);
-                
-                // --- NYTT: Haptisk Feedback ---
-                if (navigator.vibrate) {
-                    navigator.vibrate(50); // Vibrera 50ms
-                }
-                // --- SLUT NYTT ---
-                
                 const updatedItem = {...item, quantity: newQuantity, lastUpdated: Date.now() }; // NYTT: `lastUpdated`
                 await saveInventoryItem(updatedItem);
             }
@@ -1697,3 +1680,4 @@ document.addEventListener('DOMContentLoaded', () => {
         if(initialLoader) initialLoader.querySelector('p').textContent = 'Kritiskt fel vid initiering.';
     }
 });
+
