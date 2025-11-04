@@ -460,13 +460,14 @@
         transition: background-color 0.3s, border-color 0.3s; 
     }
     
+    /* --- ÄNDRAD: Grid-layout för tabell (kolumner sammanslagna) --- */
     .header, .artikel-rad { 
-        grid-template-columns: 160px 200px 90px 70px 70px minmax(120px, 1fr) 120px 140px; 
+        grid-template-columns: 160px 200px 90px 70px 70px minmax(120px, 1fr) 80px; /* Länk+Åtgärder -> Meny */
         padding: 10px 20px; 
         align-items: center; 
         font-size: 0.85em; 
         display: grid; 
-        min-width: 1200px; 
+        min-width: 1050px; /* Justerad min-width */
     }    
     .header { 
         position: sticky; 
@@ -538,6 +539,7 @@
         flex-grow: 1;
     }
     
+    /* --- ÄNDRAD: Text i anteckningar kan nu troncera --- */
     .notes-cell { 
         display: flex; 
         align-items: center; 
@@ -548,13 +550,14 @@
         cursor: help;
         min-width: 0; 
     }
-    
     .notes-text-part {
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
         min-width: 0; 
+        max-width: 120px; /* NYTT: Begränsar text-delen */
     }
+    /* --- SLUT ÄNDRING --- */
 
     .plate-tag {
         display: inline-flex;
@@ -726,19 +729,36 @@
     .search-btn:hover { opacity: 1; transform: scale(1.05); background: var(--primary-color); color: white; border-color: var(--primary-color); }
     .search-btn svg { fill: currentColor; vertical-align: middle; width: 14px; height: 14px; }
     
-    .header > span:last-child, .artikel-rad > div:last-child { position: sticky; right: 0; z-index: 50; padding-right: 20px; background-color: inherit; }
-    .header > span:last-child { background-color: var(--bg-medium); border-left: 1px solid var(--border-color); }
-    .artikel-rad > div:last-child { background-color: var(--card-bg); }
-    .artikel-rad:hover > div:last-child { background-color: var(--bg-medium); }
+    /* --- ÄNDRAD: Sticky-kolumn (sista) --- */
+    .header > span:last-child, .artikel-rad > div:last-child { 
+        position: sticky; 
+        right: 0; 
+        z-index: 50; 
+        padding-right: 20px; 
+        background-color: inherit; 
+        justify-content: center; /* NYTT: Centrera menyknappen */
+        display: flex; /* NYTT: Centrera menyknappen */
+    }
+    .header > span:last-child { 
+        background-color: var(--bg-medium); 
+        border-left: 1px solid var(--border-color); 
+    }
+    .artikel-rad > div:last-child { 
+        background-color: var(--card-bg); 
+    }
+    .artikel-rad:hover > div:last-child { 
+        background-color: var(--bg-medium); 
+    }
+    /* --- SLUT ÄNDRING --- */
     
-    .link-dropdown-container { position: relative; display: inline-block; margin-left: 5px; }
+    .link-dropdown-container { position: relative; display: inline-block; }
     .dropdown-menu { 
         display: none; 
         position: absolute; 
         right: 0; 
         top: 100%; 
         z-index: 10; 
-        min-width: 120px; 
+        min-width: 160px; /* ÄNDRAD: Lite bredare för meny */
         background-color: var(--card-bg); 
         border: 1px solid var(--border-color); 
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); 
@@ -752,15 +772,81 @@
         display: flex; 
         animation: subtleFadeIn 0.15s ease-out; 
     }
-    .dropdown-menu .lank-knapp { width: 100%; margin: 3px 0; text-align: center; padding: 8px 12px; font-size: 0.8em; box-shadow: none; background-color: var(--card-bg) !important; color: var(--primary-color) !important; border: 1px solid var(--primary-color) !important; }
-    .dropdown-menu .lank-knapp:hover { background-color: var(--primary-color) !important; color: white !important; }
-    .dropdown-menu .aero-m-btn { background-color: #4CAF50; color: white; }
-    .dropdown-menu .aero-m-btn:hover { background-color: #388E3C; }
-    .dropdown-menu .thansen-btn { background-color: #008080; color: white; }
-    .dropdown-menu .thansen-btn:hover { background-color: #006060; }
-    .dropdown-menu .egen-lank-btn { background-color: #5a7dff; color: white; }
-    .dropdown-menu .egen-lank-btn:hover { background-color: #3a57e8; }
+    .dropdown-menu .lank-knapp { 
+        width: 100%; 
+        margin: 3px 0; 
+        text-align: left; /* ÄNDRAD: För meny-känsla */
+        padding: 8px 12px; 
+        font-size: 0.9em; /* ÄNDRAD: Lite större */
+        box-shadow: none; 
+        background-color: var(--card-bg) !important; 
+        color: var(--text-dark) !important; /* ÄNDRAD: Standard textfärg */
+        border: 1px solid transparent !important; /* ÄNDRAD: Ingen kant */
+        display: flex; /* NYTT: För ikoner */
+        align-items: center; /* NYTT: För ikoner */
+    }
+    .dropdown-menu .lank-knapp .icon-span {
+        font-size: 1.1em;
+        margin-right: 10px;
+    }
     
+    .dropdown-menu .lank-knapp:hover { 
+        background-color: var(--bg-medium) !important; 
+        color: var(--text-dark) !important; 
+    }
+    
+    /* NYTT: Styling för dropdown-headers och avdelare */
+    .dropdown-header {
+        font-size: 0.75em;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: var(--text-light);
+        padding: 8px 12px 4px 12px;
+    }
+    .dropdown-divider {
+        height: 1px;
+        background-color: var(--border-color);
+        margin: 5px 5px;
+    }
+    
+    /* NYTT: Styling för länkar i dropdown-menyn */
+    .dropdown-menu .lank-knapp.trodo-btn { color: #008080 !important; }
+    .dropdown-menu .lank-knapp.trodo-btn:hover { background-color: #f0fafa !important; }
+    .dropdown-menu .lank-knapp.aero-m-btn { color: #4CAF50 !important; }
+    .dropdown-menu .lank-knapp.aero-m-btn:hover { background-color: #f0faf0 !important; }
+    .dropdown-menu .lank-knapp.thansen-btn { color: #008080 !important; }
+    .dropdown-menu .lank-knapp.thansen-btn:hover { background-color: #f0fafa !important; }
+    .dropdown-menu .lank-knapp.egen-lank-btn { color: #5a7dff !important; }
+    .dropdown-menu .lank-knapp.egen-lank-btn:hover { background-color: #f0f2ff !important; }
+
+    /* NYTT: Styling för åtgärder i dropdown-menyn */
+    .dropdown-menu .lank-knapp.edit-btn { 
+        color: var(--primary-color) !important; 
+    }
+    .dropdown-menu .lank-knapp.edit-btn:hover { 
+        background-color: rgba(79, 70, 229, 0.05) !important; 
+    }
+    .dropdown-menu .lank-knapp.delete-btn { 
+        color: var(--danger-color) !important; 
+    }
+    .dropdown-menu .lank-knapp.delete-btn:hover { 
+        background-color: rgba(239, 68, 68, 0.05) !important; 
+    }
+    
+    [data-theme="dark"] .dropdown-menu .lank-knapp {
+        color: var(--text-dark) !important;
+    }
+    [data-theme="dark"] .dropdown-menu .lank-knapp:hover {
+        background-color: var(--bg-dark) !important;
+    }
+    [data-theme="dark"] .dropdown-menu .lank-knapp.edit-btn { color: var(--primary-color) !important; }
+    [data-theme="dark"] .dropdown-menu .lank-knapp.edit-btn:hover { background-color: rgba(99, 102, 241, 0.1) !important; }
+    [data-theme="dark"] .dropdown-menu .lank-knapp.delete-btn { color: var(--danger-color) !important; }
+    [data-theme="dark"] .dropdown-menu .lank-knapp.delete-btn:hover { background-color: rgba(248, 113, 113, 0.1) !important; }
+    
+    /* --- SLUT ÄNDRINGAR DROPDOWN --- */
+
+
     .global-search-container { 
         background-color: var(--card-bg); 
         border-radius: 16px; 
@@ -855,8 +941,12 @@
         justify-content: center;
     }
 
+    /* --- ÄNDRAD: biluppgifter-container för grid --- */
     #biluppgifter-result-container {
         margin-bottom: 25px;
+        display: grid; /* NYTT */
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* NYTT */
+        gap: 15px; /* NYTT */
     }
     
     #internal-results-container { margin-bottom: 25px; }
@@ -1329,7 +1419,8 @@
         .lank-knapp, .qty-btn, .copy-btn, .search-btn, #fab-add-btn, #back-to-top-btn, 
         #toggle-add-form-btn, .json-controls, #sync-status, .theme-switcher, #pwa-install-btn,
         #category-filter-bar, .modal, .search-wrapper, .notes-cell, .link-buttons, .action-cell,
-        .top-toolbar, #recent-items-container, #app-menu-modal, .search-results-dropdown { 
+        .top-toolbar, #recent-items-container, #app-menu-modal, .search-results-dropdown,
+        .action-menu-cell /* NYTT: Dölj meny i print */ { 
             display: none !important;
         }
         h1, h2, h3 { color: black; border: none; }
@@ -1601,10 +1692,11 @@
         }
         #toolbar-filter-badge { font-size: 0.55em; }
         
+        /* --- ÄNDRAD: Centrera toolbar-kontroller på mobil --- */
         .toolbar-controls {
             gap: 10px;
             flex-basis: 100%;
-            justify-content: space-between;
+            justify-content: center; /* ÄNDRAD: space-between -> center */
         }
         
         .toolbar-controls .search-wrapper {
@@ -1624,7 +1716,6 @@
             padding: 4px 8px 4px 6px;
             gap: 5px;
         }
-        #sync-status .icon { width: 10px; height: 10px; }
         
         #pwa-install-btn {
             padding: 4px 8px;
@@ -1653,6 +1744,20 @@
     
     @media (max-width: 600px) {
         #global-search-close-btn { top: -5px; right: -5px; }
+        
+        /* --- ÄNDRAD: Behåll centrering men gör sökfältet smalare på små skärmar --- */
+        .toolbar-controls .search-wrapper {
+            width: 100%;
+        }
+        
+        /* NYTT: Tvinga tema-bytaren till en ny rad om det blir trångt */
+        .theme-switcher {
+            flex-basis: 100%;
+            justify-content: center;
+            margin-left: 0; /* Återställ auto-marginal */
+            padding-top: 5px;
+            border-top: 1px solid var(--border-color);
+        }
     }
 
     
@@ -1975,8 +2080,7 @@
                     <span data-sort="quantity">Antal <span class="sort-icon"></span></span>
                     <span>Status</span>
                     <span data-sort="notes">Anteckningar <span class="sort-icon"></span></span>
-                    <span>Länk</span>
-                    <span>Åtgärder</span>
+                    <span style="justify-content: center;">Meny</span>
                 </div>
                 <div class="empty-state" id="service-empty-state" style="display: none;">
                     <svg viewBox="0 0 24 24" fill="currentColor"><use href="#empty-state-svg"></use></svg>
@@ -2000,8 +2104,7 @@
                     <span data-sort="quantity">Antal <span class="sort-icon"></span></span>
                     <span>Status</span>
                     <span data-sort="notes">Anteckningar <span class="sort-icon"></span></span>
-                    <span>Länk</span>
-                    <span>Åtgärder</span>
+                    <span style="justify-content: center;">Meny</span>
                 </div>
                 <div class="empty-state" id="motor-chassi-empty-state" style="display: none;">
                     <svg viewBox="0 0 24 24" fill="currentColor"><use href="#empty-state-svg"></use></svg>
@@ -2025,8 +2128,7 @@
                     <span data-sort="quantity">Antal <span class="sort-icon"></span></span>
                     <span>Status</span>
                     <span data-sort="notes">Anteckningar <span class="sort-icon"></span></span>
-                    <span>Länk</span>
-                    <span>Åtgärder</span>
+                    <span style="justify-content: center;">Meny</span>
                 </div>
                 <div class="empty-state" id="andra-marken-empty-state" style="display: none;">
                     <svg viewBox="0 0 24 24" fill="currentColor"><use href="#empty-state-svg"></use></svg>
@@ -2048,8 +2150,7 @@
                         <span data-sort="quantity">Antal <span class="sort-icon"></span></span>
                         <span>Status</span>
                         <span data-sort="notes">Anteckningar <span class="sort-icon"></span></span>
-                        <span>Länk</span>
-                        <span>Åtgärder</span>
+                        <span style="justify-content: center;">Meny</span>
                     </div>
                     <div class="empty-state" id="slut-i-lager-empty-state" style="display: none;">
                         <svg viewBox="0 0 24 24" fill="currentColor"><use href="#empty-state-svg"></use></svg>
@@ -2137,6 +2238,3 @@
 
 </body>
 </html>
-
-
-
