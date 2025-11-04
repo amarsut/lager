@@ -192,10 +192,12 @@ document.addEventListener('DOMContentLoaded', () => {
       
         function formatPrice(price) { return new Intl.NumberFormat('sv-SE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(price); }
         
-        // --- NYTT: Normaliserar artikelnummer för sökning ---
+        // --- ★ FIXEN ÄR HÄR ★ ---
+        // Normaliserar artikelnummer för sökning
         function normalizeArtNr(artNr) {
             if (!artNr) return null;
-            return artNr.replace(/[\s-]/g, ''); // Tar bort mellanslag och bindestreck
+            // Tar bort mellanslag, bindestreck OCH gör till versaler för konsekvent jämförelse
+            return artNr.replace(/[\s-]/g, '').toUpperCase(); 
         }
         
         function generateAeroMLink(f) { const s = normalizeArtNr(f); if (!s) return null; return `https://aeromotors.se/sok?s=${s}&layered_id_feature_1586%5B%5D=3&sort_by=price.asc`; }
@@ -246,7 +248,7 @@ document.addEventListener('DOMContentLoaded', () => {
             saveSearchToHistory(searchTerm.toUpperCase()); 
             
             // --- REG-NR KONTROLL ---
-            const regNrRegex = /^[A-ZÅÄÖ]{3}[\s]?[0-9]{2}[A-ZÅÄÖ0-9]{1}$/i; // i-flagg för case-insensitive
+            const regNrRegex = /^[A-ZÅÄÖ]{3}[\s]?[0-9]{2}[A-ZÅÄÖ0-9]{1}$/i; 
             const cleanRegNr = searchTerm.replace(/\s/g, '').toUpperCase(); 
             
             if (regNrRegex.test(searchTerm) || (cleanRegNr.length === 6 && regNrRegex.test(cleanRegNr))) {
@@ -301,12 +303,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 globalSearchResults.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-                // --- ÄNDRAD: Normalisera söktermen för artikelnummer ---
-                const normalizedSearchTerm = normalizeArtNr(searchTerm.toUpperCase());
+                // Normalisera söktermen för artikelnummer
+                const normalizedSearchTerm = normalizeArtNr(searchTerm); // Använder nya fixade funktionen
                 
                 // 1. Interna resultat
                 const internalMatches = inventory.filter(item => {
-                    const normalizedItemArtNr = normalizeArtNr(item.service_filter || '');
+                    const normalizedItemArtNr = normalizeArtNr(item.service_filter || ''); // Använder nya fixade funktionen
                     return (normalizedItemArtNr && normalizedItemArtNr.includes(normalizedSearchTerm)) || 
                            (item.name || '').toUpperCase().includes(searchTerm.toUpperCase());
                 });
@@ -328,7 +330,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
 
-                // 2. Externa resultat (använder den *onormaliserade* termen, då länk-generatorerna normaliserar själva)
+                // 2. Externa resultat
                 let externalHTML = '';
                 let hasDisclaimer = false;
                 
@@ -350,7 +352,6 @@ document.addEventListener('DOMContentLoaded', () => {
                             </div>
                         `;
                     } else {
-                        // Detta händer sällan nu, men bra att ha kvar
                         externalHTML += `
                             <div class="provider-card disabled">
                                 <img src="${provider.icon}" alt="${provider.name}" class="provider-card-logo">
@@ -890,14 +891,14 @@ document.addEventListener('DOMContentLoaded', () => {
         function calculateRelevance(item, searchWords) {
             let score = 0; 
             
-            // --- ÄNDRAD: Använd normaliserat artikelnummer för relevans ---
+            // Använd normaliserat artikelnummer för relevans
             const serviceFilter = normalizeArtNr((item.service_filter || ''));
             const name = (item.name || '').toLowerCase(); 
             const notes = (item.notes || '').toLowerCase(); 
             const category = (item.category || '').toLowerCase();
             
             searchWords.forEach(word => {
-                // --- ÄNDRAD: Normalisera även sökordet på samma sätt ---
+                // Normalisera även sökordet på samma sätt
                 const cleanWord = normalizeArtNr(word); 
                 
                 if (serviceFilter.includes(cleanWord)) { score += 5; } 
@@ -1050,7 +1051,7 @@ document.addEventListener('DOMContentLoaded', () => {
             let dropdownResults = [];
 
             if (generalSearchTerm !== '') {
-                // --- ÄNDRAD: Skicka *onormaliserade* sökord till relevansberäkningen ---
+                // Skicka *onormaliserade* sökord till relevansberäkningen
                 const searchWords = generalSearchTerm.split(/\s+/).filter(word => word.length > 0 && !stopWords.includes(word));
                 if (searchWords.length === 0 && generalSearchTerm.length > 0) { searchWords.push(generalSearchTerm); }
 
@@ -1222,7 +1223,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const formData = new FormData(addForm);
             const serviceFilter = (formData.get('service_filter') || '').trim().toUpperCase();
 
-            // --- ÄNDRAD: Normalisera för dubblettkontroll ---
+            // Normalisera för dubblettkontroll
             const normalizedServiceFilter = normalizeArtNr(serviceFilter);
             if (normalizedServiceFilter && inventory.some(item => normalizeArtNr(item.service_filter) === normalizedServiceFilter)) {
                 showToast(`Artikelnumret ${escapeHTML(serviceFilter)} finns redan.`, 'error');
@@ -1288,7 +1289,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 editModal.style.display = 'flex';
                 
-                // NYTT: Fokusera och välj text i första fältet
+                // Fokusera och välj text i första fältet
                 setTimeout(() => {
                     const firstInput = document.getElementById(isOrderMode ? 'edit-quantity' : 'edit-service_filter');
                     firstInput.focus();
@@ -1432,6 +1433,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const focusableElements = modalElement.querySelectorAll(
                 'a[href]:not([disabled]), button:not([disabled]), textarea:not([disabled]), input[type="text"]:not([disabled]), input[type="radio"]:not([disabled]), input[type="checkbox"]:not([disabled]), input[type="number"]:not([disabled]), select:not([disabled])'
             );
+            if (focusableElements.length === 0) return; // Inget att fånga
+            
             const firstElement = focusableElements[0];
             const lastElement = focusableElements[focusableElements.length - 1];
             
@@ -1494,7 +1497,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             addForm.querySelector('#add_service_filter').addEventListener('input', (e) => {
                 const value = e.target.value.trim().toUpperCase();
-                // --- ÄNDRAD: Normalisera för dubblettkontroll ---
+                // Normalisera för dubblettkontroll
                 const normalizedValue = normalizeArtNr(value);
                 if (normalizedValue && inventory.some(item => normalizeArtNr(item.service_filter) === normalizedValue)) {
                     addFormArtnrWarning.textContent = 'Detta artikelnummer finns redan!';
@@ -1552,7 +1555,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
             
-            // --- NYTT: Applicera Focus Trap på modals ---
+            // Applicera Focus Trap på modals
             trapFocus(editModal);
             trapFocus(confirmationModal);
             trapFocus(actionsModal);
@@ -1658,7 +1661,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     addForm.querySelector('#add_category').value = category;
                     quickCategoryBtns.forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
-                    // NYTT: Flytta fokus till "Anteckningar" för snabbare arbetsflöde
+                    // Flytta fokus till "Anteckningar" för snabbare arbetsflöde
                     addForm.querySelector('#add_notes').focus();
                 });
             });
