@@ -214,29 +214,19 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const btn = event.currentTarget;
             
-            // Stäng alla andra
             document.querySelectorAll('.dropdown-menu.visible').forEach(o => { 
                 if (o.id !== id) {
-                    o.classList.remove('visible', 'open-up'); // NYTT: Ta bort 'open-up' också
+                    o.classList.remove('visible', 'open-up'); 
                 } 
             });
 
             // Växla aktuell
-            d.classList.toggle('visible'); 
+            const isCurrentlyVisible = d.classList.contains('visible');            
             
             // NYTT: Kontrollera om menyn ska öppnas uppåt (fixar clipping)
-            if (d.classList.contains('visible')) {
-                const btnRect = btn.getBoundingClientRect();
-                const menuHeight = 250; // Uppskattad maxhöjd för menyn
-                
-                // Om knappen är för nära toppen av viewport, öppna uppåt
-                if (btnRect.top < menuHeight) {
-                    d.classList.add('open-up');
-                } else {
-                    d.classList.remove('open-up'); // Se till att den öppnar nedåt annars
-                }
-            } else {
-                d.classList.remove('open-up');
+            if (isCurrentlyVisible) {
+                 d.classList.remove('visible', 'open-up');
+                 return;
             }
         };
         
@@ -1782,4 +1772,5 @@ document.addEventListener('DOMContentLoaded', () => {
         if(initialLoader) initialLoader.querySelector('p').textContent = 'Kritiskt fel vid initiering.';
     }
 });
+
 
