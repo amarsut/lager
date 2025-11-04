@@ -324,24 +324,27 @@
         margin-top: 5px;
         height: 1.2em;
     }
+    /* --- FÖRBÄTTRING 4: Tydligare "Klistra in"-knapp --- */
     .form-paste-btn {
         position: absolute;
         top: 50%; 
         transform: translateY(-50%); 
         right: 8px; 
-        background: none;
-        border: none;
-        color: var(--text-light);
+        background: var(--bg-medium);
+        border: 1px solid var(--border-color);
+        color: var(--text-dark);
         cursor: pointer;
-        padding: 5px;
-        border-radius: 4px;
-        transition: color 0.2s, background-color 0.2s;
+        padding: 5px 8px;
+        border-radius: 6px;
+        transition: color 0.2s, background-color 0.2s, border-color 0.2s;
     }
     .form-paste-btn:hover {
-        color: var(--text-dark);
+        color: var(--primary-dark);
         background-color: var(--bg-dark);
+        border-color: var(--primary-color);
     }
     .form-paste-btn .icon-span { font-size: 20px; }
+    /* --- SLUT FÖRBÄTTRING --- */
     
     .quick-category-wrapper {
         display: flex;
@@ -460,14 +463,18 @@
         transition: background-color 0.3s, border-color 0.3s; 
     }
     
+    /* --- ÄNDRING 2: KOLUMNER --- */
+    /* Tar bort "Länk" och "Åtgärder", ersätter med en "Åtgärder" (80px) */
     .header, .artikel-rad { 
-        grid-template-columns: 160px 200px 90px 70px 70px minmax(120px, 1fr) 120px 140px; 
+        grid-template-columns: 180px 1fr 90px 70px 70px minmax(120px, 1fr) 80px; 
         padding: 10px 20px; 
         align-items: center; 
         font-size: 0.85em; 
         display: grid; 
-        min-width: 1200px; 
-    }    
+        min-width: 1000px; /* Minskade min-width */
+    }
+    /* --- SLUT ÄNDRING 2 --- */
+    
     .header { 
         position: sticky; 
         top: 0; 
@@ -731,20 +738,28 @@
     .artikel-rad > div:last-child { background-color: var(--card-bg); }
     .artikel-rad:hover > div:last-child { background-color: var(--bg-medium); }
     
-    .link-dropdown-container { position: relative; display: inline-block; margin-left: 5px; }
+    /* --- ÄNDRING 2: STYLING FÖR NY ACTION-KNAPP OCH DROPDOWN --- */
+    .action-cell {
+        display: flex;
+        justify-content: center; /* Centrera knappen */
+        align-items: center;
+    }
+    .link-dropdown-container { position: relative; display: inline-block; }
     .dropdown-menu { 
         display: none; 
         position: absolute; 
         right: 0; 
-        top: 100%; 
+        /* --- ÄNDRAD: Visa ovanför knappen --- */
+        bottom: 100%; 
+        margin-bottom: 8px;
+        /* --- SLUT ÄNDRING --- */
         z-index: 10; 
-        min-width: 120px; 
+        min-width: 180px; /* Bredare för ikoner */
         background-color: var(--card-bg); 
         border: 1px solid var(--border-color); 
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); 
         border-radius: 8px; 
-        padding: 5px; 
-        margin-top: 5px; 
+        padding: 8px; /* Mer luft */
         flex-direction: column; 
         white-space: nowrap; 
     }
@@ -752,14 +767,75 @@
         display: flex; 
         animation: subtleFadeIn 0.15s ease-out; 
     }
-    .dropdown-menu .lank-knapp { width: 100%; margin: 3px 0; text-align: center; padding: 8px 12px; font-size: 0.8em; box-shadow: none; background-color: var(--card-bg) !important; color: var(--primary-color) !important; border: 1px solid var(--primary-color) !important; }
-    .dropdown-menu .lank-knapp:hover { background-color: var(--primary-color) !important; color: white !important; }
-    .dropdown-menu .aero-m-btn { background-color: #4CAF50; color: white; }
-    .dropdown-menu .aero-m-btn:hover { background-color: #388E3C; }
-    .dropdown-menu .thansen-btn { background-color: #008080; color: white; }
-    .dropdown-menu .thansen-btn:hover { background-color: #006060; }
-    .dropdown-menu .egen-lank-btn { background-color: #5a7dff; color: white; }
-    .dropdown-menu .egen-lank-btn:hover { background-color: #3a57e8; }
+    /* --- NYTT: Styling för menyalternativ --- */
+    .dropdown-menu-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        font-size: 0.9em;
+        font-weight: 600;
+        color: var(--text-dark);
+        border: none;
+        background: none;
+        cursor: pointer;
+        border-radius: 6px;
+        text-align: left;
+        width: 100%;
+    }
+    .dropdown-menu-item:hover {
+        background-color: var(--bg-medium);
+    }
+    .dropdown-menu-item .icon-span {
+        font-size: 1.2em;
+        color: var(--text-light);
+    }
+    /* Särskild styling för länkar */
+    .dropdown-menu-item.link-item .icon-span {
+        color: var(--primary-color);
+    }
+    /* Särskild styling för "Ta bort" */
+    .dropdown-menu-item.danger-item {
+        color: var(--danger-color);
+    }
+    .dropdown-menu-item.danger-item .icon-span {
+        color: var(--danger-color);
+    }
+    /* Särskild styling för "Ändra" */
+    .dropdown-menu-item .icon-span.edit-icon {
+        color: var(--primary-dark);
+    }
+    
+    /* --- NYTT: Avdelare i menyn --- */
+    .dropdown-divider {
+        height: 1px;
+        background-color: var(--border-color);
+        margin: 6px 0;
+    }
+    
+    /* --- NYTT: Action-knapp (3 prickar) --- */
+    .btn-action-menu {
+        background: var(--bg-medium);
+        color: var(--text-dark);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background-color 0.2s, border-color 0.2s;
+    }
+    .btn-action-menu:hover {
+        background-color: var(--bg-dark);
+        border-color: var(--primary-color);
+    }
+    .btn-action-menu .icon-span {
+        font-size: 24px;
+        font-weight: 700;
+    }
+    /* --- SLUT ÄNDRING 2 --- */
     
     .global-search-container { 
         background-color: var(--card-bg); 
@@ -1653,6 +1729,8 @@
     
     @media (max-width: 600px) {
         #global-search-close-btn { top: -5px; right: -5px; }
+        /* --- ÄNDRING 2: Se till att dropdown-menyn inte är för bred --- */
+        .dropdown-menu { min-width: 160px; }
     }
 
     
@@ -1787,7 +1865,7 @@
         
         <div class="top-toolbar">
             <div class="toolbar-title">
-                <a href="#" onclick="window.location.reload(); return false;" style="text-decoration: none; color: inherit;">
+                <a href="#" id="soft-reset-btn" style="text-decoration: none; color: inherit; cursor: pointer;">
                     <span class="icon-span">inventory_2</span>
                     LAGERDATABAS
                 </a>
@@ -1831,7 +1909,7 @@
                 </span> 
             för fordonsuppgifter.</p>
             <div class="global-search-wrapper">
-                <input type="text" id="global-search-input" placeholder="Ange artikelnummer (exempel: 03L 115 562)">
+                <input type="text" id="global-search-input" placeholder="Ange artikelnummer (exempel: 03L 115 562) eller tryck '/'">
                 <button id="global-search-btn" class="btn-primary" title="Sök">
                     <span class="search-spinner"></span> <span class="icon-span">compare_arrows</span>
                     Jämför
@@ -1922,7 +2000,7 @@
                 </div>
                 <div>
                     <label for="add_notes">Anteckningar</label>
-                    <input type="text" id="add_notes" name="notes" placeholder="Anteckningar (ex: [ABC123])">
+                    <input type="text" id="add_notes" name="notes" placeholder="Anteckningar (ex: [ABC123])" oninput="this.value = this.value.toUpperCase()">
                     <div class="form-warning"></div>
                 </div>
                 <div>
@@ -1975,7 +2053,6 @@
                     <span data-sort="quantity">Antal <span class="sort-icon"></span></span>
                     <span>Status</span>
                     <span data-sort="notes">Anteckningar <span class="sort-icon"></span></span>
-                    <span>Länk</span>
                     <span>Åtgärder</span>
                 </div>
                 <div class="empty-state" id="service-empty-state" style="display: none;">
@@ -2000,7 +2077,6 @@
                     <span data-sort="quantity">Antal <span class="sort-icon"></span></span>
                     <span>Status</span>
                     <span data-sort="notes">Anteckningar <span class="sort-icon"></span></span>
-                    <span>Länk</span>
                     <span>Åtgärder</span>
                 </div>
                 <div class="empty-state" id="motor-chassi-empty-state" style="display: none;">
@@ -2025,7 +2101,6 @@
                     <span data-sort="quantity">Antal <span class="sort-icon"></span></span>
                     <span>Status</span>
                     <span data-sort="notes">Anteckningar <span class="sort-icon"></span></span>
-                    <span>Länk</span>
                     <span>Åtgärder</span>
                 </div>
                 <div class="empty-state" id="andra-marken-empty-state" style="display: none;">
@@ -2048,7 +2123,6 @@
                         <span data-sort="quantity">Antal <span class="sort-icon"></span></span>
                         <span>Status</span>
                         <span data-sort="notes">Anteckningar <span class="sort-icon"></span></span>
-                        <span>Länk</span>
                         <span>Åtgärder</span>
                     </div>
                     <div class="empty-state" id="slut-i-lager-empty-state" style="display: none;">
@@ -2094,7 +2168,7 @@
                 </div>
                 <div>
                     <label for="edit-notes">Anteckningar</label>
-                    <input type="text" name="notes" id="edit-notes" placeholder="Anteckningar (ex: [ABC123])">
+                    <input type="text" name="notes" id="edit-notes" placeholder="Anteckningar (ex: [ABC123])" oninput="this.value = this.value.toUpperCase()">
                 </div>
                 <div>
                     <label for="edit-link">Länk</label>
@@ -2137,6 +2211,3 @@
 
 </body>
 </html>
-
-
-
