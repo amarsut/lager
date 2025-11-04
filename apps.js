@@ -781,9 +781,12 @@ document.addEventListener('DOMContentLoaded', () => {
             let html = '';
             // Visa max 10 resultat i dropdown
             results.slice(0, 10).forEach(item => {
+                // NYTT: Hämta de formaterade anteckningarna (reg-nr)
+                const notesHTML = parseNotes(item.notes || '');
+
                 html += `<a href="#" class="search-result-item" data-id="${item.id}">
                             <div><strong>${escapeHTML(item.service_filter)}</strong></div>
-                            <span>${escapeHTML(item.name)}</span>
+                            <span>${escapeHTML(item.name)} ${notesHTML}</span>
                          </a>`;
             });
 
@@ -1560,4 +1563,3 @@ document.addEventListener('DOMContentLoaded', () => {
         if(initialLoader) initialLoader.querySelector('p').textContent = 'Kritiskt fel vid initiering.';
     }
 });
-
