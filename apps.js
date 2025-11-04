@@ -284,6 +284,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     globalSearchResults.style.display = 'none'; 
                 });
                 
+                // --- NYTT: Skrolla ner till resultaten ---
+                globalSearchResults.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                
                 globalSearchBtn.disabled = false;
                 return; // Avsluta här, vi ska inte söka efter artiklar
             }
@@ -299,6 +302,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 searchDisclaimer.style.display = 'none';
                 globalSearchResults.style.display = 'block';
                 currentExternalLinks = []; 
+                
+                // --- NYTT: Skrolla ner till resultaten ---
+                globalSearchResults.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
                 // 1. Interna resultat
                 const internalMatches = inventory.filter(item => (item.service_filter || '').toUpperCase().includes(searchTerm) || (item.name || '').toUpperCase().includes(searchTerm));
@@ -418,18 +424,15 @@ document.addEventListener('DOMContentLoaded', () => {
         // NYA FUNKTIONER: TEMA, TOASTS, M.M. (Oförändrade)
         // ----------------------------------------------------------------------
 
-        // --- ÄNDRAD: Uppdaterade färger för att matcha ny CSS-palett ---
         function setTheme(theme) {
             document.body.setAttribute('data-theme', theme);
             localStorage.setItem('app_theme', theme);
             themeToggle.checked = (theme === 'dark');
-            // Uppdaterade färger för att matcha --bg-light i båda teman
             const color = theme === 'dark' ? '#111827' : '#f8fafc'; 
             if (metaThemeColor) {
                 metaThemeColor.setAttribute('content', color);
             }
         }
-        // --- SLUT ÄNDRING ---
 
         function checkTheme() {
             const savedTheme = localStorage.getItem('app_theme');
@@ -593,6 +596,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         function updateSyncStatus(status, message) {
             if (!syncStatusElement) return;
+            // NYTT: Ta bort flash-klassen vid varje ny status
+            syncStatusElement.classList.remove('flash');
             syncStatusElement.className = `sync-${status}`;
             syncStatusElement.title = message;
             const textEl = syncStatusElement.querySelector('.text');
@@ -659,9 +664,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return html;
         }
 
-        // --- ÄNDRAD: Hela createInventoryRow-funktionen är omskriven till en modern template literal ---
-        // Detta är mycket renare, lättare att underhålla och mer "modernt"
-        // All logik och funktionalitet är 100% bevarad.
         function createInventoryRow(item, isOutOfStock) {
             const row = document.createElement('div');
             row.className = 'artikel-rad';
@@ -747,7 +749,6 @@ document.addEventListener('DOMContentLoaded', () => {
             
             return row;
         }
-        // --- SLUT PÅ MODERNISERAD createInventoryRow ---
 
         function renderInventory(data) {
             serviceArtiklarLista.innerHTML = '';
@@ -1077,6 +1078,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const now = new Date();
                 updateSyncStatus('ok', `Synkroniserad ${now.toLocaleTimeString('sv-SE')}`);
                 
+                // --- NYTT: Visuell feedback för synk ---
+                syncStatusElement.classList.add('flash');
+                setTimeout(() => syncStatusElement.classList.remove('flash'), 1200);
+                
                 if (initialLoader) {
                     initialLoader.style.opacity = '0';
                     setTimeout(() => initialLoader.style.display = 'none', 300);
@@ -1091,13 +1096,13 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
         
+        // --- ÄNDRAD: FAB-knappen transformeras nu istället för att döljas ---
         function toggleAddForm() {
             const isCurrentlyOpen = addFormWrapper.classList.contains('open');
             const newState = isCurrentlyOpen ? 'closed' : 'open';
             
             addFormWrapper.classList.toggle('open');
-            fabAddBtn.style.opacity = isCurrentlyOpen ? '1' : '0';
-            fabAddBtn.style.visibility = isCurrentlyOpen ? 'visible' : 'hidden';
+            fabAddBtn.classList.toggle('open'); // NYTT: Styr knappens utseende
             
             localStorage.setItem('add_form_open_state', newState);
             
@@ -1106,15 +1111,15 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         
+        // --- ÄNDRAD: Synkar FAB-knappens state vid laddning ---
         function initializeAddFormState() {
             const storedState = localStorage.getItem('add_form_open_state');
             if (storedState === 'open') { 
                 addFormWrapper.classList.add('open'); 
-                fabAddBtn.style.opacity = '0';
-                fabAddBtn.style.visibility = 'hidden';
+                fabAddBtn.classList.add('open'); // NYTT
             } else {
-                fabAddBtn.style.opacity = '1';
-                fabAddBtn.style.visibility = 'visible';
+                addFormWrapper.classList.remove('open');
+                fabAddBtn.classList.remove('open'); // NYTT
             }
         }
         
@@ -1197,6 +1202,7 @@ document.addEventListener('DOMContentLoaded', () => {
             await saveInventoryItem(newItem);
             addForm.reset();
             addFormArtnrWarning.textContent = '';
+            quickCategoryBtns.forEach(b => b.classList.remove('active')); // NYTT: Återställ knappar
             submitBtn.disabled = false; submitBtn.innerHTML = '<span class="icon-span">save</span>Spara Artikel';
             if (addFormWrapper.classList.contains('open')) { toggleAddForm(); }
             
@@ -1303,11 +1309,20 @@ document.addEventListener('DOMContentLoaded', () => {
             );
         }
         
+        // --- ÄNDRAD: Ger visuell feedback på raden vid kopiering ---
         window.copyToClipboard = (buttonEl, text) => {
+            const row = buttonEl.closest('.artikel-rad'); // NYTT: Hitta raden
+            
             navigator.clipboard.writeText(text).then(() => {
                 const originalContent = buttonEl.innerHTML;
                 buttonEl.innerHTML = '✅';
                 buttonEl.disabled = true;
+                
+                // NYTT: Lägg till flash-effekt på raden
+                if (row) {
+                    row.classList.add('flash-success');
+                    setTimeout(() => row.classList.remove('flash-success'), 800);
+                }
                 
                 setTimeout(() => {
                     buttonEl.innerHTML = originalContent;
@@ -1366,14 +1381,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 showToast('Kunde inte läsa urklipp', 'error');
             }
         }
-
-        // --- BORTTAGEN: Funktion för att injicera CSS ---
-        // Denna CSS har flyttats till <style>-blocket i HTML-filen.
-        // function injectSearchDropdownCSS() { ... }
         
         function initializeListeners() {
-            // --- BORTTAGEN: Anropet till injectSearchDropdownCSS() ---
-
             addForm.addEventListener('submit', handleFormSubmit);
             document.getElementById('add-form-cancel-btn').addEventListener('click', () => {
                 if (addFormWrapper.classList.contains('open')) {
@@ -1382,6 +1391,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 addForm.reset();
                 addFormArtnrWarning.textContent = '';
                 addForm.querySelectorAll('.has-error').forEach(el => el.classList.remove('has-error'));
+                quickCategoryBtns.forEach(b => b.classList.remove('active')); // NYTT: Återställ knappar
             });
             
             editForm.addEventListener('submit', handleEditSubmit);
@@ -1428,13 +1438,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
 
+            // --- ÄNDRAD: FAB-knappen är nu en ren toggle ---
             if (fabAddBtn) {
                 fabAddBtn.addEventListener('click', () => {
-                    if (!addFormWrapper.classList.contains('open')) {
-                        toggleAddForm();
+                    toggleAddForm(); // Denna funktion hanterar nu FAB-klassen och form-wrappers
+                    
+                    // Om formuläret just öppnades (kontrollera *efter* toggling)
+                    if (addFormWrapper.classList.contains('open')) {
+                        addFormWrapper.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        document.getElementById('add_service_filter').focus();
                     }
-                    addFormWrapper.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    document.getElementById('add_service_filter').focus();
                 });
             }
 
@@ -1459,10 +1472,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     setTimeout(() => document.getElementById('add_service_filter').focus(), 400);
                 });
             }
-            
-            // BORTTAGEN: Gamla sök-lyssnare
-            // searchInput.addEventListener('input', () => { clearSearchBtn.style.display = searchInput.value.length > 0 ? 'block' : 'none'; });
-            // clearSearchBtn.addEventListener('click', () => { searchInput.value = ''; clearSearchBtn.style.display = 'none'; applySearchFilter(); searchInput.focus(); });
             
             document.querySelectorAll('.lager-container').forEach(c => { c.addEventListener('scroll', () => c.classList.toggle('scrolled', c.scrollTop > 1)); });
 
@@ -1575,11 +1584,22 @@ document.addEventListener('DOMContentLoaded', () => {
             // NYTT: Klistra in-knapp
             pasteArtnrBtn.addEventListener('click', handlePasteAndFill);
 
-            // NYTT: Snabb-kategori knappar
+            // --- ÄNDRAD: Snabb-kategori knappar hanterar nu 'active' state ---
             quickCategoryBtns.forEach(btn => {
                 btn.addEventListener('click', () => {
                     const category = btn.getAttribute('data-category');
                     addForm.querySelector('#add_category').value = category;
+                    // NYTT: Uppdatera aktivt läge
+                    quickCategoryBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                });
+            });
+            
+            // --- NYTT: Synka kategori-select med snabbknapparna ---
+            addForm.querySelector('#add_category').addEventListener('change', (e) => {
+                const selectedCategory = e.target.value;
+                quickCategoryBtns.forEach(btn => {
+                    btn.classList.toggle('active', btn.getAttribute('data-category') === selectedCategory);
                 });
             });
 
