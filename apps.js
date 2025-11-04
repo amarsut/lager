@@ -35,6 +35,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const serviceArtiklarLista = document.getElementById('service-artiklar-lista');
         const motorChassiArtiklarLista = document.getElementById('motor-chassi-artiklar-lista');
         const andraMarkenArtiklarLista = document.getElementById('andra-marken-artiklar-lista');
+        const slutILagerLista = document.getElementById('slut-i-lager-lista');
+        const slutILagerSektion = document.getElementById('slut-i-lager-sektion');
         const fullEmptyState = document.getElementById('full-empty-state');
         const emptyStateAddBtn = document.getElementById('empty-state-add-btn'); 
         
@@ -58,12 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const actionsPopoverOverlay = document.getElementById('actionsPopoverOverlay');
         const actionsPopoverContent = document.getElementById('actionsPopoverContent');
         
-        // --- NYTT: "Slut i Lager"-modal-element ---
-        const outOfStockModal = document.getElementById('outOfStockModal');
-        const showOutOfStockBtn = document.getElementById('show-out-of-stock-btn');
-        const outOfStockSearch = document.getElementById('out-of-stock-search');
-        const outOfStockEmptyState = document.getElementById('out-of-stock-empty-state');
-        let outOfStockModalContainer = null; // Definieras senare
+        // BORTTAGET: "Slut i Lager"-modal-element
         
         // Global sök
         const globalSearchInput = document.getElementById('global-search-input');
@@ -88,8 +85,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const emptyStates = {
             service: document.getElementById('service-empty-state'),
             motorChassi: document.getElementById('motor-chassi-empty-state'),
-            andraMarken: document.getElementById('andra-marken-empty-state')
-            // BORTTAGET: slutILager
+            andraMarken: document.getElementById('andra-marken-empty-state'),
+            slutILager: document.getElementById('slut-i-lager-empty-state') // ÅTERSTÄLLD
         };
         
         // Dashboard (Nu i App-meny)
@@ -129,7 +126,6 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // GLOBALA VARIABLER
         let inventory = []; 
-        let outOfStockInventory = []; // NYTT: Separat lista för "Slut i Lager"
         let selectedItemId = null;
         let currentSort = { column: 'name', direction: 'desc' };
         let currentFilter = 'Alla';
@@ -579,18 +575,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
         function renderDashboard(currentInventory) {
             const inStock = currentInventory.filter(item => item.quantity > 0);
-            outOfStockInventory = currentInventory.filter(item => item.quantity <= 0); // NYTT: Uppdatera globala listan
+            const outOfStock = currentInventory.filter(item => item.quantity <= 0); // ÅTERSTÄLLD
             
             const totalUnits = inStock.reduce((sum, item) => {
                 return sum + item.quantity;
             }, 0);
             
             const inStockItems = inStock.length;
-            const outOfStockItems = outOfStockInventory.length;
+            const outOfStockItems = outOfStock.length; // ÅTERSTÄLLD
 
             statTotalItems.textContent = inStockItems;
             statTotalUnits.textContent = totalUnits;
-            statOutOfStock.textContent = outOfStockItems; // Uppdaterar siffran i sidomenyn
+            statOutOfStock.textContent = outOfStockItems; // ÅTERSTÄLLD
         }
         
         function renderRecentItems(currentInventory) {
@@ -724,24 +720,22 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const popoverRect = actionsPopover.getBoundingClientRect();
             
-            // Positionera till vänster om knappen, centrerat vertikalt
             let top = rect.top + (rect.height / 2) - (popoverRect.height / 2);
             let left = rect.left - popoverRect.width - 5; // 5px marginal
 
-            // Justera om den hamnar utanför skärmen
-            if (left < 10) left = rect.right + 5; // Flytta till höger
-            if (top < 10) top = 10; // Flytta ner
+            if (left < 10) left = rect.right + 5; 
+            if (top < 10) top = 10; 
             if (top + popoverRect.height > window.innerHeight - 10) {
-                top = window.innerHeight - popoverRect.height - 10; // Flytta upp
+                top = window.innerHeight - popoverRect.height - 10; 
             }
 
             actionsPopover.style.top = `${top}px`;
             actionsPopover.style.left = `${left}px`;
             
-            // Fokusera på första knappen
+            // ★ FIX: Fokusera utan att scrolla ★
             setTimeout(() => {
                 const firstButton = actionsPopover.querySelector('button');
-                if (firstButton) firstButton.focus();
+                if (firstButton) firstButton.focus({ preventScroll: true });
             }, 50);
         }
         // --- SLUT ÅTGÄRDS-POPOVER ---
@@ -750,9 +744,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const row = document.createElement('div');
             row.className = 'artikel-rad';
             row.setAttribute('data-id', item.id);
-            
-            // Ta bort select-onclick om det är "Slut i Lager"-modalen (eller behåll?)
-            // Vi behåller den, det skadar inte.
             row.onclick = () => handleRowSelect(item.id, row);
             if (selectedItemId === item.id) {
                 row.classList.add('selected');
@@ -813,10 +804,10 @@ document.addEventListener('DOMContentLoaded', () => {
             serviceArtiklarLista.innerHTML = '';
             motorChassiArtiklarLista.innerHTML = '';
             andraMarkenArtiklarLista.innerHTML = '';
-            // BORTTAGET: slutILagerLista.innerHTML = '';
+            slutILagerLista.innerHTML = ''; // ÅTERSTÄLLD
             
             const iLager = data.filter(item => item.quantity > 0);
-            // BORTTAGET: const slutILager = data.filter(item => item.quantity <= 0);
+            const slutILager = data.filter(item => item.quantity <= 0); // ÅTERSTÄLLD
 
             const serviceArtiklar = iLager.filter(item => item.category === 'Service');
             const motorChassiArtiklar = iLager.filter(item => item.category === 'Motor/Chassi' || item.category === 'Övrigt' || !item.category);
@@ -825,7 +816,7 @@ document.addEventListener('DOMContentLoaded', () => {
             serviceArtiklar.forEach(item => serviceArtiklarLista.appendChild(createInventoryRow(item, false)));
             motorChassiArtiklar.forEach(item => motorChassiArtiklarLista.appendChild(createInventoryRow(item, false)));
             andraMarkenArtiklar.forEach(item => andraMarkenArtiklarLista.appendChild(createInventoryRow(item, false)));
-            // BORTTAGET: slutILager.forEach...
+            slutILager.forEach(item => slutILagerLista.appendChild(createInventoryRow(item, true))); // ÅTERSTÄLLD
 
             const serviceWrapper = document.getElementById('service-artiklar-wrapper');
             const motorWrapper = document.getElementById('motor-chassi-artiklar-wrapper');
@@ -838,7 +829,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const showService = (currentFilter === 'Alla' || currentFilter === 'Service') && serviceArtiklar.length > 0;
             const showMotor = (currentFilter === 'Alla' || currentFilter === 'Motor/Chassi') && motorChassiArtiklar.length > 0;
             const showAndra = (currentFilter === 'Alla' || currentFilter === 'Andra Märken') && andraMarkenArtiklar.length > 0;
-            // BORTTAGET: const showSlut = ...
+            const showSlut = (currentFilter === 'Alla' || currentFilter === 'Slut') && slutILager.length > 0; // ÅTERSTÄLLD
 
             serviceTitle.style.display = showService ? 'flex' : 'none';
             serviceWrapper.style.display = showService ? 'block' : 'none';
@@ -846,12 +837,12 @@ document.addEventListener('DOMContentLoaded', () => {
             motorWrapper.style.display = showMotor ? 'block' : 'none';
             andraTitle.style.display = showAndra ? 'flex' : 'none';
             andraWrapper.style.display = showAndra ? 'block' : 'none';
-            // BORTTAGET: slutILagerSektion.style.display = ...
+            slutILagerSektion.style.display = showSlut ? 'block' : 'none'; // ÅTERSTÄLLD
 
             emptyStates.service.style.display = (currentFilter === 'Alla' || currentFilter === 'Service') && serviceArtiklar.length === 0 ? 'flex' : 'none';
             emptyStates.motorChassi.style.display = (currentFilter === 'Alla' || currentFilter === 'Motor/Chassi') && motorChassiArtiklar.length === 0 ? 'flex' : 'none';
             emptyStates.andraMarken.style.display = (currentFilter === 'Alla' || currentFilter === 'Andra Märken') && andraMarkenArtiklar.length === 0 ? 'flex' : 'none';
-            // BORTTAGET: emptyStates.slutILager.style.display = ...
+            emptyStates.slutILager.style.display = (currentFilter === 'Alla' || currentFilter === 'Slut') && slutILager.length === 0 ? 'flex' : 'none'; // ÅTERSTÄLLD
             
             const totalItems = inventory.length; 
             if (totalItems === 0) {
@@ -859,6 +850,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 serviceTitle.style.display = 'none'; serviceWrapper.style.display = 'none';
                 motorTitle.style.display = 'none'; motorWrapper.style.display = 'none';
                 andraTitle.style.display = 'none'; andraWrapper.style.display = 'none';
+                slutILagerSektion.style.display = 'none';
             } else {
                 fullEmptyState.style.display = 'none';
             }
@@ -878,7 +870,8 @@ document.addEventListener('DOMContentLoaded', () => {
                  emptyStates.motorChassi.querySelector('p').textContent = 'Inga artiklar hittades. Prova ändra filtret eller lägg till en ny artikel.';
                  emptyStates.andraMarken.querySelector('h4').textContent = 'Inga artiklar för andra märken';
                  emptyStates.andraMarken.querySelector('p').textContent = 'Inga artiklar hittades. Prova ändra filtret eller lägg till en ny artikel.';
-                 // BORTTAGET: emptyStates.slutILager...
+                 emptyStates.slutILager.querySelector('h4').textContent = 'Inga artiklar slut i lager';
+                 emptyStates.slutILager.querySelector('p').textContent = 'Allt finns i lager, eller så gav din sökning inga träffar.';
             }
         }
 
@@ -892,11 +885,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const category = (item.category || '').toLowerCase();
             
             searchWords.forEach(word => {
-                // --- ★ FIX: Normalisera sökordet för art.nr-jämförelse ---
+                // ★ FIX: Normalisera sökordet för art.nr-jämförelse
                 const cleanWord = normalizeArtNr(word); 
                 
                 if (serviceFilter.includes(cleanWord)) { score += 5; } 
-                if (name.includes(word)) { score += 3; } // Behåll onormaliserat (redan lowercase) för namn
+                if (name.includes(word)) { score += 3; } 
                 if (category.includes(word)) { score += 2; } 
                 if (notes.includes(word)) { score += 1; } 
                 if (serviceFilter === cleanWord || name === word) { score += 5; }
@@ -1020,13 +1013,6 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 generalSearchTerm = searchTerm;
             }
-            
-            // --- ÄNDRAD: Hantera "Slut"-filtret ---
-            if (currentFilter === 'Slut') {
-                // Om "Slut" väljs, visa inget på huvudsidan, men uppdatera knappen
-                processedInventory = []; 
-                currentFilter = 'Slut'; 
-            }
 
             categoryFilterBar.querySelectorAll('.btn-secondary').forEach(btn => {
                 btn.classList.toggle('active', btn.getAttribute('data-filter') === currentFilter);
@@ -1039,30 +1025,45 @@ document.addEventListener('DOMContentLoaded', () => {
                 toolbarFilterBadge.style.display = 'none';
             }
 
-            if (currentFilter !== 'Alla' && currentFilter !== 'Slut' && !syntaxFilterUsed) { 
-                processedInventory = processedInventory.filter(item => item.quantity > 0 && 
-                    (item.category === currentFilter || (currentFilter === 'Motor/Chassi' && (item.category === 'Övrigt' || !item.category)))
-                );
+            // --- ÄNDRAD: Logik för att hantera "Slut"-filtret ---
+            if (currentFilter !== 'Alla' && !syntaxFilterUsed) { 
+                if (currentFilter === 'Slut') {
+                    // "Slut"-filtret hanteras nu av renderInventory, som visar/döljer sektionen
+                    // Men vi måste se till att processedInventory *bara* innehåller "slut"-artiklar
+                    processedInventory = processedInventory.filter(item => item.quantity <= 0);
+                } else {
+                    // Annars, filtrera på kategori OCH se till att de är i lager
+                    processedInventory = processedInventory.filter(item => item.quantity > 0 && 
+                        (item.category === currentFilter || (currentFilter === 'Motor/Chassi' && (item.category === 'Övrigt' || !item.category)))
+                    );
+                }
             } else if (currentFilter === 'Alla' && !syntaxFilterUsed) {
-                // Se till att "Alla" bara visar saker i lager
-                processedInventory = processedInventory.filter(item => item.quantity > 0);
+                // "Alla" ska nu visa både i lager OCH slut i lager
+                // renderInventory kommer att separera dem
             }
+            // --- SLUT ÄNDRING ---
+
 
             let dropdownResults = [];
 
             if (generalSearchTerm !== '') {
-                // Skicka *onormaliserade* sökord till relevansberäkningen
                 const searchWords = generalSearchTerm.split(/\s+/).filter(word => word.length > 0 && !stopWords.includes(word));
                 if (searchWords.length === 0 && generalSearchTerm.length > 0) { searchWords.push(generalSearchTerm); }
 
+                // --- VIKTIGT: Sök i HELA lagret, oavsett filter, för dropdown ---
+                let dropdownInventory = [...inventory];
+                if (!syntaxFilterUsed) {
+                     dropdownResults = dropdownInventory
+                        .map(item => ({ ...item, relevanceScore: calculateRelevance(item, searchWords) }))
+                        .filter(item => item.relevanceScore > 0)
+                        .sort((a, b) => b.relevanceScore - a.relevanceScore);
+                }
+                
+                // Applicera sökningen på den *filtrerade* listan för huvudvyn
                 processedInventory = processedInventory
                     .map(item => ({ ...item, relevanceScore: calculateRelevance(item, searchWords) }))
                     .filter(item => item.relevanceScore > 0)
                     .sort((a, b) => b.relevanceScore - a.relevanceScore);
-                
-                if (!syntaxFilterUsed) {
-                    dropdownResults = [...processedInventory];
-                }
                 
             } 
             else {
@@ -1076,10 +1077,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
             
-            const resultsForDropdown = syntaxFilterUsed ? processedInventory : dropdownResults;
+            const resultsForDropdown = (syntaxFilterUsed ? processedInventory : dropdownResults);
             renderSearchDropdown(generalSearchTerm, resultsForDropdown);
 
-            renderInventory(processedInventory); // Renderar nu bara "i lager"-saker
+            renderInventory(processedInventory); // renderInventory delar nu upp i/slut i lager
 
             document.querySelectorAll('.header span[data-sort]').forEach(span => {
                 span.classList.remove('active', 'asc', 'desc');
@@ -1176,16 +1177,14 @@ document.addEventListener('DOMContentLoaded', () => {
             if (savedSort) {
                 currentSort = JSON.parse(savedSort);
             }
-            if (savedFilter && savedFilter !== 'Slut') { // Ladda inte "Slut" som startfilter
+            if (savedFilter) { // Återställd: ladda alla filter
                 currentFilter = savedFilter;
             }
             
-            // Uppdatera filterknapparna baserat på det laddade (eller standard) filtret
             document.querySelectorAll('#category-filter-bar .btn-secondary').forEach(btn => {
                 btn.classList.toggle('active', btn.getAttribute('data-filter') === currentFilter);
             });
         }
-
 
         function validateForm(form) {
             let isValid = true;
@@ -1383,12 +1382,6 @@ document.addEventListener('DOMContentLoaded', () => {
         
         function closeEditModal() { editModal.style.display = 'none'; }
         function closeConfirmationModal() { confirmationModal.style.display = 'none'; confirmCallback = null; }
-        
-        // --- NYTT: Stäng "Slut i Lager"-modalen ---
-        function closeOutOfStockModal() {
-            outOfStockModal.style.display = 'none';
-            outOfStockSearch.value = ''; // Rensa sökning
-        }
 
         function showCustomConfirmation(message, callback, title = 'Bekräfta', isDanger = false) {
             confirmationModal.querySelector('#confirmationTitle').innerHTML = title;
@@ -1461,63 +1454,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
             });
-        }
-        
-        // --- NYTT: Logik för "Slut i Lager"-modalen ---
-        function renderOutOfStockList(searchTerm = '') {
-            if (!outOfStockModalContainer) {
-                outOfStockModalContainer = document.getElementById('out-of-stock-modal-container');
-                
-                // Skapa header dynamiskt första gången
-                const header = document.createElement('div');
-                header.className = 'header';
-                header.innerHTML = `
-                    <span data-sort="service_filter">Art. nr</span>
-                    <span data-sort="name">Namn</span>
-                    <span data-sort="price">Pris</span>
-                    <span data-sort="quantity">Antal</span>
-                    <span>Status</span>
-                    <span data-sort="notes">Anteckningar</span>
-                    <span>Åtgärder</span>
-                `;
-                outOfStockModalContainer.appendChild(header);
-            }
-            
-            // Rensa bara listan, inte headern
-            const rows = outOfStockModalContainer.querySelectorAll('.artikel-rad');
-            rows.forEach(row => row.remove());
-
-            // Sortera efter senast uppdaterad (nyaste först)
-            let filteredList = [...outOfStockInventory].sort((a, b) => (b.lastUpdated || b.id) - (a.lastUpdated || a.id));
-
-            if (searchTerm) {
-                const lowerSearchTerm = searchTerm.toLowerCase();
-                const normalizedSearchTerm = normalizeArtNr(lowerSearchTerm);
-                
-                filteredList = filteredList.filter(item => {
-                    const normalizedItemArtNr = normalizeArtNr(item.service_filter || '');
-                    return (normalizedItemArtNr && normalizedItemArtNr.includes(normalizedSearchTerm)) ||
-                           (item.name || '').toLowerCase().includes(lowerSearchTerm);
-                });
-            }
-
-            if (filteredList.length === 0) {
-                outOfStockEmptyState.style.display = 'flex';
-                outOfStockModalContainer.style.display = 'none';
-                if (searchTerm) {
-                    outOfStockEmptyState.querySelector('h4').textContent = 'Inga träffar';
-                    outOfStockEmptyState.querySelector('p').textContent = `Din sökning på "${escapeHTML(searchTerm)}" gav inga resultat.`;
-                } else {
-                    outOfStockEmptyState.querySelector('h4').textContent = 'Bra jobbat!';
-                    outOfStockEmptyState.querySelector('p').textContent = 'Det finns inga artiklar som är slut i lager.';
-                }
-            } else {
-                outOfStockEmptyState.style.display = 'none';
-                outOfStockModalContainer.style.display = 'block';
-                filteredList.forEach(item => {
-                    outOfStockModalContainer.appendChild(createInventoryRow(item, true));
-                });
-            }
         }
         
         function initializeListeners() {
@@ -1614,23 +1550,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     closeConfirmationModal();
                 }
             });
-            // BORTTAGET: actionsModal listener
-            
-            // --- NYTT: "Slut i Lager"-modal-lyssnare ---
-            showOutOfStockBtn.addEventListener('click', () => {
-                renderOutOfStockList(); // Rendera listan
-                outOfStockModal.style.display = 'flex'; // Visa modalen
-                outOfStockSearch.focus(); // Fokusera på sökfältet
-                closeAppMenu(); // Stäng sidomenyn
-            });
-            outOfStockModal.addEventListener('click', (e) => {
-                if (e.target === outOfStockModal || e.target.classList.contains('close-btn')) {
-                    closeOutOfStockModal();
-                }
-            });
-            outOfStockSearch.addEventListener('input', (e) => {
-                renderOutOfStockList(e.target.value);
-            });
             
             // --- NYTT: Popover-lyssnare ---
             actionsPopoverOverlay.addEventListener('click', closeActionsPopover);
@@ -1639,14 +1558,12 @@ document.addEventListener('DOMContentLoaded', () => {
             trapFocus(editModal);
             trapFocus(confirmationModal);
             trapFocus(actionsPopover);
-            trapFocus(outOfStockModal); // NYTT
             
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape') {
                     closeEditModal();
                     closeConfirmationModal();
-                    closeActionsPopover(); // NYTT
-                    closeOutOfStockModal(); // NYTT
+                    closeActionsPopover(); 
                     closeAppMenu();
                     if(globalSearchResults.style.display === 'block') {
                         globalSearchResults.style.display = 'none';
@@ -1724,6 +1641,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         });
                         applySearchFilter(desktopSearchInput.value); 
                         closeAppMenu();
+                        
+                        // --- NYTT: Scrolla till "Slut i Lager" ---
+                        if (filter === 'Slut') {
+                            setTimeout(() => {
+                                slutILagerSektion.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            }, 250); // Vänta tills menyn stängts
+                        }
                     }
                 });
             }
@@ -1776,22 +1700,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (e.target.tagName === 'BUTTON') {
                         const filter = e.target.getAttribute('data-filter');
                         if (filter) {
-                            // --- NYTT: Hantera "Slut"-filtret ---
-                            if (filter === 'Slut') {
-                                // Visa modalen istället för att filtrera listan
-                                renderOutOfStockList();
-                                outOfStockModal.style.display = 'flex';
-                                outOfStockSearch.focus();
-                                // Sätt inget filter aktivt
-                                currentFilter = 'Alla'; // Återställ till 'Alla' visuellt
-                            } else {
-                                currentFilter = filter;
-                            }
+                            currentFilter = filter;
                             
                             if(desktopSearchInput.value) {
                                 clearAndHideSearch();
                             }
                             applySearchFilter(''); 
+                            
+                            // --- NYTT: Scrolla till "Slut i Lager" ---
+                            if (filter === 'Slut') {
+                                slutILagerSektion.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            }
                         }
                     }
                 });
