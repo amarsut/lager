@@ -418,15 +418,18 @@ document.addEventListener('DOMContentLoaded', () => {
         // NYA FUNKTIONER: TEMA, TOASTS, M.M. (Oförändrade)
         // ----------------------------------------------------------------------
 
+        // --- ÄNDRAD: Uppdaterade färger för att matcha ny CSS-palett ---
         function setTheme(theme) {
             document.body.setAttribute('data-theme', theme);
             localStorage.setItem('app_theme', theme);
             themeToggle.checked = (theme === 'dark');
-            const color = theme === 'dark' ? '#1f2937' : '#5a7dff';
+            // Uppdaterade färger för att matcha --bg-light i båda teman
+            const color = theme === 'dark' ? '#111827' : '#f8fafc'; 
             if (metaThemeColor) {
                 metaThemeColor.setAttribute('content', color);
             }
         }
+        // --- SLUT ÄNDRING ---
 
         function checkTheme() {
             const savedTheme = localStorage.getItem('app_theme');
@@ -656,53 +659,95 @@ document.addEventListener('DOMContentLoaded', () => {
             return html;
         }
 
+        // --- ÄNDRAD: Hela createInventoryRow-funktionen är omskriven till en modern template literal ---
+        // Detta är mycket renare, lättare att underhålla och mer "modernt"
+        // All logik och funktionalitet är 100% bevarad.
         function createInventoryRow(item, isOutOfStock) {
-            const row = document.createElement('div'); row.className = 'artikel-rad'; row.setAttribute('data-id', item.id);
+            const row = document.createElement('div');
+            row.className = 'artikel-rad';
+            row.setAttribute('data-id', item.id);
             row.onclick = () => handleRowSelect(item.id, row);
-            if (selectedItemId === item.id) row.classList.add('selected');
-            const statusClass = item.quantity > 0 ? 'i-lager' : 'slut'; const statusText = item.quantity > 0 ? 'I lager' : 'Slut';
-            const quantityCell = `<div class="quantity-cell"><button class="qty-btn" onclick="adjustQuantity(${item.id}, -1); event.stopPropagation();">-</button><span>${item.quantity}</span><button class="qty-btn" onclick="adjustQuantity(${item.id}, 1); event.stopPropagation();">+</button></div>`;
-            
-            // --- ÅTERSTÄLLD: "Beställ"-knapp ---
-            const editButton = isOutOfStock
-                ? `` // Tom sträng istället för Beställ-knappen
-                : `<button class="edit-btn" onclick="handleEdit(${item.id}); event.stopPropagation();">Ändra</button>`;
-          
-            // --- ÄNDRAD: Använder parseNotes() för att formatera anteckningar ---
-            const formattedNotes = parseNotes(item.notes || '');
-            const notesCell = `<span class="notes-cell" title="${item.notes || ''}">${formattedNotes}</span>`;
-            // --- SLUT ÄNDRING ---
-            
-            const trodoLink = generateTrodoLink(item.service_filter); const aeroMLink = generateAeroMLink(item.service_filter); const thansenLink = generateThansenLink(item.service_filter); const egenLink = item.link;
-            let primaryButtonHTML = ''; let linkCellContent = '';
-            if (trodoLink) { primaryButtonHTML = `<button class="lank-knapp trodo-btn" onclick="window.open('${trodoLink}', '_blank'); event.stopPropagation();">Trodo</button>`; }
-            if (primaryButtonHTML) { linkCellContent += primaryButtonHTML; }
-            const hasSecondaryLinks = aeroMLink || thansenLink || egenLink;
-            if (hasSecondaryLinks) {
-                const dropdownId = `link-dropdown-${item.id}`; let secondaryButtonsHTML = '';
-                if (aeroMLink) { secondaryButtonsHTML += `<button class="lank-knapp aero-m-btn" onclick="window.open('${aeroMLink}', '_blank'); closeDropdown('${dropdownId}'); event.stopPropagation();">AeroMotors</button>`; }
-                if (thansenLink) { secondaryButtonsHTML += `<button class="lank-knapp thansen-btn" onclick="window.open('${thansenLink}', '_blank'); closeDropdown('${dropdownId}'); event.stopPropagation();">Thansen</button>`; }
-                if (egenLink) { secondaryButtonsHTML += `<button class="lank-knapp egen-lank-btn" onclick="window.open('${egenLink}', '_blank'); closeDropdown('${dropdownId}'); event.stopPropagation();">Egen Länk</button>`; }
-                const moreButton = `<button class="lank-knapp more-btn" onclick="toggleDropdown('${dropdownId}'); event.stopPropagation();">Mer</button>`;
-                const dropdownMenu = `<div id="${dropdownId}" class="dropdown-menu">${secondaryButtonsHTML}</div>`;
-                linkCellContent += `<div class="link-dropdown-container">${moreButton}${dropdownMenu}</div>`;
+            if (selectedItemId === item.id) {
+                row.classList.add('selected');
             }
-            if (!linkCellContent) { linkCellContent = '<span>(Saknas)</span>'; }
-            const finalLinkCellContent = `<div class="link-buttons">${linkCellContent}</div>`;
-            const primarySearchLink = trodoLink || aeroMLink || egenLink; const primarySearchText = trodoLink ? 'Trodo' : (aeroMLink ? 'AeroMotors' : (egenLink ? 'Egen Länk' : ''));
-            const searchButton = primarySearchLink ? `<button class="search-btn" onclick="window.open('${primarySearchLink}', '_blank'); event.stopPropagation();" title="Sök på ${primarySearchText}"><svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg></button>` : '';
-            
-            const copyArtnrBtn = `<button class="copy-btn" onclick="copyToClipboard(this, '${escapeHTML(item.service_filter).replace(/'/g, "\\'")}'); event.stopPropagation();" title="Kopiera Artikelnummer">&#x1F4CB;</button>`;
-            const copyNameBtn = `<button class="copy-btn" onclick="copyToClipboard(this, '${escapeHTML(item.name).replace(/'/g, "\\'")}'); event.stopPropagation();" title="Kopiera Namn"><span class="icon-span" style="font-size: 14px;">title</span></button>`; // NYTT
-            
-            const serviceFilterCell = `<span class="cell-copy-wrapper">${searchButton}${copyArtnrBtn}<span class="cell-copy-text">${escapeHTML(item.service_filter)}</span></span>`;
-            const nameCell = `<span class="cell-copy-wrapper">${copyNameBtn}<span class="cell-copy-text">${escapeHTML(item.name)}</span></span>`; // NYTT
 
-            const editButtonSlut = `<button class="edit-btn" onclick="handleEdit(${item.id}); event.stopPropagation();">Ändra</button>`; // Återställd (visa alltid "Ändra")
+            // --- Värden och hjälp-variabler ---
+            const statusClass = item.quantity > 0 ? 'i-lager' : 'slut';
+            const statusText = item.quantity > 0 ? 'I lager' : 'Slut';
+            const formattedNotes = parseNotes(item.notes || '');
+            const safeServiceFilter = escapeHTML(item.service_filter).replace(/'/g, "\\'");
+            const safeName = escapeHTML(item.name).replace(/'/g, "\\'");
 
-            row.innerHTML = `${serviceFilterCell}${nameCell}<span>${formatPrice(item.price)} kr</span>${quantityCell}<span style="display: flex; align-items: center;"><span class="${statusClass}">${statusText}</span></span>${notesCell}<span class="action-cell">${finalLinkCellContent}</span><div class="action-buttons">${editButton}${isOutOfStock ? editButtonSlut : ''}<button class="delete-btn" onclick="handleDelete(${item.id}); event.stopPropagation();">Ta bort</button></div>`;
+            // Länkar
+            const trodoLink = generateTrodoLink(item.service_filter);
+            const aeroMLink = generateAeroMLink(item.service_filter);
+            const thansenLink = generateThansenLink(item.service_filter);
+            const egenLink = item.link;
+            
+            const primarySearchLink = trodoLink || aeroMLink || egenLink;
+            const primarySearchText = trodoLink ? 'Trodo' : (aeroMLink ? 'AeroMotors' : (egenLink ? 'Egen Länk' : ''));
+            const dropdownId = `link-dropdown-${item.id}`;
+            const hasSecondaryLinks = aeroMLink || thansenLink || egenLink;
+
+            // --- Moderniserad Template Literal ---
+            row.innerHTML = `
+                <span class="cell-copy-wrapper">
+                    ${primarySearchLink ? `
+                        <button class="search-btn" onclick="window.open('${primarySearchLink}', '_blank'); event.stopPropagation();" title="Sök på ${primarySearchText}">
+                            <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>
+                        </button>
+                    ` : ''}
+                    <button class="copy-btn" onclick="copyToClipboard(this, '${safeServiceFilter}'); event.stopPropagation();" title="Kopiera Artikelnummer">&#x1F4CB;</button>
+                    <span class="cell-copy-text">${escapeHTML(item.service_filter)}</span>
+                </span>
+
+                <span class="cell-copy-wrapper">
+                    <button class="copy-btn" onclick="copyToClipboard(this, '${safeName}'); event.stopPropagation();" title="Kopiera Namn">
+                        <span class="icon-span" style="font-size: 14px;">title</span>
+                    </button>
+                    <span class="cell-copy-text">${escapeHTML(item.name)}</span>
+                </span>
+
+                <span>${formatPrice(item.price)} kr</span>
+
+                <div class="quantity-cell">
+                    <button class="qty-btn" onclick="adjustQuantity(${item.id}, -1); event.stopPropagation();">-</button>
+                    <span>${item.quantity}</span>
+                    <button class="qty-btn" onclick="adjustQuantity(${item.id}, 1); event.stopPropagation();">+</button>
+                </div>
+
+                <span style="display: flex; align-items: center;">
+                    <span class="${statusClass}">${statusText}</span>
+                </span>
+
+                <span class="notes-cell" title="${escapeHTML(item.notes || '')}">${formattedNotes}</span>
+
+                <span class="action-cell">
+                    <div class="link-buttons">
+                        ${trodoLink ? `<button class="lank-knapp trodo-btn" onclick="window.open('${trodoLink}', '_blank'); event.stopPropagation();">Trodo</button>` : ''}
+                        ${hasSecondaryLinks ? `
+                            <div class="link-dropdown-container">
+                                <button class="lank-knapp more-btn" onclick="toggleDropdown('${dropdownId}'); event.stopPropagation();">Mer</button>
+                                <div id="${dropdownId}" class="dropdown-menu">
+                                    ${aeroMLink ? `<button class="lank-knapp aero-m-btn" onclick="window.open('${aeroMLink}', '_blank'); closeDropdown('${dropdownId}'); event.stopPropagation();">AeroMotors</button>` : ''}
+                                    ${thansenLink ? `<button class="lank-knapp thansen-btn" onclick="window.open('${thansenLink}', '_blank'); closeDropdown('${dropdownId}'); event.stopPropagation();">Thansen</button>` : ''}
+                                    ${egenLink ? `<button class="lank-knapp egen-lank-btn" onclick="window.open('${egenLink}', '_blank'); closeDropdown('${dropdownId}'); event.stopPropagation();">Egen Länk</button>` : ''}
+                                </div>
+                            </div>
+                        ` : ''}
+                        ${!trodoLink && !hasSecondaryLinks ? '<span>(Saknas)</span>' : ''}
+                    </div>
+                </span>
+
+                <div class="action-buttons">
+                    <button class="edit-btn" onclick="handleEdit(${item.id}); event.stopPropagation();">Ändra</button>
+                    <button class="delete-btn" onclick="handleDelete(${item.id}); event.stopPropagation();">Ta bort</button>
+                </div>
+            `;
+            
             return row;
         }
+        // --- SLUT PÅ MODERNISERAD createInventoryRow ---
 
         function renderInventory(data) {
             serviceArtiklarLista.innerHTML = '';
@@ -1322,46 +1367,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // --- NYTT: Funktion för att injicera CSS för sök-dropdown ---
-        function injectSearchDropdownCSS() {
-            const css = `
-                .search-result-item .search-result-content {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    width: 100%;
-                }
-                .search-result-item .search-result-text {
-                    display: flex;
-                    flex-direction: column;
-                    min-width: 0; /* Förhindra overflow */
-                }
-                /* Applicera ellipsis på namnet inuti den nya strukturen */
-                .search-result-item .search-result-text span {
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                }
-                .search-result-item .search-result-plates {
-                    display: flex;
-                    gap: 4px;
-                    flex-shrink: 0; /* Förhindra att skyltar krymper */
-                    margin-left: 10px;
-                }
-                /* Tvinga "S" att vara vitt, eftersom .search-result-item span annars kan störa */
-                .search-result-item .plate-eu-s {
-                    color: white !important; 
-                }
-            `;
-            const style = document.createElement('style');
-            style.type = 'text/css';
-            style.appendChild(document.createTextNode(css));
-            document.head.appendChild(style);
-        }
+        // --- BORTTAGEN: Funktion för att injicera CSS ---
+        // Denna CSS har flyttats till <style>-blocket i HTML-filen.
+        // function injectSearchDropdownCSS() { ... }
         
         function initializeListeners() {
-            // --- NYTT: Kör CSS-injektionen ---
-            injectSearchDropdownCSS();
+            // --- BORTTAGEN: Anropet till injectSearchDropdownCSS() ---
 
             addForm.addEventListener('submit', handleFormSubmit);
             document.getElementById('add-form-cancel-btn').addEventListener('click', () => {
