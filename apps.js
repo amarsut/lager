@@ -637,6 +637,25 @@ document.addEventListener('DOMContentLoaded', () => {
             return html;
         }
 
+        // --- NYTT: Funktion för att ENDAST hämta skyltar från anteckningar ---
+        function extractPlatesHTML(notesText) {
+            if (!notesText) return '';
+            
+            const plateRegex = /\[([A-ZÅÄÖ0-9]{1,3}[\s]?[A-ZÅÄÖ0-9]{1,3})\]/gi;
+            let matches;
+            let html = '';
+            
+            // Hitta alla matchningar
+            while ((matches = plateRegex.exec(notesText)) !== null) {
+                const plateContent = matches[1].toUpperCase(); // matches[1] är gruppen *inuti* hakparentesen
+                html += `<span class="plate-tag">
+                            <span class="plate-eu-s">S</span>
+                            <span class="plate-text">${escapeHTML(plateContent)}</span>
+                         </span>`;
+            }
+            return html;
+        }
+
         function createInventoryRow(item, isOutOfStock) {
             const row = document.createElement('div'); row.className = 'artikel-rad'; row.setAttribute('data-id', item.id);
             row.onclick = () => handleRowSelect(item.id, row);
@@ -768,7 +787,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }); return score;
         }
 
-        // --- NYTT: Funktion för att rendera sök-dropdown ---
+        // --- ÄNDRAD: Funktion för att rendera sök-dropdown ---
         function renderSearchDropdown(searchTerm, results) {
             if (searchTerm.length < 1 || results.length === 0) {
                 desktopSearchResults.innerHTML = '';
@@ -781,12 +800,20 @@ document.addEventListener('DOMContentLoaded', () => {
             let html = '';
             // Visa max 10 resultat i dropdown
             results.slice(0, 10).forEach(item => {
-                // NYTT: Hämta de formaterade anteckningarna (reg-nr)
-                const notesHTML = parseNotes(item.notes || '');
+                // --- ÄNDRAD: Hämta ENDAST registreringsskyltar ---
+                const platesHTML = extractPlatesHTML(item.notes || '');
 
+                // --- ÄNDRAD: Uppdaterad HTML-struktur med flexbox ---
                 html += `<a href="#" class="search-result-item" data-id="${item.id}">
-                            <div><strong>${escapeHTML(item.service_filter)}</strong></div>
-                            <span>${escapeHTML(item.name)} ${notesHTML}</span>
+                            <div class="search-result-content">
+                                <div class="search-result-text">
+                                    <strong>${escapeHTML(item.service_filter)}</strong>
+                                    <span>${escapeHTML(item.name)}</span>
+                                </div>
+                                <div class="search-result-plates">
+                                    ${platesHTML}
+                                </div>
+                            </div>
                          </a>`;
             });
 
@@ -797,6 +824,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             addDropdownListeners();
         }
+        // --- SLUT ÄNDRING ---
 
         // --- NYTT: Funktion för att rensa sökfält och dölja dropdowns ---
         function clearAndHideSearch() {
@@ -1294,7 +1322,47 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
+        // --- NYTT: Funktion för att injicera CSS för sök-dropdown ---
+        function injectSearchDropdownCSS() {
+            const css = `
+                .search-result-item .search-result-content {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    width: 100%;
+                }
+                .search-result-item .search-result-text {
+                    display: flex;
+                    flex-direction: column;
+                    min-width: 0; /* Förhindra overflow */
+                }
+                /* Applicera ellipsis på namnet inuti den nya strukturen */
+                .search-result-item .search-result-text span {
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+                .search-result-item .search-result-plates {
+                    display: flex;
+                    gap: 4px;
+                    flex-shrink: 0; /* Förhindra att skyltar krymper */
+                    margin-left: 10px;
+                }
+                /* Tvinga "S" att vara vitt, eftersom .search-result-item span annars kan störa */
+                .search-result-item .plate-eu-s {
+                    color: white !important; 
+                }
+            `;
+            const style = document.createElement('style');
+            style.type = 'text/css';
+            style.appendChild(document.createTextNode(css));
+            document.head.appendChild(style);
+        }
+        
         function initializeListeners() {
+            // --- NYTT: Kör CSS-injektionen ---
+            injectSearchDropdownCSS();
+
             addForm.addEventListener('submit', handleFormSubmit);
             document.getElementById('add-form-cancel-btn').addEventListener('click', () => {
                 if (addFormWrapper.classList.contains('open')) {
