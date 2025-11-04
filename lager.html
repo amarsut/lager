@@ -832,6 +832,9 @@
         justify-content: center;
         cursor: pointer;
         transition: background-color 0.2s, border-color 0.2s;
+
+        position: relative;
+        z-index: 100; /* Viktigt: Lägre än menyns 9999 */
     }
     .btn-action-menu:hover {
         background-color: var(--bg-dark);
@@ -1803,7 +1806,7 @@
 /* 1. Säkerställer att knappen och menyn inte stör varandra */
 .link-dropdown-container {
     position: relative; /* VIKTIGT: Detta sätter positioneringskontexten */
-    z-index: 10; /* Ger en liten förhöjning för att vara över andra element i raden */
+    z-index: 20; /* Ger en liten förhöjning för att vara över andra element i raden */
 }
 
 /* 2. Style för själva menyn (Flicker/Overlap Fix) */
@@ -1812,9 +1815,10 @@
     right: 0;
     top: 100%; /* Öppnar nedåt som standard */
     
-    z-index: 1000; /* Mycket hög z-index för att vara över ALLT annat */
-    background-color: var(--card-bg, #fff); /* Sätt en solid bakgrund för att dölja knappen */
-    border: 1px solid var(--border-color, #e5e7eb); /* Lägg till en synlig kant */
+    /* VIKTIG FIX: Hög z-index och solid bakgrund */
+    z-index: 9999; /* ÄNNU HÖGRE Z-INDEX! */
+    background-color: var(--card-bg, #fff); /* ANVÄND EN SOLID BAKGRUND */
+    border: 1px solid var(--border-color, #e5e7eb); 
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     border-radius: 8px;
     padding: 8px 0;
@@ -1845,7 +1849,7 @@
 
 /* 4. Fix för raden vid kopiering/dropdown-visning */
 .artikel-rad {
-    position: relative; /* Säkerställer att raden kan höja sig själv i z-index om det behövs */
+    position: static; /* Säkerställer att raden kan höja sig själv i z-index om det behövs */
     /* Du kan eventuellt lägga till en hover-effekt här om den saknas */
 }
 </style>
@@ -2265,5 +2269,6 @@
 
 </body>
 </html>
+
 
 
