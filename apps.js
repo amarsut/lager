@@ -1466,18 +1466,22 @@ document.addEventListener('DOMContentLoaded', () => {
             editForm.addEventListener('submit', handleEditSubmit);
             
             const handleSearchInput = (e) => {
-                const term = e.target.value;
-            
-                // Synkronisera värden (om båda fälten finns)
-                if (e.target.id === 'desktop-search-input') {
-                    if (mobileSearchInput) { // <-- NY KONTROLL
-                        mobileSearchInput.value = term;
-                    }
-                } else {
-                    if (desktopSearchInput) { // <-- NY KONTROLL
-                        desktopSearchInput.value = term;
-                    }
-                }
+                  const term = e.target.value;
+                  // Synkronisera det andra sökfältet
+                  if (e.target.id === 'desktop-search-input') {
+                      mobileSearchInput.value = term;
+                  } else {
+                      desktopSearchInput.value = term;
+                  }
+                  
+                  // Visa/dölj båda rensa-knapparna
+                  const showClear = term.length > 0;
+                  desktopClearSearchBtn.style.display = showClear ? 'block' : 'none';
+                  mobileClearSearchBtn.style.display = showClear ? 'block' : 'none';
+                  
+                  // Anropa sökfunktionen
+                  applySearchFilter(term);
+              };
                 
                 const showClear = term.length > 0;
             
@@ -1748,6 +1752,7 @@ document.addEventListener('DOMContentLoaded', () => {
         else console.error("Kunde inte visa felmeddelande i UI.");
     }
 });
+
 
 
 
