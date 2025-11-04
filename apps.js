@@ -878,18 +878,19 @@ document.addEventListener('DOMContentLoaded', () => {
         function calculateRelevance(item, searchWords) {
             let score = 0; 
             
-            // Använd normaliserat artikelnummer för relevans
+            // ANVÄNDER DEN NYA, KORREKTA FUNKTIONEN
             const serviceFilter = normalizeArtNr((item.service_filter || ''));
             const name = (item.name || '').toLowerCase(); 
             const notes = (item.notes || '').toLowerCase(); 
             const category = (item.category || '').toLowerCase();
             
             searchWords.forEach(word => {
-                // ★ FIX: Normalisera sökordet för art.nr-jämförelse
+                // 'word' är redan lowercase (t.ex. "03l")
+                // 'cleanWord' blir VERSALER OCH normaliserad (t.ex. "03L")
                 const cleanWord = normalizeArtNr(word); 
                 
-                if (serviceFilter.includes(cleanWord)) { score += 5; } 
-                if (name.includes(word)) { score += 3; } 
+                if (serviceFilter.includes(cleanWord)) { score += 5; } // "03L115562".includes("03L") -> SANT
+                if (name.includes(word)) { score += 3; } // "oljefilter".includes("03l") -> FALSKT
                 if (category.includes(word)) { score += 2; } 
                 if (notes.includes(word)) { score += 1; } 
                 if (serviceFilter === cleanWord || name === word) { score += 5; }
@@ -1735,4 +1736,5 @@ document.addEventListener('DOMContentLoaded', () => {
         else console.error("Kunde inte visa felmeddelande i UI.");
     }
 });
+
 
