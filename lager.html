@@ -138,14 +138,6 @@
       animation: shake-horizontal 0.5s cubic-bezier(0.45, 0.05, 0.55, 0.95);
     }
     /* --- SLUT NYTT --- */
-    
-    /* --- NYTT: Puls-animation för CTA-knapp --- */
-    @keyframes pulse-cta {
-      0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-      70% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
-      100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
-    }
-    /* --- SLUT NYTT --- */
 
     /* --- NYTT: Moderna Scrollbars --- */
     ::-webkit-scrollbar {
@@ -468,14 +460,13 @@
         transition: background-color 0.3s, border-color 0.3s; 
     }
     
-    /* --- ÄNDRAD: 7 kolumner --- */
     .header, .artikel-rad { 
-        grid-template-columns: 160px 200px 90px 70px 70px minmax(120px, 1fr) 100px;
+        grid-template-columns: 160px 200px 90px 70px 70px minmax(120px, 1fr) 120px 140px; 
         padding: 10px 20px; 
         align-items: center; 
         font-size: 0.85em; 
         display: grid; 
-        min-width: 1000px; /* Justerad min-width */
+        min-width: 1200px; 
     }    
     .header { 
         position: sticky; 
@@ -545,15 +536,6 @@
         text-overflow: ellipsis;
         min-width: 0;
         flex-grow: 1;
-    }
-    
-    /* NYTT: Begränsa bredden på art.nr-texten */
-    .artnr-cell-text {
-        max-width: 14ch; /* Begränsar till ca 14 tecken */
-        flex-grow: 0;
-        flex-shrink: 1;
-        display: inline-block;
-        vertical-align: middle;
     }
     
     .notes-cell { 
@@ -634,34 +616,28 @@
     .copy-btn:disabled:hover { transform: none; background: var(--bg-medium); border-color: var(--border-color); }
 
     .action-buttons { display: flex; gap: 8px; justify-content: flex-start; }
-    /* --- NYTT: Knappen för åtgärdsmenyn --- */
-    .action-menu-btn {
-        background-color: var(--bg-medium);
-        color: var(--text-dark);
-        border: 1px solid var(--border-color);
-        border-radius: 6px;
-        padding: 6px 8px;
-        cursor: pointer;
-        transition: all 0.2s;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-    }
-    .action-menu-btn:hover {
-        background-color: var(--primary-color);
-        border-color: var(--primary-color);
-        color: white;
-        transform: scale(1.05);
-    }
-    .action-menu-btn .icon-span {
-        font-size: 20px;
-        vertical-align: middle;
-    }
-    /* --- SLUT NYTT --- */
+    .link-buttons { display: flex; gap: 8px; align-items: center; width: 100%; }
+    .aero-m-btn { background-color: #4CAF50; color: white; border: 1px solid #4CAF50; }
+    .aero-m-btn:hover { background-color: #388E3C; border-color: #388E3C; }
+    .thansen-btn { background-color: #008080; color: white; border: 1px solid #008080; }
+    .thansen-btn:hover { background-color: #006060; border-color: #006060; }
     
     .lank-knapp, .edit-btn, .delete-btn, .order-btn { padding: 6px 10px; border: 1px solid transparent; border-radius: 6px; cursor: pointer; font-size: 0.8em; font-weight: 600; transition: all 0.2s; text-align: center; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); }
+    .lank-knapp { background-color: var(--card-bg); color: var(--primary-color); border: 1px solid var(--primary-color); }
+    .lank-knapp:hover { background-color: var(--primary-color); color: white; border-color: var(--primary-color); }
+    [data-theme="dark"] .lank-knapp { background-color: var(--bg-medium); }
+    [data-theme="dark"] .lank-knapp:hover { background-color: var(--primary-color); }
+    .edit-btn { background-color: var(--primary-color); color: white; }
+    .edit-btn:hover { background-color: var(--primary-dark); }
+    .order-btn { background-color: var(--success-color); color: white; }
+    .order-btn:hover { background-color: #0d9488; }
     
-    /* --- NYTT: "Slut i Lager"-titel (återställd) --- */
+    .delete-btn { background-color: var(--card-bg); color: var(--danger-color); border: 1px solid var(--danger-color); }
+    .delete-btn:hover { background-color: var(--danger-color); color: white; }
+    [data-theme="dark"] .delete-btn { background-color: var(--bg-medium); }
+    [data-theme="dark"] .delete-btn:hover { background-color: var(--danger-color); }
+    
+    /* --- ÄNDRAD: Modern "Slut i lager"-titel --- */
     .out-of-stock-title {
         font-size: 1.3em; /* Mindre */
         font-weight: 700;
@@ -741,75 +717,6 @@
     .modal-content button { margin-top: 30px; width: 100%; }
     .close-btn { position: absolute; top: 15px; right: 15px; font-size: 28px; cursor: pointer; font-weight: bold; z-index: 10; color: var(--text-light); }    
     .close-btn:hover { color: var(--text-dark); }
-    
-    /* --- BORTTAGET: #actionsModal CSS --- */
-
-    /* --- NYTT: Stil för Åtgärds-Popover --- */
-    .popover-overlay {
-        display: none;
-        position: fixed;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background: transparent;
-        z-index: 1000;
-    }
-    .actions-popover {
-        display: none;
-        /* ★ FIX: Ändrad till position: fixed ★ */
-        position: fixed; 
-        z-index: 1010;
-        background: var(--card-bg);
-        border: 1px solid var(--border-color);
-        border-radius: 10px;
-        box-shadow: 0 5px 20px rgba(0,0,0,0.15);
-        width: 220px;
-        padding: 8px;
-        animation: subtleFadeIn 0.15s ease-out;
-    }
-    #actionsPopoverContent {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-    }
-    .popover-btn {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 10px 12px;
-        border: none;
-        background: transparent;
-        border-radius: 6px;
-        cursor: pointer;
-        font-size: 0.9em;
-        font-weight: 500;
-        color: var(--text-dark);
-        text-align: left;
-    }
-    .popover-btn:hover {
-        background-color: var(--bg-medium);
-        color: var(--primary-dark);
-    }
-    .popover-btn .icon-span {
-        font-size: 1.2em;
-        color: var(--text-light);
-    }
-    .popover-btn:hover .icon-span {
-        color: var(--primary-color);
-    }
-    .popover-btn.danger {
-        color: var(--danger-color);
-    }
-    .popover-btn.danger:hover {
-        background-color: var(--danger-light);
-        color: var(--danger-dark);
-    }
-    .popover-btn.danger .icon-span {
-        color: var(--danger-color);
-    }
-    .popover-btn.danger:hover .icon-span {
-        color: var(--danger-dark);
-    }
-    /* --- SLUT NYTT --- */
-
 
     #productPopup { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 10010; }
     #productPopup iframe { width: 90%; height: 90%; position: absolute; top: 5%; left: 5%; border: 2px solid white; border-radius: 10px; }
@@ -847,6 +754,12 @@
     }
     .dropdown-menu .lank-knapp { width: 100%; margin: 3px 0; text-align: center; padding: 8px 12px; font-size: 0.8em; box-shadow: none; background-color: var(--card-bg) !important; color: var(--primary-color) !important; border: 1px solid var(--primary-color) !important; }
     .dropdown-menu .lank-knapp:hover { background-color: var(--primary-color) !important; color: white !important; }
+    .dropdown-menu .aero-m-btn { background-color: #4CAF50; color: white; }
+    .dropdown-menu .aero-m-btn:hover { background-color: #388E3C; }
+    .dropdown-menu .thansen-btn { background-color: #008080; color: white; }
+    .dropdown-menu .thansen-btn:hover { background-color: #006060; }
+    .dropdown-menu .egen-lank-btn { background-color: #5a7dff; color: white; }
+    .dropdown-menu .egen-lank-btn:hover { background-color: #3a57e8; }
     
     .global-search-container { 
         background-color: var(--card-bg); 
@@ -1216,7 +1129,6 @@
     #empty-state-add-btn {
         margin-top: 25px;
         padding: 12px 20px;
-        animation: pulse-cta 2s infinite; /* NYTT: Pulserande knapp */
     }
 
     #back-to-top-btn { position: fixed; bottom: 25px; right: 25px; width: 50px; height: 50px; background-color: var(--primary-color); color: white; border: none; border-radius: 50%; cursor: pointer; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); z-index: 1009; display: none; transition: background-color 0.2s, transform 0.2s, opacity 0.3s; padding: 0; align-items: center; justify-content: center; opacity: 0.8; }
@@ -1663,14 +1575,6 @@
             padding-top: 8px;
             padding-bottom: 8px;
         }
-
-        /* NYTT: Begränsa anteckningar på mobil */
-        .notes-cell {
-            max-width: 25ch;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
         
         .global-search-container { padding: 20px; }
         .global-search-wrapper { flex-direction: column; }
@@ -1824,8 +1728,8 @@
   <div class='search-wrapper'>
     <input type='text' id='mobile-search-input' placeholder='Sök i lager...' autocomplete="off" />
     <button id='mobile-clear-search-btn'>&times;</button>
-    <div id="mobile-search-results" class="search-results-dropdown"></div></siv>
-  </div><div id="initial-loader"></div>
+    <div id="mobile-search-results" class="search-results-dropdown"></div> </div>
+</div> <div id="initial-loader">
         <div class="loader-spinner"></div>
         <p>Hämtar lagerdata...</p>
     </div>
@@ -2071,6 +1975,7 @@
                     <span data-sort="quantity">Antal <span class="sort-icon"></span></span>
                     <span>Status</span>
                     <span data-sort="notes">Anteckningar <span class="sort-icon"></span></span>
+                    <span>Länk</span>
                     <span>Åtgärder</span>
                 </div>
                 <div class="empty-state" id="service-empty-state" style="display: none;">
@@ -2095,6 +2000,7 @@
                     <span data-sort="quantity">Antal <span class="sort-icon"></span></span>
                     <span>Status</span>
                     <span data-sort="notes">Anteckningar <span class="sort-icon"></span></span>
+                    <span>Länk</span>
                     <span>Åtgärder</span>
                 </div>
                 <div class="empty-state" id="motor-chassi-empty-state" style="display: none;">
@@ -2119,6 +2025,7 @@
                     <span data-sort="quantity">Antal <span class="sort-icon"></span></span>
                     <span>Status</span>
                     <span data-sort="notes">Anteckningar <span class="sort-icon"></span></span>
+                    <span>Länk</span>
                     <span>Åtgärder</span>
                 </div>
                 <div class="empty-state" id="andra-marken-empty-state" style="display: none;">
@@ -2141,6 +2048,7 @@
                         <span data-sort="quantity">Antal <span class="sort-icon"></span></span>
                         <span>Status</span>
                         <span data-sort="notes">Anteckningar <span class="sort-icon"></span></span>
+                        <span>Länk</span>
                         <span>Åtgärder</span>
                     </div>
                     <div class="empty-state" id="slut-i-lager-empty-state" style="display: none;">
@@ -2152,7 +2060,6 @@
                 </div>
             </div>
         </div>
-        
     </div> 
     
     <div id="editModal" class="modal">
@@ -2207,10 +2114,10 @@
             <p id="confirmationMessage" style="margin-top: 20px; margin-bottom: 30px; font-size: 1.1em;"></p>
             <div class="action-buttons" style="justify-content: flex-end; gap: 15px;">
                 <button id="confirmNo" class="btn-secondary">Avbryt</button>
-                <button id="confirmYes" class="btn-primary">Ja</button> ...</div>
+                <button id="confirmYes" class="btn-primary">Ja</button> </div>
         </div>
     </div>
-    
+
     <div id="productPopup">
         <span class="close-btn">&times;</span>
         <iframe id="productIframe" src="" frameborder="0"></iframe>
@@ -2226,16 +2133,7 @@
         </svg>
     </button>
     
-    <div id="actionsPopoverOverlay" class="popover-overlay"></div>
-    <div id="actionsPopover" class="actions-popover">
-        <div id="actionsPopoverContent">
-            </div>
-    </div>
-    
     <script type="module" src="apps.js"></script>
 
 </body>
 </html>
-
-
-
