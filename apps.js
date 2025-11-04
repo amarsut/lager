@@ -201,7 +201,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- ★ FIX: Normaliserar artikelnummer för sökning (med .toUpperCase()) ---
         function normalizeArtNr(artNr) {
             if (!artNr) return null;
-            return artNr.replace(/[\s-]/g, '').toUpperCase(); 
+            return artNr.replace(/[\s-]/g, '').toUpperCase(); // Tillagd .toUpperCase()
         }
         
         function generateAeroMLink(f) { const s = normalizeArtNr(f); if (!s) return null; return `https://aeromotors.se/sok?s=${s}&layered_id_feature_1586%5B%5D=3&sort_by=price.asc`; }
@@ -1735,3 +1735,4 @@ document.addEventListener('DOMContentLoaded', () => {
         else console.error("Kunde inte visa felmeddelande i UI.");
     }
 });
+
