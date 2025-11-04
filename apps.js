@@ -1036,7 +1036,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     );
                 }
             } else if (currentFilter === 'Alla' && !syntaxFilterUsed) {
-                // "Alla" visar allt, renderInventory delar upp
+                processedInventory = processedInventory.filter(item => item.quantity > 0); // <-- DENNA RAD ÄR FEL
             }
             // --- SLUT ÄNDRING ---
 
@@ -1736,5 +1736,6 @@ document.addEventListener('DOMContentLoaded', () => {
         else console.error("Kunde inte visa felmeddelande i UI.");
     }
 });
+
 
 
