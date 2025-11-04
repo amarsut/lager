@@ -120,7 +120,11 @@ document.addEventListener('DOMContentLoaded', () => {
             motorChassi: document.getElementById('badge-motor-chassi'),
             andraMarken: document.getElementById('badge-andra-marken')
         };
-
+        
+        // --- NYTT: Popover-element ---
+        const rowActionPopover = document.getElementById('row-action-popover');
+        const popoverContent = document.getElementById('popover-content');
+        
         const HISTORY_KEY = 'globalSearchHistory';
         const MAX_HISTORY_ITEMS = 5;
         
@@ -134,6 +138,10 @@ document.addEventListener('DOMContentLoaded', () => {
         let currentExternalLinks = [];
         // --- NYTT: Flagg för att förhindra race condition vid sök-klick ---
         let isNavigatingViaSearch = false;
+        // --- NYTT: Popover-status ---
+        let isPopoverOpen = false;
+        let currentPopoverItemId = null;
+
         
         const stopWords = ['till', 'för', 'en', 'ett', 'och', 'eller', 'med', 'på', 'i', 'av', 'det', 'den', 'som', 'att', 'är', 'har', 'kan', 'ska', 'vill', 'sig', 'här', 'nu', 'från', 'man', 'vi', 'du', 'ni'];
 
@@ -207,10 +215,9 @@ document.addEventListener('DOMContentLoaded', () => {
         function generateBildelsbasenLink(f) { if (!f) return null; const s = encodeURIComponent(f.replace(/[\s-]/g, '')); return `https://bildelsbasen.se/sv-se/OEM/${s}`; }
         function generateReservdelar24Link(f) { if (!f) return null; const s = encodeURIComponent(f.replace(/[\s-]/g, '')); return `https://reservdelar24.se/suche.html?keyword=${s}`; }
         
-        window.toggleDropdown = function(id) { const d = document.getElementById(id); if (!d) return; document.querySelectorAll('.dropdown-menu.visible').forEach(o => { if (o.id !== id) o.classList.remove('visible'); }); d.classList.toggle('visible'); };
-        window.closeDropdown = function(id) { const d = document.getElementById(id); if (d) d.classList.remove('visible'); };
+        // --- BORTTAGNA: window.toggleDropdown och window.closeDropdown (används ej) ---
         
-        // --- ÄNDRAD: Eventlyssnare för att stänga dropdowns ---
+        // --- ÄNDRAD: Eventlyssnare för att stänga dropdowns OCH popover ---
         document.addEventListener('click', (e) => {
             // Stäng sök-dropdowns
             if (!e.target.closest('.search-wrapper') && !e.target.closest('#sticky-search-bar')) {
@@ -218,7 +225,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 mobileSearchResults.style.display = 'none';
             }
             
-            // Stäng länk-dropdowns
+            // NYTT: Stäng popover-menyn
+            if (isPopoverOpen && !e.target.closest('#row-action-popover') && !e.target.closest('.row-action-btn')) {
+                closeRowActionPopover();
+            }
+
+            // Stäng länk-dropdowns (för global sök)
             if (!e.target.closest('.link-dropdown-container')) {
                 document.querySelectorAll('.dropdown-menu.visible').forEach(d => d.classList.remove('visible'));
             }
@@ -421,7 +433,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 setTimeout(() => {
                     buttonEl.innerHTML = originalText;
                     buttonEl.disabled = false;
-                    closeDropdown('export-links-menu');
+                    // --- BORTTAGEN: closeDropdown('export-links-menu'); (använder nu standard-stängning) ---
                 }, 1500);
             }).catch(() => {
                 showToast('Kunde inte kopiera länkar', 'error');
@@ -549,6 +561,135 @@ document.addEventListener('DOMContentLoaded', () => {
         // ----------------------------------------------------------------------
         // GRÄNSSNITT OCH HUVUDFUNKTIONER (UPPDATERADE)
         // ----------------------------------------------------------------------
+        
+        // --- NYTT: Popover-logik ---
+        
+        /**
+         * Öppnar åtgärdsmenyn för en specifik rad.
+         */
+        function openRowActionPopover(event) {
+            event.stopPropagation(); // Förhindra att klicket stänger menyn direkt
+            
+            const buttonEl = event.currentTarget;
+            const itemId = parseInt(buttonEl.dataset.id, 10);
+            
+            // Om samma knapp klickas igen, stäng menyn
+            if (isPopoverOpen && currentPopoverItemId === itemId) {
+                closeRowActionPopover();
+                return;
+            }
+            
+            const item = inventory.find(i => i.id === itemId);
+            if (!item) return;
+
+            // Hämta länkar
+            const trodoLink = generateTrodoLink(item.service_filter);
+            const aeroMLink = generateAeroMLink(item.service_filter);
+            const thansenLink = generateThansenLink(item.service_filter);
+            const egenLink = item.link;
+            
+            // Bygg HTML för popover-innehållet
+            let html = '';
+            if (trodoLink) html += `<button class="btn-popover trodo-btn" data-action="open-link" data-url="${trodoLink}"><span class="icon-span">search</span>Trodo</button>`;
+            if (aeroMLink) html += `<button class="btn-popover aero-m-btn" data-action="open-link" data-url="${aeroMLink}"><span class="icon-span">search</span>AeroMotors</button>`;
+            if (thansenLink) html += `<button class="btn-popover thansen-btn" data-action="open-link" data-url="${thansenLink}"><span class="icon-span">search</span>Thansen</button>`;
+            if (egenLink) html += `<button class="btn-popover egen-lank-btn" data-action="open-link" data-url="${egenLink}"><span class="icon-span">link</span>Egen Länk</button>`;
+            
+            if (html !== '') {
+                html += '<hr style="border: none; border-top: 1px solid var(--border-color); margin: 6px 0;">';
+            }
+
+            html += `<button class="btn-popover edit-btn" data-action="edit" data-id="${itemId}"><span class="icon-span">edit</span>Ändra</button>`;
+            html += `<button class="btn-popover delete-btn" data-action="delete" data-id="${itemId}"><span class="icon-span">delete</span>Ta bort</button>`;
+            
+            popoverContent.innerHTML = html;
+            
+            // Positionera Popover
+            const btnRect = buttonEl.getBoundingClientRect();
+            rowActionPopover.style.display = 'block'; // Måste visas för att mäta
+            const popoverRect = rowActionPopover.getBoundingClientRect();
+            
+            // Försök placera centrerat till vänster om knappen
+            let top = btnRect.top + window.scrollY - (popoverRect.height / 2) + (btnRect.height / 2);
+            let left = btnRect.left + window.scrollX - popoverRect.width - 10; // 10px offset
+
+            // --- Kollisionsdetektering ---
+            // Om den hamnar utanför vänsterkanten, placera till höger
+            if (left < 10) {
+                left = btnRect.right + window.scrollX + 10;
+            }
+            // Om den hamnar utanför överkanten
+            if (top < (window.scrollY + 10)) {
+                top = window.scrollY + 10;
+            }
+            // Om den hamnar utanför underkanten
+            if (top + popoverRect.height > (window.scrollY + window.innerHeight - 10)) {
+                top = window.scrollY + window.innerHeight - popoverRect.height - 10;
+            }
+            
+            rowActionPopover.style.top = `${top}px`;
+            rowActionPopover.style.left = `${left}px`;
+            
+            isPopoverOpen = true;
+            currentPopoverItemId = itemId;
+            
+            // Bind lyssnare till de nya knapparna i popovern
+            popoverContent.querySelectorAll('button').forEach(btn => btn.addEventListener('click', handlePopoverAction));
+        }
+
+        /**
+         * Stänger åtgärdsmenyn.
+         */
+        function closeRowActionPopover() {
+            if (!isPopoverOpen) return;
+            rowActionPopover.style.display = 'none';
+            popoverContent.innerHTML = '';
+            isPopoverOpen = false;
+            currentPopoverItemId = null;
+        }
+
+        /**
+         * Hanterar klick på knappar inuti åtgärdsmenyn.
+         */
+        function handlePopoverAction(event) {
+            event.stopPropagation();
+            const button = event.currentTarget;
+            const action = button.dataset.action;
+            const url = button.dataset.url;
+            const id = parseInt(button.dataset.id, 10);
+            
+            // Stäng menyn *efter* vi har läst datan
+            closeRowActionPopover();
+            
+            switch (action) {
+                case 'open-link':
+                    window.open(url, '_blank');
+                    break;
+                case 'edit':
+                    handleEdit(id);
+                    break;
+                case 'delete':
+                    handleDelete(id);
+                    break;
+            }
+        }
+        
+        /**
+         * Binder klickhändelser till alla åtgärdsknappar (more_vert) i raderna.
+         * Måste köras varje gång lagret ritas om.
+         */
+        function bindRowActionButtons() {
+            document.querySelectorAll('.row-action-btn').forEach(btn => {
+                // Ersätt knappen med en klon för att ta bort gamla lyssnare
+                // Detta förhindrar minnesläckor och dubbla händelser
+                const newBtn = btn.cloneNode(true);
+                btn.parentNode.replaceChild(newBtn, btn);
+                // Lägg till den nya lyssnaren
+                newBtn.addEventListener('click', openRowActionPopover);
+            });
+        }
+        
+        // --- SLUT POPOVER-LOGIK ---
 
         function renderDashboard(currentInventory) {
             const inStock = currentInventory.filter(item => item.quantity > 0);
@@ -672,6 +813,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return html;
         }
 
+        // --- ÄNDRAD: `createInventoryRow` för att använda den nya popover-knappen ---
         function createInventoryRow(item, isOutOfStock) {
             const row = document.createElement('div');
             row.className = 'artikel-rad';
@@ -688,25 +830,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const safeServiceFilter = escapeHTML(item.service_filter).replace(/'/g, "\\'");
             const safeName = escapeHTML(item.name).replace(/'/g, "\\'");
 
-            // Länkar
-            const trodoLink = generateTrodoLink(item.service_filter);
-            const aeroMLink = generateAeroMLink(item.service_filter);
-            const thansenLink = generateThansenLink(item.service_filter);
-            const egenLink = item.link;
-            
-            const primarySearchLink = trodoLink || aeroMLink || egenLink;
-            const primarySearchText = trodoLink ? 'Trodo' : (aeroMLink ? 'AeroMotors' : (egenLink ? 'Egen Länk' : ''));
-            const dropdownId = `link-dropdown-${item.id}`;
-            const hasSecondaryLinks = aeroMLink || thansenLink || egenLink;
-
-            // --- Moderniserad Template Literal ---
+            // --- ÄNDRAD: Mallen har nu 7 kolumner ---
             row.innerHTML = `
                 <span class="cell-copy-wrapper">
-                    ${primarySearchLink ? `
-                        <button class="search-btn" onclick="window.open('${primarySearchLink}', '_blank'); event.stopPropagation();" title="Sök på ${primarySearchText}">
-                            <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>
-                        </button>
-                    ` : ''}
+                    ${'' /* Sök-knappen togs bort, läggs till i popover */}
                     <button class="copy-btn" onclick="copyToClipboard(this, '${safeServiceFilter}'); event.stopPropagation();" title="Kopiera Artikelnummer">&#x1F4CB;</button>
                     <span class="cell-copy-text">${escapeHTML(item.service_filter)}</span>
                 </span>
@@ -732,26 +859,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 <span class="notes-cell" title="${escapeHTML(item.notes || '')}">${formattedNotes}</span>
 
-                <span class="action-cell">
-                    <div class="link-buttons">
-                        ${trodoLink ? `<button class="lank-knapp trodo-btn" onclick="window.open('${trodoLink}', '_blank'); event.stopPropagation();">Trodo</button>` : ''}
-                        ${hasSecondaryLinks ? `
-                            <div class="link-dropdown-container">
-                                <button class="lank-knapp more-btn" onclick="toggleDropdown('${dropdownId}'); event.stopPropagation();">Mer</button>
-                                <div id="${dropdownId}" class="dropdown-menu">
-                                    ${aeroMLink ? `<button class="lank-knapp aero-m-btn" onclick="window.open('${aeroMLink}', '_blank'); closeDropdown('${dropdownId}'); event.stopPropagation();">AeroMotors</button>` : ''}
-                                    ${thansenLink ? `<button class="lank-knapp thansen-btn" onclick="window.open('${thansenLink}', '_blank'); closeDropdown('${dropdownId}'); event.stopPropagation();">Thansen</button>` : ''}
-                                    ${egenLink ? `<button class="lank-knapp egen-lank-btn" onclick="window.open('${egenLink}', '_blank'); closeDropdown('${dropdownId}'); event.stopPropagation();">Egen Länk</button>` : ''}
-                                </div>
-                            </div>
-                        ` : ''}
-                        ${!trodoLink && !hasSecondaryLinks ? '<span>(Saknas)</span>' : ''}
-                    </div>
-                </span>
-
-                <div class="action-buttons">
-                    <button class="edit-btn" onclick="handleEdit(${item.id}); event.stopPropagation();">Ändra</button>
-                    <button class="delete-btn" onclick="handleDelete(${item.id}); event.stopPropagation();">Ta bort</button>
+                <div class="action-buttons-cell">
+                    <button class="btn-secondary row-action-btn" data-id="${item.id}" title="Åtgärder" onclick="event.stopPropagation();">
+                        <span class="icon-span">more_vert</span>
+                    </button>
                 </div>
             `;
             
@@ -759,6 +870,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         function renderInventory(data) {
+            // Stäng popovern innan omritning, för att undvika att den "hänger kvar"
+            closeRowActionPopover(); 
+            
             serviceArtiklarLista.innerHTML = '';
             motorChassiArtiklarLista.innerHTML = '';
             andraMarkenArtiklarLista.innerHTML = '';
@@ -832,6 +946,9 @@ document.addEventListener('DOMContentLoaded', () => {
                  emptyStates.slutILager.querySelector('h4').textContent = 'Inga artiklar slut i lager';
                  emptyStates.slutILager.querySelector('p').textContent = 'Inga artiklar hittades. Prova ändra filtret eller lägg till en ny artikel.';
             }
+            
+            // --- NYTT: Bind lyssnare till de nyskapade åtgärdsknapparna ---
+            bindRowActionButtons();
         }
 
         // ÄNDRINGEN SKER INUTI calculateRelevance-funktionen
@@ -1243,6 +1360,7 @@ document.addEventListener('DOMContentLoaded', () => {
             else { selectedItemId = id; row.classList.add('selected'); }
         }
 
+        // --- ÄNDRAD: Global `handleEdit` anropas nu från popovern ---
         window.handleEdit = function(id, isOrderMode = false) {
             const item = inventory.find(i => i.id === id);
             if (item) {
@@ -1321,6 +1439,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         
+        // --- ÄNDRAD: Global `handleDelete` anropas nu från popovern ---
         window.handleDelete = function(id) {
             const item = inventory.find(i => i.id === id);
             showCustomConfirmation(
@@ -1499,7 +1618,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
             
-            document.querySelectorAll('.lager-container').forEach(c => { c.addEventListener('scroll', () => c.classList.toggle('scrolled', c.scrollTop > 1)); });
+            // --- NYTT: Stäng popover vid scroll i tabell ---
+            document.querySelectorAll('.lager-container').forEach(c => { 
+                c.addEventListener('scroll', () => {
+                    c.classList.toggle('scrolled', c.scrollTop > 1);
+                    closeRowActionPopover(); // Stäng popover vid scroll
+                }); 
+            });
 
             [editModal, confirmationModal].forEach(modal => { // BORTTAGEN: orderListModal
                 modal.addEventListener('click', (e) => {
@@ -1514,6 +1639,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     closeEditModal();
                     closeConfirmationModal();
                     closeAppMenu();
+                    closeRowActionPopover(); // NYTT
                     // BORTTAGEN: closeOrderListModal();
                     if(globalSearchResults.style.display === 'block') {
                         globalSearchResults.style.display = 'none';
@@ -1633,7 +1759,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const backToTopBtn = document.getElementById('back-to-top-btn');
             if (backToTopBtn) {
-                window.addEventListener('scroll', () => { backToTopBtn.style.display = window.scrollY > 300 ? 'flex' : 'none'; });
+                // --- NYTT: Stäng popover vid global scroll ---
+                window.addEventListener('scroll', () => { 
+                    backToTopBtn.style.display = window.scrollY > 300 ? 'flex' : 'none'; 
+                    closeRowActionPopover();
+                });
                 backToTopBtn.addEventListener('click', () => { window.scrollTo({ top: 0, behavior: 'smooth' }); });
             }
             
