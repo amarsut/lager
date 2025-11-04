@@ -199,8 +199,8 @@ document.addEventListener('DOMContentLoaded', () => {
         function formatPrice(price) { return new Intl.NumberFormat('sv-SE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(price); }
         
         // --- ★ FIX: Normaliserar artikelnummer för sökning (med .toUpperCase()) ---
-        function normalizeArtNr(artNr) { if (!artNr) return ""; return artNr.replace(/[\s-]/g, '').toUpperCase(); }
-        
+        function normalizeArtNr(artNr) { if (!artNr) return null; return artNr.replace(/[\s-]/g, '').toUpperCase(); }
+      
         function generateAeroMLink(f) { const s = normalizeArtNr(f); if (!s) return null; return `https://aeromotors.se/sok?s=${s}&layered_id_feature_1586%5B%5D=3&sort_by=price.asc`; }
         function generateTrodoLink(f) { const s = normalizeArtNr(f); if (!s) return null; const q = encodeURIComponent(s); return `https://www.trodo.se/catalogsearch/result/premium?filter[quality_group]=2&product_list_dir=asc&product_list_order=price&q=${q}`; }
         function generateThansenLink(f) { const s = normalizeArtNr(f); if (!s) return null; const q = encodeURIComponent(s); return `https://www.thansen.se/search/?query=${q}`; }
@@ -1749,6 +1749,7 @@ document.addEventListener('DOMContentLoaded', () => {
         else console.error("Kunde inte visa felmeddelande i UI.");
     }
 });
+
 
 
 
