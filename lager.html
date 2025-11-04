@@ -138,6 +138,14 @@
       animation: shake-horizontal 0.5s cubic-bezier(0.45, 0.05, 0.55, 0.95);
     }
     /* --- SLUT NYTT --- */
+    
+    /* --- NYTT: Puls-animation för CTA-knapp --- */
+    @keyframes pulse-cta {
+      0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+      70% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+      100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+    /* --- SLUT NYTT --- */
 
     /* --- NYTT: Moderna Scrollbars --- */
     ::-webkit-scrollbar {
@@ -539,6 +547,15 @@
         flex-grow: 1;
     }
     
+    /* NYTT: Begränsa bredden på art.nr-texten */
+    .artnr-cell-text {
+        max-width: 14ch; /* Begränsar till ca 14 tecken */
+        flex-grow: 0;
+        flex-shrink: 1;
+        display: inline-block;
+        vertical-align: middle;
+    }
+    
     .notes-cell { 
         display: flex; 
         align-items: center; 
@@ -626,11 +643,15 @@
         padding: 6px 8px;
         cursor: pointer;
         transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
     }
     .action-menu-btn:hover {
         background-color: var(--primary-color);
         border-color: var(--primary-color);
         color: white;
+        transform: scale(1.05);
     }
     .action-menu-btn .icon-span {
         font-size: 20px;
@@ -740,57 +761,79 @@
     .close-btn { position: absolute; top: 15px; right: 15px; font-size: 28px; cursor: pointer; font-weight: bold; z-index: 10; color: var(--text-light); }    
     .close-btn:hover { color: var(--text-dark); }
 
-    /* --- NYTT: Stil för Åtgärdsmodal --- */
-    #actionsModalButtons .btn-primary,
-    #actionsModalButtons .btn-secondary,
-    #actionsModalButtons .btn-danger,
-    #actionsModalButtons .lank-knapp {
-        width: 100%;
-        margin: 0;
-        padding: 12px 20px; /* Lite mindre padding */
-        font-size: 0.9em;
-        text-transform: none;
-        letter-spacing: 0;
+    /* --- NYTT: Stil för Åtgärdsmodal (Stiligare) --- */
+    #actionsModal .modal-content {
+        max-width: 380px; /* Smalare modal */
+        padding: 30px;
+    }
+    #actionsModalSubtitle {
+        font-size: 1.1em;
         font-weight: 600;
-        justify-content: center;
-    }
-
-    #actionsModalButtons .lank-knapp {
-        background-color: var(--card-bg) !important;
-        color: var(--primary-color) !important;
-        border: 1px solid var(--primary-color) !important;
-    }
-    #actionsModalButtons .lank-knapp:hover {
-        background-color: var(--primary-color) !important;
-        color: white !important;
-    }
-    /* Specifika länk-knappar */
-    #actionsModalButtons .aero-m-btn { background-color: #4CAF50 !important; color: white !important; border-color: #4CAF50 !important; }
-    #actionsModalButtons .aero-m-btn:hover { background-color: #388E3C !important; border-color: #388E3C !important; }
-    #actionsModalButtons .thansen-btn { background-color: #008080 !important; color: white !important; border-color: #008080 !important; }
-    #actionsModalButtons .thansen-btn:hover { background-color: #006060 !important; border-color: #006060 !important; }
-    #actionsModalButtons .egen-lank-btn { background-color: #5a7dff !important; color: white !important; border-color: #5a7dff !important; }
-    #actionsModalButtons .egen-lank-btn:hover { background-color: #3a57e8 !important; border-color: #3a57e8 !important; }
-
-
-    #actionsModalButtons .btn-secondary {
-        background-color: var(--card-bg);
         color: var(--text-dark);
-        border: 1px solid var(--border-color);
+        margin-top: -15px;
+        margin-bottom: 15px;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 15px;
+        word-break: break-all;
     }
-    #actionsModalButtons .btn-secondary:hover {
+    #actionsModalButtons {
+        display: flex;
+        flex-direction: column;
+        gap: 5px; /* Tunnare mellanrum, mer list-likt */
+    }
+    .action-modal-btn {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        padding: 12px 15px;
+        border: none;
+        background-color: transparent;
+        color: var(--text-dark);
+        font-size: 0.95em;
+        font-weight: 600;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.2s, color 0.2s, transform 0.1s ease-out;
+        text-align: left;
+        margin: 0;
+    }
+    .action-modal-btn .icon-span {
+        margin-right: 12px;
+        font-size: 1.3em;
+        color: var(--text-light);
+        transition: color 0.2s;
+    }
+    .action-modal-btn:hover {
         background-color: var(--bg-medium);
+        color: var(--primary-dark);
+        transform: scale(1.02);
     }
-    
-    #actionsModalButtons .btn-danger {
-        margin-top: 10px; /* Skapa separation */
-        border: 1px solid var(--danger-color);
-        background-color: var(--card-bg);
+    .action-modal-btn:hover .icon-span {
+        color: var(--primary-color);
+    }
+    /* Specifika färger vid hover */
+    .action-modal-btn.link-trodo:hover { color: #007bff; }
+    .action-modal-btn.link-trodo:hover .icon-span { color: #007bff; }
+    .action-modal-btn.link-aero:hover { color: #4CAF50; }
+    .action-modal-btn.link-aero:hover .icon-span { color: #4CAF50; }
+    .action-modal-btn.link-thansen:hover { color: #008080; }
+    .action-modal-btn.link-thansen:hover .icon-span { color: #008080; }
+    .action-modal-btn.link-egen:hover { color: #5a7dff; }
+    .action-modal-btn.link-egen:hover .icon-span { color: #5a7dff; }
+
+    /* Danger-knapp (Ta bort) */
+    .action-modal-btn.danger {
         color: var(--danger-color);
     }
-    #actionsModalButtons .btn-danger:hover {
-        background-color: var(--danger-color);
-        color: white;
+    .action-modal-btn.danger .icon-span {
+        color: var(--danger-color);
+    }
+    .action-modal-btn.danger:hover {
+        background-color: var(--danger-light);
+        color: var(--danger-dark);
+    }
+    .action-modal-btn.danger:hover .icon-span {
+        color: var(--danger-dark);
     }
     /* --- SLUT NYTT --- */
 
@@ -1205,6 +1248,7 @@
     #empty-state-add-btn {
         margin-top: 25px;
         padding: 12px 20px;
+        animation: pulse-cta 2s infinite; /* NYTT: Pulserande knapp */
     }
 
     #back-to-top-btn { position: fixed; bottom: 25px; right: 25px; width: 50px; height: 50px; background-color: var(--primary-color); color: white; border: none; border-radius: 50%; cursor: pointer; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); z-index: 1009; display: none; transition: background-color 0.2s, transform 0.2s, opacity 0.3s; padding: 0; align-items: center; justify-content: center; opacity: 0.8; }
@@ -1650,6 +1694,14 @@
             min-height: 34px;
             padding-top: 8px;
             padding-bottom: 8px;
+        }
+
+        /* NYTT: Begränsa anteckningar på mobil */
+        .notes-cell {
+            max-width: 25ch;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         
         .global-search-container { padding: 20px; }
@@ -2191,11 +2243,11 @@
     </div>
 
     <div id="actionsModal" class="modal">
-        <div class="modal-content" style="max-width: 400px;">
+        <div class="modal-content">
             <span class="close-btn">&times;</span>
             <h3 id="actionsModalTitle"><span class="icon-span">settings</span>Åtgärder</h3>
-            <p id="actionsModalSubtitle" style="font-weight: 600; color: var(--text-dark); margin-top: -15px; margin-bottom: 20px;"></p>
-            <div id="actionsModalButtons" style="display: flex; flex-direction: column; gap: 10px;">
+            <p id="actionsModalSubtitle"></p>
+            <div id="actionsModalButtons">
                 </div>
         </div>
     </div>
