@@ -35,8 +35,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const serviceArtiklarLista = document.getElementById('service-artiklar-lista');
         const motorChassiArtiklarLista = document.getElementById('motor-chassi-artiklar-lista');
         const andraMarkenArtiklarLista = document.getElementById('andra-marken-artiklar-lista');
-        const slutILagerLista = document.getElementById('slut-i-lager-lista');
-        const slutILagerSektion = document.getElementById('slut-i-lager-sektion');
         const fullEmptyState = document.getElementById('full-empty-state');
         const emptyStateAddBtn = document.getElementById('empty-state-add-btn'); 
         
@@ -53,8 +51,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const editModal = document.getElementById('editModal');
         const editForm = document.getElementById('edit-article-form');
         const confirmationModal = document.getElementById('confirmationModal');
-        const actionsModal = document.getElementById('actionsModal'); // NYTT: Åtgärdsmodal
         const syncStatusElement = document.getElementById('sync-status');
+        
+        // --- NYTT: Popover-element ---
+        const actionsPopover = document.getElementById('actionsPopover');
+        const actionsPopoverOverlay = document.getElementById('actionsPopoverOverlay');
+        const actionsPopoverContent = document.getElementById('actionsPopoverContent');
+        
+        // --- NYTT: "Slut i Lager"-modal-element ---
+        const outOfStockModal = document.getElementById('outOfStockModal');
+        const showOutOfStockBtn = document.getElementById('show-out-of-stock-btn');
+        const outOfStockSearch = document.getElementById('out-of-stock-search');
+        const outOfStockEmptyState = document.getElementById('out-of-stock-empty-state');
+        let outOfStockModalContainer = null; // Definieras senare
         
         // Global sök
         const globalSearchInput = document.getElementById('global-search-input');
@@ -79,8 +88,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const emptyStates = {
             service: document.getElementById('service-empty-state'),
             motorChassi: document.getElementById('motor-chassi-empty-state'),
-            andraMarken: document.getElementById('andra-marken-empty-state'),
-            slutILager: document.getElementById('slut-i-lager-empty-state')
+            andraMarken: document.getElementById('andra-marken-empty-state')
+            // BORTTAGET: slutILager
         };
         
         // Dashboard (Nu i App-meny)
@@ -120,6 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // GLOBALA VARIABLER
         let inventory = []; 
+        let outOfStockInventory = []; // NYTT: Separat lista för "Slut i Lager"
         let selectedItemId = null;
         let currentSort = { column: 'name', direction: 'desc' };
         let currentFilter = 'Alla';
@@ -192,11 +202,9 @@ document.addEventListener('DOMContentLoaded', () => {
       
         function formatPrice(price) { return new Intl.NumberFormat('sv-SE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(price); }
         
-        // --- ★ FIXEN ÄR HÄR ★ ---
-        // Normaliserar artikelnummer för sökning
+        // --- ★ FIX: Normaliserar artikelnummer för sökning (med .toUpperCase()) ---
         function normalizeArtNr(artNr) {
             if (!artNr) return null;
-            // Tar bort mellanslag, bindestreck OCH gör till versaler för konsekvent jämförelse
             return artNr.replace(/[\s-]/g, '').toUpperCase(); 
         }
         
@@ -304,11 +312,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 globalSearchResults.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
                 // Normalisera söktermen för artikelnummer
-                const normalizedSearchTerm = normalizeArtNr(searchTerm); // Använder nya fixade funktionen
+                const normalizedSearchTerm = normalizeArtNr(searchTerm); 
                 
                 // 1. Interna resultat
                 const internalMatches = inventory.filter(item => {
-                    const normalizedItemArtNr = normalizeArtNr(item.service_filter || ''); // Använder nya fixade funktionen
+                    const normalizedItemArtNr = normalizeArtNr(item.service_filter || ''); 
                     return (normalizedItemArtNr && normalizedItemArtNr.includes(normalizedSearchTerm)) || 
                            (item.name || '').toUpperCase().includes(searchTerm.toUpperCase());
                 });
@@ -335,7 +343,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 let hasDisclaimer = false;
                 
                 externalSearchProviders.forEach(provider => {
-                    const link = provider.linkGenerator(searchTerm); // Skicka den ursprungliga termen
+                    const link = provider.linkGenerator(searchTerm); 
                     if (link) {
                         currentExternalLinks.push({ name: provider.name, link: link });
                         if (provider.name.includes('Bildelsbasen')) {
@@ -571,17 +579,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
         function renderDashboard(currentInventory) {
             const inStock = currentInventory.filter(item => item.quantity > 0);
+            outOfStockInventory = currentInventory.filter(item => item.quantity <= 0); // NYTT: Uppdatera globala listan
             
             const totalUnits = inStock.reduce((sum, item) => {
                 return sum + item.quantity;
             }, 0);
             
             const inStockItems = inStock.length;
-            const outOfStockItems = currentInventory.length - inStockItems;
+            const outOfStockItems = outOfStockInventory.length;
 
             statTotalItems.textContent = inStockItems;
             statTotalUnits.textContent = totalUnits;
-            statOutOfStock.textContent = outOfStockItems;
+            statOutOfStock.textContent = outOfStockItems; // Uppdaterar siffran i sidomenyn
         }
         
         function renderRecentItems(currentInventory) {
@@ -677,30 +686,19 @@ document.addEventListener('DOMContentLoaded', () => {
             return html;
         }
         
-        // --- NYTT: Funktion för Åtgärdsmodal ---
-        function closeActionsModal() {
-            if (actionsModal) {
-                actionsModal.style.display = 'none';
-                const buttonContainer = document.getElementById('actionsModalButtons');
-                if (buttonContainer) {
-                    buttonContainer.innerHTML = '';
-                }
-            }
+        // --- NYTT: Funktion för Åtgärds-Popover ---
+        function closeActionsPopover() {
+            if (actionsPopover) actionsPopover.style.display = 'none';
+            if (actionsPopoverOverlay) actionsPopoverOverlay.style.display = 'none';
         }
-        window.closeActionsModal = closeActionsModal; // Exponera globalt
+        window.closeActionsPopover = closeActionsPopover; // Exponera globalt
 
-        window.showActionsModal = function(id) {
+        window.showActionsPopover = function(id, buttonEl) {
             const item = inventory.find(i => i.id === id);
             if (!item) return;
 
-            const titleEl = document.getElementById('actionsModalTitle');
-            const subtitleEl = document.getElementById('actionsModalSubtitle');
-            const buttonContainer = document.getElementById('actionsModalButtons');
-
-            if (!titleEl || !subtitleEl || !buttonContainer) return;
-
-            titleEl.innerHTML = '<span class="icon-span">settings</span>Åtgärder';
-            subtitleEl.textContent = `${escapeHTML(item.name)} (${escapeHTML(item.service_filter)})`;
+            // Stäng alla andra popovers
+            closeActionsPopover();
 
             const trodoLink = generateTrodoLink(item.service_filter);
             const aeroMLink = generateAeroMLink(item.service_filter);
@@ -709,54 +707,52 @@ document.addEventListener('DOMContentLoaded', () => {
 
             let buttonsHTML = '';
 
-            // Länk-knappar
-            if (trodoLink) {
-                buttonsHTML += `<button class="action-modal-btn link-trodo" onclick="window.open('${trodoLink}', '_blank'); closeActionsModal(); event.stopPropagation();">
-                                    <span class="icon-span">open_in_new</span>Sök på Trodo
-                                </button>`;
-            }
-            if (aeroMLink) {
-                buttonsHTML += `<button class="action-modal-btn link-aero" onclick="window.open('${aeroMLink}', '_blank'); closeActionsModal(); event.stopPropagation();">
-                                    <span class="icon-span">open_in_new</span>Sök på AeroMotors
-                                </button>`;
-            }
-            if (thansenLink) {
-                buttonsHTML += `<button class="action-modal-btn link-thansen" onclick="window.open('${thansenLink}', '_blank'); closeActionsModal(); event.stopPropagation();">
-                                    <span class="icon-span">open_in_new</span>Sök på Thansen
-                                </button>`;
-            }
-            if (egenLink) {
-                buttonsHTML += `<button class="action-modal-btn link-egen" onclick="window.open('${egenLink}', '_blank'); closeActionsModal(); event.stopPropagation();">
-                                    <span class="icon-span">open_in_new</span>Öppna Egen Länk
-                                </button>`;
-            }
+            if (trodoLink) buttonsHTML += `<button class="popover-btn" onclick="window.open('${trodoLink}', '_blank'); closeActionsPopover(); event.stopPropagation();"><span class="icon-span">open_in_new</span>Sök på Trodo</button>`;
+            if (aeroMLink) buttonsHTML += `<button class="popover-btn" onclick="window.open('${aeroMLink}', '_blank'); closeActionsPopover(); event.stopPropagation();"><span class="icon-span">open_in_new</span>Sök på AeroMotors</button>`;
+            if (thansenLink) buttonsHTML += `<button class="popover-btn" onclick="window.open('${thansenLink}', '_blank'); closeActionsPopover(); event.stopPropagation();"><span class="icon-span">open_in_new</span>Sök på Thansen</button>`;
+            if (egenLink) buttonsHTML += `<button class="popover-btn" onclick="window.open('${egenLink}', '_blank'); closeActionsPopover(); event.stopPropagation();"><span class="icon-span">open_in_new</span>Öppna Egen Länk</button>`;
             
-            // Åtgärds-knappar
-            buttonsHTML += `<button class="action-modal-btn" onclick="handleEdit(${item.id}); closeActionsModal(); event.stopPropagation();">
-                                <span class="icon-span">edit</span>Redigera Artikel
-                            </button>`;
-            
-            buttonsHTML += `<button class="action-modal-btn danger" onclick="handleDelete(${item.id}); closeActionsModal(); event.stopPropagation();">
-                                <span class="icon-span">delete</span>Ta bort Artikel
-                            </button>`;
+            buttonsHTML += `<button class="popover-btn" onclick="handleEdit(${item.id}); closeActionsPopover(); event.stopPropagation();"><span class="icon-span">edit</span>Redigera Artikel</button>`;
+            buttonsHTML += `<button class="popover-btn danger" onclick="handleDelete(${item.id}); closeActionsPopover(); event.stopPropagation();"><span class="icon-span">delete</span>Ta bort Artikel</button>`;
 
-            buttonContainer.innerHTML = buttonsHTML;
-            actionsModal.style.display = 'flex';
+            actionsPopoverContent.innerHTML = buttonsHTML;
+
+            // Positionera popovern
+            const rect = buttonEl.getBoundingClientRect();
+            actionsPopover.style.display = 'block';
+            actionsPopoverOverlay.style.display = 'block';
             
-            // Fokusera på första knappen i modalen
+            const popoverRect = actionsPopover.getBoundingClientRect();
+            
+            // Positionera till vänster om knappen, centrerat vertikalt
+            let top = rect.top + (rect.height / 2) - (popoverRect.height / 2);
+            let left = rect.left - popoverRect.width - 5; // 5px marginal
+
+            // Justera om den hamnar utanför skärmen
+            if (left < 10) left = rect.right + 5; // Flytta till höger
+            if (top < 10) top = 10; // Flytta ner
+            if (top + popoverRect.height > window.innerHeight - 10) {
+                top = window.innerHeight - popoverRect.height - 10; // Flytta upp
+            }
+
+            actionsPopover.style.top = `${top}px`;
+            actionsPopover.style.left = `${left}px`;
+            
+            // Fokusera på första knappen
             setTimeout(() => {
-                const firstButton = buttonContainer.querySelector('button');
-                if (firstButton) {
-                    firstButton.focus();
-                }
+                const firstButton = actionsPopover.querySelector('button');
+                if (firstButton) firstButton.focus();
             }, 50);
         }
-        // --- SLUT ÅTGÄRDSMODAL ---
+        // --- SLUT ÅTGÄRDS-POPOVER ---
 
         function createInventoryRow(item, isOutOfStock) {
             const row = document.createElement('div');
             row.className = 'artikel-rad';
             row.setAttribute('data-id', item.id);
+            
+            // Ta bort select-onclick om det är "Slut i Lager"-modalen (eller behåll?)
+            // Vi behåller den, det skadar inte.
             row.onclick = () => handleRowSelect(item.id, row);
             if (selectedItemId === item.id) {
                 row.classList.add('selected');
@@ -804,7 +800,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <span class="notes-cell" title="${escapeHTML(item.notes || '')}">${formattedNotes}</span>
 
                 <div class="action-buttons" style="justify-content: center;">
-                    <button class="action-menu-btn" onclick="showActionsModal(${item.id}); event.stopPropagation();" title="Visa åtgärder">
+                    <button class="action-menu-btn" onclick="showActionsPopover(${item.id}, this); event.stopPropagation();" title="Visa åtgärder">
                         <span class="icon-span">more_horiz</span>
                     </button>
                 </div>
@@ -817,10 +813,10 @@ document.addEventListener('DOMContentLoaded', () => {
             serviceArtiklarLista.innerHTML = '';
             motorChassiArtiklarLista.innerHTML = '';
             andraMarkenArtiklarLista.innerHTML = '';
-            slutILagerLista.innerHTML = '';
+            // BORTTAGET: slutILagerLista.innerHTML = '';
             
             const iLager = data.filter(item => item.quantity > 0);
-            const slutILager = data.filter(item => item.quantity <= 0);
+            // BORTTAGET: const slutILager = data.filter(item => item.quantity <= 0);
 
             const serviceArtiklar = iLager.filter(item => item.category === 'Service');
             const motorChassiArtiklar = iLager.filter(item => item.category === 'Motor/Chassi' || item.category === 'Övrigt' || !item.category);
@@ -829,7 +825,7 @@ document.addEventListener('DOMContentLoaded', () => {
             serviceArtiklar.forEach(item => serviceArtiklarLista.appendChild(createInventoryRow(item, false)));
             motorChassiArtiklar.forEach(item => motorChassiArtiklarLista.appendChild(createInventoryRow(item, false)));
             andraMarkenArtiklar.forEach(item => andraMarkenArtiklarLista.appendChild(createInventoryRow(item, false)));
-            slutILager.forEach(item => slutILagerLista.appendChild(createInventoryRow(item, true)));
+            // BORTTAGET: slutILager.forEach...
 
             const serviceWrapper = document.getElementById('service-artiklar-wrapper');
             const motorWrapper = document.getElementById('motor-chassi-artiklar-wrapper');
@@ -842,7 +838,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const showService = (currentFilter === 'Alla' || currentFilter === 'Service') && serviceArtiklar.length > 0;
             const showMotor = (currentFilter === 'Alla' || currentFilter === 'Motor/Chassi') && motorChassiArtiklar.length > 0;
             const showAndra = (currentFilter === 'Alla' || currentFilter === 'Andra Märken') && andraMarkenArtiklar.length > 0;
-            const showSlut = (currentFilter === 'Alla' || currentFilter === 'Slut') && slutILager.length > 0;
+            // BORTTAGET: const showSlut = ...
 
             serviceTitle.style.display = showService ? 'flex' : 'none';
             serviceWrapper.style.display = showService ? 'block' : 'none';
@@ -850,12 +846,12 @@ document.addEventListener('DOMContentLoaded', () => {
             motorWrapper.style.display = showMotor ? 'block' : 'none';
             andraTitle.style.display = showAndra ? 'flex' : 'none';
             andraWrapper.style.display = showAndra ? 'block' : 'none';
-            slutILagerSektion.style.display = showSlut ? 'block' : 'none';
+            // BORTTAGET: slutILagerSektion.style.display = ...
 
             emptyStates.service.style.display = (currentFilter === 'Alla' || currentFilter === 'Service') && serviceArtiklar.length === 0 ? 'flex' : 'none';
             emptyStates.motorChassi.style.display = (currentFilter === 'Alla' || currentFilter === 'Motor/Chassi') && motorChassiArtiklar.length === 0 ? 'flex' : 'none';
             emptyStates.andraMarken.style.display = (currentFilter === 'Alla' || currentFilter === 'Andra Märken') && andraMarkenArtiklar.length === 0 ? 'flex' : 'none';
-            emptyStates.slutILager.style.display = (currentFilter === 'Alla' || currentFilter === 'Slut') && slutILager.length === 0 ? 'flex' : 'none';
+            // BORTTAGET: emptyStates.slutILager.style.display = ...
             
             const totalItems = inventory.length; 
             if (totalItems === 0) {
@@ -863,7 +859,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 serviceTitle.style.display = 'none'; serviceWrapper.style.display = 'none';
                 motorTitle.style.display = 'none'; motorWrapper.style.display = 'none';
                 andraTitle.style.display = 'none'; andraWrapper.style.display = 'none';
-                slutILagerSektion.style.display = 'none';
             } else {
                 fullEmptyState.style.display = 'none';
             }
@@ -883,8 +878,7 @@ document.addEventListener('DOMContentLoaded', () => {
                  emptyStates.motorChassi.querySelector('p').textContent = 'Inga artiklar hittades. Prova ändra filtret eller lägg till en ny artikel.';
                  emptyStates.andraMarken.querySelector('h4').textContent = 'Inga artiklar för andra märken';
                  emptyStates.andraMarken.querySelector('p').textContent = 'Inga artiklar hittades. Prova ändra filtret eller lägg till en ny artikel.';
-                 emptyStates.slutILager.querySelector('h4').textContent = 'Inga artiklar slut i lager';
-                 emptyStates.slutILager.querySelector('p').textContent = 'Inga artiklar hittades. Prova ändra filtret eller lägg till en ny artikel.';
+                 // BORTTAGET: emptyStates.slutILager...
             }
         }
 
@@ -898,11 +892,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const category = (item.category || '').toLowerCase();
             
             searchWords.forEach(word => {
-                // Normalisera även sökordet på samma sätt
+                // --- ★ FIX: Normalisera sökordet för art.nr-jämförelse ---
                 const cleanWord = normalizeArtNr(word); 
                 
                 if (serviceFilter.includes(cleanWord)) { score += 5; } 
-                if (name.includes(word)) { score += 3; } // Behåll onormaliserat för namn
+                if (name.includes(word)) { score += 3; } // Behåll onormaliserat (redan lowercase) för namn
                 if (category.includes(word)) { score += 2; } 
                 if (notes.includes(word)) { score += 1; } 
                 if (serviceFilter === cleanWord || name === word) { score += 5; }
@@ -1026,6 +1020,13 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 generalSearchTerm = searchTerm;
             }
+            
+            // --- ÄNDRAD: Hantera "Slut"-filtret ---
+            if (currentFilter === 'Slut') {
+                // Om "Slut" väljs, visa inget på huvudsidan, men uppdatera knappen
+                processedInventory = []; 
+                currentFilter = 'Slut'; 
+            }
 
             categoryFilterBar.querySelectorAll('.btn-secondary').forEach(btn => {
                 btn.classList.toggle('active', btn.getAttribute('data-filter') === currentFilter);
@@ -1038,14 +1039,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 toolbarFilterBadge.style.display = 'none';
             }
 
-            if (currentFilter !== 'Alla' && !syntaxFilterUsed) { 
-                if (currentFilter === 'Slut') {
-                    processedInventory = processedInventory.filter(item => item.quantity <= 0);
-                } else {
-                    processedInventory = processedInventory.filter(item => item.quantity > 0 && 
-                        (item.category === currentFilter || (currentFilter === 'Motor/Chassi' && (item.category === 'Övrigt' || !item.category)))
-                    );
-                }
+            if (currentFilter !== 'Alla' && currentFilter !== 'Slut' && !syntaxFilterUsed) { 
+                processedInventory = processedInventory.filter(item => item.quantity > 0 && 
+                    (item.category === currentFilter || (currentFilter === 'Motor/Chassi' && (item.category === 'Övrigt' || !item.category)))
+                );
+            } else if (currentFilter === 'Alla' && !syntaxFilterUsed) {
+                // Se till att "Alla" bara visar saker i lager
+                processedInventory = processedInventory.filter(item => item.quantity > 0);
             }
 
             let dropdownResults = [];
@@ -1079,7 +1079,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const resultsForDropdown = syntaxFilterUsed ? processedInventory : dropdownResults;
             renderSearchDropdown(generalSearchTerm, resultsForDropdown);
 
-            renderInventory(processedInventory);
+            renderInventory(processedInventory); // Renderar nu bara "i lager"-saker
 
             document.querySelectorAll('.header span[data-sort]').forEach(span => {
                 span.classList.remove('active', 'asc', 'desc');
@@ -1176,13 +1176,16 @@ document.addEventListener('DOMContentLoaded', () => {
             if (savedSort) {
                 currentSort = JSON.parse(savedSort);
             }
-            if (savedFilter) {
+            if (savedFilter && savedFilter !== 'Slut') { // Ladda inte "Slut" som startfilter
                 currentFilter = savedFilter;
-                document.querySelectorAll('#category-filter-bar .btn-secondary').forEach(btn => {
-                    btn.classList.toggle('active', btn.getAttribute('data-filter') === currentFilter);
-                });
             }
+            
+            // Uppdatera filterknapparna baserat på det laddade (eller standard) filtret
+            document.querySelectorAll('#category-filter-bar .btn-secondary').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-filter') === currentFilter);
+            });
         }
+
 
         function validateForm(form) {
             let isValid = true;
@@ -1380,6 +1383,12 @@ document.addEventListener('DOMContentLoaded', () => {
         
         function closeEditModal() { editModal.style.display = 'none'; }
         function closeConfirmationModal() { confirmationModal.style.display = 'none'; confirmCallback = null; }
+        
+        // --- NYTT: Stäng "Slut i Lager"-modalen ---
+        function closeOutOfStockModal() {
+            outOfStockModal.style.display = 'none';
+            outOfStockSearch.value = ''; // Rensa sökning
+        }
 
         function showCustomConfirmation(message, callback, title = 'Bekräfta', isDanger = false) {
             confirmationModal.querySelector('#confirmationTitle').innerHTML = title;
@@ -1403,7 +1412,6 @@ document.addEventListener('DOMContentLoaded', () => {
             confirmationModal.style.display = 'flex';
             confirmCallback = callback;
             
-            // Fokusera på "Ja"-knappen
             setTimeout(() => yesBtn.focus(), 50);
         }
         
@@ -1433,7 +1441,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const focusableElements = modalElement.querySelectorAll(
                 'a[href]:not([disabled]), button:not([disabled]), textarea:not([disabled]), input[type="text"]:not([disabled]), input[type="radio"]:not([disabled]), input[type="checkbox"]:not([disabled]), input[type="number"]:not([disabled]), select:not([disabled])'
             );
-            if (focusableElements.length === 0) return; // Inget att fånga
+            if (focusableElements.length === 0) return; 
             
             const firstElement = focusableElements[0];
             const lastElement = focusableElements[focusableElements.length - 1];
@@ -1441,18 +1449,75 @@ document.addEventListener('DOMContentLoaded', () => {
             modalElement.addEventListener('keydown', (e) => {
                 if (e.key !== 'Tab') return;
 
-                if (e.shiftKey) { // Shift + Tab
+                if (e.shiftKey) { 
                     if (document.activeElement === firstElement) {
                         lastElement.focus();
                         e.preventDefault();
                     }
-                } else { // Tab
+                } else { 
                     if (document.activeElement === lastElement) {
                         firstElement.focus();
                         e.preventDefault();
                     }
                 }
             });
+        }
+        
+        // --- NYTT: Logik för "Slut i Lager"-modalen ---
+        function renderOutOfStockList(searchTerm = '') {
+            if (!outOfStockModalContainer) {
+                outOfStockModalContainer = document.getElementById('out-of-stock-modal-container');
+                
+                // Skapa header dynamiskt första gången
+                const header = document.createElement('div');
+                header.className = 'header';
+                header.innerHTML = `
+                    <span data-sort="service_filter">Art. nr</span>
+                    <span data-sort="name">Namn</span>
+                    <span data-sort="price">Pris</span>
+                    <span data-sort="quantity">Antal</span>
+                    <span>Status</span>
+                    <span data-sort="notes">Anteckningar</span>
+                    <span>Åtgärder</span>
+                `;
+                outOfStockModalContainer.appendChild(header);
+            }
+            
+            // Rensa bara listan, inte headern
+            const rows = outOfStockModalContainer.querySelectorAll('.artikel-rad');
+            rows.forEach(row => row.remove());
+
+            // Sortera efter senast uppdaterad (nyaste först)
+            let filteredList = [...outOfStockInventory].sort((a, b) => (b.lastUpdated || b.id) - (a.lastUpdated || a.id));
+
+            if (searchTerm) {
+                const lowerSearchTerm = searchTerm.toLowerCase();
+                const normalizedSearchTerm = normalizeArtNr(lowerSearchTerm);
+                
+                filteredList = filteredList.filter(item => {
+                    const normalizedItemArtNr = normalizeArtNr(item.service_filter || '');
+                    return (normalizedItemArtNr && normalizedItemArtNr.includes(normalizedSearchTerm)) ||
+                           (item.name || '').toLowerCase().includes(lowerSearchTerm);
+                });
+            }
+
+            if (filteredList.length === 0) {
+                outOfStockEmptyState.style.display = 'flex';
+                outOfStockModalContainer.style.display = 'none';
+                if (searchTerm) {
+                    outOfStockEmptyState.querySelector('h4').textContent = 'Inga träffar';
+                    outOfStockEmptyState.querySelector('p').textContent = `Din sökning på "${escapeHTML(searchTerm)}" gav inga resultat.`;
+                } else {
+                    outOfStockEmptyState.querySelector('h4').textContent = 'Bra jobbat!';
+                    outOfStockEmptyState.querySelector('p').textContent = 'Det finns inga artiklar som är slut i lager.';
+                }
+            } else {
+                outOfStockEmptyState.style.display = 'none';
+                outOfStockModalContainer.style.display = 'block';
+                filteredList.forEach(item => {
+                    outOfStockModalContainer.appendChild(createInventoryRow(item, true));
+                });
+            }
         }
         
         function initializeListeners() {
@@ -1549,22 +1614,39 @@ document.addEventListener('DOMContentLoaded', () => {
                     closeConfirmationModal();
                 }
             });
-            actionsModal.addEventListener('click', (e) => {
-                if (e.target === actionsModal || e.target.classList.contains('close-btn')) {
-                    closeActionsModal();
+            // BORTTAGET: actionsModal listener
+            
+            // --- NYTT: "Slut i Lager"-modal-lyssnare ---
+            showOutOfStockBtn.addEventListener('click', () => {
+                renderOutOfStockList(); // Rendera listan
+                outOfStockModal.style.display = 'flex'; // Visa modalen
+                outOfStockSearch.focus(); // Fokusera på sökfältet
+                closeAppMenu(); // Stäng sidomenyn
+            });
+            outOfStockModal.addEventListener('click', (e) => {
+                if (e.target === outOfStockModal || e.target.classList.contains('close-btn')) {
+                    closeOutOfStockModal();
                 }
             });
+            outOfStockSearch.addEventListener('input', (e) => {
+                renderOutOfStockList(e.target.value);
+            });
             
+            // --- NYTT: Popover-lyssnare ---
+            actionsPopoverOverlay.addEventListener('click', closeActionsPopover);
+
             // Applicera Focus Trap på modals
             trapFocus(editModal);
             trapFocus(confirmationModal);
-            trapFocus(actionsModal);
+            trapFocus(actionsPopover);
+            trapFocus(outOfStockModal); // NYTT
             
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape') {
                     closeEditModal();
                     closeConfirmationModal();
-                    closeActionsModal(); 
+                    closeActionsPopover(); // NYTT
+                    closeOutOfStockModal(); // NYTT
                     closeAppMenu();
                     if(globalSearchResults.style.display === 'block') {
                         globalSearchResults.style.display = 'none';
@@ -1694,7 +1776,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (e.target.tagName === 'BUTTON') {
                         const filter = e.target.getAttribute('data-filter');
                         if (filter) {
-                            currentFilter = filter;
+                            // --- NYTT: Hantera "Slut"-filtret ---
+                            if (filter === 'Slut') {
+                                // Visa modalen istället för att filtrera listan
+                                renderOutOfStockList();
+                                outOfStockModal.style.display = 'flex';
+                                outOfStockSearch.focus();
+                                // Sätt inget filter aktivt
+                                currentFilter = 'Alla'; // Återställ till 'Alla' visuellt
+                            } else {
+                                currentFilter = filter;
+                            }
+                            
                             if(desktopSearchInput.value) {
                                 clearAndHideSearch();
                             }
