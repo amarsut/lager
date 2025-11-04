@@ -460,13 +460,14 @@
         transition: background-color 0.3s, border-color 0.3s; 
     }
     
+    /* --- ÄNDRAD: Ny grid-layout (7 kolumner) --- */
     .header, .artikel-rad { 
-        grid-template-columns: 160px 200px 90px 70px 70px minmax(120px, 1fr) 120px 140px; 
+        grid-template-columns: 160px 200px 90px 70px 70px minmax(120px, 1fr) 80px; 
         padding: 10px 20px; 
         align-items: center; 
         font-size: 0.85em; 
         display: grid; 
-        min-width: 1200px; 
+        min-width: 1100px; /* Justerad bredd */
     }    
     .header { 
         position: sticky; 
@@ -615,28 +616,84 @@
     .copy-btn:disabled { color: var(--success-color); cursor: default; }
     .copy-btn:disabled:hover { transform: none; background: var(--bg-medium); border-color: var(--border-color); }
 
-    .action-buttons { display: flex; gap: 8px; justify-content: flex-start; }
-    .link-buttons { display: flex; gap: 8px; align-items: center; width: 100%; }
-    .aero-m-btn { background-color: #4CAF50; color: white; border: 1px solid #4CAF50; }
-    .aero-m-btn:hover { background-color: #388E3C; border-color: #388E3C; }
-    .thansen-btn { background-color: #008080; color: white; border: 1px solid #008080; }
-    .thansen-btn:hover { background-color: #006060; border-color: #006060; }
+    /* --- BORTTAGET: .action-buttons (ersatt) --- */
+    /* --- BORTTAGET: .link-buttons (ersatt) --- */
     
-    .lank-knapp, .edit-btn, .delete-btn, .order-btn { padding: 6px 10px; border: 1px solid transparent; border-radius: 6px; cursor: pointer; font-size: 0.8em; font-weight: 600; transition: all 0.2s; text-align: center; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); }
-    .lank-knapp { background-color: var(--card-bg); color: var(--primary-color); border: 1px solid var(--primary-color); }
-    .lank-knapp:hover { background-color: var(--primary-color); color: white; border-color: var(--primary-color); }
-    [data-theme="dark"] .lank-knapp { background-color: var(--bg-medium); }
-    [data-theme="dark"] .lank-knapp:hover { background-color: var(--primary-color); }
-    .edit-btn { background-color: var(--primary-color); color: white; }
-    .edit-btn:hover { background-color: var(--primary-dark); }
-    .order-btn { background-color: var(--success-color); color: white; }
-    .order-btn:hover { background-color: #0d9488; }
+    /* --- BORTTAGET: .lank-knapp, .edit-btn, .delete-btn, .order-btn (flyttas till popover-stil) --- */
     
-    .delete-btn { background-color: var(--card-bg); color: var(--danger-color); border: 1px solid var(--danger-color); }
-    .delete-btn:hover { background-color: var(--danger-color); color: white; }
-    [data-theme="dark"] .delete-btn { background-color: var(--bg-medium); }
-    [data-theme="dark"] .delete-btn:hover { background-color: var(--danger-color); }
+    /* --- NYTT: Stil för den nya åtgärdsknappen i raden --- */
+    .action-buttons-cell {
+        display: flex;
+        align-items: center;
+        justify-content: center; /* Centrera knappen */
+    }
+    .row-action-btn {
+        padding: 6px 8px; /* Gör den mer fyrkantig */
+    }
+    .row-action-btn .icon-span {
+        margin-right: 0; /* Ingen marginal för ikon-knapp */
+        font-size: 1.4em;
+    }
     
+    /* --- NYTT: Popover-meny för rad-åtgärder --- */
+    #row-action-popover {
+        display: none;
+        position: absolute; /* JS sätter top/left */
+        z-index: 10001;
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15); /* Tydligare skugga */
+        padding: 8px;
+        min-width: 150px;
+        animation: subtleFadeIn 0.15s ease-out;
+    }
+    #popover-content {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+    /* Knappar inuti popovern */
+    #popover-content .btn-popover {
+        width: 100%;
+        padding: 8px 12px;
+        font-size: 0.9em;
+        font-weight: 600;
+        text-align: left; /* Vänsterställd text */
+        justify-content: flex-start; /* Vänsterställd ikon/text */
+        border: none;
+        background-color: transparent;
+        color: var(--text-dark);
+        border-radius: 6px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: background-color 0.2s, color 0.2s;
+    }
+    #popover-content .btn-popover .icon-span {
+        font-size: 1.2em;
+        margin-right: 0; /* Ta bort default-marginal */
+    }
+    #popover-content .btn-popover:hover {
+        background-color: var(--bg-medium);
+    }
+    /* Specifika knappfärger */
+    #popover-content .btn-popover.trodo-btn { color: #008080; }
+    #popover-content .btn-popover.trodo-btn:hover { background-color: #008080; color: white; }
+    #popover-content .btn-popover.aero-m-btn { color: #4CAF50; }
+    #popover-content .btn-popover.aero-m-btn:hover { background-color: #4CAF50; color: white; }
+    #popover-content .btn-popover.thansen-btn { color: #008080; }
+    #popover-content .btn-popover.thansen-btn:hover { background-color: #008080; color: white; }
+    #popover-content .btn-popover.egen-lank-btn { color: #5a7dff; }
+    #popover-content .btn-popover.egen-lank-btn:hover { background-color: #5a7dff; color: white; }
+    #popover-content .btn-popover.edit-btn { color: var(--primary-color); }
+    #popover-content .btn-popover.edit-btn:hover { background-color: var(--primary-color); color: white; }
+    #popover-content .btn-popover.delete-btn { color: var(--danger-color); }
+    #popover-content .btn-popover.delete-btn:hover { background-color: var(--danger-color); color: white; }
+    /* --- SLUT NY POPOVER --- */
+
+
     /* --- ÄNDRAD: Modern "Slut i lager"-titel --- */
     .out-of-stock-title {
         font-size: 1.3em; /* Mindre */
@@ -726,11 +783,27 @@
     .search-btn:hover { opacity: 1; transform: scale(1.05); background: var(--primary-color); color: white; border-color: var(--primary-color); }
     .search-btn svg { fill: currentColor; vertical-align: middle; width: 14px; height: 14px; }
     
-    .header > span:last-child, .artikel-rad > div:last-child { position: sticky; right: 0; z-index: 50; padding-right: 20px; background-color: inherit; }
-    .header > span:last-child { background-color: var(--bg-medium); border-left: 1px solid var(--border-color); }
-    .artikel-rad > div:last-child { background-color: var(--card-bg); }
-    .artikel-rad:hover > div:last-child { background-color: var(--bg-medium); }
-    
+    /* --- ÄNDRAD: Sticky-kolumnen --- */
+    .header > span:last-child, .artikel-rad > .action-buttons-cell { 
+        position: sticky; 
+        right: 0; 
+        z-index: 50; 
+        padding-right: 20px; 
+        background-color: inherit; 
+    }
+    .header > span:last-child { 
+        background-color: var(--bg-medium); 
+        border-left: 1px solid var(--border-color); 
+        justify-content: center; /* Centrera "Åtgärder" text */
+    }
+    .artikel-rad > .action-buttons-cell { 
+        background-color: var(--card-bg); 
+    }
+    .artikel-rad:hover > .action-buttons-cell { 
+        background-color: var(--bg-medium); 
+    }
+    /* --- SLUT ÄNDRING STICKY --- */
+
     .link-dropdown-container { position: relative; display: inline-block; margin-left: 5px; }
     .dropdown-menu { 
         display: none; 
@@ -1329,7 +1402,11 @@
         .lank-knapp, .qty-btn, .copy-btn, .search-btn, #fab-add-btn, #back-to-top-btn, 
         #toggle-add-form-btn, .json-controls, #sync-status, .theme-switcher, #pwa-install-btn,
         #category-filter-bar, .modal, .search-wrapper, .notes-cell, .link-buttons, .action-cell,
-        .top-toolbar, #recent-items-container, #app-menu-modal, .search-results-dropdown { 
+        .top-toolbar, #recent-items-container, #app-menu-modal, .search-results-dropdown,
+        /* --- NYTT FÖR PRINT --- */
+        .action-buttons-cell, .row-action-btn, #row-action-popover
+        /* --- SLUT NYTT --- */
+        { 
             display: none !important;
         }
         h1, h2, h3 { color: black; border: none; }
@@ -1343,6 +1420,7 @@
         }
         .artikel-rad, .header {
             display: grid;
+            /* --- ÄNDRAD FÖR PRINT (Borttagen anteckningar, åtgärder) --- */
             grid-template-columns: 1.5fr 2fr 1fr 0.5fr 0.5fr; /* Anpassad för print */
             border-bottom: 1px solid #ccc;
         }
@@ -1567,10 +1645,9 @@
         h1 { font-size: 2em; margin-bottom: 25px; }
         h2 { font-size: 1.4em; margin-top: 30px; }
         
+        /* --- ÄNDRAD: Mer padding för touch-mål --- */
         .artikel-rad .qty-btn,
-        .artikel-rad .edit-btn,
-        .artikel-rad .delete-btn,
-        .artikel-rad .order-btn {
+        .artikel-rad .row-action-btn {
             min-height: 34px;
             padding-top: 8px;
             padding-bottom: 8px;
@@ -1975,7 +2052,6 @@
                     <span data-sort="quantity">Antal <span class="sort-icon"></span></span>
                     <span>Status</span>
                     <span data-sort="notes">Anteckningar <span class="sort-icon"></span></span>
-                    <span>Länk</span>
                     <span>Åtgärder</span>
                 </div>
                 <div class="empty-state" id="service-empty-state" style="display: none;">
@@ -2000,7 +2076,6 @@
                     <span data-sort="quantity">Antal <span class="sort-icon"></span></span>
                     <span>Status</span>
                     <span data-sort="notes">Anteckningar <span class="sort-icon"></span></span>
-                    <span>Länk</span>
                     <span>Åtgärder</span>
                 </div>
                 <div class="empty-state" id="motor-chassi-empty-state" style="display: none;">
@@ -2025,7 +2100,6 @@
                     <span data-sort="quantity">Antal <span class="sort-icon"></span></span>
                     <span>Status</span>
                     <span data-sort="notes">Anteckningar <span class="sort-icon"></span></span>
-                    <span>Länk</span>
                     <span>Åtgärder</span>
                 </div>
                 <div class="empty-state" id="andra-marken-empty-state" style="display: none;">
@@ -2048,7 +2122,6 @@
                         <span data-sort="quantity">Antal <span class="sort-icon"></span></span>
                         <span>Status</span>
                         <span data-sort="notes">Anteckningar <span class="sort-icon"></span></span>
-                        <span>Länk</span>
                         <span>Åtgärder</span>
                     </div>
                     <div class="empty-state" id="slut-i-lager-empty-state" style="display: none;">
@@ -2132,6 +2205,11 @@
             <path fill-rule="evenodd" d="M10 17a.75.75 0 01-.75-.75V5.612L5.03 10.03a.75.75 0 01-1.06-1.06l5.25-5.25a.75.75 0 011.06 0l5.25 5.25a.75.75 0 11-1.06 1.06L10.75 5.612V16.25A.75.75 0 0110 17z" clip-rule="evenodd" />
         </svg>
     </button>
+    
+    <div id="row-action-popover">
+        <div id="popover-content">
+            </div>
+    </div>
     
     <script type="module" src="apps.js"></script>
 
