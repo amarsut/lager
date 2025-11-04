@@ -56,6 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const editModal = document.getElementById('editModal');
         const editForm = document.getElementById('edit-article-form');
         const confirmationModal = document.getElementById('confirmationModal');
+        const actionsModal = document.getElementById('actionsModal'); // NYTT: Åtgärdsmodal
         const syncStatusElement = document.getElementById('sync-status');
         
         // Global sök
@@ -520,7 +521,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         function exportToJSON() {
             const dataStr = JSON.stringify(inventory, null, 2);
-            downloadFile('lager_export.json', 'application/json', dataStr);
+            downloadFile(dataStr, 'lager_export.json', 'application/json');
         }
 
         function exportToCSV() {
@@ -529,12 +530,39 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             
-            const headers = Object.keys(inventory[0]).join(',');
+            // Samla alla unika nycklar från alla objekt
+            const allKeys = inventory.reduce((keys, item) => {
+                Object.keys(item).forEach(key => {
+                    if (!keys.includes(key)) {
+                        keys.push(key);
+                    }
+                });
+                return keys;
+            }, []);
+
+            // Sortera nycklarna, t.ex. 'id' först
+            allKeys.sort((a, b) => {
+                if (a === 'id') return -1;
+                if (b === 'id') return 1;
+                if (a === 'service_filter') return -1;
+                if (b === 'service_filter') return 1;
+                if (a === 'name') return -1;
+                if (b === 'name') return 1;
+                return a.localeCompare(b);
+            });
+
+            const headers = allKeys.join(',');
+            
             const rows = inventory.map(item => {
-                return Object.values(item).map(value => {
-                    let strValue = String(value || '');
-                    if (strValue.includes(',')) {
-                        strValue = `"${strValue}"`; // Hantera kommatecken i fält
+                return allKeys.map(key => {
+                    let value = item[key];
+                    if (value === null || value === undefined) {
+                        value = '';
+                    }
+                    let strValue = String(value);
+                    // Ersätt citattecken med dubbla citattecken och omge fältet med citattecken om det innehåller kommatecken, radbrytning eller citattecken
+                    if (strValue.includes(',') || strValue.includes('"') || strValue.includes('\n')) {
+                        strValue = `"${strValue.replace(/"/g, '""')}"`;
                     }
                     return strValue;
                 }).join(',');
@@ -584,8 +612,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 recent.forEach(item => {
                     html += `<a href="#" class="recent-item" data-id="${item.id}">
                                 <span class="recent-item-category">${item.category || 'Övrigt'}</span>
-                                <strong>${item.service_filter}</strong>
-                                <span>${item.name}</span>
+                                <strong>${escapeHTML(item.service_filter)}</strong>
+                                <span>${escapeHTML(item.name)}</span>
                              </a>`;
                 });
                 recentItemsList.innerHTML = html;
@@ -671,7 +699,79 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             return html;
         }
+        
+        // --- NYTT: Funktion för Åtgärdsmodal ---
+        function closeActionsModal() {
+            if (actionsModal) {
+                actionsModal.style.display = 'none';
+                // Rensa knapparna för att förhindra att fel knappar visas nästa gång
+                const buttonContainer = document.getElementById('actionsModalButtons');
+                if (buttonContainer) {
+                    buttonContainer.innerHTML = '';
+                }
+            }
+        }
+        window.closeActionsModal = closeActionsModal; // Exponera globalt
 
+        window.showActionsModal = function(id) {
+            const item = inventory.find(i => i.id === id);
+            if (!item) return;
+
+            const titleEl = document.getElementById('actionsModalTitle');
+            const subtitleEl = document.getElementById('actionsModalSubtitle');
+            const buttonContainer = document.getElementById('actionsModalButtons');
+
+            if (!titleEl || !subtitleEl || !buttonContainer) return;
+
+            // Sätt titel och undertitel
+            titleEl.innerHTML = '<span class="icon-span">settings</span>Åtgärder';
+            subtitleEl.textContent = `${escapeHTML(item.name)} (${escapeHTML(item.service_filter)})`;
+
+            // Generera länkar
+            const trodoLink = generateTrodoLink(item.service_filter);
+            const aeroMLink = generateAeroMLink(item.service_filter);
+            const thansenLink = generateThansenLink(item.service_filter);
+            const egenLink = item.link;
+
+            let buttonsHTML = '';
+
+            // Länk-knappar
+            if (trodoLink) {
+                buttonsHTML += `<button class="lank-knapp" onclick="window.open('${trodoLink}', '_blank'); closeActionsModal(); event.stopPropagation();">
+                                    <span class="icon-span">open_in_new</span>Trodo
+                                </button>`;
+            }
+            if (aeroMLink) {
+                buttonsHTML += `<button class="lank-knapp aero-m-btn" onclick="window.open('${aeroMLink}', '_blank'); closeActionsModal(); event.stopPropagation();">
+                                    <span class="icon-span">open_in_new</span>AeroMotors
+                                </button>`;
+            }
+            if (thansenLink) {
+                buttonsHTML += `<button class="lank-knapp thansen-btn" onclick="window.open('${thansenLink}', '_blank'); closeActionsModal(); event.stopPropagation();">
+                                    <span class="icon-span">open_in_new</span>Thansen
+                                </button>`;
+            }
+            if (egenLink) {
+                buttonsHTML += `<button class="lank-knapp egen-lank-btn" onclick="window.open('${egenLink}', '_blank'); closeActionsModal(); event.stopPropagation();">
+                                    <span class="icon-span">open_in_new</span>Egen Länk
+                                </button>`;
+            }
+            
+            // Åtgärds-knappar
+            buttonsHTML += `<button class="btn-secondary" onclick="handleEdit(${item.id}); closeActionsModal(); event.stopPropagation();">
+                                <span class="icon-span">edit</span>Redigera Artikel
+                            </button>`;
+            
+            buttonsHTML += `<button class="btn-danger" onclick="handleDelete(${item.id}); closeActionsModal(); event.stopPropagation();">
+                                <span class="icon-span">delete</span>Ta bort Artikel
+                            </button>`;
+
+            buttonContainer.innerHTML = buttonsHTML;
+            actionsModal.style.display = 'flex';
+        }
+        // --- SLUT ÅTGÄRDSMODAL ---
+
+        // --- ÄNDRAD: createInventoryRow (knappar borttagna, ny menyknapp) ---
         function createInventoryRow(item, isOutOfStock) {
             const row = document.createElement('div');
             row.className = 'artikel-rad';
@@ -686,18 +786,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const statusText = item.quantity > 0 ? 'I lager' : 'Slut';
             const formattedNotes = parseNotes(item.notes || '');
             const safeServiceFilter = escapeHTML(item.service_filter).replace(/'/g, "\\'");
-            const safeName = escapeHTML(item.name).replace(/'/g, "\\'");
+            // const safeName = escapeHTML(item.name).replace(/'/g, "\\'"); // Behövs inte längre här
 
-            // Länkar
+            // Länkar (Endast för sök-knapp bredvid Art.nr)
             const trodoLink = generateTrodoLink(item.service_filter);
             const aeroMLink = generateAeroMLink(item.service_filter);
-            const thansenLink = generateThansenLink(item.service_filter);
             const egenLink = item.link;
             
             const primarySearchLink = trodoLink || aeroMLink || egenLink;
             const primarySearchText = trodoLink ? 'Trodo' : (aeroMLink ? 'AeroMotors' : (egenLink ? 'Egen Länk' : ''));
-            const dropdownId = `link-dropdown-${item.id}`;
-            const hasSecondaryLinks = aeroMLink || thansenLink || egenLink;
 
             // --- Moderniserad Template Literal ---
             row.innerHTML = `
@@ -712,9 +809,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 </span>
 
                 <span class="cell-copy-wrapper">
-                    <button class="copy-btn" onclick="copyToClipboard(this, '${safeName}'); event.stopPropagation();" title="Kopiera Namn">
-                        <span class="icon-span" style="font-size: 14px;">title</span>
-                    </button>
                     <span class="cell-copy-text">${escapeHTML(item.name)}</span>
                 </span>
 
@@ -732,26 +826,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 <span class="notes-cell" title="${escapeHTML(item.notes || '')}">${formattedNotes}</span>
 
-                <span class="action-cell">
-                    <div class="link-buttons">
-                        ${trodoLink ? `<button class="lank-knapp trodo-btn" onclick="window.open('${trodoLink}', '_blank'); event.stopPropagation();">Trodo</button>` : ''}
-                        ${hasSecondaryLinks ? `
-                            <div class="link-dropdown-container">
-                                <button class="lank-knapp more-btn" onclick="toggleDropdown('${dropdownId}'); event.stopPropagation();">Mer</button>
-                                <div id="${dropdownId}" class="dropdown-menu">
-                                    ${aeroMLink ? `<button class="lank-knapp aero-m-btn" onclick="window.open('${aeroMLink}', '_blank'); closeDropdown('${dropdownId}'); event.stopPropagation();">AeroMotors</button>` : ''}
-                                    ${thansenLink ? `<button class="lank-knapp thansen-btn" onclick="window.open('${thansenLink}', '_blank'); closeDropdown('${dropdownId}'); event.stopPropagation();">Thansen</button>` : ''}
-                                    ${egenLink ? `<button class="lank-knapp egen-lank-btn" onclick="window.open('${egenLink}', '_blank'); closeDropdown('${dropdownId}'); event.stopPropagation();">Egen Länk</button>` : ''}
-                                </div>
-                            </div>
-                        ` : ''}
-                        ${!trodoLink && !hasSecondaryLinks ? '<span>(Saknas)</span>' : ''}
-                    </div>
-                </span>
-
-                <div class="action-buttons">
-                    <button class="edit-btn" onclick="handleEdit(${item.id}); event.stopPropagation();">Ändra</button>
-                    <button class="delete-btn" onclick="handleDelete(${item.id}); event.stopPropagation();">Ta bort</button>
+                <div class="action-buttons" style="justify-content: center;">
+                    <button class="action-menu-btn" onclick="showActionsModal(${item.id}); event.stopPropagation();" title="Visa åtgärder">
+                        <span class="icon-span">more_horiz</span>
+                    </button>
                 </div>
             `;
             
@@ -819,7 +897,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 Object.values(emptyStates).forEach(el => {
                     if (el.style.display === 'flex') {
                         el.querySelector('h4').textContent = 'Inga träffar';
-                        el.querySelector('p').textContent = `Din sökning på "${currentSearchTerm}" gav inga resultat.`;
+                        el.querySelector('p').textContent = `Din sökning på "${escapeHTML(currentSearchTerm)}" gav inga resultat.`;
                     }
                 });
             } else {
@@ -1207,7 +1285,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const serviceFilter = (formData.get('service_filter') || '').trim().toUpperCase();
 
             if (serviceFilter && inventory.some(item => item.service_filter === serviceFilter)) {
-                showToast(`Artikelnumret ${serviceFilter} finns redan.`, 'error');
+                showToast(`Artikelnumret ${escapeHTML(serviceFilter)} finns redan.`, 'error');
                 addForm.querySelector('#add_service_filter').closest('div').classList.add('has-error');
                 return; 
             }
@@ -1324,7 +1402,7 @@ document.addEventListener('DOMContentLoaded', () => {
         window.handleDelete = function(id) {
             const item = inventory.find(i => i.id === id);
             showCustomConfirmation(
-                `Är du säker på att du vill ta bort <strong>${item.name} (${item.service_filter})</strong>?`,
+                `Är du säker på att du vill ta bort <strong>${escapeHTML(item.name)} (${escapeHTML(item.service_filter)})</strong>?`,
                 async (result) => {
                     if (result) {
                         await deleteInventoryItem(id);
@@ -1501,18 +1579,28 @@ document.addEventListener('DOMContentLoaded', () => {
             
             document.querySelectorAll('.lager-container').forEach(c => { c.addEventListener('scroll', () => c.classList.toggle('scrolled', c.scrollTop > 1)); });
 
-            [editModal, confirmationModal].forEach(modal => { // BORTTAGEN: orderListModal
-                modal.addEventListener('click', (e) => {
-                    if (e.target === modal || e.target.classList.contains('close-btn')) {
-                        modal.style.display = 'none';
-                    }
-                });
+            // --- ÄNDRAD: Separata lyssnare för modal-stängning ---
+            editModal.addEventListener('click', (e) => {
+                if (e.target === editModal || e.target.classList.contains('close-btn')) {
+                    closeEditModal();
+                }
+            });
+            confirmationModal.addEventListener('click', (e) => {
+                if (e.target === confirmationModal || e.target.classList.contains('close-btn')) {
+                    closeConfirmationModal();
+                }
+            });
+            actionsModal.addEventListener('click', (e) => {
+                if (e.target === actionsModal || e.target.classList.contains('close-btn')) {
+                    closeActionsModal();
+                }
             });
             
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape') {
                     closeEditModal();
                     closeConfirmationModal();
+                    closeActionsModal(); // NYTT
                     closeAppMenu();
                     // BORTTAGEN: closeOrderListModal();
                     if(globalSearchResults.style.display === 'block') {
@@ -1684,7 +1772,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     } catch (e) {
         console.error("App Initialization Error:", e);
-        updateSyncStatus('error', 'Initieringsfel!'); 
-        if(initialLoader) initialLoader.querySelector('p').textContent = 'Kritiskt fel vid initiering.';
+        // Använd en fallback för felmeddelande om syncStatusElement inte finns
+        const loader = document.getElementById('initial-loader');
+        if(loader) loader.querySelector('p').textContent = 'Kritiskt fel vid initiering.';
+        else console.error("Kunde inte visa felmeddelande i UI.");
     }
 });
