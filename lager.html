@@ -445,29 +445,40 @@
     #desktop-clear-search-btn, #mobile-clear-search-btn { position: absolute; top: 50%; right: 1px; transform: translateY(-50%); background: none; border: none; font-size: 1.8em; color: #888; cursor: pointer; padding: 0 12px; line-height: 1; display: none; z-index: 5; }
     #desktop-clear-search-btn:hover, #mobile-clear-search-btn:hover { color: var(--text-dark); }
         
-    .lager-wrapper { overflow-x: auto; margin-bottom: 25px; -webkit-overflow-scrolling: touch; }
-    /* --- ÄNDRAD: Högre tabell på desktop --- */
+    .lager-wrapper { 
+        overflow-x: auto; 
+        margin-bottom: 25px; 
+        -webkit-overflow-scrolling: touch; 
+        /* --- ÄNDRING: Lade till klass för mobil --- */
+        border: 1px solid var(--border-color);
+        background-color: var(--card-bg);
+        border-radius: 16px;
+        box-shadow: var(--card-shadow);
+    }
+    
+    /* --- ÄNDRAD: Tog bort overflow-y och max-height --- */
     .lager-container { 
-        background-color: var(--card-bg); 
+        background-color: transparent; /* Flyttad till wrapper */
         border-radius: 16px; 
-        box-shadow: var(--card-shadow); 
-        margin-bottom: 40px; 
-        border: 1px solid var(--border-color); 
+        box-shadow: none; /* Flyttad till wrapper */
+        margin-bottom: 0px; /* Ändrad från 40px */
+        border: none; /* Flyttad till wrapper */
         position: relative; 
-        max-height: 60vh; /* ÄNDRAD: 450px -> 60vh (skalar med skärmen) */
-        overflow-y: auto; 
+        /* max-height: 60vh; BORTTAGEN */
+        /* overflow-y: auto; BORTTAGEN */
         min-width: min-content; 
         transition: background-color 0.3s, border-color 0.3s; 
     }
+    /* --- SLUT ÄNDRING --- */
     
     /* --- ÄNDRAD: Grid-layout för tabell (kolumner sammanslagna) --- */
     .header, .artikel-rad { 
-        grid-template-columns: 160px 200px 90px 70px 70px minmax(120px, 1fr) 80px; /* Länk+Åtgärder -> Meny */
+        grid-template-columns: minmax(160px, 1.2fr) minmax(150px, 1.5fr) 90px 70px 70px minmax(120px, 1fr) 80px; /* Justerade kolumner */
         padding: 10px 20px; 
         align-items: center; 
         font-size: 0.85em; 
         display: grid; 
-        min-width: 1050px; /* Justerad min-width */
+        min-width: 950px; /* Justerad min-width */
     }    
     .header { 
         position: sticky; 
@@ -480,6 +491,7 @@
         text-transform: uppercase; 
         letter-spacing: 0.8px; 
         transition: background-color 0.3s, border-color 0.3s; 
+        border-radius: 16px 16px 0 0; /* NYTT */
     }
     .header span[data-sort] { cursor: pointer; user-select: none; }
     .header > span { display: flex; align-items: center; min-height: 1.8em; padding-right: 15px; }
@@ -502,7 +514,7 @@
         transform: translateY(-1px); /* NYTT: Lyft-effekt */
         box-shadow: 0 4px 8px rgba(0,0,0,0.03), inset 3px 0 0 var(--primary-color); /* NYTT: Mjuk skugga */
     }
-    .artikel-rad:last-child { border-bottom: none; }
+    .artikel-rad:last-child { border-bottom: none; border-radius: 0 0 16px 16px; } /* NYTT */
     .artikel-rad.selected { 
         background-color: rgba(79, 70, 229, 0.1); 
         box-shadow: 0 2px 4px rgba(0,0,0,0.02), inset 3px 0 0 var(--primary-dark); /* ÄNDRAD: Tydligare */
@@ -752,12 +764,14 @@
     /* --- SLUT ÄNDRING --- */
     
     .link-dropdown-container { position: relative; display: inline-block; }
+    
+    /* --- ÄNDRAD: DROPDOWN-MENY (För att visas ovanpå) --- */
     .dropdown-menu { 
         display: none; 
         position: absolute; 
         right: 0; 
         top: 100%; 
-        z-index: 10; 
+        z-index: 1050; /* --- HÖGRE Z-INDEX --- */
         min-width: 160px; /* ÄNDRAD: Lite bredare för meny */
         background-color: var(--card-bg); 
         border: 1px solid var(--border-color); 
@@ -768,6 +782,8 @@
         flex-direction: column; 
         white-space: nowrap; 
     }
+    /* --- SLUT ÄNDRING --- */
+    
     .dropdown-menu.visible { 
         display: flex; 
         animation: subtleFadeIn 0.15s ease-out; 
@@ -1508,6 +1524,13 @@
         transition: gap 0.3s; 
     }
     
+    /* --- NYTT: Grupp för knappar på mobilen --- */
+    .toolbar-button-group {
+        display: flex;
+        align-items: center;
+        gap: 15px; /* Mellanrum mellan knappar */
+    }
+    
     .toolbar-controls .search-wrapper {
         width: 350px;
         flex-grow: 1; 
@@ -1658,15 +1681,6 @@
         h1 { font-size: 2em; margin-bottom: 25px; }
         h2 { font-size: 1.4em; margin-top: 30px; }
         
-        .artikel-rad .qty-btn,
-        .artikel-rad .edit-btn,
-        .artikel-rad .delete-btn,
-        .artikel-rad .order-btn {
-            min-height: 34px;
-            padding-top: 8px;
-            padding-bottom: 8px;
-        }
-        
         .global-search-container { padding: 20px; }
         .global-search-wrapper { flex-direction: column; }
         #global-search-btn { width: 100%; padding-top: 12px; padding-bottom: 12px; } /* Mobilvänlig höjd */
@@ -1740,6 +1754,112 @@
         .app-menu-content .dashboard-stat span { font-size: 1.8em; }
         .app-menu-content .dashboard-stat .icon-span { display: none; }
         .app-menu-content #recent-items-list { grid-template-columns: 1fr; }
+        
+        /* --- NYTT: MOBIL KORTVY FÖR TABELL --- */
+        .lager-wrapper {
+            border: none;
+            box-shadow: none;
+            background-color: transparent;
+            overflow-x: visible; /* Ta bort all horisontell scroll */
+        }
+        .lager-container {
+             min-width: 100%; /* Full bredd */
+        }
+        .header {
+            display: none; /* Dölj tabell-header */
+        }
+        .artikel-rad {
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* Två kolumner */
+            gap: 10px 15px;
+            padding: 15px;
+            border-bottom: none; /* Ta bort linje, kort har skugga */
+            border-radius: 12px; /* Rundade hörn för kort */
+            box-shadow: var(--card-shadow);
+            background-color: var(--card-bg);
+            margin-bottom: 15px; /* Avstånd mellan korten */
+            min-width: 100%; /* Full bredd */
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .artikel-rad:active {
+            transform: scale(0.99); /* Tryck-effekt */
+            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+        }
+        .artikel-rad:hover {
+            transform: none; /* Ta bort hover-lyft på mobil */
+            box-shadow: var(--card-shadow);
+        }
+        .artikel-rad.selected {
+             box-shadow: 0 0 0 2px var(--primary-color), var(--card-shadow);
+        }
+        
+        .artikel-rad > span, 
+        .artikel-rad > div {
+            grid-column: span 1; /* Alla celler tar 1 kolumn */
+            display: flex;
+            flex-direction: column; /* Stapla etikett och innehåll */
+            padding-right: 0;
+            white-space: normal;
+            word-break: break-word; /* Bryt långa ord */
+            min-width: 0;
+        }
+
+        /* Lägg till etiketter */
+        .artikel-rad [data-label]::before {
+            content: attr(data-label);
+            font-size: 0.75em;
+            font-weight: 700;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+        
+        /* Specifik styling för celler i kortvy */
+        .cell-copy-wrapper {
+            grid-column: 1 / -1; /* Artnr tar full bredd */
+            font-size: 1.1em;
+            font-weight: 600;
+        }
+        .cell-copy-wrapper .cell-copy-text {
+            font-weight: 700;
+        }
+        
+        .artikel-rad > .cell-copy-text {
+            grid-column: 1 / -1; /* Namn tar full bredd */
+            font-size: 0.95em;
+        }
+        
+        .notes-cell {
+            grid-column: 1 / -1; /* Anteckningar tar full bredd */
+            white-space: normal;
+        }
+        .notes-text-part {
+            max-width: 100%; /* Tillåt full bredd i kort */
+            white-space: normal;
+        }
+        
+        .quantity-cell {
+            width: auto;
+            justify-content: flex-start;
+        }
+        
+        .action-menu-cell {
+            grid-column: 2 / 3; /* Meny-knapp längst ner till höger */
+            grid-row: 3; /* Rad 3 */
+            justify-content: flex-end;
+            align-items: flex-end; /* Fäst i botten */
+        }
+        .lank-knapp.more-btn {
+            padding: 8px;
+        }
+        .lank-knapp.more-btn .icon-span { font-size: 24px; }
+        
+        /* Dölj onödigt tomt utrymme */
+        #slut-i-lager-lista .lager-wrapper {
+             background-color: transparent;
+        }
+        /* --- SLUT MOBIL KORTVY --- */
     }
     
     @media (max-width: 600px) {
@@ -1750,13 +1870,25 @@
             width: 100%;
         }
         
-        /* NYTT: Tvinga tema-bytaren till en ny rad om det blir trångt */
+        /* --- ÄNDRAD: Ta bort ful radbrytning för knappar --- */
+        .toolbar-controls {
+            justify-content: space-between; /* Geutrymme till knappgruppen */
+        }
         .theme-switcher {
-            flex-basis: 100%;
-            justify-content: center;
+            /* flex-basis: 100%; */ /* BORTTAGEN */
+            /* justify-content: center; */ /* BORTTAGEN */
             margin-left: 0; /* Återställ auto-marginal */
-            padding-top: 5px;
-            border-top: 1px solid var(--border-color);
+            /* padding-top: 5px; */ /* BORTTAGEN */
+            /* border-top: 1px solid var(--border-color); */ /* BORTTAGEN */
+        }
+        
+        /* NYTT: Tvinga isär sök och knappar */
+        #sync-status {
+            flex-grow: 1; /* Tar upp ledigt utrymme */
+            justify-content: center; /* Centrera synk-texten */
+        }
+        .toolbar-button-group {
+             gap: 10px; /* Mindre mellanrum */
         }
     }
 
@@ -1912,19 +2044,21 @@
                     <span class="icon"></span>
                     <span class="text">Ansluter...</span>
                 </div>
-                <div class="theme-switcher">
-                    <span class="theme-switcher-label">Ljust / Mörkt</span>
-                    <label class="switch">
-                        <input type="checkbox" id="theme-toggle-cb">
-                        <span class="slider"></span>
-                    </label>
+                <div class="toolbar-button-group">
+                    <div class="theme-switcher">
+                        <span class="theme-switcher-label">Ljust / Mörkt</span>
+                        <label class="switch">
+                            <input type="checkbox" id="theme-toggle-cb">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <button id="toolbar-add-btn" class="toolbar-add-button" title="Lägg till ny artikel">
+                        <span class="icon-span">add</span>
+                    </button>
+                    <button id="app-menu-btn" class="toolbar-icon-button" title="Visa översikt">
+                        <span class="icon-span">menu</span>
+                    </button>
                 </div>
-                <button id="toolbar-add-btn" class="toolbar-add-button" title="Lägg till ny artikel">
-                    <span class="icon-span">add</span>
-                </button>
-                <button id="app-menu-btn" class="toolbar-icon-button" title="Visa översikt">
-                    <span class="icon-span">menu</span>
-                </button>
             </div>
         </div>
         
