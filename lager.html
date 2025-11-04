@@ -1800,6 +1800,54 @@
     overflow-x: hidden;
   }
 }
+/* 1. Säkerställer att knappen och menyn inte stör varandra */
+.link-dropdown-container {
+    position: relative; /* VIKTIGT: Detta sätter positioneringskontexten */
+    z-index: 10; /* Ger en liten förhöjning för att vara över andra element i raden */
+}
+
+/* 2. Style för själva menyn (Flicker/Overlap Fix) */
+.dropdown-menu {
+    position: absolute;
+    right: 0;
+    top: 100%; /* Öppnar nedåt som standard */
+    
+    z-index: 1000; /* Mycket hög z-index för att vara över ALLT annat */
+    background-color: var(--card-bg, #fff); /* Sätt en solid bakgrund för att dölja knappen */
+    border: 1px solid var(--border-color, #e5e7eb); /* Lägg till en synlig kant */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    padding: 8px 0;
+    min-width: 150px;
+    
+    display: none; 
+    opacity: 0;
+    transform: translateY(-5px);
+    transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.dropdown-menu.visible {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* 3. Modifiering för att öppna UPÅT (Clipping Fix) */
+.dropdown-menu.open-up {
+    top: auto; /* Återställ 'top' */
+    bottom: 100%; /* Menyn startar ovanför knappen */
+    transform: translateY(5px); /* Inital position för transition */
+}
+
+.dropdown-menu.open-up.visible {
+    transform: translateY(0);
+}
+
+/* 4. Fix för raden vid kopiering/dropdown-visning */
+.artikel-rad {
+    position: relative; /* Säkerställer att raden kan höja sig själv i z-index om det behövs */
+    /* Du kan eventuellt lägga till en hover-effekt här om den saknas */
+}
 </style>
 
 <link rel="manifest" href="./manifest.json">
@@ -2217,4 +2265,5 @@
 
 </body>
 </html>
+
 
