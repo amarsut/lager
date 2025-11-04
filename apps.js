@@ -870,8 +870,8 @@ document.addEventListener('DOMContentLoaded', () => {
                  emptyStates.motorChassi.querySelector('p').textContent = 'Inga artiklar hittades. Prova ändra filtret eller lägg till en ny artikel.';
                  emptyStates.andraMarken.querySelector('h4').textContent = 'Inga artiklar för andra märken';
                  emptyStates.andraMarken.querySelector('p').textContent = 'Inga artiklar hittades. Prova ändra filtret eller lägg till en ny artikel.';
-                 emptyStates.slutILager.querySelector('h4').textContent = 'Inga artiklar slut i lager';
-                 emptyStates.slutILager.querySelector('p').textContent = 'Allt finns i lager, eller så gav din sökning inga träffar.';
+                 emptyStates.slutILager.querySelector('h4').textContent = 'Inga artiklar slut i lager'; // ÅTERSTÄLLD
+                 emptyStates.slutILager.querySelector('p').textContent = 'Allt finns i lager, eller så gav din sökning inga träffar.'; // ÅTERSTÄLLD
             }
         }
 
@@ -1025,21 +1025,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 toolbarFilterBadge.style.display = 'none';
             }
 
-            // --- ÄNDRAD: Logik för att hantera "Slut"-filtret ---
+            // --- ÅTERSTÄLLD: Logik för att hantera "Slut"-filtret ---
             if (currentFilter !== 'Alla' && !syntaxFilterUsed) { 
                 if (currentFilter === 'Slut') {
-                    // "Slut"-filtret hanteras nu av renderInventory, som visar/döljer sektionen
-                    // Men vi måste se till att processedInventory *bara* innehåller "slut"-artiklar
                     processedInventory = processedInventory.filter(item => item.quantity <= 0);
                 } else {
-                    // Annars, filtrera på kategori OCH se till att de är i lager
                     processedInventory = processedInventory.filter(item => item.quantity > 0 && 
                         (item.category === currentFilter || (currentFilter === 'Motor/Chassi' && (item.category === 'Övrigt' || !item.category)))
                     );
                 }
             } else if (currentFilter === 'Alla' && !syntaxFilterUsed) {
-                // "Alla" ska nu visa både i lager OCH slut i lager
-                // renderInventory kommer att separera dem
+                // "Alla" visar allt, renderInventory delar upp
             }
             // --- SLUT ÄNDRING ---
 
@@ -1050,7 +1046,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const searchWords = generalSearchTerm.split(/\s+/).filter(word => word.length > 0 && !stopWords.includes(word));
                 if (searchWords.length === 0 && generalSearchTerm.length > 0) { searchWords.push(generalSearchTerm); }
 
-                // --- VIKTIGT: Sök i HELA lagret, oavsett filter, för dropdown ---
                 let dropdownInventory = [...inventory];
                 if (!syntaxFilterUsed) {
                      dropdownResults = dropdownInventory
@@ -1059,7 +1054,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         .sort((a, b) => b.relevanceScore - a.relevanceScore);
                 }
                 
-                // Applicera sökningen på den *filtrerade* listan för huvudvyn
                 processedInventory = processedInventory
                     .map(item => ({ ...item, relevanceScore: calculateRelevance(item, searchWords) }))
                     .filter(item => item.relevanceScore > 0)
@@ -1080,7 +1074,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const resultsForDropdown = (syntaxFilterUsed ? processedInventory : dropdownResults);
             renderSearchDropdown(generalSearchTerm, resultsForDropdown);
 
-            renderInventory(processedInventory); // renderInventory delar nu upp i/slut i lager
+            renderInventory(processedInventory); 
 
             document.querySelectorAll('.header span[data-sort]').forEach(span => {
                 span.classList.remove('active', 'asc', 'desc');
@@ -1177,7 +1171,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (savedSort) {
                 currentSort = JSON.parse(savedSort);
             }
-            if (savedFilter) { // Återställd: ladda alla filter
+            if (savedFilter) { // Återställd
                 currentFilter = savedFilter;
             }
             
