@@ -754,7 +754,8 @@
     }
     .actions-popover {
         display: none;
-        position: absolute;
+        /* ★ FIX: Ändrad till position: fixed ★ */
+        position: fixed; 
         z-index: 1010;
         background: var(--card-bg);
         border: 1px solid var(--border-color);
@@ -1625,8 +1626,6 @@
     .app-menu-content #recent-items-container { margin-bottom: 20px; }
     .app-menu-content h3 { font-size: 1.3em; }
     
-    /* --- BORTTAGET: #stock-actions-container --- */
-    
     #export-container {
         margin-top: 30px;
         padding-top: 20px;
@@ -2208,7 +2207,7 @@
             <p id="confirmationMessage" style="margin-top: 20px; margin-bottom: 30px; font-size: 1.1em;"></p>
             <div class="action-buttons" style="justify-content: flex-end; gap: 15px;">
                 <button id="confirmNo" class="btn-secondary">Avbryt</button>
-                <button id="confirmYes" class="btn-primary">Ja</button> </div>
+                <button id="confirmYes" class="btn-primary">Ja</button> ...</div>
         </div>
     </div>
     
