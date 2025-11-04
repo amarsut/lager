@@ -38,43 +38,47 @@ document.addEventListener('DOMContentLoaded', () => {
         const slutILagerLista = document.getElementById('slut-i-lager-lista');
         const slutILagerSektion = document.getElementById('slut-i-lager-sektion');
         const fullEmptyState = document.getElementById('full-empty-state');
-        const emptyStateAddBtn = document.getElementById('empty-state-add-btn'); 
+        const emptyStateAddBtn = document.getElementById('empty-state-add-btn'); // NYTT
         
+        // --- ÄNDRAD: Unika ID:n för sökfälten ---
         const desktopSearchInput = document.getElementById('desktop-search-input');
         const mobileSearchInput = document.getElementById('mobile-search-input');
         const desktopClearSearchBtn = document.getElementById('desktop-clear-search-btn');
         const mobileClearSearchBtn = document.getElementById('mobile-clear-search-btn');
         const desktopSearchResults = document.getElementById('desktop-search-results');
         const mobileSearchResults = document.getElementById('mobile-search-results');
+        // --- SLUT ÄNDRING ---
         
+        const dynamicSearchArea = document.getElementById('dynamic-search-area');
         const addFormWrapper = document.getElementById('add-form-wrapper');
         const addForm = document.getElementById('add-article-form');
         const addFormArtnrWarning = document.getElementById('add-form-artnr-warning');
         const editModal = document.getElementById('editModal');
         const editForm = document.getElementById('edit-article-form');
         const confirmationModal = document.getElementById('confirmationModal');
-        const actionsModal = document.getElementById('actionsModal'); // NYTT: Åtgärdsmodal
         const syncStatusElement = document.getElementById('sync-status');
         
         // Global sök
         const globalSearchInput = document.getElementById('global-search-input');
         const globalSearchBtn = document.getElementById('global-search-btn');
         const globalSearchResults = document.getElementById('global-search-results');
+        // --- NYTT: Container för Biluppgifter ---
         const biluppgifterResultContainer = document.getElementById('biluppgifter-result-container');
+        // --- SLUT NYTT ---
         const internalResultsContainer = document.getElementById('internal-results-container');
         const externalResultsContainer = document.getElementById('external-results-container');
         const exportLinksContainer = document.getElementById('export-search-links-container');
         const searchDisclaimer = document.getElementById('search-disclaimer');
         const quickAddFromSearchBtn = document.createElement('button');
         quickAddFromSearchBtn.id = 'quick-add-from-search';
-        quickAddFromSearchBtn.className = 'btn-primary'; 
+        quickAddFromSearchBtn.className = 'btn-primary'; // Ändrad till btn-primary
 
         // Toolbar
-        const toolbarFilterBadge = document.getElementById('toolbar-filter-badge'); 
+        const toolbarFilterBadge = document.getElementById('toolbar-filter-badge'); // NYTT
 
         // Formulär-hjälpmedel
-        const pasteArtnrBtn = document.getElementById('paste-artnr-btn'); 
-        const quickCategoryBtns = document.querySelectorAll('.quick-category-btn'); 
+        const pasteArtnrBtn = document.getElementById('paste-artnr-btn'); // NYTT
+        const quickCategoryBtns = document.querySelectorAll('.quick-category-btn'); // NYTT
 
         const emptyStates = {
             service: document.getElementById('service-empty-state'),
@@ -103,6 +107,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const exportCsvBtn = document.getElementById('export-csv-btn');
         const exportJsonBtn = document.getElementById('export-json-btn');
         
+        // BORTTAGEN: Beställningslista (Order List) element
+        
         const initialLoader = document.getElementById('initial-loader');
         const themeToggle = document.getElementById('theme-toggle-cb');
         const pwaInstallBtn = document.getElementById('pwa-install-btn');
@@ -126,6 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let confirmCallback = null; 
         let deferredInstallPrompt = null;
         let currentExternalLinks = [];
+        // --- NYTT: Flagg för att förhindra race condition vid sök-klick ---
         let isNavigatingViaSearch = false;
         
         const stopWords = ['till', 'för', 'en', 'ett', 'och', 'eller', 'med', 'på', 'i', 'av', 'det', 'den', 'som', 'att', 'är', 'har', 'kan', 'ska', 'vill', 'sig', 'här', 'nu', 'från', 'man', 'vi', 'du', 'ni'];
@@ -166,8 +173,8 @@ document.addEventListener('DOMContentLoaded', () => {
             let historyHTML = '';
             history.forEach(term => {
                 historyHTML += `<span class="history-item">
-                                    <span class="history-term">${escapeHTML(term)}</span>
-                                    <i class="delete-history" data-term="${escapeHTML(term)}">&times;</i>
+                                    <span class="history-term">${term}</span>
+                                    <i class="delete-history" data-term="${term}">&times;</i>
                                 </span>`;
             });
             historyContainer.innerHTML = historyHTML;
@@ -191,34 +198,32 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       
         function formatPrice(price) { return new Intl.NumberFormat('sv-SE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(price); }
-        
-        // --- NYTT: Normaliserar artikelnummer för sökning ---
-        function normalizeArtNr(artNr) {
-            if (!artNr) return null;
-            return artNr.replace(/[\s-]/g, ''); // Tar bort mellanslag och bindestreck
-        }
-        
-        function generateAeroMLink(f) { const s = normalizeArtNr(f); if (!s) return null; return `https://aeromotors.se/sok?s=${s}&layered_id_feature_1586%5B%5D=3&sort_by=price.asc`; }
-        function generateTrodoLink(f) { const s = normalizeArtNr(f); if (!s) return null; const q = encodeURIComponent(s); return `https://www.trodo.se/catalogsearch/result/premium?filter[quality_group]=2&product_list_dir=asc&product_list_order=price&q=${q}`; }
-        function generateThansenLink(f) { const s = normalizeArtNr(f); if (!s) return null; const q = encodeURIComponent(s); return `https://www.thansen.se/search/?query=${q}`; }
-        function generateSkruvatLink(f) { const s = normalizeArtNr(f); if (!s) return null; const q = encodeURIComponent(s); return `https://skruvat.se/search?q=${q}`; }
-        function generateVortoLink(f) { const s = normalizeArtNr(f); if (!s) return null; const q = encodeURIComponent(s); return `https://vorto.se/sok?search=${q}`; }
-        function generateAutodocLink(f) { const s = normalizeArtNr(f); if (!s) return null; const q = encodeURIComponent(s); return `https://autodoc.se/search?keyword=${q}`; }
-        function generateBildelsbasenLink(f) { const s = normalizeArtNr(f); if (!s) return null; const q = encodeURIComponent(s); return `https://bildelsbasen.se/sv-se/OEM/${q}`; }
-        function generateReservdelar24Link(f) { const s = normalizeArtNr(f); if (!s) return null; const q = encodeURIComponent(s); return `https://reservdelar24.se/suche.html?keyword=${q}`; }
+        function generateAeroMLink(f) { if (!f) return null; const s = f.replace(/[\s-]/g, ''); return `https://aeromotors.se/sok?s=${s}&layered_id_feature_1586%5B%5D=3&sort_by=price.asc`; }
+        function generateTrodoLink(f) { if (!f) return null; const s = f.replace(/[\s-]/g, ''); const q = encodeURIComponent(s); return `https://www.trodo.se/catalogsearch/result/premium?filter[quality_group]=2&product_list_dir=asc&product_list_order=price&q=${q}`; }
+        function generateThansenLink(f) { if (!f) return null; const s = f.replace(/[\s-]/g, ''); const q = encodeURIComponent(s); return `https://www.thansen.se/search/?query=${q}`; }
+        function generateSkruvatLink(f) { if (!f) return null; const s = encodeURIComponent(f.replace(/[\s-]/g, '')); return `https://skruvat.se/search?q=${s}`; }
+        function generateVortoLink(f) { if (!f) return null; const s = encodeURIComponent(f.replace(/[\s-]/g, '')); return `https://vorto.se/sok?search=${s}`; }
+        function generateAutodocLink(f) { if (!f) return null; const s = encodeURIComponent(f.replace(/[\s-]/g, '')); return `https://autodoc.se/search?keyword=${s}`; }
+        function generateBildelsbasenLink(f) { if (!f) return null; const s = encodeURIComponent(f.replace(/[\s-]/g, '')); return `https://bildelsbasen.se/sv-se/OEM/${s}`; }
+        function generateReservdelar24Link(f) { if (!f) return null; const s = encodeURIComponent(f.replace(/[\s-]/g, '')); return `https://reservdelar24.se/suche.html?keyword=${s}`; }
         
         window.toggleDropdown = function(id) { const d = document.getElementById(id); if (!d) return; document.querySelectorAll('.dropdown-menu.visible').forEach(o => { if (o.id !== id) o.classList.remove('visible'); }); d.classList.toggle('visible'); };
         window.closeDropdown = function(id) { const d = document.getElementById(id); if (d) d.classList.remove('visible'); };
         
+        // --- ÄNDRAD: Eventlyssnare för att stänga dropdowns ---
         document.addEventListener('click', (e) => {
+            // Stäng sök-dropdowns
             if (!e.target.closest('.search-wrapper') && !e.target.closest('#sticky-search-bar')) {
                 desktopSearchResults.style.display = 'none';
                 mobileSearchResults.style.display = 'none';
             }
+            
+            // Stäng länk-dropdowns
             if (!e.target.closest('.link-dropdown-container')) {
                 document.querySelectorAll('.dropdown-menu.visible').forEach(d => d.classList.remove('visible'));
             }
         });
+        // --- SLUT ÄNDRING ---
 
 
         // ----------------------------------------------------------------------
@@ -235,19 +240,21 @@ document.addEventListener('DOMContentLoaded', () => {
             { name: "Reservdelar24", linkGenerator: generateReservdelar24Link, icon: "https://www.reservdelar24.se/favicon.ico" },
         ];
 
+        // --- ÄNDRAD: handleGlobalSearch känner nu igen reg-nr ---
         async function handleGlobalSearch(searchTermOverride) {
-            const searchTerm = (searchTermOverride ? searchTermOverride.trim() : globalSearchInput.value.trim());
+            const searchTerm = (searchTermOverride ? searchTermOverride.trim().toUpperCase() : globalSearchInput.value.trim().toUpperCase());
             if (searchTerm === '') {
                 globalSearchResults.style.display = 'none';
                 return;
             }
             
             globalSearchBtn.disabled = true;
-            saveSearchToHistory(searchTerm.toUpperCase()); 
+            saveSearchToHistory(searchTerm); 
             
-            // --- REG-NR KONTROLL ---
-            const regNrRegex = /^[A-ZÅÄÖ]{3}[\s]?[0-9]{2}[A-ZÅÄÖ0-9]{1}$/i; // i-flagg för case-insensitive
-            const cleanRegNr = searchTerm.replace(/\s/g, '').toUpperCase(); 
+            // --- NYTT: REG-NR KONTROLL ---
+            // Känner igen ABC 123, ABC123, och ABC12A
+            const regNrRegex = /^[A-ZÅÄÖ]{3}[\s]?[0-9]{2}[A-ZÅÄÖ0-9]{1}$/;
+            const cleanRegNr = searchTerm.replace(/\s/g, ''); // Ta bort mellanslag
             
             if (regNrRegex.test(searchTerm) || (cleanRegNr.length === 6 && regNrRegex.test(cleanRegNr))) {
                 
@@ -273,22 +280,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
                 biluppgifterResultContainer.style.display = 'block';
                 
+                // Göm de andra sektionerna
                 internalResultsContainer.innerHTML = '';
                 externalResultsContainer.innerHTML = '';
                 exportLinksContainer.style.display = 'none';
                 searchDisclaimer.style.display = 'none';
                 globalSearchResults.style.display = 'block';
 
+                // Bind stäng-knappen
                 document.getElementById('global-search-close-btn').addEventListener('click', () => { 
                     globalSearchResults.style.display = 'none'; 
                 });
                 
+                // --- NYTT: Skrolla ner till resultaten ---
                 globalSearchResults.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                
                 globalSearchBtn.disabled = false;
-                return; 
+                return; // Avsluta här, vi ska inte söka efter artiklar
             }
-            
-            // --- ARTIKELNUMMER-SÖKNING ---
+            // --- SLUT REG-NR KONTROLL ---
+
+            // Om det inte var ett reg-nr, nollställ biluppgifter-containern
             biluppgifterResultContainer.style.display = 'none';
             
             try {
@@ -299,41 +311,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 globalSearchResults.style.display = 'block';
                 currentExternalLinks = []; 
                 
+                // --- NYTT: Skrolla ner till resultaten ---
                 globalSearchResults.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-                // --- ÄNDRAD: Normalisera söktermen för artikelnummer ---
-                const normalizedSearchTerm = normalizeArtNr(searchTerm.toUpperCase());
-                
                 // 1. Interna resultat
-                const internalMatches = inventory.filter(item => {
-                    const normalizedItemArtNr = normalizeArtNr(item.service_filter || '');
-                    return (normalizedItemArtNr && normalizedItemArtNr.includes(normalizedSearchTerm)) || 
-                           (item.name || '').toUpperCase().includes(searchTerm.toUpperCase());
-                });
-
+                const internalMatches = inventory.filter(item => (item.service_filter || '').toUpperCase().includes(searchTerm) || (item.name || '').toUpperCase().includes(searchTerm));
                 let internalHTML = '';
                 if (internalMatches.length > 0) {
                     internalHTML = '<h4 class="internal-search-title">Hittades i ditt lager:</h4>';
                     internalMatches.forEach(item => { 
-                        internalHTML += `<a href="#" class="internal-result-item" data-id="${item.id}"><div><strong>${escapeHTML(item.service_filter)}</strong> - ${escapeHTML(item.name)}</div><span>Antal: ${item.quantity}</span></a>`; 
+                        internalHTML += `<a href="#" class="internal-result-item" data-id="${item.id}"><div><strong>${item.service_filter}</strong> - ${item.name}</div><span>Antal: ${item.quantity}</span></a>`; 
                     });
                 } else {
                     internalHTML = '<h4 class="internal-search-title">Inga träffar i ditt lager</h4>';
                 }
                 internalResultsContainer.innerHTML = internalHTML;
                 if (internalMatches.length === 0) {
-                    quickAddFromSearchBtn.innerHTML = `<span class="icon-span">add_circle</span>Lägg till "${escapeHTML(searchTerm.toUpperCase())}" i lagret`;
-                    quickAddFromSearchBtn.setAttribute('data-artnr', searchTerm.toUpperCase());
+                    quickAddFromSearchBtn.innerHTML = `<span class="icon-span">add_circle</span>Lägg till "${searchTerm}" i lagret`;
+                    quickAddFromSearchBtn.setAttribute('data-artnr', searchTerm);
                     internalResultsContainer.appendChild(quickAddFromSearchBtn);
                 }
 
 
-                // 2. Externa resultat (använder den *onormaliserade* termen, då länk-generatorerna normaliserar själva)
+                // 2. Externa resultat
                 let externalHTML = '';
                 let hasDisclaimer = false;
                 
                 externalSearchProviders.forEach(provider => {
-                    const link = provider.linkGenerator(searchTerm); // Skicka den ursprungliga termen
+                    const link = provider.linkGenerator(searchTerm);
                     if (link) {
                         currentExternalLinks.push({ name: provider.name, link: link });
                         if (provider.name.includes('Bildelsbasen')) {
@@ -350,7 +355,6 @@ document.addEventListener('DOMContentLoaded', () => {
                             </div>
                         `;
                     } else {
-                        // Detta händer sällan nu, men bra att ha kvar
                         externalHTML += `
                             <div class="provider-card disabled">
                                 <img src="${provider.icon}" alt="${provider.name}" class="provider-card-logo">
@@ -503,6 +507,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 200);
         }
 
+        // BORTTAGEN: All logik för OrderList (kundvagnen)
+
         function downloadFile(content, fileName, contentType) {
             const a = document.createElement('a');
             const file = new Blob([content], { type: contentType });
@@ -514,7 +520,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         function exportToJSON() {
             const dataStr = JSON.stringify(inventory, null, 2);
-            downloadFile(dataStr, 'lager_export.json', 'application/json');
+            downloadFile('lager_export.json', 'application/json', dataStr);
         }
 
         function exportToCSV() {
@@ -523,36 +529,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             
-            const allKeys = inventory.reduce((keys, item) => {
-                Object.keys(item).forEach(key => {
-                    if (!keys.includes(key)) {
-                        keys.push(key);
-                    }
-                });
-                return keys;
-            }, []);
-
-            allKeys.sort((a, b) => {
-                if (a === 'id') return -1;
-                if (b === 'id') return 1;
-                if (a === 'service_filter') return -1;
-                if (b === 'service_filter') return 1;
-                if (a === 'name') return -1;
-                if (b === 'name') return 1;
-                return a.localeCompare(b);
-            });
-
-            const headers = allKeys.join(',');
-            
+            const headers = Object.keys(inventory[0]).join(',');
             const rows = inventory.map(item => {
-                return allKeys.map(key => {
-                    let value = item[key];
-                    if (value === null || value === undefined) {
-                        value = '';
-                    }
-                    let strValue = String(value);
-                    if (strValue.includes(',') || strValue.includes('"') || strValue.includes('\n')) {
-                        strValue = `"${strValue.replace(/"/g, '""')}"`;
+                return Object.values(item).map(value => {
+                    let strValue = String(value || '');
+                    if (strValue.includes(',')) {
+                        strValue = `"${strValue}"`; // Hantera kommatecken i fält
                     }
                     return strValue;
                 }).join(',');
@@ -583,7 +565,9 @@ document.addEventListener('DOMContentLoaded', () => {
             statOutOfStock.textContent = outOfStockItems;
         }
         
+        // NYTT: Visar "Senast Hanterade" (baserat på `lastUpdated`)
         function renderRecentItems(currentInventory) {
+            // Sortera efter `lastUpdated` (senaste först), fall back till `id`
             const sortedItems = [...currentInventory].sort((a, b) => {
                 const timeA = a.lastUpdated || a.id;
                 const timeB = b.lastUpdated || b.id;
@@ -599,9 +583,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 let html = '';
                 recent.forEach(item => {
                     html += `<a href="#" class="recent-item" data-id="${item.id}">
-                                <span class="recent-item-category">${escapeHTML(item.category || 'Övrigt')}</span>
-                                <strong>${escapeHTML(item.service_filter)}</strong>
-                                <span>${escapeHTML(item.name)}</span>
+                                <span class="recent-item-category">${item.category || 'Övrigt'}</span>
+                                <strong>${item.service_filter}</strong>
+                                <span>${item.name}</span>
                              </a>`;
                 });
                 recentItemsList.innerHTML = html;
@@ -620,6 +604,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         function updateSyncStatus(status, message) {
             if (!syncStatusElement) return;
+            // NYTT: Ta bort flash-klassen vid varje ny status
             syncStatusElement.classList.remove('flash');
             syncStatusElement.className = `sync-${status}`;
             syncStatusElement.title = message;
@@ -627,6 +612,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (textEl) textEl.textContent = message;
         }
 
+        // --- NYTT: Helper för att escapa HTML ---
         function escapeHTML(str) {
             if (typeof str !== 'string') return '';
             return str.replace(/[&<>"']/g, function(match) {
@@ -640,34 +626,44 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
+        // --- NYTT: Funktion för att parsa anteckningar och skapa skyltar ---
         function parseNotes(notesText) {
             if (!notesText) return '';
             
+            // Regex för att hitta [ABC123] eller [ABC 123]
             const plateRegex = /\[([A-ZÅÄÖ0-9]{1,3}[\s]?[A-ZÅÄÖ0-9]{1,3})\]/gi;
+            
+            // Dela upp strängen baserat på regex, men behåll delarna
             const parts = notesText.split(plateRegex);
             let html = '';
 
             for (let i = 0; i < parts.length; i++) {
                 if (i % 2 === 1) {
+                    // Detta är en matchad reg-skylt (det som var INUTI parentesen)
                     const plateContent = parts[i].toUpperCase();
                     html += `<span class="plate-tag">
                                 <span class="plate-eu-s">S</span>
                                 <span class="plate-text">${escapeHTML(plateContent)}</span>
                              </span>`;
                 } else if (parts[i]) {
-                    html += `<span class="notes-text-part">${escapeHTML(parts[i])}</span>`;
+                    // Detta är vanlig text
+                    html += escapeHTML(parts[i]);
                 }
             }
             return html;
         }
 
+        // --- NYTT: Funktion för att ENDAST hämta skyltar från anteckningar ---
         function extractPlatesHTML(notesText) {
             if (!notesText) return '';
+            
             const plateRegex = /\[([A-ZÅÄÖ0-9]{1,3}[\s]?[A-ZÅÄÖ0-9]{1,3})\]/gi;
             let matches;
             let html = '';
+            
+            // Hitta alla matchningar
             while ((matches = plateRegex.exec(notesText)) !== null) {
-                const plateContent = matches[1].toUpperCase();
+                const plateContent = matches[1].toUpperCase(); // matches[1] är gruppen *inuti* hakparentesen
                 html += `<span class="plate-tag">
                             <span class="plate-eu-s">S</span>
                             <span class="plate-text">${escapeHTML(plateContent)}</span>
@@ -675,82 +671,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             return html;
         }
-        
-        // --- NYTT: Funktion för Åtgärdsmodal ---
-        function closeActionsModal() {
-            if (actionsModal) {
-                actionsModal.style.display = 'none';
-                const buttonContainer = document.getElementById('actionsModalButtons');
-                if (buttonContainer) {
-                    buttonContainer.innerHTML = '';
-                }
-            }
-        }
-        window.closeActionsModal = closeActionsModal; // Exponera globalt
-
-        window.showActionsModal = function(id) {
-            const item = inventory.find(i => i.id === id);
-            if (!item) return;
-
-            const titleEl = document.getElementById('actionsModalTitle');
-            const subtitleEl = document.getElementById('actionsModalSubtitle');
-            const buttonContainer = document.getElementById('actionsModalButtons');
-
-            if (!titleEl || !subtitleEl || !buttonContainer) return;
-
-            titleEl.innerHTML = '<span class="icon-span">settings</span>Åtgärder';
-            subtitleEl.textContent = `${escapeHTML(item.name)} (${escapeHTML(item.service_filter)})`;
-
-            const trodoLink = generateTrodoLink(item.service_filter);
-            const aeroMLink = generateAeroMLink(item.service_filter);
-            const thansenLink = generateThansenLink(item.service_filter);
-            const egenLink = item.link;
-
-            let buttonsHTML = '';
-
-            // Länk-knappar
-            if (trodoLink) {
-                buttonsHTML += `<button class="action-modal-btn link-trodo" onclick="window.open('${trodoLink}', '_blank'); closeActionsModal(); event.stopPropagation();">
-                                    <span class="icon-span">open_in_new</span>Sök på Trodo
-                                </button>`;
-            }
-            if (aeroMLink) {
-                buttonsHTML += `<button class="action-modal-btn link-aero" onclick="window.open('${aeroMLink}', '_blank'); closeActionsModal(); event.stopPropagation();">
-                                    <span class="icon-span">open_in_new</span>Sök på AeroMotors
-                                </button>`;
-            }
-            if (thansenLink) {
-                buttonsHTML += `<button class="action-modal-btn link-thansen" onclick="window.open('${thansenLink}', '_blank'); closeActionsModal(); event.stopPropagation();">
-                                    <span class="icon-span">open_in_new</span>Sök på Thansen
-                                </button>`;
-            }
-            if (egenLink) {
-                buttonsHTML += `<button class="action-modal-btn link-egen" onclick="window.open('${egenLink}', '_blank'); closeActionsModal(); event.stopPropagation();">
-                                    <span class="icon-span">open_in_new</span>Öppna Egen Länk
-                                </button>`;
-            }
-            
-            // Åtgärds-knappar
-            buttonsHTML += `<button class="action-modal-btn" onclick="handleEdit(${item.id}); closeActionsModal(); event.stopPropagation();">
-                                <span class="icon-span">edit</span>Redigera Artikel
-                            </button>`;
-            
-            buttonsHTML += `<button class="action-modal-btn danger" onclick="handleDelete(${item.id}); closeActionsModal(); event.stopPropagation();">
-                                <span class="icon-span">delete</span>Ta bort Artikel
-                            </button>`;
-
-            buttonContainer.innerHTML = buttonsHTML;
-            actionsModal.style.display = 'flex';
-            
-            // Fokusera på första knappen i modalen
-            setTimeout(() => {
-                const firstButton = buttonContainer.querySelector('button');
-                if (firstButton) {
-                    firstButton.focus();
-                }
-            }, 50);
-        }
-        // --- SLUT ÅTGÄRDSMODAL ---
 
         function createInventoryRow(item, isOutOfStock) {
             const row = document.createElement('div');
@@ -761,30 +681,40 @@ document.addEventListener('DOMContentLoaded', () => {
                 row.classList.add('selected');
             }
 
+            // --- Värden och hjälp-variabler ---
             const statusClass = item.quantity > 0 ? 'i-lager' : 'slut';
             const statusText = item.quantity > 0 ? 'I lager' : 'Slut';
             const formattedNotes = parseNotes(item.notes || '');
             const safeServiceFilter = escapeHTML(item.service_filter).replace(/'/g, "\\'");
-            
+            const safeName = escapeHTML(item.name).replace(/'/g, "\\'");
+
+            // Länkar
             const trodoLink = generateTrodoLink(item.service_filter);
             const aeroMLink = generateAeroMLink(item.service_filter);
+            const thansenLink = generateThansenLink(item.service_filter);
             const egenLink = item.link;
             
             const primarySearchLink = trodoLink || aeroMLink || egenLink;
             const primarySearchText = trodoLink ? 'Trodo' : (aeroMLink ? 'AeroMotors' : (egenLink ? 'Egen Länk' : ''));
+            const dropdownId = `link-dropdown-${item.id}`;
+            const hasSecondaryLinks = aeroMLink || thansenLink || egenLink;
 
+            // --- Moderniserad Template Literal ---
             row.innerHTML = `
-                <span class="cell-copy-wrapper" title="${escapeHTML(item.service_filter)}">
+                <span class="cell-copy-wrapper">
                     ${primarySearchLink ? `
                         <button class="search-btn" onclick="window.open('${primarySearchLink}', '_blank'); event.stopPropagation();" title="Sök på ${primarySearchText}">
                             <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>
                         </button>
                     ` : ''}
                     <button class="copy-btn" onclick="copyToClipboard(this, '${safeServiceFilter}'); event.stopPropagation();" title="Kopiera Artikelnummer">&#x1F4CB;</button>
-                    <span class="cell-copy-text artnr-cell-text">${escapeHTML(item.service_filter)}</span>
+                    <span class="cell-copy-text">${escapeHTML(item.service_filter)}</span>
                 </span>
 
-                <span class="cell-copy-wrapper" title="${escapeHTML(item.name)}">
+                <span class="cell-copy-wrapper">
+                    <button class="copy-btn" onclick="copyToClipboard(this, '${safeName}'); event.stopPropagation();" title="Kopiera Namn">
+                        <span class="icon-span" style="font-size: 14px;">title</span>
+                    </button>
                     <span class="cell-copy-text">${escapeHTML(item.name)}</span>
                 </span>
 
@@ -802,10 +732,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 <span class="notes-cell" title="${escapeHTML(item.notes || '')}">${formattedNotes}</span>
 
-                <div class="action-buttons" style="justify-content: center;">
-                    <button class="action-menu-btn" onclick="showActionsModal(${item.id}); event.stopPropagation();" title="Visa åtgärder">
-                        <span class="icon-span">more_horiz</span>
-                    </button>
+                <span class="action-cell">
+                    <div class="link-buttons">
+                        ${trodoLink ? `<button class="lank-knapp trodo-btn" onclick="window.open('${trodoLink}', '_blank'); event.stopPropagation();">Trodo</button>` : ''}
+                        ${hasSecondaryLinks ? `
+                            <div class="link-dropdown-container">
+                                <button class="lank-knapp more-btn" onclick="toggleDropdown('${dropdownId}'); event.stopPropagation();">Mer</button>
+                                <div id="${dropdownId}" class="dropdown-menu">
+                                    ${aeroMLink ? `<button class="lank-knapp aero-m-btn" onclick="window.open('${aeroMLink}', '_blank'); closeDropdown('${dropdownId}'); event.stopPropagation();">AeroMotors</button>` : ''}
+                                    ${thansenLink ? `<button class="lank-knapp thansen-btn" onclick="window.open('${thansenLink}', '_blank'); closeDropdown('${dropdownId}'); event.stopPropagation();">Thansen</button>` : ''}
+                                    ${egenLink ? `<button class="lank-knapp egen-lank-btn" onclick="window.open('${egenLink}', '_blank'); closeDropdown('${dropdownId}'); event.stopPropagation();">Egen Länk</button>` : ''}
+                                </div>
+                            </div>
+                        ` : ''}
+                        ${!trodoLink && !hasSecondaryLinks ? '<span>(Saknas)</span>' : ''}
+                    </div>
+                </span>
+
+                <div class="action-buttons">
+                    <button class="edit-btn" onclick="handleEdit(${item.id}); event.stopPropagation();">Ändra</button>
+                    <button class="delete-btn" onclick="handleDelete(${item.id}); event.stopPropagation();">Ta bort</button>
                 </div>
             `;
             
@@ -856,7 +802,7 @@ document.addEventListener('DOMContentLoaded', () => {
             emptyStates.andraMarken.style.display = (currentFilter === 'Alla' || currentFilter === 'Andra Märken') && andraMarkenArtiklar.length === 0 ? 'flex' : 'none';
             emptyStates.slutILager.style.display = (currentFilter === 'Alla' || currentFilter === 'Slut') && slutILager.length === 0 ? 'flex' : 'none';
             
-            const totalItems = inventory.length; 
+            const totalItems = inventory.length; // Kolla *hela* lagret
             if (totalItems === 0) {
                 fullEmptyState.style.display = 'flex';
                 serviceTitle.style.display = 'none'; serviceWrapper.style.display = 'none';
@@ -867,12 +813,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 fullEmptyState.style.display = 'none';
             }
 
+            // --- ÄNDRAD: Använder desktopSearchInput som källa ---
             const currentSearchTerm = desktopSearchInput.value;
             if (currentSearchTerm.length > 0) {
                 Object.values(emptyStates).forEach(el => {
                     if (el.style.display === 'flex') {
                         el.querySelector('h4').textContent = 'Inga träffar';
-                        el.querySelector('p').textContent = `Din sökning på "${escapeHTML(currentSearchTerm)}" gav inga resultat.`;
+                        el.querySelector('p').textContent = `Din sökning på "${currentSearchTerm}" gav inga resultat.`;
                     }
                 });
             } else {
@@ -887,28 +834,32 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
+        // ÄNDRINGEN SKER INUTI calculateRelevance-funktionen
+
         function calculateRelevance(item, searchWords) {
             let score = 0; 
             
-            // --- ÄNDRAD: Använd normaliserat artikelnummer för relevans ---
-            const serviceFilter = normalizeArtNr((item.service_filter || ''));
+            // START PÅ ÄNDRING
+            // Normalisera service_filter genom att ta bort alla mellanslag (\s/g)
+            const serviceFilter = (item.service_filter || '').toLowerCase().replace(/\s/g, ''); 
+            // SLUT PÅ ÄNDRING
+            
             const name = (item.name || '').toLowerCase(); 
             const notes = (item.notes || '').toLowerCase(); 
             const category = (item.category || '').toLowerCase();
             
             searchWords.forEach(word => {
-                // --- ÄNDRAD: Normalisera även sökordet på samma sätt ---
-                const cleanWord = normalizeArtNr(word); 
-                
+                const cleanWord = word.replace(/[^a-z0-9]/g, ''); 
                 if (serviceFilter.includes(cleanWord)) { score += 5; } 
-                if (name.includes(word)) { score += 3; } // Behåll onormaliserat för namn
-                if (category.includes(word)) { score += 2; } 
-                if (notes.includes(word)) { score += 1; } 
-                if (serviceFilter === cleanWord || name === word) { score += 5; }
+                if (name.includes(cleanWord)) { score += 3; } 
+                if (category.includes(cleanWord)) { score += 2; } 
+                if (notes.includes(cleanWord)) { score += 1; } 
+                if (serviceFilter === cleanWord || name === cleanWord) { score += 5; }
             }); 
             return score;
         }
 
+        // --- ÄNDRAD: Funktion för att rendera sök-dropdown ---
         function renderSearchDropdown(searchTerm, results) {
             if (searchTerm.length < 1 || results.length === 0) {
                 desktopSearchResults.innerHTML = '';
@@ -919,8 +870,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             let html = '';
+            // Visa max 10 resultat i dropdown
             results.slice(0, 10).forEach(item => {
+                // --- ÄNDRAD: Hämta ENDAST registreringsskyltar ---
                 const platesHTML = extractPlatesHTML(item.notes || '');
+
+                // --- ÄNDRAD: Uppdaterad HTML-struktur med flexbox ---
                 html += `<a href="#" class="search-result-item" data-id="${item.id}">
                             <div class="search-result-content">
                                 <div class="search-result-text">
@@ -941,7 +896,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             addDropdownListeners();
         }
+        // --- SLUT ÄNDRING ---
 
+        // --- NYTT: Funktion för att rensa sökfält och dölja dropdowns ---
         function clearAndHideSearch() {
             desktopSearchInput.value = '';
             mobileSearchInput.value = '';
@@ -954,37 +911,47 @@ document.addEventListener('DOMContentLoaded', () => {
             desktopClearSearchBtn.style.display = 'none';
             mobileClearSearchBtn.style.display = 'none';
             
+            // Kör en tom sökning för att återställa listan
             applySearchFilter('');
         }
 
+        // --- NYTT: Funktion för att binda lyssnare till dropdown-resultat ---
+        // --- ÄNDRAD: Hanterar race condition med isNavigatingViaSearch-flaggan ---
         function addDropdownListeners() {
             document.querySelectorAll('.search-result-item').forEach(item => {
+                // Ta bort gamla lyssnare för att undvika dubletter
                 item.replaceWith(item.cloneNode(true));
             });
             
             document.querySelectorAll('.search-result-item').forEach(item => {
                 item.addEventListener('click', (e) => {
                     e.preventDefault();
-                    isNavigatingViaSearch = true; 
+                    isNavigatingViaSearch = true; // Sätt flaggan
                     
                     const itemId = e.currentTarget.getAttribute('data-id');
                     
+                    // Rensa sökfälten och dölj listan
                     clearAndHideSearch();
+                    
+                    // Scrolla och markera
                     scrollToAndHighlight(itemId);
                     
+                    // Återställ flaggan efter en kort fördröjning
                     setTimeout(() => {
                         isNavigatingViaSearch = false;
-                    }, 100); 
+                    }, 100); // 100ms för att låta renderingen stabiliseras
                 });
             });
         }
         
+        // --- ÄNDRAD: sortAndRender tar nu emot söktermen ---
         function sortAndRender(searchTermOverride) {
             let searchTerm = (searchTermOverride !== undefined ? searchTermOverride : desktopSearchInput.value).toLowerCase().trim();
             let processedInventory = [...inventory];
             let syntaxFilterUsed = false;
             let generalSearchTerm = '';
 
+            // --- NYTT: Avancerad sök-syntax ---
             const syntaxMatches = searchTerm.match(/(k:|kategori:|p>|p<|q=|q>|q<)(\S+)/g) || [];
             
             if (syntaxMatches.length > 0) {
@@ -1012,7 +979,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     } else if (match.startsWith('q=')) {
                         const value = parseInt(match.substring(2), 10);
                         if (!isNaN(value)) processedInventory = processedInventory.filter(i => i.quantity === value);
-                        if (value === 0) currentFilter = 'Slut'; 
+                        if (value === 0) currentFilter = 'Slut'; // Synka med filter
                     } else if (match.startsWith('q>')) {
                         const value = parseInt(match.substring(2), 10);
                         if (!isNaN(value)) processedInventory = processedInventory.filter(i => i.quantity > value);
@@ -1025,11 +992,14 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 generalSearchTerm = searchTerm;
             }
+            // --- SLUT NY SYNTAX ---
 
+            // Uppdatera UI för filter-knappar
             categoryFilterBar.querySelectorAll('.btn-secondary').forEach(btn => {
                 btn.classList.toggle('active', btn.getAttribute('data-filter') === currentFilter);
             });
             
+            // NYTT: Uppdatera filter-märke i headern
             if (currentFilter !== 'Alla') {
                 toolbarFilterBadge.textContent = currentFilter.toUpperCase();
                 toolbarFilterBadge.style.display = 'inline-flex';
@@ -1037,7 +1007,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 toolbarFilterBadge.style.display = 'none';
             }
 
-            if (currentFilter !== 'Alla' && !syntaxFilterUsed) { 
+            if (currentFilter !== 'Alla' && !syntaxFilterUsed) { // Använd bara om ingen syntax angavs
                 if (currentFilter === 'Slut') {
                     processedInventory = processedInventory.filter(item => item.quantity <= 0);
                 } else {
@@ -1047,11 +1017,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
+            // --- ÄNDRAD: Spara en ofiltrerad lista för dropdown ---
             let dropdownResults = [];
 
             if (generalSearchTerm !== '') {
-                // --- ÄNDRAD: Skicka *onormaliserade* sökord till relevansberäkningen ---
-                const searchWords = generalSearchTerm.split(/\s+/).filter(word => word.length > 0 && !stopWords.includes(word));
+                const searchWords = generalSearchTerm.split(/\s+/).filter(word => word.length > 1 && !stopWords.includes(word));
                 if (searchWords.length === 0 && generalSearchTerm.length > 0) { searchWords.push(generalSearchTerm); }
 
                 processedInventory = processedInventory
@@ -1059,6 +1029,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     .filter(item => item.relevanceScore > 0)
                     .sort((a, b) => b.relevanceScore - a.relevanceScore);
                 
+                // --- NYTT: Spara resultaten *innan* kategorifiltret applicerats (om man inte använde syntax)
                 if (!syntaxFilterUsed) {
                     dropdownResults = [...processedInventory];
                 }
@@ -1075,9 +1046,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
             
+            // --- NYTT: Rendera sök-dropdown ---
+            // Om syntax användes, visa den filtrerade listan. Annars, visa den ofiltrerade.
             const resultsForDropdown = syntaxFilterUsed ? processedInventory : dropdownResults;
             renderSearchDropdown(generalSearchTerm, resultsForDropdown);
 
+            // --- Slut Huvud-filtrering ---
             renderInventory(processedInventory);
 
             document.querySelectorAll('.header span[data-sort]').forEach(span => {
@@ -1091,7 +1065,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 activeHeader.classList.add('active', currentSort.direction);
                 const icon = activeHeader.querySelector('.sort-icon');
                 if (icon) {
-                    if(generalSearchTerm === '') { 
+                    if(generalSearchTerm === '') { // Använd generalSearchTerm
                         icon.textContent = currentSort.direction === 'asc' ? ' ▲' : ' ▼';
                     }
                 }
@@ -1101,8 +1075,10 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem('app_filter', currentFilter);
         }
 
+        // --- ÄNDRAD: applySearchFilter tar nu emot söktermen ---
+        // --- Och kontrollerar isNavigatingViaSearch-flaggan ---
         function applySearchFilter(term) {
-             if (isNavigatingViaSearch) return; 
+             if (isNavigatingViaSearch) return; // <-- FIXEN FÖR RACE CONDITION
              clearTimeout(window.searchTimeout);
              window.searchTimeout = setTimeout(() => sortAndRender(term), 150);
         }
@@ -1118,14 +1094,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 querySnapshot.forEach((doc) => { tempInventory.push(doc.data()); });
                 inventory = tempInventory;
                 
-                applySearchFilter(desktopSearchInput.value); 
+                applySearchFilter(desktopSearchInput.value); // Kör en sökning med nuvarande värde
                 renderDashboard(inventory); 
                 updateCategoryBadges(inventory);
                 renderRecentItems(inventory);
                 
+                // BORTTAGEN: Logik för OrderList
+                
                 const now = new Date();
                 updateSyncStatus('ok', `Synkroniserad ${now.toLocaleTimeString('sv-SE')}`);
                 
+                // --- NYTT: Visuell feedback för synk ---
                 syncStatusElement.classList.add('flash');
                 setTimeout(() => syncStatusElement.classList.remove('flash'), 1200);
                 
@@ -1143,12 +1122,13 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
         
+        // --- ÄNDRAD: FAB-knappen transformeras nu istället för att döljas ---
         function toggleAddForm() {
             const isCurrentlyOpen = addFormWrapper.classList.contains('open');
             const newState = isCurrentlyOpen ? 'closed' : 'open';
             
             addFormWrapper.classList.toggle('open');
-            fabAddBtn.classList.toggle('open'); 
+            fabAddBtn.classList.toggle('open'); // NYTT: Styr knappens utseende
             
             localStorage.setItem('add_form_open_state', newState);
             
@@ -1157,14 +1137,15 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         
+        // --- ÄNDRAD: Synkar FAB-knappens state vid laddning ---
         function initializeAddFormState() {
             const storedState = localStorage.getItem('add_form_open_state');
             if (storedState === 'open') { 
                 addFormWrapper.classList.add('open'); 
-                fabAddBtn.classList.add('open'); 
+                fabAddBtn.classList.add('open'); // NYTT
             } else {
                 addFormWrapper.classList.remove('open');
-                fabAddBtn.classList.remove('open'); 
+                fabAddBtn.classList.remove('open'); // NYTT
             }
         }
         
@@ -1193,8 +1174,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     isValid = false;
                     const wrapper = field.closest('div');
                     if (wrapper) {
-                        wrapper.classList.add('has-error', 'shake'); 
-                        setTimeout(() => wrapper.classList.remove('shake'), 500); 
+                        wrapper.classList.add('has-error', 'shake'); // NYTT: Lägg till shake
+                        setTimeout(() => wrapper.classList.remove('shake'), 500); // NYTT: Ta bort shake
                     }
                 }
             });
@@ -1202,10 +1183,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         function scrollToAndHighlight(itemId) {
+            // Konvertera till sträng om det är ett nummer, då data-id är en sträng
             const row = document.querySelector(`.artikel-rad[data-id="${itemId}"]`);
             if (row) {
                 row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
                 document.querySelectorAll('.artikel-rad.highlight').forEach(r => r.classList.remove('highlight'));
+                
                 row.classList.add('highlight');
             }
         }
@@ -1222,10 +1206,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const formData = new FormData(addForm);
             const serviceFilter = (formData.get('service_filter') || '').trim().toUpperCase();
 
-            // --- ÄNDRAD: Normalisera för dubblettkontroll ---
-            const normalizedServiceFilter = normalizeArtNr(serviceFilter);
-            if (normalizedServiceFilter && inventory.some(item => normalizeArtNr(item.service_filter) === normalizedServiceFilter)) {
-                showToast(`Artikelnumret ${escapeHTML(serviceFilter)} finns redan.`, 'error');
+            if (serviceFilter && inventory.some(item => item.service_filter === serviceFilter)) {
+                showToast(`Artikelnumret ${serviceFilter} finns redan.`, 'error');
                 addForm.querySelector('#add_service_filter').closest('div').classList.add('has-error');
                 return; 
             }
@@ -1240,13 +1222,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 category: formData.get('category') || 'Övrigt', 
                 notes: (formData.get('notes') || '').trim(),
                 link: (formData.get('link') || '').trim(),
-                lastUpdated: Date.now() 
+                lastUpdated: Date.now() // NYTT: För "Senast Hanterade"
             };
             
             await saveInventoryItem(newItem);
             addForm.reset();
             addFormArtnrWarning.textContent = '';
-            quickCategoryBtns.forEach(b => b.classList.remove('active')); 
+            quickCategoryBtns.forEach(b => b.classList.remove('active')); // NYTT: Återställ knappar
             submitBtn.disabled = false; submitBtn.innerHTML = '<span class="icon-span">save</span>Spara Artikel';
             if (addFormWrapper.classList.contains('open')) { toggleAddForm(); }
             
@@ -1277,6 +1259,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const titleEl = editModal.querySelector('h3');
                 const iconEl = editModal.querySelector('h3 .icon-span');
                 
+                // --- ÅTERSTÄLLD: Logik för "Beställ"-läge ---
                 if (isOrderMode) {
                     titleEl.childNodes[1].nodeValue = ' Beställ Artikel';
                     iconEl.textContent = 'shopping_cart';
@@ -1287,13 +1270,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     submitBtn.innerHTML = '<span class="icon-span">save</span>Spara Ändringar';
                 }
                 editModal.style.display = 'flex';
-                
-                // NYTT: Fokusera och välj text i första fältet
-                setTimeout(() => {
-                    const firstInput = document.getElementById(isOrderMode ? 'edit-quantity' : 'edit-service_filter');
-                    firstInput.focus();
-                    firstInput.select();
-                }, 50);
+                setTimeout(() => (isOrderMode ? document.getElementById('edit-quantity') : document.getElementById('edit-service_filter')).focus(), 50);
             }
         }
 
@@ -1321,8 +1298,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 category: editForm.querySelector('#edit-category').value,
                 notes: editForm.querySelector('#edit-notes').value.trim(),
                 link: editForm.querySelector('#edit-link').value.trim(),
-                lastUpdated: Date.now() 
+                lastUpdated: Date.now() // NYTT: För "Senast Hanterade"
             };
+
+            // BORTTAGEN: Logik för OrderList
 
             await saveInventoryItem(updatedItem);
             submitBtn.disabled = false; submitBtn.innerHTML = originalHTML;
@@ -1337,7 +1316,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const item = inventory.find(i => i.id === id);
             if (item) {
                 const newQuantity = Math.max(0, item.quantity + change);
-                const updatedItem = {...item, quantity: newQuantity, lastUpdated: Date.now() }; 
+                const updatedItem = {...item, quantity: newQuantity, lastUpdated: Date.now() }; // NYTT: `lastUpdated`
                 await saveInventoryItem(updatedItem);
             }
         }
@@ -1345,24 +1324,27 @@ document.addEventListener('DOMContentLoaded', () => {
         window.handleDelete = function(id) {
             const item = inventory.find(i => i.id === id);
             showCustomConfirmation(
-                `Är du säker på att du vill ta bort <strong>${escapeHTML(item.name)} (${escapeHTML(item.service_filter)})</strong>?`,
+                `Är du säker på att du vill ta bort <strong>${item.name} (${item.service_filter})</strong>?`,
                 async (result) => {
                     if (result) {
                         await deleteInventoryItem(id);
+                        // BORTTAGEN: Logik för OrderList
                         showToast('Artikel borttagen', 'info');
                     }
                 }, 'Bekräfta Borttagning', true
             );
         }
         
+        // --- ÄNDRAD: Ger visuell feedback på raden vid kopiering ---
         window.copyToClipboard = (buttonEl, text) => {
-            const row = buttonEl.closest('.artikel-rad'); 
+            const row = buttonEl.closest('.artikel-rad'); // NYTT: Hitta raden
             
             navigator.clipboard.writeText(text).then(() => {
                 const originalContent = buttonEl.innerHTML;
                 buttonEl.innerHTML = '✅';
                 buttonEl.disabled = true;
                 
+                // NYTT: Lägg till flash-effekt på raden
                 if (row) {
                     row.classList.add('flash-success');
                     setTimeout(() => row.classList.remove('flash-success'), 800);
@@ -1401,15 +1383,13 @@ document.addEventListener('DOMContentLoaded', () => {
             
             confirmationModal.style.display = 'flex';
             confirmCallback = callback;
-            
-            // Fokusera på "Ja"-knappen
-            setTimeout(() => yesBtn.focus(), 50);
         }
         
+        // NYTT: Klistra in och fyll i
         async function handlePasteAndFill() {
             try {
                 const text = await navigator.clipboard.readText();
-                const parts = text.split(/\s+/); 
+                const parts = text.split(/\s+/); // Dela på blanksteg
                 if (parts.length > 0) {
                     const artnr = parts[0].toUpperCase();
                     const name = parts.slice(1).join(' ').toUpperCase();
@@ -1420,36 +1400,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                     showToast('Innehåll inklistrat!', 'success');
                     
+                    // Trigga dubblett-koll
                     addForm.querySelector('#add_service_filter').dispatchEvent(new Event('input'));
                 }
             } catch (err) {
                 showToast('Kunde inte läsa urklipp', 'error');
             }
-        }
-        
-        // --- NYTT: Funktion för "Focus Trap" i modals ---
-        function trapFocus(modalElement) {
-            const focusableElements = modalElement.querySelectorAll(
-                'a[href]:not([disabled]), button:not([disabled]), textarea:not([disabled]), input[type="text"]:not([disabled]), input[type="radio"]:not([disabled]), input[type="checkbox"]:not([disabled]), input[type="number"]:not([disabled]), select:not([disabled])'
-            );
-            const firstElement = focusableElements[0];
-            const lastElement = focusableElements[focusableElements.length - 1];
-            
-            modalElement.addEventListener('keydown', (e) => {
-                if (e.key !== 'Tab') return;
-
-                if (e.shiftKey) { // Shift + Tab
-                    if (document.activeElement === firstElement) {
-                        lastElement.focus();
-                        e.preventDefault();
-                    }
-                } else { // Tab
-                    if (document.activeElement === lastElement) {
-                        firstElement.focus();
-                        e.preventDefault();
-                    }
-                }
-            });
         }
         
         function initializeListeners() {
@@ -1461,51 +1417,59 @@ document.addEventListener('DOMContentLoaded', () => {
                 addForm.reset();
                 addFormArtnrWarning.textContent = '';
                 addForm.querySelectorAll('.has-error').forEach(el => el.classList.remove('has-error'));
-                quickCategoryBtns.forEach(b => b.classList.remove('active')); 
+                quickCategoryBtns.forEach(b => b.classList.remove('active')); // NYTT: Återställ knappar
             });
             
             editForm.addEventListener('submit', handleEditSubmit);
             
+            // --- ÄNDRAD: Lyssnare för sökfälten ---
             const handleSearchInput = (e) => {
                 const term = e.target.value;
+                // Synkronisera det andra sökfältet
                 if (e.target.id === 'desktop-search-input') {
                     mobileSearchInput.value = term;
                 } else {
                     desktopSearchInput.value = term;
                 }
                 
+                // Visa/dölj båda rensa-knapparna
                 const showClear = term.length > 0;
                 desktopClearSearchBtn.style.display = showClear ? 'block' : 'none';
                 mobileClearSearchBtn.style.display = showClear ? 'block' : 'none';
                 
+                // Anropa sökfunktionen
                 applySearchFilter(term);
             };
 
             desktopSearchInput.addEventListener('input', handleSearchInput);
             mobileSearchInput.addEventListener('input', handleSearchInput);
             
+            // --- ÄNDRAD: Lyssnare för rensa-knapparna ---
             const handleClearSearch = () => {
-                clearAndHideSearch(); 
-                desktopSearchInput.focus(); 
+                clearAndHideSearch(); // Använd den nya hjälpfunktionen
+                desktopSearchInput.focus(); // Fokusera på desktop-sökfältet som standard
             };
 
             desktopClearSearchBtn.addEventListener('click', handleClearSearch);
             mobileClearSearchBtn.addEventListener('click', handleClearSearch);
+            // --- SLUT ÄNDRINGAR SÖK ---
+
 
             addForm.querySelector('#add_service_filter').addEventListener('input', (e) => {
                 const value = e.target.value.trim().toUpperCase();
-                // --- ÄNDRAD: Normalisera för dubblettkontroll ---
-                const normalizedValue = normalizeArtNr(value);
-                if (normalizedValue && inventory.some(item => normalizeArtNr(item.service_filter) === normalizedValue)) {
+                if (value && inventory.some(item => item.service_filter === value)) {
                     addFormArtnrWarning.textContent = 'Detta artikelnummer finns redan!';
                 } else {
                     addFormArtnrWarning.textContent = '';
                 }
             });
 
+            // --- ÄNDRAD: FAB-knappen är nu en ren toggle ---
             if (fabAddBtn) {
                 fabAddBtn.addEventListener('click', () => {
-                    toggleAddForm(); 
+                    toggleAddForm(); // Denna funktion hanterar nu FAB-klassen och form-wrappers
+                    
+                    // Om formuläret just öppnades (kontrollera *efter* toggling)
                     if (addFormWrapper.classList.contains('open')) {
                         addFormWrapper.scrollIntoView({ behavior: 'smooth', block: 'center' });
                         document.getElementById('add_service_filter').focus();
@@ -1524,6 +1488,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
             
+            // NYTT: Tomt-läge "Lägg till"-knapp
             if (emptyStateAddBtn) {
                 emptyStateAddBtn.addEventListener('click', () => {
                     if (!addFormWrapper.classList.contains('open')) {
@@ -1536,36 +1501,24 @@ document.addEventListener('DOMContentLoaded', () => {
             
             document.querySelectorAll('.lager-container').forEach(c => { c.addEventListener('scroll', () => c.classList.toggle('scrolled', c.scrollTop > 1)); });
 
-            editModal.addEventListener('click', (e) => {
-                if (e.target === editModal || e.target.classList.contains('close-btn')) {
-                    closeEditModal();
-                }
+            [editModal, confirmationModal].forEach(modal => { // BORTTAGEN: orderListModal
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal || e.target.classList.contains('close-btn')) {
+                        modal.style.display = 'none';
+                    }
+                });
             });
-            confirmationModal.addEventListener('click', (e) => {
-                if (e.target === confirmationModal || e.target.classList.contains('close-btn')) {
-                    closeConfirmationModal();
-                }
-            });
-            actionsModal.addEventListener('click', (e) => {
-                if (e.target === actionsModal || e.target.classList.contains('close-btn')) {
-                    closeActionsModal();
-                }
-            });
-            
-            // --- NYTT: Applicera Focus Trap på modals ---
-            trapFocus(editModal);
-            trapFocus(confirmationModal);
-            trapFocus(actionsModal);
             
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape') {
                     closeEditModal();
                     closeConfirmationModal();
-                    closeActionsModal(); 
                     closeAppMenu();
+                    // BORTTAGEN: closeOrderListModal();
                     if(globalSearchResults.style.display === 'block') {
                         globalSearchResults.style.display = 'none';
                     }
+                    // --- NYTT: Dölj sök-dropdowns ---
                     desktopSearchResults.style.display = 'none';
                     mobileSearchResults.style.display = 'none';
                 }
@@ -1574,12 +1527,13 @@ document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('.header span[data-sort]').forEach(header => {
                 header.addEventListener('click', () => {
                     const column = header.getAttribute('data-sort');
+                    // --- ÄNDRAD: Rensa sökfältet med nya funktionen ---
                     if (desktopSearchInput.value !== '') { 
                         clearAndHideSearch();
                     }
                     const direction = (currentSort.column === column && currentSort.direction === 'asc') ? 'desc' : 'asc';
                     currentSort = { column, direction };
-                    applySearchFilter(''); 
+                    applySearchFilter(''); // Kör tom sökning
                 });
             });
             
@@ -1637,7 +1591,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         categoryFilterBar.querySelectorAll('.btn-secondary').forEach(btn => {
                             btn.classList.toggle('active', btn.getAttribute('data-filter') === currentFilter);
                         });
-                        applySearchFilter(desktopSearchInput.value); 
+                        applySearchFilter(desktopSearchInput.value); // Behåll söktermen
                         closeAppMenu();
                     }
                 });
@@ -1647,28 +1601,35 @@ document.addEventListener('DOMContentLoaded', () => {
             appMenuOverlay.addEventListener('click', closeAppMenu);
             appMenuCloseBtn.addEventListener('click', closeAppMenu);
             
+            // BORTTAGEN: Listeners för OrderList
+            
+            // NYTT: Exportera-knappar
             exportCsvBtn.addEventListener('click', exportToCSV);
             exportJsonBtn.addEventListener('click', exportToJSON);
 
+            // NYTT: Klistra in-knapp
             pasteArtnrBtn.addEventListener('click', handlePasteAndFill);
 
+            // --- ÄNDRAD: Snabb-kategori knappar hanterar nu 'active' state ---
             quickCategoryBtns.forEach(btn => {
                 btn.addEventListener('click', () => {
                     const category = btn.getAttribute('data-category');
                     addForm.querySelector('#add_category').value = category;
+                    // NYTT: Uppdatera aktivt läge
                     quickCategoryBtns.forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
-                    // NYTT: Flytta fokus till "Anteckningar" för snabbare arbetsflöde
-                    addForm.querySelector('#add_notes').focus();
                 });
             });
             
+            // --- NYTT: Synka kategori-select med snabbknapparna ---
             addForm.querySelector('#add_category').addEventListener('change', (e) => {
                 const selectedCategory = e.target.value;
                 quickCategoryBtns.forEach(btn => {
                     btn.classList.toggle('active', btn.getAttribute('data-category') === selectedCategory);
                 });
             });
+
+            // BORTTAGEN: Skanna-knappar
 
             const backToTopBtn = document.getElementById('back-to-top-btn');
             if (backToTopBtn) {
@@ -1692,10 +1653,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         const filter = e.target.getAttribute('data-filter');
                         if (filter) {
                             currentFilter = filter;
+                            // --- ÄNDRAD: Rensa sökfältet med nya funktionen ---
                             if(desktopSearchInput.value) {
                                 clearAndHideSearch();
                             }
-                            applySearchFilter(''); 
+                            applySearchFilter(''); // Kör tom sökning
                         }
                     }
                 });
@@ -1715,15 +1677,14 @@ document.addEventListener('DOMContentLoaded', () => {
         initializeAddFormState(); 
         initializeCollapseState();
         loadPersistentState();
+        // BORTTAGEN: loadOrderListFromStorage();
         initializeListeners(); 
         renderSearchHistory();
         setupRealtimeListener();
 
     } catch (e) {
         console.error("App Initialization Error:", e);
-        const loader = document.getElementById('initial-loader');
-        if(loader) loader.querySelector('p').textContent = 'Kritiskt fel vid initiering.';
-        else console.error("Kunde inte visa felmeddelande i UI.");
+        updateSyncStatus('error', 'Initieringsfel!'); 
+        if(initialLoader) initialLoader.querySelector('p').textContent = 'Kritiskt fel vid initiering.';
     }
 });
-
