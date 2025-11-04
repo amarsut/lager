@@ -213,26 +213,54 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!d) return; 
             
             const btn = event.currentTarget;
-            const container = btn.closest('.lager-container');
             
             // Stäng alla andra
             document.querySelectorAll('.dropdown-menu.visible').forEach(o => { 
                 if (o.id !== id) {
-                    o.classList.remove('visible');
+                    o.classList.remove('visible', 'open-up'); // NYTT: Ta bort 'open-up' också
                 } 
-            });
-            document.querySelectorAll('.lager-container.is-showing-dropdown').forEach(c => {
-                if (c !== container) {
-                    c.classList.remove('is-showing-dropdown');
-                }
             });
 
             // Växla aktuell
             d.classList.toggle('visible'); 
-            if (container) {
-                container.classList.toggle('is-showing-dropdown', d.classList.contains('visible'));
+            
+            // NYTT: Kontrollera om menyn ska öppnas uppåt (fixar clipping)
+            if (d.classList.contains('visible')) {
+                const btnRect = btn.getBoundingClientRect();
+                const menuHeight = 250; // Uppskattad maxhöjd för menyn
+                
+                // Om knappen är för nära toppen av viewport, öppna uppåt
+                if (btnRect.top < menuHeight) {
+                    d.classList.add('open-up');
+                } else {
+                    d.classList.remove('open-up'); // Se till att den öppnar nedåt annars
+                }
+            } else {
+                d.classList.remove('open-up');
             }
         };
+        
+        window.closeDropdown = function(id) { 
+            const d = document.getElementById(id); 
+            if (d) {
+                d.classList.remove('visible', 'open-up'); // NYTT: Ta bort 'open-up' också
+            } 
+        };
+        // --- SLUT BUGGFIX (Klippning/Flicker-fix) ---
+        
+        // --- ÄNDRAD: Eventlyssnare för att stänga dropdowns ---
+        document.addEventListener('click', (e) => {
+            // Stäng sök-dropdowns
+            if (!e.target.closest('.search-wrapper') && !e.target.closest('#sticky-search-bar')) {
+                desktopSearchResults.style.display = 'none';
+                mobileSearchResults.style.display = 'none';
+            }
+            
+            // Stäng länk-dropdowns
+            if (!e.target.closest('.link-dropdown-container')) {
+                document.querySelectorAll('.dropdown-menu.visible').forEach(d => d.classList.remove('visible', 'open-up')); // NYTT: Ta bort 'open-up'
+            }
+        });
         
         window.closeDropdown = function(id) { 
             const d = document.getElementById(id); 
@@ -256,11 +284,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Stäng länk-dropdowns
             if (!e.target.closest('.link-dropdown-container')) {
-                document.querySelectorAll('.dropdown-menu.visible').forEach(d => d.classList.remove('visible'));
-                // --- BUGGFIX: Återställ alla containers ---
-                document.querySelectorAll('.lager-container.is-showing-dropdown').forEach(c => {
-                    c.classList.remove('is-showing-dropdown');
-                });
+                document.querySelectorAll('.dropdown-menu.visible').forEach(d => d.classList.remove('visible', 'open-up')); // NYTT: Ta bort 'open-up'
             }
         });
         // --- SLUT ÄNDRING ---
@@ -1758,3 +1782,4 @@ document.addEventListener('DOMContentLoaded', () => {
         if(initialLoader) initialLoader.querySelector('p').textContent = 'Kritiskt fel vid initiering.';
     }
 });
+
