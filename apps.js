@@ -275,7 +275,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <img src="https://car.info/favicon.ico" alt="Car.info" class="provider-card-logo">
                     <div class="provider-card-content">
                         <span class="provider-card-name">Car.info</span>
-                        <a href="${carInfoLink}" target="_blank" class="btn-provider-search">Visa Attribut</a>
+                        <a href="${carInfoLink}" target="_blank" class="btn-provider-search">Visa Fordon</a>
                     </div>
                 </div>
             `;
@@ -1690,3 +1690,4 @@ document.addEventListener('DOMContentLoaded', () => {
     if(initialLoader) initialLoader.querySelector('p').textContent = 'Kritiskt fel vid initiering.';
 }
 });
+
