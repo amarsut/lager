@@ -207,36 +207,8 @@ document.addEventListener('DOMContentLoaded', () => {
         function generateBildelsbasenLink(f) { if (!f) return null; const s = encodeURIComponent(f.replace(/[\s-]/g, '')); return `https://bildelsbasen.se/sv-se/OEM/${s}`; }
         function generateReservdelar24Link(f) { if (!f) return null; const s = encodeURIComponent(f.replace(/[\s-]/g, '')); return `https://reservdelar24.se/suche.html?keyword=${s}`; }
         
-        // --- BUGGFIX: Uppdaterad Dropdown-logik ---
-        window.toggleDropdown = function(id, event) { 
-            const d = document.getElementById(id); 
-            if (!d) return; 
-            
-            const btn = event.currentTarget;
-            
-            document.querySelectorAll('.dropdown-menu.visible').forEach(o => { 
-                if (o.id !== id) {
-                    o.classList.remove('visible', 'open-up'); 
-                } 
-            });
-
-            // Växla aktuell
-            const isCurrentlyVisible = d.classList.contains('visible');            
-            
-            // NYTT: Kontrollera om menyn ska öppnas uppåt (fixar clipping)
-            if (isCurrentlyVisible) {
-                 d.classList.remove('visible', 'open-up');
-                 return;
-            }
-        };
-        
-        window.closeDropdown = function(id) { 
-            const d = document.getElementById(id); 
-            if (d) {
-                d.classList.remove('visible', 'open-up'); // NYTT: Ta bort 'open-up' också
-            } 
-        };
-        // --- SLUT BUGGFIX (Klippning/Flicker-fix) ---
+        window.toggleDropdown = function(id) { const d = document.getElementById(id); if (!d) return; document.querySelectorAll('.dropdown-menu.visible').forEach(o => { if (o.id !== id) o.classList.remove('visible'); }); d.classList.toggle('visible'); };
+        window.closeDropdown = function(id) { const d = document.getElementById(id); if (d) d.classList.remove('visible'); };
         
         // --- ÄNDRAD: Eventlyssnare för att stänga dropdowns ---
         document.addEventListener('click', (e) => {
@@ -248,33 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Stäng länk-dropdowns
             if (!e.target.closest('.link-dropdown-container')) {
-                document.querySelectorAll('.dropdown-menu.visible').forEach(d => d.classList.remove('visible', 'open-up')); // NYTT: Ta bort 'open-up'
-            }
-        });
-        
-        window.closeDropdown = function(id) { 
-            const d = document.getElementById(id); 
-            if (d) {
-                d.classList.remove('visible');
-                const container = d.closest('.lager-container');
-                if (container) {
-                    container.classList.remove('is-showing-dropdown');
-                }
-            } 
-        };
-        // --- SLUT BUGGFIX ---
-        
-        // --- ÄNDRAD: Eventlyssnare för att stänga dropdowns ---
-        document.addEventListener('click', (e) => {
-            // Stäng sök-dropdowns
-            if (!e.target.closest('.search-wrapper') && !e.target.closest('#sticky-search-bar')) {
-                desktopSearchResults.style.display = 'none';
-                mobileSearchResults.style.display = 'none';
-            }
-            
-            // Stäng länk-dropdowns
-            if (!e.target.closest('.link-dropdown-container')) {
-                document.querySelectorAll('.dropdown-menu.visible').forEach(d => d.classList.remove('visible', 'open-up')); // NYTT: Ta bort 'open-up'
+                document.querySelectorAll('.dropdown-menu.visible').forEach(d => d.classList.remove('visible'));
             }
         });
         // --- SLUT ÄNDRING ---
@@ -310,32 +256,20 @@ document.addEventListener('DOMContentLoaded', () => {
             const regNrRegex = /^[A-ZÅÄÖ]{3}[\s]?[0-9]{2}[A-ZÅÄÖ0-9]{1}$/;
             const cleanRegNr = searchTerm.replace(/\s/g, ''); // Ta bort mellanslag
             
-            // --- ÄNDRING 3: Lade till Car.info ---
             if (regNrRegex.test(searchTerm) || (cleanRegNr.length === 6 && regNrRegex.test(cleanRegNr))) {
                 
                 const biluppgifterLink = `https://biluppgifter.se/fordon/${cleanRegNr}#vehicle-data`;
-                // NY LÄNK (Punkt 3)
-                const carInfoLink = `https://car.info/sv-se/license-plate/S/${cleanRegNr}#attributes`;
                 
                 biluppgifterResultContainer.innerHTML = `
                     <h4 class="internal-search-title">Fordonsuppslag:</h4>
                     <div class="provider-card">
                         <img src="https://biluppgifter.se/favicon/favicon.ico" alt="Biluppgifter.se" class="provider-card-logo">
                         <div class="provider-card-content">
-                            <span class="provider-card-name">${cleanRegNr} (Biluppgifter)</span>
-                            <a href="${biluppgifterLink}" target="_blank" class="btn-provider-search">Visa</a>
-                        </div>
-                    </div>
-                    <div class="provider-card">
-                        <img src="https://car.info/favicon.ico" alt="Car.info" class="provider-card-logo">
-                        <div class="provider-card-content">
-                            <span class="provider-card-name">${cleanRegNr} (Car.info)</span>
-                            <a href="${carInfoLink}" target="_blank" class="btn-provider-search">Visa</a>
+                            <span class="provider-card-name">${cleanRegNr}</span>
+                            <a href="${biluppgifterLink}" target="_blank" class="btn-provider-search">Visa Fordon</a>
                         </div>
                     </div>
                 `;
-                // --- SLUT ÄNDRING 3 ---
-                
                 biluppgifterResultContainer.style.display = 'block';
                 
                 // Göm de andra sektionerna
@@ -578,7 +512,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         function exportToJSON() {
             const dataStr = JSON.stringify(inventory, null, 2);
-            downloadFile(dataStr, 'lager_export.json', 'application/json');
+            downloadFile('lager_export.json', 'application/json', dataStr);
         }
 
         function exportToCSV() {
@@ -730,7 +664,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return html;
         }
 
-        // --- ÄNDRING 1 & 2: createInventoryRow uppdaterad ---
         function createInventoryRow(item, isOutOfStock) {
             const row = document.createElement('div');
             row.className = 'artikel-rad';
@@ -745,7 +678,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const statusText = item.quantity > 0 ? 'I lager' : 'Slut';
             const formattedNotes = parseNotes(item.notes || '');
             const safeServiceFilter = escapeHTML(item.service_filter).replace(/'/g, "\\'");
-            const safeName = escapeHTML(item.name).replace(/'/g, "\\'"); // Används ej, men behålls för säkerhet
+            const safeName = escapeHTML(item.name).replace(/'/g, "\\'");
 
             // Länkar
             const trodoLink = generateTrodoLink(item.service_filter);
@@ -755,8 +688,8 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const primarySearchLink = trodoLink || aeroMLink || egenLink;
             const primarySearchText = trodoLink ? 'Trodo' : (aeroMLink ? 'AeroMotors' : (egenLink ? 'Egen Länk' : ''));
-            const dropdownId = `action-dropdown-${item.id}`; // Unikt ID för dropdown
-            const hasLinks = trodoLink || aeroMLink || thansenLink || egenLink;
+            const dropdownId = `link-dropdown-${item.id}`;
+            const hasSecondaryLinks = aeroMLink || thansenLink || egenLink;
 
             // --- Moderniserad Template Literal ---
             row.innerHTML = `
@@ -771,7 +704,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 </span>
 
                 <span class="cell-copy-wrapper">
-                    <span class="cell-copy-text" title="${escapeHTML(item.name)}">${escapeHTML(item.name)}</span>
+                    <button class="copy-btn" onclick="copyToClipboard(this, '${safeName}'); event.stopPropagation();" title="Kopiera Namn">
+                        <span class="icon-span" style="font-size: 14px;">title</span>
+                    </button>
+                    <span class="cell-copy-text">${escapeHTML(item.name)}</span>
                 </span>
 
                 <span>${formatPrice(item.price)} kr</span>
@@ -788,33 +724,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 <span class="notes-cell" title="${escapeHTML(item.notes || '')}">${formattedNotes}</span>
 
-                <div class="action-cell">
-                    <div class="link-dropdown-container">
-                        <button class="btn-action-menu" onclick="toggleDropdown('${dropdownId}', event); event.stopPropagation();" title="Visa åtgärder">
-                            <span class="icon-span">more_vert</span>
-                        </button>
-                        <div id="${dropdownId}" class="dropdown-menu">
-                            <button class="dropdown-menu-item" onclick="handleEdit(${item.id}); closeDropdown('${dropdownId}'); event.stopPropagation();">
-                                <span class="icon-span edit-icon">edit</span>Ändra
-                            </button>
-                            <button class="dropdown-menu-item danger-item" onclick="handleDelete(${item.id}); closeDropdown('${dropdownId}'); event.stopPropagation();">
-                                <span class="icon-span">delete</span>Ta bort
-                            </button>
-                            
-                            ${hasLinks ? '<div class="dropdown-divider"></div>' : ''}
-                            
-                            ${trodoLink ? `<button class="dropdown-menu-item link-item" onclick="window.open('${trodoLink}', '_blank'); closeDropdown('${dropdownId}'); event.stopPropagation();"><span class="icon-span">open_in_new</span>Trodo</button>` : ''}
-                            ${aeroMLink ? `<button class="dropdown-menu-item link-item" onclick="window.open('${aeroMLink}', '_blank'); closeDropdown('${dropdownId}'); event.stopPropagation();"><span class="icon-span">open_in_new</span>AeroMotors</button>` : ''}
-                            ${thansenLink ? `<button class="dropdown-menu-item link-item" onclick="window.open('${thansenLink}', '_blank'); closeDropdown('${dropdownId}'); event.stopPropagation();"><span class="icon-span">open_in_new</span>Thansen</button>` : ''}
-                            ${egenLink ? `<button class="dropdown-menu-item link-item" onclick="window.open('${egenLink}', '_blank'); closeDropdown('${dropdownId}'); event.stopPropagation();"><span class="icon-span">open_in_new</span>Egen Länk</button>` : ''}
-                        </div>
+                <span class="action-cell">
+                    <div class="link-buttons">
+                        ${trodoLink ? `<button class="lank-knapp trodo-btn" onclick="window.open('${trodoLink}', '_blank'); event.stopPropagation();">Trodo</button>` : ''}
+                        ${hasSecondaryLinks ? `
+                            <div class="link-dropdown-container">
+                                <button class="lank-knapp more-btn" onclick="toggleDropdown('${dropdownId}'); event.stopPropagation();">Mer</button>
+                                <div id="${dropdownId}" class="dropdown-menu">
+                                    ${aeroMLink ? `<button class="lank-knapp aero-m-btn" onclick="window.open('${aeroMLink}', '_blank'); closeDropdown('${dropdownId}'); event.stopPropagation();">AeroMotors</button>` : ''}
+                                    ${thansenLink ? `<button class="lank-knapp thansen-btn" onclick="window.open('${thansenLink}', '_blank'); closeDropdown('${dropdownId}'); event.stopPropagation();">Thansen</button>` : ''}
+                                    ${egenLink ? `<button class="lank-knapp egen-lank-btn" onclick="window.open('${egenLink}', '_blank'); closeDropdown('${dropdownId}'); event.stopPropagation();">Egen Länk</button>` : ''}
+                                </div>
+                            </div>
+                        ` : ''}
+                        ${!trodoLink && !hasSecondaryLinks ? '<span>(Saknas)</span>' : ''}
                     </div>
+                </span>
+
+                <div class="action-buttons">
+                    <button class="edit-btn" onclick="handleEdit(${item.id}); event.stopPropagation();">Ändra</button>
+                    <button class="delete-btn" onclick="handleDelete(${item.id}); event.stopPropagation();">Ta bort</button>
                 </div>
             `;
             
             return row;
         }
-        // --- SLUT ÄNDRING 1 & 2 ---
 
         function renderInventory(data) {
             serviceArtiklarLista.innerHTML = '';
@@ -1278,7 +1212,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 price: parseFloat(formData.get('price')) || 0.00,
                 quantity: parseInt(formData.get('quantity'), 10) || 0,
                 category: formData.get('category') || 'Övrigt', 
-                notes: (formData.get('notes') || '').trim().toUpperCase(), // FÖRBÄTTRING 3
+                notes: (formData.get('notes') || '').trim(),
                 link: (formData.get('link') || '').trim(),
                 lastUpdated: Date.now() // NYTT: För "Senast Hanterade"
             };
@@ -1354,7 +1288,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 price: parseFloat(editForm.querySelector('#edit-price').value) || 0.00,
                 quantity: parseInt(editForm.querySelector('#edit-quantity').value, 10) || 0,
                 category: editForm.querySelector('#edit-category').value,
-                notes: editForm.querySelector('#edit-notes').value.trim().toUpperCase(), // FÖRBÄTTRING 3
+                notes: editForm.querySelector('#edit-notes').value.trim(),
                 link: editForm.querySelector('#edit-link').value.trim(),
                 lastUpdated: Date.now() // NYTT: För "Senast Hanterade"
             };
@@ -1568,13 +1502,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             
             document.addEventListener('keydown', (e) => {
-                // --- FÖRBÄTTRING 1: "/" för att fokusera global sökning ---
-                if (e.key === '/' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'SELECT' && e.target.tagName !== 'TEXTAREA') {
-                    e.preventDefault();
-                    globalSearchInput.focus();
-                    globalSearchInput.select();
-                }
-                
                 if (e.key === 'Escape') {
                     closeEditModal();
                     closeConfirmationModal();
@@ -1586,14 +1513,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     // --- NYTT: Dölj sök-dropdowns ---
                     desktopSearchResults.style.display = 'none';
                     mobileSearchResults.style.display = 'none';
-                    
-                    // --- BUGGFIX: Återställ alla dropdown-containers ---
-                    document.querySelectorAll('.lager-container.is-showing-dropdown').forEach(c => {
-                        c.classList.remove('is-showing-dropdown');
-                    });
-                    document.querySelectorAll('.dropdown-menu.visible').forEach(d => {
-                        d.classList.remove('visible');
-                    });
                 }
             });
             
@@ -1675,17 +1594,6 @@ document.addEventListener('DOMContentLoaded', () => {
             appMenuCloseBtn.addEventListener('click', closeAppMenu);
             
             // BORTTAGEN: Listeners för OrderList
-            
-            // --- FÖRBÄTTRING 2: Mjuk återställning (Titel-knapp) ---
-            document.getElementById('soft-reset-btn').addEventListener('click', (e) => {
-                e.preventDefault();
-                if (desktopSearchInput.value !== '' || currentFilter !== 'Alla') {
-                    clearAndHideSearch(); // Rensar sökfält (både desktop/mobil)
-                    currentFilter = 'Alla'; // Återställ filter
-                    applySearchFilter(''); // Rendera om listan
-                }
-                window.scrollTo({ top: 0, behavior: 'smooth' }); // Skrolla alltid till toppen
-            });
             
             // NYTT: Exportera-knappar
             exportCsvBtn.addEventListener('click', exportToCSV);
@@ -1772,5 +1680,4 @@ document.addEventListener('DOMContentLoaded', () => {
         if(initialLoader) initialLoader.querySelector('p').textContent = 'Kritiskt fel vid initiering.';
     }
 });
-
 
