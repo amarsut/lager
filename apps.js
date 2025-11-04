@@ -259,14 +259,22 @@ document.addEventListener('DOMContentLoaded', () => {
             if (regNrRegex.test(searchTerm) || (cleanRegNr.length === 6 && regNrRegex.test(cleanRegNr))) {
                 
                 const biluppgifterLink = `https://biluppgifter.se/fordon/${cleanRegNr}#vehicle-data`;
+                const carInfoLink = `https://car.info/sv-se/license-plate/S/${cleanRegNr}#attributes`;
                 
                 biluppgifterResultContainer.innerHTML = `
                     <h4 class="internal-search-title">Fordonsuppslag:</h4>
                     <div class="provider-card">
                         <img src="https://biluppgifter.se/favicon/favicon.ico" alt="Biluppgifter.se" class="provider-card-logo">
                         <div class="provider-card-content">
-                            <span class="provider-card-name">${cleanRegNr}</span>
-                            <a href="${biluppgifterLink}" target="_blank" class="btn-provider-search">Visa Fordon</a>
+                            <span class="provider-card-name">${cleanRegNr} (Biluppgifter)</span>
+                            <a href="${biluppgifterLink}" target="_blank" class="btn-provider-search">Visa</a>
+                        </div>
+                    </div>
+                    <div class="provider-card">
+                        <img src="https://car.info/favicon.ico" alt="Car.info" class="provider-card-logo">
+                        <div class="provider-card-content">
+                            <span class="provider-card-name">${cleanRegNr} (Car.info)</span>
+                            <a href="${carInfoLink}" target="_blank" class="btn-provider-search">Visa</a>
                         </div>
                     </div>
                 `;
@@ -1680,4 +1688,5 @@ document.addEventListener('DOMContentLoaded', () => {
         if(initialLoader) initialLoader.querySelector('p').textContent = 'Kritiskt fel vid initiering.';
     }
 });
+
 
