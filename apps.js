@@ -826,11 +826,29 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
+        // ÄNDRINGEN SKER INUTI calculateRelevance-funktionen
+
         function calculateRelevance(item, searchWords) {
-            let score = 0; const serviceFilter = (item.service_filter || '').toLowerCase(); const name = (item.name || '').toLowerCase(); const notes = (item.notes || '').toLowerCase(); const category = (item.category || '').toLowerCase();
+            let score = 0; 
+            
+            // START PÅ ÄNDRING
+            // Normalisera service_filter genom att ta bort alla mellanslag (\s/g)
+            const serviceFilter = (item.service_filter || '').toLowerCase().replace(/\s/g, ''); 
+            // SLUT PÅ ÄNDRING
+            
+            const name = (item.name || '').toLowerCase(); 
+            const notes = (item.notes || '').toLowerCase(); 
+            const category = (item.category || '').toLowerCase();
+            
             searchWords.forEach(word => {
-                const cleanWord = word.replace(/[^a-z0-9]/g, ''); if (serviceFilter.includes(cleanWord)) { score += 5; } if (name.includes(cleanWord)) { score += 3; } if (category.includes(cleanWord)) { score += 2; } if (notes.includes(cleanWord)) { score += 1; } if (serviceFilter === cleanWord || name === cleanWord) { score += 5; }
-            }); return score;
+                const cleanWord = word.replace(/[^a-z0-9]/g, ''); 
+                if (serviceFilter.includes(cleanWord)) { score += 5; } 
+                if (name.includes(cleanWord)) { score += 3; } 
+                if (category.includes(cleanWord)) { score += 2; } 
+                if (notes.includes(cleanWord)) { score += 1; } 
+                if (serviceFilter === cleanWord || name === cleanWord) { score += 5; }
+            }); 
+            return score;
         }
 
         // --- ÄNDRAD: Funktion för att rendera sök-dropdown ---
@@ -1662,3 +1680,4 @@ document.addEventListener('DOMContentLoaded', () => {
         if(initialLoader) initialLoader.querySelector('p').textContent = 'Kritiskt fel vid initiering.';
     }
 });
+
