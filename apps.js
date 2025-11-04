@@ -1467,15 +1467,27 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const handleSearchInput = (e) => {
                 const term = e.target.value;
+            
+                // Synkronisera värden (om båda fälten finns)
                 if (e.target.id === 'desktop-search-input') {
-                    mobileSearchInput.value = term;
+                    if (mobileSearchInput) { // <-- NY KONTROLL
+                        mobileSearchInput.value = term;
+                    }
                 } else {
-                    desktopSearchInput.value = term;
+                    if (desktopSearchInput) { // <-- NY KONTROLL
+                        desktopSearchInput.value = term;
+                    }
                 }
                 
                 const showClear = term.length > 0;
-                desktopClearSearchBtn.style.display = showClear ? 'block' : 'none';
-                mobileClearSearchBtn.style.display = showClear ? 'block' : 'none';
+            
+                // Visa/dölj "Rensa"-knappar (om de finns)
+                if (desktopClearSearchBtn) { // <-- NY KONTROLL
+                    desktopClearSearchBtn.style.display = showClear ? 'block' : 'none';
+                }
+                if (mobileClearSearchBtn) { // <-- NY KONTROLL
+                    mobileClearSearchBtn.style.display = showClear ? 'block' : 'none';
+                }
                 
                 applySearchFilter(term);
             };
@@ -1736,6 +1748,7 @@ document.addEventListener('DOMContentLoaded', () => {
         else console.error("Kunde inte visa felmeddelande i UI.");
     }
 });
+
 
 
 
