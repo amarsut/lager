@@ -1513,9 +1513,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         function scrollToAndHighlight(itemId) {
-            const element = document.querySelector(`.artikel-rad[data-id="${itemId}"], .artikel-kort[data-id="${itemId}"]`);
+            // 1. Hitta ALLA element som matchar (både desktop och mobil)
+            const elements = document.querySelectorAll(`.artikel-rad[data-id="${itemId}"], .artikel-kort[data-id="${itemId}"]`);
+            
+            if (elements.length === 0) return; // Hittade ingenting alls
+
+            // 2. Hitta det element som FAKTISKT SYNS (inte har display: none)
+            //    Detta löser mobil-buggen.
+            const element = Array.from(elements).find(el => {
+                return window.getComputedStyle(el).display !== 'none';
+            });
             
             if (element) {
+                // 3. KÖR DIN BEFINTLIGA KOD PÅ DET SYNLIGA ELEMENTET
                 
                 // --- KONTROLLERA OM PANELEN ÄR STÄNGD ---
                 const wrapper = element.closest('.lager-wrapper');
@@ -1534,7 +1544,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         localStorage.setItem(title.id, 'open'); // title.id är redan rätt nyckel
                     }
                 }
-                // --- SLUT PÅ NY KOD ---
+                // --- SLUT PÅ PANEL-KONTROLL ---
 
                 // Den gamla logiken körs nu *efter* panelen garanterat är öppen
                 element.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -2145,6 +2155,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if(initialLoader) initialLoader.querySelector('p').textContent = 'Kritiskt fel vid initiering.';
     }
 });
+
 
 
 
