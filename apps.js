@@ -323,10 +323,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 externalResultsContainer.innerHTML = '';
                 exportLinksContainer.style.display = 'none';
                 searchDisclaimer.style.display = 'none';
-                globalSearchResults.classList.add('visible');
+                globalSearchResults.style.display = 'block';
 
                 document.getElementById('global-search-close-btn').addEventListener('click', () => { 
-                  globalSearchResults.classList.remove('visible');
+                  globalSearchResults.style.display = 'none'; 
                 });
                 
                 document.querySelector('.global-search-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -342,7 +342,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 externalResultsContainer.innerHTML = '';
                 exportLinksContainer.style.display = 'none';
                 searchDisclaimer.style.display = 'none';
-                globalSearchResults.classList.add('visible');
+                globalSearchResults.style.display = 'block';
                 currentExternalLinks = []; 
                 
                 document.querySelector('.global-search-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -426,7 +426,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 
                 document.getElementById('global-search-close-btn').addEventListener('click', () => { 
-                  globalSearchResults.classList.remove('visible');
+                  globalSearchResults.style.display = 'none'; 
                 });
                 
             } catch (error) {
@@ -2037,6 +2037,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if(initialLoader) initialLoader.querySelector('p').textContent = 'Kritiskt fel vid initiering.';
     }
 });
+
 
 
 
