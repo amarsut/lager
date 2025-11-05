@@ -814,6 +814,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // --- ÄNDRAD: `createInventoryRow` för att använda den nya popover-knappen ---
+        // --- ÄNDRAD: `createInventoryRow` för att återinföra sök-knappen ---
         function createInventoryRow(item, isOutOfStock) {
             const row = document.createElement('div');
             row.className = 'artikel-rad';
@@ -830,10 +831,26 @@ document.addEventListener('DOMContentLoaded', () => {
             const safeServiceFilter = escapeHTML(item.service_filter).replace(/'/g, "\\'");
             const safeName = escapeHTML(item.name).replace(/'/g, "\\'");
 
-            // --- ÄNDRAD: Mallen har nu 7 kolumner ---
+            // --- ÅTERINFÖRD: Logik för primär sök-knapp ---
+            // (Denna behövdes för att knappen ska veta vilken länk den ska öppna)
+            const trodoLink = generateTrodoLink(item.service_filter);
+            const aeroMLink = generateAeroMLink(item.service_filter);
+            const egenLink = item.link;
+            
+            const primarySearchLink = trodoLink || aeroMLink || egenLink;
+            const primarySearchText = trodoLink ? 'Trodo' : (aeroMLink ? 'AeroMotors' : (egenLink ? 'Egen Länk' : ''));
+            // --- SLUT ÅTERINFÖRD ---
+
+
+            // --- ÄNDRAD: Mallen har nu 7 kolumner (med sök-knappen tillbaka) ---
             row.innerHTML = `
                 <span class="cell-copy-wrapper">
-                    ${'' /* Sök-knappen togs bort, läggs till i popover */}
+                
+                    ${primarySearchLink ? `
+                        <button class="search-btn" onclick="window.open('${primarySearchLink}', '_blank'); event.stopPropagation();" title="Sök på ${primarySearchText}">
+                            <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>
+                        </button>
+                    ` : ''}
                     <button class="copy-btn" onclick="copyToClipboard(this, '${safeServiceFilter}'); event.stopPropagation();" title="Kopiera Artikelnummer">&#x1F4CB;</button>
                     <span class="cell-copy-text">${escapeHTML(item.service_filter)}</span>
                 </span>
@@ -1818,3 +1835,4 @@ document.addEventListener('DOMContentLoaded', () => {
         if(initialLoader) initialLoader.querySelector('p').textContent = 'Kritiskt fel vid initiering.';
     }
 });
+
