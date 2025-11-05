@@ -766,10 +766,12 @@
         border-top: 1px solid var(--border-color);
     }
     .artikel-kort-footer .notes-cell {
+        display: block; /* <-- ÄNDRING: Bytt från flex till block */
         white-space: normal; /* Tillåt radbrytning */
         overflow-wrap: break-word; /* Bryt långa ord */
         overflow: visible;
         font-size: 0.9em;
+        line-height: 1.4; /* <-- NYTT: Förbättrat radavstånd */
     }
     /* --- SLUT MOBIL KORT-VY --- */
 
@@ -2614,6 +2616,7 @@
 
 </body>
 </html>
+
 
 
 
