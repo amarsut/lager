@@ -1999,6 +1999,19 @@
         .lager-container .artikel-kort-lista {
             display: flex; /* Visa mobil-kortlistan */
         }
+        /* --- NYTT: Fix för radbrytning av anteckningar i mobil-kort --- */
+        .artikel-kort-footer .notes-cell {
+            display: block; /* Tvinga block-kontext, inte flex */
+            white-space: normal; /* Tillåt normal radbrytning */
+            overflow-wrap: break-word; /* Bryt långa ord */
+            line-height: 1.45; /* Lite mer luft mellan raderna */
+        }
+        .artikel-kort-footer .plate-tag {
+            display: inline-block; /* Byt från inline-flex */
+            flex-shrink: 1; /* Tillåt krympning (tar bort "förbudet") */
+            vertical-align: middle;
+        }
+        /* --- SLUT NY FIX --- */
         /* --- SLUT NYTT KORT-VY --- */
         
         
@@ -2616,6 +2629,7 @@
 
 </body>
 </html>
+
 
 
 
