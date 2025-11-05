@@ -657,10 +657,11 @@
         border-bottom: 1px solid var(--border-color);
         padding-bottom: 8px; /* Mer kompakt */
         margin-bottom: 10px; /* Mer kompakt */
+        overflow: hidden; /* <-- LÄGG TILL DENNA RAD */
     }
     .artikel-kort-header-text {
-        flex: 1; /* ÄNDRING: Ersätter 'flex-grow: 1' */
-        min-width: 0; /* VIKTIG: Tvingar texten att kunna krympa */
+        flex: 1; /* Bygger på flex-grow: 1 */
+        min-width: 0; /* Tvingar texten att kunna krympa */
         overflow: hidden; /* Klipper text som ändå inte får plats */
     }
     .artikel-kort-artnr-wrapper { /* Wrapper för Artnr */
@@ -2604,6 +2605,7 @@
 
 </body>
 </html>
+
 
 
 
