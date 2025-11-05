@@ -26,6 +26,10 @@ if ('serviceWorker' in navigator) {
 
 document.addEventListener('DOMContentLoaded', () => {
     // --- NYTT: Skrolla till toppen vid omladdning ---
+    // Säkerställer att sidan startar högst upp
+    if ('scrollRestoration' in history) {
+        history.scrollRestoration = 'manual';
+    }
     window.scrollTo(0, 0);
     // --- SLUT NYTT ---
     
@@ -224,10 +228,15 @@ document.addEventListener('DOMContentLoaded', () => {
         function generateBildelsbasenLink(f) { if (!f) return null; const s = encodeURIComponent(f.replace(/[\s-]/g, '')); return `https://bildelsbasen.se/sv-se/OEM/${s}`; }
         function generateReservdelar24Link(f) { if (!f) return null; const s = encodeURIComponent(f.replace(/[\s-]/g, '')); return `https://reservdelar24.se/suche.html?keyword=${s}`; }
         
+        // --- NYTT: Funktion för att dölja sökresultat ---
+        function hideSearchDropdowns() {
+            desktopSearchResults.style.display = 'none';
+            mobileSearchResults.style.display = 'none';
+        }
+        
         document.addEventListener('click', (e) => {
             if (!e.target.closest('.search-wrapper') && !e.target.closest('#sticky-search-bar')) {
-                desktopSearchResults.style.display = 'none';
-                mobileSearchResults.style.display = 'none';
+                hideSearchDropdowns();
             }
             if (isPopoverOpen && !e.target.closest('#row-action-popover') && !e.target.closest('.row-action-btn')) {
                 closeRowActionPopover();
@@ -318,7 +327,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     globalSearchResults.style.display = 'none'; 
                 });
                 
-                // --- ÄNDRAD: Skrollar till toppen av resultat-containern ---
                 globalSearchResults.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 
                 globalSearchBtn.disabled = false;
@@ -335,7 +343,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 globalSearchResults.style.display = 'block';
                 currentExternalLinks = []; 
                 
-                // --- ÄNDRAD: Skrollar till toppen av resultat-containern ---
                 globalSearchResults.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
                 // 1. Interna resultat
@@ -352,7 +359,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 internalResultsContainer.innerHTML = internalHTML;
                 if (internalMatches.length === 0) {
                     quickAddFromSearchBtn.innerHTML = `<span class="icon-span">add_circle</span>Lägg till "${searchTerm}" i lagret`;
-                    // --- ÄNDRAD: Sparar hela söktermen för "smart add" ---
                     quickAddFromSearchBtn.setAttribute('data-search-term', searchTerm);
                     internalResultsContainer.appendChild(quickAddFromSearchBtn);
                 }
@@ -1002,10 +1008,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         function renderSearchDropdown(searchTerm, results) {
             if (searchTerm.length < 1 || results.length === 0) {
-                desktopSearchResults.innerHTML = '';
-                mobileSearchResults.innerHTML = '';
-                desktopSearchResults.style.display = 'none';
-                mobileSearchResults.style.display = 'none';
+                hideSearchDropdowns();
                 return;
             }
 
@@ -1039,8 +1042,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             desktopSearchResults.innerHTML = '';
             mobileSearchResults.innerHTML = '';
-            desktopSearchResults.style.display = 'none';
-            mobileSearchResults.style.display = 'none';
+            hideSearchDropdowns();
             
             desktopClearSearchBtn.style.display = 'none';
             mobileClearSearchBtn.style.display = 'none';
@@ -1117,7 +1119,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 btn.classList.toggle('active', btn.getAttribute('data-filter') === currentFilter);
             });
             
-            // --- ÄNDRAD: Hanterar "Slut"-klass för filter-badge ---
             if (currentFilter !== 'Alla') {
                 toolbarFilterBadge.textContent = currentFilter.toUpperCase();
                 toolbarFilterBadge.style.display = 'inline-flex';
@@ -1316,7 +1317,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return isValid;
         }
         
-        // --- ÄNDRAD: Hanterar både .artikel-rad och .artikel-kort ---
         function scrollToAndHighlight(itemId) {
             const element = document.querySelector(`.artikel-rad[data-id="${itemId}"], .artikel-kort[data-id="${itemId}"]`);
             
@@ -1327,7 +1327,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 element.classList.add('highlight');
                 
-                // Hitta och markera tvillingen
                 const twinSelector = element.classList.contains('artikel-rad') 
                     ? `.artikel-kort[data-id="${itemId}"]` 
                     : `.artikel-rad[data-id="${itemId}"]`;
@@ -1378,7 +1377,6 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => scrollToAndHighlight(newItem.id), 300);
         }
         
-        // --- ÄNDRAD: Hanterar både .artikel-rad och .artikel-kort ---
         function handleRowSelect(id, element) {
             document.querySelectorAll('.artikel-rad.selected, .artikel-kort.selected').forEach(r => r.classList.remove('selected'));
             
@@ -1388,7 +1386,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 selectedItemId = id; 
                 element.classList.add('selected'); 
                 
-                // Markera tvillingen
                 const twinSelector = element.classList.contains('artikel-rad') 
                     ? `.artikel-kort[data-id="${id}"]` 
                     : `.artikel-rad[data-id="${id}"]`;
@@ -1487,7 +1484,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     requestAnimationFrame(() => {
                         element.classList.add('flash-quantity');
                     });
-                    setTimeout(() => element.classList.remove('flash-quantity'), 800); // Ta bort efter animation
+                    // Ta bort klassen efter att animationen är klar
+                    element.addEventListener('animationend', () => {
+                        element.classList.remove('flash-quantity');
+                    }, { once: true });
                 }
                 // --- SLUT NYTT ---
             }
@@ -1518,7 +1518,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 if (row) {
                     row.classList.add('flash-success');
-                    setTimeout(() => row.classList.remove('flash-success'), 800);
+                    row.addEventListener('animationend', () => {
+                        row.classList.remove('flash-success');
+                    }, { once: true });
                 }
                 
                 setTimeout(() => {
@@ -1587,6 +1589,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 addForm.querySelectorAll('.form-warning').forEach(el => el.textContent = '');
                 addForm.querySelectorAll('.has-error').forEach(el => el.classList.remove('has-error'));
                 quickCategoryBtns.forEach(b => b.classList.remove('active'));
+            });
+            
+            // --- NYTT: Lyssnare för Antal-knappar i "Lägg till"-formulär ---
+            document.getElementById('add-qty-plus').addEventListener('click', () => {
+                const input = document.getElementById('add-quantity');
+                input.value = parseInt(input.value || 0, 10) + 1;
+            });
+            document.getElementById('add-qty-minus').addEventListener('click', () => {
+                const input = document.getElementById('add-quantity');
+                input.value = Math.max(0, parseInt(input.value || 0, 10) - 1);
             });
             
             editForm.addEventListener('submit', handleEditSubmit);
@@ -1683,12 +1695,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     if(globalSearchResults.style.display === 'block') {
                         globalSearchResults.style.display = 'none';
                     }
-                    desktopSearchResults.style.display = 'none';
-                    mobileSearchResults.style.display = 'none';
+                    hideSearchDropdowns();
                 }
             });
             
-            // --- ÄNDRAD: Rensar sökfältet vid sortering ---
             document.querySelectorAll('.header span[data-sort]').forEach(header => {
                 header.addEventListener('click', () => {
                     const column = header.getAttribute('data-sort');
@@ -1724,7 +1734,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 handleCopyAllLinks(e.currentTarget, 'json');
             });
             
-            // --- ÄNDRAD: "Smart" ifyllnad för quick-add ---
             quickAddFromSearchBtn.addEventListener('click', () => {
                 const searchTerm = quickAddFromSearchBtn.getAttribute('data-search-term');
                 
@@ -1842,9 +1851,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const backToTopBtn = document.getElementById('back-to-top-btn');
             if (backToTopBtn) {
+                // --- ÄNDRAD: Dölj sökresultat vid skrollning ---
                 window.addEventListener('scroll', () => { 
                     backToTopBtn.style.display = window.scrollY > 300 ? 'flex' : 'none'; 
                     closeRowActionPopover();
+                    hideSearchDropdowns(); // <-- NYTT
                 });
                 backToTopBtn.addEventListener('click', () => { window.scrollTo({ top: 0, behavior: 'smooth' }); });
             }
