@@ -1277,7 +1277,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     const itemId = e.currentTarget.getAttribute('data-id');
                     clearAndHideSearch();
-                    scrollToAndHighlight(itemId);
+                    scrollToAndHighlight(itemId, false);
                     
                     setTimeout(() => {
                         isNavigatingViaSearch = false;
@@ -2159,6 +2159,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if(initialLoader) initialLoader.querySelector('p').textContent = 'Kritiskt fel vid initiering.';
     }
 });
+
 
 
 
