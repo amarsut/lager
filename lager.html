@@ -652,7 +652,7 @@
     .artikel-kort-header {
         display: flex;
         justify-content: space-between;
-        align-items: flex-start;
+        align-items: center; /* ÄNDRAD: Vertikal centrering */
         gap: 8px; /* Mer kompakt */
         border-bottom: 1px solid var(--border-color);
         padding-bottom: 8px; /* Mer kompakt */
@@ -662,7 +662,7 @@
         min-width: 0; /* Förhindra overflow */
         flex-grow: 1;
     }
-    .artikel-kort-artnr-wrapper { /* Wrapper för Artnr + knappen */
+    .artikel-kort-artnr-wrapper { /* Wrapper för Artnr */
         display: flex;
         align-items: center;
         gap: 8px;
@@ -677,11 +677,8 @@
         flex-grow: 1;
         min-width: 0; /* Ta inte mer plats än nödvändigt */
     }
-    .artikel-kort-artnr-wrapper .copy-btn { /* Styla knappen i headern */
-        flex-shrink: 0;
-        padding: 4px 6px; /* Aningen större */
-        font-size: 1em; /* Aningen större ikon */
-    }
+    
+    /* BORTTAGEN: .artikel-kort-artnr-wrapper .copy-btn */
     
     [data-theme="dark"] .artikel-kort-artnr {
         color: var(--primary-color);
@@ -695,9 +692,43 @@
         text-overflow: ellipsis;
         margin-top: 2px;
     }
-    .artikel-kort-header .row-action-btn {
+
+    /* BORTTAGEN: .artikel-kort-header .row-action-btn */
+
+    /* --- NYTT: Knappar i mobil-kort-vy --- */
+    .artikel-kort-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px; /* Mellanrum mellan knappar */
         flex-shrink: 0;
     }
+    .artikel-kort-actions .copy-btn,
+    .artikel-kort-actions .search-btn,
+    .artikel-kort-actions .row-action-btn {
+        width: 34px; /* Samma bredd */
+        height: 34px; /* Samma höjd */
+        padding: 6px; /* Centrera ikon */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-sizing: border-box;
+    }
+    .artikel-kort-actions .copy-btn {
+        font-size: 1.1em; /* Anpassa ikonstorlek */
+    }
+    .artikel-kort-actions .search-btn svg {
+        width: 18px; /* Anpassa ikonstorlek */
+        height: 18px; /* Anpassa ikonstorlek */
+    }
+    .artikel-kort-actions .row-action-btn {
+        padding: 6px; /* Åsidosätt default */
+    }
+    .artikel-kort-actions .row-action-btn .icon-span {
+        font-size: 1.4em; /* Behåll befintlig storlek */
+        margin: 0;
+    }
+    /* --- SLUT NYTT --- */
+
     .artikel-kort-body {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -2539,3 +2570,4 @@
 
 </body>
 </html>
+
