@@ -32,6 +32,18 @@ document.addEventListener('DOMContentLoaded', () => {
     window.scrollTo(0, 0);
     // --- SLUT NYTT ---
     
+    // --- VIKTIGT: Flyttade updateSyncStatus UTANFÖR try...catch ---
+    // Detta gör att vi kan rapportera fel ÄVEN om try-blocket kraschar
+    const syncStatusElement = document.getElementById('sync-status');
+    function updateSyncStatus(status, message) {
+        if (!syncStatusElement) return;
+        syncStatusElement.classList.remove('flash');
+        syncStatusElement.className = `sync-${status}`;
+        syncStatusElement.title = message;
+        const textEl = syncStatusElement.querySelector('.text');
+        if (textEl) textEl.textContent = message;
+    }
+    
     try {
         // Initialisera Firebase
         const app = initializeApp(firebaseConfig);
@@ -71,7 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const editModal = document.getElementById('editModal');
         const editForm = document.getElementById('edit-article-form');
         const confirmationModal = document.getElementById('confirmationModal');
-        const syncStatusElement = document.getElementById('sync-status');
+        // syncStatusElement är redan definierad utanför try-blocket
         
         // Global sök
         const globalSearchInput = document.getElementById('global-search-input');
@@ -88,6 +100,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Toolbar
         const toolbarFilterBadge = document.getElementById('toolbar-filter-badge');
+        // --- **** FIX: toolbarAddBtn saknades **** ---
+        const toolbarAddBtn = document.getElementById('toolbar-add-btn');
+        // --- **** SLUT FIX **** ---
 
         // Formulär-hjälpmedel
         const pasteArtnrBtn = document.getElementById('paste-artnr-btn');
@@ -230,7 +245,6 @@ document.addEventListener('DOMContentLoaded', () => {
         function generateBildelsbasenLink(f) { if (!f) return null; const s = encodeURIComponent(f.replace(/[\s-]/g, '')); return `https://bildelsbasen.se/sv-se/OEM/${s}`; }
         function generateReservdelar24Link(f) { if (!f) return null; const s = encodeURIComponent(f.replace(/[\s-]/g, '')); return `https://reservdelar24.se/suche.html?keyword=${s}`; }
         
-        // --- NYTT: Funktion för att dölja sökresultat ---
         function hideSearchDropdowns() {
             desktopSearchResults.style.display = 'none';
             mobileSearchResults.style.display = 'none';
@@ -356,7 +370,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     const itemServiceFilter = (item.service_filter || '').toUpperCase().replace(/\s/g, '');
                     const itemName = (item.name || '').toUpperCase();
                     
-                    // Kollar både med och utan mellanslag för bästa matchning
                     return itemServiceFilter.includes(searchTermNoSpace) || itemName.includes(searchTerm);
                 });
                 // --- SLUT ÄNDRING ---
@@ -761,15 +774,6 @@ document.addEventListener('DOMContentLoaded', () => {
             badges.motorChassi.textContent = `${motorItems.length} st`;
             badges.andraMarken.textContent = `${andraItems.length} st`;
             badges.slutILager.textContent = `${slutItems.length} st`;
-        }
-
-        function updateSyncStatus(status, message) {
-            if (!syncStatusElement) return;
-            syncStatusElement.classList.remove('flash');
-            syncStatusElement.className = `sync-${status}`;
-            syncStatusElement.title = message;
-            const textEl = syncStatusElement.querySelector('.text');
-            if (textEl) textEl.textContent = message;
         }
 
         function escapeHTML(str) {
@@ -1951,7 +1955,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     } catch (e) {
         console.error("App Initialization Error:", e);
-        updateSyncStatus('error', 'Initieringsfel!'); 
+        updateSyncStatus('error', 'Initieringsfel! Se konsol.'); 
         if(initialLoader) initialLoader.querySelector('p').textContent = 'Kritiskt fel vid initiering.';
     }
 });
