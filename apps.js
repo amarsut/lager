@@ -83,10 +83,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const toolbarFilterBadge = document.getElementById('toolbar-filter-badge');
 
         // Modaler & Formulär
-        // --- NYTT: "Lägg till"-modal ---
-        const addItemModal = document.getElementById('addModal'); // Ändra ID i HTML
+        const addItemModal = document.getElementById('addModal');
         const addForm = document.getElementById('add-article-form');
-        const addFormCancelBtn = document.getElementById('add-form-cancel-btn');
         const addFormSubmitBtn = addForm.querySelector('button[type="submit"]');
 
         const editModal = document.getElementById('editModal');
@@ -554,7 +552,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         function exportToJSON() {
             const dataStr = JSON.stringify(inventory, null, 2);
-            downloadFile(dataStr, 'lager_export.json', 'application/json');
+            downloadFile('lager_export.json', dataStr, 'application/json');
             showToast('Lager exporterat som JSON', 'success');
         }
 
@@ -576,13 +574,13 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             
             const csvContent = [headers, ...rows].join('\n');
-            downloadFile(csvContent, 'lager_export.csv', 'text/csv;charset=utf-8;');
+            downloadFile('lager_export.csv', csvContent, 'text/csv;charset=utf-8;');
             showToast('Lager exporterat som CSV', 'success');
         }
 
 
         // ----------------------------------------------------------------------
-        // MODAL-HANTERING (NYTT)
+        // MODAL-HANTERING (ÄNDRAD)
         // ----------------------------------------------------------------------
         
         /**
@@ -592,13 +590,19 @@ document.addEventListener('DOMContentLoaded', () => {
         function openModal(modalId) {
             const modal = document.getElementById(modalId);
             if (!modal) return;
+
+            // --- NYTT: Lås bakgrunds-scroll ---
+            document.body.style.overflow = 'hidden';
             
             modal.style.display = 'flex';
-            modal.classList.add('open');
-            // Fokusera på det första formulärfältet
-            const firstInput = modal.querySelector('input, select');
+            // En liten fördröjning så att CSS-animationen hinner starta
+            setTimeout(() => {
+                modal.classList.add('open');
+            }, 10); 
+
+            const firstInput = modal.querySelector('input[type="text"], input[type="number"], select');
             if (firstInput) {
-                setTimeout(() => firstInput.focus(), 50); // Liten fördröjning för animation
+                setTimeout(() => firstInput.focus(), 100); // Liten fördröjning för animation
             }
         }
 
@@ -609,20 +613,26 @@ document.addEventListener('DOMContentLoaded', () => {
         function closeModal(modalIdentifier) {
             const modal = (typeof modalIdentifier === 'string')
                 ? document.getElementById(modalIdentifier)
-                : modalIdentifier;
+                : (modalIdentifier.closest ? modalIdentifier.closest('.modal') : null);
 
-            if (!modal) return;
+            if (!modal || !modal.classList.contains('open')) return;
+            
+            // --- NYTT: Lås upp bakgrunds-scroll ---
+            document.body.style.overflow = '';
             
             modal.classList.remove('open');
             
-            // Vänta tills CSS-animationen (pop-out) är klar
-            modal.addEventListener('animationend', () => {
+            // Lyssna efter att animationen är klar innan display: none
+            const onAnimationEnd = () => {
                 if (!modal.classList.contains('open')) {
                     modal.style.display = 'none';
                 }
-            }, { once: true });
+                modal.removeEventListener('animationend', onAnimationEnd);
+            };
+            
+            modal.addEventListener('animationend', onAnimationEnd);
 
-            // Om animationen inte körs (t.ex. vid snabb stängning), fall-back
+            // Fallback om animationend-eventet av nån anledning inte körs
             setTimeout(() => {
                  if (!modal.classList.contains('open')) {
                     modal.style.display = 'none';
@@ -1306,8 +1316,6 @@ document.addEventListener('DOMContentLoaded', () => {
         async function deleteInventoryItem(itemId) { const itemRef = doc(db, INVENTORY_COLLECTION, String(itemId)); await deleteDoc(itemRef); }
         
         function setupRealtimeListener() {
-            // --- NYTT: Lägg till standard sortering på `name` i Firebase-frågan ---
-            // Detta säkerställer att vi får en förutsägbar grundsortering
             const q = query(collection(db, INVENTORY_COLLECTION), firestoreOrderBy("name"));
             
             onSnapshot(q, (querySnapshot) => {
@@ -1315,7 +1323,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 querySnapshot.forEach((doc) => { tempInventory.push(doc.data()); });
                 inventory = tempInventory;
                 
-                // Om ingen sortering är vald, använd standardsorteringen från DB
                 if (!currentSort.column) {
                     currentSort = { column: 'name', direction: 'asc' };
                 }
@@ -1363,7 +1370,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         function validateForm(form, isEdit = false) {
             let isValid = true;
-            // Rensa tidigare fel
             form.querySelectorAll('.has-error').forEach(el => el.classList.remove('has-error'));
             form.querySelectorAll('.form-warning').forEach(el => el.textContent = '');
 
@@ -1372,28 +1378,24 @@ document.addEventListener('DOMContentLoaded', () => {
             requiredFields.forEach(field => {
                 if (!field.value || field.value.trim() === '') {
                     isValid = false;
-                    const wrapper = field.closest('div'); // Kan behöva justeras
+                    const wrapper = field.closest('.form-field-full, .form-field-half');
                     if (wrapper) {
                         wrapper.classList.add('has-error');
                         const warningEl = wrapper.querySelector('.form-warning');
                         if (warningEl) {
                             warningEl.textContent = 'Detta fält är obligatoriskt.';
                         }
-                    } else {
-                        // Fallback om strukturen är annorlunda
-                        field.classList.add('has-error');
                     }
                 }
             });
             
-            // Kolla dubbletter på artikelnummer BARA vid "lägg till"
             if (!isEdit) {
                 const serviceFilterField = form.querySelector('#add_service_filter');
                 const serviceFilter = (serviceFilterField.value || '').trim().toUpperCase();
                 
                 if (serviceFilter && inventory.some(item => item.service_filter === serviceFilter)) {
                     isValid = false;
-                    const wrapper = serviceFilterField.closest('div');
+                    const wrapper = serviceFilterField.closest('.form-field-full');
                     if (wrapper) {
                         wrapper.classList.add('has-error');
                         const warningEl = wrapper.querySelector('.form-warning');
@@ -1404,7 +1406,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
             
-            // --- NYTT: Skaka modalen vid fel ---
             if (!isValid) {
                 const modalContent = form.closest('.modal-content');
                 if (modalContent) {
@@ -1445,8 +1446,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            const formData = new FormData(addForm);
-            const serviceFilter = (formData.get('service_filter') || '').trim().toUpperCase();
+            const serviceFilter = (addForm.querySelector('#add_service_filter').value || '').trim().toUpperCase();
 
             addFormSubmitBtn.disabled = true; 
             addFormSubmitBtn.innerHTML = '<span class="icon-span">hourglass_top</span>Sparar...';
@@ -1454,22 +1454,22 @@ document.addEventListener('DOMContentLoaded', () => {
             const newItem = {
                 id: Date.now(), 
                 service_filter: serviceFilter, 
-                name: (formData.get('name') || '').trim().toUpperCase(), 
-                price: parseFloat(formData.get('price')) || 0.00,
-                quantity: parseInt(formData.get('quantity'), 10) || 0,
-                category: formData.get('category') || 'Övrigt', 
-                notes: (formData.get('notes') || '').trim(),
-                link: (formData.get('link') || '').trim(),
+                name: (addForm.querySelector('#add_name').value || '').trim().toUpperCase(), 
+                price: parseFloat(addForm.querySelector('#add_price').value) || 0.00,
+                quantity: parseInt(addForm.querySelector('#add-quantity').value, 10) || 0,
+                category: addForm.querySelector('#add_category').value || 'Övrigt', 
+                notes: (addForm.querySelector('#add_notes').value || '').trim(),
+                link: (addForm.querySelector('#add_link').value || '').trim(),
                 lastUpdated: Date.now()
             };
             
             await saveInventoryItem(newItem);
             
             addForm.reset();
-            // Återställ fält som .reset() kan missa (t.ex. värden satta av JS)
             addForm.querySelector('#add-quantity').value = 1; 
             addForm.querySelectorAll('.form-warning').forEach(el => el.textContent = '');
             addForm.querySelectorAll('.has-error').forEach(el => el.classList.remove('has-error'));
+            addForm.querySelectorAll('.quick-category-btn').forEach(b => b.classList.remove('active'));
             
             addFormSubmitBtn.disabled = false; 
             addFormSubmitBtn.innerHTML = '<span class="icon-span">save</span>Spara Artikel';
@@ -1528,7 +1528,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     editFormSubmitBtn.innerHTML = '<span class="icon-span">save</span>Spara Ändringar';
                 }
                 
-                openModal('editModal'); // Använd den nya funktionen
+                openModal('editModal');
             }
         }
 
@@ -1563,7 +1563,7 @@ document.addEventListener('DOMContentLoaded', () => {
             editFormSubmitBtn.disabled = false; 
             editFormSubmitBtn.innerHTML = originalHTML;
             
-            closeModal(editModal); // Använd den nya funktionen
+            closeModal(editModal);
             
             showToast('Ändringar sparade!', 'success');
             
@@ -1630,7 +1630,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         
         function closeConfirmationModal() { 
-            closeModal(confirmationModal); // Använd den nya funktionen
+            closeModal(confirmationModal);
             confirmCallback = null; 
         }
 
@@ -1653,7 +1653,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 iconEl.style.color = 'var(--primary-color)';
             }
             
-            openModal('confirmationModal'); // Använd den nya funktionen
+            openModal('confirmationModal');
             confirmCallback = callback;
         }
         
@@ -1680,11 +1680,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         function initializeListeners() {
             addForm.addEventListener('submit', handleFormSubmit);
-            if (addFormCancelBtn) {
-                addFormCancelBtn.addEventListener('click', () => closeModal(addItemModal));
-            }
             
-            // --- NYTT: Lyssnare för Antal-knappar i "Lägg till"-formulär ---
             document.getElementById('add-qty-plus').addEventListener('click', () => {
                 const input = document.getElementById('add-quantity');
                 input.value = parseInt(input.value || 0, 10) + 1;
@@ -1694,7 +1690,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 input.value = Math.max(0, parseInt(input.value || 0, 10) - 1);
             });
             
-            // --- NYTT: Lyssnare för Antal-knappar i "Redigera"-formulär ---
             document.getElementById('edit-qty-plus').addEventListener('click', () => {
                 const input = document.getElementById('edit-quantity');
                 input.value = parseInt(input.value || 0, 10) + 1;
@@ -1722,10 +1717,36 @@ document.addEventListener('DOMContentLoaded', () => {
             desktopSearchInput.addEventListener('input', handleSearchInput);
             mobileSearchInput.addEventListener('input', handleSearchInput);
         
+            // --- ÄNDRAD: Lade till scroll-logik vid Enter ---
             const handleSearchKeydown = (e) => {
                 if (e.key === 'Enter') {
                     e.preventDefault();
-                    e.target.blur(); 
+                    e.target.blur(); // Dölj tangentbordet
+
+                    // --- NYTT: Skrolla till filter-knapparna ---
+                    const targetElement = document.getElementById('category-filter-bar');
+                    if (targetElement) {
+                        let stickyHeaderHeight = 0;
+                        const stickyToolbar = document.querySelector('.top-toolbar');
+                        const stickySearchBar = document.getElementById('sticky-search-bar');
+                        
+                        // Hitta vilket sticky-element som är aktivt
+                        if (stickyToolbar && window.getComputedStyle(stickyToolbar).position === 'sticky') {
+                            stickyHeaderHeight = stickyToolbar.offsetHeight;
+                        } else if (stickySearchBar && window.getComputedStyle(stickySearchBar).display !== 'none') {
+                            stickyHeaderHeight = stickySearchBar.offsetHeight;
+                        }
+
+                        // Beräkna positionen
+                        const targetRect = targetElement.getBoundingClientRect();
+                        const targetScrollY = window.scrollY + targetRect.top - stickyHeaderHeight - 20; // 20px marginal
+
+                        window.scrollTo({
+                            top: targetScrollY,
+                            behavior: 'smooth'
+                        });
+                    }
+                    // --- SLUT NYTT ---
                 }
             };
             desktopSearchInput.addEventListener('keydown', handleSearchKeydown);
@@ -1741,18 +1762,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
             addForm.querySelector('#add_service_filter').addEventListener('input', (e) => {
                 const value = e.target.value.trim().toUpperCase();
-                const warningEl = e.target.closest('div').querySelector('.form-warning');
+                const warningEl = e.target.closest('.form-field-full').querySelector('.form-warning');
                 
                 if (value && inventory.some(item => item.service_filter === value)) {
                     warningEl.textContent = 'Detta artikelnummer finns redan!';
-                    e.target.closest('div').classList.add('has-error');
+                    e.target.closest('.form-field-full').classList.add('has-error');
                 } else {
                     warningEl.textContent = '';
-                    e.target.closest('div').classList.remove('has-error');
+                    e.target.closest('.form-field-full').classList.remove('has-error');
                 }
             });
 
-            // --- ÄNDRAT: Alla "Lägg till"-knappar öppnar nu modalen ---
             if (fabAddBtn) {
                 fabAddBtn.addEventListener('click', () => openModal('addModal'));
             }
@@ -1770,11 +1790,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 }); 
             });
 
-            // --- ÄNDRAT: Stängningslogik för alla modaler ---
+            // --- ÄNDRAD: Generell lyssnare för alla .modal-close-btn ---
+            document.querySelectorAll('.modal-close-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    closeModal(btn.closest('.modal'));
+                });
+            });
+
+            // Lyssnare för att stänga modal vid klick på bakgrund
             document.querySelectorAll('.modal').forEach(modal => {
                 modal.addEventListener('click', (e) => {
-                    // Stäng om man klickar på bakgrunden ELLER på en knapp med .close-btn
-                    if (e.target === modal || e.target.classList.contains('close-btn')) {
+                    if (e.target === modal) {
                         closeModal(modal);
                     }
                 });
@@ -1905,10 +1931,8 @@ document.addEventListener('DOMContentLoaded', () => {
             
             exportCsvBtn.addEventListener('click', exportToCSV);
             exportJsonBtn.addEventListener('click', exportToJSON);
-            
-            // --- BORTTAGEN: pasteArtnrBtn (kan läggas till i modalen om så önskas) ---
+            document.getElementById('paste-artnr-btn').addEventListener('click', handlePasteAndFill);
 
-            // --- ÄNDRAT: Flyttat till att vara inuti `addForm` ---
             addForm.querySelectorAll('.quick-category-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const category = btn.getAttribute('data-category');
@@ -1916,7 +1940,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     addForm.querySelectorAll('.quick-category-btn').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
                     
-                    const wrapper = btn.closest('div');
+                    const wrapper = btn.closest('.form-field-full');
                     if(wrapper) {
                         wrapper.classList.remove('has-error');
                         const warningEl = wrapper.querySelector('.form-warning');
@@ -1932,18 +1956,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             });
             
-            // Valideringslyssnare för båda formulären
             [addForm, editForm].forEach(form => {
                 form.querySelectorAll('[required]').forEach(field => {
                     field.addEventListener('input', (e) => {
                         if (e.target.value.trim() !== '') {
-                            const wrapper = e.target.closest('div'); // Kan behöva justeras
+                            const wrapper = e.target.closest('.form-field-full, .form-field-half');
                             if (wrapper && wrapper.classList.contains('has-error')) {
                                 wrapper.classList.remove('has-error');
                                 const warningEl = wrapper.querySelector('.form-warning');
                                 if (warningEl) warningEl.textContent = '';
-                            } else {
-                                e.target.classList.remove('has-error');
                             }
                         }
                     });
@@ -1996,7 +2017,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // KÖR ALLT I ORDNING
         checkTheme();
         updateSyncStatus('connecting', 'Ansluter...'); 
-        // BORTTAGEN: initializeAddFormState(); 
         initializeCollapseState();
         loadPersistentState();
         initializeListeners(); 
