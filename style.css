@@ -349,7 +349,9 @@ h3.collapsible-header:hover {
 .collapsible-header[data-state="closed"] .toggle-icon { transform: rotate(-90deg); }
 .lager-wrapper.collapsed { display: none !important; }
 
-/* --- BORTTAGEN: CSS för #add-form-wrapper och #add-article-form --- */
+#sync-status .text {
+    transition: opacity 0.5s ease-out;
+}
 
 /* --- FORMULÄR-STILAR (Återanvänds i modal) --- */
 .form-warning {
