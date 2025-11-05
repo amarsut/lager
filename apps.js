@@ -342,7 +342,9 @@ document.addEventListener('DOMContentLoaded', () => {
                   globalSearchResults.style.display = 'none'; 
                 });
                 
-                document.querySelector('.global-search-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                setTimeout(() => {
+                  document.querySelector('.global-search-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 50);
                 
                 globalSearchBtn.disabled = false;
                 return; 
@@ -2162,6 +2164,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if(initialLoader) initialLoader.querySelector('p').textContent = 'Kritiskt fel vid initiering.';
     }
 });
+
 
 
 
