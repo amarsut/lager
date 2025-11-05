@@ -925,6 +925,7 @@ h3.collapsible-header:hover { background-color: var(--bg-medium); border-radius:
 .modal-body {
     padding: 24px;
     overflow-y: auto;
+    flex: 1; /* <-- LÄGG TILL DENNA RAD */
 }
 #confirmationModal .modal-body {
     padding-top: 20px;
