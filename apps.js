@@ -1517,7 +1517,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (element) {
                 
-                // --- NYTT: KONTROLLERA OM PANELEN ÄR STÄNGD ---
+                // --- KONTROLLERA OM PANELEN ÄR STÄNGD ---
                 const wrapper = element.closest('.lager-wrapper');
                 if (wrapper && wrapper.classList.contains('collapsed')) {
                     // Den är stängd. Vi måste öppna den.
@@ -1526,9 +1526,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     const title = document.getElementById(titleId);
 
                     if (title) {
-                        // Öppna panelen visuellt
+                        // Öppna panelen visuellt (DOM-uppdatering)
                         title.setAttribute('data-state', 'open');
                         wrapper.classList.remove('collapsed');
+                        
+                        // --- NY RAD: SPARA DET NYA LÄGET! ---
+                        localStorage.setItem(title.id, 'open'); // title.id är redan rätt nyckel
                     }
                 }
                 // --- SLUT PÅ NY KOD ---
@@ -2142,6 +2145,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if(initialLoader) initialLoader.querySelector('p').textContent = 'Kritiskt fel vid initiering.';
     }
 });
+
 
 
 
