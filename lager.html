@@ -351,6 +351,62 @@
         outline: none; 
     }
     
+    /* --- NYTT: Göm upp/ner-pilar på nummer-fält --- */
+    #add-article-form input[type=number],
+    #edit-article-form input[type=number] {
+      -moz-appearance: textfield;
+    }
+    #add-article-form input[type=number]::-webkit-inner-spin-button, 
+    #add-article-form input[type=number]::-webkit-outer-spin-button,
+    #edit-article-form input[type=number]::-webkit-inner-spin-button,
+    #edit-article-form input[type=number]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    
+    /* --- NYTT: Wrapper för Antal-fält i formulär --- */
+    .form-quantity-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 0;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        background-color: var(--bg-light);
+        transition: border-color 0.2s, box-shadow 0.2s, background-color 0.3s;
+    }
+    .form-quantity-wrapper input {
+        border: none !important;
+        background-color: transparent !important;
+        box-shadow: none !important;
+        text-align: center;
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+    .form-quantity-wrapper .qty-btn {
+        padding-top: 12px;
+        padding-bottom: 12px;
+        background-color: var(--bg-medium);
+        border-radius: 0;
+        min-width: 40px;
+    }
+    .form-quantity-wrapper .qty-btn:first-of-type {
+        border-top-left-radius: 7px;
+        border-bottom-left-radius: 7px;
+        border-right: 1px solid var(--border-color);
+    }
+    .form-quantity-wrapper .qty-btn:last-of-type {
+        border-top-right-radius: 7px;
+        border-bottom-right-radius: 7px;
+        border-left: 1px solid var(--border-color);
+    }
+    .form-quantity-wrapper:focus-within {
+        border-color: var(--primary-color); 
+        box-shadow: 0 0 0 4px var(--primary-shadow); 
+        background-color: var(--card-bg); 
+    }
+    /* --- SLUT NYTT --- */
+
+
     #add-article-form .has-error input,
     #add-article-form .has-error select,
     #edit-article-form .has-error input,
@@ -358,11 +414,21 @@
         border-color: var(--danger-color) !important;
         box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.2) !important; 
     }
+    /* --- NYTT: Stil för fel på quantity wrapper --- */
+    #add-article-form .has-error .form-quantity-wrapper,
+    #edit-article-form .has-error .form-quantity-wrapper {
+        border-color: var(--danger-color) !important;
+        box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.2) !important; 
+    }
+    #add-article-form .has-error .form-quantity-wrapper input,
+    #edit-article-form .has-error .form-quantity-wrapper input {
+        box-shadow: none !important; /* Ta bort dubbel skugga */
+    }
     
     .form-input-wrapper { position: relative; }
     .form-warning {
         font-size: 0.85em;
-        color: var(--danger-color); /* ÄNDRAD: Tydligare fel-färg */
+        color: var(--danger-color);
         font-weight: 600;
         margin-top: 5px;
         height: 1.2em;
@@ -411,7 +477,6 @@
     .quick-category-btn:active {
         transform: scale(0.98); 
     }
-    /* --- NYTT: Aktivt läge för snabbkategori --- */
     .quick-category-btn.active {
         background-color: var(--primary-color);
         color: white;
@@ -419,16 +484,15 @@
         font-weight: 700;
     }
 
-    /* --- ÄNDRAD: Avdelare i formulär --- */
     #add-article-form .submit-button-wrapper { 
         grid-column: 1 / -1; 
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 15px;
         align-items: center;
-        margin-top: 15px; /* Ökad marginal */
-        padding-top: 15px; /* NYTT */
-        border-top: 1px solid var(--border-color); /* NYTT */
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid var(--border-color);
     }
     #add-article-form button[type="submit"] { background-color: var(--success-color); color: white; width: 100%; } 
     #add-article-form button[type="submit"]:hover { background-color: #0d9488; }
@@ -489,7 +553,6 @@
     #desktop-clear-search-btn:hover, #mobile-clear-search-btn:hover { color: var(--text-dark); }
         
     .lager-wrapper { overflow-x: auto; margin-bottom: 25px; -webkit-overflow-scrolling: touch; }
-    /* --- ÄNDRAD: Högre tabell på desktop --- */
     .lager-container { 
         background-color: var(--card-bg); 
         border-radius: 16px; 
@@ -497,20 +560,19 @@
         margin-bottom: 40px; 
         border: 1px solid var(--border-color); 
         position: relative; 
-        max-height: 60vh; /* ÄNDRAD: 450px -> 60vh (skalar med skärmen) */
+        max-height: 60vh;
         overflow-y: auto; 
         min-width: min-content; 
         transition: background-color 0.3s, border-color 0.3s; 
     }
     
-    /* --- ÄNDRAD: Ny grid-layout (7 kolumner) --- */
     .header, .artikel-rad { 
         grid-template-columns: 160px 200px 90px 70px 70px minmax(120px, 1fr) 80px; 
         padding: 10px 20px; 
         align-items: center; 
         font-size: 0.85em; 
         display: grid; 
-        min-width: 1100px; /* Justerad bredd */
+        min-width: 1100px;
     }    
     .header { 
         position: sticky; 
@@ -522,21 +584,18 @@
         border-bottom: 2px solid var(--border-color); 
         text-transform: uppercase; 
         letter-spacing: 0.8px; 
-        transition: background-color 0.3s, border-color 0.3s, box-shadow 0.2s; /* NYTT: box-shadow transition */
+        transition: background-color 0.3s, border-color 0.3s, box-shadow 0.2s;
     }
-    /* --- NYTT: Skugga på header vid skrollning --- */
     .lager-container.scrolled .header {
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
     }
     [data-theme="dark"] .lager-container.scrolled .header {
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     }
-    /* --- SLUT NYTT --- */
     
     .header span[data-sort] { cursor: pointer; user-select: none; }
     .header > span { display: flex; align-items: center; min-height: 1.8em; padding-right: 15px; }
     .header > span, .artikel-rad > span, .artikel-rad > div { padding-right: 10px; }
-    /* --- NYTT: Enkel span för namn-kolumnen (utan wrapper) --- */
     .artikel-rad > span:nth-child(2) {
         white-space: nowrap;
         overflow: hidden;
@@ -550,40 +609,39 @@
     .header span[data-sort].active { color: var(--primary-dark); }
     [data-theme="dark"] .header span[data-sort].active { color: var(--primary-color); }
 
-    /* --- ÄNDRAD: Förbättrad hovring och "selected" --- */
     .artikel-rad { 
-        transition: background-color 0.15s, box-shadow 0.15s, transform 0.15s ease-out; /* NYTT: transform */
+        transition: background-color 0.15s, box-shadow 0.15s, transform 0.15s ease-out;
         border-bottom: 1px solid var(--border-color); 
         cursor: pointer; 
     }
     .artikel-rad:hover { 
         background-color: var(--bg-medium); 
-        transform: translateY(-1px); /* NYTT: Lyft-effekt */
-        box-shadow: 0 4px 8px rgba(0,0,0,0.03), inset 3px 0 0 var(--primary-color); /* NYTT: Mjuk skugga */
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.03), inset 3px 0 0 var(--primary-color);
     }
     .artikel-rad:last-child { border-bottom: none; }
     .artikel-rad.selected { 
         background-color: rgba(79, 70, 229, 0.1); 
-        box-shadow: 0 2px 4px rgba(0,0,0,0.02), inset 3px 0 0 var(--primary-dark); /* ÄNDRAD: Tydligare */
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02), inset 3px 0 0 var(--primary-dark);
     }
     .artikel-rad.selected:hover { 
         background-color: rgba(79, 70, 229, 0.15); 
-        transform: none; /* Ta bort lyft-effekt om redan vald */
+        transform: none;
     }
     
-    /* --- NYTT: MOBIL KORT-VY (ÄNDRAD) --- */
+    /* --- MOBIL KORT-VY (ÄNDRAD) --- */
     .artikel-kort-lista {
         display: none; /* Dold på desktop */
         flex-direction: column;
-        gap: 10px; /* ÄNDRAD: Mer kompakt */
-        padding: 10px; /* ÄNDRAD: Mer kompakt */
+        gap: 10px; /* Mer kompakt */
+        padding: 10px; /* Mer kompakt */
     }
     .artikel-kort {
         background-color: var(--card-bg);
         border: 1px solid var(--border-color);
         border-radius: 12px;
         box-shadow: var(--card-shadow);
-        padding: 12px; /* ÄNDRAD: Mer kompakt */
+        padding: 12px; /* Mer kompakt */
         animation: subtleFadeIn 0.3s ease-out;
         transition: background-color 0.15s, box-shadow 0.15s;
     }
@@ -595,16 +653,16 @@
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
-        gap: 8px; /* ÄNDRAD: Mer kompakt */
+        gap: 8px; /* Mer kompakt */
         border-bottom: 1px solid var(--border-color);
-        padding-bottom: 8px; /* ÄNDRAD: Mer kompakt */
-        margin-bottom: 10px; /* ÄNDRAD: Mer kompakt */
+        padding-bottom: 8px; /* Mer kompakt */
+        margin-bottom: 10px; /* Mer kompakt */
     }
     .artikel-kort-header-text {
         min-width: 0; /* Förhindra overflow */
         flex-grow: 1;
     }
-    .artikel-kort-artnr-wrapper { /* NYTT: Wrapper för Artnr + knappen */
+    .artikel-kort-artnr-wrapper { /* Wrapper för Artnr + knappen */
         display: flex;
         align-items: center;
         gap: 8px;
@@ -617,11 +675,12 @@
         overflow: hidden;
         text-overflow: ellipsis;
         flex-grow: 1;
+        min-width: 0; /* Ta inte mer plats än nödvändigt */
     }
-    .artikel-kort-artnr-wrapper .copy-btn { /* NYTT: Styla knappen i headern */
+    .artikel-kort-artnr-wrapper .copy-btn { /* Styla knappen i headern */
         flex-shrink: 0;
-        padding: 2px 4px;
-        font-size: 0.8em;
+        padding: 4px 6px; /* Aningen större */
+        font-size: 1em; /* Aningen större ikon */
     }
     
     [data-theme="dark"] .artikel-kort-artnr {
@@ -634,7 +693,7 @@
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        margin-top: 2px; /* NYTT */
+        margin-top: 2px;
     }
     .artikel-kort-header .row-action-btn {
         flex-shrink: 0;
@@ -642,7 +701,7 @@
     .artikel-kort-body {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 12px; /* ÄNDRAD: Mer kompakt */
+        gap: 12px; /* Mer kompakt */
         align-items: center;
     }
     .artikel-kort-body .quantity-cell {
@@ -660,12 +719,13 @@
         font-weight: 700;
     }
     .artikel-kort-footer {
-        margin-top: 10px; /* ÄNDRAD: Mer kompakt */
-        padding-top: 8px; /* ÄNDRAD: Mer kompakt */
+        margin-top: 10px; /* Mer kompakt */
+        padding-top: 8px; /* Mer kompakt */
         border-top: 1px solid var(--border-color);
     }
     .artikel-kort-footer .notes-cell {
         white-space: normal; /* Tillåt radbrytning */
+        overflow-wrap: break-word; /* Bryt långa ord */
         overflow: visible;
         font-size: 0.9em;
     }
@@ -776,7 +836,6 @@
     .copy-btn:disabled { color: var(--success-color); cursor: default; }
     .copy-btn:disabled:hover { transform: none; background: var(--bg-medium); border-color: var(--border-color); }
     
-    /* --- NYTT: Stil för den nya åtgärdsknappen i raden --- */
     .action-buttons-cell {
         display: flex;
         align-items: center;
@@ -790,7 +849,6 @@
         font-size: 1.4em;
     }
     
-    /* --- NYTT: Popover-meny för rad-åtgärder (OMGJORD DESIGN) --- */
     #row-action-popover {
         display: none;
         position: absolute; /* JS sätter top/left */
@@ -808,7 +866,6 @@
         flex-direction: column;
         gap: 6px;
     }
-    /* Knappar inuti popovern */
     #popover-content .btn-popover {
         width: 100%;
         padding: 8px 12px;
@@ -834,7 +891,6 @@
         background-color: var(--bg-medium);
     }
     
-    /* --- ÄNDRAD: Renare popover-design, inga färger för länkar --- */
     #popover-content .btn-popover.link-btn {
         color: var(--text-dark); /* Standard textfärg */
     }
@@ -854,7 +910,6 @@
     #popover-content .btn-popover.edit-btn:hover { background-color: var(--primary-color); color: white; }
     #popover-content .btn-popover.delete-btn { color: var(--danger-color); }
     #popover-content .btn-popover.delete-btn:hover { background-color: var(--danger-color); color: white; }
-    /* --- SLUT NY POPOVER --- */
     
     #slut-i-lager-lista .artikel-rad,
     #slut-i-lager-kort-lista .artikel-kort { 
@@ -881,7 +936,6 @@
         align-items: center; 
     }
     
-    /* --- ÄNDRAD: Ny modal-animation --- */
     @keyframes modal-pop-in {
       from { opacity: 0; transform: scale(0.9) translateY(20px); }
       to { opacity: 1; transform: scale(1) translateY(0); }
@@ -889,25 +943,24 @@
     .modal-content {
         background-color: var(--card-bg); 
         border: 1px solid var(--border-color); 
-        padding: 30px; /* ÄNDRAD: Mindre padding */
+        padding: 30px; /* Kompaktare padding */
         border-radius: 12px; 
         width: 90%; 
-        max-width: 450px; /* ÄNDRAD: Kompaktare modal */
+        max-width: 400px; /* ÄNDRAD: ÄNNU Kompaktare modal */
         box-shadow: 0 20px 50px rgba(0,0,0,0.4); 
-        animation: modal-pop-in 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* ÄNDRAD */
+        animation: modal-pop-in 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         max-height: 90vh; 
         overflow-y: auto; 
         position: relative; 
         transition: background-color 0.3s, border-color 0.3s; 
     }
     
-    /* --- ÄNDRAD: Renare modal-header --- */
     .modal-content h3 { 
         color: var(--primary-dark); 
-        padding-bottom: 0; /* BORTTAGEN */
-        border-bottom: none; /* BORTTAGEN */
+        padding-bottom: 0;
+        border-bottom: none;
         margin-top: 0; 
-        margin-bottom: 20px; /* NYTT */
+        margin-bottom: 20px;
         font-size: 1.5em; 
         display: flex; 
         align-items: center; 
@@ -927,19 +980,28 @@
     .close-btn { position: absolute; top: 15px; right: 15px; font-size: 28px; cursor: pointer; font-weight: bold; z-index: 10; color: var(--text-light); }    
     .close-btn:hover { color: var(--text-dark); }
     
-    /* --- NYTT: Grid för modal-formulär --- */
+    /* --- NYTT: Grid för modal-formulär (ÄNDRAD) --- */
     #edit-article-form {
         display: grid;
         grid-template-columns: 1fr 1fr; /* 2 kolumner */
         gap: 0 15px; /* Endast kolumn-gap */
     }
-    /* Fält som tar full bredd */
     #edit-article-form .form-field-full {
         grid-column: 1 / -1;
     }
-    /* Fält som tar halv bredd */
     #edit-article-form .form-field-half {
         grid-column: span 1;
+    }
+    #edit-article-form .form-field-half:first-of-type {
+        padding-right: 7.5px;
+    }
+    #edit-article-form .form-field-half:last-of-type {
+        padding-left: 7.5px;
+    }
+    #edit-article-form .form-field-full label,
+    #edit-article-form .form-field-half label {
+        margin-top: 12px; /* Kompaktare marginal */
+        margin-bottom: 6px;
     }
     /* --- SLUT NYTT --- */
 
@@ -951,7 +1013,6 @@
     .search-btn:hover { opacity: 1; transform: scale(1.05); background: var(--primary-color); color: white; border-color: var(--primary-color); }
     .search-btn svg { fill: currentColor; vertical-align: middle; width: 14px; height: 14px; }
     
-    /* --- ÄNDRAD: Sticky-kolumnen --- */
     .header > span:last-child, .artikel-rad > .action-buttons-cell { 
         position: sticky; 
         right: 0; 
@@ -964,7 +1025,6 @@
         border-left: 1px solid var(--border-color); 
         justify-content: center; /* Centrera "Åtgärder" text */
     }
-    /* --- NYTT: Skugga på sticky header-cell vid skroll --- */
     .lager-container.scrolled .header > span:last-child {
         background-color: var(--bg-medium); /* Säkerställ bakgrund */
     }
@@ -975,7 +1035,6 @@
     .artikel-rad:hover > .action-buttons-cell { 
         background-color: var(--bg-medium); 
     }
-    /* --- SLUT ÄNDRING STICKY --- */
 
     .link-dropdown-container { position: relative; display: inline-block; margin-left: 5px; }
     .dropdown-menu { 
@@ -1000,12 +1059,6 @@
     }
     .dropdown-menu .lank-knapp { width: 100%; margin: 3px 0; text-align: center; padding: 8px 12px; font-size: 0.8em; box-shadow: none; background-color: var(--card-bg) !important; color: var(--primary-color) !important; border: 1px solid var(--primary-color) !important; }
     .dropdown-menu .lank-knapp:hover { background-color: var(--primary-color) !important; color: white !important; }
-    .dropdown-menu .aero-m-btn { background-color: #4CAF50; color: white; }
-    .dropdown-menu .aero-m-btn:hover { background-color: #388E3C; }
-    .dropdown-menu .thansen-btn { background-color: #008080; color: white; }
-    .dropdown-menu .thansen-btn:hover { background-color: #006060; }
-    .dropdown-menu .egen-lank-btn { background-color: #5a7dff; color: white; }
-    .dropdown-menu .egen-lank-btn:hover { background-color: #3a57e8; }
     
     .global-search-container { 
         background-color: var(--card-bg); 
@@ -1020,16 +1073,14 @@
     .global-search-container p { margin-top: 0; margin-bottom: 25px; font-size: 0.95em; color: var(--text-light); }
     
     .global-search-wrapper { display: flex; gap: 15px; width: 100%; }
-    /* --- ÄNDRAD: Ikon i globala sökfältet --- */
     #global-search-input { 
-        padding: 10px 15px 10px 40px; /* ÄNDRAD: padding-left */
+        padding: 10px 15px 10px 40px;
         border: 1px solid var(--border-color); 
         border-radius: 6px; 
         font-size: 1em; 
         flex-grow: 1; 
         background-color: var(--bg-light); 
         color: var(--text-dark); 
-        /* NYTT: Sökikon */
         background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' width='16' height='16'%3E%3Cpath fill='%236B7280' d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1z'/%3E%3C/svg%3E"); 
         background-repeat: no-repeat; 
         background-position: 12px center; 
@@ -1042,16 +1093,15 @@
         outline: none; 
     }
     
-    /* --- ÄNDRAD: Global sök-knapp med dynamisk text --- */
     #global-search-btn { 
-        padding: 16px 25px; /* Något mindre padding */
+        padding: 16px 25px;
         font-size: 1em; 
         flex-shrink: 0; 
-        min-width: 150px; /* Ge den lite utrymme att växa/krympa */
+        min-width: 150px;
     }
     #global-search-btn .icon-span { 
         font-size: 1.4em; 
-        transition: transform 0.2s ease-out; /* Snygg övergång */
+        transition: transform 0.2s ease-out;
     }
     #global-search-btn .btn-text {
         margin-left: 8px;
@@ -1073,7 +1123,6 @@
         display: none; 
     }
     #global-search-btn:disabled .search-spinner { display: inline-block; }
-    /* --- SLUT ÄNDRING --- */
     
     #global-search-results { 
         position: relative; 
@@ -1219,13 +1268,12 @@
     .search-disclaimer-text { font-size: 0.85em; color: var(--text-light); margin-top: 15px; padding-top: 10px; border-top: 1px dashed var(--border-color); }
     
     .orange-asterisk { color: var(--danger-color); font-weight: 700; font-size: 1.1em; margin-left: 3px; vertical-align: top; line-height: 1; display: inline-block; }
-    /* --- ÄNDRAD: Polerade sök-historik-taggar --- */
     .search-history-container { margin-top: 5px; margin-bottom: 5px; display: flex; flex-wrap: wrap; gap: 8px; font-size: 0.9em; }
     .history-item { padding: 4px 10px; background-color: var(--border-color); color: var(--text-dark); border-radius: 20px; transition: background-color 0.15s, transform 0.15s, box-shadow 0.15s; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; }
     .history-item:hover { 
         background-color: var(--bg-dark); 
-        transform: translateY(-2px); /* NYTT: Mer lyft */
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05); /* NYTT: Skugga */
+        transform: translateY(-2px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
     .history-item .history-term { cursor: pointer; }
     .history-item .delete-history {
@@ -1357,13 +1405,12 @@
         margin-left: 5px;
     }
 
-    /* --- ÄNDRAD: Luftigare "empty state" --- */
     .empty-state { 
         display: none; 
         flex-direction: column; 
         align-items: center; 
         justify-content: center; 
-        padding: 60px 30px; /* ÄNDRAD: Mer padding */
+        padding: 60px 30px;
         text-align: center; 
         min-height: 200px; 
         animation: subtleFadeIn 0.3s; 
@@ -1433,7 +1480,6 @@
         color: var(--success-color);
     }
     
-    /* --- ÄNDRAD: Mjukare filter-knappar --- */
     #category-filter-bar {
         display: flex;
         gap: 10px;
@@ -1445,19 +1491,18 @@
         padding: 8px 15px;
         text-transform: uppercase;
         letter-spacing: 0.5px;
-        opacity: 0.7; /* NYTT: Gör icke-aktiva svagare */
+        opacity: 0.7;
     }
     #category-filter-bar .btn-secondary:hover {
-        opacity: 1; /* NYTT: Full styrka på hover */
+        opacity: 1;
     }
     #category-filter-bar .btn-secondary.active {
         background-color: var(--primary-color);
         color: white;
         border-color: var(--primary-color);
-        opacity: 1; /* NYTT: Full styrka */
-        box-shadow: 0 2px 8px var(--primary-shadow); /* NYTT: Subtilt sken */
+        opacity: 1;
+        box-shadow: 0 2px 8px var(--primary-shadow);
     }
-    /* --- NYTT: Färg för aktivt "Slut"-filter --- */
     #category-filter-bar .btn-secondary[data-filter="Slut"].active {
         background-color: var(--danger-color);
         border-color: var(--danger-color);
@@ -1492,7 +1537,6 @@
     .toast.error { background-color: var(--danger-color); }
     .toast.info { background-color: var(--info-color); }
     
-    /* --- ÄNDRAD: Transformerande FAB --- */
     #fab-add-btn {
         position: fixed;
         bottom: 25px;
@@ -1515,7 +1559,7 @@
     }
     #fab-add-btn .icon-span {
         font-size: 32px;
-        transition: transform 0.3s ease-out; /* NYTT */
+        transition: transform 0.3s ease-out;
     }
     #fab-add-btn:hover {
         background-color: #0d9488; 
@@ -1524,18 +1568,16 @@
     #fab-add-btn:active {
         transform: scale(0.98); 
     }
-    /* NYTT: När formuläret är öppet */
     #fab-add-btn.open {
         background-color: var(--warning-color);
         transform: rotate(180deg);
     }
     #fab-add-btn.open:hover {
-        background-color: #d97706; /* Mörkare --warning-color */
+        background-color: #d97706;
     }
     #fab-add-btn.open .icon-span {
-        transform: rotate(-135deg); /* Roterar 'add' till 'close' */
+        transform: rotate(-135deg);
     }
-    /* --- SLUT FAB --- */
     
     .search-results-dropdown {
         display: none;
@@ -1550,7 +1592,7 @@
         box-shadow: var(--card-shadow);
         max-height: 300px;
         overflow-y: auto;
-        z-index: 1019; /* Just below toolbar z-index */
+        z-index: 1019;
     }
     .search-result-item {
         padding: 10px 15px;
@@ -1599,10 +1641,8 @@
         #toggle-add-form-btn, .json-controls, #sync-status, .theme-switcher, #pwa-install-btn,
         #category-filter-bar, .modal, .search-wrapper, .notes-cell, .link-buttons, .action-cell,
         .top-toolbar, #recent-items-container, #app-menu-modal, .search-results-dropdown,
-        /* --- NYTT FÖR PRINT --- */
         .action-buttons-cell, .row-action-btn, #row-action-popover,
         .artikel-kort-lista /* Dölj mobil-kort */
-        /* --- SLUT NYTT --- */
         { 
             display: none !important;
         }
@@ -1620,7 +1660,6 @@
         }
         .artikel-rad, .header {
             display: grid;
-            /* --- ÄNDRAD FÖR PRINT (Borttagen anteckningar, åtgärder) --- */
             grid-template-columns: 1.5fr 2fr 1fr 0.5fr 0.5fr; /* Anpassad för print */
             border-bottom: 1px solid #ccc;
         }
@@ -1664,7 +1703,6 @@
         gap: 10px; 
         transition: display 0.3s; 
     }
-    /* --- NYTT: Ikon i titeln --- */
     .toolbar-title .icon-span {
         font-size: 1.1em;
         margin-right: -2px;
@@ -1680,7 +1718,6 @@
         color: white;
         display: none; 
     }
-    /* --- NYTT: Färg för "Slut"-badge --- */
     #toolbar-filter-badge.filter-slut {
         background-color: var(--danger-color);
     }
@@ -1960,7 +1997,7 @@
         
         /* --- NYTT: Modal-layout för mobil --- */
         .modal-content {
-            padding: 20px;
+            padding: 25px 20px; /* Mer padding i sidled */
         }
         #edit-article-form {
             grid-template-columns: 1fr; /* 1 kolumn */
@@ -1968,6 +2005,8 @@
         }
         #edit-article-form .form-field-half {
              grid-column: 1 / -1; /* Full bredd */
+             padding-left: 0;
+             padding-right: 0;
         }
         /* --- SLUT NYTT --- */
     }
@@ -2224,7 +2263,11 @@
                 </div>
                 <div>
                     <label for="add-quantity">Antal <span class="orange-asterisk">*</span></label>
-                    <input type="number" name="quantity" id="add-quantity" value="1" placeholder="Antal" required autocomplete="off">
+                    <div class="form-quantity-wrapper">
+                        <button type="button" class="qty-btn" id="add-qty-minus">-</button>
+                        <input type="number" name="quantity" id="add-quantity" value="1" placeholder="Antal" required autocomplete="off">
+                        <button type="button" class="qty-btn" id="add-qty-plus">+</button>
+                    </div>
                     <div class="form-warning"></div>
                 </div>
                 <div>
