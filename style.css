@@ -1648,11 +1648,28 @@ input:checked + .slider:before { transform: translateX(24px); }
     color: var(--success-color);
 }
 
-#category-filter-bar {
+/*#category-filter-bar {
     display: flex;
     gap: 10px;
     margin-bottom: 20px;
     flex-wrap: wrap;
+}*/
+#category-filter-bar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: nowrap; /* ÄNDRA FRÅN 'wrap' */
+    overflow-x: auto; /* TILLÅT HORISONTELL SCROLL */
+
+    /* --- LÄGG TILL DETTA FÖR SNYGGARE SCROLL --- */
+    -webkit-overflow-scrolling: touch; /* Mjuk scroll på iOS */
+    padding-bottom: 8px; /* Ge plats för scroll-listen */
+    margin-bottom: 12px; /* Justera */
+}
+
+/* Dölj scroll-listen visuellt (behåller funktionen) */
+#category-filter-bar::-webkit-scrollbar {
+    display: none;
 }
 #category-filter-bar .btn-secondary {
     font-size: 0.85em;
