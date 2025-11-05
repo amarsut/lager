@@ -1524,14 +1524,19 @@ h3.collapsible-header:hover {
     justify-content: center; 
     padding: 60px 30px;
     text-align: center; 
-    min-height: 200px; 
+    min-height: 250px; /* Ge den lite mer höjd */
     animation: subtleFadeIn 0.3s; 
+    
+    /* --- NYA RADER --- */
+    border: 2px dashed var(--border-color); /* Streckad kant */
+    border-radius: 12px; /* Rundade hörn */
+    margin: 10px; /* Liten marginal (för mobilvyn) */
 }
 .empty-state svg { 
     width: 60px; 
     height: 60px; 
-    color: var(--primary-color); 
-    opacity: 0.3; 
+    color: var(--text-light); /* Gör ikonen mer subtil */
+    opacity: 0.5; /* Mer synlig än förut */
     margin-bottom: 20px; 
 }
 .empty-state h4 { font-size: 1.3em; font-weight: 700; color: var(--text-dark); margin: 0 0 10px 0; }
