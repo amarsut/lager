@@ -86,7 +86,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // syncStatusElement är redan definierad utanför try-blocket
         
         // Global sök
+        // Global sök
         const globalSearchInput = document.getElementById('global-search-input');
+        const globalSearchForm = document.getElementById('global-search-form'); // <-- NY
         const globalSearchBtn = document.getElementById('global-search-btn');
         const globalSearchResults = document.getElementById('global-search-results');
         const biluppgifterResultContainer = document.getElementById('biluppgifter-result-container');
@@ -94,6 +96,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const externalResultsContainer = document.getElementById('external-results-container');
         const exportLinksContainer = document.getElementById('export-search-links-container');
         const searchDisclaimer = document.getElementById('search-disclaimer');
+        const globalSearchEmptyState = document.getElementById('global-search-empty-state'); // <-- NY
+        const globalSearchEmptyText = document.getElementById('global-search-empty-text'); // <-- NY
         const quickAddFromSearchBtn = document.createElement('button');
         quickAddFromSearchBtn.id = 'quick-add-from-search';
         quickAddFromSearchBtn.className = 'btn-primary';
@@ -304,16 +308,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 globalSearchResults.style.display = 'none';
                 return;
             }
-            
+        
             globalSearchBtn.disabled = true;
             saveSearchToHistory(searchTerm); 
-            
+        
+            // --- NYTT: Nollställ alla containers först ---
+            biluppgifterResultContainer.style.display = 'none';
+            internalResultsContainer.style.display = 'none';
+            externalResultsContainer.style.display = 'none';
+            globalSearchEmptyState.style.display = 'none';
+            exportLinksContainer.style.display = 'none';
+            searchDisclaimer.style.display = 'none';
+            // Hitta och dölj rubriken för externa resultat
+            const externalHeader = document.querySelector('#global-search-results .search-results-header');
+            if (externalHeader) externalHeader.style.display = 'none';
+        
+            globalSearchResults.style.display = 'block'; // Visa huvudcontainern
+            // --- SLUT NYTT ---
+        
             if (isRegNr(searchTerm)) {
                 const cleanRegNr = searchTerm.replace(/\s/g, '');
-                
+        
                 const biluppgifterLink = `https://biluppgifter.se/fordon/${cleanRegNr}#vehicle-data`;
                 const carInfoLink = `https://car.info/sv-se/license-plate/S/${cleanRegNr}#attributes`;
-                
+        
                 biluppgifterResultContainer.innerHTML = `
                     <h4 class="internal-search-title">Fordonsuppslag:</h4>
                     <div class="provider-card">
@@ -331,49 +349,35 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                     </div>
                 `;
-                biluppgifterResultContainer.style.display = 'block';
-                
-                internalResultsContainer.innerHTML = '';
-                externalResultsContainer.innerHTML = '';
-                exportLinksContainer.style.display = 'none';
-                searchDisclaimer.style.display = 'none';
-                globalSearchResults.style.display = 'block';
-
+                biluppgifterResultContainer.style.display = 'block'; // Visa BARA denna
+        
+                internalResultsContainer.innerHTML = ''; // Säkerställ att dessa är dolda
+                externalResultsContainer.innerHTML = ''; // Säkerställ att dessa är dolda
+        
                 document.getElementById('global-search-close-btn').addEventListener('click', () => { 
                     globalSearchResults.style.display = 'none'; 
                 });
-                
-                // --- ÄNDRAD: Skrollar till toppen av HELA containern ---
+        
                 document.querySelector('.global-search-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
-                
+        
                 globalSearchBtn.disabled = false;
                 return; 
             }
-
-            biluppgifterResultContainer.style.display = 'none';
-            
+        
             try {
-                internalResultsContainer.innerHTML = '';
-                externalResultsContainer.innerHTML = '';
-                exportLinksContainer.style.display = 'none';
-                searchDisclaimer.style.display = 'none';
-                globalSearchResults.style.display = 'block';
                 currentExternalLinks = []; 
-                
-                // --- ÄNDRAD: Skrollar till toppen av HELA containern ---
+        
                 document.querySelector('.global-search-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-                // --- ÄNDRAD: Sökning ignorerar mellanslag ---
+        
                 const searchTermNoSpace = searchTerm.replace(/\s/g, '');
-
+        
                 const internalMatches = inventory.filter(item => {
                     const itemServiceFilter = (item.service_filter || '').toUpperCase().replace(/\s/g, '');
                     const itemName = (item.name || '').toUpperCase();
-                    
+        
                     return itemServiceFilter.includes(searchTermNoSpace) || itemName.includes(searchTerm);
                 });
-                // --- SLUT ÄNDRING ---
-                
+        
                 let internalHTML = '';
                 if (internalMatches.length > 0) {
                     internalHTML = '<h4 class="internal-search-title">Hittades i ditt lager:</h4>';
@@ -389,12 +393,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     quickAddFromSearchBtn.setAttribute('data-search-term', searchTerm);
                     internalResultsContainer.appendChild(quickAddFromSearchBtn);
                 }
-
-
+                internalResultsContainer.style.display = 'block'; // Visa intern-containern
+        
+        
                 // 2. Externa resultat
                 let externalHTML = '';
                 let hasDisclaimer = false;
-                
+        
                 externalSearchProviders.forEach(provider => {
                     const link = provider.linkGenerator(searchTerm);
                     if (link) {
@@ -402,7 +407,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (provider.name.includes('Bildelsbasen')) {
                             hasDisclaimer = true;
                         }
-                        
+        
                         externalHTML += `
                             <div class="provider-card">
                                 <img src="${provider.icon}" alt="${provider.name}" class="provider-card-logo">
@@ -424,16 +429,31 @@ document.addEventListener('DOMContentLoaded', () => {
                         `;
                     }
                 });
-                
+        
                 externalResultsContainer.innerHTML = externalHTML;
-                
+        
+                // Visa bara externa resultat om vi faktiskt genererade några länkar
                 if (currentExternalLinks.length > 0) {
+                    externalResultsContainer.style.display = 'grid'; // Visa extern-containern
+                    if (externalHeader) externalHeader.style.display = 'flex'; // Visa extern-rubriken
                     exportLinksContainer.style.display = 'inline-block';
                 }
+        
                 if (hasDisclaimer) {
                     searchDisclaimer.style.display = 'block';
                 }
-
+        
+                // --- NYTT: Logik för Tom-stat (OMGJORD) ---
+                if (internalMatches.length === 0 && currentExternalLinks.length === 0) {
+                    // Dölj "Inga träffar i ditt lager"-sektionen, eftersom vi visar en bättre tom-stat
+                    internalResultsContainer.style.display = 'none'; 
+        
+                    globalSearchEmptyText.textContent = `Din sökning på "${searchTerm}" gav inga resultat. Kontrollera stavningen.`;
+                    globalSearchEmptyState.style.display = 'flex';
+                }
+                // --- SLUT NYTT ---
+        
+        
                 // 3. Återbind lyssnare
                 document.querySelectorAll('.internal-result-item').forEach(link => {
                     link.addEventListener('click', (e) => {
@@ -443,11 +463,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         globalSearchResults.style.display = 'none';
                     });
                 });
-                
+        
                 document.getElementById('global-search-close-btn').addEventListener('click', () => { 
                     globalSearchResults.style.display = 'none'; 
                 });
-                
+        
             } catch (error) {
                 console.error("Fel vid global sökning: ", error);
                 showToast("Ett fel inträffade vid sökningen", "error");
@@ -1669,6 +1689,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
             desktopSearchInput.addEventListener('input', handleSearchInput);
             mobileSearchInput.addEventListener('input', handleSearchInput);
+        
+            // --- NYTT: Hantera Enter/Sök på mobil för filter-fälten ---
+            const handleSearchKeydown = (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    e.target.blur(); // Dölj tangentbordet
+                }
+            };
+            desktopSearchInput.addEventListener('keydown', handleSearchKeydown);
+            mobileSearchInput.addEventListener('keydown', handleSearchKeydown);
+            // --- SLUT NYTT ---
             
             const handleClearSearch = () => {
                 clearAndHideSearch();
@@ -1773,8 +1804,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             });
 
-            if (globalSearchBtn) { globalSearchBtn.addEventListener('click', (e) => { e.preventDefault(); handleGlobalSearch(); }); }
-            globalSearchInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); handleGlobalSearch(); } });
+            if (globalSearchForm) { 
+                globalSearchForm.addEventListener('submit', (e) => { 
+                    e.preventDefault(); 
+                    handleGlobalSearch(); 
+                }); 
+            }
+            // Vi behåller keydown-lyssnaren som en extra säkerhet, men formuläret bör nu hantera det mesta.
+            globalSearchInput.addEventListener('keydown', (e) => { 
+                if (e.key === 'Enter') { 
+                    e.preventDefault(); 
+                    handleGlobalSearch(); 
+                } 
+            });
             globalSearchInput.addEventListener('input', (e) => { updateGlobalSearchButton(e.target.value.trim().toUpperCase()); });
 
             document.getElementById('btn-copy-all-links-text').addEventListener('click', (e) => {
@@ -1972,4 +2014,5 @@ document.addEventListener('DOMContentLoaded', () => {
         if(initialLoader) initialLoader.querySelector('p').textContent = 'Kritiskt fel vid initiering.';
     }
 });
+
 
