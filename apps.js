@@ -433,15 +433,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     link.addEventListener('click', (e) => {
                         e.preventDefault(); 
                         const itemId = e.currentTarget.getAttribute('data-id');
-                        scrollToAndHighlight(itemId, true); // Starta scrollen
                         
-                        // --- NY KOD ---
-                        // Vänta 500ms (0.5s) på att "smooth scroll" ska bli klar
-                        // innan vi döljer sök-boxen.
+                        // 1. Dölj sökresultaten OMEDELBART.
+                        //    Detta orsakar den stora layout-shiften.
+                        globalSearchResults.style.display = 'none';
+
+                        // 2. Vänta en kort stund (t.ex. 50ms) för webbläsaren
+                        //    att rita om sidan och stabilisera den nya layouten.
                         setTimeout(() => {
-                            globalSearchResults.style.display = 'none';
-                        }, 500); // 500ms fördröjning
-                        // --- SLUT PÅ NY KOD ---
+                            // 3. Scrolla NU, när allt är stabilt.
+                            //    Vi kan nu använda 'smooth' (false) igen.
+                            scrollToAndHighlight(itemId, false);
+                        }, 50); // 50ms fördröjning
                     });
                 });
                 
@@ -2159,6 +2162,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if(initialLoader) initialLoader.querySelector('p').textContent = 'Kritiskt fel vid initiering.';
     }
 });
+
 
 
 
