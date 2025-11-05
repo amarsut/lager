@@ -2187,7 +2187,7 @@
 @media (max-width: 768px) {
     
     /* --- 
-      JUSTERAD FIX FÖR HORISONTELL SCROLLNING OCH REG-NUMMER STYLING
+      KORRIGERAD FIX: ÅTERSTÄLLER REG-NUMMER-UTSEENDET
     --- */
 
     /* 1. Tvingar header-texten (art.nr och namn) att radbrytas */
@@ -2199,39 +2199,26 @@
 
     /* 2. Tvingar anteckningar (notes) att radbrytas */
     .artikel-kort-footer .notes-cell {
-        display: block !important; /* Tvinga block-kontext, inte flex */
+        display: block !important; /* Byt från flex till block */
         white-space: normal !important; /* Tillåt radbrytning */
     }
 
-    /* 3. Justerad stil för reg-skyltar (plate-tag) i mobilvyn */
+    /* 3. Layout-fix för reg-skyltar (plate-tag) i mobilvyn */
+    /* (Vi rör inte utseendet, BARA layouten) */
     .artikel-kort-footer .plate-tag {
-        /* Återställer flexbox för att behålla stylingen */
-        display: inline-flex !important; 
-        align-items: center;
-        flex-shrink: 1 !important; /* Fortfarande tillåt krympning */
-        flex-wrap: wrap; /* <-- NY: Tillåt radbrytning inom skylten om den är super-lång */
+        display: inline-flex !important; /* Behåll flex för inre layout */
+        flex-shrink: 1 !important; /* Tillåt skylten att krympa */
         vertical-align: middle;
         margin-bottom: 4px; /* Lite luft om de radbryts */
-
-        /* Behåll den visuella stylingen */
-        background-color: #003399; /* Blå bakgrund */
-        color: white; /* Vit text */
-        border-radius: 4px;
-        padding: 4px 8px;
-        font-weight: 600;
-        font-size: 0.85em;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.2);
     }
     
-    /* Justera innehållet i plate-tag för att radbryta vid behov */
-    .artikel-kort-footer .plate-tag span {
-        white-space: normal !important; /* Tillåt radbrytning för texten i skylten */
-        word-break: break-word !important; /* Bryt ord i skylten */
+    /* 4. Tillåt ENDAST text-delen av skylten att radbrytas */
+    .artikel-kort-footer .plate-tag .plate-text {
+        white-space: normal !important;
+        word-break: break-all !important; /* Bryt långa reg-nr */
     }
 
-    /* --- SLUT PÅ JUSTERAD FIX --- */
+    /* --- SLUT PÅ KORRIGERAD FIX --- */
 }
 </style>
 
@@ -2678,6 +2665,7 @@
 
 </body>
 </html>
+
 
 
 
