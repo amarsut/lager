@@ -1516,6 +1516,24 @@ document.addEventListener('DOMContentLoaded', () => {
             const element = document.querySelector(`.artikel-rad[data-id="${itemId}"], .artikel-kort[data-id="${itemId}"]`);
             
             if (element) {
+                
+                // --- NYTT: KONTROLLERA OM PANELEN ÄR STÄNGD ---
+                const wrapper = element.closest('.lager-wrapper');
+                if (wrapper && wrapper.classList.contains('collapsed')) {
+                    // Den är stängd. Vi måste öppna den.
+                    const wrapperId = wrapper.id; // t.ex. "service-artiklar-wrapper"
+                    const titleId = wrapperId.replace('-wrapper', '-titel'); // "service-artiklar-titel"
+                    const title = document.getElementById(titleId);
+
+                    if (title) {
+                        // Öppna panelen visuellt
+                        title.setAttribute('data-state', 'open');
+                        wrapper.classList.remove('collapsed');
+                    }
+                }
+                // --- SLUT PÅ NY KOD ---
+
+                // Den gamla logiken körs nu *efter* panelen garanterat är öppen
                 element.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 
                 document.querySelectorAll('.artikel-rad.highlight, .artikel-kort.highlight').forEach(r => r.classList.remove('highlight'));
@@ -2124,6 +2142,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if(initialLoader) initialLoader.querySelector('p').textContent = 'Kritiskt fel vid initiering.';
     }
 });
+
 
 
 
