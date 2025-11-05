@@ -661,6 +661,7 @@
     .artikel-kort-header-text {
         min-width: 0; /* Förhindra overflow */
         flex-grow: 1;
+        overflow: hidden; /* <-- FIXEN: Tvingar innehållet att respektera gränsen */
     }
     .artikel-kort-artnr-wrapper { /* Wrapper för Artnr */
         display: flex;
@@ -728,6 +729,39 @@
         margin: 0;
     }
     /* --- SLUT NYTT --- */
+
+    .artikel-kort-body {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px; /* Mer kompakt */
+        align-items: center;
+    }
+    .artikel-kort-body .quantity-cell {
+        justify-self: flex-end; /* Placera antal-kontroll till höger */
+    }
+    .artikel-kort-label {
+        font-size: 0.8em;
+        font-weight: 600;
+        color: var(--text-light);
+        text-transform: uppercase;
+        margin-bottom: 2px;
+    }
+    .artikel-kort-price {
+        font-size: 1.1em;
+        font-weight: 700;
+    }
+    .artikel-kort-footer {
+        margin-top: 10px; /* Mer kompakt */
+        padding-top: 8px; /* Mer kompakt */
+        border-top: 1px solid var(--border-color);
+    }
+    .artikel-kort-footer .notes-cell {
+        white-space: normal; /* Tillåt radbrytning */
+        overflow-wrap: break-word; /* Bryt långa ord */
+        overflow: visible;
+        font-size: 0.9em;
+    }
+    /* --- SLUT MOBIL KORT-VY --- */
 
     .artikel-kort-body {
         display: grid;
@@ -2570,4 +2604,5 @@
 
 </body>
 </html>
+
 
