@@ -2340,14 +2340,14 @@
                     <span class="plate-text">ABC123</span>
                 </span> 
             för fordonsuppgifter.</p>
-            <form id="global-search-form" class="global-search-wrapper">
+            <div class="global-search-wrapper">
                 <input type="text" id="global-search-input" placeholder="Ange artikelnummer (exempel: 03L 115 562)" autocomplete="off">
-                <button id="global-search-btn" class="btn-primary" title="Sök" type="submit">
+                <button id="global-search-btn" class="btn-primary" title="Sök">
                     <span class="search-spinner"></span> 
                     <span class="icon-span">search</span>
                     <span class="btn-text">Sök</span>
                 </button>
-            </form>
+                </div>
             <div style="margin-top: 15px; margin-bottom: 5px;">
                 <span style="font-size: 0.9em; font-weight: 600; color: var(--text-dark); display: flex; align-items: center; gap: 5px;">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 16px; height: 16px; color: var(--primary-color);">
@@ -2384,11 +2384,6 @@
                     
                     <div id="search-disclaimer" class="search-disclaimer-text" style="display: none;">
                         * Bildelsbasen söker primärt efter begagnade delar.
-                    </div>
-                    <div id="global-search-empty-state" class="empty-state" style="display: none; padding: 40px 20px; min-height: 100px;">
-                        <svg viewBox="0 0 24 24" fill="currentColor" style="width: 40px; height: 40px;"><use href="#empty-state-svg"></use></svg>
-                        <h4>Inga träffar</h4>
-                        <p id="global-search-empty-text">Din sökning gav inga resultat.</p>
                     </div>
                 </div>
             </div>
@@ -2670,15 +2665,3 @@
 
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
