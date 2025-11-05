@@ -191,6 +191,18 @@
             <path d="M3.375 4.5C2.339 4.5 1.5 5.34 1.5 6.375V17.625c0 1.036.84 1.875 1.875 1.875h17.25c1.035 0 1.875-.84 1.875-1.875V6.375c0-1.036-.84-1.875-1.875-1.875H3.375ZM12.75 7.5a.75.75 0 0 0-1.5 0v2.25H9a.75.75 0 0 0 0 1.5h2.25V13.5a.75.75 0 0 0 1.5 0V11.25H15a.75.75 0 0 0 0-1.5h-2.25V7.5Z" />
         </svg>
 
+        <div id="search-empty-state" class="empty-state" style="display: none; min-height: 200px; padding: 30px; border-radius: 12px; margin-top: 30px;">
+            <svg viewBox="0 0 24 24" fill="currentColor" style="width: 60px; height: 60px; opacity: 0.15; margin-bottom: 15px;"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>
+            <h4 id="search-empty-state-title" style="margin-top: 0; margin-bottom: 10px; font-size: 1.5em;">Inga träffar</h4>
+            <p id="search-empty-state-text" style="font-size: 1em;">Din sökning gav inga resultat.</p>
+        </div>
+        
+        <div id="full-empty-state" class="empty-state">
+            <svg viewBox="0 0 24 24" fill="currentColor" style="width: 80px; height: 80px; opacity: 0.15;"><use href="#empty-state-svg"/></svg>
+            <h4>Ditt lager är tomt</h4>
+            <p>Börja med att lägga till din första artikel.</p>
+            <button id="empty-state-add-btn" class="btn btn-primary">Lägg till artikel</button>
+        </div>
         <div id="full-empty-state" class="empty-state">
             <svg viewBox="0 0 24 24" fill="currentColor"><use href="#empty-state-svg"></use></svg>
             <h4>Ditt lager är tomt</h4>
@@ -484,6 +496,7 @@
 
 </body>
 </html>
+
 
 
 
