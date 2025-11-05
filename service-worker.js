@@ -51,19 +51,41 @@ self.addEventListener('activate', event => {
 
 // Hämtning: Servera från cache först, sedan nätverk (Cache-First)
 self.addEventListener('fetch', event => {
-    event.respondWith(
-        caches.match(event.request)
-            .then(response => {
-                // Returnera cachad respons om den finns
-                if (response) {
-                    return response;
-                }
-                // Annars, hämta från nätverket
-                return fetch(event.request);
-            })
-            .catch(error => {
-                // Kan lägga till en fallback-sida här för offline-användning
-                console.log('Fetch failed:', error);
-            })
-    );
+  // Vi hanterar bara GET-requests (t.ex. för filer), inte POST/PUT (som sparar data)
+  if (event.request.method !== 'GET') {
+    return;
+  }
+
+  event.respondWith(
+    caches.open(CACHE_NAME).then(cache => {
+      // 1. Försök hitta filen i cachen
+      return cache.match(event.request).then(cachedResponse => {
+        
+        // 2. Starta en nätverksförfrågan OAVSETT (detta är "revalidate"-delen)
+        const fetchPromise = fetch(event.request).then(networkResponse => {
+          // Om vi får ett giltigt svar från nätverket...
+          if (networkResponse && networkResponse.status === 200) {
+            // ...spara den nya versionen i cachen för nästa gång
+            cache.put(event.request, networkResponse.clone());
+          }
+          // Returnera den nya versionen från nätverket
+          return networkResponse;
+        }).catch(error => {
+          // Nätverket misslyckades (du är offline)
+          console.log('Fetch failed; appen är offline.', error);
+          // Vi kan inte göra något mer här, men vi har förhoppningsvis redan en cachad fil
+        });
+
+        // 3. Returnera den cachade filen direkt (om den finns)
+        // Detta gör att appen laddar omedelbart ("stale"-delen)
+        if (cachedResponse) {
+          return cachedResponse;
+        }
+
+        // 4. Om filen INTE fanns i cachen (första besöket)
+        // vänta på att nätverksförfrågan blir klar och returnera den.
+        return fetchPromise;
+      });
+    })
+  );
 });
