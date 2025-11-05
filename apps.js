@@ -25,6 +25,10 @@ if ('serviceWorker' in navigator) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    // --- NYTT: Skrolla till toppen vid omladdning ---
+    window.scrollTo(0, 0);
+    // --- SLUT NYTT ---
+    
     try {
         // Initialisera Firebase
         const app = initializeApp(firebaseConfig);
@@ -806,9 +810,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 <span title="${safeName}">${escapeHTML(item.name)}</span>
                 <span>${formatPrice(item.price)} kr</span>
                 <div class="quantity-cell">
-                    <button class="qty-btn" onclick="adjustQuantity(${item.id}, -1); event.stopPropagation();">-</button>
+                    <button class="qty-btn" onclick="adjustQuantity(${item.id}, -1, this); event.stopPropagation();">-</button>
                     <span>${item.quantity}</span>
-                    <button class="qty-btn" onclick="adjustQuantity(${item.id}, 1); event.stopPropagation();">+</button>
+                    <button class="qty-btn" onclick="adjustQuantity(${item.id}, 1, this); event.stopPropagation();">+</button>
                 </div>
                 <span style="display: flex; align-items: center;">
                     <span class="${statusClass}">${statusText}</span>
@@ -823,8 +827,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return row;
         }
         
-        // --- NYTT: SKAPA HTML FÖR KORT (MOBIL) ---
-        // --- **** DETTA ÄR FIXEN **** ---
+        // --- NYTT: SKAPA HTML FÖR KORT (MOBIL) (ÄNDRAD) ---
         function createInventoryCard(item) {
             const card = document.createElement('div');
             card.className = 'artikel-kort';
@@ -834,18 +837,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 card.classList.add('selected');
             }
 
-            // --- FIXEN: Dessa 3 rader saknades! ---
             const statusClass = item.quantity > 0 ? 'i-lager' : 'slut';
             const statusText = item.quantity > 0 ? 'I lager' : 'Slut';
             const formattedNotes = parseNotes(item.notes || '');
-            // --- SLUT PÅ FIX ---
-
             const safeServiceFilter = escapeHTML(item.service_filter).replace(/'/g, "\\'");
             
             card.innerHTML = `
                 <div class="artikel-kort-header">
                     <div class="artikel-kort-header-text">
-                        <div class="artikel-kort-artnr" title="${safeServiceFilter}">${escapeHTML(item.service_filter)}</div>
+                        <div class="artikel-kort-artnr-wrapper">
+                            <span class="artikel-kort-artnr" title="${safeServiceFilter}">${escapeHTML(item.service_filter)}</span>
+                            <button class="copy-btn" onclick="copyToClipboard(this, '${safeServiceFilter}', 'Artikelnummer'); event.stopPropagation();" title="Kopiera Artikelnummer">&#x1F4CB;</button>
+                        </div>
                         <div class="artikel-kort-name" title="${escapeHTML(item.name)}">${escapeHTML(item.name)}</div>
                     </div>
                     <button class="btn-secondary row-action-btn" data-id="${item.id}" title="Åtgärder" onclick="event.stopPropagation();">
@@ -858,16 +861,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="artikel-kort-price">${formatPrice(item.price)} kr</div>
                     </div>
                     <div class="quantity-cell">
-                        <button class="qty-btn" onclick="adjustQuantity(${item.id}, -1); event.stopPropagation();">-</button>
+                        <button class="qty-btn" onclick="adjustQuantity(${item.id}, -1, this); event.stopPropagation();">-</button>
                         <span>${item.quantity}</span>
-                        <button class="qty-btn" onclick="adjustQuantity(${item.id}, 1); event.stopPropagation();">+</button>
+                        <button class="qty-btn" onclick="adjustQuantity(${item.id}, 1, this); event.stopPropagation();">+</button>
                     </div>
                     <div>
                         <div class="artikel-kort-label">Status</div>
                         <span class="${statusClass}" style="font-weight: 600;">${statusText}</span>
-                    </div>
-                    <div style="text-align: right;">
-                         <button class="copy-btn" onclick="copyToClipboard(this, '${safeServiceFilter}', 'Artikelnummer'); event.stopPropagation();" title="Kopiera Artikelnummer">&#x1F4CB;</button>
                     </div>
                 </div>
                 ${formattedNotes ? `
@@ -1399,6 +1399,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
+        // --- ÄNDRAD: Fokuserar på 'Namn' istället för 'Art.nr' ---
         window.handleEdit = function(id, isOrderMode = false) {
             const item = inventory.find(i => i.id === id);
             if (item) {
@@ -1428,7 +1429,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     submitBtn.innerHTML = '<span class="icon-span">save</span>Spara Ändringar';
                 }
                 editModal.style.display = 'flex';
-                setTimeout(() => (isOrderMode ? document.getElementById('edit-quantity') : document.getElementById('edit-service_filter')).focus(), 50);
+                
+                // --- ÄNDRAD FOKUS ---
+                setTimeout(() => (isOrderMode ? document.getElementById('edit-quantity') : document.getElementById('edit-name')).focus(), 50);
             }
         }
 
@@ -1468,12 +1471,25 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => scrollToAndHighlight(updatedItem.id), 300);
         }
         
-        window.adjustQuantity = async function(id, change) {
+        // --- ÄNDRAD: Lade till visuell feedback ---
+        window.adjustQuantity = async function(id, change, buttonEl) {
             const item = inventory.find(i => i.id === id);
             if (item) {
                 const newQuantity = Math.max(0, item.quantity + change);
                 const updatedItem = {...item, quantity: newQuantity, lastUpdated: Date.now() };
                 await saveInventoryItem(updatedItem);
+
+                // --- NYTT: Visuell feedback ---
+                const element = buttonEl.closest('.artikel-rad, .artikel-kort');
+                if (element) {
+                    element.classList.remove('flash-quantity'); // Ta bort ifall den redan finns
+                    // Måste vänta en frame för att CSS-animationen ska starta om
+                    requestAnimationFrame(() => {
+                        element.classList.add('flash-quantity');
+                    });
+                    setTimeout(() => element.classList.remove('flash-quantity'), 800); // Ta bort efter animation
+                }
+                // --- SLUT NYTT ---
             }
         }
         
