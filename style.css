@@ -922,6 +922,13 @@ h3.collapsible-header:hover { background-color: var(--bg-medium); border-radius:
 }    
 .modal-close-btn:hover { color: var(--text-dark); }
 
+/* NY REGEL FÖR ATT FORMULÄRET SKA FYLLA UTRYMMET */
+#add-article-form, #edit-article-form {
+    display: flex;
+    flex-direction: column;
+    flex: 1;          /* <-- Tvingar formuläret att fylla utrymmet */
+    min-height: 0;    /* <-- Mycket viktig "flex-fix" för att scroll ska fungera */
+}
 .modal-body {
     padding: 24px;
     overflow-y: auto;
