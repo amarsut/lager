@@ -332,6 +332,9 @@ h3.collapsible-header:hover { background-color: var(--bg-medium); border-radius:
     margin-top: 5px;
     height: 1.2em;
 }
+.form-input-wrapper {
+    position: relative;
+}
 .form-paste-btn {
     position: absolute;
     top: 50%; 
@@ -931,8 +934,8 @@ h3.collapsible-header:hover { background-color: var(--bg-medium); border-radius:
 }
 .modal-body {
     padding: 24px;
-    overflow-y: auto;
-    flex: 1; /* <-- LÄGG TILL DENNA RAD */
+    overflow-y: scroll; /* <-- ÄNDRA auto TILL scroll */
+    flex: 1; 
 }
 #confirmationModal .modal-body {
     padding-top: 20px;
