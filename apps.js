@@ -824,6 +824,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         // --- NYTT: SKAPA HTML FÖR KORT (MOBIL) ---
+        // --- **** DETTA ÄR FIXEN **** ---
         function createInventoryCard(item) {
             const card = document.createElement('div');
             card.className = 'artikel-kort';
@@ -1621,6 +1622,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
 
+            const toolbarAddBtn = document.getElementById('toolbar-add-btn');
             if (toolbarAddBtn) {
                 toolbarAddBtn.addEventListener('click', () => {
                     if (!addFormWrapper.classList.contains('open')) {
@@ -1880,4 +1882,3 @@ document.addEventListener('DOMContentLoaded', () => {
         if(initialLoader) initialLoader.querySelector('p').textContent = 'Kritiskt fel vid initiering.';
     }
 });
-
