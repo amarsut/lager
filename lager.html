@@ -659,9 +659,9 @@
         margin-bottom: 10px; /* Mer kompakt */
     }
     .artikel-kort-header-text {
-        min-width: 0; /* Förhindra overflow */
-        flex-grow: 1;
-        overflow: hidden; /* <-- FIXEN: Tvingar innehållet att respektera gränsen */
+        flex: 1; /* ÄNDRING: Ersätter 'flex-grow: 1' */
+        min-width: 0; /* VIKTIG: Tvingar texten att kunna krympa */
+        overflow: hidden; /* Klipper text som ändå inte får plats */
     }
     .artikel-kort-artnr-wrapper { /* Wrapper för Artnr */
         display: flex;
@@ -2604,5 +2604,6 @@
 
 </body>
 </html>
+
 
 
