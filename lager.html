@@ -3,199 +3,481 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lager App</title>
+    <title>Dynamisk Lagerförteckning med Firebase</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet" />
+    
     <link rel="stylesheet" href="style.css">
-    <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
-    <meta name="theme-color" content="#333333">
-</head>
-<body>
-    <div class="container">
-        <header class="header">
-            <div class="header-left">
-                <button id="menu-button" class="icon-button menu-button" aria-label="Meny">☰</button>
-                <input type="text" id="global-search-input" placeholder="Sök..." class="global-search-input">
-                <div id="search-dropdown" class="search-dropdown hidden"></div>
-            </div>
-            <h1 class="app-title">Lager</h1>
-            <div class="header-right">
-                <button id="add-item-header-button" class="icon-button" aria-label="Lägg till artikel">➕</button>
-                <button id="theme-toggle" class="icon-button theme-toggle" aria-label="Växla tema">💡</button>
-                <button id="sync-button" class="icon-button sync-button" aria-label="Synkronisera data">🔄</button>
-            </div>
-        </header>
 
-        <div class="filter-bar desktop-only">
-            <input type="text" id="desktop-search-input" placeholder="Sök i lagret..." class="search-input">
-            <div class="category-filters">
-                <button class="filter-button active" data-category="Alla">Alla</button>
-                <button class="filter-button" data-category="Verktyg">Verktyg</button>
-                <button class="filter-button" data-category="Fordon">Fordon</button>
-                <button class="filter-button" data-category="Service">Service</button>
-                <button class="filter-button" data-category="Material">Material</button>
-                <button class="filter-button" data-category="Övrigt">Övrigt</button>
-            </div>
+    <link rel="manifest" href="./manifest.json">
+    
+    <link rel="apple-touch-icon" href="images/192x192.png">
+    
+    <meta name="theme-color" content="#f8fafc"/> </head>
+    <body data-theme="light">
+    <div id='sticky-search-bar'>
+      <div class='search-wrapper'>
+    <input type='text' id='mobile-search-input' placeholder='Sök i lager...' autocomplete="off" />
+    <button id='mobile-clear-search-btn'>&times;</button>
+    <div id="mobile-search-results" class="search-results-dropdown"></div> </div>
+    </div> <div id="initial-loader">
+        <div class="loader-spinner"></div>
+        <p>Hämtar lagerdata...</p>
+    </div>
+    
+    <div id="toast-container"></div>
+    
+    <div id="app-menu-overlay"></div>
+    <div id="app-menu-modal">
+        <div class="app-menu-header">
+            <h2>Översikt</h2>
+            <button id="app-menu-close-btn" title="Stäng menyn">
+                <span class="icon-span">close</span>
+            </button>
         </div>
-
-        <div class="stats-overview">
-            <div class="stat-card">
-                <h3>Totalt antal artiklar</h3>
-                <p id="stat-total-items">0</p>
-            </div>
-            <div class="stat-card">
-                <h3>Total kvantitet</h3>
-                <p id="stat-total-units">0</p>
-            </div>
-        </div>
-
-        <main class="main-content">
-            <div class="inventory-table-container">
-                <table class="inventory-table">
-                    <thead>
-                        <tr>
-                            <th class="header-cell">
-                                <span data-sort="name">Artikel <span class="sort-icon"></span></span>
-                            </th>
-                            <th class="header-cell desktop-only">
-                                <span data-sort="category">Kategori <span class="sort-icon"></span></span>
-                            </th>
-                            <th class="header-cell">
-                                <span data-sort="quantity">Antal <span class="sort-icon"></span></span>
-                            </th>
-                            <th class="header-cell desktop-only">
-                                <span data-sort="price">Pris <span class="sort-icon"></span></span>
-                            </th>
-                            <th class="header-cell desktop-only">
-                                <span data-sort="location">Plats <span class="sort-icon"></span></span>
-                            </th>
-                            <th class="header-cell desktop-only">
-                                <span data-sort="notes">Anteckningar <span class="sort-icon"></span></span>
-                            </th>
-                            <th class="header-cell">Åtgärder</th>
-                        </tr>
-                    </thead>
-                    <tbody id="inventory-list">
-                        </tbody>
-                </table>
-            </div>
-
-            <div id="empty-inventory-message" class="empty-inventory-message hidden">
-                <p>Inga artiklar i lagret.</p>
-                <button id="add-first-item-button" class="button primary-button">Lägg till första artikeln</button>
-            </div>
-
-            <div id="artikel-kort-lista" class="artikel-kort-lista">
+        <div class="app-menu-content">
+            <div class="dashboard-container">
+                <div class="dashboard-stat" data-filter-target="Alla" title="Klicka för att visa alla artiklar i lager">
+                    <h4>Artiklar i Lager</h4>
+                    <span id="stat-total-items">0</span>
+                    <span class="icon-span">inventory_2</span>
                 </div>
-        </main>
-
-        <button id="add-item-fab" class="fab" aria-label="Lägg till ny artikel">➕</button>
-
-        <div id="toast-container" class="toast-container"></div>
-
-        <div id="edit-item-modal" class="modal">
-            <div class="modal-content">
-                <span class="close-button" data-modal="edit-item-modal">&times;</span>
-                <h2>Redigera artikel</h2>
-                <form id="edit-item-form" class="item-form">
-                    <input type="hidden" id="edit-item-id">
-                    <label for="edit-name">Artikelnamn:</label>
-                    <input type="text" id="edit-name" required>
-
-                    <label for="edit-category">Kategori:</label>
-                    <select id="edit-category" required>
-                        <option value="Verktyg">Verktyg</option>
-                        <option value="Fordon">Fordon</option>
-                        <option value="Service">Service</option>
-                        <option value="Material">Material</option>
-                        <option value="Övrigt">Övrigt</option>
-                    </select>
-
-                    <div class="quantity-controls">
-                        <label for="edit-quantity">Antal:</label>
-                        <div class="quantity-input-group">
-                            <button type="button" class="quantity-button decrease" data-type="edit">-</button>
-                            <input type="number" id="edit-quantity" min="0" required>
-                            <button type="button" class="quantity-button increase" data-type="edit">+</button>
+                <div class="dashboard-stat" data-filter-target="Alla" title="Klicka för att visa alla artiklar i lager">
+                    <h4>Totalt Antal Enheter</h4>
+                    <span id="stat-total-units">0</span>
+                    <span class="icon-span">all_inbox</span>
+                </div>
+                <div class="dashboard-stat" id="stat-out-of-stock-wrapper" data-filter-target="Slut" title="Klicka för att filtrera på 'Slut i Lager'">
+                    <h4>Artiklar Slut</h4>
+                    <span id="stat-out-of-stock">0</span>
+                    <span class="icon-span">production_quantity_limits</span>
+                </div>
+            </div>
+            
+            <div id="top-value-container">
+                <h3>Mest Värdefulla (Topp 5)</h3>
+                <div id="top-value-list">
+                    <p id="top-value-empty" style="color: var(--text-light); font-size: 0.9em;">Inget i lager att värdera.</p>
+                </div>
+            </div>
+            <div id="recent-items-container">
+                <h3>Senast Hanterade</h3>
+                <div id="recent-items-list">
+                    <p id="recent-items-empty" style="color: var(--text-light); font-size: 0.9em;">Inga nyligen hanterade artiklar.</p>
+                </div>
+            </div>
+            
+            <div id="export-container">
+                <h3>Exportera</h3>
+                <div class="export-buttons">
+                    <button id="export-csv-btn" class="btn-secondary">
+                        <span class="icon-span">description</span>Exportera CSV
+                    </button>
+                    <button id="export-json-btn" class="btn-secondary">
+                        <span class="icon-span">data_object</span>Exportera JSON
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="main-content">
+        
+        <div class="top-toolbar">
+            <div class="toolbar-title">
+                <a href="#" onclick="window.location.reload(); return false;" style="text-decoration: none; color: inherit;">
+                    <span class="icon-span">inventory_2</span>
+                    LAGERDATABAS
+                </a>
+                <span id="toolbar-filter-badge"></span> 
+            </div>
+            <div class="toolbar-controls">
+                <div class="search-wrapper">
+                    <input type="text" id="desktop-search-input" placeholder="Sök i lagret... (ex: 'k:Service')" autocomplete="off">
+                    <button type="button" id="desktop-clear-search-btn" title="Rensa sökning">&times;</button>
+                    <div id="desktop-search-results" class="search-results-dropdown"></div> </div>
+                
+                <button id="pwa-install-btn" class="btn-primary" type="button">
+                    <span class="icon-span">install_desktop</span>
+                    Installera App
+                </button>
+                <div id="sync-status" class="sync-connecting" title="Ansluter...">
+                    <span class="icon"></span>
+                    <span class="text">Ansluter...</span>
+                </div>
+                <div class="theme-switcher">
+                    <span class="theme-switcher-label">Ljust / Mörkt</span>
+                    <label class="switch">
+                        <input type="checkbox" id="theme-toggle-cb">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <button id="toolbar-add-btn" class="toolbar-add-button" title="Lägg till ny artikel">
+                    <span class="icon-span">add</span>
+                </button>
+                <button id="app-menu-btn" class="toolbar-icon-button" title="Visa översikt">
+                    <span class="icon-span">menu</span>
+                </button>
+            </div>
+        </div>
+        
+        <div class="global-search-container">
+            <p>Skriv in ett artikelnummer för att jämföra priser eller ett 
+                <span class="plate-tag" style="display: inline-flex; vertical-align: middle; margin-left: 4px; margin-right: 4px;">
+                    <span class="plate-eu-s">S</span>
+                    <span class="plate-text">ABC123</span>
+                </span> 
+            för fordonsuppgifter.</p>
+            <div class="global-search-wrapper">
+                <input type="text" id="global-search-input" placeholder="Ange artikelnummer (exempel: 03L 115 562)" autocomplete="off">
+                <button id="global-search-btn" class="btn-primary" title="Sök">
+                    <span class="search-spinner"></span> 
+                    <span class="icon-span">search</span>
+                    <span class="btn-text">Sök</span>
+                </button>
+                </div>
+            <div style="margin-top: 15px; margin-bottom: 5px;">
+                <span style="font-size: 0.9em; font-weight: 600; color: var(--text-dark); display: flex; align-items: center; gap: 5px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 16px; height: 16px; color: var(--primary-color);">
+                        <path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25ZM12.75 6a.75.75 0 0 0-1.5 0v6c0 .414.336.75.75.75h4.5a.75.75 0 0 0 0-1.5h-3.75V6Z" clip-rule="evenodd" />
+                    </svg>
+                  Tidigare sökningar:
+                </span>
+                <div id="global-search-history" class="search-history-container"></div>
+                
+                <div id="global-search-results" class="global-search-results-box">
+                    <button id="global-search-close-btn" title="Stäng">&times;</button>
+                    
+                    <div id="biluppgifter-result-container" style="display: none;">
+                        </div>
+                    
+                    <div id="internal-results-container">
+                        </div>
+                    
+                    <div class="search-results-header">
+                        <h4 class="external-search-title">Externa leverantörer</h4>
+                        <div class="link-dropdown-container" id="export-search-links-container" style="display: none;">
+                            <button id="export-links-btn" class="btn-secondary" onclick="toggleDropdown('export-links-menu'); event.stopPropagation();">
+                                <span class="icon-span">download</span>Exportera
+                            </button>
+                            <div id="export-links-menu" class="dropdown-menu">
+                                <button id="btn-copy-all-links-text" class="lank-knapp">Kopiera som text</button>
+                                <button id="btn-copy-all-links-json" class="lank-knapp">Kopiera som JSON</button>
+                            </div>
                         </div>
                     </div>
-
-                    <label for="edit-price">Pris (SEK):</label>
-                    <input type="number" id="edit-price" min="0" step="0.01">
-
-                    <label for="edit-location">Plats:</label>
-                    <input type="text" id="edit-location">
-
-                    <label for="edit-notes">Anteckningar:</label>
-                    <textarea id="edit-notes"></textarea>
-
-                    <div class="modal-actions">
-                        <button type="submit" class="button primary-button">Spara ändringar</button>
-                        <button type="button" class="button delete-button" id="delete-item-button">Radera artikel</button>
-                        <button type="button" class="button secondary-button close-modal-button" data-modal="edit-item-modal">Avbryt</button>
+                    
+                    <div id="external-results-container">
+                        </div>
+                    
+                    <div id="search-disclaimer" class="search-disclaimer-text" style="display: none;">
+                        * Bildelsbasen söker primärt efter begagnade delar.
                     </div>
-                </form>
+                </div>
+            </div>
+        </div>
+        
+        <div id="category-filter-bar">
+            <button class="btn-secondary active" data-filter="Alla">Alla</button>
+            <button class="btn-secondary" data-filter="Service">Service</button>
+            <button class="btn-secondary" data-filter="Motor/Chassi">Motor/Chassi</button>
+            <button class="btn-secondary" data-filter="Andra Märken">Andra Märken</button>
+            <button class="btn-secondary" data-filter="Slut">Slut i Lager</button>
+        </div>
+        
+        <svg id="empty-state-svg" style="display: none;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M3.375 4.5C2.339 4.5 1.5 5.34 1.5 6.375V17.625c0 1.036.84 1.875 1.875 1.875h17.25c1.035 0 1.875-.84 1.875-1.875V6.375c0-1.036-.84-1.875-1.875-1.875H3.375ZM12.75 7.5a.75.75 0 0 0-1.5 0v2.25H9a.75.75 0 0 0 0 1.5h2.25V13.5a.75.75 0 0 0 1.5 0V11.25H15a.75.75 0 0 0 0-1.5h-2.25V7.5Z" />
+        </svg>
+
+        <div id="full-empty-state" class="empty-state">
+            <svg viewBox="0 0 24 24" fill="currentColor"><use href="#empty-state-svg"></use></svg>
+            <h4>Ditt lager är tomt</h4>
+            <p>Börja med att lägga till din första artikel.</p>
+            <button id="empty-state-add-btn" class="btn-success">
+                <span class="icon-span">add</span>
+                Lägg till första artikeln
+            </button>
+        </div>
+
+        <h3 id="service-artiklar-titel" class="collapsible-header" data-state="open">
+            <div>Service <span class="category-badge" id="badge-service">0</span></div>
+            <span class="toggle-icon">▼</span>
+        </h3>
+        <div id="service-artiklar-wrapper" class="lager-wrapper">
+            <div class="lager-container">
+                <div class="header">
+                    <span data-sort="service_filter">Art. nr <span class="sort-icon"></span></span>
+                    <span data-sort="name">Namn <span class="sort-icon"></span></span>
+                    <span data-sort="price">Pris <span class="sort-icon"></span></span>
+                    <span data-sort="quantity">Antal <span class="sort-icon"></span></span>
+                    <span>Status</span>
+                    <span data-sort="notes">Anteckningar <span class="sort-icon"></span></span>
+                    <span>Åtgärder</span>
+                </div>
+                <div id="service-artiklar-lista"></div>
+                <div id="service-artiklar-kort-lista" class="artikel-kort-lista"></div>
+                <div class="empty-state" id="service-empty-state" style="display: none;">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><use href="#empty-state-svg"></use></svg>
+                    <h4>Inga serviceartiklar</h4>
+                    <p>Din sökning gav inga träffar, eller så har du inte lagt till några artiklar i denna kategori.</p>
+                </div>
             </div>
         </div>
 
-        <div id="add-item-modal" class="modal">
-            <div class="modal-content">
-                <span class="close-button" data-modal="add-item-modal">&times;</span>
-                <h2>Lägg till ny artikel</h2>
-                <form id="add-item-form" class="item-form">
-                    <label for="add-name">Artikelnamn:</label>
-                    <input type="text" id="add-name" required>
-
-                    <label for="add-category">Kategori:</label>
-                    <select id="add-category" required>
-                        <option value="Verktyg">Verktyg</option>
-                        <option value="Fordon">Fordon</option>
-                        <option value="Service">Service</option>
-                        <option value="Material">Material</option>
-                        <option value="Övrigt">Övrigt</option>
-                    </select>
-
-                    <div class="quantity-controls">
-                        <label for="add-quantity">Antal:</label>
-                        <div class="quantity-input-group">
-                            <button type="button" class="quantity-button decrease" data-type="add">-</button>
-                            <input type="number" id="add-quantity" min="0" value="1" required>
-                            <button type="button" class="quantity-button increase" data-type="add">+</button>
-                        </div>
-                    </div>
-
-                    <label for="add-price">Pris (SEK):</label>
-                    <input type="number" id="add-price" min="0" step="0.01">
-
-                    <label for="add-location">Plats:</label>
-                    <input type="text" id="add-location">
-
-                    <label for="add-notes">Anteckningar:</label>
-                    <textarea id="add-notes"></textarea>
-
-                    <div class="modal-actions">
-                        <button type="submit" class="button primary-button">Lägg till artikel</button>
-                        <button type="button" class="button secondary-button close-modal-button" data-modal="add-item-modal">Avbryt</button>
-                    </div>
-                </form>
+        <h3 id="motor-chassi-artiklar-titel" class="collapsible-header" data-state="open">
+            <div>Motor/Chassi <span class="category-badge" id="badge-motor-chassi">0</span></div>
+            <span class="toggle-icon">▼</span>
+        </h3>
+        <div id="motor-chassi-artiklar-wrapper" class="lager-wrapper">
+            <div class="lager-container">
+                <div class="header">
+                    <span data-sort="service_filter">Art. nr <span class="sort-icon"></span></span>
+                    <span data-sort="name">Namn <span class="sort-icon"></span></span>
+                    <span data-sort="price">Pris <span class="sort-icon"></span></span>
+                    <span data-sort="quantity">Antal <span class="sort-icon"></span></span>
+                    <span>Status</span>
+                    <span data-sort="notes">Anteckningar <span class="sort-icon"></span></span>
+                    <span>Åtgärder</span>
+                </div>
+                <div id="motor-chassi-artiklar-lista"></div>
+                <div id="motor-chassi-artiklar-kort-lista" class="artikel-kort-lista"></div>
+                <div class="empty-state" id="motor-chassi-empty-state" style="display: none;">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><use href="#empty-state-svg"></use></svg>
+                    <h4>Inga motor/chassi-artiklar</h4>
+                    <p>Din sökning gav inga träffar, eller så har du inte lagt till några artiklar i denna kategori.</p>
+                </div>
             </div>
         </div>
 
-    </div> <script type="module" src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
-    <script type="module" src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
+       <h3 id="andra-marken-artiklar-titel" class="collapsible-header" data-state="open">
+            <div>Andra Märken <span class="category-badge" id="badge-andra-marken">0</span></div>
+            <span class="toggle-icon">▼</span>
+        </h3>
+        <div id="andra-marken-artiklar-wrapper" class="lager-wrapper">
+            <div class="lager-container">
+                <div class="header">
+                    <span data-sort="service_filter">Art. nr <span class="sort-icon"></span></span>
+                    <span data-sort="name">Namn <span class="sort-icon"></span></span>
+                    <span data-sort="price">Pris <span class="sort-icon"></span></span>
+                    <span data-sort="quantity">Antal <span class="sort-icon"></span></span>
+                    <span>Status</span>
+                    <span data-sort="notes">Anteckningar <span class="sort-icon"></span></span>
+                    <span>Åtgärder</span>
+                </div>
+                <div id="andra-marken-artiklar-lista"></div>
+                <div id="andra-marken-artiklar-kort-lista" class="artikel-kort-lista"></div>
+                <div class="empty-state" id="andra-marken-empty-state" style="display: none;">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><use href="#empty-state-svg"></use></svg>
+                    <h4>Inga artiklar för andra märken</h4>
+                    <p>Din sökning gav inga träffar, eller så har du inte lagt till några artiklar i denna kategori.</p>
+                </div>
+            </div>
+        </div>
+        
+        <h3 id="slut-i-lager-titel" class="collapsible-header" data-state="open" style="display: none;">
+            <div>Slut i Lager <span class="category-badge" id="badge-slut-i-lager">0</span></div>
+            <span class="toggle-icon">▼</span>
+        </h3>
+        <div id="slut-i-lager-wrapper" class="lager-wrapper" style="display: none;">
+        <div class="lager-container">
+                <div class="header">
+                    <span data-sort="service_filter">Art. nr <span class="sort-icon"></span></span>
+                    <span data-sort="name">Namn <span class="sort-icon"></span></span>
+                    <span data-sort="price">Pris <span class="sort-icon"></span></span>
+                    <span data-sort="quantity">Antal <span class="sort-icon"></span></span>
+                    <span>Status</span>
+                    <span data-sort="notes">Anteckningar <span class="sort-icon"></span></span>
+                    <span>Åtgärder</span>
+                </div>
+                <div id="slut-i-lager-lista"></div>
+                <div id="slut-i-lager-kort-lista" class="artikel-kort-lista"></div>
+                <div class="empty-state" id="slut-i-lager-empty-state" style="display: none;">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><use href="#empty-state-svg"></use></svg>
+                    <h4>Inga artiklar slut i lager</h4>
+                    <p>Allt finns i lager, eller så gav din sökning inga träffar.</p>
+                </div>
+            </div>
+        </div>
+    </div> 
+    
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><span class="icon-span">edit</span>Redigera Artikel</h3>
+                <button class="modal-close-btn" data-modal-id="editModal" title="Stäng">&times;</button>
+            </div>
+            <form id="edit-article-form">
+                <div class="modal-body">
+                    <div class="form-grid">
+                        <input type="hidden" id="edit-id">
+                        <div class="form-field-full">
+                            <label for="edit-service_filter">Artikelnummer <span class="orange-asterisk">*</span></label>
+                            <input type="text" name="service_filter" id="edit-service_filter" required oninput="this.value = this.value.toUpperCase()" autocomplete="off">
+                            <div class="form-warning"></div>
+                        </div>
+                        <div class="form-field-full">
+                            <label for="edit-name">Namn <span class="orange-asterisk">*</span></label>
+                            <input type="text" name="name" id="edit-name" required oninput="this.value = this.value.toUpperCase()" autocomplete="off">
+                            <div class="form-warning"></div>
+                        </div>
+                        <div class="form-field-half">
+                            <label for="edit-price">Pris <span class="orange-asterisk">*</span></label>
+                            <input type="number" name="price" id="edit-price" step="0.01" required autocomplete="off">
+                            <div class="form-warning"></div>
+                        </div>
+                        <div class="form-field-half">
+                            <label for="edit-quantity">Antal <span class="orange-asterisk">*</span></label>
+                            <div class="form-quantity-wrapper">
+                                <button type="button" class="qty-btn" id="edit-qty-minus">-</button>
+                                <input type="number" name="quantity" id="edit-quantity" placeholder="Antal" required autocomplete="off">
+                                <button type="button" class="qty-btn" id="edit-qty-plus">+</button>
+                            </div>
+                            <div class="form-warning"></div>
+                        </div>
+                        <div class="form-field-full">
+                            <label for="edit-category">Kategori <span class="orange-asterisk">*</span></label>
+                            <select name="category" id="edit-category" required>
+                                <option value="Service">Service</option>
+                                <option value="Motor/Chassi">Motor/Chassi</option>
+                                <option value="Andra Märken">Andra Märken</option>
+                            </select>
+                            <div class="form-warning"></div>
+                        </div>
+                        <div class="form-field-full">
+                            <label for="edit-notes">Anteckningar</label>
+                            <input type="text" name="notes" id="edit-notes" placeholder="Anteckningar (ex: [ABC123])" autocomplete="off">
+                            <div class="form-warning"></div>
+                        </div>
+                        <div class="form-field-full">
+                            <label for="edit-link">Länk</label>
+                            <input type="text" name="link" id="edit-link" autocomplete="off">
+                            <div class="form-warning"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary modal-close-btn" data-modal-id="editModal">Avbryt</button>
+                    <button type="submit" class="btn-primary">
+                        <span class="icon-span">save</span>
+                        Spara Ändringar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="addModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><span class="icon-span">add_circle</span>Lägg till Ny Artikel</h3>
+                <button class="modal-close-btn" data-modal-id="addModal" title="Stäng">&times;</button>
+            </div>
+            <form id="add-article-form">
+                <div class="modal-body">
+                    <div class="form-grid">
+                        <div class="form-field-full">
+                            <label for="add_service_filter">Artikelnummer <span class="orange-asterisk">*</span></label>
+                            <div class="form-input-wrapper">
+                                <input type="text" id="add_service_filter" name="service_filter" placeholder="Artikelnummer" required oninput="this.value = this.value.toUpperCase()" autocomplete="off">
+                                <button type="button" id="paste-artnr-btn" class="form-paste-btn" title="Klistra in">
+                                    <span class="icon-span">content_paste</span>
+                                </button>
+                            </div>
+                            <div id="add-form-artnr-warning" class="form-warning"></div>
+                        </div>
+                        <div class="form-field-full">
+                            <label for="add_name">Namn <span class="orange-asterisk">*</span></label>
+                            <input type="text" id="add_name" name="name" placeholder="Namn" required oninput="this.value = this.value.toUpperCase()" autocomplete="off">
+                            <div class="form-warning"></div>
+                        </div>
+                        <div class="form-field-half">
+                            <label for="add_price">Pris <span class="orange-asterisk">*</span></label>
+                            <input type="number" id="add_price" name="price" placeholder="Pris" step="0.01" required autocomplete="off">
+                            <div class="form-warning"></div>
+                        </div>
+                        <div class="form-field-half">
+                            <label for="add-quantity">Antal <span class="orange-asterisk">*</span></label>
+                            <div class="form-quantity-wrapper">
+                                <button type="button" class="qty-btn" id="add-qty-minus">-</button>
+                                <input type="number" name="quantity" id="add-quantity" value="1" placeholder="Antal" required autocomplete="off">
+                                <button type="button" class="qty-btn" id="add-qty-plus">+</button>
+                            </div>
+                            <div class="form-warning"></div>
+                        </div>
+                        <div class="form-field-full">
+                            <label for="add_category">Kategori <span class="orange-asterisk">*</span></label>
+                            <select name="category" id="add_category" required>
+                                <option value="" disabled selected>Välj Kategori</option>
+                                <option value="Service">Service</option>
+                                <option value="Motor/Chassi">Motor/Chassi</option>
+                                <option value="Andra Märken">Andra Märken</option>
+                            </select>
+                            <div class="quick-category-wrapper">
+                                <button type="button" class="quick-category-btn" data-category="Service">Service</button>
+                                <button type="button" class="quick-category-btn" data-category="Motor/Chassi">Motor/Chassi</button>
+                                <button type="button" class="quick-category-btn" data-category="Andra Märken">Andra Märken</button>
+                            </div>
+                            <div class="form-warning"></div>
+                        </div>
+                        <div class="form-field-full">
+                            <label for="add_notes">Anteckningar</label>
+                            <input type="text" id="add_notes" name="notes" placeholder="Anteckningar (ex: [ABC123])" autocomplete="off">
+                            <div class="form-warning"></div>
+                        </div>
+                        <div class="form-field-full">
+                            <label for="add_link">Länk (URL)</label>
+                            <input type="text" id="add_link" name="link" placeholder="Länk (URL)" autocomplete="off">
+                            <div class="form-warning"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary modal-close-btn" data-modal-id="addModal">Avbryt</button>
+                    <button type="submit" class="btn-primary btn-success">
+                        <span class="icon-span">save</span>
+                        Spara Artikel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="confirmationModal" class="modal">
+        <div class="modal-content">
+             <div class="modal-header">
+                <h3><span class="icon-span" id="confirmationIcon"></span><span id="confirmationTitle">Bekräfta</span></h3>
+                <button class="modal-close-btn" data-modal-id="confirmationModal" title="Stäng">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="confirmationMessage"></p>
+            </div>
+            <div class="modal-footer">
+                <button id="confirmNo" class="btn-secondary">Avbryt</button>
+                <button id="confirmYes" class="btn-primary">Ja</button> 
+            </div>
+        </div>
+    </div>
+
+    <div id="productPopup">
+        <span class="close-btn">&times;</span>
+        <iframe id="productIframe" src="" frameborder="0"></iframe>
+    </div>
+        
+    <button id="fab-add-btn" title="Lägg till ny artikel">
+        <span class="icon-span">add</span>
+    </button>
+    
+    <button id="back-to-top-btn" title="Tillbaka till toppen" style="display: none;">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 17a.75.75 0 01-.75-.75V5.612L5.03 10.03a.75.75 0 01-1.06-1.06l5.25-5.25a.75.75 0 011.06 0l5.25 5.25a.75.75 0 11-1.06 1.06L10.75 5.612V16.25A.75.75 0 0110 17z" clip-rule="evenodd" />
+        </svg>
+    </button>
+    
+    <div id="row-action-popover">
+        <div id="popover-content">
+            </div>
+    </div>
+    
     <script type="module" src="apps.js"></script>
-    <script>
-        // Service Worker registrering
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/service-worker.js')
-                    .then(registration => {
-                        console.log('ServiceWorker registered: ', registration);
-                    })
-                    .catch(registrationError => {
-                        console.log('ServiceWorker registration failed: ', registrationError);
-                    });
-            });
-        }
-    </script>
+
 </body>
 </html>
