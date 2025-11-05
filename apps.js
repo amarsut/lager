@@ -833,9 +833,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 card.classList.add('selected');
             }
 
+            // --- FIXEN: Dessa 3 rader saknades! ---
             const statusClass = item.quantity > 0 ? 'i-lager' : 'slut';
             const statusText = item.quantity > 0 ? 'I lager' : 'Slut';
             const formattedNotes = parseNotes(item.notes || '');
+            // --- SLUT PÅ FIX ---
+
             const safeServiceFilter = escapeHTML(item.service_filter).replace(/'/g, "\\'");
             
             card.innerHTML = `
@@ -1877,3 +1880,4 @@ document.addEventListener('DOMContentLoaded', () => {
         if(initialLoader) initialLoader.querySelector('p').textContent = 'Kritiskt fel vid initiering.';
     }
 });
+
