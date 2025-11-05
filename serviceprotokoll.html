@@ -1,0 +1,2216 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Serviceprotokoll</title>
+    <style>
+        /* =======================================================
+           CSS VARIABLER (ANPASSAD FÄRG PALETT FÖR MER DISKRET UTSEENDE)
+           ======================================================= */
+        :root {
+            --color-primary: #333; 
+            --color-secondary: #004d99; 
+            --color-light-bg: #f5f5f5; 
+            --color-section-bg: #e9e9e9; 
+            --color-text: #333; 
+            --color-border-dark: #888; 
+            --color-border-light: #ccc; 
+            --color-red: #dc3545;
+            --color-warning: #ffc107; 
+            --color-success: #28a745; 
+            --spacing-base: 8px;
+            --color-toggle-off: var(--color-primary); /* Samma färg som de andra knapparna när den är avstängd */
+            --color-toggle-on: var(--color-success);  /* Grön färg när den är påslagen */
+        }
+
+        /* =======================================================
+           BASSTILAR & TYPOGRAFI
+           ======================================================= */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px auto;
+            max-width: 1000px;
+            color: var(--color-text);
+            background-color: #fff;
+        }
+
+        .header {
+            text-align: center;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 30px;
+            border-bottom: 1px solid var(--color-border-dark); 
+            padding-bottom: 5px;
+            position: relative;
+            letter-spacing: 0.5px;
+            color: var(--color-secondary); 
+        }
+        .header::after {
+            content: '';
+            display: block;
+            width: 100%;
+            height: 3px;
+            background-color: var(--color-secondary);
+            position: absolute;
+            bottom: -5px; 
+            left: 0;
+        }
+
+
+        .inspection-title {
+            text-align: center;
+            font-weight: 600;
+            font-size: 16px;
+            margin: 20px 0 20px 0;
+            border: 1px solid var(--color-border-light); 
+            padding: 10px;
+            background-color: var(--color-section-bg); 
+            color: var(--color-secondary); 
+        }
+        
+        /* NY CSS FÖR REDIGERBARA RUBRIKER */
+        .editable-header {
+            padding: 0 !important; /* Ta bort padding från föräldern */
+        }
+        
+        .editable-header-input {
+            border: none;
+            background-color: transparent;
+            font-family: inherit;
+            font-size: inherit;
+            font-weight: inherit;
+            color: inherit;
+            width: 100%;
+            outline: none;
+            box-sizing: border-box;
+        }
+
+        .editable-header-input.title-style {
+            padding: 10px;
+            text-align: center;
+        }
+        
+        .editable-header-input.section-style {
+            padding: 3px 10px;
+            text-align: left;
+        }
+        /* SLUT NY CSS */
+        
+        /* STIL FÖR VARNINGSRAD (INTE OK) - Justerad opacitet för att synas över zebra-striping */
+        .warning-row {
+            background-color: rgba(255, 193, 7, 0.2) !important; 
+            border-left: 5px solid var(--color-warning); 
+        }
+
+        /* =======================================================
+           KNAPPAR & NAVIGERING
+           ======================================================= */
+        .top-buttons {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 10px;
+            flex-wrap: wrap; /* Tillåter radbrytning på små skärmar */
+        }
+
+        .print-button-container {
+            display: flex; 
+            gap: 10px;
+            align-items: center; 
+            flex-wrap: wrap; 
+        }
+
+        /* Standardstil för alla knappar */
+        .top-buttons button {
+            padding: 10px 15px;
+            font-size: 14px;
+            cursor: pointer;
+            background-color: var(--color-primary); /* Default färg för alla knappar (mörkgrå) */
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-weight: 600;
+            transition: background-color 0.2s, box-shadow 0.2s;
+            flex-shrink: 0;
+        }
+        
+        /* Standard Hover-färg för alla knappar (Blå) */
+        .top-buttons button:hover {
+            background-color: var(--color-secondary); 
+        }
+
+        /* NYTT: Styling för Separat servicebevis (Toggle Button) */
+        /* Denna regel är borttagen för att låta .top-buttons button hantera default-färg och hover */
+        
+        #toggle-service-bevis-btn.toggled-on {
+            background-color: var(--color-toggle-on); /* Grön färg när den är påslagen */
+        }
+
+        /* För att markera hover-effekten på den gröna knappen */
+        #toggle-service-bevis-btn.toggled-on:hover {
+            background-color: #1e7e34; /* Mörkare grön vid hover */
+        }
+        
+        /* Stilar för den faktiska checkboxen (om de inte används) */
+        .checkbox-option {
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--color-primary);
+            white-space: nowrap; 
+            margin-right: 15px; 
+        }
+
+        .checkbox-option input[type="checkbox"] {
+            margin-right: 5px;
+            transform: scale(1.1);
+            accent-color: var(--color-secondary); 
+        }
+        
+        .remove-row-btn {
+            background-color: var(--color-red); 
+            color: white;
+            border: none;
+            padding: 2px 5px; 
+            font-size: 11px; 
+            cursor: pointer;
+            border-radius: 3px;
+            margin-left: var(--spacing-base); 
+            line-height: 1; 
+            order: 3; 
+            flex-shrink: 0; 
+            opacity: 0.7;
+        }
+        .remove-row-btn:hover {
+            background-color: #c82333;
+            opacity: 1;
+        }
+
+        /* =======================================================
+           FORDONSINFORMATION
+           ======================================================= */
+        .info-section {
+            grid-template-columns: repeat(4, 1fr); 
+            display: grid;
+            gap: 20px 30px; 
+            margin-bottom: 30px;
+            padding: 15px 0;
+            border-top: 1px solid var(--color-border-light); 
+            border-bottom: 1px solid var(--color-border-light); 
+            font-size: 14px;
+        }
+        
+        /* NY STYLING: Gråmarkerad exempeltext */
+        .info-item input::placeholder {
+            color: #aaa; 
+            opacity: 1; 
+        }
+
+        .info-item {
+            position: relative; 
+        }
+
+        .info-item label {
+            display: block; 
+            font-weight: 600; 
+            margin-bottom: 4px; 
+            white-space: nowrap; 
+            color: var(--color-text); 
+        }
+
+        .info-item input {
+            border: none;
+            border-bottom: 1px solid var(--color-border-dark); 
+            padding: 2px 0;
+            font-size: 14px;
+            background-color: transparent;
+            outline: none; 
+            width: 100%; 
+            padding-right: 25px; 
+            box-sizing: border-box;
+        }
+        
+        /* Kopieringsikon-stil */
+        .copy-icon-container {
+            position: absolute;
+            right: 0;
+            top: 24px; 
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            color: var(--color-secondary);
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s;
+        }
+
+        .copy-icon-container:hover {
+            color: var(--color-primary);
+        }
+        
+        .copy-icon-container::after {
+            content: "\1F4CB"; 
+        }
+        
+        /* Valideringsvarning */
+        .input-warning-msg { 
+            color: var(--color-red);
+            font-size: 11px;
+            margin-top: 2px;
+            display: none;
+        }
+        
+        .info-item input[type="date"] {
+            padding: 2px 0 2px 5px; 
+            padding-right: 0; 
+        }
+        
+        .red-text {
+            color: var(--color-red);
+            font-size: 11px;
+            margin-left: 5px;
+            position: relative;
+            top: 0; 
+            white-space: nowrap; 
+            order: 2; 
+            flex-shrink: 0; 
+        }
+        
+        .input-warning {
+             border-color: var(--color-red) !important;
+             box-shadow: 0 1px 0 0 var(--color-red);
+        }
+
+        /* =======================================================
+           TABELLSTRUKTUR & RAMAR
+           ======================================================= */
+        .custom-checkbox input[type="checkbox"] {
+            transform: scale(1.3); 
+            margin: 0; 
+            vertical-align: middle; 
+            cursor: pointer;
+            accent-color: var(--color-secondary); 
+        }
+        .custom-checkbox span {
+            display: none; 
+        }
+        .table-container {
+            border: 1px solid var(--color-border-light); 
+            margin-bottom: 25px; 
+            overflow-x: auto; 
+        }
+        .table-container table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            min-width: 600px; 
+        }
+        th, td {
+            border: 1px solid var(--color-border-light); 
+            padding: 3px 8px; 
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        /* =======================================================
+           TABELL LÄSBARHET (ZEBRA & HOVER)
+           ======================================================= */
+        /* Zebra-striping: Alternerande ljus bakgrundsfärg för varannan rad */
+        #static-rows-1 tr:nth-child(even), 
+        #static-rows-2 tr:nth-child(even), 
+        #static-rows-3 tr:nth-child(even),
+        #dynamic-rows tr.dynamic-row:nth-child(even) {
+            background-color: var(--color-light-bg); 
+        }
+
+        /* Förbättrad hover-effekt för alla rader */
+        tbody tr:hover {
+            background-color: rgba(0, 77, 153, 0.05); 
+        }
+        /* =======================================================
+           RESTEN AV CSS STYLING 
+           ======================================================= */
+        
+        .section-header-title {
+            text-align: left;
+            font-weight: 700;
+            font-size: 14px;
+            padding: 3px 10px; 
+            border-bottom: 1px solid var(--color-border-light) !important; 
+            color: var(--color-secondary); 
+            background-color: var(--color-section-bg) !important; 
+            border-right: 1px solid var(--color-border-light) !important; 
+            border-left: none !important;
+            border-top: 1px solid var(--color-border-light) !important; 
+        }
+        .header-checkbox-title {
+            text-align: center;
+            font-weight: 700;
+            font-size: 13px;
+            padding: 3px 4px; 
+            border-bottom: 1px solid var(--color-border-light) !important; 
+            background-color: var(--color-section-bg) !important; 
+            color: var(--color-secondary); 
+            vertical-align: middle; 
+            white-space: nowrap; 
+            line-height: 1.1;
+        }
+        .checkbox-cell, .action-column {
+            text-align: center; 
+            width: 15px; 
+            flex-shrink: 0;
+            padding: 3px 2px; 
+        }
+        .description-content-wrapper {
+            display: flex;
+            align-items: center; 
+            justify-content: flex-start;
+            flex-grow: 1; 
+            margin: -3px -8px; 
+            padding: 3px 8px; 
+        }
+        .editable-text {
+            border: none;
+            background-color: transparent;
+            font-family: inherit; 
+            font-size: inherit;  
+            width: 100%; 
+            flex-grow: 1; 
+            padding: 0; 
+            margin: 0;
+            box-sizing: border-box;
+            font-weight: 600; 
+            line-height: 1.3em; 
+            order: 1;
+        }
+        
+        /* Gör readonly-inputs omöjliga att särskilja från vanlig text */
+        .editable-text[readonly] {
+            outline: none;
+            cursor: default;
+            color: inherit;
+        }
+        
+        .print-text-only {
+            display: none;
+            font-weight: 600; 
+            line-height: 1.3em;
+            flex-grow: 1;
+            order: 1;
+            white-space: pre-wrap; 
+        }
+        .dynamic-row, .asterisk-row {
+            background-color: #fcfcfc;
+        }
+        #row-template {
+            display: none;
+        }
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 100; 
+            left: 0;
+            top: 0;
+            width: 100%; 
+            height: 100%; 
+            overflow: auto; 
+            background-color: rgba(0,0,0,0.6); 
+            padding-top: 50px;
+            backdrop-filter: blur(2px); 
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto; 
+            padding: 20px; 
+            border: 1px solid var(--color-border-dark); 
+            width: 90%; 
+            max-width: 500px; 
+            border-radius: 8px;
+            box-shadow: 0 8px 16px 0 rgba(0,0,0,0.3);
+        }
+        .close-btn {
+            color: #aaa;
+            float: right;
+            font-size: 30px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close-btn:hover,
+        .close-btn:focus {
+            color: var(--color-red);
+            text-decoration: none;
+        }
+        .service-list {
+            list-style: none; 
+            padding: 0;
+            margin: 15px 0 0 0;
+        }
+        .service-list li {
+            padding: 10px 15px;
+            margin-bottom: 5px; 
+            border: 1px solid #ddd; 
+            cursor: pointer;
+            transition: background-color 0.2s;
+            font-size: 14px;
+            background-color: #fff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 4px;
+        }
+        .service-list li:hover {
+            background-color: var(--color-section-bg); 
+        }
+        .service-list .asterisk {
+            color: var(--color-red);
+            font-weight: bold;
+        }
+        .service-list li.confirmed {
+            background-color: #d4edda !important; 
+            color: #155724; 
+            border: 2px solid var(--color-success); 
+            pointer-events: none; 
+            font-weight: 600; 
+        }
+
+        .comment-area {
+            width: 100%;
+            min-height: 100px;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid var(--color-border-light); 
+            box-sizing: border-box;
+            font-size: 13px;
+            resize: vertical;
+        }
+        .signature-section {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 40px;
+            padding-bottom: 20px; 
+            flex-wrap: wrap; 
+            gap: 20px;
+        }
+        .signature-box-wrapper {
+            display: flex;
+            flex-direction: column; 
+            align-items: center;
+        }
+        .signature-box {
+            text-align: center;
+            min-width: 250px;
+            position: relative; 
+        }
+        .signature-input-date {
+            border: none;
+            border-bottom: 1px solid var(--color-primary); 
+            width: 100%;
+            max-width: 280px;
+            text-align: center;
+            padding: 5px 0;
+            font-size: 14px;
+            background-color: transparent;
+            cursor: pointer; 
+        }
+        .date-picker-overlay {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 30px; 
+            opacity: 0; 
+            cursor: pointer;
+            z-index: 10;
+        }
+        .date-picker-overlay[type="date"] {
+            -webkit-appearance: textfield;
+            -moz-appearance: textfield;
+            appearance: textfield;
+            background: transparent;
+            color: transparent; 
+        }
+        .signature-label {
+            display: block;
+            margin-top: 8px;
+            font-size: 13px;
+            color: var(--color-text);
+            font-weight: 600;
+        }
+        .footer-notes {
+            margin-top: 20px;
+            font-size: 12px;
+            padding-left: 5px;
+        }
+        
+        /* NYTT: Flytande notifiering vid sparning */
+        #save-notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--color-success);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            opacity: 0;
+            transition: opacity 0.5s, transform 0.5s;
+            transform: translateY(100px); 
+            z-index: 1000;
+            font-weight: 600;
+        }
+
+        #save-notification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* =======================================================
+           MODAL KNAPPAR (FÖR BEKRÄFTELSE)
+           ======================================================= */
+        .modal-button-container {
+            display: flex; 
+            justify-content: flex-end; 
+            gap: 10px; 
+            margin-top: 25px;
+        }
+
+        .modal-button {
+            padding: 10px 15px;
+            font-size: 14px;
+            cursor: pointer;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-weight: 600;
+            transition: background-color 0.2s, box-shadow 0.2s;
+        }
+
+        .modal-button.btn-cancel {
+            background-color: #6c757d; /* Neutral grå */
+        }
+        .modal-button.btn-cancel:hover {
+            background-color: #5a6268; /* Mörkare grå */
+        }
+
+        .modal-button.btn-danger {
+            background-color: var(--color-red); /* Röd */
+        }
+        .modal-button.btn-danger:hover {
+            background-color: #c82333; /* Mörkare röd */
+        }
+        
+        /* =======================================================
+           UTSKRIFTSSTYLING (Media Print) OCH SERVICEBEVIS
+           ======================================================= */
+        @media print {
+            body { margin: 0; }
+            .modal, .top-buttons, .remove-row-btn, .date-picker-overlay, .copy-icon-container, #save-notification { display: none !important; }
+            .info-item input { border-bottom: 1px solid var(--color-border-dark) !important; padding-left: 2px; padding-right: 0 !important;}
+            .info-item input.input-warning { border: none !important; border-bottom: 1px solid var(--color-border-dark) !important; background-color: transparent !important; padding: 2px 0 !imporant;}
+            .input-warning-msg { display: none !important; } 
+            input:required:not(:valid) { border-color: initial !important; box-shadow: none !important;}
+            
+            /* Dölj input-fälten i wrapper, visa print-texten */
+            .editable-text { display: none !important; }
+            .print-text-only { display: block !important; }
+            
+            .description-content-wrapper { display: block; margin: 0; padding: 0;}
+            .custom-checkbox input[type="checkbox"] { transform: scale(1.3) !important; -webkit-print-color-adjust: exact; color-adjust: exact; accent-color: var(--color-secondary) !important; }
+            .comment-area, .table-container, .header, .header::after, .inspection-title, .section-header-title, .header-checkbox-title { -webkit-print-color-adjust: exact; color-adjust: exact; }
+            .signature-input-date { border-bottom: 1px solid var(--color-primary) !important; }
+            .info-section { grid-template-columns: repeat(4, 1fr) !important; } 
+            .warning-row { border-left: 5px solid var(--color-warning) !important; -webkit-print-color-adjust: exact; color-adjust: exact; } 
+            
+            
+            /* --- SERVICEBEVIS NY STYLING (MATCHAR AUDI PDF V2) --- */
+            
+            #service-bevis-container {
+                page-break-before: always;
+                padding: 40px; 
+                margin: 0;
+                font-family: Arial, sans-serif; 
+                border: none; 
+                box-shadow: none;
+                font-size: 10pt; /* Justerat för att passa mer text */
+            }
+            
+            .service-bevis-header-block {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                margin-bottom: 25px;
+                border-bottom: 1px solid #000;
+                padding-bottom: 10px;
+            }
+            
+            /* Höger sida: "Er Audi" och "Servicebevis" */
+            .sb-right-header {
+                text-align: right;
+                line-height: 1.1;
+                font-family: inherit;
+            }
+            .sb-right-header h1 {
+                 font-size: 10pt;
+                 font-weight: normal;
+                 margin: 0;
+            }
+            .sb-right-header h2 {
+                font-size: 22pt;
+                font-weight: bold;
+                margin: 5px 0 0 0;
+            }
+            .service-bevis-sub-title {
+                font-size: 10pt;
+                font-weight: normal;
+                margin-top: 5px;
+                display: inline-block; 
+                border: 1px solid #000;
+                padding: 2px 5px;
+                line-height: 1;
+                clear: both; 
+            }
+            
+            /* Vänster sida: Utrymme för bild/logotyp */
+            .sb-left-header {
+                width: 150px; 
+                height: 50px; 
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                /* Stil för att markera utrymmet om ingen bild finns. */
+                /* border: 1px dashed #ccc; */ 
+                font-size: 8pt; 
+                color: #888;
+                overflow: hidden;
+            }
+
+            .service-bevis-small-header {
+                font-size: 12pt;
+                font-weight: bold;
+                margin-top: 15px;
+                margin-bottom: 5px;
+                padding: 0;
+                color: #000;
+            }
+            
+            /* Ny, renare data-sektion (ingen tabell) */
+            .sb-data-section {
+                width: 100%;
+                margin-bottom: 15px;
+            }
+            .sb-data-row {
+                display: flex;
+                justify-content: space-between;
+                padding: 2px 0;
+                border-top: 1px solid #000;
+            }
+            
+            .sb-data-row:first-of-type {
+                border-top: none; 
+            }
+            .sb-data-row:last-of-type {
+                border-bottom: 1px solid #000;
+                margin-bottom: 5px; 
+                padding-bottom: 5px; 
+            }
+            
+            .sb-label {
+                width: 35%;
+                font-weight: normal; 
+                color: #555;
+            }
+            .sb-value {
+                width: 65%;
+                font-weight: 600; 
+                text-align: left;
+            }
+            
+            /* Särskild stil för block med utökad text (t.ex. Utfört av) */
+            .sb-value-block {
+                padding-top: 2px;
+                padding-bottom: 2px;
+                line-height: 1.3;
+            }
+
+            /* Stilar för bockmarkering */
+            .additional-work-list-bock {
+                margin: 0;
+                padding: 0;
+                list-style-type: none; /* Se till att inga punkter syns */
+                font-weight: 600;
+            }
+
+            .additional-work-list-bock p {
+                margin: 0;
+                line-height: 1.4;
+            }
+            
+            .additional-work-list-bock.empty {
+                font-style: italic;
+                font-weight: normal;
+            }
+            
+            /* Underskrifter */
+            .service-bevis-signatures {
+                display: flex;
+                justify-content: space-between;
+                margin-top: 40px;
+                font-size: 10pt;
+            }
+            .signature-field {
+                width: 45%;
+                border-bottom: 1px solid #000;
+                padding-bottom: 5px;
+                text-align: center;
+                font-weight: 600;
+            }
+            .signature-label-print {
+                display: block;
+                margin-top: 5px;
+                font-size: 8pt;
+                font-weight: normal;
+                text-align: center;
+            }
+
+            .service-bevis-footer {
+                font-size: 8pt;
+                margin-top: 50px;
+                text-align: center;
+                border-top: 1px solid #000;
+                padding-top: 5px;
+            }
+            
+             /* NYTT: Förhindra tom sida genom att helt dölja behållaren om den inte innehåller beviset */
+            #service-bevis-container:empty {
+                display: none !important;
+            }
+
+        }
+        
+        /* Media Query för att hantera 3 kolumner i smalare fönster */
+        @media screen and (max-width: 900px) {
+            .info-section {
+                grid-template-columns: repeat(3, 1fr); 
+            }
+        }
+        /* Media Query för att hantera 2 kolumner i smala fönster */
+        @media screen and (max-width: 600px) {
+            .info-section {
+                grid-template-columns: repeat(2, 1fr); 
+            }
+            
+            /* --- MOBIL FÖRBÄTTRINGAR START --- */
+            
+            /* 1. Sidomarginal/Padding */
+            body { 
+                margin: 0;
+                padding: 10px 10px; 
+            }
+            .header {
+                font-size: 24px;
+                margin-top: 10px;
+                margin-bottom: 20px;
+            }
+            .inspection-title {
+                font-size: 14px;
+                margin: 15px 0 15px 0;
+            }
+            
+            /* 2. Knappar: Gör större och stapla på varandra */
+            .top-buttons {
+                flex-direction: column; 
+                align-items: stretch; 
+                gap: 5px;
+            }
+            
+            .print-button-container {
+                flex-direction: column; 
+                gap: 5px;
+                width: 100%;
+                /* Lägg till checkbox-option i print-button-container för att den ska staplas */
+                align-items: stretch; 
+            }
+
+            .checkbox-option {
+                 margin-right: 0; /* Tar bort höger marginal på mobil */
+            }
+            
+            /* Se till att knapparna tar upp hela bredden i mobilvy */
+            .print-button-container button {
+                width: 100%;
+            }
+
+            .top-buttons > button { /* Rensa protokoll-knappen */
+                 width: 100%;
+            }
+            
+            /* 3. Mindre fontstorlek i tabeller */
+            .table-container table {
+                font-size: 12px; 
+            }
+            th, td {
+                padding: 5px 6px; 
+            }
+            .section-header-title {
+                font-size: 13px;
+            }
+            .header-checkbox-title {
+                font-size: 11px;
+            }
+            
+            /* 4. Justeringar för övriga element */
+            .service-list li {
+                font-size: 13px;
+            }
+            .signature-box {
+                min-width: unset; 
+                width: 100%;
+            }
+            .signature-section {
+                flex-direction: column; 
+                align-items: stretch; 
+                gap: 15px;
+            }
+            .signature-input-date {
+                max-width: 100%;
+            }
+            
+            /* --- MOBIL FÖRBÄTTRINGAR SLUT --- */
+        }
+
+    </style>
+</head>
+<body onload="loadData(); validateRequiredFields(); generateStaticRows();">
+
+    <div id="save-notification">💾 Sparat!</div>
+
+    <div class="top-buttons">
+        <div class="print-button-container">
+            
+            <button class="print-button" onclick="submitForm(event)">Skriv ut</button>
+            
+            <!-- NY MEJL-KNAPP START -->
+            <button type="button" onclick="sendEmail()">Skicka via mejl</button>
+            <!-- NY MEJL-KNAPP SLUT -->
+            
+            <button onclick="openServiceModal()">+ Lägg till extra tillägg</button>
+            
+            <button id="toggle-service-bevis-btn" onclick="toggleServiceBevis()">Separat servicebevis</button>
+            
+        </div>
+        <button class="clear-button" onclick="clearProtocol()">Rensa protokoll</button>
+    </div>
+
+    <form id="protocol-form" onsubmit="return false;">
+        <div class="header">
+            Serviceprotokoll
+        </div>
+        <div class="info-section" id="info-section-inputs">
+            
+            <div class="info-item">
+                <label for="order-nr">Ordernr</label>
+                <input type="text" id="order-nr" name="order-nr" data-persist="true" value="" onchange="saveData()">
+                <div class="copy-icon-container" onclick="copyToClipboard('order-nr')"></div>
+            </div>
+            
+            <div class="info-item"><label for="modellkod">Modellkod</label><input type="text" id="modellkod" name="modellkod" data-persist="true" value="" onchange="saveData()"></div>
+            
+            <div class="info-item">
+                <label for="registrering-nr">Registreringsnr <span class="red-text">*</span></label>
+                <input type="text" id="registrering-nr" name="registrering-nr" data-persist="true" value="" onchange="saveData(); checkRequiredInput('registrering-nr', 'Registreringsnr saknas!');" oninput="this.value = this.value.toUpperCase(); checkRequiredInput('registrering-nr', 'Registreringsnr saknas!');" required>
+                <div class="copy-icon-container" onclick="copyToClipboard('registrering-nr')"></div>
+                <div id="registrering-nr-alert" class="input-warning-msg">Registreringsnr saknas!</div>
+            </div>
+            
+            <div class="info-item"><label for="registrering-datum">Registrering</label><input type="text" id="registrering-datum" name="registrering-datum" data-persist="true" placeholder="2017-08-22" onchange="saveData()"></div>
+
+            <div class="info-item">
+                <label for="chassinummer">Chassinummer <span class="red-text">*</span></label>
+                <input type="text" id="chassinummer" name="chassinummer" data-persist="true" value="" onchange="saveData(); checkRequiredInput('chassinummer', 'Chassinummer saknas!'); decodeVINToYear();" oninput="this.value = this.value.toUpperCase(); checkRequiredInput('chassinummer', 'Chassinummer saknas!'); decodeVINToYear();" required>
+                <div class="copy-icon-container" onclick="copyToClipboard('chassinummer')"></div>
+                <div id="chassinummer-alert" class="input-warning-msg">Chassinummer saknas!</div>
+            </div>
+            
+            <div class="info-item"><label for="mmb">MMB</label><input type="text" id="mmb" name="mmb" data-persist="true" placeholder="CFGB (motorkod)" onchange="saveData()" oninput="this.value = this.value.toUpperCase()"></div>
+            
+            <div class="info-item">
+                <label for="mätarställning">Mätarställning<span class="red-text">*</span></label>
+                <input type="text" id="mätarställning" name="mätarställning" data-persist="true" value="" onchange="saveData(); checkRequiredInput('mätarställning', 'Mätarställning saknas!');" oninput="this.value = this.value.replace(/[^0-9]/g, ''); checkRequiredInput('mätarställning', 'Mätarställning saknas!');" inputmode="numeric">
+                <div id="mätarställning-alert" class="input-warning-msg">Mätarställning saknas!</div>
+            </div>
+            
+            <div class="info-item"><label for="serviceutgivare">Servicerådgivare</label><input type="text" id="serviceutgivare" name="serviceutgivare" data-persist="true" value="" onchange="saveData()"></div>
+
+            <div class="info-item"><label for="modellkod-2">Modell</label><input type="text" id="modellkod-2" name="modellkod-2" data-persist="true" placeholder="2.0 TDI 4Motion" onchange="saveData()"></div>
+            <div class="info-item"><label for="vmb">VMB</label><input type="text" id="vmb" name="vmb" data-persist="true" placeholder="SYK" onchange="saveData()" oninput="this.value = this.value.toUpperCase()"></div>
+            <div class="info-item"><label for="årsmodell">Årsmodell</label><input type="text" id="årsmodell" name="årsmodell" data-persist="true" value="" onchange="saveData()" placeholder="2018"></div>
+            
+            <div class="info-item">
+                <label for="datum">Datum <span class="red-text">*</span></label>
+                <input type="date" id="datum" name="datum" data-persist="true" value="" onchange="saveData(); checkRequiredInput('datum', 'Datum saknas!');" oninput="checkRequiredInput('datum', 'Datum saknas!');" required>
+                <div id="datum-alert" class="input-warning-msg">Datum saknas!</div>
+            </div>
+        </div>
+
+        <div class="inspection-title editable-header">
+            <input type="text" 
+                   id="main-inspection-title" 
+                   class="editable-header-input title-style"
+                   data-persist="true" 
+                   onchange="saveData()" 
+                   value="Inspektion med oljebyte">
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th class="section-header-title editable-header" colspan="2">
+                            <input type="text"
+                                   id="section-title-1"
+                                   class="editable-header-input section-style"
+                                   data-persist="true"
+                                   onchange="saveData()"
+                                   value="Fordon framför verkstadslyft">
+                        </th> 
+                        <th class="header-checkbox-title">Ok/<br>genomförd</th> 
+                        <th class="header-checkbox-title">Inte<br>ok</th> 
+                        <th class="header-checkbox-title">Åtgärdat</th>
+                    </tr>
+                </thead>
+                <tbody id="static-rows-1">
+                    <!-- ÄNDRING: Alla rader nedan har fått ny HTML-struktur för att inkludera X-knappen -->
+                    <tr data-row-id="s1_1">
+                        <td class="description-column" colspan="2">
+                            <div class="description-content-wrapper">
+                                <input type="text" class="editable-text" value="Signalhorn: Kontrollera funktionen" readonly>
+                                <span class="print-text-only">Signalhorn: Kontrollera funktionen</span> 
+                                <button type="button" class="remove-row-btn" onclick="removeRow(this)">X</button>
+                            </div>
+                        </td>
+                        <td class="checkbox-cell"><label class="custom-checkbox"><input type="checkbox" data-col="c1" onchange="handleCheckboxClick(this)" checked><span></span></label></td>
+                        <td class="checkbox-cell"><label class="custom-checkbox"><input type="checkbox" data-col="c2" onchange="handleCheckboxClick(this)"><span></span></label></td>
+                        <td class="action-column"><label class="custom-checkbox"><input type="checkbox" data-col="c3" onchange="handleCheckboxClick(this)"><span></span></label></td>
+                    </tr>
+                    <tr data-row-id="s1_2">
+                        <td class="description-column" colspan="2">
+                            <div class="description-content-wrapper">
+                                <input type="text" class="editable-text" value="Kombiinstrument: Kontrollera kontrollamporna" readonly>
+                                <span class="print-text-only">Kombinationsinstrument: Kontrollera kontrollamporna</span> 
+                                <button type="button" class="remove-row-btn" onclick="removeRow(this)">X</button>
+                            </div>
+                        </td>
+                        <td class="checkbox-cell"><label class="custom-checkbox"><input type="checkbox" data-col="c1" onchange="handleCheckboxClick(this)" checked><span></span></label></td>
+                        <td class="checkbox-cell"><label class="custom-checkbox"><input type="checkbox" data-col="c2" onchange="handleCheckboxClick(this)"><span></span></label></td>
+                        <td class="action-column"><label class="custom-checkbox"><input type="checkbox" data-col="c3" onchange="handleCheckboxClick(this)"><span></span></label></td>
+                    </tr>
+                    <tr data-row-id="s1_3">
+                        <td class="description-column" colspan="2">
+                            <div class="description-content-wrapper">
+                                <input type="text" class="editable-text" value="Färdljus, backstrålkastare, bromsljus, parkeringsljus, nummerbelysning och blinker/varningsblinkers: Kontrollera funktionen" readonly>
+                                <span class="print-text-only">Färdijus, backstrålkastare, bromsljus, parkeringsljus, nummerbelysning och blinker/varningsblinkers: Kontrollera funktionen</span> 
+                                <button type="button" class="remove-row-btn" onclick="removeRow(this)">X</button>
+                            </div>
+                        </td>
+                        <td class="checkbox-cell"><label class="custom-checkbox"><input type="checkbox" data-col="c1" onchange="handleCheckboxClick(this)" checked><span></span></label></td>
+                        <td class="checkbox-cell"><label class="custom-checkbox"><input type="checkbox" data-col="c2" onchange="handleCheckboxClick(this)"><span></span></label></td>
+                        <td class="action-column"><label class="custom-checkbox"><input type="checkbox" data-col="c3" onchange="handleCheckboxClick(this)"><span></span></label></td>
+                    </tr>
+                    <tr data-row-id="s1_4">
+                        <td class="description-column" colspan="2">
+                            <div class="description-content-wrapper">
+                                <input type="text" class="editable-text" value="Vindrutetorkare (vindruta/bakruta): Kontrollera strålens bild, ställ in vid behov" readonly>
+                                <span class="print-text-only">Vindrutetorkare (vindruta/bakruta): Kontrollera strålens bild, ställ in vid behov</span> 
+                                <button type="button" class="remove-row-btn" onclick="removeRow(this)">X</button>
+                            </div>
+                        </td>
+                        <td class="checkbox-cell"><label class="custom-checkbox"><input type="checkbox" data-col="c1" onchange="handleCheckboxClick(this)" checked><span></span></label></td>
+                        <td class="checkbox-cell"><label class="custom-checkbox"><input type="checkbox" data-col="c2" onchange="handleCheckboxClick(this)"><span></span></label></td>
+                        <td class="action-column"><label class="custom-checkbox"><input type="checkbox" data-col="c3" onchange="handleCheckboxClick(this)"><span></span></label></td>
+                    </tr>
+                    <tr data-row-id="s1_5">
+                        <td class="description-column" colspan="2">
+                            <div class="description-content-wrapper">
+                                <input type="text" class="editable-text" value="Strålkastarrengörare: Kontrollera funktionen" readonly>
+                                <span class="print-text-only">Strålkastarrengörare: Kontrollera funktionen</span> 
+                                <button type="button" class="remove-row-btn" onclick="removeRow(this)">X</button>
+                            </div>
+                        </td>
+                        <td class="checkbox-cell"><label class="custom-checkbox"><input type="checkbox" data-col="c1" onchange="handleCheckboxClick(this)" checked><span></span></label></td>
+                        <td class="checkbox-cell"><label class="custom-checkbox"><input type="checkbox" data-col="c2" onchange="handleCheckboxClick(this)"><span></span></label></td>
+                        <td class="action-column"><label class="custom-checkbox"><input type="checkbox" data-col="c3" onchange="handleCheckboxClick(this)"><span></span></label></td>
+                    </tr>
+                    <tr data-row-id="s1_6">
+                        <td class="description-column" colspan="2">
+                            <div class="description-content-wrapper">
+                                <input type="text" class="editable-text" value="Torkarblad: Kontrollera om de är skadade" readonly>
+                                <span class="print-text-only">Torkarblad: Kontrollera om de är skadade</span> 
+                                <button type="button" class="remove-row-btn" onclick="removeRow(this)">X</button>
+                            </div>
+                        </td>
+                        <td class="checkbox-cell"><label class="custom-checkbox"><input type="checkbox" data-col="c1" onchange="handleCheckboxClick(this)" checked><span></span></label></td>
+                        <td class="checkbox-cell"><label class="custom-checkbox"><input type="checkbox" data-col="c2" onchange="handleCheckboxClick(this)"><span></span></label></td>
+                        <td class="action-column"><label class="custom-checkbox"><input type="checkbox" data-col="c3" onchange="handleCheckboxClick(this)"><span></span></label></td>
+                    </tr>
+                </tbody>
+
+                <tbody id="dynamic-rows">
+                </tbody>
+            </table>
+        </div>
+
+        <div class="top-buttons">
+            <button type="button" onclick="addRow('Fordon framför verkstadslyft')">+ Lägg till egen rad</button>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th class="section-header-title editable-header" colspan="2">
+                             <input type="text"
+                                   id="section-title-2"
+                                   class="editable-header-input section-style"
+                                   data-persist="true"
+                                   onchange="saveData()"
+                                   value="Fordon på verkstadslyft">
+                        </th> 
+                        <th class="header-checkbox-title">Ok/<br>genomförd</th>
+                        <th class="header-checkbox-title">Inte<br>ok</th>
+                        <th class="header-checkbox-title">Åtgärdat</th>
+                    </tr>
+                </thead>
+                <tbody id="static-rows-2">
+                    <!-- ÄNDRING: Alla rader nedan har fått ny HTML-struktur för att inkludera X-knappen (förutom de som redan hade det) -->
+                    <tr data-row-id="s2_1">
+                        <td class="description-column" colspan="2">
+                            <div class="description-content-wrapper">
+                                <input type="text" class="editable-text" value="Kylsystem: Kontrollera kylvätskenivån, anpassa vid behov" readonly>
+                                <span class="print-text-only">Kylsystem: Kontrollera kylvätskenivån, anpassa vid behov</span> 
+                                <button type="button" class="remove-row-btn" onclick="removeRow(this)">X</button>
+                            </div>
+                        </td>
+                        <td class="checkbox-cell"><label class="custom-checkbox"><input type="checkbox" data-col="c1" onchange="handleCheckboxClick(this)" checked><span></span></label></td>
+                        <td class="checkbox-cell"><label class="custom-checkbox"><input type="checkbox" data-col="c2" onchange="handleCheckboxClick(this)"><span></span></label></td>
+                        <td class="action-column"><label class="custom-checkbox"><input type="checkbox" data-col="c3" onchange="handleCheckboxClick(this)"><span></span></label></td>
+                    </tr>
+                    
+                    <!-- Denna rad hade redan rätt struktur -->
+                    <tr data-row-id="s2_2">
+                        <td class="description-column" colspan="2">
+                            <div class="description-content-wrapper">
+                                <input type="text" class="editable-text" value="Motorolja: Byt oljefilter" readonly>
+                                <span class="print-text-only">Motorolja: Byt oljefilter</span> 
+                                <button type="button" class="remove-row-btn" onclick="removeRow(this)">X</button>
+                            </div>
+                        </td>
+                        <td class="checkbox-cell"><label class="custom-checkbox"><input type="checkbox" data-col="c1" onchange="handleCheckboxClick(this)" checked><span></span></label></td>
+                        <td class="checkbox-cell"><label class="custom-checkbox"><input type="checkbox" data-col="c2" onchange="handleCheckboxClick(this)"><span></span></label></td>
+                        <td class="action-column"><label class="custom-checkbox"><input type="checkbox" data-col="c3" onchange="handleCheckboxClick(this)"><span></span></label></td>
+                    </tr>
+                    
+                    <tr data-row-id="s2_4">
+                        <td class="description-column" colspan="2">
+                            <div class="description-content-wrapper">
+                                <input type="text" class="editable-text" value="Däck: Kontrollera däcktrycken och ställ in trycket vid behov" readonly>
+                                <span class="print-text-only">Däck: Kontrollera däcktrycken och ställ in trycket vid behov</span> 
+                                <button type="button" class="remove-row-btn" onclick="removeRow(this)">X</button>
+                            </div>
+                        </td>
+                        <td class="checkbox-cell"><label class="custom-checkbox"><input type="checkbox" data-col="c1" onchange="handleCheckboxClick(this)" checked><span></span></label></td>
+                        <td class="checkbox-cell"><label class="custom-checkbox"><input type="checkbox" data-col="c2" onchange="handleCheckboxClick(this)"><span></span></label></td>
+                        <td class="action-column"><label class="custom-checkbox"><input type="checkbox" data-col="c3" onchange="handleCheckboxClick(this)"><span></span></label></td>
+                    </tr>
+                    
+                    <tr data-row-id="s2_5_ny">
+                        <td class="description-column" colspan="2">
+                            <div class="description-content-wrapper">
+                                <input type="text" class="editable-text" value="Däck: Kontrollera skick, rotationsriktning och slitagelängd" readonly>
+                                <span class="print-text-only">Däck: Kontrollera skick, rotationsriktning och slitagelängd</span> 
+                                <button type="button" class="remove-row-btn" onclick="removeRow(this)">X</button>
+                            </div>
+                        </td>
+                        <td class="checkbox-cell"><label class="custom-checkbox"><input type="checkbox" data-col="c1" onchange="handleCheckboxClick(this)" checked><span></span></label></td>
+                        <td class="checkbox-cell"><label class="custom-checkbox"><input type="checkbox" data-col="c2" onchange="handleCheckboxClick(this)"><span></span></label></td>
+                        <td class="action-column"><label class="custom-checkbox"><input type="checkbox" data-col="c3" onchange="handleCheckboxClick(this)"><span></span></label></td>
+                    </tr>
+                    
+                    <tr data-row-id="s2_9">
+                        <td class="description-column" colspan="2">
+                            <div class="description-content-wrapper">
+                                <input type="text" class="editable-text" value="Bromsbelägg: Kontrollera tjockleken" readonly>
+                                <span class="print-text-only">Bromsbelägg: Kontrollera tjockleken</span> 
+                                <button type="button" class="remove-row-btn" onclick="removeRow(this)">X</button>
+                            </div>
+                        </td>
+                        <td class="checkbox-cell"><label class="custom-checkbox"><input type="checkbox" data-col="c1" onchange="handleCheckboxClick(this)" checked><span></span></label></td>
+                        <td class="checkbox-cell"><label class="custom-checkbox"><input type="checkbox" data-col="c2" onchange="handleCheckboxClick(this)"><span></span></label></td>
+                        <td class="action-column"><label class="custom-checkbox"><input type="checkbox" data-col="c3" onchange="handleCheckboxClick(this)"><span></span></label></td>
+                    </tr>
+                    <tr data-row-id="s2_10">
+                        <td class="description-column" colspan="2">
+                            <div class="description-content-wrapper">
+                                <input type="text" class="editable-text" value="Motor, växellåda, slutväxel och styrinrättning: Kontrollera med avseende på läckage och skador" readonly>
+                                <span class="print-text-only">Motor, växellåda, slutväxel och styrinrättning: Kontrollera med avseende på läckage och skador</span> 
+                                <button type="button" class="remove-row-btn" onclick="removeRow(this)">X</button>
+                            </div>
+                        </td>
+                        <td class="checkbox-cell"><label class="custom-checkbox"><input type="checkbox" data-col="c1" onchange="handleCheckboxClick(this)" checked><span></span></label></td>
+                        <td class="checkbox-cell"><label class="custom-checkbox"><input type="checkbox" data-col="c2" onchange="handleCheckboxClick(this)"><span></span></label></td>
+                        <td class="action-column"><label class="custom-checkbox"><input type="checkbox" data-col="c3" onchange="handleCheckboxClick(this)"><span></span></label></td>
+                    </tr>
+                    <tr data-row-id="s2_11">
+                        <td class="description-column" colspan="2">
+                            <div class="description-content-wrapper">
+                                <input type="text" class="editable-text" value="Komponenter på fram- och bakaxeln: Kontrollera spel, fastsättning och klämskydd med avseende på skador" readonly>
+                                <span class="print-text-only">Komponenter på fram- och bakaxeln: Kontrollera spel, fastsättning och klämskydd med avseende på skador</span> 
+                                <button type="button" class="remove-row-btn" onclick="removeRow(this)">X</button>
+                            </div>
+                        </td>
+                        <td class="checkbox-cell"><label class="custom-checkbox"><input type="checkbox" data-col="c1" onchange="handleCheckboxClick(this)" checked><span></span></label></td>
+                        <td class="checkbox-cell"><label class="custom-checkbox"><input type="checkbox" data-col="c2" onchange="handleCheckboxClick(this)"><span></span></label></td>
+                        <td class="action-column"><label class="custom-checkbox"><input type="checkbox" data-col="c3" onchange="handleCheckboxClick(this)"><span></span></label></td>
+                    </tr>
+                    <tr data-row-id="s2_12">
+                        <td class="description-column" colspan="2">
+                            <div class="description-content-wrapper">
+                                <input type="text" class="editable-text" value="Bromssystem: Kontrollera bromsslangarnas skick, kontrollera att avluftningsskruvarnas lock finns" readonly>
+                                <span class="print-text-only">Bromssystem: Kontrollera bromsslangarnas skick, kontrollera att avluftningsskruvarnas lock finna</span> 
+                                <button type="button" class="remove-row-btn" onclick="removeRow(this)">X</button>
+                            </div>
+                        </td>
+                        <td class="checkbox-cell"><label class="custom-checkbox"><input type="checkbox" data-col="c1" onchange="handleCheckboxClick(this)" checked><span></span></label></td>
+                        <td class="checkbox-cell"><label class="custom-checkbox"><input type="checkbox" data-col="c2" onchange="handleCheckboxClick(this)"><span></span></label></td>
+                        <td class="action-column"><label class="custom-checkbox"><input type="checkbox" data-col="c3" onchange="handleCheckboxClick(this)"><span></span></label></td>
+                    </tr>
+                    <tr data-row-id="s2_13">
+                        <td class="description-column" colspan="2">
+                            <div class="description-content-wrapper">
+                                <input type="text" class="editable-text" value="Underrede: Kontrollera inklädnader, hjulhuskar, tröskelbalkar och ledningar med avseende på skador och korrekt fastsättning" readonly>
+                                <span class="print-text-only">Underrede: Kontrollera inklädnader, hjulhuskar, tröskelbalkar och ledningar med avseende på skador och korrekt fastsättning</span> 
+                                <button type="button" class="remove-row-btn" onclick="removeRow(this)">X</button>
+                            </div>
+                        </td>
+                        <td class="checkbox-cell"><label class="custom-checkbox"><input type="checkbox" data-col="c1" onchange="handleCheckboxClick(this)" checked><span></span></label></td>
+                        <td class="checkbox-cell"><label class="custom-checkbox"><input type="checkbox" data-col="c2" onchange="handleCheckboxClick(this)"><span></span></label></td>
+                        <td class="action-column"><label class="custom-checkbox"><input type="checkbox" data-col="c3" onchange="handleCheckboxClick(this)"><span></span></label></td>
+                    </tr>
+                    
+                    <!-- Denna rad hade redan rätt struktur -->
+                    <tr data-row-id="s2_14">
+                        <td class="description-column" colspan="2">
+                             <div class="description-content-wrapper">
+                                <input type="text" class="editable-text" value="Motorolja: Fylla på" readonly>
+                                <span class="print-text-only">Motorolja: Fylla på</span> 
+                                <button type="button" class="remove-row-btn" onclick="removeRow(this)">X</button>
+                            </div>
+                        </td>
+                        <td class="checkbox-cell"><label class="custom-checkbox"><input type="checkbox" data-col="c1" onchange="handleCheckboxClick(this)" checked><span></span></label></td>
+                        <td class="checkbox-cell"><label class="custom-checkbox"><input type="checkbox" data-col="c2" onchange="handleCheckboxClick(this)"><span></span></label></td>
+                        <td class="action-column"><label class="custom-checkbox"><input type="checkbox" data-col="c3" onchange="handleCheckboxClick(this)"><span></span></label></td>
+                    </tr>
+                    
+                </tbody>
+            </table>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th class="section-header-title editable-header" colspan="2">
+                            <input type="text"
+                                   id="section-title-3"
+                                   class="editable-header-input section-style"
+                                   data-persist="true"
+                                   onchange="saveData()"
+                                   value="Avslutande arbeten">
+                        </th> 
+                        <th class="header-checkbox-title">Ok/<br>genomförd</th>
+                        <th class="header-checkbox-title">Inte<br>ok</th>
+                        <th class="header-checkbox-title">Åtgärdat</th>
+                    </tr>
+                </thead>
+                <tbody id="static-rows-3">
+                    <!-- ÄNDRING: Alla rader nedan har fått ny HTML-struktur för att inkludera X-knappen -->
+                    <tr data-row-id="s3_1">
+                        <td class="description-column" colspan="2">
+                            <div class="description-content-wrapper">
+                                <input type="text" class="editable-text" value="Serviceintervallsindikering: Återställa serviceindikering" readonly>
+                                <span class="print-text-only">Serviceintervallsindikering: Återställa serviceindikering</span> 
+                                <button type="button" class="remove-row-btn" onclick="removeRow(this)">X</button>
+                            </div>
+                        </td>
+                        <td class="checkbox-cell"><label class="custom-checkbox"><input type="checkbox" data-col="c1" onchange="handleCheckboxClick(this)" checked><span></span></label></td>
+                        <td class="checkbox-cell"><label class="custom-checkbox"><input type="checkbox" data-col="c2" onchange="handleCheckboxClick(this)"><span></span></label></td>
+                        <td class="action-column"><label class="custom-checkbox"><input type="checkbox" data-col="c3" onchange="handleCheckboxClick(this)"><span></span></label></td>
+                    </tr>
+                    <tr data-row-id="s3_2">
+                        <td class="description-column" colspan="2">
+                            <div class="description-content-wrapper">
+                                <input type="text" class="editable-text" value="Provkör" readonly>
+                                <span class="print-text-only">Provkör</span> 
+                                <button type="button" class="remove-row-btn" onclick="removeRow(this)">X</button>
+                            </div>
+                        </td>
+                        <td class="checkbox-cell"><label class="custom-checkbox"><input type="checkbox" data-col="c1" onchange="handleCheckboxClick(this)" checked><span></span></label></td>
+                        <td class="checkbox-cell"><label class="custom-checkbox"><input type="checkbox" data-col="c2" onchange="handleCheckboxClick(this)"><span></span></label></td>
+                        <td class="action-column"><label class="custom-checkbox"><input type="checkbox" data-col="c3" onchange="handleCheckboxClick(this)"><span></span></label></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="footer-notes">
+            <p><strong>Underhållskommentar:</strong></p>
+            <textarea id="comment-area" class="comment-area" name="comment-area" data-persist="true" onchange="saveData()" placeholder="Eventuella anmärkningar, rekommendationer eller ytterligare information..."></textarea>
+        </div>
+        
+        <div class="footer-notes">
+            <p><span class="red-text">*</span> = Obligatoriskt fält.</p>
+            <p><span class="red-text">**</span> = Denna serviceåtgärd utförs enligt särskilt angivet schema/intervall.</p>
+        </div>
+        
+        <div class="signature-section">
+            
+            <div class="signature-box-wrapper">
+                <div class="signature-box">
+                    <input type="date" class="date-picker-overlay" onchange="updateSignatureDate('signer-service-tekniker', this.value)">
+                    <input type="text" id="signer-service-tekniker" name="signer-service-tekniker" class="signature-input-date" data-persist="true" onchange="saveData()" onfocus="updateSignatureDate('signer-service-tekniker')" placeholder="Namn och datum">
+                    <span class="signature-label">Datum/underskrift (ansvarig)</span>
+                </div>
+            </div>
+            
+            <div class="signature-box-wrapper">
+                <div class="signature-box">
+                    <input type="date" class="date-picker-overlay" onchange="updateSignatureDate('signer-kund', this.value)">
+                    <input type="text" id="signer-kund" name="signer-kund" class="signature-input-date" data-persist="true" onchange="saveData()" onfocus="updateSignatureDate('signer-kund')" placeholder="Namn och datum">
+                    <span class="signature-label">Datum/underskrift (slutkontroll)</span>
+                </div>
+            </div>
+        </div>
+
+    </form>
+
+
+    <table>
+        <tbody id="row-template">
+            <tr class="dynamic-row" data-section="">
+                <td class="description-column" colspan="2">
+                    <div class="description-content-wrapper">
+                        <input type="text" class="editable-text" placeholder="Skriv in serviceåtgärd...">
+                        <span class="print-text-only"></span>
+                        <button type="button" class="remove-row-btn" onclick="removeRow(this)">X</button>
+                    </div>
+                </td>
+                <td class="checkbox-cell"><label class="custom-checkbox"><input type="checkbox" data-col="c1" onchange="handleCheckboxClick(this);"><span></span></label></td>
+                <td class="checkbox-cell"><label class="custom-checkbox"><input type="checkbox" data-col="c2" onchange="handleCheckboxClick(this);"><span></span></label></td>
+                <td class="action-column"><label class="custom-checkbox"><input type="checkbox" data-col="c3" onchange="handleCheckboxClick(this);"><span></span></label></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- NY MODAL FÖR RENSNINGSBEKRÄFTELSE START -->
+    <div id="clearConfirmModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModalByName('clearConfirmModal')">&times;</span>
+            <h2>Bekräfta rensning</h2>
+            <p style="margin-top: 15px; font-size: 14px; line-height: 1.4;">
+                Är du säker på att du vill rensa hela protokollet? All sparad data i webbläsaren kommer att raderas permanent.
+            </p>
+            <!-- ÄNDRAD HTML HÄR -->
+            <div class="modal-button-container">
+                <button type="button" class="modal-button btn-cancel" onclick="closeModalByName('clearConfirmModal')">
+                    Avbryt
+                </button>
+                <button type="button" class="modal-button btn-danger" onclick="executeClearProtocol()">
+                    Ja, rensa protokoll
+                </button>
+            </div>
+            <!-- ÄNDRING SLUT -->
+        </div>
+    </div>
+    <!-- NY MODAL FÖR RENSNINGSBEKRÄFTELSE SLUT -->
+
+    <div id="serviceModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModalByName('serviceModal')">&times;</span>
+            <h2>Välj extra serviceåtgärd</h2>
+            
+            <ul class="service-list">
+                <li data-predefined-id="predefined-1" onclick="addPredefinedRow('Fyrhjulskoppling: Byta olja', this)">
+                    Fyrhjulskoppling: Byta olja <span class="asterisk">*</span>
+                </li>
+                <li data-predefined-id="predefined-2" onclick="addPredefinedRow('Bromssystem: Byt bromsvätska', this)">
+                    Bromssystem: Byt bromsvätska <span class="asterisk">*</span>
+                </li>
+                <li data-predefined-id="predefined-3" onclick="addPredefinedRow('Kuggrem och spännrulle: Byta', this)">
+                    Kuggrem och spännrulle: Byta <span class="asterisk">*</span>
+                </li>
+                <li data-predefined-id="predefined-4" onclick="addPredefinedRow('Luftfilter: Rengöra huset och byta filterinsatsen', this)">
+                    Luftfilter: Rengöra huset och byta filterinsatsen <span class="asterisk">*</span>
+                </li>
+                <li data-predefined-id="predefined-5" onclick="addPredefinedRow('Friskluftfilter: Byta filterinsatsen', this)">
+                    Friskluftfilter: Byta filterinsatsen <span class="asterisk">*</span>
+                </li>
+                <li data-predefined-id="predefined-6" onclick="addPredefinedRow('Bränslefilter: Byta', this)">
+                    Bränslefilter: Byta (dieselbränsle standard EN 590) <span class="asterisk">*</span>
+                </li>
+                <li data-predefined-id="predefined-7" onclick="addPredefinedRow('Direktväxellåda (DSG): Byt DSG-olja och filter', this)">
+                    Direktväxellåda (DSG): Byt DSG-olja och filter <span class="asterisk">*</span>
+                </li>
+		<li data-predefined-id="predefined-8" onclick="addPredefinedRow('Tändstift: Byta', this)">
+                    Tändstift: Byta <span class="asterisk">*</span>
+                </li>
+            </ul>
+            <p style="margin-top: 20px; font-size: 13px;">Välj en servicepunkt att lägga till i protokollet.</p>
+        </div>
+    </div>
+    
+    <div id="service-bevis-container">
+    </div>
+
+
+    <script>
+        let dynamicRowCounter = 0;
+        const STORAGE_KEY = 'serviceProtocolDataV3'; 
+        let saveNotificationTimeout; 
+        
+        // NY VARIABEL: Håller koll på om servicebeviset ska inkluderas (initialt false)
+        let includeServiceBevis = false; 
+
+        // =======================================================
+        // == ÄNDRING GJORD HÄR ==
+        // Denna array innehåller nu ID för ALLA statiska rader,
+        // vilket gör att 'removeRow'-funktionen fungerar på samtliga.
+        // =======================================================
+        const removableStaticIds = [
+            's1_1', 's1_2', 's1_3', 's1_4', 's1_5', 's1_6',
+            's2_1', 's2_2', 's2_4', 's2_5_ny', 's2_9', 's2_10', 's2_11', 's2_12', 's2_13', 's2_14',
+            's3_1', 's3_2'
+        ];
+
+        function generateStaticRows() {
+            // Statiska rader är inbäddade i HTML.
+        }
+
+        // =======================================================
+        // NY FUNKTION: Toggle Servicebevis-knappen
+        // =======================================================
+        function toggleServiceBevis() {
+            includeServiceBevis = !includeServiceBevis; // Invertera status
+            const button = document.getElementById('toggle-service-bevis-btn');
+            
+            if (includeServiceBevis) {
+                button.classList.add('toggled-on');
+            } else {
+                button.classList.remove('toggled-on');
+            }
+            
+            // Spara den nya statusen
+            saveData();
+        }
+
+        // =======================================================
+        // FUNKTION: Genererar Servicebeviset
+        // =======================================================
+        function generateServiceBevis() {
+            const container = document.getElementById('service-bevis-container');
+            
+            // KONTROLL: Töm behållaren och avsluta om bevis inte ska inkluderas
+            if (!container || !includeServiceBevis) {
+                if (container) container.innerHTML = ''; 
+                return;
+            }
+            
+            // Hämta data från formulärfälten
+            const data = {
+                chassinummer: document.getElementById('chassinummer').value.toUpperCase() || 'WAUZZZF...',
+                typBeteckning: document.getElementById('modellkod-2').value || '-',
+                leveransdatum: document.getElementById('registrering-datum').value || '-',
+                datum: document.getElementById('datum').value || 'ÅÅÅÅ-MM-DD',
+                mätarställning: document.getElementById('mätarställning').value ? document.getElementById('mätarställning').value + ' km' : '0 km',
+                ordernr: document.getElementById('order-nr').value || '-',
+                signerTekniker: document.getElementById('signer-service-tekniker').value || '-',
+                signerKund: document.getElementById('signer-kund').value || '-',
+                registreringNr: document.getElementById('registrering-nr').value.toUpperCase() || 'ABC 123',
+                mmb: document.getElementById('mmb').value || '-',
+            };
+            
+            // Hämta utförda tilläggsarbeten
+            const utfordaArbeten = [];
+            
+            // Inkludera dynamiska rader
+            document.querySelectorAll('#dynamic-rows tr.dynamic-row').forEach(row => {
+                const descriptionInput = row.querySelector('.editable-text');
+                const description = descriptionInput ? descriptionInput.value.trim() : '';
+
+                if (description) {
+                    const c1 = row.querySelector('input[data-col="c1"]').checked;
+                    const c3 = row.querySelector('input[data-col="c3"]').checked;
+                    
+                    if (c1 || c3) {
+                        utfordaArbeten.push(description);
+                    }
+                }
+            });
+            
+            // Format work as a list with Checkmarks (Bockar)
+            let utfordaArbetenList;
+            if (utfordaArbeten.length > 0) {
+                 utfordaArbetenList = `<div class="sb-value-block"><div class="additional-work-list-bock">${utfordaArbeten.map(item => `<p>✔ ${item}</p>`).join('')}</div></div>`;
+            } else {
+                 utfordaArbetenList = `<div class="sb-value-block"><div class="additional-work-list-bock empty"><p>Inga tilläggsarbeten registrerade</p></div></div>`;
+            }
+            
+
+            // Huvud HTML
+            const serviceBevisHTML = `
+                <div class="service-bevis-header-block">
+                    <div class="sb-left-header">
+                        </div>
+                    <div class="sb-right-header">
+                        <h1>Er Bil</h1>
+                        <h2 class="service-bevis-title">Servicebevis</h2>
+                        <span class="service-bevis-sub-title">Separat bevis</span>
+<h1></h1>
+                    </div>
+                </div>
+                
+                <h3 class="service-bevis-small-header">Fordonsdata</h3>
+                <div class="sb-data-section">
+                    <div class="sb-data-row">
+                        <span class="sb-label">Chassinummer</span>
+                        <span class="sb-value">${data.chassinummer}</span>
+                    </div>
+                    <div class="sb-data-row">
+                        <span class="sb-label">Typbeteckning</span>
+                        <span class="sb-value">${data.typBeteckning}</span>
+                    </div>
+                    <div class="sb-data-row">
+                        <span class="sb-label">Leveransdatum</span>
+                        <span class="sb-value">${data.leveransdatum}</span>
+                    </div>
+                </div>
+                
+                <h3 class="service-bevis-small-header">Inspektion med oljebyte</h3>
+                <div class="sb-data-section">
+                    <div class="sb-data-row">
+                        <span class="sb-label">Datum</span>
+                        <span class="sb-value">${data.datum}</span>
+                    </div>
+                    <div class="sb-data-row">
+                        <span class="sb-label">Körsträcka</span>
+                        <span class="sb-value">${data.mätarställning}</span>
+                    </div>
+                    <div class="sb-data-row">
+                        <span class="sb-label">Ordernummer</span>
+                        <span class="sb-value">${data.ordernr}</span>
+                    </div>
+                    <div class="sb-data-row">
+                        <span class="sb-label">Utförda tilläggsarbeten</span>
+                        <span class="sb-value">
+                            ${utfordaArbetenList}
+                        </span>
+                    </div>
+                    <div class="sb-data-row">
+                        <span class="sb-label">Utfört av</span>
+                        <span class="sb-value sb-value-block">
+                            VAG Specialisten Skåne<br>
+                            SE
+                        </span>
+                    </div>
+                    <div class="sb-data-row" style="border-bottom: 1px solid #000; margin-bottom: 5px; padding-bottom: 5px;">
+                        <span class="sb-label">Auktoriserad servicepartner</span>
+                        <span class="sb-value">Nej</span>
+                    </div>
+                </div>
+            `;
+            
+            container.innerHTML = serviceBevisHTML;
+        }
+
+        // =======================================================
+        // Resten av din Javascript-kod
+        // =======================================================
+
+        function showSaveNotification() {
+            const notification = document.getElementById('save-notification');
+            if (!notification) return;
+
+            clearTimeout(saveNotificationTimeout); 
+            
+            notification.classList.add('show');
+
+            saveNotificationTimeout = setTimeout(() => {
+                notification.classList.remove('show');
+            }, 2500); 
+        }
+
+        function checkServiceListConfirmation() {
+            const dynamicRows = document.getElementById('dynamic-rows');
+            const modalItems = document.querySelectorAll('#serviceModal .service-list li');
+
+            modalItems.forEach(item => {
+                const predefinedId = item.dataset.predefinedId;
+                if (!predefinedId) return;
+
+                const existsInTable = dynamicRows.querySelector(`tr[data-predefined-id="${predefinedId}"]`);
+                
+                if (existsInTable) {
+                    item.classList.add('confirmed');
+                } else {
+                    item.classList.remove('confirmed');
+                }
+            });
+        }
+
+        function openServiceModal() {
+            checkServiceListConfirmation(); 
+            document.getElementById('serviceModal').style.display='block';
+        }
+        
+        function closeModalByName(id) {
+            const modal = document.getElementById(id);
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+        
+        // UPPDATERAD FÖR FLERA MODALER
+        window.onclick = function(event) {
+            const serviceModal = document.getElementById('serviceModal');
+            const clearModal = document.getElementById('clearConfirmModal'); // NY
+            
+            if (event.target == serviceModal) {
+                closeModalByName('serviceModal');
+            }
+            if (event.target == clearModal) { // NY
+                closeModalByName('clearConfirmModal');
+            }
+        }
+        
+        function handleCheckboxClick(clickedCheckbox) {
+            const row = clickedCheckbox.closest('tr');
+            if (!row) return;
+
+            const allCheckboxesInRow = row.querySelectorAll('input[type="checkbox"]');
+            
+            const c1 = allCheckboxesInRow[0]; 
+            const c2 = allCheckboxesInRow[1]; 
+            const c3 = allCheckboxesInRow[2]; 
+
+            if (clickedCheckbox === c3) {
+                if (c3.checked) {
+                    if (c1) c1.checked = false; 
+                    if (c2) c2.checked = true;  
+                }
+            } else if (clickedCheckbox === c1 && c1.checked) {
+                if (c2) c2.checked = false;
+                if (c3) c3.checked = false;
+            } else if (clickedCheckbox === c2 && c2.checked) {
+                if (c1) c1.checked = false;
+                if (c3) c3.checked = false;
+            }
+            
+            if (c2.checked) {
+                row.classList.add('warning-row'); 
+            } else {
+                row.classList.remove('warning-row'); 
+            }
+            
+            saveData(); 
+        }
+
+        function saveData() {
+            const data = {};
+            
+            document.querySelectorAll('[data-persist="true"]').forEach(input => {
+                data[input.id] = input.type === 'checkbox' ? input.checked : input.value;
+            });
+            
+            // Spara statusen för servicebeviset i Local Storage
+            data.includeServiceBevisStatus = includeServiceBevis;
+            
+            const staticRowData = {};
+            document.querySelectorAll('tbody[id^="static-rows-"] tr').forEach(row => {
+                const rowId = row.dataset.rowId;
+                if (!rowId) return;
+
+                const checkboxes = row.querySelectorAll('input[type="checkbox"]');
+                staticRowData[rowId] = {
+                    c1: checkboxes[0] ? checkboxes[0].checked : false,
+                    c2: checkboxes[1] ? checkboxes[1].checked : false,
+                    c3: checkboxes[2] ? checkboxes[2].checked : false,
+                };
+            });
+            data.staticRows = staticRowData;
+
+            // NYTT: Spara status för borttagbara statiska rader
+            data.removedStaticRows = [];
+            removableStaticIds.forEach(id => {
+                const row = document.querySelector(`tr[data-row-id="${id}"]`);
+                if (row && row.style.display === 'none') {
+                    data.removedStaticRows.push(id);
+                }
+            });
+            
+            const dynamicRows = [];
+            document.querySelectorAll('#dynamic-rows tr.dynamic-row').forEach(row => {
+                const description = row.querySelector('.editable-text').value;
+                const predefinedId = row.dataset.predefinedId || null; 
+                const checkboxes = row.querySelectorAll('input[type="checkbox"]');
+                dynamicRows.push({
+                    desc: description,
+                    id: predefinedId, 
+                    c1: checkboxes[0] ? checkboxes[0].checked : false,
+                    c2: checkboxes[1] ? checkboxes[1].checked : false,
+                    c3: checkboxes[2] ? checkboxes[2].checked : false,
+                });
+            });
+            data.dynamicRows = dynamicRows;
+
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            console.log("Data sparad till Local Storage (V3).");
+            
+            showSaveNotification(); 
+        }
+
+        function loadData() {
+            const savedData = localStorage.getItem(STORAGE_KEY);
+            const data = savedData ? JSON.parse(savedData) : {};
+            const button = document.getElementById('toggle-service-bevis-btn');
+
+            // Ladda status för servicebeviset
+            if (data.includeServiceBevisStatus !== undefined) {
+                 includeServiceBevis = data.includeServiceBevisStatus;
+            } else {
+                 includeServiceBevis = false; // Standardvärde (ej intryckt)
+            }
+            // Uppdatera knappens utseende
+            if (includeServiceBevis) {
+                 button.classList.add('toggled-on');
+            } else {
+                 button.classList.remove('toggled-on');
+            }
+
+
+            document.querySelectorAll('[data-persist="true"]').forEach(element => {
+                if (data[element.id] !== undefined) {
+                    if (element.type === 'checkbox') {
+                         element.checked = data[element.id];
+                    } else {
+                         element.value = data[element.id];
+                    }
+
+                    if (element.type === 'date' && data[element.id] && element.value !== data[element.id]) {
+                         element.value = data[element.id];
+                    }
+                }
+            });
+            
+            if (data.staticRows) {
+                 document.querySelectorAll('tbody[id^="static-rows-"] tr').forEach(row => {
+                    const rowId = row.dataset.rowId;
+                    if (rowId) {
+                        const rowData = data.staticRows[rowId];
+                        if (rowData) {
+                            const checkboxes = row.querySelectorAll('input[type="checkbox"]');
+                            if (checkboxes[0]) checkboxes[0].checked = rowData.c1 || false;
+                            if (checkboxes[1]) checkboxes[1].checked = rowData.c2 || false;
+                            if (checkboxes[2]) checkboxes[2].checked = rowData.c3 || false;
+                            
+                            if (rowData.c2) {
+                                row.classList.add('warning-row');
+                            } else {
+                                row.classList.remove('warning-row');
+                            }
+                        }
+                    }
+                });
+            }
+
+            // NYTT: Göm statiska rader som sparats som borttagna
+            if (data.removedStaticRows && Array.isArray(data.removedStaticRows)) {
+                data.removedStaticRows.forEach(id => {
+                    const row = document.querySelector(`tr[data-row-id="${id}"]`);
+                    if (row) {
+                        row.style.display = 'none'; // Göm raden
+                    }
+                });
+            }
+
+            const dynamicBody = document.getElementById('dynamic-rows');
+            dynamicBody.innerHTML = '';
+            
+            if (data.dynamicRows && Array.isArray(data.dynamicRows)) {
+                data.dynamicRows.forEach(rowData => {
+                    const predefinedId = rowData.id; 
+                    const newRow = createNewRow('dynamic-rows', false); 
+                    
+                    if (newRow) {
+                        if (predefinedId) newRow.setAttribute('data-predefined-id', predefinedId); 
+
+                        const editableText = newRow.querySelector('.editable-text');
+                        editableText.value = rowData.desc;
+                        updatePrintValue(editableText); 
+
+                        const checkboxes = newRow.querySelectorAll('input[type="checkbox"]');
+                        if (checkboxes[0]) checkboxes[0].checked = rowData.c1;
+                        if (checkboxes[1]) {
+                             checkboxes[1].checked = rowData.c2;
+                             if (rowData.c2) newRow.classList.add('warning-row');
+                        }
+                        if (checkboxes[2]) checkboxes[2].checked = rowData.c3;
+                        dynamicBody.appendChild(newRow);
+                    }
+                });
+                dynamicRowCounter = data.dynamicRows.length;
+            }
+            
+            setTodayDateIfEmpty(); 
+            validateRequiredFields(); 
+            // Uppdatera print-text för de statiska rader som nu har inputs
+            updatePrintValueForReadOnlyRows();
+            console.log("Data laddad från Local Storage (V3).");
+        }
+
+        // NY FUNKTION: Uppdaterar print-spans för de (nu) readonly-raderna
+        function updatePrintValueForReadOnlyRows() {
+            removableStaticIds.forEach(id => {
+                const row = document.querySelector(`tr[data-row-id="${id}"]`);
+                if(row) {
+                    const input = row.querySelector('.editable-text');
+                    if(input) {
+                        updatePrintValue(input);
+                    }
+                }
+            });
+        }
+
+
+        function setTodayDateIfEmpty() {
+            const dateInput = document.getElementById('datum');
+            
+            if (dateInput && dateInput.value.trim() === "") {
+                const today = new Date();
+                const todayFormatted = today.getFullYear() + '-' + 
+                                       String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+                                       String(today.getDate()).padStart(2, '0');
+                
+                dateInput.value = todayFormatted;
+                saveData();
+                checkRequiredInput('datum', 'Datum saknas!');
+            }
+        }
+        
+        function updatePrintValue(inputElement) {
+            // Kontrollera att wrapper och span finns
+            const wrapper = inputElement.closest('.description-content-wrapper');
+            if (!wrapper) return;
+            const printSpan = wrapper.querySelector('.print-text-only');
+            if (printSpan) {
+                printSpan.textContent = inputElement.value;
+            }
+            saveData();
+        }
+
+        function createNewRow(targetBodyId, autoCheck = true) {
+            const template = document.getElementById('row-template').querySelector('.dynamic-row');
+            if (!template) {
+                console.error("Kunde inte hitta radmallen!");
+                return null;
+            }
+            
+            const newRow = template.cloneNode(true);
+            dynamicRowCounter++;
+            const newRowId = `dyn_${dynamicRowCounter}`;
+            newRow.setAttribute('data-row-id', newRowId);
+
+            const editableText = newRow.querySelector('.editable-text');
+            editableText.placeholder = 'Skriv in serviceåtgärd...';
+
+            editableText.addEventListener('input', () => updatePrintValue(editableText));
+            editableText.addEventListener('change', () => updatePrintValue(editableText));
+            
+            const checkboxes = newRow.querySelectorAll('input[type="checkbox"]');
+            
+            if (autoCheck && checkboxes.length > 0) {
+                checkboxes[0].checked = true; 
+            }
+            
+            return newRow;
+        }
+
+        function addRow(sectionTitle, predefinedId = null, description = null) {
+            const newRow = createNewRow('dynamic-rows', true); 
+            if (!newRow) return;
+
+            newRow.setAttribute('data-section', sectionTitle);
+            
+            if (predefinedId) {
+                newRow.setAttribute('data-predefined-id', predefinedId);
+            }
+            
+            if (description) {
+                const editableText = newRow.querySelector('.editable-text');
+                editableText.value = description; 
+                updatePrintValue(editableText); 
+            }
+
+            const targetBody = document.getElementById('dynamic-rows');
+            if (targetBody) {
+                targetBody.appendChild(newRow);
+            } else {
+                console.error("Kunde inte hitta måltabellen för raden.");
+            }
+            saveData(); 
+            return newRow;
+        }
+        
+        function addPredefinedRow(description, listItem) {
+            const predefinedId = listItem.dataset.predefinedId;
+            const dynamicBody = document.getElementById('dynamic-rows');
+
+            const isDuplicate = dynamicBody.querySelector(`tr[data-predefined-id="${predefinedId}"]`);
+            if (isDuplicate) {
+                // Använd inte alert()
+                console.warn("Denna serviceåtgärd har redan lagts till.");
+                return; 
+            }
+
+            const cleanDescription = description.replace(/ \*$/, ''); 
+            addRow('Extra Service', predefinedId, cleanDescription);
+
+            listItem.classList.add('confirmed');
+        }
+
+        // ÄNDRAD: Öppnar nu bekräftelsemodalen
+        function clearProtocol() {
+            const modal = document.getElementById('clearConfirmModal');
+            if (modal) {
+                modal.style.display = 'block';
+            }
+        }
+
+        // NY FUNKTION: Utför själva rensningen efter bekräftelse
+        function executeClearProtocol() {
+            localStorage.removeItem(STORAGE_KEY);
+            
+            const form = document.getElementById('protocol-form');
+            form.reset(); 
+            
+            // NYTT: Återställ borttagna statiska rader
+            removableStaticIds.forEach(id => {
+                const row = document.querySelector(`tr[data-row-id="${id}"]`);
+                if (row) {
+                    row.style.display = ''; // Återställer till default (synlig)
+                }
+            });
+            
+            const dynamicBody = document.getElementById('dynamic-rows');
+            dynamicBody.innerHTML = '';
+            
+            // Återställ JS-variabeln och knappen
+            includeServiceBevis = false; 
+            document.getElementById('toggle-service-bevis-btn').classList.remove('toggled-on');
+            
+            loadData(); 
+            
+            document.querySelectorAll('tr').forEach(row => row.classList.remove('warning-row'));
+            
+            checkServiceListConfirmation(); 
+            
+            dynamicRowCounter = 0;
+            validateRequiredFields(); 
+
+            // Stäng modalen när rensningen är klar
+            closeModalByName('clearConfirmModal');
+        }
+        
+        // UPPDATERAD FUNKTION
+        function removeRow(button) {
+            const row = button.closest('tr');
+            if (row) {
+                const predefinedId = row.dataset.predefinedId; 
+                const rowId = row.dataset.rowId;
+
+                // NY LOGIK: Göm statiska rader, ta bort dynamiska
+                if (removableStaticIds.includes(rowId)) {
+                    row.style.display = 'none'; // Göm istället för ta bort
+                } else {
+                    row.remove(); // Ta bort dynamisk rad som vanligt
+                }
+
+                saveData(); 
+                
+                if (predefinedId) {
+                    const listItem = document.querySelector(`#serviceModal .service-list li[data-predefined-id="${predefinedId}"]`);
+                    if (listItem) {
+                        listItem.classList.remove('confirmed');
+                    }
+                }
+            }
+        }
+        
+        function updateSignatureDate(targetInputId, dateString) {
+            const today = new Date();
+            const todayFormatted = today.getFullYear() + '-' + 
+                                   String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+                                   String(today.getDate()).padStart(2, '0');
+            
+            const targetInput = document.getElementById(targetInputId);
+            if (!targetInput) return;
+            
+            let currentValue = targetInput.value.trim();
+            const placeholder = targetInput.placeholder;
+            
+            let namePart = currentValue;
+            let datePart = '';
+
+            // Om fältet är tomt, eller bara innehåller ett datum, fråga efter namn
+            if (currentValue === "" || currentValue === placeholder || currentValue.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                let newName = prompt(`Ange ${targetInput.name.includes('tekniker') ? 'Service Teknikers' : 'Kundens'} namn:`, "");
+                if (newName) {
+                    namePart = newName.trim();
+                } else if (currentValue === "" || currentValue === placeholder) {
+                    return; // Avbröt prompten och fältet var tomt
+                } else {
+                    namePart = currentValue; // Behåll befintligt värde om prompt avbryts
+                }
+            } else {
+                // Extrahera namndelen om det redan finns ett namn och datum
+                const parts = currentValue.split(', ');
+                namePart = parts[0];
+                if (parts.length > 1) {
+                    datePart = parts[1];
+                }
+            }
+            
+            const dateToUse = dateString || todayFormatted; 
+
+            let finalValue = namePart;
+            
+            if (datePart && datePart !== placeholder) {
+                finalValue = `${namePart}, ${dateToUse}`;
+            } else {
+                finalValue = `${namePart}, ${dateToUse}`;
+            }
+
+            targetInput.value = finalValue;
+            targetInput.blur(); 
+            targetInput.onchange(); 
+        }
+
+        function checkRequiredInput(inputId, message) {
+            const inputElement = document.getElementById(inputId);
+            const alertElement = document.getElementById(inputId + '-alert'); 
+            
+            if (!inputElement || !alertElement) return;
+
+            const value = inputElement.value.trim();
+            
+            const isInvalid = value === ""; 
+
+            if (isInvalid) {
+                alertElement.textContent = message; 
+                alertElement.style.display = 'block';
+                inputElement.classList.add('input-warning');
+            } else {
+                alertElement.style.display = 'none';
+                inputElement.classList.remove('input-warning');
+            }
+        }
+        
+        function validateRequiredFields() {
+             checkRequiredInput('registrering-nr', 'Registreringsnr saknas!');
+             checkRequiredInput('chassinummer', 'Chassinummer saknas!');
+             checkRequiredInput('mätarställning', 'Mätarställning saknas!');
+             checkRequiredInput('datum', 'Datum saknas!');
+        }
+        
+        // VIN-avkodning för årsmodell
+        function decodeVINToYear() {
+            const vinInput = document.getElementById('chassinummer');
+            const yearInput = document.getElementById('årsmodell');
+            
+            if (!vinInput || !yearInput) return;
+            
+            const vin = vinInput.value.trim().toUpperCase();
+            
+            // VIN måste vara minst 10 tecken för att innehålla årsmodell-koden
+            if (vin.length < 10) {
+                return;
+            }
+            
+            // Position 10 (index 9) innehåller årsmodell-koden
+            const yearCode = vin.charAt(9);
+            
+            // VIN år-kodning (position 10)
+            const yearMap = {
+                'A': [2010, 1980], 'B': [2011, 1981], 'C': [2012, 1982], 'D': [2013, 1983],
+                'E': [2014, 1984], 'F': [2015, 1985], 'G': [2016, 1986], 'H': [2017, 1987],
+                'J': [2018, 1988], 'K': [2019, 1989], 'L': [2020, 1990], 'M': [2021, 1991],
+                'N': [2022, 1992], 'P': [2023, 1993], 'R': [2024, 1994], 'S': [2025, 1995],
+                'T': [2026, 1996], 'V': [2027, 1997], 'W': [2028, 1998], 'X': [2029, 1999],
+                'Y': [2030, 2000],
+                '1': [2001], '2': [2002], '3': [2003], '4': [2004], '5': [2005],
+                '6': [2006], '7': [2007], '8': [2008], '9': [2009]
+            };
+            
+            if (yearMap[yearCode]) {
+                // Använd det mest sannolika året (senaste)
+                const decodedYear = yearMap[yearCode][0];
+                
+                // Fyll bara i om fältet är tomt (låt användaren ha kontroll)
+                if (!yearInput.value || yearInput.value.trim() === '') {
+                    yearInput.value = decodedYear.toString();
+                    saveData();
+                }
+            }
+        }
+
+        function copyToClipboard(elementId) {
+            const inputElement = document.getElementById(elementId);
+            if (inputElement) {
+                navigator.clipboard.writeText(inputElement.value).then(() => {
+                    // Använd inte alert()
+                    console.log(`Värdet för ${inputElement.name || inputElement.id} har kopierats!`);
+                    // Du kan visa din 'save-notification' här istället om du vill
+                    // showSaveNotification("Kopierat!"); // (Skulle kräva modifiering av showSaveNotification)
+                }).catch(err => {
+                    console.error('Kunde inte kopiera text: ', err);
+                });
+            }
+        }
+        
+        // =======================================================
+        // NY FUNKTION: Skicka protokoll via mejl
+        // =======================================================
+        function sendEmail() {
+            validateRequiredFields(); 
+            const form = document.getElementById('protocol-form');
+            
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return; // Stoppa om obligatoriska fält saknas
+            }
+
+            // 1. Hämta nyckeldata
+            const regNr = document.getElementById('registrering-nr').value.toUpperCase();
+            const chassiNr = document.getElementById('chassinummer').value.toUpperCase();
+            const mätarställning = document.getElementById('mätarställning').value;
+            const datum = document.getElementById('datum').value;
+
+            // 2. Skapa ämnesrad
+            let subject = `Serviceprotokoll för ${regNr || 'fordon'}`;
+            if (chassiNr) {
+                subject += ` (${chassiNr})`;
+            }
+
+            // 3. Skapa mejl-body med instruktioner och sammanfattning
+            let body = `Hej,\n\n**VÄNLIGEN BIFOGA DET UTSKRIVNA PDF-PROTOKOLLET I DETTA MEJL.**\n`;
+            body += `(Du kan skapa en PDF genom att klicka på 'Skriv ut' i protokollet och välja 'Spara som PDF'.)\n\n`;
+            body += `--------------------------------------------------\n`;
+            body += `PROTOKOLLSAMMANFATTNING:\n`;
+            body += `Registreringsnr: ${regNr}\n`;
+            body += `Chassinummer: ${chassiNr}\n`;
+            body += `Mätarställning: ${mätarställning} km\n`;
+            body += `Servicedatum: ${datum}\n\n`;
+            body += `PUNKTER SOM EJ VAR OK:\n`;
+
+            const notOkRows = document.querySelectorAll('tr.warning-row'); 
+            let notOkItems = [];
+            
+            notOkRows.forEach(row => {
+                let description = '';
+                // Hitta beskrivningstext, hantera både statiska och dynamiska rader
+                const wrapper = row.querySelector('.description-content-wrapper');
+                if (wrapper) { // Dynamisk ELLER modifierad statisk rad
+                    const input = wrapper.querySelector('.editable-text');
+                    if(input) description = input.value.trim();
+                } else { // Gammal statisk rad
+                    const descCol = row.querySelector('.description-column');
+                    if (descCol) {
+                        description = descCol.textContent.trim();
+                    }
+                }
+                
+                if (description) {
+                    notOkItems.push(`- ${description}`);
+                }
+            });
+
+            if (notOkItems.length > 0) {
+                body += notOkItems.join('\n');
+            } else {
+                body += `Alla kontrollerade punkter var OK.\n`;
+            }
+
+            body += `\n--------------------------------------------------\n`;
+            body += `\nMed vänlig hälsning,\n\n`;
+            
+            // 4. Skapa och öppna mailto-länken
+            const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            
+            // Använd window.open för att vara lite säkrare än window.location.href
+            window.open(mailtoLink, '_self');
+        }
+
+        function submitForm(event) {
+            validateRequiredFields(); 
+            const form = document.getElementById('protocol-form');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                event.preventDefault();
+                return;
+            }
+
+            // 1. Generera beviset baserat på JS-variabeln (som styrs av den nya knappen)
+            generateServiceBevis(); 
+
+            const nonPrintingPlaceholderIds = [
+                'signer-service-tekniker',
+                'signer-kund',
+                'registrering-datum', 
+                'mmb',               
+                'modellkod-2',       
+                'vmb',
+                'årsmodell'
+            ];
+            
+            const inputsToModify = nonPrintingPlaceholderIds.map(id => document.getElementById(id)).filter(e => e !== null);
+            const originalPlaceholders = [];
+
+            inputsToModify.forEach(input => {
+                const value = input.value.trim();
+                const placeholder = input.getAttribute('placeholder');
+                
+                if (value === '' && placeholder) {
+                    originalPlaceholders.push({ element: input, placeholder: placeholder });
+                    input.removeAttribute('placeholder');
+                }
+            });
+            
+            window.print();
+            
+            setTimeout(() => {
+                originalPlaceholders.forEach(item => {
+                    item.element.setAttribute('placeholder', item.placeholder);
+                });
+                // 2. Rensa beviset efter utskrift/återgång till skärmvy
+                const bevisContainer = document.getElementById('service-bevis-container');
+                if (bevisContainer) bevisContainer.innerHTML = '';
+            }, 100); 
+
+            event.preventDefault();
+        }
+
+    </script>
+</body>
+</html>
