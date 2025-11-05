@@ -319,7 +319,7 @@
     .form-input-wrapper { position: relative; }
     .form-warning {
         font-size: 0.85em;
-        color: var(--warning-color);
+        color: var(--danger-color); /* ÄNDRAD: Tydligare fel-färg */
         font-weight: 600;
         margin-top: 5px;
         height: 1.2em;
@@ -479,11 +479,27 @@
         border-bottom: 2px solid var(--border-color); 
         text-transform: uppercase; 
         letter-spacing: 0.8px; 
-        transition: background-color 0.3s, border-color 0.3s; 
+        transition: background-color 0.3s, border-color 0.3s, box-shadow 0.2s; /* NYTT: box-shadow transition */
     }
+    /* --- NYTT: Skugga på header vid skrollning --- */
+    .lager-container.scrolled .header {
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    }
+    [data-theme="dark"] .lager-container.scrolled .header {
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+    /* --- SLUT NYTT --- */
+    
     .header span[data-sort] { cursor: pointer; user-select: none; }
     .header > span { display: flex; align-items: center; min-height: 1.8em; padding-right: 15px; }
     .header > span, .artikel-rad > span, .artikel-rad > div { padding-right: 10px; }
+    /* --- NYTT: Enkel span för namn-kolumnen (utan wrapper) --- */
+    .artikel-rad > span:nth-child(2) {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        min-width: 0;
+    }
 
     .sort-icon { font-size: 0.9em; margin-left: 4px; color: var(--primary-color); width: 1em; display: inline-block; }
     .header span[data-sort]:not(.active) .sort-icon { opacity: 0.3; }
@@ -615,11 +631,6 @@
     .copy-btn:hover { opacity: 1; transform: scale(1.05); background: var(--primary-color); color: white; border-color: var(--primary-color); }
     .copy-btn:disabled { color: var(--success-color); cursor: default; }
     .copy-btn:disabled:hover { transform: none; background: var(--bg-medium); border-color: var(--border-color); }
-
-    /* --- BORTTAGET: .action-buttons (ersatt) --- */
-    /* --- BORTTAGET: .link-buttons (ersatt) --- */
-    
-    /* --- BORTTAGET: .lank-knapp, .edit-btn, .delete-btn, .order-btn (flyttas till popover-stil) --- */
     
     /* --- NYTT: Stil för den nya åtgärdsknappen i raden --- */
     .action-buttons-cell {
@@ -635,7 +646,7 @@
         font-size: 1.4em;
     }
     
-    /* --- NYTT: Popover-meny för rad-åtgärder --- */
+    /* --- NYTT: Popover-meny för rad-åtgärder (OMGJORD DESIGN) --- */
     #row-action-popover {
         display: none;
         position: absolute; /* JS sätter top/left */
@@ -678,15 +689,23 @@
     #popover-content .btn-popover:hover {
         background-color: var(--bg-medium);
     }
-    /* Specifika knappfärger */
-    #popover-content .btn-popover.trodo-btn { color: #008080; }
-    #popover-content .btn-popover.trodo-btn:hover { background-color: #008080; color: white; }
-    #popover-content .btn-popover.aero-m-btn { color: #4CAF50; }
-    #popover-content .btn-popover.aero-m-btn:hover { background-color: #4CAF50; color: white; }
-    #popover-content .btn-popover.thansen-btn { color: #008080; }
-    #popover-content .btn-popover.thansen-btn:hover { background-color: #008080; color: white; }
-    #popover-content .btn-popover.egen-lank-btn { color: #5a7dff; }
-    #popover-content .btn-popover.egen-lank-btn:hover { background-color: #5a7dff; color: white; }
+    
+    /* --- ÄNDRAD: Renare popover-design, inga färger för länkar --- */
+    #popover-content .btn-popover.link-btn {
+        color: var(--text-dark); /* Standard textfärg */
+    }
+    #popover-content .btn-popover.link-btn .icon-span {
+        color: var(--text-light); /* Subtil ikonfärg */
+    }
+    #popover-content .btn-popover.link-btn:hover {
+        background-color: var(--bg-medium);
+        color: var(--text-dark);
+    }
+    #popover-content .btn-popover.link-btn:hover .icon-span {
+        color: var(--text-dark);
+    }
+    
+    /* Funktionella färger behålls */
     #popover-content .btn-popover.edit-btn { color: var(--primary-color); }
     #popover-content .btn-popover.edit-btn:hover { background-color: var(--primary-color); color: white; }
     #popover-content .btn-popover.delete-btn { color: var(--danger-color); }
@@ -796,6 +815,11 @@
         border-left: 1px solid var(--border-color); 
         justify-content: center; /* Centrera "Åtgärder" text */
     }
+    /* --- NYTT: Skugga på sticky header-cell vid skroll --- */
+    .lager-container.scrolled .header > span:last-child {
+        background-color: var(--bg-medium); /* Säkerställ bakgrund */
+    }
+    
     .artikel-rad > .action-buttons-cell { 
         background-color: var(--card-bg); 
     }
@@ -869,8 +893,21 @@
         outline: none; 
     }
     
-    #global-search-btn { padding: 16px 30px; font-size: 1em; flex-shrink: 0; }
-    #global-search-btn .icon-span { font-size: 1.4em; }
+    /* --- ÄNDRAD: Global sök-knapp med dynamisk text --- */
+    #global-search-btn { 
+        padding: 16px 25px; /* Något mindre padding */
+        font-size: 1em; 
+        flex-shrink: 0; 
+        min-width: 150px; /* Ge den lite utrymme att växa/krympa */
+    }
+    #global-search-btn .icon-span { 
+        font-size: 1.4em; 
+        transition: transform 0.2s ease-out; /* Snygg övergång */
+    }
+    #global-search-btn .btn-text {
+        margin-left: 8px;
+        transition: opacity 0.2s ease-out;
+    }
     #global-search-btn .search-spinner {
         width: 1.2em;
         height: 1.2em;
@@ -882,8 +919,12 @@
         display: none; 
     }
     #global-search-btn:disabled { opacity: 0.7; cursor: wait; }
-    #global-search-btn:disabled .icon-span { display: none; }
+    #global-search-btn:disabled .icon-span,
+    #global-search-btn:disabled .btn-text { 
+        display: none; 
+    }
     #global-search-btn:disabled .search-spinner { display: inline-block; }
+    /* --- SLUT ÄNDRING --- */
     
     #global-search-results { 
         position: relative; 
@@ -1028,7 +1069,7 @@
 
     .search-disclaimer-text { font-size: 0.85em; color: var(--text-light); margin-top: 15px; padding-top: 10px; border-top: 1px dashed var(--border-color); }
     
-    .orange-asterisk { color: var(--warning-color); font-weight: 700; font-size: 1.1em; margin-left: 3px; vertical-align: top; line-height: 1; display: inline-block; }
+    .orange-asterisk { color: var(--danger-color); font-weight: 700; font-size: 1.1em; margin-left: 3px; vertical-align: top; line-height: 1; display: inline-block; }
     /* --- ÄNDRAD: Polerade sök-historik-taggar --- */
     .search-history-container { margin-top: 5px; margin-bottom: 5px; display: flex; flex-wrap: wrap; gap: 8px; font-size: 0.9em; }
     .history-item { padding: 4px 10px; background-color: var(--border-color); color: var(--text-dark); border-radius: 20px; transition: background-color 0.15s, transform 0.15s, box-shadow 0.15s; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; }
@@ -1655,7 +1696,12 @@
         
         .global-search-container { padding: 20px; }
         .global-search-wrapper { flex-direction: column; }
-        #global-search-btn { width: 100%; padding-top: 12px; padding-bottom: 12px; } /* Mobilvänlig höjd */
+        #global-search-btn { 
+            width: 100%; 
+            padding-top: 12px; 
+            padding-bottom: 12px; /* Mobilvänlig höjd */
+            min-width: 0; /* Återställ min-bredd */
+        } 
         #global-search-input { padding-top: 12px; padding-bottom: 12px; }
         #external-results-container { grid-template-columns: 1fr; }
         
@@ -1910,10 +1956,11 @@
             <div class="global-search-wrapper">
                 <input type="text" id="global-search-input" placeholder="Ange artikelnummer (exempel: 03L 115 562)">
                 <button id="global-search-btn" class="btn-primary" title="Sök">
-                    <span class="search-spinner"></span> <span class="icon-span">compare_arrows</span>
-                    Jämför
+                    <span class="search-spinner"></span> 
+                    <span class="icon-span">search</span>
+                    <span class="btn-text">Sök</span>
                 </button>
-            </div>
+                </div>
             <div style="margin-top: 15px; margin-bottom: 5px;">
                 <span style="font-size: 0.9em; font-weight: 600; color: var(--text-dark); display: flex; align-items: center; gap: 5px;">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 16px; height: 16px; color: var(--primary-color);">
@@ -2144,18 +2191,22 @@
                 <div>
                     <label for="edit-service_filter">Artikelnummer</label>
                     <input type="text" name="service_filter" id="edit-service_filter" required oninput="this.value = this.value.toUpperCase()">
+                    <div class="form-warning"></div>
                 </div>
                 <div>
                     <label for="edit-name">Namn</label>
                     <input type="text" name="name" id="edit-name" required oninput="this.value = this.value.toUpperCase()">
+                    <div class="form-warning"></div>
                 </div>
                 <div>
                     <label for="edit-price">Pris</label>
                     <input type="number" name="price" id="edit-price" step="0.01" required>
+                    <div class="form-warning"></div>
                 </div>
                 <div>
                     <label for="edit-quantity">Antal</label>
                     <input type="number" name="quantity" id="edit-quantity" required>
+                    <div class="form-warning"></div>
                 </div>
                 <div>
                     <label for="edit-category">Kategori</label>
@@ -2164,14 +2215,17 @@
                         <option value="Motor/Chassi">Motor/Chassi</option>
                         <option value="Andra Märken">Andra Märken</option>
                     </select>
+                    <div class="form-warning"></div>
                 </div>
                 <div>
                     <label for="edit-notes">Anteckningar</label>
                     <input type="text" name="notes" id="edit-notes" placeholder="Anteckningar (ex: [ABC123])">
+                    <div class="form-warning"></div>
                 </div>
                 <div>
                     <label for="edit-link">Länk</label>
                     <input type="text" name="link" id="edit-link">
+                    <div class="form-warning"></div>
                 </div>
                 <button type="submit" class="btn-primary">
                     <span class="icon-span">save</span>
