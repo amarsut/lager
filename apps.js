@@ -892,19 +892,32 @@ document.addEventListener('DOMContentLoaded', () => {
             const formattedNotes = parseNotes(item.notes || '');
             const safeServiceFilter = escapeHTML(item.service_filter).replace(/'/g, "\\'");
             
+            // NYTT: Hämta Trodo-länken
+            const trodoLink = generateTrodoLink(item.service_filter);
+            
             card.innerHTML = `
                 <div class="artikel-kort-header">
                     <div class="artikel-kort-header-text">
                         <div class="artikel-kort-artnr-wrapper">
                             <span class="artikel-kort-artnr" title="${safeServiceFilter}">${escapeHTML(item.service_filter)}</span>
-                            <button class="copy-btn" onclick="copyToClipboard(this, '${safeServiceFilter}', 'Artikelnummer'); event.stopPropagation();" title="Kopiera Artikelnummer">&#x1F4CB;</button>
                         </div>
                         <div class="artikel-kort-name" title="${escapeHTML(item.name)}">${escapeHTML(item.name)}</div>
                     </div>
-                    <button class="btn-secondary row-action-btn" data-id="${item.id}" title="Åtgärder" onclick="event.stopPropagation();">
-                        <span class="icon-span">more_vert</span>
-                    </button>
-                </div>
+                    
+                    <div class="artikel-kort-actions">
+                        <button class="copy-btn" onclick="copyToClipboard(this, '${safeServiceFilter}', 'Artikelnummer'); event.stopPropagation();" title="Kopiera Artikelnummer">&#x1F4CB;</button>
+                        
+                        ${trodoLink ? `
+                            <button class="search-btn" onclick="window.open('${trodoLink}', '_blank'); event.stopPropagation();" title="Sök på Trodo">
+                                <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>
+                            </button>
+                        ` : ''}
+                        
+                        <button class="btn-secondary row-action-btn" data-id="${item.id}" title="Åtgärder" onclick="event.stopPropagation();">
+                            <span class="icon-span">more_vert</span>
+                        </button>
+                    </div>
+                    </div>
                 <div class="artikel-kort-body">
                     <div>
                         <div class="artikel-kort-label">Pris</div>
@@ -1959,3 +1972,4 @@ document.addEventListener('DOMContentLoaded', () => {
         if(initialLoader) initialLoader.querySelector('p').textContent = 'Kritiskt fel vid initiering.';
     }
 });
+
