@@ -302,7 +302,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        async function handleGlobalSearch(searchTermOverride) {
+        // ERSÄTT HELA FUNKTIONEN MED DENNA:
+
+async function handleGlobalSearch(searchTermOverride) {
             const searchTerm = (searchTermOverride ? searchTermOverride.trim().toUpperCase() : globalSearchInput.value.trim().toUpperCase());
             if (searchTerm === '') {
                 globalSearchResults.style.display = 'none';
@@ -318,6 +320,11 @@ document.addEventListener('DOMContentLoaded', () => {
             externalResultsContainer.style.display = 'none';
             exportLinksContainer.style.display = 'none';
             searchDisclaimer.style.display = 'none';
+            
+            // Dölj även den globala "tom-staten" från försök 1 (om den finns kvar)
+            const oldEmptyState = document.getElementById('global-search-empty-state');
+            if (oldEmptyState) oldEmptyState.style.display = 'none';
+            
             const externalHeader = document.querySelector('#global-search-results .search-results-header');
             if (externalHeader) externalHeader.style.display = 'none';
             
@@ -377,10 +384,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                     internalResultsContainer.innerHTML = internalHTML;
                 } else {
-                    // DETTA ÄR DEN NYA "TOM-STAT"-LOGIKEN
+                    // *** DETTA ÄR DEN UPPDATERADE "TOM-STAT"-KODEN ***
+                    // Den använder en <span class="icon-span"> istället för <svg>
                     internalHTML = `
                         <div class="empty-state" style="display: flex; padding: 20px; min-height: 100px; background-color: var(--bg-light); border-radius: 8px; margin-bottom: 10px;">
-                            <svg viewBox="0 0 24 24" fill="currentColor" style="width: 30px; height: 30px; margin-bottom: 10px; margin-right: 15px; flex-shrink: 0;"><use href="#empty-state-svg"></use></svg>
+                            <span class="icon-span" style="font-size: 30px; margin-bottom: 10px; margin-right: 15px; flex-shrink: 0; color: var(--primary-color); opacity: 0.5;">search_off</span>
                             <div style="text-align: left;">
                                 <h4 style="font-size: 1.1em; margin-bottom: 5px; margin-top: 0;">Inga träffar i ditt lager</h4>
                                 <p style="font-size: 0.9em; max-width: none; margin: 0;">Sökningen på "${searchTerm}" gav inga interna resultat.</p>
@@ -1996,6 +2004,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if(initialLoader) initialLoader.querySelector('p').textContent = 'Kritiskt fel vid initiering.';
     }
 });
+
 
 
 
