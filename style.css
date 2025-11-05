@@ -1368,11 +1368,37 @@ h3.collapsible-header:hover {
 
 .orange-asterisk { color: var(--danger-color); font-weight: 700; font-size: 1.1em; margin-left: 3px; vertical-align: top; line-height: 1; display: inline-block; }
 .search-history-container { margin-top: 5px; margin-bottom: 5px; display: flex; flex-wrap: wrap; gap: 8px; font-size: 0.9em; }
-.history-item { padding: 4px 10px; background-color: var(--border-color); color: var(--text-dark); border-radius: 20px; transition: background-color 0.15s, transform 0.15s, box-shadow 0.15s; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; }
-.history-item:hover { 
-    background-color: var(--bg-dark); 
+.history-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px 4px 8px; /* Lite mer plats för ikonen */
+    background-color: var(--bg-medium);
+    color: var(--text-light);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    transition: all 0.2s ease-out;
+    font-weight: 600; /* Gör texten lite tjockare */
+    font-size: 0.85em;
+}
+
+/* Lägg till en ikon före texten */
+.history-item .history-term::before {
+    content: 'history'; /* Material Symbols-ikon */
+    font-family: 'Material Symbols Outlined';
+    font-size: 16px;
+    margin-right: 4px;
+    vertical-align: middle;
+    position: relative;
+    top: -1px;
+}
+
+.history-item:hover {
+    background-color: var(--primary-light);
+    color: var(--primary-dark);
+    border-color: var(--primary-color);
     transform: translateY(-2px);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 10px var(--primary-shadow);
 }
 .history-item .history-term { cursor: pointer; }
 .history-item .delete-history {
