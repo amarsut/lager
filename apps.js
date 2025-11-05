@@ -34,12 +34,23 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- VIKTIGT: Flyttade updateSyncStatus UTANFÖR try...catch ---
     const syncStatusElement = document.getElementById('sync-status');
     function updateSyncStatus(status, message) {
-        if (!syncStatusElement) return;
-        syncStatusElement.classList.remove('flash');
-        syncStatusElement.className = `sync-${status}`;
-        syncStatusElement.title = message;
-        const textEl = syncStatusElement.querySelector('.text');
-        if (textEl) textEl.textContent = message;
+    if (!syncStatusElement) return;
+    const textEl = syncStatusElement.querySelector('.text');
+    if (!textEl) return; // Säkerhetskoll
+
+    syncStatusElement.classList.remove('flash');
+    syncStatusElement.className = `sync-${status}`;
+    syncStatusElement.title = message;
+    textEl.textContent = message;
+
+    // --- LÄGG TILL DETTA BLOCK ---
+    textEl.style.opacity = 1; // Se till att den syns
+
+    // Om status är OK, tona ut texten efter 4 sekunder
+    if (status === 'ok') {
+        setTimeout(() => {
+            textEl.style.opacity = 0;
+        }, 4000);
     }
     
     try {
@@ -2037,6 +2048,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if(initialLoader) initialLoader.querySelector('p').textContent = 'Kritiskt fel vid initiering.';
     }
 });
+
 
 
 
