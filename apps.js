@@ -1526,47 +1526,57 @@ document.addEventListener('DOMContentLoaded', () => {
             if (elements.length === 0) return; // Hittade ingenting alls
 
             // 2. Hitta det element som FAKTISKT SYNS (inte har display: none)
-            //    Detta löser mobil-buggen.
             const element = Array.from(elements).find(el => {
                 return window.getComputedStyle(el).display !== 'none';
             });
             
             if (element) {
-                // 3. KÖR DIN BEFINTLIGA KOD PÅ DET SYNLIGA ELEMENTET
                 
-                // --- KONTROLLERA OM PANELEN ÄR STÄNGD ---
+                let panelWasOpened = false; // En flagga för att se om vi gjorde en layout-ändring
+
+                // 3. KONTROLLERA OM PANELEN ÄR STÄNGD
                 const wrapper = element.closest('.lager-wrapper');
                 if (wrapper && wrapper.classList.contains('collapsed')) {
-                    // Den är stängd. Vi måste öppna den.
-                    const wrapperId = wrapper.id; // t.ex. "service-artiklar-wrapper"
-                    const titleId = wrapperId.replace('-wrapper', '-titel'); // "service-artiklar-titel"
+                    panelWasOpened = true; // Sätt flaggan!
+                    
+                    const wrapperId = wrapper.id; 
+                    const titleId = wrapperId.replace('-wrapper', '-titel');
                     const title = document.getElementById(titleId);
 
                     if (title) {
-                        // Öppna panelen visuellt (DOM-uppdatering)
+                        // Öppna panelen (detta triggar en layout-ändring)
                         title.setAttribute('data-state', 'open');
                         wrapper.classList.remove('collapsed');
-                        
-                        // --- NY RAD: SPARA DET NYA LÄGET! ---
-                        localStorage.setItem(title.id, 'open'); // title.id är redan rätt nyckel
+                        localStorage.setItem(title.id, 'open'); 
                     }
                 }
-                // --- SLUT PÅ PANEL-KONTROLL ---
 
-                // Den gamla logiken körs nu *efter* panelen garanterat är öppen
-                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                
-                document.querySelectorAll('.artikel-rad.highlight, .artikel-kort.highlight').forEach(r => r.classList.remove('highlight'));
-                
-                element.classList.add('highlight');
-                
-                const twinSelector = element.classList.contains('artikel-rad') 
-                    ? `.artikel-kort[data-id="${itemId}"]` 
-                    : `.artikel-rad[data-id="${itemId}"]`;
-                const twinElement = document.querySelector(twinSelector);
-                
-                if (twinElement) {
-                    twinElement.classList.add('highlight');
+                // 4. Funktion som utför scroll och markering
+                const doScrollAndHighlight = () => {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    
+                    document.querySelectorAll('.artikel-rad.highlight, .artikel-kort.highlight').forEach(r => r.classList.remove('highlight'));
+                    
+                    element.classList.add('highlight');
+                    
+                    const twinSelector = element.classList.contains('artikel-rad') 
+                        ? `.artikel-kort[data-id="${itemId}"]` 
+                        : `.artikel-rad[data-id="${itemId}"]`;
+                    const twinElement = document.querySelector(twinSelector);
+                    
+                    if (twinElement) {
+                        twinElement.classList.add('highlight');
+                    }
+                };
+
+                // 5. NY LOGIK:
+                // Om vi precis öppnade en panel, vänta 100ms innan vi scrollar.
+                // Detta ger webbläsaren tid att rita om sidan och beräkna rätt position.
+                if (panelWasOpened) {
+                    setTimeout(doScrollAndHighlight, 100); // 100ms fördröjning
+                } else {
+                    // Panelen var redan öppen, scrolla direkt.
+                    doScrollAndHighlight();
                 }
             }
         }
@@ -2162,6 +2172,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if(initialLoader) initialLoader.querySelector('p').textContent = 'Kritiskt fel vid initiering.';
     }
 });
+
 
 
 
