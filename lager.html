@@ -84,7 +84,7 @@
       70% { background-color: rgba(255, 240, 0, 0.6); }
       100% { background-color: transparent; }
     }
-    .artikel-rad.highlight {
+    .artikel-rad.highlight, .artikel-kort.highlight {
       animation: highlight-flash 1.8s ease-out;
     }
 
@@ -93,10 +93,11 @@
       0%, 100% { background-color: var(--card-bg); }
       50% { background-color: var(--success-light); }
     }
-    .artikel-rad.flash-success {
+    .artikel-rad.flash-success, .artikel-kort.flash-success {
       animation: flash-success 0.8s ease-out;
     }
-    [data-theme="dark"] .artikel-rad.flash-success {
+    [data-theme="dark"] .artikel-rad.flash-success,
+    [data-theme="dark"] .artikel-kort.flash-success {
         /* Måste åsidosätta hover-effekten */
         background-color: var(--card-bg);
         animation-name: flash-success-dark;
@@ -246,6 +247,28 @@
     
     h3.collapsible-header { cursor: pointer; display: flex; justify-content: space-between; align-items: center; padding-right: 15px; transition: background-color: 0.1s; color: var(--text-dark); margin-top: 30px; margin-bottom: 15px; font-size: 1.3em; font-weight: 700; border-bottom: 2px solid var(--border-color); padding-bottom: 5px; padding-left: 5px; }
     h3.collapsible-header:hover { background-color: var(--bg-medium); border-radius: 5px; }
+    
+    /* --- NYTT: Färg på "Slut i lager"-rubriken --- */
+    #slut-i-lager-titel {
+        border-bottom-color: var(--danger-color);
+        color: var(--danger-dark);
+    }
+    [data-theme="dark"] #slut-i-lager-titel {
+        color: var(--danger-color);
+    }
+    #slut-i-lager-titel .category-badge {
+        background-color: var(--danger-light);
+        color: var(--danger-dark);
+        border-color: var(--danger-color);
+    }
+    [data-theme="dark"] #slut-i-lager-titel .category-badge {
+        border-color: var(--danger-light);
+    }
+    #slut-i-lager-titel .toggle-icon {
+        color: var(--danger-color);
+    }
+    /* --- SLUT NYTT --- */
+
 
     /* --- ÄNDRAD: Polerade kategori-märken --- */
     .category-badge {
@@ -528,6 +551,93 @@
         transform: none; /* Ta bort lyft-effekt om redan vald */
     }
     
+    /* --- NYTT: MOBIL KORT-VY --- */
+    .artikel-kort-lista {
+        display: none; /* Dold på desktop */
+        flex-direction: column;
+        gap: 12px;
+        padding: 15px; /* Padding inuti containern */
+    }
+    .artikel-kort {
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        box-shadow: var(--card-shadow);
+        padding: 15px;
+        animation: subtleFadeIn 0.3s ease-out;
+        transition: background-color 0.15s, box-shadow 0.15s;
+    }
+    .artikel-kort.selected {
+        background-color: rgba(79, 70, 229, 0.1); 
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02), inset 3px 0 0 var(--primary-dark);
+    }
+    .artikel-kort-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 10px;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 10px;
+        margin-bottom: 15px;
+    }
+    .artikel-kort-header-text {
+        min-width: 0; /* Förhindra overflow */
+    }
+    .artikel-kort-artnr {
+        font-weight: 700;
+        color: var(--primary-dark);
+        font-size: 1.1em;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    [data-theme="dark"] .artikel-kort-artnr {
+        color: var(--primary-color);
+    }
+    .artikel-kort-name {
+        font-weight: 500;
+        color: var(--text-dark);
+        font-size: 0.95em;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .artikel-kort-header .row-action-btn {
+        flex-shrink: 0;
+    }
+    .artikel-kort-body {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        align-items: center;
+    }
+    .artikel-kort-body .quantity-cell {
+        justify-self: flex-end; /* Placera antal-kontroll till höger */
+    }
+    .artikel-kort-label {
+        font-size: 0.8em;
+        font-weight: 600;
+        color: var(--text-light);
+        text-transform: uppercase;
+        margin-bottom: 2px;
+    }
+    .artikel-kort-price {
+        font-size: 1.1em;
+        font-weight: 700;
+    }
+    .artikel-kort-footer {
+        margin-top: 15px;
+        padding-top: 10px;
+        border-top: 1px solid var(--border-color);
+    }
+    .artikel-kort-footer .notes-cell {
+        white-space: normal; /* Tillåt radbrytning */
+        overflow: visible;
+        font-size: 0.9em;
+    }
+    /* --- SLUT MOBIL KORT-VY --- */
+    
+    
     .i-lager, .slut { padding: 3px 6px; border-radius: 12px; font-size: 0.7em; min-width: 55px; }
     .i-lager { background-color: var(--success-light); color: var(--success-dark); } 
     .slut { background-color: var(--danger-light); color: var(--danger-dark); } 
@@ -712,26 +822,18 @@
     #popover-content .btn-popover.delete-btn:hover { background-color: var(--danger-color); color: white; }
     /* --- SLUT NY POPOVER --- */
 
-
-    /* --- ÄNDRAD: Modern "Slut i lager"-titel --- */
-    .out-of-stock-title {
-        font-size: 1.3em; /* Mindre */
-        font-weight: 700;
-        margin-top: 50px;
-        margin-bottom: 20px;
-        padding: 8px 15px; /* Badge-padding */
-        color: var(--danger-dark);
-        background-color: var(--danger-light);
-        border: 1px solid var(--danger-color);
-        border-radius: 8px; /* Mjuka hörn */
-        display: inline-block; /* Inte full bredd */
-    }
-    [data-theme="dark"] .out-of-stock-title {
-        border-color: var(--danger-light);
-    }
     
-    #slut-i-lager-lista .artikel-rad { opacity: 0.8; background-color: rgba(239, 68, 68, 0.05); } 
-    [data-theme="dark"] #slut-i-lager-lista .artikel-rad { background-color: rgba(248, 113, 113, 0.1); }
+    /* BORTTAGEN: .out-of-stock-title (ersatt av h3.collapsible-header) */
+    
+    #slut-i-lager-lista .artikel-rad,
+    #slut-i-lager-kort-lista .artikel-kort { 
+        opacity: 0.8; 
+        background-color: rgba(239, 68, 68, 0.05); 
+    } 
+    [data-theme="dark"] #slut-i-lager-lista .artikel-rad,
+    [data-theme="dark"] #slut-i-lager-kort-lista .artikel-kort { 
+        background-color: rgba(248, 113, 113, 0.1); 
+    }
     
     .modal { 
         position: fixed; 
@@ -1308,6 +1410,12 @@
         opacity: 1; /* NYTT: Full styrka */
         box-shadow: 0 2px 8px var(--primary-shadow); /* NYTT: Subtilt sken */
     }
+    /* --- NYTT: Färg för aktivt "Slut"-filter --- */
+    #category-filter-bar .btn-secondary[data-filter="Slut"].active {
+        background-color: var(--danger-color);
+        border-color: var(--danger-color);
+        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
+    }
     
     #toast-container {
         position: fixed;
@@ -1445,7 +1553,8 @@
         #category-filter-bar, .modal, .search-wrapper, .notes-cell, .link-buttons, .action-cell,
         .top-toolbar, #recent-items-container, #app-menu-modal, .search-results-dropdown,
         /* --- NYTT FÖR PRINT --- */
-        .action-buttons-cell, .row-action-btn, #row-action-popover
+        .action-buttons-cell, .row-action-btn, #row-action-popover,
+        .artikel-kort-lista /* Dölj mobil-kort */
         /* --- SLUT NYTT --- */
         { 
             display: none !important;
@@ -1458,6 +1567,9 @@
             box-shadow: none;
             border: none;
             margin-bottom: 10px;
+        }
+        .lager-container {
+            display: block !important; /* Säkerställ att desktop-tabell visas */
         }
         .artikel-rad, .header {
             display: grid;
@@ -1520,6 +1632,10 @@
         background-color: var(--primary-color);
         color: white;
         display: none; 
+    }
+    /* --- NYTT: Färg för "Slut"-badge --- */
+    #toolbar-filter-badge.filter-slut {
+        background-color: var(--danger-color);
     }
     
     [data-theme="dark"] .toolbar-title {
@@ -1680,15 +1796,38 @@
     .export-buttons .icon-span {
         color: var(--primary-color);
     }
+    
+    /* --- START MEDIA QUERY (Mobilanpassningar) --- */
 
     @media (max-width: 768px) {
         body { padding: 20px 10px; }
         h1 { font-size: 2em; margin-bottom: 25px; }
         h2 { font-size: 1.4em; margin-top: 30px; }
         
+        /* --- NYTT: Byt till Kort-vy på mobil --- */
+        .lager-container {
+            max-height: none; /* Ta bort scroll på container */
+            overflow-y: visible;
+            border: none;
+            box-shadow: none;
+            background-color: transparent;
+            margin-bottom: 20px;
+        }
+        .lager-container .header, 
+        .lager-container .artikel-rad {
+            display: none; /* Dölj desktop-tabell */
+        }
+        .lager-container .artikel-kort-lista {
+            display: flex; /* Visa mobil-kortlistan */
+        }
+        /* --- SLUT NYTT KORT-VY --- */
+        
+        
         /* --- ÄNDRAD: Mer padding för touch-mål --- */
         .artikel-rad .qty-btn,
-        .artikel-rad .row-action-btn {
+        .artikel-kort .qty-btn,
+        .artikel-rad .row-action-btn,
+        .artikel-kort .row-action-btn {
             min-height: 34px;
             padding-top: 8px;
             padding-bottom: 8px;
@@ -1761,7 +1900,6 @@
             order: 2;
         }
         
-        /* --- ÄNDRAD: Mobil "Slut i lager"-titel --- */
         .out-of-stock-title {
             font-size: 1.1em;
             padding: 6px 12px;
@@ -2101,12 +2239,13 @@
                     <span data-sort="notes">Anteckningar <span class="sort-icon"></span></span>
                     <span>Åtgärder</span>
                 </div>
+                <div id="service-artiklar-lista"></div>
+                <div id="service-artiklar-kort-lista" class="artikel-kort-lista"></div>
                 <div class="empty-state" id="service-empty-state" style="display: none;">
                     <svg viewBox="0 0 24 24" fill="currentColor"><use href="#empty-state-svg"></use></svg>
                     <h4>Inga serviceartiklar</h4>
                     <p>Din sökning gav inga träffar, eller så har du inte lagt till några artiklar i denna kategori.</p>
                 </div>
-                <div id="service-artiklar-lista"></div>
             </div>
         </div>
 
@@ -2125,12 +2264,13 @@
                     <span data-sort="notes">Anteckningar <span class="sort-icon"></span></span>
                     <span>Åtgärder</span>
                 </div>
+                <div id="motor-chassi-artiklar-lista"></div>
+                <div id="motor-chassi-artiklar-kort-lista" class="artikel-kort-lista"></div>
                 <div class="empty-state" id="motor-chassi-empty-state" style="display: none;">
                     <svg viewBox="0 0 24 24" fill="currentColor"><use href="#empty-state-svg"></use></svg>
                     <h4>Inga motor/chassi-artiklar</h4>
                     <p>Din sökning gav inga träffar, eller så har du inte lagt till några artiklar i denna kategori.</p>
                 </div>
-                <div id="motor-chassi-artiklar-lista"></div>
             </div>
         </div>
 
@@ -2149,34 +2289,37 @@
                     <span data-sort="notes">Anteckningar <span class="sort-icon"></span></span>
                     <span>Åtgärder</span>
                 </div>
+                <div id="andra-marken-artiklar-lista"></div>
+                <div id="andra-marken-artiklar-kort-lista" class="artikel-kort-lista"></div>
                 <div class="empty-state" id="andra-marken-empty-state" style="display: none;">
                     <svg viewBox="0 0 24 24" fill="currentColor"><use href="#empty-state-svg"></use></svg>
                     <h4>Inga artiklar för andra märken</h4>
                     <p>Din sökning gav inga träffar, eller så har du inte lagt till några artiklar i denna kategori.</p>
                 </div>
-                <div id="andra-marken-artiklar-lista"></div>
             </div>
         </div>
         
-        <div id="slut-i-lager-sektion" style="display: none;">
-            <h2 class="out-of-stock-title">Slut i Lager</h2>
-            <div class="lager-wrapper">
-                <div class="lager-container">
-                    <div class="header">
-                        <span data-sort="service_filter">Art. nr <span class="sort-icon"></span></span>
-                        <span data-sort="name">Namn <span class="sort-icon"></span></span>
-                        <span data-sort="price">Pris <span class="sort-icon"></span></span>
-                        <span data-sort="quantity">Antal <span class="sort-icon"></span></span>
-                        <span>Status</span>
-                        <span data-sort="notes">Anteckningar <span class="sort-icon"></span></span>
-                        <span>Åtgärder</span>
-                    </div>
-                    <div class="empty-state" id="slut-i-lager-empty-state" style="display: none;">
-                        <svg viewBox="0 0 24 24" fill="currentColor"><use href="#empty-state-svg"></use></svg>
-                        <h4>Inga artiklar slut i lager</h4>
-                        <p>Allt finns i lager, eller så gav din sökning inga träffar.</p>
-                    </div>
-                    <div id="slut-i-lager-lista"></div>
+        <h3 id="slut-i-lager-titel" class="collapsible-header" data-state="open" style="display: none;">
+            <div>Slut i Lager <span class="category-badge" id="badge-slut-i-lager">0</span></div>
+            <span class="toggle-icon">▼</span>
+        </h3>
+        <div id="slut-i-lager-wrapper" class="lager-wrapper" style="display: none;">
+        <div class="lager-container">
+                <div class="header">
+                    <span data-sort="service_filter">Art. nr <span class="sort-icon"></span></span>
+                    <span data-sort="name">Namn <span class="sort-icon"></span></span>
+                    <span data-sort="price">Pris <span class="sort-icon"></span></span>
+                    <span data-sort="quantity">Antal <span class="sort-icon"></span></span>
+                    <span>Status</span>
+                    <span data-sort="notes">Anteckningar <span class="sort-icon"></span></span>
+                    <span>Åtgärder</span>
+                </div>
+                <div id="slut-i-lager-lista"></div>
+                <div id="slut-i-lager-kort-lista" class="artikel-kort-lista"></div>
+                <div class="empty-state" id="slut-i-lager-empty-state" style="display: none;">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><use href="#empty-state-svg"></use></svg>
+                    <h4>Inga artiklar slut i lager</h4>
+                    <p>Allt finns i lager, eller så gav din sökning inga träffar.</p>
                 </div>
             </div>
         </div>
@@ -2189,27 +2332,27 @@
             <form id="edit-article-form">
                 <input type="hidden" id="edit-id">
                 <div>
-                    <label for="edit-service_filter">Artikelnummer</label>
+                    <label for="edit-service_filter">Artikelnummer <span class="orange-asterisk">*</span></label>
                     <input type="text" name="service_filter" id="edit-service_filter" required oninput="this.value = this.value.toUpperCase()">
                     <div class="form-warning"></div>
                 </div>
                 <div>
-                    <label for="edit-name">Namn</label>
+                    <label for="edit-name">Namn <span class="orange-asterisk">*</span></label>
                     <input type="text" name="name" id="edit-name" required oninput="this.value = this.value.toUpperCase()">
                     <div class="form-warning"></div>
                 </div>
                 <div>
-                    <label for="edit-price">Pris</label>
+                    <label for="edit-price">Pris <span class="orange-asterisk">*</span></label>
                     <input type="number" name="price" id="edit-price" step="0.01" required>
                     <div class="form-warning"></div>
                 </div>
                 <div>
-                    <label for="edit-quantity">Antal</label>
+                    <label for="edit-quantity">Antal <span class="orange-asterisk">*</span></label>
                     <input type="number" name="quantity" id="edit-quantity" required>
                     <div class="form-warning"></div>
                 </div>
                 <div>
-                    <label for="edit-category">Kategori</label>
+                    <label for="edit-category">Kategori <span class="orange-asterisk">*</span></label>
                     <select name="category" id="edit-category" required>
                         <option value="Service">Service</option>
                         <option value="Motor/Chassi">Motor/Chassi</option>
