@@ -878,14 +878,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const statusClass = item.quantity > 0 ? 'i-lager' : 'slut';
             const statusText = item.quantity > 0 ? 'I lager' : 'Slut';
-            if (statusClass === 'slut') {
-                  card.classList.add('status-slut');
-              } else {
-                  // Lägg till en klass för kategorin, t.ex. "category-service"
-                  // Ersätter / med - för att få en giltig klass
-                  const categoryClass = (item.category || 'ovrigt').toLowerCase().replace('/', '-');
-                  card.classList.add('category-' + categoryClass);
-              }
             const formattedNotes = parseNotes(item.notes || '');
             const safeServiceFilter = escapeHTML(item.service_filter).replace(/'/g, "\\'");
             const safeName = escapeHTML(item.name).replace(/'/g, "\\'");
@@ -937,6 +929,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const statusClass = item.quantity > 0 ? 'i-lager' : 'slut';
+            if (statusClass === 'slut') {
+                  card.classList.add('status-slut');
+            } else {
+                  // Lägg till en klass för kategorin, t.ex. "category-service"
+                  // Ersätter / med - för att få en giltig klass
+                  const categoryClass = (item.category || 'ovrigt').toLowerCase().replace('/', '-');
+                  card.classList.add('category-' + categoryClass);
+            }
             const statusText = item.quantity > 0 ? 'I lager' : 'Slut';
             const formattedNotes = parseNotes(item.notes || '');
             const safeServiceFilter = escapeHTML(item.service_filter).replace(/'/g, "\\'");
@@ -2037,4 +2037,5 @@ document.addEventListener('DOMContentLoaded', () => {
         if(initialLoader) initialLoader.querySelector('p').textContent = 'Kritiskt fel vid initiering.';
     }
 });
+
 
