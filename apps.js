@@ -1519,42 +1519,39 @@ document.addEventListener('DOMContentLoaded', () => {
             return isValid;
         }
         
-        function scrollToAndHighlight(itemId) {
-            // 1. Hitta ALLA element som matchar (både desktop och mobil)
+        function scrollToAndHighlight(itemId, instant = false) { // <-- 1. NY PARAMETER
             const elements = document.querySelectorAll(`.artikel-rad[data-id="${itemId}"], .artikel-kort[data-id="${itemId}"]`);
             
-            if (elements.length === 0) return; // Hittade ingenting alls
+            if (elements.length === 0) return;
 
-            // 2. Hitta det element som FAKTISKT SYNS (inte har display: none)
             const element = Array.from(elements).find(el => {
                 return window.getComputedStyle(el).display !== 'none';
             });
             
             if (element) {
                 
-                let panelWasOpened = false; // En flagga för att se om vi gjorde en layout-ändring
+                // 2. BESTÄM SCROLL-BETEENDE
+                const scrollBehavior = instant ? 'auto' : 'smooth'; 
 
                 // 3. KONTROLLERA OM PANELEN ÄR STÄNGD
                 const wrapper = element.closest('.lager-wrapper');
                 if (wrapper && wrapper.classList.contains('collapsed')) {
-                    panelWasOpened = true; // Sätt flaggan!
-                    
                     const wrapperId = wrapper.id; 
                     const titleId = wrapperId.replace('-wrapper', '-titel');
                     const title = document.getElementById(titleId);
 
                     if (title) {
-                        // Öppna panelen (detta triggar en layout-ändring)
                         title.setAttribute('data-state', 'open');
                         wrapper.classList.remove('collapsed');
                         localStorage.setItem(title.id, 'open'); 
                     }
                 }
 
-                // 4. Funktion som utför scroll och markering
-                const doScrollAndHighlight = () => {
-                    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    
+                // 4. SCROLLA MED RÄTT BETEENDE
+                // Vi använder en liten fördröjning för att vara säkra på att panelen hinner öppnas
+                setTimeout(() => {
+                    element.scrollIntoView({ behavior: scrollBehavior, block: 'center' }); // <-- 5. ANVÄND VARIABELN
+
                     document.querySelectorAll('.artikel-rad.highlight, .artikel-kort.highlight').forEach(r => r.classList.remove('highlight'));
                     
                     element.classList.add('highlight');
@@ -1567,17 +1564,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (twinElement) {
                         twinElement.classList.add('highlight');
                     }
-                };
-
-                // 5. NY LOGIK:
-                // Om vi precis öppnade en panel, vänta 100ms innan vi scrollar.
-                // Detta ger webbläsaren tid att rita om sidan och beräkna rätt position.
-                if (panelWasOpened) {
-                    setTimeout(doScrollAndHighlight, 100); // 100ms fördröjning
-                } else {
-                    // Panelen var redan öppen, scrolla direkt.
-                    doScrollAndHighlight();
-                }
+                }, 50); // Liten fördröjning för att låta panelen öppnas
             }
         }
 
@@ -2172,6 +2159,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if(initialLoader) initialLoader.querySelector('p').textContent = 'Kritiskt fel vid initiering.';
     }
 });
+
 
 
 
