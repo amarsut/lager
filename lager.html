@@ -25,6 +25,7 @@
         --warning-color: #f59e0b;
         --warning-light: #fffbeb; /* NYTT */
         --info-color: #0ea5e9;
+        --info-light: #e0f2fe;  /* NYTT: För flash-effekt */
         --bg-light: #f8fafc; /* Ljusare, renare bakgrund */
         --bg-medium: #f1f5f9;
         --bg-dark: #e2e8f0;
@@ -54,6 +55,7 @@
         --warning-color: #fcd34d;
         --warning-light: #78350f; /* NYTT */
         --info-color: #38bdf8;
+        --info-light: #0c4a6e; /* NYTT: För flash-effekt */
         --bg-light: #111827; /* "True dark" bakgrund */
         --bg-medium: #1f2937; /* Kort-bakgrund */
         --bg-dark: #374151; /* Hover/Border */
@@ -88,7 +90,7 @@
       animation: highlight-flash 1.8s ease-out;
     }
 
-    /* --- NYTT: Animation för kopiering --- */
+    /* --- NYTT: Animation för kvantitet/kopiering --- */
     @keyframes flash-success {
       0%, 100% { background-color: var(--card-bg); }
       50% { background-color: var(--success-light); }
@@ -98,7 +100,6 @@
     }
     [data-theme="dark"] .artikel-rad.flash-success,
     [data-theme="dark"] .artikel-kort.flash-success {
-        /* Måste åsidosätta hover-effekten */
         background-color: var(--card-bg);
         animation-name: flash-success-dark;
     }
@@ -106,6 +107,25 @@
       0%, 100% { background-color: var(--card-bg); }
       50% { background-color: var(--success-light); }
     }
+    
+    /* --- NYTT: Animation för kvantitet-justering --- */
+    @keyframes flash-info {
+      0%, 100% { background-color: var(--card-bg); }
+      50% { background-color: var(--info-light); }
+    }
+    .artikel-rad.flash-quantity, .artikel-kort.flash-quantity {
+      animation: flash-info 0.8s ease-out;
+    }
+    [data-theme="dark"] .artikel-rad.flash-quantity,
+    [data-theme="dark"] .artikel-kort.flash-quantity {
+        background-color: var(--card-bg);
+        animation-name: flash-info-dark;
+    }
+    [data-theme="dark"] @keyframes flash-info-dark {
+      0%, 100% { background-color: var(--card-bg); }
+      50% { background-color: var(--info-light); }
+    }
+    /* --- SLUT NYTT --- */
     
     /* --- NYTT: Animation för synk-status --- */
     @keyframes flash-sync {
@@ -551,19 +571,19 @@
         transform: none; /* Ta bort lyft-effekt om redan vald */
     }
     
-    /* --- NYTT: MOBIL KORT-VY --- */
+    /* --- NYTT: MOBIL KORT-VY (ÄNDRAD) --- */
     .artikel-kort-lista {
         display: none; /* Dold på desktop */
         flex-direction: column;
-        gap: 12px;
-        padding: 15px; /* Padding inuti containern */
+        gap: 10px; /* ÄNDRAD: Mer kompakt */
+        padding: 10px; /* ÄNDRAD: Mer kompakt */
     }
     .artikel-kort {
         background-color: var(--card-bg);
         border: 1px solid var(--border-color);
         border-radius: 12px;
         box-shadow: var(--card-shadow);
-        padding: 15px;
+        padding: 12px; /* ÄNDRAD: Mer kompakt */
         animation: subtleFadeIn 0.3s ease-out;
         transition: background-color 0.15s, box-shadow 0.15s;
     }
@@ -575,13 +595,19 @@
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
-        gap: 10px;
+        gap: 8px; /* ÄNDRAD: Mer kompakt */
         border-bottom: 1px solid var(--border-color);
-        padding-bottom: 10px;
-        margin-bottom: 15px;
+        padding-bottom: 8px; /* ÄNDRAD: Mer kompakt */
+        margin-bottom: 10px; /* ÄNDRAD: Mer kompakt */
     }
     .artikel-kort-header-text {
         min-width: 0; /* Förhindra overflow */
+        flex-grow: 1;
+    }
+    .artikel-kort-artnr-wrapper { /* NYTT: Wrapper för Artnr + knappen */
+        display: flex;
+        align-items: center;
+        gap: 8px;
     }
     .artikel-kort-artnr {
         font-weight: 700;
@@ -590,7 +616,14 @@
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        flex-grow: 1;
     }
+    .artikel-kort-artnr-wrapper .copy-btn { /* NYTT: Styla knappen i headern */
+        flex-shrink: 0;
+        padding: 2px 4px;
+        font-size: 0.8em;
+    }
+    
     [data-theme="dark"] .artikel-kort-artnr {
         color: var(--primary-color);
     }
@@ -601,6 +634,7 @@
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        margin-top: 2px; /* NYTT */
     }
     .artikel-kort-header .row-action-btn {
         flex-shrink: 0;
@@ -608,7 +642,7 @@
     .artikel-kort-body {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 15px;
+        gap: 12px; /* ÄNDRAD: Mer kompakt */
         align-items: center;
     }
     .artikel-kort-body .quantity-cell {
@@ -626,8 +660,8 @@
         font-weight: 700;
     }
     .artikel-kort-footer {
-        margin-top: 15px;
-        padding-top: 10px;
+        margin-top: 10px; /* ÄNDRAD: Mer kompakt */
+        padding-top: 8px; /* ÄNDRAD: Mer kompakt */
         border-top: 1px solid var(--border-color);
     }
     .artikel-kort-footer .notes-cell {
@@ -821,9 +855,6 @@
     #popover-content .btn-popover.delete-btn { color: var(--danger-color); }
     #popover-content .btn-popover.delete-btn:hover { background-color: var(--danger-color); color: white; }
     /* --- SLUT NY POPOVER --- */
-
-    
-    /* BORTTAGEN: .out-of-stock-title (ersatt av h3.collapsible-header) */
     
     #slut-i-lager-lista .artikel-rad,
     #slut-i-lager-kort-lista .artikel-kort { 
@@ -858,10 +889,10 @@
     .modal-content {
         background-color: var(--card-bg); 
         border: 1px solid var(--border-color); 
-        padding: 40px; 
+        padding: 30px; /* ÄNDRAD: Mindre padding */
         border-radius: 12px; 
         width: 90%; 
-        max-width: 500px; 
+        max-width: 450px; /* ÄNDRAD: Kompaktare modal */
         box-shadow: 0 20px 50px rgba(0,0,0,0.4); 
         animation: modal-pop-in 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* ÄNDRAD */
         max-height: 90vh; 
@@ -895,6 +926,22 @@
     .modal-content button { margin-top: 30px; width: 100%; }
     .close-btn { position: absolute; top: 15px; right: 15px; font-size: 28px; cursor: pointer; font-weight: bold; z-index: 10; color: var(--text-light); }    
     .close-btn:hover { color: var(--text-dark); }
+    
+    /* --- NYTT: Grid för modal-formulär --- */
+    #edit-article-form {
+        display: grid;
+        grid-template-columns: 1fr 1fr; /* 2 kolumner */
+        gap: 0 15px; /* Endast kolumn-gap */
+    }
+    /* Fält som tar full bredd */
+    #edit-article-form .form-field-full {
+        grid-column: 1 / -1;
+    }
+    /* Fält som tar halv bredd */
+    #edit-article-form .form-field-half {
+        grid-column: span 1;
+    }
+    /* --- SLUT NYTT --- */
 
     #productPopup { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 10010; }
     #productPopup iframe { width: 90%; height: 90%; position: absolute; top: 5%; left: 5%; border: 2px solid white; border-radius: 10px; }
@@ -1910,6 +1957,19 @@
         .app-menu-content .dashboard-stat span { font-size: 1.8em; }
         .app-menu-content .dashboard-stat .icon-span { display: none; }
         .app-menu-content #recent-items-list { grid-template-columns: 1fr; }
+        
+        /* --- NYTT: Modal-layout för mobil --- */
+        .modal-content {
+            padding: 20px;
+        }
+        #edit-article-form {
+            grid-template-columns: 1fr; /* 1 kolumn */
+            gap: 0;
+        }
+        #edit-article-form .form-field-half {
+             grid-column: 1 / -1; /* Full bredd */
+        }
+        /* --- SLUT NYTT --- */
     }
     
     @media (max-width: 600px) {
@@ -2092,7 +2152,7 @@
                 </span> 
             för fordonsuppgifter.</p>
             <div class="global-search-wrapper">
-                <input type="text" id="global-search-input" placeholder="Ange artikelnummer (exempel: 03L 115 562)">
+                <input type="text" id="global-search-input" placeholder="Ange artikelnummer (exempel: 03L 115 562)" autocomplete="off">
                 <button id="global-search-btn" class="btn-primary" title="Sök">
                     <span class="search-spinner"></span> 
                     <span class="icon-span">search</span>
@@ -2145,7 +2205,7 @@
                 <div>
                     <label for="add_service_filter">Artikelnummer <span class="orange-asterisk">*</span></label>
                     <div class="form-input-wrapper">
-                        <input type="text" id="add_service_filter" name="service_filter" placeholder="Artikelnummer" required oninput="this.value = this.value.toUpperCase()">
+                        <input type="text" id="add_service_filter" name="service_filter" placeholder="Artikelnummer" required oninput="this.value = this.value.toUpperCase()" autocomplete="off">
                         <button type="button" id="paste-artnr-btn" class="form-paste-btn" title="Klistra in">
                             <span class="icon-span">content_paste</span>
                         </button>
@@ -2154,17 +2214,17 @@
                 </div>
                 <div>
                     <label for="add_name">Namn <span class="orange-asterisk">*</span></label>
-                    <input type="text" id="add_name" name="name" placeholder="Namn" required oninput="this.value = this.value.toUpperCase()">
+                    <input type="text" id="add_name" name="name" placeholder="Namn" required oninput="this.value = this.value.toUpperCase()" autocomplete="off">
                     <div class="form-warning"></div>
                 </div>
                 <div>
                     <label for="add_price">Pris <span class="orange-asterisk">*</span></label>
-                    <input type="number" id="add_price" name="price" placeholder="Pris" step="0.01" required>
+                    <input type="number" id="add_price" name="price" placeholder="Pris" step="0.01" required autocomplete="off">
                     <div class="form-warning"></div>
                 </div>
                 <div>
-                    <label for="add_quantity">Antal <span class="orange-asterisk">*</span></label>
-                    <input type="number" name="quantity" id="add-quantity" value="1" placeholder="Antal" required>
+                    <label for="add-quantity">Antal <span class="orange-asterisk">*</span></label>
+                    <input type="number" name="quantity" id="add-quantity" value="1" placeholder="Antal" required autocomplete="off">
                     <div class="form-warning"></div>
                 </div>
                 <div>
@@ -2184,12 +2244,12 @@
                 </div>
                 <div>
                     <label for="add_notes">Anteckningar</label>
-                    <input type="text" id="add_notes" name="notes" placeholder="Anteckningar (ex: [ABC123])">
+                    <input type="text" id="add_notes" name="notes" placeholder="Anteckningar (ex: [ABC123])" autocomplete="off">
                     <div class="form-warning"></div>
                 </div>
                 <div>
                     <label for="add_link">Länk (URL)</label>
-                    <input type="text" id="add_link" name="link" placeholder="Länk (URL)">
+                    <input type="text" id="add_link" name="link" placeholder="Länk (URL)" autocomplete="off">
                     <div class="form-warning"></div>
                 </div>
                 <div class="submit-button-wrapper">
@@ -2331,27 +2391,27 @@
             <h3><span class="icon-span">edit</span>Redigera Artikel</h3>
             <form id="edit-article-form">
                 <input type="hidden" id="edit-id">
-                <div>
+                <div class="form-field-full">
                     <label for="edit-service_filter">Artikelnummer <span class="orange-asterisk">*</span></label>
-                    <input type="text" name="service_filter" id="edit-service_filter" required oninput="this.value = this.value.toUpperCase()">
+                    <input type="text" name="service_filter" id="edit-service_filter" required oninput="this.value = this.value.toUpperCase()" autocomplete="off">
                     <div class="form-warning"></div>
                 </div>
-                <div>
+                <div class="form-field-full">
                     <label for="edit-name">Namn <span class="orange-asterisk">*</span></label>
-                    <input type="text" name="name" id="edit-name" required oninput="this.value = this.value.toUpperCase()">
+                    <input type="text" name="name" id="edit-name" required oninput="this.value = this.value.toUpperCase()" autocomplete="off">
                     <div class="form-warning"></div>
                 </div>
-                <div>
+                <div class="form-field-half">
                     <label for="edit-price">Pris <span class="orange-asterisk">*</span></label>
-                    <input type="number" name="price" id="edit-price" step="0.01" required>
+                    <input type="number" name="price" id="edit-price" step="0.01" required autocomplete="off">
                     <div class="form-warning"></div>
                 </div>
-                <div>
+                <div class="form-field-half">
                     <label for="edit-quantity">Antal <span class="orange-asterisk">*</span></label>
-                    <input type="number" name="quantity" id="edit-quantity" required>
+                    <input type="number" name="quantity" id="edit-quantity" required autocomplete="off">
                     <div class="form-warning"></div>
                 </div>
-                <div>
+                <div class="form-field-full">
                     <label for="edit-category">Kategori <span class="orange-asterisk">*</span></label>
                     <select name="category" id="edit-category" required>
                         <option value="Service">Service</option>
@@ -2360,22 +2420,22 @@
                     </select>
                     <div class="form-warning"></div>
                 </div>
-                <div>
+                <div class="form-field-full">
                     <label for="edit-notes">Anteckningar</label>
-                    <input type="text" name="notes" id="edit-notes" placeholder="Anteckningar (ex: [ABC123])">
+                    <input type="text" name="notes" id="edit-notes" placeholder="Anteckningar (ex: [ABC123])" autocomplete="off">
                     <div class="form-warning"></div>
                 </div>
-                <div>
+                <div class="form-field-full">
                     <label for="edit-link">Länk</label>
-                    <input type="text" name="link" id="edit-link">
+                    <input type="text" name="link" id="edit-link" autocomplete="off">
                     <div class="form-warning"></div>
                 </div>
-                <button type="submit" class="btn-primary">
+                <button type="submit" class="btn-primary form-field-full">
                     <span class="icon-span">save</span>
                     Spara Ändringar
                 </button>
             </form>
-        </div>
+            </div>
     </div>
 
     <div id="confirmationModal" class="modal">
