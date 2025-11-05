@@ -552,18 +552,19 @@
     #desktop-clear-search-btn, #mobile-clear-search-btn { position: absolute; top: 50%; right: 1px; transform: translateY(-50%); background: none; border: none; font-size: 1.8em; color: #888; cursor: pointer; padding: 0 12px; line-height: 1; display: none; z-index: 5; }
     #desktop-clear-search-btn:hover, #mobile-clear-search-btn:hover { color: var(--text-dark); }
         
-    .lager-wrapper { overflow-x: auto; margin-bottom: 25px; -webkit-overflow-scrolling: touch; }
     .lager-container { 
         background-color: var(--card-bg); 
         border-radius: 16px; 
         box-shadow: var(--card-shadow); 
-        margin-bottom: 40px; 
+        margin-bottom: 40px; /* Behåller denna från din gamla .lager-container */
         border: 1px solid var(--border-color); 
         position: relative; 
         max-height: 60vh;
-        overflow-y: auto; 
-        min-width: min-content; 
+        overflow-y: auto; /* <-- Behålls */
+        overflow-x: auto; /* <-- NY, från lager-wrapper */
+        -webkit-overflow-scrolling: touch; /* <-- NY, från lager-wrapper */
         transition: background-color 0.3s, border-color 0.3s; 
+        /* min-width: min-content; har tagits bort då den inte behövs */
     }
     
     .header, .artikel-rad { 
@@ -2355,8 +2356,7 @@
             <div>Service <span class="category-badge" id="badge-service">0</span></div>
             <span class="toggle-icon">▼</span>
         </h3>
-        <div id="service-artiklar-wrapper" class="lager-wrapper">
-            <div class="lager-container">
+        <div id="service-artiklar-wrapper" class="lager-container"> </div>
                 <div class="header">
                     <span data-sort="service_filter">Art. nr <span class="sort-icon"></span></span>
                     <span data-sort="name">Namn <span class="sort-icon"></span></span>
@@ -2380,8 +2380,7 @@
             <div>Motor/Chassi <span class="category-badge" id="badge-motor-chassi">0</span></div>
             <span class="toggle-icon">▼</span>
         </h3>
-        <div id="motor-chassi-artiklar-wrapper" class="lager-wrapper">
-            <div class="lager-container">
+        <div id="motor-chassi-artiklar-wrapper" class="lager-container"> </div>
                 <div class="header">
                     <span data-sort="service_filter">Art. nr <span class="sort-icon"></span></span>
                     <span data-sort="name">Namn <span class="sort-icon"></span></span>
@@ -2405,8 +2404,7 @@
             <div>Andra Märken <span class="category-badge" id="badge-andra-marken">0</span></div>
             <span class="toggle-icon">▼</span>
         </h3>
-        <div id="andra-marken-artiklar-wrapper" class="lager-wrapper">
-            <div class="lager-container">
+        <div id="andra-marken-artiklar-wrapper" class="lager-container"> </div>
                 <div class="header">
                     <span data-sort="service_filter">Art. nr <span class="sort-icon"></span></span>
                     <span data-sort="name">Namn <span class="sort-icon"></span></span>
@@ -2430,8 +2428,7 @@
             <div>Slut i Lager <span class="category-badge" id="badge-slut-i-lager">0</span></div>
             <span class="toggle-icon">▼</span>
         </h3>
-        <div id="slut-i-lager-wrapper" class="lager-wrapper" style="display: none;">
-        <div class="lager-container">
+        <div id="slut-i-lager-wrapper" class="lager-container"> </div>
                 <div class="header">
                     <span data-sort="service_filter">Art. nr <span class="sort-icon"></span></span>
                     <span data-sort="name">Namn <span class="sort-icon"></span></span>
@@ -2539,3 +2536,4 @@
 
 </body>
 </html>
+
