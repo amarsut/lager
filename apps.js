@@ -433,8 +433,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     link.addEventListener('click', (e) => {
                         e.preventDefault(); 
                         const itemId = e.currentTarget.getAttribute('data-id');
-                        scrollToAndHighlight(itemId);
-                        globalSearchResults.style.display = 'none';
+                        scrollToAndHighlight(itemId); // Starta scrollen
+                        
+                        // --- NY KOD ---
+                        // Vänta 500ms (0.5s) på att "smooth scroll" ska bli klar
+                        // innan vi döljer sök-boxen.
+                        setTimeout(() => {
+                            globalSearchResults.style.display = 'none';
+                        }, 500); // 500ms fördröjning
+                        // --- SLUT PÅ NY KOD ---
                     });
                 });
                 
@@ -2155,6 +2162,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if(initialLoader) initialLoader.querySelector('p').textContent = 'Kritiskt fel vid initiering.';
     }
 });
+
 
 
 
