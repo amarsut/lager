@@ -1007,6 +1007,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // --- KOPIERA OCH ERSÄTT HELA renderInventory-FUNKTIONEN MED DETTA ---
 
+        // --- KOPIERA OCH ERSÄTT HELA FUNKTIONEN ---
+
         function renderInventory(data, searchTerm = '') {
             closeRowActionPopover(); 
             
@@ -1028,6 +1030,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const serviceTitle = document.getElementById('service-artiklar-titel');
             const motorTitle = document.getElementById('motor-chassi-artiklar-titel');
             const andraTitle = document.getElementById('andra-marken-artiklar-titel');
+            // (Lade till saknade referenser från din kod)
+            const slutILagerSektion = document.getElementById('slut-i-lager-wrapper');
+            const slutILagerTitel = document.getElementById('slut-i-lager-titel');
         
             // Definiera artikellistorna
             const iLager = data.filter(item => item.quantity > 0);
@@ -1107,52 +1112,85 @@ document.addEventListener('DOMContentLoaded', () => {
             
             } else {
                 // FALL 3: STANDARD-VY (Antingen ingen sökning, eller en sökning som gav träffar)
+                
+                // Dölj båda "tom"-meddelandena
+                fullEmptyState.style.display = 'none'; 
+                if (searchEmptyState) searchEmptyState.style.display = 'none';
         
+                // === LOGIK FÖR ATT ÖPPNA/STÄNGA PANELER ===
+                
+                // 1. Återställ alla paneler till sitt sparade (eller stängda) läge FÖRST
+                //    om ingen sökning är aktiv.
+                if (!isSearchActive) {
+                    // Denna funktion läser localStorage och återställer .collapsed-klasser
+                    initializeCollapseState(); 
+                }
+        
+                // 2. Bestäm vilka paneler som ska visas baserat på filter
                 const isServiceCategoryActive = (currentFilter === 'Alla' || currentFilter === 'Service');
                 const isMotorCategoryActive = (currentFilter === 'Alla' || currentFilter === 'Motor/Chassi');
                 const isAndraCategoryActive = (currentFilter === 'Alla' || currentFilter === 'Andra Märken');
                 const isSlutCategoryActive = (currentFilter === 'Slut');
         
-                // Visa/Dölj sektioner baserat på filter OCH om de har resultat under en sökning
-                // Eller om det inte är en sökning alls (då visas tomma sektioner med sin egen empty-state)
-                serviceTitle.style.display = isServiceCategoryActive && (!isSearchActive || serviceArtiklar.length > 0) ? 'flex' : 'none';
-                serviceWrapper.style.display = isServiceCategoryActive && (!isSearchActive || serviceArtiklar.length > 0) ? 'block' : 'none';
-                
-                motorTitle.style.display = isMotorCategoryActive && (!isSearchActive || motorChassiArtiklar.length > 0) ? 'flex' : 'none';
-                motorWrapper.style.display = isMotorCategoryActive && (!isSearchActive || motorChassiArtiklar.length > 0) ? 'block' : 'none';
-                
-                andraTitle.style.display = isAndraCategoryActive && (!isSearchActive || andraMarkenArtiklar.length > 0) ? 'flex' : 'none';
-                andraWrapper.style.display = isAndraCategoryActive && (!isSearchActive || andraMarkenArtiklar.length > 0) ? 'block' : 'none';
-                
-                // Hantera "Slut i Lager"-filtret
-                if (currentFilter === 'Slut') {
-                    serviceTitle.style.display = 'none'; serviceWrapper.style.display = 'none';
-                    motorTitle.style.display = 'none'; motorWrapper.style.display = 'none';
-                    andraTitle.style.display = 'none'; andraWrapper.style.display = 'none';
-                    
-                    slutILagerTitel.style.display = (!isSearchActive || slutILager.length > 0) ? 'flex' : 'none';
-                    slutILagerSektion.style.display = (!isSearchActive || slutILager.length > 0) ? 'block' : 'none';
-                } else {
-                    slutILagerTitel.style.display = 'none';
-                    slutILagerSektion.style.display = 'none';
-                }
+                // 3. Loopa igenom och tillämpa logik
+                // (Säkerställer att alla referenser finns)
+                const sections = [
+                    { title: serviceTitle, wrapper: serviceWrapper, articles: serviceArtiklar, active: isServiceCategoryActive, emptyState: emptyStates.service, listDesktop: serviceArtiklarLista, listMobile: serviceArtiklarKortLista },
+                    { title: motorTitle, wrapper: motorWrapper, articles: motorChassiArtiklar, active: isMotorCategoryActive, emptyState: emptyStates.motorChassi, listDesktop: motorChassiArtiklarLista, listMobile: motorChassiArtiklarKortLista },
+                    { title: andraTitle, wrapper: andraWrapper, articles: andraMarkenArtiklar, active: isAndraCategoryActive, emptyState: emptyStates.andraMarken, listDesktop: andraMarkenArtiklarLista, listMobile: andraMarkenArtiklarKortLista },
+                    { title: slutILagerTitel, wrapper: slutILagerSektion, articles: slutILager, active: isSlutCategoryActive, emptyState: emptyStates.slutILager, listDesktop: slutILagerLista, listMobile: slutILagerKortLista }
+                ];
         
-                // Visa/Dölj "Tom-stat" inuti panelerna (ENDAST när ingen sökning är aktiv)
-                emptyStates.service.style.display = isServiceCategoryActive && serviceArtiklar.length === 0 && !isSearchActive ? 'flex' : 'none';
-                emptyStates.motorChassi.style.display = isMotorCategoryActive && motorChassiArtiklar.length === 0 && !isSearchActive ? 'flex' : 'none';
-                emptyStates.andraMarken.style.display = isAndraCategoryActive && andraMarkenArtiklar.length === 0 && !isSearchActive ? 'flex' : 'none';
-                emptyStates.slutILager.style.display = isSlutCategoryActive && slutILager.length === 0 && !isSearchActive ? 'flex' : 'none';
-                
-                // Dölj listorna om de är tomma (så att "Tom-stat" syns)
-                serviceArtiklarLista.style.display = serviceArtiklar.length > 0 ? 'block' : 'none';
-                serviceArtiklarKortLista.style.display = serviceArtiklar.length > 0 ? '' : 'none';
-                motorChassiArtiklarLista.style.display = motorChassiArtiklar.length > 0 ? 'block' : 'none';
-                motorChassiArtiklarKortLista.style.display = motorChassiArtiklar.length > 0 ? '' : 'none';
-                andraMarkenArtiklarLista.style.display = andraMarkenArtiklar.length > 0 ? 'block' : 'none';
-                andraMarkenArtiklarKortLista.style.display = andraMarkenArtiklar.length > 0 ? '' : 'none';
-                slutILagerLista.style.display = slutILager.length > 0 ? 'block' : 'none';
-                slutILagerKortLista.style.display = slutILager.length > 0 ? '' : 'none';
-            }
+                sections.forEach(section => {
+                    // Säkerhetskoll om en HTML-referens saknas
+                    if (!section.title || !section.wrapper) return; 
+                    
+                    const hasResults = section.articles.length > 0;
+                    
+                    if (isSearchActive) {
+                        // --- SÖKNING ÄR AKTIV ---
+                        if (hasResults && section.active) {
+                            // Sökning har träffar: Visa OCH tvinga panelen att öppnas
+                            section.title.style.display = 'flex';
+                            section.wrapper.style.display = 'block';
+                            section.title.setAttribute('data-state', 'open');
+                            section.wrapper.classList.remove('collapsed');
+                        } else {
+                            // Sökning har inga träffar: Dölj panelen
+                            section.title.style.display = 'none';
+                            section.wrapper.style.display = 'none';
+                        }
+                    } else {
+                        // --- INGEN SÖKNING (STANDARD-VY) ---
+                        // Visa/dölj baserat på filter
+                        section.title.style.display = section.active ? 'flex' : 'none';
+                        section.wrapper.style.display = section.active ? 'block' : 'none';
+                        
+                        // Visa "tom"-rutan inuti om panelen är tom
+                        if (section.emptyState) {
+                            section.emptyState.style.display = section.active && !hasResults ? 'flex' : 'none';
+                        }
+                    }
+        
+                    // Hantera "Slut i Lager"-filtret (specialfall)
+                    if (currentFilter === 'Slut') {
+                        if (section.title.id !== 'slut-i-lager-titel') {
+                            section.title.style.display = 'none';
+                            section.wrapper.style.display = 'none';
+                        }
+                    } else {
+                        if (section.title.id === 'slut-i-lager-titel') {
+                            section.title.style.display = 'none';
+                            section.wrapper.style.display = 'none';
+                        }
+                    }
+        
+                    // Dölj listorna om de är tomma (så att "Tom-stat" syns när man inte söker)
+                    if(section.listDesktop) section.listDesktop.style.display = hasResults ? 'block' : 'none';
+                    if(section.listMobile) section.listMobile.style.display = hasResults ? '' : 'none';
+                });
+        
+            } // Slut på FALL 3
         
             bindRowActionButtons();
         }
@@ -2086,6 +2124,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if(initialLoader) initialLoader.querySelector('p').textContent = 'Kritiskt fel vid initiering.';
     }
 });
+
 
 
 
