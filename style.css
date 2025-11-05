@@ -529,6 +529,7 @@ h3.collapsible-header:hover {
     transition: background-color 0.15s, box-shadow 0.15s, transform 0.15s ease-out;
     border-bottom: 1px solid var(--border-color); 
     cursor: pointer; 
+    animation: subtleFadeIn 0.4s ease-out;
 }
 .artikel-rad:hover { 
     background-color: var(--bg-medium); 
