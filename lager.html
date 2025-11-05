@@ -1340,17 +1340,19 @@
     [data-theme="dark"] .dashboard-stat:hover .icon-span { opacity: 0.3; }
     .dashboard-stat#stat-out-of-stock-wrapper:hover .icon-span { color: var(--danger-color); }
     
-    #recent-items-container {
+    #recent-items-container,
+    #top-value-container { /* NYTT: Delad stil */
         background-color: var(--card-bg);
         border: 1px solid var(--border-color);
         border-radius: 12px;
         padding: 25px 30px;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-        margin-bottom: 40px;
+        margin-bottom: 25px; /* ÄNDRAD */
         animation: subtleFadeIn 0.5s ease-out; 
         transition: background-color 0.3s, border-color 0.3s;
     }
-    #recent-items-container h3 {
+    #recent-items-container h3,
+    #top-value-container h3 { /* NYTT: Delad stil */
         margin-top: 0;
         margin-bottom: 20px;
         font-size: 1.3em;
@@ -1359,12 +1361,14 @@
         border-bottom: 1px solid var(--border-color);
         padding-bottom: 10px;
     }
-    #recent-items-list {
+    #recent-items-list,
+    #top-value-list { /* NYTT: Delad stil */
         display: grid;
         grid-template-columns: 1fr;
         gap: 12px;
     }
-    .recent-item {
+    .recent-item,
+    .top-value-item { /* NYTT: Delad stil */
         display: block;
         padding: 10px 12px;
         border-radius: 8px;
@@ -1375,18 +1379,21 @@
         cursor: pointer;
         font-size: 0.9em;
     }
-    .recent-item:hover {
+    .recent-item:hover,
+    .top-value-item:hover { /* NYTT: Delad stil */
         background-color: var(--bg-medium);
         box-shadow: inset 3px 0 0 var(--primary-color);
     }
-    .recent-item strong {
+    .recent-item strong,
+    .top-value-item strong { /* NYTT: Delad stil */
         color: var(--primary-color);
         display: block;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
     }
-    .recent-item span {
+    .recent-item span,
+    .top-value-item span { /* NYTT: Delad stil */
         display: block;
         color: var(--text-light);
         font-weight: 500;
@@ -1403,6 +1410,17 @@
         padding: 2px 6px;
         border-radius: 4px;
         margin-left: 5px;
+    }
+    
+    /* --- NYTT: Badge för "Mest Värdefulla" --- */
+    .top-value-badge {
+        float: right;
+        font-size: 0.9em;
+        font-weight: 700;
+        color: var(--success-dark);
+    }
+    [data-theme="dark"] .top-value-badge {
+        color: var(--success-dark);
     }
 
     .empty-state { 
@@ -2123,6 +2141,12 @@
                 </div>
             </div>
             
+            <div id="top-value-container">
+                <h3>Mest Värdefulla (Topp 5)</h3>
+                <div id="top-value-list">
+                    <p id="top-value-empty" style="color: var(--text-light); font-size: 0.9em;">Inget i lager att värdera.</p>
+                </div>
+            </div>
             <div id="recent-items-container">
                 <h3>Senast Hanterade</h3>
                 <div id="recent-items-list">
