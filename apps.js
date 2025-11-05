@@ -302,178 +302,153 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // ERSÄTT HELA FUNKTIONEN MED DENNA:
-
-async function handleGlobalSearch(searchTermOverride) {
-      const searchTerm = (searchTermOverride ? searchTermOverride.trim().toUpperCase() : globalSearchInput.value.trim().toUpperCase());
-      if (searchTerm === '') {
-          globalSearchResults.style.display = 'none';
-          return;
-      }
-      
-      globalSearchBtn.disabled = true;
-      saveSearchToHistory(searchTerm); 
-      
-      // Nollställ alla containers
-      biluppgifterResultContainer.style.display = 'none';
-      internalResultsContainer.style.display = 'none';
-      externalResultsContainer.style.display = 'none';
-      globalSearchEmptyState.style.display = 'none';
-      exportLinksContainer.style.display = 'none';
-      searchDisclaimer.style.display = 'none';
-      const externalHeader = document.querySelector('#global-search-results .search-results-header');
-      if (externalHeader) externalHeader.style.display = 'none';
-      
-      globalSearchResults.style.display = 'block'; // Visa huvudcontainern
-      
-      document.querySelector('.global-search-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
-  
-      // Hantera Reg-nr separat
-      if (isRegNr(searchTerm)) {
-          const cleanRegNr = searchTerm.replace(/\s/g, '');
-          
-          const biluppgifterLink = `https://biluppgifter.se/fordon/${cleanRegNr}#vehicle-data`;
-          const carInfoLink = `https://car.info/sv-se/license-plate/S/${cleanRegNr}#attributes`;
-          
-          biluppgifterResultContainer.innerHTML = `
-              <h4 class="internal-search-title">Fordonsuppslag:</h4>
-              <div class="provider-card">
-                  <img src="https://biluppgifter.se/favicon/favicon.ico" alt="Biluppgifter.se" class="provider-card-logo">
-                  <div class="provider-card-content">
-                      <span class="provider-card-name">${cleanRegNr} (Biluppgifter)</span>
-                      <a href="${biluppgifterLink}" target="_blank" class="btn-provider-search">Visa</a>
-                  </div>
-              </div>
-              <div class="provider-card">
-                  <img src="https://car.info/favicon.ico" alt="Car.info" class="provider-card-logo">
-                  <div class="provider-card-content">
-                      <span class="provider-card-name">${cleanRegNr} (Car.info)</span>
-                      <a href="${carInfoLink}" target="_blank" class="btn-provider-search">Visa</a>
-                  </div>
-              </div>
-          `;
-          biluppgifterResultContainer.style.display = 'block'; // Visa BARA denna
-  
-          document.getElementById('global-search-close-btn').addEventListener('click', () => { 
-              globalSearchResults.style.display = 'none'; 
-          });
-          
-          globalSearchBtn.disabled = false;
-          return; 
-      }
-  
-      // Hantera vanlig Art.nr-sökning
-      try {
-          currentExternalLinks = [];
-          let hasDisclaimer = false; 
-  
-          // 1. Hämta interna matchningar
-          const searchTermNoSpace = searchTerm.replace(/\s/g, '');
-          const internalMatches = inventory.filter(item => {
-              const itemServiceFilter = (item.service_filter || '').toUpperCase().replace(/\s/g, '');
-              const itemName = (item.name || '').toUpperCase();
-              return itemServiceFilter.includes(searchTermNoSpace) || itemName.includes(searchTerm);
-          });
-  
-          // 2. Hämta externa matchningar (men bygg inte HTML än)
-          externalSearchProviders.forEach(provider => {
-              const link = provider.linkGenerator(searchTerm);
-              if (link) {
-                  currentExternalLinks.push({ 
-                      name: provider.name, 
-                      link: link, 
-                      icon: provider.icon 
-                  });
-                  if (provider.name.includes('Bildelsbasen')) {
-                      hasDisclaimer = true;
-                  }
-              }
-          });
-  
-          // 3. NU bestämmer vi vad som ska visas, baserat på resultaten
-          
-          if (internalMatches.length === 0 && currentExternalLinks.length === 0) {
-              // ----- FALL 1: TOTALT TOMT -----
-              globalSearchEmptyText.textContent = `Din sökning på "${searchTerm}" gav inga resultat. Kontrollera stavningen.`;
-              globalSearchEmptyState.style.display = 'flex';
-  
-          } else {
-              // ----- FALL 2: Vi har MINST ETT resultat -----
-              
-              // Bygg och visa Interna Resultat
-              let internalHTML = '';
-              if (internalMatches.length > 0) {
-                  internalHTML = '<h4 class="internal-search-title">Hittades i ditt lager:</h4>';
-                  internalMatches.forEach(item => { 
-                      internalHTML += `<a href="#" class="internal-result-item" data-id="${item.id}"><div><strong>${item.service_filter}</strong> - ${item.name}</div><span>Antal: ${item.quantity}</span></a>`; 
-                  });
-              } else {
-                  // (Inga interna, men externa FINNS)
-                  internalHTML = '<h4 class="internal-search-title">Inga träffar i ditt lager</h4>';
-              }
-              
-              internalResultsContainer.innerHTML = internalHTML;
-              if (internalMatches.length === 0) {
-                  // Lägg till "Snabb-lägg-till"-knappen
-                  quickAddFromSearchBtn.innerHTML = `<span class="icon-span">add_circle</span>Lägg till "${searchTerm}" i lagret`;
-                  quickAddFromSearchBtn.setAttribute('data-search-term', searchTerm);
-                  internalResultsContainer.appendChild(quickAddFromSearchBtn);
-              }
-              internalResultsContainer.style.display = 'block'; // Visa intern-containern
-  
-              // Bygg och visa Externa Resultat (om de finns)
-              if (currentExternalLinks.length > 0) {
-                  let externalHTML = '';
-                  currentExternalLinks.forEach(provider => {
-                      externalHTML += `
-                          <div class="provider-card">
-                              <img src="${provider.icon}" alt="${provider.name}" class="provider-card-logo">
-                              <div class="provider-card-content">
-                                  <span class="provider-card-name">${provider.name}</span>
-                                  <a href="${provider.link}" target="_blank" class="btn-provider-search">Sök</a>
-                              </div>
-                          </div>
-                      `;
-                  });
-                  // Lägg till "disabled" kort för de som inte genererade länkar
-                  externalSearchProviders.forEach(provider => {
-                      if (!currentExternalLinks.some(p => p.name === provider.name)) {
-                           externalHTML += `
-                              <div class="provider-card disabled">
-                                  <img src="${provider.icon}" alt="${provider.name}" class="provider-card-logo">
-                                  <div class="provider-card-content">
-                                      <span class="provider-card-name">${provider.name}</span>
-                                      <a class="btn-provider-search">Sök</a>
-                                  </div>
-                              </div>
-                          `;
-                      }
-                  });
-  
-                  externalResultsContainer.innerHTML = externalHTML;
-                  externalResultsContainer.style.display = 'grid';
-                  if (externalHeader) externalHeader.style.display = 'flex';
-                  exportLinksContainer.style.display = 'inline-block';
-              }
-  
-              if (hasDisclaimer) {
-                  searchDisclaimer.style.display = 'block';
-              }
-          }
-  
-          // 4. Återbind alltid lyssnare
-          document.querySelectorAll('.internal-result-item').forEach(link => {
-              link.addEventListener('click', (e) => {
-                  e.preventDefault(); 
-                  const itemId = e.currentTarget.getAttribute('data-id');
-                  scrollToAndHighlight(itemId);
-                  globalSearchResults.style.display = 'none';
-              });
-          });
-          
-          document.getElementById('global-search-close-btn').addEventListener('click', () => { 
-              globalSearchResults.style.display = 'none'; 
-          });
+        async function handleGlobalSearch(searchTermOverride) {
+            const searchTerm = (searchTermOverride ? searchTermOverride.trim().toUpperCase() : globalSearchInput.value.trim().toUpperCase());
+            if (searchTerm === '') {
+                globalSearchResults.style.display = 'none';
+                return;
+            }
+            
+            globalSearchBtn.disabled = true;
+            saveSearchToHistory(searchTerm); 
+            
+            // Nollställ
+            biluppgifterResultContainer.style.display = 'none';
+            internalResultsContainer.style.display = 'none';
+            externalResultsContainer.style.display = 'none';
+            exportLinksContainer.style.display = 'none';
+            searchDisclaimer.style.display = 'none';
+            const externalHeader = document.querySelector('#global-search-results .search-results-header');
+            if (externalHeader) externalHeader.style.display = 'none';
+            
+            globalSearchResults.style.display = 'block'; 
+            document.querySelector('.global-search-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        
+            // Reg-nr-logik
+            if (isRegNr(searchTerm)) {
+                const cleanRegNr = searchTerm.replace(/\s/g, '');
+                
+                const biluppgifterLink = `https://biluppgifter.se/fordon/${cleanRegNr}#vehicle-data`;
+                const carInfoLink = `https://car.info/sv-se/license-plate/S/${cleanRegNr}#attributes`;
+                
+                biluppgifterResultContainer.innerHTML = `
+                    <h4 class="internal-search-title">Fordonsuppslag:</h4>
+                    <div class="provider-card">
+                        <img src="https://biluppgifter.se/favicon/favicon.ico" alt="Biluppgifter.se" class="provider-card-logo">
+                        <div class="provider-card-content">
+                            <span class="provider-card-name">${cleanRegNr} (Biluppgifter)</span>
+                            <a href="${biluppgifterLink}" target="_blank" class="btn-provider-search">Visa</a>
+                        </div>
+                    </div>
+                    <div class="provider-card">
+                        <img src="https://car.info/favicon.ico" alt="Car.info" class="provider-card-logo">
+                        <div class="provider-card-content">
+                            <span class="provider-card-name">${cleanRegNr} (Car.info)</span>
+                            <a href="${carInfoLink}" target="_blank" class="btn-provider-search">Visa</a>
+                        </div>
+                    </div>
+                `;
+                biluppgifterResultContainer.style.display = 'block';
+        
+                document.getElementById('global-search-close-btn').addEventListener('click', () => { 
+                    globalSearchResults.style.display = 'none'; 
+                });
+                
+                globalSearchBtn.disabled = false;
+                return; 
+            }
+        
+            // Art.nr-sök logik
+            try {
+                // 1. Interna träffar
+                const searchTermNoSpace = searchTerm.replace(/\s/g, '');
+                const internalMatches = inventory.filter(item => {
+                    const itemServiceFilter = (item.service_filter || '').toUpperCase().replace(/\s/g, '');
+                    const itemName = (item.name || '').toUpperCase();
+                    return itemServiceFilter.includes(searchTermNoSpace) || itemName.includes(searchTerm);
+                });
+        
+                // 2. Bygg Interna Resultat (eller Tom-stat)
+                let internalHTML = '';
+                if (internalMatches.length > 0) {
+                    internalHTML = '<h4 class="internal-search-title">Hittades i ditt lager:</h4>';
+                    internalMatches.forEach(item => { 
+                        internalHTML += `<a href="#" class="internal-result-item" data-id="${item.id}"><div><strong>${item.service_filter}</strong> - ${item.name}</div><span>Antal: ${item.quantity}</span></a>`; 
+                    });
+                    internalResultsContainer.innerHTML = internalHTML;
+                } else {
+                    // DETTA ÄR DEN NYA "TOM-STAT"-LOGIKEN
+                    internalHTML = `
+                        <div class="empty-state" style="display: flex; padding: 20px; min-height: 100px; background-color: var(--bg-light); border-radius: 8px; margin-bottom: 10px;">
+                            <svg viewBox="0 0 24 24" fill="currentColor" style="width: 30px; height: 30px; margin-bottom: 10px; margin-right: 15px; flex-shrink: 0;"><use href="#empty-state-svg"></use></svg>
+                            <div style="text-align: left;">
+                                <h4 style="font-size: 1.1em; margin-bottom: 5px; margin-top: 0;">Inga träffar i ditt lager</h4>
+                                <p style="font-size: 0.9em; max-width: none; margin: 0;">Sökningen på "${searchTerm}" gav inga interna resultat.</p>
+                            </div>
+                        </div>
+                    `;
+                    internalResultsContainer.innerHTML = internalHTML;
+                    
+                    quickAddFromSearchBtn.innerHTML = `<span class="icon-span">add_circle</span>Lägg till "${searchTerm}" i lagret`;
+                    quickAddFromSearchBtn.setAttribute('data-search-term', searchTerm);
+                    internalResultsContainer.appendChild(quickAddFromSearchBtn);
+                }
+                internalResultsContainer.style.display = 'block'; // Visa ALLTID intern-containern
+        
+                // 3. Bygg Externa Resultat (ALLTID)
+                currentExternalLinks = [];
+                let externalHTML = '';
+                let hasDisclaimer = false;
+        
+                externalSearchProviders.forEach(provider => {
+                    const link = provider.linkGenerator(searchTerm);
+                    if (link) { 
+                        currentExternalLinks.push({ name: provider.name, link: link });
+                        if (provider.name.includes('Bildelsbasen')) hasDisclaimer = true;
+                        
+                        externalHTML += `
+                            <div class="provider-card">
+                                <img src="${provider.icon}" alt="${provider.name}" class="provider-card-logo">
+                                <div class="provider-card-content">
+                                    <span class="provider-card-name">${provider.name}</span>
+                                    <a href="${link}" target="_blank" class="btn-provider-search">Sök</a>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                         externalHTML += `
+                            <div class="provider-card disabled">
+                                <img src="${provider.icon}" alt="${provider.name}" class="provider-card-logo">
+                                <div class="provider-card-content">
+                                    <span class="provider-card-name">${provider.name}</span>
+                                    <a class="btn-provider-search">Sök</a>
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
+        
+                externalResultsContainer.innerHTML = externalHTML;
+                externalResultsContainer.style.display = 'grid'; 
+                if (externalHeader) externalHeader.style.display = 'flex'; 
+                exportLinksContainer.style.display = 'inline-block';
+        
+                if (hasDisclaimer) {
+                    searchDisclaimer.style.display = 'block';
+                }
+        
+                // 4. Återbind lyssnare
+                document.querySelectorAll('.internal-result-item').forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault(); 
+                        const itemId = e.currentTarget.getAttribute('data-id');
+                        scrollToAndHighlight(itemId);
+                        globalSearchResults.style.display = 'none';
+                    });
+                });
+                document.getElementById('global-search-close-btn').addEventListener('click', () => { 
+                    globalSearchResults.style.display = 'none'; 
+                });
         
             } catch (error) {
                 console.error("Fel vid global sökning: ", error);
@@ -2021,6 +1996,7 @@ async function handleGlobalSearch(searchTermOverride) {
         if(initialLoader) initialLoader.querySelector('p').textContent = 'Kritiskt fel vid initiering.';
     }
 });
+
 
 
 
