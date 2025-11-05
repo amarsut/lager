@@ -1236,6 +1236,26 @@ h3.collapsible-header:hover {
 #global-search-close-btn { position: absolute; top: -10px; right: -5px; background: var(--bg-medium); border-radius: 50%; width: 30px; height: 30px; border: none; font-size: 24px; color: var(--text-light); cursor: pointer; line-height: 1; z-index: 1001; }
 #global-search-close-btn:hover { color: var(--text-dark); background: var(--bg-dark); }
 
+@keyframes slideDownFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.global-search-results-box {
+    display: none; /* Dölj som standard */
+}
+
+.global-search-results-box.visible {
+    display: block; /* Visa när klassen finns */
+    animation: slideDownFadeIn 0.3s ease-out forwards;
+}
+
 .search-results-header {
     display: flex;
     justify-content: space-between;
