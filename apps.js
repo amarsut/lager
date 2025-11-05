@@ -433,7 +433,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     link.addEventListener('click', (e) => {
                         e.preventDefault(); 
                         const itemId = e.currentTarget.getAttribute('data-id');
-                        scrollToAndHighlight(itemId); // Starta scrollen
+                        scrollToAndHighlight(itemId, true); // Starta scrollen
                         
                         // --- NY KOD ---
                         // Vänta 500ms (0.5s) på att "smooth scroll" ska bli klar
@@ -2159,6 +2159,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if(initialLoader) initialLoader.querySelector('p').textContent = 'Kritiskt fel vid initiering.';
     }
 });
+
 
 
 
