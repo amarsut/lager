@@ -934,7 +934,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                   // Lägg till en klass för kategorin, t.ex. "category-service"
                   // Ersätter / med - för att få en giltig klass
-                  const categoryClass = (item.category || 'ovrigt').toLowerCase().replace('/', '-');
+                  const categoryClass = (item.category || 'ovrigt').toLowerCase().replace(/[\s\/]/g, '-');
                   card.classList.add('category-' + categoryClass);
             }
             const statusText = item.quantity > 0 ? 'I lager' : 'Slut';
@@ -2037,5 +2037,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if(initialLoader) initialLoader.querySelector('p').textContent = 'Kritiskt fel vid initiering.';
     }
 });
+
 
 
