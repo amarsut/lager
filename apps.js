@@ -26,7 +26,6 @@ if ('serviceWorker' in navigator) {
 
 document.addEventListener('DOMContentLoaded', () => {
     // --- NYTT: Skrolla till toppen vid omladdning ---
-    // Säkerställer att sidan startar högst upp
     if ('scrollRestoration' in history) {
         history.scrollRestoration = 'manual';
     }
@@ -111,6 +110,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const recentItemsList = document.getElementById('recent-items-list');
         const recentItemsEmpty = document.getElementById('recent-items-empty');
         
+        // --- NYTT: "Mest Värdefulla"-lista ---
+        const topValueList = document.getElementById('top-value-list');
+        const topValueEmpty = document.getElementById('top-value-empty');
+        
         // App-meny
         const appMenuBtn = document.getElementById('app-menu-btn');
         const appMenuModal = document.getElementById('app-menu-modal');
@@ -128,7 +131,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const fabAddBtn = document.getElementById('fab-add-btn');
         const metaThemeColor = document.querySelector('meta[name="theme-color"]');
         
-        // --- ÄNDRAD: Lade till badge för "Slut i lager" ---
         const badges = {
             service: document.getElementById('badge-service'),
             motorChassi: document.getElementById('badge-motor-chassi'),
@@ -218,7 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
       
-        function formatPrice(price) { return new Intl.NumberFormat('sv-SE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(price); }
+        function formatPrice(price) { return new Intl.NumberFormat('sv-SE', { style: 'currency', currency: 'SEK', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(price); }
         function generateAeroMLink(f) { if (!f) return null; const s = f.replace(/[\s-]/g, ''); return `https://aeromotors.se/sok?s=${s}&layered_id_feature_1586%5B%5D=3&sort_by=price.asc`; }
         function generateTrodoLink(f) { if (!f) return null; const s = f.replace(/[\s-]/g, ''); const q = encodeURIComponent(s); return `https://www.trodo.se/catalogsearch/result/premium?filter[quality_group]=2&product_list_dir=asc&product_list_order=price&q=${q}`; }
         function generateThansenLink(f) { if (!f) return null; const s = f.replace(/[\s-]/g, ''); const q = encodeURIComponent(s); return `https://www.thansen.se/search/?query=${q}`; }
@@ -327,7 +329,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     globalSearchResults.style.display = 'none'; 
                 });
                 
-                globalSearchResults.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                // --- ÄNDRAD: Skrollar till toppen av HELA containern ---
+                document.querySelector('.global-search-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
                 
                 globalSearchBtn.disabled = false;
                 return; 
@@ -343,10 +346,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 globalSearchResults.style.display = 'block';
                 currentExternalLinks = []; 
                 
-                globalSearchResults.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                // --- ÄNDRAD: Skrollar till toppen av HELA containern ---
+                document.querySelector('.global-search-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-                // 1. Interna resultat
-                const internalMatches = inventory.filter(item => (item.service_filter || '').toUpperCase().includes(searchTerm) || (item.name || '').toUpperCase().includes(searchTerm));
+                // --- ÄNDRAD: Sökning ignorerar mellanslag ---
+                const searchTermNoSpace = searchTerm.replace(/\s/g, '');
+
+                const internalMatches = inventory.filter(item => {
+                    const itemServiceFilter = (item.service_filter || '').toUpperCase().replace(/\s/g, '');
+                    const itemName = (item.name || '').toUpperCase();
+                    
+                    // Kollar både med och utan mellanslag för bästa matchning
+                    return itemServiceFilter.includes(searchTermNoSpace) || itemName.includes(searchTerm);
+                });
+                // --- SLUT ÄNDRING ---
+                
                 let internalHTML = '';
                 if (internalMatches.length > 0) {
                     internalHTML = '<h4 class="internal-search-title">Hittades i ditt lager:</h4>';
@@ -709,7 +723,34 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         
-        // --- ÄNDRAD: Uppdaterar "Slut i lager"-badgen ---
+        // --- NYTT: Renderar "Mest Värdefulla"-listan ---
+        function renderTopValueItems(currentInventory) {
+            const inStock = currentInventory.filter(item => item.quantity > 0);
+            
+            const valuedItems = inStock.map(item => ({
+                ...item,
+                totalValue: (item.price || 0) * (item.quantity || 0)
+            })).sort((a, b) => b.totalValue - a.totalValue);
+            
+            const top5 = valuedItems.slice(0, 5);
+            
+            if (top5.length === 0) {
+                topValueList.innerHTML = '';
+                topValueEmpty.style.display = 'block';
+            } else {
+                topValueEmpty.style.display = 'none';
+                let html = '';
+                top5.forEach(item => {
+                    html += `<a href="#" class="top-value-item" data-id="${item.id}">
+                                <span class="top-value-badge">${formatPrice(item.totalValue)}</span>
+                                <strong>${item.service_filter}</strong>
+                                <span>${item.name} (Antal: ${item.quantity})</span>
+                             </a>`;
+                });
+                topValueList.innerHTML = html;
+            }
+        }
+        
         function updateCategoryBadges(currentInventory) {
             const serviceItems = currentInventory.filter(i => i.category === 'Service' && i.quantity > 0);
             const motorItems = currentInventory.filter(i => (i.category === 'Motor/Chassi' || i.category === 'Övrigt' || !i.category) && i.quantity > 0);
@@ -766,7 +807,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return html;
         }
         
-        // --- NYTT: "Smart" kategoriväljare ---
         function guessCategoryFromName(name) {
             const lowerName = name.toLowerCase();
             const serviceWords = ['filter', 'olja', 'tändstift', 'bromsbelägg', 'bromsskiva', 'olja', 'glykol', 'spolarvätska', 'torkarblad', 'bromsok', 'glödstift'];
@@ -778,7 +818,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (motorWords.some(word => lowerName.includes(word))) {
                 return 'Motor/Chassi';
             }
-            return ''; // Default (låt användaren välja)
+            return '';
         }
 
         // --- SKAPA HTML FÖR RAD (DESKTOP) ---
@@ -814,7 +854,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span class="cell-copy-text">${escapeHTML(item.service_filter)}</span>
                 </span>
                 <span title="${safeName}">${escapeHTML(item.name)}</span>
-                <span>${formatPrice(item.price)} kr</span>
+                <span>${formatPrice(item.price)}</span>
                 <div class="quantity-cell">
                     <button class="qty-btn" onclick="adjustQuantity(${item.id}, -1, this); event.stopPropagation();">-</button>
                     <span>${item.quantity}</span>
@@ -833,7 +873,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return row;
         }
         
-        // --- NYTT: SKAPA HTML FÖR KORT (MOBIL) (ÄNDRAD) ---
+        // --- SKAPA HTML FÖR KORT (MOBIL) (ÄNDRAD) ---
         function createInventoryCard(item) {
             const card = document.createElement('div');
             card.className = 'artikel-kort';
@@ -864,7 +904,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="artikel-kort-body">
                     <div>
                         <div class="artikel-kort-label">Pris</div>
-                        <div class="artikel-kort-price">${formatPrice(item.price)} kr</div>
+                        <div class="artikel-kort-price">${formatPrice(item.price)}</div>
                     </div>
                     <div class="quantity-cell">
                         <button class="qty-btn" onclick="adjustQuantity(${item.id}, -1, this); event.stopPropagation();">-</button>
@@ -885,11 +925,9 @@ document.addEventListener('DOMContentLoaded', () => {
             return card;
         }
 
-        // --- ÄNDRAD: `renderInventory` fyller nu BÅDE desktop-listor och mobil-listor ---
         function renderInventory(data) {
             closeRowActionPopover(); 
             
-            // Nollställ båda list-typerna
             serviceArtiklarLista.innerHTML = '';
             motorChassiArtiklarLista.innerHTML = '';
             andraMarkenArtiklarLista.innerHTML = '';
@@ -907,7 +945,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const motorChassiArtiklar = iLager.filter(item => item.category === 'Motor/Chassi' || item.category === 'Övrigt' || !item.category);
             const andraMarkenArtiklar = iLager.filter(item => item.category === 'Andra Märken');
 
-            // Fyll båda listorna
             serviceArtiklar.forEach(item => {
                 serviceArtiklarLista.appendChild(createInventoryRow(item, false));
                 serviceArtiklarKortLista.appendChild(createInventoryCard(item));
@@ -1214,6 +1251,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 renderDashboard(inventory); 
                 updateCategoryBadges(inventory);
                 renderRecentItems(inventory);
+                renderTopValueItems(inventory); // <-- NYTT: Uppdatera "Mest Värdefulla"
                 
                 const now = new Date();
                 updateSyncStatus('ok', `Synkroniserad ${now.toLocaleTimeString('sv-SE')}`);
@@ -1396,7 +1434,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // --- ÄNDRAD: Fokuserar på 'Namn' istället för 'Art.nr' ---
         window.handleEdit = function(id, isOrderMode = false) {
             const item = inventory.find(i => i.id === id);
             if (item) {
@@ -1427,7 +1464,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 editModal.style.display = 'flex';
                 
-                // --- ÄNDRAD FOKUS ---
                 setTimeout(() => (isOrderMode ? document.getElementById('edit-quantity') : document.getElementById('edit-name')).focus(), 50);
             }
         }
@@ -1479,12 +1515,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 // --- NYTT: Visuell feedback ---
                 const element = buttonEl.closest('.artikel-rad, .artikel-kort');
                 if (element) {
-                    element.classList.remove('flash-quantity'); // Ta bort ifall den redan finns
-                    // Måste vänta en frame för att CSS-animationen ska starta om
+                    element.classList.remove('flash-quantity');
                     requestAnimationFrame(() => {
                         element.classList.add('flash-quantity');
                     });
-                    // Ta bort klassen efter att animationen är klar
                     element.addEventListener('animationend', () => {
                         element.classList.remove('flash-quantity');
                     }, { once: true });
@@ -1650,7 +1684,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
 
-            const toolbarAddBtn = document.getElementById('toolbar-add-btn');
             if (toolbarAddBtn) {
                 toolbarAddBtn.addEventListener('click', () => {
                     if (!addFormWrapper.classList.contains('open')) {
@@ -1769,6 +1802,19 @@ document.addEventListener('DOMContentLoaded', () => {
             if (recentItemsList) {
                 recentItemsList.addEventListener('click', (e) => {
                     const itemLink = e.target.closest('.recent-item');
+                    if (itemLink) {
+                        e.preventDefault();
+                        const itemId = itemLink.getAttribute('data-id');
+                        closeAppMenu();
+                        setTimeout(() => scrollToAndHighlight(itemId), 250);
+                    }
+                });
+            }
+            
+            // --- NYTT: Lyssnare för "Mest Värdefulla"-listan ---
+            if (topValueList) {
+                topValueList.addEventListener('click', (e) => {
+                    const itemLink = e.target.closest('.top-value-item');
                     if (itemLink) {
                         e.preventDefault();
                         const itemId = itemLink.getAttribute('data-id');
