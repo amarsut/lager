@@ -865,7 +865,6 @@ h3.collapsible-header:hover { background-color: var(--bg-medium); border-radius:
     max-height: 90vh; 
     display: flex;
     flex-direction: column;
-    overflow: hidden; /* För att hantera .modal-body scroll */
     transition: background-color 0.3s, border-color 0.3s; 
 }
 .modal.open .modal-content {
