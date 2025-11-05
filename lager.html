@@ -2184,6 +2184,35 @@
     overflow-x: hidden;
   }
 }
+@media (max-width: 768px) {
+    
+    /* --- 
+      NYTT: DEFINITIV FIX FÖR HORISONTELL SCROLLNING PÅ KORT
+      Dessa regler tvingar text och reg-skyltar att radbrytas.
+    --- */
+
+    /* 1. Tvingar header-texten (art.nr och namn) att radbrytas */
+    .artikel-kort-artnr,
+    .artikel-kort-name {
+        white-space: normal !important; /* Tillåt radbrytning */
+        word-break: break-all; /* Bryt superlånga artikelnummer */
+    }
+
+    /* 2. Tvingar anteckningar (notes) att radbrytas */
+    .artikel-kort-footer .notes-cell {
+        display: block !important; /* Byt från flex till block */
+        white-space: normal !important; /* Tillåt radbrytning */
+    }
+
+    /* 3. Tvingar reg-skyltar (plate-tag) att radbrytas */
+    .artikel-kort-footer .plate-tag {
+        display: inline-block !important; /* Byt från flex till block */
+        flex-shrink: 1 !important; /* Tillåt krympning */
+        margin-bottom: 4px; /* Lite luft om de radbryts */
+    }
+
+    /* --- SLUT PÅ FIX --- */
+}
 </style>
 
 <link rel="manifest" href="./manifest.json">
@@ -2629,6 +2658,7 @@
 
 </body>
 </html>
+
 
 
 
