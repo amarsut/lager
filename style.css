@@ -536,13 +536,11 @@ h3.collapsible-header:hover {
     box-shadow: 0 4px 8px rgba(0,0,0,0.03), inset 3px 0 0 var(--primary-color);
 }
 .artikel-rad:last-child { border-bottom: none; }
-.artikel-rad.selected { 
-    background-color: rgba(79, 70, 229, 0.1); 
-    box-shadow: 0 2px 4px rgba(0,0,0,0.02), inset 3px 0 0 var(--primary-dark);
-}
-.artikel-rad.selected:hover { 
-    background-color: rgba(79, 70, 229, 0.15); 
-    transform: none;
+.artikel-rad.selected,
+.artikel-rad.selected:hover { /* Samma stil oavsett hover */
+    background-color: var(--primary-light); /* Använd din ljuslila temafärg */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02), inset 4px 0 0 var(--primary-dark); /* Tjockare kant */
+    transform: none; /* Ingen lyft-effekt när den är vald */
 }
 
 /* --- MOBIL KORT-VY --- */
