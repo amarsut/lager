@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jobbplanerare v14.1 - Pro</title> <link rel="preconnect" href="https://fonts.googleapis.com">
+    <title>Jobbplanerare v14.1 - Pro</title> 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
@@ -42,14 +43,14 @@
         
         /* NY: Visuella "Pro"-justeringar för mörkt läge */
         [data-theme="dark"] {
-            --bg-color: #111113; /* Mörkare, djupare bakgrund */
-            --content-bg: #1A1B1E; /* Subtil nyans för innehåll */
-            --border-color: #2D2E33; /* Mjukare kantlinjer */
-            --text-color: #f2f2f7;
-            --text-color-light: #8e8e93;
-            --shadow-focus: 0 0 0 3px rgba(10, 132, 255, 0.25);
-            --prio-row-bg: rgba(255, 69, 58, 0.1);
-        }
+		    --bg-color: #111113; /* Mörkare, djupare bakgrund */
+		    --content-bg: #1A1B1E; /* Subtil nyans för innehåll */
+		    --border-color: #2D2E33; /* Mjukare kantlinjer */
+		    --text-color: #f2f2f7;
+		    --text-color-light: #8e8e93;
+		    --shadow-focus: 0 0 0 3px rgba(10, 132, 255, 0.25);
+		    --prio-row-bg: rgba(255, 69, 58, 0.1); /* <--- NU ÄR DET RÄTT */
+		}
 
         /* --- Globala stilar --- */
         /* ... (Inga ändringar här) ... */
@@ -263,7 +264,8 @@
 </head>
 <body>
 
-            <symbol id="icon-car" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.125-.504 1.125-1.125V14.25m-17.25 4.5l1.17-3.873a1.125 1.125 0 011.086-.928h10.088c.563 0 1.042.404 1.086.928l1.17 3.873m0 0H6.125M6.125 18.75L4.875 15m14.25 0l-1.25-3.75m-13.5 3.75V15m14.25 0V15M6.125 15H17.875m0 0V9a2.25 2.25 0 00-2.25-2.25H8.25A2.25 2.25 0 006 9v6z" /></symbol>
+    <svg style="display: none;">
+        <symbol id="icon-car" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.125-.504 1.125-1.125V14.25m-17.25 4.5l1.17-3.873a1.125 1.125 0 011.086-.928h10.088c.563 0 1.042.404 1.086.928l1.17 3.873m0 0H6.125M6.125 18.75L4.875 15m14.25 0l-1.25-3.75m-13.5 3.75V15m14.25 0V15M6.125 15H17.875m0 0V9a2.25 2.25 0 00-2.25-2.25H8.25A2.25 2.25 0 006 9v6z" /></symbol>
         <symbol id="icon-pencil" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" /></symbol>
         <symbol id="icon-list" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></symbol>
         
