@@ -1,363 +1,390 @@
 <!DOCTYPE html>
-<html lang="sv" data-theme="light"> <head>
+<html lang="sv" data-theme="dark"> <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jobbplanerare v9 - The Timeline Edition</title>
+    <title>Jobbplanerare v10 - Kommandocentralen</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
-        /* --- Jobbplanerare v9: "The Timeline Edition" --- */
+        /* --- Jobbplanerare v10: "Kommandocentralen" --- */
         
-        /* --- FÄRGVARIABLER --- */
+        /* --- FÄRGVARIABLER (NY PALETT) --- */
         :root {
-            --primary-color: #007aff;
-            --primary-hover: #0056b3;
-            --danger-color: #ff3b30;
-            --success-color: #34c759;
-            --warning-color: #ff9500;
-            --info-color: #007aff;
-            --purple-color: #5856d6;
+            --primary-color: #0a84ff;
+            --primary-hover: #339aff;
+            --primary-light: rgba(10, 132, 255, 0.1);
             
-            --bg-color: #f7f8fa;
-            --content-bg: #ffffff;
-            --sidebar-bg: #ffffff;
-            --header-bg: rgba(255, 255, 255, 0.85);
-            --header-border: #e5e7eb;
-            --border-color: #f0f0f1;
+            --success-color: #30d158;
+            --warning-color: #ff9f0a;
+            --danger-color: #ff453a;
+            --info-color: #64d2ff;
+            --purple-color: #af52de;
+            
+            --bg-color: #f7f8fa; /* Ljus bakgrund */
+            --content-bg: #ffffff; /* Vitt innehåll */
+            --border-color: #e5e7eb; /* Ljusare kantlinje */
+            
+            --nav-bg: #1c1c1e; /* Mörk nav-meny */
+            --nav-text: #8e8e93;
+            --nav-text-hover: #ffffff;
+            --nav-active-bg: #3a3a3c;
             
             --text-color: #1a1a1a;
             --text-color-light: #6b7280;
-            --text-color-header: #333333;
             
-            --sidebar-width: 300px;
+            --nav-width: 68px;
             --header-height: 70px;
-            --border-radius: 8px;
+            --border-radius: 10px;
             
             --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
             --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --shadow-border: 0 0 0 1px var(--border-color);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-focus: 0 0 0 3px var(--primary-light);
             
-            --transition-speed: 0.3s;
+            --transition-speed: 0.2s;
+            --transition-speed-fast: 0.15s;
         }
+        
         [data-theme="dark"] {
             --primary-color: #0a84ff; --primary-hover: #339aff;
-            --danger-color: #ff453a; --success-color: #30d158;
-            --warning-color: #ff9f0a; --info-color: #0a84ff;
-            --purple-color: #5e5ce6;
-            --bg-color: #1c1c1e; --content-bg: #2c2c2e;
-            --sidebar-bg: #2c2c2e; --header-bg: rgba(44, 44, 46, 0.85);
-            --header-border: #3a3a3c; --border-color: #3a3a3c;
-            --text-color: #f2f2f7; --text-color-light: #8e8e93;
-            --text-color-header: #f2f2f7;
-            --shadow-border: 0 0 0 1px var(--border-color);
+            
+            --bg-color: #161618; /* Mörkare bakgrund */
+            --content-bg: #1c1c1e; /* Något ljusare innehåll */
+            --border-color: #3a3a3c; /* Mörk kantlinje */
+
+            --nav-bg: #1c1c1e; /* Samma som content i mörkt läge */
+            --nav-text: #8e8e93;
+            --nav-text-hover: #ffffff;
+            --nav-active-bg: #0a84ff; /* Använder primärfärg för aktiv */
+            
+            --text-color: #f2f2f7;
+            --text-color-light: #8e8e93;
+            
+            --shadow-focus: 0 0 0 3px rgba(10, 132, 255, 0.25);
         }
 
-        /* --- NY: Snyggare Scrollbars (Visuellt #11) --- */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 3px; }
+        /* --- Scrollbars (Matchar temat) --- */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-color-light); }
         ::-webkit-scrollbar-track { background: transparent; }
-        [data-theme="dark"] ::-webkit-scrollbar-thumb { background: #4a4a4e; }
 
-        /* --- IKONER & GLOBALA STILAR --- */
+        /* --- Globala stilar & Ikoner --- */
         .icon { width: 1.25rem; height: 1.25rem; }
-        .icon-sm { width: 1rem; height: 1rem; }
-        .icon-lg { width: 3.5rem; height: 3.5rem; opacity: 0.5; }
-        .icon-btn {
-            background: transparent; border: none; cursor: pointer;
-            padding: 0.5rem; border-radius: 6px; color: var(--text-color-light);
-            display: flex; align-items: center; justify-content: center;
-        }
-        .icon-btn:hover { background-color: rgba(0,0,0,0.05); color: var(--text-color); }
-        [data-theme="dark"] .icon-btn:hover { background-color: rgba(255,255,255,0.1); }
+        .icon-sm { width: 1.125rem; height: 1.125rem; }
+        .icon-lg { width: 3rem; height: 3rem; opacity: 0.5; }
 
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             margin: 0; padding: 0;
             height: 100vh;
             overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
-        /* --- LAYOUT & HEADER --- */
-        .app-layout {
-            display: grid;
-            grid-template-columns: 0 1fr;
-            grid-template-rows: var(--header-height) 1fr;
-            grid-template-areas: "header header" "sidebar main";
+        /* --- NY LAYOUT: Kommandocentral --- */
+        .app-container {
+            display: flex;
             height: 100vh;
-            transition: grid-template-columns var(--transition-speed) ease;
         }
-        .app-layout.sidebar-open { grid-template-columns: var(--sidebar-width) 1fr; }
 
-        .app-header {
-            grid-area: header; background-color: var(--header-bg);
-            border-bottom: 1px solid var(--header-border);
-            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-            padding: 0 1.5rem; display: flex; align-items: center;
-            justify-content: space-between; z-index: 10;
+        /* --- NY NAV-MENY (v10) --- */
+        .app-nav {
+            width: var(--nav-width);
+            background-color: var(--nav-bg);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1rem 0;
+            flex-shrink: 0;
+            z-index: 100;
         }
-        .header-left { display: flex; align-items: center; gap: 1rem; }
-        .header-title { font-size: 1.5rem; font-weight: 700; margin: 0; color: var(--text-color-header); }
-        .header-right { display: flex; align-items: center; gap: 0.75rem; }
-
-        .button {
-            padding: 0.625rem 1rem; border: none; border-radius: 6px;
-            font-size: 0.95rem; font-weight: 600; cursor: pointer;
-            transition: all 0.2s ease; display: inline-flex;
-            align-items: center; justify-content: center;
-            gap: 0.5rem; box-shadow: var(--shadow-sm);
+        .nav-logo {
+            width: 36px; height: 36px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.25rem;
+            text-decoration: none;
+            flex-shrink: 0;
         }
-        .button.primary { background-color: var(--primary-color); color: var(--white); }
-        .button.primary:hover { background-color: var(--primary-hover); box-shadow: var(--shadow-md); }
-        .button.success { background-color: var(--success-color); color: var(--white); }
-        .button.secondary { background-color: var(--content-bg); color: var(--text-color); border: 1px solid var(--border-color); }
-        .button.secondary:hover { background-color: var(--bg-color); }
-        .button.clear-filter { background: transparent; color: var(--primary-color); font-weight: 600; box-shadow: none; padding: 0.25rem 0.5rem; }
+        .nav-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 2rem;
+            width: 100%;
+        }
+        .nav-button {
+            background: transparent;
+            border: none;
+            color: var(--nav-text);
+            width: 44px;
+            height: 44px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all var(--transition-speed-fast) ease;
+            position: relative; /* För tooltip */
+        }
+        .nav-button:hover {
+            color: var(--nav-text-hover);
+            background-color: var(--nav-active-bg);
+        }
+        .nav-button.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        [data-theme="light"] .nav-button.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        [data-theme="dark"] .nav-button.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
         
-        .add-job-btn .btn-text { display: inline; }
-        @media (max-width: 768px) {
-            .add-job-btn { padding: 0.75rem; border-radius: 50%; width: 44px; height: 44px; }
-            .add-job-btn .btn-text { display: none; }
-            .header-title { display: none; }
+        /* NY: Tooltips */
+        .nav-button[data-tooltip]::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            left: calc(var(--nav-width) + 0.5rem);
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: #1c1c1e;
+            color: white;
+            padding: 0.35rem 0.65rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all var(--transition-speed-fast) ease;
+            box-shadow: var(--shadow-md);
+            z-index: 110;
+        }
+        .nav-button[data-tooltip]:hover::after {
+            opacity: 1;
+            visibility: visible;
+            transition-delay: 0.3s;
         }
         
-        #themeToggle {
-            background: transparent; border: none; cursor: pointer;
-            color: var(--text-color-light);
-            padding: 0.5rem; border-radius: 6px;
-        }
-        #themeToggle:hover { color: var(--text-color); background-color: rgba(0,0,0,0.05); }
-        [data-theme="dark"] #themeToggle:hover { background-color: rgba(255,255,255,0.1); }
+        .nav-footer { margin-top: auto; }
         #themeToggle .icon-moon { display: none; }
         #themeToggle .icon-sun { display: block; }
         [data-theme="dark"] #themeToggle .icon-moon { display: block; }
         [data-theme="dark"] #themeToggle .icon-sun { display: none; }
 
-        /* --- SIDOPANEL & KALENDER --- */
-        .sidebar-panel {
-            grid-area: sidebar; background-color: var(--sidebar-bg);
-            border-right: 1px solid var(--border-color);
-            padding: 1.5rem; overflow-y: auto;
-            visibility: hidden; opacity: 0;
-            transition: all var(--transition-speed) ease;
+        /* --- NY Huvudyta (v10) --- */
+        .app-main {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
         }
-        .app-layout.sidebar-open .sidebar-panel { visibility: visible; opacity: 1; }
-        .sidebar-panel h3 {
-            font-size: 0.75rem; text-transform: uppercase;
-            font-weight: 600; color: var(--text-color-light);
-            padding: 0 0.5rem; margin: 1.5rem 0 0.75rem 0;
-        }
-        
-        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding: 0 0.25rem; }
-        .calendar-header h4 { margin: 0; font-size: 1rem; font-weight: 600; text-transform: capitalize; }
-        .calendar-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); margin-bottom: 0.5rem; }
-        .calendar-weekdays div { text-align: center; font-size: 0.75rem; font-weight: 600; color: var(--text-color-light); }
-        .calendar-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
-        .calendar-day {
-            display: flex; justify-content: center; align-items: center;
-            height: 36px; font-weight: 500; font-size: 0.875rem;
-            border-radius: 50%; cursor: pointer; position: relative;
-            transition: all 0.2s ease;
-        }
-        .calendar-day:not(.empty):hover { background-color: var(--bg-color); }
-        
-        /* NY: Tydligare kalender-fokus (Visuellt #7) */
-        .calendar-day.today {
-            font-weight: 700;
-            border: 2px solid var(--primary-color);
-            opacity: 0.8;
-        }
-        .calendar-day.selected {
-            opacity: 1; background-color: var(--primary-color) !important;
-            color: var(--white) !important; font-weight: 700;
-            border-color: var(--primary-color) !important;
-        }
-        
-        .job-indicator { position: absolute; bottom: 5px; width: 5px; height: 5px; border-radius: 50%; }
-        .job-indicator.single { background-color: var(--info-color); }
-        .job-indicator.multiple { background-color: var(--danger-color); }
-        .today .job-indicator { outline: 1px solid var(--primary-color); outline-offset: 1px; }
-        [data-theme="dark"] .today .job-indicator { outline-color: var(--white); }
-        .selected .job-indicator { background-color: var(--white); }
-        
-        #goToTodayBtn {
-            width: 100%; margin-top: 1rem; padding: 0.5rem;
-            font-weight: 500; font-size: 0.875rem;
-        }
-
-        .dashboard { display: grid; grid-template-columns: 1fr; gap: 1rem; margin-top: 1.5rem; }
-        .stat-card { background-color: var(--bg-color); padding: 1.25rem; border-radius: var(--border-radius); box-shadow: var(--shadow-border); }
-        .stat-card-title { font-size: 0.8rem; font-weight: 600; color: var(--text-color-light); margin: 0 0 0.5rem 0; text-transform: uppercase; }
-        .stat-card-value { font-size: 1.5rem; font-weight: 700; margin: 0; line-height: 1.2; }
-        .stat-card-value.profit-positive { color: var(--success-color); }
-        .stat-card-value.profit-negative { color: var(--danger-color); }
-        .stat-card-value.actionable { color: var(--warning-color); }
-
-        /* --- HUVUDINNEHÅLL --- */
-        .main-content {
-            grid-area: main;
-            padding: 2rem;
-            overflow-y: auto;
-        }
-        @media (max-width: 768px) {
-            .main-content { padding: 1rem; }
-        }
-        
         .main-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1.5rem;
-            flex-wrap: wrap;
-            gap: 1rem;
+            padding: 0 2rem;
+            height: var(--header-height);
+            border-bottom: 1px solid var(--border-color);
+            background-color: var(--content-bg);
+            flex-shrink: 0;
+            z-index: 50;
         }
         .main-header h2 { font-size: 1.5rem; font-weight: 600; margin: 0; }
+        .main-controls { display: flex; align-items: center; gap: 1rem; }
         
-        .main-controls {
-            display: flex;
-            gap: 1rem;
-            align-items: center;
-            flex-wrap: wrap;
+        .main-content {
+            flex-grow: 1;
+            overflow: auto; /* Ändrad till auto för att tillåta scroll i kanban */
+            padding: 2rem;
         }
-
-        /* --- NY: View Switcher (Tidslinje/Status) (Funktion #3) --- */
-        .view-switcher {
-            display: inline-flex;
-            background-color: var(--bg-color);
-            border-radius: 6px;
-            padding: 0.25rem;
-            border: 1px solid var(--border-color);
+        .content-wrapper {
+            max-width: 1400px;
+            margin: 0 auto;
+            height: 100%; /* För kanban */
         }
-        .view-switcher button {
-            background: transparent; border: none;
-            padding: 0.375rem 0.75rem;
-            border-radius: 4px;
-            font-weight: 600; font-size: 0.875rem;
-            color: var(--text-color-light);
-            cursor: pointer;
-            transition: all 0.2s ease;
+        
+        /* Vy-specifik wrapper-justering */
+        .content-wrapper.kanban-mode {
+            max-width: 100%; /* Full bredd för kanban */
+            padding-bottom: 2rem;
         }
-        .view-switcher button.active {
-            background-color: var(--content-bg);
-            color: var(--text-color);
-            box-shadow: var(--shadow-sm);
-        }
-
-        /* --- NY: Filter Toggle (Funktion #5) --- */
-        .filter-toggle {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.875rem;
-            font-weight: 500;
-            color: var(--text-color-light);
-            cursor: pointer;
-        }
-        .filter-toggle input { width: 1rem; height: 1rem; }
-
+        
+        /* NY: Sökfält v10 */
         .search-wrapper {
             display: flex; align-items: center;
-            background: var(--content-bg);
+            background: var(--bg-color);
             border: 1px solid var(--border-color);
-            border-radius: 6px; padding-left: 0.75rem;
-            box-shadow: var(--shadow-sm);
+            border-radius: 8px; padding-left: 0.75rem;
         }
         .search-wrapper .icon { color: var(--text-color-light); }
-        #searchBar { border: none; padding: 0.75rem; font-size: 0.95rem; outline: none; border-radius: 6px; background: transparent; color: var(--text-color); }
+        #searchBar { 
+            border: none; padding: 0.65rem 0.75rem; font-size: 0.95rem; 
+            outline: none; border-radius: 8px; 
+            background: transparent; color: var(--text-color);
+            min-width: 250px;
+        }
+        #searchBar:focus-within { border-color: var(--primary-color); }
         
-        /* --- Grupperad Lista (Status-vy) --- */
-        .job-group details { margin-top: 1rem; }
-        .job-group details[open] summary { border-bottom: 1px solid var(--border-color); }
-        .job-group summary {
-            display: flex; align-items: center; gap: 0.75rem;
-            padding: 0.5rem 0.25rem; margin-top: 1rem;
-            cursor: pointer; list-style: none;
+        /* NY: Filter-knapp (ersätter checkbox) */
+        .button {
+            padding: 0.625rem 1rem; border: none; border-radius: 8px;
+            font-size: 0.9rem; font-weight: 600; cursor: pointer;
+            transition: all 0.2s ease; display: inline-flex;
+            align-items: center; justify-content: center;
+            gap: 0.5rem;
         }
-        .job-group summary::-webkit-details-marker { display: none; }
-        .job-group summary::before {
-            content: ''; display: inline-block; width: 1rem; height: 1rem;
-            mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>');
-            mask-size: contain; mask-repeat: no-repeat; mask-position: center;
-            background-color: var(--text-color);
-            transition: transform 0.2s ease;
-        }
-        .job-group details[open] summary::before { transform: rotate(90deg); }
-        .job-group summary h3 { font-size: 1.125rem; font-weight: 600; margin: 0; color: var(--text-color); }
-        .job-group summary .count-badge {
-            font-size: 0.8rem; font-weight: 600; padding: 0.125rem 0.5rem;
-            background-color: var(--bg-color); border: 1px solid var(--border-color);
-            color: var(--text-color-light); border-radius: 99px;
-        }
-        
-        /* --- STATUS & PRIO --- */
-        .status-badge { display: inline-block; padding: 0.25em 0.6em; font-size: 0.8rem; font-weight: 600; border-radius: 99px; }
-        .status-badge.status-offererad { background-color: #f3f4f6; color: #374151; }
-        .status-badge.status-bokad { background-color: #eef5ff; color: var(--info-color); }
-        .status-badge.status-pagaende { background-color: #fff7e6; color: var(--warning-color); }
-        .status-badge.status-klar { background-color: #eef2ff; color: var(--purple-color); }
-        .status-badge.status-fakturerad { background-color: #e6f7ec; color: var(--success-color); }
-        .status-badge.status-avbokad { background-color: #fdeeee; color: var(--danger-color); text-decoration: line-through; }
-        [data-theme="dark"] .status-badge.status-offererad { background-color: #4a4a4e; color: #f2f2f7; }
-        [data-theme="dark"] .status-badge.status-bokad { background-color: #3a3a3c; color: var(--info-color); }
-        [data-theme="dark"] .status-badge.status-pagaende { background-color: #573a00; color: var(--warning-color); }
-        [data-theme="dark"] .status-badge.status-klar { background-color: #393873; color: var(--purple-color); }
-        [data-theme="dark"] .status-badge.status-fakturerad { background-color: #1e462b; color: var(--success-color); }
-        [data-theme="dark"] .status-badge.status-avbokad { background-color: #5c1f1a; color: var(--danger-color); }
-        .prio-icon { color: var(--danger-color); display: flex; align-items: center; justify-content: center; }
+        .button.secondary { background-color: var(--content-bg); color: var(--text-color); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
+        .button.secondary:hover { background-color: var(--bg-color); }
+        .button.clear-filter { background: transparent; color: var(--primary-color); font-weight: 600; box-shadow: none; padding: 0.25rem 0.5rem; }
 
-        /* --- Tabell-design v9 (Kompakt & Expanderbar) --- */
-        .content-section { background-color: var(--content-bg); border-radius: var(--border-radius); box-shadow: var(--shadow-border), var(--shadow-sm); overflow: hidden; }
+        /* NY: Floating Action Button (FAB) */
+        #fabAddJob {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 56px;
+            height: 56px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            box-shadow: var(--shadow-lg);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            z-index: 1000;
+        }
+        #fabAddJob:hover {
+            background-color: var(--primary-hover);
+            transform: scale(1.05);
+        }
+        #fabAddJob .icon { width: 1.75rem; height: 1.75rem; }
+
+        /* --- NY: Vy-hantering --- */
+        .view-container {
+            display: none; /* Dold som standard */
+        }
+        .view-container.active {
+            display: block; /* Visas av JS */
+            animation: fadeIn 0.3s ease;
+            height: 100%; /* För kanban */
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- NY: Tabell-design (v10) --- */
+        .table-container { 
+            background-color: var(--content-bg); 
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+            overflow: hidden; 
+            box-shadow: var(--shadow-sm);
+        }
         .table-wrapper { overflow-x: auto; }
-        #jobbOversikt { width: 100%; border-collapse: collapse; }
+        #jobbOversikt { 
+            width: 100%; 
+            border-collapse: separate; /* VIKTIGT */
+            border-spacing: 0; /* VIKTIGT */
+        }
         
-        /* NY: Sticky Header (Visuellt #2) */
         #jobbOversikt thead {
             background-color: var(--bg-color);
             position: sticky; top: 0; z-index: 1;
         }
         
-        /* NY: Kompaktare celler (Visuellt #12 / Krav 3) */
         #jobbOversikt th, #jobbOversikt td {
-            padding: 0.8rem 1.25rem; /* Mindre padding */
+            padding: 0.9rem 1.25rem; /* Lite mer luft */
             text-align: left; vertical-align: middle;
             white-space: nowrap;
             border-bottom: 1px solid var(--border-color);
         }
         
-        #jobbOversikt th { font-size: 0.8rem; font-weight: 600; color: var(--text-color-light); text-transform: uppercase; letter-spacing: 0.05em; }
-        
-        /* NY: Färgkodade Rader (Visuellt #1) */
-        #jobbOversikt tbody tr[data-status] {
-            border-left: 4px solid transparent;
-            transition: background-color 0.2s ease, border-left-color 0.2s ease;
+        #jobbOversikt th { 
+            font-size: 0.75rem; font-weight: 600; 
+            color: var(--text-color-light); 
+            text-transform: uppercase; letter-spacing: 0.05em; 
         }
-        #jobbOversikt tbody tr[data-status="offererad"] { border-left-color: #9ca3af; }
-        #jobbOversikt tbody tr[data-status="bokad"] { border-left-color: var(--info-color); }
-        #jobbOversikt tbody tr[data-status="pagaende"] { border-left-color: var(--warning-color); }
-        #jobbOversikt tbody tr[data-status="klar"] { border-left-color: var(--purple-color); }
-        #jobbOversikt tbody tr[data-status="fakturerad"] { border-left-color: var(--success-color); }
-        #jobbOversikt tbody tr[data-status="avbokad"] { border-left-color: var(--danger-color); opacity: 0.6; }
         
-        /* NY: Tydligare Hovring (Visuellt #8) */
+        /* NY: Rad-design (v10) */
+        #jobbOversikt tbody tr {
+            transition: background-color var(--transition-speed-fast) ease;
+        }
         #jobbOversikt tbody tr[data-status]:hover {
             background-color: var(--bg-color);
-            box-shadow: 0 1px 3px 0 rgba(0,0,0,0.05);
+        }
+        #jobbOversikt tbody tr:last-child td { border-bottom: none; }
+        
+        /* NY: Status-brickor (v10) */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.25em 0.75em;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border-radius: 99px;
+            text-transform: capitalize;
+        }
+        .status-badge::before { /* Färg-prick */
+            content: '';
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            background-color: currentColor;
         }
         
-        #jobbOversikt tbody tr:last-child td { border-bottom: none; }
+        /* Mer subtila färger */
+        .status-badge.status-offererad { background-color: rgba(107, 114, 128, 0.1); color: #4b5563; }
+        .status-badge.status-bokad { background-color: var(--primary-light); color: var(--primary-color); }
+        .status-badge.status-pagaende { background-color: rgba(255, 159, 10, 0.1); color: var(--warning-color); }
+        .status-badge.status-klar { background-color: rgba(175, 82, 222, 0.1); color: var(--purple-color); }
+        .status-badge.status-fakturerad { background-color: rgba(48, 209, 88, 0.1); color: var(--success-color); }
+        .status-badge.status-avbokad { background-color: rgba(255, 69, 58, 0.1); color: var(--danger-color); }
+
+        [data-theme="dark"] .status-badge.status-offererad { background-color: rgba(142, 142, 147, 0.2); color: #9a9a9f; }
+        [data-theme="dark"] .status-badge.status-bokad { background-color: rgba(10, 132, 255, 0.2); color: #339aff; }
+        [data-theme="dark"] .status-badge.status-pagaende { background-color: rgba(255, 159, 10, 0.2); color: #ff9f0a; }
+        [data-theme="dark"] .status-badge.status-klar { background-color: rgba(175, 82, 222, 0.2); color: #bf5af2; }
+        [data-theme="dark"] .status-badge.status-fakturerad { background-color: rgba(48, 209, 88, 0.2); color: #30d158; }
+        [data-theme="dark"] .status-badge.status-avbokad { background-color: rgba(255, 69, 58, 0.2); color: #ff453a; }
+
+        .prio-icon { color: var(--danger-color); display: flex; align-items: center; justify-content: center; }
         #jobbOversikt .profit { font-weight: 600; }
         #jobbOversikt .profit.positive { color: var(--success-color); }
         #jobbOversikt .profit.negative { color: var(--danger-color); }
-        #jobbOversikt .action-col { text-align: right; white-space: nowrap; }
-        #jobbOversikt th.prio-col, #jobbOversikt td.prio-col { width: 1%; padding-right: 0; }
         
+        /* NY: Action-knappar (v10) */
+        .icon-btn {
+            background: transparent; border: none; cursor: pointer;
+            padding: 0.5rem; border-radius: 6px; color: var(--text-color-light);
+            display: inline-flex; align-items: center; justify-content: center;
+        }
+        .icon-btn:hover { background-color: var(--bg-color); color: var(--text-color); }
+        
+        #jobbOversikt .action-col { text-align: right; white-space: nowrap; }
         #jobbOversikt .action-col .icon-btn { opacity: 0; transition: opacity 0.2s ease; }
         #jobbOversikt tbody tr:hover .action-col .icon-btn { opacity: 1; }
 
-        /* NY: Expanderbar kommentar-rad (Krav 1 / Funktion #2) */
+        /* NY: Expanderbar kommentar-rad (v10) */
         #jobbOversikt .expand-col { width: 1%; padding-left: 1rem; padding-right: 0.5rem; }
         #jobbOversikt .expand-btn {
             width: 24px; height: 24px;
@@ -366,12 +393,8 @@
         }
         #jobbOversikt .expand-btn.expanded { transform: rotate(90deg); }
         
-        #jobbOversikt .comment-row {
-            display: none; /* Dold som standard */
-        }
-        #jobbOversikt .comment-row.expanded {
-            display: table-row; /* Visas när expanderad */
-        }
+        #jobbOversikt .comment-row { display: none; }
+        #jobbOversikt .comment-row.expanded { display: table-row; }
         #jobbOversikt .comment-cell {
             padding: 1rem 1.5rem 1.5rem 2.5rem;
             border-bottom: 1px solid var(--border-color);
@@ -385,59 +408,110 @@
             font-size: 0.875rem; color: var(--text-color);
         }
         
-        /* NY: Animerad "Tom Vy" (Visuellt #9) */
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        #emptyState {
+        /* NY: Tom Vy (v10) */
+        .empty-state {
             text-align: center; padding: 4rem 2rem;
             color: var(--text-color-light); display: none;
             background-color: var(--content-bg);
             border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
             animation: fadeIn 0.3s ease;
         }
-        #emptyState h3 { font-size: 1.25rem; color: var(--text-color); margin: 1.5rem 0 0.5rem 0; }
-
-        /* --- MODAL --- */
-        .modal-backdrop { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); display: none; justify-content: center; align-items: center; z-index: 1000; opacity: 0; transition: opacity 0.2s ease-in-out; }
-        .modal-backdrop.show { opacity: 1; }
-        .modal-content { background-color: var(--content-bg); padding: 2rem; border-radius: var(--border-radius); box-shadow: var(--shadow-md); width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; position: relative; transform: scale(0.95); opacity: 0; transition: all 0.2s ease-in-out; }
-        .modal-backdrop.show .modal-content { transform: scale(1); opacity: 1; }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1.5rem; }
-        .modal-header h2 { margin: 0; font-size: 1.25rem; }
-        .modal-close-btn { background: transparent; border: none; font-size: 2rem; font-weight: 300; color: var(--text-color-light); cursor: pointer; line-height: 1; padding: 0; }
+        .empty-state.show { display: block; }
+        .empty-state h3 { font-size: 1.25rem; color: var(--text-color); margin: 1.5rem 0 0.5rem 0; }
         
-        /* NY: Bättre Modal-layout (Visuellt #5) */
+        /* NY: Knapp-stilar (v10) */
+        .button.primary { background-color: var(--primary-color); color: white; box-shadow: var(--shadow-sm); }
+        .button.primary:hover { background-color: var(--primary-hover); box-shadow: var(--shadow-md); }
+        .button.success { background-color: var(--success-color); color: white; box-shadow: var(--shadow-sm); }
+        .button.danger { background-color: var(--danger-color); color: white; box-shadow: var(--shadow-sm); }
+
+        /* --- NY: Modal-design (v10) --- */
+        .modal-backdrop { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background-color: rgba(0, 0, 0, 0.6); 
+            display: none; 
+            align-items: flex-start; /* Starta från toppen */
+            justify-content: center; 
+            z-index: 1000; 
+            opacity: 0; 
+            transition: opacity 0.2s ease-in-out; 
+            padding-top: 5vh; /* Utrymme från toppen */
+        }
+        .modal-backdrop.show { opacity: 1; }
+        
+        .modal-content { 
+            background-color: var(--content-bg); 
+            border-radius: var(--border-radius); 
+            box-shadow: var(--shadow-lg); 
+            width: 90%; max-width: 640px; 
+            max-height: 90vh; 
+            overflow: hidden; /* Hanteras av .modal-body */
+            display: flex;
+            flex-direction: column;
+            transform: scale(0.98) translateY(-10px); 
+            opacity: 0; 
+            transition: all 0.2s ease-in-out; 
+        }
+        .modal-backdrop.show .modal-content { transform: scale(1) translateY(0); opacity: 1; }
+        
+        .modal-header { 
+            display: flex; justify-content: space-between; align-items: center; 
+            border-bottom: 1px solid var(--border-color); 
+            padding: 1.25rem 1.5rem;
+            flex-shrink: 0;
+        }
+        .modal-header h2 { margin: 0; font-size: 1.125rem; font-weight: 600; }
+        .modal-close-btn { 
+            background: transparent; border: none; 
+            font-size: 1.5rem; color: var(--text-color-light); 
+            cursor: pointer; line-height: 1; padding: 0.25rem;
+            display: flex; align-items: center; justify-content: center;
+        }
+        
+        .modal-body {
+            padding: 1.5rem;
+            overflow-y: auto;
+        }
+        
+        /* NY: Formulär-design (v10) */
         #jobModalForm {
             display: grid;
-            grid-template-columns: 1fr 1fr; /* Två kolumner */
+            grid-template-columns: 1fr 1fr;
             gap: 1.25rem;
         }
         .form-group-split { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
         .full-width { grid-column: 1 / -1; }
         
-        /* Standardgrupper */
-        .form-group { display: flex; flex-direction: column; }
-        .form-group label { font-weight: 600; margin-bottom: 0.5rem; font-size: 0.875rem; }
+        .form-group { display: flex; flex-direction: column; gap: 0.5rem; }
+        .form-group label { font-weight: 600; font-size: 0.875rem; }
         .form-group input, .form-group textarea, .form-group select {
             padding: 0.75rem; border: 1px solid var(--border-color);
-            border-radius: 6px; font-size: 1rem;
+            border-radius: 8px; font-size: 0.95rem;
             font-family: 'Inter', sans-serif;
             transition: border-color 0.2s, box-shadow 0.2s;
-            box-shadow: var(--shadow-sm);
-            background-color: var(--content-bg); color: var(--text-color);
+            background-color: var(--bg-color); /* Bakgrund på fält */
+            color: var(--text-color);
         }
+        [data-theme="dark"] .form-group input, [data-theme="dark"] .form-group textarea, [data-theme="dark"] .form-group select {
+             background-color: #2c2c2e; /* Mörkare fält */
+        }
+        
         .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
-            outline: none; border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(0,123,255,0.25);
+            outline: none; 
+            border-color: var(--primary-color);
+            box-shadow: var(--shadow-focus);
+            background-color: var(--content-bg);
         }
+        
         .form-group-inline {
-            grid-column: 2 / 3; /* Placeras i högerkolumnen */
-            align-self: end; /* Centrera med fältet bredvid */
+            grid-column: 2 / 3;
+            align-self: end;
             display: flex; align-items: center; gap: 0.75rem;
-            background-color: var(--bg-color); padding: 0.75rem;
-            border-radius: 6px;
+            padding-bottom: 0.75rem; /* Justera höjd */
         }
         .form-group-inline label { margin: 0; }
-        .form-group-inline input { width: auto; height: auto; }
+        .form-group-inline input { width: 1.15rem; height: 1.15rem; }
         
         .form-group-profit {
             grid-column: 1 / -1; text-align: right;
@@ -449,141 +523,338 @@
             grid-column: 1 / -1; display: flex;
             justify-content: space-between; gap: 0.75rem;
             margin-top: 1.5rem; border-top: 1px solid var(--border-color);
-            padding-top: 1.5rem;
+            padding: 1.25rem 1.5rem;
+            background-color: var(--bg-color);
+            flex-shrink: 0;
         }
         .modal-actions-right { display: flex; gap: 0.75rem; }
 
         /* --- Toast --- */
-        .toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); padding: 0.75rem 1.5rem; background-color: var(--text-color); color: var(--white); border-radius: 6px; box-shadow: var(--shadow-md); z-index: 2000; font-weight: 500; transition: bottom 0.5s ease; }
+        .toast { 
+            position: fixed; 
+            top: -100px; /* Startar ovanför */
+            left: 50%; 
+            transform: translateX(-50%); 
+            padding: 0.75rem 1.5rem; 
+            background-color: #333; 
+            color: white; 
+            border-radius: 8px; 
+            box-shadow: var(--shadow-lg); 
+            z-index: 2000; 
+            font-weight: 500; 
+            transition: top 0.4s ease-out; 
+        }
+        .toast.show { top: 20px; } /* Glider ner */
         [data-theme="dark"] .toast { background-color: #f2f2f7; color: #1c1c1e; }
-        .toast.show { bottom: 20px; }
         .toast.success { background-color: var(--success-color); color: var(--white); }
         .toast.danger { background-color: var(--danger-color); color: var(--white); }
+
+        /* --- NY: Översikt/Dashboard-vy (Fas 2) --- */
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+        .stat-card {
+            background-color: var(--content-bg);
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.2s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+        .stat-card-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-color-light);
+            margin: 0 0 0.5rem 0;
+            text-transform: uppercase;
+        }
+        .stat-card-value {
+            font-size: 2.25rem; /* Större text */
+            font-weight: 700;
+            margin: 0;
+            line-height: 1.2;
+        }
+        .stat-card-value.profit-positive { color: var(--success-color); }
+        .stat-card-value.profit-negative { color: var(--danger-color); }
+        
+        .stat-card-highlight .stat-card-value {
+             color: var(--warning-color);
+        }
+        
+        /* --- NY: Kanban-tavla (Fas 3) --- */
+        #view-board {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .kanban-board {
+            display: grid;
+            grid-auto-columns: 300px; /* Bredd på kolumner */
+            grid-auto-flow: column;
+            gap: 1rem;
+            overflow-x: auto;
+            padding-bottom: 1rem;
+            height: 100%; /* Fyller upp .main-content */
+        }
+        .kanban-column {
+            background-color: var(--bg-color);
+            border-radius: var(--border-radius);
+            display: flex;
+            flex-direction: column;
+            max-height: 100%;
+        }
+        .kanban-column-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .kanban-column-header h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 0;
+            text-transform: capitalize;
+        }
+        .kanban-job-count {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-color-light);
+            background-color: var(--content-bg);
+            border: 1px solid var(--border-color);
+            padding: 0.125rem 0.5rem;
+            border-radius: 99px;
+        }
+        
+        .kanban-column-jobs {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            min-height: 100px; /* Utrymme att släppa på */
+        }
+        
+        .kanban-card {
+            background-color: var(--content-bg);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+            padding: 1rem;
+            cursor: grab;
+            transition: all 0.2s ease;
+        }
+        .kanban-card:hover {
+            box-shadow: var(--shadow-md);
+            border-color: var(--primary-color);
+        }
+        .kanban-card-customer {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--text-color);
+        }
+        .kanban-card-regnr {
+            font-weight: 500;
+            font-size: 0.875rem;
+            color: var(--text-color-light);
+            margin-top: 0.125rem;
+        }
+        .kanban-card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--bg-color);
+        }
+        .kanban-card-date {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-color-light);
+        }
+        .kanban-card-profit {
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        .kanban-card .prio-icon {
+            color: var(--danger-color);
+            display: flex;
+        }
+        
+        /* Dra-och-släpp-stilar */
+        .kanban-card.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+            transform: rotate(3deg);
+            box-shadow: var(--shadow-lg);
+        }
+        .kanban-column-jobs.drag-over {
+            background-color: var(--primary-light);
+            border-radius: 8px;
+        }
     </style>
 </head>
 <body>
 
     <svg width="0" height="0" style="position:absolute;display:none;">
-        <symbol id="icon-plus" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></symbol>
-        <symbol id="icon-pencil" viewBox="0 0 20 20" fill="currentColor"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" /></symbol>
-        <symbol id="icon-trash" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></symbol>
+        <symbol id="icon-logo-p" xmlns="http://www.w.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M11.35 3.836c-1.061 1.061-1.66 2.503-1.66 4.025 0 3.223 2.612 5.836 5.836 5.836 1.522 0 2.964-.598 4.025-1.66m-8.05 3.32a6.963 6.963 0 00-4.025 1.66C6.446 18.06 5.845 19.502 5.845 21H3.75c0-3.223 2.612-5.836 5.836-5.836 1.522 0 2.964.598 4.025 1.66m8.05-3.32a6.963 6.963 0 00-4.025-1.66c-1.061-1.061-2.503-1.66-4.025-1.66-3.223 0-5.836 2.612-5.836 5.836 0 1.522.598 2.964 1.66 4.025m3.32-8.05a6.963 6.963 0 001.66-4.025C13.664 6.446 15.106 5.845 16.628 5.845c3.223 0 5.836 2.612 5.836 5.836 0 1.522-.598 2.964-1.66 4.025" /></symbol>
+        <symbol id="icon-dashboard" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v16.5h16.5" /><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75h16.5M3.75 12h16.5m-16.5 5.25h16.5M3.75 6.75h16.5m-16.5 5.25h16.5M3.75 15h16.5M3.75 18.75h16.5M20.25 3v16.5" /><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 20.25V3.75" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 20.25V3.75" /><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 20.25V3.75" /></symbol>
+        <symbol id="icon-list" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></symbol>
+        <symbol id="icon-kanban" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21M9 17.25v-1.007a3 3 0 00-.879-2.122L7.5 13.5m0-3L7.5 9.75m0-3L7.5 6m0 0l.879-1.122A3 3 0 019 3.75v1.007M9 17.25h6M9 3.75h6m0 0v1.007a3 3 0 01.879 2.122L16.5 9m0 3l.879 1.122a3 3 0 00.879 2.122V17.25m0-1.007v-1.007a3 3 0 00-.879-2.122L16.5 13.5m-3 0h3m-3 0h-3" /></symbol>
+        <symbol id="icon-calendar" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3.75 8.25h16.5M3.75 12h16.5m-16.5 3.75h16.5M4.5 1.5h15A2.25 2.25 0 0121.75 3.75v16.5A2.25 2.25 0 0119.5 22.5h-15A2.25 2.25 0 012.25 20.25V3.75A2.25 2.25 0 014.5 1.5z" /></symbol>
+        <symbol id="icon-settings" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" /></symbol>
+        <symbol id="icon-plus" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></symbol>
+        <symbol id="icon-pencil" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" /></symbol>
+        <symbol id="icon-trash" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12.578 0a48.108 48.108 0 01-3.478-.397m15.42 0A48.1 48.1 0 0012 5.11M4.772 5.79L4.772 4.102a2.25 2.25 0 012.25-2.25h1.5a2.25 2.25 0 012.25 2.25v1.688M4.772 5.79l-.175 2.457a1.125 1.125 0 001.12 1.228H18.28a1.125 1.125 0 001.12-1.228l-.175-2.457m0 0l-1.096-1.547a.562.562 0 00-.923 0l-1.096 1.547M19.228 5.79l-1.096-1.547a.562.562 0 01-.923 0l-1.096 1.547" /></symbol>
         <symbol id="icon-empty" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" /></symbol>
-        <symbol id="icon-prev" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></symbol>
-        <symbol id="icon-next" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></symbol>
         <symbol id="icon-chevron-right" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></symbol>
         <symbol id="icon-search" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></symbol>
-        <symbol id="icon-menu" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" /></symbol>
-        <symbol id="icon-flag" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 6a3 3 0 013-3h10a1 1 0 01.8 1.6L14.25 8l2.55 3.4A1 1 0 0116 13H6a1 1 0 00-1 1v3a1 1 0 11-2 0V6z" clip-rule="evenodd" /></symbol>
-        <symbol id="icon-sun" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M12 12a5 5 0 100-10 5 5 0 000 10z" /></symbol>
+        <symbol id="icon-flag" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3v1.5M3 21v-6m0 0l2.77-.693a9 9 0 016.208.682l.108.054a9 9 0 006.086.71l3.114-.732a48.524 48.524 0 01-.005-10.499l-3.11.732a9 9 0 01-6.085-.711l-.108-.054a9 9 0 00-6.208-.682L3 4.5M3 15V4.5" /></symbol>
+        <symbol id="icon-sun" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-6.364-.386l1.591-1.591M3 12H.75m.386-6.364l1.591 1.591M12 12a4.5 4.5 0 100-9 4.5 4.5 0 000 9z" /></symbol>
         <symbol id="icon-moon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" /></symbol>
+        <symbol id="icon-close" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></symbol>
     </svg>
 
-    <div class="app-layout" id="appLayout">
+    <div class="app-container">
         
-        <header class="app-header">
-            <div class="header-left">
-                <button class="icon-btn" id="sidebarToggleBtn" title="Växla meny" aria-label="Växla meny">
-                    <svg class="icon" viewBox="0 0 24 24"><use href="#icon-menu"></use></svg>
+        <nav class="app-nav">
+            <a href="#" class="nav-logo" title="Jobbplanerare v10">P</a>
+            
+            <div class="nav-group">
+                <button class="nav-button active" id="nav-timeline" data-view="timeline" data-tooltip="Tidslinje">
+                    <svg class="icon" viewBox="0 0 24 24"><use href="#icon-list"></use></svg>
                 </button>
-                <h1 class="header-title">Planerare Pro</h1>
+                <button class="nav-button" id="nav-board" data-view="board" data-tooltip="Tavla (Kanban)">
+                    <svg class="icon" viewBox="0 0 24 24"><use href="#icon-kanban"></use></svg>
+                </button>
+                <button class="nav-button" id="nav-calendar" data-view="calendar" data-tooltip="Kalender">
+                    <svg class="icon" viewBox="0 0 24 24"><use href="#icon-calendar"></use></svg>
+                </button>
+                <button class="nav-button" id="nav-dashboard" data-view="dashboard" data-tooltip="Översikt">
+                    <svg class="icon" viewBox="0 0 24 24"><use href="#icon-dashboard"></use></svg>
+                </button>
             </div>
-            <div class="header-right">
-                <button id="themeToggle" class="icon-btn" title="Växla tema" aria-label="Växla tema">
+            
+            <div class="nav-footer nav-group">
+                <button class="nav-button" id="themeToggle" data-tooltip="Växla tema">
                     <svg class="icon icon-sun" viewBox="0 0 24 24"><use href="#icon-sun"></use></svg>
                     <svg class="icon icon-moon" viewBox="0 0 24 24"><use href="#icon-moon"></use></svg>
                 </button>
-                <button class="button primary add-job-btn" id="addJobBtn">
-                    <svg class="icon-sm" fill="currentColor" viewBox="0 0 20 20"><use href="#icon-plus"></use></svg>
-                    <span class="btn-text">Lägg till jobb</span>
-                </button>
-            </div>
-        </header>
+                </div>
+        </nav>
 
-        <aside class="sidebar-panel">
-            <div class="calendar">
-                <div class="calendar-header">
-                    <button class="icon-btn" id="prevMonthBtn" title="Föregående månad" aria-label="Föregående månad"><svg class="icon" viewBox="0 0 24 24"><use href="#icon-prev"></use></svg></button>
-                    <h4 id="currentMonthYear"></h4>
-                    <button class="icon-btn" id="nextMonthBtn" title="Nästa månad" aria-label="Nästa månad"><svg class="icon" viewBox="0 0 24 24"><use href="#icon-next"></use></svg></button>
-                </div>
-                <div class="calendar-weekdays">
-                    <div>M</div><div>T</div><div>O</div><div>T</div><div>F</div><div>L</div><div>S</div>
-                </div>
-                <div class="calendar-days" id="calendarDays"></div>
-                <button class="button secondary" id="goToTodayBtn">Gå till idag</button>
-            </div>
+        <main class="app-main">
             
-            <h3>Global Statistik</h3>
-            <section class="dashboard" id="dashboard-stats">
-                <div class="stat-card">
-                    <h3 class="stat-card-title">Jobb att Fakturera</h3>
-                    <p class="stat-card-value actionable" id="stat-invoice-count">0</p>
-                </div>
-                <div class="stat-card">
-                    <h3 class="stat-card-title">Obetald Summa</h3>
-                    <p class="stat-card-value actionable" id="stat-invoice-sum">0 kr</p>
-                </div>
-                <div class="stat-card">
-                    <h3 class="stat-card-title">Totalt antal jobb</h3>
-                    <p class="stat-card-value" id="stat-jobs">0</p>
-                </div>
-                <div class="stat-card">
-                    <h3 class="stat-card-title">Total Vinst</h3>
-                    <p class="stat-card-value" id="stat-profit">0 kr</p>
-                </div>
-            </section>
-        </aside>
-
-        <main class="main-content">
-            <div class="main-header">
+            <header class="main-header">
                 <div>
-                    <h2 id="tableTitle">Planerade Jobb</h2>
+                    <h2 id="viewTitle">Tidslinje</h2>
                     <button class="button clear-filter" id="clearDayFilterBtn" style="display: none; margin-top: 0.5rem;">
-                        &times; Rensa dagfilter
+                        &times; Rensa dagfilter (Detta är en platshållare)
                     </button>
                 </div>
                 
                 <div class="main-controls">
-                    <div class="view-switcher" id="viewSwitcher">
-                        <button class="active" data-view="timeline" title="Visa som en tidslinje (närmast först)">Tidslinje</button>
-                        <button data-view="status" title="Gruppera efter status">Status</button>
-                    </div>
-                    
-                    <label class="filter-toggle" id="filterCompletedToggle">
-                        <input type="checkbox" id="showCompletedCheckbox">
-                        Visa slutförda
-                    </label>
-
                     <div class="search-wrapper">
                         <svg class="icon" viewBox="0 0 24 24"><use href="#icon-search"></use></svg>
-                        <input type="search" id="searchBar" placeholder="Sök kund, regnr, kommentar...">
+                        <input type="search" id="searchBar" placeholder="Sök jobb...">
                     </div>
+                    
+                    <button class="button secondary" id="filterToggleBtn" style="display: none;">
+                        <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678a1 1 0 01.917.917C21.768 6.545 22 9.245 22 12s-.232 5.455-.678 8.083a1 1 0 01-.917.917C17.455 21.768 14.755 22 12 22s-5.455-.232-8.083-.678a1 1 0 01-.917-.917C2.232 17.455 2 14.755 2 12s.232-5.455.678-8.083a1 1 0 01.917-.917C6.545 2.232 9.245 2 12 2z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 12a3 3 0 100-6 3 3 0 000 6z" /></svg>
+                        <span>Filter</span>
+                    </button>
+                </div>
+            </header>
+
+            <div class="main-content">
+                <div class="content-wrapper" id="contentWrapper">
+                    
+                    <div class="view-container active" id="view-timeline">
+                        <div class="table-container" id="jobListContainer">
+                            </div>
+                        <div class="empty-state" id="emptyStateTimeline">
+                            <svg class="icon-lg" viewBox="0 0 24 24"><use href="#icon-empty"></use></svg>
+                            <h3 id="emptyStateTitleTimeline">Du har inga jobb</h3>
+                            <p id="emptyStateTextTimeline">Klicka på "+" för att börja.</p>
+                        </div>
+                    </div>
+
+                    <div class="view-container" id="view-board">
+                        <div class="kanban-board" id="kanbanBoardContainer">
+                            </div>
+                        <div class="empty-state" id="emptyStateBoard">
+                            <svg class="icon-lg" viewBox="0 0 24 24"><use href="#icon-kanban"></use></svg>
+                            <h3>Inga jobb att visa</h3>
+                            <p>Klicka på "+" för att lägga till jobb. De dyker upp här grupperade efter status.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="view-container" id="view-calendar">
+                        <div class="empty-state show">
+                            <svg class="icon-lg" viewBox="0 0 24 24"><use href="#icon-calendar"></use></svg>
+                            <h3>Fullskärms-kalender</h3>
+                            <p>Den här vyn är under utveckling. Här kommer du se en stor månad/vecko-vy med alla dina jobb.</p>
+                        </div>
+                    </div>
+
+                    <div class="view-container" id="view-dashboard">
+                        <div class="stat-grid" style="display: none;">
+                            <div class="stat-card stat-card-highlight">
+                                <h3 class="stat-card-title">Jobb att Fakturera</h3>
+                                <p class="stat-card-value" id="stat-invoice-count">0</p>
+                            </div>
+                            <div class="stat-card stat-card-highlight">
+                                <h3 class="stat-card-title">Obetald Summa</h3>
+                                <p class="stat-card-value" id="stat-invoice-sum">0 kr</p>
+                            </div>
+                            <div class="stat-card">
+                                <h3 class="stat-card-title">Totalt antal jobb</h3>
+                                <p class="stat-card-value" id="stat-jobs">0</p>
+                            </div>
+                            <div class="stat-card">
+                                <h3 class="stat-card-title">Total Vinst</h3>
+                                <p class="stat-card-value"id="stat-profit">0 kr</p>
+                            </div>
+                        </div>
+                        
+                        <div class="empty-state" id="dashboardEmptyState">
+                            <svg class="icon-lg" viewBox="0 0 24 24"><use href="#icon-dashboard"></use></svg>
+                            <h3>Ingen data att visa</h3>
+                            <p>När du börjar lägga till jobb kommer din statistik att visas här.</p>
+                        </div>
+                    </div>
+
                 </div>
             </div>
 
-            <div id="jobListContainer">
-                </div>
-
-            <div id="emptyState">
-                <svg class="icon-lg" viewBox="0 0 24 24"><use href="#icon-empty"></use></svg>
-                <h3 id="emptyStateTitle">Du har inga jobb</h3>
-                <p id="emptyStateText">Klicka på "+" för att börja.</p>
-            </div>
         </main>
     </div>
+
+    <button id="fabAddJob" title="Lägg till nytt jobb (N)">
+        <svg class="icon" viewBox="0 0 24 24"><use href="#icon-plus"></use></svg>
+    </button>
 
     <div id="jobModal" class="modal-backdrop">
         <div class="modal-content">
             <div class="modal-header">
                 <h2 id="modalTitle">Lägg till nytt jobb</h2>
-                <button class="modal-close-btn" id="modalCloseBtn" aria-label="Stäng modal">&times;</button>
+                <button class="modal-close-btn" id="modalCloseBtn" aria-label="Stäng modal">
+                    <svg class="icon" viewBox="0 0 24 24"><use href="#icon-close"></use></svg>
+                </button>
             </div>
             
-            <form id="jobModalForm">
+            <form id="jobModalForm" class="modal-body">
                 <input type="hidden" id="jobId">
                 
                 <div class="form-group"><label for="status">Status</label><select id="status" required><option value="offererad">Offererad</option><option value="bokad" selected>Bokad</option><option value="pagaende">Pågående</option><option value="klar">Klar</option><option value="fakturerad">Fakturerad</option><option value="avbokad">Avbokad</option></select></div>
-                <div class="form-group-inline"><input type="checkbox" id="prio" style="width: 1.25rem; height: 1.25rem;"><label for="prio">Hög Prioritet</label></div>
+                <div class="form-group-inline"><label for="prio">Hög Prioritet</label><input type="checkbox" id="prio"></div>
 
                 <div class="form-group-split">
                     <div class="form-group"><label for="datum">Datum</label><input type="date" id="datum" required></div>
@@ -602,34 +873,44 @@
 
                 <div class="form-group full-width"><label for="kommentarer">Offerter / Övriga kommentarer</label><textarea id="kommentarer" rows="4"></textarea></div>
                 
-                <div class="modal-actions">
-                    <div class="modal-actions-left">
-                        <button type="button" class="button secondary" id="modalDuplicateBtn">Duplicera</button>
-                    </div>
-                    <div class="modal-actions-right">
-                        <button type="button" class="button secondary" id="modalCancelBtn">Avbryt</button>
-                        <button type="submit" class="button secondary" id="modalSaveAndNewBtn">Spara & Ny</button>
-                        <button type="submit" class="button success" id="modalSaveBtn">Spara Jobb</button>
-                    </div>
-                </div>
             </form>
+            <div class="modal-actions">
+                <div class="modal-actions-left">
+                    <button type="button" class="button secondary" id="modalDuplicateBtn">Duplicera</button>
+                </div>
+                <div class="modal-actions-right">
+                    <button type="button" class="button secondary" id="modalCancelBtn">Avbryt</button>
+                    <button type="submit" class="button primary" id="modalSaveBtn" form="jobModalForm">Spara Jobb</button>
+                </div>
+            </div>
         </div>
     </div>
     
     <div id="toastNotification" class="toast"></div>
 
     <script>
-        // --- GLOBALA KONSTANTER (Funktion #18) ---
+        // --- GLOBALA KONSTANTER (v10) ---
         const STATUS_TEXT = {
             'pagaende': 'Pågående', 'bokad': 'Bokad', 'klar': 'Klar', 
             'offererad': 'Offererad', 'fakturerad': 'Fakturerad', 'avbokad': 'Avbokad'
         };
-        const STATUS_ORDER = ['pagaende', 'bokad', 'klar', 'offererad', 'fakturerad', 'avbokad'];
+        const STATUS_ORDER = ['offererad', 'bokad', 'pagaende', 'klar', 'fakturerad', 'avbokad'];
         const formatCurrency = (num) => `${num.toLocaleString('sv-SE')} kr`;
         const formatDate = (dateString) => {
             if (!dateString) return 'Okänt datum';
             const d = new Date(dateString);
-            return d.toLocaleString('sv-SE', { dateStyle: 'short', timeStyle: 'short' });
+            return d.toLocaleString('sv-SE', { 
+                month: 'long', 
+                day: 'numeric',
+                hour: '2-digit', 
+                minute: '2-digit'
+            });
+        };
+        // NY: Kort datumformat för Kanban-kort
+        const formatShortDate = (dateString) => {
+             if (!dateString) return '';
+            const d = new Date(dateString);
+            return d.toLocaleDateString('sv-SE', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
         };
         const toLocalDateString = (isoDate) => {
             const d = new Date(isoDate + 'T00:00:00');
@@ -645,63 +926,56 @@
         
         document.addEventListener('DOMContentLoaded', function() {
             
-            // --- Globalt Tillstånd (State) (Funktion #15) ---
+            // --- Globalt Tillstånd (State) (v10) ---
             let allJobs = [];
-            let currentViewDate = new Date();
-            let selectedDate = null;
             let currentSearchTerm = "";
-            let currentViewMode = 'timeline'; // NY: 'timeline' eller 'status'
-            let showCompleted = false; // NY: Visa slutförda/avbokade
-            let expandedJobIds = new Set(); // NY: Håller reda på expanderade rader
+            let currentView = 'timeline'; // 'timeline', 'board', 'calendar', 'dashboard'
+            let showCompleted = false; // Filter
+            let expandedJobIds = new Set();
             const today = new Date();
             const todayString = today.toISOString().split('T')[0];
 
-            // --- DOM-element ---
+            // --- DOM-element (v10) ---
             const docElement = document.documentElement;
-            const appLayout = document.getElementById('appLayout');
+            const appNav = document.querySelector('.app-nav');
+            const viewContainers = document.querySelectorAll('.view-container');
+            const viewTitle = document.getElementById('viewTitle');
+            const contentWrapper = document.getElementById('contentWrapper');
+            
+            // Tidslinje-vy
             const jobListContainer = document.getElementById('jobListContainer');
-            const emptyState = document.getElementById('emptyState');
-            const emptyStateTitle = document.getElementById('emptyStateTitle');
-            const emptyStateText = document.getElementById('emptyStateText');
-            const tableTitle = document.getElementById('tableTitle');
-            const clearDayFilterBtn = document.getElementById('clearDayFilterBtn');
-            const searchBar = document.getElementById('searchBar');
-            const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
-            const themeToggle = document.getElementById('themeToggle');
-            const toast = document.getElementById('toastNotification');
-
-            // NYA Vyer & Filter
-            const viewSwitcher = document.getElementById('viewSwitcher');
-            const filterCompletedToggle = document.getElementById('filterCompletedToggle');
-            const showCompletedCheckbox = document.getElementById('showCompletedCheckbox');
-
-            // Kalender
-            const calendarDays = document.getElementById('calendarDays');
-            const currentMonthYear = document.getElementById('currentMonthYear');
-            const prevMonthBtn = document.getElementById('prevMonthBtn');
-            const nextMonthBtn = document.getElementById('nextMonthBtn');
-            const goToTodayBtn = document.getElementById('goToTodayBtn');
-
-            // Dashboard (Globalt)
+            const emptyStateTimeline = document.getElementById('emptyStateTimeline');
+            const emptyStateTitleTimeline = document.getElementById('emptyStateTitleTimeline');
+            const emptyStateTextTimeline = document.getElementById('emptyStateTextTimeline');
+            
+            // Kanban-vy (NY)
+            const kanbanBoardContainer = document.getElementById('kanbanBoardContainer');
+            const emptyStateBoard = document.getElementById('emptyStateBoard');
+            
+            // Dashboard (NY)
+            const dashboardEmptyState = document.getElementById('dashboardEmptyState');
             const statJobs = document.getElementById('stat-jobs');
             const statProfit = document.getElementById('stat-profit');
             const statInvoiceCount = document.getElementById('stat-invoice-count');
             const statInvoiceSum = document.getElementById('stat-invoice-sum');
+
+            const searchBar = document.getElementById('searchBar');
+            const themeToggle = document.getElementById('themeToggle');
+            const toast = document.getElementById('toastNotification');
             
             // Modal
             const jobModal = document.getElementById('jobModal');
             const jobModalForm = document.getElementById('jobModalForm');
             const modalTitle = document.getElementById('modalTitle');
             const modalSaveBtn = document.getElementById('modalSaveBtn');
-            const modalSaveAndNewBtn = document.getElementById('modalSaveAndNewBtn');
-            const modalDuplicateBtn = document.getElementById('modalDuplicateBtn'); // NY
-            const addJobBtn = document.getElementById('addJobBtn');
+            const modalDuplicateBtn = document.getElementById('modalDuplicateBtn');
+            const fabAddJob = document.getElementById('fabAddJob');
             const modalCloseBtn = document.getElementById('modalCloseBtn');
             const modalCancelBtn = document.getElementById('modalCancelBtn');
             
             // Modal Fält
             const modalJobId = document.getElementById('jobId');
-            const modalStatus = document.getElementById('status'); // NY
+            const modalStatus = document.getElementById('status');
             const modalKundpris = document.getElementById('kundpris');
             const modalUtgifter = document.getElementById('utgifter');
             const modalVinstKalkyl = document.getElementById('vinstKalkyl');
@@ -717,36 +991,34 @@
                 toast.className = `toast show ${type}`;
                 toastTimer = setTimeout(() => { toast.className = 'toast'; }, 3000);
             }
+            
+            // --- NY: Vy-hantering (v10) ---
+            function switchView(viewId) {
+                currentView = viewId;
+                
+                appNav.querySelector('.nav-button.active').classList.remove('active');
+                appNav.querySelector(`.nav-button[data-view="${viewId}"]`).classList.add('active');
+                
+                const viewName = appNav.querySelector(`.nav-button.active`).dataset.tooltip;
+                viewTitle.textContent = viewName;
+                
+                viewContainers.forEach(container => {
+                    container.classList.toggle('active', container.id === `view-${viewId}`);
+                });
+                
+                // Justera content-wrapper för kanban
+                contentWrapper.classList.toggle('kanban-mode', viewId === 'board');
+                
+                expandedJobIds.clear();
+                renderApp();
+            }
 
             // --- Huvud-renderingsfunktion ---
             function renderApp() {
                 loadJobsFromStorage();
-                renderCalendar();
                 
                 let jobsToDisplay = [...allJobs];
-                let filterType = 'all';
-
-                // 1. Filtrera på Kalender (Månad)
-                const year = currentViewDate.getFullYear();
-                const month = (currentViewDate.getMonth() + 1).toString().padStart(2, '0');
-                jobsToDisplay = jobsToDisplay.filter(job => 
-                    job.datum && job.datum.startsWith(`${year}-${month}`)
-                );
-                tableTitle.textContent = `Jobb för ${currentViewDate.toLocaleString('sv-SE', { month: 'long', year: 'numeric' })}`;
-                clearDayFilterBtn.style.display = 'none';
-                filterType = 'month';
-
-                // 2. Filtrera på Kalender (Dag)
-                if (selectedDate) {
-                    jobsToDisplay = jobsToDisplay.filter(job => 
-                        job.datum && job.datum.startsWith(selectedDate)
-                    );
-                    tableTitle.textContent = `Jobb för ${toLocalDateString(selectedDate)}`;
-                    clearDayFilterBtn.style.display = 'inline-flex';
-                    filterType = 'day';
-                }
-
-                // 3. Filtrera på Sökning
+                
                 if (currentSearchTerm) {
                     jobsToDisplay = jobsToDisplay.filter(job => {
                         const term = currentSearchTerm.toLowerCase();
@@ -758,209 +1030,99 @@
                         );
                     });
                 }
-                
-                // NY: Välj vilken vy som ska ritas upp (Funktion #1)
-                if (currentViewMode === 'timeline') {
-                    renderTimelineTable(jobsToDisplay, filterType);
-                    filterCompletedToggle.style.display = 'flex'; // Visa filter
-                } else {
-                    renderGroupedTable(jobsToDisplay, filterType);
-                    filterCompletedToggle.style.display = 'none'; // Dölj filter
-                }
-                
-                updateGlobalDashboardStats();
-            }
 
-            // --- Del-renderingsfunktioner ---
-
-            function renderCalendar() {
-                calendarDays.innerHTML = '';
-                const monthName = currentViewDate.toLocaleString('sv-SE', { month: 'long', year: 'numeric' });
-                currentMonthYear.textContent = monthName.charAt(0).toUpperCase() + monthName.slice(1);
-                const year = currentViewDate.getFullYear();
-                const month = currentViewDate.getMonth();
-                const firstDayOfMonth = new Date(year, month, 1);
-                const daysInMonth = new Date(year, month + 1, 0).getDate();
-                let startDayOfWeek = (firstDayOfMonth.getDay() + 6) % 7;
-
-                for (let i = 0; i < startDayOfWeek; i++) {
-                    calendarDays.innerHTML += `<div class="calendar-day empty"></div>`;
-                }
-                
-                for (let day = 1; day <= daysInMonth; day++) {
-                    const dateString = `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
-                    let classes = 'calendar-day';
-                    if (dateString === todayString) classes += ' today';
-                    if (dateString === selectedDate) classes += ' selected';
-                    
-                    const jobCount = getJobCountForDate(dateString);
-                    let indicatorHTML = '';
-                    if (jobCount === 1) indicatorHTML = '<span class="job-indicator single"></span>';
-                    else if (jobCount > 1) indicatorHTML = '<span class="job-indicator multiple"></span>';
-
-                    calendarDays.innerHTML += `<div class="${classes}" data-date="${dateString}">${day}${indicatorHTML}</div>`;
+                switch(currentView) {
+                    case 'timeline':
+                        renderTimelineTable(jobsToDisplay);
+                        break;
+                    case 'board':
+                        renderBoardView(jobsToDisplay); // NY
+                        break;
+                    case 'calendar':
+                        // renderCalendarView(jobsToDisplay); // (Framtida funktion)
+                        break;
+                    case 'dashboard':
+                        renderDashboardView(allJobs); // Nu aktiv!
+                        break;
                 }
             }
-            
+
+            // --- Renderingsfunktioner per Vy ---
+
             /**
-             * NY: Renderar "Tidslinje-vyn" (Krav 2 & 3 / Funktion #1)
+             * VY: Tidslinje (Portad & Omdesignad)
              */
-            function renderTimelineTable(jobs, filterType) {
-                jobListContainer.innerHTML = ''; // Rensa
+            function renderTimelineTable(jobs) {
+                jobListContainer.innerHTML = '';
                 
-                // Filtrera på "Visa slutförda" (Funktion #4)
                 let jobsToRender = [...jobs];
-                if (!showCompleted) {
-                    jobsToRender = jobsToRender.filter(j => j.status !== 'fakturerad' && j.status !== 'avbokad');
-                }
                 
-                // Sortera (Krav 2: Närmaste datum först)
-                jobsToRender.sort((a, b) => new Date(a.datum) - new Date(b.datum));
+                jobsToRender.sort((a, b) => {
+                    if (a.prio && !b.prio) return -1;
+                    if (!a.prio && b.prio) return 1;
+                    return new Date(a.datum) - new Date(b.datum);
+                });
 
                 if (jobsToRender.length === 0) {
-                    emptyState.style.display = 'block';
-                    if (jobs.length > 0 && !showCompleted) {
-                        emptyStateTitle.textContent = "Alla jobb är slutförda";
-                        emptyStateText.textContent = "Markera 'Visa slutförda' för att se historik.";
-                    } else if (currentSearchTerm) {
-                        emptyStateTitle.textContent = "Inga träffar";
-                        emptyStateText.textContent = "Din sökning gav inga resultat.";
+                    emptyStateTimeline.classList.add('show');
+                    jobListContainer.style.display = 'none';
+                    if (currentSearchTerm) {
+                        emptyStateTitleTimeline.textContent = "Inga träffar";
+                        emptyStateTextTimeline.textContent = "Din sökning gav inga resultat.";
                     } else {
-                        emptyStateTitle.textContent = "Du har inga jobb denna månad";
-                        emptyStateText.textContent = "Klicka på '+' för att börja.";
+                        emptyStateTitleTimeline.textContent = "Du har inga jobb";
+                        emptyStateTextTimeline.textContent = "Klicka på '+' för att börja.";
                     }
                     return;
                 }
                 
-                emptyState.style.display = 'none';
+                emptyStateTimeline.classList.remove('show');
+                jobListContainer.style.display = 'block';
 
                 let tableHTML = `
-                    <section class="content-section">
-                        <div class="table-wrapper">
-                            <table id="jobbOversikt">
-                                ${createTableHead()}
-                                <tbody>
-                                    ${jobsToRender.map(job => 
-                                        createJobRow(job) + createCommentRow(job) // Rad + dold kommentar
-                                    ).join('')}
-                                </tbody>
-                            </table>
-                        </div>
-                    </section>
+                    <div class="table-wrapper">
+                        <table id="jobbOversikt">
+                            ${createTableHead()}
+                            <tbody>
+                                ${jobsToRender.map(job => 
+                                    createJobRow(job) + createCommentRow(job)
+                                ).join('')}
+                            </tbody>
+                        </table>
+                    </div>
                 `;
                 jobListContainer.innerHTML = tableHTML;
             }
 
-            /**
-             * MODIFIERAD: Renderar "Status-vyn"
-             */
-            function renderGroupedTable(jobs, filterType) {
-                jobListContainer.innerHTML = '';
-                
-                if (jobs.length === 0) {
-                    emptyState.style.display = 'block';
-                    // (samma empty state-logik som renderTimelineTable)
-                    return;
-                }
-                
-                emptyState.style.display = 'none';
-
-                const groupedJobs = jobs.reduce((groups, job) => {
-                    const status = job.status || 'bokad';
-                    if (!groups[status]) groups[status] = [];
-                    groups[status].push(job);
-                    return groups;
-                }, {});
-
-                STATUS_ORDER.forEach(status => {
-                    const jobsInGroup = groupedJobs[status];
-                    if (!jobsInGroup || jobsInGroup.length === 0) return;
-
-                    jobsInGroup.sort((a, b) => {
-                        if (a.prio && !b.prio) return -1;
-                        if (!a.prio && b.prio) return 1;
-                        return new Date(a.datum) - new Date(b.datum);
-                    });
-
-                    let groupHTML = `
-                        <div class="job-group">
-                            <details open>
-                                <summary>
-                                    <h3>${STATUS_TEXT[status]}</h3>
-                                    <span class="count-badge">${jobsInGroup.length}</span>
-                                </summary>
-                                <section class="content-section">
-                                    <div class="table-wrapper">
-                                        <table id="jobbOversikt">
-                                            ${jobsInGroup.length > 5 ? createTableHead() : ''} 
-                                            <tbody>
-                                                ${jobsInGroup.map(job => 
-                                                    createJobRow(job) + createCommentRow(job) // Rad + dold kommentar
-                                                ).join('')}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </section>
-                            </details>
-                        </div>
-                    `;
-                    jobListContainer.innerHTML += groupHTML;
-                });
-                
-                const firstTable = jobListContainer.querySelector('table');
-                if (firstTable && !firstTable.querySelector('thead')) {
-                    firstTable.insertAdjacentHTML('afterbegin', createTableHead());
-                }
-            }
-
-            /**
-             * MODIFIERAD: Skapar tabellhuvud (utan kommentarer) (Krav 1)
-             */
             function createTableHead() {
                 return `
                     <thead>
                         <tr>
-                            <th class="expand-col"></th> <th class="prio-col">Prio</th>
+                            <th class="expand-col"></th>
+                            <th class="prio-col">Prio</th>
                             <th>Status</th>
                             <th>Tid & Datum</th>
                             <th>Kund</th>
                             <th>Reg.nr</th>
                             <th>Kundpris</th>
                             <th>Vinst</th>
-                            <th class="action-col">Åtgärd</th>
+                            <th class="action-col"></th>
                         </tr>
                     </thead>
                 `;
             }
 
-            function updateGlobalDashboardStats() {
-                const totalProfit = allJobs.reduce((sum, job) => sum + (job.vinst || 0), 0);
-                const jobsToInvoice = allJobs.filter(j => j.status === 'klar');
-                const invoiceCount = jobsToInvoice.length;
-                const invoiceSum = jobsToInvoice.reduce((sum, job) => sum + (job.kundpris || 0), 0);
-                
-                statJobs.textContent = allJobs.length;
-                statProfit.textContent = formatCurrency(totalProfit);
-                statInvoiceCount.textContent = invoiceCount;
-                statInvoiceSum.textContent = formatCurrency(invoiceSum);
-
-                statProfit.classList.toggle('profit-positive', totalProfit > 0);
-                statProfit.classList.toggle('profit-negative', totalProfit < 0);
-            }
-
-            /**
-             * MODIFIERAD: Skapar tabellrad (Krav 1 / Visuellt #1, #3)
-             */
             function createJobRow(job) {
                 const vinstClass = job.vinst > 0 ? 'positive' : (job.vinst < 0 ? 'negative' : '');
                 const prioHTML = job.prio
-                    ? `<span class="prio-icon" title="Hög Prioritet"><svg class="icon-sm" viewBox="0 0 20 20"><use href="#icon-flag"></use></svg></span>`
+                    ? `<span class="prio-icon" title="Hög Prioritet"><svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-flag"></use></svg></span>`
                     : '';
-                const isExpanded = expandedJobIds.has(job.id); // NY
+                const isExpanded = expandedJobIds.has(job.id);
                 const hasComment = job.kommentarer && job.kommentarer.trim().length > 0;
                 
                 return `
-                    <tr data-id="${job.id}" data-status="${job.status}"> <td class="expand-col">
+                    <tr data-id="${job.id}" data-status="${job.status}">
+                        <td class="expand-col">
                             ${hasComment ? `
                             <button class="icon-btn expand-btn ${isExpanded ? 'expanded' : ''}" 
                                     aria-label="Visa kommentar" 
@@ -974,66 +1136,157 @@
                         <td><span class="status-badge status-${job.status || 'bokad'}">${STATUS_TEXT[job.status] || 'Bokad'}</span></td>
                         <td>${formatDate(job.datum)}</td>
                         <td>${job.kundnamn}</td>
-                        <td>${job.regnr || '---'}</td> <td>${formatCurrency(job.kundpris)}</td>
+                        <td>${job.regnr || '---'}</td>
+                        <td>${formatCurrency(job.kundpris)}</td>
                         <td class="profit ${vinstClass}"><strong>${formatCurrency(job.vinst)}</strong></td>
                         <td class="action-col">
                             <button class="icon-btn edit-btn" data-id="${job.id}" title="Redigera" aria-label="Redigera jobb">
-                                <svg class="icon-sm" fill="currentColor" viewBox="0 0 20 20"><use href="#icon-pencil"></use></svg>
+                                <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-pencil"></use></svg>
                             </button>
-                            <button class="icon-btn danger delete-btn" data-id="${job.id}" title="Ta bort" aria-label="Ta bort jobb">
-                                <svg class="icon-sm" fill="currentColor" viewBox="0 0 20 20"><use href="#icon-trash"></use></svg>
+                            <button class="icon-btn delete-btn" data-id="${job.id}" title="Ta bort" aria-label="Ta bort jobb">
+                                <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-trash"></use></svg>
                             </button>
                         </td>
                     </tr>
                 `;
             }
 
-            /**
-             * NY: Skapar den dolda kommentarsraden (Krav 1 / Funktion #2)
-             */
             function createCommentRow(job) {
                 if (!job.kommentarer || job.kommentarer.trim().length === 0) return '';
                 const isExpanded = expandedJobIds.has(job.id);
                 return `
                     <tr class="comment-row ${isExpanded ? 'expanded' : ''}" id="comments-${job.id}">
-                        <td colspan="9" class="comment-cell"> <strong>Kommentarer:</strong>
+                        <td colspan="9" class="comment-cell">
+                            <strong>Kommentarer:</strong>
                             ${job.kommentarer.replace(/\n/g, '<br>')}
                         </td>
                     </tr>
                 `;
             }
+            
+            /**
+             * NY: VY: Kanban-tavla (Fas 3)
+             */
+            function renderBoardView(jobs) {
+                kanbanBoardContainer.innerHTML = '';
+                
+                if (jobs.length === 0) {
+                    emptyStateBoard.classList.add('show');
+                    kanbanBoardContainer.style.display = 'none';
+                    return;
+                }
+                
+                emptyStateBoard.classList.remove('show');
+                kanbanBoardContainer.style.display = 'grid';
+                
+                // Skapa en mappning för jobben per status
+                const jobsByStatus = jobs.reduce((acc, job) => {
+                    const status = job.status || 'bokad';
+                    if (!acc[status]) acc[status] = [];
+                    acc[status].push(job);
+                    return acc;
+                }, {});
+                
+                // Sortera jobben i varje grupp (prio först, sen datum)
+                for (const status in jobsByStatus) {
+                    jobsByStatus[status].sort((a, b) => {
+                        if (a.prio && !b.prio) return -1;
+                        if (!a.prio && b.prio) return 1;
+                        return new Date(a.datum) - new Date(b.datum);
+                    });
+                }
+
+                // Rita upp kolumner
+                for (const status of STATUS_ORDER) {
+                    const jobsInColumn = jobsByStatus[status] || [];
+                    const columnEl = document.createElement('div');
+                    columnEl.className = 'kanban-column';
+                    columnEl.setAttribute('data-status', status);
+                    
+                    columnEl.innerHTML = `
+                        <div class="kanban-column-header">
+                            <h3>${STATUS_TEXT[status]}</h3>
+                            <span class="kanban-job-count">${jobsInColumn.length}</span>
+                        </div>
+                        <div class="kanban-column-jobs">
+                            ${jobsInColumn.map(createKanbanCard).join('')}
+                        </div>
+                    `;
+                    kanbanBoardContainer.appendChild(columnEl);
+                }
+            }
+
+            function createKanbanCard(job) {
+                const vinstClass = job.vinst > 0 ? 'positive' : (job.vinst < 0 ? 'negative' : '');
+                const prioHTML = job.prio
+                    ? `<span class="prio-icon" title="Hög Prioritet"><svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-flag"></use></svg></span>`
+                    : '';
+                
+                return `
+                    <div class="kanban-card" draggable="true" data-id="${job.id}">
+                        <div class="kanban-card-customer">${job.kundnamn}</div>
+                        <div class="kanban-card-regnr">${job.regnr || '---'}</div>
+                        <div class="kanban-card-footer">
+                            <span class="kanban-card-date">${formatShortDate(job.datum)}</span>
+                            ${prioHTML}
+                            <span class="kanban-card-profit profit ${vinstClass}">${formatCurrency(job.vinst)}</span>
+                        </div>
+                    </div>
+                `;
+            }
+
+            /**
+             * VY: Översikt (Dashboard) (Fas 2)
+             */
+            function renderDashboardView(jobs) {
+                const grid = document.querySelector('.stat-grid');
+                if (!grid) return;
+                
+                if (jobs.length === 0) {
+                    dashboardEmptyState.classList.add('show');
+                    grid.style.display = 'none';
+                } else {
+                    dashboardEmptyState.classList.remove('show');
+                    grid.style.display = 'grid';
+                    updateGlobalDashboardStats(jobs);
+                }
+            }
+            
+            function updateGlobalDashboardStats(jobs) {
+                const totalProfit = jobs.reduce((sum, job) => sum + (job.vinst || 0), 0);
+                const jobsToInvoice = jobs.filter(j => j.status === 'klar');
+                const invoiceCount = jobsToInvoice.length;
+                const invoiceSum = jobsToInvoice.reduce((sum, job) => sum + (job.kundpris || 0), 0);
+                
+                statJobs.textContent = jobs.length;
+                statProfit.textContent = formatCurrency(totalProfit);
+                statInvoiceCount.textContent = invoiceCount;
+                statInvoiceSum.textContent = formatCurrency(invoiceSum);
+
+                statProfit.classList.toggle('profit-positive', totalProfit > 0);
+                statProfit.classList.toggle('profit-negative', totalProfit < 0);
+            }
 
             // --- Datahantering & Lagring ---
             function loadJobsFromStorage() {
-                // NY: Felhantering (Funktion #19)
                 try {
                     const jobs = localStorage.getItem('jobb');
                     if (!jobs) {
-                        allJobs = startJobb.map(j => ({...j}));
-                        allJobs.sort((a, b) => new Date(a.datum) - new Date(b.datum));
-                        saveJobsToStorage();
+                        allJobs = []; // Starta tom
                     } else {
                         allJobs = JSON.parse(jobs);
                     }
                 } catch (e) {
-                    console.error("Kunde inte ladda jobb, återställer till startdata.", e);
-                    allJobs = startJobb.map(j => ({...j}));
+                    console.error("Kunde inte ladda jobb, återställer.", e);
+                    allJobs = [];
                     saveJobsToStorage();
                 }
             }
             function saveJobsToStorage() {
                 localStorage.setItem('jobb', JSON.stringify(allJobs));
             }
-            function getJobCountForDate(dateString) {
-                let count = 0;
-                for (const job of allJobs) {
-                    if (job.datum && job.datum.startsWith(dateString)) count++;
-                    if (count > 1) return 2;
-                }
-                return count;
-            }
 
-            // --- Modal-hantering ---
+            // --- Modal-hantering (v10) ---
             
             function updateLiveProfit() {
                 const pris = parseFloat(modalKundpris.value) || 0;
@@ -1043,9 +1296,6 @@
                 modalVinstKalkyl.style.color = vinst < 0 ? 'var(--danger-color)' : (vinst > 0 ? 'var(--success-color)' : 'var(--text-color)');
             }
 
-            /**
-             * MODIFIERAD: Hanterar "Duplicera" data (Funktion #12)
-             */
             function openModal(mode, dataToClone = null) {
                 jobModalForm.reset();
                 
@@ -1070,13 +1320,13 @@
                         document.getElementById('status').value = 'bokad';
                         document.getElementById('prio').checked = false;
                         const now = new Date();
-                        const defaultDate = selectedDate || todayString;
+                        const defaultDate = todayString;
                         const defaultTime = now.toTimeString().substring(0,5);
                         modalDatum.value = defaultDate;
                         modalTid.value = defaultTime;
                     }
                 } 
-                else if (mode === 'edit' && dataToClone) { // dataToClone är 'job' här
+                else if (mode === 'edit' && dataToClone) {
                     modalTitle.textContent = 'Redigera Jobb';
                     modalSaveBtn.textContent = 'Spara ändringar';
                     
@@ -1102,8 +1352,6 @@
                 updateLiveProfit();
                 jobModal.style.display = 'flex';
                 setTimeout(() => jobModal.classList.add('show'), 10);
-                
-                // NY: Tangentbords-fokus (Funktion #11)
                 modalStatus.focus();
             }
             
@@ -1112,9 +1360,6 @@
                 setTimeout(() => jobModal.style.display = 'none', 200);
             }
 
-            /**
-             * NY: Hämtar rådata från formuläret
-             */
             function getJobDataFromForm() {
                 const kundpris = parseFloat(modalKundpris.value) || 0;
                 const utgifter = parseFloat(modalUtgifter.value) || 0;
@@ -1134,23 +1379,21 @@
             }
 
 
-            // --- Event Handlers ---
+            // --- Event Handlers (v10) ---
             
             function handleFormSubmit(e) {
                 e.preventDefault();
                 
                 const jobData = getJobDataFromForm();
                 
-                // NY: Validering v2 (Funktion #9)
                 if ((jobData.status === 'klar' || jobData.status === 'fakturerad') && jobData.kundpris === 0) {
                     alert('Ett "Klar" eller "Fakturerad" jobb kan inte ha 0 kr i kundpris.');
                     return;
                 }
                 
-                // Kombinera datum & tid
                 const fullDatum = `${jobData.datum}T${jobData.tid}`;
                 const savedData = { ...jobData, datum: fullDatum };
-                delete savedData.tid; // Ta bort onödig tid-nyckel
+                delete savedData.tid;
 
                 if (savedData.id) {
                     const index = allJobs.findIndex(job => job.id === savedData.id);
@@ -1159,22 +1402,15 @@
                 } else {
                     const newJob = { ...savedData, id: crypto.randomUUID() };
                     allJobs.push(newJob);
-                    currentViewDate = new Date(newJob.datum || Date.now());
-                    selectedDate = null;
                     showToast('Jobb sparat!');
                 }
                 
                 saveJobsToStorage();
                 renderApp();
-                
-                const submitterId = e.submitter ? e.submitter.id : 'modalSaveBtn';
-                if (submitterId === 'modalSaveAndNewBtn') {
-                    openModal('add');
-                } else {
-                    closeModal();
-                }
+                closeModal();
             }
             
+            // Event delegation för Tidslinje-listan
             jobListContainer.addEventListener('click', (e) => {
                 const targetButton = e.target.closest('button');
                 if (!targetButton) return;
@@ -1184,7 +1420,6 @@
                 
                 const id = row.dataset.id;
                 
-                // NY: Logik för att expandera kommentarer (Krav 1 / Funktion #2)
                 if (targetButton.classList.contains('expand-btn')) {
                     const commentRow = row.nextElementSibling;
                     if (commentRow && commentRow.classList.contains('comment-row')) {
@@ -1198,15 +1433,15 @@
                         targetButton.setAttribute('aria-expanded', isExpanding);
                         commentRow.classList.toggle('expanded', isExpanding);
                     }
-                    return; // Avbryt här
+                    return;
                 }
 
-                if (!id) return; // Resten behöver ID
+                if (!id) return;
 
                 if (targetButton.classList.contains('delete-btn')) {
                     if (confirm('Är du säker på att du vill ta bort detta jobb?')) {
                         allJobs = allJobs.filter(job => job.id !== id);
-                        expandedJobIds.delete(id); // Rensa från minnet
+                        expandedJobIds.delete(id);
                         saveJobsToStorage();
                         renderApp();
                         showToast('Jobb borttaget.', 'danger');
@@ -1217,80 +1452,104 @@
                 }
             });
             
-            sidebarToggleBtn.addEventListener('click', () => {
-                appLayout.classList.toggle('sidebar-open');
+            // NY: Event delegation för Kanban-kort (Fas 3)
+            // Dubbelklick för att redigera från Kanban
+            kanbanBoardContainer.addEventListener('dblclick', (e) => {
+                const card = e.target.closest('.kanban-card');
+                if (card && card.dataset.id) {
+                    const jobId = card.dataset.id;
+                    const job = allJobs.find(j => j.id === jobId);
+                    if (job) openModal('edit', job);
+                }
+            });
+
+            // NY: Dra-och-släpp-logik (Fas 3)
+            let draggedItem = null;
+            
+            kanbanBoardContainer.addEventListener('dragstart', (e) => {
+                const card = e.target.closest('.kanban-card');
+                if (!card) return;
+                
+                draggedItem = card;
+                e.dataTransfer.setData('text/plain', card.dataset.id);
+                e.dataTransfer.effectAllowed = 'move';
+                
+                // Liten fördröjning för att CSS-klassen ska hinna appliceras
+                setTimeout(() => {
+                    draggedItem.classList.add('dragging');
+                }, 0);
+            });
+            
+            kanbanBoardContainer.addEventListener('dragend', (e) => {
+                if (draggedItem) {
+                    draggedItem.classList.remove('dragging');
+                    draggedItem = null;
+                }
+            });
+            
+            kanbanBoardContainer.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                const dropTarget = e.target.closest('.kanban-column-jobs');
+                if (dropTarget) {
+                    dropTarget.classList.add('drag-over');
+                    e.dataTransfer.dropEffect = 'move';
+                }
+            });
+            
+            kanbanBoardContainer.addEventListener('dragleave', (e) => {
+                const dropTarget = e.target.closest('.kanban-column-jobs');
+                if (dropTarget) {
+                    dropTarget.classList.remove('drag-over');
+                }
+            });
+            
+            kanbanBoardContainer.addEventListener('drop', (e) => {
+                e.preventDefault();
+                const columnJobs = e.target.closest('.kanban-column-jobs');
+                if (!columnJobs) return;
+                
+                columnJobs.classList.remove('drag-over');
+                const column = columnJobs.closest('.kanban-column');
+                const newStatus = column.dataset.status;
+                const jobId = e.dataTransfer.getData('text/plain');
+                
+                const job = allJobs.find(j => j.id === jobId);
+                
+                if (job && job.status !== newStatus) {
+                    job.status = newStatus;
+                    saveJobsToStorage();
+                    renderApp(); // Ritar om hela appen med den nya statusen
+                    showToast(`Jobb flyttat till "${STATUS_TEXT[newStatus]}"`);
+                }
+            });
+            
+            // NY: Vy-växlare
+            appNav.addEventListener('click', (e) => {
+                const navButton = e.target.closest('.nav-button');
+                if (navButton && navButton.dataset.view) {
+                    switchView(navButton.dataset.view);
+                }
             });
 
             searchBar.addEventListener('input', debounce((e) => {
                 currentSearchTerm = e.target.value;
                 renderApp();
             }, 300));
-
-            // --- NYA Event Handlers för Vyer & Filter ---
-            viewSwitcher.addEventListener('click', (e) => {
-                const newView = e.target.closest('button')?.dataset.view;
-                if (newView && newView !== currentViewMode) {
-                    currentViewMode = newView;
-                    viewSwitcher.querySelector('button.active').classList.remove('active');
-                    e.target.closest('button').classList.add('active');
-                    expandedJobIds.clear(); // Nollställ expanderade rader vid vy-byte
-                    renderApp();
-                }
-            });
-            showCompletedCheckbox.addEventListener('change', (e) => {
-                showCompleted = e.target.checked;
-                renderApp();
-            });
-
-            // Kalender-events
-            prevMonthBtn.addEventListener('click', () => {
-                currentViewDate.setMonth(currentViewDate.getMonth() - 1);
-                selectedDate = null; expandedJobIds.clear(); renderApp();
-            });
-            nextMonthBtn.addEventListener('click', () => {
-                currentViewDate.setMonth(currentViewDate.getMonth() + 1);
-                selectedDate = null; expandedJobIds.clear(); renderApp();
-            });
-            calendarDays.addEventListener('click', (e) => {
-                const dayElement = e.target.closest('.calendar-day');
-                if (dayElement && !dayElement.classList.contains('empty') && dayElement.dataset.date) {
-                    const dateClicked = dayElement.dataset.date;
-                    selectedDate = (dateClicked === selectedDate) ? null : dateClicked;
-                    renderApp();
-                }
-            });
-            // NY: Dubbelklick för nytt jobb (Funktion #8)
-            calendarDays.addEventListener('dblclick', (e) => {
-                const dayElement = e.target.closest('.calendar-day');
-                if (dayElement && !dayElement.classList.contains('empty') && dayElement.dataset.date) {
-                    selectedDate = dayElement.dataset.date;
-                    openModal('add');
-                }
-            });
-            goToTodayBtn.addEventListener('click', () => {
-                currentViewDate = new Date();
-                selectedDate = todayString;
-                renderApp();
-            });
-            clearDayFilterBtn.addEventListener('click', () => {
-                selectedDate = null; renderApp();
-            });
             
             // Modal-events
             jobModalForm.addEventListener('submit', handleFormSubmit);
-            addJobBtn.addEventListener('click', () => openModal('add'));
+            fabAddJob.addEventListener('click', () => openModal('add')); // NY FAB-knapp
             modalCloseBtn.addEventListener('click', closeModal);
             modalCancelBtn.addEventListener('click', closeModal);
             jobModal.addEventListener('click', (e) => {
                 if (e.target === jobModal) closeModal();
             });
             
-            // NY: Duplicera-knapp (Funktion #12)
             modalDuplicateBtn.addEventListener('click', () => {
                 const jobData = getJobDataFromForm();
-                delete jobData.id; // Ta bort ID för att skapa en ny
+                delete jobData.id;
                 closeModal();
-                setTimeout(() => { // Ge tid för modalen att stängas
+                setTimeout(() => {
                     openModal('add', jobData);
                     showToast('Jobb duplicerat. Glöm inte spara.');
                 }, 250);
@@ -1304,21 +1563,21 @@
 
             // Tema-hantering
             themeToggle.addEventListener('click', () => {
-                const currentTheme = docElement.getAttribute('data-data-theme') || 'light';
+                const currentTheme = docElement.getAttribute('data-theme') || 'dark';
                 setTheme(currentTheme === 'dark' ? 'light' : 'dark');
             });
-            const savedTheme = localStorage.getItem('theme') || 'light';
-            setTheme(savedTheme);
+            
             function setTheme(theme) {
                 docElement.setAttribute('data-theme', theme);
                 localStorage.setItem('theme', theme);
             }
+            
+            // Ladda sparat tema
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            setTheme(savedTheme);
 
             // --- Initialisering ---
-            if (!localStorage.getItem('jobb')) {
-                currentViewDate = new Date('2025-10-01');
-            }
-            renderApp();
+            switchView('timeline'); // Starta på tidslinjevyn
         });
     </script>
 
