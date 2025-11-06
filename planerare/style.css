@@ -1,0 +1,790 @@
+/* --- Jobbplanerare v14: "Pro" --- */
+        
+        /* --- Jobbplanerare v15: "Wow" --- */
+        
+:root {
+    --primary-color: #0a84ff;
+    --primary-hover: #339aff;
+    --primary-light: rgba(10, 132, 255, 0.1);
+    
+    --success-color: #30d158;
+    --warning-color: #ff9f0a;
+    --danger-color: #ff453a;
+    --danger-light: rgba(255, 69, 58, 0.05);
+    --danger-hover-bg: rgba(255, 69, 58, 0.15);
+    --info-color: #64d2ff;
+    
+    --bg-color: #f7f8fa;
+    --content-bg: #ffffff;
+    --border-color: #e5e7eb;
+    
+    --text-color: #1a1a1a;
+    --text-color-light: #6b7280;
+    
+    --header-height: 70px;
+    --border-radius: 8px;
+    
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.03), 0 1px 1px 0 rgba(0, 0, 0, 0.02);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.06), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.03);
+    --shadow-focus: 0 0 0 3px var(--primary-light);
+    
+    --transition-speed: 0.25s;
+    --transition-speed-fast: 0.15s;
+}
+
+[data-theme="dark"] {
+    --bg-color: #161618;
+    --content-bg: #1c1c1e;
+    --border-color: #3a3a3c;
+    --text-color: #f2f2f7;
+    --text-color-light: #8e8e93;
+    --shadow-focus: 0 0 0 3px rgba(10, 132, 255, 0.25);
+    
+    --danger-light: rgba(255, 69, 58, 0.1);
+    --danger-hover-bg: rgba(255, 69, 58, 0.25);
+}
+
+/* --- Globala stilar --- */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-color-light); }
+::-webkit-scrollbar-track { background: transparent; }
+
+.icon { width: 1.25rem; height: 1.25rem; }
+.icon-sm { width: 1.125rem; height: 1.125rem; }
+.icon-lg { width: 3rem; height: 3rem; opacity: 0.5; }
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    margin: 0; padding: 0;
+    height: 100vh;
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.link-btn {
+    background: none; border: none; padding: 0; margin: 0;
+    font: inherit; color: var(--primary-color);
+    text-decoration: none; cursor: pointer; font-weight: 500;
+}
+.link-btn:hover { text-decoration: underline; }
+#jobbOversikt .link-btn {
+    color: var(--text-color); font-weight: 500;
+}
+#jobbOversikt .link-btn:hover {
+    color: var(--primary-color); text-decoration: none;
+}
+.prio-flag-icon {
+    color: var(--danger-color);
+    margin-right: 0.5rem;
+    vertical-align: -3px;
+}
+
+/* --- Layout --- */
+.app-container { 
+    display: flex; flex-direction: column; height: 100vh; 
+    /* NY: Dölj för in-animation */
+    opacity: 0;
+    animation: appFadeIn 0.5s ease 0.1s forwards;
+}
+@keyframes appFadeIn {
+    to { opacity: 1; }
+}
+
+.app-main { flex-grow: 1; overflow: auto; }
+.main-content { 
+    max-width: 1400px; margin: 0 auto; padding: 2rem; 
+}
+
+/* --- Header --- */
+.main-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0 1.5rem 0 2rem; height: var(--header-height);
+    box-shadow: var(--shadow-sm); background-color: var(--content-bg);
+    flex-shrink: 0; z-index: 50;
+    /* NY: In-animation */
+    transform: translateY(-20px);
+    opacity: 0;
+    animation: slideInDown 0.4s ease 0.1s forwards;
+}
+@keyframes slideInDown {
+    to { transform: translateY(0); opacity: 1; }
+}
+
+[data-theme="dark"] .main-header { 
+    background-color: var(--bg-color);
+    box-shadow: 0 1px 0 0 var(--border-color);
+}
+.header-left { display: flex; align-items: center; gap: 1rem; }
+.nav-logo {
+    width: 36px; height: 36px;
+    /* NY: Gradient-bakgrund */
+    background: linear-gradient(135deg, var(--primary-color) 0%, #339aff 100%);
+    background-size: 150% 150%;
+    color: white;
+    border-radius: 8px; display: flex; align-items: center;
+    justify-content: center; font-weight: 700; font-size: 1.25rem;
+    text-decoration: none; flex-shrink: 0;
+    transition: all var(--transition-speed-fast) ease;
+    animation: gradientShift 5s ease infinite;
+}
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+.nav-logo:hover { 
+    transform: scale(1.05);
+    box-shadow: 0 0 15px var(--primary-light);
+}
+
+/* NY: Header-titlar */
+.header-titles { display: flex; flex-direction: column; }
+.app-brand-title {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-color-light);
+    line-height: 1;
+}
+.main-header h2 { 
+    font-size: 1.25rem; /* Mindre för att passa */
+    font-weight: 600; 
+    margin: 0;
+    line-height: 1.2;
+}
+
+.header-right { display: flex; align-items: center; gap: 1rem; }
+.nav-button {
+    background: transparent; border: none; color: var(--text-color-light);
+    width: 44px; height: 44px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all var(--transition-speed-fast) ease;
+}
+.nav-button:hover { color: var(--primary-color); background-color: var(--bg-color); }
+.nav-button.active {
+    color: var(--primary-color);
+    background-color: var(--primary-light);
+}
+[data-theme="dark"] .nav-button.active {
+    background-color: rgba(10, 132, 255, 0.2);
+}
+
+#themeToggle .icon-moon { display: none; }
+#themeToggle .icon-sun { display: block; }
+[data-theme="dark"] #themeToggle .icon-moon { display: block; }
+[data-theme="dark"] #themeToggle .icon-sun { display: none; }
+
+.divider {
+    width: 1px; height: 24px;
+    background-color: var(--border-color);
+    margin: 0 0.5rem;
+}
+
+/* --- Klickbar Stat-panel --- */
+.stat-bar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+/* NY: Staggered animation för korten */
+.stat-card {
+    background-color: var(--content-bg);
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-speed-fast) ease;
+    cursor: pointer;
+    
+    transform: translateY(20px);
+    opacity: 0;
+    animation: slideInUp 0.4s ease forwards;
+}
+/* Staggered delay */
+.stat-card:nth-child(1) { animation-delay: 0.2s; }
+.stat-card:nth-child(2) { animation-delay: 0.25s; }
+.stat-card:nth-child(3) { animation-delay: 0.3s; }
+.stat-card:nth-child(4) { animation-delay: 0.35s; }
+
+@keyframes slideInUp {
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary-color);
+}
+/* NY: "Pop"-effekt på siffran vid hovring */
+.stat-card:hover .stat-card-value {
+    transform: scale(1.05);
+}
+
+.stat-card.active {
+    border-color: var(--primary-color);
+    box-shadow: var(--shadow-md), 0 0 0 3px var(--primary-light);
+}
+[data-theme="dark"] .stat-card.active {
+    box-shadow: var(--shadow-md), 0 0 0 3px rgba(10, 132, 255, 0.25);
+}
+
+.stat-card-title {
+    font-size: 0.875rem; font-weight: 600; color: var(--text-color-light);
+    margin: 0 0 0.5rem 0; text-transform: uppercase;
+    display: flex; align-items: center; gap: 0.5rem;
+}
+.stat-card-value {
+    font-size: 2rem; font-weight: 700;
+    margin: 0; line-height: 1.2; color: var(--text-color);
+    transition: transform var(--transition-speed-fast) ease; /* För hovring */
+}
+.stat-card .icon-sm { color: var(--primary-color); }
+.stat-card.success .icon-sm { color: var(--success-color); }
+.stat-card.success .stat-card-value { color: var(--success-color); }
+.stat-card.info .icon-sm { color: var(--info-color); }
+.stat-card.info .stat-card-value { color: var(--info-color); }
+.stat-card.default .icon-sm { color: var(--text-color-light); }
+.stat-card.default .stat-card-value { color: var(--text-color); }
+
+
+/* Kontroller (Endast Sök) */
+.view-controls {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    /* NY: Animation */
+    opacity: 0;
+    animation: fadeIn 0.4s ease 0.4s forwards;
+}
+
+/* Sökfält */
+.search-wrapper {
+    display: flex; align-items: center;
+    background: var(--content-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px; padding-left: 0.75rem;
+    box-shadow: var(--shadow-sm);
+}
+[data-theme="dark"] .search-wrapper { background: var(--bg-color); }
+.search-wrapper .icon { color: var(--text-color-light); }
+#searchBar { 
+    border: none; padding: 0.65rem 0.75rem; font-size: 0.95rem; 
+    outline: none; border-radius: 8px; 
+    background: transparent; color: var(--text-color);
+    min-width: 250px;
+}
+#searchBar:focus-within { border-color: var(--primary-color); }
+
+/* Knappar */
+.button {
+    padding: 0.625rem 1rem; border: none; border-radius: 8px;
+    font-size: 0.9rem; font-weight: 600; cursor: pointer;
+    transition: all 0.2s ease; display: inline-flex;
+    align-items: center; justify-content: center;
+    gap: 0.5rem;
+}
+.button.secondary { background-color: var(--content-bg); color: var(--text-color); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
+.button.secondary:hover { background-color: var(--bg-color); }
+.button.clear-filter { background: transparent; color: var(--primary-color); font-weight: 600; box-shadow: none; padding: 0.25rem 0.5rem; }
+.button.primary { background-color: var(--primary-color); color: white; box-shadow: var(--shadow-sm); }
+.button.primary:hover { background-color: var(--primary-hover); box-shadow: var(--shadow-md); }
+
+mark {
+    background-color: var(--warning-color);
+    color: black;
+    padding: 0 2px;
+    border-radius: 3px;
+}
+
+/* FAB */
+#fabAddJob {
+    position: fixed; bottom: 2rem; right: 2rem;
+    width: 56px; height: 56px;
+    background-color: var(--primary-color);
+    color: white; border: none; border-radius: 50%;
+    box-shadow: var(--shadow-lg); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s ease; z-index: 1000;
+    /* NY: Pulserande animation */
+    animation: pulse 2s infinite;
+}
+@keyframes pulse {
+    0% {
+        box-shadow: var(--shadow-lg), 0 0 0 0px var(--primary-light);
+    }
+    70% {
+        box-shadow: var(--shadow-lg), 0 0 0 10px rgba(10, 132, 255, 0);
+    }
+    100% {
+        box-shadow: var(--shadow-lg), 0 0 0 0px rgba(10, 132, 255, 0);
+    }
+}
+[data-theme="dark"] @keyframes pulse {
+    0% { box-shadow: var(--shadow-lg), 0 0 0 0px rgba(10, 132, 255, 0.2); }
+    70% { box-shadow: var(--shadow-lg), 0 0 0 10px rgba(10, 132, 255, 0); }
+    100% { box-shadow: var(--shadow-lg), 0 0 0 0px rgba(10, 132, 255, 0); }
+}
+
+#fabAddJob:hover {
+    background-color: var(--primary-hover); 
+    transform: scale(1.05);
+    animation-play-state: paused; /* Stoppa pulsering vid hovring */
+}
+#fabAddJob .icon { width: 1.75rem; height: 1.75rem; }
+
+/* --- Tabell-design --- */
+.table-container { 
+    background-color: var(--content-bg); 
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+    overflow: hidden; box-shadow: var(--shadow-sm);
+    /* NY: Animation */
+    opacity: 0;
+    animation: fadeIn 0.4s ease 0.4s forwards;
+}
+.table-wrapper { overflow-x: auto; }
+#jobbOversikt { width: 100%; border-collapse: separate; border-spacing: 0; }
+
+#jobbOversikt thead {
+    background-color: var(--bg-color);
+    position: sticky; top: 0; z-index: 1;
+}
+
+#jobbOversikt th, #jobbOversikt td {
+    padding: 0.9rem 1.25rem;
+    text-align: left; vertical-align: middle;
+    white-space: nowrap;
+    border-bottom: 1px solid var(--border-color);
+    transition: padding var(--transition-speed-fast) ease, background-color var(--transition-speed-fast) ease;
+}
+
+#jobbOversikt th { 
+    font-size: 0.8rem; font-weight: 600; 
+    color: var(--text-color-light); letter-spacing: 0.05em; 
+}
+
+#jobbOversikt tbody tr[data-id] {
+    transition: background-color var(--transition-speed-fast) ease, 
+                border-left-color var(--transition-speed-fast) ease,
+                opacity var(--transition-speed) ease;
+    border-left: 4px solid transparent;
+    cursor: context-menu;
+}
+#jobbOversikt tbody tr[data-id]:hover {
+    background-color: var(--primary-light);
+}
+[data-theme="dark"] #jobbOversikt tbody tr[data-id]:hover {
+    background-color: rgba(10, 132, 255, 0.15);
+}
+
+/* Tydligare Prio-rad-markering */
+#jobbOversikt tbody tr.prio-row {
+    border-left-color: var(--danger-color);
+    background-color: var(--danger-light);
+}
+/* NY: Korrekt hovring för prio-rad */
+#jobbOversikt tbody tr.prio-row:hover {
+    background-color: var(--danger-hover-bg);
+}
+
+/* Nedtonade klara jobb */
+#jobbOversikt tbody tr.done-row { opacity: 0.65; }
+#jobbOversikt tbody tr.done-row:hover { opacity: 1; }
+#jobbOversikt tbody tr:last-child td { border-bottom: none; }
+
+/* Kompakt-läge */
+.compact-mode #jobbOversikt th,
+.compact-mode #jobbOversikt td {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+}
+.compact-mode .prio-flag-icon {
+    vertical-align: -2px;
+}
+
+/* Status-brickor */
+.status-badge {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    padding: 0.25em 0.75em; font-size: 0.8rem;
+    font-weight: 600; border-radius: 99px;
+    text-transform: capitalize;
+}
+.status-badge::before {
+    content: ''; width: 7px; height: 7px;
+    border-radius: 50%; background-color: currentColor;
+}
+.status-badge.status-offererad { background-color: rgba(107, 114, 128, 0.1); color: #4b5563; }
+.status-badge.status-bokad { background-color: var(--primary-light); color: var(--primary-color); }
+.status-badge.status-klar { background-color: rgba(48, 209, 88, 0.1); color: var(--success-color); }
+.status-badge.status-avbokad { background-color: rgba(255, 69, 58, 0.1); color: var(--danger-color); }
+[data-theme="dark"] .status-badge.status-offererad { background-color: rgba(142, 142, 147, 0.2); color: #9a9a9f; }
+[data-theme="dark"] .status-badge.status-bokad { background-color: rgba(10, 132, 255, 0.2); color: #339aff; }
+[data-theme="dark"] .status-badge.status-klar { background-color: rgba(48, 209, 88, 0.2); color: var(--success-color); }
+[data-theme="dark"] .status-badge.status-avbokad { background-color: rgba(255, 69, 58, 0.2); color: #ff453a; }
+
+#jobbOversikt .profit { font-weight: 600; }
+#jobbOversikt .profit.positive { color: var(--success-color); }
+#jobbOversikt .profit.negative { color: var(--danger-color); }
+
+.icon-btn {
+    background: transparent; border: none; cursor: pointer;
+    padding: 0.5rem; border-radius: 6px; color: var(--text-color-light);
+    display: inline-flex; align-items: center; justify-content: center;
+}
+.icon-btn:hover { background-color: var(--bg-color); color: var(--primary-color); }
+
+#jobbOversikt .action-col { 
+    text-align: right; white-space: nowrap; width: 1%;
+    display: flex; gap: 0.25rem;
+}
+#jobbOversikt .action-col .icon-btn { opacity: 0.4; transition: opacity 0.2s ease; }
+#jobbOversikt tbody tr:hover .action-col .icon-btn { opacity: 1; }
+
+#jobbOversikt .comment-btn,
+#jobbOversikt .delete-btn,
+#jobbOversikt .customer-link,
+#jobbOversikt .car-link {
+    position: relative;
+    z-index: 2;
+}
+
+/* Tom Vy */
+.empty-state {
+    text-align: center; padding: 4rem 2rem;
+    color: var(--text-color-light); display: none;
+    background-color: var(--content-bg);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+    animation: fadeIn 0.3s ease;
+}
+.empty-state.show { display: block; }
+.empty-state .icon-lg { width: 3rem; height: 3rem; color: var(--primary-color); opacity: 0.3; }
+.empty-state h3 { font-size: 1.25rem; color: var(--text-color); margin: 1.5rem 0 0.5rem 0; }
+.empty-state .button { margin-top: 1.5rem; font-size: 1rem; padding: 0.75rem 1.5rem; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* --- Modal-design --- */
+.modal-backdrop { 
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+    background-color: rgba(0, 0, 0, 0.6); 
+    display: none; align-items: flex-start;
+    justify-content: center; z-index: 1000; 
+    opacity: 0; transition: opacity 0.2s ease-in-out; 
+    padding-top: 5vh;
+}
+.modal-backdrop.show { opacity: 1; }
+
+.modal-content { 
+    background-color: var(--content-bg); 
+    border-radius: var(--border-radius); 
+    box-shadow: var(--shadow-lg); 
+    width: 90%; max-width: 640px; 
+    max-height: 90vh; overflow: hidden;
+    display: flex; flex-direction: column;
+    transform: scale(0.98) translateY(-10px); 
+    opacity: 0; transition: all 0.2s ease-in-out; 
+}
+.modal-backdrop.show .modal-content { transform: scale(1) translateY(0); opacity: 1; }
+
+.modal-header { 
+    display: flex; justify-content: space-between; align-items: center; 
+    border-bottom: 1px solid var(--border-color); 
+    padding: 1.25rem 1.5rem; flex-shrink: 0;
+}
+.modal-header h2 { margin: 0; font-size: 1.125rem; font-weight: 600; }
+.modal-close-btn { 
+    background: transparent; border: none; 
+    font-size: 1.5rem; color: var(--text-color-light); 
+    cursor: pointer; line-height: 1; padding: 0.25rem;
+    display: flex; align-items: center; justify-content: center;
+}
+
+.modal-body { padding: 1.5rem; overflow-y: auto; }
+
+/* Formulär-design */
+#jobModalForm { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+.form-group-split { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+.full-width { grid-column: 1 / -1; }
+
+.form-group { display: flex; flex-direction: column; gap: 0.5rem; position: relative; }
+.form-group label { font-weight: 600; font-size: 0.875rem; }
+.form-group input, .form-group textarea, .form-group select {
+    padding: 0.75rem; border: 1px solid var(--border-color);
+    border-radius: 8px; font-size: 0.95rem;
+    font-family: 'Inter', sans-serif;
+    transition: all var(--transition-speed-fast) ease;
+    background-color: var(--bg-color); color: var(--text-color);
+}
+[data-theme="dark"] .form-group input, [data-theme="dark"] .form-group textarea, [data-theme="dark"] .form-group select {
+     background-color: #2c2c2e;
+}
+
+.form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+    outline: none; border-color: var(--primary-color);
+    box-shadow: var(--shadow-focus);
+    background-color: var(--content-bg);
+    border-width: 2px; padding: calc(0.75rem - 1px);
+}
+
+.form-group .today-btn {
+    position: absolute; right: 2.8rem; top: 50%;
+    transform: translateY(calc(0.5rem / 2));
+    font-size: 0.75rem; font-weight: 600; color: var(--primary-color);
+    background: var(--primary-light); border: none;
+    border-radius: 6px; padding: 0.25rem 0.5rem; cursor: pointer;
+}
+.form-group .today-btn:hover { background: var(--primary-color); color: white; }
+
+.form-group input[type="date"], .form-group input[type="time"] { position: relative; padding-right: 2.5rem; }
+.form-group .input-icon {
+    position: absolute; right: 0.75rem; top: 50%;
+    transform: translateY(calc(0.5rem / 2));
+    color: var(--text-color-light); pointer-events: none;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+    opacity: 0; cursor: pointer;
+    position: absolute; right: 0; top: 0; width: 100%; height: 100%;
+}
+
+.form-group-inline { display: flex; align-items: center; gap: 0.75rem; padding-top: 1.5rem; }
+.form-group-inline label { margin: 0; }
+.form-group-inline input { width: 1.15rem; height: 1.15rem; }
+
+.form-group-profit {
+    grid-column: 1 / -1; text-align: right;
+    font-size: 1.125rem; font-weight: 600; padding: 0.5rem 0;
+}
+
+.modal-actions {
+    grid-column: 1 / -1; display: flex;
+    justify-content: flex-end; gap: 0.75rem;
+    margin-top: 1.5rem; border-top: 1px solid var(--border-color);
+    padding: 1.25rem 1.5rem;
+    background-color: var(--bg-color); flex-shrink: 0;
+}
+
+#modalCancelBtn {
+    background: transparent; box-shadow: none;
+    border-color: transparent; color: var(--text-color-light);
+    order: 1;
+}
+#modalCancelBtn:hover { background-color: var(--bg-color); color: var(--text-color); }
+#modalDuplicateBtn { order: 2; }
+#modalSaveBtn { order: 3; }
+
+/* --- Toast --- */
+.toast { 
+    position: fixed; bottom: 2rem; left: 50%; 
+    transform: translateX(-50%); 
+    padding: 0.75rem 1.5rem; 
+    background-color: #333; color: white; 
+    border-radius: 8px; box-shadow: var(--shadow-lg); 
+    z-index: 2000; font-weight: 500; 
+    transition: all 0.4s ease;
+    opacity: 0; transform: translateX(-50%) translateY(20px);
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+[data-theme="dark"] .toast { background-color: #f2f2f7; color: #1c1c1e; }
+.toast.success { background-color: var(--success-color); color: white; }
+.toast.danger { background-color: var(--danger-color); color: white; }
+
+/* --- Comment Popover --- */
+.popover-backdrop {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: transparent; z-index: 1050; display: none;
+}
+.popover-backdrop.show { display: block; }
+
+#commentPopover {
+    position: absolute; background-color: var(--content-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius); box-shadow: var(--shadow-lg);
+    width: 300px; z-index: 1060; display: none;
+    opacity: 0; transform: scale(0.95);
+    transition: opacity 0.15s ease, transform 0.15s ease;
+}
+#commentPopover.show { display: block; opacity: 1; transform: scale(1); }
+#commentPopoverHeader {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-color);
+}
+#commentPopoverHeader h4 { margin: 0; font-size: 0.875rem; font-weight: 600; }
+#commentPopoverClose { background: transparent; border: none; color: var(--text-color-light); cursor: pointer; padding: 0.25rem; }
+#commentPopoverContent {
+    padding: 1rem; font-size: 0.9rem; line-height: 1.6; color: var(--text-color-light);
+    white-space: pre-wrap; word-break: break-word; max-height: 200px; overflow-y: auto;
+}
+
+/* --- Kund/Bil-Modal Delad Stil --- */
+#customerModal .modal-content,
+#carModal .modal-content { max-width: 700px; }
+
+.detail-modal-header {
+    display: flex; flex-direction: column;
+    gap: 0.25rem; align-items: flex-start;
+}
+.detail-modal-header h2 { font-size: 1.5rem; margin: 0; }
+.detail-modal-header p { font-size: 1rem; color: var(--text-color-light); margin: 0; }
+
+.detail-stats {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 1rem; background-color: var(--bg-color);
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+.detail-stats div { display: flex; flex-direction: column; }
+.detail-stats .stat-title {
+    font-size: 0.8rem; font-weight: 600;
+    color: var(--text-color-light); text-transform: uppercase;
+    margin-bottom: 0.25rem;
+}
+.detail-stats .stat-value {
+    font-size: 1.25rem; font-weight: 600;
+    color: var(--text-color);
+}
+.detail-stats .stat-value.positive { color: var(--success-color); }
+
+.detail-job-list { list-style: none; padding: 0; margin: 0; }
+.detail-job-list li {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+.detail-job-list li:last-child { border-bottom: none; }
+.detail-job-list li > div { display: flex; flex-direction: column; }
+.detail-job-list .job-date { font-weight: 500; }
+.detail-job-list .job-subline { font-size: 0.9rem; color: var(--text-color-light); }
+.detail-job-list .job-profit { font-weight: 600; font-size: 1.1rem; }
+.detail-job-list .job-comment {
+    font-size: 0.9rem; color: var(--text-color);
+    padding-top: 0.75rem; margin-top: 0.75rem;
+    border-top: 1px dashed var(--border-color);
+    white-space: pre-wrap; font-style: italic;
+}
+
+/* --- Kontextmeny --- */
+#contextMenu {
+    position: absolute;
+    display: none;
+    background-color: var(--content-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: var(--shadow-lg);
+    z-index: 1100;
+    min-width: 180px;
+    padding: 0.5rem;
+}
+#contextMenu.show { display: block; }
+.context-menu-button {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: none;
+    border: none;
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+    color: var(--text-color);
+}
+.context-menu-button:hover {
+    background-color: var(--bg-color);
+    color: var(--primary-color);
+}
+.context-menu-button.danger { color: var(--danger-color); }
+.context-menu-button.danger:hover { color: white; background-color: var(--danger-color); }
+.context-menu-divider {
+    height: 1px;
+    background-color: var(--border-color);
+    margin: 0.5rem 0;
+}
+
+/* --- PIN-lås --- */
+#pinLockModal {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: var(--bg-color);
+    z-index: 20000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    transition: opacity 0.3s ease;
+}
+#pinLockModal.show {
+    display: flex;
+}
+.pin-lock-container {
+    background-color: var(--content-bg);
+    padding: 2.5rem 3rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-lg);
+    text-align: center;
+    width: 320px;
+}
+.pin-lock-container .nav-logo {
+    margin: 0 auto 1.5rem auto;
+    width: 44px; height: 44px; font-size: 1.5rem;
+}
+.pin-lock-container h2 {
+    color: var(--text-color);
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+}
+.pin-lock-container p {
+    color: var(--text-color-light);
+    margin: 0 0 1.5rem 0;
+    font-size: 0.95rem;
+}
+#pinInput {
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: 0.5em;
+    text-align: center;
+    padding: 0.75rem;
+    width: 100%;
+    box-sizing: border-box;
+    border: 2px solid var(--border-color);
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    border-radius: var(--border-radius);
+    outline: none;
+    margin-bottom: 1rem;
+}
+#pinInput:focus {
+    border-color: var(--primary-color);
+    box-shadow: var(--shadow-focus);
+}
+#pinError {
+    color: var(--danger-color);
+    font-size: 0.875rem;
+    font-weight: 500;
+    height: 1.25em;
+    margin-bottom: 0.75rem;
+}
+#pinUnlockBtn {
+    width: 100%;
+    padding: 0.85rem 1rem;
+    font-size: 1rem;
+}
+
+#pinLockModal.shake-error .pin-lock-container {
+    animation: shake 0.5s ease;
+}
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-8px); }
+    20%, 40%, 60%, 80% { transform: translateX(8px); }
+}
