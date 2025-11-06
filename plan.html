@@ -36,14 +36,15 @@
             
             --nav-width: 68px;
             --header-height: 70px;
-            --border-radius: 10px;
+            --border-radius: 8px; /* ÄNDRING 2: (från 10px) */
             
-            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            /* ÄNDRING 1: Mjukare skuggor */
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.03), 0 1px 1px 0 rgba(0, 0, 0, 0.02);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.06), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.03);
             --shadow-focus: 0 0 0 3px var(--primary-light);
             
-            --transition-speed: 0.2s;
+            --transition-speed: 0.25s; /* ÄNDRING 3: (från 0.2s) */
             --transition-speed-fast: 0.15s;
         }
         
@@ -117,7 +118,15 @@
             font-size: 1.25rem;
             text-decoration: none;
             flex-shrink: 0;
+            transition: all var(--transition-speed-fast) ease; /* TILLAGD */
         }
+        
+        /* ÄNDRING 5: Hovring på logotyp */
+        .nav-logo:hover {
+            transform: scale(1.05);
+            background-color: var(--primary-hover);
+        }
+        
         .nav-group {
             display: flex;
             flex-direction: column;
@@ -157,19 +166,20 @@
             color: white;
         }
         
-        /* NY: Tooltips */
+        /* ÄNDRING 6: Tema-anpassade Tooltips */
         .nav-button[data-tooltip]::after {
             content: attr(data-tooltip);
             position: absolute;
             left: calc(var(--nav-width) + 0.5rem);
             top: 50%;
             transform: translateY(-50%);
-            background-color: #1c1c1e;
-            color: white;
+            background-color: var(--content-bg); /* ÄNDRAD */
+            color: var(--text-color); /* ÄNDRAD */
+            border: 1px solid var(--border-color); /* TILLAGD */
             padding: 0.35rem 0.65rem;
             border-radius: 6px;
             font-size: 0.8rem;
-            font-weight: 600;
+            font-weight: 500; /* ÄNDRAD (från 600) */
             white-space: nowrap;
             opacity: 0;
             visibility: hidden;
@@ -195,31 +205,39 @@
             display: flex;
             flex-direction: column;
             height: 100vh;
-            overflow: hidden;
+            overflow: hidden; /* Förhindra att Hela appen scrollar */
         }
+        
+        /* ÄNDRING 4: Modernare Header */
         .main-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 0 2rem;
             height: var(--header-height);
-            border-bottom: 1px solid var(--border-color);
+            /* border-bottom: 1px solid var(--border-color); */ /* BORTTAGEN */
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.03), 0 1px 2px 0 rgba(0, 0, 0, 0.02); /* TILLAGD */
             background-color: var(--content-bg);
             flex-shrink: 0;
             z-index: 50;
         }
+        /* ÄNDRING 4: Mörk header-skugga */
+        [data-theme="dark"] .main-header {
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.08);
+        }
+        
         .main-header h2 { font-size: 1.5rem; font-weight: 600; margin: 0; }
         .main-controls { display: flex; align-items: center; gap: 1rem; }
         
         .main-content {
             flex-grow: 1;
-            overflow: auto; /* Ändrad till auto för att tillåta scroll i kanban */
+            overflow: auto; /* <--- NYCKELN: Denna behållare hanterar all scrollning */
             padding: 2rem;
         }
         .content-wrapper {
             max-width: 1400px;
             margin: 0 auto;
-            height: 100%; /* För kanban */
+            height: 100%; /* För kanban/kalender att fylla ut */
         }
         
         /* Vy-specifik wrapper-justering */
@@ -254,6 +272,27 @@
         }
         .button.secondary { background-color: var(--content-bg); color: var(--text-color); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
         .button.secondary:hover { background-color: var(--bg-color); }
+        
+        /* NY: Aktivt filter */
+        /* ÄNDRING 22: Aktivt filter-feedback */
+        .button.secondary.active {
+            background-color: var(--primary-light);
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            font-weight: 700; /* TILLAGD */
+            position: relative; /* TILLAGD */
+        }
+        /* ÄNDRING 22: Prick för aktivt filter */
+        .button.secondary.active::before {
+            content: '';
+            position: absolute;
+            top: 6px;
+            right: 8px;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+        }
         .button.clear-filter { background: transparent; color: var(--primary-color); font-weight: 600; box-shadow: none; padding: 0.25rem 0.5rem; }
 
         /* NY: Floating Action Button (FAB) */
@@ -275,10 +314,16 @@
             transition: all 0.2s ease;
             z-index: 1000;
         }
+        /* ÄNDRING 20: Pulserande FAB-hovring */
         #fabAddJob:hover {
             background-color: var(--primary-hover);
             transform: scale(1.05);
+            box-shadow: var(--shadow-lg), 0 0 0 4px var(--primary-light); /* ÄNDRAD */
         }
+        [data-theme="dark"] #fabAddJob:hover {
+            box-shadow: var(--shadow-lg), 0 0 0 4px rgba(10, 132, 255, 0.2);
+        }
+        
         #fabAddJob .icon { width: 1.75rem; height: 1.75rem; }
 
         /* --- NY: Vy-hantering --- */
@@ -288,7 +333,7 @@
         .view-container.active {
             display: block; /* Visas av JS */
             animation: fadeIn 0.3s ease;
-            height: 100%; /* För kanban */
+            height: 100%; /* <--- NYCKELN: Ser till att vyn fyller ut tillgängligt utrymme */
         }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -319,20 +364,35 @@
             border-bottom: 1px solid var(--border-color);
         }
         
+        /* ÄNDRING 8: Mjukare tabellrubriker */
         #jobbOversikt th { 
-            font-size: 0.75rem; font-weight: 600; 
+            font-size: 0.8rem; /* ÄNDRAD (från 0.75rem) */
+            font-weight: 600; 
             color: var(--text-color-light); 
-            text-transform: uppercase; letter-spacing: 0.05em; 
+            text-transform: none; /* ÄNDRAD (från uppercase) */
+            letter-spacing: 0.05em; 
         }
         
         /* NY: Rad-design (v10) */
         #jobbOversikt tbody tr {
             transition: background-color var(--transition-speed-fast) ease;
         }
-        #jobbOversikt tbody tr[data-status]:hover {
+        
+        /* ÄNDRING 7: Zebra-ränder */
+        #jobbOversikt tbody tr[data-status]:nth-child(even) {
             background-color: var(--bg-color);
         }
-        #jobbOversikt tbody tr:last-child td { border-bottom: none; }
+        /* ÄNDRING 7: Tydligare hovring */
+        #jobbOversikt tbody tr[data-status]:hover {
+            background-color: var(--primary-light); /* ÄNDRAD (från --bg-color) */
+        }
+        [data-theme="dark"] #jobbOversikt tbody tr[data-status]:hover {
+            background-color: rgba(10, 132, 255, 0.15);
+        }
+
+        /* FIX: Sista raden ska inte ha border-bottom, men kommentarsraden ska ha det */
+        #jobbOversikt tbody tr[data-status]:last-child td { border-bottom: none; }
+        #jobbOversikt .comment-row:last-child .comment-cell { border-bottom: none; }
         
         /* NY: Status-brickor (v10) */
         .status-badge {
@@ -378,14 +438,24 @@
             padding: 0.5rem; border-radius: 6px; color: var(--text-color-light);
             display: inline-flex; align-items: center; justify-content: center;
         }
-        .icon-btn:hover { background-color: var(--bg-color); color: var(--text-color); }
+        /* ÄNDRING 10: Tydligare hovring på ikon-knapp */
+        .icon-btn:hover { 
+            background-color: var(--bg-color); 
+            color: var(--primary-color); /* ÄNDRAD (från --text-color) */
+        }
         
         #jobbOversikt .action-col { text-align: right; white-space: nowrap; }
-        #jobbOversikt .action-col .icon-btn { opacity: 0; transition: opacity 0.2s ease; }
+        /* ÄNDRING 9: Synligare åtgärdsknappar */
+        #jobbOversikt .action-col .icon-btn { 
+            opacity: 0.4; /* ÄNDRAD (från 0) */
+            transition: opacity 0.2s ease; 
+        }
         #jobbOversikt tbody tr:hover .action-col .icon-btn { opacity: 1; }
 
-        /* NY: Expanderbar kommentar-rad (v10) */
+        /* NY: Expanderbar kommentar-rad (v10) - FIXAD LAYOUT */
         #jobbOversikt .expand-col { width: 1%; padding-left: 1rem; padding-right: 0.5rem; }
+        #jobbOversikt .prio-col { width: 1%; } /* Ge prio-kolumnen lite utrymme */
+        
         #jobbOversikt .expand-btn {
             width: 24px; height: 24px;
             color: var(--text-color-light);
@@ -395,17 +465,28 @@
         
         #jobbOversikt .comment-row { display: none; }
         #jobbOversikt .comment-row.expanded { display: table-row; }
+        
+        /* FIX: Snyggare kommentars-cell */
         #jobbOversikt .comment-cell {
-            padding: 1rem 1.5rem 1.5rem 2.5rem;
+            padding: 1rem 1.25rem 1.25rem; /* Justerad padding */
             border-bottom: 1px solid var(--border-color);
             background-color: var(--bg-color);
             white-space: pre-wrap;
             word-break: break-word;
             line-height: 1.6;
+            color: var(--text-color-light); /* Lättare textfärg för kommentar */
         }
         #jobbOversikt .comment-cell strong {
             display: block; margin-bottom: 0.5rem;
             font-size: 0.875rem; color: var(--text-color);
+        }
+        
+        /* ÄNDRING 11: Ikon i kommentarsrad */
+        #jobbOversikt .comment-cell strong::before {
+            content: '💬 ';
+            display: inline-block;
+            margin-right: 0.5rem;
+            opacity: 0.7;
         }
         
         /* NY: Tom Vy (v10) */
@@ -418,6 +499,14 @@
             animation: fadeIn 0.3s ease;
         }
         .empty-state.show { display: block; }
+        
+        /* ÄNDRING 21: Färg i Empty State */
+        .empty-state .icon-lg {
+            width: 3rem; height: 3rem;
+            color: var(--primary-color); /* TILLAGD */
+            opacity: 0.3; /* ÄNDRAD (från 0.5) */
+        }
+        
         .empty-state h3 { font-size: 1.25rem; color: var(--text-color); margin: 1.5rem 0 0.5rem 0; }
         
         /* NY: Knapp-stilar (v10) */
@@ -489,7 +578,7 @@
             padding: 0.75rem; border: 1px solid var(--border-color);
             border-radius: 8px; font-size: 0.95rem;
             font-family: 'Inter', sans-serif;
-            transition: border-color 0.2s, box-shadow 0.2s;
+            transition: border-color 0.2s, box-shadow 0.2s, border-width 0.2s, padding 0.2s; /* TILLAGD */
             background-color: var(--bg-color); /* Bakgrund på fält */
             color: var(--text-color);
         }
@@ -497,11 +586,14 @@
              background-color: #2c2c2e; /* Mörkare fält */
         }
         
+        /* ÄNDRING 18: Tydligare fält-fokus */
         .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
             outline: none; 
             border-color: var(--primary-color);
             box-shadow: var(--shadow-focus);
             background-color: var(--content-bg);
+            border-width: 2px; /* TILLAGD */
+            padding: calc(0.75rem - 1px); /* TILLAGD */
         }
         
         .form-group-inline {
@@ -528,6 +620,18 @@
             flex-shrink: 0;
         }
         .modal-actions-right { display: flex; gap: 0.75rem; }
+        
+        /* ÄNDRING 17: Diskretare "Avbryt"-knapp */
+        #modalCancelBtn {
+            background: transparent;
+            box-shadow: none;
+            border-color: transparent;
+            color: var(--text-color-light);
+        }
+        #modalCancelBtn:hover {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
 
         /* --- Toast --- */
         .toast { 
@@ -608,7 +712,14 @@
             display: flex;
             flex-direction: column;
             max-height: 100%;
+            transition: box-shadow var(--transition-speed) ease; /* TILLAGD */
         }
+        
+        /* ÄNDRING 13: Subtil hovring på kolumn */
+        .kanban-column:hover {
+            box-shadow: var(--shadow-md);
+        }
+        
         .kanban-column-header {
             display: flex;
             justify-content: space-between;
@@ -640,6 +751,7 @@
             flex-direction: column;
             gap: 0.75rem;
             min-height: 100px; /* Utrymme att släppa på */
+            transition: all var(--transition-speed-fast) ease; /* TILLAGD */
         }
         
         .kanban-card {
@@ -672,7 +784,8 @@
             align-items: center;
             margin-top: 1rem;
             padding-top: 0.75rem;
-            border-top: 1px solid var(--bg-color);
+            /* ÄNDRING 12: Konsekvent kantlinje */
+            border-top: 1px solid var(--border-color); /* ÄNDRAD (från --bg-color) */
         }
         .kanban-card-date {
             font-size: 0.8rem;
@@ -695,16 +808,87 @@
             transform: rotate(3deg);
             box-shadow: var(--shadow-lg);
         }
+        /* ÄNDRING 14: Tydligare "Drag-over" */
         .kanban-column-jobs.drag-over {
             background-color: var(--primary-light);
             border-radius: 8px;
+            border: 2px dashed var(--primary-color); /* TILLAGD */
+            opacity: 0.7; /* TILLAGD */
         }
+        
+        /* --- NY: Kalender/Agenda-vy --- */
+        .calendar-agenda-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        .agenda-day-group {
+            /* Inget speciellt, bara en wrapper */
+        }
+        .agenda-day-header {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-color);
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--primary-color);
+            margin-bottom: 1rem;
+        }
+        
+        /* ÄNDRING 15: "Idag"-markering (CSS-regel) */
+        .agenda-day-header.is-today {
+            color: var(--primary-color);
+            border-bottom-color: var(--warning-color);
+        }
+        
+        .agenda-job-card {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            background-color: var(--content-bg);
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+            padding: 1.25rem;
+            transition: all var(--transition-speed) ease;
+            cursor: pointer;
+        }
+        /* ÄNDRING 16: Interaktivt agenda-kort */
+        .agenda-job-card:hover {
+            box-shadow: var(--shadow-md);
+            border-color: var(--primary-color);
+            transform: translateY(-2px); /* TILLAGD */
+        }
+        .agenda-job-time {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            width: 70px;
+            flex-shrink: 0;
+            text-align: right;
+        }
+        .agenda-job-details {
+            flex-grow: 1;
+        }
+        .agenda-job-details h4 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin: 0 0 0.25rem 0;
+        }
+        .agenda-job-details p {
+            margin: 0;
+            color: var(--text-color-light);
+            font-size: 0.95rem;
+        }
+        .agenda-job-status {
+            /* Använder befintlig status-badge-CSS */
+        }
+        
     </style>
 </head>
 <body>
 
     <svg width="0" height="0" style="position:absolute;display:none;">
-        <symbol id="icon-logo-p" xmlns="http://www.w.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M11.35 3.836c-1.061 1.061-1.66 2.503-1.66 4.025 0 3.223 2.612 5.836 5.836 5.836 1.522 0 2.964-.598 4.025-1.66m-8.05 3.32a6.963 6.963 0 00-4.025 1.66C6.446 18.06 5.845 19.502 5.845 21H3.75c0-3.223 2.612-5.836 5.836-5.836 1.522 0 2.964.598 4.025 1.66m8.05-3.32a6.963 6.963 0 00-4.025-1.66c-1.061-1.061-2.503-1.66-4.025-1.66-3.223 0-5.836 2.612-5.836 5.836 0 1.522.598 2.964 1.66 4.025m3.32-8.05a6.963 6.963 0 001.66-4.025C13.664 6.446 15.106 5.845 16.628 5.845c3.223 0 5.836 2.612 5.836 5.836 0 1.522-.598 2.964-1.66 4.025" /></symbol>
+        <symbol id="icon-logo-p" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M11.35 3.836c-1.061 1.061-1.66 2.503-1.66 4.025 0 3.223 2.612 5.836 5.836 5.836 1.522 0 2.964-.598 4.025-1.66m-8.05 3.32a6.963 6.963 0 00-4.025 1.66C6.446 18.06 5.845 19.502 5.845 21H3.75c0-3.223 2.612-5.836 5.836-5.836 1.522 0 2.964.598 4.025 1.66m8.05-3.32a6.963 6.963 0 00-4.025-1.66c-1.061-1.061-2.503-1.66-4.025-1.66-3.223 0-5.836 2.612-5.836 5.836 0 1.522.598 2.964 1.66 4.025m3.32-8.05a6.963 6.963 0 001.66-4.025C13.664 6.446 15.106 5.845 16.628 5.845c3.223 0 5.836 2.612 5.836 5.836 0 1.522-.598 2.964-1.66 4.025" /></symbol>
         <symbol id="icon-dashboard" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v16.5h16.5" /><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75h16.5M3.75 12h16.5m-16.5 5.25h16.5M3.75 6.75h16.5m-16.5 5.25h16.5M3.75 15h16.5M3.75 18.75h16.5M20.25 3v16.5" /><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 20.25V3.75" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 20.25V3.75" /><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 20.25V3.75" /></symbol>
         <symbol id="icon-list" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></symbol>
         <symbol id="icon-kanban" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21M9 17.25v-1.007a3 3 0 00-.879-2.122L7.5 13.5m0-3L7.5 9.75m0-3L7.5 6m0 0l.879-1.122A3 3 0 019 3.75v1.007M9 17.25h6M9 3.75h6m0 0v1.007a3 3 0 01.879 2.122L16.5 9m0 3l.879 1.122a3 3 0 00.879 2.122V17.25m0-1.007v-1.007a3 3 0 00-.879-2.122L16.5 13.5m-3 0h3m-3 0h-3" /></symbol>
@@ -728,16 +912,16 @@
             <a href="#" class="nav-logo" title="Jobbplanerare v10">P</a>
             
             <div class="nav-group">
-                <button class="nav-button active" id="nav-timeline" data-view="timeline" data-tooltip="Tidslinje">
+                <button class="nav-button active" id="nav-timeline" data-view="timeline" data-tooltip="Tidslinje (1)">
                     <svg class="icon" viewBox="0 0 24 24"><use href="#icon-list"></use></svg>
                 </button>
-                <button class="nav-button" id="nav-board" data-view="board" data-tooltip="Tavla (Kanban)">
+                <button class="nav-button" id="nav-board" data-view="board" data-tooltip="Tavla (Kanban) (2)">
                     <svg class="icon" viewBox="0 0 24 24"><use href="#icon-kanban"></use></svg>
                 </button>
-                <button class="nav-button" id="nav-calendar" data-view="calendar" data-tooltip="Kalender">
+                <button class="nav-button" id="nav-calendar" data-view="calendar" data-tooltip="Kalender (3)">
                     <svg class="icon" viewBox="0 0 24 24"><use href="#icon-calendar"></use></svg>
                 </button>
-                <button class="nav-button" id="nav-dashboard" data-view="dashboard" data-tooltip="Översikt">
+                <button class="nav-button" id="nav-dashboard" data-view="dashboard" data-tooltip="Översikt (4)">
                     <svg class="icon" viewBox="0 0 24 24"><use href="#icon-dashboard"></use></svg>
                 </button>
             </div>
@@ -756,19 +940,19 @@
                 <div>
                     <h2 id="viewTitle">Tidslinje</h2>
                     <button class="button clear-filter" id="clearDayFilterBtn" style="display: none; margin-top: 0.5rem;">
-                        &times; Rensa dagfilter (Detta är en platshållare)
+                        &times; Rensa sökning
                     </button>
                 </div>
                 
                 <div class="main-controls">
                     <div class="search-wrapper">
                         <svg class="icon" viewBox="0 0 24 24"><use href="#icon-search"></use></svg>
-                        <input type="search" id="searchBar" placeholder="Sök jobb...">
+                        <input type="search" id="searchBar" placeholder="Sök jobb... (F)">
                     </div>
                     
-                    <button class="button secondary" id="filterToggleBtn" style="display: none;">
+                    <button class="button secondary" id="filterToggleBtn">
                         <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678a1 1 0 01.917.917C21.768 6.545 22 9.245 22 12s-.232 5.455-.678 8.083a1 1 0 01-.917.917C17.455 21.768 14.755 22 12 22s-5.455-.232-8.083-.678a1 1 0 01-.917-.917C2.232 17.455 2 14.755 2 12s.232-5.455.678-8.083a1 1 0 01.917-.917C6.545 2.232 9.245 2 12 2z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 12a3 3 0 100-6 3 3 0 000 6z" /></svg>
-                        <span>Filter</span>
+                        <span>Visa tidigare</span>
                     </button>
                 </div>
             </header>
@@ -777,7 +961,7 @@
                 <div class="content-wrapper" id="contentWrapper">
                     
                     <div class="view-container active" id="view-timeline">
-                        <div class="table-container" id="jobListContainer">
+                        <div class="table-container" id="jobListContainer" style="display: none;">
                             </div>
                         <div class="empty-state" id="emptyStateTimeline">
                             <svg class="icon-lg" viewBox="0 0 24 24"><use href="#icon-empty"></use></svg>
@@ -787,7 +971,7 @@
                     </div>
 
                     <div class="view-container" id="view-board">
-                        <div class="kanban-board" id="kanbanBoardContainer">
+                        <div class="kanban-board" id="kanbanBoardContainer" style="display: none;">
                             </div>
                         <div class="empty-state" id="emptyStateBoard">
                             <svg class="icon-lg" viewBox="0 0 24 24"><use href="#icon-kanban"></use></svg>
@@ -797,10 +981,13 @@
                     </div>
                     
                     <div class="view-container" id="view-calendar">
-                        <div class="empty-state show">
+                        <div class="calendar-agenda-container" id="calendarAgendaContainer" style="display: none;">
+                            </div>
+                        
+                        <div class="empty-state" id="emptyStateCalendar">
                             <svg class="icon-lg" viewBox="0 0 24 24"><use href="#icon-calendar"></use></svg>
-                            <h3>Fullskärms-kalender</h3>
-                            <p>Den här vyn är under utveckling. Här kommer du se en stor månad/vecko-vy med alla dina jobb.</p>
+                            <h3>Inga kommande jobb</h3>
+                            <p>Du har inga bokade jobb i framtiden. Klicka på "+" för att lägga till ett.</p>
                         </div>
                     </div>
 
@@ -821,6 +1008,14 @@
                             <div class="stat-card">
                                 <h3 class="stat-card-title">Total Vinst</h3>
                                 <p class="stat-card-value"id="stat-profit">0 kr</p>
+                            </div>
+                            <div class="stat-card">
+                                <h3 class="stat-card-title">Total Omsättning</h3>
+                                <p class="stat-card-value" id="stat-revenue">0 kr</p>
+                            </div>
+                            <div class="stat-card">
+                                <h3 class="stat-card-title">Kommande (7 dagar)</h3>
+                                <p class="stat-card-value" id="stat-upcoming">0</p>
                             </div>
                         </div>
                         
@@ -930,7 +1125,7 @@
             let allJobs = [];
             let currentSearchTerm = "";
             let currentView = 'timeline'; // 'timeline', 'board', 'calendar', 'dashboard'
-            let showCompleted = false; // Filter
+            let showPastJobs = false; // NY: Filter för tidslinje
             let expandedJobIds = new Set();
             const today = new Date();
             const todayString = today.toISOString().split('T')[0];
@@ -951,15 +1146,24 @@
             // Kanban-vy (NY)
             const kanbanBoardContainer = document.getElementById('kanbanBoardContainer');
             const emptyStateBoard = document.getElementById('emptyStateBoard');
+
+            // Kalender-vy (NY)
+            const calendarAgendaContainer = document.getElementById('calendarAgendaContainer');
+            const emptyStateCalendar = document.getElementById('emptyStateCalendar');
             
             // Dashboard (NY)
+            const dashboardStatGrid = document.querySelector('.stat-grid');
             const dashboardEmptyState = document.getElementById('dashboardEmptyState');
             const statJobs = document.getElementById('stat-jobs');
             const statProfit = document.getElementById('stat-profit');
             const statInvoiceCount = document.getElementById('stat-invoice-count');
             const statInvoiceSum = document.getElementById('stat-invoice-sum');
+            const statRevenue = document.getElementById('stat-revenue'); // NY
+            const statUpcoming = document.getElementById('stat-upcoming'); // NY
 
             const searchBar = document.getElementById('searchBar');
+            const clearDayFilterBtn = document.getElementById('clearDayFilterBtn'); // NY
+            const filterToggleBtn = document.getElementById('filterToggleBtn'); // NY
             const themeToggle = document.getElementById('themeToggle');
             const toast = document.getElementById('toastNotification');
             
@@ -999,7 +1203,7 @@
                 appNav.querySelector('.nav-button.active').classList.remove('active');
                 appNav.querySelector(`.nav-button[data-view="${viewId}"]`).classList.add('active');
                 
-                const viewName = appNav.querySelector(`.nav-button.active`).dataset.tooltip;
+                const viewName = appNav.querySelector(`.nav-button.active`).dataset.tooltip.split(' (')[0];
                 viewTitle.textContent = viewName;
                 
                 viewContainers.forEach(container => {
@@ -1009,11 +1213,10 @@
                 // Justera content-wrapper för kanban
                 contentWrapper.classList.toggle('kanban-mode', viewId === 'board');
                 
-                expandedJobIds.clear();
                 renderApp();
             }
 
-            // --- Huvud-renderingsfunktion ---
+            // --- Huvud-renderingsfunktion (BUGGFIXAD) ---
             function renderApp() {
                 loadJobsFromStorage();
                 
@@ -1030,33 +1233,79 @@
                         );
                     });
                 }
+                
+                // --- FIX: Återställ alla vyer innan rendering ---
+                jobListContainer.style.display = 'none';
+                emptyStateTimeline.classList.remove('show');
+                kanbanBoardContainer.style.display = 'none';
+                emptyStateBoard.classList.remove('show');
+                calendarAgendaContainer.style.display = 'none'; // NY
+                emptyStateCalendar.classList.remove('show'); // NY
+                dashboardStatGrid.style.display = 'none';
+                dashboardEmptyState.classList.remove('show');
+                // ---------------------------------------------
 
                 switch(currentView) {
                     case 'timeline':
-                        renderTimelineTable(jobsToDisplay);
+                        const timelineCount = renderTimelineTable(jobsToDisplay);
+                        if (timelineCount === 0) {
+                            emptyStateTimeline.classList.add('show');
+                            if (currentSearchTerm) {
+                                emptyStateTitleTimeline.textContent = "Inga träffar";
+                                emptyStateTextTimeline.textContent = "Din sökning gav inga resultat.";
+                            } else if (showPastJobs) {
+                                emptyStateTitleTimeline.textContent = "Du har inga jobb";
+                                emptyStateTextTimeline.textContent = "Klicka på '+' för att börja.";
+                            } else {
+                                emptyStateTitleTimeline.textContent = "Inga kommande jobb";
+                                emptyStateTextTimeline.textContent = "Klicka på 'Visa tidigare' för att se gamla jobb.";
+                            }
+                        } else {
+                            jobListContainer.style.display = 'block';
+                        }
                         break;
                     case 'board':
-                        renderBoardView(jobsToDisplay); // NY
+                        const boardCount = renderBoardView(jobsToDisplay);
+                        if (boardCount === 0) {
+                            emptyStateBoard.classList.add('show');
+                        } else {
+                            kanbanBoardContainer.style.display = 'grid';
+                        }
                         break;
                     case 'calendar':
-                        // renderCalendarView(jobsToDisplay); // (Framtida funktion)
+                        // NY: Kalendervyn använder sin egen render-funktion
+                        renderCalendarView(jobsToDisplay);
                         break;
                     case 'dashboard':
-                        renderDashboardView(allJobs); // Nu aktiv!
+                         const dashboardCount = renderDashboardView(allJobs);
+                         if (dashboardCount === 0) {
+                             dashboardEmptyState.classList.add('show');
+                         } else {
+                             dashboardStatGrid.style.display = 'grid';
+                         }
                         break;
                 }
             }
 
-            // --- Renderingsfunktioner per Vy ---
+            // --- Renderingsfunktioner per Vy (BUGGFIXAD) ---
 
             /**
              * VY: Tidslinje (Portad & Omdesignad)
+             * NY: Filtrerar bort tidigare jobb om 'showPastJobs' är false.
              */
             function renderTimelineTable(jobs) {
                 jobListContainer.innerHTML = '';
                 
                 let jobsToRender = [...jobs];
                 
+                // NY: Filtrera bort tidigare jobb om filtret är aktivt
+                if (!showPastJobs) {
+                    const now = new Date();
+                    now.setHours(0, 0, 0, 0); // Jämför bara datum-delen
+                    jobsToRender = jobsToRender.filter(job => new Date(job.datum) >= now);
+                }
+                
+                // Sortera: Prio först, sen närmaste datum först
                 jobsToRender.sort((a, b) => {
                     if (a.prio && !b.prio) return -1;
                     if (!a.prio && b.prio) return 1;
@@ -1064,20 +1313,8 @@
                 });
 
                 if (jobsToRender.length === 0) {
-                    emptyStateTimeline.classList.add('show');
-                    jobListContainer.style.display = 'none';
-                    if (currentSearchTerm) {
-                        emptyStateTitleTimeline.textContent = "Inga träffar";
-                        emptyStateTextTimeline.textContent = "Din sökning gav inga resultat.";
-                    } else {
-                        emptyStateTitleTimeline.textContent = "Du har inga jobb";
-                        emptyStateTextTimeline.textContent = "Klicka på '+' för att börja.";
-                    }
-                    return;
+                    return 0;
                 }
-                
-                emptyStateTimeline.classList.remove('show');
-                jobListContainer.style.display = 'block';
 
                 let tableHTML = `
                     <div class="table-wrapper">
@@ -1092,6 +1329,7 @@
                     </div>
                 `;
                 jobListContainer.innerHTML = tableHTML;
+                return jobsToRender.length;
             }
 
             function createTableHead() {
@@ -1151,13 +1389,13 @@
                 `;
             }
 
+            // FIX: Modernare kommentarsrad
             function createCommentRow(job) {
                 if (!job.kommentarer || job.kommentarer.trim().length === 0) return '';
                 const isExpanded = expandedJobIds.has(job.id);
                 return `
                     <tr class="comment-row ${isExpanded ? 'expanded' : ''}" id="comments-${job.id}">
-                        <td colspan="9" class="comment-cell">
-                            <strong>Kommentarer:</strong>
+                        <td class="expand-col"></td> <td class="prio-col"></td> <td colspan="7" class="comment-cell"> <strong>Kommentarer:</strong>
                             ${job.kommentarer.replace(/\n/g, '<br>')}
                         </td>
                     </tr>
@@ -1166,18 +1404,14 @@
             
             /**
              * NY: VY: Kanban-tavla (Fas 3)
+             * FIX: Returnerar nu antalet jobb istället för att hantera display-logik.
              */
             function renderBoardView(jobs) {
                 kanbanBoardContainer.innerHTML = '';
                 
                 if (jobs.length === 0) {
-                    emptyStateBoard.classList.add('show');
-                    kanbanBoardContainer.style.display = 'none';
-                    return;
+                    return 0;
                 }
-                
-                emptyStateBoard.classList.remove('show');
-                kanbanBoardContainer.style.display = 'grid';
                 
                 // Skapa en mappning för jobben per status
                 const jobsByStatus = jobs.reduce((acc, job) => {
@@ -1214,6 +1448,8 @@
                     `;
                     kanbanBoardContainer.appendChild(columnEl);
                 }
+                
+                return jobs.length;
             }
 
             function createKanbanCard(job) {
@@ -1236,20 +1472,89 @@
             }
 
             /**
+             * NY: VY: Kalender (Agenda-stil)
+             */
+            function renderCalendarView(jobs) {
+                calendarAgendaContainer.innerHTML = '';
+                
+                const now = new Date();
+                now.setHours(0, 0, 0, 0);
+
+                // Hämta bara framtida jobb som inte är avbokade
+                const upcomingJobs = jobs.filter(j => 
+                    new Date(j.datum) >= now && j.status !== 'avbokad'
+                ).sort((a, b) => new Date(a.datum) - new Date(b.datum));
+
+                if (upcomingJobs.length === 0) {
+                    emptyStateCalendar.classList.add('show');
+                    calendarAgendaContainer.style.display = 'none';
+                    return 0;
+                }
+                
+                emptyStateCalendar.classList.remove('show');
+                calendarAgendaContainer.style.display = 'flex';
+
+                // Gruppera per dag
+                const jobsByDay = upcomingJobs.reduce((acc, job) => {
+                    const dateString = new Date(job.datum).toLocaleDateString('sv-SE', {
+                        weekday: 'long', day: 'numeric', month: 'long'
+                    });
+                    if (!acc[dateString]) acc[dateString] = [];
+                    acc[dateString].push(job);
+                    return acc;
+                }, {});
+
+                let html = '';
+                const todayDateString = new Date().toLocaleDateString('sv-SE', {
+                    weekday: 'long', day: 'numeric', month: 'long'
+                });
+
+                for (const day in jobsByDay) {
+                    const isTodayClass = (day === todayDateString) ? 'is-today' : '';
+                    html += `
+                        <div class="agenda-day-group">
+                            <h3 class="agenda-day-header ${isTodayClass}">${day}</h3>
+                            <div class="agenda-day-jobs" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                ${jobsByDay[day].map(createAgendaCard).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                calendarAgendaContainer.innerHTML = html;
+                return upcomingJobs.length;
+            }
+            
+            function createAgendaCard(job) {
+                const jobTime = new Date(job.datum).toLocaleTimeString('sv-SE', {
+                    hour: '2-digit', minute: '2-digit'
+                });
+                
+                return `
+                    <div class="agenda-job-card" data-id="${job.id}" title="Klicka för att redigera">
+                        <div class="agenda-job-time">${jobTime}</div>
+                        <div class="agenda-job-details">
+                            <h4>${job.kundnamn}</h4>
+                            <p>${job.regnr || '---'}</p>
+                        </div>
+                        <div class="agenda-job-status">
+                            <span class="status-badge status-${job.status || 'bokad'}">${STATUS_TEXT[job.status] || 'Bokad'}</span>
+                        </div>
+                    </div>
+                `;
+            }
+
+            /**
              * VY: Översikt (Dashboard) (Fas 2)
+             * NY: Utökad med fler stats
              */
             function renderDashboardView(jobs) {
-                const grid = document.querySelector('.stat-grid');
-                if (!grid) return;
-                
                 if (jobs.length === 0) {
-                    dashboardEmptyState.classList.add('show');
-                    grid.style.display = 'none';
-                } else {
-                    dashboardEmptyState.classList.remove('show');
-                    grid.style.display = 'grid';
-                    updateGlobalDashboardStats(jobs);
+                    return 0;
                 }
+                
+                updateGlobalDashboardStats(jobs);
+                return jobs.length;
             }
             
             function updateGlobalDashboardStats(jobs) {
@@ -1258,32 +1563,65 @@
                 const invoiceCount = jobsToInvoice.length;
                 const invoiceSum = jobsToInvoice.reduce((sum, job) => sum + (job.kundpris || 0), 0);
                 
+                // NYA STATS
+                const totalRevenue = jobs.filter(j => j.status !== 'avbokad').reduce((sum, job) => sum + (job.kundpris || 0), 0);
+                const today = new Date();
+                const sevenDays = new Date(today);
+                sevenDays.setDate(today.getDate() + 7);
+                const upcomingCount = jobs.filter(j => {
+                   const jobDate = new Date(j.datum);
+                   return jobDate >= today && jobDate <= sevenDays && j.status !== 'avbokad';
+                }).length;
+                
                 statJobs.textContent = jobs.length;
                 statProfit.textContent = formatCurrency(totalProfit);
                 statInvoiceCount.textContent = invoiceCount;
                 statInvoiceSum.textContent = formatCurrency(invoiceSum);
+                statRevenue.textContent = formatCurrency(totalRevenue); // NY
+                statUpcoming.textContent = upcomingCount; // NY
 
                 statProfit.classList.toggle('profit-positive', totalProfit > 0);
                 statProfit.classList.toggle('profit-negative', totalProfit < 0);
             }
 
             // --- Datahantering & Lagring ---
+            // NY: Laddar demodata om lagring är tom
             function loadJobsFromStorage() {
                 try {
                     const jobs = localStorage.getItem('jobb');
-                    if (!jobs) {
-                        allJobs = []; // Starta tom
+                    if (!jobs || jobs === '[]') { // Om ingen data finns
+                        allJobs = getDemoData(); // Ladda demo-data
+                        saveJobsToStorage(); // Och spara den
                     } else {
                         allJobs = JSON.parse(jobs);
                     }
                 } catch (e) {
                     console.error("Kunde inte ladda jobb, återställer.", e);
-                    allJobs = [];
+                    allJobs = getDemoData();
                     saveJobsToStorage();
                 }
             }
             function saveJobsToStorage() {
                 localStorage.setItem('jobb', JSON.stringify(allJobs));
+            }
+
+            // NY: Demo-data funktion
+            function getDemoData() {
+                const dStr = (d, days) => { 
+                    const newDate = new Date(d);
+                    newDate.setDate(newDate.getDate() + days); 
+                    return newDate.toISOString().split('T')[0]; 
+                };
+                const today = new Date();
+                return [
+                    {id: crypto.randomUUID(), status: 'klar', datum: `${dStr(today, -4)}T09:00`, regnr: 'CAE648', kundnamn: 'IBRAHIM', kundpris: 1200, utgifter: 0, vinst: 1200, kommentarer: '', prio: false},
+                    {id: crypto.randomUUID(), status: 'klar', datum: `${dStr(today, -2)}T09:00`, regnr: 'YXM480', kundnamn: 'IBRAHIM', kundpris: 1200, utgifter: 0, vinst: 1200, kommentarer: 'Liten buckla.', prio: false},
+                    {id: crypto.randomUUID(), status: 'klar', datum: `${dStr(today, -1)}T09:00`, regnr: 'UCJ383', kundnamn: 'OSMAN', kundpris: 1900, utgifter: 0, vinst: 1900, kommentarer: '', prio: false},
+                    {id: crypto.randomUUID(), status: 'offererad', datum: `${dStr(today, 1)}T09:00`, regnr: 'OBG200', kundnamn: 'ELVIS SALKIC', kundpris: 1900, utgifter: 0, vinst: 1900, kommentarer: 'Väntar på svar.', prio: true},
+                    {id: crypto.randomUUID(), status: 'bokad', datum: `${dStr(today, 2)}T10:00`, regnr: 'JAZ886', kundnamn: 'SALKO', kundpris: 1200, utgifter: 0, vinst: 1200, kommentarer: '', prio: false},
+                    {id: crypto.randomUUID(), status: 'bokad', datum: `${dStr(today, 3)}T09:00`, regnr: 'CKL389', kundnamn: 'JAKOB J', kundpris: 2500, utgifter: 0, vinst: 2500, kommentarer: '', prio: false},
+                    {id: crypto.randomUUID(), status: 'pagaende', datum: `${dStr(today, 0)}T08:00`, regnr: 'BSL526', kundnamn: 'JASMIN SOLAK', kundpris: 1300, utgifter: 0, vinst: 1300, kommentarer: 'Håller på med denna nu.', prio: true},
+                ];
             }
 
             // --- Modal-hantering (v10) ---
@@ -1463,6 +1801,17 @@
                 }
             });
 
+            // NY: Event delegation för Kalender-kort
+            calendarAgendaContainer.addEventListener('click', (e) => {
+                const card = e.target.closest('.agenda-job-card');
+                if (card && card.dataset.id) {
+                    const jobId = card.dataset.id;
+                    const job = allJobs.find(j => j.id === jobId);
+                    if (job) openModal('edit', job);
+                }
+            });
+
+
             // NY: Dra-och-släpp-logik (Fas 3)
             let draggedItem = null;
             
@@ -1531,10 +1880,30 @@
                 }
             });
 
+            // NY: Sökfältet är nu smartare
             searchBar.addEventListener('input', debounce((e) => {
                 currentSearchTerm = e.target.value;
+                // Visa/dölj rensa-knappen
+                clearDayFilterBtn.style.display = currentSearchTerm ? 'inline-flex' : 'none';
                 renderApp();
             }, 300));
+            
+            // NY: Rensa-knappen fungerar
+            clearDayFilterBtn.addEventListener('click', () => {
+                searchBar.value = '';
+                currentSearchTerm = '';
+                clearDayFilterBtn.style.display = 'none';
+                renderApp();
+                searchBar.focus();
+            });
+            
+            // NY: Filterknapp för tidslinje
+            filterToggleBtn.addEventListener('click', () => {
+                showPastJobs = !showPastJobs; // Växla
+                filterToggleBtn.classList.toggle('active', showPastJobs);
+                filterToggleBtn.querySelector('span').textContent = showPastJobs ? 'Dölj tidigare' : 'Visa tidigare';
+                renderApp();
+            });
             
             // Modal-events
             jobModalForm.addEventListener('submit', handleFormSubmit);
@@ -1575,6 +1944,49 @@
             // Ladda sparat tema
             const savedTheme = localStorage.getItem('theme') || 'dark';
             setTheme(savedTheme);
+
+            // NY: Tangentbordsgenvägar
+            document.addEventListener('keydown', (e) => {
+                const modalIsOpen = jobModal.classList.contains('show');
+                const isInputFocused = document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA' || document.activeElement.tagName === 'SELECT';
+
+                // Stäng alltid modal med Escape
+                if (e.key === 'Escape' && modalIsOpen) {
+                    e.preventDefault();
+                    closeModal();
+                    return;
+                }
+
+                // Om vi är i modalen eller skriver i ett fält, avbryt (förutom Escape)
+                if (modalIsOpen || isInputFocused) {
+                    return;
+                }
+
+                // Globala genvägar
+                switch(e.key.toLowerCase()) {
+                    case 'n':
+                        e.preventDefault();
+                        openModal('add');
+                        break;
+                    case 'f':
+                        e.preventDefault();
+                        searchBar.focus();
+                        break;
+                    case '1':
+                        switchView('timeline');
+                        break;
+                    case '2':
+                        switchView('board');
+                        break;
+                    case '3':
+                        switchView('calendar');
+                        break;
+                    case '4':
+                        switchView('dashboard');
+                        break;
+                }
+            });
+
 
             // --- Initialisering ---
             switchView('timeline'); // Starta på tidslinjevyn
