@@ -157,17 +157,17 @@
             <svg class="icon" viewBox="0 0 24 24"><use href="#icon-calendar-view"></use></svg>
             <span>Kalender</span>
         </button>
-        <button class="mobile-nav-btn" id="mobileAddJobBtn">
+        <button class="mobile-nav-btn" id="mobileAddJobBtn" data-modal="jobModal">
             <svg class="icon" viewBox="0 0 24 24"><use href="#icon-plus"></use></svg>
             <span>Nytt Jobb</span>
         </button>
-        <button class="mobile-nav-btn" id="mobileSearchBtn">
+        <button class="mobile-nav-btn" id="mobileSearchBtn" data-modal="mobileSearchModal">
             <svg class="icon" viewBox="0 0 24 24"><use href="#icon-search"></use></svg>
             <span>Sök</span>
         </button>
     </nav>
     
-    <div id="mobileSearchModal" class="modal-backdrop-mobile">
+    <div id="mobileSearchModal" class="modal-backdrop-mobile" data-modal-id="mobileSearchModal">
         <div class="search-modal-content">
             <div class="search-wrapper">
                 <svg class="icon" viewBox="0 0 24 24"><use href="#icon-search"></use></svg>
@@ -182,7 +182,7 @@
         <svg class="icon" viewBox="0 0 24 24"><use href="#icon-plus"></use></svg>
     </button>
 
-    <div id="jobModal" class="modal-backdrop">
+    <div id="jobModal" class="modal-backdrop" data-modal-id="jobModal">
         <div class="modal-content">
             <div class="modal-header">
                 <h2 id="modalTitle">Lägg till nytt jobb</h2>
@@ -269,7 +269,7 @@
         </div>
     </div>
     
-    <div id="customerModal" class="modal-backdrop">
+    <div id="customerModal" class="modal-backdrop" data-modal-id="customerModal">
         <div class="modal-content">
             <div class="modal-header detail-modal-header" id="customerModalHeader">
                 <h2 id="customerModalName"></h2>
@@ -297,7 +297,7 @@
         </div>
     </div>
     
-    <div id="carModal" class="modal-backdrop">
+    <div id="carModal" class="modal-backdrop" data-modal-id="carModal">
         <div class="modal-content">
             <div class="modal-header detail-modal-header" id="carModalHeader">
                 <div class="modal-title-with-link">
@@ -347,9 +347,16 @@
     
     <div id="toastNotification" class="toast"></div>
 
-    <div id="pinLockModal" class="modal-backdrop">
+    <div id="pinLockModal" class="modal-backdrop" data-modal-id="pinLockModal">
         <div class="pin-lock-container">
-            <a href="#" class="nav-logo" style="margin: 0 auto 1.5rem auto;">P</a>
+            <a href="#" class="nav-logo" style="margin: 0 auto 1.5rem auto;">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+			        <path d="M8 7H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3"/>
+			        <path d="M16 2v6h-4V2h4zM12 11h.01"/>
+			        <path d="M12 15h.01"/>
+			        <path d="M12 19h.01"/>
+			    </svg>
+            </a>
             <h2>Ange PIN-kod</h2>
             <p>Ange din 4-siffriga PIN för att låsa upp.</p>
             <form id="pinLockForm">
@@ -395,22 +402,40 @@
             alert("Kunde inte initiera Firebase.");
         }
         
-        // --- Globala Konstanter (Oförändrat) ---
+        // --- Globala Konstanter (UPPDATERAD) ---
         const STATUS_TEXT = {
             'bokad': 'Bokad', 'klar': 'Klar', 
             'offererad': 'Offererad', 'avbokad': 'Avbokad'
         };
         const formatCurrency = (num) => `${num.toLocaleString('sv-SE')} kr`;
-        const formatDate = (dateString) => {
+        
+        // UPPDATERAD: Nytt datumformat med veckodag (t.ex. "mån 9 nov. kl. 12.00")
+        const formatDate = (dateString, options = {}) => {
+            const { onlyDate = false } = options;
             if (!dateString) return 'Okänt datum';
             try {
                 const d = new Date(dateString);
-                const datePart = d.toLocaleDateString('sv-SE', { month: 'short', day: 'numeric' });
-                const h = String(d.getHours()).padStart(2, '0');
-                const m = String(d.getMinutes()).padStart(2, '0');
-                return `${datePart} kl. ${h}.${m}`;
+                
+                // Skapa en lokal 'sv-SE' formatter
+                const locale = 'sv-SE';
+                const dateOptions = { weekday: 'short', month: 'short', day: 'numeric' };
+                const timeOptions = { hour: '2-digit', minute: '2-digit', hour12: false };
+                
+                const datePart = new Intl.DateTimeFormat(locale, dateOptions).format(d);
+                
+                if (onlyDate) {
+                    return datePart.charAt(0).toUpperCase() + datePart.slice(1);
+                }
+                
+                const timePart = new Intl.DateTimeFormat(locale, timeOptions).format(d).replace(':', '.');
+                
+                // Kombinera och kapitalisera första bokstaven
+                const fullDate = `${datePart} kl. ${timePart}`;
+                return fullDate.charAt(0).toUpperCase() + fullDate.slice(1);
+
             } catch (e) { return "Ogiltigt datum"; }
         };
+        
         const debounce = (func, timeout = 300) => {
             let timer;
             return (...args) => {
@@ -427,7 +452,7 @@
         
         document.addEventListener('DOMContentLoaded', function() {
             
-            // --- Globalt Tillstånd (State) ---
+            // --- Globalt Tillstånd (State) (UPPDATERAD) ---
             let allJobs = [];
             let currentSearchTerm = "";
             let currentStatusFilter = 'kommande';
@@ -437,6 +462,10 @@
             
             let calendar;
             let currentView = 'timeline';
+            
+            // NYTT: State för modal-hantering (för bakåt-svep)
+            let isModalOpen = false;
+            let currentOpenModalId = null;
 
             // --- DOM-element ---
             const docElement = document.documentElement;
@@ -466,7 +495,6 @@
             const statOffered = document.getElementById('stat-offered');
             const statAll = document.getElementById('stat-all');
             
-            // ÄNDRING: modalTelefon är borttagen
             const jobModal = document.getElementById('jobModal');
             const jobModalForm = document.getElementById('jobModalForm');
             const modalTitle = document.getElementById('modalTitle');
@@ -523,7 +551,7 @@
             const APP_PIN_KEY = 'jobbPlannerarePin';
             const PIN_LAST_UNLOCKED_KEY = 'jobbPlannerareLastUnlocked';
 
-            // NYTT: Mobila DOM-element
+            // Mobila DOM-element
             const mobileNav = document.getElementById('mobileNav');
             const mobileAddJobBtn = document.getElementById('mobileAddJobBtn');
             const mobileSearchBtn = document.getElementById('mobileSearchBtn');
@@ -540,11 +568,8 @@
                 toastTimer = setTimeout(() => { toast.className = 'toast'; }, 3000);
             }
             
-            // --- Kalender-funktioner (UPPDATERAD för mobil) ---
+            // --- Kalender-funktioner (Oförändrad) ---
             function initializeCalendar() {
-                // Denna körs bara en gång, så isMobile här är inte tillförlitligt
-                // Vi hanterar vyn i toggleView() istället.
-
                 calendar = new FullCalendar.Calendar(calendarContainer, {
                     initialView: 'dayGridTwoWeek', // Desktop-standard
                     locale: 'sv',
@@ -736,6 +761,7 @@
                 if (activeCard) activeCard.classList.add('active');
             }
 
+            // UPPDATERAD: renderTimeline (anropar ny render-logik)
             function renderTimeline() {
                 let jobsToDisplay = [...allJobs];
                 
@@ -770,8 +796,24 @@
                     });
                 }
                 
-                const timelineCount = renderTimelineTable(jobsToDisplay);
+                // Sortera efter datum
+                jobsToDisplay.sort((a, b) => {
+                    if (a.prio && !b.prio) return -1;
+                    if (!a.prio && b.prio) return 1;
+                    return new Date(a.datum) - new Date(b.datum);
+                });
+
+                // NY LOGIK: Välj rätt renderingsfunktion baserat på skärmstorlek
+                const isMobile = window.innerWidth <= 768;
+                let timelineCount = 0;
                 
+                if (isMobile) {
+                    timelineCount = renderMobileCardList(jobsToDisplay);
+                } else {
+                    timelineCount = renderTimelineTable(jobsToDisplay);
+                }
+                
+                // Samma logik för tom vy som tidigare
                 if (timelineCount === 0) {
                     jobListContainer.style.display = 'none';
                     emptyStateTimeline.style.display = 'block';
@@ -793,31 +835,25 @@
                 }
             }
 
-
+            // --- Renderingsfunktioner för Tidslinje (UPPDATERAD) ---
+            
+            // Funktion 1: Desktop (Tabell) - (Tidigare renderTimelineTable)
             function renderTimelineTable(jobs) {
                 jobListContainer.innerHTML = '';
-                let jobsToRender = [...jobs];
-                
-                jobsToRender.sort((a, b) => {
-                    if (a.prio && !b.prio) return -1;
-                    if (!a.prio && b.prio) return 1;
-                    return new Date(a.datum) - new Date(b.datum);
-                });
-
-                if (jobsToRender.length === 0) { return 0; }
+                if (jobs.length === 0) { return 0; }
 
                 let tableHTML = `
                     <div class="table-wrapper">
                         <table id="jobbOversikt">
                             ${createTableHead()}
                             <tbody>
-                                ${jobsToRender.map(job => createJobRow(job)).join('')}
+                                ${jobs.map(job => createJobRow(job)).join('')}
                             </tbody>
                         </table>
                     </div>
                 `;
                 jobListContainer.innerHTML = tableHTML;
-                return jobsToRender.length;
+                return jobs.length;
             }
 
             function createTableHead() {
@@ -835,7 +871,6 @@
                 `;
             }
 
-            // UPPDATERAD: Lade till nya knappar i action-col
             function createJobRow(job) {
                 const prioClass = job.prio ? 'prio-row' : '';
                 const doneClass = (job.status === 'klar') ? 'done-row' : '';
@@ -882,16 +917,197 @@
                     </tr>
                 `;
             }
+            
+            // Funktion 2: Mobil (Kortvy med Datum-gruppering) - NY
+            function renderMobileCardList(jobs) {
+                jobListContainer.innerHTML = '';
+                if (jobs.length === 0) { return 0; }
+                
+                // Gruppera jobb per dag
+                const groupedJobs = jobs.reduce((acc, job) => {
+                    const dateKey = job.datum ? job.datum.split('T')[0] : 'Okänt';
+                    if (!acc[dateKey]) {
+                        acc[dateKey] = [];
+                    }
+                    acc[dateKey].push(job);
+                    return acc;
+                }, {});
+                
+                let listHTML = '<div id="mobileJobList">';
+                
+                // Sortera datumgrupperna (nycklarna)
+                const sortedDateKeys = Object.keys(groupedJobs).sort((a, b) => new Date(a) - new Date(b));
+                
+                for (const dateKey of sortedDateKeys) {
+                    const jobsForDay = groupedJobs[dateKey];
+                    const firstJobDate = jobsForDay[0].datum;
+                    
+                    // Lägg till datum-rubrik
+                    listHTML += `<h2 class="mobile-date-header">${formatDate(firstJobDate, { onlyDate: true })}</h2>`;
+                    
+                    // rendera varje jobb-kort för den dagen
+                    listHTML += jobsForDay.map(job => createJobCard(job)).join('');
+                }
+                
+                listHTML += '</div>';
+                jobListContainer.innerHTML = listHTML;
+                return jobs.length;
+            }
+            
+            // Funktion 3: Skapa enskilt mobilkort - NY
+            function createJobCard(job) {
+                const prioClass = job.prio ? 'prio-row' : '';
+                const doneClass = (job.status === 'klar') ? 'done-row' : '';
+                const hasComment = job.kommentarer && job.kommentarer.trim().length > 0;
+                
+                // Använd highlight-funktionen
+                const kundnamnHTML = highlightSearchTerm(job.kundnamn, currentSearchTerm);
+                const regnrHTML = highlightSearchTerm(job.regnr || '---', currentSearchTerm);
+                
+                return `
+                    <div class="mobile-job-card ${prioClass} ${doneClass}" data-id="${job.id}" data-status="${job.status}">
+                        <div class="card-content">
+                            <div class="card-row">
+                                <span class="card-label">Kund</span>
+                                <span class="card-value customer-name">
+                                    <button class="link-btn customer-link" data-kund="${job.kundnamn}">${kundnamnHTML}</button>
+                                </span>
+                            </div>
+                            <div class="card-row">
+                                <span class="card-label">Reg.nr</span>
+                                <span class="card-value">
+                                    <button class="car-link reg-plate" data-regnr="${job.regnr}">
+                                        <span class="reg-country">S</span>
+                                        <span class="reg-number">${regnrHTML}</span>
+                                    </button>
+                                </span>
+                            </div>
+                            <div class="card-row">
+                                <span class="card-label">Tid / Status</span>
+                                <span class="card-value">${formatDate(job.datum).split('kl. ')[1]} / <span class="status-badge status-${job.status || 'bokad'}">${STATUS_TEXT[job.status] || 'Bokad'}</span></span>
+                            </div>
+                            <div class="card-row">
+                                <span class="card-label">Kundpris</span>
+                                <span class="card-value customer-price">${formatCurrency(job.kundpris)}</span>
+                            </div>
+                        </div>
+                        <div class="action-col">
+                            ${hasComment ? `
+                            <button class="icon-btn" data-action="showComment" data-comment="${encodeURIComponent(job.kommentarer)}" aria-label="Visa kommentar">
+                                <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-chat"></use></svg>
+                            </button>
+                            ` : `<span class="icon-btn-placeholder"></span>`}
+                            
+                            <button class="icon-btn" data-action="togglePrio" aria-label="Växla Prio">
+                                <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-flag"></use></svg>
+                            </button>
+                            <button class="icon-btn" data-action="setStatusKlar" aria-label="Markera som Klar">
+                                <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-check"></use></svg>
+                            </button>
+                            
+                            <button class="icon-btn delete-btn" data-id="${job.id}" aria-label="Ta bort jobb">
+                                <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-trash"></use></svg>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
 
-            // --- Popover, Modal-hantering (Oförändrade) ---
+            // --- Popover, Modal-hantering (UPPDATERAD för bakåt-svep) ---
+            
+            // NY: Central funktion för att öppna modaler
+            function openModal(mode, dataToClone = null) {
+                if (mode === 'add' || mode === 'edit') {
+                    openJobModal(mode, dataToClone);
+                }
+            }
+            
+            // NY: Central funktion för att stänga modaler
+            function closeModal() {
+                if (!isModalOpen) return;
+                
+                const modalId = currentOpenModalId;
+                const modalElement = document.getElementById(modalId);
+                
+                if (modalElement) {
+                    modalElement.classList.remove('show');
+                    if (modalElement.id === 'jobModal') {
+                        // Specifik logik för jobb-modalen
+                        kundnamnSuggestions.style.display = 'none';
+                        kundnamnSuggestions.innerHTML = '';
+                    }
+                    setTimeout(() => {
+                        modalElement.style.display = 'none';
+                    }, 200);
+                }
+
+                // Återställ historik-state
+                if (history.state && history.state.modal === modalId) {
+                    history.back(); // Gå tillbaka ett steg för att rensa modal-statet
+                }
+                
+                isModalOpen = false;
+                currentOpenModalId = null;
+            }
+
+            // NY: Funktion för att hantera "popstate" (bakåt-svep/knapp)
+            window.addEventListener('popstate', (event) => {
+                // Om vi är i ett modal-state, stäng modalen
+                if (isModalOpen && event.state && event.state.modal) {
+                    // Detta state är på väg att tas bort, så vi stänger bara modalen visuellt
+                    const modalElement = document.getElementById(event.state.modal);
+                    if (modalElement) {
+                        modalElement.classList.remove('show');
+                         setTimeout(() => {
+                            modalElement.style.display = 'none';
+                        }, 200);
+                    }
+                    isModalOpen = false;
+                    currentOpenModalId = null;
+                }
+            });
+
+            // NY: Helper för att visa modal och hantera historik
+            function showModal(modalId) {
+                if (isModalOpen) {
+                    closeModal(); // Stäng eventuell befintlig modal först
+                }
+                
+                const modalElement = document.getElementById(modalId);
+                if (!modalElement) return;
+
+                modalElement.style.display = 'flex';
+                setTimeout(() => modalElement.classList.add('show'), 10);
+                
+                isModalOpen = true;
+                currentOpenModalId = modalId;
+                
+                // Lägg till i historiken
+                try {
+                    history.pushState({ modal: modalId }, `Modal ${modalId}`, `#${modalId}`);
+                } catch (e) {
+                    console.warn("Kunde inte använda history.pushState", e);
+                }
+            }
+
+
             function showCommentPopover(button) {
                 const commentText = decodeURIComponent(button.dataset.comment);
                 commentPopoverContent.textContent = commentText;
                 const rect = button.getBoundingClientRect();
                 commentPopover.style.display = 'block';
+                
+                let popoverTop = rect.bottom + window.scrollY + 5;
                 let popoverLeft = rect.left + window.scrollX - commentPopover.offsetWidth + rect.width;
+                
                 if (popoverLeft < 10) popoverLeft = 10;
-                commentPopover.style.top = `${rect.bottom + window.scrollY + 5}px`;
+                
+                // Justera om den hamnar utanför skärmen nedåt
+                if (popoverTop + commentPopover.offsetHeight > window.innerHeight + window.scrollY) {
+                    popoverTop = rect.top + window.scrollY - commentPopover.offsetHeight - 5;
+                }
+
+                commentPopover.style.top = `${popoverTop}px`;
                 commentPopover.style.left = `${popoverLeft}px`;
                 popoverBackdrop.classList.add('show');
                 commentPopover.classList.add('show');
@@ -908,7 +1124,8 @@
                 modalVinstKalkyl.style.color = vinst < 0 ? 'var(--danger-color)' : (vinst > 0 ? 'var(--success-color)' : 'var(--text-color)');
             }
             
-            function openModal(mode, dataToClone = null) {
+            // UPPDATERAD: Använder nu showModal()
+            function openJobModal(mode, dataToClone = null) {
                 jobModalForm.reset();
                 if (mode === 'add') {
                     modalTitle.textContent = 'Lägg till nytt jobb';
@@ -941,7 +1158,7 @@
                     if (dataToClone.datum) {
                         const [datePart, timePart] = dataToClone.datum.split('T');
                         modalDatum.value = datePart;
-                        modalTid.value = timePart || '09:00';
+                        modalTid.value = timePart ? timePart.split('.')[0].substring(0,5) : '09:00';
                     } else {
                         modalDatum.value = ''; modalTid.value = '';
                     }
@@ -952,15 +1169,8 @@
                     document.getElementById('kommentarer').value = dataToClone.kommentarer;
                 }
                 updateLiveProfit();
-                jobModal.style.display = 'flex';
-                setTimeout(() => jobModal.classList.add('show'), 10);
+                showModal('jobModal'); // NYTT
                 modalKundnamn.focus();
-            }
-            function closeModal() {
-                jobModal.classList.remove('show');
-                kundnamnSuggestions.style.display = 'none';
-                kundnamnSuggestions.innerHTML = '';
-                setTimeout(() => jobModal.style.display = 'none', 200);
             }
             
             function getJobDataFromForm() {
@@ -981,6 +1191,7 @@
                 };
             }
             
+            // UPPDATERAD: Använder nu showModal()
             function openCustomerModal(kundnamn) {
                 const customerJobs = allJobs.filter(j => j.kundnamn === kundnamn).sort((a, b) => new Date(b.datum) - new Date(a.datum));
                 if (customerJobs.length === 0) return;
@@ -995,13 +1206,10 @@
                     const prioIcon = job.prio ? `<svg class="icon-sm prio-flag-icon" viewBox="0 0 24 24"><use href="#icon-flag"></use></svg>` : '';
                     return `<li><div><span class="job-date">${prioIcon}${formatDate(job.datum)}</span><span class="job-subline">${job.regnr || '---'} (${STATUS_TEXT[job.status]})</span>${job.kommentarer ? `<p class="job-comment">${job.kommentarer}</p>` : ''}</div><span class="job-profit profit ${job.vinst > 0 ? 'positive' : ''}">${formatCurrency(job.vinst)}</span></li>`
                 }).join('');
-                customerModal.style.display = 'flex';
-                setTimeout(() => customerModal.classList.add('show'), 10);
+                showModal('customerModal'); // NYTT
             }
-            function closeCustomerModal() {
-                customerModal.classList.remove('show');
-                setTimeout(() => customerModal.style.display = 'none', 200);
-            }
+            
+            // UPPDATERAD: Använder nu showModal()
             function openCarModal(regnr) {
                 if (!regnr) return;
                 const carJobs = allJobs.filter(j => j.regnr === regnr).sort((a, b) => new Date(b.datum) - new Date(a.datum));
@@ -1018,13 +1226,9 @@
                      const prioIcon = job.prio ? `<svg class="icon-sm prio-flag-icon" viewBox="0 0 24 24"><use href="#icon-flag"></use></svg>` : '';
                     return `<li><div><span class="job-date">${prioIcon}${formatDate(job.datum)}</span><span class="job-subline">${job.kundnamn} (${STATUS_TEXT[job.status]})</span>${job.kommentarer ? `<p class="job-comment">${job.kommentarer}</p>` : ''}</div><span class="job-profit profit ${job.vinst > 0 ? 'positive' : ''}">${formatCurrency(job.vinst)}</span></li>`
                 }).join('');
-                carModal.style.display = 'flex';
-                setTimeout(() => carModal.classList.add('show'), 10);
+                showModal('carModal'); // NYTT
             }
-            function closeCarModal() {
-                carModal.classList.remove('show');
-                setTimeout(() => carModal.style.display = 'none', 200);
-            }
+            
             function showContextMenu(e, jobId) {
                 hideContextMenu();
                 e.preventDefault();
@@ -1128,7 +1332,7 @@
                     alert('Ett "Klar" jobb kan inte ha 0 kr i kundpris.');
                     return;
                 }
-                const fullDatum = `${jobData.datum}T${jobData.tid}`;
+                const fullDatum = `${jobData.datum}T${jobData.tid || '09:00'}`;
                 
                 const savedData = { 
                     status: jobData.status, datum: fullDatum, regnr: jobData.regnr,
@@ -1161,7 +1365,7 @@
                 }
             }
             
-            // UPPDATERAD: Lade till nya knappar i action-col
+            // UPPDATERAD: Klick-delegering hanterar nu både <tr> och .mobile-job-card
             jobListContainer.addEventListener('click', (e) => {
                 const target = e.target;
                 
@@ -1169,10 +1373,12 @@
                 const actionButton = target.closest('.icon-btn');
                 const customerLink = target.closest('.customer-link');
                 const carLink = target.closest('.car-link');
-                const row = target.closest('tr[data-id]');
                 
-                if (!row) return;
-                const id = row.dataset.id;
+                // Hitta närmaste jobb-ID, oavsett om det är en rad eller ett kort
+                const jobElement = target.closest('tr[data-id], .mobile-job-card[data-id]');
+                
+                if (!jobElement) return;
+                const id = jobElement.dataset.id;
                 
                 // Hantera action-knappar
                 if (actionButton) {
@@ -1203,15 +1409,21 @@
                 if (customerLink) { e.stopPropagation(); openCustomerModal(customerLink.dataset.kund); return; }
                 if (carLink) { e.stopPropagation(); openCarModal(carLink.dataset.regnr); return; }
                 
-                // Klick på resten av raden (för redigering)
+                // Klick på resten av raden/kortet (för redigering)
                 const job = findJob(id);
                 if (job) openModal('edit', job);
             });
             
             jobListContainer.addEventListener('contextmenu', (e) => {
+                // Inaktivera på mobil, tillåt på desktop
+                if (window.innerWidth <= 768) {
+                    e.preventDefault();
+                    return;
+                }
                 const row = e.target.closest('tr[data-id]');
                 if (row) showContextMenu(e, row.dataset.id);
             });
+            
             contextMenu.addEventListener('click', (e) => {
                 const action = e.target.closest('.context-menu-button')?.dataset.action;
                 if (!action || !contextMenuJobId) {
@@ -1268,20 +1480,37 @@
             jobModalForm.addEventListener('submit', handleFormSubmit);
             fabAddJob.addEventListener('click', () => openModal('add'));
             emptyStateAddBtn.addEventListener('click', () => openModal('add'));
+            
+            // Stäng-knappar för modaler
             modalCloseBtn.addEventListener('click', closeModal);
             modalCancelBtn.addEventListener('click', closeModal);
+            customerModalCloseBtn.addEventListener('click', closeModal);
+            carModalCloseBtn.addEventListener('click', closeModal);
+            mobileSearchCloseBtn.addEventListener('click', closeModal);
+            
+            // Klick utanför modalen
             jobModal.addEventListener('click', (e) => { if (e.target === jobModal) closeModal(); });
+            customerModal.addEventListener('click', (e) => { if (e.target === customerModal) closeModal(); });
+            carModal.addEventListener('click', (e) => { if (e.target === carModal) closeModal(); });
+            mobileSearchModal.addEventListener('click', (e) => { if (e.target === mobileSearchModal) closeModal(); });
+
+            
             modalDuplicateBtn.addEventListener('click', () => {
                 const jobData = getJobDataFromForm();
                 delete jobData.id;
-                closeModal();
+                closeModal(); // Stäng nuvarande
+                
                 const tempJob = { ...jobData, datum: jobData.datum, tid: jobData.tid };
                 const jobDataForModal = {...tempJob};
                 jobDataForModal.datum = todayString;
                 jobDataForModal.tid = new Date().toTimeString().substring(0,5);
-                openModal('add', jobDataForModal);
-                showToast('Jobb duplicerat. Sätt nytt datum och spara.');
+                
+                setTimeout(() => {
+                    openModal('add', jobDataForModal); // Öppna ny
+                    showToast('Jobb duplicerat. Sätt nytt datum och spara.');
+                }, 250); // Vänta tills den gamla stängts
             });
+            
             modalKundpris.addEventListener('input', updateLiveProfit);
             modalUtgifter.addEventListener('input', updateLiveProfit);
             
@@ -1349,11 +1578,6 @@
                 }
             });
 
-            customerModalCloseBtn.addEventListener('click', closeCustomerModal);
-            customerModal.addEventListener('click', (e) => { if (e.target === customerModal) closeCustomerModal(); });
-            carModalCloseBtn.addEventListener('click', closeCarModal);
-            carModal.addEventListener('click', (e) => { if (e.target === carModal) closeCarModal(); });
-
             themeToggle.addEventListener('click', () => {
                 const currentTheme = docElement.getAttribute('data-theme') || 'dark';
                 setTheme(currentTheme === 'dark' ? 'light' : 'dark');
@@ -1395,24 +1619,11 @@
             }
             setupViewToggles();
             
+            // Mobil-knappar för modaler
             mobileAddJobBtn.addEventListener('click', () => openModal('add'));
-            
             mobileSearchBtn.addEventListener('click', () => {
-                mobileSearchModal.style.display = 'flex';
-                setTimeout(() => mobileSearchModal.classList.add('show'), 10);
+                showModal('mobileSearchModal');
                 mobileSearchBar.focus();
-            });
-
-            mobileSearchCloseBtn.addEventListener('click', () => {
-                mobileSearchModal.classList.remove('show');
-                setTimeout(() => mobileSearchModal.style.display = 'none', 200);
-            });
-            
-            mobileSearchModal.addEventListener('click', (e) => {
-                if (e.target === mobileSearchModal) {
-                    mobileSearchModal.classList.remove('show');
-                    setTimeout(() => mobileSearchModal.style.display = 'none', 200);
-                }
             });
 
 
@@ -1420,17 +1631,21 @@
             function showPinLock() {
                 appContainer.style.display = 'none';
                 fabAddJob.style.display = 'none';
-                pinLockModal.style.display = 'flex';
-                setTimeout(() => pinLockModal.classList.add('show'), 10);
+                mobileNav.style.display = 'none'; // Göm mobilnav
+                
+                showModal('pinLockModal');
                 pinInput.focus();
             }
+            
             function hidePinLock() {
                 appContainer.style.display = 'flex';
                 fabAddJob.style.display = 'flex';
-                pinLockModal.classList.remove('show');
-                setTimeout(() => pinLockModal.style.display = 'none', 300);
+                mobileNav.style.display = 'flex'; // Visa mobilnav
+                
+                closeModal(); // Stäng pin-modalen
                 localStorage.setItem(PIN_LAST_UNLOCKED_KEY, Date.now().toString());
             }
+            
             pinLockForm.addEventListener('submit', (e) => {
                 e.preventDefault();
                 const storedPin = localStorage.getItem(APP_PIN_KEY);
@@ -1457,21 +1672,30 @@
             });
             
             document.addEventListener('keydown', (e) => {
-                if (pinLockModal.classList.contains('show')) {
-                    if (e.key === 'Escape') e.preventDefault();
+                // Låt PIN-modalen hantera Escape
+                if (currentOpenModalId === 'pinLockModal' && e.key === 'Escape') {
+                    e.preventDefault();
                     return;
                 }
-                const modalIsOpen = jobModal.classList.contains('show') || customerModal.classList.contains('show') || carModal.classList.contains('show');
-                const isInputFocused = document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA' || document.activeElement.tagName === 'SELECT';
+
+                // Global Escape-hantering för alla andra modaler
                 if (e.key === 'Escape') {
-                    if (jobModal.classList.contains('show')) { e.preventDefault(); closeModal(); }
-                    else if (customerModal.classList.contains('show')) { e.preventDefault(); closeCustomerModal(); }
-                    else if (carModal.classList.contains('show')) { e.preventDefault(); closeCarModal(); }
-                    else if (commentPopover.classList.contains('show')) { e.preventDefault(); hideCommentPopover(); }
-                    else { hideContextMenu(); }
+                    if (isModalOpen) {
+                        e.preventDefault();
+                        closeModal();
+                    } else if (commentPopover.classList.contains('show')) {
+                        e.preventDefault();
+                        hideCommentPopover();
+                    } else {
+                        hideContextMenu();
+                    }
                     return;
                 }
-                if (modalIsOpen || isInputFocused || contextMenu.classList.contains('show')) return;
+                
+                // Snabbknappar
+                const isInputFocused = document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA' || document.activeElement.tagName === 'SELECT';
+                if (isModalOpen || isInputFocused || contextMenu.classList.contains('show')) return;
+                
                 switch(e.key.toLowerCase()) {
                     case 'n': e.preventDefault(); openModal('add'); break;
                     case 'f': 
@@ -1516,6 +1740,10 @@
                 initializeCalendar();
                 initRealtimeListener();
             }
+            
+            // Kör en resize-check vid laddning för att visa rätt vy (tabell/kort)
+            window.addEventListener('resize', debounce(renderTimeline, 200));
+
         });
     </script>
 
