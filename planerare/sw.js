@@ -2,8 +2,8 @@
 const CACHE_NAME = 'jobbplanerare-cache-v1.0.0'; 
 // Lista alla kritiska filer som behövs för att appen ska starta offline.
 const urlsToCache = [
-  'plan.html',
-  'style.css',
+  './plan.html',
+  './style.css',
   './manifest.json',
   // Lägg till ikoner (anpassa sökvägen om den är annorlunda)
   'images/icon-192x192.png',
