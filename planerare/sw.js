@@ -4,6 +4,7 @@ const CACHE_NAME = 'jobbplanerare-cache-v1.0.0';
 const urlsToCache = [
   'plan.html',
   'style.css',
+  './manifest.json',
   // Lägg till ikoner (anpassa sökvägen om den är annorlunda)
   'images/icon-192x192.png',
   // Lägg till Firebase & FullCalendar scripts som vi använder via CDN
