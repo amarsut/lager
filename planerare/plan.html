@@ -20,6 +20,8 @@
 <body>
 
     <svg width="0" height="0" style="position:absolute;display:none;">
+        <symbol id="icon-user" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A1.875 1.875 0 0117.624 22H6.376a1.875 1.875 0 01-1.875-1.882z" /></symbol>
+        
         <symbol id="icon-logo-p" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M11.35 3.836c-1.061 1.061-1.66 2.503-1.66 4.025 0 3.223 2.612 5.836 5.836 5.836 1.522 0 2.964-.598 4.025-1.66m-8.05 3.32a6.963 6.963 0 00-4.025 1.66C6.446 18.06 5.845 19.502 5.845 21H3.75c0-3.223 2.612-5.836 5.836-5.836 1.522 0 2.964.598 4.025 1.66m8.05-3.32a6.963 6.963 0 00-4.025-1.66c-1.061-1.061-2.503-1.66-4.025-1.66-3.223 0-5.836 2.612-5.836 5.836 0 1.522.598 2.964 1.66 4.025m3.32-8.05a6.963 6.963 0 001.66-4.025C13.664 6.446 15.106 5.845 16.628 5.845c3.223 0 5.836 2.612 5.836 5.836 0 1.522-.598 2.964-1.66 4.025" /></symbol>
         <symbol id="icon-plus" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></symbol>
         <symbol id="icon-trash" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12.578 0a48.108 48.108 0 01-3.478-.397m15.42 0A48.1 48.1 0 0012 5.11M4.772 5.79L4.772 4.102a2.25 2.25 0 012.25-2.25h1.5a2.25 2.25 0 012.25 2.25v1.688M4.772 5.79l-.175 2.457a1.125 1.125 0 001.12 1.228H18.28a1.125 1.125 0 001.12-1.228l-.175-2.457m0 0l-1.096-1.547a.562.562 0 00-.923 0l-1.096 1.547M19.228 5.79l-1.096-1.547a.562.562 0 01-.923 0l-1.096 1.547" /></symbol>
@@ -471,7 +473,7 @@
             const appContainer = document.querySelector('.app-container');
             const toast = document.getElementById('toastNotification');
             
-            const appBrandTitle = document.getElementById('appBrandTitle'); // NYTT
+            const appBrandTitle = document.getElementById('appBrandTitle'); 
             
             const timelineView = document.getElementById('timelineView');
             const jobListContainer = document.getElementById('jobListContainer');
@@ -557,7 +559,7 @@
             const mobileAddJobBtn = document.getElementById('mobileAddJobBtn');
             const mobileSearchBtn = document.getElementById('mobileSearchBtn');
             const mobileSearchModal = document.getElementById('mobileSearchModal');
-            const mobileSearchForm = document.getElementById('mobileSearchForm'); // NYTT
+            const mobileSearchForm = document.getElementById('mobileSearchForm'); 
             const mobileSearchBar = document.getElementById('mobileSearchBar');
             const mobileSearchCloseBtn = document.getElementById('mobileSearchCloseBtn');
 
@@ -575,6 +577,9 @@
                 calendar = new FullCalendar.Calendar(calendarContainer, {
                     initialView: 'dayGridTwoWeek', 
                     locale: 'sv',
+                    firstDay: 1, // NYTT: Starta veckan på Måndag
+                    height: 'auto', // NYTT: Låter innehållet bestämma höjden, fixar olika radhöjder
+                    
                     headerToolbar: { 
                         left: 'prev,next today',
                         center: 'title',
@@ -600,14 +605,13 @@
                         timeGridDay: {
                             displayEventTime: true
                         },
-                        // UPPDATERAD: Listvyn (används nu för den nya mobil-designen)
+                        // Mobilvy: Snygg lista
                         listWeek: {
                             type: 'list',
                             duration: { weeks: 1 },
-                            // Ta bort Fullcalendars standard-rendering
-                            listDayFormat: false, 
+                            listDayFormat: false, // Dölj standardrubriker
                             listDaySideFormat: false,
-                            // Vi renderar eventen själva med eventContent
+                            noEventsText: 'Inga jobb denna vecka'
                         }
                     },
                     
@@ -616,7 +620,6 @@
                     slotMinTime: '07:00:00',
                     slotMaxTime: '21:00:00',
                     allDaySlot: false,
-                    aspectRatio: 2.8,
                     
                     eventClick: (clickInfo) => {
                         const jobId = clickInfo.event.id;
@@ -642,38 +645,67 @@
                         modalTid.value = time;
                     },
                     
+                    // UPPDATERAD: eventContent hanterar nu Desktop, Mobil, och Namn-brickor
                     eventContent: function(arg) {
-					    // Hämta det fullständiga job-objektet som vi precis lade till
-					    const job = arg.event.extendedProps.originalJob; 
-					
-					    // Om job-objektet inte finns, använd standard-titeln (säkerhetsåtgärd)
-					    if (!job) {
-					        return { html: `<div>${arg.event.title}</div>` };
-					    }
-					
-					    // Denna logik gäller nu för ALLA kalendervyer (mobil och desktop)
-					    let contentHtml = '';
-					    const prioIcon = job.prio ? `<span class="fc-event-prio-flag">🚩</span>` : '';
-					
-					    // Välj vad som ska visas: REG-NUMMER (med bricka) eller KUNDNAMN
-					    if (job.regnr && job.regnr.toUpperCase() !== 'OKÄNT') {
-					        contentHtml = `
-					            <div class="reg-plate-small">
-					                <span class="reg-country-small">S</span>
-					                <span class="reg-number-small">${job.regnr}</span>
-					            </div>
-					        `;
-					    } else {
-					        // Om inget reg-nummer, visa kundnamn
-					        contentHtml = `<div class="event-customer-name">${prioIcon}${job.kundnamn}</div>`;
-					    }
-					
-					    return { html: contentHtml };
-					},
+                        const job = arg.event.extendedProps.originalJob; 
+                        
+                        if (!job) {
+                            return { html: `<div>${arg.event.title}</div>` };
+                        }
+                        
+                        // Dölj avbokade jobb helt från kalendern
+                        if (job.status === 'avbokad') {
+                            return { html: '' }; // Tomt element
+                        }
+
+                        const prioIcon = job.prio ? `<span class="fc-event-prio-flag">🚩</span>` : '';
+
+                        // --- MOBILVY (listWeek) ---
+                        if (arg.view.type === 'listWeek') {
+                            const timePart = job.datum ? formatDate(job.datum).split('kl. ')[1] || '' : '';
+                            return { 
+                                html: `
+                                <div class="mobile-calendar-card ${job.prio ? 'prio-row' : ''}">
+                                    <span class="card-time-badge">${timePart}</span>
+                                    <div class="card-job-details">
+                                        <span class="card-job-customer">${prioIcon}${job.kundnamn}</span>
+                                        <span class="card-job-regnr">${job.regnr || 'Okänt reg.nr'}</span>
+                                    </div>
+                                    <span class="status-badge status-${job.status}">${STATUS_TEXT[job.status]}</span>
+                                </div>
+                                `
+                            };
+                        }
+
+                        // --- DESKTOP-VY (alla andra, t.ex. dayGridTwoWeek) ---
+                        let contentHtml = '';
+                        // Välj vad som ska visas: REG-NUMMER (med bricka) eller KUNDNAMN (med bricka)
+                        if (job.regnr && job.regnr.toUpperCase() !== 'OKÄNT') {
+                            contentHtml = `
+                                <div class="reg-plate-small">
+                                    <span class="reg-country-small">S</span>
+                                    <span class="reg-number-small">${job.regnr}</span>
+                                </div>
+                            `;
+                        } else {
+                            // NYTT: Namn-bricka med användar-ikon
+                            contentHtml = `
+                                <div class="user-plate-small">
+                                    <span class="user-icon-small">
+                                        <svg class="icon" viewBox="0 0 24 24"><use href="#icon-user"></use></svg>
+                                    </span>
+                                    <span class="user-name-small">${prioIcon}${job.kundnamn}</span>
+                                </div>
+                            `;
+                        }
+                        
+                        return { html: contentHtml };
+                    },
                 });
                 calendar.render();
             }
 
+            // UPPDATERAD: mapJobToEvent
             function mapJobToEvent(job) {
                 return {
                     id: job.id,
@@ -681,10 +713,10 @@
                     start: job.datum,
                     className: `status-${job.status}`, 
                     extendedProps: {
-					    status: job.status,
-					    prio: job.prio,
-					    originalJob: job // <-- LÄGG TILL DENNA RAD
-					}
+                        status: job.status,
+                        prio: job.prio,
+                        originalJob: job // Viktig för eventContent
+                    }
                 };
             }
             
@@ -700,33 +732,52 @@
                 }
             }
             
-            // UPPDATERAD: Hanterar nu även mobil-navigering OCH byter kalendervy
+            // UPPDATERAD: toggleView
             function toggleView(view) {
                 currentView = view;
                 
-                // Synka desktop-knapparna
                 btnToggleTimeline.classList.toggle('active', view === 'timeline');
                 btnToggleCalendar.classList.toggle('active', view === 'calendar');
                 
-                // Synka mobil-knapparna
                 document.querySelector('.mobile-nav-btn[data-view="timeline"]').classList.toggle('active', view === 'timeline');
                 document.querySelector('.mobile-nav-btn[data-view="calendar"]').classList.toggle('active', view === 'calendar');
 
                 if (view === 'calendar') {
-				    timelineView.style.display = 'none';
-				    calendarView.style.display = 'block';
-				
-				    // Aggressiv omritning: dölj, vänta en tick, visa, uppdatera
-				    calendarView.style.visibility = 'hidden'; // Dölj den *visuellt*
-				    setTimeout(() => { // Ge webbläsaren tid att registrera döljningen
-				        calendarView.style.visibility = 'visible'; // Visa den igen
-				        calendar.updateSize(); // Be kalendern räkna om sin storlek
-				    }, 10); // En kort fördröjning, men efter att den blivit "hidden"
-				} else {
-				    calendarView.style.display = 'none';
-				    timelineView.style.display = 'block';
-				}
+                    timelineView.style.display = 'none';
+                    calendarView.style.display = 'block';
+                    appBrandTitle.style.display = 'none'; // Göm datum i kalendern
+
+                    const isMobile = window.innerWidth <= 768;
+                    if (isMobile) {
+                        // NYTT: Byt till listWeek för mobil (snyggare)
+                        calendar.changeView('listWeek'); 
+                        calendar.setOption('headerToolbar', {
+                            left: 'prev,next', center: 'title', right: 'today'
+                        });
+                    } else {
+                        // Desktop
+                        calendar.changeView('dayGridTwoWeek');
+                        calendar.setOption('headerToolbar', {
+                            left: 'prev,next today',
+                            center: 'title',
+                            right: 'dayGridTwoWeek,timeGridWeek,timeGridDay'
+                        });
+                    }
+                    
+                    // Kör den aggressiva omritnings-fixen
+                    calendarView.style.visibility = 'hidden';
+                    setTimeout(() => {
+                        calendarView.style.visibility = 'visible';
+                        calendar.updateSize();
+                    }, 10);
+
+                } else {
+                    calendarView.style.display = 'none';
+                    timelineView.style.display = 'block';
+                    appBrandTitle.style.display = 'block'; // Visa datum i tidslinjen
+                }
             }
+
 
             // --- Firebase Listener (Oförändrad) ---
             function initRealtimeListener() {
@@ -783,8 +834,7 @@
                 const now = new Date();
                 now.setHours(0, 0, 0, 0);
                 
-                // Variabel för att styra sorteringsordning
-                let sortOrder = 'asc'; // Stigande (äldst först)
+                let sortOrder = 'asc'; 
                 
                 switch(currentStatusFilter) {
                     case 'kommande':
@@ -794,13 +844,13 @@
                         break;
                     case 'klar':
                         jobsToDisplay = jobsToDisplay.filter(j => j.status === 'klar');
-                        sortOrder = 'desc'; // NYTT: Fallande (nyast först)
+                        sortOrder = 'desc'; 
                         break;
                     case 'offererad':
                         jobsToDisplay = jobsToDisplay.filter(j => j.status === 'offererad');
                         break;
                     case 'alla':
-                        sortOrder = 'desc'; // NYTT: Fallande (nyast först)
+                        sortOrder = 'desc'; 
                         break;
                 }
                 
@@ -816,20 +866,17 @@
                     });
                 }
                 
-                // UPPDATERAD: Sortera baserat på sortOrder
                 jobsToDisplay.sort((a, b) => {
                     const dateA = new Date(a.datum);
                     const dateB = new Date(b.datum);
 
-                    // Prio har alltid företräde, oavsett sorteringsordning
                     if (a.prio && !b.prio) return -1;
                     if (!a.prio && b.prio) return 1;
 
-                    // Applicera tids-sortering
                     if (sortOrder === 'desc') {
-                        return dateB - dateA; // Nyast först
+                        return dateB - dateA; 
                     } else {
-                        return dateA - dateB; // Äldst först
+                        return dateA - dateB; 
                     }
                 });
 
@@ -863,7 +910,7 @@
                 }
             }
 
-            // --- Renderingsfunktioner för Tidslinje (UPPDATERAD) ---
+            // --- Renderingsfunktioner för Tidslinje (Oförändrade) ---
             
             function renderTimelineTable(jobs) {
                 jobListContainer.innerHTML = '';
@@ -917,7 +964,7 @@
                             </button>
                         </td>
                         <td data-label="Reg.nr">
-                            ${job.regnr ? `
+                            ${(job.regnr && job.regnr.toUpperCase() !== 'OKÄNT') ? `
 	                        <button class="car-link reg-plate" data-regnr="${job.regnr}">
 	                            <span class="reg-country">S</span>
 	                            <span class="reg-number">${regnrHTML}</span>
@@ -962,7 +1009,6 @@
                 
                 let listHTML = '<div id="mobileJobList">';
                 
-                // Sortera datumgrupperna baserat på samma sorteringsordning
                 const sortOrder = (currentStatusFilter === 'klar' || currentStatusFilter === 'alla') ? 'desc' : 'asc';
                 const sortedDateKeys = Object.keys(groupedJobs).sort((a, b) => {
                      if (sortOrder === 'desc') {
@@ -1009,7 +1055,7 @@
                             <div class="card-row">
                                 <span class="card-label">Reg.nr</span>
                                 <span class="card-value">
-                                    ${job.regnr ? `
+                                    ${(job.regnr && job.regnr.toUpperCase() !== 'OKÄNT') ? `
                                     <button class="car-link reg-plate" data-regnr="${job.regnr}">
                                         <span class="reg-country">S</span>
                                         <span class="reg-number">${regnrHTML}</span>
@@ -1053,7 +1099,7 @@
                 `;
             }
 
-            // --- Popover, Modal-hantering (UPPDATERAD för bakåt-svep) ---
+            // --- Popover, Modal-hantering (Oförändrade) ---
             
             function closeModal() {
                 if (!isModalOpen) return;
