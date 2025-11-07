@@ -61,8 +61,7 @@ body {
     background-color: var(--bg-color);
     color: var(--text-color);
     margin: 0; padding: 0;
-    height: 100vh;
-    overflow: hidden;
+
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
@@ -87,7 +86,7 @@ body {
 
 /* --- Layout --- */
 .app-container { 
-    display: flex; flex-direction: column; height: 100vh; 
+    display: flex; flex-direction: column;  
     opacity: 0;
     animation: appFadeIn 0.5s ease 0.1s forwards;
 }
@@ -95,7 +94,7 @@ body {
     to { opacity: 1; }
 }
 
-.app-main { flex-grow: 1; overflow: auto; }
+.app-main { flex-grow: 1; }
 .main-content { 
     max-width: 1400px; margin: 0 auto; 
     padding: 2rem; 
@@ -109,6 +108,8 @@ body {
     padding: 0 1.5rem 0 2rem; height: var(--header-height);
     box-shadow: var(--shadow-sm); background-color: var(--content-bg);
     flex-shrink: 0; z-index: 50;
+	position: sticky; /* <-- LÄGG TILL */
+    top: 0;           /* <-- LÄGG TILL */
     transform: translateY(-20px);
     opacity: 0;
     animation: slideInDown 0.4s ease 0.1s forwards;
@@ -1483,3 +1484,4 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         display: none;
     }
 }
+
