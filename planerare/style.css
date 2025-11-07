@@ -973,28 +973,28 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     border-color: #444;
 }
 .user-plate-small .user-icon-small {
-    background-color: var(--bg-color);
-    color: var(--text-color-light);
+    background-color: var(--primary-color); /* BLÅ BAKGRUND */
+    color: white; /* VIT IKON */
     padding: 0.2rem 0.3rem;
     font-weight: 700;
     align-self: stretch;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-right: 1px solid var(--border-color);
+    border-right: 1px solid #339aff; /* BLÅ HÖGERKANT */
 }
 .user-plate-small .user-icon-small .icon {
     width: 0.8rem;
     height: 0.8rem;
 }
 [data-theme="dark"] .user-plate-small .user-icon-small {
-    background-color: #3a3a3c;
-    border-right-color: #556;
+    background-color: var(--primary-color);
+    border-right-color: #339aff;
 }
 .user-plate-small .user-name-small {
     padding: 0.25rem 0.5rem;
     color: var(--text-color);
-    text-align: left;
+    text-align: center; /* CENTRERA TEXT */
     box-sizing: border-box;
     flex-grow: 1; 
     white-space: nowrap;
@@ -1070,6 +1070,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 /* 8. Tydligare "Idag"-markering (v19) */
 .fc {
     --fc-today-bg-color: var(--primary-light); 
+    height: auto; /* Lösning för kalenderhöjd i mobil */
 }
 [data-theme="dark"] .fc {
     --fc-today-bg-color: rgba(10, 132, 255, 0.15);
@@ -1266,23 +1267,22 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 }
 
 /* 14. Stil för Kalender-listvy (Mobil) - UPPDATERAD */
-.fc .fc-list-day {
-    position: sticky;
-    top: 0;
-    background: var(--bg-color);
-    z-index: 10;
+/* NY FIX: Visa kalender-listan som en vanlig lista på mobil */
+.fc-list-day-cushion {
+    padding-top: 1rem;
+    padding-bottom: 0.5rem;
+    background-color: var(--bg-color);
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 0.75rem;
 }
-[data-theme="dark"] .fc .fc-list-day {
-     background: #2c2c2e;
-}
-/* Rubrik (t.ex. "lördag 22 november") */
+
 .fc .fc-list-day-text,
 .fc .fc-list-day-side-text {
-    color: var(--text-color);
-    font-size: 1rem;
+    font-size: 1.1rem;
     font-weight: 700;
+    color: var(--text-color);
     text-decoration: none;
-    padding: 0.75rem 0;
+    padding: 0 0.5rem; /* Mindre padding */
 }
 .fc .fc-list-event-dot {
     display: none; /* Dölj prickarna */
@@ -1292,7 +1292,8 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     background: none !important;
     border: none !important;
     padding: 0 !important;
-    border-bottom: 1px solid var(--border-color) !important;
+    /* Ingen border-bottom här, låt kortet hantera det */
+    margin-bottom: 0.75rem !important; /* Separera korten */
     cursor: pointer;
 }
 .fc-list-event:hover .mobile-calendar-card {
@@ -1307,9 +1308,20 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 .fc-list-event-time { display: none; } 
 .fc-list-event-title { display: none; } 
 
-.fc-list-table > tbody > tr:last-child > td {
-    border-bottom: none !important;
+.fc-list-table {
+    border-collapse: separate;
+    border-spacing: 0 0.75rem; /* Sätt mellanrum mellan listobjekten */
 }
+.fc-list-table > tbody > tr > td {
+    padding: 0 !important;
+}
+.fc-list-table > tbody > tr:first-child > td {
+    padding-top: 0 !important;
+}
+.fc-list-table > tbody > tr:last-child > td {
+    padding-bottom: 0 !important;
+}
+
 
 /* NYTT: Styling för det egna kalender-kortet (Mobil-listvy) */
 .mobile-calendar-card {
@@ -1320,6 +1332,9 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     background-color: var(--content-bg);
     border-left: 4px solid transparent;
     transition: background-color var(--transition-speed-fast) ease;
+    border: 1px solid var(--border-color); /* Lägg till border runt kortet */
+    border-radius: var(--border-radius); /* Runda hörn */
+    box-shadow: var(--shadow-sm); /* Lite skugga */
 }
 .mobile-calendar-card.prio-row {
     border-left-color: var(--danger-color);
@@ -1691,3 +1706,4 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         display: none;
     }
 }
+
