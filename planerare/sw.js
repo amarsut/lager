@@ -1,5 +1,5 @@
 // Service Worker för Jobbplanerare PWA
-const CACHE_NAME = 'jobbplanerare-cache-v1.0.2'; 
+const CACHE_NAME = 'jobbplanerare-cache-v1.0.3'; 
 // Lista alla kritiska filer som behövs för att appen ska starta offline.
 const urlsToCache = [
   './plan.html',
