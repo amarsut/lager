@@ -731,7 +731,9 @@
                             right: 'dayGridTwoWeek,timeGridWeek,timeGridDay'
                         });
                     }
-                    calendar.render(); // Viktigt att rendera om efter vy-byte
+                    requestAnimationFrame(() => {
+    					setTimeout(() => { calendar.updateSize(); }, 0);
+					});
                 } else {
                     timelineView.style.display = 'block';
                     calendarView.style.display = 'none';
