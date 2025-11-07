@@ -5,8 +5,10 @@ const urlsToCache = [
   './plan.html',
   './style.css',
   './manifest.json',
-  // Lägg till ikoner (anpassa sökvägen om den är annorlunda)
-  'images/192x192.png',
+    // IKONER (Dubbelkolla att mappen heter images/ med litet i och att filnamnen är exakta)
+    './images/192x192.png',
+    './images/512x512.png',
+    './images/maskable.png',
   // Lägg till Firebase & FullCalendar scripts som vi använder via CDN
   'https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js',
   'https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js',
