@@ -1581,7 +1581,83 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     .fc .fc-toolbar-title {
         font-size: 1.25rem;
     }
-
+	/* --- Liten Reg-nummer-bricka för Kalendern --- */
+	.reg-plate-small {
+	    display: inline-flex;
+	    align-items: center;
+	    border: 1px solid #aab;
+	    border-radius: 4px; /* Lite mindre radie */
+	    background-color: var(--content-bg);
+	    box-shadow: var(--shadow-sm);
+	    font-family: 'Inter', sans-serif;
+	    font-weight: 700;
+	    font-size: 0.7rem; /* Mindre textstorlek */
+	    overflow: hidden;
+	    margin: 1px; /* Litet marginal mellan jobb */
+	    line-height: 1; /* Kompakt */
+	}
+	
+	[data-theme="dark"] .reg-plate-small {
+	    border-color: #556;
+	}
+	
+	.reg-plate-small .reg-country-small {
+	    background-color: #003897;
+	    color: white;
+	    padding: 0.2rem 0.3rem; /* Mindre padding */
+	    font-size: 0.6rem; /* Ännu mindre landskod */
+	    font-weight: 700;
+	    align-self: stretch;
+	    display: flex;
+	    align-items: center;
+	    justify-content: center;
+	    border-right: 1px solid #aab;
+	}
+	[data-theme="dark"] .reg-plate-small .reg-country-small {
+	    border-right-color: #556;
+	}
+	
+	.reg-plate-small .reg-number-small {
+	    padding: 0.2rem 0.4rem; /* Mindre padding */
+	    color: var(--text-color);
+	    letter-spacing: 0.05em;
+	    text-align: center;
+	    box-sizing: border-box;
+	}
+	
+	/* Stil för kundnamn om reg-nr saknas */
+	.event-customer-name {
+	    font-size: 0.75rem; /* Mindre än standard */
+	    font-weight: 600;
+	    color: var(--text-color);
+	    white-space: nowrap;
+	    overflow: hidden;
+	    text-overflow: ellipsis;
+	    padding: 2px 4px;
+	    margin: 1px;
+	}
+	
+	/* Justeringar för fc-event för att passa den nya contenten */
+	.fc-event {
+	    background: none !important; /* Ta bort bakgrunden från .fc-event */
+	    border: none !important;
+	    padding: 0 !important; /* Ta bort all padding */
+	    margin: 1px 0 !important; /* Liten marginal för att gruppera korten */
+	}
+	.fc-event-main-frame {
+	    align-items: flex-start !important; /* Placera eventen i toppen av cellen */
+	}
+	.fc-event-time { display: none !important; } /* Göm tiden */
+	
+	/* Anpassa mer-länken till den nya stilen */
+	.fc .fc-daygrid-more-link {
+	    font-size: 0.7rem;
+	    padding: 0 4px;
+	    text-align: right;
+	    width: 100%;
+	    display: block;
+	    margin-top: 2px;
+	}
 }
 
 /* Dölj mobil-nav på desktop */
@@ -1595,81 +1671,4 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     #mobileJobList {
         display: none;
     }
-}
-/* --- Liten Reg-nummer-bricka för Kalendern --- */
-.reg-plate-small {
-    display: inline-flex;
-    align-items: center;
-    border: 1px solid #aab;
-    border-radius: 4px; /* Lite mindre radie */
-    background-color: var(--content-bg);
-    box-shadow: var(--shadow-sm);
-    font-family: 'Inter', sans-serif;
-    font-weight: 700;
-    font-size: 0.7rem; /* Mindre textstorlek */
-    overflow: hidden;
-    margin: 1px; /* Litet marginal mellan jobb */
-    line-height: 1; /* Kompakt */
-}
-
-[data-theme="dark"] .reg-plate-small {
-    border-color: #556;
-}
-
-.reg-plate-small .reg-country-small {
-    background-color: #003897;
-    color: white;
-    padding: 0.2rem 0.3rem; /* Mindre padding */
-    font-size: 0.6rem; /* Ännu mindre landskod */
-    font-weight: 700;
-    align-self: stretch;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-right: 1px solid #aab;
-}
-[data-theme="dark"] .reg-plate-small .reg-country-small {
-    border-right-color: #556;
-}
-
-.reg-plate-small .reg-number-small {
-    padding: 0.2rem 0.4rem; /* Mindre padding */
-    color: var(--text-color);
-    letter-spacing: 0.05em;
-    text-align: center;
-    box-sizing: border-box;
-}
-
-/* Stil för kundnamn om reg-nr saknas */
-.event-customer-name {
-    font-size: 0.75rem; /* Mindre än standard */
-    font-weight: 600;
-    color: var(--text-color);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    padding: 2px 4px;
-    margin: 1px;
-}
-
-/* Justeringar för fc-event för att passa den nya contenten */
-.fc-event {
-    background: none !important; /* Ta bort bakgrunden från .fc-event */
-    border: none !important;
-    padding: 0 !important; /* Ta bort all padding */
-    margin: 1px 0 !important; /* Liten marginal för att gruppera korten */
-}
-.fc-event-main-frame {
-    align-items: flex-start !important; /* Placera eventen i toppen av cellen */
-}
-.fc-event-time { display: none !important; } /* Göm tiden */
-
-/* Anpassa mer-länken till den nya stilen */
-.fc .fc-daygrid-more-link {
-    font-size: 0.7rem;
-    padding: 0 4px;
-    text-align: right;
-    width: 100%;
-    display: block;
-    margin-top: 2px;
 }
