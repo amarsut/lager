@@ -880,72 +880,143 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 [data-theme="dark"] .button-toggle-view.active {
     color: var(--text-color);
 }
-/* 6. Event-styling (Jobben) - (v19 - Solid Block-stil) */
+/* 6. Event-styling (Jobben) - (UPPDATERAD för Reg-brickor) */
 .fc-event {
+    background: none !important; /* Ta bort ALLA FullCalendar-bakgrunder */
     border: none !important;
-    padding: 4px 6px !important;
-    font-size: 0.8rem !important;
-    font-weight: 500;
-    border-radius: 4px !important;
+    padding: 0 !important; 
+    margin: 1px 0 !important; 
     cursor: pointer;
-    transition: filter 0.2s ease, transform 0.2s ease;
-    color: white !important; 
+    width: 100%; /* Få brickan att fylla sin plats */
 }
-.fc-event:hover {
-    filter: brightness(1.1);
-    transform: scale(1.02);
+.fc-event:hover .reg-plate-small { /* Hover-effekt */
+    border-color: var(--primary-color);
+    transform: scale(1.03);
 }
-.fc-event-main {
-    color: white !important;
-}
-.fc-event .fc-event-time {
-    color: white !important;
-    font-weight: 700;
-}
-.fc-event .fc-event-title {
-    font-weight: 500 !important;
-    white-space: normal !important;
+.fc-event:hover .event-customer-name {
+    background-color: var(--primary-light);
 }
 
-/* Prio-flagga */
+.fc-event .fc-event-time { display: none !important; } /* Göm tiden */
+.fc-event .fc-event-title { display: none !important; } /* Göm titeln */
+
+/* Prio-flagga inuti event */
 .fc-event-prio-flag {
     margin-right: 4px;
-    filter: drop-shadow(0 0 1px rgba(0,0,0,0.5));
+    font-size: 0.6rem;
+    vertical-align: 1px;
 }
 
-/* Status-färger (Solida bakgrunder) */
-.fc-event.status-bokad {
-    background-color: var(--primary-color) !important;
+/* --- Liten Reg-nummer-bricka för Kalendern --- */
+.reg-plate-small {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid #aab;
+    border-radius: 4px;
+    background-color: var(--content-bg);
+    box-shadow: var(--shadow-sm);
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 0.75rem; /* Anpassad storlek */
+    overflow: hidden;
+    line-height: 1.2;
+    transition: all var(--transition-speed-fast) ease;
+    width: 98%; /* Fyll ut cellen snyggt */
+    margin: 1px auto; /* Centrera */
 }
-.fc-event.status-klar {
-    background-color: var(--success-color) !important;
+[data-theme="dark"] .reg-plate-small {
+    border-color: #556;
+}
+.reg-plate-small .reg-country-small {
+    background-color: #003897;
+    color: white;
+    padding: 0.2rem 0.4rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-right: 1px solid #aab;
+}
+[data-theme="dark"] .reg-plate-small .reg-country-small {
+    border-right-color: #556;
+}
+.reg-plate-small .reg-number-small {
+    padding: 0.25rem 0.5rem;
+    color: var(--text-color);
+    letter-spacing: 0.05em;
+    text-align: center;
+    box-sizing: border-box;
+    flex-grow: 1; /* Fyll ut återstående plats */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Stil för kundnamn om reg-nr saknas */
+.event-customer-name {
+    font-size: 0.75rem; 
+    font-weight: 600;
+    color: var(--text-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 4px 6px;
+    margin: 1px;
+    border-radius: 4px;
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color);
+    display: block; /* Fyll ut cellen */
+    width: 98%;
+    box-sizing: border-box;
+    margin: 1px auto; /* Centrera */
+}
+
+/* Status-färger (Används inte längre på brickan, men bra att ha kvar) */
+.fc-event.status-bokad { }
+.fc-event.status-klar .reg-plate-small,
+.fc-event.status-klar .event-customer-name {
     opacity: 0.65;
 }
-.fc-event.status-klar:hover {
+.fc-event.status-klar:hover .reg-plate-small,
+.fc-event.status-klar:hover .event-customer-name {
     opacity: 1;
 }
-.fc-event.status-offererad {
-    background-color: var(--info-color) !important;
+.fc-event.status-offererad .reg-plate-small {
+    border-style: dashed;
+    border-color: var(--info-color);
+}
+.fc-event.status-offererad .event-customer-name {
+    border-style: dashed;
+    border-color: var(--info-color);
+    background-color: transparent;
 }
 .fc-event.status-avbokad {
-    background-color: var(--danger-color) !important;
-    opacity: 0.8;
+    display: none !important; /* Göm avbokade från kalendern */
 }
 
-/* Anpassa "fler event"-länken */
+/* Justera "mer"-länken */
 .fc .fc-daygrid-more-link {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-weight: 600;
     color: var(--primary-color);
+    padding: 2px 4px;
+    text-align: right;
+    display: block;
+    width: auto;
+    float: right;
 }
 .fc .fc-daygrid-more-link:hover {
     text-decoration: underline;
 }
 
-/* Gör jobben i "Dag" och "Vecka" lite renare */
-.fc-timegrid-event .fc-event-main {
-    padding: 2px 4px;
-}
+/* Ta bort de gamla stilarna som nu är onödiga */
+.fc-event-main { color: white !important; }
+.fc-event .fc-event-time { color: white !important; }
+.fc-event .fc-event-title { font-weight: 500 !important; }
+.fc-timegrid-event .fc-event-main { padding: 2px 4px; }
+
 /* 2. Kalender-containern (Smalare och centrerad) */
 #calendarView {
     background-color: var(--content-bg);
@@ -1166,53 +1237,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 
 [data-theme="dark"] .suggestion-item:hover {
     background-color: #2c2c2e;
-}
-
-/* 14. Stil för Kalender-listvy (Mobil) - UPPDATERAD */
-.fc .fc-list-day {
-    position: sticky;
-    top: 0; /* Fäst högst upp i scroll-containern */
-    background: var(--bg-color);
-    z-index: 10;
-}
-[data-theme="dark"] .fc .fc-list-day {
-     background: #2c2c2e;
-}
-/* Rubrik (t.ex. "lördag 22 november") */
-.fc .fc-list-day-text,
-.fc .fc-list-day-side-text {
-    color: var(--text-color);
-    font-size: 1rem;
-    font-weight: 700;
-    text-decoration: none;
-    padding: 0.75rem 0;
-}
-.fc .fc-list-event-dot {
-    display: none; /* Dölj prickarna */
-}
-/* Själva list-raden */
-.fc-list-event {
-    background: none !important;
-    border: none !important;
-    padding: 0 !important;
-    border-bottom: 1px solid var(--border-color) !important;
-    cursor: pointer;
-}
-.fc-list-event:hover .mobile-calendar-card {
-    background-color: var(--primary-light) !important;
-}
-.fc-list-event.status-klar:hover .mobile-calendar-card {
-     background-color: rgba(48, 209, 88, 0.1) !important;
-}
-.fc-list-event.status-avbokad:hover .mobile-calendar-card {
-     background-color: var(--danger-light) !important;
-}
-
-.fc-list-event-time { display: none; } /* Göm standard-tiden */
-.fc-list-event-title { display: none; } /* Göm standard-titeln */
-
-.fc-list-table > tbody > tr:last-child > td {
-    border-bottom: none !important;
 }
 
 /* NYTT: Styling för det egna kalender-kortet */
@@ -1672,3 +1696,4 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         display: none;
     }
 }
+
