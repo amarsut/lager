@@ -1,12 +1,12 @@
 // Service Worker för Jobbplanerare PWA
-const CACHE_NAME = 'jobbplanerare-cache-v1.0.1'; 
+const CACHE_NAME = 'jobbplanerare-cache-v1.0.2'; 
 // Lista alla kritiska filer som behövs för att appen ska starta offline.
 const urlsToCache = [
   './plan.html',
   './style.css',
   './manifest.json',
   // Lägg till ikoner (anpassa sökvägen om den är annorlunda)
-  'images/icon-192x192.png',
+  'images/192x192.png',
   // Lägg till Firebase & FullCalendar scripts som vi använder via CDN
   'https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js',
   'https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js',
