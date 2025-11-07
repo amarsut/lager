@@ -643,21 +643,20 @@
                     },
                     
                     eventContent: function(arg) {
-					    // Hämta jobb-objektet
+					    // Hämta det fullständiga job-objektet som vi precis lade till
 					    const job = arg.event.extendedProps.originalJob; 
 					
-					    // För att säkerställa att vi har job-objektet
+					    // Om job-objektet inte finns, använd standard-titeln (säkerhetsåtgärd)
 					    if (!job) {
-					        return { html: `<div>${arg.event.title}</div>` }; // Fallback
+					        return { html: `<div>${arg.event.title}</div>` };
 					    }
 					
+					    // Denna logik gäller nu för ALLA kalendervyer (mobil och desktop)
 					    let contentHtml = '';
-					
-					    // Prioritetsflagga (om Prio är true)
-					    const prioFlag = job.prio ? '<svg class="icon-sm fc-event-prio-flag" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M11.666 2.302l-9.172 17.5a1 1 0 00.89 1.488H20.61a1 1 0 00.89-1.488l-9.172-17.5a1 1 0 00-1.764 0zM12 7a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0112 7zm0 10a1 1 0 100-2 1 1 0 000 2z"></path></svg>' : '';
+					    const prioIcon = job.prio ? `<span class="fc-event-prio-flag">🚩</span>` : '';
 					
 					    // Välj vad som ska visas: REG-NUMMER (med bricka) eller KUNDNAMN
-					    if (job.regnr && job.regnr !== 'Okänt') {
+					    if (job.regnr && job.regnr.toUpperCase() !== 'OKÄNT') {
 					        contentHtml = `
 					            <div class="reg-plate-small">
 					                <span class="reg-country-small">S</span>
@@ -666,7 +665,7 @@
 					        `;
 					    } else {
 					        // Om inget reg-nummer, visa kundnamn
-					        contentHtml = `<div class="event-customer-name">${prioFlag}${job.kundnamn}</div>`;
+					        contentHtml = `<div class="event-customer-name">${prioIcon}${job.kundnamn}</div>`;
 					    }
 					
 					    return { html: contentHtml };
@@ -682,9 +681,10 @@
                     start: job.datum,
                     className: `status-${job.status}`, 
                     extendedProps: {
-                        status: job.status,
-                        prio: job.prio
-                    }
+					    status: job.status,
+					    prio: job.prio,
+					    originalJob: job // <-- LÄGG TILL DENNA RAD
+					}
                 };
             }
             
