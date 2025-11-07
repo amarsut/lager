@@ -717,12 +717,12 @@
                     appBrandTitle.style.display = 'none'; // Göm datumet i kalendervyn
 
                     const isMobile = window.innerWidth <= 768;
-                    if (isMobile) {
-                        calendar.changeView('listWeek'); // Byt till vår nya snygga listvy
-                        calendar.setOption('headerToolbar', {
-                            left: 'prev,next', center: 'title', right: 'today'
-                        });
-                    } else {
+					if (isMobile) {
+					    calendar.changeView('dayGridTwoWeek'); // <--- ÄNDRAT FRÅN 'listWeek'
+					    calendar.setOption('headerToolbar', {
+					        left: 'prev,next', center: 'title', right: 'today'
+					    });
+					} else {
                         calendar.changeView('dayGridTwoWeek');
                         calendar.setOption('headerToolbar', {
                             left: 'prev,next today',
