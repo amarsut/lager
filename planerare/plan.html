@@ -764,12 +764,13 @@
                         });
                     }
                     
-                    // Kör den aggressiva omritnings-fixen
-                    calendarView.style.visibility = 'hidden';
                     setTimeout(() => {
-                        calendarView.style.visibility = 'visible';
-                        calendar.updateSize();
-                    }, 10);
+                        calendar.updateSize(); 
+
+                        const calendarEvents = allJobs.map(mapJobToEvent);
+                        calendar.setOption('events', calendarEvents);
+                        
+                    }, 50);
 
                 } else {
                     calendarView.style.display = 'none';
