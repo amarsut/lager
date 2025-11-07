@@ -507,6 +507,8 @@
             const commentPopover = document.getElementById('commentPopover');
             const commentPopoverContent = document.getElementById('commentPopoverContent');
             const commentPopoverClose = document.getElementById('commentPopoverClose');
+
+			commentPopover.addEventListener('click', (e) => e.stopPropagation());
             
             const contextMenu = document.getElementById('contextMenu');
             let contextMenuJobId = null;
