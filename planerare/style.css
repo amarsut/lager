@@ -1,6 +1,4 @@
-/* --- Jobbplanerare v14: "Pro" --- */
-        
-        /* --- Jobbplanerare v15: "Wow" --- */
+/* --- Jobbplanerare v15: "Wow" --- */
         
 :root {
     --primary-color: #0a84ff;
@@ -31,6 +29,9 @@
     
     --transition-speed: 0.25s;
     --transition-speed-fast: 0.15s;
+
+    /* NYTT: Mobil navigationshöjd */
+    --mobile-nav-height: 65px;
 }
 
 [data-theme="dark"] {
@@ -87,7 +88,6 @@ body {
 /* --- Layout --- */
 .app-container { 
     display: flex; flex-direction: column; height: 100vh; 
-    /* NY: Dölj för in-animation */
     opacity: 0;
     animation: appFadeIn 0.5s ease 0.1s forwards;
 }
@@ -97,7 +97,10 @@ body {
 
 .app-main { flex-grow: 1; overflow: auto; }
 .main-content { 
-    max-width: 1400px; margin: 0 auto; padding: 2rem; 
+    max-width: 1400px; margin: 0 auto; 
+    padding: 2rem; 
+    /* NYTT: Utrymme för mobil-nav */
+    padding-bottom: calc(var(--mobile-nav-height) + 2rem);
 }
 
 /* --- Header --- */
@@ -106,7 +109,6 @@ body {
     padding: 0 1.5rem 0 2rem; height: var(--header-height);
     box-shadow: var(--shadow-sm); background-color: var(--content-bg);
     flex-shrink: 0; z-index: 50;
-    /* NY: In-animation */
     transform: translateY(-20px);
     opacity: 0;
     animation: slideInDown 0.4s ease 0.1s forwards;
@@ -122,15 +124,18 @@ body {
 .header-left { display: flex; align-items: center; gap: 1rem; }
 .nav-logo {
     width: 36px; height: 36px;
-    /* NY: Gradient-bakgrund */
     background: linear-gradient(135deg, var(--primary-color) 0%, #339aff 100%);
     background-size: 150% 150%;
     color: white;
     border-radius: 8px; display: flex; align-items: center;
-    justify-content: center; font-weight: 700; font-size: 1.25rem;
+    justify-content: center;
     text-decoration: none; flex-shrink: 0;
     transition: all var(--transition-speed-fast) ease;
     animation: gradientShift 5s ease infinite;
+}
+.nav-logo .icon {
+    width: 22px;
+    height: 22px;
 }
 @keyframes gradientShift {
     0% { background-position: 0% 50%; }
@@ -142,7 +147,6 @@ body {
     box-shadow: 0 0 15px var(--primary-light);
 }
 
-/* NY: Header-titlar */
 .header-titles { display: flex; flex-direction: column; }
 .app-brand-title {
     font-size: 0.8rem;
@@ -151,7 +155,7 @@ body {
     line-height: 1;
 }
 .main-header h2 { 
-    font-size: 1.25rem; /* Mindre för att passa */
+    font-size: 1.25rem;
     font-weight: 600; 
     margin: 0;
     line-height: 1.2;
@@ -191,7 +195,6 @@ body {
     gap: 1.5rem;
     margin-bottom: 2rem;
 }
-/* NY: Staggered animation för korten */
 .stat-card {
     background-color: var(--content-bg);
     border: 2px solid var(--border-color);
@@ -205,7 +208,6 @@ body {
     opacity: 0;
     animation: slideInUp 0.4s ease forwards;
 }
-/* Staggered delay */
 .stat-card:nth-child(1) { animation-delay: 0.2s; }
 .stat-card:nth-child(2) { animation-delay: 0.25s; }
 .stat-card:nth-child(3) { animation-delay: 0.3s; }
@@ -220,7 +222,6 @@ body {
     box-shadow: var(--shadow-md);
     border-color: var(--primary-color);
 }
-/* NY: "Pop"-effekt på siffran vid hovring */
 .stat-card:hover .stat-card-value {
     transform: scale(1.05);
 }
@@ -241,7 +242,7 @@ body {
 .stat-card-value {
     font-size: 2rem; font-weight: 700;
     margin: 0; line-height: 1.2; color: var(--text-color);
-    transition: transform var(--transition-speed-fast) ease; /* För hovring */
+    transition: transform var(--transition-speed-fast) ease;
 }
 .stat-card .icon-sm { color: var(--primary-color); }
 .stat-card.success .icon-sm { color: var(--success-color); }
@@ -258,7 +259,6 @@ body {
     justify-content: flex-end;
     align-items: center;
     margin-bottom: 1.5rem;
-    /* NY: Animation */
     opacity: 0;
     animation: fadeIn 0.4s ease 0.4s forwards;
 }
@@ -270,6 +270,7 @@ body {
     border: 1px solid var(--border-color);
     border-radius: 8px; padding-left: 0.75rem;
     box-shadow: var(--shadow-sm);
+    width: 100%;
 }
 [data-theme="dark"] .search-wrapper { background: var(--bg-color); }
 .search-wrapper .icon { color: var(--text-color-light); }
@@ -278,6 +279,7 @@ body {
     outline: none; border-radius: 8px; 
     background: transparent; color: var(--text-color);
     min-width: 250px;
+    width: 100%;
 }
 #searchBar:focus-within { border-color: var(--primary-color); }
 
@@ -302,7 +304,7 @@ mark {
     border-radius: 3px;
 }
 
-/* FAB */
+/* FAB (Dölj på mobil) */
 #fabAddJob {
     position: fixed; bottom: 2rem; right: 2rem;
     width: 56px; height: 56px;
@@ -311,7 +313,6 @@ mark {
     box-shadow: var(--shadow-lg); cursor: pointer;
     display: flex; align-items: center; justify-content: center;
     transition: all 0.2s ease; z-index: 1000;
-    /* NY: Pulserande animation */
     animation: pulse 2s infinite;
 }
 @keyframes pulse {
@@ -334,17 +335,16 @@ mark {
 #fabAddJob:hover {
     background-color: var(--primary-hover); 
     transform: scale(1.05);
-    animation-play-state: paused; /* Stoppa pulsering vid hovring */
+    animation-play-state: paused;
 }
 #fabAddJob .icon { width: 1.75rem; height: 1.75rem; }
 
-/* --- Tabell-design --- */
+/* --- Tabell-design (Desktop) --- */
 .table-container { 
     background-color: var(--content-bg); 
     border-radius: var(--border-radius);
     border: 1px solid var(--border-color);
     overflow: hidden; box-shadow: var(--shadow-sm);
-    /* NY: Animation */
     opacity: 0;
     animation: fadeIn 0.4s ease 0.4s forwards;
 }
@@ -374,7 +374,7 @@ mark {
                 border-left-color var(--transition-speed-fast) ease,
                 opacity var(--transition-speed) ease;
     border-left: 4px solid transparent;
-    cursor: context-menu;
+    cursor: pointer; /* Ändrad från context-menu till pointer för mobil */
 }
 #jobbOversikt tbody tr[data-id]:hover {
     background-color: var(--primary-light);
@@ -383,22 +383,18 @@ mark {
     background-color: rgba(10, 132, 255, 0.15);
 }
 
-/* Tydligare Prio-rad-markering */
 #jobbOversikt tbody tr.prio-row {
     border-left-color: var(--danger-color);
     background-color: var(--danger-light);
 }
-/* NY: Korrekt hovring för prio-rad */
 #jobbOversikt tbody tr.prio-row:hover {
     background-color: var(--danger-hover-bg);
 }
 
-/* Nedtonade klara jobb */
 #jobbOversikt tbody tr.done-row { opacity: 0.65; }
 #jobbOversikt tbody tr.done-row:hover { opacity: 1; }
 #jobbOversikt tbody tr:last-child td { border-bottom: none; }
 
-/* Kompakt-läge */
 .compact-mode #jobbOversikt th,
 .compact-mode #jobbOversikt td {
     padding-top: 0.5rem;
@@ -438,6 +434,13 @@ mark {
     display: inline-flex; align-items: center; justify-content: center;
 }
 .icon-btn:hover { background-color: var(--bg-color); color: var(--primary-color); }
+
+/* Tom placeholder för knappar */
+.icon-btn-placeholder {
+    width: 32px; /* Samma som en icon-btn (padding + ikon) */
+    height: 32px;
+    display: inline-block;
+}
 
 #jobbOversikt .action-col { 
     text-align: right; white-space: nowrap; width: 1%;
@@ -484,7 +487,8 @@ mark {
     background-color: var(--content-bg); 
     border-radius: var(--border-radius); 
     box-shadow: var(--shadow-lg); 
-    width: 90%; max-width: 640px; 
+    width: 90%; 
+    max-width: 580px; 
     max-height: 90vh; overflow: hidden;
     display: flex; flex-direction: column;
     transform: scale(0.98) translateY(-10px); 
@@ -496,13 +500,18 @@ mark {
     display: flex; justify-content: space-between; align-items: center; 
     border-bottom: 1px solid var(--border-color); 
     padding: 1.25rem 1.5rem; flex-shrink: 0;
+    gap: 1rem;
 }
-.modal-header h2 { margin: 0; font-size: 1.125rem; font-weight: 600; }
+.modal-header h2 { 
+    margin: 0; font-size: 1.125rem; font-weight: 600; 
+    flex-grow: 1;
+}
 .modal-close-btn { 
     background: transparent; border: none; 
     font-size: 1.5rem; color: var(--text-color-light); 
     cursor: pointer; line-height: 1; padding: 0.25rem;
     display: flex; align-items: center; justify-content: center;
+    order: 3;
 }
 
 .modal-body { padding: 1.5rem; overflow-y: auto; }
@@ -520,6 +529,9 @@ mark {
     font-family: 'Inter', sans-serif;
     transition: all var(--transition-speed-fast) ease;
     background-color: var(--bg-color); color: var(--text-color);
+    
+    width: 100%;
+    box-sizing: border-box;
 }
 [data-theme="dark"] .form-group input, [data-theme="dark"] .form-group textarea, [data-theme="dark"] .form-group select {
      background-color: #2c2c2e;
@@ -532,19 +544,25 @@ mark {
     border-width: 2px; padding: calc(0.75rem - 1px);
 }
 
-.form-group .today-btn {
-    position: absolute; right: 2.8rem; top: 50%;
-    transform: translateY(calc(0.5rem / 2));
+.form-group input[type="date"], .form-group input[type="time"] { position: relative; padding-right: 2.5rem; }
+
+/* Ny wrapper för input-ikoner */
+.input-wrapper {
+    position: relative;
+}
+/* Korrekt placering för ikoner */
+.input-wrapper .today-btn {
+	position: absolute; right: 2.8rem; top: 50%;
+    transform: translateY(-50%);
     font-size: 0.75rem; font-weight: 600; color: var(--primary-color);
     background: var(--primary-light); border: none;
     border-radius: 6px; padding: 0.25rem 0.5rem; cursor: pointer;
 }
-.form-group .today-btn:hover { background: var(--primary-color); color: white; }
+.input-wrapper .today-btn:hover { background: var(--primary-color); color: white; }
 
-.form-group input[type="date"], .form-group input[type="time"] { position: relative; padding-right: 2.5rem; }
-.form-group .input-icon {
+.input-wrapper .input-icon {
     position: absolute; right: 0.75rem; top: 50%;
-    transform: translateY(calc(0.5rem / 2));
+    transform: translateY(-50%);
     color: var(--text-color-light); pointer-events: none;
 }
 
@@ -554,14 +572,45 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     position: absolute; right: 0; top: 0; width: 100%; height: 100%;
 }
 
-.form-group-inline { display: flex; align-items: center; gap: 0.75rem; padding-top: 1.5rem; }
-.form-group-inline label { margin: 0; }
-.form-group-inline input { width: 1.15rem; height: 1.15rem; }
-
 .form-group-profit {
     grid-column: 1 / -1; text-align: right;
     font-size: 1.125rem; font-weight: 600; padding: 0.5rem 0;
 }
+
+/* --- NYTT: Prio Toggle i Header --- */
+.prio-toggle-wrapper {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.8rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-color);
+    color: var(--text-color-light);
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-speed-fast) ease;
+    order: 2;
+    white-space: nowrap;
+}
+.prio-toggle-wrapper .icon-sm {
+    transition: all var(--transition-speed-fast) ease;
+}
+.prio-toggle-wrapper:hover {
+    border-color: var(--danger-color);
+    color: var(--danger-color);
+}
+.prio-toggle-wrapper input[type="checkbox"] {
+    display: none;
+}
+.prio-toggle-wrapper input[type="checkbox"]:checked + .icon-sm {
+    color: var(--danger-color);
+}
+.prio-toggle-wrapper input[type="checkbox"]:checked + .icon-sm + span {
+    color: var(--danger-color);
+}
+
 
 .modal-actions {
     grid-column: 1 / -1; display: flex;
@@ -787,4 +836,650 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     0%, 100% { transform: translateX(0); }
     10%, 30%, 50%, 70%, 90% { transform: translateX(-8px); }
     20%, 40%, 60%, 80% { transform: translateX(8px); }
+}
+
+/* 1. Vy-växlare i Headern (Omarbetad för att vara integrerad) */
+.view-toggle-buttons {
+    display: flex;
+    align-items: center;
+    background-color: transparent;
+    border-radius: 0;
+    padding: 0;
+    border: none;
+    gap: 1.25rem;
+    margin-left: -4px;
+}
+
+.button-toggle-view {
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    padding: 0.25rem 0.4rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-color-light);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    cursor: pointer;
+    transition: all var(--transition-speed-fast) ease;
+}
+.button-toggle-view:hover {
+    color: var(--text-color);
+}
+.button-toggle-view.active {
+    background-color: transparent;
+    color: var(--text-color);
+    box-shadow: none;
+}
+[data-theme="dark"] .view-toggle-buttons {
+    background-color: transparent;
+}
+[data-theme="dark"] .button-toggle-view.active {
+    color: var(--text-color);
+}
+/* 6. Event-styling (Jobben) - (v19 - Solid Block-stil) */
+.fc-event {
+    border: none !important;
+    padding: 4px 6px !important;
+    font-size: 0.8rem !important;
+    font-weight: 500;
+    border-radius: 4px !important;
+    cursor: pointer;
+    transition: filter 0.2s ease, transform 0.2s ease;
+    color: white !important; 
+}
+.fc-event:hover {
+    filter: brightness(1.1);
+    transform: scale(1.02);
+}
+.fc-event-main {
+    color: white !important;
+}
+.fc-event .fc-event-time {
+    color: white !important;
+    font-weight: 700;
+}
+.fc-event .fc-event-title {
+    font-weight: 500 !important;
+    white-space: normal !important;
+}
+
+/* Prio-flagga */
+.fc-event-prio-flag {
+    margin-right: 4px;
+    filter: drop-shadow(0 0 1px rgba(0,0,0,0.5));
+}
+
+/* Status-färger (Solida bakgrunder) */
+.fc-event.status-bokad {
+    background-color: var(--primary-color) !important;
+}
+.fc-event.status-klar {
+    background-color: var(--success-color) !important;
+    opacity: 0.65;
+}
+.fc-event.status-klar:hover {
+    opacity: 1;
+}
+.fc-event.status-offererad {
+    background-color: var(--info-color) !important;
+}
+.fc-event.status-avbokad {
+    background-color: var(--danger-color) !important;
+    opacity: 0.8;
+}
+
+/* Anpassa "fler event"-länken */
+.fc .fc-daygrid-more-link {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+.fc .fc-daygrid-more-link:hover {
+    text-decoration: underline;
+}
+
+/* Gör jobben i "Dag" och "Vecka" lite renare */
+.fc-timegrid-event .fc-event-main {
+    padding: 2px 4px;
+}
+/* 2. Kalender-containern (Smalare och centrerad) */
+#calendarView {
+    background-color: var(--content-bg);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+    padding: 1.5rem;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+[data-theme="dark"] #calendarView {
+    background-color: var(--bg-color);
+    padding: 0;
+    border: none;
+    max-width: 900px; 
+    margin: 0 auto;
+}
+
+[data-theme="dark"] #calendarView .fc {
+    background-color: var(--bg-color);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+    padding: 1.5rem;
+}
+/* 8. Tydligare "Idag"-markering (v19) */
+.fc {
+    --fc-today-bg-color: var(--primary-light); 
+}
+[data-theme="dark"] .fc {
+    --fc-today-bg-color: rgba(10, 132, 255, 0.15);
+}
+[data-theme="dark"] .fc .fc-day-today {
+    background: none !important;
+}
+
+.fc .fc-day-today .fc-daygrid-day-number {
+    background-color: var(--primary-color);
+    color: white !important;
+    font-weight: 700;
+    border-radius: 50%;
+    width: 1.75em;
+    height: 1.75em;
+    line-height: 1.75em;
+    display: inline-block;
+    text-align: center;
+    margin-top: 2px;
+    padding: 0 !important;
+}
+
+.fc .fc-day-today .fc-daygrid-day-number,
+.fc .fc-day-today .fc-daygrid-day-number:hover {
+    text-decoration: none;
+}
+/* 9. Styling för Registreringsskylt (v20) */
+.reg-plate {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid #aab;
+    border-radius: 6px;
+    background-color: var(--content-bg);
+    box-shadow: var(--shadow-sm);
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    padding: 0;
+    transition: all var(--transition-speed-fast) ease;
+    overflow: hidden;
+}
+.reg-plate:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+    border-color: var(--primary-color);
+}
+
+.reg-plate .reg-country {
+    background-color: #003897;
+    color: white;
+    padding: 0.35rem 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-right: 1px solid #aab;
+}
+
+.reg-plate .reg-number {
+    padding: 0.35rem 0.75rem;
+    color: var(--text-color);
+    letter-spacing: 0.05em;
+    width: 85px;
+    text-align: center;
+    box-sizing: border-box;
+}
+
+[data-theme="dark"] .reg-plate {
+    border-color: #556;
+}
+[data-theme="dark"] .reg-plate .reg-number {
+    color: var(--text-color);
+}
+[data-theme="dark"] .reg-plate .reg-country {
+    border-right-color: #556;
+}
+
+
+/* 10. Styling för extern länk i Modal (v20) */
+.modal-title-with-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+#carModalExternalLink {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color);
+    transition: all var(--transition-speed-fast) ease;
+}
+#carModalExternalLink:hover {
+    transform: scale(1.1);
+    box-shadow: var(--shadow-focus);
+    border-color: var(--primary-color);
+}
+
+#carModalExternalLink img {
+    width: 16px;
+    height: 16px;
+    border-radius: 2px;
+}
+/* 11. Tona ner helgdagar i kalendern (v21) */
+.fc .fc-day-sat,
+.fc .fc-day-sun {
+    background-color: var(--bg-color);
+}
+
+[data-theme="dark"] .fc .fc-day-sat,
+[data-theme="dark"] .fc .fc-day-sun {
+    background-color: var(--content-bg);
+    opacity: 0.6;
+}
+/* 12. Stil för Snabbvalsknappar (Tid) (v22) */
+.quick-time-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+}
+
+.quick-time-buttons button {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.5rem 0.25rem;
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color);
+    color: var(--text-color-light);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all var(--transition-speed-fast) ease;
+}
+
+.quick-time-buttons button:hover {
+    background-color: var(--primary-light);
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+/* 13. Styling för Kundnamn-förslag (v23) */
+.form-group {
+    position: relative;
+}
+
+.suggestions-list {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: var(--content-bg);
+    border: 1px solid var(--border-color);
+    border-top: none;
+    border-radius: 0 0 var(--border-radius) var(--border-radius);
+    box-shadow: var(--shadow-md);
+    z-index: 10;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.suggestion-item {
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+    color: var(--text-color);
+    cursor: pointer;
+    transition: background-color var(--transition-speed-fast) ease;
+}
+
+.suggestion-item:hover {
+    background-color: var(--bg-color);
+    color: var(--primary-color);
+}
+
+.suggestion-item:not(:last-child) {
+    border-bottom: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .suggestion-item:hover {
+    background-color: #2c2c2e;
+}
+
+/* 14. Stil för Kalender-listvy (Mobil) */
+.fc .fc-list-day {
+    position: sticky;
+    top: 0;
+    background: var(--bg-color);
+    z-index: 10;
+}
+[data-theme="dark"] .fc .fc-list-day {
+     background: #2c2c2e;
+}
+.fc .fc-list-day-text,
+.fc .fc-list-day-side-text {
+    color: var(--text-color);
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    padding: 0.75rem 0.5rem;
+}
+.fc .fc-list-event-dot {
+    display: none; /* Dölj prickarna */
+}
+.fc-list-event {
+    background: none !important;
+    border: none !important;
+    padding: 0.75rem 0.5rem !important;
+    border-bottom: 1px solid var(--border-color) !important;
+}
+.fc-list-event:hover {
+    background-color: var(--primary-light) !important;
+}
+.fc-list-event.status-klar:hover {
+     background-color: rgba(48, 209, 88, 0.1) !important;
+}
+.fc-list-event.status-avbokad:hover {
+     background-color: var(--danger-light) !important;
+}
+.fc-list-event-time {
+    color: var(--text-color);
+    font-weight: 600;
+    padding-right: 1rem;
+    font-size: 0.9rem;
+}
+.fc-list-event-title {
+    color: var(--text-color) !important;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+.fc-list-event-title .fc-event-prio-flag {
+    margin-right: 0.5rem;
+    font-size: 0.8rem;
+}
+.fc-list-table > tbody > tr:last-child > td {
+    border-bottom: none !important;
+}
+
+
+/* ------------------------------------------- */
+/* --- NYTT: Media-regler för Mobil (v24) --- */
+/* ------------------------------------------- */
+
+/* Gäller alla skärmar UPP TILL 768px breda */
+@media (max-width: 768px) {
+
+    /* 1. Global layout */
+    .app-main {
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    .main-content {
+        padding: 1rem;
+        padding-bottom: calc(var(--mobile-nav-height) + 1rem);
+    }
+    
+    /* 2. Header & Sök */
+    .main-header {
+        padding: 0 1rem;
+    }
+    .header-right .divider,
+    .header-right .nav-button,
+    .view-controls {
+        display: none;
+    }
+    .header-titles .view-toggle-buttons {
+        display: none;
+    }
+    .app-brand-title {
+        font-size: 1rem;
+        color: var(--text-color);
+    }
+
+    /* 3. Statistik-kort */
+    .stat-bar {
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    .stat-card {
+        padding: 1rem;
+    }
+    .stat-card-title {
+        font-size: 0.8rem;
+    }
+    .stat-card-value {
+        font-size: 1.75rem;
+    }
+
+    /* 4. Desktop FAB (Dölj på mobil) */
+    #fabAddJob {
+        display: none;
+    }
+    
+    /* 5. Tidslinje (Tabell blir Kortvy) */
+    .table-container {
+        border: none;
+        box-shadow: none;
+        background: none;
+    }
+    #jobbOversikt {
+        border-collapse: collapse;
+    }
+    #jobbOversikt thead {
+        display: none;
+    }
+    #jobbOversikt tr {
+        display: block;
+        background: var(--content-bg);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-sm);
+        margin-bottom: 1rem;
+        padding: 0; /* Ta bort padding från raden */
+    }
+    #jobbOversikt td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 1rem; /* Mer padding för kort-innehåll */
+        border-bottom: 1px solid var(--border-color);
+        white-space: normal;
+    }
+    
+    /* Göm sista linjen på näst sista elementet (som nu är .action-col) */
+    #jobbOversikt tr td:nth-last-child(2) {
+        border-bottom: none;
+    }
+    
+    #jobbOversikt td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: var(--text-color-light);
+        font-size: 0.9rem;
+        padding-right: 1rem;
+    }
+    #jobbOversikt td .reg-plate,
+    #jobbOversikt td .status-badge {
+        font-size: 0.9rem;
+    }
+    
+    /* -- ÅTGÄRDSKNAPPAR (Mobil) -- */
+    #jobbOversikt .action-col {
+        display: flex;
+        justify-content: space-around; /* Sprid ut knapparna */
+        gap: 0.5rem;
+        padding: 0.5rem; /* Mindre padding för knapp-raden */
+        background-color: var(--bg-color); /* Ge knapp-raden en bakgrund */
+        border-top: 1px solid var(--border-color);
+        border-bottom: none; /* Ta bort dubbel linje */
+    }
+    #jobbOversikt .action-col::before {
+        display: none;
+    }
+    #jobbOversikt .action-col .icon-btn {
+        opacity: 1;
+        padding: 0.75rem; /* STÖRRE KLICKYTA */
+        flex: 1; /* Få knapparna att fylla utrymmet */
+        justify-content: center;
+    }
+    /* Ge Prio-knappen färg */
+    #jobbOversikt tr.prio-row .action-col .icon-btn[data-action="togglePrio"] {
+        color: var(--danger-color);
+        background: var(--danger-light);
+    }
+    /* Göm placeholder på mobil */
+    .icon-btn-placeholder {
+        display: none;
+    }
+    
+    /* 6. Modaler (Fullskärm) */
+    .modal-backdrop {
+        padding-top: 0;
+        align-items: stretch;
+    }
+    .modal-content {
+        width: 100%;
+        max-width: 100%;
+        height: 100%;
+        max-height: 100%;
+        border-radius: 0;
+        box-shadow: none;
+    }
+    .modal-header {
+        padding: 1rem 1.25rem;
+    }
+    /* Minska Prio-knappen på mobil */
+    .prio-toggle-wrapper {
+        padding: 0.4rem 0.6rem;
+        font-size: 0.8rem;
+    }
+    
+    .modal-body {
+        padding: 1rem 1.25rem;
+        flex-grow: 1;
+        overflow-y: auto;
+    }
+    .modal-actions {
+        padding: 1rem 1.25rem;
+    }
+    #jobModalForm .form-group-split {
+        grid-template-columns: 1fr;
+        gap: 1.25rem;
+    }
+    
+    /* 7. Mobil Navigationsmeny (Längst ner) */
+    .mobile-nav {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: var(--mobile-nav-height);
+        background-color: var(--content-bg);
+        border-top: 1px solid var(--border-color);
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.04);
+        z-index: 1000;
+    }
+    .mobile-nav-btn {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: none;
+        border: none;
+        padding: 0.5rem 0;
+        color: var(--text-color-light);
+        font-size: 0.7rem;
+        font-weight: 500;
+        gap: 4px;
+        cursor: pointer;
+    }
+    .mobile-nav-btn .icon {
+        width: 1.5rem;
+        height: 1.5rem;
+    }
+    .mobile-nav-btn.active {
+        color: var(--primary-color);
+    }
+    
+    /* 8. Mobil Sök-Modal */
+    .modal-backdrop-mobile {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.4);
+        z-index: 1010;
+        display: none;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+    }
+    .modal-backdrop-mobile.show {
+        opacity: 1;
+    }
+    .search-modal-content {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        background: var(--bg-color);
+        padding: 1rem;
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        transform: translateY(-100%);
+        animation: slideInDown 0.3s ease forwards;
+    }
+    .modal-backdrop-mobile.show .search-modal-content {
+        transform: translateY(0);
+    }
+    #mobileSearchBar {
+        border: none;
+        padding: 0.75rem 0.75rem;
+        font-size: 1rem;
+        outline: none;
+        border-radius: 8px;
+        background: var(--content-bg);
+        color: var(--text-color);
+        width: 100%;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border-color);
+    }
+    #mobileSearchBar:focus {
+        border-color: var(--primary-color);
+    }
+    .search-modal-content .search-wrapper {
+        box-shadow: none;
+        border: none;
+        padding-left: 0;
+        background: transparent;
+    }
+    .search-modal-content .search-wrapper .icon {
+        display: none;
+    }
+
+}
+
+/* Dölj mobil-nav på desktop */
+@media (min-width: 769px) {
+    .mobile-nav {
+        display: none;
+    }
+    .modal-backdrop-mobile {
+        display: none;
+    }
 }
