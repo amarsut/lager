@@ -643,34 +643,34 @@
                     },
                     
                     eventContent: function(arg) {
-                        // Använd endast denna rendering för listvyn
-                        if (arg.view.type === 'listWeek') {
-                            const job = findJob(arg.event.id);
-                            if (!job) return;
-
-                            const prioClass = job.prio ? 'prio-row' : '';
-                            const timePart = job.datum ? formatDate(job.datum).split('kl. ')[1] || '' : '';
-                            const prioIcon = job.prio ? `<span class="fc-event-prio-flag">🚩</span>` : '';
-
-                            return { 
-                                html: `
-                                <div class="mobile-calendar-card ${prioClass}">
-                                    <span class="card-time-badge">${timePart}</span>
-                                    <div class="card-job-details">
-                                        <span class="card-job-customer">${prioIcon}${job.kundnamn}</span>
-                                        <span class="card-job-regnr">${job.regnr || 'Okänt reg.nr'}</span>
-                                    </div>
-                                    <span class="status-badge status-${job.status}">${STATUS_TEXT[job.status]}</span>
-                                </div>
-                                `
-                            };
-                        }
-                        // Fallback för andra vyer (desktop)
-                        if (arg.event.extendedProps.prio) {
-                           return { html: `<span class="fc-event-prio-flag">🚩</span> ${arg.event.title}` };
-                        }
-                        return; // Använd standard-rendering
-                    },
+					    // Hämta jobb-objektet
+					    const job = arg.event.extendedProps.originalJob; 
+					
+					    // För att säkerställa att vi har job-objektet
+					    if (!job) {
+					        return { html: `<div>${arg.event.title}</div>` }; // Fallback
+					    }
+					
+					    let contentHtml = '';
+					
+					    // Prioritetsflagga (om Prio är true)
+					    const prioFlag = job.prio ? '<svg class="icon-sm fc-event-prio-flag" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M11.666 2.302l-9.172 17.5a1 1 0 00.89 1.488H20.61a1 1 0 00.89-1.488l-9.172-17.5a1 1 0 00-1.764 0zM12 7a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0112 7zm0 10a1 1 0 100-2 1 1 0 000 2z"></path></svg>' : '';
+					
+					    // Välj vad som ska visas: REG-NUMMER (med bricka) eller KUNDNAMN
+					    if (job.regnr && job.regnr !== 'Okänt') {
+					        contentHtml = `
+					            <div class="reg-plate-small">
+					                <span class="reg-country-small">S</span>
+					                <span class="reg-number-small">${job.regnr}</span>
+					            </div>
+					        `;
+					    } else {
+					        // Om inget reg-nummer, visa kundnamn
+					        contentHtml = `<div class="event-customer-name">${prioFlag}${job.kundnamn}</div>`;
+					    }
+					
+					    return { html: contentHtml };
+					},
                 });
                 calendar.render();
             }
