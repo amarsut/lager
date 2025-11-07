@@ -730,7 +730,7 @@
                             right: 'dayGridTwoWeek,timeGridWeek,timeGridDay'
                         });
                     }
-                    requestAnimationFrame(() => { calendar.updateSize(); });
+                    setTimeout(() => { calendar.updateSize(); }, 50);
                 } else {
                     timelineView.style.display = 'block';
                     calendarView.style.display = 'none';
