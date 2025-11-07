@@ -661,7 +661,7 @@
                         const prioIcon = job.prio ? `<span class="fc-event-prio-flag">🚩</span>` : '';
 
                         // --- MOBILVY (listWeek) ---
-                        if (arg.view.type === 'listWeek') {
+                        if (arg.view.type === 'list') {
                             const timePart = job.datum ? formatDate(job.datum).split('kl. ')[1] || '' : '';
                             return { 
                                 html: `
