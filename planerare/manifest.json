@@ -3,6 +3,7 @@
   "short_name": "Översikt",
   "description": "Översikt i realtid.",
   "start_url": "./plan.html",
+  "scope": "/planering/",
   "display": "standalone",
   "background_color": "#f7f8fa",
   "theme_color": "#0a84ff",
