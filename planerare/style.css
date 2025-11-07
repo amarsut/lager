@@ -98,7 +98,6 @@ body {
 .main-content { 
     max-width: 1400px; margin: 0 auto; 
     padding: 2rem; 
-    /* NYTT: Utrymme för mobil-nav */
     padding-bottom: calc(var(--mobile-nav-height) + 2rem);
 }
 
@@ -632,7 +631,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     transition: all 0.4s ease;
     opacity: 0; transform: translateX(-50%) translateY(20px);
 }
-/* Justera för desktop */
 @media (min-width: 769px) {
     .toast {
         bottom: 2rem;
@@ -1054,7 +1052,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 [data-theme="dark"] .reg-plate .reg-country {
     border-right-color: #556;
 }
-/* NYTT: Stil för "OKÄNT" regnr */
 .reg-unknown {
     font-weight: 600;
     font-size: 0.9rem;
@@ -1171,59 +1168,95 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     background-color: #2c2c2e;
 }
 
-/* 14. Stil för Kalender-listvy (Mobil) */
+/* 14. Stil för Kalender-listvy (Mobil) - UPPDATERAD */
 .fc .fc-list-day {
     position: sticky;
-    top: 0;
+    top: 0; /* Fäst högst upp i scroll-containern */
     background: var(--bg-color);
     z-index: 10;
 }
 [data-theme="dark"] .fc .fc-list-day {
      background: #2c2c2e;
 }
+/* Rubrik (t.ex. "lördag 22 november") */
 .fc .fc-list-day-text,
 .fc .fc-list-day-side-text {
     color: var(--text-color);
-    font-size: 0.9rem;
-    font-weight: 600;
+    font-size: 1rem;
+    font-weight: 700;
     text-decoration: none;
-    padding: 0.75rem 0.5rem;
+    padding: 0.75rem 0;
 }
 .fc .fc-list-event-dot {
     display: none; /* Dölj prickarna */
 }
+/* Själva list-raden */
 .fc-list-event {
     background: none !important;
     border: none !important;
-    padding: 0.75rem 0.5rem !important;
+    padding: 0 !important;
     border-bottom: 1px solid var(--border-color) !important;
+    cursor: pointer;
 }
-.fc-list-event:hover {
+.fc-list-event:hover .mobile-calendar-card {
     background-color: var(--primary-light) !important;
 }
-.fc-list-event.status-klar:hover {
+.fc-list-event.status-klar:hover .mobile-calendar-card {
      background-color: rgba(48, 209, 88, 0.1) !important;
 }
-.fc-list-event.status-avbokad:hover {
+.fc-list-event.status-avbokad:hover .mobile-calendar-card {
      background-color: var(--danger-light) !important;
 }
-.fc-list-event-time {
-    color: var(--text-color);
-    font-weight: 600;
-    padding-right: 1rem;
-    font-size: 0.9rem;
-}
-.fc-list-event-title {
-    color: var(--text-color) !important;
-    font-weight: 500;
-    font-size: 0.9rem;
-}
-.fc-list-event-title .fc-event-prio-flag {
-    margin-right: 0.5rem;
-    font-size: 0.8rem;
-}
+
+.fc-list-event-time { display: none; } /* Göm standard-tiden */
+.fc-list-event-title { display: none; } /* Göm standard-titeln */
+
 .fc-list-table > tbody > tr:last-child > td {
     border-bottom: none !important;
+}
+
+/* NYTT: Styling för det egna kalender-kortet */
+.mobile-calendar-card {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background-color: var(--content-bg);
+    border-left: 4px solid transparent;
+    transition: background-color var(--transition-speed-fast) ease;
+}
+.mobile-calendar-card.prio-row {
+    border-left-color: var(--danger-color);
+    background-color: var(--danger-light);
+}
+.mobile-calendar-card .card-time-badge {
+    flex-shrink: 0;
+}
+.mobile-calendar-card .card-job-details {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    gap: 2px;
+    overflow: hidden; /* För text-ellipsis */
+}
+.mobile-calendar-card .card-job-customer {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.mobile-calendar-card .card-job-customer .fc-event-prio-flag {
+    margin-right: 0.25rem;
+}
+.mobile-calendar-card .card-job-regnr {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-color-light);
+}
+.mobile-calendar-card .status-badge {
+    flex-shrink: 0;
 }
 
 
@@ -1231,7 +1264,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 /* --- Media-regler för Mobil (UPPDATERAD) --- */
 /* ------------------------------------------- */
 
-/* Gäller alla skärmar UPP TILL 768px breda */
 @media (max-width: 768px) {
 
     /* 1. Global layout */
@@ -1256,8 +1288,10 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     .header-titles .view-toggle-buttons {
         display: none;
     }
+    /* NYTT: Visa datum i header */
     .app-brand-title {
         font-size: 1rem;
+        font-weight: 600;
         color: var(--text-color);
     }
 
@@ -1292,19 +1326,17 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         display: none;
     }
 
-    /* --- NYTT: Mobil Kort-lista --- */
+    /* --- Mobil Kort-lista --- */
     #mobileJobList {
         display: flex;
         flex-direction: column;
-        gap: 1.5rem; /* Större mellanrum MELLAN dag-grupper */
+        gap: 1.5rem; 
     }
-
     .mobile-day-group {
         display: flex;
         flex-direction: column;
-        gap: 0.75rem; /* Mindre mellanrum INUTI en dag-grupp (rubrik -> kort) */
+        gap: 0.75rem; 
     }
-
     .mobile-date-header {
         font-size: 1rem;
         font-weight: 700;
@@ -1313,7 +1345,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         padding-bottom: 0.5rem;
         border-bottom: 2px solid var(--border-color);
     }
-
     .mobile-job-card {
         background: var(--content-bg);
         border: 1px solid var(--border-color);
@@ -1323,42 +1354,36 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         border-left: 4px solid transparent;
         transition: all var(--transition-speed-fast) ease;
     }
-    
     .mobile-job-card.prio-row {
         border-left-color: var(--danger-color);
         background-color: var(--danger-light);
     }
-    
     .mobile-job-card.done-row {
         opacity: 0.7;
     }
-    
     .mobile-job-card .card-content {
         padding: 1rem;
         display: flex;
         flex-direction: column;
-        gap: 0.85rem; /* Lite mer luft */
+        gap: 0.85rem; 
     }
-
     .mobile-job-card .card-row {
         display: flex;
         justify-content: space-between;
         align-items: center;
     }
-
     .mobile-job-card .card-label {
         font-weight: 600;
         color: var(--text-color-light);
         font-size: 0.9rem;
         padding-right: 1rem;
-        flex-shrink: 0; /* Hindra labeln från att krympa */
+        flex-shrink: 0; 
     }
     .mobile-job-card .card-value {
         font-weight: 500;
         font-size: 0.9rem;
         text-align: right;
     }
-    
     .mobile-job-card .customer-name {
         font-weight: 700;
         font-size: 1.05rem;
@@ -1368,23 +1393,18 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         font-size: 1.05rem;
         color: var(--text-color);
     }
-    
     .mobile-job-card .customer-price {
         font-weight: 700;
         font-size: 1rem;
     }
-
     .mobile-job-card .reg-plate {
         font-size: 0.9rem;
     }
-
-    /* NYTT: Wrapper för Tid / Status */
     .time-status-wrapper {
         display: flex;
         align-items: center;
         gap: 0.5rem;
     }
-    /* NYTT: Badge för klockslag */
     .card-time-badge {
         background-color: var(--bg-color);
         border: 1px solid var(--border-color);
@@ -1398,7 +1418,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
          background-color: #3a3a3c;
          border-color: #4a4a4c;
     }
-    
 
     /* -- ÅTGÄRDSKNAPPAR (Mobil) -- */
     .mobile-job-card .action-col {
@@ -1409,7 +1428,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         background-color: var(--bg-color); 
         border-top: 1px solid var(--border-color);
     }
-
     .mobile-job-card .action-col .icon-btn {
         opacity: 1;
         padding: 0.75rem; 
@@ -1444,7 +1462,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         padding: 0.4rem 0.6rem;
         font-size: 0.8rem;
     }
-    
     .modal-body {
         padding: 1rem 1.25rem;
         flex-grow: 1;
@@ -1547,6 +1564,23 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     .search-modal-content .search-wrapper .icon {
         display: none;
     }
+    
+    /* 9. Mobil Kalender-vy */
+    #calendarView {
+        padding: 0;
+        background: none;
+        border: none;
+    }
+    [data-theme="dark"] #calendarView .fc {
+        padding: 0;
+        border: none;
+    }
+    .fc .fc-toolbar {
+        padding: 0.5rem 0.25rem;
+    }
+    .fc .fc-toolbar-title {
+        font-size: 1.25rem;
+    }
 
 }
 
@@ -1558,7 +1592,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     .modal-backdrop-mobile {
         display: none;
     }
-    /* Göm den mobila listan på desktop */
     #mobileJobList {
         display: none;
     }
