@@ -1278,68 +1278,110 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         box-shadow: none;
         background: none;
     }
+    /* Göm desktop-tabellen helt */
     #jobbOversikt {
-        border-collapse: collapse;
-    }
-    #jobbOversikt thead {
         display: none;
     }
-    #jobbOversikt tr {
-        display: block;
+
+    /* --- NYTT: Mobil Kort-lista --- */
+    #mobileJobList {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem; /* Utrymme MELLAN datum-grupper */
+    }
+
+    .mobile-date-header {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin: 0 0 0.5rem 0;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid var(--border-color);
+    }
+
+    .mobile-job-card {
         background: var(--content-bg);
         border: 1px solid var(--border-color);
         border-radius: var(--border-radius);
         box-shadow: var(--shadow-sm);
-        margin-bottom: 1rem;
-        padding: 0; /* Ta bort padding från raden */
+        margin-bottom: 0.5rem; /* Utrymme INOM en datum-grupp */
+        overflow: hidden; /* För prio-kanten */
+        border-left: 4px solid transparent;
+        transition: all var(--transition-speed-fast) ease;
     }
-    #jobbOversikt td {
+    
+    .mobile-job-card.prio-row {
+        border-left-color: var(--danger-color);
+        background-color: var(--danger-light);
+    }
+    
+    .mobile-job-card.done-row {
+        opacity: 0.7;
+    }
+    
+    .mobile-job-card .card-content {
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .mobile-job-card .card-row {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 0.75rem 1rem; /* Mer padding för kort-innehåll */
-        border-bottom: 1px solid var(--border-color);
-        white-space: normal;
     }
-    
-    /* Göm sista linjen på näst sista elementet (som nu är .action-col) */
-    #jobbOversikt tr td:nth-last-child(2) {
-        border-bottom: none;
-    }
-    
-    #jobbOversikt td::before {
-        content: attr(data-label);
+
+    .mobile-job-card .card-label {
         font-weight: 600;
         color: var(--text-color-light);
         font-size: 0.9rem;
         padding-right: 1rem;
     }
-    #jobbOversikt td .reg-plate,
-    #jobbOversikt td .status-badge {
+    .mobile-job-card .card-value {
+        font-weight: 500;
         font-size: 0.9rem;
+        text-align: right;
     }
     
+    /* Din önskan: Tydligare Kundnamn */
+    .mobile-job-card .customer-name {
+        font-weight: 700;
+        font-size: 1.05rem;
+    }
+    .mobile-job-card .customer-name .link-btn {
+        font-weight: 700;
+        font-size: 1.05rem;
+    }
+    
+    /* Din önskan: Tydligare Pris */
+    .mobile-job-card .customer-price {
+        font-weight: 700;
+        font-size: 1rem;
+    }
+
+    .mobile-job-card .reg-plate {
+        font-size: 0.9rem;
+    }
+
     /* -- ÅTGÄRDSKNAPPAR (Mobil) -- */
-    #jobbOversikt .action-col {
+    .mobile-job-card .action-col {
         display: flex;
         justify-content: space-around; /* Sprid ut knapparna */
         gap: 0.5rem;
         padding: 0.5rem; /* Mindre padding för knapp-raden */
         background-color: var(--bg-color); /* Ge knapp-raden en bakgrund */
         border-top: 1px solid var(--border-color);
-        border-bottom: none; /* Ta bort dubbel linje */
     }
-    #jobbOversikt .action-col::before {
-        display: none;
-    }
-    #jobbOversikt .action-col .icon-btn {
+
+    .mobile-job-card .action-col .icon-btn {
         opacity: 1;
         padding: 0.75rem; /* STÖRRE KLICKYTA */
         flex: 1; /* Få knapparna att fylla utrymmet */
         justify-content: center;
     }
     /* Ge Prio-knappen färg */
-    #jobbOversikt tr.prio-row .action-col .icon-btn[data-action="togglePrio"] {
+    .mobile-job-card.prio-row .action-col .icon-btn[data-action="togglePrio"] {
         color: var(--danger-color);
         background: var(--danger-light);
     }
@@ -1483,5 +1525,8 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     .modal-backdrop-mobile {
         display: none;
     }
+    /* Göm den mobila listan på desktop */
+    #mobileJobList {
+        display: none;
+    }
 }
-
