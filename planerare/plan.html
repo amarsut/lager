@@ -700,37 +700,43 @@
                 }
             }
             
-            // UPPDATERAD: Hanterar nu mobil-nav, byter kalendervy OCH sätter header-titeln
+            // UPPDATERAD: Hanterar nu även mobil-navigering OCH byter kalendervy
             function toggleView(view) {
                 currentView = view;
                 
+                // Synka desktop-knapparna
                 btnToggleTimeline.classList.toggle('active', view === 'timeline');
                 btnToggleCalendar.classList.toggle('active', view === 'calendar');
                 
+                // Synka mobil-knapparna
                 document.querySelector('.mobile-nav-btn[data-view="timeline"]').classList.toggle('active', view === 'timeline');
                 document.querySelector('.mobile-nav-btn[data-view="calendar"]').classList.toggle('active', view === 'calendar');
 
                 if (view === 'calendar') {
-				    timelineView.style.display = 'none';
-				    calendarView.style.display = 'block';
-				
-				    // Aggressiv omritning: dölj, vänta en tick, visa, uppdatera
-				    calendarView.style.visibility = 'hidden'; // Dölj den *visuellt*
-				    setTimeout(() => { // Ge webbläsaren tid att registrera döljningen
-				        calendarView.style.visibility = 'visible'; // Visa den igen
-				        calendar.updateSize(); // Be kalendern räkna om sin storlek
-				    }, 10); // En kort fördröjning, men efter att den blivit "hidden"
-				} else {
-				    calendarView.style.display = 'none';
-				    timelineView.style.display = 'block';
-				}
-                    requestAnimationFrame(() => {
-					    setTimeout(() => { calendar.updateSize(); }, 0);
-					});
+                    timelineView.style.display = 'none';
+                    calendarView.style.display = 'block';
+
+                    // NY LOGIK: Välj rätt vy baserat på skärmstorlek
+                    const isMobile = window.innerWidth <= 768;
+                    if (isMobile) {
+                        calendar.changeView('listWeek');
+                        calendar.setOption('headerToolbar', {
+                            left: 'prev,next', center: 'title', right: 'today'
+                        });
+                    } else {
+                        calendar.changeView('dayGridTwoWeek');
+                        calendar.setOption('headerToolbar', {
+                            left: 'prev,next today',
+                            center: 'title',
+                            right: 'dayGridTwoWeek,timeGridWeek,timeGridDay'
+                        });
+                    }
+                    calendar.render(); // Viktigt att rendera om efter vy-byte
+                } else {
+                    timelineView.style.display = 'block';
+                    calendarView.style.display = 'none';
                 }
             }
-			}
-
 
             // --- Firebase Listener (Oförändrad) ---
             function initRealtimeListener() {
