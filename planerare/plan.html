@@ -1608,8 +1608,19 @@
                                 togglePrio(id);
                                 return;
                             case 'setStatusKlar':
+                            // Kolla om vi är på mobil (skärmbredd <= 768px)
+                            const isMobile = window.innerWidth <= 768;
+
+                            if (isMobile) {
+                                // Om mobil: Visa en bekräftelse-ruta
+                                if (confirm('Är du säker på att du vill markera jobbet som KLART?')) {
+                                    quickSetStatus(id, 'klar');
+                                }
+                            } else {
+                                // Om desktop: Kör som vanligt utan bekräftelse
                                 quickSetStatus(id, 'klar');
-                                return;
+                            }
+                            return;
                         }
                     }
                     if (actionButton.classList.contains('delete-btn')) {
