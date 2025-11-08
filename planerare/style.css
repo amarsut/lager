@@ -14,6 +14,7 @@
     
     --bg-color: #f7f8fa;
     --content-bg: #ffffff;
+	--content-bg-transparent: rgba(255, 255, 255, 0.85); /* NY */
     --border-color: #e5e7eb;
     
     --text-color: #1a1a1a;
@@ -36,6 +37,7 @@
 [data-theme="dark"] {
     --bg-color: #161618;
     --content-bg: #1c1c1e;
+	--content-bg-transparent: rgba(28, 28, 30, 0.75); /* NY (baserad på content-bg) */
     --border-color: #3a3a3c;
     --text-color: #f2f2f7;
     --text-color-light: #8e8e93;
@@ -43,6 +45,7 @@
     
     --danger-light: rgba(255, 69, 58, 0.1);
     --danger-hover-bg: rgba(255, 69, 58, 0.25);
+	--bg-color-transparent: rgba(22, 22, 24, 0.8);
 }
 
 /* --- Globala stilar --- */
@@ -104,10 +107,14 @@ body {
 .main-header {
     display: flex; justify-content: space-between; align-items: center;
     padding: 0 1.5rem 0 2rem; height: var(--header-height);
-    box-shadow: var(--shadow-sm); background-color: var(--content-bg);
+    box-shadow: var(--shadow-sm); 
+	background-color: var(--content-bg-transparent);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px); /* För Safari-kompatibilitet */
+    
     flex-shrink: 0; z-index: 50;
 	position: sticky; 
-    top: 0;           
+    top: 0;
     transform: translateY(-20px);
     opacity: 0;
     animation: slideInDown 0.4s ease 0.1s forwards;
@@ -117,7 +124,7 @@ body {
 }
 
 [data-theme="dark"] .main-header { 
-    background-color: var(--bg-color);
+    background-color: var(--bg-color-transparent);
     box-shadow: 0 1px 0 0 var(--border-color);
 }
 .header-left { display: flex; align-items: center; gap: 1rem; }
@@ -1865,3 +1872,4 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         display: none;
     }
 }
+
