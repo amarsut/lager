@@ -227,13 +227,13 @@
                 <input type="hidden" id="jobId">
 
                 <div class="job-templates" id="jobTemplates">
-                    <button type="button" class="button template-btn" data-template="service">
+                    <button type="button" class="button template-btn" data-template="oljebyte">
                         <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-oil"></use></svg>
-                        <span>Service</span>
+                        <span>Oljebyte</span>
                     </button>
-                    <button type="button" class="button template-btn" data-template="dackbyte">
+                    <button type="button" class="button template-btn" data-template="hjulskifte">
                         <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-tire"></use></svg>
-                        <span>Däckbyte</span>
+                        <span>Hjulskifte</span>
                     </button>
                 </div>
                 
@@ -378,7 +378,7 @@
                 </ul>
 
                 <a id="carModalExternalLinkMobile" href="#" target="_blank" rel="noopener noreferrer" class="button primary">
-                    <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-external-link"></use></svg>
+                    <img src="https://biluppgifter.se/favicon/favicon.ico" alt="Biluppgifter Ikon" />
                     <span>Öppna i Biluppgifter.se</span>
                 </a>
             </div>
@@ -408,7 +408,7 @@
             
             <div class="modal-body" id="statsModalBody">
                 
-                <div class="profit-goal-progress" id="profitGoalProgress">
+                <div class="profit-goal-progress" id="profitGoalProgress" style="display: none;">
                     <div class="progress-bar-text">
                         <span class="current" id="profitGoalCurrent">0 kr</span>
                         <span class="goal" id="profitGoalTarget">Mål: 0 kr</span>
@@ -442,11 +442,30 @@
                         Sätt ett vinstmål för innevarande månad. Visas i statistik-översikten.
                     </p>
                 </div>
+
+                <div class="form-group settings-button-group" id="mobileSettingsGroup">
+                    <hr style="border: none; border-top: 1px solid var(--border-color); margin: 0.5rem 0;">
+                    <label>App-åtgärder</label>
+                    <button type="button" class="button secondary" id="settingsThemeToggle">
+                        <svg class="icon icon-sun" viewBox="0 0 24 24"><use href="#icon-sun"></use></svg>
+                        <svg class="icon icon-moon" viewBox="0 0 24 24"><use href="#icon-moon"></use></svg>
+                        <span>Växla Tema</span>
+                    </button>
+                    <button type="button" class="button secondary" id="settingsToggleCompactView">
+                        <svg class="icon" viewBox="0 0 24 24"><use href="#icon-view-dense"></use></svg>
+                        <span>Kompakt Vy</span>
+                    </button>
+                    <button type="button" class="button secondary" id="settingsLockAppBtn">
+                        <svg class="icon" viewBox="0 0 24 24"><use href="#icon-lock-closed"></use></svg>
+                        <span>Lås Appen</span>
+                    </button>
+                </div>
+
             </form>
 			
             <div class="modal-actions">
                 <button type="button" class="button secondary" id="settingsModalCancelBtn">Avbryt</button>
-                <button type="submit" class="button primary" id="settingsModalSaveBtn" form="settingsModalForm">Spara inställningar</button>
+                <button type="submit" class="button primary" id="settingsModalSaveBtn" form="settingsModalForm">Spara</button>
             </div>
         </div>
     </div>
@@ -523,12 +542,12 @@
             alert("Kunde inte initiera Firebase.");
         }
         
-        // --- Globala Konstanter (UPPDATERAD) ---
+        // --- Globala Konstanter ---
         const STATUS_TEXT = {
             'bokad': 'Bokad', 'klar': 'Klar', 
             'offererad': 'Offererad', 'avbokad': 'Avbokad'
         };
-        const formatCurrency = (num) => `${num.toLocaleString('sv-SE')} kr`;
+        const formatCurrency = (num) => `${(num || 0).toLocaleString('sv-SE')} kr`;
         const locale = 'sv-SE';
         
         const formatDate = (dateString, options = {}) => {
@@ -586,7 +605,7 @@
             let isNavigatingBack = false; 
 
             let statsChartInstance = null;
-            let currentProfitGoal = localStorage.getItem('profitGoal') || 0; // NYTT: Vinstmål
+            let currentProfitGoal = localStorage.getItem('profitGoal') || 0; 
 
             // --- DOM-element ---
             const docElement = document.documentElement;
@@ -623,8 +642,7 @@
             const jobModalForm = document.getElementById('jobModalForm');
             const modalTitle = document.getElementById('modalTitle');
             const modalSaveBtn = document.getElementById('modalSaveBtn');
-            // const modalDuplicateBtn = document.getElementById('modalDuplicateBtn'); // BORTTAGEN
-            const jobTemplates = document.getElementById('jobTemplates'); // NYTT
+            const jobTemplates = document.getElementById('jobTemplates'); 
             const fabAddJob = document.getElementById('fabAddJob');
             const modalCloseBtn = document.getElementById('modalCloseBtn');
             const modalCancelBtn = document.getElementById('modalCancelBtn');
@@ -652,7 +670,7 @@
             const carModalRegnr = document.getElementById('carModalRegnr');
             const carModalOwner = document.getElementById('carModalOwner');
             const carModalExternalLink = document.getElementById('carModalExternalLink'); 
-            const carModalExternalLinkMobile = document.getElementById('carModalExternalLinkMobile'); // NYTT
+            const carModalExternalLinkMobile = document.getElementById('carModalExternalLinkMobile'); 
             const carModalTotalProfit = document.getElementById('carModalTotalProfit');
             const carModalJobCount = document.getElementById('carModalJobCount');
             const carModalJobList = document.getElementById('carModalJobList');
@@ -664,7 +682,7 @@
             const statsModalJobCount = document.getElementById('statsModalJobCount');
             const statsModalBody = document.getElementById('statsModalBody');
             
-            // NYTT: Inställnings-modal element
+            // Inställnings-modal element
             const settingsBtn = document.getElementById('settingsBtn');
             const mobileSettingsBtn = document.getElementById('mobileSettingsBtn');
             const settingsModal = document.getElementById('settingsModal');
@@ -677,6 +695,11 @@
             const profitGoalCurrent = document.getElementById('profitGoalCurrent');
             const profitGoalTarget = document.getElementById('profitGoalTarget');
             const profitGoalFill = document.getElementById('profitGoalFill');
+            const mobileSettingsGroup = document.getElementById('mobileSettingsGroup');
+            const settingsThemeToggle = document.getElementById('settingsThemeToggle');
+            const settingsToggleCompactView = document.getElementById('settingsToggleCompactView');
+            const settingsLockAppBtn = document.getElementById('settingsLockAppBtn');
+
 
             const popoverBackdrop = document.getElementById('popoverBackdrop');
             const commentPopover = document.getElementById('commentPopover');
@@ -774,15 +797,13 @@
                             displayEventTime: true,
                             // NYTT: Dagens vinst-funktion
                             dayCellContent: function(arg) {
-                                // Skapa standard-texten (datum-numret)
                                 let dayNumberEl = document.createElement('a');
                                 dayNumberEl.classList.add('fc-daygrid-day-number');
                                 dayNumberEl.innerText = arg.dayNumberText;
 
-                                // Skapa vinst-elementet
                                 let profitEl = document.createElement('div');
                                 profitEl.classList.add('calendar-day-profit');
-                                profitEl.setAttribute('data-date', arg.date.toISOString().split('T')[0]); // Sätt data-attribut
+                                profitEl.setAttribute('data-date', arg.date.toISOString().split('T')[0]);
 
                                 return { domNodes: [dayNumberEl, profitEl] };
                             }
@@ -925,8 +946,12 @@
                             break;
                     }
                     
-                    // Lägg till/ta bort dim-klassen
-                    event.setProp('classNames', isVisible ? [] : ['event-dimmed']);
+                    // Ta bort gamla klasser och lägg till ny
+                    const classNames = event.classNames.filter(c => c !== 'event-dimmed');
+                    if (!isVisible) {
+                        classNames.push('event-dimmed');
+                    }
+                    event.setProp('classNames', classNames);
                 });
             }
 
@@ -935,6 +960,9 @@
                 if (currentView !== 'calendar' || !calendar) return;
 
                 const dailyProfits = {};
+                const now = new Date();
+                const currentMonth = now.getMonth();
+                const currentYear = now.getFullYear();
 
                 // 1. Summera vinst per dag för "Klar"-jobb
                 jobs.filter(j => j.status === 'klar' && j.vinst > 0).forEach(job => {
@@ -951,15 +979,19 @@
                 // 3. Uppdatera texten
                 profitElements.forEach(el => {
                     const date = el.dataset.date;
-                    if (dailyProfits[date]) {
+                    const elDate = new Date(date);
+
+                    // NYTT: Visa bara vinst för dagar i denna månad (Bonus-fix)
+                    if (dailyProfits[date] && elDate.getMonth() === currentMonth && elDate.getFullYear() === currentYear) {
                         el.textContent = `+${formatCurrency(dailyProfits[date])}`;
-                        el.style.display = ''; // Visa
+                        el.style.display = ''; 
                     } else {
                         el.textContent = '';
-                        el.style.display = 'none'; // Dölj
+                        el.style.display = 'none'; 
                     }
                 });
             }
+
 
             function mapJobToEvent(job) {
                 return {
@@ -1021,7 +1053,6 @@
                         const calendarEvents = allJobs.map(mapJobToEvent);
                         calendar.setOption('events', calendarEvents);
                         
-                        // NYTT: Kör filter och vinst-funktionerna när kalendern visas
                         filterCalendarView();
                         updateDailyProfitInCalendar(allJobs);
 
@@ -1039,7 +1070,6 @@
             function initRealtimeListener() {
                 if (!db) return;
 
-                // NYTT: Visa skelett-laddare
                 if (allJobs.length === 0) {
                     showSkeletonLoader();
                 }
@@ -1075,8 +1105,6 @@
                     }
                     jobListContainer.innerHTML = `<div id="mobileJobList">${skeletonHTML}</div>`;
                 } else {
-                    // För desktop kan vi visa en tom tabell eller en liknande skelett-struktur
-                    // Vi håller det enkelt och visar inget för desktop för nu.
                     jobListContainer.innerHTML = '';
                 }
                 jobListContainer.style.display = 'block';
@@ -1093,7 +1121,6 @@
                 calendar.setOption('events', calendarEvents);
                 renderTimeline(); 
                 
-                // NYTT: Uppdatera kalender-filter och vinst
                 filterCalendarView();
                 updateDailyProfitInCalendar(allJobs);
                 
@@ -1234,7 +1261,6 @@
                 let prioClass = job.prio ? 'prio-row' : '';
                 const doneClass = (job.status === 'klar') ? 'done-row' : '';
                 
-                // NYTT: Bonus - pulserande prio
                 const isKommandePrio = job.prio && job.status === 'bokad' && new Date(job.datum) >= new Date();
                 if(isKommandePrio) {
                     prioClass += ' kommande-prio-pulse';
@@ -1329,7 +1355,6 @@
                 let prioClass = job.prio ? 'prio-row' : '';
                 const doneClass = (job.status === 'klar') ? 'done-row' : '';
                 
-                // NYTT: Bonus - pulserande prio
                 const isKommandePrio = job.prio && job.status === 'bokad' && new Date(job.datum) >= new Date();
                 if(isKommandePrio) {
                     prioClass += ' kommande-prio-pulse';
@@ -1510,7 +1535,7 @@
                 jobModalForm.reset();
                 if (mode === 'add') {
                     modalTitle.textContent = 'Lägg till nytt jobb';
-                    modalSaveBtn.textContent = 'Spara'; // ÄNDRAD
+                    modalSaveBtn.textContent = 'Spara'; 
                     modalJobId.value = '';
                     if (dataToClone) {
                         document.getElementById('status').value = dataToClone.status || 'bokad';
@@ -1533,7 +1558,7 @@
                 } 
                 else if (mode === 'edit' && dataToClone) {
                     modalTitle.textContent = 'Redigera Jobb';
-                    modalSaveBtn.textContent = 'Spara'; // ÄNDRAD
+                    modalSaveBtn.textContent = 'Spara'; 
                     modalJobId.value = dataToClone.id;
                     document.getElementById('status').value = dataToClone.status || 'bokad';
                     document.getElementById('prio').checked = dataToClone.prio || false;
@@ -1585,9 +1610,18 @@
                 customerModalTotalProfit.textContent = formatCurrency(totalVinst);
                 customerModalTotalProfit.className = totalVinst > 0 ? 'stat-value positive' : 'stat-value';
                 customerModalJobCount.textContent = customerJobs.length;
+                
+                // NYTT: Gör jobben klickbara
                 customerModalJobList.innerHTML = customerJobs.map(job => {
                     const prioIcon = job.prio ? `<svg class="icon-sm prio-flag-icon" viewBox="0 0 24 24"><use href="#icon-flag"></use></svg>` : '';
-                    return `<li><div><span class="job-date">${prioIcon}${formatDate(job.datum)}</span><span class="job-subline">${job.regnr || '---'} (${STATUS_TEXT[job.status]})</span>${job.kommentarer ? `<p class="job-comment">${job.kommentarer}</p>` : ''}</div><span class="job-profit profit ${job.vinst > 0 ? 'positive' : ''}">${formatCurrency(job.vinst)}</span></li>`
+                    return `<li data-job-id="${job.id}">
+                                <div>
+                                    <span class="job-date">${prioIcon}${formatDate(job.datum)}</span>
+                                    <span class="job-subline">${job.regnr || '---'} (${STATUS_TEXT[job.status]})</span>
+                                    ${job.kommentarer ? `<p class="job-comment">${job.kommentarer}</p>` : ''}
+                                </div>
+                                <span class="job-profit profit ${job.vinst > 0 ? 'positive' : ''}">${formatCurrency(job.vinst)}</span>
+                            </li>`
                 }).join('');
                 showModal('customerModal'); 
             }
@@ -1603,14 +1637,23 @@
                 
                 carModalRegnr.textContent = regnr;
                 carModalExternalLink.href = biluppgifterUrl;
-                carModalExternalLinkMobile.href = biluppgifterUrl; // NYTT
+                carModalExternalLinkMobile.href = biluppgifterUrl; 
                 carModalOwner.textContent = `Senaste ägare: ${latestOwner}`;
                 carModalTotalProfit.textContent = formatCurrency(totalVinst);
                 carModalTotalProfit.className = totalVinst > 0 ? 'stat-value positive' : 'stat-value';
                 carModalJobCount.textContent = carJobs.length;
+
+                // NYTT: Gör jobben klickbara
                 carModalJobList.innerHTML = carJobs.map(job => {
                      const prioIcon = job.prio ? `<svg class="icon-sm prio-flag-icon" viewBox="0 0 24 24"><use href="#icon-flag"></use></svg>` : '';
-                    return `<li><div><span class="job-date">${prioIcon}${formatDate(job.datum)}</span><span class="job-subline">${job.kundnamn} (${STATUS_TEXT[job.status]})</span>${job.kommentarer ? `<p class="job-comment">${job.kommentarer}</p>` : ''}</div><span class="job-profit profit ${job.vinst > 0 ? 'positive' : ''}">${formatCurrency(job.vinst)}</span></li>`
+                    return `<li data-job-id="${job.id}">
+                                <div>
+                                    <span class="job-date">${prioIcon}${formatDate(job.datum)}</span>
+                                    <span class="job-subline">${job.kundnamn} (${STATUS_TEXT[job.status]})</span>
+                                    ${job.kommentarer ? `<p class="job-comment">${job.kommentarer}</p>` : ''}
+                                </div>
+                                <span class="job-profit profit ${job.vinst > 0 ? 'positive' : ''}">${formatCurrency(job.vinst)}</span>
+                            </li>`
                 }).join('');
                 showModal('carModal'); 
             }
@@ -1629,10 +1672,8 @@
                 const now = new Date();
                 const currentMonthKey = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}`;
                 
-                // Hämta målet från localStorage (eller 0)
                 const goal = parseFloat(currentProfitGoal) || 0;
                 
-                // Räkna ut vinst för *denna* månad
                 const thisMonthVinst = completedJobs
                     .filter(job => job.datum.startsWith(currentMonthKey))
                     .reduce((sum, j) => sum + (j.vinst || 0), 0);
@@ -1644,7 +1685,7 @@
                     const percent = Math.min((thisMonthVinst / goal) * 100, 100);
                     profitGoalFill.style.width = `${percent}%`;
                 } else {
-                    profitGoalProgress.style.display = 'none'; // Göm om inget mål är satt
+                    profitGoalProgress.style.display = 'none'; 
                 }
                 // --- SLUT Vinstmål Logik ---
 
@@ -1710,7 +1751,6 @@
                 statsModalBody.querySelector('#statsModalTable')?.remove(); 
                 statsModalBody.insertAdjacentHTML('beforeend', tableHtml);
 
-                // --- Diagram-logik (Oförändrad) ---
                 const chartData = Object.values(monthlyStats).sort((a, b) => a.key.localeCompare(b.key));
                 const recentChartData = chartData.slice(-12); 
 
@@ -1862,7 +1902,7 @@
                 }
             }
             
-            // --- Uppdaterad `handleFormSubmit` med Spinner ---
+            // --- `handleFormSubmit` med Spinner ---
             async function handleFormSubmit(e) {
                 e.preventDefault();
                 const jobData = getJobDataFromForm();
@@ -1912,7 +1952,7 @@
                 }
             }
             
-            // --- Uppdaterad klick-hanterare med "Ångra" ---
+            // --- `jobListContainer` klick-hanterare med "Ångra" ---
             jobListContainer.addEventListener('click', (e) => {
                 const target = e.target;
                 
@@ -2123,7 +2163,6 @@
                     currentStatusFilter = card.dataset.filter;
                     renderTimeline();
                     renderGlobalStats(allJobs);
-                    // NYTT: Uppdatera kalender-filtret
                     filterCalendarView();
                 }
             });
@@ -2137,24 +2176,32 @@
             customerModalCloseBtn.addEventListener('click', closeModal);
             carModalCloseBtn.addEventListener('click', closeModal);
             mobileSearchCloseBtn.addEventListener('click', closeModal);
-            settingsModalCloseBtn.addEventListener('click', closeModal); // NYTT
-            settingsModalCancelBtn.addEventListener('click', closeModal); // NYTT
+            settingsModalCloseBtn.addEventListener('click', closeModal); 
+            settingsModalCancelBtn.addEventListener('click', closeModal); 
             
             jobModal.addEventListener('click', (e) => { if (e.target === jobModal) closeModal(); });
             customerModal.addEventListener('click', (e) => { if (e.target === customerModal) closeModal(); });
             carModal.addEventListener('click', (e) => { if (e.target === carModal) closeModal(); });
             mobileSearchModal.addEventListener('click', (e) => { if (e.target === mobileSearchModal) closeModal(); });
             statsModal.addEventListener('click', (e) => { if (e.target === statsModal) closeModal(); });
-            settingsModal.addEventListener('click', (e) => { if (e.target === settingsModal) closeModal(); }); // NYTT
+            settingsModal.addEventListener('click', (e) => { if (e.target === settingsModal) closeModal(); }); 
 
             navLogo.addEventListener('click', (e) => {
                 e.preventDefault(); 
                 openStatsModal();
             });
             
-            // --- NYTT: Inställnings-modal (Vinstmål) ---
+            // --- Inställnings-modal (Vinstmål) ---
             function openSettingsModal() {
-                profitGoalInput.value = currentProfitGoal || '';
+                profitGoalInput.value = currentProfitGoal > 0 ? currentProfitGoal : '';
+                
+                // Dölj/visa mobil-knapparna baserat på skärmstorlek
+                if (window.innerWidth <= 768) {
+                    mobileSettingsGroup.style.display = 'grid';
+                } else {
+                    mobileSettingsGroup.style.display = 'none';
+                }
+                
                 showModal('settingsModal');
             }
             settingsBtn.addEventListener('click', openSettingsModal);
@@ -2166,42 +2213,72 @@
                 localStorage.setItem('profitGoal', currentProfitGoal);
                 showToast('Inställningar sparade!', 'success');
                 closeModal();
+                // Uppdatera statistiken om den råkar vara öppen (osannolikt, men bra)
+                if (currentOpenModalId === 'statsModal') {
+                    openStatsModal();
+                }
             });
 
+            // Knappar i inställnings-modalen
+            settingsThemeToggle.addEventListener('click', () => themeToggle.click());
+            settingsToggleCompactView.addEventListener('click', () => toggleCompactView.click());
+            settingsLockAppBtn.addEventListener('click', () => {
+                closeModal();
+                lockAppBtn.click();
+            });
 
-            // --- NYTT: Jobb-mallar ---
+            // --- Jobb-mallar (ÄNDRAD) ---
             jobTemplates.addEventListener('click', (e) => {
                 const button = e.target.closest('.template-btn');
                 if (!button) return;
 
                 const template = button.dataset.template;
                 
-                if (template === 'service') {
+                if (template === 'oljebyte') {
                     const literOljaprompt = prompt('Hur många liter olja? (t.ex. 4.5)', '4.5');
                     const literOlja = parseFloat(litersOljaprompt.replace(',', '.')) || 0;
                     
                     if (literOlja === 0) return; // Avbruten
                     
-                    const oljekostnad = literOlja * 150; // Antaget inköpspris 150kr/L
-                    const filterkostnad = 200; // Antagen kostnad filter
-                    const arbetskostnad = 1000; // Antagen arbetskostnad
+                    const oljekostnad = literOlja * 200; // Ditt pris: 200/L
+                    const filterkostnad = 200; 
+                    const arbetskostnad = 500; // Ditt pris: 500
                     
-                    modalKundpris.value = Math.round((oljekostnad + filterkostnad + arbetskostnad) * 1.25); // 25% moms
-                    modalUtgifter.value = Math.round(oljekostnad + filterkostnad);
-                    document.getElementById('kommentarer').value = `Service utförd:\n- Motorolja (${literOlja}L)\n- Oljefilter`;
+                    modalKundpris.value = Math.round(oljekostnad + filterkostnad + arbetskostnad);
+                    modalUtgifter.value = 0; // Du sa inget om utgifter, så jag nollställer
+                    document.getElementById('kommentarer').value = `Oljebyte:\n- Motorolja (${literOlja}L)\n- Oljefilter`;
                     
-                } else if (template === 'dackbyte') {
-                    modalKundpris.value = 500;
+                } else if (template === 'hjulskifte') {
+                    modalKundpris.value = 200; // Ditt pris: 200
                     modalUtgifter.value = 0;
-                    document.getElementById('kommentarer').value = 'Däckskifte (sommar/vinter)';
+                    document.getElementById('kommentarer').value = 'Hjulskifte (sommar/vinter)';
                 }
                 
                 updateLiveProfit();
                 showToast('Mall tillämpad!', 'info');
             });
             
-            // borttagen: modalDuplicateBtn.addEventListener('click', ...);
+            // --- Klickbara jobblistor i Kund/Bil-modal (NYTT) ---
+            function handleDetailListClick(e) {
+                const jobItem = e.target.closest('li[data-job-id]');
+                if (!jobItem) return;
+
+                const jobId = jobItem.dataset.jobId;
+                const job = findJob(jobId);
+                
+                if (job) {
+                    closeModal(); // Stäng kund/bil-modalen
+                    
+                    // Vänta lite så att modalen hinner stängas
+                    setTimeout(() => {
+                        openJobModal('edit', job);
+                    }, 250);
+                }
+            }
+            customerModalJobList.addEventListener('click', handleDetailListClick);
+            carModalJobList.addEventListener('click', handleDetailListClick);
             
+            // --- Övriga formulär-hanterare ---
             modalKundpris.addEventListener('input', updateLiveProfit);
             modalUtgifter.addEventListener('input', updateLiveProfit);
             
@@ -2269,6 +2346,7 @@
                 }
             });
 
+            // --- App-inställningar (Tema, Kompakt, Lås) ---
             themeToggle.addEventListener('click', () => {
                 const currentTheme = docElement.getAttribute('data-theme') || 'dark';
                 setTheme(currentTheme === 'dark' ? 'light' : 'dark');
@@ -2279,18 +2357,25 @@
             }
             const savedTheme = localStorage.getItem('theme') || 'light';
             setTheme(savedTheme);
+            
             function setCompactMode(isCompact) {
                 if (isCompact) {
                     docElement.classList.add('compact-mode');
                     toggleCompactView.classList.add('active');
+                    settingsToggleCompactView.classList.add('active'); // Synka modal-knapp
                     localStorage.setItem('compactMode', 'true');
                 } else {
                     docElement.classList.remove('compact-mode');
                     toggleCompactView.classList.remove('active');
+                    settingsToggleCompactView.classList.remove('active'); // Synka modal-knapp
                     localStorage.setItem('compactMode', 'false');
                 }
             }
             toggleCompactView.addEventListener('click', () => {
+                const isCompact = !docElement.classList.contains('compact-mode');
+                setCompactMode(isCompact);
+            });
+            settingsToggleCompactView.addEventListener('click', () => { // NYTT
                 const isCompact = !docElement.classList.contains('compact-mode');
                 setCompactMode(isCompact);
             });
@@ -2323,7 +2408,7 @@
             setHeaderDate();
 
 
-            // --- PIN-lås & Initiering (Oförändrad) ---
+            // --- PIN-lås & Initiering ---
             function showPinLock() {
                 appContainer.style.display = 'none';
                 fabAddJob.style.display = 'none';
@@ -2440,6 +2525,8 @@
                 renderTimeline();
                 if (calendar && currentView === 'calendar') {
                     calendar.rerenderEvents();
+                    // Uppdatera vinst för att hantera ändrad skärmstorlek
+                    updateDailyProfitInCalendar(allJobs);
                 }
             }, 200));
 
