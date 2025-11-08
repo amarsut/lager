@@ -277,6 +277,7 @@ body {
     border-radius: 8px; padding-left: 0.75rem;
     box-shadow: var(--shadow-sm);
     width: 100%;
+    position: relative; /* NÖDVÄNDIG FÖR RENSA-KNAPP */
 }
 [data-theme="dark"] .search-wrapper { background: var(--bg-color); }
 .search-wrapper .icon { color: var(--text-color-light); }
@@ -288,6 +289,36 @@ body {
     width: 100%;
 }
 #searchBar:focus-within { border-color: var(--primary-color); }
+
+/* --- Rensa-knapp i sökfält --- */
+.search-clear-btn {
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    display: none; /* Dold som standard */
+    align-items: center;
+    justify-content: center;
+    color: var(--text-color-light);
+}
+.search-clear-btn:hover { color: var(--text-color); }
+.search-clear-btn::before,
+.search-clear-btn::after {
+    content: '';
+    position: absolute;
+    width: 14px;
+    height: 2px;
+    background-color: currentColor;
+}
+.search-clear-btn::before { transform: rotate(45deg); }
+.search-clear-btn::after { transform: rotate(-45deg); }
+
 
 /* Knappar */
 .button {
@@ -302,6 +333,29 @@ body {
 .button.clear-filter { background: transparent; color: var(--primary-color); font-weight: 600; box-shadow: none; padding: 0.25rem 0.5rem; }
 .button.primary { background-color: var(--primary-color); color: white; box-shadow: var(--shadow-sm); }
 .button.primary:hover { background-color: var(--primary-hover); box-shadow: var(--shadow-md); }
+
+/* --- Knapp-spinner --- */
+.button .button-spinner {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    border: 3px solid rgba(255, 255, 255, 0.4);
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+[data-theme="dark"] .button.secondary .button-spinner {
+    border-color: rgba(255, 255, 255, 0.2);
+    border-top-color: #f2f2f7;
+}
+[data-theme="light"] .button.secondary .button-spinner {
+    border-color: rgba(0, 0, 0, 0.2);
+    border-top-color: #1a1a1a;
+}
+.button:disabled {
+    opacity: 0.7;
+    cursor: wait;
+}
 
 mark {
     background-color: var(--warning-color);
@@ -359,7 +413,10 @@ mark {
 
 #jobbOversikt thead {
     background-color: var(--bg-color);
-    position: sticky; top: 0; z-index: 1;
+    position: sticky; 
+    /* NYTT: Fäst under huvud-headern */
+    top: var(--header-height); 
+    z-index: 5; /* Lägre än main-header */
 }
 
 #jobbOversikt th, #jobbOversikt td {
@@ -395,6 +452,16 @@ mark {
 }
 #jobbOversikt tbody tr.prio-row:hover {
     background-color: var(--danger-hover-bg);
+}
+
+/* NYTT: Animation för kommande prio-jobb */
+#jobbOversikt tbody tr.prio-row.kommande-prio-pulse {
+    animation: pulse-prio-bg 2.5s infinite;
+}
+@keyframes pulse-prio-bg {
+    0% { background-color: var(--danger-light); }
+    50% { background-color: var(--danger-hover-bg); }
+    100% { background-color: var(--danger-light); }
 }
 
 #jobbOversikt tbody tr.done-row { opacity: 0.65; }
@@ -507,7 +574,18 @@ mark {
     border-bottom: 1px solid var(--border-color); 
     padding: 1.25rem 1.5rem; flex-shrink: 0;
     gap: 1rem;
+    /* NYTT: Frostad sticky header */
+    position: sticky;
+    top: 0;
+    background-color: var(--content-bg-transparent);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    z-index: 10;
 }
+[data-theme="dark"] .modal-header {
+    background-color: var(--bg-color-transparent);
+}
+
 .modal-header h2 { 
     margin: 0; font-size: 1.125rem; font-weight: 600; 
     flex-grow: 1;
@@ -626,6 +704,10 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     margin-top: 1.5rem; border-top: 1px solid var(--border-color);
     padding: 1.25rem 1.5rem;
     background-color: var(--bg-color); flex-shrink: 0;
+    /* NYTT: Sticky footer */
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
 }
 
 #modalCancelBtn {
@@ -634,7 +716,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     order: 1;
 }
 #modalCancelBtn:hover { background-color: var(--bg-color); color: var(--text-color); }
-#modalDuplicateBtn { order: 2; }
+/* #modalDuplicateBtn { order: 2; } (BORTTAGEN) */
 #modalSaveBtn { order: 3; }
 
 /* --- Toast --- */
@@ -648,9 +730,16 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     z-index: 2000; font-weight: 500; 
     transition: all 0.4s ease;
     opacity: 0; transform: translateX(-50%) translateY(20px);
-    display: flex; /* NYTT för att "Ångra"-knappen ska funka */
-    align-items: center; /* NYTT */
+    display: flex; /* För "Ångra"-knapp */
+    align-items: center;
 }
+/* NYTT: "Ångra"-knapp i Toast */
+.toast .button {
+    margin-left: 1rem;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+}
+
 @media (min-width: 769px) {
     .toast {
         bottom: 2rem;
@@ -741,6 +830,47 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 /* --- Statistik Modal --- */
 #statsModal .modal-content {
     max-width: 700px;
+}
+#statsModal .modal-body {
+    padding-top: 1rem;
+}
+
+/* NYTT: Progress bar för vinstmål */
+.profit-goal-progress {
+    margin-bottom: 1.5rem;
+}
+.progress-bar-container {
+    width: 100%;
+    height: 10px;
+    background-color: var(--bg-color);
+    border-radius: 5px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+}
+.progress-bar-fill {
+    height: 100%;
+    width: 0%; /* Uppdateras av JS */
+    background-color: var(--success-color);
+    border-radius: 5px;
+    transition: width 0.5s ease-out;
+}
+.progress-bar-text {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-color-light);
+    margin-top: 0.5rem;
+}
+.progress-bar-text .current {
+    color: var(--text-color);
+}
+
+.chart-container {
+    position: relative;
+    width: 100%;
+    max-height: 250px;
+    margin-bottom: 2rem;
 }
 
 #statsModalTable {
@@ -953,7 +1083,16 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     margin: 1px 0 !important; 
     cursor: pointer;
     width: 100%; /* Få brickan att fylla sin plats */
+    transition: opacity 0.2s ease; /* NYTT: För dim-effekt */
 }
+/* NYTT: Filter-dimmring */
+.fc-event.event-dimmed {
+    opacity: 0.3;
+}
+.fc-event.event-dimmed:hover {
+    opacity: 1;
+}
+
 .fc-event:hover .reg-plate-small,
 .fc-event:hover .user-plate-small { /* Hover-effekt */
     border-color: var(--primary-color);
@@ -1193,6 +1332,9 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 }
 [data-theme="dark"] .fc .fc-day-today {
     background: none !important;
+}
+.fc .fc-daygrid-day-frame {
+    position: relative; /* Nödvändig för vinst-summan */
 }
 
 .fc .fc-day-today .fc-daygrid-day-number {
@@ -1710,11 +1852,18 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         left: 0;
         right: 0;
         height: var(--mobile-nav-height);
-        background-color: var(--content-bg);
+        /* NYTT: Frostad bakgrund */
+        background-color: var(--content-bg-transparent);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
         border-top: 1px solid var(--border-color);
         box-shadow: 0 -2px 10px rgba(0,0,0,0.04);
         z-index: 1000;
     }
+    [data-theme="dark"] .mobile-nav {
+        background-color: var(--bg-color-transparent);
+    }
+
     .mobile-nav-btn {
         flex: 1;
         display: flex;
@@ -1787,9 +1936,20 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         border: none;
         padding-left: 0;
         background: transparent;
+        width: 100%; /* NYTT */
     }
     .search-modal-content .search-wrapper .icon {
         display: none;
+    }
+    /* NYTT: Rensa-knapp i mobil-sök */
+    .search-modal-content .search-clear-btn {
+        right: 0.75rem;
+        width: 32px;
+        height: 32px;
+    }
+    .search-modal-content .search-clear-btn::before,
+    .search-modal-content .search-clear-btn::after {
+        width: 16px;
     }
     
     /* 9. Mobil Kalender-vy */
@@ -1873,6 +2033,28 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 	.form-group input.input-reminder:focus {
 	    border-left-color: var(--primary-color);
 	}
+
+    /* --- NYTT: Bil-modal knapp-fix --- */
+    #carModal .modal-body {
+        /* Ge plats åt den fasta knappen */
+        padding-bottom: 6rem;
+    }
+    #carModalExternalLinkMobile {
+        display: flex; /* Dold på desktop */
+        position: sticky;
+        bottom: 1.5rem;
+        left: 1.5rem;
+        right: 1.5rem;
+        width: calc(100% - 3rem);
+        padding: 0.85rem 1rem;
+        font-size: 1rem;
+        z-index: 10;
+        margin-top: 1rem;
+    }
+    #carModalExternalLink {
+        display: none; /* Dölj original-länken på mobil */
+    }
+
 }
 
 /* Dölj mobil-nav på desktop */
@@ -1884,6 +2066,10 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         display: none;
     }
     #mobileJobList {
+        display: none;
+    }
+    /* NYTT: Dölj mobil-specifik Biluppgifter-knapp */
+    #carModalExternalLinkMobile {
         display: none;
     }
 }
@@ -1985,102 +2171,77 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 }
 
 
-/* --- NYA FÖRBÄTTRINGAR --- */
-
-/* --- 1. Knapp-spinner --- */
-.button .button-spinner {
-    display: inline-block;
-    width: 1rem;
-    height: 1rem;
-    border: 3px solid rgba(255, 255, 255, 0.4);
-    border-top-color: #ffffff;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite; /* Använder befintlig spin-keyframe */
+/* --- NYTT: Jobb-mallar --- */
+.job-templates {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 0.75rem;
 }
-
-[data-theme="dark"] .button.secondary .button-spinner {
-    border-color: rgba(255, 255, 255, 0.2);
-    border-top-color: #f2f2f7;
-}
-
-[data-theme="light"] .button.secondary .button-spinner {
-    border-color: rgba(0, 0, 0, 0.2);
-    border-top-color: #1a1a1a;
-}
-
-/* Se till att inaktiverade knappar ser rätt ut */
-.button:disabled {
-    opacity: 0.7;
-    cursor: wait;
-}
-
-/* --- 2. Rensa-knapp i sökfält --- */
-.search-wrapper {
-    position: relative; /* Nödvändigt för att positionera knappen */
-}
-
-.search-clear-btn {
-    position: absolute;
-    right: 0.5rem;
-    top: 50%;
-    transform: translateY(-50%);
-    background: none;
-    border: none;
-    cursor: pointer;
-    width: 28px;
-    height: 28px;
-    padding: 0;
-    display: none; /* Dold som standard */
-    align-items: center;
-    justify-content: center;
-    color: var(--text-color-light);
-}
-
-.search-clear-btn:hover {
-    color: var(--text-color);
-}
-
-.search-clear-btn::before,
-.search-clear-btn::after {
-    content: '';
-    position: absolute;
-    width: 14px;
-    height: 2px;
-    background-color: currentColor;
-}
-
-.search-clear-btn::before { transform: rotate(45deg); }
-.search-clear-btn::after { transform: rotate(-45deg); }
-
-.search-modal-content .search-wrapper {
-    width: 100%;
-}
-.search-modal-content .search-clear-btn {
-    right: 0.75rem;
-    width: 32px;
-    height: 32px;
-}
-.search-modal-content .search-clear-btn::before,
-.search-modal-content .search-clear-btn::after {
-    width: 16px;
-}
-
-/* --- 3. Ångra-knapp i Toast --- */
-.toast .button {
-    margin-left: 1rem;
-    padding: 0.25rem 0.5rem;
+.job-templates .button.template-btn {
     font-size: 0.8rem;
-    /* Ta bort onödiga regler, .button.secondary har redan rätt stil */
+    font-weight: 600;
+    padding: 0.5rem 0.75rem;
+    background-color: var(--bg-color);
+    color: var(--text-color-light);
+    border: 1px solid var(--border-color);
+}
+.job-templates .button.template-btn:hover {
+    background-color: var(--primary-light);
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+.job-templates .button.template-btn .icon-sm {
+    width: 0.9rem;
+    height: 0.9rem;
 }
 
-/* --- 4. Statistik-diagram --- */
-#statsModal .modal-body {
-    padding-top: 1rem;
+
+/* --- NYTT: Dagens Vinst (Kalender) --- */
+.calendar-day-profit {
+    position: absolute;
+    bottom: 4px;
+    right: 6px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--success-color);
+    background: rgba(48, 209, 88, 0.1);
+    padding: 2px 5px;
+    border-radius: 4px;
+    display: none; /* Dölj på mobil som standard */
+}
+/* Visa bara på skärmar > 900px (när kalendern är bred) */
+@media (min-width: 900px) {
+    .calendar-day-profit {
+        display: block;
+    }
 }
 
-.chart-container {
-    position: relative;
-    width: 100%;
-    max-height: 250px;
-    margin-bottom: 2rem;
+
+/* --- NYTT: Skelett-laddare (Bonus) --- */
+.skeleton-card {
+    background: var(--content-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    box-shadow: var(--shadow-sm);
+}
+.skeleton-pulse {
+    background: var(--bg-color);
+    border-radius: 6px;
+    animation: pulse-bg 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+.skeleton-card .line-1 { width: 40%; height: 1.25rem; }
+.skeleton-card .line-2 { width: 60%; height: 1rem; }
+.skeleton-card .line-3 { width: 80%; height: 1rem; margin-top: 0.5rem; }
+@keyframes pulse-bg {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
 }
