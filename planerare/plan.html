@@ -349,7 +349,12 @@
         <div class="modal-content">
             <div class="modal-header detail-modal-header" id="customerModalHeader">
                 <h2 id="customerModalName"></h2>
-                <p id="customerModalPhone"></p>
+                <div class="customer-phone-wrapper">
+                    <p id="customerModalPhone"></p>
+                    <button class="icon-btn" id="editCustomerPhoneBtn" title="Redigera telefonnummer">
+                        <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-pencil"></use></svg>
+                    </button>
+                </div>
                 <button class="modal-close-btn" id="customerModalCloseBtn" aria-label="Stäng modal">
                     <svg class="icon" viewBox="0 0 24 24"><use href="#icon-close"></use></svg>
                 </button>
@@ -711,6 +716,7 @@
             const customerModalCloseBtn = document.getElementById('customerModalCloseBtn');
             const customerModalName = document.getElementById('customerModalName');
             const customerModalPhone = document.getElementById('customerModalPhone');
+            const editCustomerPhoneBtn = document.getElementById('editCustomerPhoneBtn'); // NY (PUNKT 6)
             const customerModalTotalProfit = document.getElementById('customerModalTotalProfit');
             const customerModalJobCount = document.getElementById('customerModalJobCount');
             const customerModalJobList = document.getElementById('customerModalJobList');
@@ -1179,13 +1185,21 @@
 
                 renderGlobalStats(allJobs);
                 const calendarEvents = allJobs.map(mapJobToEvent);
-                calendar.setOption('events', calendarEvents);
+                if (calendar) { // Säkerställ att kalendern är initierad
+                    calendar.setOption('events', calendarEvents);
+                    filterCalendarView();
+                    updateDailyProfitInCalendar(allJobs);
+                }
                 renderTimeline(); 
                 
-                filterCalendarView();
-                updateDailyProfitInCalendar(allJobs);
-                
-                toggleView(currentView);
+                // Flyttad från `toggleView` för att säkerställa att vyn alltid är rätt
+                if (currentView === 'calendar') {
+                    timelineView.style.display = 'none';
+                    calendarView.style.display = 'block';
+                } else {
+                    calendarView.style.display = 'none';
+                    timelineView.style.display = 'block';
+                }
             }
 
             function renderGlobalStats(jobs) {
@@ -1557,7 +1571,8 @@
                 isModalOpen = true;
                 currentOpenModalId = modalId;
                 
-                if (history.state?.modal !== modalId) {
+                // PUNKT 7: Undvik att pusha historik för mobil sök-modal
+                if (history.state?.modal !== modalId && modalId !== 'mobileSearchModal') {
                     try {
                         history.pushState({ modal: modalId }, `Modal ${modalId}`, `#${modalId}`);
                     } catch (e) {
@@ -1598,24 +1613,42 @@
                 const commentText = decodeURIComponent(button.dataset.comment);
                 commentPopoverContent.textContent = commentText;
                 const rect = button.getBoundingClientRect();
-                commentPopover.style.display = 'block';
                 
+                commentPopover.style.display = 'block'; // Visa först för att mäta
+                
+                const popoverWidth = commentPopover.offsetWidth;
+                const popoverHeight = commentPopover.offsetHeight;
+
                 commentPopover.classList.remove('arrow-top', 'arrow-bottom');
 
-                let popoverTop = rect.bottom + window.scrollY + 5;
-                let popoverLeft = rect.left + window.scrollX - commentPopover.offsetWidth + rect.width;
+                let popoverTop = rect.bottom + window.scrollY + 8; // 8px marginal
+                let popoverLeft = rect.left + window.scrollX - (popoverWidth / 2) + (rect.width / 2);
+
+                // Justera vänster/höger
+                if (popoverLeft < 10) {
+                    popoverLeft = 10;
+                } else if (popoverLeft + popoverWidth > window.innerWidth - 10) {
+                    popoverLeft = window.innerWidth - popoverWidth - 10;
+                }
                 
-                if (popoverLeft < 10) popoverLeft = 10;
-                
-                if (popoverTop + commentPopover.offsetHeight > window.innerHeight + window.scrollY) {
-                    popoverTop = rect.top + window.scrollY - commentPopover.offsetHeight - 5;
+                // Justera topp/botten
+                if (popoverTop + popoverHeight > window.innerHeight + window.scrollY - 10) {
+                    // Visa ovanför
+                    popoverTop = rect.top + window.scrollY - popoverHeight - 8; // 8px marginal
                     commentPopover.classList.add('arrow-bottom'); 
                 } else {
-                    popoverTop = commentPopover.classList.add('arrow-top'); 
+                    // Visa nedanför
+                    commentPopover.classList.add('arrow-top'); 
                 }
+                
+                // PUNKT 5 (FIX): `popoverTop` var felaktigt, ska vara `popoverLeft`
+                // Sätt pilens position
+                const arrowOffset = rect.left + (rect.width / 2) - popoverLeft;
+                commentPopover.style.setProperty('--arrow-left-offset', `${arrowOffset}px`);
 
                 commentPopover.style.top = `${popoverTop}px`;
                 commentPopover.style.left = `${popoverLeft}px`;
+                
                 popoverBackdrop.classList.add('show');
                 commentPopover.classList.add('show');
             }
@@ -1762,6 +1795,33 @@
                 showModal('customerModal'); 
             }
             
+            // NY (PUNKT 6): Hanterare för redigeringsknappen
+            editCustomerPhoneBtn.addEventListener('click', () => {
+                const kundnamn = customerModalName.textContent;
+                const customerJobs = allJobs
+                    .filter(j => j.kundnamn === kundnamn)
+                    .sort((a, b) => new Date(b.datum) - new Date(a.datum));
+                
+                if (customerJobs.length > 0) {
+                    const latestJob = customerJobs[0]; // Ta det senaste jobbet
+                    
+                    if (history.state?.modal) {
+                        isNavigatingBack = true;
+                        history.back();
+                        isNavigatingBack = false;
+                    } else {
+                        closeModal({ popHistory: false });
+                    }
+                    
+                    setTimeout(() => {
+                        openJobModal('edit', latestJob);
+                        // Fokusera på telefonfältet
+                        setTimeout(() => modalTelefon.focus(), 100); 
+                    }, 50);
+                }
+            });
+
+
             function openCarModal(regnr) {
                 if (!regnr) return;
                 const carJobs = allJobs.filter(j => j.regnr === regnr).sort((a, b) => new Date(b.datum) - new Date(a.datum));
@@ -2293,14 +2353,14 @@
             modalCancelBtn.addEventListener('click', () => closeModal());
             customerModalCloseBtn.addEventListener('click', () => closeModal());
             carModalCloseBtn.addEventListener('click', () => closeModal());
-            mobileSearchCloseBtn.addEventListener('click', () => closeModal()); 
+            mobileSearchCloseBtn.addEventListener('click', () => closeModal({ popHistory: false })); // PUNKT 7: Ändrad
             settingsModalCloseBtn.addEventListener('click', () => closeModal()); 
             settingsModalCancelBtn.addEventListener('click', () => closeModal()); 
             
             jobModal.addEventListener('click', (e) => { if (e.target === jobModal) closeModal(); });
             customerModal.addEventListener('click', (e) => { if (e.target === customerModal) closeModal(); });
             carModal.addEventListener('click', (e) => { if (e.target === carModal) closeModal(); });
-            mobileSearchModal.addEventListener('click', (e) => { if (e.target === mobileSearchModal) closeModal(); });
+            mobileSearchModal.addEventListener('click', (e) => { if (e.target === mobileSearchModal) closeModal({ popHistory: false }); }); // PUNKT 7: Ändrad
             statsModal.addEventListener('click', (e) => { if (e.target === statsModal) closeModal(); });
             settingsModal.addEventListener('click', (e) => { if (e.target === settingsModal) closeModal(); }); 
 
