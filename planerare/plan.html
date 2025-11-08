@@ -885,8 +885,7 @@
                     const dateA = new Date(a.datum);
                     const dateB = new Date(b.datum);
 
-                    if (a.prio && !b.prio) return -1;
-                    if (!a.prio && b.prio) return 1;
+                    // De två "if (a.prio..."-raderna är borttagna här
 
                     if (sortOrder === 'desc') {
                         return dateB - dateA; 
