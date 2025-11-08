@@ -1269,6 +1269,7 @@
                         modalKundpris.value = dataToClone.kundpris;
                         modalUtgifter.value = dataToClone.utgifter;
                         document.getElementById('kommentarer').value = dataToClone.kommentarer;
+						document.getElementById('matarstallning').value = dataToClone.matarstallning || '';
                     } else {
                         document.getElementById('status').value = 'bokad';
                         document.getElementById('prio').checked = false;
@@ -1295,6 +1296,7 @@
                     modalKundpris.value = dataToClone.kundpris;
                     modalUtgifter.value = dataToClone.utgifter;
                     document.getElementById('kommentarer').value = dataToClone.kommentarer;
+					document.getElementById('matarstallning').value = dataToClone.matarstallning || '';
                 }
                 updateLiveProfit();
                 showModal('jobModal'); 
@@ -1316,6 +1318,7 @@
                     vinst: kundpris - utgifter,
                     kommentarer: document.getElementById('kommentarer').value,
                     prio: document.getElementById('prio').checked
+					matarstallning: document.getElementById('matarstallning').value
                 };
             }
             
@@ -1548,6 +1551,7 @@
                     kundnamn: jobData.kundnamn,
                     kundpris: jobData.kundpris, utgifter: jobData.utgifter,
                     vinst: jobData.vinst, kommentarer: jobData.kommentarer, prio: jobData.prio
+					matarstallning: jobData.matarstallning
                 };
 
                 if (jobData.id) {
