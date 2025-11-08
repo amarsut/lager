@@ -1952,3 +1952,32 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     top: -9px; /* 1px offset för att täcka kanten */
     border-color: transparent transparent var(--content-bg) transparent;
 }
+
+/* --- 2. Sök-Spinner CSS --- */
+
+/* Dölj spinnern som standard */
+.search-spinner {
+    display: none;
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--primary-color);
+    border-bottom-color: transparent;
+    border-radius: 50%;
+    /* Positionera den där ikonen var */
+    margin-left: 0.75rem; 
+    margin-right: -0.25rem; 
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* När .is-searching är aktiv... */
+.search-wrapper.is-searching .search-spinner {
+    display: block; /* ...visa spinnern */
+}
+
+.search-wrapper.is-searching .icon-search {
+    display: none; /* ...göm sök-ikonen */
+}
