@@ -1982,3 +1982,33 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     display: none; /* ...göm sök-ikonen */
 }
 
+/* --- Knapp-spinner --- */
+.button .button-spinner {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    border: 3px solid rgba(255, 255, 255, 0.4);
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+[data-theme="dark"] .button.secondary .button-spinner {
+    border-color: rgba(255, 255, 255, 0.2);
+    border-top-color: #f2f2f7;
+}
+
+[data-theme="light"] .button.secondary .button-spinner {
+    border-color: rgba(0, 0, 0, 0.2);
+    border-top-color: #1a1a1a;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Se till att inaktiverade knappar ser rätt ut */
+.button:disabled {
+    opacity: 0.7;
+    cursor: wait;
+}
