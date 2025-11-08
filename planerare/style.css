@@ -1767,8 +1767,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     .fc .fc-daygrid-day-frame {
         min-height: 80px; 
     }
-
-} /* <-- Slutet på din @media-regel */
 }
 
 /* Dölj mobil-nav på desktop */
@@ -1783,6 +1781,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         display: none;
     }
 }
+
 
 
 
