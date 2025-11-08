@@ -1692,6 +1692,30 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     .fc .fc-toolbar-title {
         font-size: 1.25rem;
     }
+	/* 9. Mobil Kalender-vy */
+    #calendarView {
+        padding: 0;
+        background: none;
+        border: none;
+    }
+    [data-theme="dark"] #calendarView .fc {
+        padding: 0;
+        border: none;
+    }
+    .fc .fc-toolbar {
+        padding: 0.5rem 0.25rem;
+    }
+    .fc .fc-toolbar-title {
+        font-size: 1.25rem;
+    }
+
+    /* --- NY VIKTIG FIX HÄR --- */
+    /* Tvinga kalendercellerna att ha en minsta höjd på mobil */
+    .fc .fc-daygrid-day-frame {
+        min-height: 80px; 
+    }
+
+} /* <-- Slutet på din @media-regel */
 }
 
 /* Dölj mobil-nav på desktop */
@@ -1706,4 +1730,5 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         display: none;
     }
 }
+
 
