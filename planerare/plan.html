@@ -660,23 +660,6 @@
 
                         const prioIcon = job.prio ? `<span class="fc-event-prio-flag">🚩</span>` : '';
 
-                        // --- MOBILVY (listWeek) ---
-                        if (arg.view.type === 'list') {
-                            const timePart = job.datum ? formatDate(job.datum).split('kl. ')[1] || '' : '';
-                            return { 
-                                html: `
-                                <div class="mobile-calendar-card ${job.prio ? 'prio-row' : ''}">
-                                    <span class="card-time-badge">${timePart}</span>
-                                    <div class="card-job-details">
-                                        <span class="card-job-customer">${prioIcon}${job.kundnamn}</span>
-                                        <span class="card-job-regnr">${job.regnr || 'Okänt reg.nr'}</span>
-                                    </div>
-                                    <span class="status-badge status-${job.status}">${STATUS_TEXT[job.status]}</span>
-                                </div>
-                                `
-                            };
-                        }
-
                         // --- DESKTOP-VY (alla andra, t.ex. dayGridTwoWeek) ---
                         let contentHtml = '';
                         // Välj vad som ska visas: REG-NUMMER (med bricka) eller KUNDNAMN (med bricka)
@@ -747,29 +730,30 @@
                     calendarView.style.display = 'block';
                     appBrandTitle.style.display = 'none'; // Göm datum i kalendern
 
+                    // NY LOGIK: Använd 14-dagarsvyn på ALLA enheter
+                    calendar.changeView('dayGridTwoWeek'); 
+                    
                     const isMobile = window.innerWidth <= 768;
                     if (isMobile) {
-                        // NYTT: Byt till listWeek för mobil (snyggare)
-                        calendar.changeView('listWeek'); 
+                        // Enkel header för mobil
                         calendar.setOption('headerToolbar', {
                             left: 'prev,next', center: 'title', right: 'today'
                         });
                     } else {
-                        // Desktop
-                        calendar.changeView('dayGridTwoWeek');
+                        // Den gamla, mer avancerade headern för desktop
                         calendar.setOption('headerToolbar', {
                             left: 'prev,next today',
                             center: 'title',
                             right: 'dayGridTwoWeek,timeGridWeek,timeGridDay'
                         });
                     }
-                    
-                    setTimeout(() => {
-                        calendar.updateSize(); 
 
+                    // BEHÅLL DENNA FIX: Tvinga kalendern att rita om sig själv
+                    // (Detta var min förra lösning, den behövs fortfarande)
+                    setTimeout(() => {
+                        calendar.updateSize();
                         const calendarEvents = allJobs.map(mapJobToEvent);
                         calendar.setOption('events', calendarEvents);
-                        
                     }, 50);
 
                 } else {
