@@ -1096,6 +1096,19 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 /* Prio-prickar får en röd ring */
 .calendar-job-dot.prio-dot {
     box-shadow: 0 0 0 2px var(--danger-color);
+	animation: pulse-prio 2.5s infinite cubic-bezier(0.66, 0, 0, 1);
+}
+
+@keyframes pulse-prio {
+    0% {
+        box-shadow: 0 0 0 0px rgba(255, 69, 58, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 7px rgba(255, 69, 58, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0px rgba(255, 69, 58, 0);
+    }
 }
 
 /* Tydlig hover-effekt */
@@ -1872,4 +1885,5 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         display: none;
     }
 }
+
 
