@@ -545,6 +545,18 @@ mark {
 
 .form-group input[type="date"], .form-group input[type="time"] { position: relative; padding-right: 2.5rem; }
 
+/* Stil för "påminnelse"-fält (Mätarställning) */
+.form-group input.input-reminder {
+    /* Vi behåller standard-bakgrunden men lägger till en tydlig kant */
+    border-left: 4px solid var(--info-color);
+    transition: all var(--transition-speed-fast) ease;
+}
+
+.form-group input.input-reminder:focus {
+    /* När man klickar i fältet blir kanten samma som primärfärgen */
+    border-left-color: var(--primary-color);
+}
+
 /* Ny wrapper för input-ikoner */
 .input-wrapper {
     position: relative;
@@ -1825,6 +1837,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         display: none;
     }
 }
+
 
 
 
