@@ -659,46 +659,36 @@
                         }
 
                         const prioIcon = job.prio ? `<span class="fc-event-prio-flag">🚩</span>` : '';
-						const isMobile = window.innerWidth <= 768;
 
-                        // --- NY MOBIL-LOGIK FÖR RUTNÄT (Grid View) ---
-                        if (isMobile && arg.view.type === 'dayGrid') {
-                            // Hämta tiden
-                            const timePart = new Date(job.datum).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' }).replace(':', '.');
-                            
-                            // Hämta en kort titel
-                            let titlePart = '';
-                            if (job.regnr && job.regnr.toUpperCase() !== 'OKÄNT') {
-                                titlePart = job.regnr;
-                            } else {
-                                // Ta initialer från kundnamn, t.ex. "Eva Svensson" -> "ES"
-                                titlePart = job.kundnamn.split(' ').map(n => n[0]).join('');
-                            }
-                            
-                            // Returnera en ny, super-kompakt HTML
-                            return {
-                                html: `
-                                <div class="mobile-grid-event status-${job.status}">
-                                    <span class="mge-time">${timePart}</span>
-                                    <span class="mge-title">${prioIcon}${titlePart}</span>
-                                </div>
-                                `
-                            };
+                        // --- NY LOGIK: Skapa BÅDE mobil- och desktop-HTML ---
+
+                        // 1. Skapa Mobil-HTML (Kompakt vy)
+                        const timePart = new Date(job.datum).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' }).replace(':', '.');
+                        let titlePart = '';
+                        if (job.regnr && job.regnr.toUpperCase() !== 'OKÄNT') {
+                            titlePart = job.regnr;
+                        } else {
+                            titlePart = job.kundnamn.split(' ').map(n => n[0]).join(''); // Initialer
                         }
 
-                        // --- DESKTOP-VY (alla andra, t.ex. dayGridTwoWeek) ---
-                        let contentHtml = '';
-                        // Välj vad som ska visas: REG-NUMMER (med bricka) eller KUNDNAMN (med bricka)
+                        const mobileHtml = `
+                        <div class="mobile-grid-event status-${job.status}">
+                            <span class="mge-time">${timePart}</span>
+                            <span class="mge-title">${prioIcon}${titlePart}</span>
+                        </div>
+                        `;
+
+                        // 2. Skapa Desktop-HTML (Reg-skylt-vyn)
+                        let desktopHtml = '';
                         if (job.regnr && job.regnr.toUpperCase() !== 'OKÄNT') {
-                            contentHtml = `
+                            desktopHtml = `
                                 <div class="reg-plate-small">
                                     <span class="reg-country-small">S</span>
                                     <span class="reg-number-small">${job.regnr}</span>
                                 </div>
                             `;
                         } else {
-                            // NYTT: Namn-bricka med användar-ikon
-                            contentHtml = `
+                            desktopHtml = `
                                 <div class="user-plate-small">
                                     <span class="user-icon-small">
                                         <svg class="icon" viewBox="0 0 24 24"><use href="#icon-user"></use></svg>
@@ -707,8 +697,14 @@
                                 </div>
                             `;
                         }
-                        
-                        return { html: contentHtml };
+
+                        // 3. Returnera BÅDA, inslagna i varsin wrapper
+                        return {
+                            html: `
+                                <div class="event-wrapper-mobile">${mobileHtml}</div>
+                                <div class="event-wrapper-desktop">${desktopHtml}</div>
+                            `
+                        };
                     },
                 });
                 calendar.render();
