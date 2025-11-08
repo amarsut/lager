@@ -1823,6 +1823,34 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     .fc .fc-daygrid-day-frame {
         min-height: 80px; 
     }
+
+	/* --- FIX FÖR MODAL-LAYOUT (Mätarställning & Vinst) --- */
+
+	/* Gör att vinst-texten justeras snyggt */
+	.form-group-profit {
+	    grid-column: 1 / -1; 
+	    text-align: right;
+	    font-size: 1.125rem; 
+	    font-weight: 600; 
+	    padding: 0.5rem 0;
+	    
+	    /* NYA REGLER FÖR ATT VARA I ETT SPLIT-FÄLT */
+	    display: flex;
+	    align-items: center;
+	    justify-content: flex-end;
+	    padding: 0.75rem; /* Lite luft */
+	    border: 1px solid transparent; /* Fyll ut höjden */
+	    border-radius: 8px; /* Matcha fälten */
+	}
+	
+	/* Stil för "påminnelse"-fält (Mätarställning) */
+	.form-group input.input-reminder {
+	    border-left: 4px solid var(--info-color);
+	}
+	
+	.form-group input.input-reminder:focus {
+	    border-left-color: var(--primary-color);
+	}
 }
 
 /* Dölj mobil-nav på desktop */
@@ -1837,10 +1865,3 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         display: none;
     }
 }
-
-
-
-
-
-
-
