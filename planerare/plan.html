@@ -2280,10 +2280,10 @@
                 
                 if (template === 'oljebyte') {
                     const literOljaprompt = prompt('Hur många liter olja? (t.ex. 4,5)', '4,5');
-                    if (litersOljaprompt === null) return; 
+                    if (literOljaprompt === null) return; 
                     
                     // FIX: Hanterar både komma och punkt som decimal
-                    const literOlja = parseFloat(litersOljaprompt.replace(',', '.')) || 0;
+                    const literOlja = parseFloat(literOljaprompt.replace(',', '.')) || 0;
                     
                     if (literOlja > 0) {
                         const oljekostnad = literOlja * 200; 
