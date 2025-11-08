@@ -868,6 +868,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     box-sizing: border-box;
 }
 
+
 /* --- Statistik Modal --- */
 #statsModal .modal-content {
     max-width: 700px;
