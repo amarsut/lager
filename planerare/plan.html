@@ -212,12 +212,6 @@
             <div class="modal-header">
                 <h2 id="modalTitle">Lägg till nytt jobb</h2>
                 
-                <label class="prio-toggle-wrapper" for="prio" id="prioToggleWrapper">
-                    <input type="checkbox" id="prio">
-                    <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-flag"></use></svg>
-                    <span>Hög Prioritet</span>
-                </label>
-                
                 <button class="modal-close-btn" id="modalCloseBtn" aria-label="Stäng modal">
                     <svg class="icon" viewBox="0 0 24 24"><use href="#icon-close"></use></svg>
                 </button>
@@ -235,6 +229,12 @@
                         <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-tire"></use></svg>
                         <span>Hjulskifte</span>
                     </button>
+                    
+                    <label class="prio-toggle-wrapper" for="prio" id="prioToggleWrapper">
+                        <input type="checkbox" id="prio">
+                        <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-flag"></use></svg>
+                        <span>Prioritet</span>
+                    </label>
                 </div>
                 
                 <div class="form-group full-width">
@@ -377,7 +377,7 @@
                 <ul class="detail-job-list" id="carModalJobList">
                 </ul>
 
-                <a id="carModalExternalLinkMobile" href="#" target="_blank" rel="noopener noreferrer" class="button primary">
+                <a id="carModalExternalLinkMobile" href="#" target="_blank" rel="noopener noreferrer" class="button">
                     <img src="https://biluppgifter.se/favicon/favicon.ico" alt="Biluppgifter Ikon" />
                     <span>Öppna i Biluppgifter.se</span>
                 </a>
@@ -428,7 +428,7 @@
     <div id="settingsModal" class="modal-backdrop" data-modal-id="settingsModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Inställningar</h2>
+                <h2>Mer & Inställningar</h2>
                 <button class="modal-close-btn" id="settingsModalCloseBtn" aria-label="Stäng modal">
                     <svg class="icon" viewBox="0 0 24 24"><use href="#icon-close"></use></svg>
                 </button>
@@ -682,7 +682,6 @@
             const statsModalJobCount = document.getElementById('statsModalJobCount');
             const statsModalBody = document.getElementById('statsModalBody');
             
-            // Inställnings-modal element
             const settingsBtn = document.getElementById('settingsBtn');
             const mobileSettingsBtn = document.getElementById('mobileSettingsBtn');
             const settingsModal = document.getElementById('settingsModal');
@@ -795,7 +794,6 @@
                             type: 'dayGrid',
                             duration: { weeks: 2 },
                             displayEventTime: true,
-                            // NYTT: Dagens vinst-funktion
                             dayCellContent: function(arg) {
                                 let dayNumberEl = document.createElement('a');
                                 dayNumberEl.classList.add('fc-daygrid-day-number');
@@ -919,7 +917,6 @@
                 calendar.render();
             }
 
-            // NYTT: Funktion för att filtrera kalendern
             function filterCalendarView() {
                 if (!calendar) return;
 
@@ -946,7 +943,6 @@
                             break;
                     }
                     
-                    // Ta bort gamla klasser och lägg till ny
                     const classNames = event.classNames.filter(c => c !== 'event-dimmed');
                     if (!isVisible) {
                         classNames.push('event-dimmed');
@@ -955,16 +951,11 @@
                 });
             }
 
-            // NYTT: Funktion för att räkna ut daglig vinst
             function updateDailyProfitInCalendar(jobs) {
                 if (currentView !== 'calendar' || !calendar) return;
 
                 const dailyProfits = {};
-                const now = new Date();
-                const currentMonth = now.getMonth();
-                const currentYear = now.getFullYear();
 
-                // 1. Summera vinst per dag för "Klar"-jobb
                 jobs.filter(j => j.status === 'klar' && j.vinst > 0).forEach(job => {
                     const dateKey = job.datum.split('T')[0];
                     if (!dailyProfits[dateKey]) {
@@ -973,16 +964,11 @@
                     dailyProfits[dateKey] += job.vinst;
                 });
 
-                // 2. Hitta alla synliga vinst-element
                 const profitElements = calendarContainer.querySelectorAll('.calendar-day-profit');
                 
-                // 3. Uppdatera texten
                 profitElements.forEach(el => {
                     const date = el.dataset.date;
-                    const elDate = new Date(date);
-
-                    // NYTT: Visa bara vinst för dagar i denna månad (Bonus-fix)
-                    if (dailyProfits[date] && elDate.getMonth() === currentMonth && elDate.getFullYear() === currentYear) {
+                    if (dailyProfits[date]) {
                         el.textContent = `+${formatCurrency(dailyProfits[date])}`;
                         el.style.display = ''; 
                     } else {
@@ -1088,7 +1074,6 @@
                 });
             }
 
-            // NYTT: Skelett-laddar-funktion
             function showSkeletonLoader() {
                 let skeletonHTML = '';
                 const isMobile = window.innerWidth <= 768;
@@ -1425,7 +1410,9 @@
 
             // --- Popover, Modal-hantering ---
             
-            function closeModal() {
+            function closeModal(options = {}) {
+                const { popHistory = true } = options; // Nytt alternativ
+
                 if (!isModalOpen) return;
                 
                 const modalId = currentOpenModalId;
@@ -1442,7 +1429,7 @@
                     }, 200);
                 }
 
-                if (!isNavigatingBack && history.state && history.state.modal === modalId) {
+                if (popHistory && !isNavigatingBack && history.state && history.state.modal === modalId) {
                     history.back();
                 }
                 
@@ -1459,7 +1446,7 @@
             window.addEventListener('popstate', (event) => {
                 if (isModalOpen) {
                     isNavigatingBack = true;
-                    closeModal();
+                    closeModal({ popHistory: false }); // Stäng modalen utan att ändra historiken
                     isNavigatingBack = false;
                 }
             });
@@ -1467,7 +1454,8 @@
             function showModal(modalId) {
                 if (isModalOpen) {
                     console.warn("Försöker öppna modal när en redan är öppen. Stänger föregående.");
-                    closeModal(); 
+                    // Stäng föregående modal UTAN att poppa historiken
+                    closeModal({ popHistory: false }); 
                 }
                 
                 const modalElement = document.getElementById(modalId);
@@ -1489,6 +1477,33 @@
                         console.warn("Kunde inte använda history.pushState", e);
                     }
                 }
+
+                // Bonus: Tabb-fälla
+                const focusableElements = modalElement.querySelectorAll(
+                    'a[href], button, input, textarea, select, [tabindex]:not([tabindex="-1"])'
+                );
+                const firstElement = focusableElements[0];
+                const lastElement = focusableElements[focusableElements.length - 1];
+
+                if (firstElement) {
+                    firstElement.focus();
+                }
+
+                modalElement.addEventListener('keydown', (e) => {
+                    if (e.key !== 'Tab') return;
+
+                    if (e.shiftKey) { // Shift + Tab
+                        if (document.activeElement === firstElement) {
+                            lastElement.focus();
+                            e.preventDefault();
+                        }
+                    } else { // Tab
+                        if (document.activeElement === lastElement) {
+                            firstElement.focus();
+                            e.preventDefault();
+                        }
+                    }
+                });
             }
 
 
@@ -1611,7 +1626,6 @@
                 customerModalTotalProfit.className = totalVinst > 0 ? 'stat-value positive' : 'stat-value';
                 customerModalJobCount.textContent = customerJobs.length;
                 
-                // NYTT: Gör jobben klickbara
                 customerModalJobList.innerHTML = customerJobs.map(job => {
                     const prioIcon = job.prio ? `<svg class="icon-sm prio-flag-icon" viewBox="0 0 24 24"><use href="#icon-flag"></use></svg>` : '';
                     return `<li data-job-id="${job.id}">
@@ -1643,7 +1657,6 @@
                 carModalTotalProfit.className = totalVinst > 0 ? 'stat-value positive' : 'stat-value';
                 carModalJobCount.textContent = carJobs.length;
 
-                // NYTT: Gör jobben klickbara
                 carModalJobList.innerHTML = carJobs.map(job => {
                      const prioIcon = job.prio ? `<svg class="icon-sm prio-flag-icon" viewBox="0 0 24 24"><use href="#icon-flag"></use></svg>` : '';
                     return `<li data-job-id="${job.id}">
@@ -1658,7 +1671,6 @@
                 showModal('carModal'); 
             }
 
-			// --- Uppdaterad `openStatsModal` med Vinstmål ---
 			function openStatsModal() {
                 const completedJobs = allJobs.filter(j => j.status === 'klar');
                 const totalVinst = completedJobs.reduce((sum, j) => sum + (j.vinst || 0), 0);
@@ -1668,7 +1680,6 @@
                 statsModalJobCount.textContent = totalJobb;
                 statsModalTotalProfit.className = totalVinst > 0 ? 'stat-value positive' : 'stat-value';
 
-                // --- NYTT: Vinstmål Logik ---
                 const now = new Date();
                 const currentMonthKey = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}`;
                 
@@ -1687,7 +1698,6 @@
                 } else {
                     profitGoalProgress.style.display = 'none'; 
                 }
-                // --- SLUT Vinstmål Logik ---
 
                 const monthlyStats = completedJobs.reduce((acc, job) => {
                     try {
@@ -2072,7 +2082,7 @@
                 switch(action) {
                     case 'edit': const job = findJob(contextMenuJobId); if(job) openJobModal('edit', job); break;
                     case 'prio': togglePrio(contextMenuJobId); break;
-                    case 'duplicate': duplicateJob(contextMenuJobId); break;
+                    case 'duplicate': duplicateJob(contextMenuJobId); break; // Duplicera finns kvar här
                     
                     case 'setStatusKlar': {
                         const job = findJob(contextMenuJobId);
@@ -2171,13 +2181,13 @@
             fabAddJob.addEventListener('click', () => openJobModal('add'));
             emptyStateAddBtn.addEventListener('click', () => openJobModal('add'));
             
-            modalCloseBtn.addEventListener('click', closeModal);
-            modalCancelBtn.addEventListener('click', closeModal);
-            customerModalCloseBtn.addEventListener('click', closeModal);
-            carModalCloseBtn.addEventListener('click', closeModal);
-            mobileSearchCloseBtn.addEventListener('click', closeModal);
-            settingsModalCloseBtn.addEventListener('click', closeModal); 
-            settingsModalCancelBtn.addEventListener('click', closeModal); 
+            modalCloseBtn.addEventListener('click', () => closeModal());
+            modalCancelBtn.addEventListener('click', () => closeModal());
+            customerModalCloseBtn.addEventListener('click', () => closeModal());
+            carModalCloseBtn.addEventListener('click', () => closeModal());
+            mobileSearchCloseBtn.addEventListener('click', () => closeModal());
+            settingsModalCloseBtn.addEventListener('click', () => closeModal()); 
+            settingsModalCancelBtn.addEventListener('click', () => closeModal()); 
             
             jobModal.addEventListener('click', (e) => { if (e.target === jobModal) closeModal(); });
             customerModal.addEventListener('click', (e) => { if (e.target === customerModal) closeModal(); });
@@ -2195,7 +2205,6 @@
             function openSettingsModal() {
                 profitGoalInput.value = currentProfitGoal > 0 ? currentProfitGoal : '';
                 
-                // Dölj/visa mobil-knapparna baserat på skärmstorlek
                 if (window.innerWidth <= 768) {
                     mobileSettingsGroup.style.display = 'grid';
                 } else {
@@ -2213,18 +2222,14 @@
                 localStorage.setItem('profitGoal', currentProfitGoal);
                 showToast('Inställningar sparade!', 'success');
                 closeModal();
-                // Uppdatera statistiken om den råkar vara öppen (osannolikt, men bra)
-                if (currentOpenModalId === 'statsModal') {
-                    openStatsModal();
-                }
             });
 
-            // Knappar i inställnings-modalen
             settingsThemeToggle.addEventListener('click', () => themeToggle.click());
             settingsToggleCompactView.addEventListener('click', () => toggleCompactView.click());
             settingsLockAppBtn.addEventListener('click', () => {
                 closeModal();
-                lockAppBtn.click();
+                // Vänta tills modalen stängts innan låsskärmen visas
+                setTimeout(() => lockAppBtn.click(), 250);
             });
 
             // --- Jobb-mallar (ÄNDRAD) ---
@@ -2236,20 +2241,20 @@
                 
                 if (template === 'oljebyte') {
                     const literOljaprompt = prompt('Hur många liter olja? (t.ex. 4.5)', '4.5');
+                    if (litersOljaprompt === null) return; // Användaren klickade avbryt
+                    
                     const literOlja = parseFloat(litersOljaprompt.replace(',', '.')) || 0;
                     
-                    if (literOlja === 0) return; // Avbruten
-                    
-                    const oljekostnad = literOlja * 200; // Ditt pris: 200/L
+                    const oljekostnad = literOlja * 200; 
                     const filterkostnad = 200; 
-                    const arbetskostnad = 500; // Ditt pris: 500
+                    const arbetskostnad = 500; 
                     
                     modalKundpris.value = Math.round(oljekostnad + filterkostnad + arbetskostnad);
-                    modalUtgifter.value = 0; // Du sa inget om utgifter, så jag nollställer
+                    modalUtgifter.value = 0; 
                     document.getElementById('kommentarer').value = `Oljebyte:\n- Motorolja (${literOlja}L)\n- Oljefilter`;
                     
                 } else if (template === 'hjulskifte') {
-                    modalKundpris.value = 200; // Ditt pris: 200
+                    modalKundpris.value = 200;
                     modalUtgifter.value = 0;
                     document.getElementById('kommentarer').value = 'Hjulskifte (sommar/vinter)';
                 }
@@ -2258,7 +2263,7 @@
                 showToast('Mall tillämpad!', 'info');
             });
             
-            // --- Klickbara jobblistor i Kund/Bil-modal (NYTT) ---
+            // --- Klickbara jobblistor i Kund/Bil-modal (FIXAD HISTORIK) ---
             function handleDetailListClick(e) {
                 const jobItem = e.target.closest('li[data-job-id]');
                 if (!jobItem) return;
@@ -2267,12 +2272,19 @@
                 const job = findJob(jobId);
                 
                 if (job) {
-                    closeModal(); // Stäng kund/bil-modalen
+                    // FIX: Stäng nuvarande modal, men tryck "bakåt" i historiken
+                    // så att den nya modalen kan ersätta den.
+                    if (history.state?.modal) {
+                        isNavigatingBack = true;
+                        history.back(); // Gå tillbaka från customer/car-modalen
+                        isNavigatingBack = false;
+                    } else {
+                        closeModal(); // Fallback
+                    }
                     
-                    // Vänta lite så att modalen hinner stängas
                     setTimeout(() => {
                         openJobModal('edit', job);
-                    }, 250);
+                    }, 50); // Liten fördröjning för att historiken ska hinna uppdateras
                 }
             }
             customerModalJobList.addEventListener('click', handleDetailListClick);
@@ -2362,12 +2374,12 @@
                 if (isCompact) {
                     docElement.classList.add('compact-mode');
                     toggleCompactView.classList.add('active');
-                    settingsToggleCompactView.classList.add('active'); // Synka modal-knapp
+                    settingsToggleCompactView.classList.add('active'); 
                     localStorage.setItem('compactMode', 'true');
                 } else {
                     docElement.classList.remove('compact-mode');
                     toggleCompactView.classList.remove('active');
-                    settingsToggleCompactView.classList.remove('active'); // Synka modal-knapp
+                    settingsToggleCompactView.classList.remove('active'); 
                     localStorage.setItem('compactMode', 'false');
                 }
             }
@@ -2375,7 +2387,7 @@
                 const isCompact = !docElement.classList.contains('compact-mode');
                 setCompactMode(isCompact);
             });
-            settingsToggleCompactView.addEventListener('click', () => { // NYTT
+            settingsToggleCompactView.addEventListener('click', () => { 
                 const isCompact = !docElement.classList.contains('compact-mode');
                 setCompactMode(isCompact);
             });
@@ -2425,7 +2437,7 @@
                     mobileNav.style.display = 'flex';
                 }
                 
-                closeModal();
+                closeModal({ popHistory: false }); // Stäng utan att ändra historik
                 localStorage.setItem(PIN_LAST_UNLOCKED_KEY, Date.now().toString());
             }
             
@@ -2463,7 +2475,7 @@
                 if (e.key === 'Escape') {
                     if (isModalOpen) {
                         e.preventDefault();
-                        closeModal();
+                        closeModal(); // closeModal hanterar nu history.back()
                     } else if (commentPopover.classList.contains('show')) {
                         e.preventDefault();
                         hideCommentPopover();
@@ -2474,6 +2486,19 @@
                 }
                 
                 const isInputFocused = document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA' || document.activeElement.tagName === 'SELECT';
+                
+                // Om en modal är öppen, låt bara "Enter" på Spara-knappen fungera
+                if (isModalOpen && e.key === 'Enter' && document.activeElement.tagName !== 'TEXTAREA') {
+                    if (currentOpenModalId === 'jobModal') {
+                        // Trigga formulär-submit, men låt inte bubbla (t.ex. stänga modalen)
+                        e.preventDefault();
+                        modalSaveBtn.click();
+                    } else if (currentOpenModalId === 'settingsModal') {
+                        e.preventDefault();
+                        settingsModalSaveBtn.click();
+                    }
+                }
+
                 if (isModalOpen || isInputFocused || contextMenu.classList.contains('show')) return;
                 
                 switch(e.key.toLowerCase()) {
@@ -2525,7 +2550,6 @@
                 renderTimeline();
                 if (calendar && currentView === 'calendar') {
                     calendar.rerenderEvents();
-                    // Uppdatera vinst för att hantera ändrad skärmstorlek
                     updateDailyProfitInCalendar(allJobs);
                 }
             }, 200));
