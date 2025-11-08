@@ -16,6 +16,8 @@
     
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
 </head>
 <body>
 
@@ -124,14 +126,14 @@
                 <div id="timelineView">
                     <div class="view-controls" id="view-controls">
                         <div class="search-wrapper">
-						    <svg class="icon icon-search" viewBox="0 0 24 24"><use href="#icon-search"></use></svg>
-						
-						    <div class="search-spinner"></div> 
-						
-						    <input type="search" id="searchBar" placeholder="Sök jobb... (F)">
-						
-						    <button type="button" class="search-clear-btn" id="desktopSearchClear" title="Rensa sökning"></button>
-						</div>
+                            <svg class="icon icon-search" viewBox="0 0 24 24"><use href="#icon-search"></use></svg>
+                            
+                            <div class="search-spinner"></div> 
+                            
+                            <input type="search" id="searchBar" placeholder="Sök jobb... (F)">
+                            
+                            <button type="button" class="search-clear-btn" id="desktopSearchClear" title="Rensa sökning"></button>
+                        </div>
                     </div>
 
                     <div class="table-container" id="jobListContainer">
@@ -178,11 +180,11 @@
         <div class="search-modal-content">
             <form id="mobileSearchForm" style="display: contents;">
                 <div class="search-wrapper">
-				    <svg class="icon" viewBox="0 0 24 24"><use href="#icon-search"></use></svg>
-				    <input type="search" id="mobileSearchBar" placeholder="Sök jobb...">
-				
-				    <button type="button" class="search-clear-btn" id="mobileSearchClear" title="Rensa sökning"></button>
-				</div>
+                    <svg class="icon" viewBox="0 0 24 24"><use href="#icon-search"></use></svg>
+                    <input type="search" id="mobileSearchBar" placeholder="Sök jobb...">
+                    
+                    <button type="button" class="search-clear-btn" id="mobileSearchClear" title="Rensa sökning"></button>
+                </div>
             </form>
             <button id="mobileSearchCloseBtn" class="button secondary">Avbryt</button>
         </div>
@@ -381,6 +383,9 @@
             </div>
             
             <div class="modal-body" id="statsModalBody">
+                <div class="chart-container">
+                    <canvas id="statsChart"></canvas>
+                </div>
                 </div>
         </div>
     </div>
@@ -519,6 +524,9 @@
             let currentOpenModalId = null;
             let isNavigatingBack = false; 
 
+            // NYTT: Global referens för statistik-diagrammet
+            let statsChartInstance = null; 
+
             // --- DOM-element ---
             const docElement = document.documentElement;
             const appContainer = document.querySelector('.app-container');
@@ -585,7 +593,7 @@
             const carModalTotalProfit = document.getElementById('carModalTotalProfit');
             const carModalJobCount = document.getElementById('carModalJobCount');
             const carModalJobList = document.getElementById('carModalJobList');
-			// NYA STATISTIK-ELEMENT
+
             const navLogo = document.querySelector('.nav-logo');
             const statsModal = document.getElementById('statsModal');
             const statsModalCloseBtn = document.getElementById('statsModalCloseBtn');
@@ -622,22 +630,56 @@
             const mobileSearchBar = document.getElementById('mobileSearchBar');
             const mobileSearchCloseBtn = document.getElementById('mobileSearchCloseBtn');
 
-            // --- Toast (Oförändrad) ---
+            // NYTT: DOM-element för rensa-knappar
+            const desktopSearchClear = document.getElementById('desktopSearchClear');
+            const mobileSearchClear = document.getElementById('mobileSearchClear');
+
+            // --- NYTT: Toast-funktion med "Ångra" ---
             let toastTimer;
-            function showToast(message, type = 'success') {
+            function showToast(message, type = 'success', undoCallback = null) {
                 clearTimeout(toastTimer);
-                toast.textContent = message;
+                
+                toast.innerHTML = ''; // Rensa gammalt innehåll
+                
+                const textSpan = document.createElement('span');
+                textSpan.textContent = message;
+                toast.appendChild(textSpan);
+
                 toast.className = `toast show ${type}`;
-                toastTimer = setTimeout(() => { toast.className = 'toast'; }, 3000);
+                
+                let duration = 3000;
+
+                if (undoCallback) {
+                    duration = 5000; // Ge mer tid att klicka ångra
+                    const undoButton = document.createElement('button');
+                    undoButton.className = 'button secondary'; // Återanvänder din knappsstil
+                    undoButton.textContent = 'Ångra';
+                    // Inline-stil för att göra den mindre, eller skapa en CSS-klass
+                    undoButton.style.marginLeft = '1rem';
+                    undoButton.style.padding = '0.25rem 0.5rem';
+                    
+                    undoButton.addEventListener('click', (e) => {
+                        e.stopPropagation(); // Förhindra att toasten stängs av misstag
+                        undoCallback(); // Kör ångra-funktionen
+                        toast.className = 'toast'; // Dölj toast direkt
+                        clearTimeout(toastTimer);
+                    });
+                    
+                    toast.appendChild(undoButton);
+                }
+
+                toastTimer = setTimeout(() => { 
+                    toast.className = 'toast'; 
+                }, duration);
             }
             
-            // --- Kalender-funktioner (UPPDATERAD) ---
+            // --- Kalender-funktioner (Oförändrad) ---
             function initializeCalendar() {
                 calendar = new FullCalendar.Calendar(calendarContainer, {
                     initialView: 'dayGridTwoWeek', 
                     locale: 'sv',
-                    firstDay: 1, // NYTT: Starta veckan på Måndag
-                    height: 'auto', // NYTT: Låter innehållet bestämma höjden, fixar olika radhöjder
+                    firstDay: 1, 
+                    height: 'auto', 
                     
                     headerToolbar: { 
                         left: 'prev,next today',
@@ -664,11 +706,10 @@
                         timeGridDay: {
                             displayEventTime: true
                         },
-                        // Mobilvy: Snygg lista
                         listWeek: {
                             type: 'list',
                             duration: { weeks: 1 },
-                            listDayFormat: false, // Dölj standardrubriker
+                            listDayFormat: false, 
                             listDaySideFormat: false,
                             noEventsText: 'Inga jobb denna vecka'
                         }
@@ -704,7 +745,6 @@
                         modalTid.value = time;
                     },
                     
-                    // UPPDATERAD: eventContent - Väljer vy baserat på skärmstorlek
                     eventContent: function(arg) {
                         const job = arg.event.extendedProps.originalJob; 
                         
@@ -712,13 +752,10 @@
                             return { html: `<div>${arg.event.title}</div>` };
                         }
                         
-                        // Dölj avbokade jobb helt från kalendern
                         if (job.status === 'avbokad') {
-                            return { html: '' }; // Tomt element
+                            return { html: '' }; 
                         }
 
-                        // --- MOBILVY (listWeek) ---
-                        // Denna logik är oförändrad från din originalfil
                         if (arg.view.type === 'listWeek') {
                             const prioIcon = job.prio ? `<span class="fc-event-prio-flag">🚩</span>` : '';
                             const timePart = job.datum ? formatDate(job.datum).split('kl. ')[1] || '' : '';
@@ -736,11 +773,9 @@
                             };
                         }
 
-                        // --- KONTROLLERA SKÄRMBREDD FÖR ATT VÄLJA VY ---
                         const isMobile = window.innerWidth <= 768;
 
                         if (isMobile) {
-                            // --- MOBIL RUTNÄTSVY (<= 768px): Visa prickar ---
                             const prioClass = job.prio ? 'prio-dot' : '';
                             let contentHtml = `
                                 <span class="calendar-job-dot ${prioClass}" title="${job.kundnamn} (${job.regnr || '---'})"></span>
@@ -748,7 +783,6 @@
                             return { html: contentHtml };
 
                         } else {
-                            // --- DESKTOP RUTNÄTSVY (> 768px): Visa reg/namn-brickor (DIN ORIGINALKOD) ---
                             const prioIcon = job.prio ? `<span class="fc-event-prio-flag">🚩</span>` : '';
                             let contentHtml = '';
                             
@@ -777,7 +811,6 @@
                 calendar.render();
             }
 
-            // UPPDATERAD: mapJobToEvent
             function mapJobToEvent(job) {
                 return {
                     id: job.id,
@@ -787,7 +820,7 @@
                     extendedProps: {
                         status: job.status,
                         prio: job.prio,
-                        originalJob: job // Viktig för eventContent
+                        originalJob: job 
                     }
                 };
             }
@@ -804,7 +837,6 @@
                 }
             }
             
-            // UPPDATERAD: toggleView
             function toggleView(view) {
                 currentView = view;
                 
@@ -817,19 +849,16 @@
                 if (view === 'calendar') {
                     timelineView.style.display = 'none';
                     calendarView.style.display = 'block';
-                    appBrandTitle.style.display = 'none'; // Göm datum i kalendern
+                    appBrandTitle.style.display = 'none'; 
 
-                    // NY LOGIK: Använd 14-dagarsvyn på ALLA enheter
                     calendar.changeView('dayGridTwoWeek'); 
                     
                     const isMobile = window.innerWidth <= 768;
                     if (isMobile) {
-                        // Enkel header för mobil
                         calendar.setOption('headerToolbar', {
                             left: 'prev,next', center: 'title', right: 'today'
                         });
                     } else {
-                        // Den gamla, mer avancerade headern för desktop
                         calendar.setOption('headerToolbar', {
                             left: 'prev,next today',
                             center: 'title',
@@ -837,8 +866,6 @@
                         });
                     }
 
-                    // BEHÅLL DENNA FIX: Tvinga kalendern att rita om sig själv
-                    // (Detta var min förra lösning, den behövs fortfarande)
                     setTimeout(() => {
                         calendar.updateSize();
                         const calendarEvents = allJobs.map(mapJobToEvent);
@@ -848,7 +875,7 @@
                 } else {
                     calendarView.style.display = 'none';
                     timelineView.style.display = 'block';
-                    appBrandTitle.style.display = 'block'; // Visa datum i tidslinjen
+                    appBrandTitle.style.display = 'block'; 
                 }
             }
 
@@ -901,7 +928,6 @@
                 if (activeCard) activeCard.classList.add('active');
             }
 
-            // UPPDATERAD: Hanterar ny sorteringslogik
             function renderTimeline() {
                 let jobsToDisplay = [...allJobs];
                 
@@ -943,9 +969,6 @@
                 jobsToDisplay.sort((a, b) => {
                     const dateA = new Date(a.datum);
                     const dateB = new Date(b.datum);
-
-                    // De två "if (a.prio..."-raderna är borttagna här
-
                     if (sortOrder === 'desc') {
                         return dateB - dateA; 
                     } else {
@@ -1247,7 +1270,6 @@
                 const rect = button.getBoundingClientRect();
                 commentPopover.style.display = 'block';
                 
-                // Rensa gamla pil-klasser
                 commentPopover.classList.remove('arrow-top', 'arrow-bottom');
 
                 let popoverTop = rect.bottom + window.scrollY + 5;
@@ -1255,14 +1277,11 @@
                 
                 if (popoverLeft < 10) popoverLeft = 10;
                 
-                // Kontrollera om den får plats, precis som tidigare
                 if (popoverTop + commentPopover.offsetHeight > window.innerHeight + window.scrollY) {
-                    // Öppna OVANFÖR
                     popoverTop = rect.top + window.scrollY - commentPopover.offsetHeight - 5;
-                    commentPopover.classList.add('arrow-bottom'); // Lägg till klass för pil nedåt
+                    commentPopover.classList.add('arrow-bottom'); 
                 } else {
-                    // Öppna UNDER (standard)
-                    commentPopover.classList.add('arrow-top'); // Lägg till klass för pil uppåt
+                    commentPopover.classList.add('arrow-top'); 
                 }
 
                 commentPopover.style.top = `${popoverTop}px`;
@@ -1389,6 +1408,7 @@
                 showModal('carModal'); 
             }
 
+			// --- NYTT: Uppdaterad `openStatsModal` med Diagram ---
 			function openStatsModal() {
                 // 1. Filtrera endast klara jobb
                 const completedJobs = allJobs.filter(j => j.status === 'klar');
@@ -1405,7 +1425,6 @@
                 const monthlyStats = completedJobs.reduce((acc, job) => {
                     try {
                         const d = new Date(job.datum);
-                        // Skapa en nyckel som "2025-11"
                         const key = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
                         
                         if (!acc[key]) {
@@ -1413,6 +1432,7 @@
                                 key: key,
                                 year: d.getFullYear(),
                                 month: d.getMonth() + 1,
+                                monthName: new Date(d.getFullYear(), d.getMonth()).toLocaleString(locale, { month: 'short' }),
                                 vinst: 0,
                                 jobb: 0
                             };
@@ -1421,13 +1441,11 @@
                         acc[key].vinst += (job.vinst || 0);
                         acc[key].jobb += 1;
 
-                    } catch(e) {
-                        // Ignorera ogiltiga datum
-                    }
+                    } catch(e) { /* Ignorera ogiltiga datum */ }
                     return acc;
                 }, {});
 
-                // 4. Sortera (nyaste månaden först)
+                // 4. Sortera (nyaste månaden först för tabellen)
                 const statsArray = Object.values(monthlyStats);
                 statsArray.sort((a, b) => b.key.localeCompare(a.key));
                 
@@ -1448,7 +1466,6 @@
                     tableHtml += `<tr><td colspan="3" style="text-align: center; padding: 2rem;">Inga klarmarkerade jobb att visa.</td></tr>`;
                 } else {
                     statsArray.forEach(item => {
-                        // Få månadsnamnet, t.ex. "November"
                         const monthName = new Date(item.year, item.month - 1)
                             .toLocaleString(locale, { month: 'long' });
                         
@@ -1464,11 +1481,72 @@
                         `;
                     });
                 }
-
                 tableHtml += `</tbody></table>`;
-                statsModalBody.innerHTML = tableHtml;
+                
+                // Rensa gamla tabellen och rita den nya
+                statsModalBody.querySelector('#statsModalTable')?.remove(); 
+                statsModalBody.insertAdjacentHTML('beforeend', tableHtml);
 
-                // 6. Visa modalen
+                // --- NY DIAGRAMLOGIK ---
+                
+                // 6. Förbered data för diagram (sorterat äldst->nyast)
+                const chartData = Object.values(monthlyStats).sort((a, b) => a.key.localeCompare(b.key));
+                const recentChartData = chartData.slice(-12); // Ta bara de 12 senaste månaderna
+
+                const chartLabels = recentChartData.map(d => `${d.monthName} ${d.year}`);
+                const chartVinstData = recentChartData.map(d => d.vinst);
+                
+                // 7. Hämta canvas och förstör gammal instans
+                const ctx = document.getElementById('statsChart').getContext('2d');
+                
+                if (statsChartInstance) {
+                    statsChartInstance.destroy(); // Måste förstöras!
+                }
+
+                // 8. Rita nytt diagram
+                statsChartInstance = new Chart(ctx, {
+                    type: 'bar', // Stapeldiagram
+                    data: {
+                        labels: chartLabels,
+                        datasets: [{
+                            label: 'Vinst per Månad',
+                            data: chartVinstData,
+                            backgroundColor: 'rgba(10, 132, 255, 0.7)', // --primary-color
+                            borderColor: 'rgba(10, 132, 255, 1)',
+                            borderWidth: 1,
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false 
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return ` Vinst: ${formatCurrency(context.raw)}`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return formatCurrency(value);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+                // --- SLUT PÅ DIAGRAMLOGIK ---
+
+                // 9. Visa modalen
                 showModal('statsModal');
             }
             
@@ -1558,15 +1636,18 @@
                         status: newStatus
                     })
                     .then(() => {
-                        const statusText = STATUS_TEXT[newStatus] || newStatus;
-                        showToast(`Jobb markerat som "${statusText}".`);
+                        if (newStatus === 'klar') {
+                            // Tyst om det är "klar" eftersom "Ångra"-toasten hanterar det
+                        } else {
+                            const statusText = STATUS_TEXT[newStatus] || newStatus;
+                            showToast(`Jobb markerat som "${statusText}".`);
+                        }
                     })
                     .catch(err => showToast(`Fel: ${err.message}`, 'danger'));
-                } else if (job && job.status === newStatus) {
                 }
             }
             
-            // --- Event Handlers (UPPDATERAD) ---
+            // --- NYTT: Uppdaterad `handleFormSubmit` med Spinner ---
             async function handleFormSubmit(e) {
                 e.preventDefault();
                 const jobData = getJobDataFromForm();
@@ -1592,14 +1673,13 @@
                     }
                 }
                 
-                // --- NY LOGIK BÖRJAR HÄR ---
-                const originalButtonText = modalSaveBtn.textContent; // Spara originaltexten
+                // NY LOGIK: Visa spinner
+                const originalButtonText = modalSaveBtn.textContent;
                 modalSaveBtn.disabled = true;
                 modalSaveBtn.innerHTML = `
                     <span>Sparar...</span>
                     <div class="button-spinner"></div>
                 `;
-                // --- NY LOGIK SLUTAR HÄR ---
 
                 try {
                     if (jobData.id) {
@@ -1613,12 +1693,13 @@
                 } catch (err) {
                     showToast(`Fel: ${err.message}`, 'danger');
                 } finally {
-                    // --- NY LOGIK FÖR ATT ÅTERSTÄLLA KNAPPEN ---
+                    // NY LOGIK: Återställ knapp
                     modalSaveBtn.disabled = false;
-                    modalSaveBtn.innerHTML = originalButtonText; // Återställ texten
+                    modalSaveBtn.innerHTML = originalButtonText;
                 }
             }
             
+            // --- NYTT: Uppdaterad klick-hanterare med "Ångra" ---
             jobListContainer.addEventListener('click', (e) => {
                 const target = e.target;
                 
@@ -1642,20 +1723,26 @@
                             case 'togglePrio':
                                 togglePrio(id);
                                 return;
-                            case 'setStatusKlar':
-                            // Kolla om vi är på mobil (skärmbredd <= 768px)
-                            const isMobile = window.innerWidth <= 768;
+                            
+                            // --- NY LOGIK FÖR 'setStatusKlar' MED "ÅNGRA" ---
+                            case 'setStatusKlar': { // Använd { } för att skapa ett nytt scope
+                                const job = findJob(id);
+                                if (!job) return;
+                                
+                                const originalStatus = job.status;
+                                if (originalStatus === 'klar') return; // Redan klar
 
-                            if (isMobile) {
-                                // Om mobil: Visa en bekräftelse-ruta
-                                if (confirm('Är du säker på att du vill markera jobbet som KLART?')) {
-                                    quickSetStatus(id, 'klar');
-                                }
-                            } else {
-                                // Om desktop: Kör som vanligt utan bekräftelse
+                                // Sätt status till 'klar' direkt
                                 quickSetStatus(id, 'klar');
+                                
+                                // Visa toast med ångra-funktion
+                                showToast('Jobb markerat som "Klar"', 'success', () => {
+                                    // Ångra-funktion: Sätt tillbaka till originalstatus
+                                    quickSetStatus(id, originalStatus);
+                                    showToast('Status återställd.', 'info');
+                                });
+                                return;
                             }
-                            return;
                         }
                     }
                     if (actionButton.classList.contains('delete-btn')) {
@@ -1672,14 +1759,63 @@
                 if (job) openJobModal('edit', job);
             });
             
+            // --- NYTT: Uppdaterad contextmenu-hanterare & Långtryck ---
             jobListContainer.addEventListener('contextmenu', (e) => {
+                e.preventDefault(); // Förhindra alltid webbläsarens meny
                 if (window.innerWidth <= 768) {
-                    e.preventDefault();
-                    return;
+                    return; // Låt långtryck hantera detta på mobil
                 }
                 const row = e.target.closest('tr[data-id]');
                 if (row) showContextMenu(e, row.dataset.id);
             });
+            
+            // NY LOGIK: Långtryck för mobil
+            let touchTimer;
+            let touchStartX, touchStartY;
+            
+            jobListContainer.addEventListener('touchstart', (e) => {
+                const jobElement = e.target.closest('.mobile-job-card[data-id]');
+                if (!jobElement) return;
+
+                const jobId = jobElement.dataset.id;
+                const touch = e.touches[0];
+                touchStartX = touch.clientX;
+                touchStartY = touch.clientY;
+
+                touchTimer = setTimeout(() => {
+                    e.preventDefault(); 
+                    
+                    const longPressEvent = {
+                        clientX: touchStartX,
+                        clientY: touchStartY,
+                        preventDefault: () => {}
+                    };
+                    showContextMenu(longPressEvent, jobId);
+                    
+                }, 750); // 750 ms för ett långtryck
+
+            }, { passive: true });
+
+            jobListContainer.addEventListener('touchmove', (e) => {
+                if (!touchTimer) return;
+                const touch = e.touches[0];
+                if (Math.abs(touch.clientX - touchStartX) > 10 || Math.abs(touch.clientY - touchStartY) > 10) {
+                    clearTimeout(touchTimer);
+                    touchTimer = null;
+                }
+            });
+
+            jobListContainer.addEventListener('touchend', (e) => {
+                clearTimeout(touchTimer); 
+                touchTimer = null;
+            });
+            
+            jobListContainer.addEventListener('touchcancel', (e) => {
+                clearTimeout(touchTimer); 
+                touchTimer = null;
+            });
+            // --- SLUT PÅ LÅNGTRYCK-LOGIK ---
+
             
             contextMenu.addEventListener('click', (e) => {
                 const action = e.target.closest('.context-menu-button')?.dataset.action;
@@ -1691,7 +1827,21 @@
                     case 'edit': const job = findJob(contextMenuJobId); if(job) openJobModal('edit', job); break;
                     case 'prio': togglePrio(contextMenuJobId); break;
                     case 'duplicate': duplicateJob(contextMenuJobId); break;
-                    case 'setStatusKlar': quickSetStatus(contextMenuJobId, 'klar'); break;
+                    
+                    // NYTT: Hantera "Klar" från snabbmenyn
+                    case 'setStatusKlar': {
+                        const job = findJob(contextMenuJobId);
+                        if (!job) return;
+                        const originalStatus = job.status;
+                        if (originalStatus === 'klar') return; 
+                        quickSetStatus(contextMenuJobId, 'klar');
+                        showToast('Jobb markerat som "Klar"', 'success', () => {
+                            quickSetStatus(contextMenuJobId, originalStatus);
+                            showToast('Status återställd.', 'info');
+                        });
+                        break;
+                    }
+                    
                     case 'setStatusBokad': quickSetStatus(contextMenuJobId, 'bokad'); break;
                     case 'delete': deleteJob(contextMenuJobId); break;
                 }
@@ -1702,16 +1852,20 @@
             popoverBackdrop.addEventListener('click', hideCommentPopover);
             commentPopoverClose.addEventListener('click', hideCommentPopover);
 
+            // --- NYTT: Uppdaterad `performSearch` med rensa-knapp-logik ---
             function performSearch() {
 			    const desktopQuery = searchBar.value;
 			    const mobileQuery = mobileSearchBar.value;
 			
 			    currentSearchTerm = (desktopQuery.length > mobileQuery.length) ? desktopQuery : mobileQuery;
 			
+                // NY LOGIK: Visa/dölj rensa-knappar
+                desktopSearchClear.style.display = desktopQuery.length > 0 ? 'flex' : 'none';
+                mobileSearchClear.style.display = mobileQuery.length > 0 ? 'flex' : 'none';
+
 			    clearDayFilterBtn.style.display = currentSearchTerm ? 'inline-flex' : 'none';
 			    renderTimeline();
 			
-			    // --- NY RAD (Göm spinnern när sökningen är klar) ---
 			    if (desktopSearchWrapper) {
 			        desktopSearchWrapper.classList.remove('is-searching');
 			    }
@@ -1720,27 +1874,50 @@
             searchBar.addEventListener('input', debounce(performSearch, 300));
             mobileSearchBar.addEventListener('input', debounce(performSearch, 300));
 
-            // NYTT: Hantera "Enter" på mobil-sök
             mobileSearchForm.addEventListener('submit', (e) => {
                 e.preventDefault();
-                mobileSearchBar.blur(); // Göm tangentbordet
-                closeModal(); // Stäng sök-modalen
-                performSearch(); // Sökningen körs redan via 'input', men detta säkerställer
+                mobileSearchBar.blur(); 
+                closeModal(); 
+                performSearch(); 
             });
 
-			clearDayFilterBtn.addEventListener('click', () => {
-			    searchBar.value = '';
+            // --- NYTT: Logik för alla rensa-knappar ---
+            
+            // Återanvändbar funktion för att rensa sökning
+            function clearSearch() {
+                searchBar.value = '';
 			    mobileSearchBar.value = '';
 			    currentSearchTerm = '';
-			    clearDayFilterBtn.style.display = 'none';
+			    
+                clearDayFilterBtn.style.display = 'none';
+                desktopSearchClear.style.display = 'none';
+                mobileSearchClear.style.display = 'none';
+
 			    renderTimeline();
-			    searchBar.focus();
-			
-			    // --- NY RAD (Göm spinnern när sökningen rensas) ---
+			    
 			    if (desktopSearchWrapper) {
 			        desktopSearchWrapper.classList.remove('is-searching');
 			    }
-			});
+            }
+            
+            // Uppdatera din befintliga clearDayFilterBtn att använda den nya funktionen
+            clearDayFilterBtn.addEventListener('click', () => {
+                clearSearch();
+                searchBar.focus();
+            });
+            
+            // Koppla de nya knapparna
+            desktopSearchClear.addEventListener('click', () => {
+                clearSearch();
+                searchBar.focus();
+            });
+
+            mobileSearchClear.addEventListener('click', () => {
+                clearSearch();
+                mobileSearchBar.focus();
+            });
+            // --- SLUT PÅ SÖK-LOGIK ---
+
             
             statBar.addEventListener('click', (e) => {
                 const card = e.target.closest('.stat-card');
@@ -1766,9 +1943,8 @@
             carModal.addEventListener('click', (e) => { if (e.target === carModal) closeModal(); });
             mobileSearchModal.addEventListener('click', (e) => { if (e.target === mobileSearchModal) closeModal(); });
 
-			// NYA STATISTIK-LYSSNARE
             navLogo.addEventListener('click', (e) => {
-                e.preventDefault(); // Förhindra att sidan hoppar till toppen
+                e.preventDefault(); 
                 openStatsModal();
             });
             statsModalCloseBtn.addEventListener('click', closeModal);
@@ -1904,7 +2080,6 @@
                 mobileSearchBar.focus();
             });
             
-            // NYTT: Sätt dagens datum i headern
             function setHeaderDate() {
                 let datePart = new Intl.DateTimeFormat(locale, { weekday: 'short', month: 'short', day: 'numeric' }).format(new Date());
                 appBrandTitle.textContent = datePart.charAt(0).toUpperCase() + datePart.slice(1);
@@ -1912,7 +2087,7 @@
             setHeaderDate();
 
 
-            // --- PIN-lås & Initiering (Uppdaterad) ---
+            // --- PIN-lås & Initiering (Oförändrad) ---
             function showPinLock() {
                 appContainer.style.display = 'none';
                 fabAddJob.style.display = 'none';
@@ -2026,15 +2201,11 @@
             }
             
             window.addEventListener('resize', debounce(() => {
-            renderTimeline();
-            
-            // Tvinga kalendern att rendera om sina events för att
-            // växla mellan prickar och brickor
-            if (calendar && currentView === 'calendar') {
-                // Använd 'rerenderEvents()' för att köra 'eventContent' igen
-                calendar.rerenderEvents();
-            }
-        }, 200));
+                renderTimeline();
+                if (calendar && currentView === 'calendar') {
+                    calendar.rerenderEvents();
+                }
+            }, 200));
 
         });
     </script>
