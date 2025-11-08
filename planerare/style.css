@@ -1002,6 +1002,44 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     text-overflow: ellipsis;
 }
 
+/* --- 6b. Event-styling (Minimalistiska Prickar för Mobil) --- */
+.fc-event {
+    /* Denna regel behövs för att prickarna ska kunna vara på samma rad */
+    margin: 0 !important;
+}
+
+/* Styla själva pricken */
+.calendar-job-dot {
+    display: block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    background-color: var(--text-color-light); /* Standardfärg */
+}
+
+/* Färgsätt pricken baserat på .fc-event's status-klass */
+.fc-event.status-bokad .calendar-job-dot {
+    background-color: var(--primary-color);
+}
+.fc-event.status-klar .calendar-job-dot {
+    background-color: var(--success-color);
+    opacity: 0.7;
+}
+.fc-event.status-offererad .calendar-job-dot {
+    background-color: var(--info-color); 
+}
+
+/* Prio-prickar får en röd ring */
+.calendar-job-dot.prio-dot {
+    box-shadow: 0 0 0 2px var(--danger-color);
+}
+
+/* Tydlig hover-effekt */
+.fc-event:hover .calendar-job-dot {
+    transform: scale(1.5);
+    opacity: 1;
+}
 
 /* Status-färger (Används inte längre på brickan, men bra att ha kvar) */
 .fc-event.status-bokad { }
@@ -1730,5 +1768,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         display: none;
     }
 }
+
 
 
