@@ -341,6 +341,10 @@
             </div>
             
             <div class="modal-body">
+                <div class="search-wrapper">
+                    <svg class="icon icon-search" viewBox="0 0 24 24"><use href="#icon-search"></use></svg>
+                    <input type="search" id="customerSearch" placeholder="Filtrera jobb...">
+                </div>
                 <ul class="detail-job-list" id="customerModalJobList">
                     </ul>
             </div>
@@ -374,6 +378,10 @@
             </div>
             
             <div class="modal-body">
+                <div class="search-wrapper">
+                    <svg class="icon icon-search" viewBox="0 0 24 24"><use href="#icon-search"></use></svg>
+                    <input type="search" id="carSearch" placeholder="Filtrera jobb...">
+                </div>
                 <ul class="detail-job-list" id="carModalJobList">
                 </ul>
 
@@ -664,6 +672,7 @@
             const customerModalTotalProfit = document.getElementById('customerModalTotalProfit');
             const customerModalJobCount = document.getElementById('customerModalJobCount');
             const customerModalJobList = document.getElementById('customerModalJobList');
+            const customerSearch = document.getElementById('customerSearch'); // BONUS
             
             const carModal = document.getElementById('carModal');
             const carModalCloseBtn = document.getElementById('carModalCloseBtn');
@@ -674,6 +683,7 @@
             const carModalTotalProfit = document.getElementById('carModalTotalProfit');
             const carModalJobCount = document.getElementById('carModalJobCount');
             const carModalJobList = document.getElementById('carModalJobList');
+            const carSearch = document.getElementById('carSearch'); // BONUS
 
             const navLogo = document.querySelector('.nav-logo');
             const statsModal = document.getElementById('statsModal');
@@ -1074,6 +1084,7 @@
                 });
             }
 
+            // BONUS: Skelett-laddare (för mobil och desktop)
             function showSkeletonLoader() {
                 let skeletonHTML = '';
                 const isMobile = window.innerWidth <= 768;
@@ -1090,7 +1101,19 @@
                     }
                     jobListContainer.innerHTML = `<div id="mobileJobList">${skeletonHTML}</div>`;
                 } else {
-                    jobListContainer.innerHTML = '';
+                    for (let i = 0; i < 5; i++) {
+                        skeletonHTML += `
+                        <div class="skeleton-table-row">
+                            <div class="skeleton-pulse sk-item sk-item-1"></div>
+                            <div class="skeleton-pulse sk-item sk-item-2"></div>
+                            <div class="skeleton-pulse sk-item sk-item-3"></div>
+                            <div class="skeleton-pulse sk-item sk-item-4"></div>
+                            <div class="skeleton-pulse sk-item sk-item-5"></div>
+                            <div class="skeleton-pulse sk-item sk-item-6"></div>
+                        </div>
+                        `;
+                    }
+                    jobListContainer.innerHTML = `<div class="table-container">${skeletonHTML}</div>`;
                 }
                 jobListContainer.style.display = 'block';
                 emptyStateTimeline.style.display = 'none';
@@ -1408,7 +1431,7 @@
                 `;
             }
 
-            // --- Popover, Modal-hantering ---
+            // --- Popover, Modal-hantering (FIXAD HISTORIK) ---
             
             function closeModal(options = {}) {
                 const { popHistory = true } = options; // Nytt alternativ
@@ -1453,7 +1476,6 @@
 
             function showModal(modalId) {
                 if (isModalOpen) {
-                    console.warn("Försöker öppna modal när en redan är öppen. Stänger föregående.");
                     // Stäng föregående modal UTAN att poppa historiken
                     closeModal({ popHistory: false }); 
                 }
@@ -1478,7 +1500,7 @@
                     }
                 }
 
-                // Bonus: Tabb-fälla
+                // Tabb-fälla (Bonus)
                 const focusableElements = modalElement.querySelectorAll(
                     'a[href], button, input, textarea, select, [tabindex]:not([tabindex="-1"])'
                 );
@@ -1486,7 +1508,7 @@
                 const lastElement = focusableElements[focusableElements.length - 1];
 
                 if (firstElement) {
-                    firstElement.focus();
+                    setTimeout(() => firstElement.focus(), 50); // Liten delay för att säkerställa att modalen är synlig
                 }
 
                 modalElement.addEventListener('keydown', (e) => {
@@ -1615,28 +1637,45 @@
                 };
             }
             
+            // BONUS: Om-renderar jobblistan i kund/bil-modal
+            function renderDetailJobList(listElement, jobs, filterTerm) {
+                const filteredJobs = jobs.filter(job => {
+                    const term = filterTerm.toLowerCase();
+                    return !term ||
+                           formatDate(job.datum).toLowerCase().includes(term) ||
+                           (job.regnr && job.regnr.toLowerCase().includes(term)) ||
+                           job.kundnamn.toLowerCase().includes(term) ||
+                           (job.kommentarer && job.kommentarer.toLowerCase().includes(term));
+                });
+
+                listElement.innerHTML = filteredJobs.map(job => {
+                    const prioIcon = job.prio ? `<svg class="icon-sm prio-flag-icon" viewBox="0 0 24 24"><use href="#icon-flag"></use></svg>` : '';
+                    return `<li data-job-id="${job.id}">
+                                <div>
+                                    <span class="job-date">${prioIcon}${formatDate(job.datum)}</span>
+                                    <span class="job-subline">${job.regnr || job.kundnamn} (${STATUS_TEXT[job.status]})</span>
+                                    ${job.kommentarer ? `<p class="job-comment">${job.kommentarer}</p>` : ''}
+                                </div>
+                                <span class="job-profit profit ${job.vinst > 0 ? 'positive' : ''}">${formatCurrency(job.vinst)}</span>
+                            </li>`
+                }).join('');
+            }
+
             function openCustomerModal(kundnamn) {
                 const customerJobs = allJobs.filter(j => j.kundnamn === kundnamn).sort((a, b) => new Date(b.datum) - new Date(a.datum));
                 if (customerJobs.length === 0) return;
+                
                 const latestPhone = customerJobs.find(j => j.telefon)?.telefon || 'Inget tel.nr sparat';
                 const totalVinst = customerJobs.reduce((sum, j) => sum + (j.vinst || 0), 0);
+                
                 customerModalName.textContent = kundnamn;
                 customerModalPhone.textContent = latestPhone;
                 customerModalTotalProfit.textContent = formatCurrency(totalVinst);
                 customerModalTotalProfit.className = totalVinst > 0 ? 'stat-value positive' : 'stat-value';
                 customerModalJobCount.textContent = customerJobs.length;
                 
-                customerModalJobList.innerHTML = customerJobs.map(job => {
-                    const prioIcon = job.prio ? `<svg class="icon-sm prio-flag-icon" viewBox="0 0 24 24"><use href="#icon-flag"></use></svg>` : '';
-                    return `<li data-job-id="${job.id}">
-                                <div>
-                                    <span class="job-date">${prioIcon}${formatDate(job.datum)}</span>
-                                    <span class="job-subline">${job.regnr || '---'} (${STATUS_TEXT[job.status]})</span>
-                                    ${job.kommentarer ? `<p class="job-comment">${job.kommentarer}</p>` : ''}
-                                </div>
-                                <span class="job-profit profit ${job.vinst > 0 ? 'positive' : ''}">${formatCurrency(job.vinst)}</span>
-                            </li>`
-                }).join('');
+                customerSearch.value = ''; // Rensa sök
+                renderDetailJobList(customerModalJobList, customerJobs, ''); // Rendera listan
                 showModal('customerModal'); 
             }
             
@@ -1644,6 +1683,7 @@
                 if (!regnr) return;
                 const carJobs = allJobs.filter(j => j.regnr === regnr).sort((a, b) => new Date(b.datum) - new Date(a.datum));
                 if (carJobs.length === 0) return;
+
                 const latestOwner = carJobs[0].kundnamn;
                 const totalVinst = carJobs.reduce((sum, j) => sum + (j.vinst || 0), 0);
                 
@@ -1657,17 +1697,8 @@
                 carModalTotalProfit.className = totalVinst > 0 ? 'stat-value positive' : 'stat-value';
                 carModalJobCount.textContent = carJobs.length;
 
-                carModalJobList.innerHTML = carJobs.map(job => {
-                     const prioIcon = job.prio ? `<svg class="icon-sm prio-flag-icon" viewBox="0 0 24 24"><use href="#icon-flag"></use></svg>` : '';
-                    return `<li data-job-id="${job.id}">
-                                <div>
-                                    <span class="job-date">${prioIcon}${formatDate(job.datum)}</span>
-                                    <span class="job-subline">${job.kundnamn} (${STATUS_TEXT[job.status]})</span>
-                                    ${job.kommentarer ? `<p class="job-comment">${job.kommentarer}</p>` : ''}
-                                </div>
-                                <span class="job-profit profit ${job.vinst > 0 ? 'positive' : ''}">${formatCurrency(job.vinst)}</span>
-                            </li>`
-                }).join('');
+                carSearch.value = ''; // Rensa sök
+                renderDetailJobList(carModalJobList, carJobs, ''); // Rendera listan
                 showModal('carModal'); 
             }
 
@@ -2082,7 +2113,7 @@
                 switch(action) {
                     case 'edit': const job = findJob(contextMenuJobId); if(job) openJobModal('edit', job); break;
                     case 'prio': togglePrio(contextMenuJobId); break;
-                    case 'duplicate': duplicateJob(contextMenuJobId); break; // Duplicera finns kvar här
+                    case 'duplicate': duplicateJob(contextMenuJobId); break; 
                     
                     case 'setStatusKlar': {
                         const job = findJob(contextMenuJobId);
@@ -2185,7 +2216,7 @@
             modalCancelBtn.addEventListener('click', () => closeModal());
             customerModalCloseBtn.addEventListener('click', () => closeModal());
             carModalCloseBtn.addEventListener('click', () => closeModal());
-            mobileSearchCloseBtn.addEventListener('click', () => closeModal());
+            mobileSearchCloseBtn.addEventListener('click', () => closeModal()); 
             settingsModalCloseBtn.addEventListener('click', () => closeModal()); 
             settingsModalCancelBtn.addEventListener('click', () => closeModal()); 
             
@@ -2228,11 +2259,10 @@
             settingsToggleCompactView.addEventListener('click', () => toggleCompactView.click());
             settingsLockAppBtn.addEventListener('click', () => {
                 closeModal();
-                // Vänta tills modalen stängts innan låsskärmen visas
                 setTimeout(() => lockAppBtn.click(), 250);
             });
 
-            // --- Jobb-mallar (ÄNDRAD) ---
+            // --- Jobb-mallar (FIXAD) ---
             jobTemplates.addEventListener('click', (e) => {
                 const button = e.target.closest('.template-btn');
                 if (!button) return;
@@ -2240,27 +2270,33 @@
                 const template = button.dataset.template;
                 
                 if (template === 'oljebyte') {
-                    const literOljaprompt = prompt('Hur många liter olja? (t.ex. 4.5)', '4.5');
-                    if (litersOljaprompt === null) return; // Användaren klickade avbryt
+                    const literOljaprompt = prompt('Hur många liter olja? (t.ex. 4,5)', '4,5');
+                    if (litersOljaprompt === null) return; 
                     
+                    // FIX: Hanterar både komma och punkt som decimal
                     const literOlja = parseFloat(litersOljaprompt.replace(',', '.')) || 0;
                     
-                    const oljekostnad = literOlja * 200; 
-                    const filterkostnad = 200; 
-                    const arbetskostnad = 500; 
-                    
-                    modalKundpris.value = Math.round(oljekostnad + filterkostnad + arbetskostnad);
-                    modalUtgifter.value = 0; 
-                    document.getElementById('kommentarer').value = `Oljebyte:\n- Motorolja (${literOlja}L)\n- Oljefilter`;
+                    if (literOlja > 0) {
+                        const oljekostnad = literOlja * 200; 
+                        const filterkostnad = 200; 
+                        const arbetskostnad = 500; 
+                        
+                        modalKundpris.value = Math.round(oljekostnad + filterkostnad + arbetskostnad);
+                        modalUtgifter.value = 0; 
+                        document.getElementById('kommentarer').value = `Oljebyte:\n- Motorolja (${literOlja}L)\n- Oljefilter`;
+                        showToast('Mall tillämpad!', 'info');
+                    } else {
+                        showToast('Ogiltigt antal liter.', 'danger');
+                    }
                     
                 } else if (template === 'hjulskifte') {
                     modalKundpris.value = 200;
                     modalUtgifter.value = 0;
                     document.getElementById('kommentarer').value = 'Hjulskifte (sommar/vinter)';
+                    showToast('Mall tillämpad!', 'info');
                 }
                 
                 updateLiveProfit();
-                showToast('Mall tillämpad!', 'info');
             });
             
             // --- Klickbara jobblistor i Kund/Bil-modal (FIXAD HISTORIK) ---
@@ -2273,23 +2309,36 @@
                 
                 if (job) {
                     // FIX: Stäng nuvarande modal, men tryck "bakåt" i historiken
-                    // så att den nya modalen kan ersätta den.
                     if (history.state?.modal) {
                         isNavigatingBack = true;
                         history.back(); // Gå tillbaka från customer/car-modalen
                         isNavigatingBack = false;
                     } else {
-                        closeModal(); // Fallback
+                        closeModal({ popHistory: false }); // Fallback
                     }
                     
                     setTimeout(() => {
                         openJobModal('edit', job);
-                    }, 50); // Liten fördröjning för att historiken ska hinna uppdateras
+                    }, 50); 
                 }
             }
             customerModalJobList.addEventListener('click', handleDetailListClick);
             carModalJobList.addEventListener('click', handleDetailListClick);
             
+            // BONUS: Sök i detalj-modalerna
+            customerSearch.addEventListener('input', debounce((e) => {
+                const kundnamn = customerModalName.textContent;
+                const customerJobs = allJobs.filter(j => j.kundnamn === kundnamn).sort((a, b) => new Date(b.datum) - new Date(a.datum));
+                renderDetailJobList(customerModalJobList, customerJobs, e.target.value);
+            }, 300));
+
+            carSearch.addEventListener('input', debounce((e) => {
+                const regnr = carModalRegnr.textContent;
+                const carJobs = allJobs.filter(j => j.regnr === regnr).sort((a, b) => new Date(b.datum) - new Date(a.datum));
+                renderDetailJobList(carModalJobList, carJobs, e.target.value);
+            }, 300));
+
+
             // --- Övriga formulär-hanterare ---
             modalKundpris.addEventListener('input', updateLiveProfit);
             modalUtgifter.addEventListener('input', updateLiveProfit);
@@ -2437,7 +2486,7 @@
                     mobileNav.style.display = 'flex';
                 }
                 
-                closeModal({ popHistory: false }); // Stäng utan att ändra historik
+                closeModal({ popHistory: false }); 
                 localStorage.setItem(PIN_LAST_UNLOCKED_KEY, Date.now().toString());
             }
             
@@ -2475,7 +2524,7 @@
                 if (e.key === 'Escape') {
                     if (isModalOpen) {
                         e.preventDefault();
-                        closeModal(); // closeModal hanterar nu history.back()
+                        closeModal(); 
                     } else if (commentPopover.classList.contains('show')) {
                         e.preventDefault();
                         hideCommentPopover();
@@ -2487,10 +2536,8 @@
                 
                 const isInputFocused = document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA' || document.activeElement.tagName === 'SELECT';
                 
-                // Om en modal är öppen, låt bara "Enter" på Spara-knappen fungera
                 if (isModalOpen && e.key === 'Enter' && document.activeElement.tagName !== 'TEXTAREA') {
                     if (currentOpenModalId === 'jobModal') {
-                        // Trigga formulär-submit, men låt inte bubbla (t.ex. stänga modalen)
                         e.preventDefault();
                         modalSaveBtn.click();
                     } else if (currentOpenModalId === 'settingsModal') {
