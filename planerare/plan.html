@@ -333,6 +333,32 @@
             </div>
         </div>
     </div>
+
+	<div id="statsModal" class="modal-backdrop" data-modal-id="statsModal">
+        <div class="modal-content">
+            <div class="modal-header detail-modal-header">
+                <h2>Statistiköversikt</h2>
+                <p>Baserat på alla "Klar"-markerade jobb.</p>
+                <button class="modal-close-btn" id="statsModalCloseBtn" aria-label="Stäng modal">
+                    <svg class="icon" viewBox="0 0 24 24"><use href="#icon-close"></use></svg>
+                </button>
+            </div>
+            
+            <div class="detail-stats" id="statsModalSummary">
+                <div>
+                    <span class="stat-title">Total Vinst</span>
+                    <span class="stat-value" id="statsModalTotalProfit">0 kr</span>
+                </div>
+                <div>
+                    <span class="stat-title">Totalt Antal Jobb</span>
+                    <span class="stat-value" id="statsModalJobCount">0</span>
+                </div>
+            </div>
+            
+            <div class="modal-body" id="statsModalBody">
+                </div>
+        </div>
+    </div>
     
     <div id="popoverBackdrop" class="popover-backdrop"></div>
     <div id="commentPopover">
