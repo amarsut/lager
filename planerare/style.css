@@ -421,11 +421,7 @@ mark {
 
 #jobbOversikt thead {
     background-color: var(--bg-color);
-    /* BORTTAGEN: Sticky header var trasig
-    position: sticky; 
-    top: var(--header-height); 
-    z-index: 5; 
-    */
+    /* FIX: Tog bort sticky pos */
 }
 
 #jobbOversikt th, #jobbOversikt td {
@@ -463,7 +459,7 @@ mark {
     background-color: var(--danger-hover-bg);
 }
 
-/* NYTT: Animation för kommande prio-jobb */
+/* Animation för kommande prio-jobb */
 #jobbOversikt tbody tr.prio-row.kommande-prio-pulse {
     animation: pulse-prio-bg 2.5s infinite;
 }
@@ -584,7 +580,6 @@ mark {
     border-bottom: 1px solid var(--border-color); 
     padding: 1.25rem 1.5rem; flex-shrink: 0;
     gap: 1rem;
-    /* BONUS: Frostad sticky header */
     position: sticky;
     top: 0;
     background-color: var(--content-bg-transparent);
@@ -611,8 +606,7 @@ mark {
 .modal-body { 
     padding: 1.5rem; 
     overflow-y: auto; 
-    /* BONUS: Ge plats för sticky footer */
-    padding-bottom: 6rem;
+    padding-bottom: 6rem; /* Ge plats för sticky footer */
 }
 /* Justera padding för modaler som INTE har actions */
 #customerModal .modal-body,
@@ -683,7 +677,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     font-size: 1.125rem; font-weight: 600; padding: 0.5rem 0;
 }
 
-/* --- Prio Toggle i Header --- */
+/* Prio Toggle (nu i modal body) */
 .prio-toggle-wrapper {
     display: inline-flex;
     align-items: center;
@@ -693,15 +687,17 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     border: 1px solid var(--border-color);
     background-color: var(--bg-color);
     color: var(--text-color-light);
-    font-size: 0.875rem;
+    font-size: 0.8rem;
     font-weight: 600;
     cursor: pointer;
     transition: all var(--transition-speed-fast) ease;
-    order: 2;
     white-space: nowrap;
+    margin-left: auto; /* Knuffa till höger */
 }
 .prio-toggle-wrapper .icon-sm {
     transition: all var(--transition-speed-fast) ease;
+    width: 0.9rem;
+    height: 0.9rem;
 }
 .prio-toggle-wrapper:hover {
     border-color: var(--danger-color);
@@ -710,9 +706,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 .prio-toggle-wrapper input[type="checkbox"] {
     display: none;
 }
-.prio-toggle-wrapper input[type="checkbox"]:checked + .icon-sm {
-    color: var(--danger-color);
-}
+.prio-toggle-wrapper input[type="checkbox"]:checked + .icon-sm,
 .prio-toggle-wrapper input[type="checkbox"]:checked + .icon-sm + span {
     color: var(--danger-color);
 }
@@ -724,7 +718,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     border-top: 1px solid var(--border-color);
     padding: 1.25rem 1.5rem;
     background-color: var(--bg-color); flex-shrink: 0;
-    /* BONUS: Sticky footer */
     position: sticky;
     bottom: 0;
     z-index: 10;
@@ -736,7 +729,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     order: 1;
 }
 #modalCancelBtn:hover { background-color: var(--bg-color); color: var(--text-color); }
-/* #modalDuplicateBtn (Borttagen) */
 #modalSaveBtn { order: 3; }
 
 /* --- Toast --- */
@@ -834,7 +826,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     padding: 1rem 1.5rem;
     border-bottom: 1px solid var(--border-color);
 }
-/* NYTT: Klickbara jobblistor */
 .detail-job-list li[data-job-id] {
     cursor: pointer;
     transition: background-color var(--transition-speed-fast) ease;
@@ -866,7 +857,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     padding-top: 1rem;
 }
 
-/* NYTT: Progress bar för vinstmål */
 .profit-goal-progress {
     margin-bottom: 1.5rem;
 }
@@ -880,7 +870,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 }
 .progress-bar-fill {
     height: 100%;
-    width: 0%; /* Uppdateras av JS */
+    width: 0%; 
     background-color: var(--success-color);
     border-radius: 5px;
     transition: width 0.5s ease-out;
@@ -1114,9 +1104,8 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     margin: 1px 0 !important; 
     cursor: pointer;
     width: 100%; 
-    transition: opacity 0.2s ease; /* NYTT: För dim-effekt */
+    transition: opacity 0.2s ease; 
 }
-/* NYTT: Filter-dimmring */
 .fc-event.event-dimmed {
     opacity: 0.3;
 }
@@ -1242,17 +1231,15 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     margin: 0 !important;
 }
 
-/* Styla själva pricken */
 .calendar-job-dot {
     display: block;
     width: 8px;
     height: 8px;
     border-radius: 50%;
     transition: all 0.2s ease;
-    background-color: var(--primary-color); /* ÄNDRAD: Default till blå */
+    background-color: var(--primary-color); /* FIX: Ändrad från grå till blå */
 }
 
-/* Färgsätt pricken baserat på .fc-event's status-klass */
 .fc-event.status-bokad .calendar-job-dot {
     background-color: var(--primary-color);
 }
@@ -1264,7 +1251,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     background-color: var(--info-color); 
 }
 
-/* Prio-prickar får en röd ring */
 .calendar-job-dot.prio-dot {
     box-shadow: 0 0 0 2px var(--danger-color);
 	animation: pulse-prio 2.5s infinite cubic-bezier(0.66, 0, 0, 1);
@@ -1282,13 +1268,11 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     }
 }
 
-/* Tydlig hover-effekt */
 .fc-event:hover .calendar-job-dot {
     transform: scale(1.5);
     opacity: 1;
 }
 
-/* Status-färger (Används inte längre på brickan, men bra att ha kvar) */
 .fc-event.status-bokad { }
 .fc-event.status-klar .reg-plate-small,
 .fc-event.status-klar .user-plate-small {
@@ -1307,7 +1291,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     display: none !important; 
 }
 
-/* Justera "mer"-länken */
 .fc .fc-daygrid-more-link {
     font-size: 0.75rem;
     font-weight: 600;
@@ -1362,9 +1345,20 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     background: none !important;
 }
 
-/* NYTT: Dagens Vinst-positionering */
 .fc .fc-daygrid-day-frame {
-    position: relative; /* Nödvändig för vinst-summan */
+    position: relative; 
+}
+
+/* FIX: Ljusare dag-texter i mörkt läge */
+[data-theme="dark"] .fc .fc-col-header-cell-cushion {
+    color: var(--text-color-light);
+    opacity: 0.8;
+}
+[data-theme="dark"] .fc .fc-daygrid-day-number {
+    color: var(--text-color-light);
+}
+[data-theme="dark"] .fc .fc-day-other .fc-daygrid-day-number {
+    opacity: 0.3; /* Dimmra andra månaders dagar */
 }
 
 .fc .fc-day-today .fc-daygrid-day-number {
@@ -1574,7 +1568,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 .fc .fc-list-event-dot {
     display: none; 
 }
-/* Själva list-raden */
 .fc-list-event {
     background: none !important;
     border: none !important;
@@ -1609,7 +1602,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 }
 
 
-/* NYTT: Styling för det egna kalender-kortet (Mobil-listvy) */
+/* Mobil-listvy kalender-kort */
 .mobile-calendar-card {
     display: flex;
     align-items: center;
@@ -1862,9 +1855,17 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         padding: 1rem 1.25rem;
         flex-grow: 1;
         overflow-y: auto;
-        /* Ge plats för sticky footer */
         padding-bottom: 6rem;
     }
+    #customerModal .modal-body,
+    #statsModal .modal-body,
+    #carModal .modal-body {
+        padding-bottom: 1.5rem;
+    }
+    #carModal .modal-body {
+        padding-bottom: 6rem;
+    }
+
     .modal-actions {
         padding: 1rem 1.25rem;
     }
@@ -1906,6 +1907,10 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         font-weight: 500;
         gap: 4px;
         cursor: pointer;
+        transition: transform 0.1s ease;
+    }
+    .mobile-nav-btn:active {
+        transform: scale(0.95);
     }
     .mobile-nav-btn .icon {
         width: 1.5rem;
@@ -2068,13 +2073,23 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         font-size: 1rem;
         z-index: 10;
         margin-top: 1rem;
-        gap: 0.75rem; /* NYTT */
-        justify-content: center; /* NYTT */
+        gap: 0.75rem; 
+        justify-content: center; 
+
+        /* NY STIL: Vit knapp med blå text */
+        background-color: #ffffff;
+        color: #007aff;
+        border: 2px solid #007aff;
+        font-weight: 700;
+        box-shadow: var(--shadow-md);
+    }
+    #carModalExternalLinkMobile:hover {
+        background-color: #f0f7ff;
     }
     #carModalExternalLinkMobile img {
-        width: 16px;
-        height: 16px;
-        border-radius: 2px;
+        width: 20px;
+        height: 20px;
+        border-radius: 4px;
     }
     #carModalExternalLink {
         display: none; 
@@ -2094,6 +2109,10 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         display: none;
     }
     #carModalExternalLinkMobile {
+        display: none;
+    }
+    /* Dölj mobil-inställningar på desktop */
+    #mobileSettingsGroup {
         display: none;
     }
 }
@@ -2172,7 +2191,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 }
 
 
-/* --- NYTT: Jobb-mallar --- */
+/* --- Jobb-mallar --- */
 .job-templates {
     grid-column: 1 / -1;
     display: flex;
@@ -2181,6 +2200,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     padding-bottom: 0.5rem;
     border-bottom: 1px solid var(--border-color);
     margin-bottom: 0.75rem;
+    align-items: center; /* Centrera knappar och Prio-toggle */
 }
 .job-templates .button.template-btn {
     font-size: 0.8rem;
@@ -2201,7 +2221,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 }
 
 
-/* --- NYTT: Dagens Vinst (Kalender) --- */
+/* --- Dagens Vinst (Kalender) --- */
 .calendar-day-profit {
     position: absolute;
     bottom: 4px;
@@ -2212,9 +2232,8 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     background: rgba(48, 209, 88, 0.1);
     padding: 2px 5px;
     border-radius: 4px;
-    display: none; /* Dölj på mobil som standard */
+    display: none; 
 }
-/* Visa bara på skärmar > 900px (när kalendern är bred) */
 @media (min-width: 900px) {
     .calendar-day-profit {
         display: block;
@@ -2222,7 +2241,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 }
 
 
-/* --- NYTT: Skelett-laddare (Bonus) --- */
+/* --- Skelett-laddare (Bonus) --- */
 .skeleton-card {
     background: var(--content-bg);
     border: 1px solid var(--border-color);
@@ -2247,7 +2266,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     50% { opacity: 0.5; }
 }
 
-/* --- NYTT: Inställningsmodal-knappar --- */
+/* --- Inställningsmodal-knappar --- */
 .settings-button-group {
     display: grid;
     grid-template-columns: 1fr;
@@ -2258,7 +2277,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     justify-content: flex-start; /* Vänsterställ knapp-innehåll */
     font-size: 0.95rem;
 }
-/* Synka tema-ikonerna i modalen */
 .settings-button-group #settingsThemeToggle .icon-moon { display: none; }
 .settings-button-group #settingsThemeToggle .icon-sun { display: block; }
 [data-theme="dark"] .settings-button-group #settingsThemeToggle .icon-moon { display: block; }
