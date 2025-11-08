@@ -1747,6 +1747,21 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         font-size: 1.25rem;
     }
 
+	/* Centrera prickarna i kalendern på mobil */
+    .fc .fc-daygrid-day-events {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        padding-top: 4px; /* Lite luft från toppen */
+        gap: 4px; /* Mellanrum mellan prickar */
+    }
+    
+    /* Tvinga eventet att vara litet på mobil */
+    .fc-event {
+        width: auto !important;
+    }
+
     /* --- NY VIKTIG FIX HÄR --- */
     /* Tvinga kalendercellerna att ha en minsta höjd på mobil */
     .fc .fc-daygrid-day-frame {
@@ -1768,6 +1783,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         display: none;
     }
 }
+
 
 
 
