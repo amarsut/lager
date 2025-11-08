@@ -645,44 +645,61 @@
                         modalTid.value = time;
                     },
                     
+                    // UPPDATERAD: eventContent hanterar nu Desktop, Mobil, och Namn-brickor
                     eventContent: function(arg) {
                         const job = arg.event.extendedProps.originalJob; 
                         
                         if (!job) {
-                            // Säkerhetsåtgärd om något går fel
-                            return { html: `<div>${arg.event.title}</div>` }; 
+                            return { html: `<div>${arg.event.title}</div>` };
                         }
                         
-                        // Dölj avbokade jobb
+                        // Dölj avbokade jobb helt från kalendern
                         if (job.status === 'avbokad') {
-                            return { html: '' }; 
+                            return { html: '' }; // Tomt element
                         }
 
                         const prioIcon = job.prio ? `<span class="fc-event-prio-flag">🚩</span>` : '';
-                        
-                        // Hämta tiden
-                        const timePart = new Date(job.datum).toLocaleTimeString('sv-SE', { 
-                            hour: '2-digit', minute: '2-digit' 
-                        }).replace(':', '.');
-                        
-                        // Hämta en kort titel
-                        let titlePart = '';
+
+                        // --- MOBILVY (listWeek) ---
+                        if (arg.view.type === 'listWeek') {
+                            const timePart = job.datum ? formatDate(job.datum).split('kl. ')[1] || '' : '';
+                            return { 
+                                html: `
+                                <div class="mobile-calendar-card ${job.prio ? 'prio-row' : ''}">
+                                    <span class="card-time-badge">${timePart}</span>
+                                    <div class="card-job-details">
+                                        <span class="card-job-customer">${prioIcon}${job.kundnamn}</span>
+                                        <span class="card-job-regnr">${job.regnr || 'Okänt reg.nr'}</span>
+                                    </div>
+                                    <span class="status-badge status-${job.status}">${STATUS_TEXT[job.status]}</span>
+                                </div>
+                                `
+                            };
+                        }
+
+                        // --- DESKTOP-VY (alla andra, t.ex. dayGridTwoWeek) ---
+                        let contentHtml = '';
+                        // Välj vad som ska visas: REG-NUMMER (med bricka) eller KUNDNAMN (med bricka)
                         if (job.regnr && job.regnr.toUpperCase() !== 'OKÄNT') {
-                            titlePart = job.regnr;
+                            contentHtml = `
+                                <div class="reg-plate-small">
+                                    <span class="reg-country-small">S</span>
+                                    <span class="reg-number-small">${job.regnr}</span>
+                                </div>
+                            `;
                         } else {
-                            // Ta initialer från kundnamn, t.ex. "Eva Svensson" -> "ES"
-                            titlePart = job.kundnamn.split(' ').map(n => n[0]).join(''); 
+                            // NYTT: Namn-bricka med användar-ikon
+                            contentHtml = `
+                                <div class="user-plate-small">
+                                    <span class="user-icon-small">
+                                        <svg class="icon" viewBox="0 0 24 24"><use href="#icon-user"></use></svg>
+                                    </span>
+                                    <span class="user-name-small">${prioIcon}${job.kundnamn}</span>
+                                </div>
+                            `;
                         }
                         
-                        // Returnera den kompakta HTML:en. Denna används nu för ALLA grid-vyer.
-                        return {
-                            html: `
-                            <div class="compact-grid-event status-${job.status}">
-                                <span class="cge-time">${timePart}</span>
-                                <span class="cge-title">${prioIcon}${titlePart}</span>
-                            </div>
-                            `
-                        };
+                        return { html: contentHtml };
                     },
                 });
                 calendar.render();
@@ -730,31 +747,29 @@
                     calendarView.style.display = 'block';
                     appBrandTitle.style.display = 'none'; // Göm datum i kalendern
 
-                    // NY LOGIK: Använd 14-dagarsvyn på ALLA enheter
-                    calendar.changeView('dayGridTwoWeek'); 
-                    
                     const isMobile = window.innerWidth <= 768;
                     if (isMobile) {
-                        // Enkel header för mobil
+                        // NYTT: Byt till listWeek för mobil (snyggare)
+                        calendar.changeView('listWeek'); 
                         calendar.setOption('headerToolbar', {
                             left: 'prev,next', center: 'title', right: 'today'
                         });
                     } else {
-                        // Den gamla, mer avancerade headern för desktop
+                        // Desktop
+                        calendar.changeView('dayGridTwoWeek');
                         calendar.setOption('headerToolbar', {
                             left: 'prev,next today',
                             center: 'title',
                             right: 'dayGridTwoWeek,timeGridWeek,timeGridDay'
                         });
                     }
-
-                    // BEHÅLL DENNA FIX: Tvinga kalendern att rita om sig själv
-                    // (Detta var min förra lösning, den behövs fortfarande)
+                    
+                    // Kör den aggressiva omritnings-fixen
+                    calendarView.style.visibility = 'hidden';
                     setTimeout(() => {
+                        calendarView.style.visibility = 'visible';
                         calendar.updateSize();
-                        const calendarEvents = allJobs.map(mapJobToEvent);
-                        calendar.setOption('events', calendarEvents);
-                    }, 50);
+                    }, 10);
 
                 } else {
                     calendarView.style.display = 'none';
