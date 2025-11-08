@@ -645,7 +645,7 @@
                         modalTid.value = time;
                     },
                     
-                    // UPPDATERAD: eventContent hanterar nu Desktop, Mobil, och Namn-brickor
+                    // UPPDATERAD: eventContent - Väljer vy baserat på skärmstorlek
                     eventContent: function(arg) {
                         const job = arg.event.extendedProps.originalJob; 
                         
@@ -658,10 +658,10 @@
                             return { html: '' }; // Tomt element
                         }
 
-                        const prioIcon = job.prio ? `<span class="fc-event-prio-flag">🚩</span>` : '';
-
                         // --- MOBILVY (listWeek) ---
+                        // Denna logik är oförändrad från din originalfil
                         if (arg.view.type === 'listWeek') {
+                            const prioIcon = job.prio ? `<span class="fc-event-prio-flag">🚩</span>` : '';
                             const timePart = job.datum ? formatDate(job.datum).split('kl. ')[1] || '' : '';
                             return { 
                                 html: `
@@ -677,29 +677,42 @@
                             };
                         }
 
-                        // --- DESKTOP-VY (alla andra, t.ex. dayGridTwoWeek) ---
-                        let contentHtml = '';
-                        // Välj vad som ska visas: REG-NUMMER (med bricka) eller KUNDNAMN (med bricka)
-                        if (job.regnr && job.regnr.toUpperCase() !== 'OKÄNT') {
-                            contentHtml = `
-                                <div class="reg-plate-small">
-                                    <span class="reg-country-small">S</span>
-                                    <span class="reg-number-small">${job.regnr}</span>
-                                </div>
+                        // --- KONTROLLERA SKÄRMBREDD FÖR ATT VÄLJA VY ---
+                        const isMobile = window.innerWidth <= 768;
+
+                        if (isMobile) {
+                            // --- MOBIL RUTNÄTSVY (<= 768px): Visa prickar ---
+                            const prioClass = job.prio ? 'prio-dot' : '';
+                            let contentHtml = `
+                                <span class="calendar-job-dot ${prioClass}" title="${job.kundnamn} (${job.regnr || '---'})"></span>
                             `;
+                            return { html: contentHtml };
+
                         } else {
-                            // NYTT: Namn-bricka med användar-ikon
-                            contentHtml = `
-                                <div class="user-plate-small">
-                                    <span class="user-icon-small">
-                                        <svg class="icon" viewBox="0 0 24 24"><use href="#icon-user"></use></svg>
-                                    </span>
-                                    <span class="user-name-small">${prioIcon}${job.kundnamn}</span>
-                                </div>
-                            `;
+                            // --- DESKTOP RUTNÄTSVY (> 768px): Visa reg/namn-brickor (DIN ORIGINALKOD) ---
+                            const prioIcon = job.prio ? `<span class="fc-event-prio-flag">🚩</span>` : '';
+                            let contentHtml = '';
+                            
+                            if (job.regnr && job.regnr.toUpperCase() !== 'OKÄNT') {
+                                contentHtml = `
+                                    <div class="reg-plate-small">
+                                        <span class="reg-country-small">S</span>
+                                        <span class="reg-number-small">${job.regnr}</span>
+                                    </div>
+                                `;
+                            } else {
+                                contentHtml = `
+                                    <div class="user-plate-small">
+                                        <span class="user-icon-small">
+                                            <svg class="icon" viewBox="0 0 24 24"><use href="#icon-user"></use></svg>
+                                        </span>
+                                        <span class="user-name-small">${prioIcon}${job.kundnamn}</span>
+                                    </div>
+                                `;
+                            }
+                            
+                            return { html: contentHtml };
                         }
-                        
-                        return { html: contentHtml };
                     },
                 });
                 calendar.render();
