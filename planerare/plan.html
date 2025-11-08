@@ -672,7 +672,7 @@
             const customerModalTotalProfit = document.getElementById('customerModalTotalProfit');
             const customerModalJobCount = document.getElementById('customerModalJobCount');
             const customerModalJobList = document.getElementById('customerModalJobList');
-            const customerSearch = document.getElementById('customerSearch'); // BONUS
+            const customerSearch = document.getElementById('customerSearch'); 
             
             const carModal = document.getElementById('carModal');
             const carModalCloseBtn = document.getElementById('carModalCloseBtn');
@@ -683,7 +683,7 @@
             const carModalTotalProfit = document.getElementById('carModalTotalProfit');
             const carModalJobCount = document.getElementById('carModalJobCount');
             const carModalJobList = document.getElementById('carModalJobList');
-            const carSearch = document.getElementById('carSearch'); // BONUS
+            const carSearch = document.getElementById('carSearch'); 
 
             const navLogo = document.querySelector('.nav-logo');
             const statsModal = document.getElementById('statsModal');
@@ -961,11 +961,18 @@
                 });
             }
 
+            // FIXAD: Logik för Dagens Vinst
             function updateDailyProfitInCalendar(jobs) {
                 if (currentView !== 'calendar' || !calendar) return;
 
                 const dailyProfits = {};
+                
+                // Hämta den månad som kalendern visar
+                const calendarDate = calendar.getDate();
+                const currentMonth = calendarDate.getMonth();
+                const currentYear = calendarDate.getFullYear();
 
+                // 1. Summera vinst per dag för "Klar"-jobb
                 jobs.filter(j => j.status === 'klar' && j.vinst > 0).forEach(job => {
                     const dateKey = job.datum.split('T')[0];
                     if (!dailyProfits[dateKey]) {
@@ -978,7 +985,10 @@
                 
                 profitElements.forEach(el => {
                     const date = el.dataset.date;
-                    if (dailyProfits[date]) {
+                    const elDate = new Date(date + 'T12:00:00'); // Sätt tid för att undvika tidszonsfel
+
+                    // FIX: Visa bara vinst för dagar i denna månad
+                    if (dailyProfits[date] && elDate.getMonth() === currentMonth && elDate.getFullYear() === currentYear) {
                         el.textContent = `+${formatCurrency(dailyProfits[date])}`;
                         el.style.display = ''; 
                     } else {
@@ -1084,7 +1094,6 @@
                 });
             }
 
-            // BONUS: Skelett-laddare (för mobil och desktop)
             function showSkeletonLoader() {
                 let skeletonHTML = '';
                 const isMobile = window.innerWidth <= 768;
@@ -1101,6 +1110,7 @@
                     }
                     jobListContainer.innerHTML = `<div id="mobileJobList">${skeletonHTML}</div>`;
                 } else {
+                    // Desktop skelett-laddare (Bonus)
                     for (let i = 0; i < 5; i++) {
                         skeletonHTML += `
                         <div class="skeleton-table-row">
@@ -1221,7 +1231,7 @@
                     } else if (allJobs.length > 0) {
                         const filterText = document.querySelector(`.stat-card[data-filter="${currentStatusFilter}"] h3`).textContent;
                         emptyStateTitleTimeline.textContent = `Inga ${filterText.toLowerCase()}`;
-                        emptyStateTextTimeline.textContent = "Klicka på '+' för att lägga till ett nytt jobb.";
+                        emptyStateTextTimeline.textContent = "Det finns inga jobb som matchar detta filter.";
                     } else {
                         emptyStateTitleTimeline.textContent = "Du har inga jobb";
                         emptyStateTextTimeline.textContent = "Klicka på '+' för att börja.";
@@ -1434,7 +1444,7 @@
             // --- Popover, Modal-hantering (FIXAD HISTORIK) ---
             
             function closeModal(options = {}) {
-                const { popHistory = true } = options; // Nytt alternativ
+                const { popHistory = true } = options; 
 
                 if (!isModalOpen) return;
                 
@@ -1476,7 +1486,6 @@
 
             function showModal(modalId) {
                 if (isModalOpen) {
-                    // Stäng föregående modal UTAN att poppa historiken
                     closeModal({ popHistory: false }); 
                 }
                 
@@ -1508,18 +1517,18 @@
                 const lastElement = focusableElements[focusableElements.length - 1];
 
                 if (firstElement) {
-                    setTimeout(() => firstElement.focus(), 50); // Liten delay för att säkerställa att modalen är synlig
+                    setTimeout(() => firstElement.focus(), 50); 
                 }
 
                 modalElement.addEventListener('keydown', (e) => {
                     if (e.key !== 'Tab') return;
 
-                    if (e.shiftKey) { // Shift + Tab
+                    if (e.shiftKey) { 
                         if (document.activeElement === firstElement) {
                             lastElement.focus();
                             e.preventDefault();
                         }
-                    } else { // Tab
+                    } else { 
                         if (document.activeElement === lastElement) {
                             firstElement.focus();
                             e.preventDefault();
@@ -1674,8 +1683,8 @@
                 customerModalTotalProfit.className = totalVinst > 0 ? 'stat-value positive' : 'stat-value';
                 customerModalJobCount.textContent = customerJobs.length;
                 
-                customerSearch.value = ''; // Rensa sök
-                renderDetailJobList(customerModalJobList, customerJobs, ''); // Rendera listan
+                customerSearch.value = ''; 
+                renderDetailJobList(customerModalJobList, customerJobs, ''); 
                 showModal('customerModal'); 
             }
             
@@ -1697,8 +1706,8 @@
                 carModalTotalProfit.className = totalVinst > 0 ? 'stat-value positive' : 'stat-value';
                 carModalJobCount.textContent = carJobs.length;
 
-                carSearch.value = ''; // Rensa sök
-                renderDetailJobList(carModalJobList, carJobs, ''); // Rendera listan
+                carSearch.value = ''; 
+                renderDetailJobList(carModalJobList, carJobs, ''); 
                 showModal('carModal'); 
             }
 
