@@ -717,6 +717,50 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     white-space: pre-wrap; font-style: italic;
 }
 
+/* --- Statistik Modal --- */
+#statsModal .modal-content {
+    max-width: 700px;
+}
+
+#statsModalTable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+#statsModalTable th,
+#statsModalTable td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+#statsModalTable th {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-color-light);
+    background-color: var(--bg-color);
+}
+
+#statsModalTable td:nth-child(2) {
+    text-align: center;
+}
+
+#statsModalTable .stat-month {
+    font-weight: 600;
+}
+#statsModalTable .stat-year {
+    font-size: 0.9rem;
+    color: var(--text-color-light);
+    padding-left: 0.5rem;
+}
+
+#statsModalTable .stat-profit {
+    font-weight: 600;
+    color: var(--success-color);
+    text-align: right;
+}
+
 /* --- Kontextmeny --- */
 #contextMenu {
     position: absolute;
@@ -1781,6 +1825,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         display: none;
     }
 }
+
 
 
 
