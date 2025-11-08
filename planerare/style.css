@@ -1886,5 +1886,69 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     }
 }
 
+/* --- 1. Popover Arrow CSS --- */
+
+/* Ge popover-rutan lite marginal för att rymma pilen */
+#commentPopover.arrow-top {
+    margin-top: 10px;
+}
+#commentPopover.arrow-bottom {
+    margin-bottom: 10px;
+}
+
+/* Skapa pilen med pseudo-element */
+#commentPopover::before,
+#commentPopover::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    display: none; /* Dold som standard */
+    
+    /* Positionera pilen horisontellt (justera 15px vid behov) */
+    right: 15px; 
+}
+
+/* Yttre pil (kanten) */
+#commentPopover::before {
+    z-index: 1059; /* Under popover */
+}
+
+/* Inre pil (fyllningen) */
+#commentPopover::after {
+    z-index: 1060; /* Ovanpå kanten, samma som popover */
+}
+
+/* --- PIL SOM PEKAR NEDÅT (när rutan är ovanför knappen) --- */
+#commentPopover.arrow-bottom::before,
+#commentPopover.arrow-bottom::after {
+    display: block;
+    bottom: -10px; /* Positionera under rutan */
+    border-width: 10px 10px 0 10px;
+}
+
+#commentPopover.arrow-bottom::before {
+    border-color: var(--border-color) transparent transparent transparent;
+}
+#commentPopover.arrow-bottom::after {
+    bottom: -9px; /* 1px offset för att täcka kanten */
+    border-color: var(--content-bg) transparent transparent transparent;
+}
 
 
+/* --- PIL SOM PEKAR UPPÅT (när rutan är under knappen) --- */
+#commentPopover.arrow-top::before,
+#commentPopover.arrow-top::after {
+    display: block;
+    top: -10px; /* Positionera ovanför rutan */
+    border-width: 0 10px 10px 10px;
+}
+
+#commentPopover.arrow-top::before {
+    border-color: transparent transparent var(--border-color) transparent;
+}
+#commentPopover.arrow-top::after {
+    top: -9px; /* 1px offset för att täcka kanten */
+    border-color: transparent transparent var(--content-bg) transparent;
+}
