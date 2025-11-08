@@ -215,15 +215,20 @@
                     </select>
                 </div>
 
+                <div class="form-group full-width">
+                    <label for="kundnamn">Kundens Namn</label>
+                    <input type="text" id="kundnamn" placeholder="Eva Svensson" required autocomplete="off">
+                    <div id="kundnamnSuggestions" class="suggestions-list"></div>
+                </div>
+                
                 <div class="form-group-split">
-                    <div class="form-group">
-                        <label for="kundnamn">Kundens Namn</label>
-                        <input type="text" id="kundnamn" placeholder="Eva Svensson" required autocomplete="off">
-                        <div id="kundnamnSuggestions" class="suggestions-list"></div>
-                    </div>
                     <div class="form-group">
                         <label for="regnr">Registreringsnummer</label>
                         <input type="text" id="regnr" placeholder="ABC 123">
+                    </div>
+                    <div class="form-group">
+                        <label for="matarstallning">Mätarställning (km)</label>
+                        <input type="text" inputmode="numeric" id="matarställning" placeholder="t.ex. 123456" class="input-reminder">
                     </div>
                 </div>
                 
@@ -238,14 +243,8 @@
                     </div>
                 </div>
                 
-                <div class="form-group-split">
-                    <div class="form-group">
-                        <label for="matarstallning">Mätarställning (km)</label>
-                        <input type="text" inputmode="numeric" id="matarstallning" placeholder="t.ex. 123456" class="input-reminder">
-                    </div>
-                    <div class="form-group form-group-profit">
-                        <span id="vinstKalkyl">Vinst: 0 kr</span>
-                    </div>
+                <div class="form-group-profit">
+                    <span id="vinstKalkyl">Vinst: 0 kr</span>
                 </div>
                 
                 <div class="form-group-split">
