@@ -530,6 +530,7 @@
             const emptyStateAddBtn = document.getElementById('emptyStateAddBtn');
             const searchBar = document.getElementById('searchBar');
             const viewControls = document.getElementById('view-controls');
+			const desktopSearchWrapper = document.querySelector('#view-controls .search-wrapper');
             const clearDayFilterBtn = document.getElementById('clearDayFilterBtn');
 
             const calendarView = document.getElementById('calendarView');
@@ -1194,6 +1195,12 @@
                 currentOpenModalId = null;
             }
 
+			searchBar.addEventListener('input', () => {
+			    if (desktopSearchWrapper) {
+			        desktopSearchWrapper.classList.add('is-searching');
+			    }
+			});
+
             window.addEventListener('popstate', (event) => {
                 if (isModalOpen) {
                     isNavigatingBack = true;
@@ -1682,14 +1689,19 @@
             commentPopoverClose.addEventListener('click', hideCommentPopover);
 
             function performSearch() {
-                const desktopQuery = searchBar.value;
-                const mobileQuery = mobileSearchBar.value;
-                
-                currentSearchTerm = (desktopQuery.length > mobileQuery.length) ? desktopQuery : mobileQuery;
-                
-                clearDayFilterBtn.style.display = currentSearchTerm ? 'inline-flex' : 'none';
-                renderTimeline();
-            }
+			    const desktopQuery = searchBar.value;
+			    const mobileQuery = mobileSearchBar.value;
+			
+			    currentSearchTerm = (desktopQuery.length > mobileQuery.length) ? desktopQuery : mobileQuery;
+			
+			    clearDayFilterBtn.style.display = currentSearchTerm ? 'inline-flex' : 'none';
+			    renderTimeline();
+			
+			    // --- NY RAD (Göm spinnern när sökningen är klar) ---
+			    if (desktopSearchWrapper) {
+			        desktopSearchWrapper.classList.remove('is-searching');
+			    }
+			}
 
             searchBar.addEventListener('input', debounce(performSearch, 300));
             mobileSearchBar.addEventListener('input', debounce(performSearch, 300));
@@ -1702,14 +1714,19 @@
                 performSearch(); // Sökningen körs redan via 'input', men detta säkerställer
             });
 
-            clearDayFilterBtn.addEventListener('click', () => {
-                searchBar.value = '';
-                mobileSearchBar.value = '';
-                currentSearchTerm = '';
-                clearDayFilterBtn.style.display = 'none';
-                renderTimeline();
-                searchBar.focus();
-            });
+			clearDayFilterBtn.addEventListener('click', () => {
+			    searchBar.value = '';
+			    mobileSearchBar.value = '';
+			    currentSearchTerm = '';
+			    clearDayFilterBtn.style.display = 'none';
+			    renderTimeline();
+			    searchBar.focus();
+			
+			    // --- NY RAD (Göm spinnern när sökningen rensas) ---
+			    if (desktopSearchWrapper) {
+			        desktopSearchWrapper.classList.remove('is-searching');
+			    }
+			});
             
             statBar.addEventListener('click', (e) => {
                 const card = e.target.closest('.stat-card');
