@@ -1715,7 +1715,10 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         min-height: 80px; 
     }
 
-	/* --- NY STIL FÖR KOMPAKT EVENT I KALENDER-RUTNÄT --- */
+} /* <-- Slutet på din @media-regel */
+}
+
+/* --- NY STIL FÖR KOMPAKT EVENT I KALENDER-RUTNÄT --- */
 .mobile-grid-event {
     font-size: 0.7rem; /* Mindre text för att få plats */
     font-weight: 600;
@@ -1783,9 +1786,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     }
 }
 
-} /* <-- Slutet på din @media-regel */
-}
-
 /* Dölj mobil-nav på desktop */
 @media (min-width: 769px) {
     .mobile-nav {
@@ -1798,6 +1798,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         display: none;
     }
 }
+
 
 
 
