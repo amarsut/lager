@@ -1715,6 +1715,74 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         min-height: 80px; 
     }
 
+	/* --- NY STIL FÖR KOMPAKT EVENT I KALENDER-RUTNÄT --- */
+.mobile-grid-event {
+    font-size: 0.7rem; /* Mindre text för att få plats */
+    font-weight: 600;
+    padding: 3px 4px; /* Lite luft */
+    line-height: 1.3;
+    overflow: hidden;
+    border-radius: 3px;
+    
+    /* Stapla tid och titel vertikalt */
+    display: flex;
+    flex-direction: column;
+}
+
+.mge-time {
+    font-weight: 500;
+}
+
+.mge-title {
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* ... om den ändå är för lång */
+}
+
+.mge-title .fc-event-prio-flag {
+    font-size: 0.6rem;
+    margin-right: 2px;
+}
+
+/* * Applicera status-färgerna som bakgrund och textfärg
+ * (Detta ersätter de separata "plate"-stilarna)
+*/
+.mobile-grid-event.status-bokad { 
+    background-color: var(--primary-light); 
+    color: var(--primary-color); 
+}
+.mobile-grid-event.status-klar { 
+    background-color: rgba(48, 209, 88, 0.1); 
+    color: var(--success-color); 
+    opacity: 0.8; 
+}
+.mobile-grid-event.status-offererad { 
+    background-color: rgba(107, 114, 128, 0.1); 
+    color: #4b5563; 
+}
+
+[data-theme="dark"] .mobile-grid-event.status-bokad { 
+    background-color: rgba(10, 132, 255, 0.2); 
+    color: #339aff; 
+}
+[data-theme="dark"] .mobile-grid-event.status-klar { 
+    background-color: rgba(48, 209, 88, 0.2); 
+    color: var(--success-color); 
+}
+[data-theme="dark"] .mobile-grid-event.status-offererad { 
+    background-color: rgba(142, 142, 147, 0.2); 
+    color: #9a9a9f; 
+}
+
+/* Göm de gamla "plates" på mobilen (för säkerhets skull) */
+@media (max-width: 768px) {
+    .fc-event-main > .reg-plate-small,
+    .fc-event-main > .user-plate-small {
+         display: none;
+    }
+}
+
 } /* <-- Slutet på din @media-regel */
 }
 
@@ -1730,5 +1798,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         display: none;
     }
 }
+
 
 
