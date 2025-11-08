@@ -1825,7 +1825,16 @@
                 initRealtimeListener();
             }
             
-            window.addEventListener('resize', debounce(renderTimeline, 200));
+            window.addEventListener('resize', debounce(() => {
+            renderTimeline();
+            
+            // Tvinga kalendern att rendera om sina events för att
+            // växla mellan prickar och brickor
+            if (calendar && currentView === 'calendar') {
+                // Använd 'rerenderEvents()' för att köra 'eventContent' igen
+                calendar.rerenderEvents();
+            }
+        }, 200));
 
         });
     </script>
