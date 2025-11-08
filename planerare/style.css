@@ -421,7 +421,10 @@ mark {
 
 #jobbOversikt thead {
     background-color: var(--bg-color);
-    /* FIX: Tog bort sticky pos */
+    /* Sticky header för desktop */
+    position: sticky; 
+    top: var(--header-height); 
+    z-index: 40; /* Under main header */
 }
 
 #jobbOversikt th, #jobbOversikt td {
@@ -571,9 +574,18 @@ mark {
     max-height: 90vh; overflow: hidden;
     display: flex; flex-direction: column;
     transform: scale(0.98) translateY(-10px); 
-    opacity: 0; transition: all 0.2s ease-in-out; 
+    opacity: 0; 
+    animation: modalFadeIn 0.2s ease-in-out forwards;
 }
-.modal-backdrop.show .modal-content { transform: scale(1) translateY(0); opacity: 1; }
+.modal-backdrop.show .modal-content { 
+    transform: scale(1) translateY(0); 
+    opacity: 1; 
+}
+@keyframes modalFadeIn {
+    from { transform: scale(0.98) translateY(-10px); opacity: 0; }
+    to { transform: scale(1) translateY(0); opacity: 1; }
+}
+
 
 .modal-header { 
     display: flex; justify-content: space-between; align-items: center; 
@@ -847,6 +859,13 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     padding-top: 0.75rem; margin-top: 0.75rem;
     border-top: 1px dashed var(--border-color);
     white-space: pre-wrap; font-style: italic;
+}
+
+/* Sökfält i modal */
+.modal-body .search-wrapper {
+    margin-bottom: 1rem;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 /* --- Statistik Modal --- */
@@ -1351,15 +1370,25 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 
 /* FIX: Ljusare dag-texter i mörkt läge */
 [data-theme="dark"] .fc .fc-col-header-cell-cushion {
-    color: var(--text-color-light);
-    opacity: 0.8;
+    color: var(--text-color); /* FIX: Ändrad från light */
+    opacity: 0.9;
+    font-weight: 500;
 }
 [data-theme="dark"] .fc .fc-daygrid-day-number {
-    color: var(--text-color-light);
+    color: var(--text-color); /* FIX: Ändrad från light */
+    opacity: 0.9;
+    font-weight: 500;
 }
 [data-theme="dark"] .fc .fc-day-other .fc-daygrid-day-number {
     opacity: 0.3; /* Dimmra andra månaders dagar */
 }
+/* FIX: Ta bort helg-bakgrund i mörkt läge */
+[data-theme="dark"] .fc .fc-day-sat,
+[data-theme="dark"] .fc .fc-day-sun {
+    background-color: var(--bg-color); /* Samma som veckodagar */
+    opacity: 1;
+}
+
 
 .fc .fc-day-today .fc-daygrid-day-number {
     background-color: var(--primary-color);
@@ -1474,12 +1503,8 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 .fc .fc-day-sun {
     background-color: var(--bg-color);
 }
+/* FIX: Tog bort mörk-läge-specifik regel som var i konflikt */
 
-[data-theme="dark"] .fc .fc-day-sat,
-[data-theme="dark"] .fc .fc-day-sun {
-    background-color: var(--content-bg);
-    opacity: 0.6;
-}
 /* 12. Stil för Snabbvalsknappar (Tid) (v22) */
 .quick-time-buttons {
     display: grid;
@@ -2076,15 +2101,18 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         gap: 0.75rem; 
         justify-content: center; 
 
-        /* NY STIL: Vit knapp med blå text */
+        /* FIX: Ny stil för knappen */
         background-color: #ffffff;
         color: #007aff;
         border: 2px solid #007aff;
         font-weight: 700;
         box-shadow: var(--shadow-md);
+        text-decoration: none !important;
+        transition: all 0.2s ease;
     }
     #carModalExternalLinkMobile:hover {
         background-color: #f0f7ff;
+        transform: scale(1.02);
     }
     #carModalExternalLinkMobile img {
         width: 20px;
@@ -2111,7 +2139,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     #carModalExternalLinkMobile {
         display: none;
     }
-    /* Dölj mobil-inställningar på desktop */
     #mobileSettingsGroup {
         display: none;
     }
@@ -2200,7 +2227,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     padding-bottom: 0.5rem;
     border-bottom: 1px solid var(--border-color);
     margin-bottom: 0.75rem;
-    align-items: center; /* Centrera knappar och Prio-toggle */
+    align-items: center; 
 }
 .job-templates .button.template-btn {
     font-size: 0.8rem;
@@ -2253,6 +2280,13 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     gap: 0.85rem;
     box-shadow: var(--shadow-sm);
 }
+/* Desktop tabell-skelett */
+.skeleton-table-row {
+    display: flex;
+    gap: 1.5rem;
+    padding: 0.9rem 1.25rem;
+    border-bottom: 1px solid var(--border-color);
+}
 .skeleton-pulse {
     background: var(--bg-color);
     border-radius: 6px;
@@ -2261,6 +2295,16 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 .skeleton-card .line-1 { width: 40%; height: 1.25rem; }
 .skeleton-card .line-2 { width: 60%; height: 1rem; }
 .skeleton-card .line-3 { width: 80%; height: 1rem; margin-top: 0.5rem; }
+
+.skeleton-table-row .sk-item { height: 1.25rem; }
+.skeleton-table-row .sk-item-1 { width: 15%; }
+.skeleton-table-row .sk-item-2 { width: 20%; }
+.skeleton-table-row .sk-item-3 { width: 25%; }
+.skeleton-table-row .sk-item-4 { width: 15%; }
+.skeleton-table-row .sk-item-5 { width: 15%; }
+.skeleton-table-row .sk-item-6 { width: 10%; }
+
+
 @keyframes pulse-bg {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.5; }
@@ -2274,7 +2318,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     margin-top: 0.5rem;
 }
 .settings-button-group .button {
-    justify-content: flex-start; /* Vänsterställ knapp-innehåll */
+    justify-content: flex-start; 
     font-size: 0.95rem;
 }
 .settings-button-group #settingsThemeToggle .icon-moon { display: none; }
