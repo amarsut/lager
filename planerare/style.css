@@ -648,6 +648,8 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     z-index: 2000; font-weight: 500; 
     transition: all 0.4s ease;
     opacity: 0; transform: translateX(-50%) translateY(20px);
+    display: flex; /* NYTT för att "Ångra"-knappen ska funka */
+    align-items: center; /* NYTT */
 }
 @media (min-width: 769px) {
     .toast {
@@ -1982,7 +1984,10 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     display: none; /* ...göm sök-ikonen */
 }
 
-/* --- Knapp-spinner --- */
+
+/* --- NYA FÖRBÄTTRINGAR --- */
+
+/* --- 1. Knapp-spinner --- */
 .button .button-spinner {
     display: inline-block;
     width: 1rem;
@@ -1990,7 +1995,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     border: 3px solid rgba(255, 255, 255, 0.4);
     border-top-color: #ffffff;
     border-radius: 50%;
-    animation: spin 0.8s linear infinite;
+    animation: spin 0.8s linear infinite; /* Använder befintlig spin-keyframe */
 }
 
 [data-theme="dark"] .button.secondary .button-spinner {
@@ -2003,12 +2008,79 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     border-top-color: #1a1a1a;
 }
 
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
 /* Se till att inaktiverade knappar ser rätt ut */
 .button:disabled {
     opacity: 0.7;
     cursor: wait;
+}
+
+/* --- 2. Rensa-knapp i sökfält --- */
+.search-wrapper {
+    position: relative; /* Nödvändigt för att positionera knappen */
+}
+
+.search-clear-btn {
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    display: none; /* Dold som standard */
+    align-items: center;
+    justify-content: center;
+    color: var(--text-color-light);
+}
+
+.search-clear-btn:hover {
+    color: var(--text-color);
+}
+
+.search-clear-btn::before,
+.search-clear-btn::after {
+    content: '';
+    position: absolute;
+    width: 14px;
+    height: 2px;
+    background-color: currentColor;
+}
+
+.search-clear-btn::before { transform: rotate(45deg); }
+.search-clear-btn::after { transform: rotate(-45deg); }
+
+.search-modal-content .search-wrapper {
+    width: 100%;
+}
+.search-modal-content .search-clear-btn {
+    right: 0.75rem;
+    width: 32px;
+    height: 32px;
+}
+.search-modal-content .search-clear-btn::before,
+.search-modal-content .search-clear-btn::after {
+    width: 16px;
+}
+
+/* --- 3. Ångra-knapp i Toast --- */
+.toast .button {
+    margin-left: 1rem;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    /* Ta bort onödiga regler, .button.secondary har redan rätt stil */
+}
+
+/* --- 4. Statistik-diagram --- */
+#statsModal .modal-body {
+    padding-top: 1rem;
+}
+
+.chart-container {
+    position: relative;
+    width: 100%;
+    max-height: 250px;
+    margin-bottom: 2rem;
 }
