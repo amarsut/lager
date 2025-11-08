@@ -124,12 +124,14 @@
                 <div id="timelineView">
                     <div class="view-controls" id="view-controls">
                         <div class="search-wrapper">
-                            <svg class="icon icon-search" viewBox="0 0 24 24"><use href="#icon-search"></use></svg>
-                            
-                            <div class="search-spinner"></div> 
-                            
-                            <input type="search" id="searchBar" placeholder="Sök jobb... (F)">
-                        </div>
+						    <svg class="icon icon-search" viewBox="0 0 24 24"><use href="#icon-search"></use></svg>
+						
+						    <div class="search-spinner"></div> 
+						
+						    <input type="search" id="searchBar" placeholder="Sök jobb... (F)">
+						
+						    <button type="button" class="search-clear-btn" id="desktopSearchClear" title="Rensa sökning"></button>
+						</div>
                     </div>
 
                     <div class="table-container" id="jobListContainer">
@@ -176,9 +178,11 @@
         <div class="search-modal-content">
             <form id="mobileSearchForm" style="display: contents;">
                 <div class="search-wrapper">
-                    <svg class="icon" viewBox="0 0 24 24"><use href="#icon-search"></use></svg>
-                    <input type="search" id="mobileSearchBar" placeholder="Sök jobb...">
-                </div>
+				    <svg class="icon" viewBox="0 0 24 24"><use href="#icon-search"></use></svg>
+				    <input type="search" id="mobileSearchBar" placeholder="Sök jobb...">
+				
+				    <button type="button" class="search-clear-btn" id="mobileSearchClear" title="Rensa sökning"></button>
+				</div>
             </form>
             <button id="mobileSearchCloseBtn" class="button secondary">Avbryt</button>
         </div>
@@ -1588,7 +1592,15 @@
                     }
                 }
                 
+                // --- NY LOGIK BÖRJAR HÄR ---
+                const originalButtonText = modalSaveBtn.textContent; // Spara originaltexten
                 modalSaveBtn.disabled = true;
+                modalSaveBtn.innerHTML = `
+                    <span>Sparar...</span>
+                    <div class="button-spinner"></div>
+                `;
+                // --- NY LOGIK SLUTAR HÄR ---
+
                 try {
                     if (jobData.id) {
                         await db.collection("jobs").doc(jobData.id).update(savedData);
@@ -1601,7 +1613,9 @@
                 } catch (err) {
                     showToast(`Fel: ${err.message}`, 'danger');
                 } finally {
+                    // --- NY LOGIK FÖR ATT ÅTERSTÄLLA KNAPPEN ---
                     modalSaveBtn.disabled = false;
+                    modalSaveBtn.innerHTML = originalButtonText; // Återställ texten
                 }
             }
             
