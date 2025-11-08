@@ -32,6 +32,9 @@
     --transition-speed-fast: 0.15s;
 
     --mobile-nav-height: 65px;
+
+    /* PUNKT 5 (FIX): Variabel för pil-position */
+    --arrow-left-offset: 50%;
 }
 
 [data-theme="dark"] {
@@ -66,6 +69,19 @@ body {
 
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+}
+
+/* PUNKT 4 (FIX): Nödvändig klass för att dölja select-menyn */
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+    white-space: nowrap;
 }
 
 .link-btn {
@@ -826,6 +842,16 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 .detail-modal-header h2 { font-size: 1.5rem; margin: 0; }
 .detail-modal-header p { font-size: 1rem; color: var(--text-color-light); margin: 0; }
 
+/* PUNKT 6 (NY): Styling för redigera-knapp */
+.customer-phone-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+#editCustomerPhoneBtn {
+    padding: 0.25rem;
+}
+
 .detail-stats {
     display: grid; grid-template-columns: 1fr 1fr;
     gap: 1rem; background-color: var(--bg-color);
@@ -1346,13 +1372,20 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 .fc-timegrid-event .fc-event-main { padding: 2px 4px; }
 
 
-/* --- FIX FÖR MÖRKT LÄGE (KALENDER) --- */
+/* --- PUNKT 1 (FIX): Kalender-vy Desktop Storlek --- */
+#calendarView {
+    padding: 0;
+    background: none;
+    border: none;
+    max-width: 900px; /* Sätter en maxbredd */
+    margin: 0 auto; /* Centrerar */
+}
+
+/* --- PUNKT 2 (FIX): Mörkt tema kalender-header --- */
 [data-theme="dark"] #calendarView {
     background-color: var(--bg-color);
     padding: 0;
     border: none;
-    max-width: 900px; 
-    margin: 0 auto;
 }
 
 [data-theme="dark"] #calendarView .fc {
@@ -1378,13 +1411,17 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     position: relative; 
 }
 
-/* FIX: Korrekta färger i mörkt läge */
+/* PUNKT 2 (FIX): Korrekta färger i mörkt läge för header */
+[data-theme="dark"] .fc .fc-col-header {
+    background-color: var(--bg-color); /* Sätt mörk bakgrund */
+}
 [data-theme="dark"] .fc .fc-col-header-cell-cushion {
-    color: var(--text-color);
+    color: var(--text-color); /* Ljus text */
     opacity: 0.9;
     font-weight: 500;
     text-decoration: none !important;
 }
+
 [data-theme="dark"] .fc .fc-daygrid-day-number {
     color: var(--text-color);
     opacity: 0.9;
@@ -1984,6 +2021,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         transition: opacity 0.2s ease;
     }
     .modal-backdrop-mobile.show {
+        display: flex; /* Ändrad från inget */
         opacity: 1;
     }
     .search-modal-content {
@@ -2042,6 +2080,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         padding: 0;
         background: none;
         border: none;
+        max-width: 100%; /* Åsidosätt desktop-maxbredd */
     }
     [data-theme="dark"] #calendarView .fc {
         padding: 0;
@@ -2129,19 +2168,29 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         gap: 0.75rem; 
         justify-content: center; 
 
-        /* FIX: Ny stil för knappen */
-        background-color: #ffffff;
-        color: #007aff;
-        border: 2px solid #007aff;
+        /* PUNKT 3 (FIX): Ny stil för knappen med variabler */
+        background-color: var(--content-bg);
+        color: var(--primary-color);
+        border: 2px solid var(--primary-color);
         font-weight: 700;
         box-shadow: var(--shadow-md);
         text-decoration: none !important;
         transition: all 0.2s ease;
     }
     #carModalExternalLinkMobile:hover {
-        background-color: #f0f7ff;
+        background-color: var(--primary-light);
         transform: scale(1.02);
     }
+    /* PUNKT 3 (FIX): Mörkt läge */
+    [data-theme="dark"] #carModalExternalLinkMobile {
+        background-color: var(--content-bg);
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+    }
+    [data-theme="dark"] #carModalExternalLinkMobile:hover {
+        background-color: #2c2c2e;
+    }
+
     #carModalExternalLinkMobile img {
         width: 20px;
         height: 20px;
@@ -2172,7 +2221,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     }
 }
 
-/* --- 1. Popover Arrow CSS --- */
+/* --- 1. Popover Arrow CSS (PUNKT 5 FIX) --- */
 #commentPopover.arrow-top {
     margin-top: 10px;
 }
@@ -2187,7 +2236,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     height: 0;
     border-style: solid;
     display: none; 
-    left: 50%;
+    left: var(--arrow-left-offset); /* Använd variabel */
     transform: translateX(-50%);
 }
 #commentPopover::before {
