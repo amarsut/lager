@@ -278,17 +278,23 @@ body {
     box-shadow: var(--shadow-sm);
     width: 100%;
     position: relative; 
+    transition: all var(--transition-speed-fast) ease;
 }
 [data-theme="dark"] .search-wrapper { background: var(--bg-color); }
+.search-wrapper:focus-within {
+    border-color: var(--primary-color);
+    box-shadow: var(--shadow-focus);
+}
 .search-wrapper .icon { color: var(--text-color-light); }
-#searchBar { 
+
+.search-wrapper input[type="search"] { 
     border: none; padding: 0.65rem 0.75rem; font-size: 0.95rem; 
     outline: none; border-radius: 8px; 
     background: transparent; color: var(--text-color);
     min-width: 250px;
     width: 100%;
+    box-sizing: border-box;
 }
-#searchBar:focus-within { border-color: var(--primary-color); }
 
 /* Göm webbläsarens inbyggda "x" för sökfält */
 input[type="search"]::-webkit-search-decoration,
@@ -463,7 +469,8 @@ mark {
 }
 
 /* Animation för kommande prio-jobb */
-#jobbOversikt tbody tr.prio-row.kommande-prio-pulse {
+#jobbOversikt tbody tr.prio-row.kommande-prio-pulse,
+.mobile-job-card.prio-row.kommande-prio-pulse {
     animation: pulse-prio-bg 2.5s infinite;
 }
 @keyframes pulse-prio-bg {
@@ -861,11 +868,16 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     white-space: pre-wrap; font-style: italic;
 }
 
-/* Sökfält i modal */
+/* FIX: Sökfält i modal */
 .modal-body .search-wrapper {
     margin-bottom: 1rem;
     width: 100%;
     box-sizing: border-box;
+}
+.modal-body .search-wrapper input[type="search"] {
+    min-width: 100px;
+    padding-top: 0.75rem; /* Gör den högre */
+    padding-bottom: 0.75rem;
 }
 
 
@@ -1374,11 +1386,13 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     color: var(--text-color); /* FIX: Ändrad från light */
     opacity: 0.9;
     font-weight: 500;
+    text-decoration: none !important;
 }
 [data-theme="dark"] .fc .fc-daygrid-day-number {
     color: var(--text-color); /* FIX: Ändrad från light */
     opacity: 0.9;
     font-weight: 500;
+    text-decoration: none !important;
 }
 [data-theme="dark"] .fc .fc-day-other .fc-daygrid-day-number {
     opacity: 0.3; /* Dimmra andra månaders dagar */
