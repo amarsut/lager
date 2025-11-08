@@ -56,6 +56,9 @@
         <symbol id="icon-external-link" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" /></symbol>
         <symbol id="icon-oil" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.25 8.25h-.01M12.75 8.25h.01M10.25 8.25h.01M7.75 8.25h.01M7.75 10.75h.01M10.25 10.75h.01M12.75 10.75h.01M15.25 10.75h.01M7.75 13.25h.01M10.25 13.25h.01M12.75 13.25h.01M15.25 13.25h.01M4.871 1.754l1.106-1.04a1.125 1.125 0 011.532 0l1.106 1.04m-3.744 0a48.611 48.611 0 003.744 0M4.871 1.754A48.611 48.611 0 018.615 1.754m-3.744 0l.006.006m3.732 0l.006.006m.006.006l.006-.006m-3.744 0l.006.006M15.75 5.25h1.5a1.5 1.5 0 011.5 1.5v8.25a1.5 1.5 0 01-1.5 1.5h-1.5m0-11.25S13.5 5.25 12 5.25s-3.75 0-3.75 0m0 11.25h-1.5a1.5 1.5 0 01-1.5-1.5V6.75a1.5 1.5 0 011.5-1.5h1.5m0 11.25S10.5 16.5 12 16.5s3.75 0 3.75 0" /></symbol>
         <symbol id="icon-tire" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15.91 15.91a4.5 4.5 0 01-6.364 0 4.5 4.5 0 010-6.364 4.5 4.5 0 016.364 0zm-1.06-1.06a3 3 0 00-4.242 0 3 3 0 000 4.242 3 3 0 004.242 0 3 3 0 000-4.242z" /></symbol>
+        <symbol id="icon-clipboard" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></symbol>
+        <symbol id="icon-wallet" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 12m18 0v6a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 18v-6m18 0V9A2.25 2.25 0 0018.75 6.75H5.25A2.25 2.25 0 003 9v3m18 0a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 12m15.375-3.862A2.25 2.25 0 0118.75 6.75H5.25A2.25 2.25 0 013 9v3m15.375-3.862A2.25 2.25 0 0018.75 9H5.25A2.25 2.25 0 003 12m18 0v6a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 18v-6" /></symbol>
+    
     </svg>
 
     <div class="app-container">
@@ -86,6 +89,12 @@
             </div>
             
             <div class="header-right">
+                <div class="header-profit-display" id="headerProfitDisplay">
+                    <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-wallet"></use></svg>
+                    <span>Dagens Vinst:</span>
+                    <span id="headerProfitValue">0 kr</span>
+                </div>
+
                 <div class="divider"></div>
 
                 <button class="nav-button" id="settingsBtn" title="Inställningar">
@@ -239,7 +248,13 @@
                 
                 <div class="form-group full-width">
                     <label for="status">Status</label>
-                    <select id="status" required>
+                    <div class="quick-status-buttons" id="quickStatusButtons">
+                        <button type="button" class="button" data-status="offererad">Offererad</button>
+                        <button type="button" class="button" data-status="bokad">Bokad</button>
+                        <button type="button" class="button" data-status="klar">Klar</button>
+                        <button type="button" class="button" data-status="avbokad">Avbokad</button>
+                    </div>
+                    <select id="status" required class="visually-hidden">
                         <option value="offererad">Offererad</option>
                         <option value="bokad" selected>Bokad</option>
                         <option value="klar">Klar</option>
@@ -247,16 +262,27 @@
                     </select>
                 </div>
 
-                <div class="form-group full-width">
+                <div class="form-group full-width form-group-copyable">
                     <label for="kundnamn">Kundens Namn</label>
                     <input type="text" id="kundnamn" placeholder="Eva Svensson" required autocomplete="off">
+                    <button type="button" class="copy-btn" id="copyKundnamn" title="Kopiera Kundnamn">
+                        <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-clipboard"></use></svg>
+                    </button>
                     <div id="kundnamnSuggestions" class="suggestions-list"></div>
+                </div>
+
+                <div class="form-group full-width">
+                    <label for="telefon">Telefonnummer</label>
+                    <input type="tel" id="telefon" placeholder="070-123 45 67" autocomplete="off">
                 </div>
                 
                 <div class="form-group-split">
-                    <div class="form-group">
+                    <div class="form-group form-group-copyable">
                         <label for="regnr">Registreringsnummer</label>
                         <input type="text" id="regnr" placeholder="ABC 123">
+                        <button type="button" class="copy-btn" id="copyRegnr" title="Kopiera Reg.nr">
+                            <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-clipboard"></use></svg>
+                        </button>
                     </div>
                     <div class="form-group">
                         <label for="matarstallning">Mätarställning (km)</label>
@@ -469,6 +495,15 @@
                     </button>
                 </div>
 
+                <div class="form-group settings-button-group">
+                    <hr style="border: none; border-top: 1px solid var(--border-color); margin: 0.5rem 0;">
+                    <label>Data</label>
+                    <button type="button" class="button secondary csv-export" id="exportCsvBtn">
+                        <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-download"></use></svg>
+                        <span>Exportera alla jobb till CSV</span>
+                    </button>
+                </div>
+
             </form>
 			
             <div class="modal-actions">
@@ -621,6 +656,8 @@
             const toast = document.getElementById('toastNotification');
             
             const appBrandTitle = document.getElementById('appBrandTitle'); 
+            const headerProfitDisplay = document.getElementById('headerProfitDisplay');
+            const headerProfitValue = document.getElementById('headerProfitValue');
             
             const timelineView = document.getElementById('timelineView');
             const jobListContainer = document.getElementById('jobListContainer');
@@ -664,6 +701,11 @@
             const quickTimeButtons = document.getElementById('quickTimeButtons');
             const modalKundnamn = document.getElementById('kundnamn');
             const kundnamnSuggestions = document.getElementById('kundnamnSuggestions');
+            const modalTelefon = document.getElementById('telefon');
+            const modalStatusSelect = document.getElementById('status');
+            const quickStatusButtons = document.getElementById('quickStatusButtons');
+            const copyKundnamnBtn = document.getElementById('copyKundnamn');
+            const copyRegnrBtn = document.getElementById('copyRegnr');
             
             const customerModal = document.getElementById('customerModal');
             const customerModalCloseBtn = document.getElementById('customerModalCloseBtn');
@@ -708,6 +750,7 @@
             const settingsThemeToggle = document.getElementById('settingsThemeToggle');
             const settingsToggleCompactView = document.getElementById('settingsToggleCompactView');
             const settingsLockAppBtn = document.getElementById('settingsLockAppBtn');
+            const exportCsvBtn = document.getElementById('exportCsvBtn');
 
 
             const popoverBackdrop = document.getElementById('popoverBackdrop');
@@ -1159,6 +1202,18 @@
                 statOffered.textContent = offeredJobs;
                 statAll.textContent = allJobCount;
                 
+                // NYTT: Dagens Vinst i Header
+                const todaysProfit = jobs
+                    .filter(j => j.status === 'klar' && j.datum && j.datum.startsWith(todayString))
+                    .reduce((sum, j) => sum + (j.vinst || 0), 0);
+                
+                if (todaysProfit > 0) {
+                    headerProfitValue.textContent = formatCurrency(todaysProfit);
+                    headerProfitDisplay.style.display = 'flex';
+                } else {
+                    headerProfitDisplay.style.display = 'none';
+                }
+
                 document.querySelectorAll('.stat-card.active').forEach(c => c.classList.remove('active'));
                 const activeCard = document.getElementById(`stat-card-${currentStatusFilter}`);
                 if (activeCard) activeCard.classList.add('active');
@@ -1197,6 +1252,7 @@
                             job.kundnamn.toLowerCase().includes(term) ||
                             (job.regnr && job.regnr.toLowerCase().includes(term)) ||
                             (job.kommentarer && job.kommentarer.toLowerCase().includes(term)) ||
+                            (job.telefon && job.telefon.includes(term)) || // Sök på telefon
                             (STATUS_TEXT[job.status] || '').toLowerCase().includes(term)
                         );
                     });
@@ -1555,7 +1611,7 @@
                     popoverTop = rect.top + window.scrollY - commentPopover.offsetHeight - 5;
                     commentPopover.classList.add('arrow-bottom'); 
                 } else {
-                    commentPopover.classList.add('arrow-top'); 
+                    popoverTop = commentPopover.classList.add('arrow-top'); 
                 }
 
                 commentPopover.style.top = `${popoverTop}px`;
@@ -1577,6 +1633,21 @@
                 modalVinstKalkyl.style.color = vinst < 0 ? 'var(--danger-color)' : (vinst > 0 ? 'var(--success-color)' : 'var(--text-color)');
             }
             
+            // NYTT: Funktion för att synka quick-buttons med select
+            function syncStatusUI(newStatus) {
+                modalStatusSelect.value = newStatus;
+                quickStatusButtons.querySelectorAll('.button').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.status === newStatus);
+                });
+            }
+
+            quickStatusButtons.addEventListener('click', (e) => {
+                const button = e.target.closest('.button[data-status]');
+                if (button) {
+                    syncStatusUI(button.dataset.status);
+                }
+            });
+
             function openJobModal(mode, dataToClone = null) {
                 jobModalForm.reset();
                 if (mode === 'add') {
@@ -1584,18 +1655,19 @@
                     modalSaveBtn.textContent = 'Spara'; 
                     modalJobId.value = '';
                     if (dataToClone) {
-                        document.getElementById('status').value = dataToClone.status || 'bokad';
+                        syncStatusUI(dataToClone.status || 'bokad');
                         document.getElementById('prio').checked = dataToClone.prio || false;
                         modalDatum.value = dataToClone.datum || todayString;
                         modalTid.value = dataToClone.tid || new Date().toTimeString().substring(0,5);
                         modalRegnr.value = dataToClone.regnr;
                         modalKundnamn.value = dataToClone.kundnamn.toUpperCase();
+                        modalTelefon.value = dataToClone.telefon || '';
                         modalKundpris.value = dataToClone.kundpris;
                         modalUtgifter.value = dataToClone.utgifter;
                         document.getElementById('kommentarer').value = dataToClone.kommentarer;
 						document.getElementById('matarstallning').value = dataToClone.matarstallning || '';
                     } else {
-                        document.getElementById('status').value = 'bokad';
+                        syncStatusUI('bokad');
                         document.getElementById('prio').checked = false;
                         const now = new Date();
                         modalDatum.value = todayString;
@@ -1606,7 +1678,7 @@
                     modalTitle.textContent = 'Redigera Jobb';
                     modalSaveBtn.textContent = 'Spara'; 
                     modalJobId.value = dataToClone.id;
-                    document.getElementById('status').value = dataToClone.status || 'bokad';
+                    syncStatusUI(dataToClone.status || 'bokad');
                     document.getElementById('prio').checked = dataToClone.prio || false;
                     if (dataToClone.datum) {
                         const d = new Date(dataToClone.datum);
@@ -1617,6 +1689,7 @@
                     }
                     modalRegnr.value = dataToClone.regnr;
                     modalKundnamn.value = dataToClone.kundnamn.toUpperCase();
+                    modalTelefon.value = dataToClone.telefon || '';
                     modalKundpris.value = dataToClone.kundpris;
                     modalUtgifter.value = dataToClone.utgifter;
                     document.getElementById('kommentarer').value = dataToClone.kommentarer;
@@ -1632,11 +1705,12 @@
                 const utgifter = parseFloat(modalUtgifter.value) || 0;
                 return {
                     id: modalJobId.value,
-                    status: document.getElementById('status').value,
+                    status: modalStatusSelect.value, // Läs från <select>
                     datum: modalDatum.value,
                     tid: modalTid.value,
                     regnr: modalRegnr.value.toUpperCase(),
                     kundnamn: document.getElementById('kundnamn').value.toUpperCase(),
+                    telefon: modalTelefon.value, // NYTT FÄLT
                     kundpris: kundpris,
                     utgifter: utgifter,
                     vinst: kundpris - utgifter,
@@ -1966,17 +2040,11 @@
                 const savedData = { 
                     status: jobData.status, datum: fullDatum, regnr: jobData.regnr,
                     kundnamn: jobData.kundnamn,
+                    telefon: jobData.telefon, // NYTT FÄLT
                     kundpris: jobData.kundpris, utgifter: jobData.utgifter,
                     vinst: jobData.vinst, kommentarer: jobData.kommentarer, prio: jobData.prio,
 					matarstallning: jobData.matarstallning
                 };
-
-                if (jobData.id) {
-                    const existingJob = findJob(jobData.id);
-                    if (existingJob && existingJob.telefon) {
-                        savedData.telefon = existingJob.telefon;
-                    }
-                }
                 
                 const originalButtonText = modalSaveBtn.textContent;
                 modalSaveBtn.disabled = true;
@@ -2280,10 +2348,10 @@
                 
                 if (template === 'oljebyte') {
                     const literOljaprompt = prompt('Hur många liter olja? (t.ex. 4,5)', '4,5');
-                    if (literOljaprompt === null) return; 
+                    if (litersOljaprompt === null) return; 
                     
                     // FIX: Hanterar både komma och punkt som decimal
-                    const literOlja = parseFloat(literOljaprompt.replace(',', '.')) || 0;
+                    const literOlja = parseFloat(litersOljaprompt.replace(',', '.')) || 0;
                     
                     if (literOlja > 0) {
                         const oljekostnad = literOlja * 200; 
@@ -2352,17 +2420,28 @@
             modalKundpris.addEventListener('input', updateLiveProfit);
             modalUtgifter.addEventListener('input', updateLiveProfit);
             
-            modalRegnr.addEventListener('input', debounce((e) => {
-                const regnr = e.target.value.toUpperCase();
-                e.target.value = regnr;
+            // NYTT: Funktion för att hitta senaste jobbet
+            function findLatestJob(key, value) {
+                return [...allJobs].reverse().find(job => job[key] && job[key].toLowerCase() === value.toLowerCase());
+            }
+            
+            // NYTT: Auto-ifyllning från Regnr
+            modalRegnr.addEventListener('blur', (e) => {
+                const regnr = e.target.value;
                 if (regnr.length < 3) return;
-                const existingJob = [...allJobs].reverse().find(j => j.regnr === regnr);
+                
+                const existingJob = findLatestJob('regnr', regnr);
                 if (existingJob) {
                     modalKundnamn.value = existingJob.kundnamn.toUpperCase();
+                    modalTelefon.value = existingJob.telefon || '';
                     showToast('Kund-data auto-ifylld!', 'info');
                 }
-            }, 500));
+            });
             
+            modalRegnr.addEventListener('input', (e) => {
+                e.target.value = e.target.value.toUpperCase();
+            });
+
             modalKundnamn.addEventListener('input', () => {
                 const query = modalKundnamn.value.toLowerCase();
                 kundnamnSuggestions.innerHTML = '';
@@ -2386,6 +2465,12 @@
                             modalKundnamn.value = name;
                             kundnamnSuggestions.style.display = 'none';
                             kundnamnSuggestions.innerHTML = '';
+                            
+                            // NYTT: Auto-ifyll från kundnamn
+                            const existingJob = findLatestJob('kundnamn', name);
+                            if (existingJob) {
+                                modalTelefon.value = existingJob.telefon || '';
+                            }
                         });
                         kundnamnSuggestions.appendChild(item);
                     });
@@ -2415,6 +2500,22 @@
                     modalTid.value = e.target.dataset.time;
                 }
             });
+
+            // NYTT: Kopieringsknappar
+            async function copyToClipboard(text, fieldName) {
+                if (!text) {
+                    showToast(`Fältet "${fieldName}" är tomt.`, 'danger');
+                    return;
+                }
+                try {
+                    await navigator.clipboard.writeText(text);
+                    showToast(`"${fieldName}" kopierad!`, 'success');
+                } catch (err) {
+                    showToast('Kunde inte kopiera.', 'danger');
+                }
+            }
+            copyKundnamnBtn.addEventListener('click', () => copyToClipboard(modalKundnamn.value, 'Kundnamn'));
+            copyRegnrBtn.addEventListener('click', () => copyToClipboard(modalRegnr.value, 'Reg.nr'));
 
             // --- App-inställningar (Tema, Kompakt, Lås) ---
             themeToggle.addEventListener('click', () => {
@@ -2567,6 +2668,59 @@
                             searchBar.focus();
                         }
                         break;
+                }
+            });
+
+            // --- NYTT: CSV-Export ---
+            function exportToCsv(data) {
+                const headers = [
+                    "ID", "Status", "Datum", "Tid", "Kundnamn", "Telefon", 
+                    "Regnr", "Mätarställning", "Kundpris", "Utgifter", "Vinst", 
+                    "Prioritet", "Kommentarer"
+                ];
+                
+                const rows = data.map(job => {
+                    const d = new Date(job.datum);
+                    const date = d.toISOString().split('T')[0];
+                    const time = d.toTimeString().substring(0, 5);
+                    
+                    const row = [
+                        job.id,
+                        STATUS_TEXT[job.status] || job.status,
+                        date,
+                        time,
+                        job.kundnamn,
+                        job.telefon || '',
+                        job.regnr || '',
+                        job.matarstallning || '',
+                        job.kundpris || 0,
+                        job.utgifter || 0,
+                        job.vinst || 0,
+                        job.prio ? 'Ja' : 'Nej',
+                        (job.kommentarer || '').replace(/"/g, '""').replace(/\n/g, ' ')
+                    ];
+                    return `"${row.join('","')}"`;
+                });
+
+                const csvContent = "data:text/csv;charset=utf-8," 
+                    + `"${headers.join('","')}"\n` 
+                    + rows.join("\n");
+                
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", `jobb_export_${todayString}.csv`);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                showToast('CSV-fil exporterad!', 'success');
+            }
+            
+            exportCsvBtn.addEventListener('click', () => {
+                if (allJobs.length > 0) {
+                    exportToCsv(allJobs);
+                } else {
+                    showToast('Det finns inga jobb att exportera.', 'danger');
                 }
             });
          
