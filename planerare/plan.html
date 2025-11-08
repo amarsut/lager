@@ -645,66 +645,45 @@
                         modalTid.value = time;
                     },
                     
-                    // UPPDATERAD: eventContent hanterar nu Desktop, Mobil, och Namn-brickor
                     eventContent: function(arg) {
                         const job = arg.event.extendedProps.originalJob; 
                         
                         if (!job) {
-                            return { html: `<div>${arg.event.title}</div>` };
+                            // Säkerhetsåtgärd om något går fel
+                            return { html: `<div>${arg.event.title}</div>` }; 
                         }
                         
-                        // Dölj avbokade jobb helt från kalendern
+                        // Dölj avbokade jobb
                         if (job.status === 'avbokad') {
-                            return { html: '' }; // Tomt element
+                            return { html: '' }; 
                         }
 
                         const prioIcon = job.prio ? `<span class="fc-event-prio-flag">🚩</span>` : '';
-
-                        // --- NY LOGIK: Skapa BÅDE mobil- och desktop-HTML ---
-
-                        // 1. Skapa Mobil-HTML (Kompakt vy)
-                        const timePart = new Date(job.datum).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' }).replace(':', '.');
+                        
+                        // Hämta tiden
+                        const timePart = new Date(job.datum).toLocaleTimeString('sv-SE', { 
+                            hour: '2-digit', minute: '2-digit' 
+                        }).replace(':', '.');
+                        
+                        // Hämta en kort titel
                         let titlePart = '';
                         if (job.regnr && job.regnr.toUpperCase() !== 'OKÄNT') {
                             titlePart = job.regnr;
                         } else {
-                            titlePart = job.kundnamn.split(' ').map(n => n[0]).join(''); // Initialer
+                            // Ta initialer från kundnamn, t.ex. "Eva Svensson" -> "ES"
+                            titlePart = job.kundnamn.split(' ').map(n => n[0]).join(''); 
                         }
-
-                        const mobileHtml = `
-                        <div class="mobile-grid-event status-${job.status}">
-                            <span class="mge-time">${timePart}</span>
-                            <span class="mge-title">${prioIcon}${titlePart}</span>
-                        </div>
-                        `;
-
-                        // 2. Skapa Desktop-HTML (Reg-skylt-vyn)
-                        let desktopHtml = '';
-                        if (job.regnr && job.regnr.toUpperCase() !== 'OKÄNT') {
-                            desktopHtml = `
-                                <div class="reg-plate-small">
-                                    <span class="reg-country-small">S</span>
-                                    <span class="reg-number-small">${job.regnr}</span>
-                                </div>
-                            `;
-                        } else {
-                            desktopHtml = `
-                                <div class="user-plate-small">
-                                    <span class="user-icon-small">
-                                        <svg class="icon" viewBox="0 0 24 24"><use href="#icon-user"></use></svg>
-                                    </span>
-                                    <span class="user-name-small">${prioIcon}${job.kundnamn}</span>
-                                </div>
-                            `;
-                        }
-
-                        // 3. Returnera BÅDA, inslagna i varsin wrapper
+                        
+                        // Returnera den kompakta HTML:en. Denna används nu för ALLA grid-vyer.
                         return {
                             html: `
-                                <div class="event-wrapper-mobile">${mobileHtml}</div>
-                                <div class="event-wrapper-desktop">${desktopHtml}</div>
+                            <div class="compact-grid-event status-${job.status}">
+                                <span class="cge-time">${timePart}</span>
+                                <span class="cge-title">${prioIcon}${titlePart}</span>
+                            </div>
                             `
                         };
+                    },
                     },
                 });
                 calendar.render();
