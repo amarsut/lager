@@ -1786,6 +1786,31 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     }
 }
 
+/* --- Logik för att byta mellan mobil/desktop event --- */
+
+/* 1. Dölj mobil-vyn (den kompakta) på desktop som standard */
+.event-wrapper-mobile {
+    display: none;
+}
+
+/* 2. Visa desktop-vyn (reg-skylten) på desktop som standard */
+.event-wrapper-desktop {
+    display: block;
+}
+
+/* 3. När skärmen är smal (mobil) ... */
+@media (max-width: 768px) {
+    /* 4. ... dölj desktop-vyn ... */
+    .event-wrapper-desktop {
+        display: none;
+    }
+    
+    /* 5. ... och visa mobil-vyn. */
+    .event-wrapper-mobile {
+        display: block;
+    }
+}
+
 /* Dölj mobil-nav på desktop */
 @media (min-width: 769px) {
     .mobile-nav {
@@ -1798,6 +1823,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         display: none;
     }
 }
+
 
 
 
