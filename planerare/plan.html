@@ -747,29 +747,31 @@
                     calendarView.style.display = 'block';
                     appBrandTitle.style.display = 'none'; // Göm datum i kalendern
 
+                    // NY LOGIK: Använd 14-dagarsvyn på ALLA enheter
+                    calendar.changeView('dayGridTwoWeek'); 
+                    
                     const isMobile = window.innerWidth <= 768;
                     if (isMobile) {
-                        // NYTT: Byt till listWeek för mobil (snyggare)
-                        calendar.changeView('listWeek'); 
+                        // Enkel header för mobil
                         calendar.setOption('headerToolbar', {
                             left: 'prev,next', center: 'title', right: 'today'
                         });
                     } else {
-                        // Desktop
-                        calendar.changeView('dayGridTwoWeek');
+                        // Den gamla, mer avancerade headern för desktop
                         calendar.setOption('headerToolbar', {
                             left: 'prev,next today',
                             center: 'title',
                             right: 'dayGridTwoWeek,timeGridWeek,timeGridDay'
                         });
                     }
-                    
-                    // Kör den aggressiva omritnings-fixen
-                    calendarView.style.visibility = 'hidden';
+
+                    // BEHÅLL DENNA FIX: Tvinga kalendern att rita om sig själv
+                    // (Detta var min förra lösning, den behövs fortfarande)
                     setTimeout(() => {
-                        calendarView.style.visibility = 'visible';
                         calendar.updateSize();
-                    }, 10);
+                        const calendarEvents = allJobs.map(mapJobToEvent);
+                        calendar.setOption('events', calendarEvents);
+                    }, 50);
 
                 } else {
                     calendarView.style.display = 'none';
