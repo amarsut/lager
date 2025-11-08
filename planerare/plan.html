@@ -2694,7 +2694,12 @@
                 if (e.key === 'Escape') {
                     if (isModalOpen) {
                         e.preventDefault();
-                        closeModal(); 
+                        // PUNKT 7: Hantera escape för mobil-sök
+                        if (currentOpenModalId === 'mobileSearchModal') {
+                            closeModal({ popHistory: false });
+                        } else {
+                            closeModal(); 
+                        }
                     } else if (commentPopover.classList.contains('show')) {
                         e.preventDefault();
                         hideCommentPopover();
