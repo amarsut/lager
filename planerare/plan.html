@@ -659,6 +659,32 @@
                         }
 
                         const prioIcon = job.prio ? `<span class="fc-event-prio-flag">🚩</span>` : '';
+						const isMobile = window.innerWidth <= 768;
+
+                        // --- NY MOBIL-LOGIK FÖR RUTNÄT (Grid View) ---
+                        if (isMobile && arg.view.type === 'dayGrid') {
+                            // Hämta tiden
+                            const timePart = new Date(job.datum).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' }).replace(':', '.');
+                            
+                            // Hämta en kort titel
+                            let titlePart = '';
+                            if (job.regnr && job.regnr.toUpperCase() !== 'OKÄNT') {
+                                titlePart = job.regnr;
+                            } else {
+                                // Ta initialer från kundnamn, t.ex. "Eva Svensson" -> "ES"
+                                titlePart = job.kundnamn.split(' ').map(n => n[0]).join('');
+                            }
+                            
+                            // Returnera en ny, super-kompakt HTML
+                            return {
+                                html: `
+                                <div class="mobile-grid-event status-${job.status}">
+                                    <span class="mge-time">${timePart}</span>
+                                    <span class="mge-title">${prioIcon}${titlePart}</span>
+                                </div>
+                                `
+                            };
+                        }
 
                         // --- DESKTOP-VY (alla andra, t.ex. dayGridTwoWeek) ---
                         let contentHtml = '';
