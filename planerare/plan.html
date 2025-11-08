@@ -124,7 +124,10 @@
                 <div id="timelineView">
                     <div class="view-controls" id="view-controls">
                         <div class="search-wrapper">
-                            <svg class="icon" viewBox="0 0 24 24"><use href="#icon-search"></use></svg>
+                            <svg class="icon icon-search" viewBox="0 0 24 24"><use href="#icon-search"></use></svg>
+                            
+                            <div class="search-spinner"></div> 
+                            
                             <input type="search" id="searchBar" placeholder="Sök jobb... (F)">
                         </div>
                     </div>
@@ -1233,13 +1236,22 @@
                 const rect = button.getBoundingClientRect();
                 commentPopover.style.display = 'block';
                 
+                // Rensa gamla pil-klasser
+                commentPopover.classList.remove('arrow-top', 'arrow-bottom');
+
                 let popoverTop = rect.bottom + window.scrollY + 5;
                 let popoverLeft = rect.left + window.scrollX - commentPopover.offsetWidth + rect.width;
                 
                 if (popoverLeft < 10) popoverLeft = 10;
                 
+                // Kontrollera om den får plats, precis som tidigare
                 if (popoverTop + commentPopover.offsetHeight > window.innerHeight + window.scrollY) {
+                    // Öppna OVANFÖR
                     popoverTop = rect.top + window.scrollY - commentPopover.offsetHeight - 5;
+                    commentPopover.classList.add('arrow-bottom'); // Lägg till klass för pil nedåt
+                } else {
+                    // Öppna UNDER (standard)
+                    commentPopover.classList.add('arrow-top'); // Lägg till klass för pil uppåt
                 }
 
                 commentPopover.style.top = `${popoverTop}px`;
@@ -1247,9 +1259,11 @@
                 popoverBackdrop.classList.add('show');
                 commentPopover.classList.add('show');
             }
+			
             function hideCommentPopover() {
                 popoverBackdrop.classList.remove('show');
                 commentPopover.classList.remove('show');
+				commentPopover.classList.remove('arrow-top', 'arrow-bottom');
             }
             function updateLiveProfit() {
                 const pris = parseFloat(modalKundpris.value) || 0;
