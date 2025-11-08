@@ -427,10 +427,10 @@ mark {
 
 #jobbOversikt thead {
     background-color: var(--bg-color);
-    /* Sticky header för desktop */
-    position: sticky; 
-    top: var(--header-height); 
-    z-index: 40; /* Under main header */
+    /* BORTTAGEN: Sticky header för desktop */
+    /* position: sticky; */ 
+    /* top: var(--header-height); */
+    z-index: 1; /* Sänkt från 40 */
 }
 
 #jobbOversikt th, #jobbOversikt td {
@@ -468,15 +468,20 @@ mark {
     background-color: var(--danger-hover-bg);
 }
 
-/* Animation för kommande prio-jobb */
+/* Animation för kommande prio-jobb - UPPDATERAD */
 #jobbOversikt tbody tr.prio-row.kommande-prio-pulse,
 .mobile-job-card.prio-row.kommande-prio-pulse {
     animation: pulse-prio-bg 2.5s infinite;
 }
 @keyframes pulse-prio-bg {
-    0% { background-color: var(--danger-light); }
-    50% { background-color: var(--danger-hover-bg); }
-    100% { background-color: var(--danger-light); }
+    0%, 100% {
+        background-color: var(--danger-light);
+        box-shadow: 0 0 0 0 rgba(255, 69, 58, 0.1);
+    }
+    50% {
+        background-color: var(--danger-hover-bg);
+        box-shadow: 0 0 0 4px rgba(255, 69, 58, 0.0);
+    }
 }
 
 
@@ -1341,16 +1346,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 .fc-timegrid-event .fc-event-main { padding: 2px 4px; }
 
 
-/* 2. Kalender-containern (Smalare och centrerad) */
-#calendarView {
-    background-color: var(--content-bg);
-    border-radius: var(--border-radius);
-    border: 1px solid var(--border-color);
-    padding: 1.5rem;
-    max-width: 900px;
-    margin: 0 auto;
-}
-
+/* --- FIX FÖR MÖRKT LÄGE (KALENDER) --- */
 [data-theme="dark"] #calendarView {
     background-color: var(--bg-color);
     padding: 0;
@@ -1365,7 +1361,8 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     border: 1px solid var(--border-color);
     padding: 1.5rem;
 }
-/* 8. Tydligare "Idag"-markering (v19) */
+
+/* 8. Tydligare "Idag"-markering */
 .fc {
     --fc-today-bg-color: var(--primary-light); 
     height: auto; 
@@ -1374,36 +1371,52 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     --fc-today-bg-color: rgba(10, 132, 255, 0.15);
 }
 [data-theme="dark"] .fc .fc-day-today {
-    background: none !important;
+    background-color: var(--fc-today-bg-color) !important;
 }
 
 .fc .fc-daygrid-day-frame {
     position: relative; 
 }
 
-/* FIX: Ljusare dag-texter i mörkt läge */
+/* FIX: Korrekta färger i mörkt läge */
 [data-theme="dark"] .fc .fc-col-header-cell-cushion {
-    color: var(--text-color); /* FIX: Ändrad från light */
+    color: var(--text-color);
     opacity: 0.9;
     font-weight: 500;
     text-decoration: none !important;
 }
 [data-theme="dark"] .fc .fc-daygrid-day-number {
-    color: var(--text-color); /* FIX: Ändrad från light */
+    color: var(--text-color);
     opacity: 0.9;
     font-weight: 500;
     text-decoration: none !important;
 }
 [data-theme="dark"] .fc .fc-day-other .fc-daygrid-day-number {
-    opacity: 0.3; /* Dimmra andra månaders dagar */
+    opacity: 0.3;
 }
-/* FIX: Ta bort helg-bakgrund i mörkt läge */
 [data-theme="dark"] .fc .fc-day-sat,
 [data-theme="dark"] .fc .fc-day-sun {
-    background-color: var(--bg-color); /* Samma som veckodagar */
+    background-color: var(--bg-color);
     opacity: 1;
 }
-
+[data-theme="dark"] .fc .fc-button-primary {
+    background-color: #2c2c2e;
+    border-color: var(--border-color);
+    color: var(--text-color);
+}
+[data-theme="dark"] .fc .fc-button-primary:hover {
+    background-color: #3a3a3c;
+}
+[data-theme="dark"] .fc .fc-button-primary:disabled {
+    opacity: 0.5;
+}
+[data-theme="dark"] .fc .fc-button-group > .fc-button.fc-button-active {
+    background-color: var(--primary-light);
+    color: var(--primary-color);
+}
+[data-theme="dark"] .fc-icon {
+    color: var(--text-color);
+}
 
 .fc .fc-day-today .fc-daygrid-day-number {
     background-color: var(--primary-color);
@@ -2340,3 +2353,106 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 .settings-button-group #settingsThemeToggle .icon-sun { display: block; }
 [data-theme="dark"] .settings-button-group #settingsThemeToggle .icon-moon { display: block; }
 [data-theme="dark"] .settings-button-group #settingsThemeToggle .icon-sun { display: none; }
+
+/* --- 10 NYA FUNKTIONER --- */
+
+/* 1. Dagens Vinst (Header) */
+.header-profit-display {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: rgba(48, 209, 88, 0.1);
+    color: var(--success-color);
+    font-size: 0.875rem;
+    font-weight: 700;
+    padding: 0.5rem 0.8rem;
+    border-radius: 8px;
+    border: 1px solid rgba(48, 209, 88, 0.2);
+}
+.header-profit-display .icon-sm {
+    width: 1rem;
+    height: 1rem;
+}
+@media (max-width: 768px) {
+    .header-profit-display {
+        display: none;
+    }
+}
+
+/* 2. Snabbval Status (Modal) */
+.quick-status-buttons {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+.quick-status-buttons .button {
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.5rem 0.25rem;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-color);
+    color: var(--text-color-light);
+}
+.quick-status-buttons .button:hover {
+    background-color: var(--bg-color);
+    border-color: var(--text-color-light);
+}
+.quick-status-buttons .button.active {
+    border-color: var(--primary-color);
+    background-color: var(--primary-light);
+    color: var(--primary-color);
+    box-shadow: 0 0 0 1px var(--primary-color);
+}
+[data-theme="dark"] .quick-status-buttons .button {
+    background-color: #2c2c2e;
+}
+[data-theme="dark"] .quick-status-buttons .button.active {
+    background-color: rgba(10, 132, 255, 0.2);
+}
+
+/* 3. Kopiera-knappar (Modal) */
+.form-group.form-group-copyable {
+    position: relative;
+}
+.form-group-copyable .copy-btn {
+    position: absolute;
+    right: 0.5rem;
+    top: calc(0.5rem + 1.25em + 0.25rem); /* Plats för label + gap */
+    width: 2rem;
+    height: 2rem;
+    padding: 0.5rem;
+    border-radius: 6px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--text-color-light);
+    transition: all var(--transition-speed-fast) ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.form-group-copyable .copy-btn:hover {
+    color: var(--primary-color);
+    background-color: var(--bg-color);
+}
+.form-group-copyable .copy-btn .icon-sm {
+    width: 1rem;
+    height: 1rem;
+}
+.form-group-copyable input {
+    padding-right: 3rem; /* Plats för knappen */
+}
+
+/* 4. CSV Export-knapp (Inställningar) */
+.settings-button-group .button.csv-export {
+    color: var(--success-color);
+    border-color: var(--success-color);
+}
+.settings-button-group .button.csv-export:hover {
+    background-color: rgba(48, 209, 88, 0.1);
+}
+[data-theme="dark"] .settings-button-group .button.csv-export:hover {
+    background-color: rgba(48, 209, 88, 0.2);
+}
