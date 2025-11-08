@@ -14,7 +14,7 @@
     
     --bg-color: #f7f8fa;
     --content-bg: #ffffff;
-	--content-bg-transparent: rgba(255, 255, 255, 0.65); /* NY */
+	--content-bg-transparent: rgba(255, 255, 255, 0.65);
     --border-color: #e5e7eb;
     
     --text-color: #1a1a1a;
@@ -37,7 +37,7 @@
 [data-theme="dark"] {
     --bg-color: #161618;
     --content-bg: #1c1c1e;
-	--content-bg-transparent: rgba(28, 28, 30, 0.65); /* NY (baserad på content-bg) */
+	--content-bg-transparent: rgba(28, 28, 30, 0.65);
     --border-color: #3a3a3c;
     --text-color: #f2f2f7;
     --text-color-light: #8e8e93;
@@ -110,7 +110,7 @@ body {
     box-shadow: var(--shadow-sm); 
 	background-color: var(--content-bg-transparent);
     backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px); /* För Safari-kompatibilitet */
+    -webkit-backdrop-filter: blur(10px);
     
     flex-shrink: 0; z-index: 50;
 	position: sticky; 
@@ -277,7 +277,7 @@ body {
     border-radius: 8px; padding-left: 0.75rem;
     box-shadow: var(--shadow-sm);
     width: 100%;
-    position: relative; /* NÖDVÄNDIG FÖR RENSA-KNAPP */
+    position: relative; 
 }
 [data-theme="dark"] .search-wrapper { background: var(--bg-color); }
 .search-wrapper .icon { color: var(--text-color-light); }
@@ -289,6 +289,14 @@ body {
     width: 100%;
 }
 #searchBar:focus-within { border-color: var(--primary-color); }
+
+/* Göm webbläsarens inbyggda "x" för sökfält */
+input[type="search"]::-webkit-search-decoration,
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-results-button,
+input[type="search"]::-webkit-search-results-decoration {
+    -webkit-appearance:none;
+}
 
 /* --- Rensa-knapp i sökfält --- */
 .search-clear-btn {
@@ -302,7 +310,7 @@ body {
     width: 28px;
     height: 28px;
     padding: 0;
-    display: none; /* Dold som standard */
+    display: none; 
     align-items: center;
     justify-content: center;
     color: var(--text-color-light);
@@ -413,10 +421,11 @@ mark {
 
 #jobbOversikt thead {
     background-color: var(--bg-color);
+    /* BORTTAGEN: Sticky header var trasig
     position: sticky; 
-    /* NYTT: Fäst under huvud-headern */
     top: var(--header-height); 
-    z-index: 5; /* Lägre än main-header */
+    z-index: 5; 
+    */
 }
 
 #jobbOversikt th, #jobbOversikt td {
@@ -463,6 +472,7 @@ mark {
     50% { background-color: var(--danger-hover-bg); }
     100% { background-color: var(--danger-light); }
 }
+
 
 #jobbOversikt tbody tr.done-row { opacity: 0.65; }
 #jobbOversikt tbody tr.done-row:hover { opacity: 1; }
@@ -574,7 +584,7 @@ mark {
     border-bottom: 1px solid var(--border-color); 
     padding: 1.25rem 1.5rem; flex-shrink: 0;
     gap: 1rem;
-    /* NYTT: Frostad sticky header */
+    /* BONUS: Frostad sticky header */
     position: sticky;
     top: 0;
     background-color: var(--content-bg-transparent);
@@ -598,7 +608,19 @@ mark {
     order: 3;
 }
 
-.modal-body { padding: 1.5rem; overflow-y: auto; }
+.modal-body { 
+    padding: 1.5rem; 
+    overflow-y: auto; 
+    /* BONUS: Ge plats för sticky footer */
+    padding-bottom: 6rem;
+}
+/* Justera padding för modaler som INTE har actions */
+#customerModal .modal-body,
+#statsModal .modal-body,
+#carModal .modal-body {
+    padding-bottom: 1.5rem;
+}
+
 
 /* Formulär-design */
 #jobModalForm { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
@@ -632,13 +654,11 @@ mark {
 
 /* Stil för "påminnelse"-fält (Mätarställning) */
 .form-group input.input-reminder {
-    /* Vi behåller standard-bakgrunden men lägger till en tydlig kant */
     border-left: 4px solid var(--info-color);
     transition: all var(--transition-speed-fast) ease;
 }
 
 .form-group input.input-reminder:focus {
-    /* När man klickar i fältet blir kanten samma som primärfärgen */
     border-left-color: var(--primary-color);
 }
 
@@ -701,10 +721,10 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 .modal-actions {
     grid-column: 1 / -1; display: flex;
     justify-content: flex-end; gap: 0.75rem;
-    margin-top: 1.5rem; border-top: 1px solid var(--border-color);
+    border-top: 1px solid var(--border-color);
     padding: 1.25rem 1.5rem;
     background-color: var(--bg-color); flex-shrink: 0;
-    /* NYTT: Sticky footer */
+    /* BONUS: Sticky footer */
     position: sticky;
     bottom: 0;
     z-index: 10;
@@ -716,7 +736,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     order: 1;
 }
 #modalCancelBtn:hover { background-color: var(--bg-color); color: var(--text-color); }
-/* #modalDuplicateBtn { order: 2; } (BORTTAGEN) */
+/* #modalDuplicateBtn (Borttagen) */
 #modalSaveBtn { order: 3; }
 
 /* --- Toast --- */
@@ -730,10 +750,9 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     z-index: 2000; font-weight: 500; 
     transition: all 0.4s ease;
     opacity: 0; transform: translateX(-50%) translateY(20px);
-    display: flex; /* För "Ångra"-knapp */
+    display: flex;
     align-items: center;
 }
-/* NYTT: "Ångra"-knapp i Toast */
 .toast .button {
     margin-left: 1rem;
     padding: 0.25rem 0.5rem;
@@ -815,6 +834,18 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     padding: 1rem 1.5rem;
     border-bottom: 1px solid var(--border-color);
 }
+/* NYTT: Klickbara jobblistor */
+.detail-job-list li[data-job-id] {
+    cursor: pointer;
+    transition: background-color var(--transition-speed-fast) ease;
+}
+.detail-job-list li[data-job-id]:hover {
+    background-color: var(--bg-color);
+}
+[data-theme="dark"] .detail-job-list li[data-job-id]:hover {
+    background-color: #2c2c2e;
+}
+
 .detail-job-list li:last-child { border-bottom: none; }
 .detail-job-list li > div { display: flex; flex-direction: column; }
 .detail-job-list .job-date { font-weight: 500; }
@@ -1077,12 +1108,12 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 
 /* 6. Event-styling (Jobben) - (UPPDATERAD för Reg-brickor) */
 .fc-event {
-    background: none !important; /* Ta bort ALLA FullCalendar-bakgrunder */
+    background: none !important; 
     border: none !important;
     padding: 0 !important; 
     margin: 1px 0 !important; 
     cursor: pointer;
-    width: 100%; /* Få brickan att fylla sin plats */
+    width: 100%; 
     transition: opacity 0.2s ease; /* NYTT: För dim-effekt */
 }
 /* NYTT: Filter-dimmring */
@@ -1094,13 +1125,13 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 }
 
 .fc-event:hover .reg-plate-small,
-.fc-event:hover .user-plate-small { /* Hover-effekt */
+.fc-event:hover .user-plate-small { 
     border-color: var(--primary-color);
     background-color: var(--primary-light);
 }
 
-.fc-event .fc-event-time { display: none !important; } /* Göm tiden */
-.fc-event .fc-event-title { display: none !important; } /* Göm titeln */
+.fc-event .fc-event-time { display: none !important; } 
+.fc-event .fc-event-title { display: none !important; } 
 
 /* Prio-flagga inuti event */
 .fc-event-prio-flag {
@@ -1177,15 +1208,15 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     border-color: #444;
 }
 .user-plate-small .user-icon-small {
-    background-color: var(--primary-color); /* BLÅ BAKGRUND */
-    color: white; /* VIT IKON */
+    background-color: var(--primary-color); 
+    color: white; 
     padding: 0.2rem 0.3rem;
     font-weight: 700;
     align-self: stretch;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-right: 1px solid #339aff; /* BLÅ HÖGERKANT */
+    border-right: 1px solid #339aff; 
 }
 .user-plate-small .user-icon-small .icon {
     width: 0.8rem;
@@ -1198,7 +1229,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 .user-plate-small .user-name-small {
     padding: 0.25rem 0.5rem;
     color: var(--text-color);
-    text-align: center; /* CENTRERA TEXT */
+    text-align: center; 
     box-sizing: border-box;
     flex-grow: 1; 
     white-space: nowrap;
@@ -1208,7 +1239,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 
 /* --- 6b. Event-styling (Minimalistiska Prickar för Mobil) --- */
 .fc-event {
-    /* Denna regel behövs för att prickarna ska kunna vara på samma rad */
     margin: 0 !important;
 }
 
@@ -1219,7 +1249,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     height: 8px;
     border-radius: 50%;
     transition: all 0.2s ease;
-    background-color: var(--text-color-light); /* Standardfärg */
+    background-color: var(--primary-color); /* ÄNDRAD: Default till blå */
 }
 
 /* Färgsätt pricken baserat på .fc-event's status-klass */
@@ -1274,7 +1304,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     border-color: var(--info-color);
 }
 .fc-event.status-avbokad {
-    /* Avbokade jobb ritas inte ut alls (se eventContent) */
     display: none !important; 
 }
 
@@ -1293,7 +1322,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     text-decoration: underline;
 }
 
-/* Ta bort de gamla stilarna som nu är onödiga */
 .fc-event-main { color: white !important; }
 .fc-timegrid-event .fc-event-main { padding: 2px 4px; }
 
@@ -1325,7 +1353,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 /* 8. Tydligare "Idag"-markering (v19) */
 .fc {
     --fc-today-bg-color: var(--primary-light); 
-    height: auto; /* Lösning för kalenderhöjd i mobil */
+    height: auto; 
 }
 [data-theme="dark"] .fc {
     --fc-today-bg-color: rgba(10, 132, 255, 0.15);
@@ -1333,6 +1361,8 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 [data-theme="dark"] .fc .fc-day-today {
     background: none !important;
 }
+
+/* NYTT: Dagens Vinst-positionering */
 .fc .fc-daygrid-day-frame {
     position: relative; /* Nödvändig för vinst-summan */
 }
@@ -1525,7 +1555,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 }
 
 /* 14. Stil för Kalender-listvy (Mobil) - UPPDATERAD */
-/* NY FIX: Visa kalender-listan som en vanlig lista på mobil */
 .fc-list-day-cushion {
     padding-top: 1rem;
     padding-bottom: 0.5rem;
@@ -1540,18 +1569,17 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     font-weight: 700;
     color: var(--text-color);
     text-decoration: none;
-    padding: 0 0.5rem; /* Mindre padding */
+    padding: 0 0.5rem; 
 }
 .fc .fc-list-event-dot {
-    display: none; /* Dölj prickarna */
+    display: none; 
 }
 /* Själva list-raden */
 .fc-list-event {
     background: none !important;
     border: none !important;
     padding: 0 !important;
-    /* Ingen border-bottom här, låt kortet hantera det */
-    margin-bottom: 0.75rem !important; /* Separera korten */
+    margin-bottom: 0.75rem !important; 
     cursor: pointer;
 }
 .fc-list-event:hover .mobile-calendar-card {
@@ -1568,7 +1596,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 
 .fc-list-table {
     border-collapse: separate;
-    border-spacing: 0 0.75rem; /* Sätt mellanrum mellan listobjekten */
+    border-spacing: 0 0.75rem; 
 }
 .fc-list-table > tbody > tr > td {
     padding: 0 !important;
@@ -1590,9 +1618,9 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     background-color: var(--content-bg);
     border-left: 4px solid transparent;
     transition: background-color var(--transition-speed-fast) ease;
-    border: 1px solid var(--border-color); /* Lägg till border runt kortet */
-    border-radius: var(--border-radius); /* Runda hörn */
-    box-shadow: var(--shadow-sm); /* Lite skugga */
+    border: 1px solid var(--border-color); 
+    border-radius: var(--border-radius); 
+    box-shadow: var(--shadow-sm); 
 }
 .mobile-calendar-card.prio-row {
     border-left-color: var(--danger-color);
@@ -1657,7 +1685,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     .header-titles .view-toggle-buttons {
         display: none;
     }
-    /* NYTT: Visa datum i header */
     .app-brand-title {
         font-size: 1rem;
         font-weight: 600;
@@ -1835,6 +1862,8 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         padding: 1rem 1.25rem;
         flex-grow: 1;
         overflow-y: auto;
+        /* Ge plats för sticky footer */
+        padding-bottom: 6rem;
     }
     .modal-actions {
         padding: 1rem 1.25rem;
@@ -1852,7 +1881,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         left: 0;
         right: 0;
         height: var(--mobile-nav-height);
-        /* NYTT: Frostad bakgrund */
         background-color: var(--content-bg-transparent);
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
@@ -1936,12 +1964,11 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         border: none;
         padding-left: 0;
         background: transparent;
-        width: 100%; /* NYTT */
+        width: 100%;
     }
     .search-modal-content .search-wrapper .icon {
         display: none;
     }
-    /* NYTT: Rensa-knapp i mobil-sök */
     .search-modal-content .search-clear-btn {
         right: 0.75rem;
         width: 32px;
@@ -1968,7 +1995,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     .fc .fc-toolbar-title {
         font-size: 1.25rem;
     }
-	/* 9. Mobil Kalender-vy */
+	
     #calendarView {
         padding: 0;
         background: none;
@@ -1991,41 +2018,33 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         flex-wrap: wrap;
         justify-content: center;
         align-items: center;
-        padding-top: 4px; /* Lite luft från toppen */
-        gap: 4px; /* Mellanrum mellan prickar */
+        padding-top: 4px; 
+        gap: 4px; 
     }
     
-    /* Tvinga eventet att vara litet på mobil */
     .fc-event {
         width: auto !important;
     }
 
-    /* --- NY VIKTIG FIX HÄR --- */
-    /* Tvinga kalendercellerna att ha en minsta höjd på mobil */
     .fc .fc-daygrid-day-frame {
         min-height: 80px; 
     }
 
 	/* --- FIX FÖR MODAL-LAYOUT (Mätarställning & Vinst) --- */
-
-	/* Gör att vinst-texten justeras snyggt */
 	.form-group-profit {
 	    grid-column: 1 / -1; 
 	    text-align: right;
 	    font-size: 1.125rem; 
 	    font-weight: 600; 
 	    padding: 0.5rem 0;
-	    
-	    /* NYA REGLER FÖR ATT VARA I ETT SPLIT-FÄLT */
 	    display: flex;
 	    align-items: center;
 	    justify-content: flex-end;
-	    padding: 0.75rem; /* Lite luft */
-	    border: 1px solid transparent; /* Fyll ut höjden */
-	    border-radius: 8px; /* Matcha fälten */
+	    padding: 0.75rem; 
+	    border: 1px solid transparent; 
+	    border-radius: 8px; 
 	}
 	
-	/* Stil för "påminnelse"-fält (Mätarställning) */
 	.form-group input.input-reminder {
 	    border-left: 4px solid var(--info-color);
 	}
@@ -2034,13 +2053,12 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 	    border-left-color: var(--primary-color);
 	}
 
-    /* --- NYTT: Bil-modal knapp-fix --- */
+    /* --- Bil-modal knapp-fix --- */
     #carModal .modal-body {
-        /* Ge plats åt den fasta knappen */
         padding-bottom: 6rem;
     }
     #carModalExternalLinkMobile {
-        display: flex; /* Dold på desktop */
+        display: flex; 
         position: sticky;
         bottom: 1.5rem;
         left: 1.5rem;
@@ -2050,9 +2068,16 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         font-size: 1rem;
         z-index: 10;
         margin-top: 1rem;
+        gap: 0.75rem; /* NYTT */
+        justify-content: center; /* NYTT */
+    }
+    #carModalExternalLinkMobile img {
+        width: 16px;
+        height: 16px;
+        border-radius: 2px;
     }
     #carModalExternalLink {
-        display: none; /* Dölj original-länken på mobil */
+        display: none; 
     }
 
 }
@@ -2068,23 +2093,18 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     #mobileJobList {
         display: none;
     }
-    /* NYTT: Dölj mobil-specifik Biluppgifter-knapp */
     #carModalExternalLinkMobile {
         display: none;
     }
 }
 
 /* --- 1. Popover Arrow CSS --- */
-
-/* Ge popover-rutan lite marginal för att rymma pilen */
 #commentPopover.arrow-top {
     margin-top: 10px;
 }
 #commentPopover.arrow-bottom {
     margin-bottom: 10px;
 }
-
-/* Skapa pilen med pseudo-element */
 #commentPopover::before,
 #commentPopover::after {
     content: '';
@@ -2092,58 +2112,44 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     width: 0;
     height: 0;
     border-style: solid;
-    display: none; /* Dold som standard */
-    
+    display: none; 
     left: 50%;
     transform: translateX(-50%);
 }
-
-/* Yttre pil (kanten) */
 #commentPopover::before {
-    z-index: 1059; /* Under popover */
+    z-index: 1059; 
 }
-
-/* Inre pil (fyllningen) */
 #commentPopover::after {
-    z-index: 1060; /* Ovanpå kanten, samma som popover */
+    z-index: 1060; 
 }
-
-/* --- PIL SOM PEKAR NEDÅT (när rutan är ovanför knappen) --- */
 #commentPopover.arrow-bottom::before,
 #commentPopover.arrow-bottom::after {
     display: block;
-    bottom: -10px; /* Positionera under rutan */
+    bottom: -10px; 
     border-width: 10px 10px 0 10px;
 }
-
 #commentPopover.arrow-bottom::before {
     border-color: var(--border-color) transparent transparent transparent;
 }
 #commentPopover.arrow-bottom::after {
-    bottom: -9px; /* 1px offset för att täcka kanten */
+    bottom: -9px; 
     border-color: var(--content-bg) transparent transparent transparent;
 }
-
-
-/* --- PIL SOM PEKAR UPPÅT (när rutan är under knappen) --- */
 #commentPopover.arrow-top::before,
 #commentPopover.arrow-top::after {
     display: block;
-    top: -10px; /* Positionera ovanför rutan */
+    top: -10px; 
     border-width: 0 10px 10px 10px;
 }
-
 #commentPopover.arrow-top::before {
     border-color: transparent transparent var(--border-color) transparent;
 }
 #commentPopover.arrow-top::after {
-    top: -9px; /* 1px offset för att täcka kanten */
+    top: -9px; 
     border-color: transparent transparent var(--content-bg) transparent;
 }
 
 /* --- 2. Sök-Spinner CSS --- */
-
-/* Dölj spinnern som standard */
 .search-spinner {
     display: none;
     width: 16px;
@@ -2151,23 +2157,18 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     border: 2px solid var(--primary-color);
     border-bottom-color: transparent;
     border-radius: 50%;
-    /* Positionera den där ikonen var */
     margin-left: 0.75rem; 
     margin-right: -0.25rem; 
     animation: spin 0.8s linear infinite;
 }
-
 @keyframes spin {
     to { transform: rotate(360deg); }
 }
-
-/* När .is-searching är aktiv... */
 .search-wrapper.is-searching .search-spinner {
-    display: block; /* ...visa spinnern */
+    display: block; 
 }
-
 .search-wrapper.is-searching .icon-search {
-    display: none; /* ...göm sök-ikonen */
+    display: none; 
 }
 
 
@@ -2245,3 +2246,20 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.5; }
 }
+
+/* --- NYTT: Inställningsmodal-knappar --- */
+.settings-button-group {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+}
+.settings-button-group .button {
+    justify-content: flex-start; /* Vänsterställ knapp-innehåll */
+    font-size: 0.95rem;
+}
+/* Synka tema-ikonerna i modalen */
+.settings-button-group #settingsThemeToggle .icon-moon { display: none; }
+.settings-button-group #settingsThemeToggle .icon-sun { display: block; }
+[data-theme="dark"] .settings-button-group #settingsThemeToggle .icon-moon { display: block; }
+[data-theme="dark"] .settings-button-group #settingsThemeToggle .icon-sun { display: none; }
