@@ -1692,104 +1692,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     .fc .fc-toolbar-title {
         font-size: 1.25rem;
     }
-	/* 9. Mobil Kalender-vy */
-    #calendarView {
-        padding: 0;
-        background: none;
-        border: none;
-    }
-    [data-theme="dark"] #calendarView .fc {
-        padding: 0;
-        border: none;
-    }
-    .fc .fc-toolbar {
-        padding: 0.5rem 0.25rem;
-    }
-    .fc .fc-toolbar-title {
-        font-size: 1.25rem;
-    }
-
-   /* --- NY STIL FÖR KOMPAKT EVENT I KALENDER-RUTNÄT (Mobil + Desktop) --- */
-
-/* Ta bort allt utrymme från FullCalendars event-element */
-.fc-daygrid-event {
-    padding: 1px !important; /* Minskar utrymmet, låter vår div ta över */
-    margin: 1px 0 !important;
-    background: none !important; /* Ta bort FCs bakgrund */
-}
-
-/* Ta bort de gamla reg-plåtarna (som inte längre används här) */
-.fc-daygrid-event .reg-plate-small,
-.fc-daygrid-event .user-plate-small {
-    display: none !important;
-}
-
-.compact-grid-event {
-    font-size: 0.75rem; 
-    font-weight: 600;
-    padding: 4px 5px; /* Lite luft */
-    line-height: 1.3;
-    overflow: hidden;
-    border-radius: 3px; /* Runda hörn */
-    
-    display: flex;
-    flex-direction: column; /* Stapla tid och titel */
-    height: 100%; /* Fyll ut utrymmet */
-    box-sizing: border-box;
-}
-
-.cge-time {
-    font-weight: 500;
-    opacity: 0.9;
-}
-
-.cge-title {
-    font-weight: 700;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis; /* ... om texten är för lång */
-}
-
-.cge-title .fc-event-prio-flag {
-    font-size: 0.65rem;
-    margin-right: 2px;
-}
-
-/* --- Status-färger (Bättre stil) --- */
-.compact-grid-event.status-bokad { 
-    background-color: var(--primary-light); 
-    color: var(--primary-color); 
-}
-.compact-grid-event.status-klar { 
-    background-color: rgba(48, 209, 88, 0.1); 
-    color: var(--success-color); 
-    opacity: 0.8; 
-}
-
-/* FIX: Gör "Offererad" snyggare (som du ville) */
-.compact-grid-event.status-offererad { 
-    background-color: var(--content-bg); 
-    color: var(--text-color-light);
-    border: 1px dashed var(--border-color);
-    padding: 3px 4px; /* Justera för border */
-}
-
-[data-theme="dark"] .compact-grid-event.status-bokad { 
-    background-color: rgba(10, 132, 255, 0.2); 
-    color: #339aff; 
-}
-[data-theme="dark"] .compact-grid-event.status-klar { 
-    background-color: rgba(48, 209, 88, 0.2); 
-    color: var(--success-color); 
-}
-[data-theme="dark"] .compact-grid-event.status-offererad { 
-    background-color: var(--content-bg);
-    color: var(--text-color-light);
-    border: 1px dashed var(--border-color);
-    padding: 3px 4px;
-}
-
-} /* <-- Slutet på din @media-regel */
 }
 
 /* Dölj mobil-nav på desktop */
@@ -1804,10 +1706,4 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         display: none;
     }
 }
-
-
-
-
-
-
 
