@@ -1342,6 +1342,89 @@
                 }).join('');
                 showModal('carModal'); 
             }
+
+			function openStatsModal() {
+                // 1. Filtrera endast klara jobb
+                const completedJobs = allJobs.filter(j => j.status === 'klar');
+
+                // 2. Beräkna totaler
+                const totalVinst = completedJobs.reduce((sum, j) => sum + (j.vinst || 0), 0);
+                const totalJobb = completedJobs.length;
+
+                statsModalTotalProfit.textContent = formatCurrency(totalVinst);
+                statsModalJobCount.textContent = totalJobb;
+                statsModalTotalProfit.className = totalVinst > 0 ? 'stat-value positive' : 'stat-value';
+
+                // 3. Gruppera per månad och år
+                const monthlyStats = completedJobs.reduce((acc, job) => {
+                    try {
+                        const d = new Date(job.datum);
+                        // Skapa en nyckel som "2025-11"
+                        const key = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
+                        
+                        if (!acc[key]) {
+                            acc[key] = {
+                                key: key,
+                                year: d.getFullYear(),
+                                month: d.getMonth() + 1,
+                                vinst: 0,
+                                jobb: 0
+                            };
+                        }
+                        
+                        acc[key].vinst += (job.vinst || 0);
+                        acc[key].jobb += 1;
+
+                    } catch(e) {
+                        // Ignorera ogiltiga datum
+                    }
+                    return acc;
+                }, {});
+
+                // 4. Sortera (nyaste månaden först)
+                const statsArray = Object.values(monthlyStats);
+                statsArray.sort((a, b) => b.key.localeCompare(a.key));
+                
+                // 5. Bygg HTML-tabellen
+                let tableHtml = `
+                    <table id="statsModalTable">
+                        <thead>
+                            <tr>
+                                <th>Period</th>
+                                <th>Antal Jobb</th>
+                                <th style="text-align: right;">Total Vinst</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+                if (statsArray.length === 0) {
+                    tableHtml += `<tr><td colspan="3" style="text-align: center; padding: 2rem;">Inga klarmarkerade jobb att visa.</td></tr>`;
+                } else {
+                    statsArray.forEach(item => {
+                        // Få månadsnamnet, t.ex. "November"
+                        const monthName = new Date(item.year, item.month - 1)
+                            .toLocaleString(locale, { month: 'long' });
+                        
+                        tableHtml += `
+                            <tr>
+                                <td>
+                                    <span class="stat-month">${monthName.charAt(0).toUpperCase() + monthName.slice(1)}</span>
+                                    <span class="stat-year">${item.year}</span>
+                                </td>
+                                <td style="text-align: center;">${item.jobb}</td>
+                                <td class="stat-profit">${formatCurrency(item.vinst)}</td>
+                            </tr>
+                        `;
+                    });
+                }
+
+                tableHtml += `</tbody></table>`;
+                statsModalBody.innerHTML = tableHtml;
+
+                // 6. Visa modalen
+                showModal('statsModal');
+            }
             
             function showContextMenu(e, jobId) {
                 hideContextMenu();
@@ -1605,7 +1688,14 @@
             carModal.addEventListener('click', (e) => { if (e.target === carModal) closeModal(); });
             mobileSearchModal.addEventListener('click', (e) => { if (e.target === mobileSearchModal) closeModal(); });
 
-            
+			// NYA STATISTIK-LYSSNARE
+            navLogo.addEventListener('click', (e) => {
+                e.preventDefault(); // Förhindra att sidan hoppar till toppen
+                openStatsModal();
+            });
+            statsModalCloseBtn.addEventListener('click', closeModal);
+            statsModal.addEventListener('click', (e) => { if (e.target === statsModal) closeModal(); });
+                        
             modalDuplicateBtn.addEventListener('click', () => {
                 const jobData = getJobDataFromForm();
                 delete jobData.id;
