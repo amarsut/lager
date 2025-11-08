@@ -1906,8 +1906,8 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     border-style: solid;
     display: none; /* Dold som standard */
     
-    /* Positionera pilen horisontellt (justera 15px vid behov) */
-    right: 15px; 
+    left: 50%;
+    transform: translateX(-50%);
 }
 
 /* Yttre pil (kanten) */
@@ -1981,3 +1981,4 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 .search-wrapper.is-searching .icon-search {
     display: none; /* ...göm sök-ikonen */
 }
+
