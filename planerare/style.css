@@ -360,7 +360,27 @@ input[type="search"]::-webkit-search-results-decoration {
 }
 .button.secondary { background-color: var(--content-bg); color: var(--text-color); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
 .button.secondary:hover { background-color: var(--bg-color); }
-.button.clear-filter { background: transparent; color: var(--primary-color); font-weight: 600; box-shadow: none; padding: 0.25rem 0.5rem; }
+.button.clear-filter {
+    background-color: var(--bg-color);
+    color: var(--primary-color);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    padding: 0.5rem 0.8rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border-radius: 8px;
+    transition: all var(--transition-speed-fast) ease;
+    gap: 0.4rem; /* Ger lite utrymme mellan 'x' och texten */
+}
+.button.clear-filter:hover {
+    background-color: var(--content-bg);
+    color: var(--danger-color);
+    border-color: var(--danger-color);
+}
+/* Mörkt läge-fix */
+[data-theme="dark"] .button.clear-filter:hover {
+    background-color: var(--danger-light);
+}
 .button.primary { background-color: var(--primary-color); color: white; box-shadow: var(--shadow-sm); }
 .button.primary:hover { background-color: var(--primary-hover); box-shadow: var(--shadow-md); }
 
@@ -2516,4 +2536,5 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 [data-theme="dark"] .settings-button-group .button.csv-export:hover {
     background-color: rgba(48, 209, 88, 0.2);
 }
+
 
