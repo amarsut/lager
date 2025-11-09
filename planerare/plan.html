@@ -2576,6 +2576,9 @@
 
             // --- Sök-hanterare (Med rensa-knappar) ---
             function performSearch() {
+				if (currentView === 'calendar') {
+			        toggleView('timeline');
+			    }
 			    const desktopQuery = searchBar.value;
 			    const mobileQuery = mobileSearchBar.value;
 			
@@ -2652,6 +2655,7 @@
             mobileSearchCloseBtn.addEventListener('click', () => closeModal({ popHistory: false })); // PUNKT 7: Ändrad
             settingsModalCloseBtn.addEventListener('click', () => closeModal()); 
             settingsModalCancelBtn.addEventListener('click', () => closeModal()); 
+			statsModalCloseBtn.addEventListener('click', () => closeModal());
             
             jobModal.addEventListener('click', (e) => { if (e.target === jobModal) closeModal(); });
             customerModal.addEventListener('click', (e) => { if (e.target === customerModal) closeModal(); });
