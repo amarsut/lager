@@ -2295,15 +2295,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 	    bottom: auto !important;
 	    width: 100% !important; 
 	}
-
-	/* FELSÖKNINGS-HACK: 
-	  Tvinga stilar på Oljemagasinet-knappen 
-	  genom att välja den via dess href-länk.
-	*/
-	.sticky-link-buttons a[href="https://oljemagasinet.se/"] {
-	    justify-content: center !important;
-	    padding: 0.85rem 1rem !important;
-	}
     
     /* Ikon-styling */
     #carModalExternalLinkMobile img,
@@ -2752,6 +2743,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 [data-theme="dark"] .icon-button-group #customerModalCallBtn:hover {
     background-color: rgba(48, 209, 88, 0.2);
 }
+
 
 
 
