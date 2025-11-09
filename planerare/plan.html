@@ -2714,6 +2714,20 @@
             function findLatestJob(key, value) {
                 return [...allJobs].reverse().find(job => job[key] && job[key].toLowerCase() === value.toLowerCase());
             }
+
+			modalTelefon.addEventListener('input', () => {
+	            const telefonNummer = modalTelefon.value;
+	            // Enkel validering (t.ex. minst 5 siffror)
+	            if (telefonNummer && telefonNummer.replace(/\D/g, '').length >= 5) {
+	                jobModalCallBtn.href = `tel:${telefonNummer}`;
+	                jobModalSmsBtn.href = `sms:${telefonNummer}`;
+	                jobModalCallBtn.style.display = 'inline-flex';
+	                jobModalSmsBtn.style.display = 'inline-flex';
+	            } else {
+	                jobModalCallBtn.style.display = 'none';
+	                jobModalSmsBtn.style.display = 'none';
+	            }
+	        });
             
             // NYTT: Auto-ifyllning från Regnr
             modalRegnr.addEventListener('blur', (e) => {
