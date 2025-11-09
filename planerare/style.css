@@ -224,7 +224,7 @@ body {
     background-color: var(--content-bg);
     border: 2px solid var(--border-color);
     border-radius: var(--border-radius);
-    padding: 1.5rem;
+    padding: 1.1rem 1.5rem;
     box-shadow: var(--shadow-sm);
     transition: all var(--transition-speed-fast) ease;
     cursor: pointer;
@@ -927,7 +927,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 }
 
 .detail-stats {
-    display: grid; grid-template-columns: 1fr 1fr;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: 1rem; background-color: var(--bg-color);
     padding: 1rem 1.5rem;
     border-bottom: 1px solid var(--border-color);
@@ -2806,4 +2806,5 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 .top-list .item-value.no-profit {
     color: var(--text-color-light);
 }
+
 
