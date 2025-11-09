@@ -460,11 +460,12 @@
                 <div class="chart-container">
                     <canvas id="statsChart"></canvas>
                 </div>
-
+                
                 <h3 class="chart-title">Aktivitet per Veckodag</h3>
                 <div class="chart-container" style="max-height: 220px;">
                     <canvas id="weekdayChart"></canvas>
                 </div>
+
                 </div>
         </div>
     </div>
@@ -656,6 +657,21 @@
             const regex = new RegExp(`(${term.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')})`, 'gi');
             return safeText.replace(regex, '<mark>$1</mark>');
         }
+
+        // --- NYTT: Kontextuell Ikon-funktion ---
+        function getJobContextIcon(job) {
+            const kommentarer = job.kommentarer ? job.kommentarer.toLowerCase() : '';
+            
+            if (kommentarer.includes('olja') || kommentarer.includes('oljebyte')) {
+                return `<svg class="context-icon" viewBox="0 0 24 24"><use href="#icon-oil"></use></svg>`;
+            }
+            if (kommentarer.includes('däck') || kommentarer.includes('hjul') || kommentarer.includes('hjulskifte')) {
+                return `<svg class="context-icon" viewBox="0 0 24 24"><use href="#icon-tire"></use></svg>`;
+            }
+            // Du kan lägga till fler "else if" här för andra ikoner (t.ex. bromsar, service etc.)
+            
+            return ''; // Returnera tom sträng om inget matchar
+        }
         
         document.addEventListener('DOMContentLoaded', function() {
             
@@ -675,7 +691,7 @@
             let isNavigatingBack = false; 
 
             let statsChartInstance = null;
-			let weekdayChartInstance = null;
+            let weekdayChartInstance = null;
             let currentProfitGoal = localStorage.getItem('profitGoal') || 0; 
 
             // --- DOM-element ---
@@ -739,7 +755,7 @@
             const customerModalCloseBtn = document.getElementById('customerModalCloseBtn');
             const customerModalName = document.getElementById('customerModalName');
             const customerModalPhone = document.getElementById('customerModalPhone');
-            const editCustomerPhoneBtn = document.getElementById('editCustomerPhoneBtn'); // NY (PUNKT 6)
+            const editCustomerPhoneBtn = document.getElementById('editCustomerPhoneBtn'); 
             const customerModalTotalProfit = document.getElementById('customerModalTotalProfit');
             const customerModalJobCount = document.getElementById('customerModalJobCount');
             const customerModalJobList = document.getElementById('customerModalJobList');
@@ -1256,6 +1272,7 @@
                 if (activeCard) activeCard.classList.add('active');
             }
 
+            // --- UPPDATERAD: renderTimeline med Animationslogik ---
             function renderTimeline() {
                 let jobsToDisplay = [...allJobs];
                 
@@ -1306,32 +1323,48 @@
                 });
 
                 const isMobile = window.innerWidth <= 768;
-                let timelineCount = 0;
+                let jobElements = jobListContainer.querySelectorAll('.job-entry');
                 
-                if (isMobile) {
-                    timelineCount = renderMobileCardList(jobsToDisplay);
+                // 1. Tona ut befintliga element
+                if (jobElements.length > 0) {
+                    jobElements.forEach(el => el.classList.add('fade-out'));
                 } else {
-                    timelineCount = renderTimelineTable(jobsToDisplay);
+                    // Om det inte finns några element, hoppa över väntetiden
+                    renderNewContent();
+                    return;
                 }
-                
-                if (timelineCount === 0) {
-                    jobListContainer.style.display = 'none';
-                    emptyStateTimeline.style.display = 'block';
+
+                // 2. Vänta på att animationen är klar, rendera sedan nytt innehåll
+                setTimeout(renderNewContent, 250); // 250ms matchar CSS-animationen
+
+                function renderNewContent() {
+                    let timelineCount = 0;
                     
-                    if (currentSearchTerm) {
-                        emptyStateTitleTimeline.textContent = "Inga träffar";
-                        emptyStateTextTimeline.textContent = `Din sökning på "${currentSearchTerm}" gav inga resultat.`;
-                    } else if (allJobs.length > 0) {
-                        const filterText = document.querySelector(`.stat-card[data-filter="${currentStatusFilter}"] h3`).textContent;
-                        emptyStateTitleTimeline.textContent = `Inga ${filterText.toLowerCase()}`;
-                        emptyStateTextTimeline.textContent = "Det finns inga jobb som matchar detta filter.";
+                    if (isMobile) {
+                        timelineCount = renderMobileCardList(jobsToDisplay);
                     } else {
-                        emptyStateTitleTimeline.textContent = "Du har inga jobb";
-                        emptyStateTextTimeline.textContent = "Klicka på '+' för att börja.";
+                        timelineCount = renderTimelineTable(jobsToDisplay);
                     }
-                } else {
-                    jobListContainer.style.display = 'block';
-                    emptyStateTimeline.style.display = 'none';
+                    
+                    if (timelineCount === 0) {
+                        jobListContainer.style.display = 'none';
+                        emptyStateTimeline.style.display = 'block';
+                        
+                        if (currentSearchTerm) {
+                            emptyStateTitleTimeline.textContent = "Inga träffar";
+                            emptyStateTextTimeline.textContent = `Din sökning på "${currentSearchTerm}" gav inga resultat.`;
+                        } else if (allJobs.length > 0) {
+                            const filterText = document.querySelector(`.stat-card[data-filter="${currentStatusFilter}"] h3`).textContent;
+                            emptyStateTitleTimeline.textContent = `Inga ${filterText.toLowerCase()}`;
+                            emptyStateTextTimeline.textContent = "Det finns inga jobb som matchar detta filter.";
+                        } else {
+                            emptyStateTitleTimeline.textContent = "Du har inga jobb";
+                            emptyStateTextTimeline.textContent = "Klicka på '+' för att börja.";
+                        }
+                    } else {
+                        jobListContainer.style.display = 'block';
+                        emptyStateTimeline.style.display = 'none';
+                    }
                 }
             }
 
@@ -1368,6 +1401,7 @@
                 `;
             }
 
+            // --- UPPDATERAD: createJobRow med Kontextuell Ikon ---
             function createJobRow(job) {
                 let prioClass = job.prio ? 'prio-row' : '';
                 const doneClass = (job.status === 'klar') ? 'done-row' : '';
@@ -1381,14 +1415,15 @@
                 const hasComment = job.kommentarer && job.kommentarer.trim().length > 0;
                 const kundnamnHTML = highlightSearchTerm(job.kundnamn, currentSearchTerm);
                 const regnrHTML = highlightSearchTerm(job.regnr || '---', currentSearchTerm);
+                const contextIcon = getJobContextIcon(job); // <-- NYTT
                 
                 return `
-                    <tr data-id="${job.id}" data-status="${job.status}" class="${prioClass} ${doneClass}">
+                    <tr data-id="${job.id}" data-status="${job.status}" class="job-entry ${prioClass} ${doneClass}">
                         <td data-label="Status"><span class="status-badge status-${job.status || 'bokad'}">${STATUS_TEXT[job.status] || 'Bokad'}</span></td>
                         <td data-label="Datum">${formatDate(job.datum)}</td>
                         <td data-label="Kund">
                             ${prioIcon}
-                            <button class="link-btn customer-link" data-kund="${job.kundnamn}">
+                            ${contextIcon} <button class="link-btn customer-link" data-kund="${job.kundnamn}">
                                 ${kundnamnHTML}
                             </button>
                         </td>
@@ -1462,6 +1497,7 @@
                 return jobs.length;
             }
             
+            // --- UPPDATERAD: createJobCard med Kontextuell Ikon ---
             function createJobCard(job) {
                 let prioClass = job.prio ? 'prio-row' : '';
                 const doneClass = (job.status === 'klar') ? 'done-row' : '';
@@ -1475,16 +1511,20 @@
                 
                 const kundnamnHTML = highlightSearchTerm(job.kundnamn, currentSearchTerm);
                 const regnrHTML = highlightSearchTerm(job.regnr || 'OKÄNT', currentSearchTerm);
+                const contextIcon = getJobContextIcon(job); // <-- NYTT
                 
                 const timePart = job.datum ? (formatDate(job.datum).split('kl. ')[1] || 'Okänd tid') : 'Okänd tid';
                 
                 return `
-                    <div class="mobile-job-card ${prioClass} ${doneClass}" data-id="${job.id}" data-status="${job.status}">
+                    <div class="mobile-job-card job-entry ${prioClass} ${doneClass}" data-id="${job.id}" data-status="${job.status}">
                         <div class="card-content">
                             <div class="card-row">
                                 <span class="card-label">Kund</span>
                                 <span class="card-value customer-name">
-                                    <button class="link-btn customer-link" data-kund="${job.kundnamn}">${kundnamnHTML}</button>
+                                    <div class="customer-name-wrapper">
+                                        ${contextIcon}
+                                        <button class="link-btn customer-link" data-kund="${job.kundnamn}">${kundnamnHTML}</button>
+                                    </div>
                                 </span>
                             </div>
                             <div class="card-row">
