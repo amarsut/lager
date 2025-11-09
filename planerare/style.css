@@ -926,6 +926,12 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     padding: 1rem 1.5rem;
     border-bottom: 1px solid var(--border-color);
 }
+/* Fix för Statistik-modalen: Ta bort "sticky" och gör den mindre */
+#statsModal .detail-stats {
+    position: static; /* <-- Tar bort "sticky" */
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+}
 /* Återställ Kund- & Bil-modalerna till 2 kolumner */
 #customerModal .detail-stats,
 #carModal .detail-stats {
@@ -2833,3 +2839,4 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     padding-top: 0.75rem;
     padding-bottom: 0.75rem;
 }
+
