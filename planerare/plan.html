@@ -503,6 +503,16 @@
                 <div class="chart-container" style="max-height: 220px;">
                     <canvas id="weekdayChart"></canvas>
                 </div>
+				<h3 class="chart-title">Topplistor</h3>
+                <div class="top-lists-container">
+                    <div id="topCustomersContainer">
+                        </div>
+                    <div id="topCarsContainer">
+                        </div>
+                </div>
+
+                </div> </div>
+    </div>
 
                 </div>
         </div>
@@ -1990,8 +2000,57 @@
                 showModal('carModal'); 
             }
 
+			// --- NY HJÄLPFUNKTION FÖR TOPPLISTOR ---
+			function calculateTopList(jobs, key) {
+			    const stats = jobs.reduce((acc, job) => {
+			        const groupName = job[key] ? job[key].toUpperCase() : 'OKÄND';
+			        if (groupName === 'OKÄND' || groupName === '') return acc; // Ignorera tomma
+			
+			        if (!acc[groupName]) {
+			            acc[groupName] = { name: groupName, vinst: 0 };
+			        }
+			        acc[groupName].vinst += (job.vinst || 0);
+			        return acc;
+			    }, {});
+			
+			    // Sortera listan och ta de 5 bästa
+			    return Object.values(stats)
+			        .sort((a, b) => b.vinst - a.vinst)
+			        .slice(0, 5);
+			}
+			
+			// --- NY HJÄLPFUNKTION FÖR ATT SKAPA HTML ---
+			function generateTopListHTML(list, title) {
+			    if (list.length === 0) {
+			        return `<h3 class="top-list-title">${title}</h3><p>Ingen data att visa.</p>`;
+			    }
+			
+			    let html = `<h3 class="top-list-title">${title}</h3>`;
+			    html += '<ul class="top-list">';
+			
+			    list.forEach(item => {
+			        const vinstClass = item.vinst > 0 ? '' : 'no-profit';
+			        html += `
+			            <li>
+			                <span class="item-name">${item.name}</span>
+			                <span class="item-value ${vinstClass}">${formatCurrency(item.vinst)}</span>
+			            </li>
+			        `;
+			    });
+			
+			    html += '</ul>';
+			    return html;
+			}
+
 			function openStatsModal() {
                 const completedJobs = allJobs.filter(j => j.status === 'klar');
+				// 1. Beräkna listorna
+		        const topCustomers = calculateTopList(completedJobs, 'kundnamn');
+		        const topCars = calculateTopList(completedJobs, 'regnr');
+		
+		        // 2. Skapa HTML
+		        const customerListHTML = generateTopListHTML(topCustomers, 'Mest lönsamma kunder');
+		        const carListHTML = generateTopListHTML(topCars, 'Mest lönsamma bilar (Reg.nr)');
                 const totalVinst = completedJobs.reduce((sum, j) => sum + (j.vinst || 0), 0);
                 const totalJobb = completedJobs.length;
 
@@ -2200,6 +2259,16 @@
                         }
                     }
                 });
+
+				// --- NY KOD: Fyll på topplistorna innan modalen visas ---
+	            const topCustomersContainer = document.getElementById('topCustomersContainer');
+	            if (topCustomersContainer) {
+	                topCustomersContainer.innerHTML = customerListHTML;
+	            }
+	            const topCarsContainer = document.getElementById('topCarsContainer');
+	            if (topCarsContainer) {
+	                topCarsContainer.innerHTML = carListHTML;
+	            }
                 
                 // Slutligen, visa modalen
                 showModal('statsModal');
