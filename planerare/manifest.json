@@ -24,5 +24,21 @@
             "type": "image/png",
             "purpose": "any maskable"
         }
-    ]
+    ],
+  "shortcuts": [
+    {
+      "name": "Lägg till nytt jobb",
+      "short_name": "Nytt jobb",
+      "description": "Öppnar fönstret för att skapa ett nytt jobb",
+      "url": "/plan.html#jobModal",
+      "icons": [{ "src": "images/icon-plus.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Visa kalender",
+      "short_name": "Kalender",
+      "description": "Öppnar kalendervyn",
+      "url": "/plan.html#calendar",
+      "icons": [{ "src": "images/icon-calendar.png", "sizes": "96x96" }]
+    }
+  ]
 }
