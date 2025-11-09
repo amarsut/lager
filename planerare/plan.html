@@ -460,6 +460,11 @@
                 <div class="chart-container">
                     <canvas id="statsChart"></canvas>
                 </div>
+
+                <h3 class="chart-title">Aktivitet per Veckodag</h3>
+                <div class="chart-container" style="max-height: 220px;">
+                    <canvas id="weekdayChart"></canvas>
+                </div>
                 </div>
         </div>
     </div>
@@ -653,6 +658,7 @@
             let isNavigatingBack = false; 
 
             let statsChartInstance = null;
+			let weekdayChartInstance = null;
             let currentProfitGoal = localStorage.getItem('profitGoal') || 0; 
 
             // --- DOM-element ---
@@ -1980,6 +1986,70 @@
                                     callback: function(value) {
                                         return formatCurrency(value);
                                     }
+                                }
+                            }
+                        }
+                    }
+                });
+
+				// const weekdayLabels = ['Mån', 'Tis', 'Ons', 'Tor', 'Fre', 'Lör', 'Sön'];
+                const weekdayCounts = [0, 0, 0, 0, 0, 0, 0]; // 7 dagar, Mån=0, Sön=6
+
+                completedJobs.forEach(job => {
+                    try {
+                        const d = new Date(job.datum);
+                        let dayOfWeek = d.getDay(); // 0=Söndag, 1=Måndag, ... 6=Lördag
+
+                        // Justera så att Måndag = 0 och Söndag = 6
+                        if (dayOfWeek === 0) {
+                            dayOfWeek = 6; // Flytta Söndag till slutet
+                        } else {
+                            dayOfWeek = dayOfWeek - 1; // Flytta Mån-Lör ett steg bakåt
+                        }
+                        
+                        if(dayOfWeek >= 0 && dayOfWeek <= 6) {
+                            weekdayCounts[dayOfWeek]++;
+                        }
+                    } catch(e) { /* Ignorera ogiltiga datum */ }
+                });
+
+                const weekdayCtx = document.getElementById('weekdayChart').getContext('2d');
+                
+                if (weekdayChartInstance) {
+                    weekdayChartInstance.destroy(); 
+                }
+
+                weekdayChartInstance = new Chart(weekdayCtx, {
+                    type: 'bar', // Stapeldiagram är bäst här
+                    data: {
+                        labels: weekdayLabels,
+                        datasets: [{
+                            label: 'Antal Jobb',
+                            data: weekdayCounts,
+                            backgroundColor: 'rgba(48, 209, 88, 0.7)', // Använder din "success-color"
+                            borderColor: 'rgba(48, 209, 88, 1)',
+                            borderWidth: 1,
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return ` Antal Jobb: ${context.raw}`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 1 // Visa bara heltal
                                 }
                             }
                         }
