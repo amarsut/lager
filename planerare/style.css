@@ -957,6 +957,17 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     margin-bottom: 2rem;
 }
 
+/* --- Styling för Graf-rubriker --- */
+.chart-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
 #statsModalTable {
     width: 100%;
     border-collapse: collapse;
@@ -2505,3 +2516,4 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 [data-theme="dark"] .settings-button-group .button.csv-export:hover {
     background-color: rgba(48, 209, 88, 0.2);
 }
+
