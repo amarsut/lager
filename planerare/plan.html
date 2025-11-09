@@ -271,9 +271,17 @@
                     <div id="kundnamnSuggestions" class="suggestions-list"></div>
                 </div>
 
-                <div class="form-group full-width">
-                    <label for="telefon">Telefonnummer</label>
+                <div class="form-group full-width has-actions"> <label for="telefon">Telefonnummer</label>
                     <input type="tel" id="telefon" placeholder="070-123 45 67" autocomplete="off">
+                    
+                    <div class="input-field-actions">
+                        <a href="#" id="jobModalCallBtn" class="icon-btn" title="Ring kund">
+                            <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-phone"></use></svg>
+                        </a>
+                        <a href="#" id="jobModalSmsBtn" class="icon-btn" title="Skicka SMS">
+                            <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-chat"></use></svg>
+                        </a>
+                    </div>
                 </div>
                 
                 <div class="form-group-split">
@@ -348,20 +356,27 @@
     <div id="customerModal" class="modal-backdrop" data-modal-id="customerModal">
         <div class="modal-content">
             <div class="modal-header detail-modal-header" id="customerModalHeader">
-                <h2 id="customerModalName"></h2>
-                <div class="customer-phone-wrapper">
-                    <p id="customerModalPhone"></p>
-                    
-                    <a href="#" id="customerModalCallBtn" class="icon-btn" title="Ring kund">
-                        <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-phone"></use></svg>
-                    </a>
-                    <a href="#" id="customerModalSmsBtn" class="icon-btn" title="Skicka SMS till kund">
-                        <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-chat"></use></svg>
-                    </a>
-                    <button class="icon-btn" id="editCustomerPhoneBtn" title="Redigera telefonnummer">
-                        <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-pencil"></use></svg>
-                    </button>
+                
+                <div class="detail-modal-header-titles">
+                    <h2 id="customerModalName"></h2>
+                    <div class="customer-phone-wrapper">
+                        <p id="customerModalPhone"></p>
+                        
+                        <div class="icon-button-group">
+                            <a href="#" id="customerModalCallBtn" class="icon-btn" title="Ring kund">
+                                <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-phone"></use></svg>
+                            </a>
+                            <a href="#" id="customerModalSmsBtn" class="icon-btn" title="Skicka SMS till kund">
+                                <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-chat"></use></svg>
+                            </a>
+                            <button class="icon-btn" id="editCustomerPhoneBtn" title="Redigera telefonnummer">
+                                <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-pencil"></use></svg>
+                            </button>
+                        </div>
+
+                    </div>
                 </div>
+
                 <button class="modal-close-btn" id="customerModalCloseBtn" aria-label="Stäng modal">
                     <svg class="icon" viewBox="0 0 24 24"><use href="#icon-close"></use></svg>
                 </button>
@@ -753,6 +768,8 @@
             const modalKundnamn = document.getElementById('kundnamn');
             const kundnamnSuggestions = document.getElementById('kundnamnSuggestions');
             const modalTelefon = document.getElementById('telefon');
+			const jobModalCallBtn = document.getElementById('jobModalCallBtn'); // <-- NY
+            const jobModalSmsBtn = document.getElementById('jobModalSmsBtn'); // <-- NY
             const modalStatusSelect = document.getElementById('status');
             const quickStatusButtons = document.getElementById('quickStatusButtons');
             const copyKundnamnBtn = document.getElementById('copyKundnamn');
@@ -1755,6 +1772,11 @@
 
             function openJobModal(mode, dataToClone = null) {
                 jobModalForm.reset();
+
+                // NYTT: Återställ/dölj knapparna varje gång
+                jobModalCallBtn.style.display = 'none';
+                jobModalSmsBtn.style.display = 'none';
+                
                 if (mode === 'add') {
                     modalTitle.textContent = 'Lägg till nytt jobb';
                     modalSaveBtn.textContent = 'Spara'; 
@@ -1801,6 +1823,10 @@
 					document.getElementById('matarstallning').value = dataToClone.matarstallning || '';
                 }
                 updateLiveProfit();
+                
+                // NYTT: Trigga input-eventet för att visa/dölja knappar om ett nr finns
+                modalTelefon.dispatchEvent(new Event('input')); 
+
                 showModal('jobModal'); 
                 modalKundnamn.focus();
             }
