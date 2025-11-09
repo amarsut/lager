@@ -2297,7 +2297,14 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 	    overflow: hidden;
 	    text-overflow: ellipsis;
 	}
-
+	    
+    /* Ikon-styling */
+    #carModalExternalLinkMobile img,
+    #carModalOljemagasinetLinkMobile img {
+        width: 20px;
+        height: 20px;
+        border-radius: 4px;
+    }
 }
 
 /* Dölj mobil-nav på desktop */
@@ -2737,6 +2744,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 [data-theme="dark"] .icon-button-group #customerModalCallBtn:hover {
     background-color: rgba(48, 209, 88, 0.2);
 }
+
 
 
 
