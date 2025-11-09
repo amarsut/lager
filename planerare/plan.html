@@ -1638,7 +1638,7 @@
                 const modalId = currentOpenModalId;
                 const modalElement = document.getElementById(modalId);
 
-				if (modalId === 'mobileSearchModal') {
+				if (modalId === 'mobileSearchModal' && currentSearchTerm === "") { 
 				    document.getElementById('statBar').style.display = 'grid';
 				}
                 if (modalElement) {
@@ -2020,7 +2020,7 @@
 			}
 			
 			// --- NY HJÄLPFUNKTION FÖR ATT SKAPA HTML ---
-			function generateTopListHTML(list, title) {
+			function generateTopListHTML(list, title, type) {
 			    if (list.length === 0) {
 			        return `<h3 class="top-list-title">${title}</h3><p>Ingen data att visa.</p>`;
 			    }
@@ -2031,11 +2031,11 @@
 			    list.forEach(item => {
 			        const vinstClass = item.vinst > 0 ? '' : 'no-profit';
 			        html += `
-			            <li>
-			                <span class="item-name">${item.name}</span>
-			                <span class="item-value ${vinstClass}">${formatCurrency(item.vinst)}</span>
-			            </li>
-			        `;
+					    <li>
+					        <button class="link-btn item-name" data-${type}="${item.name}">${item.name}</button>
+					        <span class="item-value ${vinstClass}">${formatCurrency(item.vinst)}</span>
+					    </li>
+					`;
 			    });
 			
 			    html += '</ul>';
@@ -2049,8 +2049,8 @@
 		        const topCars = calculateTopList(completedJobs, 'regnr');
 		
 		        // 2. Skapa HTML
-		        const customerListHTML = generateTopListHTML(topCustomers, 'Mest lönsamma kunder');
-		        const carListHTML = generateTopListHTML(topCars, 'Mest lönsamma bilar (Reg.nr)');
+		        const customerListHTML = generateTopListHTML(topCustomers, 'Mest lönsamma kunder', 'kund');
+		        const carListHTML = generateTopListHTML(topCars, 'Mest lönsamma bilar (Reg.nr)', 'bil');
                 const totalVinst = completedJobs.reduce((sum, j) => sum + (j.vinst || 0), 0);
                 const totalJobb = completedJobs.length;
 
@@ -2598,7 +2598,11 @@
                 mobileSearchClear.style.display = 'none';
 
 			    renderTimeline();
-			    
+
+				// NY KOD: Visa stat-rutorna igen när sökningen rensas
+		        if (window.innerWidth <= 768) {
+		            document.getElementById('statBar').style.display = 'grid';
+		        }
 			    if (desktopSearchWrapper) {
 			        desktopSearchWrapper.classList.remove('is-searching');
 			    }
@@ -2647,6 +2651,23 @@
             carModal.addEventListener('click', (e) => { if (e.target === carModal) closeModal(); });
             mobileSearchModal.addEventListener('click', (e) => { if (e.target === mobileSearchModal) closeModal({ popHistory: false }); }); // PUNKT 7: Ändrad
             statsModal.addEventListener('click', (e) => { if (e.target === statsModal) closeModal(); });
+			statsModalBody.addEventListener('click', (e) => {
+			    const customerBtn = e.target.closest('button[data-kund]');
+			    const carBtn = e.target.closest('button[data-regnr]');
+			
+			    if (customerBtn) {
+			        e.preventDefault();
+			        const kundnamn = customerBtn.dataset.kund;
+			        closeModal(); // Stäng statistik-modalen
+			        // En liten fördröjning så att modalerna inte krockar
+			        setTimeout(() => openCustomerModal(kundnamn), 50); 
+			    } else if (carBtn) {
+			        e.preventDefault();
+			        const regnr = carBtn.dataset.regnr;
+			        closeModal(); // Stäng statistik-modalen
+			        setTimeout(() => openCarModal(regnr), 50); 
+			    }
+			});
             settingsModal.addEventListener('click', (e) => { if (e.target === settingsModal) closeModal(); }); 
 
             navLogo.addEventListener('click', (e) => {
