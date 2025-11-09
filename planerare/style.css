@@ -2735,3 +2735,68 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 [data-theme="dark"] .icon-button-group #customerModalCallBtn:hover {
     background-color: rgba(48, 209, 88, 0.2);
 }
+
+/* --- Styling för Topplistor i Statistik-modalen --- */
+
+.top-lists-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+/* På större skärmar, visa dem sida-vid-sida */
+@media (min-width: 600px) {
+    .top-lists-container {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.top-list-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin: 0 0 0.75rem 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.top-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.top-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--bg-color);
+    padding: 0.75rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+}
+
+.top-list .item-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-right: 1rem;
+}
+
+.top-list .item-value {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--success-color);
+    flex-shrink: 0;
+}
+
+.top-list .item-value.no-profit {
+    color: var(--text-color-light);
+}
