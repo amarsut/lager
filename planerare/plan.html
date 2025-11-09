@@ -722,6 +722,8 @@
             
             // --- Globalt Tillstånd (State) ---
             let allJobs = [];
+			let backPressWarned = false;
+            let backPressTimer;
             let currentSearchTerm = "";
             let currentStatusFilter = 'kommande';
             let appInitialized = false;
@@ -1319,6 +1321,7 @@
                 
                 let sortOrder = 'asc'; 
                 
+                // --- BÖRJAN PÅ FILTERLOGIK (FRÅN DIN ORIGINALKOD) ---
                 switch(currentStatusFilter) {
                     case 'kommande':
                         jobsToDisplay = jobsToDisplay.filter(j => 
@@ -1338,11 +1341,7 @@
                 }
                 
                 if (currentSearchTerm) {
-                    // Detta är koden du redan har (för att dölja knappar)
                     clearDayFilterBtn.style.display = 'inline-flex';
-
-                    // *** DEN HÄR DELEN SAKNADES ***
-                    // Denna kod filtrerar bort jobben som inte matchar
                     jobsToDisplay = jobsToDisplay.filter(job => {
                         const term = currentSearchTerm.toLowerCase();
                         return (
@@ -1353,10 +1352,7 @@
                             (STATUS_TEXT[job.status] || '').toLowerCase().includes(term)
                         );
                     });
-                    // *** SLUT PÅ SAKNAD DEL ***
-
                 } else {
-                    // Detta är koden du redan har (för att visa knappar)
                     clearDayFilterBtn.style.display = 'none';
                     if (window.innerWidth <= 768) {
                         renderGlobalStats(allJobs); 
@@ -1372,24 +1368,12 @@
                         return dateA - dateB; 
                     }
                 });
+                // --- SLUT PÅ FILTERLOGIK ---
 
-                const isMobile = window.innerWidth <= 768;
-                let jobElements = jobListContainer.querySelectorAll('.job-entry');
-                
-                // 1. Tona ut befintliga element
-                if (jobElements.length > 0) {
-                    jobElements.forEach(el => el.classList.add('fade-out'));
-                } else {
-                    // Om det inte finns några element, hoppa över väntetiden
-                    renderNewContent();
-                    return;
-                }
-
-                // 2. Vänta på att animationen är klar, rendera sedan nytt innehåll
-                setTimeout(renderNewContent, 250); // 250ms matchar CSS-animationen
-
+                // Flytta definitionen av renderNewContent hit upp
                 function renderNewContent() {
                     let timelineCount = 0;
+                    const isMobile = window.innerWidth <= 768;
                     
                     if (isMobile) {
                         timelineCount = renderMobileCardList(jobsToDisplay);
@@ -1410,13 +1394,18 @@
                             emptyStateTextTimeline.textContent = "Det finns inga jobb som matchar detta filter.";
                         } else {
                             emptyStateTitleTimeline.textContent = "Du har inga jobb";
-                            emptyStateTextTimeline.textContent = "Klicka på '+' för att börja.";
+                            emptyS
+tateTextTimeline.textContent = "Klicka på '+' för att börja.";
                         }
                     } else {
                         jobListContainer.style.display = 'block';
                         emptyStateTimeline.style.display = 'none';
                     }
                 }
+
+                // TA BORT ALL LOGIK FÖR FADE-OUT OCH SETTIMEOUT
+                // Anropa renderNewContent direkt
+                renderNewContent();
             }
 
             function renderTimelineTable(jobs) {
@@ -1664,10 +1653,57 @@
 			});
 
             window.addEventListener('popstate', (event) => {
+                // Nollställ alltid timern när "bakåt" används
+                clearTimeout(backPressTimer); 
+
                 if (isModalOpen) {
+                    // FALL 1: En modal är öppen
+                    // Stäng modalen och se till att vi är på tidslinjen.
+                    
                     isNavigatingBack = true;
-                    closeModal({ popHistory: false }); // Stäng modalen utan att ändra historiken
+                    closeModal({ popHistory: false }); // Stäng den öppna modalen
                     isNavigatingBack = false;
+                    
+                    // Se till att vi är på tidslinjen
+                    if (currentView !== 'timeline') {
+                        toggleView('timeline');
+                    }
+                    
+                    // Nollställ varningen för dubbeltryck
+                    backPressWarned = false; 
+
+                } else if (currentView === 'calendar') {
+                    // FALL 2: Vi är på kalendern (ingen modal)
+                    // Byt till tidslinjen istället för att stänga appen.
+                    
+                    toggleView('timeline');
+                    
+                    // "Fånga" bakåt-trycket så att appen inte stängs
+                    history.pushState(null, '', location.pathname); 
+                    backPressWarned = false; // Nollställ varningen
+
+                } else {
+                    // FALL 3: Vi är på tidslinjen (ingen modal)
+                    // Hantera dubbeltryck för att stänga.
+
+                    if (backPressWarned) {
+                        // Andra trycket: Tillåt stängning.
+                        // Genom att *inte* göra något här (särskilt inte pushState),
+                        // kommer webbläsaren att slutföra sin "bakåt"-åtgärd och appen stängs.
+                        backPressWarned = false;
+                    } else {
+                        // Första trycket: Varna och förhindra stängning.
+                        backPressWarned = true;
+                        showToast('Tryck bakåt igen för att stänga', 'info');
+                        
+                        // "Fånga" bakåt-trycket
+                        history.pushState(null, '', location.pathname); 
+                        
+                        // Nollställ varningen efter 2 sekunder
+                        backPressTimer = setTimeout(() => {
+                            backPressWarned = false;
+                        }, 2000); // 2 sekunder
+                    }
                 }
             });
 
