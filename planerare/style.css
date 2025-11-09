@@ -1845,10 +1845,16 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         padding: 0 1rem;
     }
     .header-right .divider,
-    .header-right .nav-button,
-    .view-controls {
-        display: none;
-    }
+	.header-right .nav-button,
+	.view-controls,
+	.header-profit-display,
+	#clearDayFilterBtn { 
+	    display: none; 
+	}
+	/* Göm p-taggen i stats-modalens header på mobil */
+	#statsModal .detail-modal-header p {
+	    display: none;
+	}
     .header-titles .view-toggle-buttons {
         display: none;
     }
@@ -2800,3 +2806,4 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 .top-list .item-value.no-profit {
     color: var(--text-color-light);
 }
+
