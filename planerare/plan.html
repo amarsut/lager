@@ -1627,7 +1627,10 @@
                 
                 const modalId = currentOpenModalId;
                 const modalElement = document.getElementById(modalId);
-                
+
+				if (modalId === 'mobileSearchModal') {
+				    document.getElementById('statBar').style.display = 'grid';
+				}
                 if (modalElement) {
                     modalElement.classList.remove('show');
                     if (modalElement.id === 'jobModal') {
@@ -1662,6 +1665,9 @@
             });
 
             function showModal(modalId) {
+				if (modalId === 'mobileSearchModal') {
+				    document.getElementById('statBar').style.display = 'none';
+				}
                 if (isModalOpen) {
                     closeModal({ popHistory: false }); 
                 }
