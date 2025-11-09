@@ -2970,7 +2970,7 @@
                 const lastUnlocked = parseInt(lastUnlockedTimestamp, 10);
                 const elapsedHours = (Date.now() - lastUnlocked) / (1000 * 60 * 60);
                 
-                if (elapsedHours <= 4) {
+                if (elapsedHours <= 1) {
                     isUnlocked = true;
                 } else {
                     localStorage.removeItem(PIN_LAST_UNLOCKED_KEY);
@@ -2989,7 +2989,7 @@
             } else {
                 localStorage.setItem(APP_PIN_KEY, '0912');
                 localStorage.setItem(PIN_LAST_UNLOCKED_KEY, Date.now().toString());
-                showToast('Standard PIN "0912" har ställts in.', 'info');
+                //showToast('Standard PIN "0912" har ställts in.', 'info');
                 appInitialized = true;
                 initializeCalendar();
                 initRealtimeListener();
