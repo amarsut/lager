@@ -1354,17 +1354,18 @@
                 }
                 
                 if (currentSearchTerm) {
-                    jobsToDisplay = jobsToDisplay.filter(job => {
-                        const term = currentSearchTerm.toLowerCase();
-                        return (
-                            job.kundnamn.toLowerCase().includes(term) ||
-                            (job.regnr && job.regnr.toLowerCase().includes(term)) ||
-                            (job.kommentarer && job.kommentarer.toLowerCase().includes(term)) ||
-                            (job.telefon && job.telefon.includes(term)) || // Sök på telefon
-                            (STATUS_TEXT[job.status] || '').toLowerCase().includes(term)
-                        );
-                    });
-                }
+		            clearDayFilterBtn.style.display = 'inline-flex';
+		            // NYTT: Göm Dagens Vinst på mobil vid sökning
+		            if (window.innerWidth <= 768) {
+		                headerProfitDisplay.style.display = 'none';
+		            }
+		        } else {
+		            clearDayFilterBtn.style.display = 'none';
+		            // NYTT: Visa Dagens Vinst igen (om den ska synas)
+		            if (window.innerWidth <= 768) {
+		                renderGlobalStats(allJobs); // Denna återställer vinsten
+		            }
+		        }
                 
                 jobsToDisplay.sort((a, b) => {
                     const dateA = new Date(a.datum);
@@ -2030,9 +2031,11 @@
 			
 			    list.forEach(item => {
 			        const vinstClass = item.vinst > 0 ? '' : 'no-profit';
-			        html += `
+			        const dataType = (type === 'kund') ? 'data-kund' : 'data-regnr';
+
+					html += `
 					    <li>
-					        <button class="link-btn item-name" data-${type}="${item.name}">${item.name}</button>
+					        <button class="link-btn item-name" ${dataType}="${item.name}">${item.name}</button>
 					        <span class="item-value ${vinstClass}">${formatCurrency(item.vinst)}</span>
 					    </li>
 					`;
@@ -2589,24 +2592,17 @@
             });
             
             function clearSearch() {
-                searchBar.value = '';
+			    searchBar.value = '';
 			    mobileSearchBar.value = '';
-			    currentSearchTerm = '';
-			    
-                clearDayFilterBtn.style.display = 'none';
-                desktopSearchClear.style.display = 'none';
-                mobileSearchClear.style.display = 'none';
-
-			    renderTimeline();
-
-				// NY KOD: Visa stat-rutorna igen när sökningen rensas
-		        if (window.innerWidth <= 768) {
-		            document.getElementById('statBar').style.display = 'grid';
-		        }
-			    if (desktopSearchWrapper) {
-			        desktopSearchWrapper.classList.remove('is-searching');
+			    currentSearchTerm = ''; // Sätt söktermen till tom
+			
+			    performSearch(); // Anropa performSearch för att uppdatera listan OCH headern
+			
+			    // Se till att stat-rutorna visas igen på mobilen
+			    if (window.innerWidth <= 768) {
+			        document.getElementById('statBar').style.display = 'grid';
 			    }
-            }
+			}
             
             clearDayFilterBtn.addEventListener('click', () => {
                 clearSearch();
