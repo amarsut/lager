@@ -487,15 +487,6 @@
                     </p>
                 </div>
 
-				<form id="settingsModalForm" class="modal-body">
-                <div class="form-group">
-                    <label for="profitGoalInput">Månadsmål Vinst (kr)</label>
-                    <input type="number" id="profitGoalInput" placeholder="t.ex. 50000" min="0">
-                    <p style="font-size: 0.8rem; color: var(--text-color-light); margin-top: 0.5rem;">
-                        Sätt ett vinstmål för innevarande månad. Visas i statistik-översikten.
-                    </p>
-                </div>
-
                 <div class="form-group">
                     <label>Standardvy vid Start</label>
                     <div class="settings-radio-group">
@@ -512,7 +503,6 @@
                         </label>
                     </div>
                 </div>
-                <div class="form-group settings-button-group" id="mobileSettingsGroup">
 
                 <div class="form-group settings-button-group" id="mobileSettingsGroup">
                     <hr style="border: none; border-top: 1px solid var(--border-color); margin: 0.5rem 0;">
@@ -2491,6 +2481,16 @@
                 
                 showModal('settingsModal');
             }
+			radio.addEventListener('change', (e) => {
+                    if(e.target.checked) {
+                        localStorage.setItem('defaultView', e.target.value);
+                        // Ge visuell feedback, men bara om "Spara"-knappen inte syns
+                        if (window.innerWidth > 768) {
+                            showToast('Standardvy sparad!', 'success');
+                        }
+                    }
+                });
+            });
             settingsBtn.addEventListener('click', openSettingsModal);
             mobileSettingsBtn.addEventListener('click', openSettingsModal);
             
@@ -2499,8 +2499,8 @@
                 currentProfitGoal = parseFloat(profitGoalInput.value) || 0;
                 localStorage.setItem('profitGoal', currentProfitGoal);
 
-				const selectedView = document.querySelector('input[name="defaultView"]:checked').value;
-                localStorage.setItem('defaultView', selectedView);
+				//const selectedView = document.querySelector('input[name="defaultView"]:checked').value;
+                //localStorage.setItem('defaultView', selectedView);
 				
                 showToast('Inställningar sparade!', 'success');
                 closeModal();
@@ -2923,6 +2923,7 @@
                     appInitialized = true;
                     initializeCalendar();
                     initRealtimeListener();
+					toggleView(currentView);
                 } else {
                     showPinLock();
                 }
@@ -2933,6 +2934,7 @@
                 appInitialized = true;
                 initializeCalendar();
                 initRealtimeListener();
+				toggleView(currentView);
             }
             
             window.addEventListener('resize', debounce(() => {
