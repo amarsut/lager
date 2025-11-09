@@ -1853,11 +1853,34 @@
                 const customerJobs = allJobs.filter(j => j.kundnamn === kundnamn).sort((a, b) => new Date(b.datum) - new Date(a.datum));
                 if (customerJobs.length === 0) return;
                 
-                const latestPhone = customerJobs.find(j => j.telefon)?.telefon || 'Inget tel.nr sparat';
+                // NY LOGIK: Hitta senaste telefonnummer
+                const latestPhoneJob = customerJobs.find(j => j.telefon);
+                const latestPhone = latestPhoneJob ? latestPhoneJob.telefon : null; // Hämta numret eller null
+
                 const totalVinst = customerJobs.reduce((sum, j) => sum + (j.vinst || 0), 0);
                 
                 customerModalName.textContent = kundnamn;
-                customerModalPhone.textContent = latestPhone;
+
+                // NY LOGIK: Dölj/visa knappar baserat på om nummer finns
+                if (latestPhone) {
+                    // Finns ett nummer
+                    customerModalPhone.textContent = latestPhone;
+                    customerModalCallBtn.href = `tel:${latestPhone}`;
+                    customerModalSmsBtn.href = `sms:${latestPhone}`;
+                    customerModalCallBtn.style.display = 'inline-flex';
+                    customerModalSmsBtn.style.display = 'inline-flex';
+                } else {
+                    // Finns inget nummer
+                    customerModalPhone.textContent = 'Inget tel.nr sparat';
+                    customerModalCallBtn.href = '#'; // Återställ
+                    customerModalSmsBtn.href = '#'; // Återställ
+                    customerModalCallBtn.style.display = 'none';
+                    customerModalSmsBtn.style.display = 'none';
+                }
+                
+                // Se till att redigera-knappen alltid syns
+                editCustomerPhoneBtn.style.display = 'inline-flex';
+
                 customerModalTotalProfit.textContent = formatCurrency(totalVinst);
                 customerModalTotalProfit.className = totalVinst > 0 ? 'stat-value positive' : 'stat-value';
                 customerModalJobCount.textContent = customerJobs.length;
