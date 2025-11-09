@@ -837,12 +837,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     z-index: 10;
 }
 
-#modalCancelBtn {
-    background: transparent; box-shadow: none;
-    border-color: transparent; color: var(--text-color-light);
-    order: 1;
-}
-#modalCancelBtn:hover { background-color: var(--bg-color); color: var(--text-color); }
 #modalSaveBtn { order: 3; }
 
 /* --- Toast --- */
@@ -931,6 +925,22 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     gap: 1rem; background-color: var(--bg-color);
     padding: 1rem 1.5rem;
     border-bottom: 1px solid var(--border-color);
+}
+/* Återställ Kund- & Bil-modalerna till 2 kolumner */
+#customerModal .detail-stats,
+#carModal .detail-stats {
+    grid-template-columns: 1fr 1fr;
+}
+
+/* Gör texten i Kund- & Bil-modalerna mindre */
+#customerModal .detail-stats .stat-title,
+#carModal .detail-stats .stat-title {
+    font-size: 0.75rem; /* Mindre titel */
+}
+
+#customerModal .detail-stats .stat-value,
+#carModal .detail-stats .stat-value {
+    font-size: 1.1rem; /* Mindre värde */
 }
 .detail-stats div { display: flex; flex-direction: column; }
 .detail-stats .stat-title {
@@ -2807,4 +2817,19 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     color: var(--text-color-light);
 }
 
+/* Gör Statistik-headern statisk (inte sticky) */
+#statsModal .modal-header {
+    position: static;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background-color: var(--content-bg);
+}
+[data-theme="dark"] #statsModal .modal-header {
+    background-color: var(--bg-color);
+}
 
+/* Minska storleken på statistik-rutan */
+#statsModal .detail-stats {
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+}
