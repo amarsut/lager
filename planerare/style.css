@@ -69,6 +69,9 @@ body {
 
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+
+    /* --- NYTT: Mjuk Tema-växling --- */
+    transition: background-color var(--transition-speed) ease, color var(--transition-speed) ease;
 }
 
 /* PUNKT 4 (FIX): Nödvändig klass för att dölja select-menyn */
@@ -239,9 +242,10 @@ body {
     to { transform: translateY(0); opacity: 1; }
 }
 
+/* --- NYTT: Snyggare "Kort-lyft" --- */
 .stat-card:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-md);
+    transform: scale(1.02); /* Ändrad från translateY */
+    box-shadow: var(--shadow-lg); /* Använder en mjukare, större skugga */
     border-color: var(--primary-color);
 }
 .stat-card:hover .stat-card-value {
@@ -360,6 +364,8 @@ input[type="search"]::-webkit-search-results-decoration {
 }
 .button.secondary { background-color: var(--content-bg); color: var(--text-color); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
 .button.secondary:hover { background-color: var(--bg-color); }
+
+/* --- Snyggare "Rensa Filter"-knapp --- */
 .button.clear-filter {
     background-color: var(--bg-color);
     color: var(--primary-color);
@@ -377,10 +383,10 @@ input[type="search"]::-webkit-search-results-decoration {
     color: var(--danger-color);
     border-color: var(--danger-color);
 }
-/* Mörkt läge-fix */
 [data-theme="dark"] .button.clear-filter:hover {
     background-color: var(--danger-light);
 }
+
 .button.primary { background-color: var(--primary-color); color: white; box-shadow: var(--shadow-sm); }
 .button.primary:hover { background-color: var(--primary-hover); box-shadow: var(--shadow-md); }
 
@@ -455,18 +461,16 @@ mark {
     border-radius: var(--border-radius);
     border: 1px solid var(--border-color);
     overflow: hidden; box-shadow: var(--shadow-sm);
-    opacity: 0;
-    animation: fadeIn 0.4s ease 0.4s forwards;
+    /* BORTTAGEN: Animationen hanteras nu av JS */
+    /* opacity: 0; */
+    /* animation: fadeIn 0.4s ease 0.4s forwards; */
 }
 .table-wrapper { overflow-x: auto; }
 #jobbOversikt { width: 100%; border-collapse: separate; border-spacing: 0; }
 
 #jobbOversikt thead {
     background-color: var(--bg-color);
-    /* BORTTAGEN: Sticky header för desktop */
-    /* position: sticky; */ 
-    /* top: var(--header-height); */
-    z-index: 1; /* Sänkt från 40 */
+    z-index: 1;
 }
 
 #jobbOversikt th, #jobbOversikt td {
@@ -587,6 +591,35 @@ mark {
     z-index: 2;
 }
 
+/* --- NYTT: Kontextuell Ikon-styling --- */
+.context-icon {
+    width: 1rem;
+    height: 1rem;
+    margin-right: 0.6rem;
+    vertical-align: -2px;
+    color: var(--text-color-light);
+    opacity: 0.8;
+}
+
+/* --- NYTT: Animerade List-övergångar --- */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Bas-klass för både tabellrader och mobilkort */
+.job-entry {
+    animation: fadeIn 0.3s ease forwards;
+}
+
+/* Klass för att tona ut element */
+.job-entry.fade-out {
+    opacity: 0;
+    transform: scale(0.95);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+
 /* Tom Vy */
 .empty-state {
     text-align: center; padding: 4rem 2rem;
@@ -600,7 +633,7 @@ mark {
 .empty-state .icon-lg { width: 3rem; height: 3rem; color: var(--primary-color); opacity: 0.3; }
 .empty-state h3 { font-size: 1.25rem; color: var(--text-color); margin: 1.5rem 0 0.5rem 0; }
 .empty-state .button { margin-top: 1.5rem; font-size: 1rem; padding: 0.75rem 1.5rem; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
 
 /* --- Modal-design --- */
 .modal-backdrop { 
@@ -939,6 +972,16 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 #statsModal .modal-body {
     padding-top: 1rem;
 }
+/* Rubrik för grafer */
+.chart-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
 
 .profit-goal-progress {
     margin-bottom: 1.5rem;
@@ -975,17 +1018,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     width: 100%;
     max-height: 250px;
     margin-bottom: 2rem;
-}
-
-/* --- Styling för Graf-rubriker --- */
-.chart-title {
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--text-color);
-    margin-top: 2rem;
-    margin-bottom: 0.75rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid var(--border-color);
 }
 
 #statsModalTable {
@@ -1864,6 +1896,12 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         border-left: 4px solid transparent;
         transition: all var(--transition-speed-fast) ease;
     }
+    /* --- NYTT: Snyggare "Kort-lyft" (Mobil) --- */
+    .mobile-job-card:hover {
+        transform: scale(1.02);
+        box-shadow: var(--shadow-lg);
+    }
+
     .mobile-job-card.prio-row {
         border-left-color: var(--danger-color);
         background-color: var(--danger-light);
@@ -1902,6 +1940,17 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         font-weight: 700;
         font-size: 1.05rem;
         color: var(--text-color);
+    }
+    /* --- NYTT: Wrapper för kontext-ikon + namn --- */
+    .customer-name-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+    }
+    .customer-name-wrapper .context-icon {
+        width: 1rem;
+        height: 1rem;
+        margin-right: 0.4rem;
     }
     .mobile-job-card .customer-price {
         font-weight: 700;
