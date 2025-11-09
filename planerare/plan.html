@@ -2464,33 +2464,51 @@
             });
             
             // --- Inställnings-modal (Vinstmål) ---
+            // 1. FUNKTIONEN FÖR ATT ÖPPNA MODALEN
+            // Denna funktion läser bara sparade värden och visar dem.
             function openSettingsModal() {
+                // Läs in sparat vinstmål och fyll i fältet
                 profitGoalInput.value = currentProfitGoal > 0 ? currentProfitGoal : '';
-
-				const savedView = localStorage.getItem('defaultView') || 'timeline';
+                
+                // Läs in sparad standardvy och markera rätt knapp
+                const savedView = localStorage.getItem('defaultView') || 'timeline';
                 if (savedView === 'calendar') {
                     document.getElementById('defaultViewCalendar').checked = true;
                 } else {
                     document.getElementById('defaultViewTimeline').checked = true;
                 }
+                
+                // Hantera visning av mobil-specifika knappar
                 if (window.innerWidth <= 768) {
                     mobileSettingsGroup.style.display = 'grid';
                 } else {
                     mobileSettingsGroup.style.display = 'none';
                 }
                 
+                // Visa själva modalen
                 showModal('settingsModal');
             }
-			radio.addEventListener('change', (e) => {
+
+            // 2. DEN NYA LYSSNAREN (LIGGER UTANFÖR)
+            // Denna kod körs 1 gång när sidan laddas.
+            // Den lyssnar efter klick på radioknapparna och sparar direkt.
+            document.querySelectorAll('input[name="defaultView"]').forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    // Om knappen blir "checked"
                     if(e.target.checked) {
-                        localStorage.setItem('defaultView', e.target.value);
-                        // Ge visuell feedback, men bara om "Spara"-knappen inte syns
+                        const selectedView = e.target.value;
+                        // Spara valet direkt i localStorage
+                        localStorage.setItem('defaultView', selectedView);
+                        
+                        // Ge visuell feedback på datorn (där "Spara"-knappen inte används för detta)
                         if (window.innerWidth > 768) {
                             showToast('Standardvy sparad!', 'success');
                         }
                     }
                 });
             });
+
+            // 3. KOPPLINGAR TILL KNAPPARNA (Dessa rader har du redan, se till att de ligger efter)
             settingsBtn.addEventListener('click', openSettingsModal);
             mobileSettingsBtn.addEventListener('click', openSettingsModal);
             
@@ -2785,6 +2803,7 @@
                         appInitialized = true;
                         initializeCalendar();
                         initRealtimeListener();
+						toggleView(currentView);
                     }
                 } else {
                     pinError.textContent = 'Fel PIN-kod. Försök igen.';
