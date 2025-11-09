@@ -359,6 +359,9 @@
                 
                 <div class="detail-modal-header-titles">
                     <h2 id="customerModalName"></h2>
+                    <button class="icon-btn" id="copyCustomerNameBtn" title="Kopiera Kundnamn">
+                        <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-clipboard"></use></svg>
+                    </button>
                     <div class="customer-phone-wrapper">
                         <p id="customerModalPhone"></p>
                         
@@ -409,8 +412,14 @@
             <div class="modal-header detail-modal-header" id="carModalHeader">
                 <div class="modal-title-with-link">
                     <h2 id="carModalRegnr"></h2>
+                    <button class="icon-btn" id="copyCarRegnrBtn" title="Kopiera Reg.nr">
+                        <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-clipboard"></use></svg>
+                    </button>
                     <a id="carModalExternalLink" href="#" target="_blank" rel="noopener noreferrer" title="Öppna i Biluppgifter.se">
                         <img src="https://biluppgifter.se/favicon/favicon.ico" alt="Biluppgifter Ikon" />
+                    </a>
+                    <a id="carModalOljemagasinetLink" href="https://oljemagasinet.se/" target="_blank" rel="noopener noreferrer" title="Öppna i Oljemagasinet.se">
+                        <img src="https://oljemagasinet.se/favicon.ico" alt="Oljemagasinet Ikon" />
                     </a>
                 </div>
                 <p id="carModalOwner"></p>
@@ -438,10 +447,16 @@
                 <ul class="detail-job-list" id="carModalJobList">
                 </ul>
 
-                <a id="carModalExternalLinkMobile" href="#" target="_blank" rel="noopener noreferrer" class="button">
-                    <img src="https://biluppgifter.se/favicon/favicon.ico" alt="Biluppgifter Ikon" />
-                    <span>Öppna i Biluppgifter.se</span>
-                </a>
+                <div class="sticky-link-buttons">
+                    <a id="carModalExternalLinkMobile" href="#" target="_blank" rel="noopener noreferrer" class="button">
+                        <img src="https://biluppgifter.se/favicon/favicon.ico" alt="Biluppgifter Ikon" />
+                        <span>Biluppgifter.se</span>
+                    </a>
+                    <a id="carModalOljemagasinetLinkMobile" href="https://oljemagasinet.se/" target="_blank" rel="noopener noreferrer" class="button secondary">
+                        <img src="https://oljemagasinet.se/favicon.ico" alt="Oljemagasinet Ikon" />
+                        <span>Oljemagasinet</span>
+                    </a>
+                </div>
             </div>
         </div>
     </div>
@@ -774,6 +789,8 @@
             const quickStatusButtons = document.getElementById('quickStatusButtons');
             const copyKundnamnBtn = document.getElementById('copyKundnamn');
             const copyRegnrBtn = document.getElementById('copyRegnr');
+			const copyCustomerNameBtn = document.getElementById('copyCustomerNameBtn'); // <-- NY
+            const copyCarRegnrBtn = document.getElementById('copyCarRegnrBtn'); // <-- NY
             
             const customerModal = document.getElementById('customerModal');
             const customerModalCloseBtn = document.getElementById('customerModalCloseBtn');
@@ -2821,6 +2838,15 @@
             copyKundnamnBtn.addEventListener('click', () => copyToClipboard(modalKundnamn.value, 'Kundnamn'));
             copyRegnrBtn.addEventListener('click', () => copyToClipboard(modalRegnr.value, 'Reg.nr'));
 
+			copyCustomerNameBtn.addEventListener('click', (e) => {
+                e.stopPropagation(); // Förhindra att klicket går vidare
+                copyToClipboard(customerModalName.textContent, 'Kundnamn');
+            });
+            copyCarRegnrBtn.addEventListener('click', (e) => {
+                e.stopPropagation(); // Förhindra att klicket går vidare
+                copyToClipboard(carModalRegnr.textContent, 'Reg.nr');
+            });
+			
             // --- App-inställningar (Tema, Kompakt, Lås) ---
             themeToggle.addEventListener('click', () => {
                 const currentTheme = docElement.getAttribute('data-theme') || 'dark';
