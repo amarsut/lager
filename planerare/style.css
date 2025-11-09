@@ -2201,22 +2201,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     }
     
     /* 9. Mobil Kalender-vy */
-    #calendarView {
-        padding: 0;
-        background: none;
-        border: none;
-        max-width: 100%; /* Åsidosätt desktop-maxbredd */
-    }
-    [data-theme="dark"] #calendarView .fc {
-        padding: 0;
-        border: none;
-    }
-    .fc .fc-toolbar {
-        padding: 0.5rem 0.25rem;
-    }
-    .fc .fc-toolbar-title {
-        font-size: 1.25rem;
-    }
 	
     #calendarView {
         padding: 0;
@@ -2522,31 +2506,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 [data-theme="dark"] .settings-button-group #settingsThemeToggle .icon-moon { display: block; }
 [data-theme="dark"] .settings-button-group #settingsThemeToggle .icon-sun { display: none; }
 
-/* --- 10 NYA FUNKTIONER --- */
-
-/* 1. Dagens Vinst (Header) */
-.header-profit-display {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    background-color: rgba(48, 209, 88, 0.1);
-    color: var(--success-color);
-    font-size: 0.875rem;
-    font-weight: 700;
-    padding: 0.5rem 0.8rem;
-    border-radius: 8px;
-    border: 1px solid rgba(48, 209, 88, 0.2);
-}
-.header-profit-display .icon-sm {
-    width: 1rem;
-    height: 1rem;
-}
-@media (max-width: 768px) {
-    .header-profit-display {
-        display: none;
-    }
-}
-
 /* 2. Snabbval Status (Modal) */
 .quick-status-buttons {
     grid-column: 1 / -1;
@@ -2839,4 +2798,5 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     padding-top: 0.75rem;
     padding-bottom: 0.75rem;
 }
+
 
