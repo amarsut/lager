@@ -2278,11 +2278,8 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         margin-top: 0; 
     }
     
-    /* --- BRUTE FORCE-FIX FÖR KNAPPARNA --- */
-
-	/* Justera knapparna inuti wrappern */
-	#carModalExternalLinkMobile,
-	#carModalOljemagasinetLinkMobile {
+    /* Justera knapparna inuti wrappern (VIA KLASS-VÄLJARE) */
+	.sticky-link-buttons .button.secondary {
 	    display: flex !important;
 	    padding: 0.85rem 1rem;    /* <-- BRED PADDING */
 	    font-size: 0.9rem;
@@ -2294,15 +2291,12 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 	    position: static !important;
 	    bottom: auto !important;
 	    width: 100% !important; 
+	    
+	    /* Förhindra avklippt text */
+	    white-space: nowrap;
+	    overflow: hidden;
+	    text-overflow: ellipsis;
 	}
-    
-    /* Ikon-styling */
-    #carModalExternalLinkMobile img,
-    #carModalOljemagasinetLinkMobile img {
-        width: 20px;
-        height: 20px;
-        border-radius: 4px;
-    }
 
 }
 
@@ -2743,6 +2737,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 [data-theme="dark"] .icon-button-group #customerModalCallBtn:hover {
     background-color: rgba(48, 209, 88, 0.2);
 }
+
 
 
 
