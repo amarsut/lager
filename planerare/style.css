@@ -2278,24 +2278,27 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         margin-top: 0; 
     }
     
-    /* Justera knapparna inuti wrappern (VIA KLASS-VÄLJARE - FÖRSÖK 3) */
+    /* --- LÖSNING FÖR STICKY-KNAPPAR (SPECIFICITETS-KRIG) --- */
+
+	/* 1. En allmän regel för båda knapparna */
 	.sticky-link-buttons .button.secondary {
 	    display: flex !important;
-	    padding: 0.85rem 1rem;       /* <-- BRED PADDING */
+	    padding: 0.85rem 1rem;
 	    font-size: 0.9rem;
 	    gap: 0.5rem; 
-	    justify-content: center !important;  /* <-- TVINGAD CENTRERING */
+	    justify-content: center;  /* Allmän centrering */
 	    align-items: center;
 	    text-decoration: none !important;
 	    transition: all 0.2s ease;
 	    position: static !important;
 	    bottom: auto !important;
 	    width: 100% !important; 
-	    
-	    /* TA BORT REGLERNA SOM DÖLJER IKONERNA OCH KLIPPER TEXTEN */
-	    /* white-space: nowrap; (Borttagen) */
-	    /* overflow: hidden; (Borttagen) */
-	    /* text-overflow: ellipsis; (Borttagen) */
+	}
+	
+	/* 2. En HYPER-SPECIFIK regel för BARA Oljemagasinet-knappen */
+	.sticky-link-buttons a#carModalOljemagasinetLinkMobile[href="https://oljemagasinet.se/"] {
+	    justify-content: center !important; /* Tvinga centrering */
+	    padding: 0.85rem 1rem !important;   /* Tvinga padding */
 	}
 	    
     /* Ikon-styling */
@@ -2744,6 +2747,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 [data-theme="dark"] .icon-button-group #customerModalCallBtn:hover {
     background-color: rgba(48, 209, 88, 0.2);
 }
+
 
 
 
