@@ -487,6 +487,33 @@
                     </p>
                 </div>
 
+				<form id="settingsModalForm" class="modal-body">
+                <div class="form-group">
+                    <label for="profitGoalInput">Månadsmål Vinst (kr)</label>
+                    <input type="number" id="profitGoalInput" placeholder="t.ex. 50000" min="0">
+                    <p style="font-size: 0.8rem; color: var(--text-color-light); margin-top: 0.5rem;">
+                        Sätt ett vinstmål för innevarande månad. Visas i statistik-översikten.
+                    </p>
+                </div>
+
+                <div class="form-group">
+                    <label>Standardvy vid Start</label>
+                    <div class="settings-radio-group">
+                        <input type="radio" id="defaultViewTimeline" name="defaultView" value="timeline" checked>
+                        <label for="defaultViewTimeline">
+                            <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-timeline-view"></use></svg>
+                            <span>Tidslinje</span>
+                        </label>
+                        
+                        <input type="radio" id="defaultViewCalendar" name="defaultView" value="calendar">
+                        <label for="defaultViewCalendar">
+                            <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-calendar-view"></use></svg>
+                            <span>Kalender</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group settings-button-group" id="mobileSettingsGroup">
+
                 <div class="form-group settings-button-group" id="mobileSettingsGroup">
                     <hr style="border: none; border-top: 1px solid var(--border-color); margin: 0.5rem 0;">
                     <label>App-åtgärder</label>
@@ -651,7 +678,7 @@
             const todayString = today.toISOString().split('T')[0];
             
             let calendar;
-            let currentView = 'timeline';
+            let currentView = localStorage.getItem('defaultView') || 'timeline';
             
             let isModalOpen = false;
             let currentOpenModalId = null;
@@ -2449,7 +2476,13 @@
             // --- Inställnings-modal (Vinstmål) ---
             function openSettingsModal() {
                 profitGoalInput.value = currentProfitGoal > 0 ? currentProfitGoal : '';
-                
+
+				const savedView = localStorage.getItem('defaultView') || 'timeline';
+                if (savedView === 'calendar') {
+                    document.getElementById('defaultViewCalendar').checked = true;
+                } else {
+                    document.getElementById('defaultViewTimeline').checked = true;
+                }
                 if (window.innerWidth <= 768) {
                     mobileSettingsGroup.style.display = 'grid';
                 } else {
@@ -2465,6 +2498,10 @@
                 e.preventDefault();
                 currentProfitGoal = parseFloat(profitGoalInput.value) || 0;
                 localStorage.setItem('profitGoal', currentProfitGoal);
+
+				const selectedView = document.querySelector('input[name="defaultView"]:checked').value;
+                localStorage.setItem('defaultView', selectedView);
+				
                 showToast('Inställningar sparade!', 'success');
                 closeModal();
             });
