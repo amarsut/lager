@@ -2038,6 +2038,11 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     .modal-header {
         padding: 1rem 1.25rem;
     }
+	#carModalHeader .modal-title-with-link #carModalExternalLink,
+    #carModalHeader .modal-title-with-link #carModalOljemagasinetLink,
+    #carModalHeader .modal-title-with-link #copyCarRegnrBtn {
+        display: none;
+    }
     .prio-toggle-wrapper {
         padding: 0.4rem 0.6rem;
         font-size: 0.8rem;
@@ -2333,10 +2338,8 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     #mobileJobList {
         display: none;
     }
-	##carModalExternalLink, #carModalOljemagasinetLink {
-        display: none;
-    }
-    #carModalExternalLinkMobile {
+	/* Dölj mobil-länk-knapparna (.sticky-link-buttons) på desktop */
+    .sticky-link-buttons {
         display: none;
     }
     #mobileSettingsGroup {
@@ -2761,4 +2764,5 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 [data-theme="dark"] .icon-button-group #customerModalCallBtn:hover {
     background-color: rgba(48, 209, 88, 0.2);
 }
+
 
