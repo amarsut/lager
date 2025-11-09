@@ -89,7 +89,7 @@
             </div>
             
             <div class="header-right">
-                <div class="header-profit-display" id="headerProfitDisplay">
+                <div class="header-profit-display" id="headerProfitDisplay" style="display: none;">
                     <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-wallet"></use></svg>
                     <span>Dagens Vinst:</span>
                     <span id="headerProfitValue">0 kr</span>
@@ -1941,6 +1941,7 @@
                 statsModalBody.querySelector('#statsModalTable')?.remove(); 
                 statsModalBody.insertAdjacentHTML('beforeend', tableHtml);
 
+                // --- MÅNADSGRAF (BEFINTLIG) ---
                 const chartData = Object.values(monthlyStats).sort((a, b) => a.key.localeCompare(b.key));
                 const recentChartData = chartData.slice(-12); 
 
@@ -1992,15 +1993,18 @@
                     }
                 });
 
-				// const weekdayLabels = ['Mån', 'Tis', 'Ons', 'Tor', 'Fre', 'Lör', 'Sön'];
+                // --- VECKODAGSGRAF (NY KOD HÄR) ---
+                
+                // 1. Definiera labels och data-array FÖRST
+                const weekdayLabels = ['Mån', 'Tis', 'Ons', 'Tor', 'Fre', 'Lör', 'Sön'];
                 const weekdayCounts = [0, 0, 0, 0, 0, 0, 0]; // 7 dagar, Mån=0, Sön=6
 
+                // 2. Fyll på data-arrayen
                 completedJobs.forEach(job => {
                     try {
                         const d = new Date(job.datum);
                         let dayOfWeek = d.getDay(); // 0=Söndag, 1=Måndag, ... 6=Lördag
 
-                        // Justera så att Måndag = 0 och Söndag = 6
                         if (dayOfWeek === 0) {
                             dayOfWeek = 6; // Flytta Söndag till slutet
                         } else {
@@ -2013,20 +2017,22 @@
                     } catch(e) { /* Ignorera ogiltiga datum */ }
                 });
 
+                // 3. Hämta canvas och förstör gammal instans
                 const weekdayCtx = document.getElementById('weekdayChart').getContext('2d');
                 
                 if (weekdayChartInstance) {
                     weekdayChartInstance.destroy(); 
                 }
 
+                // 4. Skapa den nya grafen
                 weekdayChartInstance = new Chart(weekdayCtx, {
-                    type: 'bar', // Stapeldiagram är bäst här
+                    type: 'bar',
                     data: {
-                        labels: weekdayLabels,
+                        labels: weekdayLabels, // Använd den definierade variabeln
                         datasets: [{
                             label: 'Antal Jobb',
-                            data: weekdayCounts,
-                            backgroundColor: 'rgba(48, 209, 88, 0.7)', // Använder din "success-color"
+                            data: weekdayCounts, // Använd den definierade variabeln
+                            backgroundColor: 'rgba(48, 209, 88, 0.7)',
                             borderColor: 'rgba(48, 209, 88, 1)',
                             borderWidth: 1,
                             borderRadius: 4
@@ -2049,13 +2055,14 @@
                             y: {
                                 beginAtZero: true,
                                 ticks: {
-                                    stepSize: 1 // Visa bara heltal
+                                    stepSize: 1 
                                 }
                             }
                         }
                     }
                 });
-
+                
+                // Slutligen, visa modalen
                 showModal('statsModal');
             }
             
