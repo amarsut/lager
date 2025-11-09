@@ -89,12 +89,6 @@
             </div>
             
             <div class="header-right">
-                <div class="header-profit-display" id="headerProfitDisplay" style="display: none;">
-                    <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-wallet"></use></svg>
-                    <span>Dagens Vinst:</span>
-                    <span id="headerProfitValue">0 kr</span>
-                </div>
-
                 <div class="divider"></div>
 
                 <button class="nav-button" id="settingsBtn" title="Inställningar">
@@ -359,9 +353,6 @@
                 
                 <div class="detail-modal-header-titles">
                     <h2 id="customerModalName"></h2>
-                    <button class="icon-btn" id="copyCustomerNameBtn" title="Kopiera Kundnamn">
-                        <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-clipboard"></use></svg>
-                    </button>
                     <div class="customer-phone-wrapper">
                         <p id="customerModalPhone"></p>
                         
@@ -410,6 +401,8 @@
     <div id="carModal" class="modal-backdrop" data-modal-id="carModal">
         <div class="modal-content">
             <div class="modal-header detail-modal-header" id="carModalHeader">
+
+            <div class="detail-modal-header-titles">
                 <div class="modal-title-with-link">
                     <h2 id="carModalRegnr"></h2>
                     <button class="icon-btn" id="copyCarRegnrBtn" title="Kopiera Reg.nr">
@@ -419,14 +412,16 @@
                         <img src="https://biluppgifter.se/favicon/favicon.ico" alt="Biluppgifter Ikon" />
                     </a>
                     <a id="carModalOljemagasinetLink" href="https://oljemagasinet.se/" target="_blank" rel="noopener noreferrer" title="Öppna i Oljemagasinet.se">
-                        <img src="images/oljemagasinet-favico.png" alt="Oljemagasinet Ikon" style="width: 20px; height: 20px; border-radius: 4px;" />
+                        <img src="images/oljemagasinet-favico.png" alt="Oljemagasinet Ikon" />
                     </a>
                 </div>
-                <p id="carModalOwner"></p>
-                <button class="modal-close-btn" id="carModalCloseBtn" aria-label="Stäng modal">
-                    <svg class="icon" viewBox="0 0 24 24"><use href="#icon-close"></use></svg>
-                </button>
+                <p id="carModalOwner"></p> 
             </div>
+
+            <button class="modal-close-btn" id="carModalCloseBtn" aria-label="Stäng modal">
+                <svg class="icon" viewBox="0 0 24 24"><use href="#icon-close"></use></svg>
+            </button>
+        </div>
             
             <div class="detail-stats">
                 <div>
@@ -464,7 +459,7 @@
 
 	<div id="statsModal" class="modal-backdrop" data-modal-id="statsModal">
         <div class="modal-content">
-            <div class="modal-header detail-modal-header">
+            <div class="modal-header">
                 <h2>Statistiköversikt</h2>
                 <p>Baserat på alla "Klar"-markerade jobb.</p>
                 <button class="modal-close-btn" id="statsModalCloseBtn" aria-label="Stäng modal">
@@ -481,6 +476,10 @@
                     <span class="stat-title">Totalt Antal Jobb</span>
                     <span class="stat-value" id="statsModalJobCount">0</span>
                 </div>
+				<div>
+                <span class="stat-title">Dagens Vinst</span>
+	                <span class="stat-value" id="statsModalDagensVinst">0 kr</span>
+	            </div>
             </div>
             
             <div class="modal-body" id="statsModalBody">
@@ -748,7 +747,6 @@
             const toast = document.getElementById('toastNotification');
             
             const appBrandTitle = document.getElementById('appBrandTitle'); 
-            const headerProfitDisplay = document.getElementById('headerProfitDisplay');
             const headerProfitValue = document.getElementById('headerProfitValue');
             
             const timelineView = document.getElementById('timelineView');
@@ -800,7 +798,6 @@
             const quickStatusButtons = document.getElementById('quickStatusButtons');
             const copyKundnamnBtn = document.getElementById('copyKundnamn');
             const copyRegnrBtn = document.getElementById('copyRegnr');
-			const copyCustomerNameBtn = document.getElementById('copyCustomerNameBtn'); // <-- NY
             const copyCarRegnrBtn = document.getElementById('copyCarRegnrBtn'); // <-- NY
             
             const customerModal = document.getElementById('customerModal');
@@ -1179,8 +1176,6 @@
                 if (view === 'calendar') {
                     timelineView.style.display = 'none';
                     calendarView.style.display = 'block';
-                    appBrandTitle.style.display = 'none'; 
-
                     calendar.changeView('dayGridTwoWeek'); 
                     
                     const isMobile = window.innerWidth <= 768;
@@ -1313,13 +1308,6 @@
                 const todaysProfit = jobs
                     .filter(j => j.status === 'klar' && j.datum && j.datum.startsWith(todayString))
                     .reduce((sum, j) => sum + (j.vinst || 0), 0);
-                
-                if (todaysProfit > 0) {
-                    headerProfitValue.textContent = formatCurrency(todaysProfit);
-                    headerProfitDisplay.style.display = 'flex';
-                } else {
-                    headerProfitDisplay.style.display = 'none';
-                }
 
                 document.querySelectorAll('.stat-card.active').forEach(c => c.classList.remove('active'));
                 const activeCard = document.getElementById(`stat-card-${currentStatusFilter}`);
@@ -1356,9 +1344,6 @@
                 if (currentSearchTerm) {
                     // Detta är koden du redan har (för att dölja knappar)
                     clearDayFilterBtn.style.display = 'inline-flex';
-                    if (window.innerWidth <= 768) {
-                        headerProfitDisplay.style.display = 'none';
-                    }
 
                     // *** DEN HÄR DELEN SAKNADES ***
                     // Denna kod filtrerar bort jobben som inte matchar
@@ -2071,6 +2056,17 @@
 		        const carListHTML = generateTopListHTML(topCars, 'Mest lönsamma bilar (Reg.nr)', 'bil');
                 const totalVinst = completedJobs.reduce((sum, j) => sum + (j.vinst || 0), 0);
                 const totalJobb = completedJobs.length;
+
+				// NY KOD: Beräkna Dagens vinst
+		        const todayString = new Date().toISOString().split('T')[0];
+		        const todaysProfit = allJobs
+		            .filter(j => j.status === 'klar' && j.datum && j.datum.startsWith(todayString))
+		            .reduce((sum, j) => sum + (j.vinst || 0), 0);
+		
+		        // Sätt värdet
+		        document.getElementById('statsModalDagensVinst').textContent = formatCurrency(todaysProfit);
+		        // Sätt färg
+		        document.getElementById('statsModalDagensVinst').className = todaysProfit > 0 ? 'stat-value positive' : 'stat-value';
 
                 statsModalTotalProfit.textContent = formatCurrency(totalVinst);
                 statsModalJobCount.textContent = totalJobb;
@@ -2946,10 +2942,6 @@
             copyKundnamnBtn.addEventListener('click', () => copyToClipboard(modalKundnamn.value, 'Kundnamn'));
             copyRegnrBtn.addEventListener('click', () => copyToClipboard(modalRegnr.value, 'Reg.nr'));
 
-			copyCustomerNameBtn.addEventListener('click', (e) => {
-                e.stopPropagation(); // Förhindra att klicket går vidare
-                copyToClipboard(customerModalName.textContent, 'Kundnamn');
-            });
             copyCarRegnrBtn.addEventListener('click', (e) => {
                 e.stopPropagation(); // Förhindra att klicket går vidare
                 copyToClipboard(carModalRegnr.textContent, 'Reg.nr');
