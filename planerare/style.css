@@ -2279,22 +2279,22 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     }
     
     /* Justera knapparna inuti wrappern */
-    #carModalExternalLinkMobile,
-    #carModalOljemagasinetLinkMobile {
-        display: flex !important; /* Säkerställ att det är flex */
-        padding: 0.85rem 0.5rem;
-        font-size: 0.9rem;
-        gap: 0.5rem; 
-        justify-content: center; 
-        align-items: center; /* <-- HÄR ÄR FIXEN FÖR CENTRERING */
-        text-decoration: none !important;
-        transition: all 0.2s ease;
-        
-        /* Ta bort eventuella sticky-positioneringar från själva knappen */
-        position: static !important;
-        bottom: auto !important;
-        width: 100% !important; 
-    }
+	#carModalExternalLinkMobile,
+	#carModalOljemagasinetLinkMobile {
+	    display: flex !important; /* Säkerställ att det är flex */
+	    padding: 0.85rem 1rem; /* <-- ÄNDRINGEN ÄR HÄR (från 0.5rem) */
+	    font-size: 0.9rem;
+	    gap: 0.5rem; 
+	    justify-content: center; 
+	    align-items: center; /* <-- Denna rad är KORREKT för vertikal centrering */
+	    text-decoration: none !important;
+	    transition: all 0.2s ease;
+	    
+	    /* Ta bort eventuella sticky-positioneringar från själva knappen */
+	    position: static !important;
+	    bottom: auto !important;
+	    width: 100% !important; 
+	}
     
     /* Ikon-styling */
     #carModalExternalLinkMobile img,
@@ -2743,6 +2743,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 [data-theme="dark"] .icon-button-group #customerModalCallBtn:hover {
     background-color: rgba(48, 209, 88, 0.2);
 }
+
 
 
 
