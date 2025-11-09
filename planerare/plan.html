@@ -351,6 +351,13 @@
                 <h2 id="customerModalName"></h2>
                 <div class="customer-phone-wrapper">
                     <p id="customerModalPhone"></p>
+                    
+                    <a href="#" id="customerModalCallBtn" class="icon-btn" title="Ring kund">
+                        <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-phone"></use></svg>
+                    </a>
+                    <a href="#" id="customerModalSmsBtn" class="icon-btn" title="Skicka SMS till kund">
+                        <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-chat"></use></svg>
+                    </a>
                     <button class="icon-btn" id="editCustomerPhoneBtn" title="Redigera telefonnummer">
                         <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-pencil"></use></svg>
                     </button>
@@ -756,6 +763,8 @@
             const customerModalName = document.getElementById('customerModalName');
             const customerModalPhone = document.getElementById('customerModalPhone');
             const editCustomerPhoneBtn = document.getElementById('editCustomerPhoneBtn'); 
+			const customerModalCallBtn = document.getElementById('customerModalCallBtn'); // <-- NY
+            const customerModalSmsBtn = document.getElementById('customerModalSmsBtn'); // <-- NY
             const customerModalTotalProfit = document.getElementById('customerModalTotalProfit');
             const customerModalJobCount = document.getElementById('customerModalJobCount');
             const customerModalJobList = document.getElementById('customerModalJobList');
