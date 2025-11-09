@@ -747,7 +747,6 @@
             const toast = document.getElementById('toastNotification');
             
             const appBrandTitle = document.getElementById('appBrandTitle'); 
-            const headerProfitValue = document.getElementById('headerProfitValue');
             
             const timelineView = document.getElementById('timelineView');
             const jobListContainer = document.getElementById('jobListContainer');
@@ -756,7 +755,6 @@
             const emptyStateTextTimeline = document.getElementById('emptyStateTextTimeline');
             const emptyStateAddBtn = document.getElementById('emptyStateAddBtn');
             const searchBar = document.getElementById('searchBar');
-            const viewControls = document.getElementById('view-controls');
 			const desktopSearchWrapper = document.querySelector('#view-controls .search-wrapper');
             const clearDayFilterBtn = document.getElementById('clearDayFilterBtn');
 
@@ -3002,6 +3000,9 @@
             
             mobileAddJobBtn.addEventListener('click', () => openJobModal('add'));
             mobileSearchBtn.addEventListener('click', () => {
+				if (currentView === 'calendar') {
+                    toggleView('timeline');
+                }
                 showModal('mobileSearchModal');
                 mobileSearchBar.focus();
             });
