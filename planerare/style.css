@@ -2260,7 +2260,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     /* NY wrapper för mobil-länkar i bil-modal */
     .sticky-link-buttons {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1fr; /* <-- *** DIN FÖRSTA FIX (STAPLA) *** */
         gap: 0.75rem;
         
         /* Footer-styling */
@@ -2277,6 +2277,25 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         z-index: 10;
         margin-top: 0; 
     }
+    
+    /* Centrera innehållet i de staplade knapparna */
+    .sticky-link-buttons .button.secondary {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 0.7rem 1rem;
+        font-size: 0.9rem;
+        gap: 0.5rem;
+        text-decoration: none !important;
+    }
+
+    /* Tvinga ikonstorleken i knapparna */
+    .sticky-link-buttons .button.secondary img {
+        width: 20px;
+        height: 20px;
+        border-radius: 4px;
+    }
+
 }
 
 /* Dölj mobil-nav på desktop */
@@ -2290,65 +2309,9 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     #mobileJobList {
         display: none;
     }
-	/*
-    * LÖSNING FÖR MOBILA LÄNKKNAPPAR
-    */
-    
-    /* 1. Stapla knapparna på höjden (ersätter grid-template-columns: 1fr 1fr) */
-    .sticky-link-buttons {
-        display: grid;
-        grid-template-columns: 1fr; /* <-- Staplar dem */
-        gap: 0.75rem;
-        
-        /* Footer-styling */
-        padding: 1rem 1.25rem;
-        background-color: var(--bg-color);
-        border-top: 1px solid var(--border-color);
-        flex-shrink: 0;
-        position: static;
-        width: auto;
-        z-index: 10;
-        margin-top: 0; 
-    }
-
-    /* 2. Centrera innehållet i de staplade knapparna */
-    .sticky-link-buttons .button.secondary {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 0.7rem 1rem; /* Lagom höjd */
-        font-size: 0.9rem;
-        gap: 0.5rem;
-        text-decoration: none !important;
-    }
-
-    /* 3. Tvinga ikonstorleken i knapparna */
-    .sticky-link-buttons .button.secondary img {
-        width: 20px;
-        height: 20px;
-        border-radius: 4px;
-    }
-
-    /* 4. Göm desktop-ikonerna i headern (denna regel finns redan, men kontrollera) */
-    #carModalHeader .modal-title-with-link #carModalExternalLink,
-    #carModalHeader .modal-title-with-link #carModalOljemagasinetLink,
-    #carModalHeader .modal-title-with-link #copyCarRegnrBtn {
-        display: none;
-    }
 	/* Dölj mobil-länk-knapparna (.sticky-link-buttons) på desktop */
     .sticky-link-buttons {
         display: none;
-    }
-	/* Centrera innehållet i de staplade knapparna */
-    #carModalExternalLinkMobile,
-    #carModalOljemagasinetLinkMobile {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 0.85rem 1rem;
-        font-size: 0.9rem;
-        gap: 0.5rem;
-        text-decoration: none !important;
     }
     #mobileSettingsGroup {
         display: none;
@@ -2772,20 +2735,3 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 [data-theme="dark"] .icon-button-group #customerModalCallBtn:hover {
     background-color: rgba(48, 209, 88, 0.2);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
