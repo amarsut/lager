@@ -2638,3 +2638,76 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 [data-theme="dark"] #customerModalCallBtn:hover {
     background-color: rgba(48, 209, 88, 0.2); /* Mörkt läge ljusgrön */
 }
+
+/* Styling för åtgärdsknappar inuti textfält (Jobb-modal) */
+.form-group.has-actions {
+    position: relative; /* Nödvändig för att positionera knapparna */
+}
+
+.form-group.has-actions .input-field-actions {
+    position: absolute;
+    right: 0.5rem;
+    bottom: 0.5rem; /* Placerar dem snyggt i fältet */
+    display: flex;
+    gap: 0.25rem;
+}
+
+/* Ge plats för knapparna så texten inte går under dem */
+.form-group.has-actions input {
+    padding-right: 5.5rem; /* Plats för 2 knappar */
+}
+
+/* Dölj knapparna som standard */
+#jobModalCallBtn,
+#jobModalSmsBtn {
+    display: none;
+    padding: 0.4rem; /* Lite mindre knappar */
+}
+
+/* Hover-effekt för Ring-knappen */
+#jobModalCallBtn:hover {
+    color: var(--success-color);
+    background-color: rgba(48, 209, 88, 0.1);
+}
+[data-theme="dark"] #jobModalCallBtn:hover {
+    background-color: rgba(48, 209, 88, 0.2);
+}
+
+/* --- FIX FÖR CUSTOMER MODAL HEADER (X-knappens position) --- */
+.detail-modal-header {
+    display: flex;
+    flex-direction: row; /* ÄNDRA TILLBAKA TILL ROW */
+    justify-content: space-between; /* Skjuter X-knappen till höger */
+    align-items: flex-start; /* Linjerar toppen av titeln med toppen av X-knappen */
+    gap: 1rem;
+}
+
+/* Ny div som grupperar H2 och telefon-wrapper vertikalt */
+.detail-modal-header-titles {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem; /* Den gamla gapen från .detail-modal-header */
+    flex-grow: 1; /* Tar upp tillgänglig plats */
+}
+
+/* Ny div som grupperar ikon-knapparna TÄTT */
+.icon-button-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem; /* Mindre gap mellan ikonerna */
+    margin-left: 0.5rem; /* Ersätter den gamla gapen från .customer-phone-wrapper */
+}
+
+/* Ta bort den gamla, stora gapen från huvud-wrappern */
+.customer-phone-wrapper {
+    gap: 0; 
+}
+
+/* Återanvänd din snygga hover-effekt för samtliga knappar */
+.icon-button-group #customerModalCallBtn:hover {
+    color: var(--success-color);
+    background-color: rgba(48, 209, 88, 0.1);
+}
+[data-theme="dark"] .icon-button-group #customerModalCallBtn:hover {
+    background-color: rgba(48, 209, 88, 0.2);
+}
