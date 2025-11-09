@@ -1354,18 +1354,33 @@
                 }
                 
                 if (currentSearchTerm) {
-		            clearDayFilterBtn.style.display = 'inline-flex';
-		            // NYTT: Göm Dagens Vinst på mobil vid sökning
-		            if (window.innerWidth <= 768) {
-		                headerProfitDisplay.style.display = 'none';
-		            }
-		        } else {
-		            clearDayFilterBtn.style.display = 'none';
-		            // NYTT: Visa Dagens Vinst igen (om den ska synas)
-		            if (window.innerWidth <= 768) {
-		                renderGlobalStats(allJobs); // Denna återställer vinsten
-		            }
-		        }
+                    // Detta är koden du redan har (för att dölja knappar)
+                    clearDayFilterBtn.style.display = 'inline-flex';
+                    if (window.innerWidth <= 768) {
+                        headerProfitDisplay.style.display = 'none';
+                    }
+
+                    // *** DEN HÄR DELEN SAKNADES ***
+                    // Denna kod filtrerar bort jobben som inte matchar
+                    jobsToDisplay = jobsToDisplay.filter(job => {
+                        const term = currentSearchTerm.toLowerCase();
+                        return (
+                            (job.kundnamn && job.kundnamn.toLowerCase().includes(term)) || 
+                            (job.regnr && job.regnr.toLowerCase().includes(term)) ||
+                            (job.kommentarer && job.kommentarer.toLowerCase().includes(term)) ||
+                            (job.telefon && job.telefon.includes(term)) ||
+                            (STATUS_TEXT[job.status] || '').toLowerCase().includes(term)
+                        );
+                    });
+                    // *** SLUT PÅ SAKNAD DEL ***
+
+                } else {
+                    // Detta är koden du redan har (för att visa knappar)
+                    clearDayFilterBtn.style.display = 'none';
+                    if (window.innerWidth <= 768) {
+                        renderGlobalStats(allJobs); 
+                    }
+                }
                 
                 jobsToDisplay.sort((a, b) => {
                     const dateA = new Date(a.datum);
