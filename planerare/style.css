@@ -2628,3 +2628,13 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 [data-theme="dark"] .settings-radio-group input[type="radio"]:checked + label {
     background-color: rgba(10, 132, 255, 0.2);
 }
+
+/* Styling för nya Ring/SMS-knappar i kundmodal */
+#customerModalCallBtn:hover {
+    color: var(--success-color);
+    background-color: rgba(48, 209, 88, 0.1); /* Ljusgrön bakgrund */
+}
+
+[data-theme="dark"] #customerModalCallBtn:hover {
+    background-color: rgba(48, 209, 88, 0.2); /* Mörkt läge ljusgrön */
+}
