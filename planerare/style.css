@@ -2058,9 +2058,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     #carModal .modal-body {
         padding-bottom: 1.5rem;
     }
-    #carModal .modal-body {
-        padding-bottom: 6rem;
-    }
 
     .modal-actions {
         padding: 1rem 1.25rem;
@@ -2265,13 +2262,20 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 0.75rem;
-        position: sticky;
-        bottom: 1.5rem;
-        left: 1.5rem;
-        right: 1.5rem;
-        width: calc(100% - 3rem);
+        
+        /* Footer-styling */
+        padding: 1rem 1.25rem;
+        background-color: var(--bg-color);
+        border-top: 1px solid var(--border-color);
+        
+        /* Se till att den inte flex-växer och stannar i botten */
+        flex-shrink: 0;
+        
+        /* Ta bort gamla sticky/marginal-regler */
+        position: static; /* Ta bort sticky */
+        width: auto; /* Låt flexbox sköta bredden */
         z-index: 10;
-        margin-top: 1rem;
+        margin-top: 0; 
     }
     
     /* Justera knapparna inuti wrappern */
@@ -2764,5 +2768,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 [data-theme="dark"] .icon-button-group #customerModalCallBtn:hover {
     background-color: rgba(48, 209, 88, 0.2);
 }
+
 
 
