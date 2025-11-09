@@ -2282,11 +2282,11 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 	#carModalExternalLinkMobile,
 	#carModalOljemagasinetLinkMobile {
 	    display: flex !important; /* Säkerställ att det är flex */
-	    padding: 0.85rem 1rem; /* <-- ÄNDRINGEN ÄR HÄR (från 0.5rem) */
+	    padding: 0.85rem 1rem; /* Mer "luft" på sidorna */
 	    font-size: 0.9rem;
 	    gap: 0.5rem; 
 	    justify-content: center; 
-	    align-items: center; /* <-- Denna rad är KORREKT för vertikal centrering */
+	    align-items: center;
 	    text-decoration: none !important;
 	    transition: all 0.2s ease;
 	    
@@ -2743,6 +2743,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 [data-theme="dark"] .icon-button-group #customerModalCallBtn:hover {
     background-color: rgba(48, 209, 88, 0.2);
 }
+
 
 
 
