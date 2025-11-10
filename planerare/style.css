@@ -2814,10 +2814,20 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     padding-bottom: 0.75rem;
 }
 
+/* Varning för missade jobb */
+.job-missed {
+    /* Använd din varningsfärg */
+    border-left-color: var(--warning-color) !important; 
+    background-color: rgba(255, 159, 10, 0.05);
+}
+.job-missed:hover {
+    background-color: rgba(255, 159, 10, 0.1);
+}
+.job-missed .status-badge {
+    animation: pulse-warning 1.5s infinite;
+}
 
-
-
-
-
-
-
+@keyframes pulse-warning {
+    0%, 100% { background-color: rgba(107, 114, 128, 0.1); }
+    50% { background-color: rgba(255, 159, 10, 0.3); }
+}
