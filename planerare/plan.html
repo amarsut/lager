@@ -1352,116 +1352,119 @@
 
             // --- UPPDATERAD: renderTimeline med Animationslogik ---
             function renderTimeline() {
-				const desktopSearchCount = document.getElementById('desktopSearchResultCount');
-                let jobsToDisplay = [...allJobs];
-                
-                const now = new Date();
-                now.setHours(0, 0, 0, 0);
-                
-                let sortOrder = 'asc'; 
-                
-                // --- BÖRJAN PÅ FILTERLOGIK (FRÅN DIN ORIGINALKOD) ---
-                switch(currentStatusFilter) {
-                    case 'kommande':
-                        jobsToDisplay = jobsToDisplay.filter(j => 
-                            j.status === 'bokad' && new Date(j.datum) >= now
-                        );
-                        break;
-                    case 'klar':
-                        jobsToDisplay = jobsToDisplay.filter(j => j.status === 'klar');
-                        sortOrder = 'desc'; 
-                        break;
-                    case 'offererad':
-                        jobsToDisplay = jobsToDisplay.filter(j => j.status === 'offererad');
-                        break;
-                    case 'alla':
-                        sortOrder = 'desc';s
-                        break;
-                }
-                
-                if (currentSearchTerm) {
-                    clearDayFilterBtn.style.display = 'inline-flex';
-                    jobsToDisplay = jobsToDisplay.filter(job => {
-                        const term = currentSearchTerm.toLowerCase();
-                        
-                        // --- NY, KORREKT SÖK-LOGIK ---
-                        // Normalisera söktermen (ta bort alla mellanslag)
-                        const normalizedTerm = term.replace(/\s/g, '');
-              _         
-                        // Kontrollera om det normaliserade reg.nr-fältet (om det finns) inkluderar den normaliserade söktermen
-                        // Detta matchar "abc123" mot "ABC 123" och vice versa.
-                        const regMatch = (job.regnr && job.regnr.toLowerCase().replace(/\s/g, '').includes(normalizedTerm));
-                        // --- SLUT KORREKT SÖK-LOGIK ---
-                        
-                        return (
-                            (job.kundnamn && job.kundnamn.toLowerCase().includes(term)) ||s
-                            regMatch || // Använd den nya, korrekta matchningen
-                            (job.kommentarer && job.kommentarer.toLowerCase().includes(term)) ||
-                            (job.telefon && job.telefon.toLowerCase().includes(term)) ||
-                            (STATUS_TEXT[job.status] || '').toLowerCase().includes(term)
-                        );
-                    });
-                    
-          _         if (desktopSearchCount) {
-			            desktopSearchCount.textContent = `${jobsToDisplay.length} träff(ar)`;
-			        }
-                } else {
-                    clearDayFilterBtn.style.display = 'none';
-                    if (window.innerWidth <= 768) {
-                        renderGlobalStats(allJobs);s
-                    }
-                    // FIX från ett tidigare tips: Se till att räknaren rensas
-                    if (desktopSearchCount) {
-                s         desktopSearchCount.textContent = '';
-                    }
-                }
-                // --- SLUT PÅ FILTERLOGIK ---
+                const desktopSearchCount = document.getElementById('desktopSearchCount');
+                let jobsToDisplay = [...allJobs];
+                
+                const now = new Date();
+                now.setHours(0, 0, 0, 0);
+                
+                let sortOrder = 'asc'; 
+                
+                // --- BÖRJAN PÅ FILTERLOGIK ---
+                switch(currentStatusFilter) {
+                    case 'kommande':
+                        jobsToDisplay = jobsToDisplay.filter(j => 
+                            j.status === 'bokad' && new Date(j.datum) >= now
+                        );
+                        break;
+                    case 'klar':
+                        jobsToDisplay = jobsToDisplay.filter(j => j.status === 'klar');
+                        sortOrder = 'desc'; 
+                        break;
+                    case 'offererad':
+                        jobsToDisplay = jobsToDisplay.filter(j => j.status === 'offererad');
+                        break;
+                    case 'alla':
+                        // 'alla' betyder inget filter, bara ändra sortering
+                        sortOrder = 'desc'; 
+                        break;
+                }
+                
+                if (currentSearchTerm) {
+                    clearDayFilterBtn.style.display = 'inline-flex';
+                    jobsToDisplay = jobsToDisplay.filter(job => {
+                        const term = currentSearchTerm.toLowerCase();
+                        
+                        // --- KORREKT SÖK-LOGIK ---
+                        // Normalisera söktermen (ta bort alla mellanslag)
+                        const normalizedTerm = term.replace(/\s/g, '');
+                        
+                        // Normalisera telefonnumret för sökning
+                        const normalizedPhone = (job.telefon || '').replace(/\D/g, '');
+                        
+                        const regMatch = (job.regnr && job.regnr.toLowerCase().replace(/\s/g, '').includes(normalizedTerm));
+                        // --- SLUT KORREKT SÖK-LOGIK ---
+                        
+                        return (
+                            (job.kundnamn && job.kundnamn.toLowerCase().includes(term)) || 
+                            regMatch || // Använd den nya, korrekta matchningen
+                            (job.kommentarer && job.kommentarer.toLowerCase().includes(term)) ||
+                            (normalizedPhone && normalizedPhone.includes(normalizedTerm)) || // Sök på normaliserat tel.nr
+                            (STATUS_TEXT[job.status] || '').toLowerCase().includes(term)
+                        );
+                    });
+                    
+                    if (desktopSearchCount) {
+			            desktopSearchCount.textContent = `${jobsToDisplay.length} träff(ar)`;
+			        }
+                } else {
+                    clearDayFilterBtn.style.display = 'none';
+                    if (window.innerWidth <= 768) {
+                        renderGlobalStats(allJobs); 
+                    }
+                    // FIX: Se till att räknaren rensas
+                    if (desktopSearchCount) {
+                        desktopSearchCount.textContent = '';
+                    }
+                }
+                // --- SLUT PÅ FILTERLOGIK ---
 
-                jobsToDisplay.sort((a, b) => {
-                    const dateA = new Date(a.datum);
-s                 const dateB = new Date(b.datum);
-                    if (sortOrder === 'desc') {
-                        return dateB - dateA;g
-                    } else {
-                        return dateA - dateB; 
-                    }
-                });
+                jobsToDisplay.sort((a, b) => {
+                    const dateA = new Date(a.datum);
+                    const dateB = new Date(b.datum);
+                    if (sortOrder === 'desc') {
+                        return dateB - dateA; 
+                    } else {
+                        return dateA - dateB; 
+                    }
+                });
 
-                // Flytta definitionen av renderNewContent hit upp
-                function renderNewContent() {
-                    let timelineCount = 0;
-section                   const isMobile = window.innerWidth <= 768;
-                    
-                    if (isMobile) {
-                        timelineCount = renderMobileCardList(jobsToDisplay);
-                    } else {
-                        timelineCount = renderTimelineTable(jobsToDisplay);
-                    }
-                    
-                    if (timelineCount === 0) {
-                        jobListContainer.style.display = 'none';
-                        emptyStateTimeline.style.display = 'block';
-s                     
-                        if (currentSearchTerm) {
-                            emptyStateTitleTimeline.textContent = "Inga träffar";
-                            emptyStateTextTimeline.textContent = `Din sökning på "${currentSearchTerm}" gav inga resultat.`;
-s                     } else if (allJobs.length > 0) {
-                            const filterText = document.querySelector(`.stat-card[data-filter="${currentStatusFilter}"] h3`).textContent;
-s                         emptyStateTitleTimeline.textContent = `Inga ${filterText.toLowerCase()}`;
-                            emptyStateTextTimeline.textContent = "Det finns inga jobb som matchar detta filter.";
-s                     } else {
-                            emptyStateTitleTimeline.textContent = "Du har inga jobb";
-                            emptyStateTextTimeline.textContent = "Klicka på '+' för att börja.";
-                        }
-                    } else {
-                        jobListContainer.style.display = 'block';
-                        emptyStateTimeline.style.display = 'none';
-                    }
-                }
+                // Flytta definitionen av renderNewContent hit upp
+                function renderNewContent() {
+                    let timelineCount = 0;
+                    const isMobile = window.innerWidth <= 768;
+                    
+                    if (isMobile) {
+                        timelineCount = renderMobileCardList(jobsToDisplay);
+                    } else {
+                        timelineCount = renderTimelineTable(jobsToDisplay);
+                    }
+                    
+                    if (timelineCount === 0) {
+                        jobListContainer.style.display = 'none';
+                        emptyStateTimeline.style.display = 'block';
+                        
+                        if (currentSearchTerm) {
+                            emptyStateTitleTimeline.textContent = "Inga träffar";
+                            emptyStateTextTimeline.textContent = `Din sökning på "${currentSearchTerm}" gav inga resultat.`;
+                        } else if (allJobs.length > 0) {
+                            const filterText = document.querySelector(`.stat-card[data-filter="${currentStatusFilter}"] h3`).textContent;
+                            emptyStateTitleTimeline.textContent = `Inga ${filterText.toLowerCase()}`;
+                            emptyStateTextTimeline.textContent = "Det finns inga jobb som matchar detta filter.";
+                        } else {
+                            emptyStateTitleTimeline.textContent = "Du har inga jobb";
+                            emptyStateTextTimeline.textContent = "Klicka på '+' för att börja.";
+                        }
+                    } else {
+                        jobListContainer.style.display = 'block';
+                        emptyStateTimeline.style.display = 'none';
+                    }
+                }
 
-S               // Anropa renderNewContent direkt
-                renderNewContent();
-            }
+                // TA BORT ALL LOGIK FÖR FADE-OUT OCH SETTIMEOUT
+                // Anropa renderNewContent direkt
+                renderNewContent();
+            }
 
             function renderTimelineTable(jobs) {
                 jobListContainer.innerHTML = '';
