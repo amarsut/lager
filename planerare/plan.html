@@ -1675,16 +1675,26 @@ tateTextTimeline.textContent = "Klicka på '+' för att börja.";
                     backPressWarned = false; 
 
                 } else if (currentView === 'calendar') {
-                    // FALL 2: Vi är på kalendern (ingen modal)
-                    // Byt till tidslinjen istället för att stänga appen.
-                    
-                    toggleView('timeline');
-                    
-                    // "Fånga" bakåt-trycket så att appen inte stängs
-                    history.pushState(null, '', location.pathname); 
-                    backPressWarned = false; // Nollställ varningen
+                // FALL 2: Vi är på kalendern
+                // Byt till tidslinjen OCH starta "stängnings-varningen"
+                
+                toggleView('timeline');
+                
+                // "Fånga" bakåt-trycket så att appen inte stängs
+                history.pushState(null, '', location.pathname); 
+                
+                // --- STARTA VARNINGEN DIREKT ---
+                backPressWarned = true;
+                showToast('Tryck bakåt igen för att stänga', 'info');
+                
+                // Nollställ varningen efter 2 sekunder
+                backPressTimer = setTimeout(() => {
+                    backPressWarned = false;
+                }, 2000); // 2 sekunder
+                
+                // TA BORT DENNA RAD: backPressWarned = false; 
 
-                } else {
+            } else {
                     // FALL 3: Vi är på tidslinjen (ingen modal)
                     // Hantera dubbeltryck för att stänga.
 
