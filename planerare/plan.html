@@ -816,6 +816,8 @@
             const carModalOwner = document.getElementById('carModalOwner');
             const carModalExternalLink = document.getElementById('carModalExternalLink'); 
             const carModalExternalLinkMobile = document.getElementById('carModalExternalLinkMobile'); 
+			const carModalOljemagasinetLink = document.getElementById('carModalOljemagasinetLink');
+            const carModalOljemagasinetLinkMobile = document.getElementById('carModalOljemagasinetLinkMobile');
             const carModalTotalProfit = document.getElementById('carModalTotalProfit');
             const carModalJobCount = document.getElementById('carModalJobCount');
             const carModalJobList = document.getElementById('carModalJobList');
@@ -2982,6 +2984,27 @@ tateTextTimeline.textContent = "Klicka på '+' för att börja.";
                 e.stopPropagation(); // Förhindra att klicket går vidare
                 copyToClipboard(carModalRegnr.textContent, 'Reg.nr');
             });
+
+			// --- NYTT: Kopiera Reg.nr vid klick på Oljemagasinet ---
+            function handleOljemagasinetClick(e) {
+                const regnr = carModalRegnr.textContent;
+                if (regnr) {
+                    // Anropa den befintliga kopieringsfunktionen "tyst".
+                    // Den kommer visa en toast om den lyckas.
+                    copyToClipboard(regnr, 'Reg.nr');
+                }
+                // VIKTIGT: Vi kör *inte* e.preventDefault() här,
+                // eftersom vi vill att länken fortfarande ska öppnas.
+            }
+            
+            // Koppla lyssnaren till båda Oljemagasinet-knapparna
+            if (carModalOljemagasinetLink) {
+                carModalOljemagasinetLink.addEventListener('click', handleOljemagasinetClick);
+            }
+            if (carModalOljemagasinetLinkMobile) {
+                carModalOljemagasinetLinkMobile.addEventListener('click', handleOljemagasinetClick);
+            }
+            // --- SLUT PÅ NY KOD ---
 			
             // --- App-inställningar (Tema, Kompakt, Lås) ---
             themeToggle.addEventListener('click', () => {
