@@ -1710,61 +1710,53 @@ tateTextTimeline.textContent = "Klicka på '+' för att börja.";
             window.addEventListener('popstate', (event) => {
                 clearTimeout(backPressTimer); 
                 
-                // Hämta den historik-post vi precis navigerade TILL
                 const state = event.state; 
 
                 if (isModalOpen) {
-                    // FALL 1: En modal var öppen.
-                    // (Denna logik hanterar sin EGEN historik via { modal: '...' })
+                    // FALL 1: En modal var öppen. (Användaren tryckte "Bakåt" i webbläsaren)
+                    // Detta är den ENDA logiken vi vill köra.
                     
                     isNavigatingBack = true;
-                    closeModal({ popHistory: false }); // Stäng modalen
+                    closeModal({ popHistory: false }); // Stäng modal-UI:t
                     isNavigatingBack = false;
-
-                    // "Fånga" bakåt-trycket genom att pusha tillbaka staten vi var på
-                    if (currentView === 'calendar') {
-                        history.pushState({ view: 'calendar' }, 'Kalender', '#calendar');
-                    } else {
-                        history.pushState(null, 'Tidslinje', location.pathname);
-                    }
+                    
                     // Nollställ varningen, vi vill inte stänga appen
                     backPressWarned = false; 
 
-                } else if (!state || !state.view) { 
-                    // FALL 3: Vi är på tidslinjen (state är null) ELLER
-                    // vi har poppat från kalendern (state är nu null).
-
-                    // Om vi *just nu* är på kalendern, byt UI till tidslinjen.
-                    if (currentView === 'calendar') {
+                } else if (state && state.view === 'calendar') {
+                    // FALL 2: Vi har navigerat TILL kalender-vyn
+                    // (Antingen "Framåt" i webbläsaren, eller så har en modalstängning avslöjat detta state)
+                    
+                    // Om vi *inte* redan är på kalendern, byt UI.
+                    if (currentView !== 'calendar') {
                         isNavigatingBack = true;
-                        toggleView('timeline'); // Byt UI till tidslinje
+                        toggleView('calendar');
+                        isNavigatingBack = false;
+                    }
+                    backPressWarned = false; // Nollställ alltid varningen här
+
+                } else if (!state || !state.view) { 
+                    // FALL 3: Vi är på tidslinjen (state är null)
+                    
+                    // Om vi *inte* redan är på tidslinjen, byt UI.
+                    if (currentView !== 'timeline') {
+                        isNavigatingBack = true;
+                        toggleView('timeline');
                         isNavigatingBack = false;
                     }
 
-                    // NU är vi (eller var redan) på tidslinjen. Hantera dubbeltryck.
+                    // Hantera dubbeltryck för att stänga
                     if (backPressWarned) {
-                        // Andra trycket: Tillåt stängning.
                         backPressWarned = false;
                     } else {
-                        // Första trycket: Varna och förhindra.
                         backPressWarned = true;
                         showToast('Tryck bakåt igen för att stänga', 'info');
-                        
-                        // "Fånga" bakåt-trycket
                         history.pushState(null, 'Tidslinje', location.pathname); 
                         
                         backPressTimer = setTimeout(() => {
                             backPressWarned = false;
-                        }, 2000); // 2 sekunder
+                        }, 2000); 
                     }
-                    
-                } else if (state && state.view === 'calendar') {
-                     // FALL 2: Användaren tryckte "Framåt" i webbläsaren
-                     // och gick TILLBAKA till kalendern.
-                    isNavigatingBack = true;
-                    toggleView('calendar');
-                    isNavigatingBack = false;
-                    backPressWarned = false;
                 }
             });
 
