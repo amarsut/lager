@@ -727,6 +727,7 @@
             let currentSearchTerm = "";
             let currentStatusFilter = 'kommande';
             let appInitialized = false;
+			let lockOnHideTimer = null;
             const today = new Date();
             const todayString = today.toISOString().split('T')[0];
 			const now = new Date();
@@ -2933,11 +2934,18 @@ tateTextTimeline.textContent = "Klicka på '+' för att börja.";
             
             // NYTT: Auto-ifyllning från Regnr
             modalRegnr.addEventListener('blur', (e) => {
-                const regnr = e.target.value;
-                if (regnr.length < 3) return;
-                
-                const existingJob = findLatestJob('regnr', regnr);
-                if (existingJob) {
+			    let value = e.target.value.toUpperCase().replace(/\s/g, ''); // Ta bort alla mellanslag
+			    if (value.length < 4 || value.length > 7) return; // Ignorera ogiltiga
+			
+			    // Formatera om till "ABC 123"
+			    const letters = value.substring(0, 3);
+			    const numbers = value.substring(3);
+			    e.target.value = `${letters} ${numbers}`;
+			
+			    // Trigga din befintliga "auto-fyll"-logik
+			    const regnr = e.target.value;
+			    const existingJob = findLatestJob('regnr', regnr);
+			    if (existingJob) {
                     modalKundnamn.value = existingJob.kundnamn.toUpperCase();
                     modalTelefon.value = existingJob.telefon || '';
                     showToast('Kund-data auto-ifylld!', 'info');
@@ -3306,6 +3314,21 @@ tateTextTimeline.textContent = "Klicka på '+' för att börja.";
                     updateDailyProfitInCalendar(allJobs);
                 }
             }, 200));
+
+			// --- NY KOD: Lås vid inaktivitet ---
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) {
+                    // Användaren lämnade appen, starta en kort timer
+                    clearTimeout(lockOnHideTimer); // Rensa gammal timer
+                    lockOnHideTimer = setTimeout(() => {
+                        // Ta bort "olåst"-nyckeln efter 30 sek
+                        localStorage.removeItem(PIN_LAST_UNLOCKED_KEY); 
+                    }, 30000); // 30 sekunder
+                } else {
+                    // Användaren kom tillbaka, avbryt timern
+                    clearTimeout(lockOnHideTimer);
+                }
+            });
 
         });
     </script>
