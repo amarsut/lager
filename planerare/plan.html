@@ -142,7 +142,7 @@
                             <div class="search-spinner"></div> 
                             
                             <input type="search" id="searchBar" placeholder="Sök jobb... (F)">
-                            
+                            <span class="search-result-count" id="desktopSearchResultCount"></span>
                             <button type="button" class="search-clear-btn" id="desktopSearchClear" title="Rensa sökning"></button>
                         </div>
                     </div>
@@ -1372,6 +1372,9 @@
                             (STATUS_TEXT[job.status] || '').toLowerCase().includes(term)
                         );
                     });
+					if (desktopSearchCount) {
+			            desktopSearchCount.textContent = `${jobsToDisplay.length} träff(ar)`;
+			        }
                 } else {
                     clearDayFilterBtn.style.display = 'none';
                     if (window.innerWidth <= 768) {
