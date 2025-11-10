@@ -1401,15 +1401,33 @@
                     }
                 }
                 
-                jobsToDisplay.sort((a, b) => {
-                    const dateA = new Date(a.datum);
-                    const dateB = new Date(b.datum);
-                    if (sortOrder === 'desc') {
-                        return dateB - dateA; 
-                    } else {
-                        return dateA - dateB; 
-                    }
-                });
+                jobsToDisplay = jobsToDisplay.filter(job => {
+				    const term = currentSearchTerm.toLowerCase();
+				
+				    // --- NY SMART SÖK-LOGIK ---
+				    let regMatch = false;
+				    // Om söktermen ser ut som ett regnr (t.ex. ABC123 eller ABC 123)
+				    if (term.length >= 6 && term.length <= 7) {
+				        const termWithSpace = term.replace(/^([A-Z]{3})([A-Z0-9]{3})$/, '$1 $2');
+				        const termWithoutSpace = term.replace(' ', '');
+				
+				        regMatch = (job.regnr && (
+				            job.regnr.toLowerCase().includes(termWithSpace) || 
+				            job.regnr.toLowerCase().includes(termWithoutSpace)
+				        ));
+				    } else {
+				        regMatch = (job.regnr && job.regnr.toLowerCase().includes(term));
+				    }
+				    // --- SLUT SMART SÖK-LOGIK ---
+				
+				    return (
+				        (job.kundnamn && job.kundnamn.toLowerCase().includes(term)) || 
+				        regMatch || // Använd den nya smarta matchningen
+				        (job.kommentarer && job.kommentarer.toLowerCase().includes(term)) ||
+				        (job.telefon && job.telefon.includes(term)) ||
+				        (STATUS_TEXT[job.status] || '').toLowerCase().includes(term)
+				    );
+				});
                 // --- SLUT PÅ FILTERLOGIK ---
 
                 // Flytta definitionen av renderNewContent hit upp
