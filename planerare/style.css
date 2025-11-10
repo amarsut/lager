@@ -2151,7 +2151,8 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     }
     .search-modal-content {
         position: absolute;
-        top: 0;
+        /* --- ÄNDRING: Flyttad från top: 0 --- */
+        bottom: var(--mobile-nav-height); 
         left: 0;
         right: 0;
         background: var(--bg-color);
@@ -2159,8 +2160,12 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         display: flex;
         gap: 1rem;
         align-items: center;
-        transform: translateY(-100%);
-        animation: slideInDown 0.3s ease forwards;
+        /* --- ÄNDRING: Animerar från botten (100%) istället för toppen (-100%) --- */
+        transform: translateY(100%);
+        /* --- ÄNDRING: Använder transition istället för animation --- */
+        transition: transform 0.3s ease;
+        
+        /* Den gamla 'animation'-regeln är borttagen */
     }
     .modal-backdrop-mobile.show .search-modal-content {
         transform: translateY(0);
@@ -2798,5 +2803,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     padding-top: 0.75rem;
     padding-bottom: 0.75rem;
 }
+
 
 
