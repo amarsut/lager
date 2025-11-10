@@ -1383,15 +1383,26 @@
                     clearDayFilterBtn.style.display = 'inline-flex';
                     jobsToDisplay = jobsToDisplay.filter(job => {
                         const term = currentSearchTerm.toLowerCase();
+                        
+                        // --- NY, KORREKT SÖK-LOGIK ---
+                        // Normalisera söktermen (ta bort alla mellanslag)
+                        const normalizedTerm = term.replace(/\s/g, '');
+                        
+                        // Kontrollera om det normaliserade reg.nr-fältet (om det finns) inkluderar den normaliserade söktermen
+                        // Detta matchar "abc123" mot "ABC 123" och vice versa.
+                        const regMatch = (job.regnr && job.regnr.toLowerCase().replace(/\s/g, '').includes(normalizedTerm));
+                        // --- SLUT KORREKT SÖK-LOGIK ---
+                        
                         return (
                             (job.kundnamn && job.kundnamn.toLowerCase().includes(term)) || 
-                            (job.regnr && job.regnr.toLowerCase().includes(term)) ||
+                            regMatch || // Använd den nya, korrekta matchningen
                             (job.kommentarer && job.kommentarer.toLowerCase().includes(term)) ||
-                            (job.telefon && job.telefon.includes(term)) ||
+                            (job.telefon && job.telefon.toLowerCase().includes(term)) ||
                             (STATUS_TEXT[job.status] || '').toLowerCase().includes(term)
                         );
                     });
-					if (desktopSearchCount) {
+                    
+                    if (desktopSearchCount) {
 			            desktopSearchCount.textContent = `${jobsToDisplay.length} träff(ar)`;
 			        }
                 } else {
@@ -1399,35 +1410,11 @@
                     if (window.innerWidth <= 768) {
                         renderGlobalStats(allJobs); 
                     }
+                    // FIX från ett tidigare tips: Se till att räknaren rensas
+                    if (desktopSearchCount) {
+                        desktopSearchCount.textContent = '';
+                    }
                 }
-                
-                jobsToDisplay = jobsToDisplay.filter(job => {
-				    const term = currentSearchTerm.toLowerCase();
-				
-				    // --- NY SMART SÖK-LOGIK ---
-				    let regMatch = false;
-				    // Om söktermen ser ut som ett regnr (t.ex. ABC123 eller ABC 123)
-				    if (term.length >= 6 && term.length <= 7) {
-				        const termWithSpace = term.replace(/^([A-Z]{3})([A-Z0-9]{3})$/, '$1 $2');
-				        const termWithoutSpace = term.replace(' ', '');
-				
-				        regMatch = (job.regnr && (
-				            job.regnr.toLowerCase().includes(termWithSpace) || 
-				            job.regnr.toLowerCase().includes(termWithoutSpace)
-				        ));
-				    } else {
-				        regMatch = (job.regnr && job.regnr.toLowerCase().includes(term));
-				    }
-				    // --- SLUT SMART SÖK-LOGIK ---
-				
-				    return (
-				        (job.kundnamn && job.kundnamn.toLowerCase().includes(term)) || 
-				        regMatch || // Använd den nya smarta matchningen
-				        (job.kommentarer && job.kommentarer.toLowerCase().includes(term)) ||
-				        (job.telefon && job.telefon.includes(term)) ||
-				        (STATUS_TEXT[job.status] || '').toLowerCase().includes(term)
-				    );
-				});
                 // --- SLUT PÅ FILTERLOGIK ---
 
                 // Flytta definitionen av renderNewContent hit upp
