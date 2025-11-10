@@ -293,7 +293,7 @@ body {
     font-size: 0.8rem;
     font-weight: 600;
     color: var(--text-color-light);
-    padding-right: 0.5rem;
+    padding-right: 2.5rem;
     white-space: nowrap;
 }
 
@@ -2813,6 +2813,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     padding-top: 0.75rem;
     padding-bottom: 0.75rem;
 }
+
 
 
 
