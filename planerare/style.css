@@ -289,6 +289,21 @@ body {
     animation: fadeIn 0.4s ease 0.4s forwards;
 }
 
+.search-result-count {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-color-light);
+    padding-right: 0.5rem;
+    white-space: nowrap;
+}
+
+/* Dölj den på mobil, där utrymmet är begränsat */
+@media (max-width: 768px) {
+    .search-result-count {
+        display: none;
+    }
+}
+
 /* Sökfält */
 .search-wrapper {
     display: flex; align-items: center;
@@ -2798,6 +2813,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     padding-top: 0.75rem;
     padding-bottom: 0.75rem;
 }
+
 
 
 
