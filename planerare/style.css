@@ -535,22 +535,20 @@ mark {
 /* 2. Rikta istället en animation mot status-brickan INUTI en prio-rad */
 .kommande-prio-pulse .status-badge {
     /* Vi skapar en ny animation som heter "pulse-prio-badge" */
-    animation: pulse-prio-badge 1.5s infinite;
+    animation: pulse-prio-badge 2.5s infinite; /* <-- ÄNDRAD TILL 2.5s */
 }
 
 /* 3. Definiera den nya animationen för brickan */
 @keyframes pulse-prio-badge {
     0%, 100% {
-        /* Standard "Avbokad"-färg (som är röd) */
+        /* Standard "Avbokad"/Fara standardfärg */
         background-color: rgba(255, 69, 58, 0.1); /* danger-light */
         color: var(--danger-color);
-        box-shadow: none;
     }
     50% {
-        /* Starkare röd färg */
-        background-color: var(--danger-color); /* Helröd */
-        color: white; /* Vit text för kontrast */
-        box-shadow: 0 0 10px rgba(255, 69, 58, 0.5);
+        /* Subtilare puls, ingen shadow, ingen vit text */
+        background-color: rgba(255, 69, 58, 0.3); /* Mörkare röd bakgrund */
+        color: var(--danger-color);
     }
 }
 
@@ -2838,11 +2836,12 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     background-color: rgba(255, 159, 10, 0.1);
 }
 .job-missed .status-badge {
-    animation: pulse-warning 1.5s infinite;
+    animation: pulse-warning 2.5s infinite;
 }
 
 @keyframes pulse-warning {
     0%, 100% { background-color: rgba(107, 114, 128, 0.1); }
     50% { background-color: rgba(255, 159, 10, 0.3); }
 }
+
 
