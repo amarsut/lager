@@ -729,6 +729,7 @@
             let appInitialized = false;
             const today = new Date();
             const todayString = today.toISOString().split('T')[0];
+			const now = new Date();
             
             let calendar;
             let currentView = localStorage.getItem('defaultView') || 'timeline';
@@ -1475,14 +1476,21 @@ tateTextTimeline.textContent = "Klicka på '+' för att börja.";
                     prioClass += ' kommande-prio-pulse';
                 }
 
+                // --- NY LOGIK FÖR "MISSAT JOBB" ---
+                let jobStatusClass = '';
+                if (job.status === 'bokad' && new Date(job.datum) < now) {
+                    jobStatusClass = 'job-missed';
+                }
+                // --- SLUT NY LOGIK ---
+
                 const prioIcon = job.prio ? `<svg class="icon-sm prio-flag-icon" viewBox="0 0 24 24"><use href="#icon-flag"></use></svg>` : '';
                 const hasComment = job.kommentarer && job.kommentarer.trim().length > 0;
                 const kundnamnHTML = highlightSearchTerm(job.kundnamn, currentSearchTerm);
                 const regnrHTML = highlightSearchTerm(job.regnr || '---', currentSearchTerm);
-                const contextIcon = getJobContextIcon(job); // <-- NYTT
+                const contextIcon = getJobContextIcon(job);
                 
                 return `
-                    <tr data-id="${job.id}" data-status="${job.status}" class="job-entry ${prioClass} ${doneClass}">
+                    <tr data-id="${job.id}" data-status="${job.status}" class="job-entry ${prioClass} ${doneClass} ${jobStatusClass}">
                         <td data-label="Status"><span class="status-badge status-${job.status || 'bokad'}">${STATUS_TEXT[job.status] || 'Bokad'}</span></td>
                         <td data-label="Datum">${formatDate(job.datum)}</td>
                         <td data-label="Kund">
@@ -1571,16 +1579,23 @@ tateTextTimeline.textContent = "Klicka på '+' för att börja.";
                     prioClass += ' kommande-prio-pulse';
                 }
 
+                // --- NY LOGIK FÖR "MISSAT JOBB" ---
+                let jobStatusClass = '';
+                if (job.status === 'bokad' && new Date(job.datum) < now) {
+                    jobStatusClass = 'job-missed';
+                }
+                // --- SLUT NY LOGIK ---
+
                 const hasComment = job.kommentarer && job.kommentarer.trim().length > 0;
                 
                 const kundnamnHTML = highlightSearchTerm(job.kundnamn, currentSearchTerm);
                 const regnrHTML = highlightSearchTerm(job.regnr || 'OKÄNT', currentSearchTerm);
-                const contextIcon = getJobContextIcon(job); // <-- NYTT
+                const contextIcon = getJobContextIcon(job);
                 
                 const timePart = job.datum ? (formatDate(job.datum).split('kl. ')[1] || 'Okänd tid') : 'Okänd tid';
                 
                 return `
-                    <div class="mobile-job-card job-entry ${prioClass} ${doneClass}" data-id="${job.id}" data-status="${job.status}">
+                    <div class="mobile-job-card job-entry ${prioClass} ${doneClass} ${jobStatusClass}" data-id="${job.id}" data-status="${job.status}">
                         <div class="card-content">
                             <div class="card-row">
                                 <span class="card-label">Kund</span>
