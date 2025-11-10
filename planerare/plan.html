@@ -652,6 +652,21 @@
         try {
             firebase.initializeApp(firebaseConfig);
             db = firebase.firestore();
+			/* OFFLINE STÖD */
+			db.enablePersistence({synchronizeTabs: true})
+            .then(() => {
+                console.log("Offline-stöd aktiverat!");
+            })
+            .catch((err) => {
+                if (err.code == 'failed-precondition') {
+                    // Flera flikar är öppna, kan hända.
+                    console.warn("Kunde inte aktivera offline-stöd, troligen pga flera flikar.");
+                } else if (err.code == 'unimplemented') {
+                    // Webbläsaren stöds inte (mycket ovanligt).
+                    console.warn("Offline-stöd stöds inte i denna webbläsare.");
+                }
+            });
+			/* SLUT PÅ OFFLINE STÖD */
             console.log("Firebase initierat!");
         } catch (e) {
             console.error("Kunde inte initiera Firebase.", e);
