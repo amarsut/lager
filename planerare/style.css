@@ -523,22 +523,36 @@ mark {
     background-color: var(--danger-hover-bg);
 }
 
-/* Animation för kommande prio-jobb - UPPDATERAD */
+/* 1. Ta bort den gamla animationen från hela raden */
 #jobbOversikt tbody tr.prio-row.kommande-prio-pulse,
 .mobile-job-card.prio-row.kommande-prio-pulse {
-    animation: pulse-prio-bg 2.5s infinite;
-}
-@keyframes pulse-prio-bg {
-    0%, 100% {
-        background-color: var(--danger-light);
-        box-shadow: 0 0 0 0 rgba(255, 69, 58, 0.1);
-    }
-    50% {
-        background-color: var(--danger-hover-bg);
-        box-shadow: 0 0 0 4px rgba(255, 69, 58, 0.0);
-    }
+    /* animation: pulse-prio-bg 2.5s infinite; <-- BORTTAGEN */
+    
+    /* Ge Prio-raden en lite starkare, statisk bakgrund istället */
+    background-color: var(--danger-hover-bg);
 }
 
+/* 2. Rikta istället en animation mot status-brickan INUTI en prio-rad */
+.kommande-prio-pulse .status-badge {
+    /* Vi skapar en ny animation som heter "pulse-prio-badge" */
+    animation: pulse-prio-badge 1.5s infinite;
+}
+
+/* 3. Definiera den nya animationen för brickan */
+@keyframes pulse-prio-badge {
+    0%, 100% {
+        /* Standard "Avbokad"-färg (som är röd) */
+        background-color: rgba(255, 69, 58, 0.1); /* danger-light */
+        color: var(--danger-color);
+        box-shadow: none;
+    }
+    50% {
+        /* Starkare röd färg */
+        background-color: var(--danger-color); /* Helröd */
+        color: white; /* Vit text för kontrast */
+        box-shadow: 0 0 10px rgba(255, 69, 58, 0.5);
+    }
+}
 
 #jobbOversikt tbody tr.done-row { opacity: 0.65; }
 #jobbOversikt tbody tr.done-row:hover { opacity: 1; }
@@ -2831,3 +2845,4 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     0%, 100% { background-color: rgba(107, 114, 128, 0.1); }
     50% { background-color: rgba(255, 159, 10, 0.3); }
 }
+
