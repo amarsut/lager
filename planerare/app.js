@@ -664,7 +664,7 @@
                     calendar.setOption('events', calendarEvents);
                     filterCalendarView();
                     updateDailyProfitInCalendar(allJobs);
-					calendar.rerender();
+					calendar.render();
                 }
                 renderTimeline(); 
                 
@@ -1282,14 +1282,6 @@
                     <span style="color: ${vinst < 0 ? 'var(--danger-color)' : (vinst > 0 ? 'var(--success-color)' : 'var(--text-color)')};">Vinst: ${formatCurrency(vinst)}</span>
                     <span style="font-size: 0.9rem; color: var(--text-color-light); margin-left: 1rem;">(Utgifter: ${formatCurrency(totalUtgifter)})</span>
                 `;
-            }
-			
-            function updateLiveProfit() {
-                const pris = parseFloat(modalKundpris.value) || 0;
-                const utgift = parseFloat(modalUtgifter.value) || 0;
-                const vinst = pris - utgift;
-                modalVinstKalkyl.textContent = `Vinst: ${formatCurrency(vinst)}`;
-                modalVinstKalkyl.style.color = vinst < 0 ? 'var(--danger-color)' : (vinst > 0 ? 'var(--success-color)' : 'var(--text-color)');
             }
             
             // NYTT: Funktion för att synka quick-buttons med select
