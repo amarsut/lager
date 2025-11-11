@@ -2968,14 +2968,19 @@
 			    e.target.value = `${letters} ${numbers}`;
 			
 			    // Trigga din befintliga "auto-fyll"-logik
-			    const regnr = e.target.value;
-			    const existingJob = findLatestJob('regnr', regnr);
-			    if (existingJob) {
-                    modalKundnamn.value = existingJob.kundnamn.toUpperCase();
-                    modalTelefon.value = existingJob.telefon || '';
-                    showToast('Kund-data auto-ifylld!', 'info');
-                }
-            });
+            	const regnr = e.target.value;
+
+	            // --- FIX: Kör bara auto-ifyllning om det är ett NYTT jobb ---
+	            // (modalJobId är det dolda fältet som har jobbets ID vid redigering)
+	            if (modalJobId.value === '') {
+	                const existingJob = findLatestJob('regnr', regnr);
+	                if (existingJob) {
+	                    modalKundnamn.value = existingJob.kundnamn.toUpperCase();
+	                    modalTelefon.value = existingJob.telefon || '';
+	                    showToast('Kund-data auto-ifylld!', 'info');
+	                }
+	            }
+	        });
             
             modalRegnr.addEventListener('input', (e) => {
                 e.target.value = e.target.value.toUpperCase();
@@ -3001,16 +3006,18 @@
                         item.classList.add('suggestion-item');
                         item.textContent = name;
                         item.addEventListener('click', () => {
-                            modalKundnamn.value = name;
-                            kundnamnSuggestions.style.display = 'none';
-                            kundnamnSuggestions.innerHTML = '';
-                            
-                            // NYTT: Auto-ifyll från kundnamn
-                            const existingJob = findLatestJob('kundnamn', name);
-                            if (existingJob) {
-                                modalTelefon.value = existingJob.telefon || '';
-                            }
-                        });
+	                        modalKundnamn.value = name;
+	                        kundnamnSuggestions.style.display = 'none';
+	                        kundnamnSuggestions.innerHTML = '';
+	                        
+	                        // --- FIX: Kör bara auto-ifyllning om det är ett NYTT jobb ---
+	                        if (modalJobId.value === '') {
+	                            const existingJob = findLatestJob('kundnamn', name);
+	                            if (existingJob) {
+	                                modalTelefon.value = existingJob.telefon || '';
+	                            }
+	                        }
+	                    });
                         kundnamnSuggestions.appendChild(item);
                     });
                     kundnamnSuggestions.style.display = 'block';
