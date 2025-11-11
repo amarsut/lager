@@ -2906,4 +2906,73 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     background-color: var(--fc-today-bg-color) !important;
 }
 
+/* --- NYTT: Stil för Detaljerad Utgifts-spårning --- */
+
+.expense-add-form {
+    display: grid;
+    grid-template-columns: 1fr auto auto; /* Namn | Kostnad | Knapp */
+    gap: 0.75rem;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+/* Mobil-anpassning för formuläret */
+@media (max-width: 480px) {
+    .expense-add-form {
+        grid-template-columns: 1fr; /* Stapla allt på mobilen */
+    }
+    .expense-add-form #addExpenseBtn {
+        justify-content: center; /* Centrera "Lägg till"-knappen */
+    }
+}
+
+.expense-add-form input {
+    margin: 0;
+}
+
+.expense-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.expense-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--bg-color);
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+}
+
+.expense-item span {
+    font-weight: 500;
+}
+
+.expense-item .item-name {
+    color: var(--text-color);
+    padding-right: 1rem;
+}
+
+.expense-item .item-cost {
+    color: var(--danger-color); /* Gör kostnaden röd */
+    font-weight: 600;
+    flex-shrink: 0;
+    margin-right: 0.5rem;
+}
+
+.expense-item .delete-expense-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-color-light);
+    cursor: pointer;
+    padding: 0.25rem;
+    display: flex;
+    border-radius: 4px;
+}
+.expense-item .delete-expense-btn:hover {
+    color: var(--danger-color);
+    background-color: var(--danger-light);
+}
 
