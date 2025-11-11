@@ -376,6 +376,7 @@ input[type="search"]::-webkit-search-results-decoration {
     transition: all 0.2s ease; display: inline-flex;
     align-items: center; justify-content: center;
     gap: 0.5rem;
+	text-decoration: none;
 }
 .button.secondary { background-color: var(--content-bg); color: var(--text-color); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
 .button.secondary:hover { background-color: var(--bg-color); }
@@ -2843,5 +2844,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     0%, 100% { background-color: rgba(107, 114, 128, 0.1); }
     50% { background-color: rgba(255, 159, 10, 0.3); }
 }
+
 
 
