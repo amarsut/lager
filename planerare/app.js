@@ -125,6 +125,10 @@
             const modalKundpris = document.getElementById('kundpris');
             const modalUtgifter = document.getElementById('utgifter');
             const modalVinstKalkyl = document.getElementById('vinstKalkyl');
+			const expenseNameInput = document.getElementById('expenseName');
+            const expenseCostInput = document.getElementById('expenseCost');
+            const addExpenseBtn = document.getElementById('addExpenseBtn');
+            const expenseListContainer = document.getElementById('expenseList');
             const modalRegnr = document.getElementById('regnr');
             const modalDatum = document.getElementById('datum');
             const modalTid = document.getElementById('tid');
@@ -1238,6 +1242,48 @@
                 commentPopover.classList.remove('show');
 				commentPopover.classList.remove('arrow-top', 'arrow-bottom');
             }
+
+			// --- NY FUNKTION: Renderar listan med utgifter i modalen ---
+            function renderExpensesList() {
+                expenseListContainer.innerHTML = ''; // Rensa listan
+                
+                if (currentExpenses.length === 0) {
+                    expenseListContainer.innerHTML = `<span style="color: var(--text-color-light); font-style: italic; font-size: 0.9rem;">Inga utgifter tillagda.</span>`;
+                    return;
+                }
+
+                currentExpenses.forEach((item, index) => {
+                    const itemHtml = `
+                        <div class="expense-item">
+                            <span>
+                                <span class="item-name">${item.name}</span>
+                                <span class="item-cost">-${formatCurrency(item.cost)}</span>
+                            </span>
+                            <button type="button" class="delete-expense-btn" data-index="${index}" title="Ta bort utgift">
+                                <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-trash"></use></svg>
+                            </button>
+                        </div>
+                    `;
+                    expenseListContainer.innerHTML += itemHtml;
+                });
+            }
+
+            // --- UPPDATERAD FUNKTION: Beräknar vinst & total utgift ---
+            function updateLiveProfit() {
+                const pris = parseFloat(modalKundpris.value) || 0;
+                
+                // Beräkna total utgift från arrayen
+                const totalUtgifter = currentExpenses.reduce((sum, item) => sum + (item.cost || 0), 0);
+                
+                const vinst = pris - totalUtgifter;
+                
+                // Uppdatera UI med både vinst och totala utgifter
+                modalVinstKalkyl.innerHTML = `
+                    <span style="color: ${vinst < 0 ? 'var(--danger-color)' : (vinst > 0 ? 'var(--success-color)' : 'var(--text-color)')};">Vinst: ${formatCurrency(vinst)}</span>
+                    <span style="font-size: 0.9rem; color: var(--text-color-light); margin-left: 1rem;">(Utgifter: ${formatCurrency(totalUtgifter)})</span>
+                `;
+            }
+			
             function updateLiveProfit() {
                 const pris = parseFloat(modalKundpris.value) || 0;
                 const utgift = parseFloat(modalUtgifter.value) || 0;
@@ -1261,8 +1307,54 @@
                 }
             });
 
+			// --- NY LISTENER: Lägg till en utgift ---
+            addExpenseBtn.addEventListener('click', () => {
+                const name = expenseNameInput.value.trim();
+                const cost = parseFloat(expenseCostInput.value) || 0;
+
+                if (!name) {
+                    showToast('Du måste ange ett namn för utgiften.', 'danger');
+                    expenseNameInput.focus();
+                    return;
+                }
+                if (cost <= 0) {
+                    showToast('Kostnaden måste vara större än 0.', 'danger');
+                    expenseCostInput.focus();
+                    return;
+                }
+
+                // Lägg till i vår temporära array
+                currentExpenses.push({ name: name, cost: cost });
+
+                // Återställ formuläret
+                expenseNameInput.value = '';
+                expenseCostInput.value = '';
+                expenseNameInput.focus(); // Gör det enkelt att lägga till nästa
+
+                // Uppdatera UI
+                renderExpensesList();
+                updateLiveProfit();
+            });
+
+            // --- NY LISTENER: Ta bort en utgift (med event delegation) ---
+            expenseListContainer.addEventListener('click', (e) => {
+                const deleteButton = e.target.closest('.delete-expense-btn');
+                if (deleteButton) {
+                    const indexToRemove = parseInt(deleteButton.dataset.index, 10);
+                    
+                    // Ta bort från arrayen
+                    currentExpenses.splice(indexToRemove, 1);
+
+                    // Uppdatera UI
+                    renderExpensesList();
+                    updateLiveProfit();
+                    showToast('Utgift borttagen', 'info');
+                }
+            });
+
             function openJobModal(mode, dataToClone = null) {
                 jobModalForm.reset();
+                currentExpenses = []; // Nollställ alltid utgifts-arrayen
 
                 // NYTT: Återställ/dölj knapparna varje gång
                 jobModalCallBtn.style.display = 'none';
@@ -1273,15 +1365,21 @@
                     modalSaveBtn.textContent = 'Spara'; 
                     modalJobId.value = '';
                     if (dataToClone) {
-                        syncStatusUI(dataToClone.status || 'bokad');
-                        document.getElementById('prio').checked = dataToClone.prio || false;
-                        modalDatum.value = dataToClone.datum || todayString;
-                        modalTid.value = dataToClone.tid || new Date().toTimeString().substring(0,5);
+                        // ... (din befintliga kod för att klona status, prio, datum, etc)...
                         modalRegnr.value = dataToClone.regnr;
                         modalKundnamn.value = dataToClone.kundnamn.toUpperCase();
                         modalTelefon.value = dataToClone.telefon || '';
                         modalKundpris.value = dataToClone.kundpris;
-                        modalUtgifter.value = dataToClone.utgifter;
+                        
+                        // --- NY UTGIFTS-LOGIK (för kloning) ---
+                        if (dataToClone.expenseItems && Array.isArray(dataToClone.expenseItems)) {
+                            currentExpenses = [...dataToClone.expenseItems]; // Kopiera den nya array-datan
+                        } else {
+                            // Hantera gamla jobb som bara har ett nummer
+                            currentExpenses = [{ name: "Generell utgift", cost: dataToClone.utgifter || 0 }];
+                        }
+                        // --- SLUT NY LOGIK ---
+
                         document.getElementById('kommentarer').value = dataToClone.kommentarer;
 						document.getElementById('matarstallning').value = dataToClone.matarstallning || '';
                     } else {
@@ -1290,6 +1388,7 @@
                         const now = new Date();
                         modalDatum.value = todayString;
                         modalTid.value = now.toTimeString().substring(0,5);
+                        currentExpenses = []; // Tom för ett helt nytt jobb
                     }
                 } 
                 else if (mode === 'edit' && dataToClone) {
@@ -1298,22 +1397,24 @@
                     modalJobId.value = dataToClone.id;
                     syncStatusUI(dataToClone.status || 'bokad');
                     document.getElementById('prio').checked = dataToClone.prio || false;
-                    if (dataToClone.datum) {
-                        const d = new Date(dataToClone.datum);
-                        modalDatum.value = d.toISOString().split('T')[0];
-                        modalTid.value = d.toTimeString().substring(0,5);
-                    } else {
-                        modalDatum.value = ''; modalTid.value = '';
-                    }
-                    modalRegnr.value = dataToClone.regnr;
-                    modalKundnamn.value = dataToClone.kundnamn.toUpperCase();
-                    modalTelefon.value = dataToClone.telefon || '';
+                    // ... (din befintliga kod för datum, tid, regnr, kundnamn, telefon) ...
                     modalKundpris.value = dataToClone.kundpris;
-                    modalUtgifter.value = dataToClone.utgifter;
+                    
+                    // --- NY UTGIFTS-LOGIK (för redigering) ---
+                    if (dataToClone.expenseItems && Array.isArray(dataToClone.expenseItems)) {
+                        currentExpenses = [...dataToClone.expenseItems]; // Läs in den sparade arrayen
+                    } else {
+                        // Bakåtkompatibilitet: Omvandla gammal data
+                        currentExpenses = [{ name: "Generell utgift", cost: dataToClone.utgifter || 0 }];
+                    }
+                    // --- SLUT NY LOGIK ---
+
                     document.getElementById('kommentarer').value = dataToClone.kommentarer;
 					document.getElementById('matarstallning').value = dataToClone.matarstallning || '';
                 }
-                updateLiveProfit();
+                
+                renderExpensesList(); // <-- NYTT: rendera utgiftslistan
+                updateLiveProfit(); // <-- NYTT: Beräkna vinsten
                 
                 // NYTT: Trigga input-eventet för att visa/dölja knappar om ett nr finns
                 modalTelefon.dispatchEvent(new Event('input')); 
@@ -1845,21 +1946,36 @@
             // --- `handleFormSubmit` med Spinner ---
             async function handleFormSubmit(e) {
                 e.preventDefault();
-                const jobData = getJobDataFromForm();
                 
-                if (jobData.status === 'klar' && jobData.kundpris === 0) {
+                // Hämta grunddata från formuläret
+                const jobId = modalJobId.value;
+                const kundpris = parseFloat(modalKundpris.value) || 0;
+                
+                // --- NY BERÄKNING AV UTGIFT & VINST ---
+                const totalUtgifter = currentExpenses.reduce((sum, item) => sum + (item.cost || 0), 0);
+                const vinst = kundpris - totalUtgifter;
+                // --- SLUT NY BERÄKNING ---
+
+                if (modalStatusSelect.value === 'klar' && kundpris === 0) {
                     alert('Ett "Klar" jobb kan inte ha 0 kr i kundpris.');
                     return;
                 }
-                const fullDatum = `${jobData.datum}T${jobData.tid || '09:00'}`;
+                const fullDatum = `${modalDatum.value}T${modalTid.value || '09:00'}`;
                 
+                // Detta är det nya objektet vi sparar till Firebase
                 const savedData = { 
-                    status: jobData.status, datum: fullDatum, regnr: jobData.regnr,
-                    kundnamn: jobData.kundnamn,
-                    telefon: jobData.telefon, // NYTT FÄLT
-                    kundpris: jobData.kundpris, utgifter: jobData.utgifter,
-                    vinst: jobData.vinst, kommentarer: jobData.kommentarer, prio: jobData.prio,
-					matarstallning: jobData.matarstallning
+                    status: modalStatusSelect.value,
+                    datum: fullDatum,
+                    regnr: modalRegnr.value.toUpperCase(),
+                    kundnamn: document.getElementById('kundnamn').value.toUpperCase(),
+                    telefon: modalTelefon.value,
+                    kundpris: kundpris,
+                    utgifter: totalUtgifter,      // Sparar den totala summan (som förr)
+                    expenseItems: currentExpenses,  // <-- NYTT: Sparar detalj-arrayen
+                    vinst: vinst,                 // Sparar den nyberäknade vinsten
+                    kommentarer: document.getElementById('kommentarer').value,
+                    prio: document.getElementById('prio').checked,
+					matarstallning: document.getElementById('matarstallning').value
                 };
                 
                 const originalButtonText = modalSaveBtn.textContent;
@@ -1870,8 +1986,8 @@
                 `;
 
                 try {
-                    if (jobData.id) {
-                        await db.collection("jobs").doc(jobData.id).update(savedData);
+                    if (jobId) {
+                        await db.collection("jobs").doc(jobId).update(savedData);
                         showToast('Jobb uppdaterat i molnet!');
                     } else {
                         await db.collection("jobs").add(savedData);
@@ -2222,7 +2338,6 @@
                     const literOljaprompt = prompt('Hur många liter olja? (t.ex. 4.3)', '4,3');
                     if (literOljaprompt === null) return; 
                     
-                    // FIX: Hanterar både komma och punkt som decimal
                     const literOlja = parseFloat(literOljaprompt.replace(',', '.')) || 0;
                     
                     if (literOlja > 0) {
@@ -2231,7 +2346,15 @@
                         const arbetskostnad = 500; 
                         
                         modalKundpris.value = Math.round(oljekostnad + filterkostnad + arbetskostnad);
-                        modalUtgifter.value = 0; 
+                        
+                        // --- NY LOGIK FÖR UTGIFTER ---
+                        currentExpenses = [
+                            { name: `Motorolja (${literOlja}L)`, cost: Math.round(oljekostnad) },
+                            { name: "Oljefilter", cost: filterkostnad }
+                        ];
+                        renderExpensesList(); // Uppdatera listan
+                        // --- SLUT NY LOGIK ---
+                        
                         document.getElementById('kommentarer').value = `Oljebyte:\n- Motorolja (${literOlja}L)\n- Oljefilter`;
                         showToast('Mall tillämpad!', 'info');
                     } else {
@@ -2240,12 +2363,17 @@
                     
                 } else if (template === 'hjulskifte') {
                     modalKundpris.value = 200;
-                    modalUtgifter.value = 0;
+                    
+                    // --- NY LOGIK FÖR UTGIFTER ---
+                    currentExpenses = []; // Inga utgifter för hjulskifte
+                    renderExpensesList(); // Rensa listan
+                    // --- SLUT NY LOGIK ---
+
                     document.getElementById('kommentarer').value = 'Hjulskifte (sommar/vinter)';
                     showToast('Mall tillämpad!', 'info');
                 }
                 
-                updateLiveProfit();
+                updateLiveProfit(); // Beräkna om vinsten
             });
             
             // --- Klickbara jobblistor i Kund/Bil-modal (FIXAD HISTORIK) ---
@@ -2290,7 +2418,6 @@
 
             // --- Övriga formulär-hanterare ---
             modalKundpris.addEventListener('input', updateLiveProfit);
-            modalUtgifter.addEventListener('input', updateLiveProfit);
             
             // NYTT: Funktion för att hitta senaste jobbet
             function findLatestJob(key, value) {
