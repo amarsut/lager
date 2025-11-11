@@ -2958,19 +2958,27 @@
 	        });
             
             modalRegnr.addEventListener('blur', (e) => {
-			    let value = e.target.value.toUpperCase().replace(/\s/g, ''); // Ta bort alla mellanslag
-			    if (value.length < 4 || value.length > 7) return; // Ignorera ogiltiga
+                // Ta det synliga värdet. Trimma endast bort inledande/avslutande mellanslag.
+			    let visualValue = e.target.value.toUpperCase().trim();
+                
+                // Omvandla till ett internt format (utan mellanslag) för SÖKNING
+                let searchValue = visualValue.replace(/\s/g, ''); 
+                
+			    if (searchValue.length < 4 || searchValue.length > 7) {
+                    // Återställ det visuella värdet och avsluta
+                    e.target.value = visualValue; 
+                    return; 
+                }
 			
-			    // Formatera om till "ABC 123"
-			    const letters = value.substring(0, 3);
-			    const numbers = value.substring(3);
-			    e.target.value = `${letters} ${numbers}`;
-			
+                // VI SLUTAR ATT TVINGA FORMATET HÄR!
+                // Din korrigering till t.ex. "ABC123" kommer nu att sparas.
+                e.target.value = visualValue; 
+                
 			    // Trigga din befintliga "auto-fyll"-logik
-			    const regnr = e.target.value;
-			    const existingJob = findLatestJob('regnr', regnr); 
+			    const regnrToSearch = searchValue; // Sök med den rensade strängen
+			    const existingJob = findLatestJob('regnr', regnrToSearch); 
 			    
-                // --- SISTA FIXEN: Fyll bara tomma fält och INGEN TOAST ---
+                // --- KVARVARANDE LOGIK FÖR ATT FÖRHINDRA ÖVERSKRIVNING ---
 			    if (existingJob) {
                     // Fyll BARA kundnamn om fältet är tomt
                     if (modalKundnamn.value === '') {
@@ -2980,7 +2988,6 @@
                     if (modalTelefon.value === '') {
                         modalTelefon.value = existingJob.telefon || '';
                     }
-                    // Vi tar bort showToast('Kund-data auto-ifylld!', 'info'); HÄR
                 }
             });
             
