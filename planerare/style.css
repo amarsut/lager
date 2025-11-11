@@ -2980,19 +2980,31 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 /* --- NYTT: Stilar för Jobb-mallarnas ikoner --- */
 .template-icon {
     color: var(--primary-color); /* Ger dem din primära färg */
-    width: 2.2rem; /* Gör dem lite större än standard ikon-md */
-    height: 2.2rem;
-    margin-bottom: 0.35rem; /* Lite luft till texten */
-    transition: color var(--transition-speed-fast) ease; /* Smidig övergång */
+    width: 1.25rem; /* Sätter en konsekvent storlek */
+    height: 1.25rem;
+    transition: color var(--transition-speed-fast) ease;
 }
 
-/* Hover-effekt för ikonerna */
+/* Anpassa knapp-layouten lite */
+.job-templates .button.template-btn {
+    /* (Du kan ta bort detta om du vill ha dem sida vid sida) */
+    flex-direction: row; 
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+}
+
+.job-templates .button.template-btn .template-icon {
+    width: 1rem; /* Återställ till mindre ikon i raden */
+    height: 1rem;
+    margin-bottom: 0; /* Ta bort marginalen */
+}
+
+/* Hover-effekt för ikonerna (som en del av knappen) */
 .template-btn:hover .template-icon {
-    color: var(--primary-dark); /* Blir mörkare vid hovring */
+    color: var(--primary-hover); 
 }
 
-/* Mörk tema-anpassning */
-[data-theme="dark"] .template-icon {
-    filter: drop-shadow(0 0 4px rgba(66, 153, 225, 0.4)); /* Liten glöd i mörkt läge */
+[data-theme="dark"] .template-btn:hover .template-icon {
+     color: var(--primary-hover);
 }
-
