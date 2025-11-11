@@ -2910,7 +2910,8 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 
 .expense-add-form {
     display: grid;
-    grid-template-columns: 1fr auto auto; /* Namn | Kostnad | Knapp */
+    /* ÄNDRAD: Ge kostnad-fältet en fast bredd (t.ex. 120px) och låt namn-fältet (1fr) ta resten */
+    grid-template-columns: 1fr 120px auto; 
     gap: 0.75rem;
     align-items: center;
     margin-bottom: 1rem;
@@ -2975,4 +2976,5 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     color: var(--danger-color);
     background-color: var(--danger-light);
 }
+
 
