@@ -2957,7 +2957,16 @@
 	            }
 	        });
             
-            // Trigga din befintliga "auto-fyll"-logik
+            modalRegnr.addEventListener('blur', (e) => {
+			    let value = e.target.value.toUpperCase().replace(/\s/g, ''); // Ta bort alla mellanslag
+			    if (value.length < 4 || value.length > 7) return; // Ignorera ogiltiga
+			
+			    // Formatera om till "ABC 123"
+			    const letters = value.substring(0, 3);
+			    const numbers = value.substring(3);
+			    e.target.value = `${letters} ${numbers}`;
+			
+			    // Trigga din befintliga "auto-fyll"-logik
             const regnr = e.target.value;
             const existingJob = findLatestJob('regnr', regnr);
             
