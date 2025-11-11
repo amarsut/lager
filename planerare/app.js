@@ -1,6 +1,4 @@
-<script>
-	
-        // --- Globala Konstanter ---
+	// --- Globala Konstanter ---
         const STATUS_TEXT = {
             'bokad': 'Bokad', 'klar': 'Klar', 
             'offererad': 'Offererad', 'avbokad': 'Avbokad'
@@ -2701,4 +2699,3 @@
             });
 
         });
-    </script>
