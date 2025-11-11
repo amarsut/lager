@@ -1313,10 +1313,6 @@
                 e.target.value = e.target.value.toUpperCase();
             });
 
-            // --- NY LISTENER: Lägg till en utgift ---
-            addExpenseBtn.addEventListener('click', () => {
-                // ... (resten av din funktion) ...
-
 			// --- NY LISTENER: Lägg till en utgift ---
             addExpenseBtn.addEventListener('click', () => {
                 const name = expenseNameInput.value.trim();
