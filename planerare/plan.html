@@ -2970,25 +2970,17 @@
 			    const regnr = e.target.value;
 			    const existingJob = findLatestJob('regnr', regnr); 
 			    
-                // --- NY, SÄKER FIX: Använd flagga och fyll bara i tomma fält ---
+                // --- SISTA FIXEN: Fyll bara tomma fält och INGEN TOAST ---
 			    if (existingJob) {
-                    let didFill = false; // <<< DENNA ÄR NYCKELN
-                    
-                    // Fyll BARA om fältet är tomt
+                    // Fyll BARA kundnamn om fältet är tomt
                     if (modalKundnamn.value === '') {
                         modalKundnamn.value = existingJob.kundnamn.toUpperCase();
-                        didFill = true;
                     }
-                    // Fyll BARA om fältet är tomt
+                    // Fyll BARA telefon om fältet är tomt
                     if (modalTelefon.value === '') {
                         modalTelefon.value = existingJob.telefon || '';
-                        didFill = true;
                     }
-
-                    // Visa TOAST BARA om vi faktiskt fyllde i något
-                    if (didFill) {
-                        showToast('Kund-data auto-ifylld!', 'info');
-                    }
+                    // Vi tar bort showToast('Kund-data auto-ifylld!', 'info'); HÄR
                 }
             });
             
