@@ -3008,30 +3008,19 @@
                         item.classList.add('suggestion-item');
                         item.textContent = name;
                         item.addEventListener('click', () => {
+                            const name = item.dataset.name; // Återanvänd variabeln 'name'
                             modalKundnamn.value = name;
                             kundnamnSuggestions.style.display = 'none';
                             kundnamnSuggestions.innerHTML = '';
                             
-                            // --- NY, SÄKER FIX: Fyll bara i tomma fält ---
+                            // --- SISTA FIXEN: Fyll bara tomma fält ---
                             const existingJob = findLatestJob('kundnamn', name); 
                             
                             if (existingJob) {
-                                let didFill = false; // <<< DENNA ÄR NYCKELN
-                                
                                 // Fyll BARA om telefon-fältet är tomt
                                 if (modalTelefon.value === '') {
                                     modalTelefon.value = existingJob.telefon || '';
-                                    didFill = true;
                                 }
-
-                                // Vi kan välja att visa toast här också, men oftast är det onödigt
-                                // eftersom användaren just klickade på namnet. Vi kan ta bort den helt.
-                                // Men om vi vill ha toast:
-                                /*
-                                if (didFill) {
-                                    showToast('Kund-data auto-ifylld!', 'info');
-                                }
-                                */
                             }
                         });
                         kundnamnSuggestions.appendChild(item);
