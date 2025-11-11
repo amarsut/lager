@@ -824,6 +824,7 @@
             }
 
             // --- UPPDATERAD: createJobRow med Kontextuell Ikon ---
+            // --- UPPDATERAD: createJobRow med Kontextuell Ikon ---
             function createJobRow(job) {
                 let prioClass = job.prio ? 'prio-row' : '';
                 const doneClass = (job.status === 'klar') ? 'done-row' : '';
@@ -853,6 +854,7 @@
                         <td data-label="Kund">
                             ${prioIcon}
                             ${contextIcon} <button class="link-btn customer-link" data-kund="${job.kundnamn}">
+                                <svg class="icon-sm customer-icon" viewBox="0 0 24 24"><use href="#icon-user"></use></svg>
                                 ${kundnamnHTML}
                             </button>
                         </td>
@@ -927,6 +929,7 @@
             }
             
             // --- UPPDATERAD: createJobCard med Kontextuell Ikon ---
+            // --- UPPDATERAD: createJobCard med Kontextuell Ikon ---
             function createJobCard(job) {
                 let prioClass = job.prio ? 'prio-row' : '';
                 const doneClass = (job.status === 'klar') ? 'done-row' : '';
@@ -959,7 +962,10 @@
                                 <span class="card-value customer-name">
                                     <div class="customer-name-wrapper">
                                         ${contextIcon}
-                                        <button class="link-btn customer-link" data-kund="${job.kundnamn}">${kundnamnHTML}</button>
+                                        <button class="link-btn customer-link" data-kund="${job.kundnamn}">
+                                            <svg class="icon-sm customer-icon" viewBox="0 0 24 24"><use href="#icon-user"></use></svg>
+                                            ${kundnamnHTML}
+                                        </button>
                                     </div>
                                 </span>
                             </div>
