@@ -94,10 +94,11 @@ body {
 }
 .link-btn:hover { text-decoration: underline; }
 #jobbOversikt .link-btn {
-    color: var(--text-color); font-weight: 500;
+    font-weight: 500;
+    text-decoration: none; /* Behåll denna för att slippa understrykning som standard */
 }
 #jobbOversikt .link-btn:hover {
-    color: var(--primary-color); text-decoration: none;
+    text-decoration: underline; /* Lägg till tydlig hover-effekt */
 }
 .prio-flag-icon {
     color: var(--danger-color);
@@ -2008,10 +2009,10 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         font-size: 1.05rem;
     }
     .mobile-job-card .customer-name .link-btn {
-        font-weight: 700;
-        font-size: 1.05rem;
-        color: var(--text-color);
-    }
+    	font-weight: 700;
+    	font-size: 1.05rem;
+    	/* color: var(--text-color); */ /* BORTTAGEN - Låter länken vara blå */
+	}
     /* --- NYTT: Wrapper för kontext-ikon + namn --- */
     .customer-name-wrapper {
         display: flex;
@@ -2844,6 +2845,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     0%, 100% { background-color: rgba(107, 114, 128, 0.1); }
     50% { background-color: rgba(255, 159, 10, 0.3); }
 }
+
 
 
 
