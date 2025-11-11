@@ -2957,7 +2957,6 @@
 	            }
 	        });
             
-            // NYTT: Auto-ifyllning från Regnr
             modalRegnr.addEventListener('blur', (e) => {
 			    let value = e.target.value.toUpperCase().replace(/\s/g, ''); // Ta bort alla mellanslag
 			    if (value.length < 4 || value.length > 7) return; // Ignorera ogiltiga
@@ -2968,19 +2967,21 @@
 			    e.target.value = `${letters} ${numbers}`;
 			
 			    // Trigga din befintliga "auto-fyll"-logik
-            	const regnr = e.target.value;
+			    const regnr = e.target.value;
 
-	            // --- FIX: Kör bara auto-ifyllning om det är ett NYTT jobb ---
-	            // (modalJobId är det dolda fältet som har jobbets ID vid redigering)
-	            if (modalJobId.value === '') {
-	                const existingJob = findLatestJob('regnr', regnr);
-	                if (existingJob) {
-	                    modalKundnamn.value = existingJob.kundnamn.toUpperCase();
-	                    modalTelefon.value = existingJob.telefon || '';
-	                    showToast('Kund-data auto-ifylld!', 'info');
-	                }
-	            }
-	        });
+                // --- NYA FIXEN ÄR HÄR ---
+                // Vi kontrollerar `modalJobId.value` (det dolda fältet)
+                // Om det har ett värde (dvs. vi redigerar) ska vi INTE auto-fylla.
+                if (modalJobId.value === '') {
+			        const existingJob = findLatestJob('regnr', regnr);
+			        if (existingJob) {
+                        modalKundnamn.value = existingJob.kundnamn.toUpperCase();
+                        modalTelefon.value = existingJob.telefon || '';
+                        showToast('Kund-data auto-ifylld!', 'info');
+                    }
+                }
+                // --- SLUT PÅ FIX ---
+            });
             
             modalRegnr.addEventListener('input', (e) => {
                 e.target.value = e.target.value.toUpperCase();
@@ -3006,18 +3007,20 @@
                         item.classList.add('suggestion-item');
                         item.textContent = name;
                         item.addEventListener('click', () => {
-	                        modalKundnamn.value = name;
-	                        kundnamnSuggestions.style.display = 'none';
-	                        kundnamnSuggestions.innerHTML = '';
-	                        
-	                        // --- FIX: Kör bara auto-ifyllning om det är ett NYTT jobb ---
-	                        if (modalJobId.value === '') {
-	                            const existingJob = findLatestJob('kundnamn', name);
-	                            if (existingJob) {
-	                                modalTelefon.value = existingJob.telefon || '';
-	                            }
-	                        }
-	                    });
+                            modalKundnamn.value = name;
+                            kundnamnSuggestions.style.display = 'none';
+                            kundnamnSuggestions.innerHTML = '';
+                            
+                            // --- NYA FIXEN ÄR HÄR ---
+                            // Samma logik: fyll bara i telefon om det är ett NYTT jobb.
+                            if (modalJobId.value === '') {
+                                const existingJob = findLatestJob('kundnamn', name);
+                                if (existingJob) {
+                                    modalTelefon.value = existingJob.telefon || '';
+                                }
+                            }
+                            // --- SLUT PÅ FIX ---
+                        });
                         kundnamnSuggestions.appendChild(item);
                     });
                     kundnamnSuggestions.style.display = 'block';
