@@ -2977,4 +2977,22 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     background-color: var(--danger-light);
 }
 
+/* --- NYTT: Stilar för Jobb-mallarnas ikoner --- */
+.template-icon {
+    color: var(--primary-color); /* Ger dem din primära färg */
+    width: 2.2rem; /* Gör dem lite större än standard ikon-md */
+    height: 2.2rem;
+    margin-bottom: 0.35rem; /* Lite luft till texten */
+    transition: color var(--transition-speed-fast) ease; /* Smidig övergång */
+}
+
+/* Hover-effekt för ikonerna */
+.template-btn:hover .template-icon {
+    color: var(--primary-dark); /* Blir mörkare vid hovring */
+}
+
+/* Mörk tema-anpassning */
+[data-theme="dark"] .template-icon {
+    filter: drop-shadow(0 0 4px rgba(66, 153, 225, 0.4)); /* Liten glöd i mörkt läge */
+}
 
