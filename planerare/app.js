@@ -591,8 +591,17 @@
                     timelineView.style.display = 'block';
                     appBrandTitle.style.display = 'block'; 
                     
-                    // Tidslinjen är "default"-läget, vi pushar ingen state här.
-                    // Om vi kom hit via popstate (bakåt) hanteras det där.
+                   if (!isNavigatingBack) {
+                        // Om vi klickar på "Tidslinje" och statet är "calendar",
+                        // gå bara "bakåt" i historiken för att komma till "null" (tidslinje).
+                        if (history.state && history.state.view === 'calendar') {
+                            history.back();
+                        } else {
+                            // Om vi är någon annanstans (t.ex. just stängt en modal)
+                            // se till att state är null utan att bygga historik.
+                            history.replaceState(null, 'Tidslinje', location.pathname);
+                        }
+                    }
                 }
             }
 
@@ -1097,7 +1106,7 @@
                     
                     // Nollställ varningen, vi vill inte stänga appen
                     backPressWarned = false; 
-
+					return;
                 } else if (state && state.view === 'calendar') {
                     // FALL 2: Vi har navigerat TILL kalender-vyn
                     // (Antingen "Framåt" i webbläsaren, eller så har en modalstängning avslöjat detta state)
