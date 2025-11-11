@@ -1,91 +1,124 @@
-// Service Worker för Jobbplanerare PWA
-const CACHE_NAME = 'jobbplanerare-cache-v1.0.9'; 
-// Lista alla kritiska filer som behövs för att appen ska starta offline.
-const urlsToCache = [
+/*
+ * Service Worker för Jobbplanerare v15
+ * Uppgraderad strategi:
+ * 1. STATISK CACHE (App-skal): "Cache First" för lokala filer.
+ * 2. DYNAMISK CACHE (CDN/Fonts): "Stale-While-Revalidate" för externa resurser.
+ * 3. NÄTVERK (API): Ignorerar Firebase/Google API:er för att låta Firestore's offline-stöd fungera.
+ */
+
+// Använder din versionssättning, men uppdelad i två cacher
+const STATIC_CACHE_NAME = 'jobbplanerare-static-v1.0.9';
+const DYNAMIC_CACHE_NAME = 'jobbplanerare-dynamic-v1.0.9';
+
+// 1. App-skalet (Endast dina KÄRN-filer)
+// Dessa filer är kärnan i din app och cachas direkt vid installation.
+const APP_SHELL_FILES = [
+  '/', // Viktigt för att kunna starta från roten
   './plan.html',
   './style.css',
   './manifest.json',
-    // IKONER (Dubbelkolla att mappen heter images/ med litet i och att filnamnen är exakta)
-    './images/192x192.png',
-    './images/512x512.png',
-    './images/maskable.png',
-  // Lägg till Firebase & FullCalendar scripts som vi använder via CDN
-  'https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js',
-  'https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js',
-  'https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js',
-  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap'
+  // IKONER (från din gamla fil)
+  './images/192x192.png',
+  './images/512x512.png',
+  './images/maskable.png',
+  // Lokal bild från din HTML
+  './images/oljemagasinet-favico.png'
+  // OBS: Vi har tagit bort CDN-länkarna! De hanteras nu automatiskt av FETCH.
 ];
 
-// Installation: Cacha app-skalet (app shell)
+// --- INSTALLATION ---
+// Detta körs EN gång när Service Workern installeras.
+// Cachar endast app-skalet.
 self.addEventListener('install', event => {
+    console.log('[SW] Installation påbörjad...');
     event.waitUntil(
-        caches.open(CACHE_NAME)
+        caches.open(STATIC_CACHE_NAME)
             .then(cache => {
-                console.log('Service Worker: Caching App Shell');
-                return cache.addAll(urlsToCache);
+                console.log('[SW] Cachar app-skal:', APP_SHELL_FILES);
+                // Lägg till alla dina app-skal-filer i den statiska cachen
+                return cache.addAll(APP_SHELL_FILES);
+            })
+            .then(() => {
+                // Tvingar den nya Service Workern att aktiveras direkt
+                return self.skipWaiting();
             })
             .catch(err => {
-                console.error('Service Worker: Caching failed', err);
+                console.error('[SW] Caching av app-skal misslyckades', err);
             })
     );
 });
 
-// Aktivering: Rensar gamla cachar
+// --- AKTIVERING ---
+// Detta körs när en ny Service Worker tar över.
+// Den rensar bort gamla cachar som inte matchar de TVÅ nya.
 self.addEventListener('activate', event => {
-    const cacheWhitelist = [CACHE_NAME];
+    console.log('[SW] Aktivering påbörjad...');
+    const cacheWhitelist = [STATIC_CACHE_NAME, DYNAMIC_CACHE_NAME];
     event.waitUntil(
         caches.keys().then(cacheNames => {
             return Promise.all(
                 cacheNames.map(cacheName => {
+                    // Om cachen varken är den statiska eller dynamiska vi vill ha, ta bort den!
                     if (cacheWhitelist.indexOf(cacheName) === -1) {
-                        console.log('Service Worker: Deleting old cache:', cacheName);
+                        console.log('[SW] Rensar gammal cache:', cacheName);
                         return caches.delete(cacheName);
                     }
                 })
             );
+        }).then(() => {
+            // Tvingar Service Workern att ta kontroll över alla öppna flikar
+            return self.clients.claim();
         })
     );
-    // Säkerställ att service worker tar kontroll omedelbart
-    return self.clients.claim();
 });
 
-// Hämtning: Servera från cache först, sedan nätverk (Cache-First)
+// --- FETCH (NÄTVERKSANROP) ---
+// Detta är den viktigaste delen. Den fångar ALLA nätverksanrop från din app.
 self.addEventListener('fetch', event => {
-  // Vi hanterar bara GET-requests (t.ex. för filer), inte POST/PUT (som sparar data)
-  if (event.request.method !== 'GET') {
-    return;
-  }
+    const url = new URL(event.request.url);
 
-  event.respondWith(
-    caches.open(CACHE_NAME).then(cache => {
-      // 1. Försök hitta filen i cachen
-      return cache.match(event.request).then(cachedResponse => {
-        
-        // 2. Starta en nätverksförfrågan OAVSETT (detta är "revalidate"-delen)
-        const fetchPromise = fetch(event.request).then(networkResponse => {
-          // Om vi får ett giltigt svar från nätverket...
-          if (networkResponse && networkResponse.status === 200) {
-            // ...spara den nya versionen i cachen för nästa gång
-            cache.put(event.request, networkResponse.clone());
-          }
-          // Returnera den nya versionen från nätverket
-          return networkResponse;
-        }).catch(error => {
-          // Nätverket misslyckades (du är offline)
-          console.log('Fetch failed; appen är offline.', error);
-          // Vi kan inte göra något mer här, men vi har förhoppningsvis redan en cachad fil
-        });
+    // 1. Ignorera ALLTID Firebase-anrop och Google API:er.
+    // Firebase har sin egen offline-hantering (enablePersistence).
+    // Vi får INTE störa den genom att cacha dessa anrop.
+    if (url.hostname.includes('firebase') || url.hostname.includes('firestore') || url.hostname.includes('googleapis.com')) {
+        // Låt anropet gå direkt till nätverket
+        return event.respondWith(fetch(event.request));
+    }
 
-        // 3. Returnera den cachade filen direkt (om den finns)
-        // Detta gör att appen laddar omedelbart ("stale"-delen)
-        if (cachedResponse) {
-          return cachedResponse;
-        }
+    // 2. Hantera App-skalet (Cache First)
+    // Om filen finns i vår lista på app-skal-filer...
+    if (APP_SHELL_FILES.includes(url.pathname)) {
+        // ... svara ALLTID från den statiska cachen. Detta är blixtsnabbt.
+        event.respondWith(
+            caches.match(event.request, { cacheName: STATIC_CACHE_NAME })
+                .then(cachedResponse => {
+                    return cachedResponse || fetch(event.request); // Fallback om det *mot förmodan* saknas
+                })
+        );
+        return; // Avsluta här
+    }
 
-        // 4. Om filen INTE fanns i cachen (första besöket)
-        // vänta på att nätverksförfrågan blir klar och returnera den.
-        return fetchPromise;
-      });
-    })
-  );
+    // 3. Hantera allt annat (Stale-While-Revalidate)
+    // (Gäller t.ex. FullCalendar, Google Fonts, och andra CDNs)
+    event.respondWith(
+        caches.open(DYNAMIC_CACHE_NAME).then(cache => {
+            return cache.match(event.request).then(cachedResponse => {
+                
+                // Starta ett nätverksanrop som ALLTID körs i bakgrunden
+                const networkFetch = fetch(event.request).then(networkResponse => {
+                    // Spara den nya versionen i den dynamiska cachen
+                    cache.put(event.request, networkResponse.clone());
+                    // Returnera den nya versionen
+                    return networkResponse;
+                }).catch(err => {
+                    console.error('[SW] Nätverksfel, kunde inte hämta:', event.request.url, err);
+                });
+
+                // Svara omedelbart med cachen om den finns (Stale)
+                // annars vänta på nätverksanropet.
+                // Oavsett vilket så har 'networkFetch' startat för att uppdatera cachen (Revalidate).
+                return cachedResponse || networkFetch;
+            });
+        })
+    );
 });
