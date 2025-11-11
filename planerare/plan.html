@@ -2967,29 +2967,29 @@
 			    e.target.value = `${letters} ${numbers}`;
 			
 			    // Trigga din befintliga "auto-fyll"-logik
-            const regnr = e.target.value;
-            const existingJob = findLatestJob('regnr', regnr);
-            
-            // --- BÄTTRE FIX: Fyll bara i tomma fält ---
-            if (existingJob) {
-                let didFill = false;
-                
-                // Fyll bara i kundnamn om fältet är tomt
-                if (modalKundnamn.value === '') {
-                    modalKundnamn.value = existingJob.kundnamn.toUpperCase();
-                    didFill = true;
+			    const regnr = e.target.value;
+			    const existingJob = findLatestJob('regnr', regnr); // Använd den vanliga funktionen
+			    
+                // --- NY, SÄKER FIX ---
+			    if (existingJob) {
+                    let didFill = false;
+                    
+                    // Fyll BARA om fältet är tomt
+                    if (modalKundnamn.value === '') {
+                        modalKundnamn.value = existingJob.kundnamn.toUpperCase();
+                        didFill = true;
+                    }
+                    // Fyll BARA om fältet är tomt
+                    if (modalTelefon.value === '') {
+                        modalTelefon.value = existingJob.telefon || '';
+                        didFill = true;
+                    }
+
+                    if (didFill) {
+                        showToast('Kund-data auto-ifylld!', 'info');
+                    }
                 }
-                // Fyll bara i telefon om fältet är tomt
-                if (modalTelefon.value === '') {
-                    modalTelefon.value = existingJob.telefon || '';
-                    didFill = true;
-                }
-                
-                if (didFill) {
-                    showToast('Kund-data auto-ifylld!', 'info');
-                }
-            }
-        });
+            });
             
             modalRegnr.addEventListener('input', (e) => {
                 e.target.value = e.target.value.toUpperCase();
