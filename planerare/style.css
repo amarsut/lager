@@ -2891,5 +2891,19 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     border-bottom: 1px solid var(--primary-color);
 }
 
+/* --- NYTT: Stil för "Lediga Dagar" i kalendern --- */
+.fc-day-free {
+    /* En mycket svag, ljusgrön färg */
+    background-color: rgba(48, 209, 88, 0.05);
+}
+
+[data-theme="dark"] .fc-day-free {
+    background-color: rgba(48, 209, 88, 0.1);
+}
+
+/* Se till att "idag"-markeringen alltid vinner över "ledig dag" */
+.fc .fc-day-today {
+    background-color: var(--fc-today-bg-color) !important;
+}
 
 
