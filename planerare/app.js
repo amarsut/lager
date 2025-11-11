@@ -1366,7 +1366,11 @@
                     modalSaveBtn.textContent = 'Spara'; 
                     modalJobId.value = '';
                     if (dataToClone) {
-                        // ... (din befintliga kod för att klona status, prio, datum, etc)...
+                        // Kloningslogik
+                        syncStatusUI(dataToClone.status || 'bokad');
+                        document.getElementById('prio').checked = dataToClone.prio || false;
+                        modalDatum.value = dataToClone.datum ? dataToClone.datum.split('T')[0] : todayString; // Sätt till dagens datum om källan saknar
+                        modalTid.value = dataToClone.datum ? new Date(dataToClone.datum).toTimeString().substring(0,5) : new Date().toTimeString().substring(0,5);
                         modalRegnr.value = dataToClone.regnr;
                         modalKundnamn.value = dataToClone.kundnamn.toUpperCase();
                         modalTelefon.value = dataToClone.telefon || '';
@@ -1375,15 +1379,18 @@
                         // --- NY UTGIFTS-LOGIK (för kloning) ---
                         if (dataToClone.expenseItems && Array.isArray(dataToClone.expenseItems)) {
                             currentExpenses = [...dataToClone.expenseItems]; // Kopiera den nya array-datan
-                        } else {
+                        } else if (dataToClone.utgifter > 0) {
                             // Hantera gamla jobb som bara har ett nummer
                             currentExpenses = [{ name: "Generell utgift", cost: dataToClone.utgifter || 0 }];
+                        } else {
+                            currentExpenses = [];
                         }
                         // --- SLUT NY LOGIK ---
 
                         document.getElementById('kommentarer').value = dataToClone.kommentarer;
 						document.getElementById('matarstallning').value = dataToClone.matarstallning || '';
                     } else {
+                        // Logik för ett helt nytt, tomt jobb
                         syncStatusUI('bokad');
                         document.getElementById('prio').checked = false;
                         const now = new Date();
@@ -1393,20 +1400,36 @@
                     }
                 } 
                 else if (mode === 'edit' && dataToClone) {
+                    // REDIGERINGS-LÄGE (Här var felet)
                     modalTitle.textContent = 'Redigera Jobb';
                     modalSaveBtn.textContent = 'Spara'; 
                     modalJobId.value = dataToClone.id;
                     syncStatusUI(dataToClone.status || 'bokad');
                     document.getElementById('prio').checked = dataToClone.prio || false;
-                    // ... (din befintliga kod för datum, tid, regnr, kundnamn, telefon) ...
+
+                    // --- START: DEN SAKNADE KODEN SOM NU ÄR TILLBAKA ---
+                    if (dataToClone.datum) {
+                        const d = new Date(dataToClone.datum);
+                        modalDatum.value = d.toISOString().split('T')[0];
+                        modalTid.value = d.toTimeString().substring(0,5);
+                    } else {
+                        modalDatum.value = ''; modalTid.value = '';
+                    }
+                    modalRegnr.value = dataToClone.regnr;
+                    modalKundnamn.value = dataToClone.kundnamn.toUpperCase();
+                    modalTelefon.value = dataToClone.telefon || '';
+                    // --- SLUT: DEN SAKNADE KODEN ---
+                    
                     modalKundpris.value = dataToClone.kundpris;
                     
                     // --- NY UTGIFTS-LOGIK (för redigering) ---
                     if (dataToClone.expenseItems && Array.isArray(dataToClone.expenseItems)) {
                         currentExpenses = [...dataToClone.expenseItems]; // Läs in den sparade arrayen
-                    } else {
+                    } else if (dataToClone.utgifter > 0) {
                         // Bakåtkompatibilitet: Omvandla gammal data
                         currentExpenses = [{ name: "Generell utgift", cost: dataToClone.utgifter || 0 }];
+                    } else {
+                        currentExpenses = []; // Starta tom om gamla utgifter var 0
                     }
                     // --- SLUT NY LOGIK ---
 
@@ -1414,10 +1437,10 @@
 					document.getElementById('matarstallning').value = dataToClone.matarstallning || '';
                 }
                 
-                renderExpensesList(); // <-- NYTT: rendera utgiftslistan
-                updateLiveProfit(); // <-- NYTT: Beräkna vinsten
+                renderExpensesList(); // <-- Denna körs
+                updateLiveProfit(); // <-- Denna körs
                 
-                // NYTT: Trigga input-eventet för att visa/dölja knappar om ett nr finns
+                // Trigga input-eventet för att visa/dölja knappar om ett nr finns
                 modalTelefon.dispatchEvent(new Event('input')); 
 
                 showModal('jobModal'); 
