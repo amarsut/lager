@@ -1,53 +1,5 @@
 <script>
-        // --- Firebase Config (Oförändrad) ---
-        const firebaseConfig = {
-		  apiKey: "AIzaSyDwCQkUl-je3L3kF7EuxRC6Dm6Gw2N0nJw",
-		  authDomain: "planerare-f6006.firebaseapp.com",
-		  projectId: "planerare-f6006",
-		  storageBucket: "planerare-f6006.firebasestorage.app",
-		  messagingSenderId: "360462069749",
-		  appId: "1:360462069749:web:c754879f3f75d5ef3cbabc",
-		  measurementId: "G-L6516XLZ1Y"
-		};
-
-		// --- REGISTRERA SERVICE WORKER FÖR PWA INSTALLATION ---
-		if ('serviceWorker' in navigator) {
-		    window.addEventListener('load', () => {
-		        navigator.serviceWorker.register('./sw.js')
-		            .then(registration => {
-		                console.log('Service Worker registrerad framgångsrikt med scope:', registration.scope);
-		            })
-		            .catch(error => {
-		                console.log('Service Worker registrering misslyckades:', error);
-		            });
-		    });
-		}
-
-        let db;
-        try {
-            firebase.initializeApp(firebaseConfig);
-            db = firebase.firestore();
-			/* OFFLINE STÖD */
-			db.enablePersistence({synchronizeTabs: true})
-            .then(() => {
-                console.log("Offline-stöd aktiverat!");
-            })
-            .catch((err) => {
-                if (err.code == 'failed-precondition') {
-                    // Flera flikar är öppna, kan hända.
-                    console.warn("Kunde inte aktivera offline-stöd, troligen pga flera flikar.");
-                } else if (err.code == 'unimplemented') {
-                    // Webbläsaren stöds inte (mycket ovanligt).
-                    console.warn("Offline-stöd stöds inte i denna webbläsare.");
-                }
-            });
-			/* SLUT PÅ OFFLINE STÖD */
-            console.log("Firebase initierat!");
-        } catch (e) {
-            console.error("Kunde inte initiera Firebase.", e);
-            alert("Kunde inte initiera Firebase.");
-        }
-        
+	
         // --- Globala Konstanter ---
         const STATUS_TEXT = {
             'bokad': 'Bokad', 'klar': 'Klar', 
