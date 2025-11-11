@@ -3006,19 +3006,19 @@
                         item.classList.add('suggestion-item');
                         item.textContent = name;
                         item.addEventListener('click', () => {
-                        modalKundnamn.value = name;
-                        kundnamnSuggestions.style.display = 'none';
-                        kundnamnSuggestions.innerHTML = '';
-                        
-                        // --- BÄTTRE FIX: Fyll bara i tomma fält ---
-                        const existingJob = findLatestJob('kundnamn', name);
-                        if (existingJob) {
-                            // Fyll bara i telefon om fältet är tomt
-                            if (modalTelefon.value === '') {
-                                modalTelefon.value = existingJob.telefon || '';
+                            modalKundnamn.value = name;
+                            kundnamnSuggestions.style.display = 'none';
+                            kundnamnSuggestions.innerHTML = '';
+                            
+                            // --- NY, SÄKER FIX ---
+                            const existingJob = findLatestJob('kundnamn', name); // Använd den vanliga funktionen
+                            if (existingJob) {
+                                // Fyll BARA om telefon-fältet är tomt
+                                if (modalTelefon.value === '') {
+                                    modalTelefon.value = existingJob.telefon || '';
+                                }
                             }
-                        }
-                    });
+                        });
                         kundnamnSuggestions.appendChild(item);
                     });
                     kundnamnSuggestions.style.display = 'block';
