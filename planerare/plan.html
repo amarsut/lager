@@ -2968,11 +2968,11 @@
 			
 			    // Trigga din befintliga "auto-fyll"-logik
 			    const regnr = e.target.value;
-			    const existingJob = findLatestJob('regnr', regnr); // Använd den vanliga funktionen
+			    const existingJob = findLatestJob('regnr', regnr); 
 			    
-                // --- NY, SÄKER FIX ---
+                // --- NY, SÄKER FIX: Använd flagga och fyll bara i tomma fält ---
 			    if (existingJob) {
-                    let didFill = false;
+                    let didFill = false; // <<< DENNA ÄR NYCKELN
                     
                     // Fyll BARA om fältet är tomt
                     if (modalKundnamn.value === '') {
@@ -2985,6 +2985,7 @@
                         didFill = true;
                     }
 
+                    // Visa TOAST BARA om vi faktiskt fyllde i något
                     if (didFill) {
                         showToast('Kund-data auto-ifylld!', 'info');
                     }
@@ -3019,13 +3020,26 @@
                             kundnamnSuggestions.style.display = 'none';
                             kundnamnSuggestions.innerHTML = '';
                             
-                            // --- NY, SÄKER FIX ---
-                            const existingJob = findLatestJob('kundnamn', name); // Använd den vanliga funktionen
+                            // --- NY, SÄKER FIX: Fyll bara i tomma fält ---
+                            const existingJob = findLatestJob('kundnamn', name); 
+                            
                             if (existingJob) {
+                                let didFill = false; // <<< DENNA ÄR NYCKELN
+                                
                                 // Fyll BARA om telefon-fältet är tomt
                                 if (modalTelefon.value === '') {
                                     modalTelefon.value = existingJob.telefon || '';
+                                    didFill = true;
                                 }
+
+                                // Vi kan välja att visa toast här också, men oftast är det onödigt
+                                // eftersom användaren just klickade på namnet. Vi kan ta bort den helt.
+                                // Men om vi vill ha toast:
+                                /*
+                                if (didFill) {
+                                    showToast('Kund-data auto-ifylld!', 'info');
+                                }
+                                */
                             }
                         });
                         kundnamnSuggestions.appendChild(item);
