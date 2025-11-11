@@ -341,6 +341,29 @@
                         modalDatum.value = datePart;
                         modalTid.value = time;
                     },
+
+					dayCellClassNames: function(arg) {
+                        const dateKey = arg.date.toISOString().split('T')[0];
+                        const isPast = dateKey < todayString; // todayString är en global variabel
+
+                        // Om dagen är i dåtid, gör ingenting
+                        if (isPast) {
+                            return [];
+                        }
+
+                        // Kolla om det finns några "aktiva" jobb (bokade eller offererade)
+                        const hasActiveJob = allJobs.some(j => 
+                            j.datum.startsWith(dateKey) && 
+                            (j.status === 'bokad' || j.status === 'offererad')
+                        );
+
+                        // Om det INTE finns några aktiva jobb, returnera vår nya klass
+                        if (!hasActiveJob) {
+                            return ['fc-day-free'];
+                        }
+
+                        return [];
+                    },
                     
                     eventContent: function(arg) {
                         const job = arg.event.extendedProps.originalJob; 
@@ -637,6 +660,7 @@
                     calendar.setOption('events', calendarEvents);
                     filterCalendarView();
                     updateDailyProfitInCalendar(allJobs);
+					calendar.rerender();
                 }
                 renderTimeline(); 
                 
