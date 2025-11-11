@@ -292,17 +292,26 @@
                     </div>
                 </div>
                 
-                <div class="form-group-split">
-                    <div class="form-group">
-                        <label for="kundpris">Kundpris (kr)</label>
-                        <input type="number" id="kundpris" value="0" min="0" required onfocus="this.select()">
-                    </div>
-                    <div class="form-group">
-                        <label for="utgifter">Utgifter (kr)</label>
-                        <input type="number" id="utgifter" value="0" min="0" required onfocus="this.select()">
-                    </div>
+                <div class="form-group full-width">
+                    <label for="kundpris">Kundpris (kr)</label>
+                    <input type="number" id="kundpris" value="0" min="0" required onfocus="this.select()">
                 </div>
-                
+
+                <div class="form-group full-width" id="expense-tracker">
+                    <label>Specificerade Utgifter</label>
+                    
+                    <div class="expense-add-form">
+                        <input type="text" id="expenseName" placeholder="Utgiftens namn (t.ex. Oljefilter)">
+                        <input type="number" id="expenseCost" placeholder="Kostnad (kr)">
+                        <button type="button" class="button secondary" id="addExpenseBtn">
+                            <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-plus"></use></svg>
+                            <span>Lägg till</span>
+                        </button>
+                    </div>
+                    
+                    <div id="expenseList" class="expense-list">
+                        </div>
+                </div>
                 <div class="form-group-profit">
                     <span id="vinstKalkyl">Vinst: 0 kr</span>
                 </div>
