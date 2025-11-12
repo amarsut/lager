@@ -3170,8 +3170,10 @@ html.privacy-mode-enabled #settingsPrivacyToggle {
 /* * HUVUDREGEL: Dölj allt med klassen .money-related
  * när <html>-taggen har klassen .privacy-mode-enabled
  */
-html.privacy-mode-enabled .money-related {
-    display: none !important;
+html.privacy-mode-enabled .detail-stats .money-related {
+    display: inline !important;    /* Återställer till span-taggens standard */
+    visibility: hidden !important; /* Dölj, men behåll utrymmet */
+    opacity: 0 !important;         /* Extra säkerhet för att dölja */
 }
 
 /* Specialregler för tabellkolumner (döljer 5:e kolumnen) */
@@ -3180,3 +3182,4 @@ html.privacy-mode-enabled #jobbOversikt td:nth-child(5)
 {
     display: none;
 }
+
