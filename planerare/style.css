@@ -1,24 +1,12 @@
 /* --- Jobbplanerare v15: "Wow" --- */
         
 :root {
-	/* --- NYTT: Färg-teman (KORRIGERAD) --- */
 
-	/* 1. Blå (Standard) */
-	html[data-theme-color="blue"] { 
-	    --primary-color: #0a84ff;
-	    --primary-hover: #339aff;
-	    --primary-light: rgba(10, 132, 255, 0.1);
-	}
-	[data-theme="dark"]:root,
-	[data-theme="dark"] html[data-theme-color="blue"] {
-	    --primary-color: #0a84ff; /* Se till att blå är blå även i mörkt läge */
-	    --primary-hover: #339aff;
-	    --primary-light: rgba(10, 132, 255, 0.2);
-	}
-	
-	/* 2. Grön */
+	/* --- NYTT: Färg-teman (KORRIGERAD IGEN) --- */
+
+	/* Grön */
 	html[data-theme-color="green"] {
-	    --primary-color: var(--success-color); /* #30d158 */
+	    --primary-color: var(--success-color);
 	    --primary-hover: #36f264;
 	    --primary-light: rgba(48, 209, 88, 0.1);
 	}
@@ -28,9 +16,9 @@
 	    --primary-light: rgba(48, 209, 88, 0.2);
 	}
 	
-	/* 3. Röd */
+	/* Röd */
 	html[data-theme-color="red"] {
-	    --primary-color: var(--danger-color); /* #ff453a */
+	    --primary-color: var(--danger-color);
 	    --primary-hover: #ff6861;
 	    --primary-light: rgba(255, 69, 58, 0.1);
 	}
@@ -40,9 +28,9 @@
 	    --primary-light: rgba(255, 69, 58, 0.2);
 	}
 	
-	/* 4. Orange */
+	/* Orange */
 	html[data-theme-color="orange"] {
-	    --primary-color: var(--warning-color); /* #ff9f0a */
+	    --primary-color: var(--warning-color);
 	    --primary-hover: #ffb339;
 	    --primary-light: rgba(255, 159, 10, 0.1);
 	}
@@ -52,7 +40,7 @@
 	    --primary-light: rgba(255, 159, 10, 0.2);
 	}
 	
-	/* 5. Lila */
+	/* Lila */
 	html[data-theme-color="lila"] {
 	    --primary-color: #af52de;
 	    --primary-hover: #c46ef1;
@@ -63,10 +51,11 @@
 	    --primary-hover: #c46ef1;
 	    --primary-light: rgba(175, 82, 222, 0.2);
 	}
+	
 	/* STANDARD FÄRGER */
-    /*--primary-color: #0a84ff;
+    --primary-color: #0a84ff;
     --primary-hover: #339aff;
-    --primary-light: rgba(10, 132, 255, 0.1);*/
+    --primary-light: rgba(10, 132, 255, 0.1);
     
     --success-color: #30d158;
     --warning-color: #ff9f0a;
@@ -3413,6 +3402,7 @@ html.privacy-mode-enabled .nav-logo {
     height: 0.9rem;
     vertical-align: -2px;
 }
+
 
 
 
