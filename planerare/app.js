@@ -1622,7 +1622,7 @@
                 // Se till att redigera-knappen alltid syns
                 editCustomerPhoneBtn.style.display = 'inline-flex';
 
-                customerModalTotalProfit.textContent = formatCurrency(totalVinst);
+                customerModalTotalProfit.textContent = isPrivacyModeEnabled ? "---" : formatCurrency(totalVinst);
                 customerModalTotalProfit.className = totalVinst > 0 ? 'stat-value money-related positive' : 'stat-value money-related';
                 customerModalJobCount.textContent = customerJobs.length;
                 
@@ -1672,7 +1672,7 @@
                 carModalExternalLink.href = biluppgifterUrl;
                 carModalExternalLinkMobile.href = biluppgifterUrl; 
                 carModalOwner.textContent = `Senaste ägare: ${latestOwner}`;
-                carModalTotalProfit.textContent = formatCurrency(totalVinst);
+                carModalTotalProfit.textContent = isPrivacyModeEnabled ? "---" : formatCurrency(totalVinst);
                 carModalTotalProfit.className = totalVinst > 0 ? 'stat-value money-related positive' : 'stat-value money-related';
                 carModalJobCount.textContent = carJobs.length;
 
