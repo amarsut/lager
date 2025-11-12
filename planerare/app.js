@@ -2416,6 +2416,12 @@
                 } else {
                     document.getElementById('defaultViewTimeline').checked = true;
                 }
+
+				const savedColor = localStorage.getItem('themeColor') || 'blue';
+			    const currentColorRadio = document.getElementById(`color-${savedColor}`);
+			    if (currentColorRadio) {
+			        currentColorRadio.checked = true;
+			    }
                 
                 // Hantera visning av mobil-specifika knappar
                 if (window.innerWidth <= 768) {
@@ -2446,6 +2452,19 @@
                     }
                 });
             });
+
+			const themeColorPicker = document.getElementById('themeColorPicker');
+			if (themeColorPicker) {
+			    themeColorPicker.addEventListener('change', (e) => {
+			        if (e.target.name === 'themeColor') {
+			            setThemeColor(e.target.value);
+			            // Ge visuell feedback på datorn
+			            if (window.innerWidth > 768) {
+			                showToast('Accentfärg sparad!', 'success');
+			            }
+			        }
+			    });
+			}
 
             // 3. KOPPLINGAR TILL KNAPPARNA (Dessa rader har du redan, se till att de ligger efter)
             settingsBtn.addEventListener('click', openSettingsModal);
@@ -2740,6 +2759,15 @@
             const savedTheme = localStorage.getItem('theme') || 'light';
             setTheme(savedTheme);
 			setPrivacyMode(isPrivacyModeEnabled);
+
+			const savedColor = localStorage.getItem('themeColor') || 'blue';
+			setThemeColor(savedColor);
+
+			// NY FUNKTION för att byta accentfärg
+			function setThemeColor(colorName) {
+			    docElement.setAttribute('data-theme-color', colorName);
+			    localStorage.setItem('themeColor', colorName);
+			}
 
 			// --- NY FUNKTION: Sekretessläge ---
 			function setPrivacyMode(isEnabled) {
