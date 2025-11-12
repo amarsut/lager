@@ -3183,9 +3183,13 @@ html.privacy-mode-enabled #jobbOversikt td:nth-child(5)
     display: none;
 }
 
+html.privacy-mode-enabled .money-related {
+    display: none !important;
+}
 /* Inaktivera statistik-logotypen i privatläge */
 html.privacy-mode-enabled .nav-logo {
     pointer-events: none; /* Gör den oklickbar */
     opacity: 0.5; /* Tona ut den */
     cursor: not-allowed; /* Visa "stopp"-markör */
 }
+
