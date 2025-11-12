@@ -1578,13 +1578,15 @@
                 listElement.innerHTML = filteredJobs.map(job => {
                     const prioIcon = job.prio ? `<svg class="icon-sm prio-flag-icon" viewBox="0 0 24 24"><use href="#icon-flag"></use></svg>` : '';
                     return `<li data-job-id="${job.id}">
-                                <div>
-                                    <span class="job-date">${prioIcon}${formatDate(job.datum)}</span>
-                                    <span class="job-subline">${job.regnr || job.kundnamn} (${STATUS_TEXT[job.status]})</span>
-                                    ${job.kommentarer ? `<p class="job-comment">${job.kommentarer}</p>` : ''}
-                                </div>
-                                <span class="job-profit profit money-related ${job.vinst > 0 ? 'positive' : ''}">${formatCurrency(job.vinst)}</span>
-                            </li>`
+			            <div>
+			                <span class="job-date">${prioIcon}${formatDate(job.datum)}</span>
+			                <span class="job-subline">${job.regnr || job.kundnamn} (${STATUS_TEXT[job.status]})</span>
+			                ${job.kommentarer ? `<p class="job-comment">${job.kommentarer}</p>` : ''}
+			            </div>
+			            <span class="job-profit profit ${job.vinst > 0 ? 'positive' : ''}">
+			                ${isPrivacyModeEnabled ? '---' : formatCurrency(job.vinst)}
+			            </span>
+			        </li>`
                 }).join('');
             }
 
