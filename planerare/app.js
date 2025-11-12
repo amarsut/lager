@@ -87,10 +87,7 @@
             const docElement = document.documentElement;
 			const privacyToggle = document.getElementById('privacyToggle');
 			const settingsPrivacyToggle = document.getElementById('settingsPrivacyToggle');
-			
-			// --- Globalt Tillstånd (State) ---
-			let allJobs = [];
-			// ...
+
 			let isPrivacyModeEnabled = localStorage.getItem('privacyMode') === 'true';
             const appContainer = document.querySelector('.app-container');
             const toast = document.getElementById('toastNotification');
