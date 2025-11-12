@@ -2453,18 +2453,38 @@
                 });
             });
 
-			const themeColorPicker = document.getElementById('themeColorPicker');
-			if (themeColorPicker) {
-			    themeColorPicker.addEventListener('change', (e) => {
-			        if (e.target.name === 'themeColor') {
-			            setThemeColor(e.target.value);
-			            // Ge visuell feedback på datorn
-			            if (window.innerWidth > 768) {
-			                showToast('Accentfärg sparad!', 'success');
-			            }
-			        }
-			    });
-			}
+			// === NY, KORRIGERAD LYSSNARE FÖR FÄRGVÄLJARE ===
+            const themeColorPicker = document.getElementById('themeColorPicker');
+            if (themeColorPicker) {
+                
+                // Vi lyssnar efter KLICK, inte "change"
+                themeColorPicker.addEventListener('click', (e) => {
+                    
+                    // Kolla om vi klickade på en färg-prick (som är en <label>)
+                    const label = e.target.closest('.color-dot');
+                    
+                    if (label) {
+                        // Hämta "for"-attributet (t.ex. "color-blue")
+                        const forId = label.getAttribute('for');
+                        if (forId) {
+                            // Hitta den dolda radio-knappen som hör ihop med pricken
+                            const input = document.getElementById(forId);
+                            if (input) {
+                                // Hämta värdet från radio-knappen (t.ex. "blue")
+                                const colorValue = input.value; 
+                                
+                                // Kör vår funktion för att byta färg
+                                setThemeColor(colorValue);
+                                
+                                // Ge visuell feedback (bara på datorn)
+                                if (window.innerWidth > 768) {
+                                    showToast('Accentfärg sparad!', 'success');
+                                }
+                            }
+                        }
+                    }
+                });
+            }
 
             // 3. KOPPLINGAR TILL KNAPPARNA (Dessa rader har du redan, se till att de ligger efter)
             settingsBtn.addEventListener('click', openSettingsModal);
