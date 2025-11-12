@@ -2467,7 +2467,6 @@
             });
 
             settingsThemeToggle.addEventListener('click', () => themeToggle.click());
-            settingsToggleCompactView.addEventListener('click', () => toggleCompactView.click());
             settingsLockAppBtn.addEventListener('click', () => {
                 closeModal();
                 setTimeout(() => lockAppBtn.click(), 250);
