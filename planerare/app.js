@@ -913,10 +913,10 @@
                         <td data-label="Datum">${formatDate(job.datum)}</td>
                         <td data-label="Kund">
                             ${prioIcon}
-                            ${contextIcon} <button class="link-btn customer-link" data-kund="${job.kundnamn}">
-                                <svg class="icon-sm customer-icon" viewBox="0 0 24 24"><use href="#icon-user"></use></svg>
+                            <button class="link-btn customer-link" data-kund="${job.kundnamn}">
                                 ${kundnamnHTML}
-                            </button>
+                                <svg class="icon-sm customer-icon" viewBox="0 0 24 24"><use href="#icon-user"></use></svg>
+                            </button> ${contextIcon} 
                         </td>
                         <td data-label="Reg.nr">
                             ${(job.regnr && job.regnr.toUpperCase() !== 'OKÄNT') ? `
