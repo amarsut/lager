@@ -2729,6 +2729,10 @@
                 const currentTheme = docElement.getAttribute('data-theme') || 'dark';
                 setTheme(currentTheme === 'dark' ? 'light' : 'dark');
             });
+
+			privacyToggle.addEventListener('click', () => setPrivacyMode(!isPrivacyModeEnabled));
+			settingsPrivacyToggle.addEventListener('click', () => setPrivacyMode(!isPrivacyModeEnabled));
+			
             function setTheme(theme) {
                 docElement.setAttribute('data-theme', theme);
                 localStorage.setItem('theme', theme);
