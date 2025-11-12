@@ -3147,44 +3147,48 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     color: var(--danger-color);
 }
 
-/* --- Sekretessläge --- */
-/* Dölj "slash"-ikonen som standard */
+/* --- SEKRETESSLÄGE (KORRIGERING) --- */
+
+/* 1. Ikon-växling för knapparna */
 #privacyToggle .icon-eye-slash,
 #settingsPrivacyToggle .icon-eye-slash { display: none; }
 #privacyToggle .icon-eye,
 #settingsPrivacyToggle .icon-eye { display: block; }
 
-/* När privat läge är PÅ, visa "slash" och dölj "öga" */
 html.privacy-mode-enabled #privacyToggle .icon-eye-slash,
 html.privacy-mode-enabled #settingsPrivacyToggle .icon-eye-slash { display: block; }
 html.privacy-mode-enabled #privacyToggle .icon-eye,
 html.privacy-mode-enabled #settingsPrivacyToggle .icon-eye { display: none; }
 
-/* Gör knappen "aktiv" (orange) när läget är på */
+/* 2. Gör knapparna "aktiva" när läget är på */
 html.privacy-mode-enabled #privacyToggle,
 html.privacy-mode-enabled #settingsPrivacyToggle {
     color: var(--warning-color);
     background-color: rgba(255, 159, 10, 0.1);
 }
 
-/* * HUVUDREGEL: Dölj allt med klassen .money-related
- * när <html>-taggen har klassen .privacy-mode-enabled
- */
-html.privacy-mode-enabled .detail-stats .money-related {
-    display: inline !important;    /* Återställer till span-taggens standard */
-    visibility: hidden !important; /* Dölj, men behåll utrymmet */
-    opacity: 0 !important;         /* Extra säkerhet för att dölja */
+/* 3. Inaktivera statistik-loggan (som vi kom överens om) */
+html.privacy-mode-enabled .nav-logo {
+    pointer-events: none;
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
-/* Specialregler för tabellkolumner (döljer 5:e kolumnen) */
+/* * 4. === HUVUDREGEL FÖR DÖLJNING ===
+ * Detta är den viktigaste regeln. Den döljer ALLT
+ * med klassen .money-related när privat läge är på.
+ */
+html.privacy-mode-enabled .money-related {
+    display: none !important;
+}
+
+/* * 5. Specialregel för Desktop-tabellen (döljer 5:e kolumnen)
+ * (Denna behövs utöver huvudregeln)
+ */
 html.privacy-mode-enabled #jobbOversikt th:nth-child(5),
 html.privacy-mode-enabled #jobbOversikt td:nth-child(5)
 {
     display: none;
-}
-
-html.privacy-mode-enabled .money-related {
-    display: none !important;
 }
 /* Inaktivera statistik-logotypen i privatläge */
 html.privacy-mode-enabled .nav-logo {
@@ -3192,4 +3196,5 @@ html.privacy-mode-enabled .nav-logo {
     opacity: 0.5; /* Tona ut den */
     cursor: not-allowed; /* Visa "stopp"-markör */
 }
+
 
