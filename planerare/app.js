@@ -1623,7 +1623,7 @@
                 editCustomerPhoneBtn.style.display = 'inline-flex';
 
                 customerModalTotalProfit.textContent = formatCurrency(totalVinst);
-                customerModalTotalProfit.className = totalVinst > 0 ? 'stat-value positive' : 'stat-value';
+                customerModalTotalProfit.className = totalVinst > 0 ? 'stat-value money-related positive' : 'stat-value money-related';
                 customerModalJobCount.textContent = customerJobs.length;
                 
                 customerSearch.value = ''; 
@@ -1673,7 +1673,7 @@
                 carModalExternalLinkMobile.href = biluppgifterUrl; 
                 carModalOwner.textContent = `Senaste ägare: ${latestOwner}`;
                 carModalTotalProfit.textContent = formatCurrency(totalVinst);
-                carModalTotalProfit.className = totalVinst > 0 ? 'stat-value positive' : 'stat-value';
+                carModalTotalProfit.className = totalVinst > 0 ? 'stat-value money-related positive' : 'stat-value money-related';
                 carModalJobCount.textContent = carJobs.length;
 
                 carSearch.value = ''; 
