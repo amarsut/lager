@@ -3198,7 +3198,7 @@ html.privacy-mode-enabled .nav-logo {
  * Detta är den viktigaste regeln. Den döljer ALLT
  * med klassen .money-related när privat läge är på.
  */
-html.privacy-mode-enabled .money-related {
+html.privacy-mode-enabled .money-related:not(#customerModalTotalProfit):not(#carModalTotalProfit):not(#statsModalTotalProfit) {
     display: none !important;
 }
 
@@ -3231,5 +3231,6 @@ html.privacy-mode-enabled .nav-logo {
     margin-right: 0;       /* Ta bort den gamla marginalen */
     margin-left: 0.35rem;  /* Lägg till ny marginal */
 }
+
 
 
