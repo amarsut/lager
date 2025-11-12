@@ -383,7 +383,6 @@
                         // Kolla om det finns några "aktiva" jobb
 					    const hasActiveJob = allJobs.some(j => 
 					        j.datum.startsWith(dateKey) && 
-					        // --- ÄNDRA HÄR ---
 					        (j.status === 'bokad' || j.status === 'offererad' || j.status === 'klar')
 					    );
 
