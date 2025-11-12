@@ -1,59 +1,68 @@
 /* --- Jobbplanerare v15: "Wow" --- */
         
 :root {
-	/* --- NYTT: Färg-teman --- */
+	/* --- NYTT: Färg-teman (KORRIGERAD) --- */
 
-		/* Blå (Standard) - Vi behåller :root som fallback */
-		html[data-theme-color="blue"],
-		:root { 
-		    --primary-color: #0a84ff;
-		    --primary-hover: #339aff;
-		    --primary-light: rgba(10, 132, 255, 0.1);
-		}
-		[data-theme="dark"] html[data-theme-color="blue"],
-		[data-theme="dark"] {
-		    --primary-light: rgba(10, 132, 255, 0.2);
-		}
-		
-		/* Grön (Baserad på din --success-color) */
-		html[data-theme-color="green"] {
-		    --primary-color: var(--success-color); /* #30d158 */
-		    --primary-hover: #36f264;
-		    --primary-light: rgba(48, 209, 88, 0.1);
-		}
-		[data-theme="dark"] html[data-theme-color="green"] {
-		    --primary-light: rgba(48, 209, 88, 0.2);
-		}
-		
-		/* Röd (Baserad på din --danger-color) */
-		html[data-theme-color="red"] {
-		    --primary-color: var(--danger-color); /* #ff453a */
-		    --primary-hover: #ff6861;
-		    --primary-light: rgba(255, 69, 58, 0.1);
-		}
-		[data-theme="dark"] html[data-theme-color="red"] {
-		    --primary-light: rgba(255, 69, 58, 0.2);
-		}
-		
-		/* Orange (Baserad på din --warning-color) */
-		html[data-theme-color="orange"] {
-		    --primary-color: var(--warning-color); /* #ff9f0a */
-		    --primary-hover: #ffb339;
-		    --primary-light: rgba(255, 159, 10, 0.1);
-		}
-		[data-theme="dark"] html[data-theme-color="orange"] {
-		    --primary-light: rgba(255, 159, 10, 0.2);
-		}
-		
-		/* Lila (Ny färg) */
-		html[data-theme-color="lila"] {
-		    --primary-color: #af52de; /* Apple Purple */
-		    --primary-hover: #c46ef1;
-		    --primary-light: rgba(175, 82, 222, 0.1);
-		}
-		[data-theme="dark"] html[data-theme-color="lila"] {
-		    --primary-light: rgba(175, 82, 222, 0.2);
-		}
+	/* 1. Blå (Standard) */
+	html[data-theme-color="blue"] { 
+	    --primary-color: #0a84ff;
+	    --primary-hover: #339aff;
+	    --primary-light: rgba(10, 132, 255, 0.1);
+	}
+	[data-theme="dark"]:root,
+	[data-theme="dark"] html[data-theme-color="blue"] {
+	    --primary-color: #0a84ff; /* Se till att blå är blå även i mörkt läge */
+	    --primary-hover: #339aff;
+	    --primary-light: rgba(10, 132, 255, 0.2);
+	}
+	
+	/* 2. Grön */
+	html[data-theme-color="green"] {
+	    --primary-color: var(--success-color); /* #30d158 */
+	    --primary-hover: #36f264;
+	    --primary-light: rgba(48, 209, 88, 0.1);
+	}
+	[data-theme="dark"] html[data-theme-color="green"] {
+	    --primary-color: var(--success-color);
+	    --primary-hover: #36f264;
+	    --primary-light: rgba(48, 209, 88, 0.2);
+	}
+	
+	/* 3. Röd */
+	html[data-theme-color="red"] {
+	    --primary-color: var(--danger-color); /* #ff453a */
+	    --primary-hover: #ff6861;
+	    --primary-light: rgba(255, 69, 58, 0.1);
+	}
+	[data-theme="dark"] html[data-theme-color="red"] {
+	    --primary-color: var(--danger-color);
+	    --primary-hover: #ff6861;
+	    --primary-light: rgba(255, 69, 58, 0.2);
+	}
+	
+	/* 4. Orange */
+	html[data-theme-color="orange"] {
+	    --primary-color: var(--warning-color); /* #ff9f0a */
+	    --primary-hover: #ffb339;
+	    --primary-light: rgba(255, 159, 10, 0.1);
+	}
+	[data-theme="dark"] html[data-theme-color="orange"] {
+	    --primary-color: var(--warning-color);
+	    --primary-hover: #ffb339;
+	    --primary-light: rgba(255, 159, 10, 0.2);
+	}
+	
+	/* 5. Lila */
+	html[data-theme-color="lila"] {
+	    --primary-color: #af52de;
+	    --primary-hover: #c46ef1;
+	    --primary-light: rgba(175, 82, 222, 0.1);
+	}
+	[data-theme="dark"] html[data-theme-color="lila"] {
+	    --primary-color: #af52de;
+	    --primary-hover: #c46ef1;
+	    --primary-light: rgba(175, 82, 222, 0.2);
+	}
 	/* STANDARD FÄRGER */
     /*--primary-color: #0a84ff;
     --primary-hover: #339aff;
@@ -3404,6 +3413,7 @@ html.privacy-mode-enabled .nav-logo {
     height: 0.9rem;
     vertical-align: -2px;
 }
+
 
 
 
