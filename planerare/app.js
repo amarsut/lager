@@ -1162,7 +1162,7 @@
                 }
             });
 
-            function showModal(modalId) {
+            function showModal(modalId, options = {}) {
 				if (modalId === 'mobileSearchModal') {
 				    document.getElementById('statBar').style.display = 'none';
 				}
@@ -1183,9 +1183,17 @@
                 currentOpenModalId = modalId;
                 
                 // PUNKT 7: Undvik att pusha historik för mobil sök-modal
+                const { replaceHistory = false } = options; // <--- NY
+
                 if (history.state?.modal !== modalId && modalId !== 'mobileSearchModal') {
                     try {
-                        history.pushState({ modal: modalId }, `Modal ${modalId}`, `#${modalId}`);
+                        if (replaceHistory) {
+                            // Ersätt nuvarande historik-post
+                            history.replaceState({ modal: modalId }, `Modal ${modalId}`, `#${modalId}`); // <--- NY
+                        } else {
+                            // Lägg till en ny historik-post (standard)
+                            history.pushState({ modal: modalId }, `Modal ${modalId}`, `#${modalId}`); // <--- NY
+                        }
                     } catch (e) {
                         console.warn("Kunde inte använda history.pushState", e);
                     }
@@ -1431,7 +1439,7 @@
                 showModal('jobSummaryModal');
             }
 
-            function openJobModal(mode, dataToClone = null) {
+            function openJobModal(mode, dataToClone = null, options = {}) {
                 jobModalForm.reset();
                 currentExpenses = []; // Nollställ alltid utgifts-arrayen
 
@@ -1521,7 +1529,7 @@
                 // Trigga input-eventet för att visa/dölja knappar om ett nr finns
                 modalTelefon.dispatchEvent(new Event('input')); 
 
-                showModal('jobModal'); 
+                showModal('jobModal', options);
                 modalKundnamn.focus();
             }
             
@@ -2340,12 +2348,12 @@
                 const jobId = e.currentTarget.dataset.jobId;
                 const job = findJob(jobId);
                 if (job) {
-                    // Stäng nuvarande (summary) modal
-                    closeModal(); 
+                    // Stäng nuvarande (summary) modal - UTAN ATT RÖRA HISTORIKEN
+                    closeModal({ popHistory: false }); // <--- NY
                     
-                    // Öppna redigerings-modalen (med en fördröjning för snygg övergång)
+                    // Öppna redigerings-modalen OCH tala om för den att ERSÄTTA historiken
                     setTimeout(() => {
-                        openJobSummaryModal(job);
+                        openJobModal('edit', job, { replaceHistory: true }); // <--- NY
                     }, 50);
                 }
             });
