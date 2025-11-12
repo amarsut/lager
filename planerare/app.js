@@ -914,9 +914,9 @@
                         <td data-label="Kund">
                             ${prioIcon}
                             <button class="link-btn customer-link" data-kund="${job.kundnamn}">
-                                ${kundnamnHTML}
+                                <span class="customer-name-text">${kundnamnHTML}</span>
                                 <svg class="icon-sm customer-icon" viewBox="0 0 24 24"><use href="#icon-user"></use></svg>
-                            </button> ${contextIcon} 
+                            </button> ${contextIcon}
                         </td>
                         <td data-label="Reg.nr">
                             ${(job.regnr && job.regnr.toUpperCase() !== 'OKÄNT') ? `
@@ -1023,7 +1023,7 @@
                                         ${contextIcon}
                                         <button class="link-btn customer-link" data-kund="${job.kundnamn}">
                                             <svg class="icon-sm customer-icon" viewBox="0 0 24 24"><use href="#icon-user"></use></svg>
-                                            ${kundnamnHTML}
+                                            <span class="customer-name-text">${kundnamnHTML}</span>
                                         </button>
                                     </div>
                                 </span>
