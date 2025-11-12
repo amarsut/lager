@@ -533,6 +533,89 @@
         </div>
     </div>
 
+	<div id="jobSummaryModal" class="modal-backdrop" data-modal-id="jobSummaryModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalSummaryTitle">Jobböversikt</h2>
+                <button class="modal-close-btn" id="modalSummaryCloseBtn" aria-label="Stäng modal">
+                    <svg class="icon" viewBox="0 0 24 24"><use href="#icon-close"></use></svg>
+                </button>
+            </div>
+            
+            <div class="modal-body" id="modalSummaryBody">
+                
+                <div class="summary-section">
+                    <div class="summary-item">
+                        <span class="summary-label">Kund</span>
+                        <span class="summary-value" id="modalSummaryKundnamn"></span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Telefon</span>
+                        <span class="summary-value" id="modalSummaryTelefon"></span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Reg.nr</span>
+                        <span class="summary-value" id="modalSummaryRegnr"></span>
+                    </div>
+                </div>
+
+                <div class="summary-section">
+                    <div class="summary-item">
+                        <span class="summary-label">Status</span>
+                        <span class="summary-value" id="modalSummaryStatus"></span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Datum & Tid</span>
+                        <span class="summary-value" id="modalSummaryDatum"></span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Mätarställning</span>
+                        <span class="summary-value" id="modalSummaryMatarstallning"></span>
+                    </div>
+                </div>
+
+                <div class="summary-section">
+                    <h4 class="summary-section-title">Ekonomi</h4>
+                    <div class="summary-grid">
+                        <div class="summary-item">
+                            <span class="summary-label">Kundpris</span>
+                            <span class="summary-value positive" id="modalSummaryKundpris"></span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Total Utgift</span>
+                            <span class="summary-value negative" id="modalSummaryTotalUtgift"></span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Vinst</span>
+                            <span class="summary-value vinst" id="modalSummaryVinst"></span>
+                        </div>
+                    </div>
+                    <div class="summary-item" id="modalSummaryExpenseBox">
+                        <span class="summary-label">Specificerade Utgifter</span>
+                        <ul class="summary-expense-list" id="modalSummaryExpenseList">
+                            </ul>
+                    </div>
+                </div>
+
+                <div class="summary-section">
+                     <div class="summary-item">
+                        <span class="summary-label">Kommentarer</span>
+                        <p class="summary-comment" id="modalSummaryKommentarer"></p>
+                    </div>
+                </div>
+
+            </div>
+			
+            <div class="modal-actions">
+                <button type="button" class="button secondary" id="modalSummaryStangBtn">Stäng</button>
+                <button type="button" class="button primary" id="modalSummaryEditBtn" data-job-id="">
+                    <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-pencil"></use></svg>
+                    <span>Redigera</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <div id="settingsModal" class="modal-backdrop" data-modal-id="settingsModal">
         <div class="modal-content">
             <div class="modal-header">
