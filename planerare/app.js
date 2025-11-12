@@ -2820,7 +2820,7 @@
             settingsToggleCompactView.addEventListener('click', handleCompactToggleClick);
             
             // --- NYTT (Steg 3): Läs in den sparade nivån vid start ---
-            const savedCompactLevel = localStorage.getItem('compactModeLevel') || '0';
+            const savedCompactLevel = localStorage.getItem('compactModeLevel') || '1';
             setCompactMode(savedCompactLevel);
 
             function setupViewToggles() {
