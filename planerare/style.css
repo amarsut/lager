@@ -3008,3 +3008,99 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 [data-theme="dark"] .template-btn:hover .template-icon {
      color: var(--primary-hover);
 }
+
+/* --- NYTT: Stilar för Jobb-Översikt Modal --- */
+#jobSummaryModal .modal-content {
+    max-width: 500px; /* Gör den kompakt */
+}
+
+.summary-section {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+.summary-section:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+.summary-section-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-color-light);
+    text-transform: uppercase;
+    margin: 0 0 1rem 0;
+}
+
+.summary-item {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1.25rem;
+}
+.summary-item:last-child {
+    margin-bottom: 0;
+}
+
+.summary-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-color-light);
+    margin-bottom: 0.25rem;
+}
+
+.summary-value {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--text-color);
+}
+#modalSummaryStatus {
+    font-weight: 600;
+}
+
+.summary-comment {
+    font-size: 0.95rem;
+    color: var(--text-color);
+    white-space: pre-wrap; /* Behåller radbrytningar */
+    background-color: var(--bg-color);
+    padding: 0.75rem;
+    border-radius: var(--border-radius);
+    margin: 0;
+    line-height: 1.6;
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1rem;
+}
+.summary-grid .summary-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+.summary-value.positive { color: var(--success-color); }
+.summary-value.negative { color: var(--danger-color); }
+.summary-value.vinst { color: var(--primary-color); }
+
+.summary-expense-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.summary-expense-list li {
+    display: flex;
+    justify-content: space-between;
+    background-color: var(--bg-color);
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.9rem;
+}
+.summary-expense-list .expense-name {
+    color: var(--text-color);
+}
+.summary-expense-list .expense-cost {
+    font-weight: 600;
+    color: var(--danger-color);
+}
