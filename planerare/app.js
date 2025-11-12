@@ -2457,30 +2457,24 @@
             const themeColorPicker = document.getElementById('themeColorPicker');
             if (themeColorPicker) {
                 
-                // Vi lyssnar efter KLICK, inte "change"
-                themeColorPicker.addEventListener('click', (e) => {
+                // Vi lyssnar efter "change", som avfyras när en ny radioknapp väljs.
+                themeColorPicker.addEventListener('change', (e) => {
                     
-                    // Kolla om vi klickade på en färg-prick (som är en <label>)
-                    const label = e.target.closest('.color-dot');
+                    // e.target kommer att vara den <input> som precis blev vald.
+                    const input = e.target;
                     
-                    if (label) {
-                        // Hämta "for"-attributet (t.ex. "color-blue")
-                        const forId = label.getAttribute('for');
-                        if (forId) {
-                            // Hitta den dolda radio-knappen som hör ihop med pricken
-                            const input = document.getElementById(forId);
-                            if (input) {
-                                // Hämta värdet från radio-knappen (t.ex. "blue")
-                                const colorValue = input.value; 
-                                
-                                // Kör vår funktion för att byta färg
-                                setThemeColor(colorValue);
-                                
-                                // Ge visuell feedback (bara på datorn)
-                                if (window.innerWidth > 768) {
-                                    showToast('Accentfärg sparad!', 'success');
-                                }
-                            }
+                    // Dubbelkolla att det är en radioknapp vi bryr oss om
+                    if (input && input.name === 'themeColor') {
+                        
+                        // Hämta värdet (t.ex. "blue", "green")
+                        const colorValue = input.value; 
+                        
+                        // Kör vår funktion för att byta färg
+                        setThemeColor(colorValue);
+                        
+                        // Ge visuell feedback (bara på datorn)
+                        if (window.innerWidth > 768) {
+                            showToast('Accentfärg sparad!', 'success');
                         }
                     }
                 });
