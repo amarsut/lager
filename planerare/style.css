@@ -2,6 +2,46 @@
         
 :root {
 
+	/* --- KORRIGERING: Styling för Färg-väljare (använder ID) --- */
+
+/* Huvud-containern */
+#themeColorPicker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+/* Göm den fula, vanliga radioknappen */
+#themeColorPicker input[type="radio"] {
+    display: none;
+}
+
+/* Rita upp vår snygga, klickbara "prick" (som är en label) */
+#themeColorPicker .color-dot {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: var(--color-swatch); /* Färgen vi satte i HTML:en */
+    cursor: pointer;
+    border: 3px solid var(--border-color);
+    transition: all 0.2s ease;
+    box-shadow: var(--shadow-sm);
+}
+
+/* Gör den lite större vid hover */
+#themeColorPicker .color-dot:hover {
+    transform: scale(1.1);
+    border-color: var(--content-bg);
+}
+
+/* När radioknappen ÄR vald, styla pricken bredvid den */
+#themeColorPicker input[type="radio"]:checked + .color-dot {
+    border-color: var(--content-bg);
+    box-shadow: 0 0 0 3px var(--color-swatch), var(--shadow-md);
+    transform: scale(1.1);
+}
+
 	/* --- NYTT: Färg-teman (KORRIGERAD IGEN) --- */
 
 	/* Grön */
@@ -3402,6 +3442,7 @@ html.privacy-mode-enabled .nav-logo {
     height: 0.9rem;
     vertical-align: -2px;
 }
+
 
 
 
