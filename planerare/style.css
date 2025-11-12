@@ -3009,14 +3009,48 @@ input[type="time"]::-webkit-calendar-picker-indicator {
      color: var(--primary-hover);
 }
 
-/* --- NYTT: Stilar för Jobb-Översikt Modal --- */
+/* --- NYTT: Stilar för Jobb-Översikt Modal (KOMPAKT) --- */
 #jobSummaryModal .modal-content {
-    max-width: 500px; /* Gör den kompakt */
+    max-width: 500px; 
+}
+#jobSummaryModal .modal-body {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
 }
 
+/* Den nya rad-layouten */
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.6rem 0; /* Tajtare padding */
+    border-bottom: 1px solid var(--border-color);
+}
+.summary-row:first-child {
+    padding-top: 0;
+}
+.summary-row:last-child {
+    border-bottom: none;
+}
+.summary-row .summary-label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-color-light);
+    margin-bottom: 0;
+    padding-right: 1rem;
+    flex-shrink: 0;
+}
+.summary-row .summary-value {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-color);
+    text-align: right;
+}
+
+/* Tajta till existerande sektioner */
 .summary-section {
-    margin-bottom: 1.5rem;
-    padding-bottom: 1.5rem;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
     border-bottom: 1px solid var(--border-color);
 }
 .summary-section:last-child {
@@ -3025,17 +3059,18 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     border-bottom: none;
 }
 .summary-section-title {
-    font-size: 0.9rem;
+    font-size: 0.8rem; /* Mindre titel */
     font-weight: 600;
     color: var(--text-color-light);
     text-transform: uppercase;
-    margin: 0 0 1rem 0;
+    margin: 0 0 0.75rem 0; /* Mindre marginal */
 }
 
+/* Detta är nu Ekonomi-grid, Utgifter & Kommentarer */
 .summary-item {
     display: flex;
     flex-direction: column;
-    margin-bottom: 1.25rem;
+    margin-bottom: 0.75rem; /* Mindre marginal */
 }
 .summary-item:last-child {
     margin-bottom: 0;
@@ -3055,47 +3090,54 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 }
 #modalSummaryStatus {
     font-weight: 600;
+    font-size: 0.95rem; /* Matchar de andra värdena */
+    padding: 0.15rem 0.5rem; /* Lite padding för badgen */
+    border-radius: 99px;
+    display: inline-block; /* Få badgen att fungera */
+    text-align: center;
 }
 
+/* Tajta till kommentarer */
 .summary-comment {
-    font-size: 0.95rem;
-    color: var(--text-color);
-    white-space: pre-wrap; /* Behåller radbrytningar */
+    font-size: 0.9rem;
+    white-space: pre-wrap;
     background-color: var(--bg-color);
-    padding: 0.75rem;
+    padding: 0.5rem 0.75rem; /* Mindre padding */
     border-radius: var(--border-radius);
     margin: 0;
-    line-height: 1.6;
+    line-height: 1.5;
 }
 
+/* Tajta till ekonomi-gridden */
 .summary-grid {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
-    gap: 1rem;
+    gap: 0.75rem; /* Mindre gap */
 }
 .summary-grid .summary-value {
-    font-size: 1.25rem;
+    font-size: 1.15rem; /* Lite mindre */
     font-weight: 700;
 }
 .summary-value.positive { color: var(--success-color); }
 .summary-value.negative { color: var(--danger-color); }
 .summary-value.vinst { color: var(--primary-color); }
 
+/* Tajta till utgiftslistan */
 .summary-expense-list {
     list-style: none;
     padding: 0;
     margin: 0;
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.25rem; /* Mindre gap */
 }
 .summary-expense-list li {
     display: flex;
     justify-content: space-between;
     background-color: var(--bg-color);
-    padding: 0.5rem 0.75rem;
+    padding: 0.4rem 0.6rem; /* Mindre padding */
     border-radius: 6px;
-    font-size: 0.9rem;
+    font-size: 0.85rem; /* Lite mindre */
 }
 .summary-expense-list .expense-name {
     color: var(--text-color);
