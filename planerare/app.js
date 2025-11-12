@@ -2761,40 +2761,53 @@
 			    }
 			}
             
-            // --- NYTT (Steg 1): Uppgraderad funktion för 3 kompakt-lägen ---
+            // --- NYTT: Uppgraderad funktion med SÄKERHETSKONTROLL ---
             function setCompactMode(level) {
                 // Rensa alltid gamla klasser först
                 docElement.classList.remove('compact-mode', 'extra-compact-mode');
                 toggleCompactView.classList.remove('active');
-                settingsToggleCompactView.classList.remove('active');
                 
-                const levelNum = parseInt(level) || 0; // Se till att vi har en siffra
+                // SÄKERHETSKONTROLL: Kör bara om mobil-knappen existerar
+                if (settingsToggleCompactView) { 
+                    settingsToggleCompactView.classList.remove('active');
+                }
+                
+                const levelNum = parseInt(level) || 0; 
 
                 if (levelNum === 1) {
                     // Läge 1: Kompakt
                     docElement.classList.add('compact-mode');
                     toggleCompactView.classList.add('active');
-                    settingsToggleCompactView.classList.add('active');
-                    // Uppdatera knappens titel för att visa vad nästa klick gör
                     toggleCompactView.title = "Växla till Extra Kompakt vy";
-                    settingsToggleCompactView.title = "Växla till Extra Kompakt vy";
+                    
+                    // SÄKERHETSKONTROLL
+                    if (settingsToggleCompactView) {
+                        settingsToggleCompactView.classList.add('active');
+                        settingsToggleCompactView.title = "Växla till Extra Kompakt vy";
+                    }
 
                 } else if (levelNum === 2) {
                     // Läge 2: Extra Kompakt
-                    docElement.classList.add('extra-compact-mode'); // Ny klass!
+                    docElement.classList.add('extra-compact-mode'); 
                     toggleCompactView.classList.add('active');
-                    settingsToggleCompactView.classList.add('active');
                     toggleCompactView.title = "Växla till Standardvy";
-                    settingsToggleCompactView.title = "Växla till Standardvy";
+
+                    // SÄKERHETSKONTROLL
+                    if (settingsToggleCompactView) {
+                        settingsToggleCompactView.classList.add('active');
+                        settingsToggleCompactView.title = "Växla till Standardvy";
+                    }
 
                 } else {
                     // Läge 0: Normal
-                    // Inga klasser behövs
                     toggleCompactView.title = "Växla till Kompakt vy";
-                    settingsToggleCompactView.title = "Växla till Kompakt vy";
+                    
+                    // SÄKERHETSKONTROLL
+                    if (settingsToggleCompactView) {
+                        settingsToggleCompactView.title = "Växla till Kompakt vy";
+                    }
                 }
                 
-                // Spara den nya nivån (0, 1, eller 2)
                 localStorage.setItem('compactModeLevel', levelNum.toString());
             }
 
@@ -2815,9 +2828,13 @@
                 setCompactMode(currentLevel);
             }
 
-            // Koppla den nya cykel-funktionen till båda knapparna
+            // Koppla den nya cykel-funktionen till knapparna
             toggleCompactView.addEventListener('click', handleCompactToggleClick);
-            settingsToggleCompactView.addEventListener('click', handleCompactToggleClick);
+            
+            // SÄKERHETSKONTROLL: Koppla bara lyssnaren om knappen existerar
+            if (settingsToggleCompactView) {
+                settingsToggleCompactView.addEventListener('click', handleCompactToggleClick);
+            }
             
             // --- NYTT (Steg 3): Läs in den sparade nivån vid start ---
             const savedCompactLevel = localStorage.getItem('compactModeLevel') || '1';
