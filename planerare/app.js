@@ -2761,29 +2761,67 @@
 			    }
 			}
             
-            function setCompactMode(isCompact) {
-                if (isCompact) {
+            // --- NYTT (Steg 1): Uppgraderad funktion för 3 kompakt-lägen ---
+            function setCompactMode(level) {
+                // Rensa alltid gamla klasser först
+                docElement.classList.remove('compact-mode', 'extra-compact-mode');
+                toggleCompactView.classList.remove('active');
+                settingsToggleCompactView.classList.remove('active');
+                
+                const levelNum = parseInt(level) || 0; // Se till att vi har en siffra
+
+                if (levelNum === 1) {
+                    // Läge 1: Kompakt
                     docElement.classList.add('compact-mode');
                     toggleCompactView.classList.add('active');
-                    settingsToggleCompactView.classList.add('active'); 
-                    localStorage.setItem('compactMode', 'true');
+                    settingsToggleCompactView.classList.add('active');
+                    // Uppdatera knappens titel för att visa vad nästa klick gör
+                    toggleCompactView.title = "Växla till Extra Kompakt vy";
+                    settingsToggleCompactView.title = "Växla till Extra Kompakt vy";
+
+                } else if (levelNum === 2) {
+                    // Läge 2: Extra Kompakt
+                    docElement.classList.add('extra-compact-mode'); // Ny klass!
+                    toggleCompactView.classList.add('active');
+                    settingsToggleCompactView.classList.add('active');
+                    toggleCompactView.title = "Växla till Standardvy";
+                    settingsToggleCompactView.title = "Växla till Standardvy";
+
                 } else {
-                    docElement.classList.remove('compact-mode');
-                    toggleCompactView.classList.remove('active');
-                    settingsToggleCompactView.classList.remove('active'); 
-                    localStorage.setItem('compactMode', 'false');
+                    // Läge 0: Normal
+                    // Inga klasser behövs
+                    toggleCompactView.title = "Växla till Kompakt vy";
+                    settingsToggleCompactView.title = "Växla till Kompakt vy";
                 }
+                
+                // Spara den nya nivån (0, 1, eller 2)
+                localStorage.setItem('compactModeLevel', levelNum.toString());
             }
-            toggleCompactView.addEventListener('click', () => {
-                const isCompact = !docElement.classList.contains('compact-mode');
-                setCompactMode(isCompact);
-            });
-            settingsToggleCompactView.addEventListener('click', () => { 
-                const isCompact = !docElement.classList.contains('compact-mode');
-                setCompactMode(isCompact);
-            });
-            const savedCompactMode = localStorage.getItem('compactMode') !== 'false';
-            setCompactMode(savedCompactMode);
+
+            // --- NYTT (Steg 2): Uppgraderad klick-hanterare som cyklar ---
+            function handleCompactToggleClick() {
+                // Hämta nuvarande nivå, default 0 (Normal)
+                let currentLevel = parseInt(localStorage.getItem('compactModeLevel') || '0');
+                
+                // Öka nivån
+                currentLevel++;
+                
+                // Om vi går över 2, börja om på 0
+                if (currentLevel > 2) {
+                    currentLevel = 0; 
+                }
+                
+                // Anropa funktionen med den nya nivån
+                setCompactMode(currentLevel);
+            }
+
+            // Koppla den nya cykel-funktionen till båda knapparna
+            toggleCompactView.addEventListener('click', handleCompactToggleClick);
+            settingsToggleCompactView.addEventListener('click', handleCompactToggleClick);
+            
+            // --- NYTT (Steg 3): Läs in den sparade nivån vid start ---
+            const savedCompactLevel = localStorage.getItem('compactModeLevel') || '0';
+            setCompactMode(savedCompactLevel);
 
             function setupViewToggles() {
                 const allToggleButtons = document.querySelectorAll('.button-toggle-view, .mobile-nav-btn[data-view]');
