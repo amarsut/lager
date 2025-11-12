@@ -2846,49 +2846,69 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     50% { background-color: rgba(255, 159, 10, 0.3); }
 }
 
-/* --- NYA STILAR FÖR KUNDLÄNKAR (Steg 2) --- */
+/* --- NYA STILAR FÖR KUNDLÄNKAR (Steg 3 - Fixad understrykning) --- */
 
-/* 1. Stajla den nya kund-ikonen */
+/* 1. Stajla kund-ikonen */
 .customer-icon {
-    color: var(--primary-color); /* Ikonen är alltid blå */
+    color: var(--primary-color);
     width: 1rem;
     height: 1rem;
-    margin-right: 0.35rem;
-    vertical-align: -2px; /* Justerar den snyggt med texten */
+    vertical-align: -2px; 
 }
 
-/* 2. Ta bort blåfärg från texten och lägg till en prickad linje (Desktop) */
-#jobbOversikt .link-btn.customer-link {
-    color: var(--text-color); /* Texten är i standardfärg */
+/* 2. Justera ikon-placering (Desktop vs Mobil) */
+#jobbOversikt .link-btn.customer-link .customer-icon {
+    margin-left: 0.35rem; /* Höger om text på desktop */
+}
+.mobile-job-card .link-btn.customer-link .customer-icon {
+    margin-right: 0.35rem; /* Vänster om text på mobil */
+}
+
+/* 3. Stajla SJÄLVA KNAPPEN (Gemensam för desktop/mobil) */
+/* Vi tar bort border/padding från knappen... */
+#jobbOversikt .link-btn.customer-link,
+.mobile-job-card .customer-name .link-btn.customer-link {
+    color: var(--text-color);
     font-weight: 500;
     text-decoration: none;
-    border-bottom: 1px dotted var(--text-color-light); /* Prickad linje som antydan */
-    padding-bottom: 2px; /* Lite luft för linjen */
     transition: all var(--transition-speed-fast) ease;
-}
+    
+    /* Ta bort linjen från knappen */
+    border-bottom: none;
+    padding-bottom: 0;
 
-/* 3. Hover-effekt (Desktop) */
-#jobbOversikt .link-btn.customer-link:hover {
-    color: var(--primary-color); /* Texten blir blå */
-    text-decoration: none; 
-    border-bottom: 1px solid var(--primary-color); /* Linjen blir solid och blå */
+    /* Snygg justering av text och ikon */
+    display: inline-flex;
+    align-items: baseline; /* Linjerar texten snyggt med ikonen */
 }
-
-/* 4. Samma stil för mobil-kortet */
+/* Återställ specifik font-weight för mobil */
 .mobile-job-card .customer-name .link-btn.customer-link {
-    color: var(--text-color); /* Texten är i standardfärg */
     font-weight: 700;
-    text-decoration: none;
-    border-bottom: 1px dotted var(--text-color-light); /* Prickad linje */
-    padding-bottom: 2px;
-    transition: all var(--transition-speed-fast) ease;
 }
 
-/* 5. Hover-effekt (Mobil) - Stödjer mest :active för touch */
+
+/* 4. Stajla den NYA SPAN-TAGGEN (Här lägger vi linjen) */
+#jobbOversikt .link-btn.customer-link .customer-name-text,
+.mobile-job-card .customer-name .link-btn.customer-link .customer-name-text {
+    border-bottom: 1px dotted var(--text-color-light);
+    padding-bottom: 2px;
+    transition: border-color var(--transition-speed-fast) ease;
+}
+
+/* 5. Hover-effekt för KNAPPEN (Ändrar färg) */
+#jobbOversikt .link-btn.customer-link:hover,
 .mobile-job-card .customer-name .link-btn.customer-link:hover,
 .mobile-job-card .customer-name .link-btn.customer-link:active {
     color: var(--primary-color);
-    border-bottom: 1px solid var(--primary-color);
+    text-decoration: none; 
+    border-bottom: none; /* Se till att ingen border är här */
+}
+
+/* 6. Hover-effekt för SPAN-TAGGEN (Ändrar linjens färg) */
+#jobbOversikt .link-btn.customer-link:hover .customer-name-text,
+.mobile-job-card .customer-name .link-btn.customer-link:hover .customer-name-text,
+.mobile-job-card .customer-name .link-btn.customer-link:active .customer-name-text {
+    border-bottom-color: var(--primary-color);
 }
 
 /* --- NYTT: Stil för "Lediga Dagar" i kalendern --- */
@@ -3211,4 +3231,5 @@ html.privacy-mode-enabled .nav-logo {
     margin-right: 0;       /* Ta bort den gamla marginalen */
     margin-left: 0.35rem;  /* Lägg till ny marginal */
 }
+
 
