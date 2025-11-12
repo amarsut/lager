@@ -2535,37 +2535,65 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 [data-theme="dark"] .settings-button-group #settingsThemeToggle .icon-moon { display: block; }
 [data-theme="dark"] .settings-button-group #settingsThemeToggle .icon-sun { display: none; }
 
-/* 2. Snabbval Status (Modal) */
+/* 2. Snabbval Status (Modal) - Segmented Control */
 .quick-status-buttons {
     grid-column: 1 / -1;
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 0.5rem;
+    display: flex; /* Byt från Grid till Flex */
+    width: 100%;
     margin-bottom: 0.75rem;
+    
+    /* Skapa den yttre, rundade ramen */
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    overflow: hidden; /* Klipper knapparna till ramen */
+    box-shadow: var(--shadow-sm);
 }
+
 .quick-status-buttons .button {
+    flex: 1; /* Gör att alla 4 knappar delar utrymmet lika */
     font-size: 0.8rem;
     font-weight: 600;
-    padding: 0.5rem 0.25rem;
-    border: 1px solid var(--border-color);
+    padding: 0.6rem 0.25rem; /* Lite mer höjd */
+    
+    /* Ta bort individuella kanter och rundning */
+    border: none;
+    border-radius: 0;
+    
     background-color: var(--bg-color);
     color: var(--text-color-light);
+    transition: all 0.2s ease; /* Mjuk övergång */
 }
-.quick-status-buttons .button:hover {
-    background-color: var(--bg-color);
-    border-color: var(--text-color-light);
+
+/* Lägg till avdelare mellan knapparna */
+.quick-status-buttons .button:not(:last-child) {
+    border-right: 1px solid var(--border-color);
 }
+
+/* Hover-effekt (endast för de som inte är aktiva) */
+.quick-status-buttons .button:not(.active):hover {
+    background-color: var(--content-bg); /* Ljusare hover */
+    color: var(--text-color);
+}
+
+/* Så här ser den VALDA knappen ut */
 .quick-status-buttons .button.active {
-    border-color: var(--primary-color);
-    background-color: var(--primary-light);
-    color: var(--primary-color);
-    box-shadow: 0 0 0 1px var(--primary-color);
+    background-color: var(--primary-color);
+    color: white;
+    box-shadow: none;
 }
+
+/* Mörkt läge-fixar */
 [data-theme="dark"] .quick-status-buttons .button {
     background-color: #2c2c2e;
 }
+[data-theme="dark"] .quick-status-buttons .button:not(:last-child) {
+    border-color: #3a3a3c;
+}
+
+/* Samma "active"-stil för mörkt läge */
 [data-theme="dark"] .quick-status-buttons .button.active {
-    background-color: rgba(10, 132, 255, 0.2);
+    background-color: var(--primary-color);
+    color: white;
 }
 
 /* 3. Kopiera-knappar (Modal) */
@@ -3231,6 +3259,7 @@ html.privacy-mode-enabled .nav-logo {
     margin-right: 0;       /* Ta bort den gamla marginalen */
     margin-left: 0.35rem;  /* Lägg till ny marginal */
 }
+
 
 
 
