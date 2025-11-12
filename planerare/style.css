@@ -3146,3 +3146,37 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     font-weight: 600;
     color: var(--danger-color);
 }
+
+/* --- Sekretessläge --- */
+/* Dölj "slash"-ikonen som standard */
+#privacyToggle .icon-eye-slash,
+#settingsPrivacyToggle .icon-eye-slash { display: none; }
+#privacyToggle .icon-eye,
+#settingsPrivacyToggle .icon-eye { display: block; }
+
+/* När privat läge är PÅ, visa "slash" och dölj "öga" */
+html.privacy-mode-enabled #privacyToggle .icon-eye-slash,
+html.privacy-mode-enabled #settingsPrivacyToggle .icon-eye-slash { display: block; }
+html.privacy-mode-enabled #privacyToggle .icon-eye,
+html.privacy-mode-enabled #settingsPrivacyToggle .icon-eye { display: none; }
+
+/* Gör knappen "aktiv" (orange) när läget är på */
+html.privacy-mode-enabled #privacyToggle,
+html.privacy-mode-enabled #settingsPrivacyToggle {
+    color: var(--warning-color);
+    background-color: rgba(255, 159, 10, 0.1);
+}
+
+/* * HUVUDREGEL: Dölj allt med klassen .money-related
+ * när <html>-taggen har klassen .privacy-mode-enabled
+ */
+html.privacy-mode-enabled .money-related {
+    display: none !important;
+}
+
+/* Specialregler för tabellkolumner (döljer 5:e kolumnen) */
+html.privacy-mode-enabled #jobbOversikt th:nth-child(5),
+html.privacy-mode-enabled #jobbOversikt td:nth-child(5)
+{
+    display: none;
+}
