@@ -85,6 +85,13 @@
 
             // --- DOM-element ---
             const docElement = document.documentElement;
+			const privacyToggle = document.getElementById('privacyToggle');
+			const settingsPrivacyToggle = document.getElementById('settingsPrivacyToggle');
+			
+			// --- Globalt Tillstånd (State) ---
+			let allJobs = [];
+			// ...
+			let isPrivacyModeEnabled = localStorage.getItem('privacyMode') === 'true';
             const appContainer = document.querySelector('.app-container');
             const toast = document.getElementById('toastNotification');
             
@@ -315,7 +322,7 @@
                                 dayNumberEl.innerText = arg.dayNumberText;
 
                                 let profitEl = document.createElement('div');
-                                profitEl.classList.add('calendar-day-profit');
+                                profitEl.classList.add('calendar-day-profit', 'money-related');
                                 profitEl.setAttribute('data-date', arg.date.toISOString().split('T')[0]);
 
                                 return { domNodes: [dayNumberEl, profitEl] };
@@ -922,7 +929,7 @@
 	                        </button>
                             ` : '---'}
                     	</td>
-                        <td data-label="Kundpris">${formatCurrency(job.kundpris)}</td>
+                        <td data-label="Kundpris" class="money-related">${formatCurrency(job.kundpris)}</td>
                         <td class="action-col">
                             ${hasComment ? `
                             <button class="icon-btn" data-action="showComment" data-comment="${encodeURIComponent(job.kommentarer)}" title="Visa kommentar" aria-label="Visa kommentar">
@@ -1012,7 +1019,7 @@
                 return `
                     <div class="mobile-job-card job-entry ${prioClass} ${doneClass} ${jobStatusClass}" data-id="${job.id}" data-status="${job.status}">
                         <div class="card-content">
-                            <div class="card-row">
+                            <div class="card-row money-related">
                                 <span class="card-label">Kund</span>
                                 <span class="card-value customer-name">
                                     <div class="customer-name-wrapper">
@@ -1579,7 +1586,7 @@
                                     <span class="job-subline">${job.regnr || job.kundnamn} (${STATUS_TEXT[job.status]})</span>
                                     ${job.kommentarer ? `<p class="job-comment">${job.kommentarer}</p>` : ''}
                                 </div>
-                                <span class="job-profit profit ${job.vinst > 0 ? 'positive' : ''}">${formatCurrency(job.vinst)}</span>
+                                <span class="job-profit profit money-related ${job.vinst > 0 ? 'positive' : ''}">${formatCurrency(job.vinst)}</span>
                             </li>`
                 }).join('');
             }
@@ -1710,7 +1717,7 @@
 					html += `
 					    <li>
 					        <button class="link-btn item-name" ${dataType}="${item.name}">${item.name}</button>
-					        <span class="item-value ${vinstClass}">${formatCurrency(item.vinst)}</span>
+					        <span class="item-value money-related ${vinstClass}">${formatCurrency(item.vinst)}</span>
 					    </li>
 					`;
 			    });
@@ -1798,7 +1805,7 @@
                             <tr>
                                 <th>Period</th>
                                 <th>Antal Jobb</th>
-                                <th style="text-align: right;">Total Vinst</th>
+                                <th style="text-align: right;" class="money-related">Total Vinst</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -1818,7 +1825,7 @@
                                     <span class="stat-year">${item.year}</span>
                                 </td>
                                 <td style="text-align: center;">${item.jobb}</td>
-                                <td class="stat-profit">${formatCurrency(item.vinst)}</td>
+                                <td class="stat-profit money-related">${formatCurrency(item.vinst)}</td>
                             </tr>
                         `;
                     });
@@ -2728,6 +2735,23 @@
             }
             const savedTheme = localStorage.getItem('theme') || 'light';
             setTheme(savedTheme);
+			setPrivacyMode(isPrivacyModeEnabled);
+
+			// --- NY FUNKTION: Sekretessläge ---
+			function setPrivacyMode(isEnabled) {
+			    isPrivacyModeEnabled = isEnabled;
+			    if (isEnabled) {
+			        docElement.classList.add('privacy-mode-enabled');
+			        localStorage.setItem('privacyMode', 'true');
+			    } else {
+			        docElement.classList.remove('privacy-mode-enabled');
+			        localStorage.setItem('privacyMode', 'false');
+			    }
+			    // Uppdatera kalendern, som kanske visar vinst
+			    if (calendar) {
+			        updateDailyProfitInCalendar(allJobs);
+			    }
+			}
             
             function setCompactMode(isCompact) {
                 if (isCompact) {
