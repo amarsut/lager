@@ -2474,9 +2474,9 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     .calendar-day-profit {
         display: block;
 
-		float: right;
+		float: left;
         margin-top: 2px;
-        margin-right: 4px;
+        margin-right: 6px;
     }
 }
 
