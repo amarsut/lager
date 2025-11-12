@@ -1750,7 +1750,7 @@
 
                 statsModalTotalProfit.textContent = formatCurrency(totalVinst);
                 statsModalJobCount.textContent = totalJobb;
-                statsModalTotalProfit.className = totalVinst > 0 ? 'stat-value positive' : 'stat-value';
+                statsModalTotalProfit.className = totalVinst > 0 ? 'stat-value money-related positive' : 'stat-value money-related';
 
                 const now = new Date();
                 const currentMonthKey = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}`;
