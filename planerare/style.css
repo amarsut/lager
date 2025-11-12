@@ -118,7 +118,7 @@ body {
 
 .app-main { flex-grow: 1; }
 .main-content { 
-    max-width: 1000px; margin: 0 auto; /* <-- ÄNDRAD HÄR */
+    max-width: 1100px; margin: 0 auto; /* <-- ÄNDRAD HÄR */
     padding: 2rem; 
     padding-bottom: calc(var(--mobile-nav-height) + 2rem);
 }
@@ -3231,6 +3231,7 @@ html.privacy-mode-enabled .nav-logo {
     margin-right: 0;       /* Ta bort den gamla marginalen */
     margin-left: 0.35rem;  /* Lägg till ny marginal */
 }
+
 
 
 
