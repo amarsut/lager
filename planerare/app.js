@@ -143,6 +143,26 @@
             const copyKundnamnBtn = document.getElementById('copyKundnamn');
             const copyRegnrBtn = document.getElementById('copyRegnr');
             const copyCarRegnrBtn = document.getElementById('copyCarRegnrBtn'); // <-- NY
+
+			// --- NYTT: Översikts-modal ---
+            const jobSummaryModal = document.getElementById('jobSummaryModal');
+            const modalSummaryCloseBtn = document.getElementById('modalSummaryCloseBtn');
+            const modalSummaryStangBtn = document.getElementById('modalSummaryStangBtn');
+            const modalSummaryEditBtn = document.getElementById('modalSummaryEditBtn');
+            
+            const modalSummaryKundnamn = document.getElementById('modalSummaryKundnamn');
+            const modalSummaryTelefon = document.getElementById('modalSummaryTelefon');
+            const modalSummaryRegnr = document.getElementById('modalSummaryRegnr');
+            const modalSummaryStatus = document.getElementById('modalSummaryStatus');
+            const modalSummaryDatum = document.getElementById('modalSummaryDatum');
+            const modalSummaryMatarstallning = document.getElementById('modalSummaryMatarstallning');
+            const modalSummaryKundpris = document.getElementById('modalSummaryKundpris');
+            const modalSummaryTotalUtgift = document.getElementById('modalSummaryTotalUtgift');
+            const modalSummaryVinst = document.getElementById('modalSummaryVinst');
+            const modalSummaryExpenseBox = document.getElementById('modalSummaryExpenseBox');
+            const modalSummaryExpenseList = document.getElementById('modalSummaryExpenseList');
+            const modalSummaryKommentarer = document.getElementById('modalSummaryKommentarer');
+            // --- SLUT ÖVERSIKTS-MODAL ---
             
             const customerModal = document.getElementById('customerModal');
             const customerModalCloseBtn = document.getElementById('customerModalCloseBtn');
@@ -326,7 +346,7 @@
                         const jobId = clickInfo.event.id;
                         const job = findJob(jobId);
                         if (job) {
-                            openJobModal('edit', job);
+                            openJobSummaryModal(job);
                         }
                     },
                     
@@ -1356,6 +1376,61 @@
                 }
             });
 
+			// --- NY FUNKTION: Öppnar Översikts-modalen ---
+            function openJobSummaryModal(job) {
+                if (!job) return;
+
+                // Fyll i data
+                modalSummaryKundnamn.textContent = job.kundnamn || '---';
+                modalSummaryTelefon.textContent = job.telefon || '---';
+                modalSummaryRegnr.textContent = job.regnr || '---';
+                
+                const statusText = STATUS_TEXT[job.status] || job.status;
+                modalSummaryStatus.textContent = statusText;
+                modalSummaryStatus.className = `summary-value status-badge status-${job.status}`; // Återanvänder din status-badge-stil
+
+                modalSummaryDatum.textContent = formatDate(job.datum);
+                modalSummaryMatarstallning.textContent = job.matarstallning ? `${job.matarstallning} km` : '---';
+
+                modalSummaryKundpris.textContent = formatCurrency(job.kundpris);
+                modalSummaryTotalUtgift.textContent = formatCurrency(job.utgifter);
+                
+                const vinst = job.vinst || (job.kundpris || 0) - (job.utgifter || 0);
+                modalSummaryVinst.textContent = formatCurrency(vinst);
+                modalSummaryVinst.className = vinst > 0 ? 'summary-value vinst' : 'summary-value';
+
+                // Fyll i kommentarer
+                if (job.kommentarer && job.kommentarer.trim().length > 0) {
+                    modalSummaryKommentarer.textContent = job.kommentarer;
+                    modalSummaryKommentarer.parentElement.style.display = 'flex';
+                } else {
+                    modalSummaryKommentarer.textContent = '';
+                    modalSummaryKommentarer.parentElement.style.display = 'none';
+                }
+
+                // Fyll i utgiftslistan
+                if (job.expenseItems && job.expenseItems.length > 0) {
+                    modalSummaryExpenseList.innerHTML = '';
+                    job.expenseItems.forEach(item => {
+                        modalSummaryExpenseList.innerHTML += `
+                            <li>
+                                <span class="expense-name">${item.name}</span>
+                                <span class="expense-cost">-${formatCurrency(item.cost)}</span>
+                            </li>
+                        `;
+                    });
+                    modalSummaryExpenseBox.style.display = 'flex';
+                } else {
+                    modalSummaryExpenseList.innerHTML = '';
+                    modalSummaryExpenseBox.style.display = 'none';
+                }
+
+                // Spara jobb-ID på redigera-knappen
+                modalSummaryEditBtn.dataset.jobId = job.id;
+
+                showModal('jobSummaryModal');
+            }
+
             function openJobModal(mode, dataToClone = null) {
                 jobModalForm.reset();
                 currentExpenses = []; // Nollställ alltid utgifts-arrayen
@@ -2082,7 +2157,7 @@
                 if (carLink) { e.stopPropagation(); openCarModal(carLink.dataset.regnr); return; }
                 
                 const job = findJob(id);
-                if (job) openJobModal('edit', job);
+                if (job) openJobSummaryModal(job);
             });
             
             // --- Långtryck- & Kontextmeny-hanterare ---
@@ -2147,7 +2222,7 @@
                     return;
                 }
                 switch(action) {
-                    case 'edit': const job = findJob(contextMenuJobId); if(job) openJobModal('edit', job); break;
+                    case 'edit': const job = findJob(contextMenuJobId); if(job) openJobSummaryModal(job); break;
                     case 'prio': togglePrio(contextMenuJobId); break;
                     case 'duplicate': duplicateJob(contextMenuJobId); break; 
                     
@@ -2256,6 +2331,24 @@
             settingsModalCloseBtn.addEventListener('click', () => closeModal()); 
             settingsModalCancelBtn.addEventListener('click', () => closeModal()); 
 			statsModalCloseBtn.addEventListener('click', () => closeModal());
+
+			modalSummaryCloseBtn.addEventListener('click', () => closeModal());
+            modalSummaryStangBtn.addEventListener('click', () => closeModal());
+            jobSummaryModal.addEventListener('click', (e) => { if (e.target === jobSummaryModal) closeModal(); }); 
+            
+            modalSummaryEditBtn.addEventListener('click', (e) => {
+                const jobId = e.currentTarget.dataset.jobId;
+                const job = findJob(jobId);
+                if (job) {
+                    // Stäng nuvarande (summary) modal
+                    closeModal(); 
+                    
+                    // Öppna redigerings-modalen (med en fördröjning för snygg övergång)
+                    setTimeout(() => {
+                        openJobSummaryModal(job);
+                    }, 50);
+                }
+            });
             
             jobModal.addEventListener('click', (e) => { if (e.target === jobModal) closeModal(); });
             customerModal.addEventListener('click', (e) => { if (e.target === customerModal) closeModal(); });
