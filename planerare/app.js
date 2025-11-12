@@ -2394,9 +2394,14 @@
             settingsModal.addEventListener('click', (e) => { if (e.target === settingsModal) closeModal(); }); 
 
             navLogo.addEventListener('click', (e) => {
-                e.preventDefault(); 
-                openStatsModal();
-            });
+			    e.preventDefault();
+			    // NY KONTROLL: Blockera i privat läge
+			    if (isPrivacyModeEnabled) {
+			        showToast('Statistiköversikten är dold i privat läge.', 'info');
+			        return;
+			    } 
+			    openStatsModal();
+			});
             
             // --- Inställnings-modal (Vinstmål) ---
             // 1. FUNKTIONEN FÖR ATT ÖPPNA MODALEN
