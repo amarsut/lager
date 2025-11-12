@@ -322,7 +322,8 @@
                                 profitEl.classList.add('calendar-day-profit', 'money-related');
                                 profitEl.setAttribute('data-date', arg.date.toISOString().split('T')[0]);
 
-                                return { domNodes: [dayNumberEl, profitEl] };
+                                //return { domNodes: [dayNumberEl, profitEl] };
+								return { domNodes: [profitEl, dayNumberEl] };
                             }
                         },
                         timeGridWeek: {
@@ -379,16 +380,17 @@
                             return [];
                         }
 
-                        // Kolla om det finns några "aktiva" jobb (bokade eller offererade)
-                        const hasActiveJob = allJobs.some(j => 
-                            j.datum.startsWith(dateKey) && 
-                            (j.status === 'bokad' || j.status === 'offererad')
-                        );
+                        // Kolla om det finns några "aktiva" jobb
+					    const hasActiveJob = allJobs.some(j => 
+					        j.datum.startsWith(dateKey) && 
+					        // --- ÄNDRA HÄR ---
+					        (j.status === 'bokad' || j.status === 'offererad' || j.status === 'klar')
+					    );
 
                         // Om det INTE finns några aktiva jobb, returnera vår nya klass
-                        if (!hasActiveJob) {
-                            return ['fc-day-free'];
-                        }
+					    if (!hasActiveJob) {
+					        return ['fc-day-free'];
+					    }
 
                         return [];
                     },
@@ -505,7 +507,7 @@
                 const currentYear = calendarDate.getFullYear();
 
                 // 1. Summera vinst per dag för "Klar"-jobb
-                jobs.filter(j => j.status === 'klar' && j.vinst > 0).forEach(job => {
+                jobs.filter(j => (j.status === 'bokad' || j.status === 'klar') && j.vinst > 0).forEach(job => {
                     const dateKey = job.datum.split('T')[0];
                     if (!dailyProfits[dateKey]) {
                         dailyProfits[dateKey] = 0;
@@ -519,14 +521,13 @@
                     const date = el.dataset.date;
                     const elDate = new Date(date + 'T12:00:00'); // Sätt tid för att undvika tidszonsfel
 
-                    // FIX: Visa bara vinst för dagar i denna månad
-                    if (dailyProfits[date] && elDate.getMonth() === currentMonth && elDate.getFullYear() === currentYear) {
-                        el.textContent = `+${formatCurrency(dailyProfits[date])}`;
-                        el.style.display = ''; 
-                    } else {
-                        el.textContent = '';
-                        el.style.display = 'none'; 
-                    }
+                    if (dailyProfits[date]) {
+			            el.textContent = `+${formatCurrency(dailyProfits[date])}`;
+			            el.style.display = ''; 
+			        } else {
+			            el.textContent = '';
+			            el.style.display = 'none'; 
+			        }
                 });
             }
 
