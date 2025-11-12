@@ -1048,7 +1048,7 @@
                                     <span class="status-badge status-${job.status || 'bokad'}">${STATUS_TEXT[job.status] || 'Bokad'}</span>
                                 </span>
                             </div>
-                            <div class="card-row">
+                            <div class="card-row money-related">
                                 <span class="card-label">Kundpris</span>
                                 <span class="card-value customer-price">${formatCurrency(job.kundpris)}</span>
                             </div>
