@@ -407,10 +407,10 @@
             </div>
             
             <div class="detail-stats">
-                <div>
-                    <span class="stat-title">Total Vinst</span>
-                    <span class="stat-value" id="customerModalTotalProfit"></span>
-                </div>
+			    <div class="money-related">
+			        <span class="stat-title">Total Vinst</span>
+			        <span class="stat-value" id="customerModalTotalProfit"></span>
+			    </div>
                 <div>
                     <span class="stat-title">Antal Jobb</span>
                     <span class="stat-value" id="customerModalJobCount"></span>
@@ -454,10 +454,10 @@
         </div>
             
             <div class="detail-stats">
-                <div>
-                    <span class="stat-title">Total Vinst</span>
-                    <span class="stat-value" id="carModalTotalProfit"></span>
-                </div>
+			    <div class="money-related">
+			        <span class="stat-title">Total Vinst</span>
+			        <span class="stat-value" id="carModalTotalProfit"></span>
+			    </div>
                 <div>
                     <span class="stat-title">Antal Jobb</span>
                     <span class="stat-value" id="carModalJobCount"></span>
@@ -498,22 +498,23 @@
             
             <div class="modal-body" id="statsModalBody">
 				<div class="detail-stats" id="statsModalSummary">
-                <div>
-                    <span class="stat-title">Total Vinst</span>
-                    <span class="stat-value" id="statsModalTotalProfit">0 kr</span>
-                </div>
+			    <div class="money-related">
+			        <span class="stat-title">Total Vinst</span>
+			        <span class="stat-value" id="statsModalTotalProfit">0 kr</span>
+			    </div>
                 <div>
                     <span class="stat-title">Totalt Antal Jobb</span>
                     <span class="stat-value" id="statsModalJobCount">0</span>
                 </div>
 				<div>
-                <span class="stat-title">Dagens Vinst</span>
-	                <span class="stat-value" id="statsModalDagensVinst">0 kr</span>
-	            </div>
+                <div class="money-related">
+				    <span class="stat-title">Dagens Vinst</span>
+				    <span class="stat-value" id="statsModalDagensVinst">0 kr</span>
+				</div>
             </div>
                 
-                <div class="profit-goal-progress" id="profitGoalProgress" style="display: none;">
-                    <div class="progress-bar-text">
+                <div class="profit-goal-progress money-related" id="profitGoalProgress" style="display: none;">
+    				<div class="progress-bar-text">
                         <span class="current" id="profitGoalCurrent">0 kr</span>
                         <span class="goal" id="profitGoalTarget">Mål: 0 kr</span>
                     </div>
@@ -587,20 +588,20 @@
                 <div class="summary-section">
                     <h4 class="summary-section-title">Ekonomi</h4>
                     <div class="summary-grid">
-                        <div class="summary-item">
+                        <div class="summary-item money-related">
                             <span class="summary-label">Kundpris</span>
                             <span class="summary-value positive" id="modalSummaryKundpris"></span>
                         </div>
-                        <div class="summary-item">
+                        <div class="summary-item money-related">
                             <span class="summary-label">Total Utgift</span>
                             <span class="summary-value negative" id="modalSummaryTotalUtgift"></span>
                         </div>
-                        <div class="summary-item">
+                        <div class="summary-item money-related">
                             <span class="summary-label">Vinst</span>
                             <span class="summary-value vinst" id="modalSummaryVinst"></span>
                         </div>
                     </div>
-                    <div class="summary-item" id="modalSummaryExpenseBox">
+                    <div class="summary-item money-related" id="modalSummaryExpenseBox">
                         <span class="summary-label">Specificerade Utgifter</span>
                         <ul class="summary-expense-list" id="modalSummaryExpenseList">
                             </ul>
