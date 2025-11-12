@@ -322,8 +322,7 @@
                                 profitEl.classList.add('calendar-day-profit', 'money-related');
                                 profitEl.setAttribute('data-date', arg.date.toISOString().split('T')[0]);
 
-                                //return { domNodes: [dayNumberEl, profitEl] };
-								return { domNodes: [profitEl, dayNumberEl] };
+                                return { domNodes: [dayNumberEl, profitEl] };
                             }
                         },
                         timeGridWeek: {
@@ -380,16 +379,16 @@
                             return [];
                         }
 
-                        // Kolla om det finns några "aktiva" jobb
-					    const hasActiveJob = allJobs.some(j => 
-					        j.datum.startsWith(dateKey) && 
-					        (j.status === 'bokad' || j.status === 'offererad' || j.status === 'klar')
-					    );
+                        // Kolla om det finns några "aktiva" jobb (bokade eller offererade)
+                        const hasActiveJob = allJobs.some(j => 
+                            j.datum.startsWith(dateKey) && 
+                            (j.status === 'bokad' || j.status === 'offererad')
+                        );
 
                         // Om det INTE finns några aktiva jobb, returnera vår nya klass
-					    if (!hasActiveJob) {
-					        return ['fc-day-free'];
-					    }
+                        if (!hasActiveJob) {
+                            return ['fc-day-free'];
+                        }
 
                         return [];
                     },
@@ -494,38 +493,42 @@
                 });
             }
 
-            // Radera din gamla funktion och ersätt den med denna
-			function updateDailyProfitInCalendar(jobs) {
-			    if (currentView !== 'calendar' || !calendar) return;
-			
-			    const dailyProfits = {};
-			
-			    // 1. Summera vinst per dag
-			    // --- ÄNDRING 1: Inkludera 'bokad' OCH 'klar' ---
-			    jobs.filter(j => (j.status === 'bokad' || j.status === 'klar') && j.vinst > 0).forEach(job => {
-			        const dateKey = job.datum.split('T')[0];
-			        if (!dailyProfits[dateKey]) {
-			            dailyProfits[dateKey] = 0;
-			        }
-			        dailyProfits[dateKey] += job.vinst;
-			    });
-			
-			    const profitElements = calendarContainer.querySelectorAll('.calendar-day-profit');
-			    
-			    profitElements.forEach(el => {
-			        const date = el.dataset.date;
-			        
-			        // --- ÄNDRING 2: Ta bort den buggiga månads-kontrollen ---
-			        // Den gamla IF-satsen är helt ersatt med denna
-			        if (dailyProfits[date]) {
-			            el.textContent = `+${formatCurrency(dailyProfits[date])}`;
-			            el.style.display = ''; 
-			        } else {
-			            el.textContent = '';
-			            el.style.display = 'none'; 
-			        }
-			    });
-			}
+            // FIXAD: Logik för Dagens Vinst
+            function updateDailyProfitInCalendar(jobs) {
+                if (currentView !== 'calendar' || !calendar) return;
+
+                const dailyProfits = {};
+                
+                // Hämta den månad som kalendern visar
+                const calendarDate = calendar.getDate();
+                const currentMonth = calendarDate.getMonth();
+                const currentYear = calendarDate.getFullYear();
+
+                // 1. Summera vinst per dag för "Klar"-jobb
+                jobs.filter(j => j.status === 'klar' && j.vinst > 0).forEach(job => {
+                    const dateKey = job.datum.split('T')[0];
+                    if (!dailyProfits[dateKey]) {
+                        dailyProfits[dateKey] = 0;
+                    }
+                    dailyProfits[dateKey] += job.vinst;
+                });
+
+                const profitElements = calendarContainer.querySelectorAll('.calendar-day-profit');
+                
+                profitElements.forEach(el => {
+                    const date = el.dataset.date;
+                    const elDate = new Date(date + 'T12:00:00'); // Sätt tid för att undvika tidszonsfel
+
+                    // FIX: Visa bara vinst för dagar i denna månad
+                    if (dailyProfits[date] && elDate.getMonth() === currentMonth && elDate.getFullYear() === currentYear) {
+                        el.textContent = `+${formatCurrency(dailyProfits[date])}`;
+                        el.style.display = ''; 
+                    } else {
+                        el.textContent = '';
+                        el.style.display = 'none'; 
+                    }
+                });
+            }
 
 
             function mapJobToEvent(job) {
@@ -2416,12 +2419,6 @@
                 } else {
                     document.getElementById('defaultViewTimeline').checked = true;
                 }
-
-				const savedColor = localStorage.getItem('themeColor') || 'blue';
-			    const currentColorRadio = document.getElementById(`color-${savedColor}`);
-			    if (currentColorRadio) {
-			        currentColorRadio.checked = true;
-			    }
                 
                 // Hantera visning av mobil-specifika knappar
                 if (window.innerWidth <= 768) {
@@ -2452,33 +2449,6 @@
                     }
                 });
             });
-
-			// === NY, KORRIGERAD LYSSNARE FÖR FÄRGVÄLJARE ===
-            const themeColorPicker = document.getElementById('themeColorPicker');
-            if (themeColorPicker) {
-                
-                // Vi lyssnar efter "change", som avfyras när en ny radioknapp väljs.
-                themeColorPicker.addEventListener('change', (e) => {
-                    
-                    // e.target kommer att vara den <input> som precis blev vald.
-                    const input = e.target;
-                    
-                    // Dubbelkolla att det är en radioknapp vi bryr oss om
-                    if (input && input.name === 'themeColor') {
-                        
-                        // Hämta värdet (t.ex. "blue", "green")
-                        const colorValue = input.value; 
-                        
-                        // Kör vår funktion för att byta färg
-                        setThemeColor(colorValue);
-                        
-                        // Ge visuell feedback (bara på datorn)
-                        if (window.innerWidth > 768) {
-                            showToast('Accentfärg sparad!', 'success');
-                        }
-                    }
-                });
-            }
 
             // 3. KOPPLINGAR TILL KNAPPARNA (Dessa rader har du redan, se till att de ligger efter)
             settingsBtn.addEventListener('click', openSettingsModal);
@@ -2773,15 +2743,6 @@
             const savedTheme = localStorage.getItem('theme') || 'light';
             setTheme(savedTheme);
 			setPrivacyMode(isPrivacyModeEnabled);
-
-			const savedColor = localStorage.getItem('themeColor') || 'blue';
-			setThemeColor(savedColor);
-
-			// NY FUNKTION för att byta accentfärg
-			function setThemeColor(colorName) {
-			    docElement.setAttribute('data-theme-color', colorName);
-			    localStorage.setItem('themeColor', colorName);
-			}
 
 			// --- NY FUNKTION: Sekretessläge ---
 			function setPrivacyMode(isEnabled) {
