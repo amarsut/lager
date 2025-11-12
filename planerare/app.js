@@ -864,7 +864,7 @@
             function createJobRow(job) {
                 let prioClass = job.prio ? 'prio-row' : '';
                 const doneClass = (job.status === 'klar') ? 'done-row' : '';
-                
+
                 const isKommandePrio = job.prio && job.status === 'bokad' && new Date(job.datum) >= new Date();
                 if(isKommandePrio) {
                     prioClass += ' kommande-prio-pulse';
@@ -882,7 +882,7 @@
                 const kundnamnHTML = highlightSearchTerm(job.kundnamn, currentSearchTerm);
                 const regnrHTML = highlightSearchTerm(job.regnr || '---', currentSearchTerm);
                 const contextIcon = getJobContextIcon(job);
-                
+
                 return `
                     <tr data-id="${job.id}" data-status="${job.status}" class="job-entry ${prioClass} ${doneClass} ${jobStatusClass}">
                         <td data-label="Status"><span class="status-badge status-${job.status || 'bokad'}">${STATUS_TEXT[job.status] || 'Bokad'}</span></td>
@@ -909,14 +909,14 @@
                                 <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-chat"></use></svg>
                             </button>
                             ` : `<span class="icon-btn-placeholder"></span>`}
-                            
+
                             <button class="icon-btn" data-action="togglePrio" title="Växla Prio" aria-label="Växla Prio">
                                 <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-flag"></use></svg>
                             </button>
                             <button class="icon-btn" data-action="setStatusKlar" title="Markera som Klar" aria-label="Markera som Klar">
                                 <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-check"></use></svg>
                             </button>
-                            
+
                             <button class="icon-btn delete-btn" data-id="${job.id}" title="Ta bort" aria-label="Ta bort jobb">
                                 <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-trash"></use></svg>
                             </button>
@@ -968,7 +968,7 @@
             function createJobCard(job) {
                 let prioClass = job.prio ? 'prio-row' : '';
                 const doneClass = (job.status === 'klar') ? 'done-row' : '';
-                
+
                 const isKommandePrio = job.prio && job.status === 'bokad' && new Date(job.datum) >= new Date();
                 if(isKommandePrio) {
                     prioClass += ' kommande-prio-pulse';
@@ -982,13 +982,13 @@
                 // --- SLUT NY LOGIK ---
 
                 const hasComment = job.kommentarer && job.kommentarer.trim().length > 0;
-                
+
                 const kundnamnHTML = highlightSearchTerm(job.kundnamn, currentSearchTerm);
                 const regnrHTML = highlightSearchTerm(job.regnr || 'OKÄNT', currentSearchTerm);
                 const contextIcon = getJobContextIcon(job);
-                
+
                 const timePart = job.datum ? (formatDate(job.datum).split('kl. ')[1] || 'Okänd tid') : 'Okänd tid';
-                
+
                 return `
                     <div class="mobile-job-card job-entry ${prioClass} ${doneClass} ${jobStatusClass}" data-id="${job.id}" data-status="${job.status}">
                         <div class="card-content">
@@ -1035,14 +1035,14 @@
                                 <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-chat"></use></svg>
                             </button>
                             ` : `<span class="icon-btn-placeholder"></span>`}
-                            
+
                             <button class="icon-btn" data-action="togglePrio" aria-label="Växla Prio">
                                 <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-flag"></use></svg>
                             </button>
                             <button class="icon-btn" data-action="setStatusKlar" aria-label="Markera som Klar">
                                 <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-check"></use></svg>
                             </button>
-                            
+
                             <button class="icon-btn delete-btn" data-id="${job.id}" aria-label="Ta bort jobb">
                                 <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-trash"></use></svg>
                             </button>
