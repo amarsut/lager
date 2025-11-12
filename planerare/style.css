@@ -3197,4 +3197,18 @@ html.privacy-mode-enabled .nav-logo {
     cursor: not-allowed; /* Visa "stopp"-markör */
 }
 
+/* --- FIX: Flytta ikoner till höger om kundnamn (Desktop) --- */
+
+/* 1. Justera kontext-ikonen (olja/däck) som nu är efter knappen */
+#jobbOversikt .context-icon {
+    margin-right: 0;       /* Ta bort den gamla marginalen */
+    margin-left: 0.6rem;   /* Lägg till ny marginal */
+    vertical-align: -3px;  /* Justera vertikalt (kan behöva finjusteras) */
+}
+
+/* 2. Justera profil-ikonen (inuti knappen) */
+#jobbOversikt .customer-link .customer-icon {
+    margin-right: 0;       /* Ta bort den gamla marginalen */
+    margin-left: 0.35rem;  /* Lägg till ny marginal */
+}
 
