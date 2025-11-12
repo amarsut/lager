@@ -407,10 +407,10 @@
             </div>
             
             <div class="detail-stats">
-			    <div class="money-related">
-			        <span class="stat-title">Total Vinst</span>
-			        <span class="stat-value" id="customerModalTotalProfit"></span>
-			    </div>
+			    <div>
+				    <span class="stat-title money-related">Total Vinst</span>
+				    <span class="stat-value money-related" id="statsModalTotalProfit">0 kr</span>
+				</div>
                 <div>
                     <span class="stat-title">Antal Jobb</span>
                     <span class="stat-value" id="customerModalJobCount"></span>
@@ -454,10 +454,10 @@
         </div>
             
             <div class="detail-stats">
-			    <div class="money-related">
-			        <span class="stat-title">Total Vinst</span>
-			        <span class="stat-value" id="carModalTotalProfit"></span>
-			    </div>
+			    <div>
+				    <span class="stat-title money-related">Total Vinst</span>
+				    <span class="stat-value money-related" id="customerModalTotalProfit"></span>
+				</div>
                 <div>
                     <span class="stat-title">Antal Jobb</span>
                     <span class="stat-value" id="carModalJobCount"></span>
@@ -498,18 +498,18 @@
             
             <div class="modal-body" id="statsModalBody">
 				<div class="detail-stats" id="statsModalSummary">
-			    <div class="money-related">
-			        <span class="stat-title">Total Vinst</span>
-			        <span class="stat-value" id="statsModalTotalProfit">0 kr</span>
-			    </div>
+			    <div>
+				    <span class="stat-title money-related">Total Vinst</span>
+				    <span class="stat-value money-related" id="carModalTotalProfit"></span>
+				</div>
                 <div>
                     <span class="stat-title">Totalt Antal Jobb</span>
                     <span class="stat-value" id="statsModalJobCount">0</span>
                 </div>
 				<div>
                 <div class="money-related">
-				    <span class="stat-title">Dagens Vinst</span>
-				    <span class="stat-value" id="statsModalDagensVinst">0 kr</span>
+				    <span class="stat-title money-related">Dagens Vinst</span>
+				    <span class="stat-value money-related" id="statsModalDagensVinst">0 kr</span>
 				</div>
             </div>
                 
@@ -523,17 +523,17 @@
                     </div>
                 </div>
                 
-                <h3 class="chart-title">Vinst per Månad</h3>
-                <div class="chart-container">
-                    <canvas id="statsChart"></canvas>
-                </div>
+                <h3 class="chart-title money-related">Vinst per Månad</h3>
+				<div class="chart-container money-related">
+				    <canvas id="statsChart"></canvas>
+				</div>
                 
                 <h3 class="chart-title">Aktivitet per Veckodag</h3>
                 <div class="chart-container" style="max-height: 220px;">
                     <canvas id="weekdayChart"></canvas>
                 </div>
-				<h3 class="chart-title">Topplistor</h3>
-                <div class="top-lists-container">
+				<h3 class="chart-title money-related">Topplistor</h3>
+				<div class="top-lists-container money-related">
                     <div id="topCustomersContainer">
                         </div>
                     <div id="topCarsContainer">
