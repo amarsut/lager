@@ -48,10 +48,10 @@
             const kommentarer = job.kommentarer ? job.kommentarer.toLowerCase() : '';
             
             if (kommentarer.includes('olja') || kommentarer.includes('oljebyte')) {
-                return `<svg class="context-icon" viewBox="0 0 24 24"><use href="#icon-oil"></use></svg>`;
+                return `<svg class="context-icon" viewBox="0 0 24 24"><use href="#icon-oil-can"></use></svg>`;
             }
             if (kommentarer.includes('däck') || kommentarer.includes('hjul') || kommentarer.includes('hjulskifte')) {
-                return `<svg class="context-icon" viewBox="0 0 24 24"><use href="#icon-tire"></use></svg>`;
+                return `<svg class="context-icon" viewBox="0 0 24 24"><use href="#icon-tire-wheel"></use></svg>`;
             }
             // Du kan lägga till fler "else if" här för andra ikoner (t.ex. bromsar, service etc.)
             
