@@ -3260,6 +3260,62 @@ html.privacy-mode-enabled .nav-logo {
     margin-left: 0.35rem;  /* Lägg till ny marginal */
 }
 
+/* --- NYTT: Styling för Extra Kompakt Läge (Nivå 2) --- */
+
+/* Gör text och padding ännu mindre än .compact-mode */
+.extra-compact-mode #jobbOversikt th,
+.extra-compact-mode #jobbOversikt td {
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+    font-size: 0.85rem; /* Mindre text */
+}
+
+/* Förminska status-brickan */
+.extra-compact-mode .status-badge {
+    font-size: 0.75rem;
+    padding: 0.2em 0.6em;
+    gap: 0.3rem;
+}
+.extra-compact-mode .status-badge::before {
+    width: 6px;
+    height: 6px;
+}
+
+/* Förminska reg-skylten */
+.extra-compact-mode .reg-plate {
+    font-size: 0.85rem;
+}
+.extra-compact-mode .reg-plate .reg-number {
+    padding: 0.25rem 0.6rem;
+    width: 80px;
+}
+.extra-compact-mode .reg-plate .reg-country {
+    padding: 0.25rem 0.4rem;
+    font-size: 0.75rem;
+}
+
+/* Förminska ikon-knapparna i åtgärds-kolumnen */
+.extra-compact-mode .action-col {
+    gap: 0;
+}
+.extra-compact-mode .action-col .icon-btn {
+    padding: 0.3rem;
+}
+.extra-compact-mode .action-col .icon-sm {
+    width: 0.9rem;
+    height: 0.9rem;
+}
+
+/* Justera prio-flaggan och andra ikoner */
+.extra-compact-mode .prio-flag-icon,
+.extra-compact-mode .customer-icon,
+.extra-compact-mode .context-icon {
+    width: 0.9rem;
+    height: 0.9rem;
+    vertical-align: -2px;
+}
 
 
 
