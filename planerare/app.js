@@ -861,7 +861,6 @@
             }
 
             // --- UPPDATERAD: createJobRow med Kontextuell Ikon ---
-            // --- UPPDATERAD: createJobRow med Kontextuell Ikon ---
             function createJobRow(job) {
                 let prioClass = job.prio ? 'prio-row' : '';
                 const doneClass = (job.status === 'klar') ? 'done-row' : '';
@@ -965,7 +964,6 @@
                 return jobs.length;
             }
             
-            // --- UPPDATERAD: createJobCard med Kontextuell Ikon ---
             // --- UPPDATERAD: createJobCard med Kontextuell Ikon ---
             function createJobCard(job) {
                 let prioClass = job.prio ? 'prio-row' : '';
