@@ -1096,8 +1096,9 @@
                 }
 
                 if (popHistory && !isNavigatingBack && history.state && history.state.modal === modalId) {
-                    history.back();
-                }
+				    isNavigatingBack = true; // <-- 1. Sätt flaggan FÖRST
+				    history.back();
+				}
                 
                 isModalOpen = false;
                 currentOpenModalId = null;
@@ -1111,7 +1112,13 @@
 
             window.addEventListener('popstate', (event) => {
                 clearTimeout(backPressTimer); 
-                
+
+				if (isNavigatingBack) {
+			        isNavigatingBack = false; // Återställ flaggan
+			        backPressWarned = false; // Se till att varningen rensas
+			        return; // Gör ingenting mer, detta var avsiktligt
+			    }
+				
                 const state = event.state; 
 
                 if (isModalOpen) {
