@@ -1016,8 +1016,8 @@
                 return `
                     <div class="mobile-job-card job-entry ${prioClass} ${doneClass} ${jobStatusClass}" data-id="${job.id}" data-status="${job.status}">
                         <div class="card-content">
-                            <div class="card-row money-related">
-                                <span class="card-label">Kund</span>
+						    <div class="card-row">
+						        <span class="card-label">Kund</span>
                                 <span class="card-value customer-name">
                                     <div class="customer-name-wrapper">
                                         ${contextIcon}
