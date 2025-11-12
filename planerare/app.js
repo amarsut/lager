@@ -494,41 +494,38 @@
                 });
             }
 
-            // FIXAD: Logik för Dagens Vinst
-            function updateDailyProfitInCalendar(jobs) {
-                if (currentView !== 'calendar' || !calendar) return;
-
-                const dailyProfits = {};
-                
-                // Hämta den månad som kalendern visar
-                const calendarDate = calendar.getDate();
-                const currentMonth = calendarDate.getMonth();
-                const currentYear = calendarDate.getFullYear();
-
-                // 1. Summera vinst per dag för "Klar"-jobb
-                jobs.filter(j => (j.status === 'bokad' || j.status === 'klar') && j.vinst > 0).forEach(job => {
-                    const dateKey = job.datum.split('T')[0];
-                    if (!dailyProfits[dateKey]) {
-                        dailyProfits[dateKey] = 0;
-                    }
-                    dailyProfits[dateKey] += job.vinst;
-                });
-
-                const profitElements = calendarContainer.querySelectorAll('.calendar-day-profit');
-                
-                profitElements.forEach(el => {
-                    const date = el.dataset.date;
-                    const elDate = new Date(date + 'T12:00:00'); // Sätt tid för att undvika tidszonsfel
-
-                    if (dailyProfits[date]) {
+            // Radera din gamla funktion och ersätt den med denna
+			function updateDailyProfitInCalendar(jobs) {
+			    if (currentView !== 'calendar' || !calendar) return;
+			
+			    const dailyProfits = {};
+			
+			    // 1. Summera vinst per dag
+			    // --- ÄNDRING 1: Inkludera 'bokad' OCH 'klar' ---
+			    jobs.filter(j => (j.status === 'bokad' || j.status === 'klar') && j.vinst > 0).forEach(job => {
+			        const dateKey = job.datum.split('T')[0];
+			        if (!dailyProfits[dateKey]) {
+			            dailyProfits[dateKey] = 0;
+			        }
+			        dailyProfits[dateKey] += job.vinst;
+			    });
+			
+			    const profitElements = calendarContainer.querySelectorAll('.calendar-day-profit');
+			    
+			    profitElements.forEach(el => {
+			        const date = el.dataset.date;
+			        
+			        // --- ÄNDRING 2: Ta bort den buggiga månads-kontrollen ---
+			        // Den gamla IF-satsen är helt ersatt med denna
+			        if (dailyProfits[date]) {
 			            el.textContent = `+${formatCurrency(dailyProfits[date])}`;
 			            el.style.display = ''; 
 			        } else {
 			            el.textContent = '';
 			            el.style.display = 'none'; 
 			        }
-                });
-            }
+			    });
+			}
 
 
             function mapJobToEvent(job) {
