@@ -1,98 +1,6 @@
 /* --- Jobbplanerare v15: "Wow" --- */
         
 :root {
-
-	/* --- KORRIGERING: Styling för Färg-väljare (använder ID) --- */
-
-/* Huvud-containern */
-#themeColorPicker {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    margin-top: 0.5rem;
-}
-
-/* Göm den fula, vanliga radioknappen */
-#themeColorPicker input[type="radio"] {
-    display: none;
-}
-
-/* Rita upp vår snygga, klickbara "prick" (som är en label) */
-#themeColorPicker .color-dot {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background-color: var(--color-swatch); /* Färgen vi satte i HTML:en */
-    cursor: pointer;
-    border: 3px solid var(--border-color);
-    transition: all 0.2s ease;
-    box-shadow: var(--shadow-sm);
-}
-
-/* Gör den lite större vid hover */
-#themeColorPicker .color-dot:hover {
-    transform: scale(1.1);
-    border-color: var(--content-bg);
-}
-
-/* När radioknappen ÄR vald, styla pricken bredvid den */
-#themeColorPicker input[type="radio"]:checked + .color-dot {
-    border-color: var(--content-bg);
-    box-shadow: 0 0 0 3px var(--color-swatch), var(--shadow-md);
-    transform: scale(1.1);
-}
-
-	/* --- NYTT: Färg-teman (KORRIGERAD IGEN) --- */
-
-	/* Grön */
-	html[data-theme-color="green"] {
-	    --primary-color: var(--success-color);
-	    --primary-hover: #36f264;
-	    --primary-light: rgba(48, 209, 88, 0.1);
-	}
-	[data-theme="dark"] html[data-theme-color="green"] {
-	    --primary-color: var(--success-color);
-	    --primary-hover: #36f264;
-	    --primary-light: rgba(48, 209, 88, 0.2);
-	}
-	
-	/* Röd */
-	html[data-theme-color="red"] {
-	    --primary-color: var(--danger-color);
-	    --primary-hover: #ff6861;
-	    --primary-light: rgba(255, 69, 58, 0.1);
-	}
-	[data-theme="dark"] html[data-theme-color="red"] {
-	    --primary-color: var(--danger-color);
-	    --primary-hover: #ff6861;
-	    --primary-light: rgba(255, 69, 58, 0.2);
-	}
-	
-	/* Orange */
-	html[data-theme-color="orange"] {
-	    --primary-color: var(--warning-color);
-	    --primary-hover: #ffb339;
-	    --primary-light: rgba(255, 159, 10, 0.1);
-	}
-	[data-theme="dark"] html[data-theme-color="orange"] {
-	    --primary-color: var(--warning-color);
-	    --primary-hover: #ffb339;
-	    --primary-light: rgba(255, 159, 10, 0.2);
-	}
-	
-	/* Lila */
-	html[data-theme-color="lila"] {
-	    --primary-color: #af52de;
-	    --primary-hover: #c46ef1;
-	    --primary-light: rgba(175, 82, 222, 0.1);
-	}
-	[data-theme="dark"] html[data-theme-color="lila"] {
-	    --primary-color: #af52de;
-	    --primary-hover: #c46ef1;
-	    --primary-light: rgba(175, 82, 222, 0.2);
-	}
-	
-	/* STANDARD FÄRGER */
     --primary-color: #0a84ff;
     --primary-hover: #339aff;
     --primary-light: rgba(10, 132, 255, 0.1);
@@ -2032,36 +1940,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         display: none;
     }
 
-	/* --- NYTT: Styling för Färg-väljare --- */
-	.theme-color-picker {
-	    display: flex;
-	    flex-wrap: wrap;
-	    gap: 1rem;
-	    margin-top: 0.5rem;
-	}
-	.theme-color-picker input[type="radio"] {
-	    display: none; /* Dölj den fula radioknappen */
-	}
-	.theme-color-picker .color-dot {
-	    width: 32px;
-	    height: 32px;
-	    border-radius: 50%;
-	    background-color: var(--color-swatch);
-	    cursor: pointer;
-	    border: 3px solid var(--border-color);
-	    transition: all 0.2s ease;
-	    box-shadow: var(--shadow-sm);
-	}
-	.theme-color-picker .color-dot:hover {
-	    transform: scale(1.1);
-	    border-color: var(--content-bg);
-	}
-	.theme-color-picker input[type="radio"]:checked + .color-dot {
-	    border-color: var(--content-bg);
-	    box-shadow: 0 0 0 3px var(--color-swatch), var(--shadow-md);
-	    transform: scale(1.1);
-	}
-
     /* --- Mobil Kort-lista --- */
     #mobileJobList {
         display: flex;
@@ -2581,9 +2459,9 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 
 /* --- Dagens Vinst (Kalender) --- */
 .calendar-day-profit {
-    /*position: absolute;*/
-    /*bottom: 4px;*/
-    /*right: 6px;*/
+    position: absolute;
+    bottom: 4px;
+    right: 6px;
     font-size: 0.7rem;
     font-weight: 700;
     color: var(--success-color);
@@ -2595,10 +2473,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 @media (min-width: 900px) {
     .calendar-day-profit {
         display: block;
-
-		float: left;
-        margin-top: 2px;
-        margin-right: 6px;
     }
 }
 
@@ -3442,16 +3316,3 @@ html.privacy-mode-enabled .nav-logo {
     height: 0.9rem;
     vertical-align: -2px;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
