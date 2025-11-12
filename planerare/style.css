@@ -2977,35 +2977,34 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     background-color: var(--danger-light);
 }
 
-/* --- NYTT: Korrekt stil för Jobb-mallarnas ikoner (Stora & Centrerade) --- */
+/* --- NYTT: Stilar för Jobb-mallarnas ikoner --- */
+.template-icon {
+    color: var(--primary-color); /* Ger dem din primära färg */
+    width: 1.25rem; /* Sätter en konsekvent storlek */
+    height: 1.25rem;
+    transition: color var(--transition-speed-fast) ease;
+}
 
+/* Anpassa knapp-layouten lite */
 .job-templates .button.template-btn {
-    display: flex;
-    flex-direction: column;  /* Stapla ikon och text vertikalt */
-    align-items: center;    /* Centrera dem */
-    justify-content: center;
-    
-    /* Ge knappen mer "kort"-känsla */
-    padding: 0.75rem 0.5rem;
-    min-width: 100px; /* Ge dem en fast minsta bredd */
-    height: 80px;     /* Ge dem en fast höjd */
-    font-size: 0.8rem; /* Behåll texten liten och ren */
-    font-weight: 600;
+    /* (Du kan ta bort detta om du vill ha dem sida vid sida) */
+    flex-direction: row; 
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
 }
 
 .job-templates .button.template-btn .template-icon {
-    color: var(--primary-color); /* Ikonen är blå */
-    width: 2rem;   /* Gör ikonen stor */
-    height: 2rem;
-    margin-bottom: 0.5rem; /* Avstånd mellan ikon och text */
-    transition: all var(--transition-speed-fast) ease;
+    width: 1rem; /* Återställ till mindre ikon i raden */
+    height: 1rem;
+    margin-bottom: 0; /* Ta bort marginalen */
 }
 
-/* Hover-effekt för hela knappen */
-.job-templates .button.template-btn:hover {
-    border-color: var(--primary-color);
-    background-color: var(--primary-light);
+/* Hover-effekt för ikonerna (som en del av knappen) */
+.template-btn:hover .template-icon {
+    color: var(--primary-hover); 
 }
-.job-templates .button.template-btn:hover .template-icon {
-    transform: scale(1.05); /* Liten "lyft"-effekt på ikonen */
+
+[data-theme="dark"] .template-btn:hover .template-icon {
+     color: var(--primary-hover);
 }
