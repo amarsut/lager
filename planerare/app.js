@@ -826,16 +826,18 @@
             // --- Huvud-renderingsfunktioner ---
 			function updateUI() {
 			    if (!appInitialized) return;
+
+				const activeJobs = allJobs.filter(job => !job.deleted);
 			
 			    // 1. Globala uppdateringar
 			    renderGlobalStats(allJobs);
-			    const calendarEvents = allJobs.map(mapJobToEvent);
+			    const calendarEvents = activeJobs.map(mapJobToEvent);
 			
 			    // 2. Uppdatera Kalendern (alltid, den körs i bakgrunden)
 			    if (calendar) { 
 			        calendar.setOption('events', calendarEvents);
 			        filterCalendarView();
-			        updateDailyProfitInCalendar(allJobs);
+			        updateDailyProfitInCalendar(activeJobs);
 			        calendar.render();
 			    }
 			
@@ -2228,12 +2230,16 @@
                 return allJobs.find(j => j.id === jobId);
             }
             function deleteJob(jobId) {
-                if (confirm('Är du säker på att du vill ta bort detta jobb från molnet?')) {
-                    db.collection("jobs").doc(jobId).delete()
-                        .then(() => showToast('Jobb borttaget från molnet.', 'danger'))
-                        .catch(err => showToast(`Fel: ${err.message}`, 'danger'));
-                }
-            }
+			    if (confirm('Vill du flytta jobbet till papperskorgen?')) {
+			        // ÄNDRING: Vi använder .update istället för .delete
+			        db.collection("jobs").doc(jobId).update({
+			            deleted: true,              // Markera som raderad
+			            deletedAt: new Date().toISOString() // Spara datumet då det raderades (för 30-dagars regeln)
+			        })
+			        .then(() => showToast('Jobb flyttat till papperskorgen.', 'info'))
+			        .catch(err => showToast(`Fel: ${err.message}`, 'danger'));
+			    }
+			}
             function togglePrio(jobId) {
                 const job = findJob(jobId);
                 if (job) {
