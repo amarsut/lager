@@ -3517,3 +3517,37 @@ html.privacy-mode-enabled .nav-logo {
     min-height: 200px;
 }
 
+/* FIX FÖR KALENDER-HEADER PÅ MOBIL */
+@media (max-width: 768px) {
+    
+    /* 1. Tvinga headern att vara en flex-rad och inte bryta */
+    .fc .fc-toolbar.fc-header-toolbar {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 5px !important;
+        padding: 0.5rem !important;
+    }
+
+    /* 2. Se till att knapp-gruppen till vänster ligger på rad */
+    .fc .fc-toolbar-chunk:first-child {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+    }
+
+    /* 3. Justera titeln (datumet) så den får plats */
+    .fc .fc-toolbar-title {
+        font-size: 0.9rem !important; /* Lite mindre text */
+        white-space: nowrap !important; /* Förbjud radbrytning av texten */
+        margin-left: 0.5rem !important;
+    }
+
+    /* 4. Gör själva knapparna lite mer kompakta på mobil */
+    .fc .fc-button {
+        padding: 0.25rem 0.5rem !important;
+        font-size: 0.85rem !important;
+    }
+}
