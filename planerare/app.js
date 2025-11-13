@@ -555,112 +555,6 @@
                     console.error(err);
                 }
             }
-            
-            // --- UPPDATERAD: toggleView med Kanban ---
-			function toggleView(view) {
-			    // Om vi redan är på denna vy OCH vi inte navigerar (via bakåtknapp), gör inget.
-			    if (view === currentView && !isNavigatingBack) return;
-			
-			    currentView = view;
-			
-			    // 1. Hantera knappar (Desktop)
-			    btnToggleTimeline.classList.toggle('active', view === 'timeline');
-			    btnToggleCalendar.classList.toggle('active', view === 'calendar');
-			    document.getElementById('btnToggleKanban')?.classList.toggle('active', view === 'kanban');
-			
-			    // 2. Hantera knappar (Mobil)
-			    
-			    // Hantera Kalender-knappen (den enkla)
-			    document.querySelector('.mobile-nav-btn[data-view="calendar"]').classList.toggle('active', view === 'calendar');
-			
-			    // Hantera vår nya special-knapp (Tidslinje/Tavla)
-			    const toggleBtn = document.getElementById('mobileViewToggleBtn');
-			    if (toggleBtn) {
-			        const btnIcon = toggleBtn.querySelector('use');
-			        const btnText = toggleBtn.querySelector('span');
-			
-			        // Sätt 'active' om vi är på Tidslinje ELLER Tavla
-			        const isActive = (view === 'timeline' || view === 'kanban');
-			        toggleBtn.classList.toggle('active', isActive);
-			
-			        // Ändra knappens utseende och funktion baserat på nuvarande vy
-			        if (view === 'timeline') {
-			            // Vi är på Tidslinje, så knappen måste visa "Tavla"
-			            btnText.textContent = 'Tavla';
-			            btnIcon.setAttribute('href', '#icon-kanban-view');
-			            toggleBtn.dataset.view = 'kanban'; // Sätt nästa klick-destination
-			        } else {
-			            // Vi är på Tavla ELLER Kalender. I båda fallen ska knappen visa "Tidslinje".
-			            btnText.textContent = 'Tidslinje';
-			            btnIcon.setAttribute('href', '#icon-timeline-view');
-			            toggleBtn.dataset.view = 'timeline'; // Sätt nästa klick-destination
-			        }
-			    }
-			
-			    // 3. Dölj alla vyer först
-			    timelineView.style.display = 'none';
-			    calendarView.style.display = 'none';
-			    kanbanView.style.display = 'none'; 
-			
-			    // 4. Visa den valda vyn
-			    if (view === 'calendar') {
-			        calendarView.style.display = 'block';
-			        calendar.changeView('dayGridTwoWeek'); 
-			
-			        const isMobile = window.innerWidth <= 768;
-			        if (isMobile) {
-			            // ... (din befintliga mobil-kalender-logik) ...
-			        } else {
-			            // ... (din befintliga desktop-kalender-logik) ...
-			        }
-			
-			        setTimeout(() => {
-			            calendar.updateSize();
-			            const calendarEvents = allJobs.map(mapJobToEvent);
-			            calendar.setOption('events', calendarEvents);
-			
-			            filterCalendarView();
-			            updateDailyProfitInCalendar(allJobs);
-			
-			        }, 50);
-			
-			        if (!isNavigatingBack) {
-			            if (history.state?.view === 'calendar') {
-			                history.replaceState({ view: 'calendar' }, 'Kalender', '#calendar');
-			            } else {
-			                history.pushState({ view: 'calendar' }, 'Kalender', '#calendar');
-			            }
-			        }
-			
-			    } else if (view === 'kanban') { 
-			
-			        kanbanView.style.display = 'block';
-			        appBrandTitle.style.display = 'block'; 
-			
-			        // Rendera tavlan med korten
-			        renderKanbanBoard(); 
-			
-			        if (!isNavigatingBack) {
-			            if (history.state?.view === 'kanban') {
-			                history.replaceState({ view: 'kanban' }, 'Tavla', '#kanban');
-			            } else {
-			                history.pushState({ view: 'kanban' }, 'Tavla', '#kanban');
-			            }
-			        }
-			
-			    } else { // (view === 'timeline')
-			        timelineView.style.display = 'block';
-			        appBrandTitle.style.display = 'block'; 
-			
-			        if (!isNavigatingBack) {
-			            if (history.state && (history.state.view === 'calendar' || history.state.view === 'kanban')) {
-			                history.back();
-			            } else {
-			                history.replaceState(null, 'Tidslinje', location.pathname);
-			            }
-			        }
-			    }
-			}
 
 			// --- SLUTGILTIG VERSION: renderKanbanBoard ---
 			function renderKanbanBoard() {
@@ -3064,8 +2958,10 @@
             const savedCompactLevel = localStorage.getItem('compactModeLevel') || '1';
             setCompactMode(savedCompactLevel);
 
-            function setupViewToggles() {
+            // ERSÄTTNING FÖR setupViewToggles
+			function setupViewToggles() {
 			    // 1. Hitta ALLA knappar som har data-view, FÖRUTOM vår special-knapp
+			    // Detta hittar "Kalender" och desktop-knapparna
 			    const allToggleButtons = document.querySelectorAll('.button-toggle-view, .mobile-nav-btn[data-view]:not(#mobileViewToggleBtn)');
 			    allToggleButtons.forEach(button => {
 			        button.addEventListener('click', (e) => {
@@ -3089,7 +2985,116 @@
 			        });
 			    }
 			}
-            setupViewToggles();
+			
+			// ERSÄTTNING FÖR toggleView
+			function toggleView(view) {
+			    // Om vi redan är på denna vy OCH vi inte navigerar (via bakåtknapp), gör inget.
+			    if (view === currentView && !isNavigatingBack) return;
+			
+			    currentView = view;
+			
+			    // 1. Hantera knappar (Desktop)
+			    btnToggleTimeline.classList.toggle('active', view === 'timeline');
+			    btnToggleCalendar.classList.toggle('active', view === 'calendar');
+			    document.getElementById('btnToggleKanban')?.classList.toggle('active', view === 'kanban');
+			
+			    // 2. Hantera knappar (Mobil)
+			    
+			    // Hantera Kalender-knappen (den enkla)
+			    // Se till att den finns innan vi försöker ändra den
+			    const calendarBtn = document.querySelector('.mobile-nav-btn[data-view="calendar"]');
+			    if (calendarBtn) {
+			        calendarBtn.classList.toggle('active', view === 'calendar');
+			    }
+			
+			    // Hantera vår nya special-knapp (Tidslinje/Tavla)
+			    const toggleBtn = document.getElementById('mobileViewToggleBtn');
+			    if (toggleBtn) {
+			        const btnIcon = toggleBtn.querySelector('use');
+			        const btnText = toggleBtn.querySelector('span');
+			
+			        // Sätt 'active' om vi är på Tidslinje ELLER Tavla
+			        const isActive = (view === 'timeline' || view === 'kanban');
+			        toggleBtn.classList.toggle('active', isActive);
+			
+			        // Ändra knappens utseende och funktion baserat på nuvarande vy
+			        if (view === 'timeline') {
+			            // Vi är på Tidslinje, så knappen måste visa "Tavla"
+			            btnText.textContent = 'Tavla';
+			            btnIcon.setAttribute('href', '#icon-kanban-view');
+			            toggleBtn.dataset.view = 'kanban'; // Sätt nästa klick-destination
+			        } else {
+			            // Vi är på Tavla ELLER Kalender. I båda fallen ska knappen visa "Tidslinje".
+			            btnText.textContent = 'Tidslinje';
+			            btnIcon.setAttribute('href', '#icon-timeline-view');
+			            toggleBtn.dataset.view = 'timeline'; // Sätt nästa klick-destination
+			        }
+			    }
+			
+			    // 3. Dölj alla vyer först
+			    timelineView.style.display = 'none';
+			    calendarView.style.display = 'none';
+			    kanbanView.style.display = 'none'; 
+			
+			    // 4. Visa den valda vyn
+			    if (view === 'calendar') {
+			        calendarView.style.display = 'block';
+			        calendar.changeView('dayGridTwoWeek'); 
+			
+			        const isMobile = window.innerWidth <= 768;
+			        if (isMobile) {
+			            // ... (din befintliga mobil-kalender-logik) ...
+			        } else {
+			            // ... (din befintliga desktop-kalender-logik) ...
+			        }
+			
+			        setTimeout(() => {
+			            calendar.updateSize();
+			            const calendarEvents = allJobs.map(mapJobToEvent);
+			            calendar.setOption('events', calendarEvents);
+			
+			            filterCalendarView();
+			            updateDailyProfitInCalendar(allJobs);
+			
+			        }, 50);
+			
+			        if (!isNavigatingBack) {
+			            if (history.state?.view === 'calendar') {
+			                history.replaceState({ view: 'calendar' }, 'Kalender', '#calendar');
+			            } else {
+			                history.pushState({ view: 'calendar' }, 'Kalender', '#calendar');
+			            }
+			        }
+			
+			    } else if (view === 'kanban') { 
+			
+			        kanbanView.style.display = 'block';
+			        appBrandTitle.style.display = 'block'; 
+			
+			        // Rendera tavlan med korten
+			        renderKanbanBoard(); 
+			
+			        if (!isNavigatingBack) {
+			            if (history.state?.view === 'kanban') {
+			                history.replaceState({ view: 'kanban' }, 'Tavla', '#kanban');
+			            } else {
+			                history.pushState({ view: 'kanban' }, 'Tavla', '#kanban');
+			            }
+			        }
+			
+			    } else { // (view === 'timeline')
+			        timelineView.style.display = 'block';
+			        appBrandTitle.style.display = 'block'; 
+			
+			        if (!isNavigatingBack) {
+			            if (history.state && (history.state.view === 'calendar' || history.state.view === 'kanban')) {
+			                history.back();
+			            } else {
+			                history.replaceState(null, 'Tidslinje', location.pathname);
+			            }
+			        }
+			    }
+			}
             
             mobileAddJobBtn.addEventListener('click', () => openJobModal('add'));
             mobileSearchBtn.addEventListener('click', () => {
