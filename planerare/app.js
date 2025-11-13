@@ -294,10 +294,15 @@
                     firstDay: 1, 
                     height: 'auto', 
                     
-                    headerToolbar: { 
+                    /*headerToolbar: { 
 					    left: 'prev,next today', // Behåller pilarna och "Idag"
 					    center: 'title',         // Behåller titeln (datumet) i mitten
 					    right: ''                // Tömmer högersidan helt (tar bort 14 dagar, vecka, dag)
+					},*/
+					footerToolbar: {
+					    left: '',
+					    center: 'title',
+					    right: 'prev,next,today'
 					},
                     buttonText: {
                         today:         'Idag',
