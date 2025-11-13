@@ -666,7 +666,7 @@
 		        // Fyll kolumnerna med dina befintliga jobbkort
 		        jobsToDisplay.forEach(job => {
 		            // VI ÅTERANVÄNDER DIN createJobCard-FUNKTION!
-		            const cardHTML = createJobCard(job); //
+		            const cardHTML = createKanbanCard(job); // Byt från createJobCard
 		            
 		            switch (job.status) {
 		                case 'offererad':
@@ -1204,6 +1204,52 @@
                     </div>
                 `;
             }
+
+			// --- NY FUNKTION: Skapar ett kompakt Kanban-kort ---
+			function createKanbanCard(job) {
+			    // Återanvänd din befintliga logik för klasser
+			    let prioClass = job.prio ? 'prio-row' : '';
+			    const doneClass = (job.status === 'klar') ? 'done-row' : '';
+			    const isKommandePrio = job.prio && job.status === 'bokad' && new Date(job.datum) >= new Date();
+			    if(isKommandePrio) {
+			        prioClass += ' kommande-prio-pulse';
+			    }
+			    const jobStatusClass = (job.status === 'bokad' && new Date(job.datum) < now) ? 'job-missed' : '';
+			    const hasComment = job.kommentarer && job.kommentarer.trim().length > 0;
+			    
+			    // Hämta delar
+			    const kundnamnHTML = highlightSearchTerm(job.kundnamn, currentSearchTerm);
+			    const regnrHTML = highlightSearchTerm(job.regnr || 'OKÄNT', currentSearchTerm);
+			    const prioIcon = job.prio ? `<svg class="icon-sm prio-flag-icon" viewBox="0 0 24 24"><use href="#icon-flag"></use></svg>` : '';
+			    const timePart = job.datum ? (formatDate(job.datum).split('kl. ')[1] || 'Okänd tid') : 'Okänd tid';
+			
+			    // Detta är den NYA, förenklade HTML-strukturen
+			    return `
+			        <div class="kanban-card job-entry ${prioClass} ${doneClass} ${jobStatusClass}" data-id="${job.id}" data-status="${job.status}">
+			            
+			            <div class="kanban-card-header">
+			                <span class="kanban-card-title">${prioIcon} ${kundnamnHTML}</span>
+			                <span class="card-time-badge">${timePart}</span>
+			            </div>
+			            
+			            ${(job.regnr && job.regnr.toUpperCase() !== 'OKÄNT') ? `
+			            <button class="car-link reg-plate" data-regnr="${job.regnr}">
+			                <span class="reg-country">S</span>
+			                <span class="reg-number">${regnrHTML}</span>
+			            </button>
+			            ` : `
+			            <span class="reg-unknown">${regnrHTML}</span>
+			            `}
+			            
+			            <div class="kanban-card-footer">
+			                ${hasComment ? `
+			                <svg class="kanban-card-icon" viewBox="0 0 24 24" title="Har kommentar"><use href="#icon-chat"></use></svg>
+			                ` : '<span></span>' /* Tom span för att justera ikoner */ }
+			                
+			                </div>
+			        </div>
+			    `;
+			}
 
             // --- Popover, Modal-hantering (FIXAD HISTORIK) ---
             
