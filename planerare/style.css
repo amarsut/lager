@@ -494,7 +494,6 @@ mark {
     padding: 0.9rem 1.25rem;
     text-align: left; vertical-align: middle;
     white-space: nowrap;
-    border-bottom: 1px solid var(--border-color);
     transition: padding var(--transition-speed-fast) ease, background-color var(--transition-speed-fast) ease;
 }
 
@@ -509,6 +508,7 @@ mark {
                 opacity var(--transition-speed) ease;
     border-left: 4px solid transparent;
     cursor: pointer; 
+	border-bottom: 1px solid var(--border-color);
 }
 #jobbOversikt tbody tr[data-id]:hover {
     background-color: var(--primary-light);
@@ -556,28 +556,6 @@ mark {
 
 #jobbOversikt tbody tr.done-row { opacity: 0.65; }
 #jobbOversikt tbody tr.done-row:hover { opacity: 1; }
-#jobbOversikt tbody tr:last-child td { border-bottom: none; }
-
-/* --- NYTT: Zebra-ränder för tabell --- */
-#jobbOversikt tbody tr:nth-child(even) {
-    background-color: var(--bg-color);
-}
-
-/* Se till att hover-effekten fortfarande är starkare */
-#jobbOversikt tbody tr:nth-child(even):hover {
-    background-color: var(--primary-light);
-}
-[data-theme="dark"] #jobbOversikt tbody tr:nth-child(even):hover {
-    background-color: rgba(10, 132, 255, 0.15);
-}
-
-/* Se till att prio-rader inte påverkas */
-#jobbOversikt tbody tr.prio-row:nth-child(even) {
-    background-color: var(--danger-light);
-}
-#jobbOversikt tbody tr.prio-row:nth-child(even):hover {
-    background-color: var(--danger-hover-bg);
-}
 
 .compact-mode #jobbOversikt th,
 .compact-mode #jobbOversikt td {
@@ -3323,5 +3301,18 @@ html.privacy-mode-enabled .nav-logo {
     vertical-align: -2px;
 }
 
+/* --- NYTT: Proffsig justering av tabell --- */
+
+/* Centrera Status (kolumn 1) */
+#jobbOversikt th:nth-child(1),
+#jobbOversikt td:nth-child(1) {
+    text-align: center;
+}
+
+/* Högerställ Kundpris (kolumn 5) */
+#jobbOversikt th:nth-child(5),
+#jobbOversikt td:nth-child(5) {
+    text-align: right;
+}
 
 
