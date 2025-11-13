@@ -3315,62 +3315,18 @@ html.privacy-mode-enabled .nav-logo {
     text-align: right;
 }
 
-/* --- KANBAN-VY (KOMPLETT & KORREKT) --- */
+/* --- KANBAN-KORT (POLERAD VERSION) --- */
 
-/* 1. Själva tavlan (Centrerad & Skrollbar) */
-.kanban-board {
-    display: flex;             /* Rada upp kolumnerna */
-    justify-content: center;   /* Centrera dem på sidan (för desktop) */
-    gap: 1.5rem;
-    padding-bottom: 1rem;
-    overflow-x: auto;          /* Tillåt horisontell skrollning (för mobil) */
-    -webkit-overflow-scrolling: touch;
-    max-width: 100%;           /* Se till att den inte skapar sid-skroll i onödan */
-}
-
-/* 2. Kolumnerna (Fast bredd) */
-.kanban-column {
-    width: 300px;     /* Ge kolumnerna en fast, snygg bredd */
-    flex-shrink: 0;   /* Förhindra att de krymper (viktigt för mobil) */
-    /* Du kan lägga till 'max-height: 70vh; overflow-y: auto;' här om listorna blir FÖR långa */
-}
-
-/* 3. Kolumn-rubriker och Kort-räknare */
-.kanban-column-title {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    position: sticky;
-    top: 0;
-    background-color: var(--content-bg);
-    z-index: 5;
-    padding: 1rem;
-    margin: 0;
-    border-bottom: 1px solid var(--border-color);
-}
-.kanban-column-count {
-    font-size: 0.9rem;
-    font-weight: 700;
-    background-color: var(--bg-color);
-    color: var(--text-color-light);
-    padding: 0.15rem 0.5rem;
-    border-radius: 99px;
-    border: 1px solid var(--border-color);
-}
-[data-theme="dark"] .kanban-column-count {
-    background-color: #3a3a3c;
-}
-
-/* 4. Styling för själva Kanban-kortet (Yttre) */
+/* 3. Styling för själva Kanban-kortet (Yttre) */
 .kanban-card {
-    position: relative;
+    position: relative; /* Viktigt för dra-handtaget */
     background: var(--content-bg);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     box-shadow: var(--shadow-sm);
     transition: all var(--transition-speed-fast) ease;
-    border-left: 4px solid transparent;
-    cursor: pointer !important;
+    border-left: 4px solid transparent; /* För prio */
+    cursor: pointer !important; /* Klickbar som standard */
     margin-bottom: 1rem; /* Utrymme mellan korten */
 }
 .kanban-card:last-child {
@@ -3382,7 +3338,7 @@ html.privacy-mode-enabled .nav-logo {
     border-color: var(--primary-color);
 }
 
-/* 5. Kortets status-stilar (Prio, Klar, Missad) */
+/* 4. Kortets status-stilar (Prio, Klar, Missad) */
 .kanban-card.prio-row {
     border-left-color: var(--danger-color);
     background-color: var(--danger-light);
@@ -3395,37 +3351,33 @@ html.privacy-mode-enabled .nav-logo {
     background-color: rgba(255, 159, 10, 0.05);
 }
 
-/* 6. Kortets Innehåll (Inre wrapper) */
+/* 5. Kortets Innehåll (Inre wrapper) */
 .kanban-card-content {
-    padding: 0.75rem 1rem;
+    padding: 0.75rem 1rem; /* Standard padding */
     display: flex;
     flex-direction: column;
     gap: 0.6rem;
+    padding-top: 1.5rem; /* MER padding upptill för att ge plats åt handtaget */
 }
-.kanban-card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 0.5rem;
-}
+
+/* 6. Kortets Titel (Kundnamn & Prio) */
 .kanban-card-title {
     font-weight: 700;
     font-size: 1.05rem;
     color: var(--text-color);
-    word-break: break-word;
+    word-break: break-word; /* Bryt långa kundnamn */
+    
+    display: flex; /* Sätt prio-ikonen på samma rad */
+    align-items: center;
 }
 .kanban-card-title .prio-flag-icon {
     color: var(--danger-color);
     margin-right: 0.35rem;
     vertical-align: -3px;
+    flex-shrink: 0;
 }
 
-/* 7. Kortets Innehåll (Mitten och Footer) */
-.kanban-card .card-time-badge {
-    flex-shrink: 0;
-    font-size: 0.75rem;
-    padding: 0.2em 0.6em;
-}
+/* 7. Kortets Reg-plåt */
 .kanban-card .reg-plate {
     font-size: 0.9rem;
     cursor: pointer !important;
@@ -3435,9 +3387,12 @@ html.privacy-mode-enabled .nav-logo {
     color: var(--text-color-light);
     font-size: 0.9rem;
 }
+
+/* 8. Kortets Footer (Ikoner & Tids-badge) */
 .kanban-card-footer {
     display: flex;
     align-items: center;
+    justify-content: space-between; /* Skjuter ikoner och tid åt varsitt håll */
     margin-top: 0.25rem;
 }
 .kanban-card-icon {
@@ -3446,21 +3401,31 @@ html.privacy-mode-enabled .nav-logo {
     color: var(--text-color-light);
     opacity: 0.7;
 }
+/* Återanvänd din befintliga, snygga tids-badge */
+.kanban-card-footer .card-time-badge {
+    flex-shrink: 0;
+    font-size: 0.75rem;
+    padding: 0.2em 0.6em;
+}
 
-/* 8. Dra-handtaget (Löser mobil-skrollning) */
+/* 9. Dra-handtaget (LÖSNINGEN FÖR MOBILEN) */
 .kanban-drag-handle {
     position: absolute;
-    top: 0;
-    right: 0;
+    top: 6px;  /* Placerad snyggt i hörnet */
+    right: 4px; /* Placerad snyggt i hörnet */
     padding: 6px;
     color: var(--text-color-light);
-    opacity: 0.2;
+    opacity: 0; /* GÖMD SOM STANDARD */
     transition: all var(--transition-speed-fast) ease;
     cursor: grab !important;
+    z-index: 10;
 }
-.kanban-card:hover .kanban-drag-handle {
-    opacity: 0.6;
+/* Visa bara handtaget när man hovrar (desktop) eller om det är en touch-enhet */
+.kanban-card:hover .kanban-drag-handle,
+body:has(html[data-theme]) .kanban-drag-handle { /* En liten ful-hack för att visa den på touch-enheter */
+    opacity: 0.4;
 }
+/* Tydliggör vid hovring på själva handtaget */
 .kanban-drag-handle:hover {
     opacity: 1.0 !important;
     color: var(--primary-color);
@@ -3473,7 +3438,7 @@ html.privacy-mode-enabled .nav-logo {
     height: 0.8rem;
 }
 
-/* 9. Dra-effekterna (Bonus) */
+/* 10. Dra-effekterna (Bonus) */
 .kanban-card-ghost {
     opacity: 0.4;
     background: var(--primary-light);
@@ -3483,13 +3448,4 @@ html.privacy-mode-enabled .nav-logo {
     box-shadow: var(--shadow-lg);
     transform: scale(1.03);
     background: var(--content-bg);
-}
-
-/* 10. Kolumnens kort-container (VIKTIGT!) */
-.kanban-column-cards {
-    padding: 1rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem; /* Detta ersätter 'margin-bottom' på kortet */
-    min-height: 200px;
 }
