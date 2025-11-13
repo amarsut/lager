@@ -3326,6 +3326,10 @@ html.privacy-mode-enabled .nav-logo {
     /* MAGIN FÖR MOBIL OCH DESKTOP: */
     overflow-x: auto; /* Tillåt horisontell skrollning */
     -webkit-overflow-scrolling: touch; /* Mjuk skrollning på iOS */
+
+	width: fit-content; /* Sätt bredden baserat på innehållet */
+    max-width: 100%;    /* Men aldrig bredare än skärmen */
+    margin: 0 auto;     /* Centrera tavlan horisontellt */
 }
 
 /* Själva kolumnerna */
@@ -3463,3 +3467,4 @@ html.privacy-mode-enabled .nav-logo {
     color: var(--text-color-light);
     opacity: 0.7;
 }
+
