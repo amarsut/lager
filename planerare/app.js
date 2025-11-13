@@ -295,10 +295,10 @@
                     height: 'auto', 
                     
                     headerToolbar: { 
-                        left: 'prev,next today',
-                        center: 'title',
-                        right: 'dayGridTwoWeek,timeGridWeek,timeGridDay'
-                    },
+					    left: 'prev,next today', // Behåller pilarna och "Idag"
+					    center: 'title',         // Behåller titeln (datumet) i mitten
+					    right: ''                // Tömmer högersidan helt (tar bort 14 dagar, vecka, dag)
+					},
                     buttonText: {
                         today:         'Idag',
                         dayGridTwoWeek:'14 Dagar',
