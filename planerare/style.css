@@ -3551,3 +3551,36 @@ html.privacy-mode-enabled .nav-logo {
         font-size: 0.85rem !important;
     }
 }
+
+/* Papperskorgens stilar */
+.trash-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    background-color: rgba(255, 69, 58, 0.05); /* Svag röd ton */
+}
+.trash-item-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+.trash-item-date {
+    font-size: 0.8rem;
+    color: var(--text-color-light);
+}
+.restore-btn {
+    font-size: 0.85rem;
+    padding: 0.4rem 0.8rem;
+    background-color: var(--bg-color);
+    border: 1px solid var(--success-color);
+    color: var(--success-color);
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+}
+.restore-btn:hover {
+    background-color: var(--success-color);
+    color: white;
+}
