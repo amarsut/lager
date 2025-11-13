@@ -657,9 +657,10 @@
 			    const klarJobsToShow = klarJobs.slice(0, 5);
 			    
 			    klarJobsToShow.forEach(job => {
+			        // VIKTIGT: Säkerställ att vi anropar createKanbanCard
 			        kanbanColKlar.innerHTML += createKanbanCard(job); 
 			    });
-			    // UPPDATERA ANTAL (NYTT)
+			    // UPPDATERA ANTAL
 			    document.querySelector('.kanban-column[data-status="klar"] .kanban-column-count').textContent = klarJobs.length;
 			
 			
@@ -678,6 +679,7 @@
 			    let bokadCount = 0;
 			
 			    otherJobs.forEach(job => {
+			        // VIKTIGT: Säkerställ att vi anropar createKanbanCard
 			        const cardHTML = createKanbanCard(job);
 			        
 			        switch (job.status) {
@@ -691,25 +693,21 @@
 			                break;
 			        }
 			    });
-			    // UPPDATERA ANTAL (NYTT)
+			    // UPPDATERA ANTAL
 			    document.querySelector('.kanban-column[data-status="offererad"] .kanban-column-count').textContent = offereradCount;
 			    document.querySelector('.kanban-column[data-status="bokad"] .kanban-column-count').textContent = bokadCount;
 			
 			
-			    // --- 3. Initiera SortableJS (UPPDATERAD) ---
-			    if (!sortableColBokad) { // Kollar bara en, det räcker
-		            const options = {
-		                group: 'shared',
-		                animation: 150,
-		                onEnd: handleKanbanDrop, // Din befintliga drop-funktion
-		                
-		                // --- DENNA RAD LÖSER DITT MOBILPROBLEM ---
-		                handle: '.kanban-drag-handle', // Säger åt SortableJS att endast denna klass kan starta ett drag
-		                
-		                // --- Snyggare CSS-klasser (redan från förut) ---
-		                ghostClass: 'kanban-card-ghost',
-		                chosenClass: 'kanban-card-chosen'
-		            };
+			    // --- 3. Initiera SortableJS (med handtaget) ---
+			    if (!sortableColBokad) {
+			        const options = {
+			            group: 'shared',
+			            animation: 150,
+			            onEnd: handleKanbanDrop, // Din befintliga drop-funktion
+			            handle: '.kanban-drag-handle', // LÖSNINGEN FÖR MOBILEN
+			            ghostClass: 'kanban-card-ghost',
+			            chosenClass: 'kanban-card-chosen'
+			        };
 			        sortableColOffererad = new Sortable(kanbanColOffererad, options);
 			        sortableColBokad = new Sortable(kanbanColBokad, options);
 			        sortableColKlar = new Sortable(kanbanColKlar, options);
@@ -1246,8 +1244,9 @@
 			    const timePart = job.datum ? (formatDate(job.datum).split('kl. ')[1] || 'Okänd tid') : 'Okänd tid';
 			
 			    // --- NY, POLERAD HTML-STRUKTUR ---
+			    // VIKTIGT: Första raden har "class=" (inte "class_name=")
 			    return `
-    				<div class="kanban-card job-entry ${prioClass} ${doneClass} ${jobStatusClass}" data-id="${job.id}" data-status="${job.status}">
+			        <div class="kanban-card job-entry ${prioClass} ${doneClass} ${jobStatusClass}" data-id="${job.id}" data-status="${job.status}">
 			            
 			            <div class="kanban-drag-handle" title="Håll för att flytta">
 			                <svg class="icon-sm" viewBox="0 0 16 16"><use href="#icon-drag-handle"></use></svg>
