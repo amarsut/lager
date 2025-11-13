@@ -2157,7 +2157,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 
     /* 3. DÖLJ TEXTEN PÅ INAKTIVA KNAPPAR (NYTT) */
     .mobile-nav-btn span {
-        display: none; /* Dold som standard */
+        display: block; /* Dold som standard */
         white-space: nowrap; /* Förhindra radbrytning */
     }
 
@@ -2165,9 +2165,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     .mobile-nav-btn.active {
         color: var(--primary-color);
     }
-    .mobile-nav-btn.active span {
-        display: block; /* Visa texten för den aktiva */
-    }
+    .mobile-nav-btn.active span {}
     
     /* 8. Mobil Sök-Modal */
     .modal-backdrop-mobile {
@@ -3514,4 +3512,5 @@ html.privacy-mode-enabled .nav-logo {
     gap: 1rem; /* Detta ersätter 'margin-bottom' på kortet */
     min-height: 200px;
 }
+
 
