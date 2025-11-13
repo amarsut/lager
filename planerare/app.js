@@ -649,8 +649,9 @@
 			    kanbanColKlar.innerHTML = '';
 			
 			    // --- 1. Hantera "Klar"-kolumnen ---
-			    const klarJobs = allJobs
-			        .filter(j => j.status === 'klar')
+				const activeJobs = allJobs.filter(job => !job.deleted);
+			    const klarJobs = activeJobs
+        			.filter(j => j.status === 'klar')
 			        .sort((a, b) => new Date(b.datum) - new Date(a.datum)); // Nyast först
 			    
 			    // Ta bara de 5 senaste
@@ -665,8 +666,8 @@
 			
 			
 			    // --- 2. Hantera övriga kolumner ---
-			    const otherJobs = allJobs
-			        .filter(j => j.status !== 'avbokad' && j.status !== 'klar')
+			    const otherJobs = activeJobs
+        			.filter(j => j.status !== 'avbokad' && j.status !== 'klar')
 			        .sort((a, b) => {
 			            const prioA = (a.prio && a.status !== 'klar');
 			            const prioB = (b.prio && b.status !== 'klar');
@@ -939,7 +940,7 @@
 				const activeJobs = allJobs.filter(job => !job.deleted);
 			
 			    // 1. Globala uppdateringar
-			    renderGlobalStats(allJobs);
+			    renderGlobalStats(activeJobs);
 			    const calendarEvents = activeJobs.map(mapJobToEvent);
 			
 			    // 2. Uppdatera Kalendern (alltid, den körs i bakgrunden)
@@ -1000,7 +1001,7 @@
             // --- UPPDATERAD: renderTimeline med Animationslogik ---
             function renderTimeline() {
                 const desktopSearchCount = document.getElementById('desktopSearchCount');
-                let jobsToDisplay = [...allJobs];
+                let jobsToDisplay = allJobs.filter(job => !job.deleted);
                 
                 const now = new Date();
                 now.setHours(0, 0, 0, 0);
@@ -1907,7 +1908,7 @@
             }
 
             function openCustomerModal(kundnamn) {
-                const customerJobs = allJobs.filter(j => j.kundnamn === kundnamn).sort((a, b) => new Date(b.datum) - new Date(a.datum));
+                const customerJobs = allJobs.filter(j => !j.deleted && j.kundnamn === kundnamn).sort((a, b) => new Date(b.datum) - new Date(a.datum));
                 if (customerJobs.length === 0) return;
                 
                 // NY LOGIK: Hitta senaste telefonnummer
@@ -1976,7 +1977,7 @@
 
             function openCarModal(regnr) {
                 if (!regnr) return;
-                const carJobs = allJobs.filter(j => j.regnr === regnr).sort((a, b) => new Date(b.datum) - new Date(a.datum));
+                const carJobs = allJobs.filter(j => !j.deleted && j.regnr === regnr).sort((a, b) => new Date(b.datum) - new Date(a.datum));
                 if (carJobs.length === 0) return;
 
                 const latestOwner = carJobs[0].kundnamn;
@@ -2042,7 +2043,7 @@
 			}
 
 			function openStatsModal() {
-                const completedJobs = allJobs.filter(j => j.status === 'klar');
+                const completedJobs = allJobs.filter(j => !j.deleted && j.status === 'klar');
 				// 1. Beräkna listorna
 		        const topCustomers = calculateTopList(completedJobs, 'kundnamn');
 		        const topCars = calculateTopList(completedJobs, 'regnr');
