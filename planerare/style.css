@@ -505,13 +505,18 @@ mark {
 #jobbOversikt tbody tr[data-id] {
     transition: background-color var(--transition-speed-fast) ease, 
                 border-left-color var(--transition-speed-fast) ease,
-                opacity var(--transition-speed) ease;
+                opacity var(--transition-speed) ease,
+                transform 0.1s ease,         /* <-- LÄGG TILL DENNA */
+                box-shadow 0.1s ease;         /* <-- OCH DENNA */
     border-left: 4px solid transparent;
     cursor: pointer; 
 	border-bottom: 1px solid var(--border-color);
 }
 #jobbOversikt tbody tr[data-id]:hover {
     background-color: var(--primary-light);
+    transform: translateY(-2px); /* LYFT! */
+    box-shadow: var(--shadow-md); /* Lägg till en mjuk skugga */
+    /* Detta gör att raden "lossnar" från tabellen */
 }
 [data-theme="dark"] #jobbOversikt tbody tr[data-id]:hover {
     background-color: rgba(10, 132, 255, 0.15);
@@ -3584,3 +3589,4 @@ html.privacy-mode-enabled .nav-logo {
     background-color: var(--success-color);
     color: white;
 }
+
