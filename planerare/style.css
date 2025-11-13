@@ -1590,7 +1590,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     box-shadow: var(--shadow-sm);
     font-family: 'Inter', sans-serif;
     font-weight: 700;
-    font-size: 0.9rem;
+    font-size: 0.85rem; /* <-- Ändrad från 0.9rem */
     cursor: pointer;
     padding: 0;
     transition: all var(--transition-speed-fast) ease;
@@ -1605,8 +1605,8 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 .reg-plate .reg-country {
     background-color: #003897;
     color: white;
-    padding: 0.35rem 0.5rem;
-    font-size: 0.8rem;
+    padding: 0.25rem 0.4rem; /* <-- Ändrad från 0.35rem 0.5rem */
+    font-size: 0.75rem; /* <-- Ändrad från 0.8rem */
     font-weight: 700;
     align-self: stretch;
     display: flex;
@@ -1616,10 +1616,10 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 }
 
 .reg-plate .reg-number {
-    padding: 0.35rem 0.75rem;
+    padding: 0.25rem 0.6rem; /* <-- Ändrad från 0.35rem 0.75rem */
     color: var(--text-color);
     letter-spacing: 0.05em;
-    width: 85px;
+    width: 80px; /* <-- Ändrad från 85px */
     text-align: center;
     box-sizing: border-box;
 }
@@ -3314,5 +3314,6 @@ html.privacy-mode-enabled .nav-logo {
 #jobbOversikt td:nth-child(5) {
     text-align: right;
 }
+
 
 
