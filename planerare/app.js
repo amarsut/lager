@@ -296,7 +296,7 @@
                     
                     headerToolbar: { 
 					    left: '', // Behåller pilarna och "Idag"
-					    center: 'dayGridTwoWeek,timeGridWeek,timeGridDay',         // Behåller titeln (datumet) i mitten
+					    center: 'dayGridMonth,dayGridTwoWeek,timeGridWeek',         // Behåller titeln (datumet) i mitten
 					    right: ''                // Tömmer högersidan helt (tar bort 14 dagar, vecka, dag)
 					},
 					footerToolbar: {
