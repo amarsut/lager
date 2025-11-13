@@ -3378,3 +3378,88 @@ html.privacy-mode-enabled .nav-logo {
     max-width: 100%;
 }
 
+/* NYTT: Styling för Kanban-kort */
+.kanban-card {
+    background: var(--content-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    padding: 0.75rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem; /* Mellanrum mellan titel, regnr, och ikoner */
+    cursor: grab !important; /* Visar att den är flyttbar */
+    transition: all var(--transition-speed-fast) ease;
+    border-left: 4px solid transparent; /* Behåll prio-indikatorn */
+}
+.kanban-card:active {
+    cursor: grabbing !important;
+}
+
+.kanban-card:hover {
+    transform: scale(1.02);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary-color);
+}
+
+/* Behåll din prio-styling */
+.kanban-card.prio-row {
+    border-left-color: var(--danger-color);
+    background-color: var(--danger-light);
+}
+.kanban-card.done-row { opacity: 0.7; }
+.kanban-card.job-missed {
+    border-left-color: var(--warning-color);
+    background-color: rgba(255, 159, 10, 0.05);
+}
+
+.kanban-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+
+.kanban-card-title {
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--text-color);
+    word-break: break-word; /* Bryt långa kundnamn */
+}
+.kanban-card-title .prio-flag-icon {
+    color: var(--danger-color);
+    margin-right: 0.35rem;
+    vertical-align: -3px;
+}
+
+/* Återanvänd din fina time-badge */
+.kanban-card .card-time-badge {
+    flex-shrink: 0;
+    font-size: 0.75rem;
+    padding: 0.2em 0.6em;
+}
+
+/* Återanvänd reg-plate, men se till att den är klickbar */
+.kanban-card .reg-plate {
+    font-size: 0.9rem;
+    cursor: pointer !important; /* Tvinga klick-markör */
+}
+.kanban-card .reg-unknown {
+    font-style: italic;
+    color: var(--text-color-light);
+    font-size: 0.9rem;
+}
+
+.kanban-card-footer {
+    display: flex;
+    align-items: center;
+    margin-top: 0.25rem;
+}
+
+/* Ikon för kommentarer */
+.kanban-card-icon {
+    width: 1rem;
+    height: 1rem;
+    color: var(--text-color-light);
+    opacity: 0.7;
+}
