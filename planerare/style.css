@@ -3319,11 +3319,16 @@ html.privacy-mode-enabled .nav-logo {
 
 /* 1. Kolumn-layout för Desktop (Grid) och Mobil (Flex) */
 .kanban-board {
-    display: grid; /* Använder grid för att fylla utrymmet på desktop */
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    display: flex; /* Använd flex för att rada upp kolumnerna */
     gap: 1.5rem;
     padding-bottom: 1rem;
-    width: 100%; 
+    overflow-x: auto; /* Tillåt horisontell skrollning (för mobil) */
+    -webkit-overflow-scrolling: touch;
+    
+    /* --- HÄR ÄR LÖSNINGEN --- */
+    width: fit-content; /* Sätt bredden på tavlan till exakt så bred som kolumnerna är */
+    max-width: 100%;    /* Men se till att den inte svämmar över på mobilen */
+    margin: 0 auto;     /* Centrera hela tavlan på sidan */
 }
 @media (max-width: 800px) {
     .kanban-board {
@@ -3483,3 +3488,4 @@ html.privacy-mode-enabled .nav-logo {
     transform: scale(1.03);
     background: var(--content-bg); /* Se till att den lyfts */
 }
+
