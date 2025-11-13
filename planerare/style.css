@@ -1893,6 +1893,11 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         color: var(--text-color);
     }
 
+	/* Dölj desktop-knappen för "Tavla" i mobilvyn */
+	#btnToggleKanban {
+	    display: none;
+	}
+
     /* 3. Statistik-kort */
     .stat-bar {
         grid-template-columns: 1fr 1fr;
@@ -2157,16 +2162,13 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 
     /* 3. DÖLJ TEXTEN PÅ INAKTIVA KNAPPAR (NYTT) */
     .mobile-nav-btn span {
-        display: none; /* Dold som standard */
+        display: block; /* Dold som standard */
         white-space: nowrap; /* Förhindra radbrytning */
     }
 
     /* 4. VISA TEXTEN ENDAST PÅ DEN AKTIVA KNAPPEN (NYTT) */
     .mobile-nav-btn.active {
         color: var(--primary-color);
-    }
-    .mobile-nav-btn.active span {
-        display: block; /* Visa texten för den aktiva */
     }
     
     /* 8. Mobil Sök-Modal */
@@ -3514,3 +3516,4 @@ html.privacy-mode-enabled .nav-logo {
     gap: 1rem; /* Detta ersätter 'margin-bottom' på kortet */
     min-height: 200px;
 }
+
