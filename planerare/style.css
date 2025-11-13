@@ -3315,43 +3315,35 @@ html.privacy-mode-enabled .nav-logo {
     text-align: right;
 }
 
-/* --- KANBAN-VY --- */
+/* --- KANBAN-VY (KOMPLETT & KORREKT) --- */
 
-/* 1. Kolumn-layout för Desktop (Grid) och Mobil (Flex) */
+/* 1. Själva tavlan (Centrerad & Skrollbar) */
 .kanban-board {
-    display: flex; /* Använd flex för att rada upp kolumnerna */
+    display: flex;             /* Rada upp kolumnerna */
+    justify-content: center;   /* Centrera dem på sidan (för desktop) */
     gap: 1.5rem;
     padding-bottom: 1rem;
-    overflow-x: auto; /* Tillåt horisontell skrollning (för mobil) */
+    overflow-x: auto;          /* Tillåt horisontell skrollning (för mobil) */
     -webkit-overflow-scrolling: touch;
-    
-    /* --- HÄR ÄR LÖSNINGEN --- */
-    width: fit-content; /* Sätt bredden på tavlan till exakt så bred som kolumnerna är */
-    max-width: 100%;    /* Men se till att den inte svämmar över på mobilen */
-    margin: 0 auto;     /* Centrera hela tavlan på sidan */
-}
-@media (max-width: 800px) {
-    .kanban-board {
-        display: flex; /* Återgår till flex för horisontell skrollning på mobil */
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-    }
-    .kanban-column {
-        width: 300px; /* Ger tillbaka fast bredd på mobilen */
-        flex-shrink: 0;
-    }
+    max-width: 100%;           /* Se till att den inte skapar sid-skroll i onödan */
 }
 
-/* 2. Kolumn-rubriker och Kort-räknare */
+/* 2. Kolumnerna (Fast bredd) */
+.kanban-column {
+    width: 300px;     /* Ge kolumnerna en fast, snygg bredd */
+    flex-shrink: 0;   /* Förhindra att de krymper (viktigt för mobil) */
+    /* Du kan lägga till 'max-height: 70vh; overflow-y: auto;' här om listorna blir FÖR långa */
+}
+
+/* 3. Kolumn-rubriker och Kort-räknare */
 .kanban-column-title {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    position: sticky; /* Håller rubriken synlig när korten skrollas */
+    position: sticky;
     top: 0;
     background-color: var(--content-bg);
     z-index: 5;
-    /* Behåll din befintliga padding och border */
     padding: 1rem;
     margin: 0;
     border-bottom: 1px solid var(--border-color);
@@ -3369,16 +3361,20 @@ html.privacy-mode-enabled .nav-logo {
     background-color: #3a3a3c;
 }
 
-/* 3. Styling för själva Kanban-kortet (Yttre) */
+/* 4. Styling för själva Kanban-kortet (Yttre) */
 .kanban-card {
-    position: relative; /* Viktigt för dra-handtaget */
+    position: relative;
     background: var(--content-bg);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     box-shadow: var(--shadow-sm);
     transition: all var(--transition-speed-fast) ease;
-    border-left: 4px solid transparent; /* För prio */
-    cursor: pointer !important; /* Klickbar som standard */
+    border-left: 4px solid transparent;
+    cursor: pointer !important;
+    margin-bottom: 1rem; /* Utrymme mellan korten */
+}
+.kanban-card:last-child {
+    margin-bottom: 0;
 }
 .kanban-card:hover {
     transform: scale(1.02);
@@ -3386,7 +3382,7 @@ html.privacy-mode-enabled .nav-logo {
     border-color: var(--primary-color);
 }
 
-/* 4. Kortets status-stilar (Prio, Klar, Missad) */
+/* 5. Kortets status-stilar (Prio, Klar, Missad) */
 .kanban-card.prio-row {
     border-left-color: var(--danger-color);
     background-color: var(--danger-light);
@@ -3399,7 +3395,7 @@ html.privacy-mode-enabled .nav-logo {
     background-color: rgba(255, 159, 10, 0.05);
 }
 
-/* 5. Kortets Innehåll (Inre wrapper) */
+/* 6. Kortets Innehåll (Inre wrapper) */
 .kanban-card-content {
     padding: 0.75rem 1rem;
     display: flex;
@@ -3416,7 +3412,7 @@ html.privacy-mode-enabled .nav-logo {
     font-weight: 700;
     font-size: 1.05rem;
     color: var(--text-color);
-    word-break: break-word; /* Bryt långa kundnamn */
+    word-break: break-word;
 }
 .kanban-card-title .prio-flag-icon {
     color: var(--danger-color);
@@ -3424,7 +3420,7 @@ html.privacy-mode-enabled .nav-logo {
     vertical-align: -3px;
 }
 
-/* 6. Kortets Innehåll (Mitten och Footer) */
+/* 7. Kortets Innehåll (Mitten och Footer) */
 .kanban-card .card-time-badge {
     flex-shrink: 0;
     font-size: 0.75rem;
@@ -3432,7 +3428,7 @@ html.privacy-mode-enabled .nav-logo {
 }
 .kanban-card .reg-plate {
     font-size: 0.9rem;
-    cursor: pointer !important; /* Tvinga klick-markör */
+    cursor: pointer !important;
 }
 .kanban-card .reg-unknown {
     font-style: italic;
@@ -3451,19 +3447,19 @@ html.privacy-mode-enabled .nav-logo {
     opacity: 0.7;
 }
 
-/* 7. Dra-handtaget (Löser mobil-skrollning) */
+/* 8. Dra-handtaget (Löser mobil-skrollning) */
 .kanban-drag-handle {
     position: absolute;
     top: 0;
     right: 0;
     padding: 6px;
     color: var(--text-color-light);
-    opacity: 0.2; /* Dölj den tills man hovrar */
+    opacity: 0.2;
     transition: all var(--transition-speed-fast) ease;
-    cursor: grab !important; /* Muspekaren är 'grab' (flytta) */
+    cursor: grab !important;
 }
 .kanban-card:hover .kanban-drag-handle {
-    opacity: 0.6; /* Visa vid hovring */
+    opacity: 0.6;
 }
 .kanban-drag-handle:hover {
     opacity: 1.0 !important;
@@ -3477,7 +3473,7 @@ html.privacy-mode-enabled .nav-logo {
     height: 0.8rem;
 }
 
-/* 8. Dra-effekterna (Bonus) */
+/* 9. Dra-effekterna (Bonus) */
 .kanban-card-ghost {
     opacity: 0.4;
     background: var(--primary-light);
@@ -3486,6 +3482,14 @@ html.privacy-mode-enabled .nav-logo {
 .kanban-card-chosen {
     box-shadow: var(--shadow-lg);
     transform: scale(1.03);
-    background: var(--content-bg); /* Se till att den lyfts */
+    background: var(--content-bg);
 }
 
+/* 10. Kolumnens kort-container (VIKTIGT!) */
+.kanban-column-cards {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem; /* Detta ersätter 'margin-bottom' på kortet */
+    min-height: 200px;
+}
