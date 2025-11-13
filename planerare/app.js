@@ -822,6 +822,115 @@
                 emptyStateTimeline.style.display = 'none';
             }
 
+			// --- AUTOMATISK STÄDNING (STEG 4) ---
+			function cleanupOldTrash() {
+			    if (!db) return; // Säkerhetskoll om db inte laddats
+			
+			    const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000; // 30 dagar i millisekunder
+			    const now = Date.now();
+			
+			    console.log("Kör städning av papperskorgen...");
+			
+			    db.collection("jobs")
+			      .where("deleted", "==", true)
+			      .get()
+			      .then(snapshot => {
+			          let count = 0;
+			          snapshot.forEach(doc => {
+			              const data = doc.data();
+			              // Kontrollera om jobbet har ett raderingsdatum
+			              if (data.deletedAt) {
+			                  const deletedTime = new Date(data.deletedAt).getTime();
+			                  
+			                  // Om det gått mer än 30 dagar
+			                  if (now - deletedTime > THIRTY_DAYS_MS) {
+			                      console.log("Raderar permanent gammalt jobb:", doc.id);
+			                      // Permanent borttagning
+			                      db.collection("jobs").doc(doc.id).delete();
+			                      count++;
+			                  }
+			              }
+			          });
+			          if (count > 0) console.log(`Städning klar. ${count} jobb togs bort permanent.`);
+			      })
+			      .catch(err => console.log("Fel vid städning:", err));
+			}
+			
+			// Kör städningen en gång när scriptet laddas (ca 3 sekunder efter start)
+			setTimeout(cleanupOldTrash, 3000);
+
+			// --- PAPPERSKORG LOGIK (STEG 3) ---
+    
+		    const trashModal = document.getElementById('trashModal');
+		    const trashList = document.getElementById('trashList');
+		    const openTrashBtn = document.getElementById('openTrashBtn');
+		    const trashModalCloseBtn = document.getElementById('trashModalCloseBtn');
+		    const trashModalCancelBtn = document.getElementById('trashModalCancelBtn');
+		
+		    // 1. Öppna papperskorgen
+		    openTrashBtn.addEventListener('click', () => {
+		        // Stäng inställningarna först
+		        closeModal({ popHistory: false });
+		        
+		        renderTrashList();
+		        // Liten fördröjning så modalerna inte krockar
+		        setTimeout(() => showModal('trashModal'), 50);
+		    });
+		
+		    // 2. Stäng papperskorgen
+		    trashModalCloseBtn.addEventListener('click', () => closeModal());
+		    trashModalCancelBtn.addEventListener('click', () => closeModal());
+		    trashModal.addEventListener('click', (e) => { 
+		        if (e.target === trashModal) closeModal(); 
+		    });
+		
+		    // 3. Rita ut listan med raderade jobb
+		    function renderTrashList() {
+		        trashList.innerHTML = '';
+		        const deletedJobs = allJobs.filter(j => j.deleted);
+		
+		        if (deletedJobs.length === 0) {
+		            trashList.innerHTML = '<p style="text-align:center; padding:2rem; color:var(--text-color-light);">Papperskorgen är tom.</p>';
+		            return;
+		        }
+		
+		        deletedJobs.forEach(job => {
+		            const li = document.createElement('li');
+		            li.className = 'trash-item';
+		            
+		            // Formatera datum snyggt
+		            const dateStr = job.datum ? job.datum.split('T')[0] : 'Inget datum';
+		            
+		            li.innerHTML = `
+		                <div class="trash-item-info">
+		                    <span style="font-weight:600;">${job.kundnamn}</span>
+		                    <span class="trash-item-date">${dateStr} | ${job.regnr || '---'}</span>
+		                </div>
+		                <button class="restore-btn" data-id="${job.id}">Återställ</button>
+		            `;
+		            trashList.appendChild(li);
+		        });
+		    }
+		
+		    // 4. Hantera "Återställ"-klick
+		    trashList.addEventListener('click', (e) => {
+		        if (e.target.classList.contains('restore-btn')) {
+		            const jobId = e.target.dataset.id;
+		            restoreJob(jobId);
+		        }
+		    });
+		
+		    function restoreJob(jobId) {
+		        db.collection("jobs").doc(jobId).update({
+		            deleted: false,
+		            deletedAt: firebase.firestore.FieldValue.delete() // Tar bort tidsstämpeln
+		        })
+		        .then(() => {
+		            showToast('Jobb återställt!', 'success');
+		            renderTrashList(); // Uppdatera listan direkt
+		        })
+		        .catch(err => showToast('Kunde inte återställa: ' + err.message, 'danger'));
+		    }
 
             // --- Huvud-renderingsfunktioner ---
 			function updateUI() {
