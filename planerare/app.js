@@ -43,45 +43,6 @@
             return safeText.replace(regex, '<mark>$1</mark>');
         }
 
-		// NY HJÄLPARE: Tar ett datum och returnerar en grupperings-rubrik
-		function getGroupHeader(dateString, sortOrder) {
-		    if (!dateString) return "Okänt datum";
-		    
-		    const jobDate = new Date(dateString);
-		    jobDate.setHours(0, 0, 0, 0);
-		    
-		    const todayDate = new Date(); // 'today' är redan global, men vi skapar en ny för säkerhets skull
-		    todayDate.setHours(0, 0, 0, 0);
-		
-		    // Hitta måndagen i denna vecka
-		    const dayOfWeek = todayDate.getDay(); // 0=Sön, 1=Mån
-		    const diff = todayDate.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
-		    const startThisWeek = new Date(new Date(todayDate).setDate(diff));
-		
-		    const startNextWeek = new Date(new Date(startThisWeek).setDate(startThisWeek.getDate() + 7));
-		    const startLastWeek = new Date(new Date(startThisWeek).setDate(startThisWeek.getDate() - 7));
-		    
-		    // --- Grupperingslogik ---
-		    if (jobDate >= startThisWeek && jobDate < startNextWeek) {
-		        return "Denna vecka";
-		    }
-		
-		    if (sortOrder === 'asc') { // För "Kommande"
-		        const startNextNextWeek = new Date(new Date(startNextWeek).setDate(startNextWeek.getDate() + 7));
-		        if (jobDate >= startNextWeek && jobDate < startNextNextWeek) {
-		            return "Nästa vecka";
-		        }
-		    } else { // För "Klar" och "Alla" (bakåt i tiden)
-		        if (jobDate >= startLastWeek && jobDate < startThisWeek) {
-		            return "Förra veckan";
-		        }
-		    }
-		    
-		    // Fallback: Returnera Månad + År (t.ex., "November 2025")
-		    let monthYear = jobDate.toLocaleString(locale, { month: 'long', year: 'numeric' });
-		    return monthYear.charAt(0).toUpperCase() + monthYear.slice(1);
-		}
-
         // --- NYTT: Kontextuell Ikon-funktion ---
         function getJobContextIcon(job) {
             return ''; // Returnera tom sträng om inget matchar
@@ -127,7 +88,6 @@
             const appBrandTitle = document.getElementById('appBrandTitle'); 
             
             const timelineView = document.getElementById('timelineView');
-			const fokusWidgetInput = document.getElementById('fokusWidgetInput');
             const jobListContainer = document.getElementById('jobListContainer');
             const emptyStateTimeline = document.getElementById('emptyStateTimeline');
             const emptyStateTitleTimeline = document.getElementById('emptyStateTitleTimeline');
@@ -335,18 +295,12 @@
                     height: 'auto', 
                     
                     headerToolbar: { 
-					    left: '', // Behåller pilarna och "Idag"
-					    center: 'dayGridMonth,dayGridTwoWeek,timeGridWeek',         // Behåller titeln (datumet) i mitten
-					    right: ''                // Tömmer högersidan helt (tar bort 14 dagar, vecka, dag)
-					},
-					footerToolbar: {
-					    left: '',
-					    center: 'title',
-					    right: 'today,prev,next'
-					},
+                        left: 'prev,next today',
+                        center: 'title',
+                        right: 'dayGridTwoWeek,timeGridWeek,timeGridDay'
+                    },
                     buttonText: {
                         today:         'Idag',
-						month:         'Månad',
                         dayGridTwoWeek:'14 Dagar',
                         timeGridWeek:  'Vecka',
                         timeGridDay:   'Dag',
@@ -512,7 +466,7 @@
 
                 calendar.getEvents().forEach(event => {
                     const job = event.extendedProps.originalJob;
-                    if (!job || job.deleted) return;
+                    if (!job) return;
 
                     let isVisible = false;
                     switch(currentStatusFilter) {
@@ -604,59 +558,47 @@
             
             // --- UPPDATERAD: toggleView med Kanban ---
 			function toggleView(view) {
-			    // Om vi redan är på denna vy, gör inget
+			    // NYTT: Om vi redan är på denna vy OCH vi inte navigerar (via bakåtknapp), gör inget.
 			    if (view === currentView && !isNavigatingBack) return;
-			
-			    // **NY SÄKERHETSKONTROLL**
-			    // Om en mobilanvändare (skärm <= 768px) på något sätt försöker öppna kanban,
-			    // stoppa det och gå till tidslinjen istället.
-			    if (window.innerWidth <= 768 && view === 'kanban') {
-			        view = 'timeline'; // Omdirigera till tidslinjen
-			    }
 			
 			    currentView = view;
 			
-			    // 1. Hantera knappar (Desktop)
+			    // 1. Hantera knappar (Desktop & Mobil)
 			    btnToggleTimeline.classList.toggle('active', view === 'timeline');
 			    btnToggleCalendar.classList.toggle('active', view === 'calendar');
-			    // Desktop-knappen för Kanban (påverkar inte mobil)
+			    // NYTT: Lägg till din nya knapp-ID här (om du döpte den till btnToggleKanban)
 			    document.getElementById('btnToggleKanban')?.classList.toggle('active', view === 'kanban');
 			
-			    // 2. Hantera knappar (Mobil)
-			    // Denna logik är nu superenkel och ignorerar kanban
-			    const mobileTimelineBtn = document.querySelector('.mobile-nav-btn[data-view="timeline"]');
-			    if (mobileTimelineBtn) {
-			        mobileTimelineBtn.classList.toggle('active', view === 'timeline');
-			    }
+			    document.querySelector('.mobile-nav-btn[data-view="timeline"]').classList.toggle('active', view === 'timeline');
+			    document.querySelector('.mobile-nav-btn[data-view="calendar"]').classList.toggle('active', view === 'calendar');
+			    // NYTT: Lägg till mobilknappen
+			    document.querySelector('.mobile-nav-btn[data-view="kanban"]').classList.toggle('active', view === 'kanban');
 			
-			    const mobileCalendarBtn = document.querySelector('.mobile-nav-btn[data-view="calendar"]');
-			    if (mobileCalendarBtn) {
-			        mobileCalendarBtn.classList.toggle('active', view === 'calendar');
-			    }
-			
-			    // 3. Dölj alla vyer först
+			    // 2. Dölj alla vyer först
 			    timelineView.style.display = 'none';
 			    calendarView.style.display = 'none';
-			    kanbanView.style.display = 'none'; 
+			    kanbanView.style.display = 'none'; // NYTT
 			
-			    // 4. Visa den valda vyn (Din befintliga kod)
+			    // 3. Visa den valda vyn
 			    if (view === 'calendar') {
 			        calendarView.style.display = 'block';
 			        calendar.changeView('dayGridTwoWeek'); 
 			
 			        const isMobile = window.innerWidth <= 768;
 			        if (isMobile) {
-			            // ... (befintlig mobil-kalender-logik) ...
+			            // ... (din befintliga mobil-kalender-logik) ...
 			        } else {
-			            // ... (befintlig desktop-kalender-logik) ...
+			            // ... (din befintliga desktop-kalender-logik) ...
 			        }
 			
 			        setTimeout(() => {
 			            calendar.updateSize();
 			            const calendarEvents = allJobs.map(mapJobToEvent);
 			            calendar.setOption('events', calendarEvents);
+			
 			            filterCalendarView();
 			            updateDailyProfitInCalendar(allJobs);
+			
 			        }, 50);
 			
 			        if (!isNavigatingBack) {
@@ -667,19 +609,23 @@
 			            }
 			        }
 			
-			    } else if (view === 'kanban') { 
-			        // Denna kod körs nu BARA på desktop
+			    } else if (view === 'kanban') { // --- NYTT BLOCK ---
+			
 			        kanbanView.style.display = 'block';
 			        appBrandTitle.style.display = 'block'; 
+			
+			        // Rendera tavlan med korten
 			        renderKanbanBoard(); 
 			
 			        if (!isNavigatingBack) {
+			            // Skapa en ny historik-post för kanban
 			            if (history.state?.view === 'kanban') {
 			                history.replaceState({ view: 'kanban' }, 'Tavla', '#kanban');
 			            } else {
 			                history.pushState({ view: 'kanban' }, 'Tavla', '#kanban');
 			            }
 			        }
+			        // --- SLUT NYTT BLOCK ---
 			
 			    } else { // (view === 'timeline')
 			        timelineView.style.display = 'block';
@@ -819,37 +765,6 @@
 		        }
 		    }
 
-			// --- LOGIK FÖR DAGENS FOKUS ---
-
-			// Funktion för att spara
-			const saveFokus = () => {
-			    const todayKey = `fokus-${new Date().toISOString().split('T')[0]}`;
-			    localStorage.setItem(todayKey, fokusWidgetInput.value);
-			};
-			
-			// Funktion för att ladda
-			const loadFokus = () => {
-			    const todayKey = `fokus-${new Date().toISOString().split('T')[0]}`;
-			    const savedFokus = localStorage.getItem(todayKey);
-			    if (savedFokus) {
-			        fokusWidgetInput.value = savedFokus;
-			    }
-			};
-			
-			// Skapa en "debounced" (fördröjd) version av spara-funktionen
-			const debouncedSaveFokus = debounce(saveFokus, 500);
-			
-			// Koppla lyssnaren
-			fokusWidgetInput.addEventListener('input', () => {
-			    debouncedSaveFokus();
-			    // Låt textrutan växa med innehållet (bonus)
-			    fokusWidgetInput.style.height = 'auto';
-			    fokusWidgetInput.style.height = (fokusWidgetInput.scrollHeight) + 'px';
-			});
-			
-			// Ladda dagens fokus när sidan startar
-			loadFokus();
-
             // --- Firebase Listener ---
             function initRealtimeListener() {
                 if (!db) return;
@@ -911,8 +826,6 @@
             // --- Huvud-renderingsfunktioner ---
 			function updateUI() {
 			    if (!appInitialized) return;
-
-				const activeJobs = allJobs.filter(job => !job.deleted);
 			
 			    // 1. Globala uppdateringar
 			    renderGlobalStats(allJobs);
@@ -922,7 +835,7 @@
 			    if (calendar) { 
 			        calendar.setOption('events', calendarEvents);
 			        filterCalendarView();
-			        updateDailyProfitInCalendar(activeJobs);
+			        updateDailyProfitInCalendar(allJobs);
 			        calendar.render();
 			    }
 			
@@ -976,7 +889,7 @@
             // --- UPPDATERAD: renderTimeline med Animationslogik ---
             function renderTimeline() {
                 const desktopSearchCount = document.getElementById('desktopSearchCount');
-                let jobsToDisplay = allJobs.filter(j => !j.deleted);
+                let jobsToDisplay = [...allJobs];
                 
                 const now = new Date();
                 now.setHours(0, 0, 0, 0);
@@ -1187,73 +1100,43 @@
             }
             
             function renderMobileCardList(jobs) {
-			    jobListContainer.innerHTML = '';
-			    if (jobs.length === 0) { return 0; }
-			    
-			    // Hämta sortOrder från den yttre funktionen (renderTimeline)
-			    // Detta är en "ful" men enkel lösning
-			    let sortOrder = 'asc'; 
-			    if (currentStatusFilter === 'klar' || currentStatusFilter === 'alla') {
-			        sortOrder = 'desc';
-			    }
-			
-			    // NY GRUPPERING: Använd vår nya hjälp-funktion
-			    const groupedJobs = jobs.reduce((acc, job) => {
-			        const dateKey = getGroupHeader(job.datum, sortOrder); // <-- HÄR ÄR ÄNDRINGEN
-			        if (!acc[dateKey]) {
-			            acc[dateKey] = [];
-			        }
-			        acc[dateKey].push(job);
-			        return acc;
-			    }, {});
-			    
-			    let listHTML = '<div id="mobileJobList">';
-			    
-			    // NY SORTERINGSLOGIK för rubrikerna
-			    const sortPriority = {
-			        "Denna vecka": sortOrder === 'asc' ? 1 : 2,
-			        "Nästa vecka": 2, // Används bara i 'asc'
-			        "Förra veckan": 1, // Används bara i 'desc'
-			    };
-			
-			    const sortedDateKeys = Object.keys(groupedJobs).sort((a, b) => {
-			        const prioA = sortPriority[a];
-			        const prioB = sortPriority[b];
-			        
-			        // Hämta första jobbets datum för att kunna sortera månader korrekt
-			        const dateA = new Date(groupedJobs[a][0].datum);
-			        const dateB = new Date(groupedJobs[b][0].datum);
-			
-			        if (sortOrder === 'desc') {
-			            // Sortera bakåt i tiden
-			            if (prioA && prioB) return prioA - prioB; // "Förra veckan" (1) före "Denna vecka" (2)
-			            if (prioA && !prioB) return -1; // Prioriterade grupper (veckor) före månader
-			            if (!prioA && prioB) return 1; // Månader efter prioriterade grupper
-			            return dateB - dateA; // Sortera månader (November före Oktober)
-			        } else {
-			            // Sortera framåt i tiden
-			            if (prioA && prioB) return prioA - prioB; // "Denna vecka" (1) före "Nästa vecka" (2)
-			            if (prioA && !prioB) return -1; // Prioriterade grupper före månader
-			            if (!prioA && prioB) return 1; // Månader efter prioriterade grupper
-			            return dateA - dateB; // Sortera månader (November före December)
-			        }
-			    });
-			    
-			    for (const dateKey of sortedDateKeys) {
-			        const jobsForDay = groupedJobs[dateKey];
-			        // const firstJobDate = jobsForDay[0].datum; // Behövs inte längre
-			        
-			        listHTML += `<div class="mobile-day-group">`;
-			        // HÄR ÄR ÄNDRINGEN: Använd 'dateKey' som rubrik
-			        listHTML += `<h2 class="mobile-date-header">${dateKey}</h2>`;
-			        listHTML += jobsForDay.map(job => createJobCard(job)).join('');
-			        listHTML += `</div>`;
-			    }
-			    
-			    listHTML += '</div>';
-			    jobListContainer.innerHTML = listHTML;
-			    return jobs.length;
-			}
+                jobListContainer.innerHTML = '';
+                if (jobs.length === 0) { return 0; }
+                
+                const groupedJobs = jobs.reduce((acc, job) => {
+                    const dateKey = job.datum ? job.datum.split('T')[0] : 'Okänt';
+                    if (!acc[dateKey]) {
+                        acc[dateKey] = [];
+                    }
+                    acc[dateKey].push(job);
+                    return acc;
+                }, {});
+                
+                let listHTML = '<div id="mobileJobList">';
+                
+                const sortOrder = (currentStatusFilter === 'klar' || currentStatusFilter === 'alla') ? 'desc' : 'asc';
+                const sortedDateKeys = Object.keys(groupedJobs).sort((a, b) => {
+                     if (sortOrder === 'desc') {
+                        return new Date(b) - new Date(a);
+                    } else {
+                        return new Date(a) - new Date(b);
+                    }
+                });
+                
+                for (const dateKey of sortedDateKeys) {
+                    const jobsForDay = groupedJobs[dateKey];
+                    const firstJobDate = jobsForDay[0].datum;
+                    
+                    listHTML += `<div class="mobile-day-group">`;
+                    listHTML += `<h2 class="mobile-date-header">${formatDate(firstJobDate, { onlyDate: true })}</h2>`;
+                    listHTML += jobsForDay.map(job => createJobCard(job)).join('');
+                    listHTML += `</div>`;
+                }
+                
+                listHTML += '</div>';
+                jobListContainer.innerHTML = listHTML;
+                return jobs.length;
+            }
             
             // --- UPPDATERAD: createJobCard med Kontextuell Ikon ---
             function createJobCard(job) {
@@ -2047,116 +1930,6 @@
 			    return html;
 			}
 
-			// --- PAPPERSKORG LOGIK (STEG 3) ---
-    
-		    const trashModal = document.getElementById('trashModal');
-		    const trashList = document.getElementById('trashList');
-		    const openTrashBtn = document.getElementById('openTrashBtn');
-		    const trashModalCloseBtn = document.getElementById('trashModalCloseBtn');
-		    const trashModalCancelBtn = document.getElementById('trashModalCancelBtn');
-		
-		    // 1. Öppna papperskorgen
-		    openTrashBtn.addEventListener('click', () => {
-		        // Stäng inställningarna först
-		        closeModal({ popHistory: false });
-		        
-		        renderTrashList();
-		        // Liten fördröjning så modalerna inte krockar
-		        setTimeout(() => showModal('trashModal'), 50);
-		    });
-		
-		    // 2. Stäng papperskorgen
-		    trashModalCloseBtn.addEventListener('click', () => closeModal());
-		    trashModalCancelBtn.addEventListener('click', () => closeModal());
-		    trashModal.addEventListener('click', (e) => { 
-		        if (e.target === trashModal) closeModal(); 
-		    });
-		
-		    // 3. Rita ut listan med raderade jobb
-		    function renderTrashList() {
-		        trashList.innerHTML = '';
-		        const deletedJobs = allJobs.filter(j => j.deleted);
-		
-		        if (deletedJobs.length === 0) {
-		            trashList.innerHTML = '<p style="text-align:center; padding:2rem; color:var(--text-color-light);">Papperskorgen är tom.</p>';
-		            return;
-		        }
-		
-		        deletedJobs.forEach(job => {
-		            const li = document.createElement('li');
-		            li.className = 'trash-item';
-		            
-		            // Formatera datum snyggt
-		            const dateStr = job.datum ? job.datum.split('T')[0] : 'Inget datum';
-		            
-		            li.innerHTML = `
-		                <div class="trash-item-info">
-		                    <span style="font-weight:600;">${job.kundnamn}</span>
-		                    <span class="trash-item-date">${dateStr} | ${job.regnr || '---'}</span>
-		                </div>
-		                <button class="restore-btn" data-id="${job.id}">Återställ</button>
-		            `;
-		            trashList.appendChild(li);
-		        });
-		    }
-		
-		    // 4. Hantera "Återställ"-klick
-		    trashList.addEventListener('click', (e) => {
-		        if (e.target.classList.contains('restore-btn')) {
-		            const jobId = e.target.dataset.id;
-		            restoreJob(jobId);
-		        }
-		    });
-		
-		    function restoreJob(jobId) {
-		        db.collection("jobs").doc(jobId).update({
-		            deleted: false,
-		            deletedAt: firebase.firestore.FieldValue.delete() // Tar bort tidsstämpeln
-		        })
-		        .then(() => {
-		            showToast('Jobb återställt!', 'success');
-		            renderTrashList(); // Uppdatera listan direkt
-		        })
-		        .catch(err => showToast('Kunde inte återställa: ' + err.message, 'danger'));
-		    }
-
-			// --- AUTOMATISK STÄDNING (STEG 4) ---
-			function cleanupOldTrash() {
-			    if (!db) return; // Säkerhetskoll om db inte laddats
-			
-			    const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000; // 30 dagar i millisekunder
-			    const now = Date.now();
-			
-			    console.log("Kör städning av papperskorgen...");
-			
-			    db.collection("jobs")
-			      .where("deleted", "==", true)
-			      .get()
-			      .then(snapshot => {
-			          let count = 0;
-			          snapshot.forEach(doc => {
-			              const data = doc.data();
-			              // Kontrollera om jobbet har ett raderingsdatum
-			              if (data.deletedAt) {
-			                  const deletedTime = new Date(data.deletedAt).getTime();
-			                  
-			                  // Om det gått mer än 30 dagar
-			                  if (now - deletedTime > THIRTY_DAYS_MS) {
-			                      console.log("Raderar permanent gammalt jobb:", doc.id);
-			                      // Permanent borttagning
-			                      db.collection("jobs").doc(doc.id).delete();
-			                      count++;
-			                  }
-			              }
-			          });
-			          if (count > 0) console.log(`Städning klar. ${count} jobb togs bort permanent.`);
-			      })
-			      .catch(err => console.log("Fel vid städning:", err));
-			}
-			
-			// Kör städningen en gång när scriptet laddas (ca 3 sekunder efter start)
-			setTimeout(cleanupOldTrash, 3000);
-
 			function openStatsModal() {
                 const completedJobs = allJobs.filter(j => j.status === 'klar');
 				// 1. Beräkna listorna
@@ -2455,16 +2228,12 @@
                 return allJobs.find(j => j.id === jobId);
             }
             function deleteJob(jobId) {
-			    if (confirm('Vill du flytta jobbet till papperskorgen?')) {
-			        // ÄNDRING: Vi använder .update istället för .delete
-			        db.collection("jobs").doc(jobId).update({
-			            deleted: true,              // Markera som raderad
-			            deletedAt: new Date().toISOString() // Spara datumet då det raderades (för 30-dagars regeln)
-			        })
-			        .then(() => showToast('Jobb flyttat till papperskorgen.', 'info'))
-			        .catch(err => showToast(`Fel: ${err.message}`, 'danger'));
-			    }
-			}
+                if (confirm('Är du säker på att du vill ta bort detta jobb från molnet?')) {
+                    db.collection("jobs").doc(jobId).delete()
+                        .then(() => showToast('Jobb borttaget från molnet.', 'danger'))
+                        .catch(err => showToast(`Fel: ${err.message}`, 'danger'));
+                }
+            }
             function togglePrio(jobId) {
                 const job = findJob(jobId);
                 if (job) {
@@ -3276,18 +3045,16 @@
             setCompactMode(savedCompactLevel);
 
             function setupViewToggles() {
-			    // Denna enkla version hittar ALLA knappar med [data-view]
-			    // (både desktop och mobil) och lägger till en enkel klick-lyssnare.
-			    const allToggleButtons = document.querySelectorAll('.button-toggle-view, .mobile-nav-btn[data-view]');
-			    allToggleButtons.forEach(button => {
-			        button.addEventListener('click', (e) => {
-			            const view = e.currentTarget.dataset.view;
-			            if (view) {
-			                toggleView(view);
-			            }
-			        });
-			    });
-			}
+                const allToggleButtons = document.querySelectorAll('.button-toggle-view, .mobile-nav-btn[data-view]');
+                allToggleButtons.forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const view = e.currentTarget.dataset.view;
+                        if (view) {
+                            toggleView(view);
+                        }
+                    });
+                });
+            }
             setupViewToggles();
             
             mobileAddJobBtn.addEventListener('click', () => openJobModal('add'));
