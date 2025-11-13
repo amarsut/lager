@@ -300,7 +300,7 @@
                         right: ''
                     },
 					footerToolbar: {
-					    left: '',
+					    left: 'title',
 					    center: 'prev,next,today',
 					    right: ''
 					},
