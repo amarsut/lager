@@ -742,6 +742,15 @@
                     </a>
                 </div>
 
+				<div class="form-group settings-button-group">
+			    <hr style="border: none; border-top: 1px solid var(--border-color); margin: 0.5rem 0;">
+			    <label>Datahantering</label>
+			    <button type="button" class="button secondary" id="openTrashBtn">
+			        <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-trash"></use></svg>
+			        <span>Öppna Papperskorgen</span>
+			    </button>
+			    </div>
+
                 <div class="form-group settings-button-group">
                     <hr style="border: none; border-top: 1px solid var(--border-color); margin: 0.5rem 0;">
                     <label>Data</label>
@@ -795,6 +804,29 @@
             </form>
         </div>
     </div>
+
+	<div id="trashModal" class="modal-backdrop" data-modal-id="trashModal">
+	    <div class="modal-content">
+	        <div class="modal-header">
+	            <h2>Papperskorg</h2>
+	            <button class="modal-close-btn" id="trashModalCloseBtn">
+	                <svg class="icon" viewBox="0 0 24 24"><use href="#icon-close"></use></svg>
+	            </button>
+	        </div>
+	        
+	        <div class="modal-body">
+	            <p style="font-size: 0.9rem; color: var(--text-color-light); margin-bottom: 1rem;">
+	                Jobb här raderas permanent efter 30 dagar.
+	            </p>
+	            <ul id="trashList" class="detail-job-list">
+	                </ul>
+	        </div>
+	        
+	        <div class="modal-actions">
+	            <button type="button" class="button secondary" id="trashModalCancelBtn">Stäng</button>
+	        </div>
+	    </div>
+	</div>
 
 	<script>
 		// --- Firebase Config (Oförändrad) ---
