@@ -2886,7 +2886,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 
 /* 2. Justera ikon-placering (Desktop vs Mobil) */
 #jobbOversikt .link-btn.customer-link .customer-icon {
-    margin-left: 0.35rem; /* Höger om text på desktop */
+   margin-right: 0.35rem; /* VÄNSTER om text på desktop */
 }
 .mobile-job-card .link-btn.customer-link .customer-icon {
     margin-right: 0.35rem; /* Vänster om text på mobil */
@@ -3316,3 +3316,4 @@ html.privacy-mode-enabled .nav-logo {
     height: 0.9rem;
     vertical-align: -2px;
 }
+
