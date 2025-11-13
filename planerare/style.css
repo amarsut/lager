@@ -1868,6 +1868,11 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     flex-shrink: 0;
 }
 
+/* --- NYTT: Färg för Prio-knapp (Desktop) --- */
+#jobbOversikt .action-col .icon-btn.active-prio {
+    color: var(--danger-color);
+    background: var(--danger-light);
+}
 
 /* ------------------------------------------- */
 /* --- Media-regler för Mobil (UPPDATERAD) --- */
@@ -3316,4 +3321,5 @@ html.privacy-mode-enabled .nav-logo {
     height: 0.9rem;
     vertical-align: -2px;
 }
+
 
