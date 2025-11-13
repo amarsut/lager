@@ -558,65 +558,51 @@
             
             // --- UPPDATERAD: toggleView med Kanban ---
 			function toggleView(view) {
-			    // NYTT: Om vi redan är på denna vy OCH vi inte navigerar (via bakåtknapp), gör inget.
+			    // Om vi redan är på denna vy OCH vi inte navigerar (via bakåtknapp), gör inget.
 			    if (view === currentView && !isNavigatingBack) return;
 			
 			    currentView = view;
 			
-			    // 1. Hantera knappar (Desktop & Mobil)
+			    // 1. Hantera knappar (Desktop)
 			    btnToggleTimeline.classList.toggle('active', view === 'timeline');
 			    btnToggleCalendar.classList.toggle('active', view === 'calendar');
-			    // NYTT: Lägg till din nya knapp-ID här (om du döpte den till btnToggleKanban)
 			    document.getElementById('btnToggleKanban')?.classList.toggle('active', view === 'kanban');
 			
+			    // 2. Hantera knappar (Mobil)
+			    
+			    // Hantera Kalender-knappen (den enkla)
 			    document.querySelector('.mobile-nav-btn[data-view="calendar"]').classList.toggle('active', view === 'calendar');
-				const toggleBtn = document.getElementById('mobileViewToggleBtn');
-				if (toggleBtn) {
-				    const btnIcon = toggleBtn.querySelector('use');
-				    const btnText = toggleBtn.querySelector('span');
-				
-				    // 1. Sätt 'active'-status
-				    // Knappen är 'active' om vi är på Tidslinje ELLER Tavla
-				    const isActive = (view === 'timeline' || view === 'kanban');
-				    toggleBtn.classList.toggle('active', isActive);
-				
-				    // 2. Ändra innehåll baserat på nuvarande vy
-				    if (view === 'timeline') {
-				        // Vi ÄR PÅ Tidslinje, knappen ska byta TILL "Tavla"
-				        btnText.textContent = 'Tavla';
-				        btnIcon.setAttribute('href', '#icon-kanban-view');
-				        toggleBtn.dataset.view = 'kanban'; 
-				    } else {
-				        // Vi ÄR PÅ Tavla ELLER Kalender.
-				        // I båda fallen ska knappen byta TILL "Tidslinje".
-				        btnText.textContent = 'Tidslinje';
-				        btnIcon.setAttribute('href', '#icon-timeline-view');
-				        toggleBtn.dataset.view = 'timeline';
-				    }
-				}
-				
-				// --- NY LOGIK FÖR ATT VÄXLA KNAPPAR ---
-				const mobileTimelineBtn = document.querySelector('.mobile-nav-btn[data-view="timeline"]');
-				const mobileKanbanBtn = document.querySelector('.mobile-nav-btn[data-view="kanban"]');
-				
-				if (view === 'timeline') {
-				    mobileTimelineBtn.style.display = 'none'; // Dölj Tidslinje
-				    mobileKanbanBtn.style.display = 'flex';   // Visa Tavla
-				} else if (view === 'kanban') {
-				    mobileTimelineBtn.style.display = 'flex';   // Visa Tidslinje
-				    mobileKanbanBtn.style.display = 'none';  // Dölj Tavla
-				} else { // För Kalender-vyn, visa båda
-				    mobileTimelineBtn.style.display = 'flex';
-				    mobileKanbanBtn.style.display = 'flex';
-				}
-				// --- SLUT PÅ NY LOGIK ---
 			
-			    // 2. Dölj alla vyer först
+			    // Hantera vår nya special-knapp (Tidslinje/Tavla)
+			    const toggleBtn = document.getElementById('mobileViewToggleBtn');
+			    if (toggleBtn) {
+			        const btnIcon = toggleBtn.querySelector('use');
+			        const btnText = toggleBtn.querySelector('span');
+			
+			        // Sätt 'active' om vi är på Tidslinje ELLER Tavla
+			        const isActive = (view === 'timeline' || view === 'kanban');
+			        toggleBtn.classList.toggle('active', isActive);
+			
+			        // Ändra knappens utseende och funktion baserat på nuvarande vy
+			        if (view === 'timeline') {
+			            // Vi är på Tidslinje, så knappen måste visa "Tavla"
+			            btnText.textContent = 'Tavla';
+			            btnIcon.setAttribute('href', '#icon-kanban-view');
+			            toggleBtn.dataset.view = 'kanban'; // Sätt nästa klick-destination
+			        } else {
+			            // Vi är på Tavla ELLER Kalender. I båda fallen ska knappen visa "Tidslinje".
+			            btnText.textContent = 'Tidslinje';
+			            btnIcon.setAttribute('href', '#icon-timeline-view');
+			            toggleBtn.dataset.view = 'timeline'; // Sätt nästa klick-destination
+			        }
+			    }
+			
+			    // 3. Dölj alla vyer först
 			    timelineView.style.display = 'none';
 			    calendarView.style.display = 'none';
-			    kanbanView.style.display = 'none'; // NYTT
+			    kanbanView.style.display = 'none'; 
 			
-			    // 3. Visa den valda vyn
+			    // 4. Visa den valda vyn
 			    if (view === 'calendar') {
 			        calendarView.style.display = 'block';
 			        calendar.changeView('dayGridTwoWeek'); 
@@ -646,7 +632,7 @@
 			            }
 			        }
 			
-			    } else if (view === 'kanban') { // --- NYTT BLOCK ---
+			    } else if (view === 'kanban') { 
 			
 			        kanbanView.style.display = 'block';
 			        appBrandTitle.style.display = 'block'; 
@@ -655,14 +641,12 @@
 			        renderKanbanBoard(); 
 			
 			        if (!isNavigatingBack) {
-			            // Skapa en ny historik-post för kanban
 			            if (history.state?.view === 'kanban') {
 			                history.replaceState({ view: 'kanban' }, 'Tavla', '#kanban');
 			            } else {
 			                history.pushState({ view: 'kanban' }, 'Tavla', '#kanban');
 			            }
 			        }
-			        // --- SLUT NYTT BLOCK ---
 			
 			    } else { // (view === 'timeline')
 			        timelineView.style.display = 'block';
@@ -3081,16 +3065,30 @@
             setCompactMode(savedCompactLevel);
 
             function setupViewToggles() {
-                const allToggleButtons = document.querySelectorAll('.button-toggle-view, .mobile-nav-btn[data-view]');
-                allToggleButtons.forEach(button => {
-                    button.addEventListener('click', (e) => {
-                        const view = e.currentTarget.dataset.view;
-                        if (view) {
-                            toggleView(view);
-                        }
-                    });
-                });
-            }
+			    // 1. Hitta ALLA knappar som har data-view, FÖRUTOM vår special-knapp
+			    const allToggleButtons = document.querySelectorAll('.button-toggle-view, .mobile-nav-btn[data-view]:not(#mobileViewToggleBtn)');
+			    allToggleButtons.forEach(button => {
+			        button.addEventListener('click', (e) => {
+			            const view = e.currentTarget.dataset.view;
+			            if (view) {
+			                toggleView(view);
+			            }
+			        });
+			    });
+			
+			    // 2. Lägg till en SPECIELL lyssnare BARA för vår nya växlingsknapp
+			    const specialToggleButton = document.getElementById('mobileViewToggleBtn');
+			    if (specialToggleButton) {
+			        specialToggleButton.addEventListener('click', (e) => {
+			            // Läs knappens "data-view". Denna kommer att vara
+			            // antingen "timeline" eller "kanban" (beroende på vad toggleView satte den till)
+			            const viewToLoad = e.currentTarget.dataset.view;
+			            if (viewToLoad) {
+			                toggleView(viewToLoad);
+			            }
+			        });
+			    }
+			}
             setupViewToggles();
             
             mobileAddJobBtn.addEventListener('click', () => openJobModal('add'));
