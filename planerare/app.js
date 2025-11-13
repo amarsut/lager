@@ -306,6 +306,7 @@
 					},
                     buttonText: {
                         today:         'Idag',
+						month:         'Månad',
                         dayGridTwoWeek:'14 Dagar',
                         timeGridWeek:  'Vecka',
                         timeGridDay:   'Dag',
