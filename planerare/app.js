@@ -641,64 +641,74 @@
 			    }
 			}
 
-			// --- NY FUNKTION: Renderar Kanban-tavlan (UPPDATERAD MED 5-KORTS-GRÄNS) ---
+			// --- SLUTGILTIG VERSION: renderKanbanBoard ---
 			function renderKanbanBoard() {
 			    // Rensa kolumnerna
 			    kanbanColOffererad.innerHTML = '';
 			    kanbanColBokad.innerHTML = '';
 			    kanbanColKlar.innerHTML = '';
 			
-			    // --- NY LOGIK: Hantera "Klar"-kolumnen separat ---
+			    // --- 1. Hantera "Klar"-kolumnen ---
 			    const klarJobs = allJobs
 			        .filter(j => j.status === 'klar')
-			        .sort((a, b) => new Date(b.datum) - new Date(a.datum)) // Sortera: Nyast först
-			        .slice(0, 5); // Ta bara de 5 SENASTE klara jobben
-			
-			    // Fyll "Klar"-kolumnen direkt
-			    klarJobs.forEach(job => {
-			        // Använd createKanbanCard (från förra tipset) eller createJobCard
+			        .sort((a, b) => new Date(b.datum) - new Date(a.datum)); // Nyast först
+			    
+			    // Ta bara de 5 senaste
+			    const klarJobsToShow = klarJobs.slice(0, 5);
+			    
+			    klarJobsToShow.forEach(job => {
 			        kanbanColKlar.innerHTML += createKanbanCard(job); 
 			    });
-			    // --- SLUT NY LOGIK ---
+			    // UPPDATERA ANTAL (NYTT)
+			    document.querySelector('.kanban-column[data-status="klar"] .kanban-column-count').textContent = klarJobs.length;
 			
 			
-			    // --- UPPDATERAD LOGIK: Hantera övriga kolumner ---
-			    // Filtrera bort avbokade OCH klara jobb
-			    const jobsToDisplay = allJobs
+			    // --- 2. Hantera övriga kolumner ---
+			    const otherJobs = allJobs
 			        .filter(j => j.status !== 'avbokad' && j.status !== 'klar')
 			        .sort((a, b) => {
-			            // Prio-jobb hamnar högst upp
 			            const prioA = (a.prio && a.status !== 'klar');
 			            const prioB = (b.prio && b.status !== 'klar');
-			            
 			            if (prioA && !prioB) return -1;
 			            if (!prioA && prioB) return 1;
-			
-			            // Sortera sedan efter datum
 			            return new Date(a.datum) - new Date(b.datum);
 			        });
 			
-			    // Fyll "Offererad" och "Bokad"
-			    jobsToDisplay.forEach(job => {
-			        const cardHTML = createKanbanCard(job); // Använder den nya kort-funktionen
+			    let offereradCount = 0;
+			    let bokadCount = 0;
+			
+			    otherJobs.forEach(job => {
+			        const cardHTML = createKanbanCard(job);
 			        
 			        switch (job.status) {
 			            case 'offererad':
 			                kanbanColOffererad.innerHTML += cardHTML;
+			                offereradCount++;
 			                break;
 			            case 'bokad':
 			                kanbanColBokad.innerHTML += cardHTML;
+			                bokadCount++;
 			                break;
-			            // Inget 'klar'-case behövs här längre
 			        }
 			    });
+			    // UPPDATERA ANTAL (NYTT)
+			    document.querySelector('.kanban-column[data-status="offererad"] .kanban-column-count').textContent = offereradCount;
+			    document.querySelector('.kanban-column[data-status="bokad"] .kanban-column-count').textContent = bokadCount;
 			
-			    // Initiera dra-och-släpp (endast FÖRSTA gången)
-			    if (!sortableColBokad) { // Kollar bara en, det räcker
+			
+			    // --- 3. Initiera SortableJS (UPPDATERAD) ---
+			    if (!sortableColBokad) {
 			        const options = {
 			            group: 'shared',
 			            animation: 150,
-			            onEnd: handleKanbanDrop // Din befintliga drop-funktion
+			            onEnd: handleKanbanDrop, // Din befintliga drop-funktion
+			            
+			            // --- DEN VIKTIGA ÄNDRINGEN FÖR MOBILEN ---
+			            handle: '.kanban-drag-handle', // Säger åt SortableJS att endast denna klass kan starta ett drag
+			            
+			            // --- BONUS: Snyggare CSS-klasser ---
+			            ghostClass: 'kanban-card-ghost',   // CSS-klass för "skuggan" där kortet kan landa
+			            chosenClass: 'kanban-card-chosen'  // CSS-klass för kortet du lyfter
 			        };
 			        sortableColOffererad = new Sortable(kanbanColOffererad, options);
 			        sortableColBokad = new Sortable(kanbanColBokad, options);
@@ -1217,9 +1227,9 @@
                 `;
             }
 
-			// --- NY FUNKTION: Skapar ett kompakt Kanban-kort ---
+			// --- UPPDATERAD: Skapar ett kompakt Kanban-kort MED DRA-HANDTAG ---
 			function createKanbanCard(job) {
-			    // Återanvänd din befintliga logik för klasser
+			    // (Befintlig logik för klasser...)
 			    let prioClass = job.prio ? 'prio-row' : '';
 			    const doneClass = (job.status === 'klar') ? 'done-row' : '';
 			    const isKommandePrio = job.prio && job.status === 'bokad' && new Date(job.datum) >= new Date();
@@ -1229,36 +1239,39 @@
 			    const jobStatusClass = (job.status === 'bokad' && new Date(job.datum) < now) ? 'job-missed' : '';
 			    const hasComment = job.kommentarer && job.kommentarer.trim().length > 0;
 			    
-			    // Hämta delar
 			    const kundnamnHTML = highlightSearchTerm(job.kundnamn, currentSearchTerm);
 			    const regnrHTML = highlightSearchTerm(job.regnr || 'OKÄNT', currentSearchTerm);
 			    const prioIcon = job.prio ? `<svg class="icon-sm prio-flag-icon" viewBox="0 0 24 24"><use href="#icon-flag"></use></svg>` : '';
 			    const timePart = job.datum ? (formatDate(job.datum).split('kl. ')[1] || 'Okänd tid') : 'Okänd tid';
 			
-			    // Detta är den NYA, förenklade HTML-strukturen
+			    // NY, UPPDATERAD HTML-STRUKTUR:
 			    return `
-			        <div class="kanban-card job-entry ${prioClass} ${doneClass} ${jobStatusClass}" data-id="${job.id}" data-status="${job.status}">
+			        <div class_name="kanban-card job-entry ${prioClass} ${doneClass} ${jobStatusClass}" data-id="${job.id}" data-status="${job.status}">
 			            
-			            <div class="kanban-card-header">
-			                <span class="kanban-card-title">${prioIcon} ${kundnamnHTML}</span>
-			                <span class="card-time-badge">${timePart}</span>
+			            <div class="kanban-drag-handle" title="Håll för att flytta">
+			                <svg class="icon-sm" viewBox="0 0 16 16"><use href="#icon-drag-handle"></use></svg>
 			            </div>
-			            
-			            ${(job.regnr && job.regnr.toUpperCase() !== 'OKÄNT') ? `
-			            <button class="car-link reg-plate" data-regnr="${job.regnr}">
-			                <span class="reg-country">S</span>
-			                <span class="reg-number">${regnrHTML}</span>
-			            </button>
-			            ` : `
-			            <span class="reg-unknown">${regnrHTML}</span>
-			            `}
-			            
-			            <div class="kanban-card-footer">
-			                ${hasComment ? `
-			                <svg class="kanban-card-icon" viewBox="0 0 24 24" title="Har kommentar"><use href="#icon-chat"></use></svg>
-			                ` : '<span></span>' /* Tom span för att justera ikoner */ }
-			                
+			
+			            <div class="kanban-card-content"> <div class="kanban-card-header">
+			                    <span class="kanban-card-title">${prioIcon} ${kundnamnHTML}</span>
+			                    <span class="card-time-badge">${timePart}</span>
 			                </div>
+			                
+			                ${(job.regnr && job.regnr.toUpperCase() !== 'OKÄNT') ? `
+			                <button class="car-link reg-plate" data-regnr="${job.regnr}">
+			                    <span class="reg-country">S</span>
+			                    <span class="reg-number">${regnrHTML}</span>
+			                </button>
+			                ` : `
+			                <span class="reg-unknown">${regnrHTML}</span>
+			                `}
+			                
+			                <div class="kanban-card-footer">
+			                    ${hasComment ? `
+			                    <svg class="kanban-card-icon" viewBox="0 0 24 24" title="Har kommentar"><use href="#icon-chat"></use></svg>
+			                    ` : '<span></span>'}
+			                </div>
+			            </div>
 			        </div>
 			    `;
 			}
