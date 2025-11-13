@@ -904,8 +904,8 @@
                         <td data-label="Kund">
                             ${prioIcon}
                             <button class="link-btn customer-link" data-kund="${job.kundnamn}">
-                                <span class="customer-name-text">${kundnamnHTML}</span>
                                 <svg class="icon-sm customer-icon" viewBox="0 0 24 24"><use href="#icon-user"></use></svg>
+                                <span class="customer-name-text">${kundnamnHTML}</span>
                             </button> ${contextIcon}
                         </td>
                         <td data-label="Reg.nr">
