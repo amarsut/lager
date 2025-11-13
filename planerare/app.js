@@ -43,6 +43,45 @@
             return safeText.replace(regex, '<mark>$1</mark>');
         }
 
+		// NY HJÄLPARE: Tar ett datum och returnerar en grupperings-rubrik
+		function getGroupHeader(dateString, sortOrder) {
+		    if (!dateString) return "Okänt datum";
+		    
+		    const jobDate = new Date(dateString);
+		    jobDate.setHours(0, 0, 0, 0);
+		    
+		    const todayDate = new Date(); // 'today' är redan global, men vi skapar en ny för säkerhets skull
+		    todayDate.setHours(0, 0, 0, 0);
+		
+		    // Hitta måndagen i denna vecka
+		    const dayOfWeek = todayDate.getDay(); // 0=Sön, 1=Mån
+		    const diff = todayDate.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+		    const startThisWeek = new Date(new Date(todayDate).setDate(diff));
+		
+		    const startNextWeek = new Date(new Date(startThisWeek).setDate(startThisWeek.getDate() + 7));
+		    const startLastWeek = new Date(new Date(startThisWeek).setDate(startThisWeek.getDate() - 7));
+		    
+		    // --- Grupperingslogik ---
+		    if (jobDate >= startThisWeek && jobDate < startNextWeek) {
+		        return "Denna vecka";
+		    }
+		
+		    if (sortOrder === 'asc') { // För "Kommande"
+		        const startNextNextWeek = new Date(new Date(startNextWeek).setDate(startNextWeek.getDate() + 7));
+		        if (jobDate >= startNextWeek && jobDate < startNextNextWeek) {
+		            return "Nästa vecka";
+		        }
+		    } else { // För "Klar" och "Alla" (bakåt i tiden)
+		        if (jobDate >= startLastWeek && jobDate < startThisWeek) {
+		            return "Förra veckan";
+		        }
+		    }
+		    
+		    // Fallback: Returnera Månad + År (t.ex., "November 2025")
+		    let monthYear = jobDate.toLocaleString(locale, { month: 'long', year: 'numeric' });
+		    return monthYear.charAt(0).toUpperCase() + monthYear.slice(1);
+		}
+
         // --- NYTT: Kontextuell Ikon-funktion ---
         function getJobContextIcon(job) {
             return ''; // Returnera tom sträng om inget matchar
@@ -88,6 +127,7 @@
             const appBrandTitle = document.getElementById('appBrandTitle'); 
             
             const timelineView = document.getElementById('timelineView');
+			const fokusWidgetInput = document.getElementById('fokusWidgetInput');
             const jobListContainer = document.getElementById('jobListContainer');
             const emptyStateTimeline = document.getElementById('emptyStateTimeline');
             const emptyStateTitleTimeline = document.getElementById('emptyStateTitleTimeline');
@@ -779,6 +819,37 @@
 		        }
 		    }
 
+			// --- LOGIK FÖR DAGENS FOKUS ---
+
+			// Funktion för att spara
+			const saveFokus = () => {
+			    const todayKey = `fokus-${new Date().toISOString().split('T')[0]}`;
+			    localStorage.setItem(todayKey, fokusWidgetInput.value);
+			};
+			
+			// Funktion för att ladda
+			const loadFokus = () => {
+			    const todayKey = `fokus-${new Date().toISOString().split('T')[0]}`;
+			    const savedFokus = localStorage.getItem(todayKey);
+			    if (savedFokus) {
+			        fokusWidgetInput.value = savedFokus;
+			    }
+			};
+			
+			// Skapa en "debounced" (fördröjd) version av spara-funktionen
+			const debouncedSaveFokus = debounce(saveFokus, 500);
+			
+			// Koppla lyssnaren
+			fokusWidgetInput.addEventListener('input', () => {
+			    debouncedSaveFokus();
+			    // Låt textrutan växa med innehållet (bonus)
+			    fokusWidgetInput.style.height = 'auto';
+			    fokusWidgetInput.style.height = (fokusWidgetInput.scrollHeight) + 'px';
+			});
+			
+			// Ladda dagens fokus när sidan startar
+			loadFokus();
+
             // --- Firebase Listener ---
             function initRealtimeListener() {
                 if (!db) return;
@@ -1116,43 +1187,73 @@
             }
             
             function renderMobileCardList(jobs) {
-                jobListContainer.innerHTML = '';
-                if (jobs.length === 0) { return 0; }
-                
-                const groupedJobs = jobs.reduce((acc, job) => {
-                    const dateKey = job.datum ? job.datum.split('T')[0] : 'Okänt';
-                    if (!acc[dateKey]) {
-                        acc[dateKey] = [];
-                    }
-                    acc[dateKey].push(job);
-                    return acc;
-                }, {});
-                
-                let listHTML = '<div id="mobileJobList">';
-                
-                const sortOrder = (currentStatusFilter === 'klar' || currentStatusFilter === 'alla') ? 'desc' : 'asc';
-                const sortedDateKeys = Object.keys(groupedJobs).sort((a, b) => {
-                     if (sortOrder === 'desc') {
-                        return new Date(b) - new Date(a);
-                    } else {
-                        return new Date(a) - new Date(b);
-                    }
-                });
-                
-                for (const dateKey of sortedDateKeys) {
-                    const jobsForDay = groupedJobs[dateKey];
-                    const firstJobDate = jobsForDay[0].datum;
-                    
-                    listHTML += `<div class="mobile-day-group">`;
-                    listHTML += `<h2 class="mobile-date-header">${formatDate(firstJobDate, { onlyDate: true })}</h2>`;
-                    listHTML += jobsForDay.map(job => createJobCard(job)).join('');
-                    listHTML += `</div>`;
-                }
-                
-                listHTML += '</div>';
-                jobListContainer.innerHTML = listHTML;
-                return jobs.length;
-            }
+			    jobListContainer.innerHTML = '';
+			    if (jobs.length === 0) { return 0; }
+			    
+			    // Hämta sortOrder från den yttre funktionen (renderTimeline)
+			    // Detta är en "ful" men enkel lösning
+			    let sortOrder = 'asc'; 
+			    if (currentStatusFilter === 'klar' || currentStatusFilter === 'alla') {
+			        sortOrder = 'desc';
+			    }
+			
+			    // NY GRUPPERING: Använd vår nya hjälp-funktion
+			    const groupedJobs = jobs.reduce((acc, job) => {
+			        const dateKey = getGroupHeader(job.datum, sortOrder); // <-- HÄR ÄR ÄNDRINGEN
+			        if (!acc[dateKey]) {
+			            acc[dateKey] = [];
+			        }
+			        acc[dateKey].push(job);
+			        return acc;
+			    }, {});
+			    
+			    let listHTML = '<div id="mobileJobList">';
+			    
+			    // NY SORTERINGSLOGIK för rubrikerna
+			    const sortPriority = {
+			        "Denna vecka": sortOrder === 'asc' ? 1 : 2,
+			        "Nästa vecka": 2, // Används bara i 'asc'
+			        "Förra veckan": 1, // Används bara i 'desc'
+			    };
+			
+			    const sortedDateKeys = Object.keys(groupedJobs).sort((a, b) => {
+			        const prioA = sortPriority[a];
+			        const prioB = sortPriority[b];
+			        
+			        // Hämta första jobbets datum för att kunna sortera månader korrekt
+			        const dateA = new Date(groupedJobs[a][0].datum);
+			        const dateB = new Date(groupedJobs[b][0].datum);
+			
+			        if (sortOrder === 'desc') {
+			            // Sortera bakåt i tiden
+			            if (prioA && prioB) return prioA - prioB; // "Förra veckan" (1) före "Denna vecka" (2)
+			            if (prioA && !prioB) return -1; // Prioriterade grupper (veckor) före månader
+			            if (!prioA && prioB) return 1; // Månader efter prioriterade grupper
+			            return dateB - dateA; // Sortera månader (November före Oktober)
+			        } else {
+			            // Sortera framåt i tiden
+			            if (prioA && prioB) return prioA - prioB; // "Denna vecka" (1) före "Nästa vecka" (2)
+			            if (prioA && !prioB) return -1; // Prioriterade grupper före månader
+			            if (!prioA && prioB) return 1; // Månader efter prioriterade grupper
+			            return dateA - dateB; // Sortera månader (November före December)
+			        }
+			    });
+			    
+			    for (const dateKey of sortedDateKeys) {
+			        const jobsForDay = groupedJobs[dateKey];
+			        // const firstJobDate = jobsForDay[0].datum; // Behövs inte längre
+			        
+			        listHTML += `<div class="mobile-day-group">`;
+			        // HÄR ÄR ÄNDRINGEN: Använd 'dateKey' som rubrik
+			        listHTML += `<h2 class="mobile-date-header">${dateKey}</h2>`;
+			        listHTML += jobsForDay.map(job => createJobCard(job)).join('');
+			        listHTML += `</div>`;
+			    }
+			    
+			    listHTML += '</div>';
+			    jobListContainer.innerHTML = listHTML;
+			    return jobs.length;
+			}
             
             // --- UPPDATERAD: createJobCard med Kontextuell Ikon ---
             function createJobCard(job) {
