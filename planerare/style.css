@@ -3361,4 +3361,20 @@ html.privacy-mode-enabled .nav-logo {
     margin-bottom: 0;
 }
 
+/* FIX 1: Centrera Kanban-vyn */
+#kanbanView {
+    display: flex;
+    justify-content: center; /* Centrerar .kanban-board horisontellt */
+}
+
+.kanban-board {
+    display: flex; /* Behåll denna som flex */
+    gap: 1.5rem;
+    padding-bottom: 1rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    
+    /* Se till att den inte svämmar över i onödan på desktop */
+    max-width: 100%;
+}
 
