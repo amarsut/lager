@@ -1247,7 +1247,7 @@
 			
 			    // --- NY, POLERAD HTML-STRUKTUR ---
 			    return `
-			        <div class="kanban-card job-entry ${prioClass} ${doneClass} ${jobStatusClass}" data-id="${job.id}" data-status="${job.status}">
+    				<div class="kanban-card job-entry ${prioClass} ${doneClass} ${jobStatusClass}" data-id="${job.id}" data-status="${job.status}">
 			            
 			            <div class="kanban-drag-handle" title="Håll för att flytta">
 			                <svg class="icon-sm" viewBox="0 0 16 16"><use href="#icon-drag-handle"></use></svg>
