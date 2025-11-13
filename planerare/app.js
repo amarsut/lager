@@ -73,6 +73,9 @@
             let weekdayChartInstance = null;
             let currentProfitGoal = localStorage.getItem('profitGoal') || 0; 
 
+			// --- NYTT: Kanban Sorterings-instanser ---
+			let sortableColOffererad, sortableColBokad, sortableColKlar;
+
             // --- DOM-element ---
             const docElement = document.documentElement;
 			const privacyToggle = document.getElementById('privacyToggle');
@@ -240,6 +243,12 @@
 
             const desktopSearchClear = document.getElementById('desktopSearchClear');
             const mobileSearchClear = document.getElementById('mobileSearchClear');
+
+			// --- NYTT: Kanban-element ---
+			const kanbanView = document.getElementById('kanbanView');
+			const kanbanColOffererad = document.getElementById('kanban-col-offererad');
+			const kanbanColBokad = document.getElementById('kanban-col-bokad');
+			const kanbanColKlar = document.getElementById('kanban-col-klar');
 
             // --- Toast-funktion med "Ångra" ---
             let toastTimer;
@@ -547,77 +556,194 @@
                 }
             }
             
-            function toggleView(view) {
-                // NYTT: Om vi redan är på denna vy OCH vi inte navigerar (via bakåtknapp), gör inget.
-                if (view === currentView && !isNavigatingBack) return;
+            // --- UPPDATERAD: toggleView med Kanban ---
+			function toggleView(view) {
+			    // NYTT: Om vi redan är på denna vy OCH vi inte navigerar (via bakåtknapp), gör inget.
+			    if (view === currentView && !isNavigatingBack) return;
+			
+			    currentView = view;
+			
+			    // 1. Hantera knappar (Desktop & Mobil)
+			    btnToggleTimeline.classList.toggle('active', view === 'timeline');
+			    btnToggleCalendar.classList.toggle('active', view === 'calendar');
+			    // NYTT: Lägg till din nya knapp-ID här (om du döpte den till btnToggleKanban)
+			    document.getElementById('btnToggleKanban')?.classList.toggle('active', view === 'kanban');
+			
+			    document.querySelector('.mobile-nav-btn[data-view="timeline"]').classList.toggle('active', view === 'timeline');
+			    document.querySelector('.mobile-nav-btn[data-view="calendar"]').classList.toggle('active', view === 'calendar');
+			    // NYTT: Lägg till mobilknappen
+			    document.querySelector('.mobile-nav-btn[data-view="kanban"]').classList.toggle('active', view === 'kanban');
+			
+			    // 2. Dölj alla vyer först
+			    timelineView.style.display = 'none';
+			    calendarView.style.display = 'none';
+			    kanbanView.style.display = 'none'; // NYTT
+			
+			    // 3. Visa den valda vyn
+			    if (view === 'calendar') {
+			        calendarView.style.display = 'block';
+			        calendar.changeView('dayGridTwoWeek'); 
+			
+			        const isMobile = window.innerWidth <= 768;
+			        if (isMobile) {
+			            // ... (din befintliga mobil-kalender-logik) ...
+			        } else {
+			            // ... (din befintliga desktop-kalender-logik) ...
+			        }
+			
+			        setTimeout(() => {
+			            calendar.updateSize();
+			            const calendarEvents = allJobs.map(mapJobToEvent);
+			            calendar.setOption('events', calendarEvents);
+			
+			            filterCalendarView();
+			            updateDailyProfitInCalendar(allJobs);
+			
+			        }, 50);
+			
+			        if (!isNavigatingBack) {
+			            if (history.state?.view === 'calendar') {
+			                history.replaceState({ view: 'calendar' }, 'Kalender', '#calendar');
+			            } else {
+			                history.pushState({ view: 'calendar' }, 'Kalender', '#calendar');
+			            }
+			        }
+			
+			    } else if (view === 'kanban') { // --- NYTT BLOCK ---
+			
+			        kanbanView.style.display = 'block';
+			        appBrandTitle.style.display = 'block'; 
+			
+			        // Rendera tavlan med korten
+			        renderKanbanBoard(); 
+			
+			        if (!isNavigatingBack) {
+			            // Skapa en ny historik-post för kanban
+			            if (history.state?.view === 'kanban') {
+			                history.replaceState({ view: 'kanban' }, 'Tavla', '#kanban');
+			            } else {
+			                history.pushState({ view: 'kanban' }, 'Tavla', '#kanban');
+			            }
+			        }
+			        // --- SLUT NYTT BLOCK ---
+			
+			    } else { // (view === 'timeline')
+			        timelineView.style.display = 'block';
+			        appBrandTitle.style.display = 'block'; 
+			
+			        if (!isNavigatingBack) {
+			            if (history.state && (history.state.view === 'calendar' || history.state.view === 'kanban')) {
+			                history.back();
+			            } else {
+			                history.replaceState(null, 'Tidslinje', location.pathname);
+			            }
+			        }
+			    }
+			}
 
-                currentView = view;
-                
-                btnToggleTimeline.classList.toggle('active', view === 'timeline');
-                btnToggleCalendar.classList.toggle('active', view === 'calendar');
-                
-                document.querySelector('.mobile-nav-btn[data-view="timeline"]').classList.toggle('active', view === 'timeline');
-                document.querySelector('.mobile-nav-btn[data-view="calendar"]').classList.toggle('active', view === 'calendar');
-
-                if (view === 'calendar') {
-                    timelineView.style.display = 'none';
-                    calendarView.style.display = 'block';
-                    calendar.changeView('dayGridTwoWeek'); 
-                    
-                    const isMobile = window.innerWidth <= 768;
-                    if (isMobile) {
-                        calendar.setOption('headerToolbar', {
-                            left: 'prev,next', center: 'title', right: 'today'
-                        });
-                    } else {
-                        calendar.setOption('headerToolbar', {
-                            left: 'prev,next today',
-                            center: 'title',
-                            right: 'dayGridTwoWeek,timeGridWeek,timeGridDay'
-                        });
-                    }
-
-                    setTimeout(() => {
-                        calendar.updateSize();
-                        const calendarEvents = allJobs.map(mapJobToEvent); // Fixade ett stavfel från din kod (mapToEvent -> mapJobToEvent)
-                        calendar.setOption('events', calendarEvents);
-                        
-                        filterCalendarView();
-                        updateDailyProfitInCalendar(allJobs);
-
-                    }, 50);
-                    
-                    // --- NYTT: HISTORIK-HANTERING ---
-                    // Om vi inte navigerar bakåt, skapa en ny historik-post för kalendern.
-                    if (!isNavigatingBack) {
-                        // Använd replaceState om vi redan är på kalendern (t.ex. bara roterat skärmen)
-                        if (history.state?.view === 'calendar') {
-                            history.replaceState({ view: 'calendar' }, 'Kalender', '#calendar');
-                        } else {
-                        // Annars, pusha en ny post
-                            history.pushState({ view: 'calendar' }, 'Kalender', '#calendar');
-                        }
-                    }
-                    // --- SLUT NY KOD ---
-
-                } else { // (view === 'timeline')
-                    calendarView.style.display = 'none';
-                    timelineView.style.display = 'block';
-                    appBrandTitle.style.display = 'block'; 
-                    
-                   if (!isNavigatingBack) {
-                        // Om vi klickar på "Tidslinje" och statet är "calendar",
-                        // gå bara "bakåt" i historiken för att komma till "null" (tidslinje).
-                        if (history.state && history.state.view === 'calendar') {
-                            history.back();
-                        } else {
-                            // Om vi är någon annanstans (t.ex. just stängt en modal)
-                            // se till att state är null utan att bygga historik.
-                            history.replaceState(null, 'Tidslinje', location.pathname);
-                        }
-                    }
-                }
-            }
+			// --- NY FUNKTION: Renderar Kanban-tavlan ---
+		    function renderKanbanBoard() {
+		        // Rensa kolumnerna
+		        kanbanColOffererad.innerHTML = '';
+		        kanbanColBokad.innerHTML = '';
+		        kanbanColKlar.innerHTML = '';
+		
+		        // Filtrera bort avbokade och sortera, t.ex. efter Prio och sedan Datum
+		        const jobsToDisplay = allJobs
+		            .filter(j => j.status !== 'avbokad')
+		            .sort((a, b) => {
+		                // Prio-jobb (som inte är klara) hamnar högst upp
+		                const prioA = (a.prio && a.status !== 'klar');
+		                const prioB = (b.prio && b.status !== 'klar');
+		                
+		                if (prioA && !prioB) return -1;
+		                if (!prioA && prioB) return 1;
+		
+		                // Sortera sedan efter datum
+		                return new Date(a.datum) - new Date(b.datum);
+		            });
+		
+		        // Fyll kolumnerna med dina befintliga jobbkort
+		        jobsToDisplay.forEach(job => {
+		            // VI ÅTERANVÄNDER DIN createJobCard-FUNKTION!
+		            const cardHTML = createJobCard(job); //
+		            
+		            switch (job.status) {
+		                case 'offererad':
+		                    kanbanColOffererad.innerHTML += cardHTML;
+		                    break;
+		                case 'bokad':
+		                    kanbanColBokad.innerHTML += cardHTML;
+		                    break;
+		                case 'klar':
+		                    kanbanColKlar.innerHTML += cardHTML;
+		                    break;
+		            }
+		        });
+		
+		        // Initiera dra-och-släpp (endast FÖRSTA gången)
+		        if (!sortableColBokad) { // Kollar bara en, det räcker
+		            const options = {
+		                group: 'shared', // Tillåter drag mellan kolumner
+		                animation: 150,
+		                onEnd: handleKanbanDrop // Funktionen som anropas när du släpper ett kort
+		            };
+		            sortableColOffererad = new Sortable(kanbanColOffererad, options);
+		            sortableColBokad = new Sortable(kanbanColBokad, options);
+		            sortableColKlar = new Sortable(kanbanColKlar, options);
+		        }
+		    }
+		
+		    // --- NY FUNKTION: Hanterar dra-och-släpp-händelsen ---
+		    async function handleKanbanDrop(evt) {
+		        const jobCard = evt.item; // Det flyttade HTML-elementet
+		        const jobId = jobCard.dataset.id;
+		        
+		        // Hitta den nya kolumnen och dess status
+		        const newColumn = evt.to.closest('.kanban-column');
+		        const newStatus = newColumn.dataset.status;
+		
+		        // Hämta originaljobbet (från din befintliga funktion)
+		        const job = findJob(jobId); //
+		        if (!job) return; // Säkerhetskoll
+		
+		        const originalStatus = job.status;
+		
+		        // Om statusen faktiskt har ändrats
+		        if (originalStatus !== newStatus) {
+		            try {
+		                // 1. Uppdatera Firebase
+		                await db.collection("jobs").doc(jobId).update({
+		                    status: newStatus
+		                });
+		
+		                // 2. Uppdatera lokala data-arrayen (VIKTIGT!)
+		                job.status = newStatus;
+		
+		                // 3. Visa din befintliga Ångra-toast
+		                if (newStatus === 'klar') {
+		                    showToast('Jobb markerat som "Klar"', 'success', () => {
+		                        // ÅNGRA-LOGIK:
+		                        db.collection("jobs").doc(jobId).update({ status: originalStatus });
+		                        job.status = originalStatus; // Återställ lokalt
+		                        renderKanbanBoard(); // Rita om tavlan
+		                        showToast('Status återställd.', 'info');
+		                    });
+		                } else {
+		                    const statusText = STATUS_TEXT[newStatus] || newStatus; //
+		                    showToast(`Status ändrad till "${statusText}".`);
+		                }
+		                
+		                // 4. Rita om tavlan för att få rätt sortering (t.ex. prio tas bort från "Klar"-kolumnen)
+		                renderKanbanBoard();
+		
+		            } catch (err) {
+		                showToast(`Fel: ${err.message}`, 'danger');
+		                // Om Firebase misslyckas, flytta tillbaka kortet visuellt
+		                evt.from.appendChild(jobCard); 
+		            }
+		        }
+		    }
 
             // --- Firebase Listener ---
             function initRealtimeListener() {
@@ -678,28 +804,43 @@
 
 
             // --- Huvud-renderingsfunktioner ---
-            function updateUI() {
-                if (!appInitialized) return;
-
-                renderGlobalStats(allJobs);
-                const calendarEvents = allJobs.map(mapJobToEvent);
-                if (calendar) { // Säkerställ att kalendern är initierad
-                    calendar.setOption('events', calendarEvents);
-                    filterCalendarView();
-                    updateDailyProfitInCalendar(allJobs);
-					calendar.render();
-                }
-                renderTimeline(); 
-                
-                // Flyttad från `toggleView` för att säkerställa att vyn alltid är rätt
-                if (currentView === 'calendar') {
-                    timelineView.style.display = 'none';
-                    calendarView.style.display = 'block';
-                } else {
-                    calendarView.style.display = 'none';
-                    timelineView.style.display = 'block';
-                }
-            }
+			function updateUI() {
+			    if (!appInitialized) return;
+			
+			    // 1. Globala uppdateringar
+			    renderGlobalStats(allJobs);
+			    const calendarEvents = allJobs.map(mapJobToEvent);
+			
+			    // 2. Uppdatera Kalendern (alltid, den körs i bakgrunden)
+			    if (calendar) { 
+			        calendar.setOption('events', calendarEvents);
+			        filterCalendarView();
+			        updateDailyProfitInCalendar(allJobs);
+			        calendar.render();
+			    }
+			
+			    // 3. Uppdatera den VY SOM ÄR AKTIV
+			    if (currentView === 'timeline') {
+			        renderTimeline(); 
+			    } else if (currentView === 'kanban') {
+			        renderKanbanBoard(); // NYTT
+			    }
+			
+			    // 4. Se till att rätt vy-container visas
+			    if (currentView === 'calendar') {
+			        timelineView.style.display = 'none';
+			        kanbanView.style.display = 'none'; // NYTT
+			        calendarView.style.display = 'block';
+			    } else if (currentView === 'kanban') { // NYTT
+			        timelineView.style.display = 'none';
+			        calendarView.style.display = 'none';
+			        kanbanView.style.display = 'block';
+			    } else { // Timeline
+			        calendarView.style.display = 'none';
+			        kanbanView.style.display = 'none'; // NYTT
+			        timelineView.style.display = 'block';
+			    }
+			}
 
             function renderGlobalStats(jobs) {
                 const now = new Date();
