@@ -103,6 +103,10 @@
                             <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-calendar-view"></use></svg>
                             <span>Kalender</span>
                         </button>
+						<button class="button-toggle-view" id="btnToggleKanban" data-view="kanban">
+						    <svg class="icon-sm" ...> </svg>
+						    <span>Tavla</span>
+						</button>
                     </div>
                 </div>
             </div>
@@ -183,6 +187,30 @@
                     </div>
                 </div>
 
+				<div id="kanbanView" style="display: none;">
+				    <div class="kanban-board">
+				
+				        <div class="kanban-column" data-status="offererad">
+				            <h3 class="kanban-column-title">Offererad</h3>
+				            <div class="kanban-column-cards" id="kanban-col-offererad">
+				                </div>
+				        </div>
+				
+				        <div class="kanban-column" data-status="bokad">
+				            <h3 class="kanban-column-title">Bokad</h3>
+				            <div class="kanban-column-cards" id="kanban-col-bokad">
+				                </div>
+				        </div>
+				
+				        <div class="kanban-column" data-status="klar">
+				            <h3 class="kanban-column-title">Klar</h3>
+				            <div class="kanban-column-cards" id="kanban-col-klar">
+				                </div>
+				        </div>
+				
+				    </div>
+				</div>
+
                 <div id="calendarView" style="display: none;">
                     <div id="calendarContainer"></div>
                 </div>
@@ -196,6 +224,10 @@
             <svg class="icon" viewBox="0 0 24 24"><use href="#icon-timeline-view"></use></svg>
             <span>Tidslinje</span>
         </button>
+		<button class="mobile-nav-btn" data-view="kanban">
+		    <svg class="icon" ...> </svg>
+		    <span>Tavla</span>
+		</button>
         <button class="mobile-nav-btn" data-view="calendar">
             <svg class="icon" viewBox="0 0 24 24"><use href="#icon-calendar-view"></use></svg>
             <span>Kalender</span>
