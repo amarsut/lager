@@ -571,8 +571,23 @@
 			
 			    document.querySelector('.mobile-nav-btn[data-view="timeline"]').classList.toggle('active', view === 'timeline');
 			    document.querySelector('.mobile-nav-btn[data-view="calendar"]').classList.toggle('active', view === 'calendar');
-			    // NYTT: Lägg till mobilknappen
 			    document.querySelector('.mobile-nav-btn[data-view="kanban"]').classList.toggle('active', view === 'kanban');
+
+				// --- NY LOGIK FÖR ATT VÄXLA KNAPPAR ---
+				const mobileTimelineBtn = document.querySelector('.mobile-nav-btn[data-view="timeline"]');
+				const mobileKanbanBtn = document.querySelector('.mobile-nav-btn[data-view="kanban"]');
+				
+				if (view === 'timeline') {
+				    mobileTimelineBtn.style.display = 'none'; // Dölj Tidslinje
+				    mobileKanbanBtn.style.display = 'flex';   // Visa Tavla
+				} else if (view === 'kanban') {
+				    mobileTimelineBtn.style.display = 'flex';   // Visa Tidslinje
+				    mobileKanbanBtn.style.display = 'none';  // Dölj Tavla
+				} else { // För Kalender-vyn, visa båda
+				    mobileTimelineBtn.style.display = 'flex';
+				    mobileKanbanBtn.style.display = 'flex';
+				}
+				// --- SLUT PÅ NY LOGIK ---
 			
 			    // 2. Dölj alla vyer först
 			    timelineView.style.display = 'none';
@@ -704,7 +719,6 @@
 			            group: 'shared',
 			            animation: 150,
 			            onEnd: handleKanbanDrop, // Din befintliga drop-funktion
-			            handle: '.kanban-drag-handle', // LÖSNINGEN FÖR MOBILEN
 			            ghostClass: 'kanban-card-ghost',
 			            chosenClass: 'kanban-card-chosen'
 			        };
