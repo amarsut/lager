@@ -902,12 +902,11 @@
                         <td data-label="Status"><span class="status-badge status-${job.status || 'bokad'}">${STATUS_TEXT[job.status] || 'Bokad'}</span></td>
                         <td data-label="Datum">${formatDate(job.datum)}</td>
                         <td data-label="Kund">
-                            ${prioIcon}
-                            <button class="link-btn customer-link" data-kund="${job.kundnamn}">
-                                <svg class="icon-sm customer-icon" viewBox="0 0 24 24"><use href="#icon-user"></use></svg>
-                                <span class="customer-name-text">${kundnamnHTML}</span>
-                            </button> ${contextIcon}
-                        </td>
+	                        <button class="link-btn customer-link" data-kund="${job.kundnamn}">
+	                            <svg class="icon-sm customer-icon" viewBox="0 0 24 24"><use href="#icon-user"></use></svg>
+	                            <span class="customer-name-text">${kundnamnHTML}</span>
+	                        </button> ${contextIcon}
+	                    </td>
                         <td data-label="Reg.nr">
                             ${(job.regnr && job.regnr.toUpperCase() !== 'OKÄNT') ? `
 	                        <button class="car-link reg-plate" data-regnr="${job.regnr}">
@@ -924,9 +923,9 @@
                             </button>
                             ` : `<span class="icon-btn-placeholder"></span>`}
 
-                            <button class="icon-btn" data-action="togglePrio" title="Växla Prio" aria-label="Växla Prio">
-                                <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-flag"></use></svg>
-                            </button>
+                            <button class="icon-btn ${job.prio ? 'active-prio' : ''}" data-action="togglePrio" title="Växla Prio" aria-label="Växla Prio">
+                            	<svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-flag"></use></svg>
+                        	</button>
                             <button class="icon-btn" data-action="setStatusKlar" title="Markera som Klar" aria-label="Markera som Klar">
                                 <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-check"></use></svg>
                             </button>
