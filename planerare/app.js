@@ -569,10 +569,32 @@
 			    // NYTT: Lägg till din nya knapp-ID här (om du döpte den till btnToggleKanban)
 			    document.getElementById('btnToggleKanban')?.classList.toggle('active', view === 'kanban');
 			
-			    document.querySelector('.mobile-nav-btn[data-view="timeline"]').classList.toggle('active', view === 'timeline');
 			    document.querySelector('.mobile-nav-btn[data-view="calendar"]').classList.toggle('active', view === 'calendar');
-			    document.querySelector('.mobile-nav-btn[data-view="kanban"]').classList.toggle('active', view === 'kanban');
-
+				const toggleBtn = document.getElementById('mobileViewToggleBtn');
+				if (toggleBtn) {
+				    const btnIcon = toggleBtn.querySelector('use');
+				    const btnText = toggleBtn.querySelector('span');
+				
+				    // 1. Sätt 'active'-status
+				    // Knappen är 'active' om vi är på Tidslinje ELLER Tavla
+				    const isActive = (view === 'timeline' || view === 'kanban');
+				    toggleBtn.classList.toggle('active', isActive);
+				
+				    // 2. Ändra innehåll baserat på nuvarande vy
+				    if (view === 'timeline') {
+				        // Vi ÄR PÅ Tidslinje, knappen ska byta TILL "Tavla"
+				        btnText.textContent = 'Tavla';
+				        btnIcon.setAttribute('href', '#icon-kanban-view');
+				        toggleBtn.dataset.view = 'kanban'; 
+				    } else {
+				        // Vi ÄR PÅ Tavla ELLER Kalender.
+				        // I båda fallen ska knappen byta TILL "Tidslinje".
+				        btnText.textContent = 'Tidslinje';
+				        btnIcon.setAttribute('href', '#icon-timeline-view');
+				        toggleBtn.dataset.view = 'timeline';
+				    }
+				}
+				
 				// --- NY LOGIK FÖR ATT VÄXLA KNAPPAR ---
 				const mobileTimelineBtn = document.querySelector('.mobile-nav-btn[data-view="timeline"]');
 				const mobileKanbanBtn = document.querySelector('.mobile-nav-btn[data-view="kanban"]');
