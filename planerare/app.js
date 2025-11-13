@@ -572,7 +572,7 @@
 			    document.querySelector('.mobile-nav-btn[data-view="timeline"]').classList.toggle('active', view === 'timeline');
 			    document.querySelector('.mobile-nav-btn[data-view="calendar"]').classList.toggle('active', view === 'calendar');
 			    // NYTT: Lägg till mobilknappen
-			    document.querySelector('.mobile-nav-btn[data-view="kanban"]').classList.toggle('active', view === 'kanban');
+			    document.querySelector('.mobile-nav-btn[data-view="kanban"]')?.classList.toggle('active', view === 'kanban');
 			
 			    // 2. Dölj alla vyer först
 			    timelineView.style.display = 'none';
