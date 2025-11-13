@@ -633,7 +633,7 @@
 			
 			        if (!isNavigatingBack) {
 			            if (history.state && (history.state.view === 'calendar' || history.state.view === 'kanban')) {
-			                history.back();
+			                history.pushState(null, 'Tidslinje', location.pathname);
 			            } else {
 			                history.replaceState(null, 'Tidslinje', location.pathname);
 			            }
