@@ -1872,6 +1872,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 #jobbOversikt .action-col .icon-btn.active-prio {
     color: var(--danger-color);
     background: var(--danger-light);
+    opacity: 1; /* <-- Se till att den alltid syns! */
 }
 
 /* ------------------------------------------- */
@@ -3321,5 +3322,6 @@ html.privacy-mode-enabled .nav-logo {
     height: 0.9rem;
     vertical-align: -2px;
 }
+
 
 
