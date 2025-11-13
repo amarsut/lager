@@ -558,47 +558,59 @@
             
             // --- UPPDATERAD: toggleView med Kanban ---
 			function toggleView(view) {
-			    // NYTT: Om vi redan är på denna vy OCH vi inte navigerar (via bakåtknapp), gör inget.
+			    // Om vi redan är på denna vy, gör inget
 			    if (view === currentView && !isNavigatingBack) return;
+			
+			    // **NY SÄKERHETSKONTROLL**
+			    // Om en mobilanvändare (skärm <= 768px) på något sätt försöker öppna kanban,
+			    // stoppa det och gå till tidslinjen istället.
+			    if (window.innerWidth <= 768 && view === 'kanban') {
+			        view = 'timeline'; // Omdirigera till tidslinjen
+			    }
 			
 			    currentView = view;
 			
-			    // 1. Hantera knappar (Desktop & Mobil)
+			    // 1. Hantera knappar (Desktop)
 			    btnToggleTimeline.classList.toggle('active', view === 'timeline');
 			    btnToggleCalendar.classList.toggle('active', view === 'calendar');
-			    // NYTT: Lägg till din nya knapp-ID här (om du döpte den till btnToggleKanban)
+			    // Desktop-knappen för Kanban (påverkar inte mobil)
 			    document.getElementById('btnToggleKanban')?.classList.toggle('active', view === 'kanban');
 			
-			    document.querySelector('.mobile-nav-btn[data-view="timeline"]').classList.toggle('active', view === 'timeline');
-			    document.querySelector('.mobile-nav-btn[data-view="calendar"]').classList.toggle('active', view === 'calendar');
-			    // NYTT: Lägg till mobilknappen
-			    document.querySelector('.mobile-nav-btn[data-view="kanban"]').classList.toggle('active', view === 'kanban');
+			    // 2. Hantera knappar (Mobil)
+			    // Denna logik är nu superenkel och ignorerar kanban
+			    const mobileTimelineBtn = document.querySelector('.mobile-nav-btn[data-view="timeline"]');
+			    if (mobileTimelineBtn) {
+			        mobileTimelineBtn.classList.toggle('active', view === 'timeline');
+			    }
 			
-			    // 2. Dölj alla vyer först
+			    const mobileCalendarBtn = document.querySelector('.mobile-nav-btn[data-view="calendar"]');
+			    if (mobileCalendarBtn) {
+			        mobileCalendarBtn.classList.toggle('active', view === 'calendar');
+			    }
+			
+			    // 3. Dölj alla vyer först
 			    timelineView.style.display = 'none';
 			    calendarView.style.display = 'none';
-			    kanbanView.style.display = 'none'; // NYTT
+			    kanbanView.style.display = 'none'; 
 			
-			    // 3. Visa den valda vyn
+			    // 4. Visa den valda vyn (Din befintliga kod)
 			    if (view === 'calendar') {
 			        calendarView.style.display = 'block';
 			        calendar.changeView('dayGridTwoWeek'); 
 			
 			        const isMobile = window.innerWidth <= 768;
 			        if (isMobile) {
-			            // ... (din befintliga mobil-kalender-logik) ...
+			            // ... (befintlig mobil-kalender-logik) ...
 			        } else {
-			            // ... (din befintliga desktop-kalender-logik) ...
+			            // ... (befintlig desktop-kalender-logik) ...
 			        }
 			
 			        setTimeout(() => {
 			            calendar.updateSize();
 			            const calendarEvents = allJobs.map(mapJobToEvent);
 			            calendar.setOption('events', calendarEvents);
-			
 			            filterCalendarView();
 			            updateDailyProfitInCalendar(allJobs);
-			
 			        }, 50);
 			
 			        if (!isNavigatingBack) {
@@ -609,23 +621,19 @@
 			            }
 			        }
 			
-			    } else if (view === 'kanban') { // --- NYTT BLOCK ---
-			
+			    } else if (view === 'kanban') { 
+			        // Denna kod körs nu BARA på desktop
 			        kanbanView.style.display = 'block';
 			        appBrandTitle.style.display = 'block'; 
-			
-			        // Rendera tavlan med korten
 			        renderKanbanBoard(); 
 			
 			        if (!isNavigatingBack) {
-			            // Skapa en ny historik-post för kanban
 			            if (history.state?.view === 'kanban') {
 			                history.replaceState({ view: 'kanban' }, 'Tavla', '#kanban');
 			            } else {
 			                history.pushState({ view: 'kanban' }, 'Tavla', '#kanban');
 			            }
 			        }
-			        // --- SLUT NYTT BLOCK ---
 			
 			    } else { // (view === 'timeline')
 			        timelineView.style.display = 'block';
@@ -3045,16 +3053,18 @@
             setCompactMode(savedCompactLevel);
 
             function setupViewToggles() {
-                const allToggleButtons = document.querySelectorAll('.button-toggle-view, .mobile-nav-btn[data-view]');
-                allToggleButtons.forEach(button => {
-                    button.addEventListener('click', (e) => {
-                        const view = e.currentTarget.dataset.view;
-                        if (view) {
-                            toggleView(view);
-                        }
-                    });
-                });
-            }
+			    // Denna enkla version hittar ALLA knappar med [data-view]
+			    // (både desktop och mobil) och lägger till en enkel klick-lyssnare.
+			    const allToggleButtons = document.querySelectorAll('.button-toggle-view, .mobile-nav-btn[data-view]');
+			    allToggleButtons.forEach(button => {
+			        button.addEventListener('click', (e) => {
+			            const view = e.currentTarget.dataset.view;
+			            if (view) {
+			                toggleView(view);
+			            }
+			        });
+			    });
+			}
             setupViewToggles();
             
             mobileAddJobBtn.addEventListener('click', () => openJobModal('add'));
