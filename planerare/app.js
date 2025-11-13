@@ -1244,7 +1244,7 @@
 			    const timePart = job.datum ? (formatDate(job.datum).split('kl. ')[1] || 'Okänd tid') : 'Okänd tid';
 			
 			    // --- NY, POLERAD HTML-STRUKTUR ---
-			    // VIKTIGT: Första raden har "class=" (inte "class_name=")
+			    // (Denna gång med "class=" korrekt från början)
 			    return `
 			        <div class="kanban-card job-entry ${prioClass} ${doneClass} ${jobStatusClass}" data-id="${job.id}" data-status="${job.status}">
 			            
