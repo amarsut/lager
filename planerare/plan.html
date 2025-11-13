@@ -36,7 +36,12 @@
         <symbol id="icon-close" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></symbol>
         <symbol id="icon-chat" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.76c0 1.6 1.123 2.994 2.707 3.227 1.068.157 2.148.279 3.238.364.466.037.893.281 1.153.671L12 21l3.66-3.938c.26-.29.687-.534 1.153-.67 1.09-.086 2.17-.208 3.238-.365 1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.344 48.344 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.74v6.02z" /></symbol>
         <symbol id="icon-calendar-day" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3.75 8.25h16.5M4.5 1.5h15A2.25 2.25 0 0121.75 3.75v16.5A2.25 2.25 0 0119.5 22.5h-15A2.25 2.25 0 012.25 20.25V3.75A2.25 2.25 0 014.5 1.5zM12 12.75h.007v.008H12v-.008z" /></symbol>
-        <symbol id="icon-clock" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></symbol>
+        <symbol id="icon-kanban-view" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+		    <path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v-9.75a.75.75 0 01.75-.75h2.5a.75.75 0 01.75.75v9.75a.75.75 0 01-.75.75h-2.5a.75.75 0 01-.75-.75z" />
+		    <path stroke-linecap="round" stroke-linejoin="round" d="M3 17.25v-7.5a.75.75 0 01.75-.75h2.5a.75.75 0 01.75.75v7.5a.75.75 0 01-.75.75h-2.5a.75.75 0 01-.75-.75z" />
+		    <path stroke-linecap="round" stroke-linejoin="round" d="M15 17.25v-3.75a.75.75 0 01.75-.75h2.5a.75.75 0 01.75.75v3.75a.75.75 0 01-.75.75h-2.5a.75.75 0 01-.75-.75z" />
+		</symbol>
+		<symbol id="icon-clock" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></symbol>
         <symbol id="icon-duplicate" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75c-.621 0-1.125-.504-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375V17.25" /></symbol>
         <symbol id="icon-upload" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" /></symbol>
         <symbol id="icon-download" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></symbol>
@@ -104,7 +109,7 @@
                             <span>Kalender</span>
                         </button>
 						<button class="button-toggle-view" id="btnToggleKanban" data-view="kanban">
-						    <svg class="icon-sm" ...> </svg>
+						    <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-kanban-view"></use></svg>
 						    <span>Tavla</span>
 						</button>
                     </div>
@@ -224,8 +229,9 @@
             <svg class="icon" viewBox="0 0 24 24"><use href="#icon-timeline-view"></use></svg>
             <span>Tidslinje</span>
         </button>
+		<button class="button-toggle-view" id="btnToggleKanban" data-view="kanban">
 		<button class="mobile-nav-btn" data-view="kanban">
-		    <svg class="icon" ...> </svg>
+		    <svg class="icon" viewBox="0 0 24 24"><use href="#icon-kanban-view"></use></svg>
 		    <span>Tavla</span>
 		</button>
         <button class="mobile-nav-btn" data-view="calendar">
