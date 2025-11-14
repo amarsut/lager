@@ -1898,19 +1898,42 @@
                            (job.kommentarer && job.kommentarer.toLowerCase().includes(term));
                 });
 
-                listElement.innerHTML = filteredJobs.map(job => {
-                    const prioIcon = job.prio ? `<svg class="icon-sm prio-flag-icon" viewBox="0 0 24 24"><use href="#icon-flag"></use></svg>` : '';
-                    return `<li data-job-id="${job.id}">
-			            <div>
-			                <span class="job-date">${prioIcon}${formatDate(job.datum)}</span>
-			                <span class="job-subline">${job.regnr || job.kundnamn} (${STATUS_TEXT[job.status]})</span>
-			                ${job.kommentarer ? `<p class="job-comment">${job.kommentarer}</p>` : ''}
-			            </div>
-			            <span class="job-profit profit ${job.vinst > 0 ? 'positive' : ''}">
-			                ${isPrivacyModeEnabled ? '---' : formatCurrency(job.vinst)}
-			            </span>
-			        </li>`
-                }).join('');
+                let tableHTML = `
+				    <table class="detail-job-table">
+				        <thead>
+				            <tr>
+				                <th>Datum</th>
+				                <th>Info</th>
+				                <th>Status</th>
+				                <th class="money-related">Vinst</th>
+				            </tr>
+				        </thead>
+				        <tbody>
+				`;
+				
+				tableHTML += filteredJobs.map(job => {
+				    const prioIcon = job.prio ? `...` : ''; // Din prio-ikon-logik
+				    const subline = (listElement === customerModalJobList) ? job.regnr : job.kundnamn;
+				
+				    return `
+				        <tr data-job-id="${job.id}">
+				            <td>${formatDate(job.datum, { onlyDate: true })}</td>
+				            <td>
+				                <span class="job-subline-main">${prioIcon}${subline || '---'}</span>
+				                ${job.kommentarer ? `<span class="job-subline-comment">${job.kommentarer}</span>` : ''}
+				            </td>
+				            <td>
+				                <span class="status-badge status-${job.status}">${STATUS_TEXT[job.status]}</span>
+				            </td>
+				            <td class="job-profit money-related">
+				                ${isPrivacyModeEnabled ? '---' : formatCurrency(job.vinst)}
+				            </td>
+				        </tr>
+				    `;
+				}).join('');
+				
+				tableHTML += `</tbody></table>`;
+				listElement.innerHTML = tableHTML;
             }
 
             function openCustomerModal(kundnamn) {
