@@ -1917,15 +1917,15 @@
 				
 				    return `
 				        <tr data-job-id="${job.id}">
-				            <td>${formatDate(job.datum, { onlyDate: true })}</td>
-				            <td>
+				            <td data-label="Datum">${formatDate(job.datum, { onlyDate: true })}</td>
+				            <td data-label="Info">
 				                <span class="job-subline-main">${prioIcon}${subline || '---'}</span>
 				                ${job.kommentarer ? `<span class="job-subline-comment">${job.kommentarer}</span>` : ''}
 				            </td>
-				            <td>
+				            <td data-label="Status">
 				                <span class="status-badge status-${job.status}">${STATUS_TEXT[job.status]}</span>
 				            </td>
-				            <td class="job-profit money-related">
+				            <td data-label="Vinst" class="job-profit money-related ${job.vinst > 0 ? 'positive' : ''}">
 				                ${isPrivacyModeEnabled ? '---' : formatCurrency(job.vinst)}
 				            </td>
 				        </tr>
