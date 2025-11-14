@@ -3641,3 +3641,70 @@ html.privacy-mode-enabled .nav-logo {
     padding-top: 0.25rem;
 }
 
+/* --- FÖRSLAG: Responsiv Kund/Bil-TABELL --- */
+
+/* 1. Tillåt radbrytning för långa kommentarer i tabellen 
+      (bra även på desktop) */
+.detail-job-table .job-subline-comment {
+    white-space: pre-wrap;  /* Tillåt radbrytning */
+    word-break: break-word; /* Bryt långa ord */
+}
+
+/* 2. Media Query: När vi går till MOBIL (768px eller smalare)... */
+@media (max-width: 768px) {
+    
+    /* Dölj tabell-headern, vi använder etiketter istället */
+    .detail-job-table thead {
+        display: none;
+    }
+
+    /* Gör varje tabellrad (tr) till ett "kort" */
+    .detail-job-table tbody tr {
+        display: block;
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius);
+        margin-bottom: 1rem;
+        box-shadow: var(--shadow-sm);
+        background: var(--content-bg);
+    }
+    .detail-job-table tbody tr:hover {
+         background: var(--bg-color); /* Bevarar hover-effekten */
+    }
+
+    /* Gör varje cell (td) till en "rad" inuti kortet */
+    .detail-job-table td {
+        display: flex;
+        justify-content: space-between; /* Etikett till vänster, värde till höger */
+        align-items: center;
+        padding: 0.6rem 0.75rem;
+        font-size: 0.9rem;
+        border-bottom: 1px solid var(--border-color);
+        text-align: right; /* Högerställ värdet */
+    }
+    .detail-job-table tr td:last-child {
+        border-bottom: none; /* Ta bort sista linjen */
+    }
+
+    /* Etiketten (från data-label vi lade till i Steg 1) */
+    .detail-job-table td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: var(--text-color-light);
+        font-size: 0.9rem;
+        padding-right: 1rem;
+        text-align: left; /* Vänsterställ etiketten */
+    }
+
+    /* Special-fall för "Info"-cellen (med kommentaren) */
+    .detail-job-table td[data-label="Info"] {
+        flex-direction: column; /* Stapla etikett och innehåll */
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    /* Se till att innehållet i Info-cellen är vänsterställt */
+    .detail-job-table td[data-label="Info"] .job-subline-main,
+    .detail-job-table td[data-label="Info"] .job-subline-comment {
+        text-align: left;
+    }
+}
