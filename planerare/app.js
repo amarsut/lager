@@ -2890,7 +2890,7 @@
                     }
                     
                     setTimeout(() => {
-                        openJobModal('edit', job);
+                        openJobSummaryModal(job);
                     }, 50); 
                 }
             }
