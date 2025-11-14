@@ -3708,3 +3708,45 @@ html.privacy-mode-enabled .nav-logo {
         text-align: left;
     }
 }
+
+/* --- FÖRSLAG: Justering av Mobil Kund/Bil-lista --- */
+
+@media (max-width: 768px) {
+
+    /* 1. Dölj "Info:"-etiketten (detta är vad du bad om) */
+    .detail-job-table td[data-label="Info"]::before {
+        display: none;
+    }
+
+    /* 2. Justera "Info"-cellens layout (som nu är huvud-cellen) */
+    .detail-job-table td[data-label="Info"] {
+        flex-direction: column;  /* Behåll staplad layout */
+        align-items: flex-start; /* Behåll vänster-justering */
+        gap: 0.25rem;            /* Litet gap mellan regnr och kommentar */
+        
+        /* Ge den lite mer luft upptill eftersom den agerar "rubrik" */
+        padding-top: 0.75rem;
+        padding-bottom: 0.75rem;
+    }
+
+    /* 3. Gör Regnr/Kundnamn fetstilt och större (din andra önskan) */
+    .detail-job-table .job-subline-main {
+        font-weight: 700;  /* Fetstilt */
+        font-size: 1rem;   /* Lite större */
+        color: var(--text-color); /* Se till att den har huvud-textfärgen */
+    }
+
+    /* 4. (Valfritt) Gör de andra "raderna" lite tajtare */
+    .detail-job-table td[data-label="Datum"],
+    .detail-job-table td[data-label="Status"],
+    .detail-job-table td[data-label="Vinst"] {
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+    }
+
+    /* 5. (Valfritt) Ta bort kursiv stil från kommentaren */
+    .detail-job-table .job-subline-comment {
+        font-style: normal;
+        font-size: 0.85rem;
+    }
+}
