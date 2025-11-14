@@ -3591,4 +3591,53 @@ html.privacy-mode-enabled .nav-logo {
     color: white;
 }
 
+/* --- FÖRSLAG: Proffsig Jobb-Tabell --- */
+.detail-job-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.detail-job-table thead th {
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-color-light);
+    padding: 0.5rem 0.75rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.detail-job-table tbody tr {
+    border-bottom: 1px solid var(--border-color);
+    transition: background-color var(--transition-speed-fast) ease;
+    cursor: pointer;
+}
+.detail-job-table tbody tr:hover {
+    background-color: var(--bg-color);
+}
+
+.detail-job-table tbody td {
+    padding: 0.6rem 0.75rem;
+    vertical-align: top;
+    font-size: 0.9rem;
+}
+
+/* Högerställ vinsten */
+.detail-job-table th:last-child,
+.detail-job-table td:last-child {
+    text-align: right;
+}
+
+/* Styling för Info-kolumnen */
+.detail-job-table .job-subline-main {
+    font-weight: 500;
+    display: block;
+}
+.detail-job-table .job-subline-comment {
+    font-size: 0.8rem;
+    color: var(--text-color-light);
+    font-style: italic;
+    white-space: pre-wrap;
+    display: block;
+    padding-top: 0.25rem;
+}
 
