@@ -919,8 +919,8 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     display: flex; flex-direction: column;
     gap: 0.25rem; align-items: flex-start;
 }
-.detail-modal-header h2 { font-size: 1.5rem; margin: 0; }
-.detail-modal-header p { font-size: 1rem; color: var(--text-color-light); margin: 0; }
+.detail-modal-header h2 { font-size: 1.25rem; margin: 0; }
+.detail-modal-header p { font-size: 0.9rem; color: var(--text-color-light); margin: 0; }
 
 /* PUNKT 6 (NY): Styling för redigera-knapp */
 .customer-phone-wrapper {
@@ -935,7 +935,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 .detail-stats {
     display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: 1rem; background-color: var(--bg-color);
-    padding: 1rem 1.5rem;
+    padding: 0.75rem 1.25rem;
     border-bottom: 1px solid var(--border-color);
 }
 /* Fix för Statistik-modalen: Ta bort "sticky" och gör den mindre */
@@ -953,12 +953,13 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 /* Gör texten i Kund- & Bil-modalerna mindre */
 #customerModal .detail-stats .stat-title,
 #carModal .detail-stats .stat-title {
-    font-size: 0.75rem; /* Mindre titel */
+    font-size: 0.7rem; /* Mindre titel */
+	text-transform: uppercase;
 }
 
 #customerModal .detail-stats .stat-value,
 #carModal .detail-stats .stat-value {
-    font-size: 1.1rem; /* Mindre värde */
+    font-size: 1rem; /* Mindre värde */
 }
 .detail-stats div { display: flex; flex-direction: column; }
 .detail-stats .stat-title {
@@ -975,7 +976,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 .detail-job-list { list-style: none; padding: 0; margin: 0; }
 .detail-job-list li {
     display: flex; justify-content: space-between; align-items: center;
-    padding: 1rem 1.5rem;
+    padding: 0.75rem 1.25rem;
     border-bottom: 1px solid var(--border-color);
 }
 .detail-job-list li[data-job-id] {
@@ -991,12 +992,12 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 
 .detail-job-list li:last-child { border-bottom: none; }
 .detail-job-list li > div { display: flex; flex-direction: column; }
-.detail-job-list .job-date { font-weight: 500; }
-.detail-job-list .job-subline { font-size: 0.9rem; color: var(--text-color-light); }
-.detail-job-list .job-profit { font-weight: 600; font-size: 1.1rem; }
+.detail-job-list .job-date { font-size: 0.9rem; font-weight: 600; }
+.detail-job-list .job-subline { font-size: 0.85rem; color: var(--text-color-light); }
+.detail-job-list .job-profit { font-weight: 600; font-size: 1rem; }
 .detail-job-list .job-comment {
-    font-size: 0.9rem; color: var(--text-color);
-    padding-top: 0.75rem; margin-top: 0.75rem;
+    font-size: 0.85rem; color: var(--text-color);
+    padding-top: 0.5rem; margin-top: 0.5rem;
     border-top: 1px dashed var(--border-color);
     white-space: pre-wrap; font-style: italic;
 }
@@ -3589,4 +3590,5 @@ html.privacy-mode-enabled .nav-logo {
     background-color: var(--success-color);
     color: white;
 }
+
 
