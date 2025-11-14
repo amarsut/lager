@@ -2873,7 +2873,7 @@
             
             // --- Klickbara jobblistor i Kund/Bil-modal (FIXAD HISTORIK) ---
             function handleDetailListClick(e) {
-                const jobItem = e.target.closest('li[data-job-id]');
+                const jobItem = e.target.closest('tr[data-job-id]');
                 if (!jobItem) return;
 
                 const jobId = jobItem.dataset.jobId;
