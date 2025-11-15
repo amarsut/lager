@@ -3016,8 +3016,9 @@
                         const item = document.createElement('div');
                         item.classList.add('suggestion-item');
                         item.textContent = name;
+                        item.dataset.name = name; // <--- HÄR ÄR FIXEN!
                         item.addEventListener('click', () => {
-                            const name = item.dataset.name; // <-- HÄR ÄR BUGGEN
+                            const name = item.dataset.name; // Denna rad fungerar nu
                             modalKundnamn.value = name;
                             kundnamnSuggestions.style.display = 'none';
                             kundnamnSuggestions.innerHTML = '';
@@ -3029,6 +3030,12 @@
                                 // Fyll BARA om telefon-fältet är tomt
                                 if (modalTelefon.value === '') {
                                     modalTelefon.value = existingJob.telefon || '';
+                                    // Bonus: Trigga input-eventet för att visa Ring/SMS-knapparna
+                                    modalTelefon.dispatchEvent(new Event('input'));
+                                }
+                                // Bonus 2: Fyll även i regnr om det är tomt
+                                if (modalRegnr.value === '') {
+                                    modalRegnr.value = existingJob.regnr || '';
                                 }
                             }
                         });
