@@ -295,12 +295,12 @@
                     height: 'auto', 
                     
                     headerToolbar: { 
-                        left: 'title',
-                        center: 'dayGridMonth,dayGridTwoWeek',
+                        left: '',
+                        center: 'dayGridMonth,dayGridTwoWeek,dayGridWeek',
                         right: ''
                     },
 					footerToolbar: {
-					    left: '',
+					    left: 'title',
 					    center: '',
 					    right: 'prev,next,today'
 					},
