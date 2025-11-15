@@ -3017,7 +3017,7 @@
                         item.classList.add('suggestion-item');
                         item.textContent = name;
                         item.addEventListener('click', () => {
-                            const name = item.dataset.name; // Återanvänd variabeln 'name'
+                            const name = item.dataset.name; // <-- HÄR ÄR BUGGEN
                             modalKundnamn.value = name;
                             kundnamnSuggestions.style.display = 'none';
                             kundnamnSuggestions.innerHTML = '';
