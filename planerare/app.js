@@ -314,14 +314,22 @@
                     },
                     
                     views: {
+                        // NYTT FÖR ATT FÅ "November" istället för "November 2025"
+                        dayGridMonth: { 
+                            titleFormat: { month: 'long' } // <-- NY RAD
+                        }, 
                         dayGridTwoWeek: {
                             type: 'dayGrid',
                             duration: { weeks: 2 },
                             displayEventTime: true,
+                            // FIX FÖR TITELN: "24 nov. - 7 dec."
+                            titleFormat: { day: 'numeric', month: 'short' }, // <-- NY RAD
                             dayCellContent: function(arg) {
                                 let dayNumberEl = document.createElement('a');
                                 dayNumberEl.classList.add('fc-daygrid-day-number');
-                                dayNumberEl.innerText = arg.dayNumberText;
+                                // FIX FÖR DAG-NUMMER: Visar "1" istället för "1 december"
+                                dayNumberEl.innerText = arg.date.getDate(); // <-- ÄNDRAD
+
 
                                 let profitEl = document.createElement('div');
                                 profitEl.classList.add('calendar-day-profit', 'money-related');
@@ -331,10 +339,12 @@
                             }
                         },
                         timeGridWeek: {
-                            displayEventTime: true
+                            displayEventTime: true,
+                            titleFormat: { day: 'numeric', month: 'short' } // <-- NY RAD (Bonus)
                         },
                         timeGridDay: {
-                            displayEventTime: true
+                            displayEventTime: true,
+                            titleFormat: { day: 'numeric', month: 'short' } // <-- NY RAD (Bonus)
                         },
                         listWeek: {
                             type: 'list',
@@ -399,6 +409,7 @@
                     },
                     
                     eventContent: function(arg) {
+                        // ... (resten av din eventContent-funktion är oförändrad) ...
                         const job = arg.event.extendedProps.originalJob; 
                         
                         if (!job) {
