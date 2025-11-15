@@ -1006,72 +1006,84 @@
 
             // --- UPPDATERAD: renderTimeline med Animationslogik ---
             function renderTimeline() {
-                const desktopSearchCount = document.getElementById('desktopSearchCount');
+                // BUGGFIX: Ditt ID i plan.html är "desktopSearchResultCount"
+                const desktopSearchCount = document.getElementById('desktopSearchResultCount'); 
                 let jobsToDisplay = allJobs.filter(job => !job.deleted);
                 
                 const now = new Date();
                 now.setHours(0, 0, 0, 0);
                 
-                let sortOrder = 'asc'; 
+                let sortOrder = 'asc'; // Standard-sortering
                 
-                // --- BÖRJAN PÅ FILTERLOGIK ---
-                switch(currentStatusFilter) {
-                    case 'kommande':
-                        jobsToDisplay = jobsToDisplay.filter(j => 
-                            j.status === 'bokad' && new Date(j.datum) >= now
-                        );
-                        break;
-                    case 'klar':
-                        jobsToDisplay = jobsToDisplay.filter(j => j.status === 'klar');
-                        sortOrder = 'desc'; 
-                        break;
-                    case 'offererad':
-                        jobsToDisplay = jobsToDisplay.filter(j => j.status === 'offererad');
-                        break;
-                    case 'alla':
-                        // 'alla' betyder inget filter, bara ändra sortering
-                        sortOrder = 'desc'; 
-                        break;
-                }
+                // --- BÖRJAN PÅ NY FILTERLOGIK ---
                 
                 if (currentSearchTerm) {
+                    // 1. SÖKNING ÄR AKTIV: Filtrera ALLA jobb
                     clearDayFilterBtn.style.display = 'inline-flex';
                     jobsToDisplay = jobsToDisplay.filter(job => {
                         const term = currentSearchTerm.toLowerCase();
                         
                         // --- KORREKT SÖK-LOGIK ---
-                        // Normalisera söktermen (ta bort alla mellanslag)
                         const normalizedTerm = term.replace(/\s/g, '');
-                        
-                        // Normalisera telefonnumret för sökning
                         const normalizedPhone = (job.telefon || '').replace(/\D/g, '');
-                        
                         const regMatch = (job.regnr && job.regnr.toLowerCase().replace(/\s/g, '').includes(normalizedTerm));
-                        // --- SLUT KORREKT SÖK-LOGIK ---
                         
                         return (
                             (job.kundnamn && job.kundnamn.toLowerCase().includes(term)) || 
-                            regMatch || // Använd den nya, korrekta matchningen
+                            regMatch || 
                             (job.kommentarer && job.kommentarer.toLowerCase().includes(term)) ||
-                            (normalizedPhone && normalizedPhone.includes(normalizedTerm)) || // Sök på normaliserat tel.nr
+                            (normalizedPhone && normalizedPhone.includes(normalizedTerm)) || 
                             (STATUS_TEXT[job.status] || '').toLowerCase().includes(term)
                         );
                     });
                     
+                    // Sätt sortering för sökresultat (senaste först är oftast bäst)
+                    sortOrder = 'desc';
+                    
+                    // Uppdatera stat-knapparna visuellt (rensa aktiv, sätt "alla" som aktiv)
+                    document.querySelectorAll('.stat-card.active').forEach(c => c.classList.remove('active'));
+                    const allaKort = document.getElementById('stat-card-alla');
+                    if(allaKort) allaKort.classList.add('active');
+
+                    // Uppdatera sök-räknaren
                     if (desktopSearchCount) {
 			            desktopSearchCount.textContent = `${jobsToDisplay.length} träff(ar)`;
 			        }
+
                 } else {
+                    // 2. INGEN SÖKNING: Använd kategorifiltret som vanligt
                     clearDayFilterBtn.style.display = 'none';
-                    if (window.innerWidth <= 768) {
-                        renderGlobalStats(allJobs); 
+                    
+                    switch(currentStatusFilter) {
+                        case 'kommande':
+                            jobsToDisplay = jobsToDisplay.filter(j => 
+                                j.status === 'bokad' && new Date(j.datum) >= now
+                            );
+                            break;
+                        case 'klar':
+                            jobsToDisplay = jobsToDisplay.filter(j => j.status === 'klar');
+                            sortOrder = 'desc'; 
+                            break;
+                        case 'offererad':
+                            jobsToDisplay = jobsToDisplay.filter(j => j.status === 'offererad');
+                            break;
+                        case 'alla':
+                            sortOrder = 'desc'; 
+                            break;
                     }
-                    // FIX: Se till att räknaren rensas
+
+                    // Rensa sök-räknaren
                     if (desktopSearchCount) {
                         desktopSearchCount.textContent = '';
                     }
+
+                    // Sätt korrekt stat-knapp som aktiv (hanteras också av renderGlobalStats, men dubbelkolla här)
+                    document.querySelectorAll('.stat-card.active').forEach(c => c.classList.remove('active'));
+                    const activeCard = document.getElementById(`stat-card-${currentStatusFilter}`);
+                    if (activeCard) activeCard.classList.add('active');
                 }
-                // --- SLUT PÅ FILTERLOGIK ---
+                // --- SLUT PÅ NY FILTERLOGIK ---
+
 
                 jobsToDisplay.sort((a, b) => {
                     const dateA = new Date(a.datum);
@@ -1083,7 +1095,7 @@
                     }
                 });
 
-                // Flytta definitionen av renderNewContent hit upp
+                // (Resten av din funktion är oförändrad)
                 function renderNewContent() {
                     let timelineCount = 0;
                     const isMobile = window.innerWidth <= 768;
@@ -1102,7 +1114,8 @@
                             emptyStateTitleTimeline.textContent = "Inga träffar";
                             emptyStateTextTimeline.textContent = `Din sökning på "${currentSearchTerm}" gav inga resultat.`;
                         } else if (allJobs.length > 0) {
-                            const filterText = document.querySelector(`.stat-card[data-filter="${currentStatusFilter}"] h3`).textContent;
+                            const filterTextEl = document.querySelector(`.stat-card[data-filter="${currentStatusFilter}"] h3`);
+                            const filterText = filterTextEl ? filterTextEl.textContent : 'valda filter';
                             emptyStateTitleTimeline.textContent = `Inga ${filterText.toLowerCase()}`;
                             emptyStateTextTimeline.textContent = "Det finns inga jobb som matchar detta filter.";
                         } else {
@@ -1115,8 +1128,6 @@
                     }
                 }
 
-                // TA BORT ALL LOGIK FÖR FADE-OUT OCH SETTIMEOUT
-                // Anropa renderNewContent direkt
                 renderNewContent();
             }
 
@@ -2683,6 +2694,21 @@
             statBar.addEventListener('click', (e) => {
                 const card = e.target.closest('.stat-card');
                 if (card && card.dataset.filter) {
+                    
+                    // Om vi söker, rensa sökningen när vi klickar på ett filter
+                    if (currentSearchTerm) {
+                        searchBar.value = '';
+                        mobileSearchBar.value = '';
+                        currentSearchTerm = '';
+                        desktopSearchClear.style.display = 'none';
+                        mobileSearchClear.style.display = 'none';
+                        clearDayFilterBtn.style.display = 'none';
+                        const desktopSearchCount = document.getElementById('desktopSearchResultCount');
+                        if (desktopSearchCount) {
+                            desktopSearchCount.textContent = '';
+                        }
+                    }
+                    
                     currentStatusFilter = card.dataset.filter;
                     renderTimeline();
                     renderGlobalStats(allJobs);
