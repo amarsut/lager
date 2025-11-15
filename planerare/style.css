@@ -1487,11 +1487,23 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 
 /* --- PUNKT 1 (FIX): Kalender-vy Desktop Storlek --- */
 #calendarView {
-    padding: 0;
+    /*padding: 0;
     background: none;
-    border: none;
-    max-width: 900px; /* Sätter en maxbredd */
+    border: none;*/
+    max-width: 100%; /* 900px tidigare, Sätter en maxbredd */
     margin: 0 auto; /* Centrerar */
+}
+
+/* --- Snyggare "Inbäddad" Kalender --- */
+#calendarView .fc {
+    /* Återanvänd din "card"-stil */
+    background-color: var(--content-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    
+    /* Lägg till luft inuti kortet */
+    padding: 1.5rem;
 }
 
 /* --- PUNKT 2 (FIX): Mörkt tema kalender-header --- */
@@ -1517,11 +1529,11 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     --fc-today-bg-color: rgba(10, 132, 255, 0.15);
 }
 [data-theme="dark"] .fc .fc-day-today {
-    background-color: var(--fc-today-bg-color) !important;
+    background-color: rgba(10, 132, 255, 0.15) !important;
 }
 
 .fc .fc-daygrid-day-frame {
-    position: relative; 
+    min-height: 110px; /* Justera vid behov relative tidigare */
 }
 
 /* PUNKT 2 (FIX): Korrekta färger i mörkt läge för header */
@@ -1544,10 +1556,15 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 [data-theme="dark"] .fc .fc-day-other .fc-daygrid-day-number {
     opacity: 0.3;
 }
+.fc .fc-day-sat,
+.fc .fc-day-sun {
+    /* Använd din --bg-color men lägg till en svag mörkare ton */
+    background-color: rgba(0, 0, 0, 0.02);
+}
 [data-theme="dark"] .fc .fc-day-sat,
 [data-theme="dark"] .fc .fc-day-sun {
-    background-color: var(--bg-color);
-    opacity: 1;
+    /* En mörkare ton för mörkt läge */
+    background-color: rgba(255, 255, 255, 0.03);
 }
 [data-theme="dark"] .fc .fc-button-primary {
     background-color: #2c2c2e;
@@ -1675,11 +1692,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     width: 16px;
     height: 16px;
     border-radius: 2px;
-}
-/* 11. Tona ner helgdagar i kalendern (v21) */
-.fc .fc-day-sat,
-.fc .fc-day-sun {
-    background-color: var(--bg-color);
 }
 /* FIX: Tog bort mörk-läge-specifik regel som var i konflikt */
 
@@ -2954,17 +2966,17 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 
 /* --- NYTT: Stil för "Lediga Dagar" i kalendern --- */
 .fc-day-free {
-    /* En mycket svag, ljusgrön färg */
-    background-color: rgba(48, 209, 88, 0.05);
+    /* Lite starkare grön ton än du hade */
+    background-color: rgba(48, 209, 88, 0.08) !important;
 }
 
 [data-theme="dark"] .fc-day-free {
-    background-color: rgba(48, 209, 88, 0.1);
+    background-color: rgba(48, 209, 88, 0.12) !important;
 }
 
 /* Se till att "idag"-markeringen alltid vinner över "ledig dag" */
 .fc .fc-day-today {
-    background-color: var(--fc-today-bg-color) !important;
+    background-color: var(--primary-light) !important;
 }
 
 /* --- NYTT: Stil för Detaljerad Utgifts-spårning --- */
@@ -3750,3 +3762,4 @@ html.privacy-mode-enabled .nav-logo {
         font-size: 0.85rem;
     }
 }
+
