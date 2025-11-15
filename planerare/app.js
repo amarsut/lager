@@ -295,14 +295,14 @@
                     height: 'auto', 
                     
                     headerToolbar: { 
-                        left: '',
-                        center: 'dayGridMonth,dayGridTwoWeek,timeGridWeek,timeGridDay',
+                        left: 'title',
+                        center: 'dayGridMonth,dayGridTwoWeek',
                         right: ''
                     },
 					footerToolbar: {
-					    left: 'title',
-					    center: 'prev,next,today',
-					    right: ''
+					    left: '',
+					    center: '',
+					    right: 'prev,next,today'
 					},
                     buttonText: {
                         today:         'Idag',
