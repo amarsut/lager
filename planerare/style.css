@@ -3763,3 +3763,49 @@ html.privacy-mode-enabled .nav-logo {
     }
 }
 
+/* --- 1. Gör kalender-knapparna moderna --- */
+.fc .fc-button-primary {
+    background-color: var(--bg-color); /* Använd din ljusa bakgrund */
+    color: var(--text-color-light); /* Ljusgrå text */
+    border: 1px solid var(--border-color); /* Samma kant som dina fält */
+    border-radius: 6px; /* Matchar dina snabbknappar */
+    font-weight: 600; /* Matchar dina knappar */
+    padding: 0.5em 1em;
+    text-transform: capitalize; /* "Månad" istället för "månad" */
+    transition: all var(--transition-speed-fast) ease;
+}
+
+/* Hover-effekt */
+.fc .fc-button-primary:not(:disabled):hover {
+    background-color: var(--content-bg); /* Ljusare vid hover */
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+/* Inaktiverad knapp */
+.fc .fc-button-primary:disabled {
+    opacity: 0.5;
+}
+
+/* Aktiv knapp (t.ex. "14 Dagar" när den är vald) */
+.fc .fc-button-group > .fc-button.fc-button-active,
+.fc .fc-button-group > .fc-button.fc-button-active:hover {
+    background-color: var(--primary-light); /* Din primära ljusa färg */
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+    box-shadow: none;
+    z-index: 2;
+}
+
+/* Fixar för mörkt läge */
+[data-theme="dark"] .fc .fc-button-primary {
+    background-color: #2c2c2e; /* Mörk bakgrund */
+    border-color: var(--border-color);
+    color: var(--text-color);
+}
+[data-theme="dark"] .fc .fc-button-primary:not(:disabled):hover {
+    background-color: #3a3a3c;
+}
+[data-theme="dark"] .fc .fc-button-group > .fc-button.fc-button-active {
+    background-color: rgba(10, 132, 255, 0.2); /* Mörk primär ljus */
+}
