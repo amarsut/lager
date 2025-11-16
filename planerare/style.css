@@ -2933,12 +2933,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     border-bottom-color: var(--primary-color);
 }
 
-/* --- NYTT: Stil för "Lediga Dagar" i kalendern --- */
-.fc-day-free {
-    /* Lite starkare grön ton än du hade */
-    background-color: rgba(48, 209, 88, 0.08) !important;
-}
-
 [data-theme="dark"] .fc-day-free {
     background-color: rgba(48, 209, 88, 0.12) !important;
 }
@@ -3823,4 +3817,5 @@ html.privacy-mode-enabled .nav-logo {
 .fc td:first-child {
     border-left-width: 0;
 }
+
 
