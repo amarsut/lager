@@ -3365,18 +3365,20 @@ html.privacy-mode-enabled .nav-logo {
     top: 0;
     background-color: var(--content-bg);
     z-index: 5;
-    padding: 1rem;
+    padding: 1rem; /* <-- Behåll denna */
     margin: 0;
-    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border-color); /* <-- LÄGG TILL/SÄKERSTÄLL DENNA */
 }
 .kanban-column-count {
-    font-size: 0.9rem;
+    font-size: 0.8rem; /* <-- Mindre text */
     font-weight: 700;
     background-color: var(--bg-color);
     color: var(--text-color-light);
-    padding: 0.15rem 0.5rem;
+    padding: 0.25rem 0.6rem; /* <-- Mer padding */
     border-radius: 99px;
     border: 1px solid var(--border-color);
+    min-width: 1.5rem; /* Ser bra ut även med en siffra */
+    text-align: center;
 }
 [data-theme="dark"] .kanban-column-count {
     background-color: #3a3a3c;
@@ -3385,7 +3387,7 @@ html.privacy-mode-enabled .nav-logo {
 /* 4. Styling för själva Kanban-kortet (Yttre) */
 .kanban-card {
     position: relative;
-    background: var(--content-bg);
+    background: var(--bg-color);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     box-shadow: var(--shadow-sm);
@@ -3460,14 +3462,14 @@ html.privacy-mode-enabled .nav-logo {
     font-style: italic;
     color: var(--text-color-light);
     font-size: 0.9rem;
-	opacity: 0.8;
+	/*opacity: 0.8;*/
 }
 .kanban-card-footer {
     display: flex;
     justify-content: space-between; /* <-- NYTT */
     align-items: center;
     margin-top: 0.5rem; /* <-- Lite mer luft */
-    opacity: 0.8; /* <-- Tona ner hela foten (tid/ikon) */
+    /*opacity: 0.8;*/ /* <-- Tona ner hela foten (tid/ikon) */
 }
 .kanban-card-icon {
     width: 1rem;
@@ -3524,7 +3526,7 @@ html.privacy-mode-enabled .nav-logo {
     /* Lyft och TILTA kortet lite när du drar det */
     box-shadow: var(--shadow-lg) !important;
     transform: scale(1.05) rotate(1.5deg) !important;
-    background: var(--content-bg);
+    background: var(--bg-color);
 }
 
 /* NYTT: Markera kolumnen du drar ÖVER */
@@ -3964,6 +3966,7 @@ html.privacy-mode-enabled .nav-logo {
     background-color: var(--primary-color) !important;
     color: white !important;
 }
+
 
 
 
