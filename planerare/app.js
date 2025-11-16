@@ -395,6 +395,7 @@
                         
                         // ▼▼▼ HÄR ÄR FIXEN ▼▼▼
                         const hasActiveJob = allJobs.some(j => 
+							!j.deleted &&
                             j.datum.startsWith(dateKey) && 
                             (j.status === 'bokad' || j.status === 'offererad' || j.status === 'klar')
                         );
