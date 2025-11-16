@@ -3346,6 +3346,7 @@ html.privacy-mode-enabled .nav-logo {
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     box-shadow: var(--shadow-sm);
+	border-top: 4px solid var(--border-color);
 
     /* Viktigt för att "korten" inte ska svämma över */
     overflow: hidden; 
@@ -3354,6 +3355,17 @@ html.privacy-mode-enabled .nav-logo {
     max-height: 80vh; 
     display: flex;
     flex-direction: column;
+}
+
+/* --- NYTT: Färg-accenter --- */
+.kanban-column[data-status="offererad"] {
+    border-top-color: var(--info-color);
+}
+.kanban-column[data-status="bokad"] {
+    border-top-color: var(--primary-color);
+}
+.kanban-column[data-status="klar"] {
+    border-top-color: var(--success-color);
 }
 
 /* 3. Kolumn-rubriker och Kort-räknare */
@@ -3529,6 +3541,15 @@ html.privacy-mode-enabled .nav-logo {
     background: var(--bg-color);
 }
 
+/* --- NYTT: Tona ner "Klar"-kolumnen --- */
+.kanban-column[data-status="klar"] {
+    opacity: 0.8;
+    transition: opacity 0.2s ease;
+}
+.kanban-column[data-status="klar"]:hover {
+    opacity: 1; /* Visa tydligt vid hovring */
+}
+
 /* NYTT: Markera kolumnen du drar ÖVER */
 .kanban-column-cards.sortable-drag {
     background-color: var(--primary-light) !important;
@@ -3584,15 +3605,18 @@ html.privacy-mode-enabled .nav-logo {
     min-height: 200px;
 }
 
+/* --- NYTT: Snyggare "Ghost Button" för Lägg till --- */
 .kanban-add-btn {
     width: calc(100% - 2rem); /* Full bredd minus padding */
-    margin: 0 1rem 1rem 1rem;
+    margin: 0.5rem 1rem 1rem 1rem;
     font-size: 0.9rem;
     padding: 0.6rem;
     
-    /* Dölj den som standard */
-    opacity: 0.3;
-    transition: all var(--transition-speed-fast) ease;
+    background: transparent;
+    border: 2px dashed var(--border-color);
+    color: var(--text-color-light);
+    opacity: 0.7;
+    transition: all 0.2s ease;
 }
 
 /* Visa bara knappen när man hovrar över kolumnen */
@@ -3600,8 +3624,10 @@ html.privacy-mode-enabled .nav-logo {
     opacity: 1;
 }
 
-.kanban-column:hover .kanban-add-btn:hover {
-    background-color: var(--primary-light);
+.kanban-add-btn:hover {
+    background: var(--primary-light);
+    border-style: solid;
+    border-color: var(--primary-color);
     color: var(--primary-color);
 }
 
@@ -3966,6 +3992,7 @@ html.privacy-mode-enabled .nav-logo {
     background-color: var(--primary-color) !important;
     color: white !important;
 }
+
 
 
 
