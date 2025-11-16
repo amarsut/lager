@@ -3803,7 +3803,7 @@ html.privacy-mode-enabled .nav-logo {
     font-weight: 600;
     text-transform: uppercase; /* MÅN, TIS, ONS */
     color: var(--text-color-light);
-    padding: 1rem 0;
+    padding: 0.5rem 0;
     text-decoration: none !important;
 }
 
@@ -3817,5 +3817,6 @@ html.privacy-mode-enabled .nav-logo {
 .fc td:first-child {
     border-left-width: 0;
 }
+
 
 
