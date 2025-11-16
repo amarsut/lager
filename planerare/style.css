@@ -2933,10 +2933,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     border-bottom-color: var(--primary-color);
 }
 
-[data-theme="dark"] .fc-day-free {
-    background-color: rgba(48, 209, 88, 0.12) !important;
-}
-
 /* Se till att "idag"-markeringen alltid vinner över "ledig dag" */
 .fc .fc-day-today {
     background-color: var(--primary-light) !important;
@@ -3776,7 +3772,14 @@ html.privacy-mode-enabled .nav-logo {
 /* --- 2. Subtilare "Ledig Dag"-markering --- */
 
 /* Ta först bort den gamla gröna bakgrunden */
+/* --- 2. Subtilare "Ledig Dag"-markering (KORRIGERAD) --- */
+
+/* Sätt INGEN bakgrundsfärg på själva dagen */
 .fc-day-free {
+    background-color: transparent !important;
+}
+
+[data-theme="dark"] .fc-day-free {
     background-color: transparent !important;
 }
 
@@ -3784,7 +3787,7 @@ html.privacy-mode-enabled .nav-logo {
 .fc-day-free .fc-daygrid-day-number-btn {
     color: var(--success-color);
     font-weight: 600;
-    
+
     /* Ge den en subtil streckad ring */
     border: 1px dashed var(--success-color);
     opacity: 0.8;
@@ -3817,6 +3820,7 @@ html.privacy-mode-enabled .nav-logo {
 .fc td:first-child {
     border-left-width: 0;
 }
+
 
 
 
