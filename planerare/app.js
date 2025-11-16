@@ -384,32 +384,29 @@
 
 					dayCellClassNames: function(arg) {
                         const dateKey = arg.date.toISOString().split('T')[0];
-                        const isPast = dateKey < todayString; // todayString är en global variabel
+                        const isPast = dateKey < todayString;
 
-                        // Om dagen är i dåtid, gör ingenting
                         if (isPast) {
                             return [];
                         }
 
                         // Steg 1: Leta efter ett "synligt" jobb.
-                        // Ett synligt jobb är ett som INTE är raderat OCH INTE är avbokat.
                         const hasVisibleJob = allJobs.some(j => 
                             !j.deleted && 
                             j.datum.startsWith(dateKey) && 
                             (j.status === 'bokad' || j.status === 'offererad' || j.status === 'klar')
                         );
 
-                        // Steg 2: Här är den viktiga logiken.
-                        // VI VILL: Om "har synligt jobb" är FALSKT, DÅ är dagen ledig.
-                        
-                        // ▼▼▼ VAR NOGA MED DETTA UDROPSTECKEN (!) ▼▼▼
+                        // Steg 2: Logik-kontroll.
+                        // (Detta ! är det viktigaste tecknet i hela funktionen)
                         if (!hasVisibleJob) { 
                             // Inga synliga jobb hittades = LEDIG DAG
+                            console.log(`Dag ${dateKey}: ÄR LEDIG (blir grön)`);
                             return ['fc-day-free'];
                         }
-                        // ▲▲▲ SLUT PÅ DEN VIKTIGA RADEN ▲▲▲
 
-                        // Om "hasVisibleJob" var sant (ett jobb hittades), returnera ingenting.
+                        // Om "hasVisibleJob" var sant (ett jobb hittades)
+                        console.log(`Dag ${dateKey}: Upptagen (blir vit)`);
                         return [];
                     },
                     
