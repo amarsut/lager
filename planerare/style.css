@@ -3456,35 +3456,36 @@ html.privacy-mode-enabled .nav-logo {
 }
 
 /* 8. Dra-handtaget (Större & Tydligare) */
+/* 8. Dra-handtaget (Större & Svart) */
 .kanban-drag-handle {
     position: absolute;
     top: 4px; /* Lite mer marginal */
     right: 4px;
-    padding: 8px; /* <-- STÖRRE klick-yta */
+    padding: 10px; /* <-- STÖRRE klick-yta */
     border-radius: 6px; /* Snyggare */
-    color: var(--text-color-light);
-    opacity: 0.3; /* <-- ALLTID svagt synlig */
+    color: var(--text-color); /* <-- GJORD SVART (din mörka textfärg) */
+    opacity: 0.4; /* <-- TYDLIGARE (alltid svagt synlig) */
     transition: all var(--transition-speed-fast) ease;
     cursor: grab !important;
 }
 
 /* Tydligare när man hovrar kortet */
 .kanban-card:hover .kanban-drag-handle {
-    opacity: 0.7;
+    opacity: 0.8; /* <-- Starkare hover */
 }
 
 /* Tydligast när man hovrar själva handtaget */
 .kanban-drag-handle:hover {
     opacity: 1.0 !important;
-    color: var(--primary-color);
+    color: var(--text-color); /* <-- Behåll svart (istället för blå) */
     background-color: var(--bg-color); /* <-- NY BAKGRUND */
 }
 .kanban-drag-handle:active {
     cursor: grabbing !important;
 }
 .kanban-drag-handle .icon-sm {
-    width: 1rem; /* <-- STÖRRE IKON */
-    height: 1rem;
+    width: 1.2rem; /* <-- STÖRRE IKON (från 0.8rem) */
+    height: 1.2rem;
     display: block; /* Säkerställer korrekt layout */
 }
 
@@ -3927,6 +3928,7 @@ html.privacy-mode-enabled .nav-logo {
     background-color: var(--primary-color) !important;
     color: white !important;
 }
+
 
 
 
