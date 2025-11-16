@@ -3338,9 +3338,22 @@ html.privacy-mode-enabled .nav-logo {
 
 /* 2. Kolumnerna (Fast bredd) */
 .kanban-column {
-    width: 300px;     /* Ge kolumnerna en fast, snygg bredd */
-    flex-shrink: 0;   /* Förhindra att de krymper (viktigt för mobil) */
-    /* Du kan lägga till 'max-height: 70vh; overflow-y: auto;' här om listorna blir FÖR långa */
+    width: 300px;
+    flex-shrink: 0;
+
+    /* --- NYTT HÄR --- */
+    background-color: var(--content-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+
+    /* Viktigt för att "korten" inte ska svämma över */
+    overflow: hidden; 
+
+    /* Sätt en max-höjd så långa listor blir skrollbara */
+    max-height: 80vh; 
+    display: flex;
+    flex-direction: column;
 }
 
 /* 3. Kolumn-rubriker och Kort-räknare */
@@ -3354,7 +3367,7 @@ html.privacy-mode-enabled .nav-logo {
     z-index: 5;
     padding: 1rem;
     margin: 0;
-    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.75rem;
 }
 .kanban-column-count {
     font-size: 0.9rem;
@@ -3447,11 +3460,14 @@ html.privacy-mode-enabled .nav-logo {
     font-style: italic;
     color: var(--text-color-light);
     font-size: 0.9rem;
+	opacity: 0.8;
 }
 .kanban-card-footer {
     display: flex;
+    justify-content: space-between; /* <-- NYTT */
     align-items: center;
-    margin-top: 0.25rem;
+    margin-top: 0.5rem; /* <-- Lite mer luft */
+    opacity: 0.8; /* <-- Tona ner hela foten (tid/ikon) */
 }
 .kanban-card-icon {
     width: 1rem;
@@ -3496,23 +3512,38 @@ html.privacy-mode-enabled .nav-logo {
 
 /* 9. Dra-effekterna (Bonus) */
 .kanban-card-ghost {
-    opacity: 0.4;
-    background: var(--primary-light);
-    border-style: dashed;
+    background: var(--bg-color);
+    border: 2px dashed var(--primary-color);
+    box-shadow: none;
+    /* Dölj innehållet i "spöket" */
+    & > * { 
+        opacity: 0;
+    }
 }
 .kanban-card-chosen {
-    box-shadow: var(--shadow-lg);
-    transform: scale(1.03);
+    /* Lyft och TILTA kortet lite när du drar det */
+    box-shadow: var(--shadow-lg) !important;
+    transform: scale(1.05) rotate(1.5deg) !important;
     background: var(--content-bg);
+}
+
+/* NYTT: Markera kolumnen du drar ÖVER */
+.kanban-column-cards.sortable-drag {
+    background-color: var(--primary-light) !important;
+}
+[data-theme="dark"] .kanban-column-cards.sortable-drag {
+    background-color: rgba(10, 132, 255, 0.1) !important;
 }
 
 /* 10. Kolumnens kort-container (FIXAD) */
 .kanban-column-cards {
-    padding: 0; /* <-- TA BORT ALL PADDING */
+    padding: 0 1rem; /* <-- Padding på sidorna, men inte uppe/nere */
     display: flex;
     flex-direction: column;
-    /* gap: 1rem; <-- TA BORT GAP */
-    /* min-height: 200px; <-- TA BORT MIN-HEIGHT (fixar avståndet) */
+
+    /* --- NYTT HÄR --- */
+    overflow-y: auto; /* Gör så att listan kan skrolla INUTI kolumnen */
+    flex-grow: 1; /* Får den att fylla upp ledigt utrymme */
 }
 
 /* --- NYTT: Stil för Tom Kolumn --- */
@@ -3933,6 +3964,7 @@ html.privacy-mode-enabled .nav-logo {
     background-color: var(--primary-color) !important;
     color: white !important;
 }
+
 
 
 
