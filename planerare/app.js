@@ -402,10 +402,12 @@
                         // Steg 2: Här är den viktiga logiken.
                         // VI VILL: Om "har synligt jobb" är FALSKT, DÅ är dagen ledig.
                         
-                        if (!hasVisibleJob) { // <--- !-tecknet (NOT) är det viktiga
+                        // ▼▼▼ VAR NOGA MED DETTA UDROPSTECKEN (!) ▼▼▼
+                        if (!hasVisibleJob) { 
                             // Inga synliga jobb hittades = LEDIG DAG
                             return ['fc-day-free'];
                         }
+                        // ▲▲▲ SLUT PÅ DEN VIKTIGA RADEN ▲▲▲
 
                         // Om "hasVisibleJob" var sant (ett jobb hittades), returnera ingenting.
                         return [];
