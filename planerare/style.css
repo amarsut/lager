@@ -1556,16 +1556,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 [data-theme="dark"] .fc .fc-day-other .fc-daygrid-day-number {
     opacity: 0.3;
 }
-.fc .fc-day-sat,
-.fc .fc-day-sun {
-    /* Använd din --bg-color men lägg till en svag mörkare ton */
-    background-color: rgba(0, 0, 0, 0.02);
-}
-[data-theme="dark"] .fc .fc-day-sat,
-[data-theme="dark"] .fc .fc-day-sun {
-    /* En mörkare ton för mörkt läge */
-    background-color: rgba(255, 255, 255, 0.03);
-}
 [data-theme="dark"] .fc .fc-button-primary {
     background-color: #2c2c2e;
     border-color: var(--border-color);
@@ -3788,4 +3778,5 @@ html.privacy-mode-enabled .nav-logo {
 [data-theme="dark"] .fc .fc-button-group > .fc-button.fc-button-active {
     background-color: rgba(10, 132, 255, 0.2); /* Mörk primär ljus */
 }
+
 
