@@ -2481,27 +2481,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     height: 0.9rem;
 }
 
-
-/* --- Dagens Vinst (Kalender) --- */
-.calendar-day-profit {
-    position: absolute;
-    bottom: 4px;
-    right: 6px;
-    font-size: 0.7rem;
-    font-weight: 700;
-    color: var(--success-color);
-    background: rgba(48, 209, 88, 0.1);
-    padding: 2px 5px;
-    border-radius: 4px;
-    display: none; 
-}
-@media (min-width: 900px) {
-    .calendar-day-profit {
-        display: block;
-    }
-}
-
-
 /* --- Skelett-laddare (Bonus) --- */
 .skeleton-card {
     background: var(--content-bg);
@@ -3809,3 +3788,4 @@ html.privacy-mode-enabled .nav-logo {
 [data-theme="dark"] .fc .fc-button-group > .fc-button.fc-button-active {
     background-color: rgba(10, 132, 255, 0.2); /* Mörk primär ljus */
 }
+
