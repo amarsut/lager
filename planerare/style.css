@@ -3502,6 +3502,27 @@ html.privacy-mode-enabled .nav-logo {
     min-height: 200px;
 }
 
+.kanban-add-btn {
+    width: calc(100% - 2rem); /* Full bredd minus padding */
+    margin: 0 1rem 1rem 1rem;
+    font-size: 0.9rem;
+    padding: 0.6rem;
+    
+    /* Dölj den som standard */
+    opacity: 0.3;
+    transition: all var(--transition-speed-fast) ease;
+}
+
+/* Visa bara knappen när man hovrar över kolumnen */
+.kanban-column:hover .kanban-add-btn {
+    opacity: 1;
+}
+
+.kanban-column:hover .kanban-add-btn:hover {
+    background-color: var(--primary-light);
+    color: var(--primary-color);
+}
+
 /* FIX FÖR KALENDER-HEADER PÅ MOBIL */
 @media (max-width: 768px) {
     
@@ -3863,6 +3884,7 @@ html.privacy-mode-enabled .nav-logo {
     background-color: var(--primary-color) !important;
     color: white !important;
 }
+
 
 
 
