@@ -3779,4 +3779,48 @@ html.privacy-mode-enabled .nav-logo {
     background-color: rgba(10, 132, 255, 0.2); /* Mörk primär ljus */
 }
 
+/* --- 2. Subtilare "Ledig Dag"-markering --- */
+
+/* Ta först bort den gamla gröna bakgrunden */
+.fc-day-free {
+    background-color: transparent !important;
+}
+
+/* Gör istället dag-siffran grön och streckad */
+.fc-day-free .fc-daygrid-day-number-btn {
+    color: var(--success-color);
+    font-weight: 600;
+    
+    /* Ge den en subtil streckad ring */
+    border: 1px dashed var(--success-color);
+    opacity: 0.8;
+}
+
+.fc-day-free .fc-daygrid-day-number-btn:hover {
+    background-color: rgba(48, 209, 88, 0.1); /* Ljusgrön hover */
+    opacity: 1;
+}
+
+/* --- 3. Polera Rutnät & Rubriker --- */
+
+/* Gör veckodag-rubrikerna (mån, tis) snyggare */
+.fc .fc-col-header-cell-cushion {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase; /* MÅN, TIS, ONS */
+    color: var(--text-color-light);
+    padding: 1rem 0;
+    text-decoration: none !important;
+}
+
+/* Tona ner rutnätets linjer för ett mjukare intryck */
+.fc .fc-daygrid-day,
+.fc .fc-col-header-cell {
+    border-color: var(--border-color); /* Din vanliga kantlinje-färg */
+    border-width: 0 0 1px 1px;
+}
+.fc th:first-child,
+.fc td:first-child {
+    border-left-width: 0;
+}
 
