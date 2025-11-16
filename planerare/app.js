@@ -391,7 +391,7 @@
                             return [];
                         }
 
-                        // Kolla om det finns några "aktiva" jobb (bokade eller offererade)
+                        // Kolla om det finns några "aktiva" jobb (bokade, offererade ELLER KLARA)
                         
                         // ▼▼▼ HÄR ÄR FIXEN ▼▼▼
                         const hasActiveJob = allJobs.some(j => 
