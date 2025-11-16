@@ -329,13 +329,10 @@
                                 dayNumberEl.classList.add('fc-daygrid-day-number');
                                 // FIX FÖR DAG-NUMMER: Visar "1" istället för "1 december"
                                 dayNumberEl.innerText = arg.date.getDate(); // <-- ÄNDRAD
-
-
-                                let profitEl = document.createElement('div');
-                                profitEl.classList.add('calendar-day-profit', 'money-related');
-                                profitEl.setAttribute('data-date', arg.date.toISOString().split('T')[0]);
-
-                                return { domNodes: [dayNumberEl, profitEl] };
+                                
+                                // All vinst-kod borttagen härifrån
+                                
+                                return { domNodes: [dayNumberEl] }; // <-- ÄNDRAD HÄR
                             }
                         },
                         timeGridWeek: {
@@ -395,10 +392,13 @@
                         }
 
                         // Kolla om det finns några "aktiva" jobb (bokade eller offererade)
+                        
+                        // ▼▼▼ HÄR ÄR FIXEN ▼▼▼
                         const hasActiveJob = allJobs.some(j => 
                             j.datum.startsWith(dateKey) && 
-                            (j.status === 'bokad' || j.status === 'offererad')
+                            (j.status === 'bokad' || j.status === 'offererad' || j.status === 'klar')
                         );
+                        // ▲▲▲ SLUT PÅ FIXEN ▲▲▲
 
                         // Om det INTE finns några aktiva jobb, returnera vår nya klass
                         if (!hasActiveJob) {
@@ -509,44 +509,6 @@
                 });
             }
 
-            // FIXAD: Logik för Dagens Vinst
-            function updateDailyProfitInCalendar(jobs) {
-                if (currentView !== 'calendar' || !calendar) return;
-
-                const dailyProfits = {};
-                
-                // Hämta den månad som kalendern visar
-                const calendarDate = calendar.getDate();
-                const currentMonth = calendarDate.getMonth();
-                const currentYear = calendarDate.getFullYear();
-
-                // 1. Summera vinst per dag för "Klar"-jobb
-                jobs.filter(j => j.status === 'klar' && j.vinst > 0).forEach(job => {
-                    const dateKey = job.datum.split('T')[0];
-                    if (!dailyProfits[dateKey]) {
-                        dailyProfits[dateKey] = 0;
-                    }
-                    dailyProfits[dateKey] += job.vinst;
-                });
-
-                const profitElements = calendarContainer.querySelectorAll('.calendar-day-profit');
-                
-                profitElements.forEach(el => {
-                    const date = el.dataset.date;
-                    const elDate = new Date(date + 'T12:00:00'); // Sätt tid för att undvika tidszonsfel
-
-                    // FIX: Visa bara vinst för dagar i denna månad
-                    if (dailyProfits[date] && elDate.getMonth() === currentMonth && elDate.getFullYear() === currentYear) {
-                        el.textContent = `+${formatCurrency(dailyProfits[date])}`;
-                        el.style.display = ''; 
-                    } else {
-                        el.textContent = '';
-                        el.style.display = 'none'; 
-                    }
-                });
-            }
-
-
             function mapJobToEvent(job) {
                 return {
                     id: job.id,
@@ -614,8 +576,6 @@
 			            calendar.setOption('events', calendarEvents);
 			
 			            filterCalendarView();
-			            updateDailyProfitInCalendar(allJobs);
-			
 			        }, 50);
 			
 			        if (!isNavigatingBack) {
@@ -964,7 +924,6 @@
 			    if (calendar) { 
 			        calendar.setOption('events', calendarEvents);
 			        filterCalendarView();
-			        updateDailyProfitInCalendar(activeJobs);
 			        calendar.render();
 			    }
 			
@@ -3148,10 +3107,6 @@
 			        docElement.classList.remove('privacy-mode-enabled');
 			        localStorage.setItem('privacyMode', 'false');
 			    }
-			    // Uppdatera kalendern, som kanske visar vinst
-			    if (calendar) {
-			        updateDailyProfitInCalendar(allJobs);
-			    }
 			}
             
             // --- NYTT: Uppgraderad funktion med SÄKERHETSKONTROLL ---
@@ -3451,7 +3406,6 @@
                 renderTimeline();
                 if (calendar && currentView === 'calendar') {
                     calendar.rerenderEvents();
-                    updateDailyProfitInCalendar(allJobs);
                 }
             }, 200));
 
