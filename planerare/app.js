@@ -652,34 +652,61 @@
 			    }
 			}
 
-			// --- SLUTGILTIG VERSION: renderKanbanBoard ---
+			// --- UPPDATERAD: renderKanbanBoard (med Sök och Tomt-läge) ---
 			function renderKanbanBoard() {
 			    // Rensa kolumnerna
 			    kanbanColOffererad.innerHTML = '';
 			    kanbanColBokad.innerHTML = '';
 			    kanbanColKlar.innerHTML = '';
 			
-			    // --- 1. Hantera "Klar"-kolumnen ---
-				const activeJobs = allJobs.filter(job => !job.deleted);
+			    // --- 1. FILTER-LOGIK (Kopierad från renderTimeline) ---
+			    let activeJobs = allJobs.filter(job => !job.deleted);
+
+                if (currentSearchTerm) {
+                    activeJobs = activeJobs.filter(job => {
+                        const term = currentSearchTerm.toLowerCase();
+                        const normalizedTerm = term.replace(/\s/g, '');
+                        const normalizedPhone = (job.telefon || '').replace(/\D/g, '');
+                        const regMatch = (job.regnr && job.regnr.toLowerCase().replace(/\s/g, '').includes(normalizedTerm));
+                        
+                        return (
+                            (job.kundnamn && job.kundnamn.toLowerCase().includes(term)) || 
+                            regMatch || 
+                            (job.kommentarer && job.kommentarer.toLowerCase().includes(term)) ||
+                            (normalizedPhone && normalizedPhone.includes(normalizedTerm)) || 
+                            (STATUS_TEXT[job.status] || '').toLowerCase().includes(term)
+                        );
+                    });
+                }
+                // --- SLUT FILTER-LOGIK ---
+
+			    // --- 2. Hantera "Klar"-kolumnen ---
 			    const klarJobs = activeJobs
         			.filter(j => j.status === 'klar')
-			        .sort((a, b) => new Date(b.datum) - new Date(a.datum)); // Nyast först
+			        .sort((a, b) => new Date(b.datum) - new Date(a.datum));
 			    
-			    // Ta bara de 5 senaste
 			    const klarJobsToShow = klarJobs.slice(0, 5);
 			    
 			    klarJobsToShow.forEach(job => {
-			        // VIKTIGT: Säkerställ att vi anropar createKanbanCard
 			        kanbanColKlar.innerHTML += createKanbanCard(job); 
 			    });
-			    // UPPDATERA ANTAL
 			    document.querySelector('.kanban-column[data-status="klar"] .kanban-column-count').textContent = klarJobs.length;
+
+                // --- NYTT: Hantera "Tomt läge" för Klar ---
+                if (klarJobsToShow.length === 0) {
+                    kanbanColKlar.innerHTML = `
+                        <div class="kanban-empty-state">
+                            <svg class="icon-lg" viewBox="0 0 24 24"><use href="#icon-check"></use></svg>
+                            <span>Inga klara jobb${currentSearchTerm ? ' matchade sökningen' : ''}.</span>
+                        </div>
+                    `;
+                }
 			
-			
-			    // --- 2. Hantera övriga kolumner ---
+			    // --- 3. Hantera övriga kolumner ---
 			    const otherJobs = activeJobs
         			.filter(j => j.status !== 'avbokad' && j.status !== 'klar')
 			        .sort((a, b) => {
+			            // Samma sorteringslogik som förut
 			            const prioA = (a.prio && a.status !== 'klar');
 			            const prioB = (b.prio && b.status !== 'klar');
 			            if (prioA && !prioB) return -1;
@@ -691,9 +718,7 @@
 			    let bokadCount = 0;
 			
 			    otherJobs.forEach(job => {
-			        // VIKTIGT: Säkerställ att vi anropar createKanbanCard
 			        const cardHTML = createKanbanCard(job);
-			        
 			        switch (job.status) {
 			            case 'offererad':
 			                kanbanColOffererad.innerHTML += cardHTML;
@@ -705,18 +730,35 @@
 			                break;
 			        }
 			    });
-			    // UPPDATERA ANTAL
+			
 			    document.querySelector('.kanban-column[data-status="offererad"] .kanban-column-count').textContent = offereradCount;
 			    document.querySelector('.kanban-column[data-status="bokad"] .kanban-column-count').textContent = bokadCount;
 			
-			
-			    // --- 3. Initiera SortableJS (med handtaget) ---
+                // --- NYTT: Hantera "Tomt läge" för Offererad/Bokad ---
+                if (offereradCount === 0) {
+                    kanbanColOffererad.innerHTML = `
+                        <div class="kanban-empty-state">
+                            <svg class="icon-lg" viewBox="0 0 24 24"><use href="#icon-file-text"></use></svg>
+                            <span>Inga offerter${currentSearchTerm ? ' matchade sökningen' : ''}.</span>
+                        </div>
+                    `;
+                }
+                if (bokadCount === 0) {
+                    kanbanColBokad.innerHTML = `
+                        <div class="kanban-empty-state">
+                            <svg class="icon-lg" viewBox="0 0 24 24"><use href="#icon-briefcase"></use></svg>
+                            <span>Inga bokade jobb${currentSearchTerm ? ' matchade sökningen' : ''}.</span>
+                        </div>
+                    `;
+                }
+
+			    // --- 4. Initiera SortableJS (Oförändrad) ---
 			    if (!sortableColBokad) {
 			        const options = {
 			            group: 'shared',
 			            animation: 150,
-			            onEnd: handleKanbanDrop, // Din befintliga drop-funktion
-			            handle: '.kanban-drag-handle', // LÖSNINGEN FÖR MOBILEN
+			            onEnd: handleKanbanDrop,
+			            handle: '.kanban-drag-handle',
 			            ghostClass: 'kanban-card-ghost',
 			            chosenClass: 'kanban-card-chosen'
 			        };
@@ -2637,9 +2679,11 @@
 
             // --- Sök-hanterare (Med rensa-knappar) ---
             function performSearch() {
-				if (currentView === 'calendar') {
-			        toggleView('timeline');
-			    }
+				if (currentView === 'timeline') {
+			        renderTimeline();
+                } else if (currentView === 'kanban') {
+                    renderKanbanBoard();
+                }
 			    const desktopQuery = searchBar.value;
 			    const mobileQuery = mobileSearchBar.value;
 			
