@@ -3378,8 +3378,13 @@ html.privacy-mode-enabled .nav-logo {
     box-shadow: var(--shadow-sm);
     transition: all var(--transition-speed-fast) ease;
     border-left: 4px solid transparent;
-    cursor: pointer !important;
-    margin-bottom: 1rem; /* Utrymme mellan korten */
+	cursor: pointer !important;
+    /* NYTT: Lägg till marginal på sidorna + botten */
+    margin: 0 0 1rem 0;
+}
+/* NY REGEL: Lägg till marginal OVANFÖR det FÖRSTA kortet */
+.kanban-column-cards .kanban-card:first-child {
+    margin-top: 1rem;
 }
 .kanban-card:last-child {
     margin-bottom: 0;
@@ -3501,13 +3506,13 @@ html.privacy-mode-enabled .nav-logo {
     background: var(--content-bg);
 }
 
-/* 10. Kolumnens kort-container (VIKTIGT!) */
+/* 10. Kolumnens kort-container (FIXAD) */
 .kanban-column-cards {
-    padding: 1rem;
+    padding: 0; /* <-- TA BORT ALL PADDING */
     display: flex;
     flex-direction: column;
-    /* gap: 1rem; <-- BORTTAGEN */
-    /* min-height: 200px; <-- BORTTAGEN */
+    /* gap: 1rem; <-- TA BORT GAP */
+    /* min-height: 200px; <-- TA BORT MIN-HEIGHT (fixar avståndet) */
 }
 
 /* --- NYTT: Stil för Tom Kolumn --- */
@@ -3928,6 +3933,7 @@ html.privacy-mode-enabled .nav-logo {
     background-color: var(--primary-color) !important;
     color: white !important;
 }
+
 
 
 
