@@ -3455,30 +3455,37 @@ html.privacy-mode-enabled .nav-logo {
     opacity: 0.7;
 }
 
-/* 8. Dra-handtaget (Löser mobil-skrollning) */
+/* 8. Dra-handtaget (Större & Tydligare) */
 .kanban-drag-handle {
     position: absolute;
-    top: 0;
-    right: 0;
-    padding: 6px;
+    top: 4px; /* Lite mer marginal */
+    right: 4px;
+    padding: 8px; /* <-- STÖRRE klick-yta */
+    border-radius: 6px; /* Snyggare */
     color: var(--text-color-light);
-    opacity: 0;
+    opacity: 0.3; /* <-- ALLTID svagt synlig */
     transition: all var(--transition-speed-fast) ease;
     cursor: grab !important;
 }
+
+/* Tydligare när man hovrar kortet */
 .kanban-card:hover .kanban-drag-handle {
-    opacity: 0.6;
+    opacity: 0.7;
 }
+
+/* Tydligast när man hovrar själva handtaget */
 .kanban-drag-handle:hover {
     opacity: 1.0 !important;
     color: var(--primary-color);
+    background-color: var(--bg-color); /* <-- NY BAKGRUND */
 }
 .kanban-drag-handle:active {
     cursor: grabbing !important;
 }
 .kanban-drag-handle .icon-sm {
-    width: 0.8rem;
-    height: 0.8rem;
+    width: 1rem; /* <-- STÖRRE IKON */
+    height: 1rem;
+    display: block; /* Säkerställer korrekt layout */
 }
 
 /* 9. Dra-effekterna (Bonus) */
@@ -3498,11 +3505,8 @@ html.privacy-mode-enabled .nav-logo {
     padding: 1rem;
     display: flex;
     flex-direction: column;
-    gap: 1rem; /* Detta ersätter 'margin-bottom' på kortet */
-    min-height: 200px;
-    
-    /* NYTT: Mjuk övergång när kort läggs till/tas bort */
-    transition: all 0.2s ease;
+    /* gap: 1rem; <-- BORTTAGEN */
+    /* min-height: 200px; <-- BORTTAGEN */
 }
 
 /* --- NYTT: Stil för Tom Kolumn --- */
@@ -3923,6 +3927,7 @@ html.privacy-mode-enabled .nav-logo {
     background-color: var(--primary-color) !important;
     color: white !important;
 }
+
 
 
 
