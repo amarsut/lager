@@ -386,27 +386,27 @@
                         const dateKey = arg.date.toISOString().split('T')[0];
                         const isPast = dateKey < todayString;
 
+                        // Om dagen är i dåtid, returnera ingenting (vit)
                         if (isPast) {
                             return [];
                         }
 
                         // Steg 1: Leta efter ett "synligt" jobb.
+                        // Ett synligt jobb är ett som INTE är raderat OCH INTE är avbokat.
                         const hasVisibleJob = allJobs.some(j => 
                             !j.deleted && 
                             j.datum.startsWith(dateKey) && 
                             (j.status === 'bokad' || j.status === 'offererad' || j.status === 'klar')
                         );
 
-                        // Steg 2: Logik-kontroll.
-                        // (Detta ! är det viktigaste tecknet i hela funktionen)
+                        // Steg 2: Här är den korrekta logiken.
+                        // Om "hasVisibleJob" är FALSKT (!), då är dagen ledig.
                         if (!hasVisibleJob) { 
                             // Inga synliga jobb hittades = LEDIG DAG
-                            console.log(`Dag ${dateKey}: ÄR LEDIG (blir grön)`);
                             return ['fc-day-free'];
                         }
 
-                        // Om "hasVisibleJob" var sant (ett jobb hittades)
-                        console.log(`Dag ${dateKey}: Upptagen (blir vit)`);
+                        // Om "hasVisibleJob" var SANT (ett jobb hittades), returnera ingenting (vit).
                         return [];
                     },
                     
