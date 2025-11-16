@@ -3771,29 +3771,36 @@ html.privacy-mode-enabled .nav-logo {
 
 /* --- 2. Subtilare "Ledig Dag"-markering --- */
 
-/* Ta först bort den gamla gröna bakgrunden */
-/* --- 2. Subtilare "Ledig Dag"-markering (KORRIGERAD) --- */
-
-/* Sätt INGEN bakgrundsfärg på själva dagen */
+/* Ta bort den gröna bakgrundsfärgen från själva dagen */
 .fc-day-free {
     background-color: transparent !important;
 }
-
 [data-theme="dark"] .fc-day-free {
     background-color: transparent !important;
 }
 
-/* Gör istället dag-siffran grön och streckad */
-.fc-day-free .fc-daygrid-day-number-btn {
+/* * Gör istället dag-SIFFRAN (som är en <a>-länk) grön.
+ * Detta är den korrekta selektorn för din kod.
+*/
+.fc-day-free .fc-daygrid-day-number {
     color: var(--success-color);
     font-weight: 600;
-
+    
     /* Ge den en subtil streckad ring */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75em;
+    height: 1.75em;
+    line-height: 1.75em;
+    border-radius: 50%;
     border: 1px dashed var(--success-color);
     opacity: 0.8;
+    text-decoration: none; /* Ta bort län-understrykning */
 }
 
-.fc-day-free .fc-daygrid-day-number-btn:hover {
+/* Snygg hover-effekt */
+.fc-day-free .fc-daygrid-day-number:hover {
     background-color: rgba(48, 209, 88, 0.1); /* Ljusgrön hover */
     opacity: 1;
 }
@@ -3820,6 +3827,7 @@ html.privacy-mode-enabled .nav-logo {
 .fc td:first-child {
     border-left-width: 0;
 }
+
 
 
 
