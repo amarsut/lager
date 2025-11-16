@@ -3828,6 +3828,33 @@ html.privacy-mode-enabled .nav-logo {
     border-left-width: 0;
 }
 
+/* --- 2. Gör "Idag"-knappen tydligare --- */
+.fc .fc-today-button {
+    /* Ge den din primära färg */
+    background-color: var(--primary-light) !important;
+    color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+    font-weight: 600 !important;
+    
+    /* Ta bort den från pil-gruppen */
+    margin-left: 0.75em;
+    box-shadow: none !important;
+}
+
+/* Starkare hover-effekt */
+.fc .fc-today-button:hover {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+}
+
+[data-theme="dark"] .fc .fc-today-button {
+    background-color: rgba(10, 132, 255, 0.2) !important;
+    color: var(--primary-color) !important;
+}
+[data-theme="dark"] .fc .fc-today-button:hover {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+}
 
 
 
