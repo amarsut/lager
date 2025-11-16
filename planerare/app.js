@@ -250,6 +250,38 @@
 			const kanbanColBokad = document.getElementById('kanban-col-bokad');
 			const kanbanColKlar = document.getElementById('kanban-col-klar');
 
+			// --- NY LYSSNARE FÖR KANBAN-VYN ---
+            kanbanView.addEventListener('click', (e) => {
+                const addBtn = e.target.closest('.kanban-add-btn');
+                const card = e.target.closest('.kanban-card');
+                
+                // 1. Hantera "Snabblägg till"-knappen
+                if (addBtn) {
+                    const status = addBtn.dataset.status;
+                    openJobModal('add'); // Öppna en tom modal
+                    
+                    // Sätt statusen direkt
+                    setTimeout(() => {
+                        syncStatusUI(status);
+                    }, 50);
+                    return;
+                }
+
+                // 2. Hantera klick på ett kort (för att öppna summary)
+                if (card) {
+                    // Ignorera klick på drag-handtaget eller länkar inuti kortet
+                    if (e.target.closest('.kanban-drag-handle, .car-link, .customer-link')) {
+                        return;
+                    }
+                    
+                    const jobId = card.dataset.id;
+                    const job = findJob(jobId);
+                    if (job) {
+                        openJobSummaryModal(job);
+                    }
+                }
+            });
+
             // --- Toast-funktion med "Ångra" ---
             let toastTimer;
             function showToast(message, type = 'success', undoCallback = null) {
