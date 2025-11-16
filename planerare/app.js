@@ -296,7 +296,7 @@
                     
                     headerToolbar: { 
                         left: '',
-                        center: 'dayGridMonth,dayGridTwoWeek,dayGridWeek',
+                        center: 'dayGridMonth,dayGridTwoWeek,timeGridWeek',
                         right: ''
                     },
 					footerToolbar: {
