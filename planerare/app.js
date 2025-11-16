@@ -391,26 +391,23 @@
                             return [];
                         }
 
-                        // Leta efter ett jobb som uppfyller kraven för att dagen ska vara "upptagen"
+                        // Steg 1: Leta efter ett "synligt" jobb.
+                        // Ett synligt jobb är ett som INTE är raderat OCH INTE är avbokat.
                         const hasVisibleJob = allJobs.some(j => 
-                            // 1. Jobbet får INTE vara raderat (ligga i papperskorgen)
                             !j.deleted && 
-                            
-                            // 2. Jobbet måste vara på denna dag
                             j.datum.startsWith(dateKey) && 
-                            
-                            // 3. Jobbets status FÅR INTE vara 'avbokad'
-                            //    (Vi kollar alltså bara efter de statusar som gör dagen upptagen)
                             (j.status === 'bokad' || j.status === 'offererad' || j.status === 'klar')
                         );
 
-                        // Om funktionen INTE hittade något sådant jobb...
-                        if (!hasVisibleJob) {
-                            // ...då är dagen ledig och ska vara grön.
+                        // Steg 2: Här är den viktiga logiken.
+                        // VI VILL: Om "har synligt jobb" är FALSKT, DÅ är dagen ledig.
+                        
+                        if (!hasVisibleJob) { // <--- !-tecknet (NOT) är det viktiga
+                            // Inga synliga jobb hittades = LEDIG DAG
                             return ['fc-day-free'];
                         }
 
-                        // Annars, returnera ingenting (vit bakgrund)
+                        // Om "hasVisibleJob" var sant (ett jobb hittades), returnera ingenting.
                         return [];
                     },
                     
