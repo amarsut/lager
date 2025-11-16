@@ -2638,8 +2638,16 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 /* --- Inställningar: Radio-knappar för Standardvy --- */
 .settings-radio-group {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    /* ÄNDRAD: Nu 3 kolumner */
+    grid-template-columns: 1fr 1fr 1fr; 
     gap: 0.75rem;
+}
+
+/* NYTT: Gör dem staplade på små skärmar */
+@media (max-width: 480px) {
+    .settings-radio-group {
+        grid-template-columns: 1fr;
+    }
 }
 
 .settings-radio-group input[type="radio"] {
@@ -3855,6 +3863,7 @@ html.privacy-mode-enabled .nav-logo {
     background-color: var(--primary-color) !important;
     color: white !important;
 }
+
 
 
 
