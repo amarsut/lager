@@ -1272,28 +1272,32 @@
                     	</td>
                         <td data-label="Kundpris" class="money-related">${formatCurrency(job.kundpris)}</td>
                         <td class="action-col">
-	                        ${hasComment ? `
-	                        <button class="icon-btn" data-action="showComment" data-comment="${encodeURIComponent(job.kommentarer)}" title="Visa kommentar" aria-label="Visa kommentar">
-	                            <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-chat"></use></svg>
-	                        </button>
-	                        ` : `<span class="icon-btn-placeholder"></span>`}
-	
-	                        ${job.status === 'klar' ? `
-	                            <button class="icon-btn" data-action="setStatusBetald" title="Markera som Betald" aria-label="Markera som Betald">
-	                                <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-wallet"></use></svg>
-	                            </button>
-	                        ` : (job.status !== 'betald' && job.status !== 'avbokad' ? `
-	                            <button class="icon-btn ${job.prio ? 'active-prio' : ''}" data-action="togglePrio" title="Växla Prio" aria-label="Växla Prio">
-	                                <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-flag"></use></svg>
-	                            </button>
-	                            <button class="icon-btn" data-action="setStatusKlar" title="Markera som Klar" aria-label="Markera som Klar">
-	                                <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-check"></use></svg>
-	                            </button>
-	                        ` : `<span class="icon-btn-placeholder"></span>`)}
-	                        <button class="icon-btn delete-btn" data-id="${job.id}" title="Ta bort" aria-label="Ta bort jobb">
-	                            <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-trash"></use></svg>
-	                        </button>
-	                    </td>
+                            ${hasComment ? `
+                            <button class="icon-btn" data-action="showComment" data-comment="${encodeURIComponent(job.kommentarer)}" title="Visa kommentar" aria-label="Visa kommentar">
+                                <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-chat"></use></svg>
+                            </button>
+                            ` : `<span class="icon-btn-placeholder"></span>`}
+
+                            ${job.status === 'klar' ? `
+                                <button class="icon-btn" data-action="setStatusBetald" title="Markera som Betald" aria-label="Markera som Betald">
+                                    <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-wallet"></use></svg>
+                                </button>
+                            ` : (job.status === 'betald' ? `
+                                <button class="icon-btn" data-action="setStatusObetald" title="Markera som Obetald (Klar)" aria-label="Markera som Obetald">
+                                    <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-briefcase"></use></svg>
+                                </button>
+                            ` : (job.status !== 'avbokad' ? `
+                                <button class="icon-btn ${job.prio ? 'active-prio' : ''}" data-action="togglePrio" title="Växla Prio" aria-label="Växla Prio">
+                                    <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-flag"></use></svg>
+                                </button>
+                                <button class="icon-btn" data-action="setStatusKlar" title="Markera som Klar" aria-label="Markera som Klar">
+                                    <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-check"></use></svg>
+                                </button>
+                            ` : `<span class="icon-btn-placeholder"></span>`))}
+                            <button class="icon-btn delete-btn" data-id="${job.id}" title="Ta bort" aria-label="Ta bort jobb">
+                                <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-trash"></use></svg>
+                            </button>
+                        </td>
                     </tr>
                 `;
             }
@@ -1403,28 +1407,32 @@
                             </div>
                         </div>
                         <div class="action-col">
-	                        ${hasComment ? `
-	                        <button class="icon-btn" data-action="showComment" data-comment="${encodeURIComponent(job.kommentarer)}" aria-label="Visa kommentar">
-	                            <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-chat"></use></svg>
-	                        </button>
-	                        ` : `<span class="icon-btn-placeholder"></span>`}
-	
-	                        ${job.status === 'klar' ? `
-	                            <button class="icon-btn" data-action="setStatusBetald" title="Markera som Betald" aria-label="Markera som Betald">
-	                                <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-wallet"></use></svg>
-	                            </button>
-	                        ` : (job.status !== 'betald' && job.status !== 'avbokad' ? `
-	                            <button class="icon-btn" data-action="togglePrio" aria-label="Växla Prio">
-	                                <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-flag"></use></svg>
-	                            </button>
-	                            <button class="icon-btn" data-action="setStatusKlar" aria-label="Markera som Klar">
-	                                <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-check"></use></svg>
-	                            </button>
-	                        ` : `<span class="icon-btn-placeholder"></span>`)}
-	                        <button class="icon-btn delete-btn" data-id="${job.id}" aria-label="Ta bort jobb">
-	                            <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-trash"></use></svg>
-	                        </button>
-	                    </div>
+                            ${hasComment ? `
+                            <button class="icon-btn" data-action="showComment" data-comment="${encodeURIComponent(job.kommentarer)}" aria-label="Visa kommentar">
+                                <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-chat"></use></svg>
+                            </button>
+                            ` : `<span class="icon-btn-placeholder"></span>`}
+
+                            ${job.status === 'klar' ? `
+                                <button class="icon-btn" data-action="setStatusBetald" title="Markera som Betald" aria-label="Markera som Betald">
+                                    <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-wallet"></use></svg>
+                                </button>
+                            ` : (job.status === 'betald' ? `
+                                <button class="icon-btn" data-action="setStatusObetald" title="Markera som Obetald (Klar)" aria-label="Markera som Obetald">
+                                    <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-briefcase"></use></svg>
+                                </button>
+                            ` : (job.status !== 'avbokad' ? `
+                                <button class="icon-btn" data-action="togglePrio" aria-label="Växla Prio">
+                                    <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-flag"></use></svg>
+                                </button>
+                                <button class="icon-btn" data-action="setStatusKlar" aria-label="Markera som Klar">
+                                    <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-check"></use></svg>
+                                </button>
+                            ` : `<span class="icon-btn-placeholder"></span>`))}
+                            <button class="icon-btn delete-btn" data-id="${job.id}" aria-label="Ta bort jobb">
+                                <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-trash"></use></svg>
+                            </button>
+                        </div>
                     </div>
                 `;
             }
@@ -2621,10 +2629,24 @@
                                 return;
                             }
 							case 'setStatusBetald': {
-                            	quickSetStatus(id, 'betald');
-                            	showToast('Jobb markerat som Betald!', 'success');
-                            	return;
-                        	}
+                                const job = findJob(id);
+                                if (!job) return;
+                                const originalStatus = job.status; // Blir 'klar'
+                                
+                                quickSetStatus(id, 'betald');
+                                
+                                // NY ÅNGRA-FUNKTION
+                                showToast('Jobb markerat som Betald!', 'success', () => {
+                                    quickSetStatus(id, originalStatus); // Återställer till 'klar'
+                                    showToast('Status återställd till Klar.', 'info');
+                                });
+                                return;
+                            }
+							case 'setStatusObetald': {
+				                quickSetStatus(id, 'klar'); // Sätter tillbaka status till "Klar"
+				                showToast('Status återställd till Obetald (Klar).', 'info');
+				                return;
+				            }
                         }
                     }
                     if (actionButton.classList.contains('delete-btn')) {
