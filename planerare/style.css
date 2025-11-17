@@ -2867,9 +2867,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 .job-missed:hover {
     background-color: rgba(255, 159, 10, 0.1);
 }
-.job-missed .status-badge {
-    animation: pulse-warning 2.5s infinite;
-}
 
 @keyframes pulse-warning {
     0%, 100% { background-color: rgba(107, 114, 128, 0.1); }
@@ -3495,6 +3492,8 @@ html.privacy-mode-enabled .nav-logo {
 .kanban-card.job-missed {
     border-left-color: var(--warning-color);
     background-color: rgba(255, 159, 10, 0.05);
+    /* NYTT: Lägg till animationen */
+    animation: pulse-border-warning 2.5s infinite ease-in-out;
 }
 
 /* 6. Kortets Innehåll (Inre wrapper) */
@@ -3609,18 +3608,23 @@ html.privacy-mode-enabled .nav-logo {
 /* --- NYTT: Tona ner "Klar"-kolumnen --- */
 .kanban-column[data-status="klar"] {
     opacity: 0.8;
-    transition: opacity 0.2s ease;
+    transition: opacity 0.2s ease, filter 0.3s ease; /* NY: filter */
+    filter: grayscale(40%); /* --- NY: Gör den lite gråare --- */
 }
 .kanban-column[data-status="klar"]:hover {
     opacity: 1; /* Visa tydligt vid hovring */
+    filter: grayscale(0%); /* --- NY: Full färg vid hover --- */
 }
 
 /* NYTT: Markera kolumnen du drar ÖVER */
 .kanban-column-cards.sortable-drag {
-    background-color: var(--primary-light) !important;
+    /* Använder vår nya animation */
+    animation: pulse-bg-light 1.5s infinite ease-in-out;
+    background-color: rgba(10, 132, 255, 0.15); /* Fallback */
 }
 [data-theme="dark"] .kanban-column-cards.sortable-drag {
-    background-color: rgba(10, 132, 255, 0.1) !important;
+    animation: pulse-bg-dark 1.5s infinite ease-in-out;
+    background-color: rgba(10, 132, 255, 0.2); /* Fallback */
 }
 
 /* 10. Kolumnens kort-container (FIXAD) */
@@ -4059,6 +4063,7 @@ html.privacy-mode-enabled .nav-logo {
     background-color: var(--primary-color) !important;
     color: white !important;
 }
+
 
 
 
