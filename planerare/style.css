@@ -3338,7 +3338,7 @@ html.privacy-mode-enabled .nav-logo {
 
 /* 2. Kolumnerna (Fast bredd) */
 .kanban-column {
-    width: 300px;
+    width: 340px; /* --- ÄNDRING: Från 300px --- */
     flex-shrink: 0;
 
     /* --- ÄNDRING HÄR --- */
@@ -3407,8 +3407,8 @@ html.privacy-mode-enabled .nav-logo {
     transition: all var(--transition-speed-fast) ease;
     border-left: 4px solid transparent;
 	cursor: pointer !important;
-    /* NYTT: Lägg till marginal på sidorna + botten */
-    margin: 0 0 1rem 0;
+    /* --- ÄNDRING: Tog bort marginal --- */
+    margin: 0; /* Tidigare "margin: 0 0 1rem 0;" */
 }
 
 /* --- NYTT: Styling för Klickbar Rubrik i Kanban --- */
@@ -3622,13 +3622,11 @@ html.privacy-mode-enabled .nav-logo {
 
 /* 10. Kolumnens kort-container (FIXAD) */
 .kanban-column-cards {
-    padding: 0 1rem; /* <-- Padding på sidorna, men inte uppe/nere */
+    padding: 1rem;
     display: flex;
     flex-direction: column;
-
-    /* --- NYTT HÄR --- */
-    overflow-y: auto; /* Gör så att listan kan skrolla INUTI kolumnen */
-    flex-grow: 1; /* Får den att fylla upp ledigt utrymme */
+    gap: 0.75rem; /* --- ÄNDRING: Från 1rem --- */
+    min-height: 200px;
 }
 
 /* --- NYTT: Stil för Tom Kolumn --- */
@@ -4054,6 +4052,7 @@ html.privacy-mode-enabled .nav-logo {
     background-color: var(--primary-color) !important;
     color: white !important;
 }
+
 
 
 
