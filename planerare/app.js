@@ -1406,8 +1406,8 @@
 			    let prioClass = job.prio ? 'prio-row' : '';
 			    const doneClass = (job.status === 'klar') ? 'done-row' : '';
 			    const isKommandePrio = job.prio && job.status === 'bokad' && new Date(job.datum) >= new Date();
-			    if(isKommandePrio) {
-			        prioClass += 'function createKanbanCard(job) {
+			    	prioClass += ' kommande-prio-pulse';
+			    }
 			    // (Befintlig logik för klasser...)
 			    let prioClass = job.prio ? 'prio-row' : '';
 			    const doneClass = (job.status === 'klar') ? 'done-row' : '';
