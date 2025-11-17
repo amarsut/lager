@@ -4079,22 +4079,50 @@ html.privacy-mode-enabled .nav-logo {
     color: white !important;
 }
 
+/* Ny stil för "Obetald" stat-kort */
+.stat-card.warning .icon-sm { color: var(--warning-color); }
+.stat-card.warning .stat-card-value { color: var(--warning-color); }
+.stat-card.warning.active {
+    border-color: var(--warning-color);
+    box-shadow: var(--shadow-md), 0 0 0 3px rgba(255, 159, 10, 0.2);
+}
+[data-theme="dark"] .stat-card.warning.active {
+    box-shadow: var(--shadow-md), 0 0 0 3px rgba(255, 159, 10, 0.25);
+}
 
+/* Ny stil för "Betald"-badgen */
+.status-badge.status-betald { 
+    background-color: rgba(48, 209, 88, 0.2); /* Mörkare grön */
+    color: var(--success-color); 
+    border: 1px solid var(--success-color); /* Extra tydlig */
+}
+.status-badge.status-betald::before {
+    display: none; /* Ta bort pricken, ersätt med ikon? */
+    /* Alternativt, ladda en annan ikon */
+}
 
+/* Gör "Klar"-raden (som nu är obetald) mindre framträdande */
+#jobbOversikt tbody tr.done-row,
+.mobile-job-card.done-row { 
+    opacity: 0.8; /* Mindre nedtonad än förut */
+}
 
+/* Gör "Betald"-raden (som är helt klar) mest nedtonad */
+#jobbOversikt tbody tr[data-status="betald"],
+.mobile-job-card[data-status="betald"] {
+    opacity: 0.6;
+}
+#jobbOversikt tbody tr[data-status="betald"]:hover,
+.mobile-job-card[data-status="betald"]:hover {
+    opacity: 1;
+}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+/* Stil för "Markera som Betald"-knappen */
+.icon-btn[data-action="setStatusBetald"] {
+    color: var(--success-color);
+}
+.icon-btn[data-action="setStatusBetald"]:hover {
+    background-color: var(--danger-light);
+    color: var(--success-color);
+}
 
