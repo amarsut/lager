@@ -3341,8 +3341,8 @@ html.privacy-mode-enabled .nav-logo {
     width: 300px;
     flex-shrink: 0;
 
-    /* --- NYTT HÄR --- */
-    background-color: var(--content-bg);
+    /* --- ÄNDRING HÄR --- */
+    background-color: var(--bg-color); /* Blev ljusgrå (tidigare --content-bg) */
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     box-shadow: var(--shadow-sm);
@@ -3399,7 +3399,8 @@ html.privacy-mode-enabled .nav-logo {
 /* 4. Styling för själva Kanban-kortet (Yttre) */
 .kanban-card {
     position: relative;
-    background: var(--bg-color);
+    /* --- ÄNDRING HÄR --- */
+    background: var(--content-bg); /* Blev vit (tidigare --bg-color) */
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     box-shadow: var(--shadow-sm);
@@ -3409,6 +3410,67 @@ html.privacy-mode-enabled .nav-logo {
     /* NYTT: Lägg till marginal på sidorna + botten */
     margin: 0 0 1rem 0;
 }
+
+/* --- NYTT: Styling för Klickbar Rubrik i Kanban --- */
+.kanban-card-title .link-btn.customer-link {
+    /* Återställ knapp-styling */
+    padding: 0;
+    margin: 0;
+    font-size: 1.05rem; /* Matchar .kanban-card-title */
+    font-weight: 700;   /* Matchar .kanban-card-title */
+    color: var(--text-color);
+    text-align: left;
+    line-height: 1.3; /* Förbättrar radbrytning */
+}
+
+/* Använd befintlig understryknings-stil */
+.kanban-card-title .link-btn.customer-link .customer-name-text {
+    border-bottom: 1px dotted var(--text-color-light);
+    padding-bottom: 1px;
+    transition: border-color var(--transition-speed-fast) ease;
+}
+
+/* Hover-effekter */
+.kanban-card-title .link-btn.customer-link:hover {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+.kanban-card-title .link-btn.customer-link:hover .customer-name-text {
+    border-bottom-color: var(--primary-color);
+}
+
+
+/* --- NYTT: Styling för Datum i Kanban-fot --- */
+.kanban-footer-left {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem; /* Mellanrum mellan kommentar-ikon och datum */
+    
+    /* Se till att den inte växer och krockar med tid-badgen */
+    flex-shrink: 1;
+    overflow: hidden;
+}
+
+.kanban-card-date {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-color-light);
+    
+    /* Förhindra att datumet bryter rad */
+    white-space: nowrap;
+}
+
+.kanban-card-date .icon-sm {
+    width: 0.9rem;
+    height: 0.9rem;
+    opacity: 0.7;
+    flex-shrink: 0; /* Förhindra att ikonen krymper */
+}
+
 /* NY REGEL: Lägg till marginal OVANFÖR det FÖRSTA kortet */
 .kanban-column-cards .kanban-card:first-child {
     margin-top: 1rem;
@@ -3992,6 +4054,7 @@ html.privacy-mode-enabled .nav-logo {
     background-color: var(--primary-color) !important;
     color: white !important;
 }
+
 
 
 
