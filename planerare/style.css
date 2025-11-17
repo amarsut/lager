@@ -916,19 +916,11 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 #carModal .modal-content { max-width: 700px; }
 
 .detail-modal-header {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: flex-start; /* Linjera toppen av titlar med toppen av X */
-    gap: 1rem;
+    display: flex; flex-direction: column;
+    gap: 0.25rem; align-items: flex-start;
 }
-
-#customerModalPhone {
-    font-size: 0.9rem;
-    color: var(--text-color-light);
-    margin: 0;
-    line-height: 1; /* Säkerställer tajt justering */
-}
+.detail-modal-header h2 { font-size: 1.25rem; margin: 0; }
+.detail-modal-header p { font-size: 0.9rem; color: var(--text-color-light); margin: 0; }
 
 /* PUNKT 6 (NY): Styling för redigera-knapp */
 .customer-phone-wrapper {
@@ -1545,13 +1537,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 }
 
 /* PUNKT 2 (FIX): Korrekta färger i mörkt läge för header */
-/* PUNKT 2 (FIX): Korrekta färger i mörkt läge för header */
-[data-theme="dark"] .fc .fc-col-header,
-[data-theme="dark"] .fc .fc-col-header-cell { /* <-- VIKTIGT TILLÄGG */
-    background-color: var(--bg-color) !important; /* Sätt mörk bakgrund (tvingande) */
-}
-
-[data-theme="dark"] #calendarView .fc .fc-col-header {
+[data-theme="dark"] .fc .fc-col-header {
     background-color: var(--bg-color); /* Sätt mörk bakgrund */
 }
 [data-theme="dark"] .fc .fc-col-header-cell-cushion {
@@ -2757,29 +2743,28 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 .detail-modal-header-titles {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem; /* Mellanrum mellan H2 och telefonraden */
-    flex-grow: 1;
-}
-
-.detail-modal-header-titles h2 {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+    gap: 0.25rem;
+    flex-grow: 1; 
+    
+    /* NYA REGLER FÖR H2 OCH KOPIERA-KNAPP */
+    & h2 {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
 }
 
 /* Ny div som grupperar ikon-knapparna TÄTT */
 .icon-button-group {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem; /* --- Ökat mellanrum mellan ikonerna --- */
-    margin-left: 0; /* Tar bort gammal margin */
+    gap: 0.25rem; /* Mindre gap mellan ikonerna */
+    margin-left: 0.5rem; /* Ersätter den gamla gapen från .customer-phone-wrapper */
 }
 
 /* Ta bort den gamla, stora gapen från huvud-wrappern */
 .customer-phone-wrapper {
-    display: flex;
-    align-items: center; /* <<< --- DEN VIKTIGA FIXEN */
-    gap: 0.75rem; /* Lite mer luft mellan nr och ikoner */
+    gap: 0; 
 }
 
 /* Återanvänd din snygga hover-effekt för samtliga knappar */
@@ -2881,6 +2866,9 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 }
 .job-missed:hover {
     background-color: rgba(255, 159, 10, 0.1);
+}
+.job-missed .status-badge {
+    animation: pulse-warning 2.5s infinite;
 }
 
 @keyframes pulse-warning {
@@ -3350,11 +3338,11 @@ html.privacy-mode-enabled .nav-logo {
 
 /* 2. Kolumnerna (Fast bredd) */
 .kanban-column {
-    width: 340px; /* --- ÄNDRING: Från 300px --- */
+    width: 300px;
     flex-shrink: 0;
 
-    /* --- ÄNDRING HÄR --- */
-    background-color: var(--bg-color); /* Blev ljusgrå (tidigare --content-bg) */
+    /* --- NYTT HÄR --- */
+    background-color: var(--content-bg);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     box-shadow: var(--shadow-sm);
@@ -3385,103 +3373,42 @@ html.privacy-mode-enabled .nav-logo {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    position: sticky; /* --- NY: Fäster rubriken --- */
-    top: 0;           /* --- NY: Fäster den högst upp --- */
-    background-color: var(--bg-color); /* --- ÄNDRAD: Matchar kolumnens bakgrund --- */
+    position: sticky;
+    top: 0;
+    background-color: var(--content-bg);
     z-index: 5;
-    padding: 1rem;
+    padding: 1rem; /* <-- Behåll denna */
     margin: 0;
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color); /* <-- LÄGG TILL/SÄKERSTÄLL DENNA */
 }
 .kanban-column-count {
-    font-size: 0.8rem;
+    font-size: 0.8rem; /* <-- Mindre text */
     font-weight: 700;
-    background-color: var(--content-bg); /* --- ÄNDRAD: Vit/mörk bakgrund --- */
+    background-color: var(--bg-color);
     color: var(--text-color-light);
-    padding: 0.25rem 0.6rem;
+    padding: 0.25rem 0.6rem; /* <-- Mer padding */
     border-radius: 99px;
     border: 1px solid var(--border-color);
-    min-width: 1.5rem;
+    min-width: 1.5rem; /* Ser bra ut även med en siffra */
     text-align: center;
 }
 [data-theme="dark"] .kanban-column-count {
     background-color: #3a3a3c;
-    border-color: #4a4a4c; /* --- BÄTTRE KONTRAST FÖR DARK MODE --- */
 }
 
 /* 4. Styling för själva Kanban-kortet (Yttre) */
 .kanban-card {
-    position: relative; /* Nödvändig för drag-handtaget */
-    background: var(--content-bg);
+    position: relative;
+    background: var(--bg-color);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     box-shadow: var(--shadow-sm);
     transition: all var(--transition-speed-fast) ease;
     border-left: 4px solid transparent;
 	cursor: pointer !important;
-    margin: 0; /* --- VIKTIG: 'gap' hanterar allt avstånd --- */
+    /* NYTT: Lägg till marginal på sidorna + botten */
+    margin: 0 0 1rem 0;
 }
-
-/* --- NYTT: Styling för Klickbar Rubrik i Kanban --- */
-.kanban-card-title .link-btn.customer-link {
-    /* Återställ knapp-styling */
-    padding: 0;
-    margin: 0;
-    font-size: 1.05rem; /* Matchar .kanban-card-title */
-    font-weight: 700;   /* Matchar .kanban-card-title */
-    color: var(--text-color);
-    text-align: left;
-    line-height: 1.3; /* Förbättrar radbrytning */
-}
-
-/* Använd befintlig understryknings-stil */
-.kanban-card-title .link-btn.customer-link .customer-name-text {
-    border-bottom: 1px dotted var(--text-color-light);
-    padding-bottom: 1px;
-    transition: border-color var(--transition-speed-fast) ease;
-}
-
-/* Hover-effekter */
-.kanban-card-title .link-btn.customer-link:hover {
-    color: var(--primary-color);
-    text-decoration: none;
-}
-
-.kanban-card-title .link-btn.customer-link:hover .customer-name-text {
-    border-bottom-color: var(--primary-color);
-}
-
-
-/* --- NYTT: Styling för Datum i Kanban-fot --- */
-.kanban-footer-left {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem; /* Mellanrum mellan kommentar-ikon och datum */
-    
-    /* Se till att den inte växer och krockar med tid-badgen */
-    flex-shrink: 1;
-    overflow: hidden;
-}
-
-.kanban-card-date {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    font-size: 0.8rem;
-    font-weight: 500;
-    color: var(--text-color-light);
-    
-    /* Förhindra att datumet bryter rad */
-    white-space: nowrap;
-}
-
-.kanban-card-date .icon-sm {
-    width: 0.9rem;
-    height: 0.9rem;
-    opacity: 0.7;
-    flex-shrink: 0; /* Förhindra att ikonen krymper */
-}
-
 /* NY REGEL: Lägg till marginal OVANFÖR det FÖRSTA kortet */
 .kanban-column-cards .kanban-card:first-child {
     margin-top: 1rem;
@@ -3491,9 +3418,8 @@ html.privacy-mode-enabled .nav-logo {
 }
 .kanban-card:hover {
     transform: scale(1.02);
-    box-shadow: var(--shadow-lg); /* --- ÄNDRAD: Starkare skugga --- */
+    box-shadow: var(--shadow-lg);
     border-color: var(--primary-color);
-    z-index: 10; /* --- NY: Lyfter kortet över andra kort --- */
 }
 
 /* 5. Kortets status-stilar (Prio, Klar, Missad) */
@@ -3507,8 +3433,6 @@ html.privacy-mode-enabled .nav-logo {
 .kanban-card.job-missed {
     border-left-color: var(--warning-color);
     background-color: rgba(255, 159, 10, 0.05);
-    /* NYTT: Lägg till animationen */
-    animation: pulse-border-warning 2.5s infinite ease-in-out;
 }
 
 /* 6. Kortets Innehåll (Inre wrapper) */
@@ -3567,31 +3491,30 @@ html.privacy-mode-enabled .nav-logo {
 }
 
 /* 8. Dra-handtaget (Större & Tydligare) */
+/* 8. Dra-handtaget (Större & Svart) */
 .kanban-drag-handle {
     position: absolute;
-    top: 4px;
+    top: 4px; /* Lite mer marginal */
     right: 4px;
-    padding: 10px;
-    border-radius: 6px;
-    color: var(--text-color-light); /* --- ÄNDRAD: Subtilare färg --- */
-    opacity: 0; /* --- NY: Göm som standard --- */
+    padding: 10px; /* <-- STÖRRE klick-yta */
+    border-radius: 6px; /* Snyggare */
+    color: var(--text-color); /* <-- GJORD SVART (din mörka textfärg) */
+    opacity: 0.4; /* <-- TYDLIGARE (alltid svagt synlig) */
     transition: all var(--transition-speed-fast) ease;
     cursor: grab !important;
-    z-index: 5; /* Se till att den ligger överst på kortet */
 }
 
 /* Tydligare när man hovrar kortet */
 .kanban-card:hover .kanban-drag-handle {
-    opacity: 0.6; /* --- ÄNDRAD: Visa på kort-hover --- */
+    opacity: 0.8; /* <-- Starkare hover */
 }
 
 /* Tydligast när man hovrar själva handtaget */
 .kanban-drag-handle:hover {
     opacity: 1.0 !important;
-    color: var(--primary-color); /* --- ÄNDRAD: Blå vid hover --- */
-    background-color: var(--primary-light); /* --- ÄNDRAD: Ljusblå bakgrund --- */
+    color: var(--text-color); /* <-- Behåll svart (istället för blå) */
+    background-color: var(--bg-color); /* <-- NY BAKGRUND */
 }
-
 .kanban-drag-handle:active {
     cursor: grabbing !important;
 }
@@ -3603,11 +3526,9 @@ html.privacy-mode-enabled .nav-logo {
 
 /* 9. Dra-effekterna (Bonus) */
 .kanban-card-ghost {
-    background: var(--primary-light); /* Ljusblå yta */
-    border: 1px solid var(--primary-color); /* Blå kant */
-    border-radius: var(--border-radius);
+    background: var(--bg-color);
+    border: 2px dashed var(--primary-color);
     box-shadow: none;
-    opacity: 0.8;
     /* Dölj innehållet i "spöket" */
     & > * { 
         opacity: 0;
@@ -3617,42 +3538,35 @@ html.privacy-mode-enabled .nav-logo {
     /* Lyft och TILTA kortet lite när du drar det */
     box-shadow: var(--shadow-lg) !important;
     transform: scale(1.05) rotate(1.5deg) !important;
-    background: var(--content-bg); /* --- ÄNDRAD: Matchar kortets färg --- */
+    background: var(--bg-color);
 }
 
 /* --- NYTT: Tona ner "Klar"-kolumnen --- */
 .kanban-column[data-status="klar"] {
     opacity: 0.8;
-    transition: opacity 0.2s ease, filter 0.3s ease; /* NY: filter */
-    filter: grayscale(40%); /* --- NY: Gör den lite gråare --- */
+    transition: opacity 0.2s ease;
 }
 .kanban-column[data-status="klar"]:hover {
     opacity: 1; /* Visa tydligt vid hovring */
-    filter: grayscale(0%); /* --- NY: Full färg vid hover --- */
 }
 
 /* NYTT: Markera kolumnen du drar ÖVER */
 .kanban-column-cards.sortable-drag {
-    /* Använder vår nya animation */
-    animation: pulse-bg-light 1.5s infinite ease-in-out;
-    background-color: rgba(10, 132, 255, 0.15); /* Fallback */
+    background-color: var(--primary-light) !important;
 }
 [data-theme="dark"] .kanban-column-cards.sortable-drag {
-    animation: pulse-bg-dark 1.5s infinite ease-in-out;
-    background-color: rgba(10, 132, 255, 0.2); /* Fallback */
+    background-color: rgba(10, 132, 255, 0.1) !important;
 }
 
 /* 10. Kolumnens kort-container (FIXAD) */
 .kanban-column-cards {
-    padding: 1rem;
+    padding: 0 1rem; /* <-- Padding på sidorna, men inte uppe/nere */
     display: flex;
     flex-direction: column;
-    gap: 0.75rem; /* Ditt önskade tätare avstånd */
 
-    /* --- FIX FÖR SKROLLNING --- */
-    overflow-y: auto; /* Tillåt vertikal skrollning */
-    flex-grow: 1;     /* Fyll upp ledigt utrymme i kolumnen */
-    min-height: 100px; /* En liten fallback-höjd */
+    /* --- NYTT HÄR --- */
+    overflow-y: auto; /* Gör så att listan kan skrolla INUTI kolumnen */
+    flex-grow: 1; /* Får den att fylla upp ledigt utrymme */
 }
 
 /* --- NYTT: Stil för Tom Kolumn --- */
@@ -4079,58 +3993,15 @@ html.privacy-mode-enabled .nav-logo {
     color: white !important;
 }
 
-/* Ny stil för "Obetald" stat-kort */
-.stat-card.warning .icon-sm { color: var(--warning-color); }
-.stat-card.warning .stat-card-value { color: var(--warning-color); }
-.stat-card.warning.active {
-    border-color: var(--warning-color);
-    box-shadow: var(--shadow-md), 0 0 0 3px rgba(255, 159, 10, 0.2);
-}
-[data-theme="dark"] .stat-card.warning.active {
-    box-shadow: var(--shadow-md), 0 0 0 3px rgba(255, 159, 10, 0.25);
-}
 
-/* Ny stil för "Betald"-badgen */
-.status-badge.status-betald { 
-    background-color: rgba(48, 209, 88, 0.2); /* Mörkare grön */
-    color: var(--success-color); 
-    border: 1px solid var(--success-color); /* Extra tydlig */
-}
-.status-badge.status-betald::before {
-    display: none; /* Ta bort pricken, ersätt med ikon? */
-    /* Alternativt, ladda en annan ikon */
-}
 
-/* Gör "Klar"-raden (som nu är obetald) mindre framträdande */
-#jobbOversikt tbody tr.done-row,
-.mobile-job-card.done-row { 
-    opacity: 0.8; /* Mindre nedtonad än förut */
-}
 
-/* Gör "Betald"-raden (som är helt klar) mest nedtonad */
-#jobbOversikt tbody tr[data-status="betald"],
-.mobile-job-card[data-status="betald"] {
-    opacity: 0.6;
-}
-#jobbOversikt tbody tr[data-status="betald"]:hover,
-.mobile-job-card[data-status="betald"]:hover {
-    opacity: 1;
-}
 
-/* Stil för "Markera som Betald"-knappen */
-.icon-btn[data-action="setStatusBetald"] {
-    color: var(--success-color);
-}
-.icon-btn[data-action="setStatusBetald"]:hover {
-    background-color: var(--danger-light);
-    color: var(--success-color);
-}
 
-/* Ny stil för "Markera som Obetald"-knappen (återöppna) */
-.icon-btn[data-action="setStatusObetald"] {
-    color: var(--warning-color); /* Använder varningsfärgen */
-}
-.icon-btn[data-action="setStatusObetald"]:hover {
-    background-color: rgba(255, 159, 10, 0.1); /* Ljusgul bakgrund */
-    color: var(--warning-color);
-}
+
+
+
+
+
+
+
