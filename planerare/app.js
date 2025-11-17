@@ -1407,6 +1407,12 @@
 			    const doneClass = (job.status === 'klar') ? 'done-row' : '';
 			    const isKommandePrio = job.prio && job.status === 'bokad' && new Date(job.datum) >= new Date();
 			    if(isKommandePrio) {
+			        prioClass += 'function createKanbanCard(job) {
+			    // (Befintlig logik för klasser...)
+			    let prioClass = job.prio ? 'prio-row' : '';
+			    const doneClass = (job.status === 'klar') ? 'done-row' : '';
+			    const isKommandePrio = job.prio && job.status === 'bokad' && new Date(job.datum) >= new Date();
+			    if(isKommandePrio) {
 			        prioClass += ' kommande-prio-pulse';
 			    }
 			    const jobStatusClass = (job.status === 'bokad' && new Date(job.datum) < now) ? 'job-missed' : '';
@@ -1416,10 +1422,28 @@
 			    const kundnamnHTML = highlightSearchTerm(job.kundnamn, currentSearchTerm);
 			    const regnrHTML = highlightSearchTerm(job.regnr || 'OKÄNT', currentSearchTerm);
 			    const prioIcon = job.prio ? `<svg class="icon-sm prio-flag-icon" viewBox="0 0 24 24"><use href="#icon-flag"></use></svg>` : '';
-			    const timePart = job.datum ? (formatDate(job.datum).split('kl. ')[1] || 'Okänd tid') : 'Okänd tid';
+			    const timePart = job.datum ? (formatDate(job.datum).split('kl. ')[1] || '---') : '---';
+
+                // --- NYTT: Logik för foten (Datum + Kommentar) ---
+                let footerLeftHTML = '';
+                if (job.status === 'klar') {
+                    // För "Klar", visa BARA kommentar-ikonen
+                    if (hasComment) {
+                        footerLeftHTML = `<svg class="kanban-card-icon" viewBox="0 0 24 24" title="Har kommentar"><use href="#icon-chat"></use></svg>`;
+                    }
+                } else {
+                    // För "Bokad" / "Offererad", visa datum + kommentar
+                    const formattedDate = job.datum ? formatDate(job.datum, { onlyDate: true }) : 'Okänt datum';
+                    footerLeftHTML = `
+                        ${hasComment ? `<svg class="kanban-card-icon" viewBox="0 0 24 24" title="Har kommentar"><use href="#icon-chat"></use></svg>` : ''}
+                        <span class="kanban-card-date">
+                            <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-calendar-day"></use></svg>
+                            <span>${formattedDate}</span>
+                        </span>
+                    `;
+                }
+                // --- SLUT NYTT ---
 			
-			    // --- NY, POLERAD HTML-STRUKTUR ---
-			    // (Denna gång med "class=" korrekt från början)
 			    return `
 			        <div class="kanban-card job-entry ${prioClass} ${doneClass} ${jobStatusClass}" data-id="${job.id}" data-status="${job.status}">
 			            
@@ -1429,9 +1453,11 @@
 			
 			            <div class="kanban-card-content">
 			                
-			                <div class="kanban-card-title">
+                            <div class="kanban-card-title">
 			                    ${prioIcon}
-			                    <span>${kundnamnHTML}</span>
+                                <button class="link-btn customer-link" data-kund="${job.kundnamn}">
+                                    <span class="customer-name-text">${kundnamnHTML}</span>
+                                </button>
 			                </div>
 			                
 			                ${(job.regnr && job.regnr.toUpperCase() !== 'OKÄNT') ? `
@@ -1443,13 +1469,12 @@
 			                <span class="reg-unknown">${regnrHTML}</span>
 			                `}
 			                
-			                <div class="kanban-card-footer">
-			                    ${hasComment ? `
-			                        <svg class="kanban-card-icon" viewBox="0 0 24 24" title="Har kommentar"><use href="#icon-chat"></use></svg>
-			                    ` : '<span></span>' /* Tom span för att justera badgen */ }
-			                    
-			                    <span class="card-time-badge">${timePart}</span>
-			                </div>
+                            <div class="kanban-card-footer">
+                                <div class="kanban-footer-left">
+                                    ${footerLeftHTML}
+                                </div>
+                                <span class="card-time-badge">${timePart}</span>
+                            </div>
 			            </div>
 			        </div>
 			    `;
