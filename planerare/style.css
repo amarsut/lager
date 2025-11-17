@@ -1545,6 +1545,12 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 }
 
 /* PUNKT 2 (FIX): Korrekta färger i mörkt läge för header */
+/* PUNKT 2 (FIX): Korrekta färger i mörkt läge för header */
+[data-theme="dark"] .fc .fc-col-header,
+[data-theme="dark"] .fc .fc-col-header-cell { /* <-- VIKTIGT TILLÄGG */
+    background-color: var(--bg-color) !important; /* Sätt mörk bakgrund (tvingande) */
+}
+
 [data-theme="dark"] #calendarView .fc .fc-col-header {
     background-color: var(--bg-color); /* Sätt mörk bakgrund */
 }
@@ -4072,6 +4078,7 @@ html.privacy-mode-enabled .nav-logo {
     background-color: var(--primary-color) !important;
     color: white !important;
 }
+
 
 
 
