@@ -1,8 +1,7 @@
 	// --- Globala Konstanter ---
         const STATUS_TEXT = {
             'bokad': 'Bokad', 'klar': 'Klar', 
-            'offererad': 'Offererad', 'avbokad': 'Avbokad',
-			'betald': 'Betald'
+            'offererad': 'Offererad', 'avbokad': 'Avbokad'
         };
         const formatCurrency = (num) => `${(num || 0).toLocaleString('sv-SE')} kr`;
         const locale = 'sv-SE';
@@ -1028,42 +1027,28 @@
 			}
 
             function renderGlobalStats(jobs) {
-			    const now = new Date();
-			    now.setHours(0, 0, 0, 0);
-			
-			    const upcomingJobs = jobs.filter(j => j.status === 'bokad' && new Date(j.datum) >= now).length;
-			
-			    // Hitta alla "Klar" (men inte betalda) jobb
-			    const obetaldaJobb = jobs.filter(j => j.status === 'klar');
-			    const obetaldaSumma = obetaldaJobb.reduce((sum, j) => sum + (j.kundpris || 0), 0);
-			
-			    // "Färdiga" inkluderar nu både Klar och Betald
-			    const finishedJobs = jobs.filter(j => j.status === 'klar' || j.status === 'betald').length;
-			
-			    const offeredJobs = jobs.filter(j => j.status === 'offererad').length;
-			    const allJobCount = jobs.length;
-			
-			    statUpcoming.textContent = upcomingJobs;
-			    statFinished.textContent = finishedJobs;
-			    statOffered.textContent = offeredJobs;
-			    statAll.textContent = allJobCount;
-			
-			    // Uppdatera det nya kortet
-			    const statObetald = document.getElementById('stat-obetald');
-			    if (statObetald) {
-			        statObetald.textContent = formatCurrency(obetaldaSumma);
-			    }
-			
-			    // NYTT: Dagens Vinst i Header
-			    // ... (resten av din funktion är oförändrad) ...
-			    const todaysProfit = jobs
-			        .filter(j => (j.status === 'klar' || j.status === 'betald') && j.datum && j.datum.startsWith(todayString)) // <-- Uppdaterad logik
-			        .reduce((sum, j) => sum + (j.vinst || 0), 0);
-			
-			    document.querySelectorAll('.stat-card.active').forEach(c => c.classList.remove('active'));
-			    const activeCard = document.getElementById(`stat-card-${currentStatusFilter}`);
-			    if (activeCard) activeCard.classList.add('active');
-			}
+                const now = new Date();
+                now.setHours(0, 0, 0, 0);
+
+                const upcomingJobs = jobs.filter(j => j.status === 'bokad' && new Date(j.datum) >= now).length;
+                const finishedJobs = jobs.filter(j => j.status === 'klar').length;
+                const offeredJobs = jobs.filter(j => j.status === 'offererad').length;
+                const allJobCount = jobs.length;
+                
+                statUpcoming.textContent = upcomingJobs;
+                statFinished.textContent = finishedJobs;
+                statOffered.textContent = offeredJobs;
+                statAll.textContent = allJobCount;
+                
+                // NYTT: Dagens Vinst i Header
+                const todaysProfit = jobs
+                    .filter(j => j.status === 'klar' && j.datum && j.datum.startsWith(todayString))
+                    .reduce((sum, j) => sum + (j.vinst || 0), 0);
+
+                document.querySelectorAll('.stat-card.active').forEach(c => c.classList.remove('active'));
+                const activeCard = document.getElementById(`stat-card-${currentStatusFilter}`);
+                if (activeCard) activeCard.classList.add('active');
+            }
 
             // --- UPPDATERAD: renderTimeline med Animationslogik ---
             function renderTimeline() {
@@ -1128,10 +1113,6 @@
                         case 'offererad':
                             jobsToDisplay = jobsToDisplay.filter(j => j.status === 'offererad');
                             break;
-						case 'obetald':
-		                    jobsToDisplay = jobsToDisplay.filter(j => j.status === 'klar');
-		                    sortOrder = 'desc'; // Visa senaste obetalda först
-		                    break;
                         case 'alla':
                             sortOrder = 'desc'; 
                             break;
@@ -1278,22 +1259,13 @@
                             </button>
                             ` : `<span class="icon-btn-placeholder"></span>`}
 
-                            ${job.status === 'klar' ? `
-                                <button class="icon-btn" data-action="setStatusBetald" title="Markera som Betald" aria-label="Markera som Betald">
-                                    <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-wallet"></use></svg>
-                                </button>
-                            ` : (job.status === 'betald' ? `
-                                <button class="icon-btn" data-action="setStatusObetald" title="Markera som Obetald (Klar)" aria-label="Markera som Obetald">
-                                    <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-briefcase"></use></svg>
-                                </button>
-                            ` : (job.status !== 'avbokad' ? `
-                                <button class="icon-btn ${job.prio ? 'active-prio' : ''}" data-action="togglePrio" title="Växla Prio" aria-label="Växla Prio">
-                                    <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-flag"></use></svg>
-                                </button>
-                                <button class="icon-btn" data-action="setStatusKlar" title="Markera som Klar" aria-label="Markera som Klar">
-                                    <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-check"></use></svg>
-                                </button>
-                            ` : `<span class="icon-btn-placeholder"></span>`))}
+                            <button class="icon-btn ${job.prio ? 'active-prio' : ''}" data-action="togglePrio" title="Växla Prio" aria-label="Växla Prio">
+                            	<svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-flag"></use></svg>
+                        	</button>
+                            <button class="icon-btn" data-action="setStatusKlar" title="Markera som Klar" aria-label="Markera som Klar">
+                                <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-check"></use></svg>
+                            </button>
+
                             <button class="icon-btn delete-btn" data-id="${job.id}" title="Ta bort" aria-label="Ta bort jobb">
                                 <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-trash"></use></svg>
                             </button>
@@ -1413,22 +1385,13 @@
                             </button>
                             ` : `<span class="icon-btn-placeholder"></span>`}
 
-                            ${job.status === 'klar' ? `
-                                <button class="icon-btn" data-action="setStatusBetald" title="Markera som Betald" aria-label="Markera som Betald">
-                                    <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-wallet"></use></svg>
-                                </button>
-                            ` : (job.status === 'betald' ? `
-                                <button class="icon-btn" data-action="setStatusObetald" title="Markera som Obetald (Klar)" aria-label="Markera som Obetald">
-                                    <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-briefcase"></use></svg>
-                                </button>
-                            ` : (job.status !== 'avbokad' ? `
-                                <button class="icon-btn" data-action="togglePrio" aria-label="Växla Prio">
-                                    <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-flag"></use></svg>
-                                </button>
-                                <button class="icon-btn" data-action="setStatusKlar" aria-label="Markera som Klar">
-                                    <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-check"></use></svg>
-                                </button>
-                            ` : `<span class="icon-btn-placeholder"></span>`))}
+                            <button class="icon-btn" data-action="togglePrio" aria-label="Växla Prio">
+                                <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-flag"></use></svg>
+                            </button>
+                            <button class="icon-btn" data-action="setStatusKlar" aria-label="Markera som Klar">
+                                <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-check"></use></svg>
+                            </button>
+
                             <button class="icon-btn delete-btn" data-id="${job.id}" aria-label="Ta bort jobb">
                                 <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-trash"></use></svg>
                             </button>
@@ -1453,28 +1416,10 @@
 			    const kundnamnHTML = highlightSearchTerm(job.kundnamn, currentSearchTerm);
 			    const regnrHTML = highlightSearchTerm(job.regnr || 'OKÄNT', currentSearchTerm);
 			    const prioIcon = job.prio ? `<svg class="icon-sm prio-flag-icon" viewBox="0 0 24 24"><use href="#icon-flag"></use></svg>` : '';
-			    const timePart = job.datum ? (formatDate(job.datum).split('kl. ')[1] || '---') : '---';
-
-                // --- NYTT: Logik för foten (Datum + Kommentar) ---
-                let footerLeftHTML = '';
-                if (job.status === 'klar') {
-                    // För "Klar", visa BARA kommentar-ikonen
-                    if (hasComment) {
-                        footerLeftHTML = `<svg class="kanban-card-icon" viewBox="0 0 24 24" title="Har kommentar"><use href="#icon-chat"></use></svg>`;
-                    }
-                } else {
-                    // För "Bokad" / "Offererad", visa datum + kommentar
-                    const formattedDate = job.datum ? formatDate(job.datum, { onlyDate: true }) : 'Okänt datum';
-                    footerLeftHTML = `
-                        ${hasComment ? `<svg class="kanban-card-icon" viewBox="0 0 24 24" title="Har kommentar"><use href="#icon-chat"></use></svg>` : ''}
-                        <span class="kanban-card-date">
-                            <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-calendar-day"></use></svg>
-                            <span>${formattedDate}</span>
-                        </span>
-                    `;
-                }
-                // --- SLUT NYTT ---
+			    const timePart = job.datum ? (formatDate(job.datum).split('kl. ')[1] || 'Okänd tid') : 'Okänd tid';
 			
+			    // --- NY, POLERAD HTML-STRUKTUR ---
+			    // (Denna gång med "class=" korrekt från början)
 			    return `
 			        <div class="kanban-card job-entry ${prioClass} ${doneClass} ${jobStatusClass}" data-id="${job.id}" data-status="${job.status}">
 			            
@@ -1484,11 +1429,9 @@
 			
 			            <div class="kanban-card-content">
 			                
-                            <div class="kanban-card-title">
+			                <div class="kanban-card-title">
 			                    ${prioIcon}
-                                <button class="link-btn customer-link" data-kund="${job.kundnamn}">
-                                    <span class="customer-name-text">${kundnamnHTML}</span>
-                                </button>
+			                    <span>${kundnamnHTML}</span>
 			                </div>
 			                
 			                ${(job.regnr && job.regnr.toUpperCase() !== 'OKÄNT') ? `
@@ -1500,12 +1443,13 @@
 			                <span class="reg-unknown">${regnrHTML}</span>
 			                `}
 			                
-                            <div class="kanban-card-footer">
-                                <div class="kanban-footer-left">
-                                    ${footerLeftHTML}
-                                </div>
-                                <span class="card-time-badge">${timePart}</span>
-                            </div>
+			                <div class="kanban-card-footer">
+			                    ${hasComment ? `
+			                        <svg class="kanban-card-icon" viewBox="0 0 24 24" title="Har kommentar"><use href="#icon-chat"></use></svg>
+			                    ` : '<span></span>' /* Tom span för att justera badgen */ }
+			                    
+			                    <span class="card-time-badge">${timePart}</span>
+			                </div>
 			            </div>
 			        </div>
 			    `;
@@ -2457,10 +2401,10 @@
                         <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-check"></use></svg>
                         <span>Markera som Klar</span>
                     </button>
-                    <button class="context-menu-button" data-action="setStatusBetald">
-	                    <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-wallet"></use></svg>
-	                    <span>Markera som Betald</span>
-	                </button>
+                    <button class="context-menu-button" data-action="setStatusBokad">
+                        <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-briefcase"></use></svg>
+                        <span>Markera som Bokad</span>
+                    </button>
                     <div class="context-menu-divider"></div>
                     <button class="context-menu-button danger" data-action="delete">
                         <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-trash"></use></svg>
@@ -2628,25 +2572,6 @@
                                 });
                                 return;
                             }
-							case 'setStatusBetald': {
-                                const job = findJob(id);
-                                if (!job) return;
-                                const originalStatus = job.status; // Blir 'klar'
-                                
-                                quickSetStatus(id, 'betald');
-                                
-                                // NY ÅNGRA-FUNKTION
-                                showToast('Jobb markerat som Betald!', 'success', () => {
-                                    quickSetStatus(id, originalStatus); // Återställer till 'klar'
-                                    showToast('Status återställd till Klar.', 'info');
-                                });
-                                return;
-                            }
-							case 'setStatusObetald': {
-				                quickSetStatus(id, 'klar'); // Sätter tillbaka status till "Klar"
-				                showToast('Status återställd till Obetald (Klar).', 'info');
-				                return;
-				            }
                         }
                     }
                     if (actionButton.classList.contains('delete-btn')) {
@@ -2742,7 +2667,7 @@
                         break;
                     }
                     
-                    case 'setStatusBetald': quickSetStatus(contextMenuJobbId, 'betald'); break;
+                    case 'setStatusBokad': quickSetStatus(contextMenuJobId, 'bokad'); break;
                     case 'delete': deleteJob(contextMenuJobId); break;
                 }
                 hideContextMenu();
