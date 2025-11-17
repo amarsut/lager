@@ -920,7 +920,13 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     gap: 0.25rem; align-items: flex-start;
 }
 .detail-modal-header h2 { font-size: 1.25rem; margin: 0; }
-.detail-modal-header p { font-size: 0.9rem; color: var(--text-color-light); margin: 0; }
+.detail-modal-header p,
+#customerModalPhone {
+    font-size: 0.9rem;
+    color: var(--text-color-light);
+    margin: 0;
+    line-height: 1; /* Säkerställer tajt justering */
+}
 
 /* PUNKT 6 (NY): Styling för redigera-knapp */
 .customer-phone-wrapper {
@@ -2733,9 +2739,9 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 /* --- FIX FÖR CUSTOMER MODAL HEADER (X-knappens position) --- */
 .detail-modal-header {
     display: flex;
-    flex-direction: row; /* ÄNDRA TILLBAKA TILL ROW */
-    justify-content: space-between; /* Skjuter X-knappen till höger */
-    align-items: flex-start; /* Linjerar toppen av titeln med toppen av X-knappen */
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start; /* Linjera toppen av titlar med toppen av X */
     gap: 1rem;
 }
 
@@ -2743,28 +2749,29 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 .detail-modal-header-titles {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
-    flex-grow: 1; 
-    
-    /* NYA REGLER FÖR H2 OCH KOPIERA-KNAPP */
-    & h2 {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
+    gap: 0.5rem; /* Mellanrum mellan H2 och telefonraden */
+    flex-grow: 1;
+}
+
+.detail-modal-header-titles h2 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 /* Ny div som grupperar ikon-knapparna TÄTT */
 .icon-button-group {
     display: inline-flex;
     align-items: center;
-    gap: 0.25rem; /* Mindre gap mellan ikonerna */
-    margin-left: 0.5rem; /* Ersätter den gamla gapen från .customer-phone-wrapper */
+    gap: 0.5rem; /* --- Ökat mellanrum mellan ikonerna --- */
+    margin-left: 0; /* Tar bort gammal margin */
 }
 
 /* Ta bort den gamla, stora gapen från huvud-wrappern */
 .customer-phone-wrapper {
-    gap: 0; 
+    display: flex;
+    align-items: center; /* <<< --- DEN VIKTIGA FIXEN */
+    gap: 0.75rem; /* Lite mer luft mellan nr och ikoner */
 }
 
 /* Återanvänd din snygga hover-effekt för samtliga knappar */
@@ -4065,6 +4072,7 @@ html.privacy-mode-enabled .nav-logo {
     background-color: var(--primary-color) !important;
     color: white !important;
 }
+
 
 
 
