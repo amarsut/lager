@@ -4126,3 +4126,11 @@ html.privacy-mode-enabled .nav-logo {
     color: var(--success-color);
 }
 
+/* Ny stil för "Markera som Obetald"-knappen (återöppna) */
+.icon-btn[data-action="setStatusObetald"] {
+    color: var(--warning-color); /* Använder varningsfärgen */
+}
+.icon-btn[data-action="setStatusObetald"]:hover {
+    background-color: rgba(255, 159, 10, 0.1); /* Ljusgul bakgrund */
+    color: var(--warning-color);
+}
