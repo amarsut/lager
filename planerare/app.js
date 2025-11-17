@@ -1404,16 +1404,10 @@
 			function createKanbanCard(job) {
 			    // (Befintlig logik för klasser...)
 			    let prioClass = job.prio ? 'prio-row' : '';
-			    const doneClass = (job.status === 'klar') ? 'done-row' : '';
-			    const isKommandePrio = job.prio && job.status === 'bokad' && new Date(job.datum) >= new Date();
-			    	prioClass += ' kommande-prio-pulse';
-			    }
-			    // (Befintlig logik för klasser...)
-			    let prioClass = job.prio ? 'prio-row' : '';
-			    const doneClass = (job.status === 'klar') ? 'done-row' : '';
+			    const doneClass = (job.status === 'klar' || job.status === 'betald') ? 'done-row' : ''; // <-- ÄNDRAD FÖR NY FUNKTION
 			    const isKommandePrio = job.prio && job.status === 'bokad' && new Date(job.datum) >= new Date();
 			    if(isKommandePrio) {
-			        prioClass += ' kommande-prio-pulse';
+			        prioClass += ' kommande-prio-pulse'; // <-- **HÄR ÄR DEN KORRIGERADE RADEN**
 			    }
 			    const jobStatusClass = (job.status === 'bokad' && new Date(job.datum) < now) ? 'job-missed' : '';
 			    const hasComment = job.kommentarer && job.kommentarer.trim().length > 0;
@@ -1426,7 +1420,7 @@
 
                 // --- NYTT: Logik för foten (Datum + Kommentar) ---
                 let footerLeftHTML = '';
-                if (job.status === 'klar') {
+                if (job.status === 'klar' || job.status === 'betald') { // <-- ÄNDRAD FÖR NY FUNKTION
                     // För "Klar", visa BARA kommentar-ikonen
                     if (hasComment) {
                         footerLeftHTML = `<svg class="kanban-card-icon" viewBox="0 0 24 24" title="Har kommentar"><use href="#icon-chat"></use></svg>`;
