@@ -1980,7 +1980,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 	/* Anpassa "Alla Jobb" för att också vara större, men behålla högerjusteringen */
 	.stat-bar > .stat-card:nth-child(5) .stat-card-value {
 	    text-align: right;
-	    font-size: 2.15rem; /* Gör denna siffra störst */
+	    font-size: 1.85rem; /* Gör denna siffra störst */
 	    margin-top: 0;
 	}
 
@@ -4160,6 +4160,7 @@ html.privacy-mode-enabled .nav-logo {
     background-color: var(--primary-color) !important;
     color: white !important;
 }
+
 
 
 
