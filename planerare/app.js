@@ -51,7 +51,20 @@
 
         // --- NYTT: Kontextuell Ikon-funktion (UPPDATERAD) ---
 		function getJobContextIcon(job) {
-    		return ''; // Returnera tom sträng om inget matchar
+		    // Definiera dina företagskunder här igen (du behöver inte "const" om de redan är globala, men det skadar inte)
+		    const SPECIAL_CLIENTS = ['fogarolli', 'bmg']; 
+		    
+		    if (!job || !job.kundnamn) return '#icon-user'; 
+		
+		    const name = job.kundnamn.toLowerCase();
+		    
+		    const isCorporate = SPECIAL_CLIENTS.some(client => name.includes(client));
+		    
+		    if (isCorporate) {
+		        return '#icon-office-building'; 
+		    }
+		    
+		    return '#icon-user'; 
 		}
         
         document.addEventListener('DOMContentLoaded', function() {
@@ -1341,7 +1354,7 @@
                 const doneClass = (job.status === 'klar') ? 'done-row' : '';
 
 				const customerIconLink = getJobContextIcon(job);
-				const contextIcon = getJobContextIcon(job);
+				const contextIcon = '';
                 const isKommandePrio = job.prio && job.status === 'bokad' && new Date(job.datum) >= new Date();
                 if(isKommandePrio) {
                     prioClass += ' kommande-prio-pulse';
