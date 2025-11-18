@@ -1958,23 +1958,46 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 .stat-card-title span {
     display: none;
 }
-/* Bibehåll den nya texten som visas efter ikonen */
-.stat-card-title::after {
-    content: attr(data-filter);
-    text-transform: uppercase;
-    font-size: 0.7rem;
-    font-weight: 600;
-    line-height: 1;
-}
+	/* Bibehåll den nya texten som visas efter ikonen */
+	.stat-card-title::after {
+	    content: attr(data-filter);
+	    text-transform: uppercase;
+	    font-size: 0.7rem;
+	    font-weight: 600;
+	    line-height: 1;
+	}
+	
+	.stat-card-value {
+	    /* NYTT: Öka storleken, men inte till 2rem som tidigare. */
+	    font-size: 1.85rem; 
+	    font-weight: 700;
+	    text-align: left; 
+	    margin-top: 0.1rem; /* Minska marginalen ytterligare */
+	    line-height: 1.2;
+	    transition: none;
+	}
+	
+	/* Anpassa "Alla Jobb" för att också vara större, men behålla högerjusteringen */
+	.stat-bar > .stat-card:nth-child(5) .stat-card-value {
+	    text-align: right;
+	    font-size: 2.15rem; /* Gör denna siffra störst */
+	    margin-top: 0;
+	}
 
-.stat-card-value {
-    font-size: 1.5rem; /* Betydligt mindre siffra */
-    font-weight: 700;
-    text-align: left; /* Flyttar siffran till vänster, under titeln */
-    margin-top: 0.25rem;
-    line-height: 1.1;
-    transition: none; /* Ta bort onödiga animationer */
-}
+	/* Sätt ALLA JOBB på en egen rad (fortsätt att visa det som en hel rad) */
+	.stat-bar > .stat-card:nth-child(5) {
+	    grid-column: 1 / -1; 
+	    display: flex;
+	    flex-direction: row;
+	    justify-content: space-between;
+	    align-items: center;
+	    padding: 0.75rem 1rem;
+	    min-height: auto;
+	}
+	.stat-bar > .stat-card:nth-child(5) .stat-card-title {
+	    display: flex;
+	    align-items: center;
+	}
 
 	/* Visa texten för det nya Faktureras-kortet */
 .stat-card[data-filter="faktureras"] .stat-card-title::after {
@@ -1991,26 +2014,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 }
 .stat-card[data-filter="alla"] .stat-card-title::after {
     content: "ALLA JOBB";
-}
-
-/* Sätt ALLA JOBB på en egen rad (fortsätt att visa det som en hel rad) */
-.stat-bar > .stat-card:nth-child(5) {
-    grid-column: 1 / -1; 
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.75rem 1rem;
-    min-height: auto;
-}
-.stat-bar > .stat-card:nth-child(5) .stat-card-title {
-    display: flex;
-    align-items: center;
-}
-.stat-bar > .stat-card:nth-child(5) .stat-card-value {
-    text-align: right;
-    font-size: 1.75rem; /* Lite större än de andra för att fylla ut */
-    margin-top: 0;
 }
 
     /* 4. Desktop FAB (Dölj på mobil) */
@@ -4157,6 +4160,7 @@ html.privacy-mode-enabled .nav-logo {
     background-color: var(--primary-color) !important;
     color: white !important;
 }
+
 
 
 
