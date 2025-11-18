@@ -4,6 +4,8 @@
     --primary-color: #0a84ff;
     --primary-hover: #339aff;
     --primary-light: rgba(10, 132, 255, 0.1);
+	--invoice-color: #af52de; /* En snygg lila färg */
+    --invoice-light: rgba(175, 82, 222, 0.1);
     
     --success-color: #30d158;
     --warning-color: #ff9f0a;
@@ -572,6 +574,18 @@ mark {
 }
 
 /* Status-brickor */
+.status-badge.status-faktureras { background-color: var(--invoice-light); color: var(--invoice-color); }
+[data-theme="dark"] .status-badge.status-faktureras { background-color: rgba(175, 82, 222, 0.2); color: #bf5af2; }
+
+/* Kanban: Faktureras-kolumnens färg */
+.kanban-column[data-status="faktureras"] {
+    border-top-color: var(--invoice-color);
+}
+
+/* Stat-kort för Fakturering */
+.stat-card.invoice .icon-sm { color: var(--invoice-color); }
+.stat-card.invoice .stat-card-value { color: var(--invoice-color); }
+
 .status-badge {
     display: inline-flex; align-items: center; gap: 0.4rem;
     padding: 0.25em 0.75em; font-size: 0.8rem;
@@ -4072,6 +4086,7 @@ html.privacy-mode-enabled .nav-logo {
     background-color: var(--primary-color) !important;
     color: white !important;
 }
+
 
 
 
