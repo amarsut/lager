@@ -8,6 +8,7 @@
 		};
 		// Lägg till dina företagskunder här (små bokstäver för sökning)
 		const CORPORATE_CLIENTS = ['fogarolli', 'bmg'];
+		const SPECIAL_CLIENTS = ['fogarolli', 'bmg'];
         const formatCurrency = (num) => `${(num || 0).toLocaleString('sv-SE')} kr`;
         const locale = 'sv-SE';
         
@@ -48,10 +49,23 @@
             return safeText.replace(regex, '<mark>$1</mark>');
         }
 
-        // --- NYTT: Kontextuell Ikon-funktion ---
-        function getJobContextIcon(job) {
-            return ''; // Returnera tom sträng om inget matchar
-        }
+        // --- NYTT: Kontextuell Ikon-funktion (UPPDATERAD) ---
+		function getJobContextIcon(job) {
+		    if (!job || !job.kundnamn) return '#icon-user'; // Fallback till standard-användare
+		
+		    const name = job.kundnamn.toLowerCase();
+		    
+		    // Använd listan du redan har för faktureringslogiken
+		    const isCorporate = SPECIAL_CLIENTS.some(client => name.includes(client));
+		    
+		    if (isCorporate) {
+		        // Om det är en av dina företagskunder, använd företagsikonen
+		        return '#icon-office-building'; 
+		    }
+		    
+		    // Annars, använd standard användarikon
+		    return '#icon-user'; 
+		}
         
         document.addEventListener('DOMContentLoaded', function() {
             
@@ -1239,6 +1253,7 @@
                 let prioClass = job.prio ? 'prio-row' : '';
                 const doneClass = (job.status === 'klar') ? 'done-row' : '';
 
+				const customerIconLink = getJobContextIcon(job);
                 const isKommandePrio = job.prio && job.status === 'bokad' && new Date(job.datum) >= new Date();
                 if(isKommandePrio) {
                     prioClass += ' kommande-prio-pulse';
@@ -1262,11 +1277,11 @@
                         <td data-label="Status"><span class="status-badge status-${job.status || 'bokad'}">${STATUS_TEXT[job.status] || 'Bokad'}</span></td>
                         <td data-label="Datum">${formatDate(job.datum)}</td>
                         <td data-label="Kund">
-	                        <button class="link-btn customer-link" data-kund="${job.kundnamn}">
-	                            <svg class="icon-sm customer-icon" viewBox="0 0 24 24"><use href="#icon-user"></use></svg>
-	                            <span class="customer-name-text">${kundnamnHTML}</span>
-	                        </button> ${contextIcon}
-	                    </td>
+				            <button class="link-btn customer-link" data-kund="${job.kundnamn}">
+				                <svg class="icon-sm customer-icon" viewBox="0 0 24 24"><use href="${customerIconLink}"></use></svg>
+				                <span class="customer-name-text">${kundnamnHTML}</span>
+				            </button> ${contextIcon}
+				        </td>
                         <td data-label="Reg.nr">
                             ${(job.regnr && job.regnr.toUpperCase() !== 'OKÄNT') ? `
 	                        <button class="car-link reg-plate" data-regnr="${job.regnr}">
@@ -1342,6 +1357,7 @@
                 let prioClass = job.prio ? 'prio-row' : '';
                 const doneClass = (job.status === 'klar') ? 'done-row' : '';
 
+				const customerIconLink = getJobContextIcon(job);
                 const isKommandePrio = job.prio && job.status === 'bokad' && new Date(job.datum) >= new Date();
                 if(isKommandePrio) {
                     prioClass += ' kommande-prio-pulse';
@@ -1367,15 +1383,15 @@
                         <div class="card-content">
 						    <div class="card-row">
 						        <span class="card-label">Kund</span>
-                                <span class="card-value customer-name">
-                                    <div class="customer-name-wrapper">
-                                        ${contextIcon}
-                                        <button class="link-btn customer-link" data-kund="${job.kundnamn}">
-                                            <svg class="icon-sm customer-icon" viewBox="0 0 24 24"><use href="#icon-user"></use></svg>
-                                            <span class="customer-name-text">${kundnamnHTML}</span>
-                                        </button>
-                                    </div>
-                                </span>
+				                <span class="card-value customer-name">
+				                    <div class="customer-name-wrapper">
+				                        ${contextIcon}
+				                        <button class="link-btn customer-link" data-kund="${job.kundnamn}">
+				                            <svg class="icon-sm customer-icon" viewBox="0 0 24 24"><use href="${customerIconLink}"></use></svg>
+				                            <span class="customer-name-text">${kundnamnHTML}</span>
+				                        </button>
+				                    </div>
+				                </span>
                             </div>
                             <div class="card-row">
                                 <span class="card-label">Reg.nr</span>
