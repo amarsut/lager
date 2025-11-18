@@ -1928,19 +1928,71 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 
     /* 3. Statistik-kort */
     .stat-bar {
-        grid-template-columns: 1fr 1fr;
-        gap: 1rem;
-        margin-bottom: 1.5rem;
-    }
-    .stat-card {
-        padding: 1rem;
-    }
-    .stat-card-title {
-        font-size: 0.8rem;
-    }
-    .stat-card-value {
-        font-size: 1.75rem;
-    }
+    /* ÄNDRING: Stapla korten vertikalt i en kolumn, men bibehåll rutnätet */
+    grid-template-columns: 1fr; /* NU: Endast en kolumn */
+    gap: 0.75rem; /* Mindre vertikalt mellanrum */
+    margin-bottom: 1.5rem;
+	}
+	.stat-card {
+	    /* NYTT: Tvinga dem att ligga sida-vid-sida i två kolumner INUTI varje rad */
+	    display: grid; 
+	    grid-template-columns: 1fr 1fr;
+	    align-items: center;
+	    justify-content: space-between;
+	    padding: 0.75rem 1rem; /* Kompaktare padding */
+	}
+	.stat-card-title {
+	    /* Flytta ikonen till vänster och sänk textstorleken */
+	    font-size: 0.75rem; 
+	    margin: 0;
+	}
+	.stat-card-value {
+	    /* Högerställ värdet */
+	    font-size: 2rem; 
+	    text-align: right;
+	    margin: 0;
+	    line-height: 1;
+	}
+	.stat-card-title span {
+	    display: none; /* Dölj texten "Kommande" etc. i kortet för att spara plats */
+	}
+	/* Speciell regel för att visa titeln i den nya layouten */
+	.stat-card-title::after {
+	    content: attr(data-filter);
+	    text-transform: uppercase;
+	    font-size: 0.75rem;
+	    color: var(--text-color-light);
+	    font-weight: 600;
+	}
+	/* Visa texten för det nya Faktureras-kortet */
+	.stat-card[data-filter="faktureras"] .stat-card-title::after {
+	    content: "FAKTURERING";
+	}
+	.stat-card[data-filter="kommande"] .stat-card-title::after {
+	    content: "KOMMANDE";
+	}
+	.stat-card[data-filter="klar"] .stat-card-title::after {
+	    content: "FÄRDIGA JOBB";
+	}
+	.stat-card[data-filter="offererad"] .stat-card-title::after {
+	    content: "OFFERTERADE";
+	}
+	.stat-card[data-filter="alla"] .stat-card-title::after {
+	    content: "ALLA JOBB";
+	}
+	
+	/* FIX FÖR att få "Alla Jobb" att ta hela bredden */
+	.stat-bar > .stat-card:nth-child(5) {
+	    grid-column: 1 / -1; /* Tvingar "Alla Jobb" att ta upp en hel rad */
+	    grid-template-columns: 1fr 1fr;
+	}
+	/* FIX FÖR ATT VISA ALLA JOBB KORREKT PÅ EGEN RAD */
+	.stat-bar > .stat-card:nth-child(5) .stat-card-title {
+	    grid-column: 1; 
+	}
+	.stat-bar > .stat-card:nth-child(5) .stat-card-value {
+	    grid-column: 2;
+	}
 
     /* 4. Desktop FAB (Dölj på mobil) */
     #fabAddJob {
@@ -4086,6 +4138,7 @@ html.privacy-mode-enabled .nav-logo {
     background-color: var(--primary-color) !important;
     color: white !important;
 }
+
 
 
 
