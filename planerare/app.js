@@ -1057,32 +1057,37 @@
 			}
 
             function renderGlobalStats(jobs) {
-                const now = new Date();
-                now.setHours(0, 0, 0, 0);
-
-                const upcomingJobs = jobs.filter(j => j.status === 'bokad' && new Date(j.datum) >= now).length;
-                const finishedJobs = jobs.filter(j => j.status === 'klar').length;
-                const offeredJobs = jobs.filter(j => j.status === 'offererad').length;
-				const invoiceJobs = jobs.filter(j => j.status === 'faktureras').length;
-                const allJobCount = jobs.length;
-                
-                statUpcoming.textContent = upcomingJobs;
-                statFinished.textContent = finishedJobs;
-                statOffered.textContent = offeredJobs;
-                statAll.textContent = allJobCount;
-
-				const statInvoice = document.getElementById('stat-invoice');
-    				if(statInvoice) statInvoice.textContent = invoiceJobs;
-                
-                // NYTT: Dagens Vinst i Header
-                const todaysProfit = jobs
-                    .filter(j => j.status === 'klar' && j.datum && j.datum.startsWith(todayString))
-                    .reduce((sum, j) => sum + (j.vinst || 0), 0);
-
-                document.querySelectorAll('.stat-card.active').forEach(c => c.classList.remove('active'));
-                const activeCard = document.getElementById(`stat-card-${currentStatusFilter}`);
-                if (activeCard) activeCard.classList.add('active');
-            }
+			    const now = new Date();
+			    now.setHours(0, 0, 0, 0);
+			
+			    // STEG 1: Filtrera bort alla raderade jobb FÖRST
+			    const activeJobs = jobs.filter(job => !job.deleted);
+			
+			    // STEG 2: Använd activeJobs för ALL statistikräkning
+			    const upcomingJobs = activeJobs.filter(j => j.status === 'bokad' && new Date(j.datum) >= now).length;
+			    const finishedJobs = activeJobs.filter(j => j.status === 'klar').length;
+			    const offeredJobs = activeJobs.filter(j => j.status === 'offererad').length;
+			    const invoiceJobs = activeJobs.filter(j => j.status === 'faktureras').length; // Nytt faktureras-kort
+			    const allJobCount = activeJobs.length;
+			    
+			    statUpcoming.textContent = upcomingJobs;
+			    statFinished.textContent = finishedJobs;
+			    statOffered.textContent = offeredJobs;
+			    statAll.textContent = allJobCount;
+			    
+			    const statInvoice = document.getElementById('stat-invoice');
+			    if(statInvoice) statInvoice.textContent = invoiceJobs;
+			
+			    // NYTT: Dagens Vinst i Header (Måste också använda activeJobs)
+			    const todaysProfit = activeJobs
+			        .filter(j => j.status === 'klar' && j.datum && j.datum.startsWith(todayString))
+			        .reduce((sum, j) => sum + (j.vinst || 0), 0);
+			    // (Visningslogiken för Dagens Vinst är i openStatsModal och behöver inte uppdateras här)
+			    
+			    document.querySelectorAll('.stat-card.active').forEach(c => c.classList.remove('active'));
+			    const activeCard = document.getElementById(`stat-card-${currentStatusFilter}`);
+			    if (activeCard) activeCard.classList.add('active');
+			}
 
             // --- UPPDATERAD: renderTimeline med Animationslogik ---
             function renderTimeline() {
