@@ -51,22 +51,7 @@
 
         // --- NYTT: Kontextuell Ikon-funktion (UPPDATERAD) ---
 		function getJobContextIcon(job) {
-		    // Om jobbet är ogiltigt, returnera en tom sträng (då inget matchar)
-		    if (!job || !job.kundnamn) return ''; 
-		    
-		    const name = job.kundnamn.toLowerCase();
-		    const SPECIAL_CLIENTS = ['fogarolli', 'bmg']; 
-		    
-		    // Denna variabel är vad som KONTROLLERAR om du ska få en företagsikon
-		    const isCorporate = SPECIAL_CLIENTS.some(client => name.includes(client));
-		    
-		    if (isCorporate) {
-		        // Returnera ID:et för företagsikonen
-		        return '#icon-office-building'; 
-		    }
-		    
-		    // Annars, returnera ID:et för standard användarikonen
-		    return '#icon-user'; 
+    		return ''; // Returnera tom sträng om inget matchar
 		}
         
         document.addEventListener('DOMContentLoaded', function() {
@@ -1252,67 +1237,64 @@
 
             // --- UPPDATERAD: createJobRow med Kontextuell Ikon ---
             function createJobRow(job) {
-                let prioClass = job.prio ? 'prio-row' : '';
-                const doneClass = (job.status === 'klar') ? 'done-row' : '';
-
-				const customerIconLink = getJobContextIcon(job);
-                const isKommandePrio = job.prio && job.status === 'bokad' && new Date(job.datum) >= new Date();
-                if(isKommandePrio) {
-                    prioClass += ' kommande-prio-pulse';
-                }
-
-                // --- NY LOGIK FÖR "MISSAT JOBB" ---
-                let jobStatusClass = '';
-                if (job.status === 'bokad' && new Date(job.datum) < now) {
-                    jobStatusClass = 'job-missed';
-                }
-                // --- SLUT NY LOGIK ---
-
-                const prioIcon = job.prio ? `<svg class="icon-sm prio-flag-icon" viewBox="0 0 24 24"><use href="#icon-flag"></use></svg>` : '';
-                const hasComment = job.kommentarer && job.kommentarer.trim().length > 0;
-                const kundnamnHTML = highlightSearchTerm(job.kundnamn, currentSearchTerm);
-                const regnrHTML = highlightSearchTerm(job.regnr || '---', currentSearchTerm);
-
-                return `
-                    <tr data-id="${job.id}" data-status="${job.status}" class="job-entry ${prioClass} ${doneClass} ${jobStatusClass}">
-                        <td data-label="Status"><span class="status-badge status-${job.status || 'bokad'}">${STATUS_TEXT[job.status] || 'Bokad'}</span></td>
-                        <td data-label="Datum">${formatDate(job.datum)}</td>
-                        <td data-label="Kund">
+			    let prioClass = job.prio ? 'prio-row' : '';
+			    const doneClass = (job.status === 'klar') ? 'done-row' : '';
+			
+			    const isKommandePrio = job.prio && job.status === 'bokad' && new Date(job.datum) >= new Date();
+			    if(isKommandePrio) {
+			        prioClass += ' kommande-prio-pulse';
+			    }
+			
+			    let jobStatusClass = (job.status === 'bokad' && new Date(job.datum) < now) ? 'job-missed' : '';
+			
+			    const hasComment = job.kommentarer && job.kommentarer.trim().length > 0;
+			    const kundnamnHTML = highlightSearchTerm(job.kundnamn, currentSearchTerm);
+			    const regnrHTML = highlightSearchTerm(job.regnr || '---', currentSearchTerm);
+			    
+			    // NYTT: Hämta den dynamiska ikonen som ska användas
+			    const customerIconLink = getJobContextIcon(job); 
+			    const contextIcon = ''; // Håll denna tom för att slippa texten
+			
+			    return `
+			        <tr data-id="${job.id}" data-status="${job.status}" class="job-entry ${prioClass} ${doneClass} ${jobStatusClass}">
+			            <td data-label="Status"><span class="status-badge status-${job.status || 'bokad'}">${STATUS_TEXT[job.status] || 'Bokad'}</span></td>
+			            <td data-label="Datum">${formatDate(job.datum)}</td>
+			            <td data-label="Kund">
 				            <button class="link-btn customer-link" data-kund="${job.kundnamn}">
 				                <svg class="icon-sm customer-icon" viewBox="0 0 24 24"><use href="${customerIconLink}"></use></svg>
 				                <span class="customer-name-text">${kundnamnHTML}</span>
 				            </button> ${contextIcon}
 				        </td>
-                        <td data-label="Reg.nr">
-                            ${(job.regnr && job.regnr.toUpperCase() !== 'OKÄNT') ? `
-	                        <button class="car-link reg-plate" data-regnr="${job.regnr}">
-	                            <span class="reg-country">S</span>
-	                            <span class="reg-number">${regnrHTML}</span>
-	                        </button>
-                            ` : '---'}
-                    	</td>
-                        <td data-label="Kundpris" class="money-related">${formatCurrency(job.kundpris)}</td>
-                        <td class="action-col">
-                            ${hasComment ? `
-                            <button class="icon-btn" data-action="showComment" data-comment="${encodeURIComponent(job.kommentarer)}" title="Visa kommentar" aria-label="Visa kommentar">
-                                <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-chat"></use></svg>
-                            </button>
-                            ` : `<span class="icon-btn-placeholder"></span>`}
-
-                            <button class="icon-btn ${job.prio ? 'active-prio' : ''}" data-action="togglePrio" title="Växla Prio" aria-label="Växla Prio">
-                            	<svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-flag"></use></svg>
-                        	</button>
-                            <button class="icon-btn" data-action="setStatusKlar" title="Markera som Klar" aria-label="Markera som Klar">
-                                <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-check"></use></svg>
-                            </button>
-
-                            <button class="icon-btn delete-btn" data-id="${job.id}" title="Ta bort" aria-label="Ta bort jobb">
-                                <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-trash"></use></svg>
-                            </button>
-                        </td>
-                    </tr>
-                `;
-            }
+			            <td data-label="Reg.nr">
+			                ${(job.regnr && job.regnr.toUpperCase() !== 'OKÄNT') ? `
+				            <button class="car-link reg-plate" data-regnr="${job.regnr}">
+				                <span class="reg-country">S</span>
+				                <span class="reg-number">${regnrHTML}</span>
+				            </button>
+			                ` : '---'}
+			        	</td>
+			            <td data-label="Kundpris" class="money-related">${formatCurrency(job.kundpris)}</td>
+			            <td class="action-col">
+			                ${hasComment ? `
+			                <button class="icon-btn" data-action="showComment" data-comment="${encodeURIComponent(job.kommentarer)}" title="Visa kommentar" aria-label="Visa kommentar">
+			                    <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-chat"></use></svg>
+			                </button>
+			                ` : `<span class="icon-btn-placeholder"></span>`}
+			
+			                <button class="icon-btn ${job.prio ? 'active-prio' : ''}" data-action="togglePrio" title="Växla Prio" aria-label="Växla Prio">
+			                	<svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-flag"></use></svg>
+			            	</button>
+			                <button class="icon-btn" data-action="setStatusKlar" title="Markera som Klar" aria-label="Markera som Klar">
+			                    <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-check"></use></svg>
+			                </button>
+			
+			                <button class="icon-btn delete-btn" data-id="${job.id}" title="Ta bort" aria-label="Ta bort jobb">
+			                    <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-trash"></use></svg>
+			                </button>
+			            </td>
+			        </tr>
+			    `;
+			}
             
             function renderMobileCardList(jobs) {
                 jobListContainer.innerHTML = '';
@@ -1359,6 +1341,7 @@
                 const doneClass = (job.status === 'klar') ? 'done-row' : '';
 
 				const customerIconLink = getJobContextIcon(job);
+				const contextIcon = getJobContextIcon(job);
                 const isKommandePrio = job.prio && job.status === 'bokad' && new Date(job.datum) >= new Date();
                 if(isKommandePrio) {
                     prioClass += ' kommande-prio-pulse';
