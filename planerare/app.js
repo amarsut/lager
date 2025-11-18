@@ -1,7 +1,7 @@
 	// --- Globala Konstanter ---
         const STATUS_TEXT = {
 		    'bokad': 'Bokad', 
-		    'klar': 'Betald & Klar', // Ändra texten för att tydliggöra
+		    'klar': 'Slutfört', // Ändra texten för att tydliggöra
 		    'offererad': 'Offererad', 
 		    'avbokad': 'Avbokad',
 		    'faktureras': 'Faktureras' // Ny
