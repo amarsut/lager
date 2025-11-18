@@ -1,8 +1,13 @@
 	// --- Globala Konstanter ---
         const STATUS_TEXT = {
-            'bokad': 'Bokad', 'klar': 'Klar', 
-            'offererad': 'Offererad', 'avbokad': 'Avbokad'
-        };
+		    'bokad': 'Bokad', 
+		    'klar': 'Betald & Klar', // Ändra texten för att tydliggöra
+		    'offererad': 'Offererad', 
+		    'avbokad': 'Avbokad',
+		    'faktureras': 'Faktureras' // Ny
+		};
+		// Lägg till dina företagskunder här (små bokstäver för sökning)
+		const CORPORATE_CLIENTS = ['fogarolli', 'bmg'];
         const formatCurrency = (num) => `${(num || 0).toLocaleString('sv-SE')} kr`;
         const locale = 'sv-SE';
         
@@ -249,6 +254,7 @@
 			const kanbanColOffererad = document.getElementById('kanban-col-offererad');
 			const kanbanColBokad = document.getElementById('kanban-col-bokad');
 			const kanbanColKlar = document.getElementById('kanban-col-klar');
+			const kanbanColFaktureras = document.getElementById('kanban-col-faktureras');
 
 			// --- NY LYSSNARE FÖR KANBAN-VYN ---
             kanbanView.addEventListener('click', (e) => {
@@ -657,7 +663,10 @@
 			    // Rensa kolumnerna
 			    kanbanColOffererad.innerHTML = '';
 			    kanbanColBokad.innerHTML = '';
+				kanbanColFaktureras.innerHTML = '';
 			    kanbanColKlar.innerHTML = '';
+
+				let fakturerasCount = 0;
 			
 			    // --- 1. FILTER-LOGIK (Kopierad från renderTimeline) ---
 			    let activeJobs = allJobs.filter(job => !job.deleted);
@@ -728,11 +737,16 @@
 			                kanbanColBokad.innerHTML += cardHTML;
 			                bokadCount++;
 			                break;
+						case 'faktureras': // NYTT CASE
+			                kanbanColFaktureras.innerHTML += cardHTML;
+			                fakturerasCount++;
+			                break;
 			        }
 			    });
 			
 			    document.querySelector('.kanban-column[data-status="offererad"] .kanban-column-count').textContent = offereradCount;
 			    document.querySelector('.kanban-column[data-status="bokad"] .kanban-column-count').textContent = bokadCount;
+				document.querySelector('.kanban-column[data-status="faktureras"] .kanban-column-count').textContent = fakturerasCount;
 			
                 // --- NYTT: Hantera "Tomt läge" för Offererad/Bokad ---
                 if (offereradCount === 0) {
@@ -765,6 +779,7 @@
 			        sortableColOffererad = new Sortable(kanbanColOffererad, options);
 			        sortableColBokad = new Sortable(kanbanColBokad, options);
 			        sortableColKlar = new Sortable(kanbanColKlar, options);
+					sortableColFaktureras = new Sortable(kanbanColFaktureras, options);
 			    }
 			}
 		
@@ -1033,12 +1048,16 @@
                 const upcomingJobs = jobs.filter(j => j.status === 'bokad' && new Date(j.datum) >= now).length;
                 const finishedJobs = jobs.filter(j => j.status === 'klar').length;
                 const offeredJobs = jobs.filter(j => j.status === 'offererad').length;
+				const invoiceJobs = jobs.filter(j => j.status === 'faktureras').length;
                 const allJobCount = jobs.length;
                 
                 statUpcoming.textContent = upcomingJobs;
                 statFinished.textContent = finishedJobs;
                 statOffered.textContent = offeredJobs;
                 statAll.textContent = allJobCount;
+
+				const statInvoice = document.getElementById('stat-invoice');
+    				if(statInvoice) statInvoice.textContent = invoiceJobs;
                 
                 // NYTT: Dagens Vinst i Header
                 const todaysProfit = jobs
@@ -1106,6 +1125,10 @@
                                 j.status === 'bokad' && new Date(j.datum) >= now
                             );
                             break;
+						case 'faktureras': // NYTT CASE
+					        jobsToDisplay = jobsToDisplay.filter(j => j.status === 'faktureras');
+					        sortOrder = 'desc'; // Visa nyaste överst
+					        break;
                         case 'klar':
                             jobsToDisplay = jobsToDisplay.filter(j => j.status === 'klar');
                             sortOrder = 'desc'; 
@@ -2475,22 +2498,46 @@
                 }
             }
             function quickSetStatus(jobId, newStatus) {
-                const job = findJob(jobId);
-                if (job && job.status !== newStatus) {
-                    db.collection("jobs").doc(jobId).update({
-                        status: newStatus
-                    })
-                    .then(() => {
-                        if (newStatus === 'klar') {
-                            // Tyst, hanteras av "Ångra"-toasten
-                        } else {
-                            const statusText = STATUS_TEXT[newStatus] || newStatus;
-                            showToast(`Jobb markerat som "${statusText}".`);
-                        }
-                    })
-                    .catch(err => showToast(`Fel: ${err.message}`, 'danger'));
-                }
-            }
+			    const job = findJob(jobId);
+			    if (job && job.status !== newStatus) {
+			        
+			        let statusToSet = newStatus;
+			        let toastMessage = '';
+			
+			        // LOGIK FÖR FÖRETAGSKUNDER
+			        // Om vi försöker sätta den till "Klar", kolla om det är en företagskund
+			        if (newStatus === 'klar') {
+			            const kundLiten = job.kundnamn.toLowerCase();
+			            const isCorporate = CORPORATE_CLIENTS.some(client => kundLiten.includes(client));
+			            
+			            if (isCorporate) {
+			                statusToSet = 'faktureras'; // Ändra målet till faktureras
+			                toastMessage = 'Företagskund: Flyttad till "Fakturering" i väntan på betalning.';
+			            }
+			        }
+			
+			        db.collection("jobs").doc(jobId).update({
+			            status: statusToSet
+			        })
+			        .then(() => {
+			            if (toastMessage) {
+			                showToast(toastMessage, 'info');
+			            } else {
+			                // Standard meddelanden
+			                if (statusToSet === 'klar') {
+			                    // Tyst (hanteras av "Ångra"-toasten i anropet)
+			                } else {
+			                    const statusText = STATUS_TEXT[statusToSet] || statusToSet;
+			                    showToast(`Jobb markerat som "${statusText}".`);
+			                }
+			            }
+			            
+			            // Om vi tvingade över den till 'faktureras', se till att UI uppdateras korrekt
+			            // (renderTimeline/renderKanban körs automatiskt via onSnapshot, så det löser sig)
+			        })
+			        .catch(err => showToast(`Fel: ${err.message}`, 'danger'));
+			    }
+			}
             
             // --- `handleFormSubmit` med Spinner ---
             async function handleFormSubmit(e) {
