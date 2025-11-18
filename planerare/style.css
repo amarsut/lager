@@ -2010,7 +2010,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     content: "FÄRDIGA JOBB";
 }
 .stat-card[data-filter="offererad"] .stat-card-title::after {
-    content: "OFFERTERADE";
+    content: "OFFERERADE";
 }
 .stat-card[data-filter="alla"] .stat-card-title::after {
     content: "ALLA JOBB";
@@ -4171,6 +4171,7 @@ html.privacy-mode-enabled .nav-logo {
     background-color: var(--primary-color) !important;
     color: white !important;
 }
+
 
 
 
