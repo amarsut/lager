@@ -155,6 +155,10 @@
                         <h3 class="stat-card-title"><svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-briefcase"></use></svg><span>Kommande</span></h3>
                         <p class="stat-card-value" id="stat-upcoming">0</p>
                     </div>
+					<div class="stat-card invoice clickable" id="stat-card-faktureras" data-filter="faktureras">
+				        <h3 class="stat-card-title"><svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-clipboard"></use></svg><span>Fakturering</span></h3>
+				        <p class="stat-card-value" id="stat-invoice">0</p>
+				    </div>
                     <div class="stat-card success clickable" id="stat-card-klar" data-filter="klar">
                         <h3 class="stat-card-title"><svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-check"></use></svg><span>Färdiga jobb</span></h3>
                         <p class="stat-card-value" id="stat-finished">0</p>
@@ -220,6 +224,14 @@
                                 <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-plus"></use></svg>
                                 <span>Lägg till...</span>
                             </button>
+						</div>
+
+						<div class="kanban-column" data-status="faktureras">
+						    <h3 class="kanban-column-title">
+						        <span>Fakturering</span>
+						        <span class="kanban-column-count">0</span> 
+						    </h3>
+						    <div class="kanban-column-cards" id="kanban-col-faktureras"></div>
 						</div>
 						
 						<div class="kanban-column" data-status="klar">
@@ -319,12 +331,14 @@
                     <div class="quick-status-buttons" id="quickStatusButtons">
                         <button type="button" class="button" data-status="offererad">Offererad</button>
                         <button type="button" class="button" data-status="bokad">Bokad</button>
+						<button type="button" class="button" data-status="faktureras">Fakt.</button>
                         <button type="button" class="button" data-status="klar">Klar</button>
                         <button type="button" class="button" data-status="avbokad">Avbokad</button>
                     </div>
                     <select id="status" required class="visually-hidden">
                         <option value="offererad">Offererad</option>
                         <option value="bokad" selected>Bokad</option>
+						<option value="faktureras">Faktureras</option> <option value="klar">Klar</option>
                         <option value="klar">Klar</option>
                         <option value="avbokad">Avbokad</option>
                     </select>
