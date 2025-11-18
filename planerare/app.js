@@ -51,19 +51,21 @@
 
         // --- NYTT: Kontextuell Ikon-funktion (UPPDATERAD) ---
 		function getJobContextIcon(job) {
-		    if (!job || !job.kundnamn) return '#icon-user'; // Fallback till standard-användare
-		
-		    const name = job.kundnamn.toLowerCase();
+		    // Om jobbet är ogiltigt, returnera en tom sträng (då inget matchar)
+		    if (!job || !job.kundnamn) return ''; 
 		    
-		    // Använd listan du redan har för faktureringslogiken
+		    const name = job.kundnamn.toLowerCase();
+		    const SPECIAL_CLIENTS = ['fogarolli', 'bmg']; 
+		    
+		    // Denna variabel är vad som KONTROLLERAR om du ska få en företagsikon
 		    const isCorporate = SPECIAL_CLIENTS.some(client => name.includes(client));
 		    
 		    if (isCorporate) {
-		        // Om det är en av dina företagskunder, använd företagsikonen
+		        // Returnera ID:et för företagsikonen
 		        return '#icon-office-building'; 
 		    }
 		    
-		    // Annars, använd standard användarikon
+		    // Annars, returnera ID:et för standard användarikonen
 		    return '#icon-user'; 
 		}
         
@@ -1270,7 +1272,6 @@
                 const hasComment = job.kommentarer && job.kommentarer.trim().length > 0;
                 const kundnamnHTML = highlightSearchTerm(job.kundnamn, currentSearchTerm);
                 const regnrHTML = highlightSearchTerm(job.regnr || '---', currentSearchTerm);
-                const contextIcon = getJobContextIcon(job);
 
                 return `
                     <tr data-id="${job.id}" data-status="${job.status}" class="job-entry ${prioClass} ${doneClass} ${jobStatusClass}">
@@ -1374,7 +1375,6 @@
 
                 const kundnamnHTML = highlightSearchTerm(job.kundnamn, currentSearchTerm);
                 const regnrHTML = highlightSearchTerm(job.regnr || 'OKÄNT', currentSearchTerm);
-                const contextIcon = getJobContextIcon(job);
 
                 const timePart = job.datum ? (formatDate(job.datum).split('kl. ')[1] || 'Okänd tid') : 'Okänd tid';
 
