@@ -197,6 +197,7 @@
             const statsModalTotalProfit = document.getElementById('statsModalTotalProfit');
             const statsModalJobCount = document.getElementById('statsModalJobCount');
             const statsModalBody = document.getElementById('statsModalBody');
+			const statsModalFordringar = document.getElementById('statsModalFordringar');
             
             const settingsBtn = document.getElementById('settingsBtn');
             const mobileSettingsBtn = document.getElementById('mobileSettingsBtn');
@@ -2172,6 +2173,9 @@
 
 			function openStatsModal() {
                 const completedJobs = allJobs.filter(j => !j.deleted && j.status === 'klar');
+				const utgaendeFordringar = allJobs
+			        .filter(j => !j.deleted && j.status === 'faktureras')
+			        .reduce((sum, j) => sum + (j.vinst || 0), 0);
 				// 1. Beräkna listorna
 		        const topCustomers = calculateTopList(completedJobs, 'kundnamn');
 		        const topCars = calculateTopList(completedJobs, 'regnr');
@@ -2196,6 +2200,8 @@
                 statsModalTotalProfit.textContent = formatCurrency(totalVinst);
                 statsModalJobCount.textContent = totalJobb;
                 statsModalTotalProfit.className = totalVinst > 0 ? 'stat-value money-related positive' : 'stat-value money-related';
+				statsModalFordringar.textContent = formatCurrency(utgaendeFordringar);
+    			statsModalFordringar.className = utgaendeFordringar > 0 ? 'stat-value warning' : 'stat-value'; // Använd warning-färg
 
                 const now = new Date();
                 const currentMonthKey = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}`;
