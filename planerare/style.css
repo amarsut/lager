@@ -2981,12 +2981,23 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     vertical-align: -2px; 
 }
 
+.business-icon { 
+    color: var(--primary-color); /* Använd samma färg som kundikonen */
+    width: 1rem;
+    height: 1rem;
+    vertical-align: -2px; 
+}
+
 /* 2. Justera ikon-placering (Desktop vs Mobil) */
 #jobbOversikt .link-btn.customer-link .customer-icon {
    margin-right: 0.35rem; /* VÄNSTER om text på desktop */
 }
 .mobile-job-card .link-btn.customer-link .customer-icon {
     margin-right: 0.35rem; /* Vänster om text på mobil */
+}
+#jobbOversikt .link-btn.customer-link .business-icon,
+.mobile-job-card .link-btn.customer-link .business-icon {
+   margin-right: 0.35rem; 
 }
 
 /* 3. Stajla SJÄLVA KNAPPEN (Gemensam för desktop/mobil) */
@@ -4160,6 +4171,7 @@ html.privacy-mode-enabled .nav-logo {
     background-color: var(--primary-color) !important;
     color: white !important;
 }
+
 
 
 
