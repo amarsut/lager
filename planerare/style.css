@@ -1976,6 +1976,23 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     transition: none; /* Ta bort onödiga animationer */
 }
 
+	/* Visa texten för det nya Faktureras-kortet */
+.stat-card[data-filter="faktureras"] .stat-card-title::after {
+    content: "FAKTURERING";
+}
+.stat-card[data-filter="kommande"] .stat-card-title::after {
+    content: "KOMMANDE";
+}
+.stat-card[data-filter="klar"] .stat-card-title::after {
+    content: "FÄRDIGA JOBB";
+}
+.stat-card[data-filter="offererad"] .stat-card-title::after {
+    content: "OFFERTERADE";
+}
+.stat-card[data-filter="alla"] .stat-card-title::after {
+    content: "ALLA JOBB";
+}
+
 /* Sätt ALLA JOBB på en egen rad (fortsätt att visa det som en hel rad) */
 .stat-bar > .stat-card:nth-child(5) {
     grid-column: 1 / -1; 
@@ -4140,6 +4157,7 @@ html.privacy-mode-enabled .nav-logo {
     background-color: var(--primary-color) !important;
     color: white !important;
 }
+
 
 
 
