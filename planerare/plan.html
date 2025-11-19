@@ -257,9 +257,14 @@
 
     <nav class="mobile-nav" id="mobileNav">
 	    <button class="mobile-nav-btn active" data-view="timeline">
-	        <svg class="icon" viewBox="0 0 24 24"><use href="#icon-timeline-view"></use></svg>
-	        <span>Tidslinje</span>
-	    </button>
+		    <svg class="icon" viewBox="0 0 24 24"><use href="#icon-timeline-view"></use></svg>
+		    <span>Tidslinje</span>
+		</button>
+		
+		<button class="mobile-nav-btn active" id="mobileViewToggle" data-modal="viewSelectModal">
+		    <svg class="icon" viewBox="0 0 24 24"><use href="#icon-view-dense"></use></svg> 
+		    <span>Vy</span>
+		</button>
 	
 	    <button class="mobile-nav-btn" data-view="calendar">
 		    <svg class="icon" viewBox="0 0 24 24"><use href="#icon-calendar-view"></use></svg>
@@ -856,6 +861,27 @@
 	        <div class="modal-actions">
 	            <button type="button" class="button secondary" id="trashModalCancelBtn">Stäng</button>
 	        </div>
+	    </div>
+	</div>
+
+	<div id="viewSelectModal" class="modal-backdrop-mobile" data-modal-id="viewSelectModal" style="display: none;">
+	    <div class="search-modal-content" style="flex-direction: column; align-items: stretch; padding: 1rem; border-radius: 8px;">
+	        <h3 style="margin: 0 0 1rem 0; font-size: 1.1rem;">Välj Jobbvy</h3>
+	        
+	        <button class="button secondary" data-view-select="timeline" id="mobileSelectTimeline">
+	            <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-timeline-view"></use></svg>
+	            <span>Tidslinje</span>
+	        </button>
+	        <button class="button secondary" data-view-select="calendar" id="mobileSelectCalendar">
+	            <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-calendar-view"></use></svg>
+	            <span>Kalender</span>
+	        </button>
+	        <button class="button secondary" data-view-select="kanban" id="mobileSelectKanban">
+	            <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-kanban-view"></use></svg>
+	            <span>Tavla (Kanban)</span>
+	        </button>
+	        
+	        <button id="viewSelectCloseBtn" class="button secondary" style="margin-top: 1rem;">Stäng</button>
 	    </div>
 	</div>
 
