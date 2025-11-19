@@ -4296,6 +4296,11 @@ html.privacy-mode-enabled .nav-logo {
     margin: 0 auto; /* Centrera på desktop */
     background: var(--content-bg);
     padding: 1rem;
+    
+    /* --- NYCKELN TILL LÖSNINGEN HÄR --- */
+    box-sizing: border-box; /* Gör att padding räknas IN I bredden, inte utanför */
+    /* ---------------------------------- */
+
     box-shadow: 0 -4px 10px rgba(0,0,0,0.1);
     border-top-left-radius: 12px;
     border-top-right-radius: 12px;
@@ -4327,6 +4332,7 @@ html.privacy-mode-enabled .nav-logo {
     }
 }
 /* SLUT Fix för Modal som ska komma underifrån */
+
 
 
 
