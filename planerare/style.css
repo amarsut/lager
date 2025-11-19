@@ -2458,8 +2458,8 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 	    flex-shrink: 0;
 	    
 	    /* Behåll fast storlek */
-	    width: 1.125rem !important; 
-	    height: 1.125rem !important;
+	    width: 1.25rem !important; /* Ökad till 1.25rem för bättre synlighet */
+	    height: 1.25rem !important;
 	    
 	    /* Lägg till mellanrum till texten */
 	    margin-right: 0.75rem !important; 
@@ -4327,6 +4327,7 @@ html.privacy-mode-enabled .nav-logo {
     }
 }
 /* SLUT Fix för Modal som ska komma underifrån */
+
 
 
 
