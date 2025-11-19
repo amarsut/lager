@@ -260,6 +260,9 @@
             const mobileSearchForm = document.getElementById('mobileSearchForm'); 
             const mobileSearchBar = document.getElementById('mobileSearchBar');
             const mobileSearchCloseBtn = document.getElementById('mobileSearchCloseBtn');
+			const mobileViewToggle = document.getElementById('mobileViewToggle');
+			const viewSelectModal = document.getElementById('viewSelectModal');
+			const viewSelectCloseBtn = document.getElementById('viewSelectCloseBtn');
 
             const desktopSearchClear = document.getElementById('desktopSearchClear');
             const mobileSearchClear = document.getElementById('mobileSearchClear');
@@ -967,6 +970,38 @@
 		    trashModal.addEventListener('click', (e) => { 
 		        if (e.target === trashModal) closeModal(); 
 		    });
+
+			// Öppna Välj Vy-modalen
+			mobileViewToggle.addEventListener('click', () => {
+			    // Stäng andra nav-knappars modals först
+			    closeModal({ popHistory: false }); 
+			    showModal('viewSelectModal');
+			});
+			
+			// Stäng Välj Vy-modalen
+			viewSelectCloseBtn.addEventListener('click', () => closeModal());
+			viewSelectModal.addEventListener('click', (e) => { 
+			    if (e.target === viewSelectModal) closeModal(); 
+			});
+			
+			// Hantera klick på vy-knapparna inuti modalen
+			viewSelectModal.addEventListener('click', (e) => {
+			    const button = e.target.closest('[data-view-select]');
+			    if (button) {
+			        const view = button.dataset.viewSelect;
+			        
+			        // Stäng modalen först
+			        closeModal();
+			        
+			        // Anropa din befintliga vy-växlingsfunktion
+			        setTimeout(() => {
+			            toggleView(view);
+			            // Sätt den nya knappen som aktiv i bottenmenyn
+			            document.querySelectorAll('.mobile-nav-btn').forEach(btn => btn.classList.remove('active'));
+			            mobileViewToggle.classList.add('active');
+			        }, 50);
+			    }
+			});
 		
 		    // 3. Rita ut listan med raderade jobb
 		    function renderTrashList() {
