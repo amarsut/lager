@@ -2875,7 +2875,7 @@
                 const card = e.target.closest('.stat-card');
                 if (card && card.dataset.filter) {
                     
-                    // Om vi söker, rensa sökningen när vi klickar på ett filter
+                    // ... (kod för sökrensning är oförändrad) ...
                     if (currentSearchTerm) {
                         searchBar.value = '';
                         mobileSearchBar.value = '';
@@ -2891,7 +2891,7 @@
                     
                     currentStatusFilter = card.dataset.filter;
                     
-                    // --- KORRIGERAD KANBAN-SCROLL-LOGIK START ---
+                    // --- KORRIGERAD KANBAN-SCROLL-LOGIK START (Final) ---
                     if (currentView === 'kanban') {
                         renderKanbanBoard(); 
                         
@@ -2901,10 +2901,11 @@
 
                             switch (currentStatusFilter) {
                                 case 'offererad':
+                                case 'alla':
                                     targetColumn = document.getElementById('kanban-col-offererad')?.closest('.kanban-column');
                                     break;
                                 case 'bokad':
-                                case 'kommande': // FIX 1: "Kommande" ska scrolla till "Bokad"
+                                case 'kommande':
                                     targetColumn = document.getElementById('kanban-col-bokad')?.closest('.kanban-column');
                                     break;
                                 case 'faktureras':
@@ -2913,24 +2914,25 @@
                                 case 'klar':
                                     targetColumn = document.getElementById('kanban-col-klar')?.closest('.kanban-column');
                                     break;
-                                case 'alla':
-                                    // Scrolla till första kolumnen (Offererad)
-                                    targetColumn = document.getElementById('kanban-col-offererad')?.closest('.kanban-column');
-                                    break;
                             }
 
                             if (kanbanBoard && targetColumn) {
-                                // FIX 2: Använd .offsetLeft för kolumnen och subtrahera sedan
-                                // kanban-boardens vänstra padding/marginal (som är 1rem/16px)
                                 
-                                // Jag ser i din style.css att .kanban-board har padding: 0 1rem 1rem 1rem;
-                                const boardPaddingLeft = 16; 
-                                
-                                kanbanBoard.scrollTo({
-                                    // Beräkna offset position i förhållande till behållarens skrollbara yta
-                                    left: targetColumn.offsetLeft - boardPaddingLeft, 
-                                    behavior: 'smooth'
-                                });
+                                // FIX: Hantera "Klar" (sista kolumnen) separat
+                                if (currentStatusFilter === 'klar') {
+                                    // Använd scrollIntoView med 'end' för att få kolumnen längst till höger
+                                    targetColumn.scrollIntoView({
+                                        behavior: 'smooth',
+                                        inline: 'end' // Scrollar så elementet syns längst till höger
+                                    });
+                                } else {
+                                    // För alla andra (Offererad, Bokad, Faktureras) använder vi den befintliga left-beräkningen
+                                    const boardPaddingLeft = 16; 
+                                    kanbanBoard.scrollTo({
+                                        left: targetColumn.offsetLeft - boardPaddingLeft, 
+                                        behavior: 'smooth'
+                                    });
+                                }
                             }
                         }, 50); 
                     }
