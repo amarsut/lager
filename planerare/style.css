@@ -3843,6 +3843,72 @@ html.privacy-mode-enabled .nav-logo {
         padding: 0.25rem 0.5rem !important;
         font-size: 0.85rem !important;
     }
+
+	/* 1. Gör behållaren skrollvänlig i sidled */
+	.kanban-board {
+	    display: flex;
+	    overflow-x: auto;
+	    scroll-snap-type: x mandatory; /* Låser skrollningen vid varje kolumn */
+	    padding: 0 1rem 1rem 1rem; /* Lite luft på sidorna */
+	    gap: 1rem; /* Mellanrum mellan kolumnerna */
+	    justify-content: flex-start; /* Tvinga start från vänster */
+	}
+	
+	/* 2. Anpassa kolumnerna för mobilen */
+	.kanban-column {
+	    min-width: 85vw; /* Varje kolumn tar 85% av skärmbredden */
+	    max-width: 85vw; 
+	    scroll-snap-align: center; /* Centrera kolumnen när man släpper */
+	    height: calc(100vh - 180px); /* Anpassa höjden så den ryms */
+	    border-top-width: 4px; /* Tydligare färgkod i toppen */
+	    margin-bottom: 0;
+	    box-shadow: 0 4px 15px rgba(0,0,0,0.1); /* Lite djup */
+	}
+
+	.kanban-column-title {
+	    padding: 0.75rem;
+	    font-size: 1rem;
+	    background-color: var(--bg-color);
+	}
+	
+	.kanban-column-cards {
+	    padding: 0.5rem 0.75rem; /* Mindre padding runt korten */
+	    gap: 0.75rem;
+	    overflow-y: auto; /* Tillåt skroll inuti kolumnen */
+	    /* Göm skrollbaren men behåll funktionen */
+	    scrollbar-width: none; 
+	}
+	
+	.kanban-column-cards::-webkit-scrollbar {
+	    display: none;
+	}
+
+	.kanban-card {
+    margin: 0; /* Ta bort onödiga marginaler */
+    width: 100%; /* Fyll kolumnen */
+	}
+	
+	.kanban-card-content {
+	    padding: 0.75rem; /* Mindre luft inuti kortet */
+	}
+	
+	/* Justera textstorlekar */
+	.kanban-card-title {
+	    font-size: 1rem;
+	    margin-bottom: 0.25rem;
+	}
+	
+	/* Gör reg-skylten lite mindre */
+	.kanban-card .reg-plate {
+	    font-size: 0.8rem;
+	    margin-top: 0.25rem;
+	}
+	
+	/* Justera foten (Datum & Ikon) */
+	.kanban-card-footer {
+	    margin-top: 0.5rem;
+	    font-size: 0.75rem;
+	}
 }
 
 /* Papperskorgens stilar */
@@ -4171,6 +4237,7 @@ html.privacy-mode-enabled .nav-logo {
     background-color: var(--primary-color) !important;
     color: white !important;
 }
+
 
 
 
