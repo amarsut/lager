@@ -3433,13 +3433,13 @@ html.privacy-mode-enabled .nav-logo {
 
 /* 1. Själva tavlan (Centrerad & Skrollbar) */
 .kanban-board {
-    display: flex;             /* Rada upp kolumnerna */
-    justify-content: center;   /* Centrera dem på sidan (för desktop) */
+    display: flex;             
+    justify-content: flex-start; /* FIX: Tvinga start från vänster */
     gap: 1.5rem;
-    padding-bottom: 1rem;
-    overflow-x: auto;          /* Tillåt horisontell skrollning (för mobil) */
-    -webkit-overflow-scrolling: touch;
-    max-width: 100%;           /* Se till att den inte skapar sid-skroll i onödan */
+    padding: 0 1.5rem 1rem 1.5rem; /* NYTT: Lägg till padding på sidorna så kolumnerna syns snyggt */
+    overflow-x: auto;          
+    max-width: 100%;           
+    box-sizing: border-box;    /* Se till att paddingen inte gör containern bredare */
 }
 
 /* 2. Kolumnerna (Fast bredd) */
@@ -4171,6 +4171,7 @@ html.privacy-mode-enabled .nav-logo {
     background-color: var(--primary-color) !important;
     color: white !important;
 }
+
 
 
 
