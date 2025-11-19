@@ -4240,10 +4240,13 @@ html.privacy-mode-enabled .nav-logo {
 
 /* Fix för Modal som ska komma underifrån */
 .view-select-content {
-    position: fixed; /* Använd fixed för att ligga längst ner */
+    position: fixed; 
     bottom: 0;
     left: 0;
     right: 0;
+    width: 100%; /* Säkra bredden */
+    max-width: 500px; /* Begränsa bredden på desktop */
+    margin: 0 auto; /* Centrera på desktop */
     background: var(--content-bg);
     padding: 1rem;
     box-shadow: 0 -4px 10px rgba(0,0,0,0.1);
@@ -4252,8 +4255,8 @@ html.privacy-mode-enabled .nav-logo {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
-    z-index: 1010; /* Se till att den ligger över mobilnaven */
-
+    z-index: 1010; 
+    
     /* Animation: Glid in underifrån */
     transform: translateY(100%);
     transition: transform 0.3s ease-out;
@@ -4264,14 +4267,16 @@ html.privacy-mode-enabled .nav-logo {
     transform: translateY(0);
 }
 
-/* Göm bakgrunden när modalen visas */
-#viewSelectModal.show {
-    align-items: flex-end;
+/* Se till att bakgrunden fungerar korrekt */
+.modal-backdrop-mobile {
+    /* Måste ha flex-end för att dra modalen neråt */
+    align-items: flex-end; 
+    padding-top: 0; 
 }
-
-/* Justera stilen för knapparna inuti modalen */
-.view-select-content .button.secondary {
-    justify-content: flex-start;
-    font-size: 1rem;
-    padding: 0.75rem 1rem;
+/* Åsidosätt mobil-CSS för att få den att visas */
+@media (max-width: 768px) {
+    .modal-backdrop-mobile {
+        align-items: flex-end; /* Fortsätt med flex-end på mobil */
+    }
 }
+/* SLUT Fix för Modal som ska komma underifrån */
