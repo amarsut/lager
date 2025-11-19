@@ -3857,22 +3857,23 @@ html.privacy-mode-enabled .nav-logo {
 	
 	/* 2. Anpassa kolumnerna för mobilen */
 	.kanban-column {
-	    min-width: 85vw;
-	    max-width: 85vw;
-	    /* VIKTIGT: Ta bort begränsningar på höjden */
-	    max-height: none; 
-	    height: auto; 
+	    /* FIX: Tvinga bredden till hela skärmen (minus padding) */
+	    width: 100%; 
+	    max-width: 100%;
+	    /* Tillåt vertikal skrollning för varje kolumns kort */
+	    max-height: calc(100vh - 120px); /* Låter kolumnen fylla nästan hela skärmhöjden */
 	    
-	    /* Lägg till padding längst ner så att sista kortet syns över navigeringsmenyn */
-	    padding-bottom: 75px; 
+	    /* NYTT: Lägg till en tydlig ram/lyft för att skilja kolumnerna åt */
+	    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); 
 	}
 	
 	/* Crucial Fix: Förhindra den lilla interna skrollningen på listan */
 	.kanban-column-cards {
-	    overflow-y: hidden !important; /* Tvinga fram dold vertikal skroll */
-	    /* Se till att den fyller sin flexibla yta */
-	    flex-grow: 1;
-	    min-height: 1px;
+	    padding: 0.5rem 0.75rem; /* Mindre padding runt korten */
+	    gap: 0.75rem;
+	    overflow-y: auto; /* Tillåt skroll inuti kolumnen */
+	    /* Göm skrollbaren men behåll funktionen */
+	    scrollbar-width: none; 
 	}
 
 	.kanban-column-title {
@@ -4282,4 +4283,5 @@ html.privacy-mode-enabled .nav-logo {
     }
 }
 /* SLUT Fix för Modal som ska komma underifrån */
+
 
