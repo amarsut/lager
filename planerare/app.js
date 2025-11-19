@@ -619,13 +619,13 @@
 			        setTimeout(() => {
 			            
 			            // NYTT FIX FÖR MOBIL/DESKTOP VYVÄXLING (Detta block saknades/var fel)
-			            if (window.innerWidth <= 768) {
+			            /*if (window.innerWidth <= 768) {
 			                // Tvinga till ListWeek på mobil för att spara utrymme
 			                calendar.changeView('listWeek');
-			            } else {
+			            } else {*/
 			                // Tvinga till 14 Dagar på desktop (ditt önskemål)
 			                calendar.changeView('dayGridTwoWeek');
-			            }
+			            //}
 			            // SLUT NYTT FIX
 			
 			            calendar.updateSize();
