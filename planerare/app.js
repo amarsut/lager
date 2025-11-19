@@ -595,7 +595,7 @@
             
             // --- UPPDATERAD: toggleView med Kanban ---
 			function toggleView(view) {
-			    // NYTT: Om vi redan är på denna vy OCH vi inte navigerar (via bakåtknapp), gör inget.
+			    // Om vi redan är på denna vy OCH vi inte navigerar (via bakåtknapp), gör inget.
 			    if (view === currentView && !isNavigatingBack) return;
 			
 			    currentView = view;
@@ -603,36 +603,27 @@
 			    // 1. Hantera knappar (Desktop & Mobil)
 			    btnToggleTimeline.classList.toggle('active', view === 'timeline');
 			    btnToggleCalendar.classList.toggle('active', view === 'calendar');
-			    // NYTT: Lägg till din nya knapp-ID här (om du döpte den till btnToggleKanban)
 			    document.getElementById('btnToggleKanban')?.classList.toggle('active', view === 'kanban');
 			
-			    document.querySelector('.mobile-nav-btn[data-view="timeline"]').classList.toggle('active', view === 'timeline');
-			    document.querySelector('.mobile-nav-btn[data-view="calendar"]').classList.toggle('active', view === 'calendar');
-			    // NYTT: Lägg till mobilknappen
-			    document.querySelector('.mobile-nav-btn[data-view="kanban"]')?.classList.toggle('active', view === 'kanban');
+			    // Mobilknapparna är nu hanterade av lyssnaren och behöver inte vara i toggleView
+			    // förutom i undantagsfall.
 			
 			    // 2. Dölj alla vyer först
 			    timelineView.style.display = 'none';
 			    calendarView.style.display = 'none';
-			    kanbanView.style.display = 'none'; // NYTT
+			    kanbanView.style.display = 'none'; 
 			
 			    // 3. Visa den valda vyn
 			    if (view === 'calendar') {
 			        calendarView.style.display = 'block';
-			        calendar.changeView('dayGridTwoWeek'); 
+			        appBrandTitle.style.display = 'block'; 
 			
-			        const isMobile = window.innerWidth <= 768;
-			        if (isMobile) {
-			            // ... (din befintliga mobil-kalender-logik) ...
-			        } else {
-			            // ... (din befintliga desktop-kalender-logik) ...
-			        }
-			
+			        // Kalender-specifik rendering (MÅSTE vara i setTimeout för att få rätt storlek)
 			        setTimeout(() => {
+			            calendar.changeView(window.innerWidth <= 768 ? 'listWeek' : 'dayGridTwoWeek'); 
 			            calendar.updateSize();
 			            const calendarEvents = allJobs.map(mapJobToEvent);
 			            calendar.setOption('events', calendarEvents);
-			
 			            filterCalendarView();
 			        }, 50);
 			
@@ -644,33 +635,37 @@
 			            }
 			        }
 			
-			    } else if (view === 'kanban') { // --- NYTT BLOCK ---
+			    } else if (view === 'kanban') { 
 			
 			        kanbanView.style.display = 'block';
 			        appBrandTitle.style.display = 'block'; 
 			
-			        // Rendera tavlan med korten
+			        // Rendera tavlan med korten (FIX: Tvinga rendering)
 			        renderKanbanBoard(); 
 			
 			        if (!isNavigatingBack) {
-			            // Skapa en ny historik-post för kanban
 			            if (history.state?.view === 'kanban') {
 			                history.replaceState({ view: 'kanban' }, 'Tavla', '#kanban');
 			            } else {
 			                history.pushState({ view: 'kanban' }, 'Tavla', '#kanban');
 			            }
 			        }
-			        // --- SLUT NYTT BLOCK ---
 			
-			    } else { // (view === 'timeline')
+			    } else { // (view === 'timeline') - FIX: Tvinga rendering av Tidslinje
+			
 			        timelineView.style.display = 'block';
 			        appBrandTitle.style.display = 'block'; 
 			
+			        // FIX: Tvinga rendering av tidslinjen
+			        renderTimeline(); 
+			
 			        if (!isNavigatingBack) {
-			            if (history.state && (history.state.view === 'calendar' || history.state.view === 'kanban')) {
-			                history.pushState(null, 'Tidslinje', location.pathname);
+			            if (history.state && (history.state.view === 'calendar' || history.state.view === 'kanban' || history.state.modal)) {
+			                // Om vi kommer från en annan vy eller modal, lägg till en ny ren post
+			                history.pushState(null, 'Tidslinje', location.pathname); 
 			            } else {
-			                history.replaceState(null, 'Tidslinje', location.pathname);
+			                // Annars, ersätt nuvarande state (förhindrar dubbla entries vid start)
+			                history.replaceState(null, 'Tidslinje', location.pathname); 
 			            }
 			        }
 			    }
@@ -990,12 +985,14 @@
 			    if (button) {
 			        const view = button.dataset.viewSelect;
 			        
-			        // Stäng modalen först
-			        closeModal();
+			        // FIX: Stäng modalen UTAN att röra webbläsarhistoriken
+			        closeModal({ popHistory: false }); // <-- ÄNDRA TILL DETTA
 			        
 			        // Anropa din befintliga vy-växlingsfunktion
 			        setTimeout(() => {
+			            // Nu kan toggleView säkert byta vy och lägga till #kanban i historiken
 			            toggleView(view);
+			            
 			            // Sätt den nya knappen som aktiv i bottenmenyn
 			            document.querySelectorAll('.mobile-nav-btn').forEach(btn => btn.classList.remove('active'));
 			            mobileViewToggle.classList.add('active');
