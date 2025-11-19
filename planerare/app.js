@@ -2920,13 +2920,15 @@
                                 
                                 // FIX: Hantera "Klar" (sista kolumnen) separat
                                 if (currentStatusFilter === 'klar') {
-                                    // Använd scrollIntoView med 'end' för att få kolumnen längst till höger
+                                    // Använd scrollIntoView med 'end' för horisontell scrollning,
+                                    // men lägg till 'block: "nearest"' för att förhindra vertikal scrollning.
                                     targetColumn.scrollIntoView({
                                         behavior: 'smooth',
-                                        inline: 'end' // Scrollar så elementet syns längst till höger
+                                        inline: 'end', // Horisontell scrollning
+                                        block: 'nearest' // NYTT: Förhindrar vertikal scrollning (hålls på samma nivå)
                                     });
                                 } else {
-                                    // För alla andra (Offererad, Bokad, Faktureras) använder vi den befintliga left-beräkningen
+                                    // För alla andra (Offererad, Bokad, Faktureras) använder vi den exakta left-beräkningen
                                     const boardPaddingLeft = 16; 
                                     kanbanBoard.scrollTo({
                                         left: targetColumn.offsetLeft - boardPaddingLeft, 
