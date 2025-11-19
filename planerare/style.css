@@ -1889,9 +1889,10 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 
     /* 1. Global layout */
     .app-main {
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
-    }
+	    overflow-y: auto; /* Detta är avgörande för att återställa vertikal skrollning */
+	    -webkit-overflow-scrolling: touch;
+	    height: auto; /* Säkerställer att höjden inte fastnar */
+	}
     .main-content {
         padding: 1rem;
         padding-bottom: calc(var(--mobile-nav-height) + 1rem);
@@ -3856,27 +3857,28 @@ html.privacy-mode-enabled .nav-logo {
 	
 	/* 2. Anpassa kolumnerna för mobilen */
 	.kanban-column {
-	    min-width: 85vw; /* Varje kolumn tar 85% av skärmbredden */
-	    max-width: 85vw; 
-	    scroll-snap-align: center; /* Centrera kolumnen när man släpper */
-	    height: calc(100vh - 180px); /* Anpassa höjden så den ryms */
-	    border-top-width: 4px; /* Tydligare färgkod i toppen */
-	    margin-bottom: 0;
-	    box-shadow: 0 4px 15px rgba(0,0,0,0.1); /* Lite djup */
+	    min-width: 85vw;
+	    max-width: 85vw;
+	    /* VIKTIGT: Ta bort begränsningar på höjden */
+	    max-height: none; 
+	    height: auto; 
+	    
+	    /* Lägg till padding längst ner så att sista kortet syns över navigeringsmenyn */
+	    padding-bottom: 75px; 
+	}
+	
+	/* Crucial Fix: Förhindra den lilla interna skrollningen på listan */
+	.kanban-column-cards {
+	    overflow-y: hidden !important; /* Tvinga fram dold vertikal skroll */
+	    /* Se till att den fyller sin flexibla yta */
+	    flex-grow: 1;
+	    min-height: 1px;
 	}
 
 	.kanban-column-title {
 	    padding: 0.75rem;
 	    font-size: 1rem;
 	    background-color: var(--bg-color);
-	}
-	
-	.kanban-column-cards {
-	    padding: 0.5rem 0.75rem; /* Mindre padding runt korten */
-	    gap: 0.75rem;
-	    overflow-y: hidden !important;
-	    /* Göm skrollbaren men behåll funktionen */
-	    scrollbar-width: none; 
 	}
 	
 	.kanban-column-cards::-webkit-scrollbar {
@@ -4280,3 +4282,4 @@ html.privacy-mode-enabled .nav-logo {
     }
 }
 /* SLUT Fix för Modal som ska komma underifrån */
+
