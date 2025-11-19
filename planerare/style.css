@@ -2446,7 +2446,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 	    display: flex;
 	    align-items: center;
 	    width: 100%;
-	    padding: 0.75rem 1rem; /* Standard padding */
+	    padding: 0.75rem 1rem; /* Återställ en standard padding */
 	    box-sizing: border-box;
 	    justify-content: flex-start; /* Tvinga innehållet till vänster */
 	}
@@ -2457,7 +2457,11 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 	    padding: 0 !important; 
 	    flex-shrink: 0;
 	    
-	    /* VIKTIGT: Sätt fast mellanrummet här */
+	    /* Behåll fast storlek */
+	    width: 1.125rem !important; 
+	    height: 1.125rem !important;
+	    
+	    /* Lägg till mellanrum till texten */
 	    margin-right: 0.75rem !important; 
 	}
 	
@@ -2468,9 +2472,14 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 	
 	/* 3. Tvinga texten att fylla utrymmet till vänster */
 	.view-select-content .button.secondary span {
-	    flex-grow: 1; /* Växer för att fylla ut */
+	    flex-grow: 1; 
 	    text-align: left;
-	    white-space: nowrap; /* Förhindrar radbrytning */
+	    
+	    /* NYTT: Förhindra att texten hamnar utanför vid smal skärm */
+	    min-width: 0; /* Låter texten krympa */
+	    overflow: hidden; /* Dölj det som går utanför */
+	    text-overflow: ellipsis; /* Lägg till "..." om texten blir för lång (även om den inte ska) */
+	    
 	    /* Ta bort alla dolda paddingar/marginaler från texten */
 	    margin: 0 !important; 
 	    padding: 0 !important; 
@@ -4318,6 +4327,7 @@ html.privacy-mode-enabled .nav-logo {
     }
 }
 /* SLUT Fix för Modal som ska komma underifrån */
+
 
 
 
