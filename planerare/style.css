@@ -2457,22 +2457,29 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 	
 	/* Tvinga alla ikoner till identiskt utseende */
 	.view-select-content .button.secondary svg {
-	    /* Nollställ all potentiell negativ marginal/storlek */
-	    flex-shrink: 0;
-	    margin: 0;
-	    padding: 0;
+	    /* Nollställ alla marginaler/padding som kan ha ärvts */
+	    margin: 0 !important;
+	    padding: 0 !important; 
 	    
-	    /* VIKTIGT: Sätt en maxbredd på själva SVG-behållaren */
+	    /* Tvinga fram standardstorlek FÖR SVG-BEHÅLLAREN */
 	    width: 1.125rem !important; 
 	    height: 1.125rem !important;
+	    flex-shrink: 0; /* Förhindra att den krymper */
+	    
+	    /* Lägg till det visuella mellanrummet här istället */
+	    margin-right: 0.75rem; 
 	}
 	
-	/* Sätt det visuella mellanrummet i text-spannen */
+	/* 2. Fixa eventuellt överflöde på den inre <use> taggen */
+	.view-select-content .button.secondary svg use {
+	    overflow: hidden; /* Förhindra att ikonen ritas utanför sin behållare */
+	}
+	
+	/* 3. Tvinga texten att fylla utrymmet till vänster */
 	.view-select-content .button.secondary span {
-	    /* Tvinga texten att ta upp resten av platsen */
-	    flex-grow: 1; 
-	    text-align: left; /* Tvinga texten till vänster för att lämna utrymme */
-	    padding-left: 0.75rem; /* Kontrollerat mellanrum */
+	    flex-grow: 1; /* Låt texten ta resten */
+	    text-align: left;
+	    white-space: nowrap; /* Förhindra radbrytning */
 	}
 
 }
@@ -4317,6 +4324,7 @@ html.privacy-mode-enabled .nav-logo {
     }
 }
 /* SLUT Fix för Modal som ska komma underifrån */
+
 
 
 
