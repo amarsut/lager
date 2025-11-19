@@ -613,24 +613,20 @@
 			    // 3. Visa den valda vyn
 			    if (view === 'calendar') {
 			        calendarView.style.display = 'block';
-			        appBrandTitle.style.display = 'block'; 
+			        calendar.changeView('dayGridTwoWeek'); 
 			
-			        // Kalender-specifik rendering (MÅSTE vara i setTimeout för att få rätt storlek)
+			        const isMobile = window.innerWidth <= 768;
+			        if (isMobile) {
+			            // ... (din befintliga mobil-kalender-logik) ...
+			        } else {
+			            // ... (din befintliga desktop-kalender-logik) ...
+			        }
+			
 			        setTimeout(() => {
-			            
-			            // NYTT FIX FÖR MOBIL/DESKTOP VYVÄXLING (Detta block saknades/var fel)
-			            /*if (window.innerWidth <= 768) {
-			                // Tvinga till ListWeek på mobil för att spara utrymme
-			                calendar.changeView('listWeek');
-			            } else {*/
-			                // Tvinga till 14 Dagar på desktop (ditt önskemål)
-			                calendar.changeView('dayGridTwoWeek');
-			            //}
-			            // SLUT NYTT FIX
-			
 			            calendar.updateSize();
 			            const calendarEvents = allJobs.map(mapJobToEvent);
 			            calendar.setOption('events', calendarEvents);
+			
 			            filterCalendarView();
 			        }, 50);
 			
