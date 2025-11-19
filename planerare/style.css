@@ -2441,31 +2441,38 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         border-radius: 4px;
     }
 
-	/* FIX för Välj Jobbvy-modalens knappar */
-
-	/* Säkra att Knapparna fyller utrymmet och har en flexibel bredd */
+	/* FIX: Överflöde i Välj Jobbvy Modal */
 	.view-select-content .button.secondary {
 	    display: flex;
 	    align-items: center;
-	    justify-content: center; /* FIX 1: Centrera innehållet */
-	    width: 100%; /* Säkra att de tar hela tillgängliga bredden */
+	    justify-content: center; /* Försök centrera först */
+	    width: 100%; 
+	    padding: 0.75rem 0.5rem; /* Krymp paddingen horisontellt till 0.5rem */
 	    box-sizing: border-box; 
-	    padding: 0.75rem 1rem; /* Återställ standard padding */
+	    
+	    /* VIKTIGT: Förhindra att texten hamnar på rad 2 */
+	    white-space: nowrap; 
+	    overflow: hidden; 
 	}
 	
-	/* FIX 2: Justera ikonen och texten inuti knappen */
-	.view-select-content .button.secondary span,
+	/* Tvinga alla ikoner till identiskt utseende */
 	.view-select-content .button.secondary svg {
-	    /* Ta bort alla eventuella dolda marginaler som kan ha lagts till */
-	    margin: 0 !important; 
+	    /* Nollställ all potentiell negativ marginal/storlek */
+	    flex-shrink: 0;
+	    margin: 0;
+	    padding: 0;
+	    
+	    /* VIKTIGT: Sätt en maxbredd på själva SVG-behållaren */
+	    width: 1.125rem !important; 
+	    height: 1.125rem !important;
 	}
 	
-	/* FIX 3: Tvinga tillbaka alla ikoner till standardstorlek */
-	.view-select-content .button.secondary .icon-sm {
-	    width: 1.125rem;
-	    height: 1.125rem;
-	    /* Lägg till ett standardmellanrum mellan ikon och text */
-	    margin-right: 0.75rem; 
+	/* Sätt det visuella mellanrummet i text-spannen */
+	.view-select-content .button.secondary span {
+	    /* Tvinga texten att ta upp resten av platsen */
+	    flex-grow: 1; 
+	    text-align: left; /* Tvinga texten till vänster för att lämna utrymme */
+	    padding-left: 0.75rem; /* Kontrollerat mellanrum */
 	}
 
 }
@@ -4310,6 +4317,7 @@ html.privacy-mode-enabled .nav-logo {
     }
 }
 /* SLUT Fix för Modal som ska komma underifrån */
+
 
 
 
