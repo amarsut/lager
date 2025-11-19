@@ -784,14 +784,22 @@
 
 			    // --- 4. Initiera SortableJS (Oförändrad) ---
 			    if (!sortableColBokad) {
-			        const options = {
-			            group: 'shared',
-			            animation: 150,
-			            onEnd: handleKanbanDrop,
-			            handle: '.kanban-drag-handle',
-			            ghostClass: 'kanban-card-ghost',
-			            chosenClass: 'kanban-card-chosen'
-			        };
+				    const options = {
+				        group: 'shared',
+				        animation: 150,
+				        onEnd: handleKanbanDrop,
+				        handle: '.kanban-drag-handle',
+				        ghostClass: 'kanban-card-ghost',
+				        chosenClass: 'kanban-card-chosen',
+				        
+				        // --- TOUCH/MOBIL FIX HÄR ---
+				        delay: 200,                  // Kort fördröjning på touch för att skilja drag från skroll
+				        touchStartThreshold: 5,      // Liten tolerans för att starta drag
+				        scrollSensitivity: 80,       // Ökad känslighet för att utlösa skrollning mellan kolumner
+				        scrollSpeed: 10,             // Snabbare skrollning mellan kolumner
+				        forceFallback: true,         // Tvinga drag-effekten i mobila webbläsare
+				        // --- SLUT TOUCH FIX ---
+				    };
 			        sortableColOffererad = new Sortable(kanbanColOffererad, options);
 			        sortableColBokad = new Sortable(kanbanColBokad, options);
 			        sortableColKlar = new Sortable(kanbanColKlar, options);
