@@ -2891,47 +2891,50 @@
                     
                     currentStatusFilter = card.dataset.filter;
                     
-                    // --- NY KANBAN-SCROLL-LOGIK START ---
+                    // --- KORRIGERAD KANBAN-SCROLL-LOGIK START ---
                     if (currentView === 'kanban') {
-                        // Vi behöver rita om tavlan för att filtreringen ska fungera (om vi t.ex. sökte innan)
                         renderKanbanBoard(); 
                         
-                        // Sätt en liten fördröjning för att vara säker på att renderingen är klar
                         setTimeout(() => {
                             const kanbanBoard = document.querySelector('.kanban-board');
-                            let targetColumnId = null;
+                            let targetColumn = null;
 
-                            // Mappa filter till kolumn-ID
                             switch (currentStatusFilter) {
-                                case 'offererad': targetColumnId = 'kanban-col-offererad'; break;
-                                case 'bokad': targetColumnId = 'kanban-col-bokad'; break;
-                                case 'faktureras': targetColumnId = 'kanban-col-faktureras'; break;
-                                // 'klar' och 'alla' får också kolumner
-                                case 'klar': targetColumnId = 'kanban-col-klar'; break;
-                                // 'alla' har ingen egen kolumn, vi scrollar till starten (offererad)
-                                case 'alla': targetColumnId = 'kanban-col-offererad'; break; 
+                                case 'offererad':
+                                    targetColumn = document.getElementById('kanban-col-offererad')?.closest('.kanban-column');
+                                    break;
+                                case 'bokad':
+                                case 'kommande': // FIX 1: "Kommande" ska scrolla till "Bokad"
+                                    targetColumn = document.getElementById('kanban-col-bokad')?.closest('.kanban-column');
+                                    break;
+                                case 'faktureras':
+                                    targetColumn = document.getElementById('kanban-col-faktureras')?.closest('.kanban-column');
+                                    break;
+                                case 'klar':
+                                    targetColumn = document.getElementById('kanban-col-klar')?.closest('.kanban-column');
+                                    break;
+                                case 'alla':
+                                    // Scrolla till första kolumnen (Offererad)
+                                    targetColumn = document.getElementById('kanban-col-offererad')?.closest('.kanban-column');
+                                    break;
                             }
 
-                            if (kanbanBoard && targetColumnId) {
-                                // Hitta den översta föräldern till korten (som är kolumnen)
-                                const targetColumn = document.getElementById(targetColumnId)?.closest('.kanban-column'); 
+                            if (kanbanBoard && targetColumn) {
+                                // FIX 2: Använd .offsetLeft för kolumnen och subtrahera sedan
+                                // kanban-boardens vänstra padding/marginal (som är 1rem/16px)
                                 
-                                if (targetColumn) {
-                                    kanbanBoard.scrollTo({
-                                        left: targetColumn.offsetLeft - 10, // -10 för lite marginal
-                                        behavior: 'smooth'
-                                    });
-                                } else if (currentStatusFilter === 'kommande' && kanbanBoard) {
-                                    // 'kommande' är samma som 'bokad' i Kanban, så scrolla dit
-                                    const bokadColumn = document.getElementById('kanban-col-bokad')?.closest('.kanban-column');
-                                    if(bokadColumn) {
-                                         kanbanBoard.scrollTo({ left: bokadColumn.offsetLeft - 10, behavior: 'smooth' });
-                                    }
-                                }
+                                // Jag ser i din style.css att .kanban-board har padding: 0 1rem 1rem 1rem;
+                                const boardPaddingLeft = 16; 
+                                
+                                kanbanBoard.scrollTo({
+                                    // Beräkna offset position i förhållande till behållarens skrollbara yta
+                                    left: targetColumn.offsetLeft - boardPaddingLeft, 
+                                    behavior: 'smooth'
+                                });
                             }
-                        }, 50); // Liten fördröjning
+                        }, 50); 
                     }
-                    // --- NY KANBAN-SCROLL-LOGIK SLUT ---
+                    // --- KORRIGERAD KANBAN-SCROLL-LOGIK SLUT ---
                     
                     renderTimeline();
                     renderGlobalStats(allJobs);
