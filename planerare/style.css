@@ -2441,6 +2441,33 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         border-radius: 4px;
     }
 
+	/* FIX för Välj Jobbvy-modalens knappar */
+
+	/* Säkra att Knapparna fyller utrymmet och har en flexibel bredd */
+	.view-select-content .button.secondary {
+	    display: flex;
+	    align-items: center;
+	    justify-content: center; /* FIX 1: Centrera innehållet */
+	    width: 100%; /* Säkra att de tar hela tillgängliga bredden */
+	    box-sizing: border-box; 
+	    padding: 0.75rem 1rem; /* Återställ standard padding */
+	}
+	
+	/* FIX 2: Justera ikonen och texten inuti knappen */
+	.view-select-content .button.secondary span,
+	.view-select-content .button.secondary svg {
+	    /* Ta bort alla eventuella dolda marginaler som kan ha lagts till */
+	    margin: 0 !important; 
+	}
+	
+	/* FIX 3: Tvinga tillbaka alla ikoner till standardstorlek */
+	.view-select-content .button.secondary .icon-sm {
+	    width: 1.125rem;
+	    height: 1.125rem;
+	    /* Lägg till ett standardmellanrum mellan ikon och text */
+	    margin-right: 0.75rem; 
+	}
+
 }
 
 /* Dölj mobil-nav på desktop */
@@ -4283,5 +4310,6 @@ html.privacy-mode-enabled .nav-logo {
     }
 }
 /* SLUT Fix för Modal som ska komma underifrån */
+
 
 
