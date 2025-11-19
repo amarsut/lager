@@ -2891,7 +2891,7 @@
                     
                     currentStatusFilter = card.dataset.filter;
                     
-                    // --- KORRIGERAD KANBAN-SCROLL-LOGIK START (Final) ---
+                    // --- KORRIGERAD KANBAN-SCROLL-LOGIK START (Tvingar vertikal position) ---
                     if (currentView === 'kanban') {
                         renderKanbanBoard(); 
                         
@@ -2918,23 +2918,30 @@
 
                             if (kanbanBoard && targetColumn) {
                                 
-                                // FIX: Hantera "Klar" (sista kolumnen) separat
+                                // FIX: Använd scrollTo() för båda fallen, med smart beräkning för "Klar"
+                                const boardPaddingLeft = 16; 
+                                let scrollLeftPosition = 0;
+
                                 if (currentStatusFilter === 'klar') {
-                                    // Använd scrollIntoView med 'end' för horisontell scrollning,
-                                    // men lägg till 'block: "nearest"' för att förhindra vertikal scrollning.
-                                    targetColumn.scrollIntoView({
-                                        behavior: 'smooth',
-                                        inline: 'end', // Horisontell scrollning
-                                        block: 'nearest' // NYTT: Förhindrar vertikal scrollning (hålls på samma nivå)
-                                    });
+                                    // Beräkna positionen så att kolumnens högra kant når höger sida av skärmen.
+                                    // Detta är elementets vänstra offset + dess bredd - skärmens/kanban-behållarens bredd.
+                                    const columnWidth = targetColumn.offsetWidth;
+                                    const boardWidth = kanbanBoard.offsetWidth;
+
+                                    scrollLeftPosition = (targetColumn.offsetLeft + columnWidth) - boardWidth + boardPaddingLeft;
+                                    
                                 } else {
-                                    // För alla andra (Offererad, Bokad, Faktureras) använder vi den exakta left-beräkningen
-                                    const boardPaddingLeft = 16; 
-                                    kanbanBoard.scrollTo({
-                                        left: targetColumn.offsetLeft - boardPaddingLeft, 
-                                        behavior: 'smooth'
-                                    });
+                                    // För de andra, scrolla till kolumnens vänstra kant.
+                                    scrollLeftPosition = targetColumn.offsetLeft - boardPaddingLeft;
                                 }
+
+                                // Vi tvingar nu scrollningen med scrollTo() och sätter 'top' till noll (0)
+                                // för att säkerställa att ingen vertikal scrollning sker.
+                                kanbanBoard.scrollTo({
+                                    left: scrollLeftPosition, 
+                                    top: 0, // <--- DETTA FÖRHINDRAR VERTIKAL SCROLLNING
+                                    behavior: 'smooth'
+                                });
                             }
                         }, 50); 
                     }
