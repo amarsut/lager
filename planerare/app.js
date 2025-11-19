@@ -593,7 +593,7 @@
                 }
             }
             
-            // --- UPPDATERAD: toggleView med Kanban ---
+			 // --- KORRIGERAD & KOMPLETT toggleView ---
 			function toggleView(view) {
 			    // Om vi redan är på denna vy OCH vi inte navigerar (via bakåtknapp), gör inget.
 			    if (view === currentView && !isNavigatingBack) return;
@@ -604,9 +604,6 @@
 			    btnToggleTimeline.classList.toggle('active', view === 'timeline');
 			    btnToggleCalendar.classList.toggle('active', view === 'calendar');
 			    document.getElementById('btnToggleKanban')?.classList.toggle('active', view === 'kanban');
-			
-			    // Mobilknapparna är nu hanterade av lyssnaren och behöver inte vara i toggleView
-			    // förutom i undantagsfall.
 			
 			    // 2. Dölj alla vyer först
 			    timelineView.style.display = 'none';
@@ -620,7 +617,17 @@
 			
 			        // Kalender-specifik rendering (MÅSTE vara i setTimeout för att få rätt storlek)
 			        setTimeout(() => {
-			            calendar.changeView(window.innerWidth <= 768 ? 'listWeek' : 'dayGridTwoWeek'); 
+			            
+			            // NYTT FIX FÖR MOBIL/DESKTOP VYVÄXLING (Detta block saknades/var fel)
+			            if (window.innerWidth <= 768) {
+			                // Tvinga till ListWeek på mobil för att spara utrymme
+			                calendar.changeView('listWeek');
+			            } else {
+			                // Tvinga till 14 Dagar på desktop (ditt önskemål)
+			                calendar.changeView('dayGridTwoWeek');
+			            }
+			            // SLUT NYTT FIX
+			
 			            calendar.updateSize();
 			            const calendarEvents = allJobs.map(mapJobToEvent);
 			            calendar.setOption('events', calendarEvents);
@@ -640,7 +647,7 @@
 			        kanbanView.style.display = 'block';
 			        appBrandTitle.style.display = 'block'; 
 			
-			        // Rendera tavlan med korten (FIX: Tvinga rendering)
+			        // Rendera tavlan med korten
 			        renderKanbanBoard(); 
 			
 			        if (!isNavigatingBack) {
@@ -651,7 +658,7 @@
 			            }
 			        }
 			
-			    } else { // (view === 'timeline') - FIX: Tvinga rendering av Tidslinje
+			    } else { // (view === 'timeline') - Tvinga rendering av Tidslinje
 			
 			        timelineView.style.display = 'block';
 			        appBrandTitle.style.display = 'block'; 
