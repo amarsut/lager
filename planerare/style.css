@@ -2445,29 +2445,20 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 	.view-select-content .button.secondary {
 	    display: flex;
 	    align-items: center;
-	    justify-content: center; /* Försök centrera först */
-	    width: 100%; 
-	    padding: 0.75rem 0.5rem; /* Krymp paddingen horisontellt till 0.5rem */
-	    box-sizing: border-box; 
-	    
-	    /* VIKTIGT: Förhindra att texten hamnar på rad 2 */
-	    white-space: nowrap; 
-	    overflow: hidden; 
+	    width: 100%;
+	    padding: 0.75rem 1rem; /* Standard padding */
+	    box-sizing: border-box;
+	    justify-content: flex-start; /* Tvinga innehållet till vänster */
 	}
 	
 	/* Tvinga alla ikoner till identiskt utseende */
 	.view-select-content .button.secondary svg {
-	    /* Nollställ alla marginaler/padding som kan ha ärvts */
 	    margin: 0 !important;
 	    padding: 0 !important; 
+	    flex-shrink: 0;
 	    
-	    /* Tvinga fram standardstorlek FÖR SVG-BEHÅLLAREN */
-	    width: 1.125rem !important; 
-	    height: 1.125rem !important;
-	    flex-shrink: 0; /* Förhindra att den krymper */
-	    
-	    /* Lägg till det visuella mellanrummet här istället */
-	    margin-right: 0.75rem; 
+	    /* VIKTIGT: Sätt fast mellanrummet här */
+	    margin-right: 0.75rem !important; 
 	}
 	
 	/* 2. Fixa eventuellt överflöde på den inre <use> taggen */
@@ -2477,9 +2468,12 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 	
 	/* 3. Tvinga texten att fylla utrymmet till vänster */
 	.view-select-content .button.secondary span {
-	    flex-grow: 1; /* Låt texten ta resten */
+	    flex-grow: 1; /* Växer för att fylla ut */
 	    text-align: left;
-	    white-space: nowrap; /* Förhindra radbrytning */
+	    white-space: nowrap; /* Förhindrar radbrytning */
+	    /* Ta bort alla dolda paddingar/marginaler från texten */
+	    margin: 0 !important; 
+	    padding: 0 !important; 
 	}
 
 }
@@ -4324,6 +4318,7 @@ html.privacy-mode-enabled .nav-logo {
     }
 }
 /* SLUT Fix för Modal som ska komma underifrån */
+
 
 
 
