@@ -475,9 +475,14 @@
             
             <div class="detail-stats">
 			    <div>
-			        <span class="stat-title">Total Vinst</span>
-			        <span class="stat-value money-related" id="customerModalTotalProfit"></span>
-			    </div>
+            		<span class="stat-title">
+                	<span id="statsModalProfitTitle">Denna Månad</span>
+                		<button class="icon-btn" id="toggleProfitView" title="Växla till Total Vinst">
+                    		<svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-list"></use></svg>
+                		</button>
+            	</span>
+            <span class="stat-value money-related" id="statsModalTotalProfit">0 kr</span>
+            </div>
 			    <div>
 			        <span class="stat-title">Antal Jobb</span>
 			        <span class="stat-value" id="customerModalJobCount"></span>
