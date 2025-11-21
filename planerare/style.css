@@ -3459,16 +3459,35 @@ html.privacy-mode-enabled .nav-logo {
     text-align: right; 
     white-space: nowrap; 
     width: 1%;
-    /* FIX: Återinför display: flex och justering */
+    /* FIX: Återinför display: flex och justering, MEN pga kapsling måste vi ha flex här för att låsa upp positionen */
     display: flex; 
     gap: 0.25rem;
-    justify-content: flex-end; /* Tvingar knapparna till höger */
-    align-items: center; /* NYTT: Centrera vertikalt */
+    justify-content: flex-end; 
+    align-items: center; 
 }
 .extra-compact-mode #jobbOversikt .action-col {
     gap: 0; 
     justify-content: flex-end; 
     align-items: center; /* NYTT: Centrera vertikalt */
+}
+/* --- NYTT: Stilar för att hantera knappar inuti action-col (style.css) --- */
+.action-buttons-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem; /* Standardgap */
+}
+
+/* 3. FIX för Extra Kompakt läge: Nollställ gapet på wrappern */
+.extra-compact-mode .action-col .action-buttons-wrapper {
+    gap: 0; /* Tar bort mellanrummet för max kompakthet */
+}
+
+/* 4. FIX: Tvinga action-col att *inte* vara flexbox i mobilvy */
+@media (max-width: 768px) {
+    #jobbOversikt .action-col {
+        /* Återställ till standard-display för att inte krocka med mobilens "kort-rad"-layout */
+        display: block; 
+    }
 }
 /* NY FIX: Gör en flex-container enbart för åtgärdsknapparna */
 #jobbOversikt .action-col .action-buttons-wrapper {
@@ -4378,6 +4397,7 @@ html.privacy-mode-enabled .nav-logo {
     color: var(--primary-color);
     background: transparent;
 }
+
 
 
 
