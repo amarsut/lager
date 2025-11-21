@@ -1918,7 +1918,6 @@
                 
                 // Uppdatera UI med både vinst och totala utgifter
                 modalVinstKalkyl.innerHTML = `
-                    <span style="color: ${vinst < 0 ? 'var(--danger-color)' : (vinst > 0 ? 'var(--success-color)' : 'var(--text-color)')};">Vinst: ${formatCurrency(vinst)}</span>
                     <span style="font-size: 0.9rem; color: var(--text-color-light); margin-left: 1rem;">(Utgifter: ${formatCurrency(totalUtgifter)})</span>
                 `;
             }
