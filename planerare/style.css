@@ -3439,9 +3439,12 @@ html.privacy-mode-enabled .nav-logo {
     font-size: 0.75rem;
 }
 
+/* --- Sista Poleringen för Åtgärdskolumnen (style.css) --- */
+
 /* Förminska ikon-knapparna i åtgärds-kolumnen */
 .extra-compact-mode .action-col {
-    gap: 0;
+    gap: 0; /* Ta bort mellanrummet */
+    justify-content: flex-end; /* NYTT: Tvinga alla element till höger */
 }
 .extra-compact-mode .action-col .icon-btn {
     padding: 0.3rem;
@@ -3451,7 +3454,18 @@ html.privacy-mode-enabled .nav-logo {
     height: 0.9rem;
 }
 
-/* Justera prio-flaggan och andra ikoner */
+/* Tvinga åtgärdskolumnen att vara högerjusterad för renhet */
+#jobbOversikt .action-col { 
+    text-align: right; white-space: nowrap; width: 1%;
+    display: flex; gap: 0.25rem;
+    justify-content: flex-end; /* NYTT: Tvinga knapparna till höger */
+}
+/* Ta bort onödig placeholder i detta täta läge */
+.extra-compact-mode .icon-btn-placeholder {
+    display: none;
+}
+
+/* Se till att ikonerna i extra-compact mode är små överallt */
 .extra-compact-mode .prio-flag-icon,
 .extra-compact-mode .customer-icon,
 .extra-compact-mode .context-icon {
@@ -4333,6 +4347,20 @@ html.privacy-mode-enabled .nav-logo {
 }
 /* SLUT Fix för Modal som ska komma underifrån */
 
+/* --- Nytt: För att fixa visningen i Statistik-Modal (style.css) --- */
+#statsModalProfitTitle {
+    padding-right: 0.5rem; /* Separera text och knapp */
+}
+#toggleProfitView {
+    padding: 0;
+    width: 20px;
+    height: 20px;
+    color: var(--text-color-light);
+}
+#toggleProfitView:hover {
+    color: var(--primary-color);
+    background: transparent;
+}
 
 
 
