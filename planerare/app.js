@@ -1374,8 +1374,6 @@
                         jobListContainer.style.display = 'block';
                         emptyStateTimeline.style.display = 'none';
                     }
-                }
-			}
                 renderNewContent();
 			}
 
