@@ -71,6 +71,7 @@
             
             // --- Globalt Tillstånd (State) ---
             let allJobs = [];
+			let currentProfitView = 'month'; // 'month' eller 'total'
 			let backPressWarned = false;
             let backPressTimer;
             let currentSearchTerm = "";
@@ -159,6 +160,9 @@
             const copyKundnamnBtn = document.getElementById('copyKundnamn');
             const copyRegnrBtn = document.getElementById('copyRegnr');
             const copyCarRegnrBtn = document.getElementById('copyCarRegnrBtn'); // <-- NY
+
+			const statsModalProfitTitle = document.getElementById('statsModalProfitTitle');
+			const toggleProfitView = document.getElementById('toggleProfitView');
 
 			// --- NYTT: Översikts-modal ---
             const jobSummaryModal = document.getElementById('jobSummaryModal');
@@ -3634,6 +3638,19 @@
                     showToast('Det finns inga jobb att exportera.', 'danger');
                 }
             });
+
+			if (toggleProfitView) {
+			    toggleProfitView.addEventListener('click', () => {
+			        if (currentProfitView === 'month') {
+			            currentProfitView = 'total';
+			            toggleProfitView.title = "Växla till Denna Månads Vinst";
+			        } else {
+			            currentProfitView = 'month';
+			            toggleProfitView.title = "Växla till Total Vinst";
+			        }
+			        openStatsModal(); // Anropa igen för att uppdatera visningen
+			    });
+			}
          
             const storedPin = localStorage.getItem(APP_PIN_KEY);
             const lastUnlockedTimestamp = localStorage.getItem(PIN_LAST_UNLOCKED_KEY);
