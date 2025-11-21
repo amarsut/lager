@@ -3463,10 +3463,12 @@ html.privacy-mode-enabled .nav-logo {
     display: flex; 
     gap: 0.25rem;
     justify-content: flex-end; /* Tvingar knapparna till höger */
+    align-items: center; /* NYTT: Centrera vertikalt */
 }
 .extra-compact-mode #jobbOversikt .action-col {
-    gap: 0; /* Tar bort mellanrummet för max kompakthet */
-    justify-content: flex-end; /* Fortsätter att tvinga till höger */
+    gap: 0; 
+    justify-content: flex-end; 
+    align-items: center; /* NYTT: Centrera vertikalt */
 }
 /* NY FIX: Gör en flex-container enbart för åtgärdsknapparna */
 #jobbOversikt .action-col .action-buttons-wrapper {
@@ -4376,6 +4378,7 @@ html.privacy-mode-enabled .nav-logo {
     color: var(--primary-color);
     background: transparent;
 }
+
 
 
 
