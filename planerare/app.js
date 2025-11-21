@@ -1227,7 +1227,6 @@
 			    let mainContentHTML = '';
 			    if (jobsToDisplay.length > 0) {
 			        if (isMobile) {
-			            // Återanvänd logiken från renderMobileCardList men returnera sträng
 			            mainContentHTML = getMobileCardListHTML(jobsToDisplay);
 			        } else {
 			            mainContentHTML = getTimelineTableHTML(jobsToDisplay);
@@ -1250,7 +1249,7 @@
 			            emptyStateTextTimeline.textContent = "Klicka på '+' för att börja.";
 			        }
 			        
-			        // Om tomt, avbryt här (vi visar inte "Senaste 5" om huvudvyn är tom pga sökning etc)
+			        // Om tomt, avbryt här (om vi har en sökterm)
 			        if (currentSearchTerm) return;
 			    }
 			
@@ -1261,7 +1260,7 @@
 			        jobListContainer.innerHTML = mainContentHTML;
 			    }
 			
-			    // --- NYTT: LÄGG TILL "SENASTE 5 FÄRDIGA" (Bara i standardvyn 'kommande' och utan sökning) ---
+			    // --- 4. "SENASTE 5 FÄRDIGA" (Endast i standardvy, ingen sökning) ---
 			    if (currentStatusFilter === 'kommande' && !currentSearchTerm) {
 			        const last5Finished = allJobs
 			            .filter(j => !j.deleted && j.status === 'klar')
@@ -1270,17 +1269,9 @@
 			
 			        if (last5Finished.length > 0) {
 			            let finishedHTML = '';
-			            // Lägg till en rubrik/avdelare
-			            const dividerStyle = `
-			                margin-top: 2.5rem; 
-			                margin-bottom: 1rem; 
-			                padding-bottom: 0.5rem;
-			                border-bottom: 2px solid var(--border-color);
-			                font-size: 1rem; 
-			                font-weight: 700; 
-			                color: var(--text-color-light);
-			                display: flex; align-items: center; gap: 0.5rem;
-			            `;
+			            
+			            // CSS för avdelaren definieras här för säkerhets skull
+			            const dividerStyle = 'margin-top: 2.5rem; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--border-color); font-size: 1rem; font-weight: 700; color: var(--text-color-light); display: flex; align-items: center; gap: 0.5rem;';
 			            
 			            const headerHTML = `
 			                <div style="${dividerStyle}">
@@ -1295,10 +1286,10 @@
 			                finishedHTML = getTimelineTableHTML(last5Finished);
 			            }
 			
-			            // Lägg till rubriken och listan i containern (om vi hade en empty state innan, visa containern nu)
+			            // Lägg till rubriken och listan i containern
 			            jobListContainer.style.display = 'block';
 			            
-			            // Om huvudlistan var tom (men vi är i kommande), göm empty state för vi visar dessa istället
+			            // Om huvudlistan var tom (men vi är i kommande), göm empty state
 			            if (jobsToDisplay.length === 0) {
 			                 emptyStateTimeline.style.display = 'none';
 			            }
@@ -1308,7 +1299,7 @@
 			    }
 			}
 			
-			// --- NYA HJÄLPFUNKTIONER (Extrahera HTML-generering) ---
+			// --- NYA HJÄLPFUNKTIONER ---
 			
 			function getTimelineTableHTML(jobs) {
 			    return `
@@ -1331,10 +1322,7 @@
 			        return acc;
 			    }, {});
 			    
-			    // Sortera datumen (senaste överst för färdiga jobb, annars äldst)
-			    // Eftersom vi använder denna för "Senaste 5" (desc) och "Kommande" (asc),
-			    // måste vi gissa ordning eller skicka med den.
-			    // Förenkling: Om första jobbet i listan är 'klar', sortera DESC. Annars ASC.
+			    // Gissa sortering: Om första jobbet är klart, kör fallande (senaste först)
 			    const isHistoryList = jobs[0] && jobs[0].status === 'klar';
 			    
 			    const sortedDateKeys = Object.keys(groupedJobs).sort((a, b) => {
