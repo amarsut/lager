@@ -2360,7 +2360,7 @@
 			    
 			    const totalJobb = completedJobs.length;
 			
-			    // --- NY LOGIK: Beräkna Månadens Vinst (istället för total) ---
+			    // --- Beräkna Månadens Vinst ---
 			    const now = new Date();
 			    const currentMonthKey = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}`;
 			    const goal = parseFloat(currentProfitGoal) || 0;
@@ -2369,7 +2369,7 @@
 			        .filter(job => job.datum.startsWith(currentMonthKey))
 			        .reduce((sum, j) => sum + (j.vinst || 0), 0);
 			
-			    // Uppdatera modalens "Huvudsiffra" (som nu är månadens vinst)
+			    // Uppdatera textvärden
 			    statsModalTotalProfit.textContent = formatCurrency(thisMonthVinst);
 			    statsModalJobCount.textContent = totalJobb;
 			    statsModalTotalProfit.className = thisMonthVinst > 0 ? 'stat-value money-related positive' : 'stat-value money-related';
@@ -2448,7 +2448,13 @@
 			    }
 			    tableHtml += `</tbody></table>`;
 			    
-			    statsModalBody.querySelector('#statsModalTable')?.remove(); 
+			    // Rensa gammal tabell och lägg in ny
+			    const oldTable = statsModalBody.querySelector('#statsModalTable');
+			    if (oldTable) oldTable.remove();
+			    
+			    // Ta bort eventuell gammal rubrik också för att undvika dubbletter
+			    const oldTitle = statsModalBody.querySelectorAll('.chart-title');
+			    // Spara referens till var vi ska sätta in tabellen (sist i body)
 			    statsModalBody.insertAdjacentHTML('beforeend', tableHtml);
 			
 			    // --- GRAFER ---
@@ -2481,13 +2487,21 @@
 			            plugins: {
 			                legend: { display: false },
 			                tooltip: {
-			                    callbacks: { label: function(context) { return ` Vinst: ${formatCurrency(context.raw)}`; } }
+			                    callbacks: {
+			                        label: function(context) {
+			                            return ' Vinst: ' + formatCurrency(context.raw);
+			                        }
+			                    }
 			                }
 			            },
 			            scales: {
 			                y: {
 			                    beginAtZero: true,
-			                    ticks: { callback: function(value) { return formatCurrency(value); } }
+			                    ticks: {
+			                        callback: function(value) {
+			                            return formatCurrency(value);
+			                        }
+			                    }
 			                }
 			            }
 			        }
@@ -2526,7 +2540,12 @@
 			            responsive: true,
 			            maintainAspectRatio: false,
 			            plugins: { legend: { display: false } },
-			            scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+			            scales: {
+			                y: {
+			                    beginAtZero: true,
+			                    ticks: { stepSize: 1 }
+			                }
+			            }
 			        }
 			    });
 			
