@@ -1375,9 +1375,8 @@
                         emptyStateTimeline.style.display = 'none';
                     }
                 }
-
+			}
                 renderNewContent();
-            	}
 			}
 
             function renderTimelineTable(jobs) {
