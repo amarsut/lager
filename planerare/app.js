@@ -1377,7 +1377,8 @@
                 }
 
                 renderNewContent();
-            }
+            	}
+			}
 
             function renderTimelineTable(jobs) {
                 jobListContainer.innerHTML = '';
