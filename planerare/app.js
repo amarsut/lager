@@ -1137,7 +1137,7 @@
 			}
 
             // --- UPPDATERAD: renderTimeline med Animationslogik ---
-            function renderTimeline() {
+			function renderTimeline() {
 			    const desktopSearchCount = document.getElementById('desktopSearchResultCount'); 
 			    let jobsToDisplay = allJobs.filter(job => !job.deleted);
 			    
@@ -1172,7 +1172,7 @@
 			        if(allaKort) allaKort.classList.add('active');
 			
 			        if (desktopSearchCount) {
-			            desktopSearchCount.textContent = `${jobsToDisplay.length} träff(ar)`;
+			            desktopSearchCount.textContent = jobsToDisplay.length + ' träff(ar)';
 			        }
 			
 			    } else {
@@ -1204,7 +1204,7 @@
 			        if (desktopSearchCount) desktopSearchCount.textContent = '';
 			
 			        document.querySelectorAll('.stat-card.active').forEach(c => c.classList.remove('active'));
-			        const activeCard = document.getElementById(`stat-card-${currentStatusFilter}`);
+			        const activeCard = document.getElementById('stat-card-' + currentStatusFilter);
 			        if (activeCard) activeCard.classList.add('active');
 			    }
 			
@@ -1238,18 +1238,18 @@
 			        
 			        if (currentSearchTerm) {
 			            emptyStateTitleTimeline.textContent = "Inga träffar";
-			            emptyStateTextTimeline.textContent = `Din sökning på "${currentSearchTerm}" gav inga resultat.`;
+			            emptyStateTextTimeline.textContent = 'Din sökning på "' + currentSearchTerm + '" gav inga resultat.';
 			        } else if (allJobs.length > 0) {
-			            const filterTextEl = document.querySelector(`.stat-card[data-filter="${currentStatusFilter}"] h3`);
+			            const filterTextEl = document.querySelector('.stat-card[data-filter="' + currentStatusFilter + '"] h3');
 			            const filterText = filterTextEl ? filterTextEl.textContent : 'valda filter';
-			            emptyStateTitleTimeline.textContent = `Inga ${filterText.toLowerCase()}`;
+			            emptyStateTitleTimeline.textContent = 'Inga ' + filterText.toLowerCase();
 			            emptyStateTextTimeline.textContent = "Det finns inga jobb som matchar detta filter.";
 			        } else {
 			            emptyStateTitleTimeline.textContent = "Du har inga jobb";
 			            emptyStateTextTimeline.textContent = "Klicka på '+' för att börja.";
 			        }
 			        
-			        // Om tomt, avbryt här (om vi har en sökterm)
+			        // Om tomt pga sökning, avbryt här
 			        if (currentSearchTerm) return;
 			    }
 			
@@ -1260,7 +1260,7 @@
 			        jobListContainer.innerHTML = mainContentHTML;
 			    }
 			
-			    // --- 4. "SENASTE 5 FÄRDIGA" (Endast i standardvy, ingen sökning) ---
+			    // --- 4. "SENASTE 5 FÄRDIGA" (Endast i standardvy 'kommande', ingen sökning) ---
 			    if (currentStatusFilter === 'kommande' && !currentSearchTerm) {
 			        const last5Finished = allJobs
 			            .filter(j => !j.deleted && j.status === 'klar')
@@ -1270,11 +1270,9 @@
 			        if (last5Finished.length > 0) {
 			            let finishedHTML = '';
 			            
-			            // CSS för avdelaren definieras här för säkerhets skull
-			            const dividerStyle = 'margin-top: 2.5rem; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--border-color); font-size: 1rem; font-weight: 700; color: var(--text-color-light); display: flex; align-items: center; gap: 0.5rem;';
-			            
+			            // Använd CSS-klassen istället för inline styles för att undvika syntaxfel
 			            const headerHTML = `
-			                <div style="${dividerStyle}">
+			                <div class="finished-jobs-divider">
 			                    <svg class="icon" viewBox="0 0 24 24"><use href="#icon-check"></use></svg>
 			                    Senaste 5 Färdiga
 			                </div>
@@ -1299,7 +1297,7 @@
 			    }
 			}
 			
-			// --- NYA HJÄLPFUNKTIONER ---
+			// --- HJÄLPFUNKTIONER (Måste ligga kvar här) ---
 			
 			function getTimelineTableHTML(jobs) {
 			    return `
@@ -1322,7 +1320,7 @@
 			        return acc;
 			    }, {});
 			    
-			    // Gissa sortering: Om första jobbet är klart, kör fallande (senaste först)
+			    // Kontrollera om det är historik-listan för att sortera rätt
 			    const isHistoryList = jobs[0] && jobs[0].status === 'klar';
 			    
 			    const sortedDateKeys = Object.keys(groupedJobs).sort((a, b) => {
@@ -1374,6 +1372,7 @@
                         jobListContainer.style.display = 'block';
                         emptyStateTimeline.style.display = 'none';
                     }
+				}
                 renderNewContent();
 			}
 
