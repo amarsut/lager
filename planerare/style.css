@@ -3454,11 +3454,22 @@ html.privacy-mode-enabled .nav-logo {
     height: 0.9rem;
 }
 
-/* Tvinga åtgärdskolumnen att vara högerjusterad för renhet */
+/* --- FIX: Åtgärdskolumnen (style.css) --- */
 #jobbOversikt .action-col { 
-    text-align: right; white-space: nowrap; width: 1%;
-    display: flex; gap: 0.25rem;
-    justify-content: flex-end; /* NYTT: Tvinga knapparna till höger */
+    text-align: right; 
+    white-space: nowrap; 
+    width: 1%;
+    /* Vi tar bort flexbox-egenskaperna härifrån */
+    /* display: flex; */ 
+    /* gap: 0.25rem; */
+    /* justify-content: flex-end; */ 
+}
+/* NY FIX: Gör en flex-container enbart för åtgärdsknapparna */
+#jobbOversikt .action-col .action-buttons-wrapper {
+    display: flex;
+    gap: 0.25rem; /* Återinför mellanrummet här */
+    justify-content: flex-end; /* Högerjustera bara knapparna */
+    align-items: center; /* Centrera vertikalt om knapparna har olika höjd */
 }
 /* Ta bort onödig placeholder i detta täta läge */
 .extra-compact-mode .icon-btn-placeholder {
@@ -4361,6 +4372,7 @@ html.privacy-mode-enabled .nav-logo {
     color: var(--primary-color);
     background: transparent;
 }
+
 
 
 
