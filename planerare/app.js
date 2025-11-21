@@ -1467,24 +1467,21 @@
                             </div>
                         </div>
                         <div class="action-col">
-                            ${hasComment ? `
-                            <button class="icon-btn" data-action="showComment" data-comment="${encodeURIComponent(job.kommentarer)}" aria-label="Visa kommentar">
-                                <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-chat"></use></svg>
-                            </button>
-                            ` : `<span class="icon-btn-placeholder"></span>`}
-
-                            <button class="icon-btn" data-action="togglePrio" aria-label="Växla Prio">
-                                <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-flag"></use></svg>
-                            </button>
-                            <button class="icon-btn" data-action="setStatusKlar" aria-label="Markera som Klar">
-                                <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-check"></use></svg>
-                            </button>
-
-                            <button class="icon-btn delete-btn" data-id="${job.id}" aria-label="Ta bort jobb">
-                                <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-trash"></use></svg>
-                            </button>
-                        </div>
-                    </div>
+						    <span class="job-profit">0 kr</span> 
+						    <div class="action-buttons-wrapper"> <button class="icon-btn" title="Markera som klar">
+						            <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-check"></use></svg>
+						        </button>
+						        <button class="icon-btn prio-toggle" title="Prioritera jobb">
+						            <svg class="icon-sm prio-flag-icon" viewBox="0 0 24 24"><use href="#icon-flag"></use></svg>
+						        </button>
+						        <button class="icon-btn comment-btn" title="Kommentarer">
+						            <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-chat"></use></svg>
+						        </button>
+						        <button class="icon-btn delete-btn" title="Ta bort jobb">
+						            <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-trash"></use></svg>
+						        </button>
+						    </div> 
+						</div>
                 `;
             }
 
