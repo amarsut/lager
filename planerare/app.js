@@ -1138,98 +1138,222 @@
 
             // --- UPPDATERAD: renderTimeline med Animationslogik ---
             function renderTimeline() {
-                // BUGGFIX: Ditt ID i plan.html är "desktopSearchResultCount"
-                const desktopSearchCount = document.getElementById('desktopSearchResultCount'); 
-                let jobsToDisplay = allJobs.filter(job => !job.deleted);
-                
-                const now = new Date();
-                now.setHours(0, 0, 0, 0);
-                
-                let sortOrder = 'asc'; // Standard-sortering
-                
-                // --- BÖRJAN PÅ NY FILTERLOGIK ---
-                
-                if (currentSearchTerm) {
-                    // 1. SÖKNING ÄR AKTIV: Filtrera ALLA jobb
-                    clearDayFilterBtn.style.display = 'inline-flex';
-                    jobsToDisplay = jobsToDisplay.filter(job => {
-                        const term = currentSearchTerm.toLowerCase();
-                        
-                        // --- KORREKT SÖK-LOGIK ---
-                        const normalizedTerm = term.replace(/\s/g, '');
-                        const normalizedPhone = (job.telefon || '').replace(/\D/g, '');
-                        const regMatch = (job.regnr && job.regnr.toLowerCase().replace(/\s/g, '').includes(normalizedTerm));
-                        
-                        return (
-                            (job.kundnamn && job.kundnamn.toLowerCase().includes(term)) || 
-                            regMatch || 
-                            (job.kommentarer && job.kommentarer.toLowerCase().includes(term)) ||
-                            (normalizedPhone && normalizedPhone.includes(normalizedTerm)) || 
-                            (STATUS_TEXT[job.status] || '').toLowerCase().includes(term)
-                        );
-                    });
-                    
-                    // Sätt sortering för sökresultat (senaste först är oftast bäst)
-                    sortOrder = 'desc';
-                    
-                    // Uppdatera stat-knapparna visuellt (rensa aktiv, sätt "alla" som aktiv)
-                    document.querySelectorAll('.stat-card.active').forEach(c => c.classList.remove('active'));
-                    const allaKort = document.getElementById('stat-card-alla');
-                    if(allaKort) allaKort.classList.add('active');
-
-                    // Uppdatera sök-räknaren
-                    if (desktopSearchCount) {
+			    const desktopSearchCount = document.getElementById('desktopSearchResultCount'); 
+			    let jobsToDisplay = allJobs.filter(job => !job.deleted);
+			    
+			    const now = new Date();
+			    now.setHours(0, 0, 0, 0);
+			    
+			    let sortOrder = 'asc'; // Standard-sortering
+			    
+			    // --- 1. FILTRERING ---
+			    
+			    if (currentSearchTerm) {
+			        // Sökning aktiv
+			        clearDayFilterBtn.style.display = 'inline-flex';
+			        jobsToDisplay = jobsToDisplay.filter(job => {
+			            const term = currentSearchTerm.toLowerCase();
+			            const normalizedTerm = term.replace(/\s/g, '');
+			            const normalizedPhone = (job.telefon || '').replace(/\D/g, '');
+			            const regMatch = (job.regnr && job.regnr.toLowerCase().replace(/\s/g, '').includes(normalizedTerm));
+			            
+			            return (
+			                (job.kundnamn && job.kundnamn.toLowerCase().includes(term)) || 
+			                regMatch || 
+			                (job.kommentarer && job.kommentarer.toLowerCase().includes(term)) ||
+			                (normalizedPhone && normalizedPhone.includes(normalizedTerm)) || 
+			                (STATUS_TEXT[job.status] || '').toLowerCase().includes(term)
+			            );
+			        });
+			        sortOrder = 'desc';
+			        
+			        document.querySelectorAll('.stat-card.active').forEach(c => c.classList.remove('active'));
+			        const allaKort = document.getElementById('stat-card-alla');
+			        if(allaKort) allaKort.classList.add('active');
+			
+			        if (desktopSearchCount) {
 			            desktopSearchCount.textContent = `${jobsToDisplay.length} träff(ar)`;
 			        }
-
-                } else {
-                    // 2. INGEN SÖKNING: Använd kategorifiltret som vanligt
-                    clearDayFilterBtn.style.display = 'none';
-                    
-                    switch(currentStatusFilter) {
-                        case 'kommande':
-                            jobsToDisplay = jobsToDisplay.filter(j => 
-                                j.status === 'bokad' && new Date(j.datum) >= now
-                            );
-                            break;
-						case 'faktureras': // NYTT CASE
-					        jobsToDisplay = jobsToDisplay.filter(j => j.status === 'faktureras');
-					        sortOrder = 'desc'; // Visa nyaste överst
-					        break;
-                        case 'klar':
-                            jobsToDisplay = jobsToDisplay.filter(j => j.status === 'klar');
-                            sortOrder = 'desc'; 
-                            break;
-                        case 'offererad':
-                            jobsToDisplay = jobsToDisplay.filter(j => j.status === 'offererad');
-                            break;
-                        case 'alla':
-                            sortOrder = 'desc'; 
-                            break;
-                    }
-
-                    // Rensa sök-räknaren
-                    if (desktopSearchCount) {
-                        desktopSearchCount.textContent = '';
-                    }
-
-                    // Sätt korrekt stat-knapp som aktiv (hanteras också av renderGlobalStats, men dubbelkolla här)
-                    document.querySelectorAll('.stat-card.active').forEach(c => c.classList.remove('active'));
-                    const activeCard = document.getElementById(`stat-card-${currentStatusFilter}`);
-                    if (activeCard) activeCard.classList.add('active');
-                }
-                // --- SLUT PÅ NY FILTERLOGIK ---
-
-
-                jobsToDisplay.sort((a, b) => {
-                    const dateA = new Date(a.datum);
-                    const dateB = new Date(b.datum);
-                    if (sortOrder === 'desc') {
-                        return dateB - dateA; 
-                    } else {
-                        return dateA - dateB; 
-                    }
-                });
+			
+			    } else {
+			        // Standardfilter
+			        clearDayFilterBtn.style.display = 'none';
+			        
+			        switch(currentStatusFilter) {
+			            case 'kommande':
+			                jobsToDisplay = jobsToDisplay.filter(j => 
+			                    j.status === 'bokad' && new Date(j.datum) >= now
+			                );
+			                break;
+			            case 'faktureras':
+			                jobsToDisplay = jobsToDisplay.filter(j => j.status === 'faktureras');
+			                sortOrder = 'desc';
+			                break;
+			            case 'klar':
+			                jobsToDisplay = jobsToDisplay.filter(j => j.status === 'klar');
+			                sortOrder = 'desc'; 
+			                break;
+			            case 'offererad':
+			                jobsToDisplay = jobsToDisplay.filter(j => j.status === 'offererad');
+			                break;
+			            case 'alla':
+			                sortOrder = 'desc'; 
+			                break;
+			        }
+			
+			        if (desktopSearchCount) desktopSearchCount.textContent = '';
+			
+			        document.querySelectorAll('.stat-card.active').forEach(c => c.classList.remove('active'));
+			        const activeCard = document.getElementById(`stat-card-${currentStatusFilter}`);
+			        if (activeCard) activeCard.classList.add('active');
+			    }
+			
+			    // --- 2. SORTERING AV HUVUDLISTA ---
+			    jobsToDisplay.sort((a, b) => {
+			        const dateA = new Date(a.datum);
+			        const dateB = new Date(b.datum);
+			        if (sortOrder === 'desc') {
+			            return dateB - dateA; 
+			        } else {
+			            return dateA - dateB; 
+			        }
+			    });
+			
+			    // --- 3. RENDERING ---
+			    const isMobile = window.innerWidth <= 768;
+			    jobListContainer.innerHTML = ''; // Rensa containern
+			
+			    // Rendera huvudlistan
+			    let mainContentHTML = '';
+			    if (jobsToDisplay.length > 0) {
+			        if (isMobile) {
+			            // Återanvänd logiken från renderMobileCardList men returnera sträng
+			            mainContentHTML = getMobileCardListHTML(jobsToDisplay);
+			        } else {
+			            mainContentHTML = getTimelineTableHTML(jobsToDisplay);
+			        }
+			    } else {
+			        // Hantera tomt läge (Empty State)
+			        jobListContainer.style.display = 'none';
+			        emptyStateTimeline.style.display = 'block';
+			        
+			        if (currentSearchTerm) {
+			            emptyStateTitleTimeline.textContent = "Inga träffar";
+			            emptyStateTextTimeline.textContent = `Din sökning på "${currentSearchTerm}" gav inga resultat.`;
+			        } else if (allJobs.length > 0) {
+			            const filterTextEl = document.querySelector(`.stat-card[data-filter="${currentStatusFilter}"] h3`);
+			            const filterText = filterTextEl ? filterTextEl.textContent : 'valda filter';
+			            emptyStateTitleTimeline.textContent = `Inga ${filterText.toLowerCase()}`;
+			            emptyStateTextTimeline.textContent = "Det finns inga jobb som matchar detta filter.";
+			        } else {
+			            emptyStateTitleTimeline.textContent = "Du har inga jobb";
+			            emptyStateTextTimeline.textContent = "Klicka på '+' för att börja.";
+			        }
+			        
+			        // Om tomt, avbryt här (vi visar inte "Senaste 5" om huvudvyn är tom pga sökning etc)
+			        if (currentSearchTerm) return;
+			    }
+			
+			    // Om vi har jobb, dölj empty state och visa container
+			    if (jobsToDisplay.length > 0) {
+			        jobListContainer.style.display = 'block';
+			        emptyStateTimeline.style.display = 'none';
+			        jobListContainer.innerHTML = mainContentHTML;
+			    }
+			
+			    // --- NYTT: LÄGG TILL "SENASTE 5 FÄRDIGA" (Bara i standardvyn 'kommande' och utan sökning) ---
+			    if (currentStatusFilter === 'kommande' && !currentSearchTerm) {
+			        const last5Finished = allJobs
+			            .filter(j => !j.deleted && j.status === 'klar')
+			            .sort((a, b) => new Date(b.datum) - new Date(a.datum))
+			            .slice(0, 5);
+			
+			        if (last5Finished.length > 0) {
+			            let finishedHTML = '';
+			            // Lägg till en rubrik/avdelare
+			            const dividerStyle = `
+			                margin-top: 2.5rem; 
+			                margin-bottom: 1rem; 
+			                padding-bottom: 0.5rem;
+			                border-bottom: 2px solid var(--border-color);
+			                font-size: 1rem; 
+			                font-weight: 700; 
+			                color: var(--text-color-light);
+			                display: flex; align-items: center; gap: 0.5rem;
+			            `;
+			            
+			            const headerHTML = `
+			                <div style="${dividerStyle}">
+			                    <svg class="icon" viewBox="0 0 24 24"><use href="#icon-check"></use></svg>
+			                    Senaste 5 Färdiga
+			                </div>
+			            `;
+			
+			            if (isMobile) {
+			                finishedHTML = getMobileCardListHTML(last5Finished);
+			            } else {
+			                finishedHTML = getTimelineTableHTML(last5Finished);
+			            }
+			
+			            // Lägg till rubriken och listan i containern (om vi hade en empty state innan, visa containern nu)
+			            jobListContainer.style.display = 'block';
+			            
+			            // Om huvudlistan var tom (men vi är i kommande), göm empty state för vi visar dessa istället
+			            if (jobsToDisplay.length === 0) {
+			                 emptyStateTimeline.style.display = 'none';
+			            }
+			            
+			            jobListContainer.insertAdjacentHTML('beforeend', headerHTML + finishedHTML);
+			        }
+			    }
+			}
+			
+			// --- NYA HJÄLPFUNKTIONER (Extrahera HTML-generering) ---
+			
+			function getTimelineTableHTML(jobs) {
+			    return `
+			        <div class="table-wrapper">
+			            <table id="jobbOversikt">
+			                ${createTableHead()}
+			                <tbody>
+			                    ${jobs.map(job => createJobRow(job)).join('')}
+			                </tbody>
+			            </table>
+			        </div>
+			    `;
+			}
+			
+			function getMobileCardListHTML(jobs) {
+			    const groupedJobs = jobs.reduce((acc, job) => {
+			        const dateKey = job.datum ? job.datum.split('T')[0] : 'Okänt';
+			        if (!acc[dateKey]) { acc[dateKey] = []; }
+			        acc[dateKey].push(job);
+			        return acc;
+			    }, {});
+			    
+			    // Sortera datumen (senaste överst för färdiga jobb, annars äldst)
+			    // Eftersom vi använder denna för "Senaste 5" (desc) och "Kommande" (asc),
+			    // måste vi gissa ordning eller skicka med den.
+			    // Förenkling: Om första jobbet i listan är 'klar', sortera DESC. Annars ASC.
+			    const isHistoryList = jobs[0] && jobs[0].status === 'klar';
+			    
+			    const sortedDateKeys = Object.keys(groupedJobs).sort((a, b) => {
+			         if (isHistoryList) return new Date(b) - new Date(a);
+			         return new Date(a) - new Date(b);
+			    });
+			    
+			    let listHTML = '<div id="mobileJobList">';
+			    for (const dateKey of sortedDateKeys) {
+			        const jobsForDay = groupedJobs[dateKey];
+			        const firstJobDate = jobsForDay[0].datum;
+			        listHTML += `<div class="mobile-day-group">`;
+			        listHTML += `<h2 class="mobile-date-header">${formatDate(firstJobDate, { onlyDate: true })}</h2>`;
+			        listHTML += jobsForDay.map(job => createJobCard(job)).join('');
+			        listHTML += `</div>`;
+			    }
+			    listHTML += '</div>';
+			    return listHTML;
+			}
 
                 // (Resten av din funktion är oförändrad)
                 function renderNewContent() {
@@ -2233,253 +2357,199 @@
 			}
 
 			function openStatsModal() {
-                const completedJobs = allJobs.filter(j => !j.deleted && j.status === 'klar');
-				const utgaendeFordringar = allJobs
+			    const completedJobs = allJobs.filter(j => !j.deleted && j.status === 'klar');
+			    const utgaendeFordringar = allJobs
 			        .filter(j => !j.deleted && j.status === 'faktureras')
 			        .reduce((sum, j) => sum + (j.vinst || 0), 0);
-				// 1. Beräkna listorna
-		        const topCustomers = calculateTopList(completedJobs, 'kundnamn');
-		        const topCars = calculateTopList(completedJobs, 'regnr');
-		
-		        // 2. Skapa HTML
-		        const customerListHTML = generateTopListHTML(topCustomers, 'Mest lönsamma kunder', 'kund');
-		        const carListHTML = generateTopListHTML(topCars, 'Mest lönsamma bilar (Reg.nr)', 'bil');
-                const totalVinst = completedJobs.reduce((sum, j) => sum + (j.vinst || 0), 0);
-                const totalJobb = completedJobs.length;
-
-				// NY KOD: Beräkna Dagens vinst
-		        const todayString = new Date().toISOString().split('T')[0];
-		        const todaysProfit = allJobs
-		            .filter(j => j.status === 'klar' && j.datum && j.datum.startsWith(todayString))
-		            .reduce((sum, j) => sum + (j.vinst || 0), 0);
-		
-		        // Sätt värdet
-		        document.getElementById('statsModalDagensVinst').textContent = formatCurrency(todaysProfit);
-		        // Sätt färg
-		        document.getElementById('statsModalDagensVinst').className = todaysProfit > 0 ? 'stat-value positive' : 'stat-value';
-
-                statsModalTotalProfit.textContent = formatCurrency(totalVinst);
-                statsModalJobCount.textContent = totalJobb;
-                statsModalTotalProfit.className = totalVinst > 0 ? 'stat-value money-related positive' : 'stat-value money-related';
-				statsModalFordringar.textContent = formatCurrency(utgaendeFordringar);
-    			statsModalFordringar.className = utgaendeFordringar > 0 ? 'stat-value warning' : 'stat-value'; // Använd warning-färg
-
-                const now = new Date();
-                const currentMonthKey = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}`;
-                
-                const goal = parseFloat(currentProfitGoal) || 0;
-                
-                const thisMonthVinst = completedJobs
-                    .filter(job => job.datum.startsWith(currentMonthKey))
-                    .reduce((sum, j) => sum + (j.vinst || 0), 0);
-
-                if (goal > 0) {
-                    profitGoalProgress.style.display = 'block';
-                    profitGoalCurrent.textContent = formatCurrency(thisMonthVinst);
-                    profitGoalTarget.textContent = `Mål: ${formatCurrency(goal)}`;
-                    const percent = Math.min((thisMonthVinst / goal) * 100, 100);
-                    profitGoalFill.style.width = `${percent}%`;
-                } else {
-                    profitGoalProgress.style.display = 'none'; 
-                }
-
-                const monthlyStats = completedJobs.reduce((acc, job) => {
-                    try {
-                        const d = new Date(job.datum);
-                        const key = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
-                        
-                        if (!acc[key]) {
-                            acc[key] = {
-                                key: key,
-                                year: d.getFullYear(),
-                                month: d.getMonth() + 1,
-                                monthName: new Date(d.getFullYear(), d.getMonth()).toLocaleString(locale, { month: 'short' }),
-                                vinst: 0,
-                                jobb: 0
-                            };
-                        }
-                        
-                        acc[key].vinst += (job.vinst || 0);
-                        acc[key].jobb += 1;
-
-                    } catch(e) { /* Ignorera ogiltiga datum */ }
-                    return acc;
-                }, {});
-
-                const statsArray = Object.values(monthlyStats);
-                statsArray.sort((a, b) => b.key.localeCompare(a.key));
-                
-                let tableHtml = `
-                    <h3 class="chart-title">Månadsöversikt (Klart-jobb)</h3>
-                    <table id="statsModalTable">
-                        <thead>
-                            <tr>
-                                <th>Period</th>
-                                <th>Antal Jobb</th>
-                                <th style="text-align: right;" class="money-related">Total Vinst</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                `;
-
-                if (statsArray.length === 0) {
-                    tableHtml += `<tr><td colspan="3" style="text-align: center; padding: 2rem;">Inga klarmarkerade jobb att visa.</td></tr>`;
-                } else {
-                    statsArray.forEach(item => {
-                        const monthName = new Date(item.year, item.month - 1)
-                            .toLocaleString(locale, { month: 'long' });
-                        
-                        tableHtml += `
-                            <tr>
-                                <td>
-                                    <span class="stat-month">${monthName.charAt(0).toUpperCase() + monthName.slice(1)}</span>
-                                    <span class="stat-year">${item.year}</span>
-                                </td>
-                                <td style="text-align: center;">${item.jobb}</td>
-                                <td class="stat-profit money-related">${formatCurrency(item.vinst)}</td>
-                            </tr>
-                        `;
-                    });
-                }
-                tableHtml += `</tbody></table>`;
-                
-                statsModalBody.querySelector('#statsModalTable')?.remove(); 
-                statsModalBody.insertAdjacentHTML('beforeend', tableHtml);
-
-                // --- MÅNADSGRAF (BEFINTLIG) ---
-                const chartData = Object.values(monthlyStats).sort((a, b) => a.key.localeCompare(b.key));
-                const recentChartData = chartData.slice(-12); 
-
-                const chartLabels = recentChartData.map(d => `${d.monthName} ${d.year}`);
-                const chartVinstData = recentChartData.map(d => d.vinst);
-                
-                const ctx = document.getElementById('statsChart').getContext('2d');
-                
-                if (statsChartInstance) {
-                    statsChartInstance.destroy(); 
-                }
-
-                statsChartInstance = new Chart(ctx, {
-                    type: 'bar', 
-                    data: {
-                        labels: chartLabels,
-                        datasets: [{
-                            label: 'Vinst per Månad',
-                            data: chartVinstData,
-                            backgroundColor: 'rgba(10, 132, 255, 0.7)', 
-                            borderColor: 'rgba(10, 132, 255, 1)',
-                            borderWidth: 1,
-                            borderRadius: 4
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { display: false },
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        return ` Vinst: ${formatCurrency(context.raw)}`;
-                                    }
-                                }
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                ticks: {
-                                    callback: function(value) {
-                                        return formatCurrency(value);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                });
-
-                // --- VECKODAGSGRAF (NY KOD HÄR) ---
-                
-                // 1. Definiera labels och data-array FÖRST
-                const weekdayLabels = ['Mån', 'Tis', 'Ons', 'Tor', 'Fre', 'Lör', 'Sön'];
-                const weekdayCounts = [0, 0, 0, 0, 0, 0, 0]; // 7 dagar, Mån=0, Sön=6
-
-                // 2. Fyll på data-arrayen
-                completedJobs.forEach(job => {
-                    try {
-                        const d = new Date(job.datum);
-                        let dayOfWeek = d.getDay(); // 0=Söndag, 1=Måndag, ... 6=Lördag
-
-                        if (dayOfWeek === 0) {
-                            dayOfWeek = 6; // Flytta Söndag till slutet
-                        } else {
-                            dayOfWeek = dayOfWeek - 1; // Flytta Mån-Lör ett steg bakåt
-                        }
-                        
-                        if(dayOfWeek >= 0 && dayOfWeek <= 6) {
-                            weekdayCounts[dayOfWeek]++;
-                        }
-                    } catch(e) { /* Ignorera ogiltiga datum */ }
-                });
-
-                // 3. Hämta canvas och förstör gammal instans
-                const weekdayCtx = document.getElementById('weekdayChart').getContext('2d');
-                
-                if (weekdayChartInstance) {
-                    weekdayChartInstance.destroy(); 
-                }
-
-                // 4. Skapa den nya grafen
-                weekdayChartInstance = new Chart(weekdayCtx, {
-                    type: 'bar',
-                    data: {
-                        labels: weekdayLabels, // Använd den definierade variabeln
-                        datasets: [{
-                            label: 'Antal Jobb',
-                            data: weekdayCounts, // Använd den definierade variabeln
-                            backgroundColor: 'rgba(48, 209, 88, 0.7)',
-                            borderColor: 'rgba(48, 209, 88, 1)',
-                            borderWidth: 1,
-                            borderRadius: 4
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { display: false },
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        return ` Antal Jobb: ${context.raw}`;
-                                    }
-                                }
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                ticks: {
-                                    stepSize: 1 
-                                }
-                            }
-                        }
-                    }
-                });
-
-				// --- NY KOD: Fyll på topplistorna innan modalen visas ---
-	            const topCustomersContainer = document.getElementById('topCustomersContainer');
-	            if (topCustomersContainer) {
-	                topCustomersContainer.innerHTML = customerListHTML;
-	            }
-	            const topCarsContainer = document.getElementById('topCarsContainer');
-	            if (topCarsContainer) {
-	                topCarsContainer.innerHTML = carListHTML;
-	            }
-                
-                // Slutligen, visa modalen
-                showModal('statsModal');
-            }
+			
+			    // 1. Beräkna listorna
+			    const topCustomers = calculateTopList(completedJobs, 'kundnamn');
+			    const topCars = calculateTopList(completedJobs, 'regnr');
+			
+			    // 2. Skapa HTML för topplistor
+			    const customerListHTML = generateTopListHTML(topCustomers, 'Mest lönsamma kunder', 'kund');
+			    const carListHTML = generateTopListHTML(topCars, 'Mest lönsamma bilar (Reg.nr)', 'bil');
+			    
+			    const totalJobb = completedJobs.length;
+			
+			    // --- NY LOGIK: Beräkna Månadens Vinst (istället för total) ---
+			    const now = new Date();
+			    const currentMonthKey = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}`;
+			    const goal = parseFloat(currentProfitGoal) || 0;
+			
+			    const thisMonthVinst = completedJobs
+			        .filter(job => job.datum.startsWith(currentMonthKey))
+			        .reduce((sum, j) => sum + (j.vinst || 0), 0);
+			
+			    // Uppdatera modalens "Huvudsiffra" (som nu är månadens vinst)
+			    statsModalTotalProfit.textContent = formatCurrency(thisMonthVinst);
+			    statsModalJobCount.textContent = totalJobb;
+			    statsModalTotalProfit.className = thisMonthVinst > 0 ? 'stat-value money-related positive' : 'stat-value money-related';
+			    
+			    statsModalFordringar.textContent = formatCurrency(utgaendeFordringar);
+			    statsModalFordringar.className = utgaendeFordringar > 0 ? 'stat-value warning' : 'stat-value';
+			
+			    // Mål-progress bar
+			    if (goal > 0) {
+			        profitGoalProgress.style.display = 'block';
+			        profitGoalCurrent.textContent = formatCurrency(thisMonthVinst);
+			        profitGoalTarget.textContent = `Mål: ${formatCurrency(goal)}`;
+			        const percent = Math.min((thisMonthVinst / goal) * 100, 100);
+			        profitGoalFill.style.width = `${percent}%`;
+			    } else {
+			        profitGoalProgress.style.display = 'none'; 
+			    }
+			
+			    // --- Månadsöversikt (Tabell) ---
+			    const monthlyStats = completedJobs.reduce((acc, job) => {
+			        try {
+			            const d = new Date(job.datum);
+			            const key = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
+			            
+			            if (!acc[key]) {
+			                acc[key] = {
+			                    key: key,
+			                    year: d.getFullYear(),
+			                    month: d.getMonth() + 1,
+			                    monthName: new Date(d.getFullYear(), d.getMonth()).toLocaleString(locale, { month: 'short' }),
+			                    vinst: 0,
+			                    jobb: 0
+			                };
+			            }
+			            acc[key].vinst += (job.vinst || 0);
+			            acc[key].jobb += 1;
+			
+			        } catch(e) { }
+			        return acc;
+			    }, {});
+			
+			    const statsArray = Object.values(monthlyStats);
+			    statsArray.sort((a, b) => b.key.localeCompare(a.key));
+			    
+			    let tableHtml = `
+			        <h3 class="chart-title">Månadsöversikt (Klart-jobb)</h3>
+			        <table id="statsModalTable">
+			            <thead>
+			                <tr>
+			                    <th>Period</th>
+			                    <th>Antal Jobb</th>
+			                    <th style="text-align: right;" class="money-related">Total Vinst</th>
+			                </tr>
+			            </thead>
+			            <tbody>
+			    `;
+			
+			    if (statsArray.length === 0) {
+			        tableHtml += `<tr><td colspan="3" style="text-align: center; padding: 2rem;">Inga klarmarkerade jobb att visa.</td></tr>`;
+			    } else {
+			        statsArray.forEach(item => {
+			            const monthName = new Date(item.year, item.month - 1)
+			                .toLocaleString(locale, { month: 'long' });
+			            
+			            tableHtml += `
+			                <tr>
+			                    <td>
+			                        <span class="stat-month">${monthName.charAt(0).toUpperCase() + monthName.slice(1)}</span>
+			                        <span class="stat-year">${item.year}</span>
+			                    </td>
+			                    <td style="text-align: center;">${item.jobb}</td>
+			                    <td class="stat-profit money-related">${formatCurrency(item.vinst)}</td>
+			                </tr>
+			            `;
+			        });
+			    }
+			    tableHtml += `</tbody></table>`;
+			    
+			    statsModalBody.querySelector('#statsModalTable')?.remove(); 
+			    statsModalBody.insertAdjacentHTML('beforeend', tableHtml);
+			
+			    // --- GRAFER ---
+			    const chartData = Object.values(monthlyStats).sort((a, b) => a.key.localeCompare(b.key));
+			    const recentChartData = chartData.slice(-12); 
+			
+			    const chartLabels = recentChartData.map(d => `${d.monthName} ${d.year}`);
+			    const chartVinstData = recentChartData.map(d => d.vinst);
+			    
+			    const ctx = document.getElementById('statsChart').getContext('2d');
+			    
+			    if (statsChartInstance) { statsChartInstance.destroy(); }
+			
+			    statsChartInstance = new Chart(ctx, {
+			        type: 'bar', 
+			        data: {
+			            labels: chartLabels,
+			            datasets: [{
+			                label: 'Vinst per Månad',
+			                data: chartVinstData,
+			                backgroundColor: 'rgba(10, 132, 255, 0.7)', 
+			                borderColor: 'rgba(10, 132, 255, 1)',
+			                borderWidth: 1,
+			                borderRadius: 4
+			            }]
+			        },
+			        options: {
+			            responsive: true,
+			            maintainAspectRatio: false,
+			            plugins: {
+			                legend: { display: false },
+			                tooltip: {
+			                    callbacks: { label: function(context) { return ` Vinst: ${formatCurrency(context.raw)}`; } }
+			                }
+			            },
+			            scales: {
+			                y: {
+			                    beginAtZero: true,
+			                    ticks: { callback: function(value) { return formatCurrency(value); } }
+			                }
+			            }
+			        }
+			    });
+			
+			    // Veckodagsgraf
+			    const weekdayLabels = ['Mån', 'Tis', 'Ons', 'Tor', 'Fre', 'Lör', 'Sön'];
+			    const weekdayCounts = [0, 0, 0, 0, 0, 0, 0]; 
+			
+			    completedJobs.forEach(job => {
+			        try {
+			            const d = new Date(job.datum);
+			            let dayOfWeek = d.getDay(); 
+			            if (dayOfWeek === 0) { dayOfWeek = 6; } else { dayOfWeek = dayOfWeek - 1; }
+			            if(dayOfWeek >= 0 && dayOfWeek <= 6) { weekdayCounts[dayOfWeek]++; }
+			        } catch(e) { }
+			    });
+			
+			    const weekdayCtx = document.getElementById('weekdayChart').getContext('2d');
+			    if (weekdayChartInstance) { weekdayChartInstance.destroy(); }
+			
+			    weekdayChartInstance = new Chart(weekdayCtx, {
+			        type: 'bar',
+			        data: {
+			            labels: weekdayLabels,
+			            datasets: [{
+			                label: 'Antal Jobb',
+			                data: weekdayCounts,
+			                backgroundColor: 'rgba(48, 209, 88, 0.7)',
+			                borderColor: 'rgba(48, 209, 88, 1)',
+			                borderWidth: 1,
+			                borderRadius: 4
+			            }]
+			        },
+			        options: {
+			            responsive: true,
+			            maintainAspectRatio: false,
+			            plugins: { legend: { display: false } },
+			            scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+			        }
+			    });
+			
+			    // Fyll på topplistor i DOM
+			    const topCustomersContainer = document.getElementById('topCustomersContainer');
+			    if (topCustomersContainer) { topCustomersContainer.innerHTML = customerListHTML; }
+			    const topCarsContainer = document.getElementById('topCarsContainer');
+			    if (topCarsContainer) { topCarsContainer.innerHTML = carListHTML; }
+			    
+			    showModal('statsModal');
+			}
             
             function showContextMenu(e, jobId) {
                 hideContextMenu();
