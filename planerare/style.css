@@ -4415,3 +4415,37 @@ html.privacy-mode-enabled .nav-logo {
     background-color: var(--danger-light);
     border-color: var(--danger-color) !important;
 }
+
+/* --- Papperskorg Uppdatering --- */
+
+/* Behållare för knapparna så de hamnar på rad */
+.trash-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+/* Den nya permanenta radera-knappen */
+.delete-permanent-btn {
+    background: transparent;
+    border: 1px solid var(--danger-color);
+    color: var(--danger-color);
+    border-radius: 6px;
+    padding: 0.4rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.delete-permanent-btn:hover {
+    background-color: var(--danger-color);
+    color: white;
+}
+
+/* Justera storleken på ikonen inuti */
+.delete-permanent-btn .icon-sm {
+    width: 1.1rem;
+    height: 1.1rem;
+}
