@@ -3077,9 +3077,6 @@
 			    openStatsModal();
 			});
             
-            // --- Inställnings-modal (Vinstmål) ---
-            // 1. FUNKTIONEN FÖR ATT ÖPPNA MODALEN
-            // Denna funktion läser bara sparade värden och visar dem.
             function openSettingsModal() {
                 // Läs in sparat vinstmål och fyll i fältet
                 profitGoalInput.value = currentProfitGoal > 0 ? currentProfitGoal : '';
@@ -3088,15 +3085,10 @@
                 const savedView = localStorage.getItem('defaultView') || 'timeline';
                 if (savedView === 'calendar') {
                     document.getElementById('defaultViewCalendar').checked = true;
+                } else if (savedView === 'kanban') {
+                    document.getElementById('defaultViewKanban').checked = true;
                 } else {
                     document.getElementById('defaultViewTimeline').checked = true;
-                }
-                
-                // Hantera visning av mobil-specifika knappar
-                if (window.innerWidth <= 768) {
-                    mobileSettingsGroup.style.display = 'grid';
-                } else {
-                    mobileSettingsGroup.style.display = 'none';
                 }
                 
                 // Visa själva modalen
