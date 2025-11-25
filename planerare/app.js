@@ -1029,38 +1029,40 @@
 			});
 		
 		    // 3. Rita ut listan med raderade jobb (UPPDATERAD)
-		    function renderTrashList() {
-		        trashList.innerHTML = '';
-		        const deletedJobs = allJobs.filter(j => j.deleted);
-		
-		        if (deletedJobs.length === 0) {
-		            trashList.innerHTML = '<p style="text-align:center; padding:2rem; color:var(--text-color-light);">Papperskorgen är tom.</p>';
-		            return;
-		        }
-		
-		        deletedJobs.forEach(job => {
-		            const li = document.createElement('li');
-		            li.className = 'trash-item';
-		            
-		            // Formatera datum snyggt
-		            const dateStr = job.datum ? job.datum.split('T')[0] : 'Inget datum';
-		            
-		            li.innerHTML = `
-		                <div class="trash-item-info">
-		                    <span style="font-weight:600;">${job.kundnamn}</span>
-		                    <span class="trash-item-date">${dateStr} | ${job.regnr || '---'}</span>
-		                </div>
-                        
-                        <div class="trash-actions">
-                            <button class="restore-btn" data-id="${job.id}">Återställ</button>
-                            <button class="delete-permanent-btn" data-id="${job.id}" title="Radera permanent (går ej att ångra)">
-                                <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-trash"></use></svg>
-                            </button>
-                        </div>
-		            `;
-		            trashList.appendChild(li);
-		        });
-		    }
+			function renderTrashList() {
+			    const trashList = document.getElementById('trashList'); // Säkerställer att vi har elementet
+			    trashList.innerHTML = '';
+			    
+			    const deletedJobs = allJobs.filter(j => j.deleted);
+			
+			    if (deletedJobs.length === 0) {
+			        trashList.innerHTML = '<p style="text-align:center; padding:2rem; color:var(--text-color-light);">Papperskorgen är tom.</p>';
+			        return;
+			    }
+			
+			    deletedJobs.forEach(job => {
+			        const li = document.createElement('li');
+			        li.className = 'trash-item';
+			        
+			        const dateStr = job.datum ? job.datum.split('T')[0] : 'Inget datum';
+			        
+			        // HÄR ÄR ÄNDRINGEN: Vi lägger till <div class="trash-actions"> runt knapparna
+			        li.innerHTML = `
+			            <div class="trash-item-info">
+			                <span style="font-weight:600;">${job.kundnamn}</span>
+			                <span class="trash-item-date">${dateStr} | ${job.regnr || '---'}</span>
+			            </div>
+			            
+			            <div class="trash-actions">
+			                <button class="restore-btn" data-id="${job.id}">Återställ</button>
+			                <button class="delete-permanent-btn" data-id="${job.id}" title="Radera permanent">
+			                    <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-trash"></use></svg>
+			                </button>
+			            </div>
+			        `;
+			        trashList.appendChild(li);
+			    });
+			}
 		
 		   // 4. Hantera "Återställ" och "Radera Permanent" klick
 		    trashList.addEventListener('click', (e) => {
