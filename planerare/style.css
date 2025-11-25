@@ -4387,3 +4387,31 @@ html.privacy-mode-enabled .nav-logo {
         grid-template-columns: 1fr; /* 1 kolumn på små mobiler */
     }
 }
+
+/* --- MER INSTÄLLNINGAR DESIGN --- */
+
+/* Liten rubrik ovanför varje sektion */
+.section-label {
+    display: block;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: var(--text-color-light);
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    letter-spacing: 0.05em;
+}
+
+/* Versionsnummer längst ner */
+.app-version-footer {
+    text-align: center;
+    margin-top: 2rem;
+    font-size: 0.75rem;
+    color: var(--text-color-light);
+    opacity: 0.6;
+}
+
+/* Gör Data-knapparna lite tydligare */
+#openTrashBtn:hover {
+    background-color: var(--danger-light);
+    border-color: var(--danger-color) !important;
+}
