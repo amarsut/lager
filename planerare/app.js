@@ -71,6 +71,7 @@
             
             // --- Globalt Tillstånd (State) ---
             let allJobs = [];
+			let currentOilStock = 0;
 			let backPressWarned = false;
             let backPressTimer;
             let currentSearchTerm = "";
@@ -857,6 +858,22 @@
 		            }
 		        }
 		    }
+
+			function initInventoryListener() {
+                db.collection("settings").doc("inventory").onSnapshot(doc => {
+                    if (doc.exists) {
+                        currentOilStock = doc.data().motorOil || 0;
+                        
+                        // Uppdatera fältet i inställningar om det är öppet
+                        const stockInput = document.getElementById('oilStockInput');
+                        if (stockInput && document.activeElement !== stockInput) {
+                            stockInput.value = currentOilStock;
+                        }
+                    } else {
+                        db.collection("settings").doc("inventory").set({ motorOil: 0 });
+                    }
+                });
+            }
 
             // --- Firebase Listener ---
             function initRealtimeListener() {
@@ -2623,6 +2640,48 @@
                     return;
                 }
                 const fullDatum = `${modalDatum.value}T${modalTid.value || '09:00'}`;
+
+				// --- AUTOMATISK LAGERHANTERING ---
+			    // Vi gör detta bara för NYA jobb (!jobId) för att inte råka dra av oljan två gånger om du redigerar jobbet.
+			    if (!jobId) {
+			        const oilItem = currentExpenses.find(item => item.name.toLowerCase().includes('motorolja'));
+			        
+			        if (oilItem) {
+			            // Vi letar efter ett tal följt av "L" i texten, t.ex. "Motorolja (4.3L)"
+			            // (Detta matchar formatet från din mall)
+			            const match = oilItem.name.match(/([\d.,]+)\s*L/i);
+			            
+			            if (match) {
+			                // Byt ut komma mot punkt för att kunna räkna
+			                const litersUsed = parseFloat(match[1].replace(',', '.'));
+			                
+			                if (litersUsed > 0) {
+			                    // Uppdatera lagret i Firebase (minska med litersUsed)
+			                    try {
+			                        await db.collection("settings").doc("inventory").update({
+			                            motorOil: firebase.firestore.FieldValue.increment(-litersUsed)
+			                        });
+			                        
+			                        // Kolla om vi passerar varningsgränsen (lokal beräkning för snabb feedback)
+			                        if ((currentOilStock - litersUsed) <= 20) {
+			                            // Visa en varning efter en kort stund
+			                            setTimeout(() => {
+			                                showToast(`Varning: Oljelagret är lågt! (${(currentOilStock - litersUsed).toFixed(1)} L kvar)`, 'warning');
+			                            }, 1500);
+			                        } else {
+			                            // Visa info om att olja drogs
+			                            setTimeout(() => {
+			                                showToast(`${litersUsed}L olja registrerat från lagret.`, 'info');
+			                            }, 1000);
+			                        }
+			                    } catch (err) {
+			                        console.error("Kunde inte uppdatera lager:", err);
+			                    }
+			                }
+			            }
+			        }
+			    }
+			    // --- SLUT LAGERHANTERING ---
                 
                 // Detta är det nya objektet vi sparar till Firebase
                 const savedData = { 
@@ -3068,16 +3127,20 @@
             mobileSettingsBtn.addEventListener('click', openSettingsModal);
             
             settingsModalForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                currentProfitGoal = parseFloat(profitGoalInput.value) || 0;
-                localStorage.setItem('profitGoal', currentProfitGoal);
-
-				//const selectedView = document.querySelector('input[name="defaultView"]:checked').value;
-                //localStorage.setItem('defaultView', selectedView);
-				
-                showToast('Inställningar sparade!', 'success');
-                closeModal();
-            });
+			    e.preventDefault();
+			    
+			    // Din gamla kod för vinstmål
+			    currentProfitGoal = parseFloat(profitGoalInput.value) || 0;
+			    localStorage.setItem('profitGoal', currentProfitGoal);
+			
+			    // --- NY KOD FÖR OLJELAGER ---
+			    const newStock = parseFloat(document.getElementById('oilStockInput').value) || 0;
+			    db.collection("settings").doc("inventory").set({ motorOil: newStock }, { merge: true });
+			    // ----------------------------
+			
+			    showToast('Inställningar och lager sparade!', 'success');
+			    closeModal();
+			});
 
             settingsThemeToggle.addEventListener('click', () => themeToggle.click());
             settingsLockAppBtn.addEventListener('click', () => {
@@ -3521,6 +3584,7 @@
                         appInitialized = true;
                         initializeCalendar();
                         initRealtimeListener();
+						initInventoryListener();
 						toggleView(currentView);
                     }
                 } else {
@@ -3660,6 +3724,7 @@
                     appInitialized = true;
                     initializeCalendar();
                     initRealtimeListener();
+					initInventoryListener();
 					toggleView(currentView);
                 } else {
                     showPinLock();
