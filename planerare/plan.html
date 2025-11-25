@@ -702,70 +702,80 @@
                     <svg class="icon" viewBox="0 0 24 24"><use href="#icon-close"></use></svg>
                 </button>
             </div>
-
-			<div class="form-group">
-			    <label for="oilStockInput">Motorolja i Lager (Liter)</label>
-			    <input type="number" id="oilStockInput" step="0.1" placeholder="0">
-			    <p style="font-size: 0.8rem; color: var(--text-color-light); margin-top: 0.5rem;">
-			        Räknas automatiskt ned när du bokar oljebyten. Varning vid 20 liter.
-			    </p>
-			</div>
             
             <form id="settingsModalForm" class="modal-body">
                 
                 <div class="settings-section">
-                    <div class="form-group">
+                    <label class="section-label">Drift & Ekonomi</label>
+                    
+                    <div class="form-group" style="margin-bottom: 1rem;">
                         <label for="oilStockInput">
                             <svg class="icon-sm" viewBox="0 0 24 24" style="vertical-align: -2px; margin-right:4px;"><use href="#icon-oil-can"></use></svg>
                             Motorolja i Lager (Liter)
                         </label>
                         <input type="number" id="oilStockInput" step="0.1" placeholder="0">
-                        <p class="helper-text">
-                            Räknas automatiskt ned när du bokar oljebyten. Varning vid 20 liter.
-                        </p>
                     </div>
-                </div>
 
-                <div class="settings-section">
                     <div class="form-group">
                         <label for="profitGoalInput">
                             <svg class="icon-sm" viewBox="0 0 24 24" style="vertical-align: -2px; margin-right:4px;"><use href="#icon-briefcase"></use></svg>
                             Månadsmål Vinst (kr)
                         </label>
                         <input type="number" id="profitGoalInput" placeholder="t.ex. 50000" min="0">
-                        <p class="helper-text">
-                            Sätt ett vinstmål för innevarande månad. Visas i statistik-översikten.
-                        </p>
                     </div>
                 </div>
 
                 <div class="settings-section">
-                    <div class="form-group">
-                        <label>Standardvy vid Start</label>
-                        <div class="settings-radio-group">
-                            <input type="radio" id="defaultViewTimeline" name="defaultView" value="timeline" checked>
-                            <label for="defaultViewTimeline">
-                                <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-timeline-view"></use></svg>
-                                <span>Tidslinje</span>
-                            </label>
-                            
-                            <input type="radio" id="defaultViewCalendar" name="defaultView" value="calendar">
-                            <label for="defaultViewCalendar">
-                                <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-calendar-view"></use></svg>
-                                <span>Kalender</span>
-                            </label>
+                    <label class="section-label">Startvy</label>
+                    <div class="settings-radio-group">
+                        <input type="radio" id="defaultViewTimeline" name="defaultView" value="timeline" checked>
+                        <label for="defaultViewTimeline">
+                            <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-timeline-view"></use></svg>
+                            <span>Tidslinje</span>
+                        </label>
+                        
+                        <input type="radio" id="defaultViewCalendar" name="defaultView" value="calendar">
+                        <label for="defaultViewCalendar">
+                            <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-calendar-view"></use></svg>
+                            <span>Kalender</span>
+                        </label>
 
-                            <input type="radio" id="defaultViewKanban" name="defaultView" value="kanban">
-                            <label for="defaultViewKanban">
-                                <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-kanban-view"></use></svg>
-                                <span>Tavla</span>
-                            </label>
-                        </div>
+                        <input type="radio" id="defaultViewKanban" name="defaultView" value="kanban">
+                        <label for="defaultViewKanban">
+                            <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-kanban-view"></use></svg>
+                            <span>Tavla</span>
+                        </label>
                     </div>
                 </div>
 
                 <div class="settings-section">
-                    <label style="margin-bottom: 0.75rem; display:block;">Externa Verktyg</label>
+                    <label class="section-label">System & Utseende</label>
+                    <div class="settings-button-group">
+                        <button type="button" class="button secondary" id="settingsThemeToggle">
+                            <svg class="icon icon-sun" viewBox="0 0 24 24"><use href="#icon-sun"></use></svg>
+                            <svg class="icon icon-moon" viewBox="0 0 24 24"><use href="#icon-moon"></use></svg>
+                            <span>Växla Tema (Ljus/Mörk)</span>
+                        </button>
+                        
+                        <button type="button" class="button secondary" id="settingsToggleCompactView">
+                            <svg class="icon" viewBox="0 0 24 24"><use href="#icon-view-dense"></use></svg>
+                            <span>Växla Kompakt Läge</span>
+                        </button>
+
+                        <button type="button" class="button secondary" id="settingsPrivacyToggle">
+                            <svg class="icon icon-eye" viewBox="0 0 24 24"><use href="#icon-eye"></use></svg>
+                            <span>Privat Läge (Dölj belopp)</span>
+                        </button>
+                        
+                        <button type="button" class="button secondary" id="settingsLockAppBtn">
+                            <svg class="icon" viewBox="0 0 24 24"><use href="#icon-lock-closed"></use></svg>
+                            <span>Lås Appen</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <label class="section-label">Externa Verktyg</label>
                     <div class="external-links-grid">
                         <a href="https://biluppgifter.se" target="_blank" rel="noopener noreferrer" class="button secondary">
                             <img src="https://biluppgifter.se/favicon/favicon.ico" alt="Ikon" style="width: 20px; height: 20px; border-radius: 4px;">
@@ -785,34 +795,20 @@
                 </div>
 
                 <div class="settings-section no-border">
-                    <label style="margin-bottom: 0.75rem; display:block;">Data & Export</label>
+                    <label class="section-label">Data & Export</label>
                     <div class="settings-button-group">
-                        <button type="button" class="button secondary" id="openTrashBtn">
+                        <button type="button" class="button secondary csv-export" id="exportCsvBtn">
+                            <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-download"></use></svg>
+                            <span>Exportera CSV (Excel)</span>
+                        </button>
+                        <button type="button" class="button secondary" id="openTrashBtn" style="color: var(--danger-color); border-color: var(--border-color);">
                             <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-trash"></use></svg>
                             <span>Öppna Papperskorgen</span>
                         </button>
-                        <button type="button" class="button secondary csv-export" id="exportCsvBtn">
-                            <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-download"></use></svg>
-                            <span>Exportera CSV</span>
-                        </button>
                     </div>
-                </div>
-
-                <div class="settings-section" id="mobileSettingsGroup">
-                    <label>App-åtgärder</label>
-                    <div class="settings-button-group">
-                        <button type="button" class="button secondary" id="settingsPrivacyToggle">
-                            <svg class="icon icon-eye" viewBox="0 0 24 24"><use href="#icon-eye"></use></svg>
-                            <span>Växla Privat Läge</span>
-                        </button>
-                        <button type="button" class="button secondary" id="settingsThemeToggle">
-                            <svg class="icon icon-sun" viewBox="0 0 24 24"><use href="#icon-sun"></use></svg>
-                            <span>Växla Tema</span>
-                        </button>
-                        <button type="button" class="button secondary" id="settingsLockAppBtn">
-                            <svg class="icon" viewBox="0 0 24 24"><use href="#icon-lock-closed"></use></svg>
-                            <span>Lås Appen</span>
-                        </button>
+                    
+                    <div class="app-version-footer">
+                        Jobbplanerare v15.2 &bull; 2024
                     </div>
                 </div>
 
