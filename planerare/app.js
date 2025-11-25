@@ -1028,7 +1028,7 @@
 			    }
 			});
 		
-		    // 3. Rita ut listan med raderade jobb
+		    // 3. Rita ut listan med raderade jobb (UPPDATERAD)
 		    function renderTrashList() {
 		        trashList.innerHTML = '';
 		        const deletedJobs = allJobs.filter(j => j.deleted);
@@ -1050,19 +1050,47 @@
 		                    <span style="font-weight:600;">${job.kundnamn}</span>
 		                    <span class="trash-item-date">${dateStr} | ${job.regnr || '---'}</span>
 		                </div>
-		                <button class="restore-btn" data-id="${job.id}">Återställ</button>
+                        
+                        <div class="trash-actions">
+                            <button class="restore-btn" data-id="${job.id}">Återställ</button>
+                            <button class="delete-permanent-btn" data-id="${job.id}" title="Radera permanent (går ej att ångra)">
+                                <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-trash"></use></svg>
+                            </button>
+                        </div>
 		            `;
 		            trashList.appendChild(li);
 		        });
 		    }
 		
-		    // 4. Hantera "Återställ"-klick
+		   // 4. Hantera "Återställ" och "Radera Permanent" klick
 		    trashList.addEventListener('click', (e) => {
+                // Hantera Återställning
 		        if (e.target.classList.contains('restore-btn')) {
 		            const jobId = e.target.dataset.id;
 		            restoreJob(jobId);
 		        }
+
+                // Hantera Permanent Radering (NYTT)
+                const deleteBtn = e.target.closest('.delete-permanent-btn');
+                if (deleteBtn) {
+                    const jobId = deleteBtn.dataset.id;
+                    deleteJobPermanently(jobId);
+                }
 		    });
+
+            // NY FUNKTION: Radera permanent
+            function deleteJobPermanently(jobId) {
+                if (confirm('Är du säker? Detta tar bort jobbet permanent och går INTE att ångra.')) {
+                    db.collection("jobs").doc(jobId).delete()
+                    .then(() => {
+                        showToast('Jobb raderat permanent.', 'info');
+                        // Uppdatera lokala listan direkt så den försvinner från skärmen
+                        allJobs = allJobs.filter(j => j.id !== jobId);
+                        renderTrashList(); 
+                    })
+                    .catch(err => showToast('Kunde inte radera: ' + err.message, 'danger'));
+                }
+            }
 		
 		    function restoreJob(jobId) {
 		        db.collection("jobs").doc(jobId).update({
