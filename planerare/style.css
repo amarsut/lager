@@ -4420,23 +4420,19 @@ html.privacy-mode-enabled .nav-logo {
 
 /* Behållare för knapparna så de hamnar på rad */
 .trash-actions {
-    display: flex;
-    gap: 0.5rem;
-    align-items: center;
+    display: flex;          /* Lägger knapparna på rad */
+    align-items: center;    /* Centrerar dem i höjdled */
+    gap: 0.5rem;            /* Mellanrum mellan Återställ och Soptunnan */
+    flex-shrink: 0;         /* Förhindrar att knapparna trycks ihop om texten är lång */
 }
 
-/* Den nya permanenta radera-knappen */
 .delete-permanent-btn {
-    background: transparent;
-    border: 1px solid var(--danger-color);
-    color: var(--danger-color);
-    border-radius: 6px;
-    padding: 0.4rem;
-    cursor: pointer;
+    width: 36px;            /* Kvadratisk knapp */
+    height: 36px;
+    padding: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s ease;
 }
 
 .delete-permanent-btn:hover {
@@ -4449,3 +4445,4 @@ html.privacy-mode-enabled .nav-logo {
     width: 1.1rem;
     height: 1.1rem;
 }
+
