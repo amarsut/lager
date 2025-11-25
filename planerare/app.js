@@ -3099,22 +3099,27 @@
                     const literOlja = parseFloat(literOljaprompt.replace(',', '.')) || 0;
                     
                     if (literOlja > 0) {
-                        const oljekostnad = literOlja * 200; 
-                        const filterkostnad = 200; 
-                        const arbetskostnad = 500; 
+                        // PRIS MOT KUND
+                        const oljaPrisKund = literOlja * 200; 
+                        const filterPrisKund = 200; 
+                        const arbetePrisKund = 500; 
                         
-                        modalKundpris.value = Math.round(oljekostnad + filterkostnad + arbetskostnad);
+                        // Sätt totalpriset till kunden
+                        modalKundpris.value = Math.round(oljaPrisKund + filterPrisKund + arbetePrisKund);
                         
-                        // --- NY LOGIK FÖR UTGIFTER ---
+                        // DIN KOSTNAD (UTGIFTER)
+                        const oljaInkop = literOlja * 65; // <-- ÄNDRAT HÄR: 65 kr/liter i utgift
+                        const filterInkop = 200; // Just nu räknas filter som 0 kr vinst (ändra detta om filtret kostar dig mindre än 200)
+
+                        // Uppdatera utgiftslistan
                         currentExpenses = [
-                            { name: `Motorolja (${literOlja}L)`, cost: Math.round(oljekostnad) },
-                            { name: "Oljefilter", cost: filterkostnad }
+                            { name: `Motorolja (${literOlja}L)`, cost: Math.round(oljaInkop) },
+                            { name: "Oljefilter", cost: filterInkop }
                         ];
-                        renderExpensesList(); // Uppdatera listan
-                        // --- SLUT NY LOGIK ---
+                        renderExpensesList(); 
                         
                         document.getElementById('kommentarer').value = `Oljebyte:\n- Motorolja (${literOlja}L)\n- Oljefilter`;
-                        showToast('Mall tillämpad!', 'info');
+                        showToast('Mall tillämpad (med korrekt marginal)!', 'info');
                     } else {
                         showToast('Ogiltigt antal liter.', 'danger');
                     }
