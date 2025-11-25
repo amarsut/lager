@@ -1028,7 +1028,7 @@
 			    }
 			});
 		
-		    // 3. Rita ut listan med raderade jobb (FELSÄKER VERSION)
+		    // 3. Rita ut listan med raderade jobb (TVINGAD DESIGN)
 			function renderTrashList() {
 			    const trashList = document.getElementById('trashList');
 			    if (!trashList) return;
@@ -1037,7 +1037,7 @@
 			    const deletedJobs = allJobs.filter(j => j.deleted);
 			
 			    if (deletedJobs.length === 0) {
-			        trashList.innerHTML = '<p style="text-align:center; padding:2rem; color:var(--text-color-light);">Papperskorgen är tom.</p>';
+			        trashList.innerHTML = '<p style="text-align:center; padding:2rem; color:#888;">Papperskorgen är tom.</p>';
 			        return;
 			    }
 			
@@ -1045,23 +1045,44 @@
 			        const li = document.createElement('li');
 			        li.className = 'trash-item';
 			        
-			        // Se till att huvudraden också använder flexbox
-			        li.style.display = 'flex';
-			        li.style.justifyContent = 'space-between';
-			        li.style.alignItems = 'center';
+			        // 1. TVINGA raden att vara Flexbox (Vänster - Höger)
+			        li.style.cssText = "display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-bottom: 1px solid #eee; background: rgba(255, 69, 58, 0.03);";
 			        
 			        const dateStr = job.datum ? job.datum.split('T')[0] : 'Inget datum';
 			        
 			        li.innerHTML = `
-			            <div class="trash-item-info">
-			                <span style="font-weight:600;">${job.kundnamn}</span>
-			                <span class="trash-item-date">${dateStr} | ${job.regnr || '---'}</span>
+			            <div style="display: flex; flex-direction: column; gap: 4px;">
+			                <span style="font-weight: 700; font-size: 1rem; color: #333;">${job.kundnamn}</span>
+			                <span style="font-size: 0.85rem; color: #666;">${dateStr} | ${job.regnr || '---'}</span>
 			            </div>
 			            
-			            <div class="trash-actions" style="display: flex; align-items: center; gap: 10px;">
-			                <button class="restore-btn" data-id="${job.id}">Återställ</button>
-			                <button class="delete-permanent-btn" data-id="${job.id}" title="Radera permanent">
-			                    <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-trash"></use></svg>
+			            <div style="display: flex; align-items: center; gap: 10px;">
+			                
+			                <button class="restore-btn" data-id="${job.id}" style="
+			                    height: 40px;
+			                    padding: 0 1rem;
+			                    background-color: white;
+			                    border: 1px solid #30d158;
+			                    color: #30d158;
+			                    border-radius: 6px;
+			                    font-weight: 600;
+			                    cursor: pointer;">
+			                    Återställ
+			                </button>
+			
+			                <button class="delete-permanent-btn" data-id="${job.id}" title="Radera permanent" style="
+			                    width: 40px;
+			                    height: 40px;
+			                    display: flex;
+			                    align-items: center;
+			                    justify-content: center;
+			                    background-color: white;
+			                    border: 1px solid #ff453a;
+			                    color: #ff453a;
+			                    border-radius: 6px;
+			                    cursor: pointer;
+			                    padding: 0;">
+			                    <svg class="icon-sm" viewBox="0 0 24 24" style="width: 20px; height: 20px; pointer-events: none;"><use href="#icon-trash"></use></svg>
 			                </button>
 			            </div>
 			        `;
