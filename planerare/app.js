@@ -1028,7 +1028,7 @@
 			    }
 			});
 		
-		    // 3. Rita ut listan med raderade jobb (TVINGAD DESIGN)
+		    // 3. Rita ut listan med raderade jobb (TABELL-LÖSNING)
 			function renderTrashList() {
 			    const trashList = document.getElementById('trashList');
 			    if (!trashList) return;
@@ -1045,46 +1045,45 @@
 			        const li = document.createElement('li');
 			        li.className = 'trash-item';
 			        
-			        // 1. TVINGA raden att vara Flexbox (Vänster - Höger)
-			        li.style.cssText = "display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-bottom: 1px solid #eee; background: rgba(255, 69, 58, 0.03);";
+			        // Vi nollställer stilen på list-elementet för säkerhets skull
+			        li.style.cssText = "padding: 10px; border-bottom: 1px solid #eee; background: rgba(255, 69, 58, 0.03); list-style: none;";
 			        
 			        const dateStr = job.datum ? job.datum.split('T')[0] : 'Inget datum';
 			        
+			        // HÄR ÄR FIXEN: En osynlig tabell med 100% bredd
+			        // Vänstra cellen = Text. Högra cellen = Knappar.
 			        li.innerHTML = `
-			            <div style="display: flex; flex-direction: column; gap: 4px;">
-			                <span style="font-weight: 700; font-size: 1rem; color: #333;">${job.kundnamn}</span>
-			                <span style="font-size: 0.85rem; color: #666;">${dateStr} | ${job.regnr || '---'}</span>
-			            </div>
-			            
-			            <div style="display: flex; align-items: center; gap: 10px;">
-			                
-			                <button class="restore-btn" data-id="${job.id}" style="
-			                    height: 40px;
-			                    padding: 0 1rem;
-			                    background-color: white;
-			                    border: 1px solid #30d158;
-			                    color: #30d158;
-			                    border-radius: 6px;
-			                    font-weight: 600;
-			                    cursor: pointer;">
-			                    Återställ
-			                </button>
+			            <table style="width: 100%; border-collapse: collapse; border: none;">
+			                <tr>
+			                    <td style="vertical-align: middle; padding: 0; border: none;">
+			                        <div style="font-weight: 700; font-size: 1rem; color: #333;">${job.kundnamn}</div>
+			                        <div style="font-size: 0.85rem; color: #666;">${dateStr} | ${job.regnr || '---'}</div>
+			                    </td>
+			                    
+			                    <td style="vertical-align: middle; text-align: right; padding: 0; border: none; white-space: nowrap;">
+			                        
+			                        <div style="display: inline-flex; align-items: center; gap: 8px;">
+			                            
+			                            <button class="restore-btn" data-id="${job.id}" style="
+			                                display: inline-flex; align-items: center; justify-content: center;
+			                                height: 38px; padding: 0 12px;
+			                                background: white; border: 1px solid #30d158; color: #30d158;
+			                                border-radius: 6px; font-weight: 600; cursor: pointer;">
+			                                Återställ
+			                            </button>
 			
-			                <button class="delete-permanent-btn" data-id="${job.id}" title="Radera permanent" style="
-			                    width: 40px;
-			                    height: 40px;
-			                    display: flex;
-			                    align-items: center;
-			                    justify-content: center;
-			                    background-color: white;
-			                    border: 1px solid #ff453a;
-			                    color: #ff453a;
-			                    border-radius: 6px;
-			                    cursor: pointer;
-			                    padding: 0;">
-			                    <svg class="icon-sm" viewBox="0 0 24 24" style="width: 20px; height: 20px; pointer-events: none;"><use href="#icon-trash"></use></svg>
-			                </button>
-			            </div>
+			                            <button class="delete-permanent-btn" data-id="${job.id}" title="Radera permanent" style="
+			                                display: inline-flex; align-items: center; justify-content: center;
+			                                width: 38px; height: 38px; padding: 0;
+			                                background: white; border: 1px solid #ff453a; color: #ff453a;
+			                                border-radius: 6px; cursor: pointer;">
+			                                <svg class="icon-sm" viewBox="0 0 24 24" style="width: 20px; height: 20px; pointer-events: none; fill: none; stroke: currentColor; stroke-width: 2;"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12.578 0a48.108 48.108 0 01-3.478-.397m15.42 0A48.1 48.1 0 0012 5.11M4.772 5.79L4.772 4.102a2.25 2.25 0 012.25-2.25h1.5a2.25 2.25 0 012.25 2.25v1.688M4.772 5.79l-.175 2.457a1.125 1.125 0 001.12 1.228H18.28a1.125 1.125 0 001.12-1.228l-.175-2.457m0 0l-1.096-1.547a.562.562 0 00-.923 0l-1.096 1.547M19.228 5.79l-1.096-1.547a.562.562 0 01-.923 0l-1.096 1.547" /></svg>
+			                            </button>
+			
+			                        </div>
+			                    </td>
+			                </tr>
+			            </table>
 			        `;
 			        trashList.appendChild(li);
 			    });
