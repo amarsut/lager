@@ -4418,15 +4418,26 @@ html.privacy-mode-enabled .nav-logo {
 
 /* --- Papperskorg Uppdatering (FIXAD) --- */
 
-/* 1. Behållaren för knapparna - Tvingar dem att ligga på rad */
+/* Huvudraden för varje jobb i papperskorgen */
+.trash-item {
+    display: flex;
+    justify-content: space-between; /* Text till vänster, knappar till höger */
+    align-items: center;            /* Centrera vertikalt */
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    background-color: rgba(255, 69, 58, 0.03); /* Mycket svag röd ton */
+    gap: 1rem; /* Mellanrum mellan text och knappar */
+}
+
+/* Behållaren som tvingar knapparna att ligga på rad */
 .trash-actions {
     display: flex;
     align-items: center;
-    gap: 0.5rem;       /* Mellanrum mellan knapparna */
+    gap: 0.5rem;       /* Mellanrum mellan Återställ och Soptunna */
     flex-shrink: 0;    /* Se till att knapparna inte krymper */
 }
 
-/* 2. Den röda raderaknappen - Saknade utseende tidigare */
+/* Den röda raderaknappen */
 .delete-permanent-btn {
     width: 36px;
     height: 36px;
@@ -4434,8 +4445,6 @@ html.privacy-mode-enabled .nav-logo {
     display: flex;
     align-items: center;
     justify-content: center;
-    
-    /* Utseende */
     background-color: transparent;
     border: 1px solid var(--danger-color);
     color: var(--danger-color);
@@ -4449,34 +4458,26 @@ html.privacy-mode-enabled .nav-logo {
     color: white;
 }
 
-/* Ikonstorlek i raderaknappen */
 .delete-permanent-btn .icon-sm {
     width: 1.1rem;
     height: 1.1rem;
 }
 
-/* 3. Justering av Återställ-knappen så den matchar soptunnan */
+/* Återställ-knappen (Matchar höjden på soptunnan) */
 .restore-btn {
-    /* Tvinga samma höjd som soptunnan */
-    height: 36px;
-    box-sizing: border-box;
-    
-    /* Centrera texten */
+    height: 36px; /* Samma höjd som soptunnan */
+    padding: 0 1rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    
-    padding: 0 1rem;
     font-size: 0.85rem;
     font-weight: 600;
     border-radius: 6px;
     cursor: pointer;
-    
-    /* Färger (samma som förut) */
     background-color: var(--bg-color);
     border: 1px solid var(--success-color);
     color: var(--success-color);
-    margin: 0; /* Ta bort ev. gamla marginaler */
+    margin: 0; /* Viktigt: Tar bort gamla marginaler */
 }
 
 .restore-btn:hover {
