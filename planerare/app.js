@@ -1028,11 +1028,12 @@
 			    }
 			});
 		
-		    // 3. Rita ut listan med raderade jobb (UPPDATERAD)
+		    // 3. Rita ut listan med raderade jobb (FELSÄKER VERSION)
 			function renderTrashList() {
-			    const trashList = document.getElementById('trashList'); // Säkerställer att vi har elementet
-			    trashList.innerHTML = '';
+			    const trashList = document.getElementById('trashList');
+			    if (!trashList) return;
 			    
+			    trashList.innerHTML = '';
 			    const deletedJobs = allJobs.filter(j => j.deleted);
 			
 			    if (deletedJobs.length === 0) {
@@ -1044,16 +1045,20 @@
 			        const li = document.createElement('li');
 			        li.className = 'trash-item';
 			        
+			        // Se till att huvudraden också använder flexbox
+			        li.style.display = 'flex';
+			        li.style.justifyContent = 'space-between';
+			        li.style.alignItems = 'center';
+			        
 			        const dateStr = job.datum ? job.datum.split('T')[0] : 'Inget datum';
 			        
-			        // HÄR ÄR ÄNDRINGEN: Vi lägger till <div class="trash-actions"> runt knapparna
 			        li.innerHTML = `
 			            <div class="trash-item-info">
 			                <span style="font-weight:600;">${job.kundnamn}</span>
 			                <span class="trash-item-date">${dateStr} | ${job.regnr || '---'}</span>
 			            </div>
 			            
-			            <div class="trash-actions">
+			            <div class="trash-actions" style="display: flex; align-items: center; gap: 10px;">
 			                <button class="restore-btn" data-id="${job.id}">Återställ</button>
 			                <button class="delete-permanent-btn" data-id="${job.id}" title="Radera permanent">
 			                    <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-trash"></use></svg>
