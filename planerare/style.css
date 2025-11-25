@@ -4332,3 +4332,58 @@ html.privacy-mode-enabled .nav-logo {
     }
 }
 /* SLUT Fix för Modal som ska komma underifrån */
+
+/* --- INSTÄLLNINGAR MODAL DESIGN (NYTT) --- */
+
+/* Separerar varje del med en linje och luft */
+.settings-section {
+    padding-bottom: 1.5rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+/* Tar bort linjen på sista elementet */
+.settings-section.no-border, 
+.settings-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+/* Snyggare hjältext under inputs */
+.helper-text {
+    font-size: 0.8rem;
+    color: var(--text-color-light);
+    margin-top: 0.5rem;
+    margin-bottom: 0;
+    line-height: 1.4;
+}
+
+/* Rubriker i inställningar */
+#settingsModalForm label {
+    font-weight: 600;
+    color: var(--text-color);
+    font-size: 0.9rem;
+}
+
+/* Rutnät för externa länkar (2 i bredd) */
+.external-links-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.external-links-grid .button {
+    justify-content: flex-start;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Mobilanpassning för länkar */
+@media (max-width: 480px) {
+    .external-links-grid {
+        grid-template-columns: 1fr; /* 1 kolumn på små mobiler */
+    }
+}
