@@ -341,18 +341,26 @@ body {
 
 /* Sökfält */
 .search-wrapper {
-    /* Behåll dina grundstilar */
+    display: flex; align-items: center;
+    background: var(--content-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px; padding-left: 0.75rem;
+    box-shadow: var(--shadow-sm);
+    width: 100%;
+    position: relative; 
+    
+    /* Uppdaterad transition-kurva för "växande" effekt */
     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-    border: 1px solid transparent; /* Förbered för border-byte */
-    background: var(--content-bg); 
 }
 
-/* När man klickar i sökfältet */
 .search-wrapper:focus-within {
-    transform: scale(1.02); /* Växer liiite */
-    box-shadow: 0 4px 15px rgba(10, 132, 255, 0.15); /* Blått glow */
     border-color: var(--primary-color);
-    background: #fff;
+    
+    /* Ny effekt: Växer och får "glow" */
+    transform: scale(1.02);
+    box-shadow: 0 4px 15px rgba(10, 132, 255, 0.15);
+    background: var(--content-bg); /* Säkerställer rätt bakgrundsfärg */
+    z-index: 5; /* Se till att den hamnar över eventuella grannar */
 }
 [data-theme="dark"] .search-wrapper { background: var(--bg-color); }
 
@@ -804,12 +812,20 @@ mark {
 
 
 /* --- Modal-design --- */
-.modal-backdrop {
-    /* Behåll positionering m.m. */
-    background-color: rgba(0, 0, 0, 0.4); /* Lite mer transparent svart */
-    backdrop-filter: blur(8px); /* Den magiska raden: Frostat glas-effekt */
-    -webkit-backdrop-filter: blur(8px); /* För Safari */
-    transition: opacity 0.3s ease, backdrop-filter 0.3s ease;
+.modal-backdrop { 
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+    
+    /* Uppdaterad bakgrund och blur */
+    background-color: rgba(0, 0, 0, 0.4); 
+    backdrop-filter: blur(8px); /* "Frostat glas"-effekt */
+    -webkit-backdrop-filter: blur(8px); /* Safari-stöd */
+    
+    display: none; align-items: flex-start;
+    justify-content: center; z-index: 1000; 
+    
+    /* Lite långsammare transition för mjukare känsla */
+    opacity: 0; transition: opacity 0.3s ease, backdrop-filter 0.3s ease; 
+    padding-top: 5vh;
 }
 .modal-backdrop.show { opacity: 1; }
 
@@ -4604,6 +4620,7 @@ html.privacy-mode-enabled .nav-logo {
     background-color: var(--success-color);
     color: white;
 }
+
 
 
 
