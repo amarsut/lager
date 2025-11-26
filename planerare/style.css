@@ -691,19 +691,71 @@ mark {
     display: inline-block;
 }
 
-#jobbOversikt .action-col { 
-    text-align: right; white-space: nowrap; width: 1%;
-    display: flex; gap: 0.25rem;
+#jobbOversikt .action-col {
+    display: flex;
+    justify-content: flex-end; /* Högerställ */
+    gap: 0.5rem; /* Luft mellan knapparna */
+    opacity: 0.2; /* Nästan osynliga tills du hovrar raden */
+    transition: opacity 0.2s ease;
 }
-#jobbOversikt .action-col .icon-btn { opacity: 0.4; transition: opacity 0.2s ease; }
-#jobbOversikt tbody tr:hover .action-col .icon-btn { opacity: 1; }
 
-#jobbOversikt .comment-btn,
-#jobbOversikt .delete-btn,
-#jobbOversikt .customer-link,
-#jobbOversikt .car-link {
-    position: relative;
-    z-index: 2;
+/* Visa knapparna tydligt när man hovrar på raden */
+#jobbOversikt tbody tr:hover .action-col {
+    opacity: 1;
+}
+
+/* Grundstil för knappen (Cirkel) */
+#jobbOversikt .action-col .icon-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%; /* Cirkelform */
+    background-color: transparent;
+    color: var(--text-color-light);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 1; /* Återställ opacity från tidigare CSS */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Ikon-storlek */
+#jobbOversikt .action-col .icon-btn .icon-sm {
+    width: 1.1rem;
+    height: 1.1rem;
+    pointer-events: none; /* Klicket hamnar på knappen, inte ikonen */
+}
+
+/* --- Hover-effekter med specifika färger --- */
+
+/* Standard Hover (Grå bubbla) - t.ex. för Prio/Kommentar */
+#jobbOversikt .action-col .icon-btn:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    color: var(--primary-color);
+    transform: scale(1.1);
+}
+
+/* KLAR-knapp (Grön bubbla) */
+#jobbOversikt .action-col .icon-btn[data-action="setStatusKlar"]:hover {
+    background-color: rgba(48, 209, 88, 0.15);
+    color: var(--success-color);
+}
+
+/* PRIO-knapp (Om den är aktiv eller hover) */
+#jobbOversikt .action-col .icon-btn[data-action="togglePrio"]:hover,
+#jobbOversikt .action-col .icon-btn.active-prio {
+    background-color: rgba(255, 159, 10, 0.15); /* Orange/Warning färg */
+    color: var(--warning-color);
+}
+
+/* DELETE-knapp (Röd bubbla) */
+#jobbOversikt .action-col .delete-btn:hover {
+    background-color: rgba(255, 69, 58, 0.15);
+    color: var(--danger-color);
+}
+
+/* Dark mode justeringar */
+[data-theme="dark"] #jobbOversikt .action-col .icon-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
 /* --- NYTT: Kontextuell Ikon-styling --- */
@@ -4552,5 +4604,6 @@ html.privacy-mode-enabled .nav-logo {
     background-color: var(--success-color);
     color: white;
 }
+
 
 
