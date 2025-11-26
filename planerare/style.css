@@ -506,62 +506,71 @@ mark {
 }
 #fabAddJob .icon { width: 1.75rem; height: 1.75rem; }
 
-/* --- Tabell-design (Desktop) --- */
+/* Ersätt din nuvarande .table-container (rad ca 621) med denna: */
 .table-container { 
-    background-color: var(--content-bg); 
+    background-color: transparent; /* Ändrad från --content-bg till transparent */
+    border: none; /* Ta bort ramen runt hela tabellen */
+    box-shadow: none; /* Ta bort skuggan från behållaren */
     border-radius: var(--border-radius);
-    border: 1px solid var(--border-color);
-    overflow: hidden; box-shadow: var(--shadow-sm);
-    /* BORTTAGEN: Animationen hanteras nu av JS */
-    /* opacity: 0; */
-    /* animation: fadeIn 0.4s ease 0.4s forwards; */
+    overflow: visible; /* Låt skuggor på rader synas utanför */
 }
 .table-wrapper { overflow-x: auto; }
-#jobbOversikt { width: 100%; border-collapse: separate; border-spacing: 0; }
-
-#jobbOversikt thead {
-    background-color: var(--bg-color);
-    z-index: 1;
+#jobbOversikt { 
+    width: 100%; 
+    border-collapse: separate; /* VIKTIGT: Tillåter mellanrum mellan rader */
+    border-spacing: 0 8px;     /* 8px luft mellan varje rad */
+    margin-top: -8px;          /* Justering för första raden */
 }
 
-#jobbOversikt th, #jobbOversikt td {
-    padding: 0.9rem 1.25rem;
-    text-align: left; vertical-align: middle;
-    white-space: nowrap;
-    transition: padding var(--transition-speed-fast) ease, background-color var(--transition-speed-fast) ease;
+#jobbOversikt thead {
+    /* Gör rubrikraden genomskinlig */
+    background-color: transparent; 
 }
 
 #jobbOversikt th { 
-    font-size: 0.8rem; font-weight: 600; 
-    color: var(--text-color-light); letter-spacing: 0.05em; 
+    font-size: 0.75rem; 
+    font-weight: 700; 
+    color: var(--text-color-light); 
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0 1.25rem 0.5rem 1.25rem; /* Justera padding */
+    border: none; /* Ingen linje under rubriker */
 }
 
+/* Design för själva raderna (Korten) */
 #jobbOversikt tbody tr[data-id] {
-    transition: background-color var(--transition-speed-fast) ease, 
-                border-left-color var(--transition-speed-fast) ease,
-                opacity var(--transition-speed) ease,
-                transform 0.1s ease,         /* <-- LÄGG TILL DENNA */
-                box-shadow 0.1s ease;         /* <-- OCH DENNA */
-    border-left: 4px solid transparent;
-    cursor: pointer; 
-	border-bottom: 1px solid var(--border-color);
-}
-#jobbOversikt tbody tr[data-id]:hover {
-    background-color: var(--primary-light);
-    transform: translateY(-2px); /* LYFT! */
-    box-shadow: var(--shadow-md); /* Lägg till en mjuk skugga */
-    /* Detta gör att raden "lossnar" från tabellen */
-}
-[data-theme="dark"] #jobbOversikt tbody tr[data-id]:hover {
-    background-color: rgba(10, 132, 255, 0.15);
+    background-color: var(--content-bg); /* Vit bakgrund på raden */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02), 0 1px 2px rgba(0,0,0,0.04); /* Subtil skugga */
+    transition: all 0.2s ease;
+    border-left: 4px solid transparent; /* Plats för prio-färg */
 }
 
-#jobbOversikt tbody tr.prio-row {
-    border-left-color: var(--danger-color);
-    background-color: var(--danger-light);
+/* Runda hörn på raderna */
+#jobbOversikt td:first-child { border-top-left-radius: 10px; border-bottom-left-radius: 10px; }
+#jobbOversikt td:last-child { border-top-right-radius: 10px; border-bottom-right-radius: 10px; }
+
+/* Ta bort linjer inuti raderna */
+#jobbOversikt td { border-bottom: none; }
+
+/* Hover-effekt: Lyft raden */
+#jobbOversikt tbody tr[data-id]:hover {
+    transform: translateY(-3px) scale(1.005); /* Lyft och förstora minimalt */
+    box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.1); /* Snygg djupskugga */
+    background-color: var(--content-bg); /* Behåll vit bakgrund */
+    z-index: 10;
+    position: relative;
 }
-#jobbOversikt tbody tr.prio-row:hover {
-    background-color: var(--danger-hover-bg);
+
+/* Anpassa Prio-raden för den nya stilen */
+#jobbOversikt tbody tr.prio-row {
+    border-left: 4px solid var(--danger-color);
+    background-color: #fff5f5; /* Mycket ljus röd ton */
+}
+/* Anpassa Klar-raden */
+#jobbOversikt tbody tr.done-row { 
+    opacity: 0.6; 
+    background-color: #f9fafb; 
+    box-shadow: none;
 }
 
 /* 1. Ta bort den gamla animationen från hela raden */
@@ -606,36 +615,63 @@ mark {
 }
 
 /* Status-brickor */
-.status-badge.status-faktureras { background-color: var(--invoice-light); color: var(--invoice-color); }
-[data-theme="dark"] .status-badge.status-faktureras { background-color: rgba(175, 82, 222, 0.2); color: #bf5af2; }
-
-/* Kanban: Faktureras-kolumnens färg */
-.kanban-column[data-status="faktureras"] {
-    border-top-color: var(--invoice-color);
-}
-
-/* Stat-kort för Fakturering */
-.stat-card.invoice .icon-sm { color: var(--invoice-color); }
-.stat-card.invoice .stat-card-value { color: var(--invoice-color); }
-
 .status-badge {
-    display: inline-flex; align-items: center; gap: 0.4rem;
-    padding: 0.25em 0.75em; font-size: 0.8rem;
-    font-weight: 600; border-radius: 99px;
-    text-transform: capitalize;
+    display: inline-flex; 
+    align-items: center; 
+    gap: 0.35rem;
+    padding: 0.35em 0.8em; 
+    font-size: 0.75rem;
+    font-weight: 700; 
+    border-radius: 6px; /* Lite fyrkantigare än 99px ser ofta modernare ut nu, eller behåll 99px */
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    border: 1px solid transparent; /* Förbereder för border */
 }
+
+/* Ta bort den gamla pricken (::before) om du vill ha en renare look, 
+   annars behåll koden nedan för pricken */
 .status-badge::before {
-    content: ''; width: 7px; height: 7px;
+    content: ''; width: 6px; height: 6px;
     border-radius: 50%; background-color: currentColor;
+    opacity: 0.6;
 }
-.status-badge.status-offererad { background-color: rgba(107, 114, 128, 0.1); color: #4b5563; }
-.status-badge.status-bokad { background-color: var(--primary-light); color: var(--primary-color); }
-.status-badge.status-klar { background-color: rgba(48, 209, 88, 0.1); color: var(--success-color); }
-.status-badge.status-avbokad { background-color: rgba(255, 69, 58, 0.1); color: var(--danger-color); }
-[data-theme="dark"] .status-badge.status-offererad { background-color: rgba(142, 142, 147, 0.2); color: #9a9a9f; }
-[data-theme="dark"] .status-badge.status-bokad { background-color: rgba(10, 132, 255, 0.2); color: #339aff; }
-[data-theme="dark"] .status-badge.status-klar { background-color: rgba(48, 209, 88, 0.2); color: var(--success-color); }
-[data-theme="dark"] .status-badge.status-avbokad { background-color: rgba(255, 69, 58, 0.2); color: #ff453a; }
+
+/* --- Färger med subtil bakgrund och border --- */
+
+/* BOKAD (Blå) */
+.status-badge.status-bokad { 
+    background-color: rgba(10, 132, 255, 0.1); 
+    color: #007aff; 
+    border-color: rgba(10, 132, 255, 0.2);
+}
+
+/* KLAR (Grön) */
+.status-badge.status-klar { 
+    background-color: rgba(48, 209, 88, 0.1); 
+    color: #248a3d; /* Lite mörkare grön för läsbarhet */
+    border-color: rgba(48, 209, 88, 0.2);
+}
+
+/* OFFERERAD (Grå/Blå) */
+.status-badge.status-offererad { 
+    background-color: rgba(100, 210, 255, 0.1); 
+    color: #0066cc; /* Mörkare blå */
+    border-color: rgba(100, 210, 255, 0.2);
+}
+
+/* FAKTURERAS (Lila) */
+.status-badge.status-faktureras { 
+    background-color: rgba(175, 82, 222, 0.1); 
+    color: #9f3ec6; 
+    border-color: rgba(175, 82, 222, 0.2);
+}
+
+/* AVBOKAD (Röd) */
+.status-badge.status-avbokad { 
+    background-color: rgba(255, 69, 58, 0.1); 
+    color: #d63026; 
+    border-color: rgba(255, 69, 58, 0.2);
+}
 
 #jobbOversikt .profit { font-weight: 600; }
 #jobbOversikt .profit.positive { color: var(--success-color); }
@@ -4516,4 +4552,5 @@ html.privacy-mode-enabled .nav-logo {
     background-color: var(--success-color);
     color: white;
 }
+
 
