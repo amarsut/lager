@@ -113,10 +113,20 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* --- Layout --- */
-.app-container { 
-    display: flex; flex-direction: column;  
+.app-container {
+    display: flex; flex-direction: column;
     opacity: 0;
     animation: appFadeIn 0.5s ease 0.1s forwards;
+    
+    /* --- NYTT: Prickmönster --- */
+    background-image: radial-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+    background-size: 24px 24px; /* Avstånd mellan prickarna */
+    min-height: 100vh; /* Säkerställer att mönstret täcker hela höjden */
+}
+
+/* Dark mode justering (ljusare prickar) */
+[data-theme="dark"] .app-container {
+    background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
 }
 @keyframes appFadeIn {
     to { opacity: 1; }
@@ -4747,6 +4757,7 @@ html.privacy-mode-enabled .nav-logo {
     margin: 4px;
     box-shadow: 0 2px 5px rgba(10, 132, 255, 0.4);
 }
+
 
 
 
