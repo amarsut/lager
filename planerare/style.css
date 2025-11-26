@@ -1003,18 +1003,43 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 
 /* --- Toast --- */
 .toast { 
-    position: fixed; bottom: calc(var(--mobile-nav-height) + 1rem); 
+    /* Placering och bas */
+    position: fixed; 
+    bottom: 2rem; 
     left: 50%; 
-    transform: translateX(-50%); 
-    padding: 0.75rem 1.5rem; 
-    background-color: #333; color: white; 
-    border-radius: 8px; box-shadow: var(--shadow-lg); 
-    z-index: 2000; font-weight: 500; 
-    transition: all 0.4s ease;
-    opacity: 0; transform: translateX(-50%) translateY(20px);
-    display: flex;
-    align-items: center;
+    transform: translateX(-50%) translateY(20px); 
+    z-index: 2000; 
+    
+    /* Utseende */
+    padding: 0.75rem 1.25rem; 
+    background-color: rgba(30, 30, 35, 0.85); /* Halvtransparent mörk */
+    color: white; 
+    backdrop-filter: blur(10px); /* Glassmorphism */
+    -webkit-backdrop-filter: blur(10px);
+    
+    border-radius: 50px; /* Piller-form istället för fyrkantig */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15); /* Djup skugga */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    
+    font-weight: 500; 
+    font-size: 0.9rem;
+    display: flex; align-items: center; gap: 0.5rem;
+    
+    /* Animation */
+    opacity: 0; 
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Studsig effekt */
 }
+
+/* När den visas */
+.toast.show { 
+    opacity: 1; 
+    transform: translateX(-50%) translateY(0); 
+}
+
+/* Anpassa färgerna för olika typer (behåll texten vit för kontrast) */
+.toast.success { background-color: rgba(48, 209, 88, 0.9); border-color: transparent; }
+.toast.danger { background-color: rgba(255, 69, 58, 0.9); border-color: transparent; }
+.toast.info { background-color: rgba(10, 132, 255, 0.9); border-color: transparent; }
 .toast .button {
     margin-left: 1rem;
     padding: 0.25rem 0.5rem;
@@ -1027,11 +1052,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     }
 }
 
-.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 [data-theme="dark"] .toast { background-color: #f2f2f7; color: #1c1c1e; }
-.toast.success { background-color: var(--success-color); color: white; }
-.toast.danger { background-color: var(--danger-color); color: white; }
-.toast.info { background-color: var(--info-color); color: black; }
 
 
 /* --- Comment Popover --- */
@@ -3687,15 +3708,31 @@ html.privacy-mode-enabled .nav-logo {
 
 /* 4. Styling för själva Kanban-kortet (Yttre) */
 .kanban-card {
-    position: relative; /* Nödvändig för drag-handtaget */
+    position: relative; 
     background: var(--content-bg);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow-sm);
-    transition: all var(--transition-speed-fast) ease;
-    border-left: 4px solid transparent;
-	cursor: pointer !important;
-    margin: 0; /* --- VIKTIG: 'gap' hanterar allt avstånd --- */
+    
+    /* Ta bort den hårda bordern och använd skugga istället */
+    border: none; 
+    border-left: 4px solid transparent; /* Behåll färgkoden till vänster */
+    
+    border-radius: 12px; /* Samma rundning som tabellen */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.03); /* Lätt skugga i vila */
+    
+    transition: all 0.2s ease;
+    cursor: grab;
+    margin: 0;
+}
+
+/* Lyft kortet vid hover */
+.kanban-card:hover {
+    transform: translateY(-4px); /* Lyft uppåt */
+    box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.1); /* Stor skugga under */
+    z-index: 10;
+}
+
+/* Gör att innehållet känns luftigare */
+.kanban-card-content {
+    padding: 1rem;
 }
 
 /* --- NYTT: Styling för Klickbar Rubrik i Kanban --- */
@@ -4620,6 +4657,7 @@ html.privacy-mode-enabled .nav-logo {
     background-color: var(--success-color);
     color: white;
 }
+
 
 
 
