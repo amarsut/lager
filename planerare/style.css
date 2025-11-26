@@ -216,70 +216,102 @@ body {
     margin: 0 0.5rem;
 }
 
-/* --- Klickbar Stat-panel --- */
+/* --- Klickbar Stat-panel (Modern & Glow) --- */
 .stat-bar {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 1.5rem;
     margin-bottom: 2rem;
 }
+
 .stat-card {
-    background-color: var(--content-bg);
-    border: 2px solid var(--border-color);
-    border-radius: var(--border-radius);
-    padding: 1.1rem 1.5rem;
-    box-shadow: var(--shadow-sm);
-    transition: all var(--transition-speed-fast) ease;
+    position: relative;
+    background: var(--content-bg); /* Basfärg */
+    border: none; /* Ingen kantlinje för modernare look */
+    border-radius: 16px; /* Mer rundade hörn */
+    padding: 1.25rem 1.5rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); /* Mjuk, stor skugga */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
+    overflow: hidden;
     
+    /* Animation vid laddning */
     transform: translateY(20px);
     opacity: 0;
     animation: slideInUp 0.4s ease forwards;
 }
+
+/* Animationsfördröjning för snygg "trappstegs-effekt" */
 .stat-card:nth-child(1) { animation-delay: 0.2s; }
 .stat-card:nth-child(2) { animation-delay: 0.25s; }
 .stat-card:nth-child(3) { animation-delay: 0.3s; }
 .stat-card:nth-child(4) { animation-delay: 0.35s; }
+.stat-card:nth-child(5) { animation-delay: 0.4s; }
 
 @keyframes slideInUp {
     to { transform: translateY(0); opacity: 1; }
 }
 
-/* --- NYTT: Snyggare "Kort-lyft" --- */
+/* Hover-effekt: Lyft kortet */
 .stat-card:hover {
-    transform: scale(1.02); /* Ändrad från translateY */
-    box-shadow: var(--shadow-lg); /* Använder en mjukare, större skugga */
-    border-color: var(--primary-color);
-}
-.stat-card:hover .stat-card-value {
-    transform: scale(1.05);
+    transform: translateY(-5px) !important; /* !important för att skriva över animationens slutläge */
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
 
+/* Färgad linje i botten (istället för border) */
+.stat-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 4px;
+    background: currentColor; /* Ärv färgen från texten/ikonen */
+    opacity: 0.3;
+}
+
+/* Aktivt val */
 .stat-card.active {
-    border-color: var(--primary-color);
-    box-shadow: var(--shadow-md), 0 0 0 3px var(--primary-light);
+    box-shadow: 0 0 0 2px var(--primary-color), 0 10px 25px rgba(0, 0, 0, 0.1);
 }
 [data-theme="dark"] .stat-card.active {
-    box-shadow: var(--shadow-md), 0 0 0 3px rgba(10, 132, 255, 0.25);
+    box-shadow: 0 0 0 2px rgba(10, 132, 255, 0.5);
 }
 
+/* Innehåll */
 .stat-card-title {
-    font-size: 0.875rem; font-weight: 600; color: var(--text-color-light);
-    margin: 0 0 0.5rem 0; text-transform: uppercase;
+    font-size: 0.8rem; 
+    font-weight: 700; 
+    color: var(--text-color-light);
+    margin: 0 0 0.25rem 0; 
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
     display: flex; align-items: center; gap: 0.5rem;
 }
+
 .stat-card-value {
-    font-size: 2rem; font-weight: 700;
-    margin: 0; line-height: 1.2; color: var(--text-color);
-    transition: transform var(--transition-speed-fast) ease;
+    font-size: 2.2rem; /* Större siffror */
+    font-weight: 800;
+    margin: 0; 
+    line-height: 1.1; 
+    color: var(--text-color);
+    letter-spacing: -1px;
 }
-.stat-card .icon-sm { color: var(--primary-color); }
-.stat-card.success .icon-sm { color: var(--success-color); }
-.stat-card.success .stat-card-value { color: var(--success-color); }
-.stat-card.info .icon-sm { color: var(--info-color); }
-.stat-card.info .stat-card-value { color: var(--info-color); }
-.stat-card.default .icon-sm { color: var(--text-color-light); }
-.stat-card.default .stat-card-value { color: var(--text-color); }
+
+/* --- Gradienter & Färger (Specifikt för Ljust Tema) --- */
+[data-theme="light"] .stat-card[data-filter="kommande"] { background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%); }
+[data-theme="light"] .stat-card[data-filter="faktureras"] { background: linear-gradient(135deg, #ffffff 0%, #fcf0ff 100%); }
+[data-theme="light"] .stat-card[data-filter="klar"] { background: linear-gradient(135deg, #ffffff 0%, #f0fff4 100%); }
+[data-theme="light"] .stat-card[data-filter="offererad"] { background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); }
+
+/* Ikon-färger och textfärger */
+.stat-card .icon-sm { transition: transform 0.3s ease; }
+.stat-card:hover .icon-sm { transform: scale(1.1); }
+
+/* Specifika färger för ikonerna */
+.stat-card[data-filter="kommande"] .icon-sm, .stat-card[data-filter="kommande"] .stat-card-value { color: var(--primary-color); }
+.stat-card[data-filter="faktureras"] .icon-sm, .stat-card[data-filter="faktureras"] .stat-card-value { color: var(--invoice-color); }
+.stat-card[data-filter="klar"] .icon-sm, .stat-card[data-filter="klar"] .stat-card-value { color: var(--success-color); }
+.stat-card[data-filter="offererad"] .icon-sm { color: var(--info-color); }
+.stat-card[data-filter="alla"] .icon-sm { color: var(--text-color-light); }
 
 
 /* Kontroller (Endast Sök) */
@@ -4484,3 +4516,4 @@ html.privacy-mode-enabled .nav-logo {
     background-color: var(--success-color);
     color: white;
 }
+
