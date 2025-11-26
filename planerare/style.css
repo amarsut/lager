@@ -69,11 +69,15 @@ body {
     color: var(--text-color);
     margin: 0; padding: 0;
 
-    -webkit-font-smoothing: antialiased;
+    /* --- NYA RADER FÖR SKÄRPA --- */
+    -webkit-font-smoothing: antialiased; /* Gör texten tunnare och skarpare */
     -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility; /* Förbättrar kerning (avstånd mellan bokstäver) */
+}
 
-    /* --- NYTT: Mjuk Tema-växling --- */
-    transition: background var(--transition-speed) ease, color var(--transition-speed) ease;
+/* Gör alla rubriker lite tajtare för en modernare look */
+h1, h2, h3, h4, h5, h6 {
+    letter-spacing: -0.02em; /* Drar ihop bokstäverna liiite, väldigt modernt */
 }
 
 /* PUNKT 4 (FIX): Nödvändig klass för att dölja select-menyn */
@@ -4743,6 +4747,7 @@ html.privacy-mode-enabled .nav-logo {
     margin: 4px;
     box-shadow: 0 2px 5px rgba(10, 132, 255, 0.4);
 }
+
 
 
 
