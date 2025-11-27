@@ -1815,45 +1815,51 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 /* 9. Styling för Registreringsskylt (v20) */
 .reg-plate {
     display: inline-flex;
-    align-items: center;
-    border: 1px solid #aab;
-    border-radius: 6px;
-    background-color: var(--content-bg);
-    box-shadow: var(--shadow-sm);
-    font-family: 'Inter', sans-serif;
-    font-weight: 700;
-    font-size: 0.85rem; /* <-- Ändrad från 0.9rem */
-    cursor: pointer;
-    padding: 0;
-    transition: all var(--transition-speed-fast) ease;
+    align-items: stretch; /* Se till att delarna fyller höjden */
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px; /* Lite mindre rundning för att likna en skylt */
     overflow: hidden;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    font-family: 'Inter', sans-serif; /* Eller en font som liknar skylt-font */
+    height: 24px; /* Fix höjd för konsekvens */
+    vertical-align: middle;
+    transition: transform 0.2s ease;
 }
+
 .reg-plate:hover {
-    box-shadow: var(--shadow-md);
-    transform: translateY(-1px);
+    transform: scale(1.05);
     border-color: var(--primary-color);
 }
 
+/* Den blå delen (S) */
 .reg-plate .reg-country {
-    background-color: #003897;
-    color: white;
-    padding: 0.25rem 0.4rem; /* <-- Ändrad från 0.35rem 0.5rem */
-    font-size: 0.75rem; /* <-- Ändrad från 0.8rem */
+    background-color: #005293; /* Korrekt "Svensk skylt"-blå */
+    color: #fff;
+    font-size: 0.6rem;
     font-weight: 700;
-    align-self: stretch;
+    width: 14px;
     display: flex;
+    flex-direction: column;
+    justify-content: center; /* Centrera vertikalt */
     align-items: center;
-    justify-content: center;
-    border-right: 1px solid #aab;
+    line-height: 1;
+    padding: 0 2px;
 }
 
+/* Lägg till "S" via CSS om du vill, eller behåll din span */
+/* .reg-plate .reg-country::after { content: 'S'; } */
+
+/* Textdelen */
 .reg-plate .reg-number {
-    padding: 0.25rem 0.6rem; /* <-- Ändrad från 0.35rem 0.75rem */
-    color: var(--text-color);
-    letter-spacing: 0.05em;
-    width: 80px; /* <-- Ändrad från 85px */
-    text-align: center;
-    box-sizing: border-box;
+    padding: 0 6px;
+    color: #333;
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 1px; /* Öka avståndet för att likna riktiga skyltar */
+    display: flex;
+    align-items: center;
+    background: #fff;
 }
 
 [data-theme="dark"] .reg-plate {
@@ -4757,6 +4763,7 @@ html.privacy-mode-enabled .nav-logo {
     margin: 4px;
     box-shadow: 0 2px 5px rgba(10, 132, 255, 0.4);
 }
+
 
 
 
