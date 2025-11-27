@@ -571,6 +571,16 @@ mark {
     border: none; /* Ingen linje under rubriker */
 }
 
+/* Varannan rad får en nästan osynlig toning */
+#jobbOversikt tbody tr:nth-child(even) {
+    background-color: rgba(0, 0, 0, 0.005); /* Extremt subtilt! */
+}
+
+/* Se till att hover-effekten fortfarande är vit och lyfter */
+#jobbOversikt tbody tr:hover {
+    background-color: #fff !important;
+}
+
 /* Design för själva raderna (Korten) */
 #jobbOversikt tbody tr[data-id] {
     background-color: var(--content-bg); /* Vit bakgrund på raden */
@@ -1815,51 +1825,45 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 /* 9. Styling för Registreringsskylt (v20) */
 .reg-plate {
     display: inline-flex;
-    align-items: stretch; /* Se till att delarna fyller höjden */
-    background-color: #fff;
-    border: 1px solid #ccc;
-    border-radius: 4px; /* Lite mindre rundning för att likna en skylt */
+    align-items: center;
+    border: 1px solid #aab;
+    border-radius: 6px;
+    background-color: var(--content-bg);
+    box-shadow: var(--shadow-sm);
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem; /* <-- Ändrad från 0.9rem */
+    cursor: pointer;
+    padding: 0;
+    transition: all var(--transition-speed-fast) ease;
     overflow: hidden;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-    font-family: 'Inter', sans-serif; /* Eller en font som liknar skylt-font */
-    height: 24px; /* Fix höjd för konsekvens */
-    vertical-align: middle;
-    transition: transform 0.2s ease;
 }
-
 .reg-plate:hover {
-    transform: scale(1.05);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
     border-color: var(--primary-color);
 }
 
-/* Den blå delen (S) */
 .reg-plate .reg-country {
-    background-color: #005293; /* Korrekt "Svensk skylt"-blå */
-    color: #fff;
-    font-size: 0.6rem;
+    background-color: #003897;
+    color: white;
+    padding: 0.25rem 0.4rem; /* <-- Ändrad från 0.35rem 0.5rem */
+    font-size: 0.75rem; /* <-- Ändrad från 0.8rem */
     font-weight: 700;
-    width: 14px;
+    align-self: stretch;
     display: flex;
-    flex-direction: column;
-    justify-content: center; /* Centrera vertikalt */
     align-items: center;
-    line-height: 1;
-    padding: 0 2px;
+    justify-content: center;
+    border-right: 1px solid #aab;
 }
 
-/* Lägg till "S" via CSS om du vill, eller behåll din span */
-/* .reg-plate .reg-country::after { content: 'S'; } */
-
-/* Textdelen */
 .reg-plate .reg-number {
-    padding: 0 6px;
-    color: #333;
-    font-weight: 700;
-    font-size: 0.8rem;
-    letter-spacing: 1px; /* Öka avståndet för att likna riktiga skyltar */
-    display: flex;
-    align-items: center;
-    background: #fff;
+    padding: 0.25rem 0.6rem; /* <-- Ändrad från 0.35rem 0.75rem */
+    color: var(--text-color);
+    letter-spacing: 0.05em;
+    width: 80px; /* <-- Ändrad från 85px */
+    text-align: center;
+    box-sizing: border-box;
 }
 
 [data-theme="dark"] .reg-plate {
@@ -4763,6 +4767,7 @@ html.privacy-mode-enabled .nav-logo {
     margin: 4px;
     box-shadow: 0 2px 5px rgba(10, 132, 255, 0.4);
 }
+
 
 
 
