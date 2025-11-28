@@ -1470,31 +1470,40 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     20%, 40%, 60%, 80% { transform: translateX(8px); }
 }
 
-/* 1. Vy-växlare i Headern (Omarbetad för att vara integrerad) */
+/* Behållaren runt knapparna */
 .view-toggle-buttons {
-    display: flex;
-    align-items: center;
-    background-color: transparent;
-    border-radius: 0;
-    padding: 0;
-    border: none;
-    gap: 1.25rem;
-    margin-left: -4px;
+    background-color: #F3F4F6; /* Ljusgrå bana */
+    padding: 4px;
+    border-radius: 10px;
+    gap: 0; /* Inget mellanrum, bakgrunden sköter det */
+    border: 1px solid #E5E7EB;
 }
 
+/* Själva knapparna */
 .button-toggle-view {
-    background: transparent;
-    border: none;
-    border-radius: 6px;
-    padding: 0.25rem 0.4rem;
-    font-size: 1.25rem;
-    font-weight: 600;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 0.8rem;
     color: var(--text-color-light);
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    cursor: pointer;
-    transition: all var(--transition-speed-fast) ease;
+    border: 1px solid transparent; /* Förhindra hopp vid active */
+}
+
+/* Den aktiva knappen blir vit med skugga (som en fysisk knapp) */
+.button-toggle-view.active {
+    background-color: #FFFFFF;
+    color: var(--text-color);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    font-weight: 600;
+}
+
+/* Dark mode justering */
+[data-theme="dark"] .view-toggle-buttons {
+    background-color: #2C2C2E;
+    border-color: #3A3A3C;
+}
+[data-theme="dark"] .button-toggle-view.active {
+    background-color: #3A3A3C;
+    color: #FFF;
 }
 .button-toggle-view:hover {
     color: var(--text-color);
@@ -1503,12 +1512,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     background-color: transparent;
     color: var(--text-color);
     box-shadow: none;
-}
-[data-theme="dark"] .view-toggle-buttons {
-    background-color: transparent;
-}
-[data-theme="dark"] .button-toggle-view.active {
-    color: var(--text-color);
 }
 
 /* 6. Event-styling (Jobben) - (UPPDATERAD för Reg-brickor) */
@@ -4853,6 +4856,7 @@ html.privacy-mode-enabled .nav-logo {
     /* border-left: 3px solid var(--primary-color) !important; */ 
     /* (Avkommentera raden ovan om du vill ha en blå kant vid hover) */
 }
+
 
 
 
