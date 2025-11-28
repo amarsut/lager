@@ -4300,11 +4300,14 @@ html.privacy-mode-enabled .nav-logo {
 }
 
 /* Krymp datumkolumnen nu när veckodagen är borta */
-.detail-job-table td:first-child {
-    width: 50px; /* Fast smal bredd */
-    white-space: nowrap; /* Förbjud radbrytning */
-    padding-right: 0; /* Minska luft till höger */
-    vertical-align: middle; /* Centrera vertikalt */
+@media (min-width: 769px) {
+    .detail-job-table td:first-child {
+        width: 50px; 
+        white-space: nowrap; 
+        padding-right: 0; 
+        vertical-align: top;
+        padding-top: 1.2rem;
+    }
 }
 
 /* Om du vill att datumet ska vara mer kompakt: */
@@ -4999,3 +5002,4 @@ html.privacy-mode-enabled .nav-logo {
     border-color: var(--primary-color);
     opacity: 1;
 }
+
