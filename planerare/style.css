@@ -4299,6 +4299,23 @@ html.privacy-mode-enabled .nav-logo {
     font-size: 0.9rem;
 }
 
+/* Datum-kolumnen */
+.detail-job-table td:first-child {
+    line-height: 1.2;
+    color: var(--text-color);
+    width: 60px; /* Fast bredd så allt linjerar */
+    vertical-align: top; /* Fäst mot toppen */
+    padding-top: 1.2rem; /* Justera mot reg-nr */
+}
+
+/* Du behöver kanske lägga datumdelarna i span-taggar i JS, 
+   MEN här är ett CSS-trick om texten ligger rått (förutsatt format "1 jan"): */
+.detail-job-table td:first-child::first-line {
+    font-weight: 800;
+    font-size: 1.1rem;
+    color: #111827;
+}
+
 /* Högerställ vinsten */
 .detail-job-table th:last-child,
 .detail-job-table td:last-child {
@@ -4961,3 +4978,4 @@ html.privacy-mode-enabled .nav-logo {
     border-color: var(--primary-color);
     opacity: 1;
 }
+
