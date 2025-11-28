@@ -319,11 +319,9 @@ h1, h2, h3, h4, h5, h6 {
 /* Kontroller (Endast Sök) */
 .view-controls {
     display: flex;
-    justify-content: flex-end;
-    align-items: center;
+    justify-content: stretch; /* Låt innehållet sträcka ut sig */
+    width: 100%;
     margin-bottom: 1.5rem;
-    opacity: 0;
-    animation: fadeIn 0.4s ease 0.4s forwards;
 }
 
 .search-result-count {
@@ -343,28 +341,40 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Sökfält */
 .search-wrapper {
-    background: #fff;
-    border: 1px solid #E5E7EB;
-    border-radius: 12px; /* Mjukare hörn */
-    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-    padding: 0.5rem 1rem;
+    width: 100%; /* Fyll hela bredden */
+    max-width: 100%; /* Ta bort eventuella spärrar */
+    background: #ffffff;
+    border: 1px solid #E5E7EB; /* Ljusgrå ram */
+    border-radius: 12px; /* Mjuka hörn */
+    padding: 0 1rem; /* Luft på sidorna inuti boxen */
+    height: 50px; /* En rejäl, klickvänlig höjd */
+    display: flex;
+    align-items: center; /* Centrera ikon och text vertikalt */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02); /* Subtil skugga */
+    transition: all 0.2s ease;
 }
 .search-wrapper:focus-within {
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px var(--primary-light);
+    box-shadow: 0 0 0 4px var(--primary-light); /* "Glow"-effekt */
     transform: translateY(-1px);
 }
 [data-theme="dark"] .search-wrapper { background: var(--bg-color); }
 
-.search-wrapper .icon { color: var(--text-color-light); }
-
-.search-wrapper input[type="search"] { 
-    border: none; padding: 0.65rem 0.75rem; font-size: 0.95rem; 
-    outline: none; border-radius: 8px; 
-    background: transparent; color: var(--text-color);
-    min-width: 250px;
+.search-wrapper .icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    color: #9CA3AF; /* Ljusgrå ikon */
+    flex-shrink: 0; /* Förhindra att ikonen kläms ihop */
+}
+.search-wrapper input[type="search"] {
+    border: none;
+    background: transparent;
     width: 100%;
-    box-sizing: border-box;
+    height: 100%;
+    padding: 0 0.75rem; /* Luft mellan ikon och text */
+    font-size: 1rem;
+    color: var(--text-color);
+    outline: none; /* Ta bort den fula blå standard-ramen */
 }
 
 /* Göm webbläsarens inbyggda "x" för sökfält */
@@ -4745,4 +4755,5 @@ html.privacy-mode-enabled .nav-logo {
     margin: 4px;
     box-shadow: 0 2px 5px rgba(10, 132, 255, 0.4);
 }
+
 
