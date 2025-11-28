@@ -529,65 +529,68 @@ mark {
 #fabAddJob .icon { width: 1.75rem; height: 1.75rem; }
 
 /* Ersätt din nuvarande .table-container (rad ca 621) med denna: */
-.table-container {
-    background: transparent;
-    box-shadow: none;
-    border: none;
-    padding: 0;
+.table-container { 
+    background-color: transparent; /* Ändrad från --content-bg till transparent */
+    border: none; /* Ta bort ramen runt hela tabellen */
+    box-shadow: none; /* Ta bort skuggan från behållaren */
+    border-radius: var(--border-radius);
+    overflow: visible; /* Låt skuggor på rader synas utanför */
 }
 .table-wrapper { overflow-x: auto; }
-#jobbOversikt {
-    border-collapse: separate; 
-    border-spacing: 0 12px; /* Luft mellan raderna */
-    width: 100%;
+#jobbOversikt { 
+    width: 100%; 
+    border-collapse: separate; /* VIKTIGT: Tillåter mellanrum mellan rader */
+    border-spacing: 0 8px;     /* 8px luft mellan varje rad */
+    margin-top: -8px;          /* Justering för första raden */
 }
 
-#jobbOversikt thead th {
-    font-size: 0.75rem;
+#jobbOversikt thead {
+    /* Gör rubrikraden genomskinlig */
+    background-color: transparent; 
+}
+
+#jobbOversikt th { 
+    font-size: 0.75rem; 
+    font-weight: 700; 
+    color: var(--text-color-light); 
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: var(--text-color-light);
-    font-weight: 600;
-    padding: 0 1.5rem;
-    border: none;
-    background: transparent;
+    padding: 0 1.25rem 0.5rem 1.25rem; /* Justera padding */
+    border: none; /* Ingen linje under rubriker */
 }
 
 /* Varannan rad får en nästan osynlig toning */
-#jobbOversikt tbody tr {
-    background: var(--content-bg);
-    box-shadow: var(--shadow-sm);
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    border-radius: var(--border-radius); /* Mjuka hörn på raden */
+#jobbOversikt tbody tr:nth-child(even) {
+    background-color: rgba(0, 0, 0, 0.005); /* Extremt subtilt! */
 }
 
 /* Se till att hover-effekten fortfarande är vit och lyfter */
-#jobbOversikt tbody tr td:first-child { border-top-left-radius: var(--border-radius); border-bottom-left-radius: var(--border-radius); }
-#jobbOversikt tbody tr td:last-child { border-top-right-radius: var(--border-radius); border-bottom-right-radius: var(--border-radius); }
-
-#jobbOversikt tbody tr td {
-    padding: 1.25rem 1.5rem; /* Mer luft inuti raden */
-    border: none; /* Inga linjer! */
-    vertical-align: middle;
+#jobbOversikt tbody tr:hover {
+    background-color: #fff !important;
 }
+
+/* Design för själva raderna (Korten) */
+#jobbOversikt tbody tr[data-id] {
+    background-color: var(--content-bg); /* Vit bakgrund på raden */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02), 0 1px 2px rgba(0,0,0,0.04); /* Subtil skugga */
+    transition: all 0.2s ease;
+    border-left: 4px solid transparent; /* Plats för prio-färg */
+}
+
+/* Runda hörn på raderna */
+#jobbOversikt td:first-child { border-top-left-radius: 10px; border-bottom-left-radius: 10px; }
+#jobbOversikt td:last-child { border-top-right-radius: 10px; border-bottom-right-radius: 10px; }
+
+/* Ta bort linjer inuti raderna */
+#jobbOversikt td { border-bottom: none; }
 
 /* Hover-effekt: Lyft raden */
-#jobbOversikt tbody tr:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-lg);
-    background: #fff; /* Säkerställ vit bakgrund */
+#jobbOversikt tbody tr[data-id]:hover {
+    transform: translateY(-3px) scale(1.005); /* Lyft och förstora minimalt */
+    box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.1); /* Snygg djupskugga */
+    background-color: var(--content-bg); /* Behåll vit bakgrund */
     z-index: 10;
     position: relative;
-}
-
-/* Status-piller (Modernare look) */
-.status-badge {
-    padding: 0.4em 0.8em;
-    border-radius: 9999px; /* Helt runda piller */
-    font-size: 0.7rem;
-    font-weight: 700;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
 }
 
 /* Anpassa Prio-raden för den nya stilen */
@@ -595,6 +598,7 @@ mark {
     border-left: 4px solid var(--danger-color);
     background-color: #fff5f5; /* Mycket ljus röd ton */
 }
+
 /* Anpassa Klar-raden */
 #jobbOversikt tbody tr.done-row { 
     opacity: 0.6; 
@@ -2108,54 +2112,50 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 	}
 
     /* 3. Statistik-kort (MOBIL FIX) */
-.stat-bar {
-    grid-template-columns: 1fr 1fr; 
-    gap: 0.5rem; /* Mindre mellanrum mellan korten */
-    margin-bottom: 1rem; /* Mindre marginal under korten */
-}
-
-/* Anpassa alla kort för att vara tunnare */
-.stat-card {
-    display: flex; /* Ändra till flexbox för enkel vertikal centrering */
-    flex-direction: column; 
-    align-items: flex-start;
-    padding: 0.5rem 0.75rem; /* Krymper vertikal och horisontell padding */
-    min-height: 70px; /* Sätter en minsta höjd för konsekvens */
-}
-.stat-card-title {
-    font-size: 0.7rem; /* Ännu mindre titel */
-    margin: 0;
-    line-height: 1; /* Kompaktare radhöjd */
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    height: 1.1em; /* Sätter en fix höjd för titeln */
-}
-.stat-card-title .icon-sm {
-    width: 0.8rem; /* Krymper ikonstorleken */
-    height: 0.8rem;
-    margin-right: 0;
-}
-.stat-card-title span {
-    display: none;
-}
-	/* Bibehåll den nya texten som visas efter ikonen */
-	.stat-card-title::after {
-	    content: attr(data-filter);
-	    text-transform: uppercase;
-	    font-size: 0.7rem;
+	.stat-bar {
+	    gap: 1.5rem;
+	    margin-bottom: 3rem;
+	}
+	
+	.stat-card {
+	    background: var(--content-bg);
+	    border: none; /* Ingen border */
+	    border-radius: 20px; /* Ännu mjukare hörn */
+	    box-shadow: var(--shadow-sm);
+	    padding: 1.5rem;
+	    position: relative;
+	    overflow: hidden;
+	    transition: transform 0.3s ease, box-shadow 0.3s ease;
+	}
+	
+	.stat-card:hover {
+	    transform: translateY(-5px);
+	    box-shadow: var(--shadow-lg);
+	}
+	
+	/* Ta bort den färgade linjen i botten och använd en subtil ikon-färg istället */
+	.stat-card::after { display: none; }
+	
+	.stat-card-title {
+	    font-size: 0.85rem;
 	    font-weight: 600;
-	    line-height: 1;
+	    color: var(--text-color-light);
+	    opacity: 0.8;
 	}
 	
 	.stat-card-value {
-	    /* NYTT: Öka storleken, men inte till 2rem som tidigare. */
-	    font-size: 1.85rem; 
-	    font-weight: 700;
-	    text-align: left; 
-	    margin-top: 0.1rem; /* Minska marginalen ytterligare */
-	    line-height: 1.2;
-	    transition: none;
+	    font-size: 2.5rem; /* Stora, tunnare siffror är trendigt */
+	    font-weight: 700; 
+	    margin-top: 0.5rem;
+	    color: var(--text-color);
+	    letter-spacing: -0.03em; /* Tightare kerning */
+	}
+	
+	/* Aktivt kort (Valt filter) */
+	.stat-card.active {
+	    background: var(--content-bg);
+	    ring: 2px solid var(--primary-color); /* Använd ring istället för border */
+	    box-shadow: 0 0 0 2px var(--primary-color), var(--shadow-lg);
 	}
 	
 	/* Anpassa "Alla Jobb" för att också vara större, men behålla högerjusteringen */
@@ -4738,6 +4738,7 @@ html.privacy-mode-enabled .nav-logo {
     margin: 4px;
     box-shadow: 0 2px 5px rgba(10, 132, 255, 0.4);
 }
+
 
 
 
