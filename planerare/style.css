@@ -1470,7 +1470,18 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     20%, 40%, 60%, 80% { transform: translateX(8px); }
 }
 
-/* Behållaren runt knapparna */
+/* 1. Behållaren (Lite mörkare grå för kontrast) */
+.view-toggle-buttons {
+    display: inline-flex;
+    align-items: center;
+    background-color: #E5E7EB; /* Mörkare grå än tidigare (#F3F4F6) */
+    padding: 4px; /* Luft runt knapparna */
+    border-radius: 12px;
+    border: 1px solid #D1D5DB; /* Tydligare kantlinje */
+    margin-left: 1rem;
+}
+
+/* 2. Knapparna (Inaktiva) */
 .button-toggle-view {
     display: flex;
     align-items: center;
@@ -1488,26 +1499,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     transition: all 0.2s ease;
 }
 
-/* Själva knapparna */
-.button-toggle-view {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px; /* Mellanrum mellan ikon och text */
-    
-    background: transparent;
-    border: none;
-    padding: 0.5rem 1rem; /* Rejäl klick-yta */
-    border-radius: 8px; /* Måste vara mindre än behållarens radie */
-    
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: #6B7280; /* Mörkgrå text */
-    cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); /* Snärtig övergång */
-}
-
-/* Den aktiva knappen blir vit med skugga (som en fysisk knapp) */
+/* 3. Aktiv knapp (Vit, Tydlig skugga) */
 .button-toggle-view.active {
     background-color: #FFFFFF !important; /* Tvinga vit */
     color: #111827 !important; /* Svart text */
@@ -1515,13 +1507,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     transform: scale(1.02); /* Väx lite, lite grann */
 }
 
-/* 4. Hover-effekt på de inaktiva */
-.button-toggle-view:not(.active):hover {
-    color: #374151;
-    background-color: rgba(255,255,255,0.5); /* Ljusar upp vid hover */
-}
-
-/* 5. Fixa ikon-storleken så de linjerar snyggt */
+/* 4. Ikoner */
 .button-toggle-view .icon-sm {
     color: #9CA3AF;
     width: 1.1rem;
@@ -1531,18 +1517,10 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     color: var(--primary-color); /* Blå ikon */
 }
 
-/* Dark mode justeringar */
-[data-theme="dark"] .view-toggle-buttons {
-    background-color: #1C1C1E;
-    border-color: #3A3A3C;
-}
-[data-theme="dark"] .button-toggle-view {
-    color: #9CA3AF;
-}
-[data-theme="dark"] .button-toggle-view.active {
-    background-color: #3A3A3C;
-    color: #FFFFFF;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+/* Hover på inaktiva */
+.button-toggle-view:not(.active):hover {
+    color: #374151;
+    background-color: rgba(255,255,255,0.5); /* Ljusar upp vid hover */
 }
 
 .button-toggle-view:hover {
@@ -4896,6 +4874,7 @@ html.privacy-mode-enabled .nav-logo {
     /* border-left: 3px solid var(--primary-color) !important; */ 
     /* (Avkommentera raden ovan om du vill ha en blå kant vid hover) */
 }
+
 
 
 
