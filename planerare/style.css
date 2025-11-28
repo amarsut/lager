@@ -4299,13 +4299,17 @@ html.privacy-mode-enabled .nav-logo {
     font-size: 0.9rem;
 }
 
-/* Datum-kolumnen */
+/* Krymp datumkolumnen nu när veckodagen är borta */
 .detail-job-table td:first-child {
-    line-height: 1.2;
-    color: var(--text-color);
-    width: 60px; /* Fast bredd så allt linjerar */
-    vertical-align: top; /* Fäst mot toppen */
-    padding-top: 1.2rem; /* Justera mot reg-nr */
+    width: 50px; /* Fast smal bredd */
+    white-space: nowrap; /* Förbjud radbrytning */
+    padding-right: 0; /* Minska luft till höger */
+    vertical-align: middle; /* Centrera vertikalt */
+}
+
+/* Om du vill att datumet ska vara mer kompakt: */
+.detail-job-table td:first-child span {
+    display: inline-block; /* Håller dem på rad */
 }
 
 /* Du behöver kanske lägga datumdelarna i span-taggar i JS, 
@@ -4978,4 +4982,5 @@ html.privacy-mode-enabled .nav-logo {
     border-color: var(--primary-color);
     opacity: 1;
 }
+
 
