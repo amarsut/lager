@@ -564,14 +564,20 @@ mark {
     background-color: transparent; 
 }
 
-#jobbOversikt th { 
-    font-size: 0.75rem; 
-    font-weight: 700; 
-    color: var(--text-color-light); 
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    padding: 0 1.25rem 0.5rem 1.25rem; /* Justera padding */
-    border: none; /* Ingen linje under rubriker */
+#jobbOversikt th {
+    /* 1. Matcha luften i sidled med raderna under */
+    /* (Om dina rader har 1.5rem padding måste rubriken ha det också) */
+    padding-left: 1.5rem; 
+    padding-right: 1.5rem;
+    
+    /* 2. Tryck ner rubriken lite så den inte svävar för högt */
+    padding-bottom: 1rem;
+    vertical-align: bottom;
+    
+    /* 3. Tona ner färgen så de inte slåss om uppmärksamhet */
+    color: #9CA3AF; 
+    font-size: 0.7rem;
+    font-weight: 700;
 }
 
 /* Varannan rad får en nästan osynlig toning */
@@ -3678,13 +3684,21 @@ html.privacy-mode-enabled .nav-logo {
 /* Centrera Status (kolumn 1) */
 #jobbOversikt th:nth-child(1),
 #jobbOversikt td:nth-child(1) {
-    text-align: center;
+    text-align: left; /* Eller center om du föredrar det */
+    padding-left: 1.5rem; /* Extra luft i början */
 }
 
 /* Högerställ Kundpris (kolumn 5) */
 #jobbOversikt th:nth-child(5),
 #jobbOversikt td:nth-child(5) {
     text-align: right;
+}
+
+/* Kolumn 6: Åtgärder - Högerställ för att matcha knapparna */
+#jobbOversikt th:nth-child(6),
+#jobbOversikt td:nth-child(6) {
+    text-align: right;
+    padding-right: 1.5rem; /* Extra luft i slutet */
 }
 
 /* --- KANBAN-VY (KOMPLETT & KORREKT) --- */
@@ -4817,6 +4831,7 @@ html.privacy-mode-enabled .nav-logo {
     /* border-left: 3px solid var(--primary-color) !important; */ 
     /* (Avkommentera raden ovan om du vill ha en blå kant vid hover) */
 }
+
 
 
 
