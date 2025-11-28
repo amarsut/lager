@@ -1471,15 +1471,21 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 }
 
 /* Behållaren runt knapparna */
-.view-toggle-buttons {
-    display: inline-flex; /* Viktigt: Gör att lådan krymper runt knapparna */
+.button-toggle-view {
+    display: flex;
     align-items: center;
-    background-color: #F3F4F6; /* Ljusgrå bana */
-    padding: 4px; /* Luft mellan kanten och knapparna */
-    border-radius: 12px; /* Mjukare hörn */
-    border: 1px solid #E5E7EB; /* Tydligare avgränsning */
-    gap: 0; /* Inget mellanrum, paddingen sköter det */
-    margin-left: 1rem; /* Lite avstånd från loggan/titeln */
+    gap: 6px;
+    
+    background: transparent;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #6B7280; /* Grå text */
+    cursor: pointer;
+    transition: all 0.2s ease;
 }
 
 /* Själva knapparna */
@@ -1503,26 +1509,26 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 
 /* Den aktiva knappen blir vit med skugga (som en fysisk knapp) */
 .button-toggle-view.active {
-    background-color: #FFFFFF;
-    color: #111827; /* Nästan svart text för kontrast */
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06); /* Tydlig skugga */
+    background-color: #FFFFFF !important; /* Tvinga vit */
+    color: #111827 !important; /* Svart text */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important; /* Mycket tydligare skugga */
+    transform: scale(1.02); /* Väx lite, lite grann */
 }
 
 /* 4. Hover-effekt på de inaktiva */
 .button-toggle-view:not(.active):hover {
-    background-color: rgba(0,0,0,0.04); /* Subtil mörkare ton */
     color: #374151;
+    background-color: rgba(255,255,255,0.5); /* Ljusar upp vid hover */
 }
 
 /* 5. Fixa ikon-storleken så de linjerar snyggt */
 .button-toggle-view .icon-sm {
+    color: #9CA3AF;
     width: 1.1rem;
     height: 1.1rem;
-    opacity: 0.8; /* Lite nertonad ikon */
 }
 .button-toggle-view.active .icon-sm {
-    opacity: 1;
-    color: var(--primary-color); /* Gör ikonen blå när den är aktiv */
+    color: var(--primary-color); /* Blå ikon */
 }
 
 /* Dark mode justeringar */
@@ -4890,6 +4896,7 @@ html.privacy-mode-enabled .nav-logo {
     /* border-left: 3px solid var(--primary-color) !important; */ 
     /* (Avkommentera raden ovan om du vill ha en blå kant vid hover) */
 }
+
 
 
 
