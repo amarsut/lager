@@ -529,68 +529,65 @@ mark {
 #fabAddJob .icon { width: 1.75rem; height: 1.75rem; }
 
 /* Ersätt din nuvarande .table-container (rad ca 621) med denna: */
-.table-container { 
-    background-color: transparent; /* Ändrad från --content-bg till transparent */
-    border: none; /* Ta bort ramen runt hela tabellen */
-    box-shadow: none; /* Ta bort skuggan från behållaren */
-    border-radius: var(--border-radius);
-    overflow: visible; /* Låt skuggor på rader synas utanför */
+.table-container {
+    background: transparent;
+    box-shadow: none;
+    border: none;
+    padding: 0;
 }
 .table-wrapper { overflow-x: auto; }
-#jobbOversikt { 
-    width: 100%; 
-    border-collapse: separate; /* VIKTIGT: Tillåter mellanrum mellan rader */
-    border-spacing: 0 8px;     /* 8px luft mellan varje rad */
-    margin-top: -8px;          /* Justering för första raden */
+#jobbOversikt {
+    border-collapse: separate; 
+    border-spacing: 0 12px; /* Luft mellan raderna */
+    width: 100%;
 }
 
-#jobbOversikt thead {
-    /* Gör rubrikraden genomskinlig */
-    background-color: transparent; 
-}
-
-#jobbOversikt th { 
-    font-size: 0.75rem; 
-    font-weight: 700; 
-    color: var(--text-color-light); 
+#jobbOversikt thead th {
+    font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    padding: 0 1.25rem 0.5rem 1.25rem; /* Justera padding */
-    border: none; /* Ingen linje under rubriker */
+    color: var(--text-color-light);
+    font-weight: 600;
+    padding: 0 1.5rem;
+    border: none;
+    background: transparent;
 }
 
 /* Varannan rad får en nästan osynlig toning */
-#jobbOversikt tbody tr:nth-child(even) {
-    background-color: rgba(0, 0, 0, 0.005); /* Extremt subtilt! */
+#jobbOversikt tbody tr {
+    background: var(--content-bg);
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: var(--border-radius); /* Mjuka hörn på raden */
 }
 
 /* Se till att hover-effekten fortfarande är vit och lyfter */
-#jobbOversikt tbody tr:hover {
-    background-color: #fff !important;
+#jobbOversikt tbody tr td:first-child { border-top-left-radius: var(--border-radius); border-bottom-left-radius: var(--border-radius); }
+#jobbOversikt tbody tr td:last-child { border-top-right-radius: var(--border-radius); border-bottom-right-radius: var(--border-radius); }
+
+#jobbOversikt tbody tr td {
+    padding: 1.25rem 1.5rem; /* Mer luft inuti raden */
+    border: none; /* Inga linjer! */
+    vertical-align: middle;
 }
-
-/* Design för själva raderna (Korten) */
-#jobbOversikt tbody tr[data-id] {
-    background-color: var(--content-bg); /* Vit bakgrund på raden */
-    box-shadow: 0 2px 4px rgba(0,0,0,0.02), 0 1px 2px rgba(0,0,0,0.04); /* Subtil skugga */
-    transition: all 0.2s ease;
-    border-left: 4px solid transparent; /* Plats för prio-färg */
-}
-
-/* Runda hörn på raderna */
-#jobbOversikt td:first-child { border-top-left-radius: 10px; border-bottom-left-radius: 10px; }
-#jobbOversikt td:last-child { border-top-right-radius: 10px; border-bottom-right-radius: 10px; }
-
-/* Ta bort linjer inuti raderna */
-#jobbOversikt td { border-bottom: none; }
 
 /* Hover-effekt: Lyft raden */
-#jobbOversikt tbody tr[data-id]:hover {
-    transform: translateY(-3px) scale(1.005); /* Lyft och förstora minimalt */
-    box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.1); /* Snygg djupskugga */
-    background-color: var(--content-bg); /* Behåll vit bakgrund */
+#jobbOversikt tbody tr:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+    background: #fff; /* Säkerställ vit bakgrund */
     z-index: 10;
     position: relative;
+}
+
+/* Status-piller (Modernare look) */
+.status-badge {
+    padding: 0.4em 0.8em;
+    border-radius: 9999px; /* Helt runda piller */
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
 }
 
 /* Anpassa Prio-raden för den nya stilen */
@@ -644,20 +641,6 @@ mark {
 }
 .compact-mode .prio-flag-icon {
     vertical-align: -2px;
-}
-
-/* Status-brickor */
-.status-badge {
-    display: inline-flex; 
-    align-items: center; 
-    gap: 0.35rem;
-    padding: 0.35em 0.8em; 
-    font-size: 0.75rem;
-    font-weight: 700; 
-    border-radius: 6px; /* Lite fyrkantigare än 99px ser ofta modernare ut nu, eller behåll 99px */
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-    border: 1px solid transparent; /* Förbereder för border */
 }
 
 /* Ta bort den gamla pricken (::before) om du vill ha en renare look, 
@@ -4755,6 +4738,7 @@ html.privacy-mode-enabled .nav-logo {
     margin: 4px;
     box-shadow: 0 2px 5px rgba(10, 132, 255, 0.4);
 }
+
 
 
 
