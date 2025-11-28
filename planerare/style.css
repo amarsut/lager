@@ -4962,25 +4962,40 @@ html.privacy-mode-enabled .nav-logo {
     }
 }
 
-/* Skapa en pil med CSS (slipper ladda ikon) */
+/* 1. Gör raden till "ankare" (Referenspunkt) */
+.detail-job-list li, 
+.detail-job-table tr {
+    position: relative; /* Detta krävs för att pilen ska stanna inom rutan */
+}
+
+/* 2. Placera pilen i hörnet */
 .detail-job-list li::after, 
 .detail-job-table tr td:last-child::after {
+    /* Lossa pilen från textflödet */
+    position: absolute; 
+    
+    /* Placera den exakt där du vill ha den */
+    bottom: 12px;  /* Avstånd från botten */
+    right: 16px;   /* Avstånd från högerkanten */
+    
+    /* Nollställ gamla marginaler */
+    margin: 0;
+    
+    /* Behåll utseendet (formen på pilen) */
     content: '';
     display: inline-block;
     width: 8px;
     height: 8px;
-    border-right: 2px solid #D1D5DB; /* Grå färg */
+    border-right: 2px solid #D1D5DB; 
     border-top: 2px solid #D1D5DB;
     transform: rotate(45deg);
-    margin-left: 1rem;
     opacity: 0.5;
+    transition: all 0.2s ease;
 }
 
-/* Gör pilen mörkare vid hover */
+/* Hover-effekt (valfritt: gör den lite mörkare/större) */
 .detail-job-list li:hover::after, 
 .detail-job-table tr:hover td:last-child::after {
     border-color: var(--primary-color);
     opacity: 1;
 }
-
-
