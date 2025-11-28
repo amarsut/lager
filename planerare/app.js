@@ -2143,43 +2143,46 @@
 				        <tbody>
 				`;
 				
+				/* --- I funktionen renderDetailJobList --- */
+
 				tableHTML += filteredJobs.map(job => {
-			    const prioIcon = job.prio ? `...` : ''; 
-			    const subline = (listElement === customerModalJobList) ? job.regnr : job.kundnamn;
-			
-			    // --- NY DATUM-LOGIK ---
-			    const jobDate = new Date(job.datum);
-			    const currentYear = new Date().getFullYear();
-			    const jobYear = jobDate.getFullYear();
-			    
-			    // Hämta dag och månad
-			    const day = jobDate.getDate();
-			    const month = jobDate.toLocaleString('sv-SE', { month: 'short' }).replace('.', '');
-			    
-			    // Bestäm om året ska visas (bara om det INTE är nuvarande år)
-			    const yearHTML = (jobYear !== currentYear) 
-			        ? `<span style="display:block; font-size:0.75em; color:#9CA3AF; font-weight:400;">${jobYear}</span>` 
-			        : '';
-			
-			    return `
-			        <tr data-job-id="${job.id}">
-			            <td data-label="Datum">
-			                <span style="font-weight: 700; color: #111;">${day}</span>
-			                <span style="font-size: 0.85em; color: #6B7280; margin-left: 2px;">${month}</span>
-			                ${yearHTML} </td>
-			            <td data-label="Info">
-			                <span class="job-subline-main">${prioIcon}${subline || '---'}</span>
-			                ${job.kommentarer ? `<span class="job-subline-comment">${job.kommentarer}</span>` : ''}
-			            </td>
-			            <td data-label="Status">
-			                <span class="status-badge status-${job.status}">${STATUS_TEXT[job.status]}</span>
-			            </td>
-			            <td data-label="Vinst" class="job-profit money-related ${job.vinst > 0 ? 'positive' : ''}">
-			                ${isPrivacyModeEnabled ? '---' : formatCurrency(job.vinst)}
-			            </td>
-			        </tr>
-			    `;
-			}).join('');
+				    const prioIcon = job.prio ? `...` : ''; 
+				    const subline = (listElement === customerModalJobList) ? job.regnr : job.kundnamn;
+				
+				    // Datum-logik
+				    const jobDate = new Date(job.datum);
+				    const currentYear = new Date().getFullYear();
+				    const jobYear = jobDate.getFullYear();
+				    
+				    const day = jobDate.getDate();
+				    const month = jobDate.toLocaleString('sv-SE', { month: 'short' }).replace('.', '');
+				    
+				    const yearHTML = (jobYear !== currentYear) 
+				        ? `<span style="display:block; font-size:0.75em; color:#9CA3AF; font-weight:400;">${jobYear}</span>` 
+				        : '';
+				
+				    return `
+				        <tr data-job-id="${job.id}">
+				            <td data-label="Datum">
+				                <div class="date-wrapper" style="text-align: right; display: inline-block;">
+				                    <span style="font-weight: 700; color: #111;">${day}</span>
+				                    <span style="font-size: 0.85em; color: #6B7280; margin-left: 2px;">${month}</span>
+				                    ${yearHTML}
+				                </div>
+				            </td>
+				            <td data-label="Info">
+				                <span class="job-subline-main">${prioIcon}${subline || '---'}</span>
+				                ${job.kommentarer ? `<span class="job-subline-comment">${job.kommentarer}</span>` : ''}
+				            </td>
+				            <td data-label="Status">
+				                <span class="status-badge status-${job.status}">${STATUS_TEXT[job.status]}</span>
+				            </td>
+				            <td data-label="Vinst" class="job-profit money-related ${job.vinst > 0 ? 'positive' : ''}">
+				                ${isPrivacyModeEnabled ? '---' : formatCurrency(job.vinst)}
+				            </td>
+				        </tr>
+				    `;
+				}).join('');
 				
 				tableHTML += `</tbody></table>`;
 				listElement.innerHTML = tableHTML;
