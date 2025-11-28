@@ -26,6 +26,9 @@
     /* Typsnittsjustering för krispighet */
     -webkit-font-smoothing: antialiased;
 
+	--header-height: 60px;
+    --border-radius: 8px;
+
 	--mobile-nav-height: 65px;
 }
 
@@ -4758,4 +4761,5 @@ html.privacy-mode-enabled .nav-logo {
     margin: 4px;
     box-shadow: 0 2px 5px rgba(10, 132, 255, 0.4);
 }
+
 
