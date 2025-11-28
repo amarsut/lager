@@ -2149,7 +2149,10 @@
 				
 				    return `
 				        <tr data-job-id="${job.id}">
-				            <td data-label="Datum">${formatDate(job.datum, { onlyDate: true })}</td>
+				            <td data-label="Datum">
+							    <span style="font-weight: 700; color: #111;">${new Date(job.datum).getDate()}</span>
+							    <span style="font-size: 0.85em; color: #6B7280; margin-left: 2px;">${new Date(job.datum).toLocaleString('sv-SE', { month: 'short' }).replace('.', '')}</span>
+							</td>
 				            <td data-label="Info">
 				                <span class="job-subline-main">${prioIcon}${subline || '---'}</span>
 				                ${job.kommentarer ? `<span class="job-subline-comment">${job.kommentarer}</span>` : ''}
