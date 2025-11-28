@@ -129,19 +129,12 @@ h1, h2, h3, h4, h5, h6 {
 
 /* --- Header --- */
 .main-header {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 0 1.5rem 0 2rem; height: var(--header-height);
-    box-shadow: var(--shadow-sm); 
-	background-color: var(--content-bg-transparent);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    
-    flex-shrink: 0; z-index: 50;
-	position: sticky; 
-    top: 0;
-    transform: translateY(-20px);
-    opacity: 0;
-    animation: slideInDown 0.4s ease 0.1s forwards;
+    background: rgba(255, 255, 255, 0.8); /* Halvgenomskinlig */
+    backdrop-filter: blur(12px); /* Blur-effekten */
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(0,0,0,0.03); /* Extremt subtil linje */
+    box-shadow: none;
+    height: 80px; /* Lite högre för att kännas luftigare */
 }
 @keyframes slideInDown {
     to { transform: translateY(0); opacity: 1; }
@@ -193,12 +186,13 @@ h1, h2, h3, h4, h5, h6 {
 
 .header-right { display: flex; align-items: center; gap: 1rem; }
 .nav-button {
-    background: transparent; border: none; color: var(--text-color-light);
-    width: 44px; height: 44px; border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; transition: all var(--transition-speed-fast) ease;
+    background: transparent;
+    border-radius: 12px;
 }
-.nav-button:hover { color: var(--primary-color); background-color: var(--bg-color); }
+.nav-button:hover {
+    background: var(--bg-color);
+    color: var(--primary-color);
+}
 .nav-button.active {
     color: var(--primary-color);
     background-color: var(--primary-light);
@@ -1799,19 +1793,12 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 }
 /* 9. Styling för Registreringsskylt (v20) */
 .reg-plate {
-    display: inline-flex;
-    align-items: center;
-    border: 1px solid #aab;
-    border-radius: 6px;
-    background-color: var(--content-bg);
-    box-shadow: var(--shadow-sm);
-    font-family: 'Inter', sans-serif;
-    font-weight: 700;
-    font-size: 0.85rem; /* <-- Ändrad från 0.9rem */
-    cursor: pointer;
-    padding: 0;
-    transition: all var(--transition-speed-fast) ease;
-    overflow: hidden;
+    background: #fff;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    font-family: 'Inter', sans-serif; /* Monospace ser ofta för "kodigt" ut */
+    letter-spacing: 0.05em;
 }
 .reg-plate:hover {
     box-shadow: var(--shadow-md);
@@ -1820,25 +1807,14 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 }
 
 .reg-plate .reg-country {
-    background-color: #003897;
-    color: white;
-    padding: 0.25rem 0.4rem; /* <-- Ändrad från 0.35rem 0.5rem */
-    font-size: 0.75rem; /* <-- Ändrad från 0.8rem */
-    font-weight: 700;
-    align-self: stretch;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-right: 1px solid #aab;
+    background: #0052cc; /* Eu-blå */
+    font-size: 0.6rem;
+    padding: 2px 4px;
 }
-
 .reg-plate .reg-number {
-    padding: 0.25rem 0.6rem; /* <-- Ändrad från 0.35rem 0.75rem */
-    color: var(--text-color);
-    letter-spacing: 0.05em;
-    width: 80px; /* <-- Ändrad från 85px */
-    text-align: center;
-    box-sizing: border-box;
+    padding: 2px 6px;
+    font-weight: 700;
+    color: #111;
 }
 
 [data-theme="dark"] .reg-plate {
@@ -4738,6 +4714,7 @@ html.privacy-mode-enabled .nav-logo {
     margin: 4px;
     box-shadow: 0 2px 5px rgba(10, 132, 255, 0.4);
 }
+
 
 
 
