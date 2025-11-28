@@ -129,12 +129,19 @@ h1, h2, h3, h4, h5, h6 {
 
 /* --- Header --- */
 .main-header {
-    background: rgba(255, 255, 255, 0.8); /* Halvgenomskinlig */
-    backdrop-filter: blur(12px); /* Blur-effekten */
-    -webkit-backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgba(0,0,0,0.03); /* Extremt subtil linje */
-    box-shadow: none;
-    height: 80px; /* Lite högre för att kännas luftigare */
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0 1.5rem 0 2rem; height: var(--header-height);
+    box-shadow: var(--shadow-sm); 
+	background-color: var(--content-bg-transparent);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    
+    flex-shrink: 0; z-index: 50;
+	position: sticky; 
+    top: 0;
+    transform: translateY(-20px);
+    opacity: 0;
+    animation: slideInDown 0.4s ease 0.1s forwards;
 }
 @keyframes slideInDown {
     to { transform: translateY(0); opacity: 1; }
@@ -186,13 +193,12 @@ h1, h2, h3, h4, h5, h6 {
 
 .header-right { display: flex; align-items: center; gap: 1rem; }
 .nav-button {
-    background: transparent;
-    border-radius: 12px;
+    background: transparent; border: none; color: var(--text-color-light);
+    width: 44px; height: 44px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all var(--transition-speed-fast) ease;
 }
-.nav-button:hover {
-    background: var(--bg-color);
-    color: var(--primary-color);
-}
+.nav-button:hover { color: var(--primary-color); background-color: var(--bg-color); }
 .nav-button.active {
     color: var(--primary-color);
     background-color: var(--primary-light);
@@ -592,7 +598,6 @@ mark {
     border-left: 4px solid var(--danger-color);
     background-color: #fff5f5; /* Mycket ljus röd ton */
 }
-
 /* Anpassa Klar-raden */
 #jobbOversikt tbody tr.done-row { 
     opacity: 0.6; 
@@ -639,6 +644,20 @@ mark {
 }
 .compact-mode .prio-flag-icon {
     vertical-align: -2px;
+}
+
+/* Status-brickor */
+.status-badge {
+    display: inline-flex; 
+    align-items: center; 
+    gap: 0.35rem;
+    padding: 0.35em 0.8em; 
+    font-size: 0.75rem;
+    font-weight: 700; 
+    border-radius: 6px; /* Lite fyrkantigare än 99px ser ofta modernare ut nu, eller behåll 99px */
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    border: 1px solid transparent; /* Förbereder för border */
 }
 
 /* Ta bort den gamla pricken (::before) om du vill ha en renare look, 
@@ -1793,12 +1812,19 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 }
 /* 9. Styling för Registreringsskylt (v20) */
 .reg-plate {
-    background: #fff;
-    border: 1px solid #d1d5db;
-    border-radius: 4px;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-    font-family: 'Inter', sans-serif; /* Monospace ser ofta för "kodigt" ut */
-    letter-spacing: 0.05em;
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid #aab;
+    border-radius: 6px;
+    background-color: var(--content-bg);
+    box-shadow: var(--shadow-sm);
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem; /* <-- Ändrad från 0.9rem */
+    cursor: pointer;
+    padding: 0;
+    transition: all var(--transition-speed-fast) ease;
+    overflow: hidden;
 }
 .reg-plate:hover {
     box-shadow: var(--shadow-md);
@@ -1807,14 +1833,25 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 }
 
 .reg-plate .reg-country {
-    background: #0052cc; /* Eu-blå */
-    font-size: 0.6rem;
-    padding: 2px 4px;
-}
-.reg-plate .reg-number {
-    padding: 2px 6px;
+    background-color: #003897;
+    color: white;
+    padding: 0.25rem 0.4rem; /* <-- Ändrad från 0.35rem 0.5rem */
+    font-size: 0.75rem; /* <-- Ändrad från 0.8rem */
     font-weight: 700;
-    color: #111;
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-right: 1px solid #aab;
+}
+
+.reg-plate .reg-number {
+    padding: 0.25rem 0.6rem; /* <-- Ändrad från 0.35rem 0.75rem */
+    color: var(--text-color);
+    letter-spacing: 0.05em;
+    width: 80px; /* <-- Ändrad från 85px */
+    text-align: center;
+    box-sizing: border-box;
 }
 
 [data-theme="dark"] .reg-plate {
@@ -2088,50 +2125,54 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 	}
 
     /* 3. Statistik-kort (MOBIL FIX) */
-	.stat-bar {
-	    gap: 1.5rem;
-	    margin-bottom: 3rem;
-	}
-	
-	.stat-card {
-	    background: var(--content-bg);
-	    border: none; /* Ingen border */
-	    border-radius: 20px; /* Ännu mjukare hörn */
-	    box-shadow: var(--shadow-sm);
-	    padding: 1.5rem;
-	    position: relative;
-	    overflow: hidden;
-	    transition: transform 0.3s ease, box-shadow 0.3s ease;
-	}
-	
-	.stat-card:hover {
-	    transform: translateY(-5px);
-	    box-shadow: var(--shadow-lg);
-	}
-	
-	/* Ta bort den färgade linjen i botten och använd en subtil ikon-färg istället */
-	.stat-card::after { display: none; }
-	
-	.stat-card-title {
-	    font-size: 0.85rem;
+.stat-bar {
+    grid-template-columns: 1fr 1fr; 
+    gap: 0.5rem; /* Mindre mellanrum mellan korten */
+    margin-bottom: 1rem; /* Mindre marginal under korten */
+}
+
+/* Anpassa alla kort för att vara tunnare */
+.stat-card {
+    display: flex; /* Ändra till flexbox för enkel vertikal centrering */
+    flex-direction: column; 
+    align-items: flex-start;
+    padding: 0.5rem 0.75rem; /* Krymper vertikal och horisontell padding */
+    min-height: 70px; /* Sätter en minsta höjd för konsekvens */
+}
+.stat-card-title {
+    font-size: 0.7rem; /* Ännu mindre titel */
+    margin: 0;
+    line-height: 1; /* Kompaktare radhöjd */
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    height: 1.1em; /* Sätter en fix höjd för titeln */
+}
+.stat-card-title .icon-sm {
+    width: 0.8rem; /* Krymper ikonstorleken */
+    height: 0.8rem;
+    margin-right: 0;
+}
+.stat-card-title span {
+    display: none;
+}
+	/* Bibehåll den nya texten som visas efter ikonen */
+	.stat-card-title::after {
+	    content: attr(data-filter);
+	    text-transform: uppercase;
+	    font-size: 0.7rem;
 	    font-weight: 600;
-	    color: var(--text-color-light);
-	    opacity: 0.8;
+	    line-height: 1;
 	}
 	
 	.stat-card-value {
-	    font-size: 2.5rem; /* Stora, tunnare siffror är trendigt */
-	    font-weight: 700; 
-	    margin-top: 0.5rem;
-	    color: var(--text-color);
-	    letter-spacing: -0.03em; /* Tightare kerning */
-	}
-	
-	/* Aktivt kort (Valt filter) */
-	.stat-card.active {
-	    background: var(--content-bg);
-	    ring: 2px solid var(--primary-color); /* Använd ring istället för border */
-	    box-shadow: 0 0 0 2px var(--primary-color), var(--shadow-lg);
+	    /* NYTT: Öka storleken, men inte till 2rem som tidigare. */
+	    font-size: 1.85rem; 
+	    font-weight: 700;
+	    text-align: left; 
+	    margin-top: 0.1rem; /* Minska marginalen ytterligare */
+	    line-height: 1.2;
+	    transition: none;
 	}
 	
 	/* Anpassa "Alla Jobb" för att också vara större, men behålla högerjusteringen */
@@ -4714,18 +4755,3 @@ html.privacy-mode-enabled .nav-logo {
     margin: 4px;
     box-shadow: 0 2px 5px rgba(10, 132, 255, 0.4);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
