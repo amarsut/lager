@@ -57,7 +57,10 @@
 .icon-lg { width: 3rem; height: 3rem; opacity: 0.5; }
 
 body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    /*font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;*/
+	-webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+	font-variant-numeric: tabular-nums;
+	
     background: var(--bg-color);
     color: var(--text-color);
     margin: 0; padding: 0;
@@ -4800,4 +4803,5 @@ html.privacy-mode-enabled .nav-logo {
     z-index: 100; /* Se till att den svävar ÖVER andra rader */
     background-color: #ffffff !important; /* Håll den vit */
 }
+
 
