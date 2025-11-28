@@ -4775,33 +4775,3 @@ html.privacy-mode-enabled .nav-logo {
         border-top: 1px solid rgba(0, 0, 0, 0.05); 
     }
 }
-
-/* 1. Tvinga tabellen att tillåta mellanrum (Krävs för animation) */
-#jobbOversikt {
-    border-collapse: separate !important; 
-    border-spacing: 0 10px !important; /* Luft mellan raderna */
-    width: 100%;
-}
-
-/* 2. Grundläge för raden */
-#jobbOversikt tbody tr {
-    background-color: #ffffff; /* Måste ha färg, annars blir den genomskinlig */
-    transition: transform 0.2s ease, box-shadow 0.2s ease; /* Mjuk övergång */
-    position: relative;
-    border-radius: 8px; /* Mjuka hörn på hela raden */
-}
-
-/* Fix för runda hörn på rad-nivå i tabeller */
-#jobbOversikt td:first-child { border-top-left-radius: 8px; border-bottom-left-radius: 8px; }
-#jobbOversikt td:last-child { border-top-right-radius: 8px; border-bottom-right-radius: 8px; }
-
-/* 3. Hover-effekt (Lyftet) */
-#jobbOversikt tbody tr:hover {
-    transform: translateY(-2px) scale(1.01) !important; /* Tvingar lyftet */
-    box-shadow: 0 10px 20px rgba(0,0,0,0.12) !important; /* Skugga under */
-    z-index: 100; /* Se till att den svävar ÖVER andra rader */
-    background-color: #ffffff !important; /* Håll den vit */
-}
-
-
-
