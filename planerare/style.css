@@ -109,14 +109,21 @@ h1, h2, h3, h4, h5, h6 {
 
 /* --- Layout --- */
 .app-container {
-    display: flex; flex-direction: column;
-    opacity: 0;
-    animation: appFadeIn 0.5s ease 0.1s forwards;
+    /* Basinställningar */
+    background-color: var(--bg-color); /* Din bakgrundsfärg */
+    min-height: 100vh;
     
-    /* --- NYTT: Prickmönster --- */
-    background-image: radial-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px);
-    background-size: 24px 24px; /* Avstånd mellan prickarna */
-    min-height: 100vh; /* Säkerställer att mönstret täcker hela höjden */
+    /* MÖNSTER-LAGER (Ordningen är viktig: Först = Överst) */
+    background-image: 
+        /* Lager 1 (Överst): Noise/Brus (valfritt, ta bort raden om du inte vill ha brus) */
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.04'/%3E%3C/svg%3E"),
+        
+        /* Lager 2 (Underst): Prickarna */
+        radial-gradient(rgba(0, 0, 0, 0.15) 1.5px, transparent 1.5px); /* Ökad styrka & storlek för test */
+        
+    /* STORLEK PÅ MÖNSTREN */
+    /* Auto för brus, 24px för prick-mönstret */
+    background-size: auto, 24px 24px; 
 }
 
 /* Dark mode justering (ljusare prickar) */
@@ -4810,3 +4817,4 @@ html.privacy-mode-enabled .nav-logo {
     /* border-left: 3px solid var(--primary-color) !important; */ 
     /* (Avkommentera raden ovan om du vill ha en blå kant vid hover) */
 }
+
