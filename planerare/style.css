@@ -4940,3 +4940,55 @@ html.privacy-mode-enabled .nav-logo {
         padding: 0.5rem;
     }
 }
+
+/* --- TIDSLINJE-DESIGN (Kund/Bil Historik) --- */
+
+/* 1. Skapa den vertikala linjen */
+.detail-job-list, 
+.detail-job-table tbody {
+    position: relative;
+    border-left: 2px solid #E5E7EB; /* Den grå linjen */
+    margin-left: 1rem;
+    padding-left: 0;
+}
+
+/* 2. Varje jobb (rad eller li) */
+.detail-job-list li, 
+.detail-job-table tr {
+    position: relative;
+    margin-bottom: 1.5rem; /* Luft mellan jobben */
+    padding-left: 1.5rem; /* Flytta ut innehållet från linjen */
+    background: transparent !important; /* Ingen bakgrund på själva raden */
+    display: block; /* Tvinga radbrytning */
+    border: none !important; /* Ta bort gamla linjer */
+}
+
+/* 3. "Pricken" på tidslinjen */
+.detail-job-list li::before, 
+.detail-job-table tr::before {
+    content: '';
+    position: absolute;
+    left: -5px; /* Centrera pricken på linjen (linjen är 2px, pricken 8px) */
+    top: 0.5rem; /* Justera höjden så den linjerar med datumet */
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #fff; /* Vit insida */
+    border: 2px solid var(--primary-color); /* Färgad ram */
+    z-index: 1;
+}
+
+/* 4. Gör själva innehållskortet snyggt */
+.detail-job-list li > div, 
+.detail-job-table td {
+    background-color: #fff;
+    padding: 1rem;
+    border-radius: 12px;
+    border: 1px solid #F3F4F6;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    /* Om det är tabell, samla cellerna */
+    display: block; 
+}
+
+/* Om du kör tabell, dölj headern för en renare tidslinje */
+.detail-job-table thead { display: none; }
