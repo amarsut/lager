@@ -1048,32 +1048,15 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 #modalSaveBtn { order: 3; }
 
 /* --- Toast --- */
-.toast { 
-    /* Placering och bas */
-    position: fixed; 
-    bottom: 2rem; 
-    left: 50%; 
-    transform: translateX(-50%) translateY(20px); 
-    z-index: 2000; 
-    
-    /* Utseende */
-    padding: 0.75rem 1.25rem; 
-    background-color: rgba(30, 30, 35, 0.85); /* Halvtransparent mörk */
-    color: white; 
-    backdrop-filter: blur(10px); /* Glassmorphism */
+.toast {
+    background-color: rgba(30, 30, 30, 0.85); /* Halvtransparent mörk */
+    backdrop-filter: blur(10px); /* Suddig bakgrund bakom */
     -webkit-backdrop-filter: blur(10px);
-    
-    border-radius: 50px; /* Piller-form istället för fyrkantig */
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15); /* Djup skugga */
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    
-    font-weight: 500; 
-    font-size: 0.9rem;
-    display: flex; align-items: center; gap: 0.5rem;
-    
-    /* Animation */
-    opacity: 0; 
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Studsig effekt */
+    color: white;
+    border-radius: 50px; /* Piller-form */
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    padding: 0.75rem 1.5rem;
+    border: 1px solid rgba(255,255,255,0.1);
 }
 
 /* När den visas */
@@ -1083,8 +1066,8 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 }
 
 /* Anpassa färgerna för olika typer (behåll texten vit för kontrast) */
-.toast.success { background-color: rgba(48, 209, 88, 0.9); border-color: transparent; }
-.toast.danger { background-color: rgba(255, 69, 58, 0.9); border-color: transparent; }
+.toast.success { background-color: rgba(22, 163, 74, 0.9); }
+.toast.danger { background-color: rgba(220, 38, 38, 0.9); }
 .toast.info { background-color: rgba(10, 132, 255, 0.9); border-color: transparent; }
 .toast .button {
     margin-left: 1rem;
@@ -4773,3 +4756,29 @@ html.privacy-mode-enabled .nav-logo {
     }
 }
 
+/* 1. Gör raden redo för animation */
+#jobbOversikt tbody tr {
+    /* Detta gör rörelsen mjuk (samma "kurva" som dina stat-kort) */
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s ease, background-color 0.2s ease;
+    
+    /* Se till att raden har en bakgrundsfärg (annars blir den genomskinlig när den lyfter) */
+    background-color: #FFFFFF; 
+    
+    /* Gör raden solid så skuggan syns ordentligt */
+    position: relative; 
+}
+
+/* 2. Effekten när du håller musen över (Hover) */
+#jobbOversikt tbody tr:hover {
+    /* Lyft raden 3 pixlar uppåt */
+    transform: translateY(-3px);
+    
+    /* Lägg på en tydlig, mjuk skugga under för djup */
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    
+    /* Se till att den lyfta raden ligger ÖVER raderna bredvid */
+    z-index: 10;
+    
+    /* Behåll den vita bakgrunden (eller byt till mycket ljus grå om du vill) */
+    background-color: #FFFFFF; 
+}
