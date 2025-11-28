@@ -4775,3 +4775,38 @@ html.privacy-mode-enabled .nav-logo {
         border-top: 1px solid rgba(0, 0, 0, 0.05); 
     }
 }
+
+/* 1. Tvinga tabellen att tillåta mellanrum (Krävs för animation) */
+#jobbOversikt {
+    border-collapse: separate !important; 
+    border-spacing: 0 10px !important; /* Luft mellan raderna */
+    width: 100%;
+}
+
+/* 2. Grundläge för raden */
+#jobbOversikt tbody tr {
+    background-color: #ffffff; /* Måste ha färg, annars blir den genomskinlig */
+    transition: transform 0.2s ease, box-shadow 0.2s ease; /* Mjuk övergång */
+    position: relative;
+    border-radius: 8px; /* Mjuka hörn på hela raden */
+}
+
+/* Fix för runda hörn på rad-nivå i tabeller */
+#jobbOversikt td:first-child { border-top-left-radius: 8px; border-bottom-left-radius: 8px; }
+#jobbOversikt td:last-child { border-top-right-radius: 8px; border-bottom-right-radius: 8px; }
+
+/* 3. Hover-effekt (Lyftet) */
+#jobbOversikt tbody tr:hover {
+    /* Ändrat från Y till X (4px åt höger). Tog bort scale för en renare glid-känsla. */
+    transform: translateX(4px) !important; 
+    
+    /* En lite mjukare skugga passar bättre till sidorörelse än "lyft-skuggan" */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important; 
+    
+    z-index: 100; /* Se till att den ligger överst */
+    background-color: #ffffff !important; /* Behåll vit bakgrund */
+    
+    /* BONUS: Lägg till en tunn färgad linje till vänster för extra "här är jag"-känsla */
+    /* border-left: 3px solid var(--primary-color) !important; */ 
+    /* (Avkommentera raden ovan om du vill ha en blå kant vid hover) */
+}
