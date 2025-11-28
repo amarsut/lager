@@ -4795,8 +4795,9 @@ html.privacy-mode-enabled .nav-logo {
 
 /* 3. Hover-effekt (Lyftet) */
 #jobbOversikt tbody tr:hover {
-    transform: translateY(-4px) scale(1.01) !important; /* Tvingar lyftet */
+    transform: translateY(-2px) scale(1.01) !important; /* Tvingar lyftet */
     box-shadow: 0 10px 20px rgba(0,0,0,0.12) !important; /* Skugga under */
     z-index: 100; /* Se till att den svävar ÖVER andra rader */
     background-color: #ffffff !important; /* Håll den vit */
 }
+
