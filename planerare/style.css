@@ -1171,57 +1171,11 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     padding: 0.25rem;
 }
 
-/*.detail-stats {
+.detail-stats {
     display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: 1rem; background-color: var(--bg-color);
     padding: 0.75rem 1.25rem;
     border-bottom: 1px solid var(--border-color);
-}*/
-/* --- STATISTIK-KORT (Top of Modal) --- */
-.detail-stats {
-    display: grid;
-    grid-template-columns: 1fr 1fr; /* Två lika stora kort */
-    gap: 1rem;
-    padding: 1rem 1.5rem;
-    background-color: #fff; /* Vit bakgrund */
-    border-bottom: none;
-}
-
-.detail-stats > div {
-    background-color: #F9FAFB; /* Ljusgrå insida */
-    border-radius: 12px;
-    padding: 1rem;
-    text-align: center;
-    border: 1px solid #F3F4F6;
-    transition: transform 0.2s ease;
-}
-
-/* Liten hover-effekt */
-.detail-stats > div:hover {
-    transform: translateY(-2px);
-    border-color: var(--primary-light);
-}
-
-.detail-stats .stat-title {
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: #9CA3AF;
-    margin-bottom: 0.25rem;
-    display: block;
-}
-
-.detail-stats .stat-value {
-    font-size: 1.5rem;
-    font-weight: 800;
-    color: #1F2937;
-    display: block;
-    line-height: 1.2;
-}
-
-/* Gör vinst-siffran grön */
-.detail-stats .stat-value.positive {
-    color: #16A34A; /* Fin grön färg */
 }
 /* Fix för Statistik-modalen: Ta bort "sticky" och gör den mindre */
 #statsModal .detail-stats {
@@ -4986,3 +4940,4 @@ html.privacy-mode-enabled .nav-logo {
         padding: 0.5rem;
     }
 }
+
