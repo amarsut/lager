@@ -343,26 +343,16 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Sökfält */
 .search-wrapper {
-    display: flex; align-items: center;
-    background: var(--content-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 8px; padding-left: 0.75rem;
-    box-shadow: var(--shadow-sm);
-    width: 100%;
-    position: relative; 
-    
-    /* Uppdaterad transition-kurva för "växande" effekt */
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    background: #fff;
+    border: 1px solid #E5E7EB;
+    border-radius: 12px; /* Mjukare hörn */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    padding: 0.5rem 1rem;
 }
-
 .search-wrapper:focus-within {
     border-color: var(--primary-color);
-    
-    /* Ny effekt: Växer och får "glow" */
-    transform: scale(1.02);
-    box-shadow: 0 4px 15px rgba(10, 132, 255, 0.15);
-    background: var(--content-bg); /* Säkerställer rätt bakgrundsfärg */
-    z-index: 5; /* Se till att den hamnar över eventuella grannar */
+    box-shadow: 0 0 0 3px var(--primary-light);
+    transform: translateY(-1px);
 }
 [data-theme="dark"] .search-wrapper { background: var(--bg-color); }
 
@@ -4755,3 +4745,4 @@ html.privacy-mode-enabled .nav-logo {
     margin: 4px;
     box-shadow: 0 2px 5px rgba(10, 132, 255, 0.4);
 }
+
