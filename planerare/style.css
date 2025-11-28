@@ -4854,13 +4854,89 @@ html.privacy-mode-enabled .nav-logo {
     /* (Avkommentera raden ovan om du vill ha en blå kant vid hover) */
 }
 
+/* --- BIL-MODAL HEADER FIX --- */
 
+/* 1. Huvudbehållaren: Separera Regnr från Knapparna */
+.modal-title-with-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Tryck isär grupperna */
+    width: 100%;
+    gap: 1rem;
+    flex-wrap: wrap; /* Säkra för små skärmar */
+}
 
+/* 2. Grupp Vänster: Reg.nr + Kopiera */
+.reg-copy-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem; /* Litet avstånd mellan text och ikon */
+}
 
+/* Gör kopiera-knappen diskret men klickvänlig */
+#copyCarRegnrBtn {
+    background-color: transparent;
+    color: var(--text-color-light);
+    padding: 0.4rem;
+    margin: 0;
+    transition: all 0.2s ease;
+}
+#copyCarRegnrBtn:hover {
+    color: var(--primary-color);
+    background-color: var(--primary-light);
+    transform: scale(1.1);
+}
 
+/* 3. Grupp Höger: Externa Knappar */
+.external-actions-wrapper {
+    display: flex;
+    gap: 0.75rem;
+}
 
+/* Design för de nya knapparna ("External Pills") */
+.button.external-pill {
+    /* Nollställ gamla stilar */
+    width: auto !important; 
+    height: auto !important;
+    border-radius: 8px !important; /* Mjuka hörn, ej cirklar */
+    
+    /* Ny layout */
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.8rem;
+    
+    /* Utseende */
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-color);
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
 
+/* Hover-effekt på knapparna */
+.button.external-pill:hover {
+    background-color: #fff;
+    border-color: var(--primary-color);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08); /* Lyft upp den */
+    transform: translateY(-2px);
+}
 
+/* Ikonerna inuti knapparna */
+.button.external-pill img {
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+}
 
-
-
+/* MOBIL-JUSTERING: Om det blir trångt, göm texten men behåll stora knappar */
+@media (max-width: 480px) {
+    .button.external-pill span {
+        display: none;
+    }
+    .button.external-pill {
+        padding: 0.5rem;
+    }
+}
