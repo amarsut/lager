@@ -3682,23 +3682,45 @@ html.privacy-mode-enabled .nav-logo {
 /* --- NYTT: Proffsig justering av tabell --- */
 
 /* Centrera Status (kolumn 1) */
-#jobbOversikt th:nth-child(1),
-#jobbOversikt td:nth-child(1) {
-    text-align: left; /* Eller center om du föredrar det */
-    padding-left: 1.5rem; /* Extra luft i början */
+#jobbOversikt th,
+#jobbOversikt td {
+    /* Samma sid-padding på BÅDA är nyckeln till att de linjerar */
+    padding-left: 1.5rem; 
+    padding-right: 1.5rem;
+    
+    /* Tvinga vänsterjustering som standard */
+    text-align: left;
 }
 
-/* Högerställ Kundpris (kolumn 5) */
+/* 2. Specifik design för rubrikerna (th) */
+#jobbOversikt th {
+    padding-top: 1rem;    /* Lite luft ovanför */
+    padding-bottom: 1rem; /* Lite luft under */
+    vertical-align: bottom; /* Tryck texten mot botten */
+    
+    color: #9CA3AF; 
+    font-size: 0.75rem; 
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    
+    /* Ta bort ev. gamla centrerings-regler */
+    border-bottom: none; 
+}
+
+/* 3. Högerställ specifika kolumner (Pris & Åtgärder) */
+/* Kolumn 5 (Kundpris) */
 #jobbOversikt th:nth-child(5),
 #jobbOversikt td:nth-child(5) {
     text-align: right;
 }
 
-/* Kolumn 6: Åtgärder - Högerställ för att matcha knapparna */
+/* Kolumn 6 (Åtgärder) */
 #jobbOversikt th:nth-child(6),
 #jobbOversikt td:nth-child(6) {
     text-align: right;
-    padding-right: 1.5rem; /* Extra luft i slutet */
+    /* Extra luft till höger för att matcha kortets rundning */
+    padding-right: 2rem; 
 }
 
 /* --- KANBAN-VY (KOMPLETT & KORREKT) --- */
@@ -4831,6 +4853,7 @@ html.privacy-mode-enabled .nav-logo {
     /* border-left: 3px solid var(--primary-color) !important; */ 
     /* (Avkommentera raden ovan om du vill ha en blå kant vid hover) */
 }
+
 
 
 
