@@ -4762,4 +4762,14 @@ html.privacy-mode-enabled .nav-logo {
     box-shadow: 0 2px 5px rgba(10, 132, 255, 0.4);
 }
 
+/* Fix för mobilkortens botten-meny */
+@media (max-width: 768px) {
+    .mobile-job-card .action-col {
+        /* Ändra bakgrunden till vit (samma som kortet) istället för grå */
+        background-color: var(--content-bg); 
+        
+        /* Gör linjen ovanför knapparna mycket subtilare (eller sätt 'none' för att ta bort den helt) */
+        border-top: 1px solid rgba(0, 0, 0, 0.05); 
+    }
+}
 
