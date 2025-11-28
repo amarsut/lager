@@ -365,6 +365,7 @@ h1, h2, h3, h4, h5, h6 {
     box-shadow: 0 2px 4px rgba(0,0,0,0.02); /* Subtil skugga */
     transition: all 0.2s ease;
 }
+
 .search-wrapper:focus-within {
     border-color: var(--primary-color);
     box-shadow: 0 0 0 4px var(--primary-light); /* "Glow"-effekt */
@@ -4767,6 +4768,3 @@ html.privacy-mode-enabled .nav-logo {
     margin: 4px;
     box-shadow: 0 2px 5px rgba(10, 132, 255, 0.4);
 }
-
-
-
