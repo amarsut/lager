@@ -1470,57 +1470,66 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     20%, 40%, 60%, 80% { transform: translateX(8px); }
 }
 
-/* 1. Behållaren (Lite mörkare grå för kontrast) */
+/* 1. Behållaren: Svalare grå och lite tajtare */
 .view-toggle-buttons {
     display: inline-flex;
     align-items: center;
-    background-color: #E5E7EB; /* Mörkare grå än tidigare (#F3F4F6) */
-    padding: 4px; /* Luft runt knapparna */
-    border-radius: 12px;
-    border: 1px solid #D1D5DB; /* Tydligare kantlinje */
+    background-color: #F1F5F9; /* En "kallare" ljusgrå (ser renare ut) */
+    padding: 3px; /* Lite mindre padding (från 4px) för en stramare look */
+    border-radius: 10px; /* Något mindre radie */
+    border: 1px solid #E2E8F0; /* Mycket subtil kantlinje */
     margin-left: 1rem;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.03); /* Liten inre skugga för djup */
 }
 
-/* 2. Knapparna (Inaktiva) */
+/* 2. Knapparna: Mjukare textfärg */
 .button-toggle-view {
     display: flex;
     align-items: center;
     gap: 6px;
-    
     background: transparent;
     border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 8px;
+    
+    /* Justerade mått för bättre balans */
+    padding: 6px 12px; 
+    border-radius: 7px; /* Matchar behållarens inre kurva */
     
     font-size: 0.85rem;
-    font-weight: 600;
-    color: #6B7280; /* Grå text */
+    font-weight: 500; /* Lite tunnare text på de inaktiva */
+    color: #64748B; /* Mjukare grå-blå ton på texten */
     cursor: pointer;
     transition: all 0.2s ease;
 }
 
-/* 3. Aktiv knapp (Vit, Tydlig skugga) */
+/* 3. Aktiv knapp: Krispig vit med mjuk skugga */
 .button-toggle-view.active {
-    background-color: #FFFFFF !important; /* Tvinga vit */
-    color: #111827 !important; /* Svart text */
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important; /* Mycket tydligare skugga */
-    transform: scale(1.02); /* Väx lite, lite grann */
+    background-color: #FFFFFF !important;
+    color: #0F172A !important; /* Nästan svart med blå ton */
+    font-weight: 600; /* Fetare text på den valda */
+    
+    /* En mer sofistikerad skugga (en liten, en stor) */
+    box-shadow: 
+        0 1px 2px rgba(0,0,0,0.04), 
+        0 1px 3px rgba(0,0,0,0.08); 
+        
+    transform: none; /* Vi skippar förstoringen för en renare look */
 }
 
 /* 4. Ikoner */
 .button-toggle-view .icon-sm {
-    color: #9CA3AF;
-    width: 1.1rem;
-    height: 1.1rem;
+    color: #94A3B8; /* Ljusare ikon på inaktiva */
+    width: 1rem; /* Lite mindre ikoner för elegans */
+    height: 1rem;
+    transition: color 0.2s;
 }
 .button-toggle-view.active .icon-sm {
-    color: var(--primary-color); /* Blå ikon */
+    color: var(--primary-color); /* Din blå färg */
 }
 
-/* Hover på inaktiva */
+/* Hover */
 .button-toggle-view:not(.active):hover {
-    color: #374151;
-    background-color: rgba(255,255,255,0.5); /* Ljusar upp vid hover */
+    color: #475569;
+    background-color: rgba(255,255,255,0.6);
 }
 
 .button-toggle-view:hover {
@@ -4874,6 +4883,7 @@ html.privacy-mode-enabled .nav-logo {
     /* border-left: 3px solid var(--primary-color) !important; */ 
     /* (Avkommentera raden ovan om du vill ha en blå kant vid hover) */
 }
+
 
 
 
