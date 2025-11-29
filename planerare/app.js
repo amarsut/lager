@@ -2269,93 +2269,120 @@
             }
 
             function openJobModal(mode, dataToClone = null, options = {}) {
-                jobModalForm.reset();
-                currentExpenses = []; // Nollställ alltid utgifts-arrayen
-
-				if (accordionToggle) {
+			    jobModalForm.reset();
+			    currentExpenses = []; 
+			
+			    // 2. Stäng Accordion (Mer uppgifter) så den är snygg
+			    const accordionToggle = document.getElementById('extraDetailsToggle');
+			    const accordionContent = document.getElementById('extraDetailsContent');
+			    if (accordionToggle && accordionContent) {
 			        accordionToggle.classList.remove('active');
 			        accordionContent.classList.remove('show');
 			    }
-
-                // NYTT: Återställ/dölj knapparna varje gång
-                jobModalCallBtn.style.display = 'none';
-                jobModalSmsBtn.style.display = 'none';
-                
-                if (mode === 'add') {
-				    modalTitle.textContent = 'Lägg till nytt jobb';
-				    modalSaveBtn.textContent = 'Spara'; 
-				    modalJobId.value = '';
-				    
-				    // --- NYTT: Sätt status & nollställ mall via dropdown ---
-				    document.getElementById('statusSelect').value = 'bokad'; 
-				    document.getElementById('templateSelect').value = "";
-				    // ------------------------------------------------------
-				
-				    if (dataToClone) {
-				        // Kloning...
-				        document.getElementById('statusSelect').value = dataToClone.status || 'bokad'; // Uppdatera status
-				        document.getElementById('prio').checked = dataToClone.prio || false;
-				        // ... (resten av kloningskoden är samma som förut) ...
-				    } else {
-				        // Helt nytt...
-				        document.getElementById('prio').checked = false;
-				        const now = new Date();
-				        modalDatum.value = todayString;
-				        modalTid.value = now.toTimeString().substring(0,5);
-				        currentExpenses = [];
-				    }
-				}
-                else if (mode === 'edit' && dataToClone) {
-                    // REDIGERINGS-LÄGE (Här var felet)
-                    modalTitle.textContent = 'Redigera Jobb';
-                    modalSaveBtn.textContent = 'Spara'; 
-                    modalJobId.value = dataToClone.id;
-
-					document.getElementById('statusSelect').value = dataToClone.status || 'bokad';
-    				document.getElementById('templateSelect').value = ""; // Nollställ alltid mall vid edit
-					
-                    syncStatusUI(dataToClone.status || 'bokad');
-                    document.getElementById('prio').checked = dataToClone.prio || false;
-
-                    // --- START: DEN SAKNADE KODEN SOM NU ÄR TILLBAKA ---
-                    if (dataToClone.datum) {
-                        const d = new Date(dataToClone.datum);
-                        modalDatum.value = d.toISOString().split('T')[0];
-                        modalTid.value = d.toTimeString().substring(0,5);
-                    } else {
-                        modalDatum.value = ''; modalTid.value = '';
-                    }
-                    modalRegnr.value = dataToClone.regnr;
-                    modalKundnamn.value = dataToClone.kundnamn.toUpperCase();
-                    modalTelefon.value = dataToClone.telefon || '';
-                    // --- SLUT: DEN SAKNADE KODEN ---
-                    
-                    modalKundpris.value = dataToClone.kundpris;
-                    
-                    // --- NY UTGIFTS-LOGIK (för redigering) ---
-                    if (dataToClone.expenseItems && Array.isArray(dataToClone.expenseItems)) {
-                        currentExpenses = [...dataToClone.expenseItems]; // Läs in den sparade arrayen
-                    } else if (dataToClone.utgifter > 0) {
-                        // Bakåtkompatibilitet: Omvandla gammal data
-                        currentExpenses = [{ name: "Generell utgift", cost: dataToClone.utgifter || 0 }];
-                    } else {
-                        currentExpenses = []; // Starta tom om gamla utgifter var 0
-                    }
-                    // --- SLUT NY LOGIK ---
-
-                    document.getElementById('kommentarer').value = dataToClone.kommentarer;
-					document.getElementById('matarstallning').value = dataToClone.matarstallning || '';
-                }
-                
-                renderExpensesList(); // <-- Denna körs
-                updateLiveProfit(); // <-- Denna körs
-                
-                // Trigga input-eventet för att visa/dölja knappar om ett nr finns
-                modalTelefon.dispatchEvent(new Event('input')); 
-
-                showModal('jobModal', options);
-                modalKundnamn.focus();
-            }
+			
+			    // 3. Dölj ring/sms-knappar till en början
+			    const btnCall = document.getElementById('jobModalCallBtn');
+			    const btnSms = document.getElementById('jobModalSmsBtn');
+			    if(btnCall) btnCall.style.display = 'none';
+			    if(btnSms) btnSms.style.display = 'none';
+			    
+			    // Hämta dropdown-elementen säkert
+			    const statusSelect = document.getElementById('statusSelect');
+			    const templateSelect = document.getElementById('templateSelect');
+			
+			    // --- LÄGE: LÄGG TILL (ADD) ---
+			    if (mode === 'add') {
+			        modalTitle.textContent = 'Lägg till nytt jobb';
+			        modalSaveBtn.textContent = 'Spara'; 
+			        modalJobId.value = '';
+			        
+			        // Standardvärden
+			        if(statusSelect) statusSelect.value = 'bokad'; 
+			        if(templateSelect) templateSelect.value = "";
+			
+			        if (dataToClone) {
+			            // KLONING (Kopiera från ett gammalt jobb)
+			            if(statusSelect) statusSelect.value = dataToClone.status || 'bokad';
+			            if(document.getElementById('prio')) document.getElementById('prio').checked = dataToClone.prio || false;
+			            
+			            // Datum & Tid
+			            modalDatum.value = dataToClone.datum ? dataToClone.datum.split('T')[0] : new Date().toISOString().split('T')[0];
+			            modalTid.value = dataToClone.datum ? new Date(dataToClone.datum).toTimeString().substring(0,5) : new Date().toTimeString().substring(0,5);
+			            
+			            // Fyll i fält
+			            modalRegnr.value = dataToClone.regnr || '';
+			            modalKundnamn.value = (dataToClone.kundnamn || '').toUpperCase();
+			            modalTelefon.value = dataToClone.telefon || '';
+			            modalKundpris.value = dataToClone.kundpris || 0;
+			
+			            // Utgifter
+			            if (dataToClone.expenseItems && Array.isArray(dataToClone.expenseItems)) {
+			                currentExpenses = [...dataToClone.expenseItems];
+			            } else if (dataToClone.utgifter > 0) {
+			                currentExpenses = [{ name: "Generell utgift", cost: dataToClone.utgifter || 0 }];
+			            }
+			
+			            document.getElementById('kommentarer').value = dataToClone.kommentarer || '';
+			            document.getElementById('matarstallning').value = dataToClone.matarstallning || '';
+			        } else {
+			            // HELT NYTT (Tomt)
+			            if(document.getElementById('prio')) document.getElementById('prio').checked = false;
+			            const now = new Date();
+			            modalDatum.value = now.toISOString().split('T')[0];
+			            modalTid.value = now.toTimeString().substring(0,5);
+			            currentExpenses = [];
+			        }
+			    } 
+			    // --- LÄGE: REDIGERA (EDIT) ---
+			    else if (mode === 'edit' && dataToClone) {
+			        modalTitle.textContent = 'Redigera Jobb';
+			        modalSaveBtn.textContent = 'Spara'; 
+			        modalJobId.value = dataToClone.id;
+			        
+			        // Sätt status
+			        if(statusSelect) statusSelect.value = dataToClone.status || 'bokad';
+			        if(templateSelect) templateSelect.value = ""; // Nollställ mall vid redigering
+			
+			        if(document.getElementById('prio')) document.getElementById('prio').checked = dataToClone.prio || false;
+			
+			        // Fyll i Datum & Tid (Detta saknades troligen förut!)
+			        if (dataToClone.datum) {
+			            const d = new Date(dataToClone.datum);
+			            modalDatum.value = d.toISOString().split('T')[0];
+			            modalTid.value = d.toTimeString().substring(0,5);
+			        } else {
+			            modalDatum.value = ''; modalTid.value = '';
+			        }
+			        
+			        // Fyll i Textfält
+			        modalRegnr.value = dataToClone.regnr || '';
+			        modalKundnamn.value = (dataToClone.kundnamn || '').toUpperCase();
+			        modalTelefon.value = dataToClone.telefon || '';
+			        modalKundpris.value = dataToClone.kundpris || 0;
+			        
+			        // Fyll i Utgifter
+			        if (dataToClone.expenseItems && Array.isArray(dataToClone.expenseItems)) {
+			            currentExpenses = [...dataToClone.expenseItems];
+			        } else if (dataToClone.utgifter > 0) {
+			            currentExpenses = [{ name: "Generell utgift", cost: dataToClone.utgifter || 0 }];
+			        } else {
+			            currentExpenses = [];
+			        }
+			
+			        document.getElementById('kommentarer').value = dataToClone.kommentarer || '';
+			        document.getElementById('matarstallning').value = dataToClone.matarstallning || '';
+			    }
+			    
+			    // Uppdatera listor och kalkyler
+			    renderExpensesList();
+			    updateLiveProfit();
+			    
+			    // Trigga input-eventet för telefon (visar knappar om nummer finns)
+			    if (modalTelefon) modalTelefon.dispatchEvent(new Event('input')); 
+			
+			    // Visa modalen
+			    showModal('jobModal', options);
+			}
             
             function getJobDataFromForm() {
                 const kundpris = parseFloat(modalKundpris.value) || 0;
