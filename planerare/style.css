@@ -5623,6 +5623,11 @@ html.privacy-mode-enabled .nav-logo {
         grid-template-columns: 1fr 1fr !important; /* Tvinga 2 kolumner */
         gap: 0.75rem !important;
     }
+
+	.name-reg-wrapper {
+        grid-template-columns: 1fr !important; /* En enda kolumn */
+        gap: 1rem !important;
+    }
     
     /* Justera labels så de får plats bättre på mobilen */
     #jobModalForm .form-group-split label {
@@ -5955,3 +5960,4 @@ html.privacy-mode-enabled .nav-logo {
 .prio-toggle-wrapper input:checked + .icon-sm {
     fill: currentColor; /* Fyll ikonen */
 }
+
