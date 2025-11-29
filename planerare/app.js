@@ -2177,19 +2177,32 @@
 
             // --- UPPDATERAD FUNKTION: Beräknar vinst & total utgift ---
             function updateLiveProfit() {
-                const pris = parseFloat(modalKundpris.value) || 0;
-                
-                // Beräkna total utgift från arrayen
-                const totalUtgifter = currentExpenses.reduce((sum, item) => sum + (item.cost || 0), 0);
-                
-                const vinst = pris - totalUtgifter;
-                
-                // Uppdatera UI med både vinst och totala utgifter
-                modalVinstKalkyl.innerHTML = `
-                    <span style="color: ${vinst < 0 ? 'var(--danger-color)' : (vinst > 0 ? 'var(--success-color)' : 'var(--text-color)')};">Vinst: ${formatCurrency(vinst)}</span>
-                    <span style="font-size: 0.9rem; color: var(--text-color-light); margin-left: 1rem;">(Utgifter: ${formatCurrency(totalUtgifter)})</span>
-                `;
-            }
+			    const prisEl = document.getElementById('kundpris');
+			    const pris = prisEl ? (parseFloat(prisEl.value) || 0) : 0;
+			    
+			    // Beräkna total utgift
+			    const totalUtgifter = currentExpenses.reduce((sum, item) => sum + (item.cost || 0), 0);
+			    const vinst = pris - totalUtgifter;
+			    
+			    // Uppdatera de nya fälten
+			    const expenseEl = document.getElementById('liveExpenseSum');
+			    const profitEl = document.getElementById('liveProfitSum');
+			    
+			    if (expenseEl && profitEl) {
+			        // Uppdatera text
+			        expenseEl.textContent = `-${formatCurrency(totalUtgifter)}`;
+			        profitEl.textContent = formatCurrency(vinst);
+			        
+			        // Byt färg på vinsten beroende på plus/minus
+			        if (vinst < 0) {
+			            profitEl.className = "value negative"; // Röd
+			            profitEl.style.color = "var(--danger-color)";
+			        } else {
+			            profitEl.className = "value positive"; // Grön
+			            profitEl.style.color = "var(--success-color)";
+			        }
+			    }
+			}
 
 			// --- NY LISTENER: Gör utgiftsnamn till stora bokstäver ---
             expenseNameInput.addEventListener('input', (e) => {
