@@ -5547,6 +5547,15 @@ html.privacy-mode-enabled .nav-logo {
 .confirm-box h3 { margin: 0; font-size: 1.2rem; }
 .confirm-box p { color: var(--text-color-light); margin: 0 0 1rem 0; font-size: 0.95rem; }
 
+#confirmYesBtn {
+    color: #ffffff !important;       /* Tvinga vit text */
+    font-weight: 600 !important;     /* Tydlig fetstil */
+    display: inline-flex !important; /* Säkerställ att den beter sig som en knapp */
+    align-items: center;
+    justify-content: center;
+    opacity: 1 !important;           /* Säkerställ att den inte är genomskinlig */
+}
+
 .confirm-actions {
     width: 100%;
     justify-content: center !important; /* Centrera knapparna */
@@ -5556,6 +5565,7 @@ html.privacy-mode-enabled .nav-logo {
     gap: 1rem;
 }
 .confirm-actions .button { flex: 1; }
+
 
 
 
