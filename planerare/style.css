@@ -5868,7 +5868,7 @@ html.privacy-mode-enabled .nav-logo {
 .expense-add-form-original {
     display: grid;
     /* Justera bredden: Namn tar mest plats, Pris lite mindre, Knappen fast */
-    grid-template-columns: 1fr 100px auto; 
+    grid-template-columns: 1fr 135px auto;
     gap: 0.75rem;
     margin-bottom: 1rem;
     align-items: center;
@@ -5897,10 +5897,11 @@ html.privacy-mode-enabled .nav-logo {
     justify-content: space-between;
     align-items: center;
     background-color: #F3F4F6; /* Ljusgrå */
-    padding: 0.75rem 1rem;
+    padding: 0.4rem 0.8rem;
     border-radius: 8px;
     border: 1px solid var(--border-color);
     font-size: 0.9rem;
+	min-height: 36px;
 }
 
 .expense-item-original .item-name {
@@ -5975,3 +5976,4 @@ html.privacy-mode-enabled .nav-logo {
     font-weight: 500;
     margin-left: 4px;
 }
+
