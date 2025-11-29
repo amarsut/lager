@@ -949,12 +949,19 @@ mark {
 
 .modal-content { 
     background-color: var(--content-bg); 
-    border-radius: var(--border-radius); 
-    box-shadow: var(--shadow-lg); 
-    width: 90%; 
-    max-width: 580px; 
-    max-height: 90vh; overflow: hidden;
-    display: flex; flex-direction: column;
+    border-radius: 12px; /* Lite mindre runda hörn för proffsigare look */
+    box-shadow: 0 20px 50px rgba(0,0,0,0.15); /* Snyggare skugga (djup) */
+    
+    width: 100%; 
+    max-width: 520px; /* <-- VIKTIGT: Smalare modal ser proffsigare ut på desktop */
+    
+    height: auto;     /* <-- VIKTIGT: Tar bort tomrummet i botten! */
+    max-height: 85vh; /* Går aldrig utanför skärmen */
+    
+    display: flex; 
+    flex-direction: column;
+    overflow: hidden; /* För runda hörn */
+    
     transform: scale(0.98) translateY(-10px); 
     opacity: 0; 
     animation: modalFadeIn 0.2s ease-in-out forwards;
@@ -1012,7 +1019,33 @@ mark {
 
 /* Formulär-design */
 #jobModalForm { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
-.form-group-split { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+.form-group-split, 
+.name-reg-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Exakt hälften var */
+    gap: 1rem;
+    width: 100%;
+}
+.price-profit-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.75rem;
+}
+/* --- UTGIFTSLISTA (KOMPAKT) --- */
+.clean-list-row {
+    padding: 0.35rem 0 !important; /* Mycket tajtare rader */
+    font-size: 0.85rem !important;
+}
+.clean-input {
+    padding: 0.5rem 0.75rem !important; /* Matcha övriga fält */
+}
+.clean-add-btn {
+    height: 38px !important; /* Lite mindre knapp */
+    width: 38px !important;
+}
 .full-width { grid-column: 1 / -1; }
 
 .form-group { display: flex; flex-direction: column; gap: 0.5rem; position: relative; }
@@ -1040,6 +1073,39 @@ mark {
     background-color: #ffffff;
     border-color: var(--primary-color);
     box-shadow: 0 0 0 4px var(--primary-light); /* "Ring"-effekt */
+}
+
+/* --- KOMPAKTARE FORMULÄR (DESKTOP) --- */
+
+/* Minska avståndet mellan fälten */
+.form-group, .form-group-split, .economy-clean-wrapper {
+    margin-bottom: 1rem !important; /* Var 1.5rem eller mer förut */
+}
+
+/* Mindre och tydligare etiketter */
+.form-group label {
+    font-size: 0.75rem !important;
+    font-weight: 700 !important;
+    color: #6B7280; /* Ljusgrå proffsig färg */
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-bottom: 0.35rem !important;
+}
+
+/* Slankare input-fält */
+.form-group input, 
+.form-group textarea, 
+.compact-select {
+    padding: 0.6rem 0.75rem !important; /* Mindre luft inuti */
+    font-size: 0.9rem !important;
+    border-radius: 8px !important;
+    height: auto !important;
+}
+
+/* Sökryss för kommentarsfältet */
+.form-group textarea {
+    resize: vertical;
+    min-height: 60px;
 }
 
 /* Dark mode justering för inputs */
@@ -5977,6 +6043,7 @@ html.privacy-mode-enabled .nav-logo {
     font-weight: 500;
     margin-left: 4px;
 }
+
 
 
 
