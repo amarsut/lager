@@ -2189,11 +2189,12 @@
 			    const vinstDiv = document.getElementById('vinstKalkyl');
 			    
 			    if (vinstDiv) {
-			        // Skapa HTML-strängen precis som på bilden
+			        // Bygg strängen: "Vinst: 986 kr (Utgifter: 434 kr)"
 			        let html = `Vinst: <span style="color:${vinst >= 0 ? 'var(--success-color)' : 'var(--danger-color)'}">${formatCurrency(vinst)}</span>`;
 			        
 			        if (totalUtgifter > 0) {
-			            html += ` <span class="expense-summary">(Utgifter: ${formatCurrency(totalUtgifter)})</span>`;
+			            // Lägg till utgifter i en span för att kunna göra den grå
+			            html += `<span class="expense-part"> (Utgifter: ${formatCurrency(totalUtgifter)})</span>`;
 			        }
 			        
 			        vinstDiv.innerHTML = html;
