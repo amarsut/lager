@@ -4577,7 +4577,7 @@ html.privacy-mode-enabled .nav-logo {
 /* ========================================= */
 @media (max-width: 768px) {
 
-    /* --- 1. Global Layout --- */
+    /* --- 1. Global Layout & Scroll --- */
     .app-main {
         overflow-y: auto; 
         -webkit-overflow-scrolling: touch;
@@ -4600,13 +4600,18 @@ html.privacy-mode-enabled .nav-logo {
     #fabAddJob,
     #jobbOversikt, 
     .table-container, 
-    .sticky-link-buttons, 
     #btnToggleKanban,
     #mobileSettingsGroup,
     .header-titles .view-toggle-buttons,
     #statsModal .detail-modal-header p { 
         display: none !important; 
     }
+
+    /* FIX 4: Dölj externa länkar i headern (Bil-modal) */
+    .detail-modal-header .external-actions-wrapper {
+        display: none !important;
+    }
+    #copyCarRegnrBtn { display: none !important; } /* Dölj kopiera-knapp i header på mobil om den stör */
 
     /* --- 3. Header & Navigation --- */
     .main-header { padding: 0 1rem; height: 60px; }
@@ -4667,35 +4672,38 @@ html.privacy-mode-enabled .nav-logo {
         border-top: 1px solid var(--border-color);
     }
 
-    /* FIX 1: JOBB-MALLAR (Mer utrymme så de inte klipps) */
+    /* FIX 2: JOBB-MALLAR (Mer höjd och padding) */
     .job-templates {
         display: flex !important;
-        flex-wrap: nowrap !important; /* Tvinga allt på en rad */
-        overflow-x: auto !important;  /* Tillåt swipe */
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
         gap: 0.75rem !important;
         
-        /* Mer luft i botten fixar att de klipps av */
-        padding: 0.25rem 0.25rem 1rem 0.25rem !important; 
-        
+        /* Öka padding så skuggor och kanter syns */
+        padding: 0.5rem 0.25rem 1rem 0.25rem !important; 
         margin-bottom: 0.5rem !important;
         align-items: center;
+        min-height: 50px; /* Garantera plats */
         
-        /* Göm scrollbar men behåll funktionen */
         scrollbar-width: none; 
         -ms-overflow-style: none;
     }
     .job-templates::-webkit-scrollbar { display: none; }
 
     .job-templates .button.template-btn {
-        flex-shrink: 0 !important; /* Krymp inte knapparna */
+        flex-shrink: 0 !important;
         white-space: nowrap !important;
         font-size: 0.85rem !important;
+        height: 38px; /* Fast höjd */
     }
     
     .prio-toggle-wrapper {
         flex-shrink: 0 !important;
         margin-left: 0 !important;
         white-space: nowrap !important;
+        height: 38px; /* Samma höjd som knappar */
+        display: inline-flex;
+        align-items: center;
     }
 
     /* --- 5. Statistik-kort --- */
@@ -4746,7 +4754,7 @@ html.privacy-mode-enabled .nav-logo {
         box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         border-left: 4px solid transparent;
         display: block !important;
-        padding-bottom: 0; /* Action-raden har egen padding */
+        padding-bottom: 0; 
     }
     .mobile-job-card.prio-row {
         border-left-color: var(--danger-color); background-color: var(--danger-light);
@@ -4760,36 +4768,110 @@ html.privacy-mode-enabled .nav-logo {
         padding: 0.25em 0.75em !important; border-radius: 99px !important; display: inline-block;
     }
 
-    /* FIX 2: ÅTGÄRDSKNAPPAR (Utspridda över hela bredden) */
+    /* FIX 1: ÅTGÄRDSKNAPPAR (Små och prydliga) */
     .mobile-job-card .action-col {
         display: flex !important;
-        justify-content: space-around !important; /* Sprider ut dem jämnt */
-        align-items: center !important;
-        gap: 0 !important; /* Gap behövs inte med space-around */
-        
-        padding: 0.75rem 0.5rem !important;
-        
-        background-color: var(--bg-color) !important; /* Ljusgrå bakgrund som förr */
-        border-top: 1px solid rgba(0,0,0,0.05) !important;
+        justify-content: flex-start !important; /* Vänsterställd */
+        gap: 1.5rem !important; /* Luft mellan ikonerna */
+        padding: 0.5rem 1rem 1rem 1rem !important; 
+        background-color: transparent !important;
+        border-top: none !important;
         opacity: 1 !important;
-        width: 100% !important;
-        box-sizing: border-box !important;
     }
     
     .mobile-job-card .action-col .icon-btn {
-        padding: 0.5rem !important;
+        padding: 0 !important;
         background: transparent !important;
         width: auto !important; height: auto !important;
-        border-radius: 6px !important;
-        color: var(--text-color-light) !important;
-        flex: 1 !important; /* Gör att de tar lika stor klick-yta */
-        display: flex !important;
-        justify-content: center !important;
+        border-radius: 0 !important;
+        color: #9CA3AF !important; 
+        flex: 0 0 auto !important; /* Förhindra expandering */
     }
     
     .mobile-job-card .action-col .icon-sm {
-        width: 1.4rem !important;
-        height: 1.4rem !important;
+        width: 1.3rem !important;
+        height: 1.3rem !important;
+    }
+    
+    .mobile-job-card .action-col .icon-btn.active-prio { color: var(--danger-color) !important; }
+    
+    /* FIX 3: KUND & BIL MODAL (Snyggare lista) */
+    .detail-job-table tbody tr {
+        display: block !important;
+        background: var(--content-bg);
+        border: none !important;
+        border-bottom: 1px solid var(--border-color) !important;
+        padding: 1rem 0 !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+    }
+    
+    .detail-job-table td {
+        display: block !important;
+        padding: 0 0 0.25rem 0 !important;
+        border: none !important;
+        text-align: left !important;
+    }
+    
+    /* Datumrubrik */
+    .detail-job-table td[data-label="Datum"] {
+        font-weight: 700 !important;
+        font-size: 0.9rem !important;
+        margin-bottom: 0.25rem;
+    }
+    
+    /* Info (Regnr/Namn) */
+    .detail-job-table td[data-label="Info"] {
+        padding-top: 0 !important;
+    }
+    .detail-job-table .job-subline-main {
+        font-size: 1rem !important;
+        font-weight: 600 !important;
+        color: var(--text-color) !important;
+    }
+    .detail-job-table .job-subline-comment {
+        font-style: italic;
+        color: var(--text-color-light);
+        font-size: 0.85rem;
+    }
+    
+    /* Status & Vinst på samma rad i botten */
+    .detail-job-table td[data-label="Status"],
+    .detail-job-table td[data-label="Vinst"] {
+        display: inline-block !important;
+        width: auto !important;
+        vertical-align: middle;
+        margin-top: 0.5rem;
+    }
+    .detail-job-table td[data-label="Vinst"] {
+        float: right;
+        font-weight: 700;
+        font-size: 1rem !important;
+    }
+    
+    /* Göm etiketter */
+    .detail-job-table td::before { display: none !important; }
+    .detail-job-table thead { display: none !important; }
+
+    /* FIX 4: EXTERNA LÄNKAR (Enhetliga knappar i botten) */
+    .sticky-link-buttons {
+        display: grid !important; 
+        grid-template-columns: 1fr !important; /* Stapla dem */
+        gap: 0.75rem !important;
+        padding: 1rem 1.25rem !important;
+        background-color: var(--bg-color) !important;
+        border-top: 1px solid var(--border-color) !important;
+    }
+    
+    .sticky-link-buttons .button.secondary {
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        padding: 0.8rem 1rem !important; /* Lite större klickyta */
+        width: 100% !important;
+        box-sizing: border-box;
+        font-weight: 600;
     }
     
     /* --- 7. Sök-Modal --- */
@@ -4822,10 +4904,6 @@ html.privacy-mode-enabled .nav-logo {
     #mobileSearchResults .action-col { display: none !important; }
 
     /* --- 8. Övrigt --- */
-    .sticky-link-buttons {
-        display: grid !important; grid-template-columns: 1fr; gap: 0.75rem;
-        padding: 1rem 1.25rem; background-color: var(--bg-color); border-top: 1px solid var(--border-color);
-    }
     #confirmModal .modal-content.confirm-box {
         height: auto !important; width: 95% !important; position: absolute !important;
         bottom: 1.5rem !important; left: 50% !important; transform: translateX(-50%) !important;
@@ -4836,8 +4914,6 @@ html.privacy-mode-enabled .nav-logo {
 
     /* --- 9. Kalender (KOMPAKT) --- */
     #calendarView { padding: 0; background: none; border: none; }
-    
-    /* Header: Stacka knapparna för plats */
     .fc .fc-toolbar.fc-header-toolbar {
         display: flex !important; flex-direction: column !important;
         gap: 0.5rem !important; padding: 0.5rem !important; align-items: center !important;
