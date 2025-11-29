@@ -2893,6 +2893,7 @@
             
             // --- `jobListContainer` klick-hanterare med "Ångra" ---
             jobListContainer.addEventListener('click', (e) => {
+				e.stopPropagation();
                 const target = e.target;
                 
                 const actionButton = target.closest('.icon-btn');
@@ -4078,23 +4079,40 @@
     }
     /* --- FELSÄKER MOBIL-SÖK SLUT --- */
 
-	const mobileResultList = document.getElementById('mobileSearchResults');
+	/* --- KLICK-HANTERARE FÖR MOBIL SÖKLISTA (FIXAD) --- */
+    const mobileResultList = document.getElementById('mobileSearchResults');
 
     if (mobileResultList) {
         mobileResultList.addEventListener('click', (e) => {
-            // Hitta kortet man klickade på
-            const card = e.target.closest('.mobile-job-card');
-            if (!card) return;
+            e.stopPropagation(); // VIKTIGT: Stoppar klicket från att stänga saker bakom
 
-            const jobId = card.dataset.id;
-            const job = findJob(jobId);
+            const target = e.target;
 
-            if (job) {
-                // Öppna jobbet (Översikts-modalen)
-                openJobSummaryModal(job);
-                
-                // Valfritt: Stäng tangentbordet om det är öppet
-                if (document.activeElement) document.activeElement.blur();
+            // 1. Klick på Kund-länk?
+            const customerLink = target.closest('.customer-link');
+            if (customerLink) {
+                const kundnamn = customerLink.dataset.kund;
+                openCustomerModal(kundnamn);
+                return;
+            }
+
+            // 2. Klick på Bil-länk?
+            const carLink = target.closest('.car-link');
+            if (carLink) {
+                const regnr = carLink.dataset.regnr;
+                openCarModal(regnr);
+                return;
+            }
+
+            // 3. Klick på själva kortet? (Öppna jobbet)
+            const card = target.closest('.mobile-job-card');
+            if (card) {
+                const jobId = card.dataset.id;
+                const job = findJob(jobId);
+                if (job) {
+                    openJobSummaryModal(job);
+                    if (document.activeElement) document.activeElement.blur(); // Stäng tangentbord
+                }
             }
         });
     }
