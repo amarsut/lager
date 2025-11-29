@@ -5300,14 +5300,15 @@ html.privacy-mode-enabled .nav-logo {
 /* --- 1. VISA DATUM I MOBIL SÖKRESULTAT --- */
 /* Se till att tids-badgen syns i söklistan */
 #mobileSearchResults .card-time-badge {
-    display: inline-block !important; /* Tvinga fram den */
+    display: inline-block !important;
     background: transparent !important;
     border: none !important;
     padding: 0 !important;
-    color: #6B7280 !important; /* Grå text */
-    font-size: 0.85rem !important;
-    font-weight: 500 !important;
-    margin-left: auto; /* Knuffa den till högerkanten */
+    color: var(--text-color-light);
+    font-size: 0.9rem !important;
+    font-weight: 500;
+    margin: 0 !important;
+    text-align: left; /* Ligg nära datumet */
 }
 
 /* Justera raden så datum hamnar snyggt till höger om namnet */
@@ -5319,9 +5320,7 @@ html.privacy-mode-enabled .nav-logo {
 /* Dölj själva status-texten ("Bokad") i söklistan för att spara plats, 
    vi har ju färgen i kanten ändå */
 #mobileSearchResults .status-badge {
-    display: inline-flex !important;
-    font-size: 0.7rem !important;
-    padding: 2px 6px !important;
+    justify-self: end;
 }
 
 /* 2. Datum-hantering */
@@ -5331,17 +5330,26 @@ html.privacy-mode-enabled .nav-logo {
 
 /* Visa datumet BARA inuti sökresultaten */
 #mobileSearchResults .search-date-badge {
-    /* Lägg till !important för att skriva över Javascriptets inline-style */
-    display: inline-block !important; 
-    margin-right: 6px;
-    font-weight: 600;
+    display: inline-block !important;
+    font-weight: 700; /* Fetstilt som i tidslinjen */
+    font-size: 0.95rem;
     color: var(--text-color);
+    margin: 0 !important;
+    text-transform: capitalize; /* Stor bokstav (t.ex. "28 Feb") */
 }
 
 /* 3. Justera layouten i söklistan */
 #mobileSearchResults .time-status-wrapper {
-    justify-content: flex-end; /* Tryck allt till höger */
-    gap: 6px;
+    width: 100%;
+    display: grid !important;
+    /* Skapa tre kolumner: Datum (vänster), Tid (mitten), Status (höger) */
+    grid-template-columns: auto 1fr auto; 
+    align-items: center;
+    gap: 10px;
 }
 
+/* 1. Dölj etiketten "Tid / Status" inuti sökresultaten för att spara plats */
+#mobileSearchResults .card-row .card-label {
+    display: none !important;
+}
 
