@@ -1839,146 +1839,71 @@
 			});
 
             window.addEventListener('popstate', (event) => {
-    
-			    // 1. Hämta sökmodalen
-			    const mSearchModal = document.getElementById('mobileSearchModal');
-			    
-			    // 2. Kolla om den faktiskt syns på skärmen just nu
-			    const isSearchVisible = mSearchModal && window.getComputedStyle(mSearchModal).display !== 'none';
-			    
-			    // 3. Kolla om vi är på väg IN i sökläget (då ska vi inte stänga)
-			    const isNavigatingToSearch = event.state && event.state.modal === 'mobileSearch';
+			    clearTimeout(backPressTimer); 
 			
-			    // --- HUVUDREGEL FÖR SWIPE/BAKÅT ---
-			    // Om sökrutan syns, MEN vi är inte på väg till den (alltså vi backar bort från den)
-			    if (isSearchVisible && !isNavigatingToSearch) {
-			        
-			        // Anropa din städ-funktion som rensar allt
-			        if (typeof resetAndCloseSearch === 'function') {
-			            resetAndCloseSearch();
-			        } else {
-			            // Fallback om funktionen inte hittas (säkerhetsåtgärd)
-			            if (mSearchModal) mSearchModal.style.display = 'none';
-			            currentSearchTerm = '';
-			            performSearch();
-			        }
-			        
-			        return; // VIKTIGT: Stoppa här så ingen annan kod körs!
-			    }
-			    
-			    // Om sökfönstret är synligt när man trycker Bakåt på telefonen...
-			    if (mSearchModal && getComputedStyle(mSearchModal).display === 'flex') {
-			        
-			        // 1. Dölj fönstret
-			        mSearchModal.style.display = 'none';
-			        
-			        // 2. Töm sökfältet
+			    const state = event.state;
+			
+			    // FALL 1: Vi navigerar TILL sök-läget (Framåt i historiken eller liknande)
+			    if (state && state.modal === 'mobileSearch') {
+			        const mSearchModal = document.getElementById('mobileSearchModal');
 			        const mInput = document.getElementById('mobileSearchBar');
-			        const dInput = document.getElementById('searchBar');
-			        if (mInput) mInput.value = '';
-			        if (dInput) dInput.value = '';
+			        if (mSearchModal) {
+			            mSearchModal.style.cssText = 'display: flex !important; opacity: 1 !important; visibility: visible !important;';
+			            setTimeout(() => { if (mInput) mInput.focus(); }, 100);
+			        }
+			        return;
+			    }
+			
+			    // FALL 2: En annan modal är öppen (t.ex. Jobb-modal)
+			    if (isModalOpen) {
+			        isNavigatingBack = true;
+			        closeModal({ popHistory: false }); // Stäng modalen men rör inte historiken igen
+			        isNavigatingBack = false;
+			        backPressWarned = false; 
+			        return;
+			    }
+			
+			    // FALL 3: Vi är på väg till Kalendern
+			    if (state && state.view === 'calendar') {
+			        if (currentView !== 'calendar') {
+			            isNavigatingBack = true;
+			            toggleView('calendar');
+			            isNavigatingBack = false;
+			        }
+			        backPressWarned = false;
+			    } 
+			    
+			    // FALL 4: Vi är på väg till Tidslinjen/Startsidan (state är null eller 'timeline')
+			    else if (!state || !state.view || state.view === 'timeline') { 
 			        
-			        // 3. Nollställ söktermen (Viktigast!)
-			        currentSearchTerm = '';
-			        
-			        // 4. Dölj "Rensa sökning"-knappar
-			        const globalClearBtn = document.getElementById('clearDayFilterBtn');
-			        if (globalClearBtn) globalClearBtn.style.display = 'none';
-			        
-			        if (document.getElementById('mobileSearchClear')) {
-			             document.getElementById('mobileSearchClear').style.cssText = 'display: none !important';
+			        // --- HÄR ÄR FIXEN ---
+			        // Vi kör ALLTID städning av sök när vi landar på startsidan.
+			        // Det fixar problemet med tangentbordet och "Anette"-resultatet.
+			        resetAndCloseSearch(); 
+			        // -------------------
+			
+			        // Se till att vi visar tidslinjen
+			        if (currentView !== 'timeline') {
+			            isNavigatingBack = true;
+			            toggleView('timeline');
+			            isNavigatingBack = false;
 			        }
 			
-			        // 5. Uppdatera listan så allt visas igen
-			        performSearch();
-			        
-			        // 6. Stanna här (kör ingen annan logik)
-			        return; 
+			        // Dubbeltryck för att stänga appen (Android-standard)
+			        if (backPressWarned) {
+			            backPressWarned = false;
+			        } else {
+			            backPressWarned = true;
+			            showToast('Tryck bakåt igen för att stänga', 'info');
+			            // Lägg tillbaka ett state så att man kan trycka bakåt en gång till
+			            history.pushState(null, 'Tidslinje', location.pathname); 
+			            
+			            backPressTimer = setTimeout(() => {
+			                backPressWarned = false;
+			            }, 2000); 
+			        }
 			    }
-
-				clearTimeout(backPressTimer);
-
-				const mClearBtn = document.getElementById('mobileSearchClear');
-				if (mClearBtn && mInput) {
-				    mClearBtn.addEventListener('click', (e) => {
-				        e.preventDefault();
-				        e.stopPropagation(); // Stoppa klicket
-				        
-				        mInput.value = ''; // Töm texten
-				        mInput.focus();    // Behåll fokus i rutan
-				        
-				        performSearch();   // Kör sökningen (som nu visar "Placeholder" pga koden i Steg A)
-				    });
-				}
-
-				if (isNavigatingBack) {
-			        isNavigatingBack = false; // Återställ flaggan
-			        backPressWarned = false; // Se till att varningen rensas
-			        return; // Gör ingenting mer, detta var avsiktligt
-			    }
-				
-                const state = event.state; 
-
-                if (isModalOpen) {
-                    // FALL 1: En modal var öppen. (Användaren tryckte "Bakåt" i webbläsaren)
-                    // Detta är den ENDA logiken vi vill köra.
-                    
-                    isNavigatingBack = true;
-                    closeModal({ popHistory: false }); // Stäng modal-UI:t
-                    isNavigatingBack = false;
-                    
-                    // Nollställ varningen, vi vill inte stänga appen
-                    backPressWarned = false; 
-					return;
-                } else if (state && state.view === 'calendar') {
-                    // FALL 2: Vi har navigerat TILL kalender-vyn
-                    // (Antingen "Framåt" i webbläsaren, eller så har en modalstängning avslöjat detta state)
-                    
-                    // Om vi *inte* redan är på kalendern, byt UI.
-                    if (currentView !== 'calendar') {
-                        isNavigatingBack = true;
-                        toggleView('calendar');
-                        isNavigatingBack = false;
-                    }
-                    backPressWarned = false; // Nollställ alltid varningen här
-
-                } else if (!state || !state.view) { 
-                    // FALL 3: Vi är på tidslinjen (state är null)
-
-					if (document.getElementById('mobileSearchModal')) {
-				        document.getElementById('mobileSearchModal').style.display = 'none';
-				    }
-
-					if (currentSearchTerm !== '') {
-				        currentSearchTerm = '';
-				        const dInput = document.getElementById('searchBar');
-				        const mInput = document.getElementById('mobileSearchBar');
-				        if(dInput) dInput.value = '';
-				        if(mInput) mInput.value = '';
-				        performSearch(); // Rita om listan direkt
-				    }
-                    
-                    // Om vi *inte* redan är på tidslinjen, byt UI.
-                    if (currentView !== 'timeline') {
-                        isNavigatingBack = true;
-                        toggleView('timeline');
-                        isNavigatingBack = false;
-                    }
-
-                    // Hantera dubbeltryck för att stänga
-                    if (backPressWarned) {
-                        backPressWarned = false;
-                    } else {
-                        backPressWarned = true;
-                        showToast('Tryck bakåt igen för att stänga', 'info');
-                        history.pushState(null, 'Tidslinje', location.pathname); 
-                        
-                        backPressTimer = setTimeout(() => {
-                            backPressWarned = false;
-                        }, 2000); 
-                    }
-                }
-            });
+			});
 
             function showModal(modalId, options = {}) {
 				if (modalId === 'mobileSearchModal') {
