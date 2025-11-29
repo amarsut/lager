@@ -3050,16 +3050,16 @@
 							    const originalStatus = job.status;
 							    if (originalStatus === 'klar') return; 
 							
-							    // Anropa bekräftelse istället för direkt handling
+							    // SKAPA EN VARIABEL FÖR REGNR (om det finns)
+							    const regInfo = (job.regnr && job.regnr !== 'OKÄNT') ? ` (${job.regnr})` : '';
+							
 							    showConfirmation(
 							        'Markera som Klar?', 
-							        `Vill du avsluta jobbet för ${job.kundnamn}?`, 
+							        // LÄGG TILL regInfo HÄR:
+							        `Vill du avsluta jobbet för ${job.kundnamn}${regInfo}?`, 
 							        'success', 
 							        () => {
-							            // Detta körs BARA om man trycker "Ja"
 							            quickSetStatus(id, 'klar');
-							            // (Du kan ta bort den gamla showToast med "Ångra" här om du vill, 
-							            // eftersom bekräftelsen nu fungerar som skydd)
 							        }
 							    );
 							    return;
@@ -3069,17 +3069,21 @@
                     if (actionButton.classList.contains('delete-btn')) {
 					    e.stopPropagation();
 					    
-					    // Hitta jobbet för att få namnet
 					    const job = findJob(id);
-					    const jobName = job ? job.kundnamn : 'detta jobb';
+					    
+					    // SKAPA NAMN + REGNR FÖR MEDDELANDET
+					    let jobDisplay = 'detta jobb';
+					    if (job) {
+					        const regInfo = (job.regnr && job.regnr !== 'OKÄNT') ? ` (${job.regnr})` : '';
+					        jobDisplay = `${job.kundnamn}${regInfo}`;
+					    }
 					
-					    // Anropa bekräftelse
 					    showConfirmation(
 					        'Radera jobb?', 
-					        `Är du säker på att du vill ta bort jobbet för ${jobName}?`, 
+					        // ANVÄND jobDisplay HÄR:
+					        `Är du säker på att du vill ta bort jobbet för ${jobDisplay}?`, 
 					        'danger', 
 					        () => {
-					            // Här kör vi raderingen direkt mot DB (utan extra confirm-ruta)
 					            db.collection("jobs").doc(id).update({
 					                deleted: true,
 					                deletedAt: new Date().toISOString()
