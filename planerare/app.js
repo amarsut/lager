@@ -1815,6 +1815,10 @@
 
                 } else if (!state || !state.view) { 
                     // FALL 3: Vi är på tidslinjen (state är null)
+
+					if (document.getElementById('mobileSearchModal')) {
+				        document.getElementById('mobileSearchModal').style.display = 'none';
+				    }
                     
                     // Om vi *inte* redan är på tidslinjen, byt UI.
                     if (currentView !== 'timeline') {
