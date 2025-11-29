@@ -1167,7 +1167,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 /* --- FIX FÖR SÖK I MODALER (Krock med ikon) --- */
 .modal-body .search-wrapper input {
     /* Ge plats åt förstoringsglaset i modalerna */
-    padding-left: 2.0rem !important; 
+    padding-left: 1.5rem !important; 
 }
 .modal-body .search-wrapper input[type="search"] {
     min-width: 100px;
@@ -5306,6 +5306,7 @@ html.privacy-mode-enabled .nav-logo {
     text-transform: uppercase;
     letter-spacing: 0.05em;
 }
+
 
 
 
