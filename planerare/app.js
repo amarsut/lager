@@ -3004,62 +3004,83 @@
             
             // --- `handleFormSubmit` med Spinner ---
             async function handleFormSubmit(e) {
-                e.preventDefault();
-                
-                // Hämta grunddata från formuläret
-                const jobId = modalJobId.value;
-                const kundpris = parseFloat(modalKundpris.value) || 0;
-                
-                // --- NY BERÄKNING AV UTGIFT & VINST ---
-                const totalUtgifter = currentExpenses.reduce((sum, item) => sum + (item.cost || 0), 0);
-                const vinst = kundpris - totalUtgifter;
-                // --- SLUT NY BERÄKNING ---
-
-                if (modalStatusSelect.value === 'klar' && kundpris === 0) {
-                    alert('Ett "Klar" jobb kan inte ha 0 kr i kundpris.');
-                    return;
-                }
-                const fullDatum = `${modalDatum.value}T${modalTid.value || '09:00'}`;
-                
-                // Detta är det nya objektet vi sparar till Firebase
-                const savedData = { 
-					status: document.getElementById('statusSelect').value, // Hämta från nya dropdownen
-                    datum: fullDatum,
-                    regnr: modalRegnr.value.toUpperCase(),
-                    kundnamn: document.getElementById('kundnamn').value.toUpperCase(),
-                    telefon: modalTelefon.value,
-                    kundpris: kundpris,
-                    utgifter: totalUtgifter,      // Sparar den totala summan (som förr)
-                    expenseItems: currentExpenses,  // <-- NYTT: Sparar detalj-arrayen
-                    vinst: vinst,                 // Sparar den nyberäknade vinsten
-                    kommentarer: document.getElementById('kommentarer').value,
-                    prio: document.getElementById('prio').checked,
-					matarstallning: document.getElementById('matarstallning').value
-                };
-                
-                const originalButtonText = modalSaveBtn.textContent;
-                modalSaveBtn.disabled = true;
-                modalSaveBtn.innerHTML = `
-                    <span>Sparar...</span>
-                    <div class="button-spinner"></div>
-                `;
-
-                try {
-                    if (jobId) {
-                        await db.collection("jobs").doc(jobId).update(savedData);
-                        showToast('Jobb uppdaterat i molnet!');
-                    } else {
-                        await db.collection("jobs").add(savedData);
-                        showToast('Jobb sparat i molnet!');
-                    }
-                    closeModal();
-                } catch (err) {
-                    showToast(`Fel: ${err.message}`, 'danger');
-                } finally {
-                    modalSaveBtn.disabled = false;
-                    modalSaveBtn.innerHTML = originalButtonText;
-                }
-            }
+			    e.preventDefault();
+			    
+			    // Hämta status från den NYA dropdown-listan
+			    const statusEl = document.getElementById('statusSelect');
+			    const statusVal = statusEl ? statusEl.value : 'bokad'; // Fallback
+			
+			    const jobId = document.getElementById('jobId').value;
+			    
+			    // Hämta pris
+			    const prisEl = document.getElementById('kundpris');
+			    const kundpris = prisEl ? (parseFloat(prisEl.value) || 0) : 0;
+			    
+			    // Beräkna utgifter från listan (inte från ett input-fält)
+			    const totalUtgifter = currentExpenses.reduce((sum, item) => sum + (item.cost || 0), 0);
+			    const vinst = kundpris - totalUtgifter;
+			
+			    // Hämta datum & tid
+			    const datumVal = document.getElementById('datum').value;
+			    const tidVal = document.getElementById('tid').value || '09:00';
+			    const fullDatum = `${datumVal}T${tidVal}`;
+			    
+			    // Hämta textfält
+			    const regnrVal = document.getElementById('regnr').value.toUpperCase();
+			    const namnVal = document.getElementById('kundnamn').value.toUpperCase();
+			    const tfnVal = document.getElementById('telefon').value;
+			    const kommVal = document.getElementById('kommentarer').value;
+			    const matarVal = document.getElementById('matarstallning').value;
+			    
+			    // Hämta prio
+			    const prioEl = document.getElementById('prio');
+			    const prioVal = prioEl ? prioEl.checked : false;
+			
+			    // Validering för "Klar"-status
+			    if (statusVal === 'klar' && kundpris === 0) {
+			        alert('Ett "Klar" jobb kan inte ha 0 kr i kundpris.');
+			        return;
+			    }
+			    
+			    // Skapa data-objektet
+			    const savedData = { 
+			        status: statusVal,
+			        datum: fullDatum,
+			        regnr: regnrVal,
+			        kundnamn: namnVal,
+			        telefon: tfnVal,
+			        kundpris: kundpris,
+			        utgifter: totalUtgifter,      
+			        expenseItems: currentExpenses, // Spara detaljerad lista
+			        vinst: vinst,                 
+			        kommentarer: kommVal,
+			        prio: prioVal,
+			        matarstallning: matarVal
+			    };
+			    
+			    // UI-feedback (Spinner)
+			    const saveBtn = document.getElementById('modalSaveBtn');
+			    const originalButtonText = saveBtn.textContent;
+			    saveBtn.disabled = true;
+			    saveBtn.innerHTML = `<span>Sparar...</span>`; // Förenklad spinner-text
+			
+			    try {
+			        if (jobId) {
+			            await db.collection("jobs").doc(jobId).update(savedData);
+			            showToast('Jobb uppdaterat!');
+			        } else {
+			            await db.collection("jobs").add(savedData);
+			            showToast('Jobb sparat!');
+			        }
+			        closeModal();
+			    } catch (err) {
+			        console.error(err);
+			        showToast(`Fel: ${err.message}`, 'danger');
+			    } finally {
+			        saveBtn.disabled = false;
+			        saveBtn.textContent = originalButtonText; // Återställ text
+			    }
+			}
             
             // --- `jobListContainer` klick-hanterare med "Ångra" ---
             jobListContainer.addEventListener('click', (e) => {
