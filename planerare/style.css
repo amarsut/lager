@@ -5003,91 +5003,96 @@ html.privacy-mode-enabled .nav-logo {
     opacity: 1;
 }
 
-/* Container för Sök + Sortering */
-.view-controls {
-    display: flex;
-    gap: 1rem; /* Luft mellan sök och sortering */
-    align-items: center;
-    width: 100%;
+/* --- 1. Fixa Mobile Buggen (Dölj desktop-sök på mobil) --- */
+@media (max-width: 768px) {
+    #view-controls {
+        display: none !important; /* Borta från startsidan! */
+    }
 }
 
-/* Anpassa sökfältet så det delar plats */
+/* --- 2. Minimalistisk "Ghost"-stil (Desktop) --- */
+
+/* Själva raden */
+.view-controls {
+    background: transparent;
+    padding: 0;
+    margin-bottom: 2rem;
+    border: none;
+    gap: 1.5rem; /* Luft mellan sök och filter */
+}
+
+/* Sökfältet - gör det diskretare (endast linje under) */
 .search-wrapper {
-    flex-grow: 1; /* Låt söket ta all ledig plats */
-    /* Behåll dina tidigare snygga stilar för border/shadow här */
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid #E5E7EB; /* Endast bottenlinje */
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0 0.5rem;
+    transition: border-color 0.2s;
+}
+.search-wrapper:focus-within {
+    border-bottom-color: var(--primary-color);
+    box-shadow: none;
+    transform: none;
 }
 
 /* Sorterings-gruppen */
 .sort-controls {
     display: flex;
-    gap: 0.5rem;
-    flex-shrink: 0; /* Förhindra att den krymper */
-}
-
-/* Snygg dropdown (Select) */
-.select-wrapper {
-    position: relative;
-    background: #fff;
-    border: 1px solid #E5E7EB;
-    border-radius: 12px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-    display: flex;
     align-items: center;
-    transition: all 0.2s ease;
+    gap: 1rem;
 }
 
+/* Den nya "Text-knappen" för dropdown */
+.select-wrapper {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
 .select-wrapper:hover {
-    border-color: var(--primary-color);
+    background-color: rgba(0,0,0,0.04); /* Ljusgrå platta vid hover */
+    border-color: transparent;
+}
+
+/* Lägg till en ikon till vänster om texten (via CSS eller HTML) */
+.select-wrapper::before {
+    content: ''; 
+    /* Vi lägger in ikonen i HTML istället för flexibilitet */
+    display: none; 
 }
 
 .select-wrapper select {
-    appearance: none;
-    -webkit-appearance: none;
+    font-weight: 500;
+    color: var(--text-color);
+    font-size: 0.9rem;
+    padding-left: 0; /* Ta bort onödig luft */
+    cursor: pointer;
+}
+
+/* Pilen till höger */
+.select-wrapper .chevron {
+    right: 0;
+    width: 0.8rem;
+    color: var(--text-color-light);
+}
+
+/* Riktning-knappen (Pilen upp/ner) */
+.sort-btn {
     background: transparent;
     border: none;
-    padding: 0 2.5rem 0 1rem; /* Plats för pilen till höger */
-    height: 50px; /* Samma höjd som sökfältet */
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--text-color);
-    cursor: pointer;
-    outline: none;
-}
-
-/* Vår egen pil-ikon */
-.select-wrapper .chevron {
-    position: absolute;
-    right: 10px;
-    pointer-events: none; /* Klick går igenom till select */
-    color: #9CA3AF;
-    width: 1rem;
-    height: 1rem;
-}
-
-/* Rilktnings-knappen */
-.sort-btn {
-    background: #fff;
-    border: 1px solid #E5E7EB;
-    border-radius: 12px;
-    width: 50px; /* Kvadratisk */
-    height: 50px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    box-shadow: none;
+    width: auto;
+    height: auto;
+    padding: 0.4rem;
     color: var(--text-color-light);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    border-radius: 6px;
 }
-
 .sort-btn:hover {
-    border-color: var(--primary-color);
-    color: var(--primary-color);
-}
-
-.sort-btn svg {
-    transition: transform 0.3s ease;
-}
-
-/* Klass för att rotera pilen när vi byter håll */
-.sort-btn.descending svg {
-    transform: rotate(180deg);
+    background-color: rgba(0,0,0,0.04);
+    color: var(--text-color);
 }
