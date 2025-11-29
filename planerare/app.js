@@ -4322,12 +4322,12 @@
 	                openSafe(() => openJobSummaryModal(job));
 	            }
 	        }
-			if (searchBar && desktopSearchClear) {
-			    desktopSearchClear.style.display = searchBar.value.trim() ? 'flex' : 'none';
+			if (document.getElementById('desktopSearchClear')) {
+		        document.getElementById('desktopSearchClear').style.cssText = desktopVal ? 'display: flex !important' : 'display: none !important';
 			}
-			if (mobileSearchBar && mobileSearchClear) {
-			    mobileSearchClear.style.display = mobileSearchBar.value.trim() ? 'flex' : 'none';
-			}
+		   if (document.getElementById('mobileSearchClear')) {
+		        document.getElementById('mobileSearchClear').style.cssText = mobileVal ? 'display: flex !important' : 'display: none !important';
+		    }
 	    });
 	}
 
