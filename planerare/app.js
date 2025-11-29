@@ -4322,6 +4322,12 @@
 	                openSafe(() => openJobSummaryModal(job));
 	            }
 	        }
+			if (searchBar && desktopSearchClear) {
+			    desktopSearchClear.style.display = searchBar.value.trim() ? 'flex' : 'none';
+			}
+			if (mobileSearchBar && mobileSearchClear) {
+			    mobileSearchClear.style.display = mobileSearchBar.value.trim() ? 'flex' : 'none';
+			}
 	    });
 	}
 
