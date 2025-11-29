@@ -5828,3 +5828,130 @@ html.privacy-mode-enabled .nav-logo {
 #extraDetailsContent .form-group-split {
     align-items: flex-end;
 }
+
+/* I style.css, sektionen för desktop (utanför media queries) */
+
+/* NYTT: Wrapper för Namn & Regnr */
+.name-reg-wrapper {
+    display: grid;
+    grid-template-columns: 2fr 1fr; /* Namn får mer plats än Regnr */
+    gap: 1.25rem;
+    width: 100%;
+}
+
+/* På mobil: Stapla dem */
+@media (max-width: 768px) {
+    .name-reg-wrapper {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+}
+
+/* --- MODERN UTGIFTS-HANTERARE --- */
+.expense-input-group {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.expense-input-group input {
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color);
+    padding: 0.6rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+}
+
+.expense-input-group .cost-input {
+    width: 80px; /* Smalare för pris */
+}
+
+.icon-btn-add {
+    background-color: var(--primary-light);
+    color: var(--primary-color);
+    border: 1px solid var(--primary-color);
+    border-radius: 8px;
+    width: 40px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Tag-container (Chips) */
+.expense-tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    min-height: 0; /* Ta ingen plats om tom */
+}
+
+/* Själva Taggen/Chipet */
+.expense-tag {
+    display: inline-flex;
+    align-items: center;
+    background-color: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 20px; /* Piller-form */
+    padding: 0.25rem 0.75rem;
+    font-size: 0.85rem;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.expense-tag .tag-name {
+    font-weight: 500;
+    margin-right: 0.5rem;
+}
+
+.expense-tag .tag-cost {
+    color: var(--danger-color);
+    font-weight: 700;
+    margin-right: 0.5rem;
+}
+
+.expense-tag .tag-remove {
+    cursor: pointer;
+    color: var(--text-color-light);
+    display: flex;
+    align-items: center;
+}
+.expense-tag .tag-remove:hover {
+    color: var(--danger-color);
+}
+
+/* --- FIX: PRIORITET-KNAPP (GLOBAL) --- */
+.prio-toggle-wrapper {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.5rem !important;
+    
+    /* Matcha höjden på input-fälten exakt */
+    height: 42px !important; 
+    padding: 0 1rem !important;
+    margin-top: 0 !important;
+    
+    background-color: var(--bg-color) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 8px !important; /* Matcha input-radius */
+    
+    cursor: pointer;
+    color: var(--text-color-light);
+    font-weight: 500;
+    transition: all 0.2s ease;
+    
+    width: 100%; /* Fyll bredden i sin kolumn */
+    box-sizing: border-box;
+}
+
+/* Aktivt läge (när checkboxen inuti är vald) */
+.prio-toggle-wrapper:has(input:checked) {
+    background-color: rgba(255, 69, 58, 0.1) !important; /* Ljus röd */
+    border-color: var(--danger-color) !important;
+    color: var(--danger-color) !important;
+}
+
+/* Ikonfärgen */
+.prio-toggle-wrapper input:checked + .icon-sm {
+    fill: currentColor; /* Fyll ikonen */
+}
