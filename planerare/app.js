@@ -4068,10 +4068,12 @@
 			// 1. Hämta elementen vi behöver
 			const mSearchModal = document.getElementById('mobileSearchModal');
 			const mNavOpenBtn = document.getElementById('mobileSearchBtn'); // Knappen i botten-menyn
+			const mHeaderBackBtn = document.getElementById('mobileSearchBackBtn');
+			
 			if (mHeaderBackBtn) {
 			    mHeaderBackBtn.onclick = function(e) {
 			        e.preventDefault();
-			        resetAndCloseSearch(); // Anropar vår nya "super-städare"
+			        resetAndCloseSearch(); // Kör vår nya städ-funktion
 			    };
 			}
 			//const mInput = document.getElementById('mobileSearchBar');
