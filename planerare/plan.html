@@ -186,20 +186,23 @@
 					    </div>
 					
 					    <div class="sort-controls">
-					        <div class="select-wrapper">
-					            <select id="sortBy">
-					                <option value="datum">Datum</option>
-					                <option value="kundpris">Pris</option>
-					                <option value="kundnamn">Kund</option>
-					                <option value="status">Status</option>
-					            </select>
-					            <svg class="icon-sm chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-					        </div>
-					
-					        <button id="sortDirectionBtn" class="icon-btn sort-btn" title="Växla ordning">
-					            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"/></svg>
-					        </button>
-					    </div>
+						    <div class="select-wrapper">
+						        <svg class="icon-sm" style="margin-right: 8px; color: #6B7280;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 4h13M3 8h9m-9 4h6"/></svg>
+						        
+						        <select id="sortBy">
+						            <option value="datum">Datum</option>
+						            <option value="kundpris">Pris</option>
+						            <option value="kundnamn">Kund</option>
+						            <option value="status">Status</option>
+						        </select>
+						        
+						        <svg class="icon-sm chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+						    </div>
+						
+						    <button id="sortDirectionBtn" class="icon-btn sort-btn" title="Växla ordning">
+						        <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 11l5-5 5 5M7 13l5 5 5-5"/></svg>
+						    </button>
+						</div>
 					</div>
 
                     <div class="table-container" id="jobListContainer">
@@ -291,17 +294,25 @@
 	</nav>
     
     <div id="mobileSearchModal" class="modal-backdrop-mobile" data-modal-id="mobileSearchModal">
-        <div class="search-modal-content">
-            <form id="mobileSearchForm" style="display: contents;">
-                <div class="search-wrapper">
-                    <svg class="icon" viewBox="0 0 24 24"><use href="#icon-search"></use></svg>
-                    <input type="search" id="mobileSearchBar" placeholder="Sök jobb...">
-                    
-                    <button type="button" class="search-clear-btn" id="mobileSearchClear" title="Rensa sökning"></button>
-                </div>
-            </form>
-            <button id="mobileSearchCloseBtn" class="button secondary">Avbryt</button>
-        </div>
+        <div class="search-modal-content" style="flex-direction: column; align-items: stretch; padding-top: 1rem;">
+		    <div class="search-wrapper" style="border-bottom: 1px solid #eee; margin-bottom: 1rem;">
+		        <svg class="icon" viewBox="0 0 24 24"><use href="#icon-search"></use></svg>
+		        <input type="search" id="mobileSearchBar" placeholder="Sök jobb, kund, bil..." style="font-size: 1.1rem;">
+		        <button type="button" class="search-clear-btn" id="mobileSearchClear" title="Rensa"></button>
+		    </div>
+		
+		    <div style="padding: 0 0.5rem;">
+		        <label style="font-size: 0.75rem; color: #9CA3AF; font-weight: 700; text-transform: uppercase; margin-bottom: 0.5rem; display: block;">Sortera efter</label>
+		        <div class="mobile-sort-chips" id="mobileSortOptions">
+		            <button type="button" class="sort-chip active" data-sort="datum">Datum</button>
+		            <button type="button" class="sort-chip" data-sort="kundpris">Pris</button>
+		            <button type="button" class="sort-chip" data-sort="kundnamn">Kund</button>
+		            <button type="button" class="sort-chip" data-sort="status">Status</button>
+		        </div>
+		    </div>
+		
+		    <button id="mobileSearchCloseBtn" class="button secondary" style="margin-top: auto;">Klar</button>
+		</div>
     </div>
 
 
