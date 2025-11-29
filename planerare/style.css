@@ -5,6 +5,12 @@
     --primary-color: #0066FF; 
     --primary-light: rgba(0, 102, 255, 0.08);
     --primary-hover: #0052cc;
+
+	--success-color: #30d158; /* Grön */
+    --danger-color: #ff453a;  /* Röd */
+    --warning-color: #ff9f0a; /* Orange */
+    --info-color: #0a84ff;    /* Ljusblå */
+    --invoice-color: #bf5af2; /* Lila (för Faktureras) */
     
     /* Bakgrunden ska vara renare, nästan platt men med djup */
     --bg-color: #F3F4F6; /* Ljus gråvit */
@@ -5565,6 +5571,7 @@ html.privacy-mode-enabled .nav-logo {
     gap: 1rem;
 }
 .confirm-actions .button { flex: 1; }
+
 
 
 
