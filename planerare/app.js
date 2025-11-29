@@ -1859,10 +1859,31 @@
 				// 2. Om vi backar FRÅN sök-läget till HEM (inget state)
     			// Och sökfönstret är öppet -> Stäng det!
 				if ((!event.state || !event.state.modal) && mSearchModal && mSearchModal.style.display === 'flex') {
-			        mSearchModal.style.display = 'none';
-			        // (Här är vi nu tillbaka på framsidan)
-			        return;
-			    }
+				    // 1. Stäng rutan visuellt
+				    mSearchModal.style.display = 'none';
+				    
+				    // 2. --- NYTT: RENSA ALL SÖKDATA ---
+				    currentSearchTerm = ''; // Nollställ variabeln
+				    
+				    // Töm textrutorna
+				    if (typeof searchBar !== 'undefined') searchBar.value = '';
+				    const mInput = document.getElementById('mobileSearchBar');
+				    if (mInput) mInput.value = '';
+				
+				    // Dölj rensa-knappar
+				    const globalClearBtn = document.getElementById('clearDayFilterBtn'); 
+				    if (globalClearBtn) globalClearBtn.style.display = 'none';
+				    
+				    if (document.getElementById('mobileSearchClear')) {
+				         document.getElementById('mobileSearchClear').style.cssText = 'display: none !important';
+				    }
+				
+				    // 3. Uppdatera listan på framsidan (så alla jobb syns igen)
+				    performSearch(); 
+				    // ----------------------------------
+				
+				    return; // Stanna här
+				}
 
 				const mClearBtn = document.getElementById('mobileSearchClear');
 				if (mClearBtn && mInput) {
