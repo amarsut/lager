@@ -429,7 +429,7 @@ h1, h2, h3, h4, h5, h6 {
     border: none;
     border-radius: 50%;
     color: #6B7280;
-    display: none;
+    display: none;     
     align-items: center;
     justify-content: center;
     cursor: pointer;
@@ -5653,5 +5653,6 @@ html.privacy-mode-enabled .nav-logo {
 .stat-card[data-filter="klar"] .stat-card-value {
     color: var(--text-color) !important;
 }
+
 
 
