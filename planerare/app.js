@@ -1839,51 +1839,40 @@
 			});
 
             window.addEventListener('popstate', (event) => {
-                clearTimeout(backPressTimer); 
-
-				const mSearchModal = document.getElementById('mobileSearchModal');
-			    if (mSearchModal && mSearchModal.style.display === 'flex') {
+			    // --- NYTT: Huvudregel för Sök-modalen (Samma som "Bakåt"-pilen) ---
+			    const mSearchModal = document.getElementById('mobileSearchModal');
+			    
+			    // Om sökfönstret är synligt när man trycker Bakåt på telefonen...
+			    if (mSearchModal && getComputedStyle(mSearchModal).display === 'flex') {
+			        
+			        // 1. Dölj fönstret
 			        mSearchModal.style.display = 'none';
-			        return; // Stanna här, stäng inte appen
+			        
+			        // 2. Töm sökfältet
+			        const mInput = document.getElementById('mobileSearchBar');
+			        const dInput = document.getElementById('searchBar');
+			        if (mInput) mInput.value = '';
+			        if (dInput) dInput.value = '';
+			        
+			        // 3. Nollställ söktermen (Viktigast!)
+			        currentSearchTerm = '';
+			        
+			        // 4. Dölj "Rensa sökning"-knappar
+			        const globalClearBtn = document.getElementById('clearDayFilterBtn');
+			        if (globalClearBtn) globalClearBtn.style.display = 'none';
+			        
+			        if (document.getElementById('mobileSearchClear')) {
+			             document.getElementById('mobileSearchClear').style.cssText = 'display: none !important';
+			        }
+			
+			        // 5. Uppdatera listan så allt visas igen
+			        performSearch();
+			        
+			        // 6. Stanna här (kör ingen annan logik)
+			        return; 
 			    }
 
-				// 1. Om vi backar TILL sök-läget (event.state.modal === 'mobileSearch')
-			    if (event.state && event.state.modal === 'mobileSearch') {
-			        // Se till att sökfönstret är ÖPPET
-			        if (mSearchModal) mSearchModal.style.display = 'flex';
-			        // Stäng eventuella andra modaler som ligger ovanpå (t.ex. jobbmodalen)
-			        closeModal({ popHistory: false }); 
-			        return;
-			    }
-
-				// 2. Om vi backar FRÅN sök-läget till HEM (inget state)
-    			// Och sökfönstret är öppet -> Stäng det!
-				if ((!event.state || !event.state.modal) && mSearchModal && mSearchModal.style.display === 'flex') {
-				    // 1. Stäng rutan visuellt
-				    mSearchModal.style.display = 'none';
-				    
-				    // 2. --- NYTT: RENSA ALL SÖKDATA ---
-				    currentSearchTerm = ''; // Nollställ variabeln
-				    
-				    // Töm textrutorna
-				    if (typeof searchBar !== 'undefined') searchBar.value = '';
-				    const mInput = document.getElementById('mobileSearchBar');
-				    if (mInput) mInput.value = '';
-				
-				    // Dölj rensa-knappar
-				    const globalClearBtn = document.getElementById('clearDayFilterBtn'); 
-				    if (globalClearBtn) globalClearBtn.style.display = 'none';
-				    
-				    if (document.getElementById('mobileSearchClear')) {
-				         document.getElementById('mobileSearchClear').style.cssText = 'display: none !important';
-				    }
-				
-				    // 3. Uppdatera listan på framsidan (så alla jobb syns igen)
-				    performSearch(); 
-				    // ----------------------------------
-				
-				    return; // Stanna här
-				}
+				clearTimeout(backPressTimer);
 
 				const mClearBtn = document.getElementById('mobileSearchClear');
 				if (mClearBtn && mInput) {
