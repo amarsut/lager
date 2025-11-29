@@ -4076,7 +4076,7 @@
             }
             
             function hidePinLock() {
-                appContainer.style.display = 'flex';
+                appContainer.style.display = '';
                 fabAddJob.style.display = 'flex';
                 if(window.innerWidth <= 768) {
                     mobileNav.style.display = 'flex';
