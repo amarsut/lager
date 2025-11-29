@@ -1000,7 +1000,7 @@ mark {
 .modal-body { 
     padding: 1.5rem; 
     overflow-y: auto; 
-    padding-bottom: 6rem; /* Ge plats för sticky footer */
+    padding-bottom: 2rem; 
 }
 /* Justera padding för modaler som INTE har actions */
 #customerModal .modal-body,
@@ -4904,10 +4904,13 @@ html.privacy-mode-enabled .nav-logo {
     .modal-content {
         width: 100%;
         max-width: 100%;
-        height: 100%;
-        max-height: 100%;
+        height: auto;       /* Ändrat från 100% till auto */
+        min-height: 100%;   /* Ser till att bakgrunden täcker skärmen */
+        max-height: none;   /* Låt den växa om det behövs */
         border-radius: 0;
         box-shadow: none;
+        display: flex;
+        flex-direction: column;
     }
     .modal-header {
         padding: 1rem 1.25rem;
@@ -4923,9 +4926,9 @@ html.privacy-mode-enabled .nav-logo {
     }
     .modal-body {
         padding: 1rem 1.25rem;
-        flex-grow: 1;
-        overflow-y: auto;
-        padding-bottom: 6rem;
+        flex-grow: 0; /* Ändrat från 1 till 0 så den inte expanderar i onödan */
+        overflow-y: visible; /* Låt hela sidan scrolla istället för bara mitten */
+        padding-bottom: 2rem; /* Mindre luft här också */
     }
     #customerModal .modal-body,
     #statsModal .modal-body,
@@ -5977,3 +5980,4 @@ html.privacy-mode-enabled .nav-logo {
     font-weight: 500;
     margin-left: 4px;
 }
+
