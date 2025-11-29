@@ -1988,6 +1988,53 @@
                 });
             }
 
+			// Global variabel för att spara vilken funktion som ska köras
+			let pendingConfirmAction = null;
+			
+			function showConfirmation(title, message, type, callback) {
+			    const modal = document.getElementById('confirmModal');
+			    const content = modal.querySelector('.modal-content');
+			    const titleEl = document.getElementById('confirmTitle');
+			    const msgEl = document.getElementById('confirmMessage');
+			    const iconContainer = document.getElementById('confirmIconContainer');
+			    const yesBtn = document.getElementById('confirmYesBtn');
+			
+			    // 1. Sätt text och callback
+			    titleEl.textContent = title;
+			    msgEl.textContent = message;
+			    pendingConfirmAction = callback;
+			
+			    // 2. Styla baserat på typ ('danger' eller 'success')
+			    content.className = 'modal-content confirm-box ' + type;
+			    
+			    if (type === 'danger') {
+			        iconContainer.innerHTML = '<svg class="icon-lg" viewBox="0 0 24 24" style="opacity:1;"><use href="#icon-trash"></use></svg>';
+			        yesBtn.textContent = "Ta bort";
+			    } else {
+			        iconContainer.innerHTML = '<svg class="icon-lg" viewBox="0 0 24 24" style="opacity:1;"><use href="#icon-check"></use></svg>';
+			        yesBtn.textContent = "Markera Klar";
+			    }
+			
+			    // 3. Visa modalen
+			    modal.style.display = 'flex';
+			    setTimeout(() => modal.classList.add('show'), 10);
+			}
+			
+			// Koppla knapparna i modalen
+			document.getElementById('confirmCancelBtn').addEventListener('click', () => {
+			    const modal = document.getElementById('confirmModal');
+			    modal.classList.remove('show');
+			    setTimeout(() => modal.style.display = 'none', 200);
+			    pendingConfirmAction = null;
+			});
+			
+			document.getElementById('confirmYesBtn').addEventListener('click', () => {
+			    if (pendingConfirmAction) pendingConfirmAction();
+			    // Stäng modalen
+			    const modal = document.getElementById('confirmModal');
+			    modal.classList.remove('show');
+			    setTimeout(() => modal.style.display = 'none', 200);
+			});
 
             function showCommentPopover(button) {
                 const commentText = decodeURIComponent(button.dataset.comment);
@@ -2998,27 +3045,51 @@
                                 return;
                             
                             case 'setStatusKlar': { 
-                                const job = findJob(id);
-                                if (!job) return;
-                                
-                                const originalStatus = job.status;
-                                if (originalStatus === 'klar') return; 
-
-                                quickSetStatus(id, 'klar');
-                                
-                                showToast('Jobb markerat som "Klar"', 'success', () => {
-                                    quickSetStatus(id, originalStatus);
-                                    showToast('Status återställd.', 'info');
-                                });
-                                return;
-                            }
+							    const job = findJob(id);
+							    if (!job) return;
+							    const originalStatus = job.status;
+							    if (originalStatus === 'klar') return; 
+							
+							    // Anropa bekräftelse istället för direkt handling
+							    showConfirmation(
+							        'Markera som Klar?', 
+							        `Vill du avsluta jobbet för ${job.kundnamn}?`, 
+							        'success', 
+							        () => {
+							            // Detta körs BARA om man trycker "Ja"
+							            quickSetStatus(id, 'klar');
+							            // (Du kan ta bort den gamla showToast med "Ångra" här om du vill, 
+							            // eftersom bekräftelsen nu fungerar som skydd)
+							        }
+							    );
+							    return;
+							}
                         }
                     }
                     if (actionButton.classList.contains('delete-btn')) {
-                        e.stopPropagation();
-                        deleteJob(id);
-                        return;
-                    }
+					    e.stopPropagation();
+					    
+					    // Hitta jobbet för att få namnet
+					    const job = findJob(id);
+					    const jobName = job ? job.kundnamn : 'detta jobb';
+					
+					    // Anropa bekräftelse
+					    showConfirmation(
+					        'Radera jobb?', 
+					        `Är du säker på att du vill ta bort jobbet för ${jobName}?`, 
+					        'danger', 
+					        () => {
+					            // Här kör vi raderingen direkt mot DB (utan extra confirm-ruta)
+					            db.collection("jobs").doc(id).update({
+					                deleted: true,
+					                deletedAt: new Date().toISOString()
+					            })
+					            .then(() => showToast('Jobb flyttat till papperskorgen.', 'info'))
+					            .catch(err => showToast(`Fel: ${err.message}`, 'danger'));
+					        }
+					    );
+					    return;
+					}
                 }
                 
                 if (customerLink) { e.stopPropagation(); openCustomerModal(customerLink.dataset.kund); return; }
