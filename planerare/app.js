@@ -3066,6 +3066,25 @@
                     }
                     
                     currentStatusFilter = card.dataset.filter;
+
+					// Alltid sortera på Datum som standard när man byter flik
+					currentSortField = 'datum'; 
+					
+					if (currentStatusFilter === 'kommande') {
+					    // För Kommande vill vi se det som händer SNART överst (Stigande: 1 jan -> 5 jan)
+					    currentSortOrder = 'asc';
+					} else {
+					    // För Klar, Alla, Faktureras vill vi se det NYASTE överst (Fallande: 5 jan -> 1 jan)
+					    currentSortOrder = 'desc';
+					}
+					
+					// 3. VIKTIGT: Uppdatera även själva knapparna i gränssnittet så de visar rätt!
+					if (sortBySelect) sortBySelect.value = 'datum'; // Sätt dropdown till Datum
+					
+					if (sortDirectionBtn) {
+					    // Uppdatera pil-ikonens rotation baserat på vår nya ordning
+					    sortDirectionBtn.classList.toggle('descending', currentSortOrder === 'desc');
+					}
                     
                     // --- KORRIGERAD KANBAN-SCROLL-LOGIK START (Tvingar vertikal position) ---
                     if (currentView === 'kanban') {
