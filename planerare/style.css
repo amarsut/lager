@@ -5861,175 +5861,90 @@ html.privacy-mode-enabled .nav-logo {
 }
 
 /* ========================================= */
-/* EKONOMI CLEAN (GRID FIX)                  */
+/* ÅTERSTÄLLD EKONOMI (ORIGINAL DESIGN)      */
 /* ========================================= */
 
-.economy-clean-wrapper {
-    /* --- HÄR ÄR FIXEN --- */
-    grid-column: 1 / -1; /* Tvingar den att ta upp hela bredden (båda kolumnerna) */
-    /* -------------------- */
-    
-    margin-bottom: 1.5rem;
-    width: 100%;
-}
-
-/* --- 1. PRIS & VINST (Grid 50/50) --- */
-.price-profit-grid {
+/* Inmatningsraden (Namn | Pris | Knapp) */
+.expense-add-form-original {
     display: grid;
-    grid-template-columns: 1fr 1fr; /* Exakt hälften var */
-    gap: 1.25rem; /* Samma mellanrum som Datum/Tid */
-    align-items: end; /* Linjera mot botten */
+    /* Justera bredden: Namn tar mest plats, Pris lite mindre, Knappen fast */
+    grid-template-columns: 1fr 100px auto; 
+    gap: 0.75rem;
     margin-bottom: 1rem;
-    border-bottom: 1px solid var(--border-color);
-    padding-bottom: 1rem;
+    align-items: center;
 }
 
-.grid-item {
+/* Mobila anpassningar för inmatningen */
+@media (max-width: 480px) {
+    .expense-add-form-original {
+        grid-template-columns: 1fr 80px auto; /* Lite tajtare på mobil */
+        gap: 0.5rem;
+    }
+    .expense-add-form-original .button span {
+        display: none; /* Dölj texten "Lägg till" på mycket små skärmar */
+    }
+}
+
+/* Listan (Grå boxar) */
+.expense-list-original {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    width: 100%; /* Fyll grid-cellen */
 }
 
-.grid-item label {
-    font-weight: 600;
-    font-size: 0.875rem;
-    color: var(--text-color);
-    text-transform: none; /* Vanlig text */
-}
-
-/* Input-fältet (Kundpris) */
-.clean-price-input {
-    background-color: #f3f4f6;
-    border: 1px solid transparent;
-    border-radius: 10px;
-    padding: 0.85rem 1rem; /* Samma padding som övriga fält */
-    font-size: 0.95rem;
-    color: var(--text-color);
-    width: 100%;
-    box-sizing: border-box; /* VIKTIGT: Gör att padding inte spräcker bredden */
-    font-weight: 500;
-}
-.clean-price-input:focus {
-    background-color: #ffffff;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 4px var(--primary-light);
-    outline: none;
-}
-
-/* Vinst-delen (Höger) */
-.profit-item {
-    align-items: flex-end; /* Högerställ allt */
-    justify-content: flex-end;
-    padding-bottom: 0.5rem; /* Finjustera höjdled mot inputfältet */
-}
-
-.profit-header {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    line-height: 1.2;
-}
-
-.profit-item .label {
-    font-size: 0.7rem;
-    font-weight: 700;
-    color: var(--text-color-light);
-    text-transform: uppercase;
-}
-
-.profit-item .sub-label {
-    font-size: 0.75rem;
-    color: var(--text-color-light);
-}
-
-.profit-value {
-    font-size: 1.5rem;
-    font-weight: 800;
-    color: var(--success-color);
-    line-height: 1;
-    margin-top: 0.25rem;
-}
-.profit-value.negative { color: var(--danger-color); }
-
-
-/* --- 2. UTGIFTS-INMATNING (Grid) --- */
-.expense-input-grid {
-    display: grid;
-    /* Namn (Auto) | Kostnad (90px) | Knapp (46px) */
-    grid-template-columns: 1fr 90px 46px; 
-    gap: 0.75rem;
-    width: 100%;
-    align-items: center;
-    margin-bottom: 0.75rem;
-}
-
-.clean-input {
-    background-color: #f3f4f6;
-    border: 1px solid transparent;
-    border-radius: 10px;
-    padding: 0.85rem 1rem; /* Matcha höjden på Kundpris */
-    font-size: 0.95rem;
-    color: var(--text-color);
-    width: 100%;
-    box-sizing: border-box;
-}
-.clean-input:focus {
-    background-color: #fff;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 4px var(--primary-light);
-    outline: none;
-}
-
-.clean-input.cost {
-    text-align: right;
-    padding-right: 0.5rem;
-}
-
-.clean-add-btn {
-    width: 100%; /* Fyll grid-cellen */
-    height: 46px; /* Matcha input-höjden */
-    background-color: var(--primary-light);
-    border: 1px solid var(--primary-color);
-    border-radius: 10px;
-    color: var(--primary-color);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    padding: 0;
-}
-.clean-add-btn:hover {
-    background-color: var(--primary-color);
-    color: white;
-}
-
-/* --- 3. LISTA --- */
-.expense-clean-list {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    border-top: 1px dashed var(--border-color); /* Separera listan */
-}
-
-.clean-list-row {
+.expense-item-original {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.6rem 0;
-    border-bottom: 1px dashed var(--border-color);
+    background-color: #F3F4F6; /* Ljusgrå */
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
     font-size: 0.9rem;
 }
-.clean-list-row:last-child { border-bottom: none; }
 
-.clean-row-name { font-weight: 500; color: var(--text-color); }
-.clean-row-cost { font-weight: 600; color: var(--text-color); margin-right: 0.75rem; }
-.clean-row-remove {
+.expense-item-original .item-name {
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.expense-item-original .item-cost {
+    font-weight: 600;
+    color: var(--danger-color); /* Röd text */
+    margin-right: 1rem;
+}
+
+.expense-item-original .delete-btn {
+    background: transparent;
+    border: none;
     cursor: pointer;
     color: #9CA3AF;
-    padding: 4px;
     display: flex;
+    align-items: center;
+    padding: 4px;
 }
-.clean-row-remove:hover { color: var(--danger-color); }
+.expense-item-original .delete-btn:hover {
+    color: var(--danger-color);
+}
 
+/* Vinst-texten (Längst ner höger) */
+.form-group-profit {
+    text-align: right;
+    font-size: 1.1rem;
+    padding-top: 0.5rem;
+    font-weight: 600;
+    display: flex;
+    justify-content: flex-end;
+    align-items: baseline;
+    gap: 0.5rem;
+}
+
+/* Gör "Utgifter: ..." texten grå och mindre */
+.form-group-profit span {
+    font-size: 1.2rem;
+}
+.form-group-profit .expense-summary {
+    font-size: 0.9rem;
+    color: var(--text-color-light);
+    font-weight: 500;
+}
