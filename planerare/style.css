@@ -5050,70 +5050,108 @@ html.privacy-mode-enabled .nav-logo {
     /* ... (Din select-wrapper CSS från tidigare kan vara kvar här) ... */
 }
 
-/* --- MOBIL SPECIFIKT (Heltäckande & Snyggt) --- */
-/* --- MOBIL FIX (Pil + Enkelhet) --- */
+/* --- MOBIL SÖK (HELTÄCKANDE APP-KÄNSLA) --- */
 @media (max-width: 768px) {
-    /* Header */
-    .mobile-search-header {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.75rem 1rem;
-        background-color: #fff;
-        border-bottom: 1px solid #f3f4f6;
-    }
-
-    /* Tillbaka-pil (Istället för "Avbryt") */
-    .back-btn {
-        padding: 0.5rem;
-        margin-left: -0.5rem; /* Dra ut den mot kanten */
-        color: var(--text-color);
-    }
-
-    /* Sökfältet (Fixar "dubbla rutor" känslan) */
-    .mobile-wrapper {
-        background-color: #F3F4F6; /* Grå bakgrund */
-        border: none; /* Ingen kant */
-        border-radius: 50px; /* Helt runda hörn (Piller) */
-        height: 44px;
-        box-shadow: none; /* Ingen skugga */
-    }
-    .mobile-wrapper input {
-        font-size: 1rem;
-        padding-left: 0.5rem;
-    }
-    /* Dölj skrivbords-ikonen i mobilen för renare look */
-    .mobile-wrapper .icon { display: none; } 
-
-    /* Filter Chips (Snyggare) */
-    .mobile-filter-bar {
-        padding: 1rem;
-        background: #fff;
-    }
-    .sort-chip {
-        background: #fff;
-        border: 1px solid #E5E7EB;
-        color: var(--text-color-light);
-        padding: 0.5rem 1rem;
-        font-size: 0.85rem;
-        font-weight: 500;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.02);
-    }
-    .sort-chip.active {
-        background: #111827; /* Svart (Apple style) */
-        color: #fff;
-        border-color: #111827;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-    }
     
-    /* Tomt läge */
-    .empty-search-placeholder {
-        margin-top: 30vh;
-        opacity: 0.4;
+    /* 1. Huvudbehållaren: Måste täcka HELA skärmen */
+    .mobile-search-layout {
+        position: fixed;
+        top: 0; 
+        left: 0; 
+        width: 100%;
+        height: 100vh;      /* Fallback */
+        height: 100dvh;     /* Täcker hela mobila skärmen inkl addressbar */
+        background-color: #fff;
+        z-index: 9999;
         display: flex;
         flex-direction: column;
+        
+        /* Ta bort ev. gamla "popup"-stilar */
+        border-radius: 0 !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+    }
+
+    /* 2. Header: Pil + Fält på en prydlig rad */
+    .mobile-search-header {
+        display: flex;
+        align-items: center; /* Centrera vertikalt! */
+        gap: 12px;           /* Luft mellan pil och fält */
+        padding: 12px 16px;  /* Luft runt om */
+        background-color: #fff;
+        border-bottom: 1px solid #f3f4f6;
+        flex-shrink: 0;      /* Krymp inte headern */
+    }
+
+    /* 3. Tillbaka-pilen */
+    .back-btn {
+        padding: 8px;
+        margin: 0;
+        color: #111827; /* Mörkgrå/Svart */
+        background: transparent;
+        border: none;
+        display: flex;
         align-items: center;
-        gap: 1rem;
+        justify-content: center;
+    }
+    .back-btn .icon {
+        width: 24px;
+        height: 24px;
+    }
+
+    /* 4. Sökfältet: En mjuk grå "piller"-form */
+    .mobile-wrapper {
+        flex-grow: 1; /* Ta all plats som finns kvar */
+        height: 44px; /* Standard höjd för touch */
+        background-color: #F3F4F6;
+        border-radius: 12px; /* Mjuka hörn */
+        border: 1px solid transparent; /* Ingen kant */
+        display: flex;
+        align-items: center;
+        padding: 0 12px;
+        box-shadow: none !important; /* Ta bort skugga om det finns */
+        margin-bottom: 0 !important;
+    }
+    
+    /* Fokus-effekt på mobilen */
+    .mobile-wrapper:focus-within {
+        background-color: #fff;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 4px var(--primary-light) !important;
+    }
+
+    .mobile-wrapper input {
+        font-size: 16px; /* Förhindrar inzoomning på iPhone */
+        padding: 0;
+    }
+
+    /* 5. Filter-chips (Knapparna under) */
+    .mobile-filter-bar {
+        padding: 12px 16px;
+        border-bottom: 1px solid #f3f4f6;
+        background: #fff;
+        overflow-x: auto; /* Scrolla i sidled om det behövs */
+    }
+    
+    .mobile-sort-chips {
+        display: flex;
+        gap: 10px;
+    }
+
+    .sort-chip {
+        padding: 8px 16px;
+        background-color: #F3F4F6; /* Ljusgrå inaktiv */
+        color: #4B5563;
+        border-radius: 99px; /* Helt runda */
+        font-size: 0.9rem;
+        font-weight: 600;
+        border: none;
+        transition: all 0.2s ease;
+    }
+
+    .sort-chip.active {
+        background-color: #111827; /* Svart (Apple style) eller din blå färg */
+        color: #fff;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
 }
-
