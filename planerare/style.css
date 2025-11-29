@@ -5630,6 +5630,23 @@ html.privacy-mode-enabled .nav-logo {
 
 /* SLUT PÅ BEKRÄFTELSE-MODAL */
 
+/* --- NEUTRALISERA FÄRGER I MODALER (Ingen Röd/Grön text) --- */
 
+/* 1. Jobb-översikt (Summary Modal) */
+#jobSummaryModal .summary-value.positive, /* Kundpris */
+#jobSummaryModal .summary-value.negative, /* Total Utgift */
+#jobSummaryModal .summary-value.vinst {    /* Vinst */
+    color: var(--text-color) !important;
+}
 
+/* Utgiftslistan i Jobb-översikt (De specifika raderna) */
+.summary-expense-list .expense-cost {
+    color: var(--text-color) !important;
+}
 
+/* 2. Kund & Bil Modaler (Topp-statistik & Historik-listan) */
+#customerModal .stat-value.positive,       /* Total vinst i toppen */
+#carModal .stat-value.positive,
+.detail-job-list .job-profit.positive {    /* Vinst per rad i listan */
+    color: var(--text-color) !important;
+}
