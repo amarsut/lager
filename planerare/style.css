@@ -4667,14 +4667,17 @@ html.privacy-mode-enabled .nav-logo {
         border-top: 1px solid var(--border-color);
     }
 
-    /* FIX 1: JOBB-MALLAR (Scrollbar rad) */
+    /* FIX 1: JOBB-MALLAR (Mer utrymme så de inte klipps) */
     .job-templates {
         display: flex !important;
         flex-wrap: nowrap !important; /* Tvinga allt på en rad */
         overflow-x: auto !important;  /* Tillåt swipe */
         gap: 0.75rem !important;
-        padding-bottom: 0.5rem;
-        margin-bottom: 1rem;
+        
+        /* Mer luft i botten fixar att de klipps av */
+        padding: 0.25rem 0.25rem 1rem 0.25rem !important; 
+        
+        margin-bottom: 0.5rem !important;
         align-items: center;
         
         /* Göm scrollbar men behåll funktionen */
@@ -4689,10 +4692,9 @@ html.privacy-mode-enabled .nav-logo {
         font-size: 0.85rem !important;
     }
     
-    /* Fixa Prio-knappen */
     .prio-toggle-wrapper {
         flex-shrink: 0 !important;
-        margin-left: 0 !important; /* Ligg bredvid de andra */
+        margin-left: 0 !important;
         white-space: nowrap !important;
     }
 
@@ -4744,7 +4746,7 @@ html.privacy-mode-enabled .nav-logo {
         box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         border-left: 4px solid transparent;
         display: block !important;
-        padding-bottom: 0.25rem; /* Lite padding i botten för knapparna */
+        padding-bottom: 0; /* Action-raden har egen padding */
     }
     .mobile-job-card.prio-row {
         border-left-color: var(--danger-color); background-color: var(--danger-light);
@@ -4758,33 +4760,37 @@ html.privacy-mode-enabled .nav-logo {
         padding: 0.25em 0.75em !important; border-radius: 99px !important; display: inline-block;
     }
 
-    /* FIX 2: ÅTGÄRDSKNAPPAR (Ren stil som på bilden) */
+    /* FIX 2: ÅTGÄRDSKNAPPAR (Utspridda över hela bredden) */
     .mobile-job-card .action-col {
         display: flex !important;
-        justify-content: flex-start !important; /* Vänsterställd */
-        gap: 1.5rem !important; /* Luft mellan ikonerna */
-        padding: 0.5rem 1rem 1rem 1rem !important; /* Luft runt om */
-        background-color: transparent !important;
-        border-top: none !important; /* Ingen linje */
+        justify-content: space-around !important; /* Sprider ut dem jämnt */
+        align-items: center !important;
+        gap: 0 !important; /* Gap behövs inte med space-around */
+        
+        padding: 0.75rem 0.5rem !important;
+        
+        background-color: var(--bg-color) !important; /* Ljusgrå bakgrund som förr */
+        border-top: 1px solid rgba(0,0,0,0.05) !important;
         opacity: 1 !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
     }
     
     .mobile-job-card .action-col .icon-btn {
-        padding: 0 !important;
-        background: transparent !important; /* Ingen bakgrundsfärg */
+        padding: 0.5rem !important;
+        background: transparent !important;
         width: auto !important; height: auto !important;
-        border-radius: 0 !important;
-        color: #9CA3AF !important; /* Grå färg som standard */
-        flex: 0 0 auto !important; /* Krymp inte */
+        border-radius: 6px !important;
+        color: var(--text-color-light) !important;
+        flex: 1 !important; /* Gör att de tar lika stor klick-yta */
+        display: flex !important;
+        justify-content: center !important;
     }
     
     .mobile-job-card .action-col .icon-sm {
-        width: 1.3rem !important;
-        height: 1.3rem !important;
+        width: 1.4rem !important;
+        height: 1.4rem !important;
     }
-    
-    /* Aktiva färger vid behov */
-    .mobile-job-card .action-col .icon-btn.active-prio { color: var(--danger-color) !important; }
     
     /* --- 7. Sök-Modal --- */
     #mobileSearchModal {
@@ -4836,13 +4842,9 @@ html.privacy-mode-enabled .nav-logo {
         display: flex !important; flex-direction: column !important;
         gap: 0.5rem !important; padding: 0.5rem !important; align-items: center !important;
     }
-    /* Titel: Mindre */
     .fc .fc-toolbar-title { font-size: 1.1rem !important; }
-    /* Rutorna: Mindre höjd */
     .fc .fc-daygrid-day-frame { min-height: 60px !important; }
-    /* Prickarna: Tajtare */
     .fc .fc-daygrid-day-events { margin-top: 0 !important; min-height: 10px !important; padding-bottom: 2px; }
-    /* Knapparna: Små */
     .fc .fc-button { padding: 0.2rem 0.5rem !important; font-size: 0.75rem !important; }
 
     /* --- 10. Kanban --- */
