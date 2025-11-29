@@ -5108,17 +5108,21 @@ html.privacy-mode-enabled .nav-logo {
 
     /* Ta bort ALL styling från själva input-fältet */
     .mobile-wrapper input {
-        border: none !important;
-        outline: none !important;
-        background: transparent !important;
-        box-shadow: none !important;
-        font-size: 16px;
-        width: 100%;
-        padding: 0;
-        margin: 0;
-        height: 100%;
-        color: #111;
-    }
+	    border: none !important;
+	    outline: none !important;
+	    background: transparent !important;
+	    box-shadow: none !important;
+	    font-size: 16px;
+	    width: 100%;
+	    
+	    /* HÄR ÄR FIXEN: Tvinga vänster-padding till 0 (eller liten marginal) */
+	    padding-left: 0.5rem !important; 
+	    padding-right: 0 !important;
+	    
+	    margin: 0;
+	    height: 100%;
+	    color: #111;
+	}
 
     /* Krysset inuti fältet */
     .search-clear-btn {
@@ -5327,7 +5331,8 @@ html.privacy-mode-enabled .nav-logo {
 
 /* Visa datumet BARA inuti sökresultaten */
 #mobileSearchResults .search-date-badge {
-    display: inline-block;
+    /* Lägg till !important för att skriva över Javascriptets inline-style */
+    display: inline-block !important; 
     margin-right: 6px;
     font-weight: 600;
     color: var(--text-color);
@@ -5338,4 +5343,5 @@ html.privacy-mode-enabled .nav-logo {
     justify-content: flex-end; /* Tryck allt till höger */
     gap: 6px;
 }
+
 
