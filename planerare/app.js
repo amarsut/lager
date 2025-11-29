@@ -2229,6 +2229,11 @@
                 jobModalForm.reset();
                 currentExpenses = []; // Nollställ alltid utgifts-arrayen
 
+				if (accordionToggle) {
+			        accordionToggle.classList.remove('active');
+			        accordionContent.classList.remove('show');
+			    }
+
                 // NYTT: Återställ/dölj knapparna varje gång
                 jobModalCallBtn.style.display = 'none';
                 jobModalSmsBtn.style.display = 'none';
@@ -3485,6 +3490,17 @@
             jobModalForm.addEventListener('submit', handleFormSubmit);
             fabAddJob.addEventListener('click', () => openJobModal('add'));
             emptyStateAddBtn.addEventListener('click', () => openJobModal('add'));
+
+			const accordionToggle = document.getElementById('extraDetailsToggle');
+            const accordionContent = document.getElementById('extraDetailsContent');
+
+            if (accordionToggle && accordionContent) {
+                accordionToggle.addEventListener('click', () => {
+                    // Växla klasser
+                    accordionToggle.classList.toggle('active');
+                    accordionContent.classList.toggle('show');
+                });
+            }
             
             modalCloseBtn.addEventListener('click', () => closeModal());
             modalCancelBtn.addEventListener('click', () => closeModal());
