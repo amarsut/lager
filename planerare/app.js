@@ -1844,11 +1844,10 @@
             // --- Popover, Modal-hantering (FIXAD HISTORIK) ---
             
             function closeModal(options = {}) {
-			    const { popHistory = true } = options; 
+			    const { popHistory = true } = options;
 			
-			    // --- NYTT: SÄKERHETSÅTGÄRD ---
-			    // Om vi stänger en vanlig modal (t.ex. Jobb-modal), se till att Sök-modalen 
-			    // inte ligger och skräpar i bakgrunden.
+			    // 1. Säkerhetsåtgärd: Stäng sök-modalen om den ligger i bakgrunden
+			    // Vi kollar noga att elementet finns innan vi rör stilen.
 			    if (currentOpenModalId !== 'mobileSearchModal') {
 			        const mSearch = document.getElementById('mobileSearchModal');
 			        if (mSearch) {
@@ -1856,44 +1855,58 @@
 			            mSearch.classList.remove('show');
 			        }
 			    }
-			    // -----------------------------
 			
 			    if (!isModalOpen) return;
-			    
+			
 			    const modalId = currentOpenModalId;
+			    if (!modalId) return; // Om inget ID finns, avbryt
+			
 			    const modalElement = document.getElementById(modalId);
-
-				// Om vi stänger sökmodalen -> Rensa sökningen helt
+			
+			    // 2. Logik för Sök-modalen
 			    if (modalId === 'mobileSearchModal') {
 			        currentSearchTerm = ''; // Töm variabeln
 			        
-			        // Töm input-fälten
+			        // Töm input-fälten säkert
 			        const dInput = document.getElementById('searchBar');
 			        const mInput = document.getElementById('mobileSearchBar');
 			        if(dInput) dInput.value = '';
 			        if(mInput) mInput.value = '';
 			        
-			        // Uppdatera listan så allt visas igen
-			        performSearch(); 
-			    }
-			
-			    // Om vi stänger sökfönstret och sökfältet är tomt, visa statistiken igen
-			    if (modalId === 'mobileSearchModal' && currentSearchTerm === "") { 
+			        // Återställ statistik-baren (om den finns)
 			        const statBar = document.getElementById('statBar');
-			        if(statBar) statBar.style.display = 'grid';
+			        if (statBar) { 
+			            statBar.style.display = 'grid'; // <-- Här kraschade det nog förut om statBar saknades
+			        }
+			
+			        // Uppdatera listan
+			        if (typeof performSearch === 'function') {
+			            performSearch(); 
+			        }
 			    }
 			
+			    // 3. Stäng själva modalen
 			    if (modalElement) {
 			        modalElement.classList.remove('show');
+			        
+			        // Rensa förslag om det var jobb-modalen
 			        if (modalElement.id === 'jobModal') {
-			            kundnamnSuggestions.style.display = 'none';
-			            kundnamnSuggestions.innerHTML = '';
+			            const suggestions = document.getElementById('kundnamnSuggestions');
+			            if (suggestions) {
+			                suggestions.style.display = 'none';
+			                suggestions.innerHTML = '';
+			            }
 			        }
+			        
 			        setTimeout(() => {
-			            modalElement.style.display = 'none';
+			            // Kontrollera igen att elementet finns innan vi döljer det
+			            if (modalElement) {
+			                modalElement.style.display = 'none';
+			            }
 			        }, 200);
 			    }
 			
+			    // 4. Hantera historiken
 			    if (popHistory && !isNavigatingBack && history.state && history.state.modal === modalId) {
 			        isNavigatingBack = true; 
 			        history.back();
