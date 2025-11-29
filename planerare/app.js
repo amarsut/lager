@@ -4082,39 +4082,42 @@
 	/* --- KLICK-HANTERARE FÖR MOBIL SÖKLISTA (FIXAD) --- */
     const mobileResultList = document.getElementById('mobileSearchResults');
 
-    if (mobileResultList) {
-        mobileResultList.addEventListener('click', (e) => {
-            e.stopPropagation(); // VIKTIGT: Stoppar klicket från att stänga saker bakom
-
-            const target = e.target;
-
-            // 1. Klick på Kund-länk?
-            const customerLink = target.closest('.customer-link');
-            if (customerLink) {
-                const kundnamn = customerLink.dataset.kund;
-                openCustomerModal(kundnamn);
-                return;
-            }
-
-            // 2. Klick på Bil-länk?
-            const carLink = target.closest('.car-link');
-            if (carLink) {
-                const regnr = carLink.dataset.regnr;
-                openCarModal(regnr);
-                return;
-            }
-
-            // 3. Klick på själva kortet? (Öppna jobbet)
-            const card = target.closest('.mobile-job-card');
-            if (card) {
-                const jobId = card.dataset.id;
-                const job = findJob(jobId);
-                if (job) {
-                    openJobSummaryModal(job);
-                    if (document.activeElement) document.activeElement.blur(); // Stäng tangentbord
-                }
-            }
-        });
-    }
+	if (mobileResultList) {
+	    mobileResultList.addEventListener('click', (e) => {
+	        e.stopPropagation(); // Stoppa klicket från att bubbla
+	
+	        const target = e.target;
+	        
+	        // Hitta vad som klickades (Kund, Bil eller Hela kortet)
+	        const customerLink = target.closest('.customer-link');
+	        const carLink = target.closest('.car-link');
+	        const card = target.closest('.mobile-job-card');
+	
+	        // Funktion för att öppna modal säkert
+	        const openSafe = (action) => {
+	            // Stäng tangentbordet om det är uppe
+	            if (document.activeElement) document.activeElement.blur();
+	            // Kör öppningen
+	            setTimeout(action, 50);
+	        };
+	
+	        if (customerLink) {
+	            openSafe(() => openCustomerModal(customerLink.dataset.kund));
+	            return;
+	        }
+	
+	        if (carLink) {
+	            openSafe(() => openCarModal(carLink.dataset.regnr));
+	            return;
+	        }
+	
+	        if (card) {
+	            const job = findJob(card.dataset.id);
+	            if (job) {
+	                openSafe(() => openJobSummaryModal(job));
+	            }
+	        }
+	    });
+	}
 
 });
