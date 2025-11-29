@@ -5654,6 +5654,10 @@ html.privacy-mode-enabled .nav-logo {
     color: var(--text-color) !important;
 }
 
+/* --- Dölj den gamla "Rensa sökning"-knappen i headern --- */
+#clearDayFilterBtn {
+    display: none !important;
+}
 
 
 
