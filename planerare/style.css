@@ -330,91 +330,214 @@ h1, h2, h3, h4, h5, h6 {
 .stat-card[data-filter="alla"] .icon-sm { color: var(--text-color-light); }
 
 
-/* Kontroller (Endast Sök) */
+/*NY SÖKRUTA*/
+/* --- MODERN SÖK & FILTER-PANEL --- */
+
+/* Huvudbehållaren för raden */
 .view-controls {
     display: flex;
-    justify-content: stretch; /* Låt innehållet sträcka ut sig */
+    justify-content: stretch;
+    align-items: center; /* Centrera vertikalt */
     width: 100%;
-    margin-bottom: 1.5rem;
+    margin-bottom: 2rem;
+    gap: 1rem; /* Luft mellan sök och filter */
 }
 
-.search-result-count {
-    font-size: 0.8rem;
-    font-weight: 600;
+/* --- 1. SÖKFÄLTET (Modern Look) --- */
+.search-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    
+    /* Vit bakgrund med mjuk skugga istället för kantlinje */
+    background: var(--content-bg);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+    border: 1px solid transparent; /* Osynlig kant som standard */
+    
+    border-radius: 16px; /* Matchar dina kort */
+    height: 52px; /* Lite högre för bättre touch/klick-yta */
+    width: 100%;
+    box-sizing: border-box;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* Hover-effekt: Lyft lite */
+.search-wrapper:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+}
+
+/* Fokus-effekt: Blå glöd */
+.search-wrapper:focus-within {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px var(--primary-light);
+    transform: translateY(0);
+}
+
+/* Ikonen (Förstoringsglaset) */
+.search-wrapper .icon-search {
+    left: 1.25rem; /* Flytta in den lite mer */
+    position: absolute;
     color: var(--text-color-light);
-    padding-right: 2.5rem;
-    white-space: nowrap;
+    width: 1.2rem;
+    height: 1.2rem;
+    opacity: 0.7;
+    transition: color 0.2s ease;
 }
 
-/* Dölj den på mobil, där utrymmet är begränsat */
+.search-wrapper:focus-within .icon-search {
+    color: var(--primary-color);
+    opacity: 1;
+}
+
+/* Själva textfältet */
+.search-wrapper input {
+    border: none;
+    background: transparent;
+    width: 100%;
+    height: 100%;
+    outline: none;
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text-color);
+    
+    /* Padding: Plats för ikon vänster, kryss höger */
+    padding-left: 3.2rem !important; 
+    padding-right: 3rem !important; 
+    border-radius: 16px;
+}
+.search-wrapper input::placeholder {
+    color: #9CA3AF;
+    font-weight: 400;
+}
+
+/* Krysset (Rensa) - Gör den snyggare */
+.search-clear-btn {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 28px;
+    height: 28px;
+    background: rgba(0,0,0,0.05); /* Svag grå cirkel */
+    border: none;
+    border-radius: 50%;
+    color: var(--text-color-light);
+    display: none; /* Visas via JS */
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+.search-clear-btn:hover {
+    background: var(--text-color);
+    color: white;
+}
+
+/* --- 2. SORTERINGSDROPDOWN (Knapp-stil) --- */
+.sort-controls {
+    display: flex;
+    gap: 0.75rem;
+    flex-shrink: 0; /* Hindra den från att krympa */
+}
+
+.custom-select-wrapper {
+    position: relative;
+    background: var(--content-bg);
+    
+    /* Samma skugg-stil som sökfältet */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+    border: 1px solid transparent;
+    
+    border-radius: 16px;
+    height: 52px; /* Matcha sökfältets höjd */
+    min-width: 160px; /* Lite bredare för att se bra ut */
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.custom-select-wrapper:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+}
+
+/* Texten inuti sorteringen */
+.select-visual {
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between;
+    width: 100%; 
+    padding: 0 1.25rem;
+    font-size: 0.95rem;
+}
+
+.select-label { 
+    color: var(--text-color-light); 
+    margin-right: 6px; 
+    font-weight: 500;
+    font-size: 0.85rem;
+}
+.select-value { 
+    color: var(--text-color); 
+    font-weight: 700; 
+}
+
+/* --- 3. SORTERINGSKNAPPEN (Pilarna) --- */
+#sortDirectionBtn {
+    background: var(--content-bg);
+    border: 1px solid transparent;
+    border-radius: 14px; /* Lite fyrkantigare än dropdownen för kontrast, eller kör 16px */
+    width: 52px; /* Kvadratisk */
+    height: 52px;
+    
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+    color: var(--text-color-light);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#sortDirectionBtn:hover {
+    background: var(--bg-color); /* Något mörkare vid hover */
+    color: var(--primary-color);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+}
+
+/* Animera pilen när man klickar */
+#sortDirectionBtn svg {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+#sortDirectionBtn.descending svg {
+    transform: rotate(180deg);
+}
+
+/* --- MOBILANPASSNING --- */
 @media (max-width: 768px) {
-    .search-result-count {
-        display: none;
+    /* På mobil döljer vi hela denna raden eftersom du har en separat mobil-sök */
+    .view-controls {
+        display: none !important;
     }
 }
 
-
-
-
-/* Knappar */
-.button {
-    padding: 0.625rem 1rem; border: none; border-radius: 8px;
-    font-size: 0.9rem; font-weight: 600; cursor: pointer;
-    transition: all 0.2s ease; display: inline-flex;
-    align-items: center; justify-content: center;
-    gap: 0.5rem;
-	text-decoration: none;
+/* --- DARK MODE FIX --- */
+[data-theme="dark"] .search-wrapper,
+[data-theme="dark"] .custom-select-wrapper,
+[data-theme="dark"] #sortDirectionBtn {
+    background: #2c2c2e; /* Mörkare grå */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    border: 1px solid rgba(255,255,255,0.05);
 }
-.button.secondary { background-color: var(--content-bg); color: var(--text-color); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
-.button.secondary:hover { background-color: var(--bg-color); }
-
-/* --- Snyggare "Rensa Filter"-knapp --- */
-.button.clear-filter {
-    background-color: var(--bg-color);
-    color: var(--primary-color);
-    border: 1px solid var(--border-color);
-    box-shadow: var(--shadow-sm);
-    padding: 0.5rem 0.8rem;
-    font-size: 0.875rem;
-    font-weight: 600;
-    border-radius: 8px;
-    transition: all var(--transition-speed-fast) ease;
-    gap: 0.4rem; /* Ger lite utrymme mellan 'x' och texten */
+[data-theme="dark"] .search-wrapper input {
+    color: #fff;
 }
-.button.clear-filter:hover {
-    background-color: var(--content-bg);
-    color: var(--danger-color);
-    border-color: var(--danger-color);
-}
-[data-theme="dark"] .button.clear-filter:hover {
-    background-color: var(--danger-light);
-}
-
-.button.primary { background-color: var(--primary-color); color: white; box-shadow: var(--shadow-sm); }
-.button.primary:hover { background-color: var(--primary-hover); box-shadow: var(--shadow-md); }
-
-/* --- Knapp-spinner --- */
-.button .button-spinner {
-    display: inline-block;
-    width: 1rem;
-    height: 1rem;
-    border: 3px solid rgba(255, 255, 255, 0.4);
-    border-top-color: #ffffff;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-}
-[data-theme="dark"] .button.secondary .button-spinner {
-    border-color: rgba(255, 255, 255, 0.2);
-    border-top-color: #f2f2f7;
-}
-[data-theme="light"] .button.secondary .button-spinner {
-    border-color: rgba(0, 0, 0, 0.2);
-    border-top-color: #1a1a1a;
-}
-.button:disabled {
-    opacity: 0.7;
-    cursor: wait;
-}
+/*SLUT PÅ NY SÖKRUTA*/
 
 mark {
     background-color: var(--warning-color);
@@ -5306,6 +5429,7 @@ html.privacy-mode-enabled .nav-logo {
     text-transform: uppercase;
     letter-spacing: 0.05em;
 }
+
 
 
 
