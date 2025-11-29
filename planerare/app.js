@@ -2151,27 +2151,33 @@
 			// --- NY FUNKTION: Renderar listan med utgifter i modalen ---
             function renderExpensesList() {
 			    const container = document.getElementById('expenseList');
+			    if (!container) return;
 			    container.innerHTML = ''; 
 			
 			    if (currentExpenses.length === 0) return;
 			
 			    currentExpenses.forEach((item, index) => {
-			        const tag = document.createElement('div');
-			        tag.className = 'expense-tag';
-			        tag.innerHTML = `
-			            <span class="tag-name">${item.name}</span>
-			            <span class="tag-cost">-${item.cost} kr</span>
-			            <div class="tag-remove" data-index="${index}">✕</div>
+			        const row = document.createElement('div');
+			        row.className = 'expense-row-item';
+			        
+			        // Exakt layout som på bilden: Namn till vänster, Pris till höger
+			        row.innerHTML = `
+			            <span class="row-name">${item.name}</span>
+			            <div class="row-right">
+			                <span class="row-cost">-${formatCurrency(item.cost)}</span>
+			                <div class="btn-remove" data-index="${index}" title="Ta bort">×</div>
+			            </div>
 			        `;
 			        
-			        // Ta bort vid klick på krysset
-			        tag.querySelector('.tag-remove').addEventListener('click', (e) => {
+			        // Koppla krysset
+			        row.querySelector('.btn-remove').addEventListener('click', (e) => {
+			            e.stopPropagation();
 			            currentExpenses.splice(index, 1);
 			            renderExpensesList();
 			            updateLiveProfit();
 			        });
 			        
-			        container.appendChild(tag);
+			        container.appendChild(row);
 			    });
 			}
 
@@ -2184,22 +2190,22 @@
 			    const totalUtgifter = currentExpenses.reduce((sum, item) => sum + (item.cost || 0), 0);
 			    const vinst = pris - totalUtgifter;
 			    
-			    // Uppdatera de nya fälten
-			    const expenseEl = document.getElementById('liveExpenseSum');
-			    const profitEl = document.getElementById('liveProfitSum');
+			    // Uppdatera de nya fälten i grid-en
+			    const costEl = document.getElementById('liveTotalCost');
+			    const profitEl = document.getElementById('liveProfit');
 			    
-			    if (expenseEl && profitEl) {
-			        // Uppdatera text
-			        expenseEl.textContent = `-${formatCurrency(totalUtgifter)}`;
+			    if (costEl) costEl.textContent = formatCurrency(totalUtgifter);
+			    
+			    if (profitEl) {
 			        profitEl.textContent = formatCurrency(vinst);
 			        
-			        // Byt färg på vinsten beroende på plus/minus
+			        // Färgkodning av vinst
 			        if (vinst < 0) {
-			            profitEl.className = "value negative"; // Röd
 			            profitEl.style.color = "var(--danger-color)";
+			        } else if (vinst > 0) {
+			            profitEl.style.color = "var(--primary-color)"; // Eller success-color om du föredrar grönt
 			        } else {
-			            profitEl.className = "value positive"; // Grön
-			            profitEl.style.color = "var(--success-color)";
+			            profitEl.style.color = "var(--text-color)";
 			        }
 			    }
 			}
@@ -4211,6 +4217,11 @@
                     e.preventDefault();
                     return;
                 }
+
+				const prisInput = document.getElementById('kundpris');
+				if (prisInput) {
+				    prisInput.addEventListener('input', updateLiveProfit);
+				}
 
                 if (e.key === 'Escape') {
                     if (isModalOpen) {
