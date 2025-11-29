@@ -5861,7 +5861,7 @@ html.privacy-mode-enabled .nav-logo {
 }
 
 /* ========================================= */
-/* EKONOMI CLEAN (MINIMALISTISK DESIGN)      */
+/* EKONOMI CLEAN (FIXAD & ENHETLIG)          */
 /* ========================================= */
 
 .economy-clean-wrapper {
@@ -5869,44 +5869,50 @@ html.privacy-mode-enabled .nav-logo {
     width: 100%;
 }
 
-/* --- 1. PRIS & VINST (Samma rad) --- */
+/* --- 1. PRIS & VINST (Samma layout som Datum/Tid) --- */
 .price-profit-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end; /* Linjera mot botten */
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Exakt 50/50 fördelning */
+    gap: 1.25rem; /* Samma mellanrum som övriga formuläret */
+    align-items: center; /* Centrera vertikalt */
     margin-bottom: 1rem;
-    border-bottom: 1px solid var(--border-color);
-    padding-bottom: 1rem;
+    /* Ingen linje under, för en renare look */
 }
 
 /* Pris-delen (Vänster) */
 .price-input-container {
     display: flex;
     flex-direction: column;
-    width: 45%;
+    gap: 0.5rem; /* Avstånd mellan label och input */
+    width: 100%;
 }
+
 .price-input-container label {
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: var(--text-color-light);
-    margin-bottom: 0.25rem;
-    text-transform: uppercase;
-}
-.clean-price-input {
-    font-size: 1.5rem; /* Stor text för priset */
-    font-weight: 700;
+    font-weight: 600;
+    font-size: 0.875rem;
     color: var(--text-color);
-    border: 1px solid var(--border-color);
-    background-color: #fff;
-    border-radius: 8px;
-    padding: 0.5rem 0.75rem;
+    text-transform: none; /* Vanlig text, inte VERSALER */
+}
+
+/* Input-fältet: Exakt samma stil som övriga fält */
+.clean-price-input {
+    background-color: #f3f4f6; /* Samma grå som andra fält */
+    border: 1px solid transparent;
+    border-radius: 10px;
+    padding: 0.85rem 1rem;
+    font-size: 0.95rem;
+    color: var(--text-color);
     width: 100%;
     box-sizing: border-box;
+    font-weight: 500;
+    transition: all 0.2s ease;
 }
+
 .clean-price-input:focus {
+    background-color: #ffffff;
     border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px var(--primary-light);
     outline: none;
-    box-shadow: 0 0 0 3px var(--primary-light);
 }
 
 /* Vinst-delen (Höger) */
@@ -5914,17 +5920,21 @@ html.privacy-mode-enabled .nav-logo {
     text-align: right;
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
+    justify-content: center;
+    padding-top: 1.4rem; /* Justera ner så den linjerar med input-fältet */
 }
+
 .profit-label {
-    font-size: 0.7rem;
-    font-weight: 700;
+    font-size: 0.75rem;
+    font-weight: 600;
     color: var(--text-color-light);
     text-transform: uppercase;
+    margin-bottom: 2px;
 }
+
 .profit-value {
-    font-size: 1.5rem; /* Matcha storleken på priset */
-    font-weight: 800;
+    font-size: 1.1rem; /* Mycket mindre och diskretare */
+    font-weight: 700;
     color: var(--success-color);
     line-height: 1.2;
 }
@@ -5933,51 +5943,67 @@ html.privacy-mode-enabled .nav-logo {
 .expense-info {
     font-size: 0.8rem;
     color: var(--text-color-light);
-    margin-top: 2px;
 }
 
 /* --- 2. UTGIFTS-INMATNING --- */
 .expense-clean-input {
     display: flex;
-    gap: 0.5rem;
-    margin-bottom: 0.5rem;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    margin-bottom: 0.75rem;
 }
+
 .clean-input {
-    background-color: var(--bg-color);
+    background-color: #f3f4f6;
     border: 1px solid transparent;
-    border-radius: 6px;
-    padding: 0.6rem;
-    font-size: 0.9rem;
-    flex-grow: 1;
+    border-radius: 10px;
+    padding: 0.85rem 1rem; /* Matcha höjden på pris-fältet */
+    font-size: 0.95rem;
+    color: var(--text-color);
 }
 .clean-input:focus {
     background-color: #fff;
-    border-color: var(--border-color);
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px var(--primary-light);
     outline: none;
 }
-.clean-input.cost {
-    width: 80px;
-    flex-grow: 0;
+
+/* Namn tar all plats */
+#expenseName {
+    flex-grow: 1;
+    width: 100%;
+    min-width: 0;
+}
+
+/* Pris fast bredd */
+#expenseCost {
+    width: 90px !important;
+    flex-shrink: 0;
     text-align: right;
 }
+
+/* Lägg till-knapp */
 .clean-add-btn {
-    width: 40px;
+    width: 46px; /* Matcha höjden på input (ca 46-48px) */
+    height: 46px;
     flex-shrink: 0;
-    background-color: var(--bg-color);
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
+    background-color: var(--primary-light);
+    border: 1px solid var(--primary-color);
+    border-radius: 10px;
     color: var(--primary-color);
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
+    transition: all 0.2s ease;
 }
 .clean-add-btn:hover {
-    background-color: var(--primary-light);
-    border-color: var(--primary-color);
+    background-color: var(--primary-color);
+    color: white;
 }
 
-/* --- 3. LISTA (Smalare rader) --- */
+/* --- 3. LISTA --- */
 .expense-clean-list {
     display: flex;
     flex-direction: column;
@@ -5987,18 +6013,18 @@ html.privacy-mode-enabled .nav-logo {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.4rem 0;
+    padding: 0.5rem 0.25rem;
     border-bottom: 1px dashed var(--border-color);
-    font-size: 0.85rem;
+    font-size: 0.9rem;
 }
 .clean-list-row:last-child { border-bottom: none; }
 
-.clean-row-name { color: var(--text-color); }
-.clean-row-cost { font-weight: 600; color: var(--text-color); margin-right: 0.5rem; }
+.clean-row-name { font-weight: 500; color: var(--text-color); }
+.clean-row-cost { font-weight: 600; color: var(--text-color); margin-right: 0.75rem; }
 .clean-row-remove {
     cursor: pointer;
     color: #9CA3AF;
-    font-size: 1.1rem;
-    line-height: 1;
+    padding: 4px;
+    display: flex;
 }
 .clean-row-remove:hover { color: var(--danger-color); }
