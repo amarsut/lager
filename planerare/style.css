@@ -5050,88 +5050,106 @@ html.privacy-mode-enabled .nav-logo {
     /* ... (Din select-wrapper CSS från tidigare kan vara kvar här) ... */
 }
 
-/* --- MOBIL SÖK (HELTÄCKANDE APP-KÄNSLA) --- */
+/* --- MOBIL SÖK (HELTÄCKANDE APP-KÄNSLA - FIXAD) --- */
 @media (max-width: 768px) {
     
-    /* 1. Huvudbehållaren: Måste täcka HELA skärmen */
+    /* 1. Huvudbehållaren: Måste ligga överst och täcka allt */
     .mobile-search-layout {
         position: fixed;
-        top: 0; 
-        left: 0; 
+        top: 0; left: 0; 
         width: 100%;
-        height: 100vh;      /* Fallback */
-        height: 100dvh;     /* Täcker hela mobila skärmen inkl addressbar */
+        height: 100vh;
+        height: 100dvh; /* För moderna mobiler */
         background-color: #fff;
-        z-index: 9999;
+        z-index: 2147483647; /* Max z-index för att garanterat ligga överst */
         display: flex;
         flex-direction: column;
-        
-        /* Ta bort ev. gamla "popup"-stilar */
-        border-radius: 0 !important;
-        margin: 0 !important;
-        box-shadow: none !important;
     }
 
-    /* 2. Header: Pil + Fält på en prydlig rad */
+    /* 2. Header: Pil + Fält */
     .mobile-search-header {
         display: flex;
-        align-items: center; /* Centrera vertikalt! */
-        gap: 12px;           /* Luft mellan pil och fält */
-        padding: 12px 16px;  /* Luft runt om */
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
         background-color: #fff;
         border-bottom: 1px solid #f3f4f6;
-        flex-shrink: 0;      /* Krymp inte headern */
+        flex-shrink: 0; /* VIKTIGT: Krymp inte headern */
     }
 
     /* 3. Tillbaka-pilen */
     .back-btn {
         padding: 8px;
-        margin: 0;
-        color: #111827; /* Mörkgrå/Svart */
+        margin-left: -8px; /* Dra ut den mot kanten */
+        color: #111827;
         background: transparent;
         border: none;
         display: flex;
         align-items: center;
         justify-content: center;
     }
-    .back-btn .icon {
-        width: 24px;
-        height: 24px;
-    }
+    .back-btn .icon { width: 24px; height: 24px; }
 
-    /* 4. Sökfältet: En mjuk grå "piller"-form */
+    /* 4. Sökfältet: Piller-form */
     .mobile-wrapper {
-        flex-grow: 1; /* Ta all plats som finns kvar */
-        height: 44px; /* Standard höjd för touch */
+        flex-grow: 1;
+        height: 40px; /* Lite kompaktare */
         background-color: #F3F4F6;
-        border-radius: 12px; /* Mjuka hörn */
-        border: 1px solid transparent; /* Ingen kant */
+        border-radius: 99px; /* Helt runda hörn */
+        border: 2px solid transparent; /* Plats för fokus-ram */
         display: flex;
         align-items: center;
-        padding: 0 12px;
-        box-shadow: none !important; /* Ta bort skugga om det finns */
-        margin-bottom: 0 !important;
+        padding: 0 16px;
+        transition: all 0.2s ease;
     }
     
-    /* Fokus-effekt på mobilen */
+    /* VIKTIGT: Fokus-ring på behållaren, inte fältet */
     .mobile-wrapper:focus-within {
         background-color: #fff;
         border-color: var(--primary-color);
-        box-shadow: 0 0 0 4px var(--primary-light) !important;
+        box-shadow: 0 0 0 4px var(--primary-light);
     }
 
+    /* Ta bort ALL styling från själva input-fältet */
     .mobile-wrapper input {
-        font-size: 16px; /* Förhindrar inzoomning på iPhone */
+        border: none !important;
+        outline: none !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        font-size: 16px;
+        width: 100%;
         padding: 0;
+        margin: 0;
+        height: 100%;
+        color: #111;
     }
 
-    /* 5. Filter-chips (Knapparna under) */
+    /* Krysset inuti fältet */
+    .search-clear-btn {
+        position: static; /* Låt den flöda naturligt i flexbox */
+        transform: none;
+        background: #D1D5DB;
+        color: #fff;
+        width: 18px;
+        height: 18px;
+        min-width: 18px; /* Så den inte kläms */
+        font-size: 10px;
+        margin-left: 8px;
+    }
+
+    /* 5. Filter-chips (Scrollbar rad) */
     .mobile-filter-bar {
         padding: 12px 16px;
         border-bottom: 1px solid #f3f4f6;
         background: #fff;
-        overflow-x: auto; /* Scrolla i sidled om det behövs */
+        overflow-x: auto;
+        white-space: nowrap;
+        flex-shrink: 0;
+        -webkit-overflow-scrolling: touch;
     }
+    
+    /* Göm scrollbar men behåll funktion */
+    .mobile-filter-bar::-webkit-scrollbar { display: none; }
     
     .mobile-sort-chips {
         display: flex;
@@ -5140,18 +5158,37 @@ html.privacy-mode-enabled .nav-logo {
 
     .sort-chip {
         padding: 8px 16px;
-        background-color: #F3F4F6; /* Ljusgrå inaktiv */
+        background-color: #F3F4F6;
         color: #4B5563;
-        border-radius: 99px; /* Helt runda */
-        font-size: 0.9rem;
+        border-radius: 99px;
+        font-size: 0.85rem;
         font-weight: 600;
         border: none;
         transition: all 0.2s ease;
     }
 
     .sort-chip.active {
-        background-color: #111827; /* Svart (Apple style) eller din blå färg */
+        background-color: #111827; 
         color: #fff;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    /* 6. Resultatlistan (Skrollbar yta) */
+    .mobile-results-container {
+        flex: 1; /* Ta all återstående plats */
+        overflow-y: auto;
+        background-color: #fff;
+        padding: 0; /* Listan ska gå kant-till-kant */
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    /* Justera korten i mobilsöken för att passa listan */
+    .mobile-results-container .mobile-job-card {
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+        border-top: none;
+        border-bottom: 1px solid #f3f4f6;
+        box-shadow: none;
+        margin: 0;
     }
 }
