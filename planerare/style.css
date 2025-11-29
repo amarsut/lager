@@ -2705,20 +2705,38 @@ input[type="search"]::-webkit-search-results-decoration {
 
 /* --- 2. Sök-Spinner CSS --- */
 .search-spinner {
-    right: auto; /* Nollställ höger */
-    left: 2.5rem; /* Placera till vänster */
+    display: none; /* Dold som standard */
+    width: 20px;
+    height: 20px;
+    border: 2px solid #E5E7EB;
+    border-top-color: var(--primary-color);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    
+    /* Positionering (Desktop: Vänster, Mobil: Höger) */
+    position: absolute;
+    left: 3rem; /* Justera beroende på var din sökikon är */
     top: 50%;
-    margin-top: -9px; /* Centrera exakt (halva höjden av 18px) */
-    z-index: 5;
+    margin-top: -10px;
+    z-index: 10;
 }
 /* Visa bara när vi söker */
 .search-wrapper.is-loading .search-spinner {
     display: block;
 }
 /* Dölj sök-ikonen när vi laddar så det inte blir grötigt */
-.search-wrapper.is-loading .icon {
-    display: none;
+.search-wrapper.is-loading .icon,
+.search-wrapper.is-loading .icon-search {
+    opacity: 0; 
 }
+
+@media (max-width: 768px) {
+    .search-spinner {
+        left: auto; 
+        right: 40px; /* Till vänster om krysset i mobilen */
+    }
+}
+
 /* 3. Desktop Sortering (Custom Select - ser ut som en knapp) */
 .custom-select-wrapper {
     position: relative;
@@ -5325,5 +5343,26 @@ html.privacy-mode-enabled .nav-logo {
 /* Dölj själva status-texten ("Bokad") i söklistan för att spara plats, 
    vi har ju färgen i kanten ändå */
 #mobileSearchResults .status-badge {
-    display: none !important; 
+    display: inline-flex !important;
+    font-size: 0.7rem !important;
+    padding: 2px 6px !important;
+}
+
+/* 2. Datum-hantering */
+.search-date-badge {
+    display: none; /* Dölj datumet på startsidan (där har vi rubriker) */
+}
+
+/* Visa datumet BARA inuti sökresultaten */
+#mobileSearchResults .search-date-badge {
+    display: inline-block;
+    margin-right: 6px;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+/* 3. Justera layouten i söklistan */
+#mobileSearchResults .time-status-wrapper {
+    justify-content: flex-end; /* Tryck allt till höger */
+    gap: 6px;
 }
