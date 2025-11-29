@@ -4600,7 +4600,7 @@ html.privacy-mode-enabled .nav-logo {
 
 .name-reg-wrapper {
     display: grid;
-    grid-template-columns: 1fr 1fr; /* Namn tar 2/3, Regnr 1/3 */
+    grid-template-columns: 1fr 1fr !important;
     gap: 1.25rem;
     width: 100%;
     grid-column: 1 / -1; /* Se till att den fyller hela modal-bredden */
@@ -5968,6 +5968,7 @@ html.privacy-mode-enabled .nav-logo {
 .prio-toggle-wrapper input:checked + .icon-sm {
     fill: currentColor; /* Fyll ikonen */
 }
+
 
 
 
