@@ -5575,39 +5575,61 @@ html.privacy-mode-enabled .nav-logo {
 /* --- MOBILANPASSNING FÖR BEKRÄFTELSE-RUTAN --- */
 @media (max-width: 768px) {
     
-    /* 1. Krymp modalen så den inte täcker hela skärmen */
     #confirmModal .modal-content.confirm-box {
-        height: auto !important;        /* Anpassa höjden efter innehållet */
-        max-height: auto !important;    /* Ta bort max-höjd begränsningar */
-        width: 92% !important;          /* Lämna lite luft på sidorna */
+        height: auto !important;
+        max-height: auto !important;
+        width: 95% !important; /* Lite bredare för att utnyttja ytan */
         
-        /* 2. Placera den längst ner (Lättare för tummen) */
         position: absolute !important;
-        bottom: 2rem !important;        /* 2rem från bottenkanten */
+        bottom: 1.5rem !important; /* Lite närmare kanten */
         left: 50% !important;
-        transform: translateX(-50%) !important; /* Centrera horisontellt */
+        transform: translateX(-50%) !important;
         
-        border-radius: 24px !important; /* Snygga runda hörn */
-        padding: 1.5rem !important;
+        /* -- FÖRÄNDRINGARNA HÄR -- */
+        border-radius: 16px !important; /* Mindre runda hörn (var 24px) */
+        padding: 1.25rem !important;    /* Mindre luft (var 1.5rem) */
         
-        /* 3. Lägg till en tydlig skugga så den "poppar" */
-        box-shadow: 0 10px 30px rgba(0,0,0,0.3) !important;
+        box-shadow: 0 4px 25px rgba(0,0,0,0.15) !important; /* Lite stramare skugga */
+        border: 1px solid var(--border-color); /* Tunn ram för definition */
     }
 
-    /* 4. Gör knapparna större och "fetare" (Lättare att träffa) */
-    .confirm-actions .button {
-        padding: 1rem !important;      /* Mer padding = Större knapp */
-        font-size: 1rem !important;    /* Tydligare text */
-        border-radius: 12px !important;
-    }
-    
-    /* Justera ikonen lite */
+    /* Gör ikonen mindre dominant */
     .confirm-icon-wrapper {
-        margin-top: 0.5rem;
+        width: 48px;
+        height: 48px;
+        margin-bottom: 0.25rem;
+    }
+    .confirm-icon-wrapper .icon-lg {
+        width: 2rem;
+        height: 2rem;
+    }
+
+    /* Strama upp rubriken */
+    .confirm-box h3 {
+        font-size: 1.1rem;
+        margin-bottom: 0.25rem;
+        font-weight: 700;
+    }
+
+    /* Strama upp brödtexten */
+    .confirm-box p {
+        font-size: 0.9rem;
+        margin-bottom: 1.25rem;
+        color: #6B7280;
+    }
+
+    /* Gör knapparna mer kompakta */
+    .confirm-actions .button {
+        padding: 0.75rem 1rem !important; /* Mindre höjd */
+        font-size: 0.95rem !important;
+        border-radius: 10px !important;   /* Mindre runda hörn på knappar */
+        font-weight: 600;
+        min-height: 44px; /* Standardhöjd för touch, men inte gigantisk */
     }
 }
 
 /* SLUT PÅ BEKRÄFTELSE-MODAL */
+
 
 
 
