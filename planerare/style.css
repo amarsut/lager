@@ -4577,7 +4577,7 @@ html.privacy-mode-enabled .nav-logo {
 /* ========================================= */
 @media (max-width: 768px) {
 
-    /* --- 1. Global Layout & Scroll --- */
+    /* --- 1. Global Layout --- */
     .app-main {
         overflow-y: auto; 
         -webkit-overflow-scrolling: touch;
@@ -4607,11 +4607,9 @@ html.privacy-mode-enabled .nav-logo {
         display: none !important; 
     }
 
-    /* FIX 4: Dölj externa länkar i headern (Bil-modal) */
-    .detail-modal-header .external-actions-wrapper {
-        display: none !important;
-    }
-    #copyCarRegnrBtn { display: none !important; } /* Dölj kopiera-knapp i header på mobil om den stör */
+    /* Dölj länkar i header (Bil-modal) */
+    .detail-modal-header .external-actions-wrapper { display: none !important; }
+    #copyCarRegnrBtn { display: none !important; } 
 
     /* --- 3. Header & Navigation --- */
     .main-header { padding: 0 1rem; height: 60px; }
@@ -4672,38 +4670,42 @@ html.privacy-mode-enabled .nav-logo {
         border-top: 1px solid var(--border-color);
     }
 
-    /* FIX 2: JOBB-MALLAR (Mer höjd och padding) */
+    /* FIX 2: JOBB-MALLAR (Samma höjd, justerad position) */
     .job-templates {
         display: flex !important;
         flex-wrap: nowrap !important;
         overflow-x: auto !important;
         gap: 0.75rem !important;
-        
-        /* Öka padding så skuggor och kanter syns */
-        padding: 0.5rem 0.25rem 1rem 0.25rem !important; 
+        padding: 0.25rem 0.25rem 0.75rem 0.25rem !important; /* Mindre padding top */
         margin-bottom: 0.5rem !important;
-        align-items: center;
-        min-height: 50px; /* Garantera plats */
+        align-items: center !important;
+        
+        /* Ta bort min-height som kan spöka */
+        height: auto !important;
         
         scrollbar-width: none; 
         -ms-overflow-style: none;
     }
     .job-templates::-webkit-scrollbar { display: none; }
 
-    .job-templates .button.template-btn {
+    /* Tvinga alla knappar och labels att ha exakt samma höjd */
+    .job-templates .button.template-btn,
+    .prio-toggle-wrapper {
         flex-shrink: 0 !important;
         white-space: nowrap !important;
         font-size: 0.85rem !important;
-        height: 38px; /* Fast höjd */
+        height: 40px !important; /* Fast höjd för enhetlighet */
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        margin: 0 !important;
+        box-sizing: border-box !important;
     }
     
+    /* Justera marginalen i prio-wrapper */
     .prio-toggle-wrapper {
-        flex-shrink: 0 !important;
-        margin-left: 0 !important;
-        white-space: nowrap !important;
-        height: 38px; /* Samma höjd som knappar */
-        display: inline-flex;
-        align-items: center;
+        margin-left: 0 !important; 
+        padding: 0 0.8rem !important;
     }
 
     /* --- 5. Statistik-kort --- */
@@ -4722,12 +4724,6 @@ html.privacy-mode-enabled .nav-logo {
     .stat-card-title::after {
         content: attr(data-filter); text-transform: uppercase; font-size: 0.7rem; font-weight: 700;
     }
-    .stat-card[data-filter="faktureras"] .stat-card-title::after { content: "FAKTURERING"; }
-    .stat-card[data-filter="kommande"] .stat-card-title::after { content: "KOMMANDE"; }
-    .stat-card[data-filter="klar"] .stat-card-title::after { content: "FÄRDIGA JOBB"; }
-    .stat-card[data-filter="offererad"] .stat-card-title::after { content: "OFFERERADE"; }
-    .stat-card[data-filter="alla"] .stat-card-title::after { content: "ALLA JOBB"; }
-
     .stat-card-value {
         font-size: 1.8rem; text-align: left; margin-top: 0.2rem; font-weight: 700;
     }
@@ -4754,7 +4750,7 @@ html.privacy-mode-enabled .nav-logo {
         box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         border-left: 4px solid transparent;
         display: block !important;
-        padding-bottom: 0; 
+        padding-bottom: 0;
     }
     .mobile-job-card.prio-row {
         border-left-color: var(--danger-color); background-color: var(--danger-light);
@@ -4768,34 +4764,46 @@ html.privacy-mode-enabled .nav-logo {
         padding: 0.25em 0.75em !important; border-radius: 99px !important; display: inline-block;
     }
 
-    /* FIX 1: ÅTGÄRDSKNAPPAR (Små och prydliga) */
+    /* FIX 1: JOBBKORTENS KNAPPAR (Små och utspridda) */
     .mobile-job-card .action-col {
         display: flex !important;
-        justify-content: flex-start !important; /* Vänsterställd */
-        gap: 1.5rem !important; /* Luft mellan ikonerna */
-        padding: 0.5rem 1rem 1rem 1rem !important; 
+        justify-content: space-between !important; /* Sprid ut dem maximalt */
+        align-items: center !important;
+        gap: 0 !important;
+        
+        padding: 0.5rem 1.5rem !important; /* Lite luft på sidorna */
+        
         background-color: transparent !important;
         border-top: none !important;
         opacity: 1 !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
     }
     
     .mobile-job-card .action-col .icon-btn {
-        padding: 0 !important;
+        padding: 0.5rem !important; /* Liten padding */
         background: transparent !important;
-        width: auto !important; height: auto !important;
-        border-radius: 0 !important;
-        color: #9CA3AF !important; 
+        
+        /* Tvinga liten storlek */
+        width: 36px !important; 
+        height: 36px !important;
+        
+        border-radius: 50% !important; /* Runda cirklar */
+        color: var(--text-color-light) !important;
         flex: 0 0 auto !important; /* Förhindra expandering */
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
     }
     
     .mobile-job-card .action-col .icon-sm {
-        width: 1.3rem !important;
-        height: 1.3rem !important;
+        width: 1.2rem !important;
+        height: 1.2rem !important;
     }
     
     .mobile-job-card .action-col .icon-btn.active-prio { color: var(--danger-color) !important; }
     
-    /* FIX 3: KUND & BIL MODAL (Snyggare lista) */
+    /* FIX 3: KUND & BIL MODAL (Rensa upp röran) */
     .detail-job-table tbody tr {
         display: block !important;
         background: var(--content-bg);
@@ -4809,34 +4817,33 @@ html.privacy-mode-enabled .nav-logo {
     
     .detail-job-table td {
         display: block !important;
-        padding: 0 0 0.25rem 0 !important;
+        padding: 0 0 0.15rem 0 !important; /* Tajtare rader */
         border: none !important;
         text-align: left !important;
     }
     
-    /* Datumrubrik */
+    /* Datum: Fetstilt och tydligt */
     .detail-job-table td[data-label="Datum"] {
         font-weight: 700 !important;
-        font-size: 0.9rem !important;
+        font-size: 0.95rem !important;
         margin-bottom: 0.25rem;
+        color: var(--text-color) !important;
     }
-    
-    /* Info (Regnr/Namn) */
-    .detail-job-table td[data-label="Info"] {
-        padding-top: 0 !important;
-    }
+    /* Info: Normal text */
     .detail-job-table .job-subline-main {
-        font-size: 1rem !important;
-        font-weight: 600 !important;
+        font-size: 0.95rem !important;
+        font-weight: 500 !important;
         color: var(--text-color) !important;
     }
     .detail-job-table .job-subline-comment {
         font-style: italic;
         color: var(--text-color-light);
         font-size: 0.85rem;
+        display: block;
+        margin-top: 0.2rem;
     }
     
-    /* Status & Vinst på samma rad i botten */
+    /* Lägg Status och Vinst på samma rad längst ner */
     .detail-job-table td[data-label="Status"],
     .detail-job-table td[data-label="Vinst"] {
         display: inline-block !important;
@@ -4850,15 +4857,16 @@ html.privacy-mode-enabled .nav-logo {
         font-size: 1rem !important;
     }
     
-    /* Göm etiketter */
+    /* Göm desktop-element i tabellen */
     .detail-job-table td::before { display: none !important; }
     .detail-job-table thead { display: none !important; }
+    .date-wrapper span { display: inline !important; margin: 0 !important; font-size: inherit !important; color: inherit !important; } /* Återställ datum-styling */
 
-    /* FIX 4: EXTERNA LÄNKAR (Enhetliga knappar i botten) */
+    /* FIX 4: EXTERNA LÄNKAR (Sida vid sida, snygga) */
     .sticky-link-buttons {
         display: grid !important; 
-        grid-template-columns: 1fr !important; /* Stapla dem */
-        gap: 0.75rem !important;
+        grid-template-columns: 1fr 1fr !important; /* Sida vid sida */
+        gap: 10px !important;
         padding: 1rem 1.25rem !important;
         background-color: var(--bg-color) !important;
         border-top: 1px solid var(--border-color) !important;
@@ -4868,12 +4876,25 @@ html.privacy-mode-enabled .nav-logo {
         display: flex !important;
         justify-content: center !important;
         align-items: center !important;
-        padding: 0.8rem 1rem !important; /* Lite större klickyta */
+        padding: 0 !important;
+        
+        height: 48px !important; /* Fast höjd så de blir lika stora */
         width: 100% !important;
+        
         box-sizing: border-box;
         font-weight: 600;
+        font-size: 0.85rem !important;
+        border-radius: 8px !important;
     }
     
+    /* Göm texten om det blir för trångt, eller minska den */
+    .sticky-link-buttons .button.secondary span {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 80px; /* Förhindra att texten spränger knappen */
+    }
+
     /* --- 7. Sök-Modal --- */
     #mobileSearchModal {
         position: fixed !important; top: 0 !important; left: 0 !important;
@@ -4912,7 +4933,7 @@ html.privacy-mode-enabled .nav-logo {
     }
     .confirm-actions .button { padding: 0.75rem 1rem !important; font-size: 0.95rem !important; border-radius: 10px !important; }
 
-    /* --- 9. Kalender (KOMPAKT) --- */
+    /* --- 9. Kalender --- */
     #calendarView { padding: 0; background: none; border: none; }
     .fc .fc-toolbar.fc-header-toolbar {
         display: flex !important; flex-direction: column !important;
