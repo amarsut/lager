@@ -5617,6 +5617,20 @@ html.privacy-mode-enabled .nav-logo {
         font-weight: 600;
         min-height: 44px; /* Standardhöjd för touch, men inte gigantisk */
     }
+
+    /* --- FIX: TVINGA TOPP-MENYER BREDVID VARANDRA PÅ MOBIL --- */
+    #jobModalForm .form-group-split {
+        grid-template-columns: 1fr 1fr !important; /* Tvinga 2 kolumner */
+        gap: 0.75rem !important;
+    }
+    
+    /* Justera labels så de får plats bättre på mobilen */
+    #jobModalForm .form-group-split label {
+        font-size: 0.8rem;
+        white-space: nowrap; /* Försök hålla på en rad */
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
 }
 
 /* --- ACCORDION STYLING (Nytt Jobb Modal) --- */
@@ -5746,3 +5760,71 @@ html.privacy-mode-enabled .nav-logo {
 /* Status-färger inuti dropdown (fungerar i vissa webbläsare) */
 #statusSelect option[value="bokad"] { color: var(--primary-color); font-weight: bold; }
 #statusSelect option[value="klar"] { color: var(--success-color); font-weight: bold; }
+
+/* --- FIX: SNYGGARE PRIORITET-KNAPP --- */
+
+/* Gör om wrappern till en snygg, klickbar ruta som matchar inputs */
+.prio-toggle-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0 1rem;
+    
+    /* Samma höjd och utseende som vanliga input-fält */
+    height: 42px; 
+    background-color: var(--bg-color); 
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    
+    cursor: pointer;
+    user-select: none; /* Förhindra textmarkering när man klickar */
+    transition: all 0.2s ease;
+    margin-top: auto; /* Tryck ner den i linje med input-fältet bredvid */
+}
+
+.prio-toggle-wrapper:hover {
+    border-color: var(--primary-color);
+    background-color: var(--bg-color-hover, #f9fafb);
+}
+
+/* Dölj den fula checkboxen helt */
+.prio-toggle-wrapper input[type="checkbox"] {
+    display: none;
+}
+
+/* Ikonens standardfärg */
+.prio-toggle-wrapper .icon-sm {
+    color: var(--text-color-light);
+    transition: color 0.2s ease, fill 0.2s ease;
+}
+
+/* Textens standardfärg */
+.prio-toggle-wrapper span {
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+/* --- NÄR DEN ÄR IKRYSSAD (PRIO AKTIV) --- */
+/* Ändra färg på ikonen till röd och fyll den */
+.prio-toggle-wrapper input:checked + .icon-sm {
+    color: var(--danger-color);
+    fill: var(--danger-color); /* Fyll ikonen med rött */
+}
+
+/* Ändra färg på texten till röd */
+.prio-toggle-wrapper input:checked ~ span {
+    color: var(--danger-color);
+    font-weight: 600;
+}
+
+/* Ge hela rutan en röd kant */
+.prio-toggle-wrapper:has(input:checked) {
+    border-color: var(--danger-color);
+    background-color: var(--danger-light, #fef2f2);
+}
+
+/* Se till att Mätarställning och Prio linjerar snyggt i botten */
+#extraDetailsContent .form-group-split {
+    align-items: flex-end;
+}
