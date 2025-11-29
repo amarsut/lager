@@ -1321,26 +1321,6 @@
 
             // --- UPPDATERAD: renderTimeline med Animationslogik ---
             function renderTimeline() {
-				// Om vi är på tidslinjen och sök-modalen är STÄNGD, men det finns söktext...
-			    const mModal = document.getElementById('mobileSearchModal');
-			    const isSearchOpen = mModal && getComputedStyle(mModal).display !== 'none';
-			    
-			    if (!isSearchOpen && currentSearchTerm !== '') {
-			        // ...då har vi hamnat fel. Nollställ allt!
-			        currentSearchTerm = '';
-			        const dInput = document.getElementById('searchBar');
-			        const mInput = document.getElementById('mobileSearchBar');
-			        if(dInput) dInput.value = '';
-			        if(mInput) mInput.value = '';
-			        
-			        // Dölj rensa-knappar
-			        if (document.getElementById('desktopSearchClear')) {
-			             document.getElementById('desktopSearchClear').style.cssText = 'display: none !important';
-			        }
-			        if (document.getElementById('mobileSearchClear')) {
-			             document.getElementById('mobileSearchClear').style.cssText = 'display: none !important';
-			        }
-			    }
                 // BUGGFIX: Ditt ID i plan.html är "desktopSearchResultCount"
                 const desktopSearchCount = document.getElementById('desktopSearchResultCount'); 
                 let jobsToDisplay = allJobs.filter(job => !job.deleted);
@@ -3221,7 +3201,10 @@
 			    if (mClearBtn) mClearBtn.style.cssText = 'display: none !important';
 			    if (dClearBtn) dClearBtn.style.cssText = 'display: none !important';
 			
-			    // 5. Uppdatera listan så att ALLA jobb visas igen
+			    // 5. VIKTIGT: Tvinga startsidan (Tidslinjen) att ritas om helt ren!
+			    renderTimeline(); 
+			    
+			    // (Vi kör även performSearch för att nollställa söklistan inför nästa gång)
 			    performSearch();
 			}
 
