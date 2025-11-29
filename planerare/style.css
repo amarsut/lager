@@ -5861,7 +5861,7 @@ html.privacy-mode-enabled .nav-logo {
 }
 
 /* ========================================= */
-/* EKONOMI CLEAN (FIXAD & ENHETLIG)          */
+/* EKONOMI CLEAN (FULL BREDD FIX)            */
 /* ========================================= */
 
 .economy-clean-wrapper {
@@ -5869,45 +5869,50 @@ html.privacy-mode-enabled .nav-logo {
     width: 100%;
 }
 
-/* --- 1. PRIS & VINST (Samma layout som Datum/Tid) --- */
+/* --- 1. PRIS & VINST (Grid 50/50) --- */
 .price-profit-row {
     display: grid;
-    grid-template-columns: 1fr 1fr; /* Exakt 50/50 fördelning */
-    gap: 1.25rem; /* Samma mellanrum som övriga formuläret */
-    align-items: center; /* Centrera vertikalt */
+    /* Exakt samma kolumner och mellanrum som Datum/Tid */
+    grid-template-columns: 1fr 1fr; 
+    gap: 1.25rem; 
+    
+    width: 100%; /* VIKTIGT: Tvinga full bredd */
+    box-sizing: border-box;
+    align-items: flex-end; /* Linjera mot botten */
     margin-bottom: 1rem;
-    /* Ingen linje under, för en renare look */
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 1rem;
 }
 
-/* Pris-delen (Vänster) */
+/* Pris-delen */
 .price-input-container {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem; /* Avstånd mellan label och input */
-    width: 100%;
+    gap: 0.5rem;
+    width: 100%; /* Fyll sin kolumn */
 }
 
 .price-input-container label {
     font-weight: 600;
     font-size: 0.875rem;
     color: var(--text-color);
-    text-transform: none; /* Vanlig text, inte VERSALER */
+    text-transform: uppercase;
 }
 
-/* Input-fältet: Exakt samma stil som övriga fält */
 .clean-price-input {
-    background-color: #f3f4f6; /* Samma grå som andra fält */
+    background-color: #f3f4f6;
     border: 1px solid transparent;
     border-radius: 10px;
     padding: 0.85rem 1rem;
     font-size: 0.95rem;
     color: var(--text-color);
-    width: 100%;
-    box-sizing: border-box;
+    
+    width: 100%; /* VIKTIGT: Fyll containern */
+    box-sizing: border-box; /* Räkna in padding i bredden */
+    
     font-weight: 500;
     transition: all 0.2s ease;
 }
-
 .clean-price-input:focus {
     background-color: #ffffff;
     border-color: var(--primary-color);
@@ -5915,13 +5920,13 @@ html.privacy-mode-enabled .nav-logo {
     outline: none;
 }
 
-/* Vinst-delen (Höger) */
+/* Vinst-delen */
 .profit-display {
     text-align: right;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding-top: 1.4rem; /* Justera ner så den linjerar med input-fältet */
+    padding-bottom: 0.5rem; /* Finjustering höjdled */
 }
 
 .profit-label {
@@ -5933,7 +5938,7 @@ html.privacy-mode-enabled .nav-logo {
 }
 
 .profit-value {
-    font-size: 1.1rem; /* Mycket mindre och diskretare */
+    font-size: 1.1rem;
     font-weight: 700;
     color: var(--success-color);
     line-height: 1.2;
@@ -5945,12 +5950,16 @@ html.privacy-mode-enabled .nav-logo {
     color: var(--text-color-light);
 }
 
-/* --- 2. UTGIFTS-INMATNING --- */
+/* --- 2. UTGIFTS-INMATNING (Grid Layout) --- */
 .expense-clean-input {
-    display: flex;
+    display: grid;
+    /* Namn (Resten) | Pris (90px) | Knapp (46px) */
+    grid-template-columns: 1fr 90px 46px; 
+    gap: 0.75rem; /* Samma mellanrum mellan fälten */
+    
+    width: 100%; /* VIKTIGT: Fyll hela bredden */
+    box-sizing: border-box;
     align-items: center;
-    gap: 0.75rem;
-    width: 100%;
     margin-bottom: 0.75rem;
 }
 
@@ -5958,9 +5967,11 @@ html.privacy-mode-enabled .nav-logo {
     background-color: #f3f4f6;
     border: 1px solid transparent;
     border-radius: 10px;
-    padding: 0.85rem 1rem; /* Matcha höjden på pris-fältet */
+    padding: 0.85rem 1rem; /* Matcha höjd på Pris-fältet */
     font-size: 0.95rem;
     color: var(--text-color);
+    width: 100%; /* Fyll grid-cellen */
+    box-sizing: border-box;
 }
 .clean-input:focus {
     background-color: #fff;
@@ -5969,25 +5980,14 @@ html.privacy-mode-enabled .nav-logo {
     outline: none;
 }
 
-/* Namn tar all plats */
-#expenseName {
-    flex-grow: 1;
-    width: 100%;
-    min-width: 0;
-}
-
-/* Pris fast bredd */
-#expenseCost {
-    width: 90px !important;
-    flex-shrink: 0;
+.clean-input.cost {
     text-align: right;
+    padding-right: 0.5rem; /* Justera padding för siffror */
 }
 
-/* Lägg till-knapp */
 .clean-add-btn {
-    width: 46px; /* Matcha höjden på input (ca 46-48px) */
-    height: 46px;
-    flex-shrink: 0;
+    width: 100%; /* Fyll sin grid-cell (46px) */
+    height: 46px; /* Matcha höjden på inputs */
     background-color: var(--primary-light);
     border: 1px solid var(--primary-color);
     border-radius: 10px;
@@ -5997,6 +5997,7 @@ html.privacy-mode-enabled .nav-logo {
     justify-content: center;
     cursor: pointer;
     transition: all 0.2s ease;
+    padding: 0;
 }
 .clean-add-btn:hover {
     background-color: var(--primary-color);
@@ -6008,6 +6009,7 @@ html.privacy-mode-enabled .nav-logo {
     display: flex;
     flex-direction: column;
     gap: 1px;
+    width: 100%;
 }
 .clean-list-row {
     display: flex;
@@ -6028,3 +6030,16 @@ html.privacy-mode-enabled .nav-logo {
     display: flex;
 }
 .clean-row-remove:hover { color: var(--danger-color); }
+
+/* Mobiljustering: Stapla Pris/Vinst om det blir för trångt */
+@media (max-width: 400px) {
+    .price-profit-row {
+        grid-template-columns: 1fr; /* En kolumn */
+        gap: 1rem;
+    }
+    .profit-display {
+        text-align: left;
+        align-items: flex-start;
+        padding-top: 0;
+    }
+}
