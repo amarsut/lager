@@ -3307,16 +3307,22 @@
 			    renderTimeline();
 			}
 
-            searchBar.addEventListener('input', debounce(performSearch, 300));
-            if (mobileSearchBar) {
+            if (searchBar) {
+		        searchBar.addEventListener('input', debounce(() => {
+		            if (desktopSearchWrapper) desktopSearchWrapper.classList.add('is-searching');
+		            performSearch();
+		        }, 300));
+		    }
+		
+		    // Mobil Input
+		    if (mobileSearchBar) {
 		        mobileSearchBar.addEventListener('input', debounce(performSearch, 300));
 		        
-		        // 2. NYTT: Hantera "Enter" (Sök/Gå) direkt på input-fältet istället för formuläret
+		        // Hantera "Enter/Sök" på mobil-tangentbordet
 		        mobileSearchBar.addEventListener('keyup', (e) => {
 		            if (e.key === 'Enter') {
 		                e.preventDefault();
-		                mobileSearchBar.blur(); // Stäng tangentbordet
-		                // closeModal(); // Valfritt: Om du vill att rutan ska stängas direkt vid Enter
+		                mobileSearchBar.blur(); 
 		                performSearch(); 
 		            }
 		        });
@@ -4275,83 +4281,40 @@
                 }
             });
 
-			/* --- FELSÄKER MOBIL-SÖK START --- */
-    
-    // 1. Hämta elementen på nytt
-    const _mobileBtn = document.getElementById('mobileSearchBtn');
-    const _mobileModal = document.getElementById('mobileSearchModal');
-    const _mobileInput = document.getElementById('mobileSearchBar');
-    const _mobileBack = document.getElementById('mobileSearchBackBtn');
-
-    // 2. Koppla 'Öppna'-funktionen (Tvingande)
-    if (_mobileBtn && _mobileModal) {
-	    _mobileBtn.onclick = function(e) {
-	        e.preventDefault();
-	        console.log("Sök-knapp tryckt! Tvingar öppning...");
-	        
-	        // Tvinga fram rutan OCH tvinga den att vara synlig
-	        _mobileModal.style.cssText = 'display: flex !important; opacity: 1 !important; visibility: visible !important;';
-	        
-	        // Fokusera i rutan
-	        setTimeout(() => {
-	            if (_mobileInput) _mobileInput.focus();
-	        }, 100);
-	    };
-    }
-
-    // 3. Koppla 'Stäng'-funktionen
-    if (_mobileBack && _mobileModal) {
-        _mobileBack.onclick = function(e) {
-            e.preventDefault();
-            _mobileModal.style.display = 'none';
-        };
-    }
-    /* --- FELSÄKER MOBIL-SÖK SLUT --- */
-
-	/* --- KLICK-HANTERARE FÖR MOBIL SÖKLISTA (FIXAD) --- */
-    const mobileResultList = document.getElementById('mobileSearchResults');
-
-	if (mobileResultList) {
-	    mobileResultList.addEventListener('click', (e) => {
-	        e.stopPropagation(); // Stoppa klicket från att bubbla
-	
-	        const target = e.target;
-	        
-	        // Hitta vad som klickades (Kund, Bil eller Hela kortet)
-	        const customerLink = target.closest('.customer-link');
-	        const carLink = target.closest('.car-link');
-	        const card = target.closest('.mobile-job-card');
-	
-	        // Funktion för att öppna modal säkert
-	        const openSafe = (action) => {
-	            // Stäng tangentbordet om det är uppe
-	            if (document.activeElement) document.activeElement.blur();
-	            // Kör öppningen
-	            setTimeout(action, 50);
-	        };
-	
-	        if (customerLink) {
-	            openSafe(() => openCustomerModal(customerLink.dataset.kund));
-	            return;
-	        }
-	
-	        if (carLink) {
-	            openSafe(() => openCarModal(carLink.dataset.regnr));
-	            return;
-	        }
-	
-	        if (card) {
-	            const job = findJob(card.dataset.id);
-	            if (job) {
-	                openSafe(() => openJobSummaryModal(job));
-	            }
-	        }
-			if (searchBar && desktopSearchClear) {
-			    desktopSearchClear.style.cssText = searchBar.value.trim() ? 'display: flex !important' : 'display: none !important';
-			}
-			if (mobileSearchBar && mobileSearchClear) {
-			    mobileSearchClear.style.cssText = mobileSearchBar.value.trim() ? 'display: flex !important' : 'display: none !important';
-			}
+			/* --- KLICK-HANTERARE FÖR MOBIL SÖKLISTA (RENSAD) --- */
+		    const mobileResultList = document.getElementById('mobileSearchResults');
+		
+		    if (mobileResultList) {
+		        mobileResultList.addEventListener('click', (e) => {
+		            e.stopPropagation(); 
+		
+		            const target = e.target;
+		            const customerLink = target.closest('.customer-link');
+		            const carLink = target.closest('.car-link');
+		            const card = target.closest('.mobile-job-card');
+		
+		            // Funktion för att öppna modal säkert och stänga tangentbord
+		            const openSafe = (action) => {
+		                if (document.activeElement) document.activeElement.blur();
+		                setTimeout(action, 50);
+		            };
+		
+		            if (customerLink) {
+		                openSafe(() => openCustomerModal(customerLink.dataset.kund));
+		                return;
+		            }
+		
+		            if (carLink) {
+		                openSafe(() => openCarModal(carLink.dataset.regnr));
+		                return;
+		            }
+		
+		            if (card) {
+		                const job = findJob(card.dataset.id);
+		                if (job) {
+		                    openSafe(() => openJobSummaryModal(job));
+		                }
+		            }			
 	    });
 	}
 
