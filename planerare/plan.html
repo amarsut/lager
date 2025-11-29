@@ -782,37 +782,27 @@
             <form id="settingsModalForm" class="modal-body">
                 
                 <div class="settings-section">
-				    <label class="section-label">Oljelager (Startvärden)</label>
+				    <label class="section-label">Drift & Ekonomi</label>
 				    
-				    <div class="form-group" style="margin-bottom: 1rem;">
-				        <label for="oilStartAmount">
-				            <svg class="icon-sm" viewBox="0 0 24 24" style="vertical-align: -2px; margin-right:4px;"><use href="#icon-oil-can"></use></svg>
-				            Påfylld Mängd (Fat)
-				        </label>
-				        <input type="number" id="oilStartAmount" placeholder="t.ex. 205">
-				    </div>
-				
-				    <div class="form-group" style="margin-bottom: 1rem;">
-				        <label for="oilStartDate">
-				            Påfyllningsdatum
-				        </label>
-				        <input type="date" id="oilStartDate">
-				    </div>
-				
-				    <div class="form-group money-related">
-				        <label>Aktuellt Beräknat Lager:</label>
-				        <div id="calculatedOilStock" style="font-size: 1.2rem; font-weight: 800; color: var(--primary-color);">
-				            Räknar...
+				    <div class="settings-row-split">
+				        <div class="form-group">
+				            <label for="oilStartAmount" style="font-size: 0.8rem;">Startmängd (L)</label>
+				            <input type="number" id="oilStartAmount" placeholder="205">
 				        </div>
-				        <p class="helper-text">Lagersaldot räknas ut automatiskt baserat på bokade/klara jobb efter datumet ovan.</p>
+				        <div class="form-group">
+				            <label for="oilStartDate" style="font-size: 0.8rem;">Startdatum</label>
+				            <input type="date" id="oilStartDate">
+				        </div>
 				    </div>
 				
-				    <div class="form-group">
-				        <label for="profitGoalInput">
-				            <svg class="icon-sm" viewBox="0 0 24 24" style="vertical-align: -2px; margin-right:4px;"><use href="#icon-briefcase"></use></svg>
-				            Månadsmål Vinst (kr)
-				        </label>
-				        <input type="number" id="profitGoalInput" placeholder="t.ex. 50000" min="0">
+				    <div class="oil-status-bar">
+				        <span>Kvar i lager:</span>
+				        <span id="calculatedOilStock">...</span>
+				    </div>
+				
+				    <div class="form-group" style="margin-top: 1rem;">
+				        <label for="profitGoalInput" style="font-size: 0.8rem;">Månadsmål Vinst (kr)</label>
+				        <input type="number" id="profitGoalInput" placeholder="50000">
 				    </div>
 				</div>
 
