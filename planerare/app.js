@@ -3788,7 +3788,7 @@
 			const mSearchModal = document.getElementById('mobileSearchModal');
 			const mNavOpenBtn = document.getElementById('mobileSearchBtn'); // Knappen i botten-menyn
 			const mHeaderBackBtn = document.getElementById('mobileSearchBackBtn'); // Pilen uppe till vänster
-			const mInput = document.getElementById('mobileSearchBar');
+			//const mInput = document.getElementById('mobileSearchBar');
 			
 			// 2. Logik för att ÖPPNA (Knappen i menyn)
 			if (mNavOpenBtn && mSearchModal) {
