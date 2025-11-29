@@ -3013,14 +3013,19 @@
 			}
 
             searchBar.addEventListener('input', debounce(performSearch, 300));
-            mobileSearchBar.addEventListener('input', debounce(performSearch, 300));
-
-            mobileSearchForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                mobileSearchBar.blur(); 
-                closeModal(); 
-                performSearch(); 
-            });
+            if (mobileSearchBar) {
+		        mobileSearchBar.addEventListener('input', debounce(performSearch, 300));
+		        
+		        // 2. NYTT: Hantera "Enter" (Sök/Gå) direkt på input-fältet istället för formuläret
+		        mobileSearchBar.addEventListener('keyup', (e) => {
+		            if (e.key === 'Enter') {
+		                e.preventDefault();
+		                mobileSearchBar.blur(); // Stäng tangentbordet
+		                // closeModal(); // Valfritt: Om du vill att rutan ska stängas direkt vid Enter
+		                performSearch(); 
+		            }
+		        });
+		    }
 
 			const mobileSortContainer = document.getElementById('mobileSortOptions');
 
