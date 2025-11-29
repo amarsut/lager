@@ -785,6 +785,7 @@ mark {
     justify-content: center; z-index: 1000; 
     opacity: 0; transition: opacity 0.3s ease; 
     padding-top: 5vh;
+	z-index: 9500 !important;
 }
 .modal-backdrop.show { opacity: 1; }
 
@@ -1011,6 +1012,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     opacity: 1;
     transform: translateX(-50%) translateY(0); /* Flyg upp till rätt plats */
     pointer-events: auto; /* Nu kan man klicka på knappar i den */
+	z-index: 10000 !important;
 }
 
 /* Anpassa färgerna för olika typer (behåll texten vit för kontrast) */
@@ -5212,7 +5214,7 @@ html.privacy-mode-enabled .nav-logo {
     visibility: visible !important;
     
     /* Superhögt z-index så den hamnar över menyn */
-    z-index: 2147483647 !important; 
+    z-index: 9000 !important; 
     
     display: none; /* Dold tills JS aktiverar den */
     flex-direction: column !important;
@@ -5296,3 +5298,4 @@ html.privacy-mode-enabled .nav-logo {
     border: none !important;
     box-shadow: none !important;
 }
+
