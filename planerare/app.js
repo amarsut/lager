@@ -1707,35 +1707,50 @@
             // --- Popover, Modal-hantering (FIXAD HISTORIK) ---
             
             function closeModal(options = {}) {
-                const { popHistory = true } = options; 
-
-                if (!isModalOpen) return;
-                
-                const modalId = currentOpenModalId;
-                const modalElement = document.getElementById(modalId);
-
-				if (modalId === 'mobileSearchModal' && currentSearchTerm === "") { 
-				    document.getElementById('statBar').style.display = 'grid';
-				}
-                if (modalElement) {
-                    modalElement.classList.remove('show');
-                    if (modalElement.id === 'jobModal') {
-                        kundnamnSuggestions.style.display = 'none';
-                        kundnamnSuggestions.innerHTML = '';
-                    }
-                    setTimeout(() => {
-                        modalElement.style.display = 'none';
-                    }, 200);
-                }
-
-                if (popHistory && !isNavigatingBack && history.state && history.state.modal === modalId) {
-				    isNavigatingBack = true; // <-- 1. Sätt flaggan FÖRST
-				    history.back();
-				}
-                
-                isModalOpen = false;
-                currentOpenModalId = null;
-            }
+			    const { popHistory = true } = options; 
+			
+			    // --- NYTT: SÄKERHETSÅTGÄRD ---
+			    // Om vi stänger en vanlig modal (t.ex. Jobb-modal), se till att Sök-modalen 
+			    // inte ligger och skräpar i bakgrunden.
+			    if (currentOpenModalId !== 'mobileSearchModal') {
+			        const mSearch = document.getElementById('mobileSearchModal');
+			        if (mSearch) {
+			            mSearch.style.display = 'none';
+			            mSearch.classList.remove('show');
+			        }
+			    }
+			    // -----------------------------
+			
+			    if (!isModalOpen) return;
+			    
+			    const modalId = currentOpenModalId;
+			    const modalElement = document.getElementById(modalId);
+			
+			    // Om vi stänger sökfönstret och sökfältet är tomt, visa statistiken igen
+			    if (modalId === 'mobileSearchModal' && currentSearchTerm === "") { 
+			        const statBar = document.getElementById('statBar');
+			        if(statBar) statBar.style.display = 'grid';
+			    }
+			
+			    if (modalElement) {
+			        modalElement.classList.remove('show');
+			        if (modalElement.id === 'jobModal') {
+			            kundnamnSuggestions.style.display = 'none';
+			            kundnamnSuggestions.innerHTML = '';
+			        }
+			        setTimeout(() => {
+			            modalElement.style.display = 'none';
+			        }, 200);
+			    }
+			
+			    if (popHistory && !isNavigatingBack && history.state && history.state.modal === modalId) {
+			        isNavigatingBack = true; 
+			        history.back();
+			    }
+			    
+			    isModalOpen = false;
+			    currentOpenModalId = null;
+			}
 
 			searchBar.addEventListener('input', () => {
 			    if (desktopSearchWrapper) {
