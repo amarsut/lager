@@ -73,9 +73,6 @@
             let allJobs = [];
 			let currentSortField = 'datum'; 
 			let currentSortOrder = 'asc';
-			if (sortDirectionBtn) {
-    			sortDirectionBtn.classList.toggle('descending', currentSortOrder === 'desc');
-			}
 			let currentOilStock = 0;
 			let backPressWarned = false;
             let backPressTimer;
@@ -108,6 +105,10 @@
 
 			const sortBySelect = document.getElementById('sortBy');
 			const sortDirectionBtn = document.getElementById('sortDirectionBtn');
+
+			if (sortDirectionBtn) {
+        		sortDirectionBtn.classList.toggle('descending', currentSortOrder === 'desc');
+    		}
 
 			let isPrivacyModeEnabled = localStorage.getItem('privacyMode') === 'true';
             const appContainer = document.querySelector('.app-container');
