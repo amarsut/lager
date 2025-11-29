@@ -5732,74 +5732,31 @@ html.privacy-mode-enabled .nav-logo {
     width: 100%;
 }
 
-/* Själva select-rutan */
 .compact-select {
-    appearance: none; /* Ta bort standard-pilen (viktigt!) */
+    appearance: none; /* Ta bort standard-pilen */
     -webkit-appearance: none;
-    
     width: 100%;
-    /* Lite mer höjd och luft */
-    padding: 0.7rem 2.5rem 0.7rem 1rem; 
-    
-    /* Design: Vit och krispig */
-    background-color: #ffffff;
-    border: 1px solid var(--border-color);
-    border-radius: 8px; /* Matcha övriga fält */
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05); /* Subtil skugga */
-    
+    padding: 0.7rem 1rem;
+    padding-right: 2.5rem; /* Plats för vår egen pil */
     font-size: 0.9rem;
-    font-weight: 600; /* Fetare text ser proffsigare ut */
+    font-weight: 500;
     color: var(--text-color);
-    
+    background-color: #f3f4f6;
+    border: 1px solid transparent;
+    border-radius: 10px;
     cursor: pointer;
     transition: all 0.2s ease;
 }
 
-/* Hover-effekt */
+/* Hover & Focus */
 .compact-select:hover {
-    border-color: #9CA3AF; /* Lite mörkare ram vid hover */
-    background-color: #FAFAFA;
+    background-color: #e5e7eb;
 }
-
-/* Fokus (När man klickar) */
 .compact-select:focus {
-    outline: none;
+    background-color: #fff;
     border-color: var(--primary-color);
     box-shadow: 0 0 0 3px var(--primary-light);
-}
-
-/* Pilen (Ikonen till höger) */
-.select-wrapper-custom .dropdown-arrow {
-    position: absolute;
-    right: 1rem;
-    top: 50%;
-    transform: translateY(-50%);
-    pointer-events: none; /* Klick går igenom till selecten */
-    
-    width: 1.2rem;
-    height: 1.2rem;
-    color: var(--text-color-light); /* Diskret grå */
-    transition: transform 0.2s ease;
-}
-
-/* Rotera pilen när man fokuserar (Fungerar i vissa webbläsare) */
-.compact-select:focus + .dropdown-arrow {
-    transform: translateY(-50%) rotate(180deg);
-    color: var(--primary-color);
-}
-
-/* --- DYNAMISKA FÄRGER FÖR STATUS (Aktiveras via JS) --- */
-.compact-select.status-bokad { color: var(--primary-color); }
-.compact-select.status-klar { color: var(--success-color); }
-.compact-select.status-offererad { color: var(--info-color); }
-.compact-select.status-avbokad { color: var(--danger-color); }
-.compact-select.status-faktureras { color: var(--invoice-color); }
-
-/* Dark mode fix */
-[data-theme="dark"] .compact-select {
-    background-color: #2c2c2e;
-    color: #fff;
-    border-color: #3a3a3c;
+    outline: none;
 }
 
 /* Vår egen pil-ikon */
@@ -6020,4 +5977,3 @@ html.privacy-mode-enabled .nav-logo {
     font-weight: 500;
     margin-left: 4px;
 }
-
