@@ -200,6 +200,19 @@
             const modalTid = document.getElementById('tid');
             const quickTimeButtons = document.getElementById('quickTimeButtons');
             const modalKundnamn = document.getElementById('kundnamn');
+			if (modalKundnamn) {
+			    modalKundnamn.addEventListener('input', (e) => {
+			        // Spara markörens position så den inte hoppar till slutet
+			        const start = e.target.selectionStart;
+			        const end = e.target.selectionEnd;
+			
+			        // Gör om till stora bokstäver
+			        e.target.value = e.target.value.toUpperCase();
+			
+			        // Återställ markören
+			        e.target.setSelectionRange(start, end);
+			    });
+			}
             const kundnamnSuggestions = document.getElementById('kundnamnSuggestions');
             const modalTelefon = document.getElementById('telefon');
 			const jobModalCallBtn = document.getElementById('jobModalCallBtn'); // <-- NY
