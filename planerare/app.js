@@ -1565,6 +1565,7 @@
                 const regnrHTML = highlightSearchTerm(job.regnr || 'OKÄNT', currentSearchTerm);
 
                 const timePart = job.datum ? (formatDate(job.datum).split('kl. ')[1] || 'Okänd tid') : 'Okänd tid';
+				const dateDisplay = job.datum ? formatDate(job.datum, { onlyDate: true }) : '';
 
                 return `
                     <div class="mobile-job-card job-entry ${prioClass} ${doneClass} ${jobStatusClass}" data-id="${job.id}" data-status="${job.status}">
