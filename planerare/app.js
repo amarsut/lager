@@ -3097,9 +3097,8 @@
 			function performSearch() {
 			    const desktopInput = document.getElementById('searchBar');
 			    const mobileInput = document.getElementById('mobileSearchBar');
-			    const wrapper = document.querySelector('.search-wrapper'); // För spinner
+			    const wrapper = document.querySelector('.search-wrapper');
 			    
-			    // Hämta värde
 			    const desktopVal = desktopInput ? desktopInput.value : '';
 			    const mobileVal = mobileInput ? mobileInput.value : '';
 			    currentSearchTerm = desktopVal || mobileVal;
@@ -3112,19 +3111,21 @@
 			        document.getElementById('mobileSearchClear').style.display = mobileVal ? 'flex' : 'none';
 			    }
 			
-			    // --- PUNKT 5: STOPPA SPINNERN ---
-			    // När sökningen körs (här), ta bort ladd-klassen
 			    if (wrapper) wrapper.classList.remove('is-loading'); 
-			    const spinner = document.getElementById('searchSpinner');
-			    if (spinner) spinner.style.display = 'none'; // Dubbel säkerhet
-			
+			    
 			    // --- MOBIL LOGIK ---
 			    const mobileModal = document.getElementById('mobileSearchModal');
 			    const mobileResults = document.getElementById('mobileSearchResults');
 			    
-			    if (mobileModal && getComputedStyle(mobileModal).display !== 'none' && mobileResults) {
+			    if (mobileModal && getComputedStyle(mobileModal).display !== 'flex' && window.innerWidth > 768) {
+			        // Om vi är på desktop, kör vanliga tidslinjen
+			        renderTimeline();
+			        return;
+			    }
+			
+			    // Om vi är på mobil och modalen är öppen (eller vi tvingar uppdatering)
+			    if (mobileResults) {
 			        
-			        // PUNKT 3: Om sökfältet är tomt, visa "Placeholder" istället för alla jobb
 			        if (!currentSearchTerm.trim()) {
 			            mobileResults.innerHTML = `
 			                <div class="empty-search-placeholder" style="text-align: center; padding-top: 3rem; color: #9ca3af;">
@@ -3134,25 +3135,59 @@
 			            return;
 			        }
 			
-			        // Annars, sök...
 			        let jobs = allJobs.filter(job => !job.deleted);
 			        const term = currentSearchTerm.toLowerCase();
-			        
-			        jobs = jobs.filter(job => 
-			            (job.kundnamn && job.kundnamn.toLowerCase().includes(term)) ||
-			            (job.regnr && job.regnr.toLowerCase().includes(term)) ||
-			            (job.kommentarer && job.kommentarer.toLowerCase().includes(term))
-			        );
+			        const normalizedTerm = term.replace(/\s/g, ''); // Ta bort mellanslag för smartare sök
+			
+			        jobs = jobs.filter(job => {
+			            const normalizedPhone = (job.telefon || '').replace(/\D/g, '');
+			            const regMatch = (job.regnr && job.regnr.toLowerCase().replace(/\s/g, '').includes(normalizedTerm));
+			            
+			            return (
+			                (job.kundnamn && job.kundnamn.toLowerCase().includes(term)) || 
+			                regMatch || 
+			                (job.kommentarer && job.kommentarer.toLowerCase().includes(term)) ||
+			                (normalizedPhone && normalizedPhone.includes(normalizedTerm))
+			            );
+			        });
 			
 			        if (jobs.length === 0) {
 			            mobileResults.innerHTML = '<p style="text-align:center; color:#999; margin-top:2rem;">Inga träffar.</p>';
 			        } else {
-			            mobileResults.innerHTML = jobs.map(job => createJobCard(job)).join('');
+			            // --- HÄR ÄR ÄNDRINGEN FÖR ATT FÅ RUBRIKER ---
+			            
+			            // 1. Gruppera jobben per datum
+			            const groupedJobs = jobs.reduce((acc, job) => {
+			                const dateKey = job.datum ? job.datum.split('T')[0] : 'Okänt';
+			                if (!acc[dateKey]) { acc[dateKey] = []; }
+			                acc[dateKey].push(job);
+			                return acc;
+			            }, {});
+			
+			            // 2. Sortera datumen (Nyaste överst oftast bäst vid sök, eller äldst först)
+			            // Vi kör fallande (nyaste först) för sökresultat
+			            const sortedDateKeys = Object.keys(groupedJobs).sort((a, b) => new Date(b) - new Date(a));
+			
+			            let listHTML = '';
+			
+			            // 3. Bygg HTML med rubriker
+			            for (const dateKey of sortedDateKeys) {
+			                const jobsForDay = groupedJobs[dateKey];
+			                const firstJobDate = jobsForDay[0].datum;
+			                
+			                // Återanvänd din snygga rubrik-klass
+			                listHTML += `<div class="mobile-day-group">`;
+			                listHTML += `<h2 class="mobile-date-header">${formatDate(firstJobDate, { onlyDate: true })}</h2>`;
+			                listHTML += jobsForDay.map(job => createJobCard(job)).join('');
+			                listHTML += `</div>`;
+			            }
+			
+			            mobileResults.innerHTML = listHTML;
 			        }
 			        return; 
 			    }
 			
-			    // DESKTOP
+			    // Fallback för desktop
 			    renderTimeline();
 			}
 
