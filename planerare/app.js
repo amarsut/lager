@@ -1791,6 +1791,20 @@
 			    
 			    const modalId = currentOpenModalId;
 			    const modalElement = document.getElementById(modalId);
+
+				// Om vi stänger sökmodalen -> Rensa sökningen helt
+			    if (modalId === 'mobileSearchModal') {
+			        currentSearchTerm = ''; // Töm variabeln
+			        
+			        // Töm input-fälten
+			        const dInput = document.getElementById('searchBar');
+			        const mInput = document.getElementById('mobileSearchBar');
+			        if(dInput) dInput.value = '';
+			        if(mInput) mInput.value = '';
+			        
+			        // Uppdatera listan så allt visas igen
+			        performSearch(); 
+			    }
 			
 			    // Om vi stänger sökfönstret och sökfältet är tomt, visa statistiken igen
 			    if (modalId === 'mobileSearchModal' && currentSearchTerm === "") { 
@@ -1899,6 +1913,15 @@
 
 					if (document.getElementById('mobileSearchModal')) {
 				        document.getElementById('mobileSearchModal').style.display = 'none';
+				    }
+
+					if (currentSearchTerm !== '') {
+				        currentSearchTerm = '';
+				        const dInput = document.getElementById('searchBar');
+				        const mInput = document.getElementById('mobileSearchBar');
+				        if(dInput) dInput.value = '';
+				        if(mInput) mInput.value = '';
+				        performSearch(); // Rita om listan direkt
 				    }
                     
                     // Om vi *inte* redan är på tidslinjen, byt UI.
