@@ -4608,1042 +4608,280 @@ html.privacy-mode-enabled .nav-logo {
 
 /* --- MOBILANPASSNING --- */
 @media (max-width: 768px) {
-	.name-reg-wrapper {
-        grid-template-columns: 1fr !important; /* Stapla på höjden */
-        gap: 1rem !important;
-    }
-	
-    /* På mobil döljer vi hela denna raden eftersom du har en separat mobil-sök */
-    .view-controls {
-        display: none !important;
-    }
 
-	/* 1. Global layout */
+    /* --- 1. Global Layout --- */
     .app-main {
-	    overflow-y: auto; /* Detta är avgörande för att återställa vertikal skrollning */
-	    -webkit-overflow-scrolling: touch;
-	    height: auto; /* Säkerställer att höjden inte fastnar */
-	}
+        overflow-y: auto; 
+        -webkit-overflow-scrolling: touch;
+        height: auto; 
+        min-height: 100vh;
+        display: block !important;
+    }
     .main-content {
         padding: 1rem;
-        padding-bottom: calc(var(--mobile-nav-height) + 1rem);
-    }
-    
-    /* 2. Header & Sök */
-    .main-header {
-        padding: 0 1rem;
-    }
-    .header-right .divider,
-	.header-right .nav-button,
-	.view-controls,
-	.header-profit-display,
-	#clearDayFilterBtn { 
-	    display: none; 
-	}
-	/* Göm p-taggen i stats-modalens header på mobil */
-	#statsModal .detail-modal-header p {
-	    display: none;
-	}
-    .header-titles .view-toggle-buttons {
-        display: none;
-    }
-    .app-brand-title {
-        font-size: 1rem;
-        font-weight: 600;
-        color: var(--text-color);
-    }
-
-	/* Dölj desktop-knappen för "Tavla" i mobilvyn */
-	#btnToggleKanban {
-	    display: none;
-	}
-
-    /* 3. Statistik-kort (MOBIL FIX) */
-.stat-bar {
-    grid-template-columns: 1fr 1fr; 
-    gap: 0.5rem; /* Mindre mellanrum mellan korten */
-    margin-bottom: 1rem; /* Mindre marginal under korten */
-}
-
-/* Anpassa alla kort för att vara tunnare */
-.stat-card {
-    display: flex; /* Ändra till flexbox för enkel vertikal centrering */
-    flex-direction: column; 
-    align-items: flex-start;
-    padding: 0.5rem 0.75rem; /* Krymper vertikal och horisontell padding */
-    min-height: 70px; /* Sätter en minsta höjd för konsekvens */
-}
-.stat-card-title {
-    font-size: 0.7rem; /* Ännu mindre titel */
-    margin: 0;
-    line-height: 1; /* Kompaktare radhöjd */
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    height: 1.1em; /* Sätter en fix höjd för titeln */
-}
-.stat-card-title .icon-sm {
-    width: 0.8rem; /* Krymper ikonstorleken */
-    height: 0.8rem;
-    margin-right: 0;
-}
-.stat-card-title span {
-    display: none;
-}
-	/* Bibehåll den nya texten som visas efter ikonen */
-	.stat-card-title::after {
-	    content: attr(data-filter);
-	    text-transform: uppercase;
-	    font-size: 0.7rem;
-	    font-weight: 600;
-	    line-height: 1;
-	}
-	
-	.stat-card-value {
-	    /* NYTT: Öka storleken, men inte till 2rem som tidigare. */
-	    font-size: 1.85rem; 
-	    font-weight: 700;
-	    text-align: left; 
-	    margin-top: 0.1rem; /* Minska marginalen ytterligare */
-	    line-height: 1.2;
-	    transition: none;
-	}
-	
-	/* Anpassa "Alla Jobb" för att också vara större, men behålla högerjusteringen */
-	.stat-bar > .stat-card:nth-child(5) .stat-card-value {
-	    text-align: right;
-	    font-size: 1.85rem; /* Gör denna siffra störst */
-	    margin-top: 0;
-	}
-
-	/* Sätt ALLA JOBB på en egen rad (fortsätt att visa det som en hel rad) */
-	.stat-bar > .stat-card:nth-child(5) {
-	    grid-column: 1 / -1; 
-	    display: flex;
-	    flex-direction: row;
-	    justify-content: space-between;
-	    align-items: center;
-	    padding: 0.75rem 1rem;
-	    min-height: auto;
-	}
-	.stat-bar > .stat-card:nth-child(5) .stat-card-title {
-	    display: flex;
-	    align-items: center;
-	}
-
-	/* Visa texten för det nya Faktureras-kortet */
-.stat-card[data-filter="faktureras"] .stat-card-title::after {
-    content: "FAKTURERING";
-}
-.stat-card[data-filter="kommande"] .stat-card-title::after {
-    content: "KOMMANDE";
-}
-.stat-card[data-filter="klar"] .stat-card-title::after {
-    content: "FÄRDIGA JOBB";
-}
-.stat-card[data-filter="offererad"] .stat-card-title::after {
-    content: "OFFERERADE";
-}
-.stat-card[data-filter="alla"] .stat-card-title::after {
-    content: "ALLA JOBB";
-}
-
-    /* 4. Desktop FAB (Dölj på mobil) */
-    #fabAddJob {
-        display: none;
-    }
-    
-    /* 5. Tidslinje (Tabell blir Kortvy) */
-    .table-container {
-        border: none;
-        box-shadow: none;
-        background: none;
-    }
-    #jobbOversikt {
-        display: none;
-    }
-
-    /* --- Mobil Kort-lista --- */
-    #mobileJobList {
-        display: flex;
-        flex-direction: column;
-        gap: 1.5rem; 
-    }
-    .mobile-day-group {
-        display: flex;
-        flex-direction: column;
-        gap: 0.75rem; 
-    }
-    .mobile-date-header {
-        font-size: 1rem;
-        font-weight: 700;
-        color: var(--text-color);
-        margin: 0;
-        padding-bottom: 0.5rem;
-        border-bottom: 2px solid var(--border-color);
-    }
-    .mobile-job-card {
-        background: var(--content-bg);
-        border: 1px solid var(--border-color);
-        border-radius: var(--border-radius);
-        box-shadow: var(--shadow-sm);
-        overflow: hidden; 
-        border-left: 4px solid transparent;
-        transition: all var(--transition-speed-fast) ease;
-    }
-    /* --- NYTT: Snyggare "Kort-lyft" (Mobil) --- */
-    .mobile-job-card:hover {
-        transform: scale(1.02);
-        box-shadow: var(--shadow-lg);
-    }
-
-    .mobile-job-card.prio-row {
-        border-left-color: var(--danger-color);
-        background-color: var(--danger-light);
-    }
-    .mobile-job-card.done-row {
-        opacity: 0.7;
-    }
-    .mobile-job-card .card-content {
-        padding: 1rem;
-        display: flex;
-        flex-direction: column;
-        gap: 0.85rem; 
-    }
-    .mobile-job-card .card-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    .mobile-job-card .card-label {
-        font-weight: 600;
-        color: var(--text-color-light);
-        font-size: 0.9rem;
-        padding-right: 1rem;
-        flex-shrink: 0; 
-    }
-    .mobile-job-card .card-value {
-        font-weight: 500;
-        font-size: 0.9rem;
-        text-align: right;
-    }
-    .mobile-job-card .customer-name {
-        font-weight: 700;
-        font-size: 1.05rem;
-    }
-    .mobile-job-card .customer-name .link-btn {
-    	font-weight: 700;
-    	font-size: 1.05rem;
-    	/* color: var(--text-color); */ /* BORTTAGEN - Låter länken vara blå */
-	}
-    /* --- NYTT: Wrapper för kontext-ikon + namn --- */
-    .customer-name-wrapper {
-        display: flex;
-        align-items: center;
-        justify-content: flex-end;
-    }
-    .customer-name-wrapper .context-icon {
-        width: 1rem;
-        height: 1rem;
-        margin-right: 0.4rem;
-    }
-    .mobile-job-card .customer-price {
-        font-weight: 700;
-        font-size: 1rem;
-    }
-    .mobile-job-card .reg-plate {
-        font-size: 0.9rem;
-    }
-    .time-status-wrapper {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-    .card-time-badge {
-        background-color: var(--bg-color);
-        border: 1px solid var(--border-color);
-        color: var(--text-color);
-        font-size: 0.8rem;
-        font-weight: 600;
-        padding: 0.25em 0.75em;
-        border-radius: 99px;
-    }
-    [data-theme="dark"] .card-time-badge {
-         background-color: #3a3a3c;
-         border-color: #4a4a4c;
-    }
-
-    /* -- ÅTGÄRDSKNAPPAR (Mobil) -- */
-    .mobile-job-card .action-col {
-        display: flex;
-        justify-content: space-around; 
-        gap: 0.5rem;
-        padding: 0.5rem; 
-        background-color: var(--bg-color); 
-        border-top: 1px solid var(--border-color);
-    }
-    .mobile-job-card .action-col .icon-btn {
-        opacity: 1;
-        padding: 0.75rem; 
-        flex: 1; 
-        justify-content: center;
-    }
-    .mobile-job-card.prio-row .action-col .icon-btn[data-action="togglePrio"] {
-        color: var(--danger-color);
-        background: var(--danger-light);
-    }
-    .icon-btn-placeholder {
-        display: none;
-    }
-    
-    /* 6. Modaler (Fullskärm) */
-    .modal-backdrop {
-        padding-top: 0;
-        align-items: stretch;
-    }
-    .modal-content {
-        width: 100%;
+        padding-bottom: calc(var(--mobile-nav-height) + 2rem);
         max-width: 100%;
-        height: 100%;
-        max-height: 100%;
-        border-radius: 0;
-        box-shadow: none;
-    }
-    .modal-header {
-        padding: 1rem 1.25rem;
-    }
-	#carModalHeader .modal-title-with-link #carModalExternalLink,
-    #carModalHeader .modal-title-with-link #carModalOljemagasinetLink,
-    #carModalHeader .modal-title-with-link #copyCarRegnrBtn {
-        display: none;
-    }
-    .prio-toggle-wrapper {
-        padding: 0.4rem 0.6rem;
-        font-size: 0.8rem;
-    }
-    .modal-body {
-        padding: 1rem 1.25rem;
-        flex-grow: 1;
-        overflow-y: auto;
-        padding-bottom: 6rem;
-    }
-    #customerModal .modal-body,
-    #statsModal .modal-body,
-    #carModal .modal-body {
-        padding-bottom: 1.5rem;
     }
 
-    .modal-actions {
-        padding: 1rem 1.25rem;
+    /* --- 2. Dölj Desktop-element --- */
+    .header-right .divider,
+    .header-right .nav-button,
+    .view-controls, 
+    .header-profit-display,
+    #clearDayFilterBtn,
+    #fabAddJob,
+    #jobbOversikt, 
+    .table-container, 
+    #btnToggleKanban,
+    #mobileSettingsGroup,
+    .header-titles .view-toggle-buttons,
+    #statsModal .detail-modal-header p { 
+        display: none !important; 
     }
-    #jobModalForm .form-group-split {
-        grid-template-columns: 1fr;
-        gap: 1.25rem;
-    }
-    
-    /* 7. Mobil Navigationsmeny (Längst ner) */
+    .detail-modal-header .external-actions-wrapper { display: none !important; }
+    #copyCarRegnrBtn { display: none !important; } 
+
+    /* --- 3. Header & Navigation --- */
+    .main-header { padding: 0 1rem; height: 60px; }
+    .app-brand-title { font-size: 1.1rem; color: var(--text-color); }
+
     .mobile-nav {
         display: flex;
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
+        position: fixed; bottom: 0; left: 0; right: 0;
         height: var(--mobile-nav-height);
         background-color: var(--content-bg-transparent);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
         border-top: 1px solid var(--border-color);
         box-shadow: 0 -2px 10px rgba(0,0,0,0.04);
         z-index: 1000;
     }
-    [data-theme="dark"] .mobile-nav {
-        background-color: var(--bg-color-transparent);
-    }
-
-    /* --- UPPDATERAD MOBIL-NAVIGERING --- */
     .mobile-nav-btn {
-        flex: 1;
+        flex: 1; display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        background: none; border: none; padding: 0.5rem 0;
+        color: var(--text-color-light); font-size: 0.7rem; font-weight: 500;
+        gap: 4px; min-width: 0;
+    }
+    .mobile-nav-btn span { display: block; white-space: nowrap; }
+    .mobile-nav-btn.active { color: var(--primary-color); }
+    .mobile-nav-btn .icon { width: 1.5rem; height: 1.5rem; }
+
+    /* --- 4. Modaler (Auto-höjd / Bottom Sheet) --- */
+    .modal-backdrop { 
+        padding-top: 2rem !important; /* Lite luft i toppen */
+        align-items: flex-end !important; /* Tryck modalen mot botten */
+        background-color: rgba(0,0,0,0.5); /* Mörkare bakgrund */
+    }
+    
+    .modal-content { 
+        width: 100% !important; 
+        max-width: 100% !important; 
+        
+        /* HÄR ÄR ÄNDRINGEN FÖR ATT TA BORT TOMRUMMET: */
+        height: auto !important;       /* Anpassa höjden efter innehåll */
+        max-height: 92vh !important;   /* Men gå aldrig högre än 92% av skärmen */
+        
+        border-bottom-left-radius: 0 !important; 
+        border-bottom-right-radius: 0 !important;
+        border-top-left-radius: 16px !important; /* Runda hörn upptill */
+        border-top-right-radius: 16px !important;
+        
+        margin: 0 !important;
+        box-shadow: 0 -4px 20px rgba(0,0,0,0.2) !important;
         display: flex;
         flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        background: none;
-        border: none;
-        padding: 0.5rem 0;
-        color: var(--text-color-light);
-        
-        /* 1. ÖKA TEXTSTORLEKEN LITE */
-        font-size: 0.75rem; /* Var 0.7rem */
-        
-        font-weight: 500;
-        gap: 4px;
-        cursor: pointer;
-        transition: all var(--transition-speed-fast) ease;
-
-        /* 2. OPTIMERA UTRYMME (NYTT) */
-        min-width: 0; /* Tillåt knappen att krympa */
-        overflow: hidden; /* Dölj text som inte får plats */
     }
     
-    .mobile-nav-btn:active {
-        transform: scale(0.95);
+    .modal-header {
+        flex-shrink: 0; 
+        border-bottom: 1px solid var(--border-color);
+        padding: 0.75rem 1rem; /* Kompaktare header */
     }
+    .modal-header h2 { font-size: 1.1rem !important; }
     
-    .mobile-nav-btn .icon {
-        width: 1.5rem;
-        height: 1.5rem;
-    }
-
-    /* 3. DÖLJ TEXTEN PÅ INAKTIVA KNAPPAR (NYTT) */
-    .mobile-nav-btn span {
-        display: block; /* Dold som standard */
-        white-space: nowrap; /* Förhindra radbrytning */
-    }
-
-    /* 4. VISA TEXTEN ENDAST PÅ DEN AKTIVA KNAPPEN (NYTT) */
-    .mobile-nav-btn.active {
-        color: var(--primary-color);
-    }
-    
-    /* 8. Mobil Sök-Modal */
-    .modal-backdrop-mobile {
-        position: fixed;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background: rgba(0,0,0,0.4);
-        z-index: 1010;
-        display: none;
-        opacity: 0;
-        transition: opacity 0.2s ease;
-    }
-    .modal-backdrop-mobile.show {
-        display: flex; /* Ändrad från inget */
-        opacity: 1;
-    }
-    .search-modal-content {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        background: var(--bg-color);
+    .modal-body {
         padding: 1rem;
-        display: flex;
-        gap: 1rem;
-        align-items: center;
-        transform: translateY(-100%);
-        animation: slideInDown 0.3s ease forwards;
-    }
-    .modal-backdrop-mobile.show .search-modal-content {
-        transform: translateY(0);
-    }
-    #mobileSearchBar {
-        border: none;
-        padding: 0.75rem 0.75rem;
-        font-size: 1rem;
-        outline: none;
-        border-radius: 8px;
-        background: var(--content-bg);
-        color: var(--text-color);
-        width: 100%;
-        box-shadow: var(--shadow-sm);
-        border: 1px solid var(--border-color);
-    }
-    #mobileSearchBar:focus {
-        border-color: var(--primary-color);
-    }
-    .search-modal-content .search-wrapper {
-        box-shadow: none;
-        border: none;
-        padding-left: 0;
-        background: transparent;
-        width: 100%;
-    }
-    .search-modal-content .search-wrapper .icon {
-        display: none;
-    }
-    .search-modal-content .search-clear-btn {
-        right: 0.75rem;
-        width: 32px;
-        height: 32px;
-    }
-    .search-modal-content .search-clear-btn::before,
-    .search-modal-content .search-clear-btn::after {
-        width: 16px;
+        flex-grow: 1; 
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
     }
     
-    /* 9. Mobil Kalender-vy */
-	
-    #calendarView {
-        padding: 0;
-        background: none;
-        border: none;
-    }
-    [data-theme="dark"] #calendarView .fc {
-        padding: 0;
-        border: none;
-    }
-    .fc .fc-toolbar {
-        padding: 0.5rem 0.25rem;
-    }
-    .fc .fc-toolbar-title {
-        font-size: 1.25rem;
-    }
-
-	/* Centrera prickarna i kalendern på mobil */
-    .fc .fc-daygrid-day-events {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        align-items: center;
-        padding-top: 4px; 
-        gap: 4px; 
-    }
-    
-    .fc-event {
-        width: auto !important;
-    }
-
-    .fc .fc-daygrid-day-frame {
-        min-height: 80px; 
-    }
-
-	/* --- FIX FÖR MODAL-LAYOUT (Mätarställning & Vinst) --- */
-	.form-group-profit {
-	    grid-column: 1 / -1; 
-	    text-align: right;
-	    font-size: 1.125rem; 
-	    font-weight: 600; 
-	    padding: 0.5rem 0;
-	    display: flex;
-	    align-items: center;
-	    justify-content: flex-end;
-	    padding: 0.75rem; 
-	    border: 1px solid transparent; 
-	    border-radius: 8px; 
-	}
-	
-	.form-group input.input-reminder {
-	    border-left: 4px solid var(--info-color);
-	}
-	
-	.form-group input.input-reminder:focus {
-	    border-left-color: var(--primary-color);
-	}
-
-    /* --- Bil-modal knapp-fix --- */
-    #carModal .modal-body {
-        padding-bottom: 6rem;
-    }
-    /* NY wrapper för mobil-länkar i bil-modal */
-    .sticky-link-buttons {
-        display: grid;
-        grid-template-columns: 1fr; /* <-- *** DIN FÖRSTA FIX (STAPLA) *** */
-        gap: 0.75rem;
-        
-        /* Footer-styling */
-        padding: 1rem 1.25rem;
+    .modal-actions {
+        flex-shrink: 0;
+        padding: 0.75rem 1rem; /* Kompaktare footer */
         background-color: var(--bg-color);
         border-top: 1px solid var(--border-color);
-        
-        /* Se till att den inte flex-växer och stannar i botten */
-        flex-shrink: 0;
-        
-        /* Ta bort gamla sticky/marginal-regler */
-        position: static; /* Ta bort sticky */
-        width: auto; /* Låt flexbox sköta bredden */
-        z-index: 10;
-        margin-top: 0; 
+    }
+
+    /* --- 5. TIGHTARE FORMULÄR (KOMPAKT DESIGN) --- */
+    
+    /* Minska avstånd mellan fält */
+    .form-group, .form-group-split, .economy-clean-wrapper {
+        margin-bottom: 0.75rem !important;
     }
     
-    /* Centrera innehållet i de staplade knapparna */
-    .sticky-link-buttons .button.secondary {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 0.7rem 1rem;
-        font-size: 0.9rem;
-        gap: 0.5rem;
-        text-decoration: none !important;
-    }
-
-    /* Tvinga ikonstorleken i knapparna */
-    .sticky-link-buttons .button.secondary img {
-        width: 20px;
-        height: 20px;
-        border-radius: 4px;
-    }
-
-	/* FIX: Överflöde i Välj Jobbvy Modal */
-	.view-select-content .button.secondary {
-	    display: flex;
-	    align-items: center;
-	    width: 100%;
-	    padding: 0.75rem 1rem; /* Återställ en standard padding */
-	    box-sizing: border-box;
-	    justify-content: flex-start; /* Tvinga innehållet till vänster */
-	}
-	
-	/* Tvinga alla ikoner till identiskt utseende */
-	.view-select-content .button.secondary svg {
-	    margin: 0 !important;
-	    padding: 0 !important; 
-	    flex-shrink: 0;
-	    
-	    /* Behåll fast storlek */
-	    width: 1.25rem !important; /* Ökad till 1.25rem för bättre synlighet */
-	    height: 1.25rem !important;
-	    
-	    /* Lägg till mellanrum till texten */
-	    margin-right: 0.75rem !important; 
-	}
-	
-	/* 2. Fixa eventuellt överflöde på den inre <use> taggen */
-	.view-select-content .button.secondary svg use {
-	    overflow: hidden; /* Förhindra att ikonen ritas utanför sin behållare */
-	}
-	
-	/* 3. Tvinga texten att fylla utrymmet till vänster */
-	.view-select-content .button.secondary span {
-	    flex-grow: 1; 
-	    text-align: left;
-	    
-	    /* NYTT: Förhindra att texten hamnar utanför vid smal skärm */
-	    min-width: 0; /* Låter texten krympa */
-	    overflow: hidden; /* Dölj det som går utanför */
-	    text-overflow: ellipsis; /* Lägg till "..." om texten blir för lång (även om den inte ska) */
-	    
-	    /* Ta bort alla dolda paddingar/marginaler från texten */
-	    margin: 0 !important; 
-	    padding: 0 !important; 
-	}
-
-	/* 1. Tvinga headern att vara en flex-rad och inte bryta */
-    .fc .fc-toolbar.fc-header-toolbar {
-        display: flex !important;
-        flex-direction: row !important;
-        flex-wrap: nowrap !important;
-        align-items: center !important;
-        justify-content: space-between !important;
-        gap: 5px !important;
-        padding: 0.5rem !important;
-    }
-
-    /* 2. Se till att knapp-gruppen till vänster ligger på rad */
-    .fc .fc-toolbar-chunk:first-child {
-        display: flex !important;
-        flex-direction: row !important;
-        align-items: center !important;
-    }
-
-    /* 3. Justera titeln (datumet) så den får plats */
-    .fc .fc-toolbar-title {
-        font-size: 0.9rem !important; /* Lite mindre text */
-        white-space: nowrap !important; /* Förbjud radbrytning av texten */
-        margin-left: 0.5rem !important;
-    }
-
-    /* 4. Gör själva knapparna lite mer kompakta på mobil */
-    .fc .fc-button {
-        padding: 0.25rem 0.5rem !important;
-        font-size: 0.85rem !important;
-    }
-
-	/* 1. Gör behållaren skrollvänlig i sidled */
-	.kanban-board {
-	    display: flex;
-	    overflow-x: auto;
-	    
-	    /* Denna rad är magin: */
-	    scroll-snap-type: x mandatory; 
-	    
-	    padding: 0 1rem 20px 1rem; /* Lite extra padding i botten (20px) för skuggor */
-	    gap: 1rem; 
-	    justify-content: flex-start;
-	    
-	    /* Göm scrollbar men behåll funktionen */
-	    scrollbar-width: none; 
-	}
-	.kanban-board::-webkit-scrollbar { 
-	    display: none; 
-	}
-	
-	/* 2. Kolumnerna: Bestämmer var den ska stanna */
-	.kanban-column {
-	    width: 100%; 
-	    min-width: 85vw; /* Gör att man ser lite av nästa kolumn (UX-trick) */
-	    max-width: 85vw;
-	    
-	    /* Se till att den stannar i mitten av skärmen */
-	    scroll-snap-align: center; 
-	    scroll-snap-stop: always; /* Tvingar den att stanna, man kan inte "kasta" förbi */
-	    
-	    max-height: calc(100vh - 140px); 
-	    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); 
-	    border-radius: 12px;
-	    margin-bottom: 0;
-	}
-	
-	/* Crucial Fix: Förhindra den lilla interna skrollningen på listan */
-	.kanban-column-cards {
-	    padding: 0.5rem 0.75rem; /* Mindre padding runt korten */
-	    gap: 0.75rem;
-	    overflow-y: auto; /* Tillåt skroll inuti kolumnen */
-	    /* Göm skrollbaren men behåll funktionen */
-	    scrollbar-width: none; 
-	}
-
-	.kanban-column-title {
-	    padding: 0.75rem;
-	    font-size: 1rem;
-	    background-color: var(--bg-color);
-	}
-	
-	.kanban-column-cards::-webkit-scrollbar {
-	    display: none;
-	}
-
-	.kanban-card {
-    margin: 0; /* Ta bort onödiga marginaler */
-    width: 100%; /* Fyll kolumnen */
-	}
-	
-	.kanban-card-content {
-	    padding: 0.75rem; /* Mindre luft inuti kortet */
-	}
-	
-	/* Justera textstorlekar */
-	.kanban-card-title {
-	    font-size: 1rem;
-	    margin-bottom: 0.25rem;
-	}
-	
-	/* Gör reg-skylten lite mindre */
-	.kanban-card .reg-plate {
-	    font-size: 0.8rem;
-	    margin-top: 0.25rem;
-	}
-	
-	/* Justera foten (Datum & Ikon) */
-	.kanban-card-footer {
-	    margin-top: 0.5rem;
-	    font-size: 0.75rem;
-	}
-
-	/* Dölj tabell-headern, vi använder etiketter istället */
-    .detail-job-table thead {
-        display: none;
-    }
-
-    /* Gör varje tabellrad (tr) till ett "kort" */
-    .detail-job-table tbody tr {
-        display: block;
-        border: 1px solid var(--border-color);
-        border-radius: var(--border-radius);
-        margin-bottom: 1rem;
-        box-shadow: var(--shadow-sm);
-        background: var(--content-bg);
-    }
-    .detail-job-table tbody tr:hover {
-         background: var(--bg-color); /* Bevarar hover-effekten */
-    }
-
-    /* Gör varje cell (td) till en "rad" inuti kortet */
-    .detail-job-table td {
-        display: flex;
-        justify-content: space-between; /* Etikett till vänster, värde till höger */
-        align-items: center;
-        padding: 0.6rem 0.75rem;
-        font-size: 0.9rem;
-        border-bottom: 1px solid var(--border-color);
-        text-align: right; /* Högerställ värdet */
-    }
-    .detail-job-table tr td:last-child {
-        border-bottom: none; /* Ta bort sista linjen */
-    }
-
-    /* Etiketten (från data-label vi lade till i Steg 1) */
-    .detail-job-table td::before {
-        content: attr(data-label);
-        font-weight: 600;
-        color: var(--text-color-light);
-        font-size: 0.9rem;
-        padding-right: 1rem;
-        text-align: left; /* Vänsterställ etiketten */
-    }
-
-    /* Special-fall för "Info"-cellen (med kommentaren) */
-    .detail-job-table td[data-label="Info"] {
-        flex-direction: column; /* Stapla etikett och innehåll */
-        align-items: flex-start;
-        gap: 0.5rem;
+    /* Mindre etiketter */
+    .form-group label {
+        font-size: 0.8rem !important;
+        margin-bottom: 0.25rem !important;
     }
     
-    /* Se till att innehållet i Info-cellen är vänsterställt */
-    .detail-job-table td[data-label="Info"] .job-subline-main,
-    .detail-job-table td[data-label="Info"] .job-subline-comment {
-        text-align: left;
-    }
-
-	/* 1. Dölj "Info:"-etiketten (detta är vad du bad om) */
-    .detail-job-table td[data-label="Info"]::before {
-        display: none;
-    }
-
-    /* 2. Justera "Info"-cellens layout (som nu är huvud-cellen) */
-    .detail-job-table td[data-label="Info"] {
-        flex-direction: column;  /* Behåll staplad layout */
-        align-items: flex-start; /* Behåll vänster-justering */
-        gap: 0.25rem;            /* Litet gap mellan regnr och kommentar */
-        
-        /* Ge den lite mer luft upptill eftersom den agerar "rubrik" */
-        padding-top: 0.75rem;
-        padding-bottom: 0.75rem;
-    }
-
-    /* 3. Gör Regnr/Kundnamn fetstilt och större (din andra önskan) */
-    .detail-job-table .job-subline-main {
-        font-weight: 700;  /* Fetstilt */
-        font-size: 1rem;   /* Lite större */
-        color: var(--text-color); /* Se till att den har huvud-textfärgen */
-    }
-
-    /* 4. (Valfritt) Gör de andra "raderna" lite tajtare */
-    .detail-job-table td[data-label="Datum"],
-    .detail-job-table td[data-label="Status"],
-    .detail-job-table td[data-label="Vinst"] {
-        padding-top: 0.5rem;
-        padding-bottom: 0.5rem;
-    }
-
-    /* 5. (Valfritt) Ta bort kursiv stil från kommentaren */
-    .detail-job-table .job-subline-comment {
-        font-style: normal;
-        font-size: 0.85rem;
-    }
-
-	.modal-backdrop-mobile {
-        align-items: flex-end; /* Fortsätt med flex-end på mobil */
-    }
-
-	.mobile-job-card .action-col {
-        /* Ändra bakgrunden till vit (samma som kortet) istället för grå */
-        background-color: var(--content-bg); 
-        
-        /* Gör linjen ovanför knapparna mycket subtilare (eller sätt 'none' för att ta bort den helt) */
-        border-top: 1px solid rgba(0, 0, 0, 0.05); 
-    }
-
-	#view-controls {
-        display: none !important; /* Borta från startsidan! */
-    }
-
-	/* 1. Huvudbehållaren: Måste ligga överst och täcka allt */
-    .mobile-search-layout {
-        position: fixed;
-        top: 0; left: 0; 
-        width: 100%;
-        height: 100vh;
-        height: 100dvh; /* För moderna mobiler */
-        background-color: #fff;
-        z-index: 2147483647; /* Max z-index för att garanterat ligga överst */
-        display: flex;
-        flex-direction: column;
-    }
-
-    /* 2. Header: Pil + Fält */
-    .mobile-search-header {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 12px 16px;
-        background-color: #fff;
-        border-bottom: 1px solid #f3f4f6;
-        flex-shrink: 0; /* VIKTIGT: Krymp inte headern */
-    }
-
-    /* 3. Tillbaka-pilen */
-    .back-btn {
-        padding: 8px;
-        margin-left: -8px; /* Dra ut den mot kanten */
-        color: #111827;
-        background: transparent;
-        border: none;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    .back-btn .icon { width: 24px; height: 24px; }
-
-    /* 4. Sökfältet: Piller-form */
-    .mobile-wrapper {
-        flex-grow: 1;
-        height: 40px; /* Lite kompaktare */
-        background-color: #F3F4F6;
-        border-radius: 99px; /* Helt runda hörn */
-        border: 2px solid transparent; /* Plats för fokus-ram */
-        display: flex;
-        align-items: center;
-        padding: 0 16px;
-        transition: all 0.2s ease;
-    }
-    
-    /* VIKTIGT: Fokus-ring på behållaren, inte fältet */
-    .mobile-wrapper:focus-within {
-        background-color: #fff;
-        border-color: var(--primary-color);
-        box-shadow: 0 0 0 4px var(--primary-light);
-    }
-
-    /* Ta bort ALL styling från själva input-fältet */
-    .mobile-wrapper input {
-	    border: none !important;
-	    outline: none !important;
-	    background: transparent !important;
-	    box-shadow: none !important;
-	    font-size: 16px;
-	    width: 100%;
-	    
-	    /* HÄR ÄR FIXEN: Tvinga vänster-padding till 0 (eller liten marginal) */
-	    padding-left: 0.5rem !important; 
-	    padding-right: 0 !important;
-	    
-	    margin: 0;
-	    height: 100%;
-	    color: #111;
-	}
-
-    /* Krysset inuti fältet */
-    .search-clear-btn {
-        position: static; /* Låt den flöda naturligt i flexbox */
-        transform: none;
-        background: #D1D5DB;
-        color: #fff;
-        width: 18px;
-        height: 18px;
-        min-width: 18px; /* Så den inte kläms */
-        font-size: 10px;
-        margin-left: 8px;
-    }
-
-    /* 5. Filter-chips (Scrollbar rad) */
-    .mobile-filter-bar {
-        padding: 12px 16px;
-        border-bottom: 1px solid #f3f4f6;
-        background: #fff;
-        overflow-x: auto;
-        white-space: nowrap;
-        flex-shrink: 0;
-        -webkit-overflow-scrolling: touch;
-    }
-    
-    /* Göm scrollbar men behåll funktion */
-    .mobile-filter-bar::-webkit-scrollbar { display: none; }
-    
-    .mobile-sort-chips {
-        display: flex;
-        gap: 10px;
-    }
-
-    .sort-chip {
-        padding: 8px 16px;
-        background-color: #F3F4F6;
-        color: #4B5563;
-        border-radius: 99px;
-        font-size: 0.85rem;
-        font-weight: 600;
-        border: none;
-        transition: all 0.2s ease;
-    }
-
-    .sort-chip.active {
-        background-color: #111827; 
-        color: #fff;
-    }
-
-    /* 6. Resultatlistan (Skrollbar yta) */
-    .mobile-results-container {
-        flex: 1; /* Ta all återstående plats */
-        overflow-y: auto;
-        background-color: #fff;
-        padding: 0; /* Listan ska gå kant-till-kant */
-        -webkit-overflow-scrolling: touch;
-    }
-    
-    /* Justera korten i mobilsöken för att passa listan */
-    .mobile-results-container .mobile-job-card {
-        border-radius: 0;
-        border-left: none;
-        border-right: none;
-        border-top: none;
-        border-bottom: 1px solid #f3f4f6;
-        box-shadow: none;
-        margin: 0;
-    }
-
-	#confirmModal .modal-content.confirm-box {
-        height: auto !important;
-        max-height: auto !important;
-        width: 95% !important; /* Lite bredare för att utnyttja ytan */
-        
-        position: absolute !important;
-        bottom: 1.5rem !important; /* Lite närmare kanten */
-        left: 50% !important;
-        transform: translateX(-50%) !important;
-        
-        /* -- FÖRÄNDRINGARNA HÄR -- */
-        border-radius: 16px !important; /* Mindre runda hörn (var 24px) */
-        padding: 1.25rem !important;    /* Mindre luft (var 1.5rem) */
-        
-        box-shadow: 0 4px 25px rgba(0,0,0,0.15) !important; /* Lite stramare skugga */
-        border: 1px solid var(--border-color); /* Tunn ram för definition */
-    }
-
-    /* Gör ikonen mindre dominant */
-    .confirm-icon-wrapper {
-        width: 48px;
-        height: 48px;
-        margin-bottom: 0.25rem;
-    }
-    .confirm-icon-wrapper .icon-lg {
-        width: 2rem;
-        height: 2rem;
-    }
-
-    /* Strama upp rubriken */
-    .confirm-box h3 {
-        font-size: 1.1rem;
-        margin-bottom: 0.25rem;
-        font-weight: 700;
-    }
-
-    /* Strama upp brödtexten */
-    .confirm-box p {
-        font-size: 0.9rem;
-        margin-bottom: 1.25rem;
-        color: #6B7280;
-    }
-
-    /* Gör knapparna mer kompakta */
-    .confirm-actions .button {
-        padding: 0.75rem 1rem !important; /* Mindre höjd */
+    /* Kompaktare input-fält */
+    .form-group input, 
+    .form-group textarea, 
+    .compact-select {
+        padding: 0.6rem 0.8rem !important; /* Mindre luft inuti */
         font-size: 0.95rem !important;
-        border-radius: 10px !important;   /* Mindre runda hörn på knappar */
-        font-weight: 600;
-        min-height: 44px; /* Standardhöjd för touch, men inte gigantisk */
-    }
-
-    /* --- FIX: TVINGA TOPP-MENYER BREDVID VARANDRA PÅ MOBIL --- */
-    #jobModalForm .form-group-split {
-        grid-template-columns: 1fr 1fr !important; /* Tvinga 2 kolumner */
-        gap: 0.75rem !important;
+        height: auto !important;
     }
     
-    /* Justera labels så de får plats bättre på mobilen */
-    #jobModalForm .form-group-split label {
-        font-size: 0.8rem;
-        white-space: nowrap; /* Försök hålla på en rad */
-        overflow: hidden;
-        text-overflow: ellipsis;
+    /* Justera Ekonomi-raden */
+    .price-profit-row {
+        gap: 0.75rem !important;
+        margin-bottom: 0.5rem !important;
+        padding-bottom: 0.5rem !important;
     }
+    .clean-price-input {
+        padding: 0.5rem 0.75rem !important;
+        font-size: 1.1rem !important; /* Lite mindre siffror */
+    }
+    .profit-value { font-size: 1.2rem !important; }
+
+    /* --- 6. Jobb-mallar (Fixad höjd) --- */
+    .job-templates {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        gap: 0.5rem !important;
+        padding: 0.25rem 0.25rem 0.5rem 0.25rem !important; 
+        margin-bottom: 0.5rem !important;
+        align-items: center !important;
+        height: auto !important;
+        scrollbar-width: none; 
+    }
+    .job-templates::-webkit-scrollbar { display: none; }
+
+    .job-templates .button.template-btn,
+    .prio-toggle-wrapper {
+        flex-shrink: 0 !important;
+        white-space: nowrap !important;
+        font-size: 0.8rem !important; /* Lite mindre text */
+        height: 36px !important; /* Tvinga ner höjden för kompaktare look */
+        padding: 0 0.8rem !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        margin: 0 !important;
+    }
+    .prio-toggle-wrapper { margin-left: 0 !important; }
+
+    /* --- 7. Statistik & Kort --- */
+    .stat-bar { grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1rem; }
+    .stat-card { padding: 0.75rem; min-height: 70px; display: flex; flex-direction: column; }
+    .stat-card-title { font-size: 0.7rem; margin: 0; line-height: 1; height: 1.2em; display: flex; align-items: center; gap: 0.3rem; }
+    .stat-card-title span { display: none; }
+    .stat-card-title::after { content: attr(data-filter); text-transform: uppercase; font-size: 0.7rem; font-weight: 700; }
+    .stat-card[data-filter="faktureras"] .stat-card-title::after { content: "FAKTURERING"; }
+    .stat-card[data-filter="kommande"] .stat-card-title::after { content: "KOMMANDE"; }
+    .stat-card[data-filter="klar"] .stat-card-title::after { content: "FÄRDIGA JOBB"; }
+    .stat-card[data-filter="offererad"] .stat-card-title::after { content: "OFFERERADE"; }
+    .stat-card[data-filter="alla"] .stat-card-title::after { content: "ALLA JOBB"; }
+    .stat-card-value { font-size: 1.8rem; text-align: left; margin-top: 0.2rem; font-weight: 700; }
+    .stat-bar > .stat-card:nth-child(5) { grid-column: 1 / -1; flex-direction: row; justify-content: space-between; align-items: center; padding: 0.75rem 1rem; }
+    .stat-bar > .stat-card:nth-child(5) .stat-card-value { text-align: right; margin-top: 0; }
+
+    /* --- 8. Jobb-lista & Kort --- */
+    .table-container#jobListContainer { display: block !important; border: none !important; }
+    #mobileJobList, .mobile-day-group { display: flex !important; flex-direction: column !important; gap: 1rem !important; width: 100%; }
+    .mobile-date-header {
+        font-size: 1rem !important; font-weight: 700; color: var(--text-color);
+        margin: 0.5rem 0 0.5rem 0; padding-bottom: 0.5rem;
+        border-bottom: 2px solid var(--border-color);
+    }
+    .mobile-job-card {
+        background: var(--content-bg); border: 1px solid var(--border-color);
+        border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        border-left: 4px solid transparent; display: block !important; padding-bottom: 0;
+    }
+    .mobile-job-card.prio-row { border-left-color: var(--danger-color); background-color: var(--danger-light); }
+    .mobile-job-card .card-content { padding: 1rem 1rem 0.5rem 1rem; display: flex; flex-direction: column; gap: 0.75rem; }
+    .mobile-job-card .card-row { display: flex; justify-content: space-between; align-items: center; }
+    .card-time-badge {
+        background-color: var(--bg-color); border: 1px solid var(--border-color);
+        color: var(--text-color); font-size: 0.8rem !important; font-weight: 600;
+        padding: 0.25em 0.75em !important; border-radius: 99px !important; display: inline-block;
+    }
+    .mobile-job-card .action-col {
+        display: flex !important; justify-content: flex-start !important; gap: 1.5rem !important;
+        padding: 0.5rem 1rem 1rem 1rem !important; background-color: transparent !important;
+        border-top: none !important; opacity: 1 !important; width: 100% !important; box-sizing: border-box !important;
+    }
+    .mobile-job-card .action-col .icon-btn {
+        padding: 0 !important; background: transparent !important;
+        width: auto !important; height: auto !important; border-radius: 0 !important;
+        color: #9CA3AF !important; flex: 0 0 auto !important;
+    }
+    .mobile-job-card .action-col .icon-sm { width: 1.3rem !important; height: 1.3rem !important; }
+    .mobile-job-card .action-col .icon-btn.active-prio { color: var(--danger-color) !important; }
+
+    /* --- 9. Modal Övrigt (Kund/Bil) --- */
+    .detail-job-table tbody tr {
+        display: flex !important; flex-direction: column !important;
+        background: transparent !important; border: none !important;
+        border-bottom: 1px solid var(--border-color) !important;
+        padding: 1rem 0 !important; margin: 0 !important; box-shadow: none !important;
+        border-radius: 0 !important; position: relative;
+    }
+    .detail-job-table td { display: block !important; padding: 0 !important; border: none !important; text-align: left !important; width: 100% !important; }
+    .detail-job-table td[data-label="Datum"] { order: 1; font-weight: 700 !important; font-size: 0.95rem !important; color: var(--text-color) !important; margin-bottom: 0.25rem !important; }
+    .detail-job-table td[data-label="Info"] { order: 2; margin-bottom: 0.5rem !important; }
+    .detail-job-table .job-subline-main { font-size: 1rem !important; font-weight: 700 !important; color: var(--text-color) !important; display: block !important; margin-bottom: 0.25rem; }
+    .detail-job-table .job-subline-comment { font-style: normal !important; color: var(--text-color-light); font-size: 0.9rem; line-height: 1.4; display: block; }
+    .detail-job-table td[data-label="Status"] { order: 3; display: inline-block !important; width: auto !important; }
+    .detail-job-table td[data-label="Vinst"] { position: absolute !important; bottom: 1rem; right: 2rem; width: auto !important; font-weight: 700 !important; font-size: 1rem !important; text-align: right !important; }
+    .detail-job-table tr td:last-child::after { position: absolute; right: 0; top: 50%; transform: translateY(-50%) rotate(45deg); margin-top: 0; bottom: auto; }
+    .detail-job-table td::before, .detail-job-table thead { display: none !important; }
+    .date-wrapper span { display: inline !important; margin: 0 !important; font-size: inherit !important; color: inherit !important; }
+
+    .sticky-link-buttons {
+        display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 10px !important;
+        padding: 1rem 1.25rem !important; background-color: var(--bg-color) !important;
+        border-top: 1px solid var(--border-color) !important;
+    }
+    .sticky-link-buttons .button.secondary {
+        display: flex !important; justify-content: center !important; align-items: center !important;
+        padding: 0 !important; height: 48px !important; width: 100% !important;
+        box-sizing: border-box; font-weight: 600; font-size: 0.85rem !important; border-radius: 8px !important;
+    }
+    .sticky-link-buttons .button.secondary span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 80px; }
+
+    /* --- 10. Övrigt --- */
+    #mobileSearchModal { position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100dvh !important; background-color: #ffffff !important; z-index: 9000 !important; display: none; flex-direction: column !important; }
+    .mobile-search-layout { width: 100%; height: 100%; display: flex; flex-direction: column; }
+    .mobile-search-header { flex-shrink: 0; display: flex; align-items: center; gap: 12px; padding: 12px 16px; background-color: #fff; border-bottom: 1px solid #f3f4f6; }
+    .mobile-wrapper { flex-grow: 1; height: 40px; background-color: #F3F4F6; border-radius: 99px; display: flex; align-items: center; padding: 0 16px; }
+    .mobile-wrapper input { border: none !important; outline: none !important; background: transparent !important; font-size: 16px; width: 100%; padding: 0 !important; margin: 0; color: #111; box-shadow: none !important; }
+    .mobile-filter-bar { display: none !important; }
+    .mobile-results-container { flex: 1; overflow-y: auto; background-color: #fff; padding: 0; }
+    #mobileSearchResults { background-color: var(--bg-color) !important; padding: 1rem !important; }
+    #mobileSearchResults .mobile-job-card { margin-bottom: 1rem !important; border-radius: 12px !important; background-color: #ffffff !important; }
+    #mobileSearchResults .action-col { display: none !important; }
+
+    #confirmModal .modal-content.confirm-box {
+        height: auto !important; width: 95% !important; position: absolute !important; bottom: 1.5rem !important; left: 50% !important; transform: translateX(-50%) !important;
+        border-radius: 16px !important; padding: 1.25rem !important; box-shadow: 0 4px 25px rgba(0,0,0,0.15) !important; border: 1px solid var(--border-color);
+    }
+    .confirm-actions .button { padding: 0.75rem 1rem !important; font-size: 0.95rem !important; border-radius: 10px !important; }
+
+    #calendarView { padding: 0; background: none; border: none; }
+    .fc .fc-toolbar.fc-header-toolbar { display: flex !important; flex-direction: column !important; gap: 0.5rem !important; padding: 0.5rem !important; align-items: center !important; }
+    .fc .fc-toolbar-title { font-size: 1.1rem !important; }
+    .fc .fc-daygrid-day-frame { min-height: 60px !important; }
+    .fc .fc-button { padding: 0.2rem 0.5rem !important; font-size: 0.75rem !important; }
+
+    .kanban-board { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; padding: 0 1rem 20px 1rem; gap: 1rem; justify-content: flex-start; scrollbar-width: none; }
+    .kanban-column { width: 100%; min-width: 85vw; max-width: 85vw; scroll-snap-align: center; scroll-snap-stop: always; max-height: calc(100vh - 140px); }
+    .kanban-column-cards { overflow-y: auto; }
 }
 
 /* --- ACCORDION STYLING (Nytt Jobb Modal) --- */
@@ -5977,5 +5215,6 @@ html.privacy-mode-enabled .nav-logo {
     font-weight: 500;
     margin-left: 4px;
 }
+
 
 
