@@ -2154,7 +2154,6 @@
 			    if (!container) return;
 			    container.innerHTML = ''; 
 			
-			    // Göm list-containern helt om den är tom (CSS :empty sköter detta ofta, men JS är säkrare)
 			    if (currentExpenses.length === 0) {
 			        container.style.display = 'none';
 			        return;
@@ -2163,21 +2162,17 @@
 			
 			    currentExpenses.forEach((item, index) => {
 			        const row = document.createElement('div');
-			        row.className = 'expense-row';
+			        row.className = 'clean-list-row';
 			        
 			        row.innerHTML = `
-			            <span class="expense-row-name">${item.name}</span>
+			            <span class="clean-row-name">${item.name}</span>
 			            <div style="display:flex; align-items:center;">
-			                <span class="expense-row-cost">-${formatCurrency(item.cost)}</span>
-			                <div class="expense-row-remove" title="Ta bort">
-			                    <svg style="width:16px;height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 18L18 6M6 6l12 12"/></svg>
-			                </div>
+			                <span class="clean-row-cost">-${formatCurrency(item.cost)}</span>
+			                <div class="clean-row-remove" title="Ta bort">×</div>
 			            </div>
 			        `;
 			        
-			        // Klick på krysset
-			        row.querySelector('.expense-row-remove').addEventListener('click', (e) => {
-			            e.stopPropagation();
+			        row.querySelector('.clean-row-remove').addEventListener('click', (e) => {
 			            currentExpenses.splice(index, 1);
 			            renderExpensesList();
 			            updateLiveProfit();
@@ -2192,22 +2187,24 @@
 			    const prisEl = document.getElementById('kundpris');
 			    const pris = prisEl ? (parseFloat(prisEl.value) || 0) : 0;
 			    
-			    // Beräkna total utgift
 			    const totalUtgifter = currentExpenses.reduce((sum, item) => sum + (item.cost || 0), 0);
 			    const vinst = pris - totalUtgifter;
 			    
-			    // Uppdatera dashboard-fälten
-			    const costEl = document.getElementById('liveTotalCost');
-			    const profitEl = document.getElementById('liveProfit');
+			    // Uppdatera de nya fälten
+			    const profitDisplay = document.getElementById('liveProfitDisplay');
+			    const expenseDisplay = document.getElementById('liveExpenseDisplay');
 			    
-			    if (costEl) costEl.textContent = totalUtgifter > 0 ? `-${formatCurrency(totalUtgifter)}` : '0 kr';
+			    if (profitDisplay) {
+			        profitDisplay.textContent = formatCurrency(vinst);
+			        if (vinst < 0) {
+			            profitDisplay.style.color = "var(--danger-color)";
+			        } else {
+			            profitDisplay.style.color = "var(--success-color)";
+			        }
+			    }
 			    
-			    if (profitEl) {
-			        profitEl.textContent = formatCurrency(vinst);
-			        // Byt färg om minus
-			        profitEl.className = vinst < 0 ? 'dash-value negative' : 'dash-value positive';
-			        if (vinst < 0) profitEl.style.color = "var(--danger-color)";
-			        else profitEl.style.color = "var(--success-color)";
+			    if (expenseDisplay) {
+			        expenseDisplay.textContent = totalUtgifter > 0 ? `(${formatCurrency(totalUtgifter)} utgifter)` : '';
 			    }
 			}
 
