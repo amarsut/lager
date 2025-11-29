@@ -4046,18 +4046,18 @@
 
     // 2. Koppla 'Öppna'-funktionen (Tvingande)
     if (_mobileBtn && _mobileModal) {
-        _mobileBtn.onclick = function(e) {
-            e.preventDefault();
-            console.log("Sök-knapp tryckt! Tvingar öppning...");
-            
-            // Tvinga fram rutan
-            _mobileModal.style.cssText = 'display: flex !important;';
-            
-            // Fokusera i rutan
-            setTimeout(() => {
-                if (_mobileInput) _mobileInput.focus();
-            }, 100);
-        };
+	    _mobileBtn.onclick = function(e) {
+	        e.preventDefault();
+	        console.log("Sök-knapp tryckt! Tvingar öppning...");
+	        
+	        // Tvinga fram rutan OCH tvinga den att vara synlig
+	        _mobileModal.style.cssText = 'display: flex !important; opacity: 1 !important; visibility: visible !important;';
+	        
+	        // Fokusera i rutan
+	        setTimeout(() => {
+	            if (_mobileInput) _mobileInput.focus();
+	        }, 100);
+	    };
     }
 
     // 3. Koppla 'Stäng'-funktionen
