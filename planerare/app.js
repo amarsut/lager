@@ -909,19 +909,84 @@
 		    }
 
 			function initInventoryListener() {
-                db.collection("settings").doc("inventory").onSnapshot(doc => {
-                    if (doc.exists) {
-                        currentOilStock = doc.data().motorOil || 0;
+			    db.collection("settings").doc("inventory").onSnapshot(doc => {
+			        if (doc.exists) {
+			            const data = doc.data();
+			            
+			            // Fyll i inställningsfälten
+			            const amountInput = document.getElementById('oilStartAmount');
+			            const dateInput = document.getElementById('oilStartDate');
+			            
+			            if (amountInput) amountInput.value = data.oilStartAmount || 205;
+			            if (dateInput) dateInput.value = data.oilStartDate || "2024-11-22"; // Din default
+			            
+			            // Kör beräkningen direkt när vi fått datan
+			            calculateOilStock();
+			        }
+			    });
+			}
+
+			function calculateOilStock() {
+                // 1. Hämta startvärden från inputs (eller state om modalen är stängd)
+                const amountInput = document.getElementById('oilStartAmount');
+                const dateInput = document.getElementById('oilStartDate');
+                
+                // SÄKERHETSÅTGÄRD: Om elementen inte finns (appen laddas), avbryt inte, använd 0
+                const startAmount = amountInput ? (parseFloat(amountInput.value) || 0) : 0;
+                const startDateVal = dateInput ? dateInput.value : '';
+                
+                // Om vi inte har data i fälten än (t.ex. vid start), försök inte räkna
+                if (!startDateVal && startAmount === 0) return;
+
+                const startDate = new Date(startDateVal);
+                startDate.setHours(0, 0, 0, 0); 
+
+                let totalUsed = 0;
+
+                // 2. Loopa igenom ALLA jobb
+                allJobs.forEach(job => {
+                    // Ignorera raderade jobb och avbokade jobb
+                    if (job.deleted || job.status === 'avbokad') return;
+
+                    // Kolla om jobbets datum är EFTER startdatumet
+                    const jobDate = new Date(job.datum);
+                    if (jobDate >= startDate) {
                         
-                        // Uppdatera fältet i inställningar om det är öppet
-                        const stockInput = document.getElementById('oilStockInput');
-                        if (stockInput && document.activeElement !== stockInput) {
-                            stockInput.value = currentOilStock;
+                        // 3. Leta efter olja i utgiftslistan
+                        if (job.expenseItems && Array.isArray(job.expenseItems)) {
+                            job.expenseItems.forEach(item => {
+                                // Kollar om namnet innehåller "olja"
+                                if (item.name && item.name.toLowerCase().includes('motorolja')) {
+                                    // Extrahera siffran: "Motorolja (4.3L)" -> 4.3
+                                    const match = item.name.match(/([\d.,]+)\s*L/i);
+                                    if (match) {
+                                        let liters = parseFloat(match[1].replace(',', '.'));
+                                        if (!isNaN(liters)) {
+                                            totalUsed += liters;
+                                        }
+                                    }
+                                }
+                            });
                         }
-                    } else {
-                        db.collection("settings").doc("inventory").set({ motorOil: 0 });
                     }
                 });
+
+                // 4. Visa resultatet
+                const currentStock = startAmount - totalUsed;
+                const stockElement = document.getElementById('calculatedOilStock');
+                
+                if (stockElement) {
+                    stockElement.textContent = `${currentStock.toFixed(1)} Liter kvar`;
+                    
+                    if (currentStock < 20) {
+                        stockElement.style.color = "var(--danger-color)";
+                        stockElement.textContent += " (LÅGT!)";
+                    } else {
+                        stockElement.style.color = "var(--success-color)";
+                    }
+                }
+                
+                currentOilStock = currentStock;
             }
 
             // --- Firebase Listener ---
@@ -1218,6 +1283,7 @@
 			        kanbanView.style.display = 'none'; // NYTT
 			        timelineView.style.display = 'block';
 			    }
+				calculateOilStock();
 			}
 
             function renderGlobalStats(jobs) {
@@ -2864,48 +2930,6 @@
                     return;
                 }
                 const fullDatum = `${modalDatum.value}T${modalTid.value || '09:00'}`;
-
-				// --- AUTOMATISK LAGERHANTERING ---
-			    // Vi gör detta bara för NYA jobb (!jobId) för att inte råka dra av oljan två gånger om du redigerar jobbet.
-			    if (!jobId) {
-			        const oilItem = currentExpenses.find(item => item.name.toLowerCase().includes('motorolja'));
-			        
-			        if (oilItem) {
-			            // Vi letar efter ett tal följt av "L" i texten, t.ex. "Motorolja (4.3L)"
-			            // (Detta matchar formatet från din mall)
-			            const match = oilItem.name.match(/([\d.,]+)\s*L/i);
-			            
-			            if (match) {
-			                // Byt ut komma mot punkt för att kunna räkna
-			                const litersUsed = parseFloat(match[1].replace(',', '.'));
-			                
-			                if (litersUsed > 0) {
-			                    // Uppdatera lagret i Firebase (minska med litersUsed)
-			                    try {
-			                        await db.collection("settings").doc("inventory").update({
-			                            motorOil: firebase.firestore.FieldValue.increment(-litersUsed)
-			                        });
-			                        
-			                        // Kolla om vi passerar varningsgränsen (lokal beräkning för snabb feedback)
-			                        if ((currentOilStock - litersUsed) <= 20) {
-			                            // Visa en varning efter en kort stund
-			                            setTimeout(() => {
-			                                showToast(`Varning: Oljelagret är lågt! (${(currentOilStock - litersUsed).toFixed(1)} L kvar)`, 'warning');
-			                            }, 1500);
-			                        } else {
-			                            // Visa info om att olja drogs
-			                            setTimeout(() => {
-			                                showToast(`${litersUsed}L olja registrerat från lagret.`, 'info');
-			                            }, 1000);
-			                        }
-			                    } catch (err) {
-			                        console.error("Kunde inte uppdatera lager:", err);
-			                    }
-			                }
-			            }
-			        }
-			    }
-			    // --- SLUT LAGERHANTERING ---
                 
                 // Detta är det nya objektet vi sparar till Firebase
                 const savedData = { 
@@ -3474,17 +3498,24 @@
             settingsModalForm.addEventListener('submit', (e) => {
 			    e.preventDefault();
 			    
-			    // Din gamla kod för vinstmål
 			    currentProfitGoal = parseFloat(profitGoalInput.value) || 0;
 			    localStorage.setItem('profitGoal', currentProfitGoal);
 			
-			    // --- NY KOD FÖR OLJELAGER ---
-			    const newStock = parseFloat(document.getElementById('oilStockInput').value) || 0;
-			    db.collection("settings").doc("inventory").set({ motorOil: newStock }, { merge: true });
-			    // ----------------------------
+			    // --- NY LOGIK FÖR ATT SPARA OLJE-INSTÄLLNINGAR ---
+			    const startAmount = parseFloat(document.getElementById('oilStartAmount').value) || 0;
+			    const startDate = document.getElementById('oilStartDate').value;
 			
-			    showToast('Inställningar och lager sparade!', 'success');
+			    db.collection("settings").doc("inventory").set({ 
+			        oilStartAmount: startAmount,
+			        oilStartDate: startDate
+			    }, { merge: true });
+			    // -------------------------------------------------
+			
+			    showToast('Inställningar sparade & lager omräknat!', 'success');
 			    closeModal();
+			    
+			    // Tvinga en omräkning direkt
+			    calculateOilStock();
 			});
 
             settingsThemeToggle.addEventListener('click', () => themeToggle.click());
