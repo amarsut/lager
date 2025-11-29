@@ -3021,6 +3021,35 @@
                 closeModal(); 
                 performSearch(); 
             });
+
+			const mobileSortContainer = document.getElementById('mobileSortOptions');
+
+		    if (mobileSortContainer) {
+		        mobileSortContainer.addEventListener('click', (e) => {
+		            // Kolla om vi klickade på en av knapparna (chipsen)
+		            if (e.target.classList.contains('sort-chip')) {
+		                
+		                // 1. Visuell uppdatering (Flytta den blå färgen)
+		                document.querySelectorAll('.sort-chip').forEach(btn => btn.classList.remove('active'));
+		                e.target.classList.add('active');
+		                
+		                // 2. Uppdatera global sortering (variabeln vi skapade tidigare)
+		                currentSortField = e.target.dataset.sort;
+		                
+		                // 3. (Valfritt) Byt till fallande ordning automatiskt om man väljer Pris
+		                if (currentSortField === 'kundpris') {
+		                    currentSortOrder = 'desc';
+		                } else if (currentSortField === 'datum') {
+		                    // Om man går tillbaka till datum, kanske man vill ha "Kommande" (asc) eller "Nyaste" (desc)
+		                    // Låt oss behålla nuvarande ordning eller sätta en standard:
+		                    // currentSortOrder = 'asc'; 
+		                }
+		                
+		                // 4. Rita om listan med den nya sorteringen
+		                performSearch(); 
+		            }
+		        });
+		    }
             
             function clearSearch() {
 			    searchBar.value = '';
