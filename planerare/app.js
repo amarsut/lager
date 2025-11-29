@@ -1842,67 +1842,64 @@
 			    clearTimeout(backPressTimer); 
 			
 			    const state = event.state;
-			
-			    // FALL 1: Vi navigerar TILL sök-läget (Framåt i historiken eller liknande)
-			    if (state && state.modal === 'mobileSearch') {
-			        const mSearchModal = document.getElementById('mobileSearchModal');
-			        const mInput = document.getElementById('mobileSearchBar');
-			        if (mSearchModal) {
-			            mSearchModal.style.cssText = 'display: flex !important; opacity: 1 !important; visibility: visible !important;';
-			            setTimeout(() => { if (mInput) mInput.focus(); }, 100);
-			        }
-			        return;
-			    }
-			
-			    // FALL 2: En annan modal är öppen (t.ex. Jobb-modal)
-			    if (isModalOpen) {
-			        isNavigatingBack = true;
-			        closeModal({ popHistory: false }); // Stäng modalen men rör inte historiken igen
-			        isNavigatingBack = false;
-			        backPressWarned = false; 
-			        return;
-			    }
-			
-			    // FALL 3: Vi är på väg till Kalendern
-			    if (state && state.view === 'calendar') {
-			        if (currentView !== 'calendar') {
-			            isNavigatingBack = true;
-			            toggleView('calendar');
-			            isNavigatingBack = false;
-			        }
-			        backPressWarned = false;
-			    } 
+			    const mSearchModal = document.getElementById('mobileSearchModal');
 			    
-			    // FALL 4: Vi är på väg till Tidslinjen/Startsidan (state är null eller 'timeline')
-			    else if (!state || !state.view || state.view === 'timeline') { 
+			    // --- NIVÅ 1: SÖK-MODALEN (Högst prioritet) ---
+			    // Om sökrutan är öppen -> Stäng den och STOPPA där.
+			    if (mSearchModal && getComputedStyle(mSearchModal).display !== 'none') {
 			        if (typeof resetAndCloseSearch === 'function') {
 			            resetAndCloseSearch();
+			        } else {
+			            mSearchModal.style.display = 'none';
+			            currentSearchTerm = '';
+			            performSearch();
 			        }
+			        return; // <--- STOPP! Gå inte vidare.
+			    }
 			
-			        // Om vi INTE är på tidslinjen (t.ex. vi kommer från Kalender/Tavla)
-			        if (currentView !== 'timeline') {
-			            isNavigatingBack = true;
-			            toggleView('timeline');
-			            isNavigatingBack = false;
-			            return; // Stanna här! Visa inte "Stäng"-varningen när vi bara byter vy.
+			    // --- NIVÅ 2: VANLIGA MODALER (Jobb, Kund, Inställningar) ---
+			    // Om en modal är öppen -> Stäng den och STOPPA där.
+			    if (isModalOpen) {
+			        isNavigatingBack = true;
+			        closeModal({ popHistory: false }); // Stäng utan att bråka med historiken
+			        isNavigatingBack = false;
+			        backPressWarned = false; 
+			        return; // <--- STOPP! Visa ingen toast.
+			    }
+			
+			    // --- NIVÅ 3: VY-BYTE (Från Kalender/Tavla -> Tidslinje) ---
+			    // Om vi inte är på tidslinjen -> Byt till tidslinjen och STOPPA där.
+			    if (currentView !== 'timeline') {
+			        isNavigatingBack = true;
+			        toggleView('timeline');
+			        isNavigatingBack = false;
+			        backPressWarned = false;
+			        return; // <--- STOPP! Visa ingen toast.
+			    }
+			
+			    // --- NIVÅ 4: "AVSLUTA APPEN" (Endast om vi nått hit) ---
+			    // Vi är på Tidslinjen, inga modaler är öppna, inget sök är öppet.
+			    // Det är BARA HÄR vi ska visa varningen.
+			    
+			    if (window.innerWidth <= 768) {
+			        if (backPressWarned) {
+			            // Användaren har tryckt en gång redan -> Stäng appen på riktigt
+			            backPressWarned = false;
+			            // history.back() här skulle bara loopa, så vi låter webbläsaren hantera avslutet naturligt
+			            // eller anropar history.go(-1) om vi har historik kvar.
+			            history.back(); 
+			        } else {
+			            // Första trycket -> Visa varning och lägg tillbaka spärren
+			            backPressWarned = true;
+			            showToast('Tryck bakåt igen för att stänga', 'info');
+			            
+			            // Tryck in ett nytt state så att vi stannar kvar på sidan
+			            history.pushState(null, 'Tidslinje', location.pathname); 
+			            
+			            backPressTimer = setTimeout(() => {
+			                backPressWarned = false;
+			            }, 2000); 
 			        }
-			
-			        // Endast om vi REDAN var på tidslinjen och trycker bakåt, körs detta:
-			        if (window.innerWidth <= 768) {
-				        if (backPressWarned) {
-				            backPressWarned = false;
-				            history.back(); 
-				        } else {
-				            backPressWarned = true;
-				            showToast('Tryck bakåt igen för att stänga', 'info');
-				            
-				            history.pushState(null, 'Tidslinje', location.pathname); 
-				            
-				            backPressTimer = setTimeout(() => {
-				                backPressWarned = false;
-				            }, 2000); 
-				        }
-				    }
 			    }
 			});
 
