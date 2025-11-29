@@ -4036,4 +4036,37 @@
                 }
             });
 
+			/* --- FELSÄKER MOBIL-SÖK START --- */
+    
+    // 1. Hämta elementen på nytt
+    const _mobileBtn = document.getElementById('mobileSearchBtn');
+    const _mobileModal = document.getElementById('mobileSearchModal');
+    const _mobileInput = document.getElementById('mobileSearchBar');
+    const _mobileBack = document.getElementById('mobileSearchBackBtn');
+
+    // 2. Koppla 'Öppna'-funktionen (Tvingande)
+    if (_mobileBtn && _mobileModal) {
+        _mobileBtn.onclick = function(e) {
+            e.preventDefault();
+            console.log("Sök-knapp tryckt! Tvingar öppning...");
+            
+            // Tvinga fram rutan
+            _mobileModal.style.cssText = 'display: flex !important;';
+            
+            // Fokusera i rutan
+            setTimeout(() => {
+                if (_mobileInput) _mobileInput.focus();
+            }, 100);
+        };
+    }
+
+    // 3. Koppla 'Stäng'-funktionen
+    if (_mobileBack && _mobileModal) {
+        _mobileBack.onclick = function(e) {
+            e.preventDefault();
+            _mobileModal.style.display = 'none';
+        };
+    }
+    /* --- FELSÄKER MOBIL-SÖK SLUT --- */
+
         });
