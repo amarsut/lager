@@ -5231,43 +5231,68 @@ html.privacy-mode-enabled .nav-logo {
 
 /* --- KOMPAKTA SÖKRESULTAT (MOBIL) --- */
 
-/* Endast inuti sök-modalen */
+/* 1. Dölj filter-raden helt (du ville ta bort den) */
+.mobile-filter-bar {
+    display: none !important;
+}
+
+/* 2. Återställ "Kort"-utseendet i söklistan */
 #mobileSearchResults .mobile-job-card {
-    box-shadow: none !important;        /* Ingen skugga */
-    border: none !important;            /* Ingen ram */
-    border-bottom: 1px solid #F3F4F6 !important; /* Tunn linje under */
-    border-radius: 0 !important;        /* Raka hörn */
-    margin: 0 !important;               /* Inget mellanrum */
-    padding: 12px 4px !important;       /* Tajtare padding */
-    background: transparent !important;
-}
-
-/* Tajta till innehållet */
-#mobileSearchResults .mobile-job-card .card-content {
+    /* Återställ boxen */
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+    border: 1px solid #E5E7EB !important;
+    border-radius: 12px !important;
+    background: #fff !important;
+    margin-bottom: 1rem !important; /* Luft mellan korten */
     padding: 0 !important;
-    gap: 4px !important; /* Mindre luft mellan raderna */
+    
+    /* Behåll vänster-färgen för status */
+    border-left-width: 4px !important;
+    border-left-style: solid !important;
 }
 
-/* Gör kundnamnet tydligare */
-#mobileSearchResults .customer-name {
-    font-size: 1rem;
-    color: #111827;
+/* Återställ innehållet i kortet */
+#mobileSearchResults .card-content {
+    padding: 1rem !important;
+    gap: 0.5rem !important;
 }
 
-/* Förminska sekundär text (Regnr, Pris) */
-#mobileSearchResults .card-row {
-    margin-bottom: 2px;
-}
+/* Visa etiketterna igen (Kund, Regnr) */
 #mobileSearchResults .card-label {
-    display: none; /* Dölj etiketterna "Kund", "Regnr" för att spara plats */
+    display: block !important;
 }
 #mobileSearchResults .card-value {
-    text-align: left; /* Vänsterställ allt */
-    font-size: 0.9rem;
-    color: #6B7280;
+    text-align: right !important; /* Högerställ värden igen */
 }
 
-/* Dölj knappraden i söklistan för att hålla det rent (man klickar på raden istället) */
+/* DÖLJ Åtgärdsknapparna (Soptunna etc) - Vi vill bara ha info */
 #mobileSearchResults .action-col {
     display: none !important;
+}
+
+/* 3. Snyggare "Tomt Sökresultat" */
+.empty-search-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 50vh; /* Centrera mitt på skärmen */
+    color: #9CA3AF;
+    text-align: center;
+}
+.empty-search-placeholder .icon-lg {
+    width: 64px; height: 64px;
+    margin-bottom: 1rem;
+    opacity: 0.2;
+}
+.empty-search-placeholder p {
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+/* 4. Fixa den blå ramen i sökfältet (Säkerhetsåtgärd) */
+.mobile-wrapper input:focus {
+    outline: none !important;
+    border: none !important;
+    box-shadow: none !important;
 }
