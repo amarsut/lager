@@ -1321,6 +1321,26 @@
 
             // --- UPPDATERAD: renderTimeline med Animationslogik ---
             function renderTimeline() {
+				// Om vi är på tidslinjen och sök-modalen är STÄNGD, men det finns söktext...
+			    const mModal = document.getElementById('mobileSearchModal');
+			    const isSearchOpen = mModal && getComputedStyle(mModal).display !== 'none';
+			    
+			    if (!isSearchOpen && currentSearchTerm !== '') {
+			        // ...då har vi hamnat fel. Nollställ allt!
+			        currentSearchTerm = '';
+			        const dInput = document.getElementById('searchBar');
+			        const mInput = document.getElementById('mobileSearchBar');
+			        if(dInput) dInput.value = '';
+			        if(mInput) mInput.value = '';
+			        
+			        // Dölj rensa-knappar
+			        if (document.getElementById('desktopSearchClear')) {
+			             document.getElementById('desktopSearchClear').style.cssText = 'display: none !important';
+			        }
+			        if (document.getElementById('mobileSearchClear')) {
+			             document.getElementById('mobileSearchClear').style.cssText = 'display: none !important';
+			        }
+			    }
                 // BUGGFIX: Ditt ID i plan.html är "desktopSearchResultCount"
                 const desktopSearchCount = document.getElementById('desktopSearchResultCount'); 
                 let jobsToDisplay = allJobs.filter(job => !job.deleted);
