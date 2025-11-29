@@ -420,21 +420,21 @@ h1, h2, h3, h4, h5, h6 {
 /* Krysset (Rensa) - Gör den snyggare */
 .search-clear-btn {
     position: absolute;
-    right: 1rem;
+    right: 12px; 
     top: 50%;
-    transform: translateY(-50%);
-    width: 28px;
-    height: 28px;
-    background: rgba(0,0,0,0.05); /* Svag grå cirkel */
+    transform: translateY(-50%); 
+    width: 24px;
+    height: 24px;
+    background: #E5E7EB;
     border: none;
     border-radius: 50%;
-    color: var(--text-color-light);
-    display: none; /* Visas via JS */
+    color: #6B7280;
+    display: none;
     align-items: center;
     justify-content: center;
     cursor: pointer;
+    padding: 0;
     font-size: 14px;
-    transition: all 0.2s ease;
 }
 .search-clear-btn:hover {
     background: var(--text-color);
@@ -5653,4 +5653,5 @@ html.privacy-mode-enabled .nav-logo {
 .stat-card[data-filter="klar"] .stat-card-value {
     color: var(--text-color) !important;
 }
+
 
