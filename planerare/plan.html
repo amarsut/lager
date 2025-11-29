@@ -437,43 +437,35 @@
 			    <div class="economy-section-wrapper">
 				    <label class="section-label-bold">EKONOMI</label>
 				    
-				    <div class="economy-pro-wrapper">
-					    <div class="economy-dashboard">
-					        <div class="dash-col">
+				    <div class="economy-clean-wrapper">
+    
+					    <div class="price-profit-row">
+					        <div class="price-input-container">
 					            <label for="kundpris">KUNDPRIS</label>
-					            <div class="input-currency-wrapper">
-					                <input type="number" id="kundpris" value="0" min="0" placeholder="0" class="dash-input">
-					                <span class="currency-suffix">kr</span>
-					            </div>
+					            <input type="number" id="kundpris" value="0" min="0" placeholder="0" class="clean-price-input">
 					        </div>
-					        <div class="dash-divider"></div>
-					        <div class="dash-col">
-					            <label>UTGIFTER</label>
-					            <div class="dash-value negative" id="liveTotalCost">0 kr</div>
-					        </div>
-					        <div class="dash-divider"></div>
-					        <div class="dash-col">
-					            <label>VINST</label>
-					            <div class="dash-value positive" id="liveProfit">0 kr</div>
+					        
+					        <div class="profit-display">
+					            <span class="profit-label">BERÄKNAD VINST</span>
+					            <span class="profit-value" id="liveProfitDisplay">0 kr</span>
+					            <span class="expense-info" id="liveExpenseDisplay">(0 kr utgifter)</span>
 					        </div>
 					    </div>
 					
-					    <div class="expense-manager">
-					        <div class="expense-input-row">
-					            <input type="text" id="expenseName" placeholder="Lägg till utgift (t.ex. Filter)..." class="ex-input name">
-					            <input type="number" id="expenseCost" placeholder="Pris" class="ex-input cost">
-					            <button type="button" id="addExpenseBtn" class="ex-btn-add">
-					                <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-plus"></use></svg>
-					            </button>
-					        </div>
-					        
-					        <div id="expenseList" class="expense-list-container"></div>
+					    <div class="expense-clean-input">
+					        <input type="text" id="expenseName" placeholder="Lägg till utgift..." class="clean-input">
+					        <input type="number" id="expenseCost" placeholder="Kostnad" class="clean-input cost">
+					        <button type="button" id="addExpenseBtn" class="clean-add-btn">
+					            <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-plus"></use></svg>
+					        </button>
 					    </div>
+					
+					    <div id="expenseList" class="expense-clean-list"></div>
+					
 					</div>
-				</div>
 			
 			    <div class="form-group full-width">
-			        <label for="kommentarer">Arbetsbeskrivning / Notering</label>
+			        <label for="kommentarer">Kommentar</label>
 			        <textarea id="kommentarer" rows="3" placeholder="Vad ska göras?"></textarea>
 			    </div>
 			
