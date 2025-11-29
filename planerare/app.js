@@ -3054,43 +3054,40 @@
             async function handleFormSubmit(e) {
 			    e.preventDefault();
 			    
-			    // Hämta status från den NYA dropdown-listan
 			    const statusEl = document.getElementById('statusSelect');
-			    const statusVal = statusEl ? statusEl.value : 'bokad'; // Fallback
+			    const statusVal = statusEl ? statusEl.value : 'bokad'; 
 			
 			    const jobId = document.getElementById('jobId').value;
 			    
-			    // Hämta pris
 			    const prisEl = document.getElementById('kundpris');
 			    const kundpris = prisEl ? (parseFloat(prisEl.value) || 0) : 0;
 			    
-			    // Beräkna utgifter från listan (inte från ett input-fält)
+			    // Om currentExpenses inte finns (om du laddat om sidan och variabeln tappats), skapa den
+			    if (typeof currentExpenses === 'undefined') {
+			        window.currentExpenses = [];
+			    }
+			
 			    const totalUtgifter = currentExpenses.reduce((sum, item) => sum + (item.cost || 0), 0);
 			    const vinst = kundpris - totalUtgifter;
 			
-			    // Hämta datum & tid
 			    const datumVal = document.getElementById('datum').value;
 			    const tidVal = document.getElementById('tid').value || '09:00';
 			    const fullDatum = `${datumVal}T${tidVal}`;
 			    
-			    // Hämta textfält
 			    const regnrVal = document.getElementById('regnr').value.toUpperCase();
 			    const namnVal = document.getElementById('kundnamn').value.toUpperCase();
 			    const tfnVal = document.getElementById('telefon').value;
 			    const kommVal = document.getElementById('kommentarer').value;
 			    const matarVal = document.getElementById('matarstallning').value;
 			    
-			    // Hämta prio
 			    const prioEl = document.getElementById('prio');
 			    const prioVal = prioEl ? prioEl.checked : false;
 			
-			    // Validering för "Klar"-status
 			    if (statusVal === 'klar' && kundpris === 0) {
 			        alert('Ett "Klar" jobb kan inte ha 0 kr i kundpris.');
 			        return;
 			    }
 			    
-			    // Skapa data-objektet
 			    const savedData = { 
 			        status: statusVal,
 			        datum: fullDatum,
@@ -3099,18 +3096,17 @@
 			        telefon: tfnVal,
 			        kundpris: kundpris,
 			        utgifter: totalUtgifter,      
-			        expenseItems: currentExpenses, // Spara detaljerad lista
+			        expenseItems: currentExpenses,
 			        vinst: vinst,                 
 			        kommentarer: kommVal,
 			        prio: prioVal,
 			        matarstallning: matarVal
 			    };
 			    
-			    // UI-feedback (Spinner)
 			    const saveBtn = document.getElementById('modalSaveBtn');
 			    const originalButtonText = saveBtn.textContent;
 			    saveBtn.disabled = true;
-			    saveBtn.innerHTML = `<span>Sparar...</span>`; // Förenklad spinner-text
+			    saveBtn.innerHTML = `<span>Sparar...</span>`;
 			
 			    try {
 			        if (jobId) {
@@ -3126,7 +3122,7 @@
 			        showToast(`Fel: ${err.message}`, 'danger');
 			    } finally {
 			        saveBtn.disabled = false;
-			        saveBtn.textContent = originalButtonText; // Återställ text
+			        saveBtn.textContent = originalButtonText; 
 			    }
 			}
             
