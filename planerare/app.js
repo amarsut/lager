@@ -3820,12 +3820,14 @@
                 }, 150);
             });
             
-            quickTimeButtons.addEventListener('click', (e) => {
-                if (e.target.dataset.time) {
-                    e.preventDefault();
-                    modalTid.value = e.target.dataset.time;
-                }
-            });
+			if (quickTimeButtons) {
+			    quickTimeButtons.addEventListener('click', (e) => {
+			        if (e.target.dataset.time) {
+			            e.preventDefault();
+			            modalTid.value = e.target.dataset.time;
+			        }
+			    });
+			}
 
             // NYTT: Kopieringsknappar
             async function copyToClipboard(text, fieldName) {
