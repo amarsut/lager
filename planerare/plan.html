@@ -178,16 +178,29 @@
                 
                 <div id="timelineView">
                     <div class="view-controls" id="view-controls">
-                        <div class="search-wrapper">
-                            <svg class="icon icon-search" viewBox="0 0 24 24"><use href="#icon-search"></use></svg>
-                            
-                            <div class="search-spinner"></div> 
-                            
-                            <input type="search" id="searchBar" placeholder="Sök jobb... (F)">
-                            <span class="search-result-count" id="desktopSearchResultCount"></span>
-                            <button type="button" class="search-clear-btn" id="desktopSearchClear" title="Rensa sökning"></button>
-                        </div>
-                    </div>
+					    <div class="search-wrapper">
+					        <svg class="icon icon-search" viewBox="0 0 24 24"><use href="#icon-search"></use></svg>
+					        <div class="search-spinner"></div> 
+					        <input type="search" id="searchBar" placeholder="Sök jobb... (F)">
+					        <button type="button" class="search-clear-btn" id="desktopSearchClear" title="Rensa"></button>
+					    </div>
+					
+					    <div class="sort-controls">
+					        <div class="select-wrapper">
+					            <select id="sortBy">
+					                <option value="datum">Datum</option>
+					                <option value="kundpris">Pris</option>
+					                <option value="kundnamn">Kund</option>
+					                <option value="status">Status</option>
+					            </select>
+					            <svg class="icon-sm chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+					        </div>
+					
+					        <button id="sortDirectionBtn" class="icon-btn sort-btn" title="Växla ordning">
+					            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"/></svg>
+					        </button>
+					    </div>
+					</div>
 
                     <div class="table-container" id="jobListContainer">
                         </div>
