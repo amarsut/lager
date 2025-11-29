@@ -72,7 +72,10 @@
             // --- Globalt Tillstånd (State) ---
             let allJobs = [];
 			let currentSortField = 'datum'; 
-			let currentSortOrder = 'desc';
+			let currentSortOrder = 'asc';
+			if (sortDirectionBtn) {
+    			sortDirectionBtn.classList.toggle('descending', currentSortOrder === 'desc');
+			}
 			let currentOilStock = 0;
 			let backPressWarned = false;
             let backPressTimer;
