@@ -5696,3 +5696,53 @@ html.privacy-mode-enabled .nav-logo {
 [data-theme="dark"] .accordion-content {
     background-color: #1c1c1e; /* Något mörkare insida */
 }
+
+/* --- MODERN DROPDOWN STYLING --- */
+
+/* Behållare för att kunna lägga pilen ovanpå */
+.select-wrapper-custom {
+    position: relative;
+    width: 100%;
+}
+
+.compact-select {
+    appearance: none; /* Ta bort standard-pilen */
+    -webkit-appearance: none;
+    width: 100%;
+    padding: 0.7rem 1rem;
+    padding-right: 2.5rem; /* Plats för vår egen pil */
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-color);
+    background-color: #f3f4f6;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+/* Hover & Focus */
+.compact-select:hover {
+    background-color: #e5e7eb;
+}
+.compact-select:focus {
+    background-color: #fff;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px var(--primary-light);
+    outline: none;
+}
+
+/* Vår egen pil-ikon */
+.dropdown-arrow {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none; /* Klick går igenom till selecten */
+    color: var(--text-color-light);
+    opacity: 0.7;
+}
+
+/* Status-färger inuti dropdown (fungerar i vissa webbläsare) */
+#statusSelect option[value="bokad"] { color: var(--primary-color); font-weight: bold; }
+#statusSelect option[value="klar"] { color: var(--success-color); font-weight: bold; }
