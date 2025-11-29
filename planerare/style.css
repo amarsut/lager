@@ -5650,3 +5650,7 @@ html.privacy-mode-enabled .nav-logo {
 .detail-job-list .job-profit.positive {    /* Vinst per rad i listan */
     color: var(--text-color) !important;
 }
+
+.stat-card[data-filter="klar"] .stat-card-value {
+    color: var(--text-color) !important;
+}
