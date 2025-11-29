@@ -3915,8 +3915,13 @@
                     showToast('Kunde inte kopiera.', 'danger');
                 }
             }
-            copyKundnamnBtn.addEventListener('click', () => copyToClipboard(modalKundnamn.value, 'Kundnamn'));
-            copyRegnrBtn.addEventListener('click', () => copyToClipboard(modalRegnr.value, 'Reg.nr'));
+            if (copyKundnamnBtn) {
+			    copyKundnamnBtn.addEventListener('click', () => copyToClipboard(modalKundnamn.value, 'Kundnamn'));
+			}
+			
+			if (copyRegnrBtn) {
+			    copyRegnrBtn.addEventListener('click', () => copyToClipboard(modalRegnr.value, 'Reg.nr'));
+			}
 
             copyCarRegnrBtn.addEventListener('click', (e) => {
                 e.stopPropagation(); // Förhindra att klicket går vidare
