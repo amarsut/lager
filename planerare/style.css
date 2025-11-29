@@ -5862,17 +5862,19 @@ html.privacy-mode-enabled .nav-logo {
 
 /* --- MODERN UTGIFTS-HANTERARE --- */
 .expense-input-group {
-    display: flex;
+    display: grid !important; /* Byt till Grid för exakt kontroll */
+    /* 1.5fr = Namnet (lite smalare)
+       1fr   = Priset (bredare än förut)
+       42px  = Knappen (fast bredd) 
+    */
+    grid-template-columns: 1.5fr 1fr 42px; 
     gap: 0.5rem;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
 }
 
 .expense-input-group input {
-    background-color: var(--bg-color);
-    border: 1px solid var(--border-color);
-    padding: 0.6rem;
-    border-radius: 8px;
-    font-size: 0.9rem;
+    width: 100%; /* Fyll sin grid-cell */
+    padding: 0.6rem 0.8rem;
 }
 
 .expense-input-group .cost-input {
@@ -5969,6 +5971,66 @@ html.privacy-mode-enabled .nav-logo {
     fill: currentColor; /* Fyll ikonen */
 }
 
+.profit-dashboard-strip {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    
+    background-color: #f9fafb; /* Mycket ljus grå */
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin-top: 1rem;
+}
+
+.dashboard-item {
+    display: flex;
+    flex-direction: column; /* Stapla Label och Värde */
+    line-height: 1.2;
+}
+
+.dashboard-item .label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: var(--text-color-light);
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.dashboard-item .value {
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+/* Specifikt för Utgifter */
+.dashboard-item.expense .value {
+    color: var(--text-color); /* Neutral färg */
+}
+
+/* Specifikt för Vinst */
+.dashboard-item.profit {
+    text-align: right;
+}
+.dashboard-item.profit .value {
+    color: var(--success-color); /* Grön */
+}
+/* Om vinsten är negativ blir den röd via JS klass */
+.dashboard-item.profit .value.negative {
+    color: var(--danger-color);
+}
+
+/* En liten linje mellan dem */
+.dashboard-divider {
+    width: 1px;
+    height: 24px;
+    background-color: var(--border-color);
+    margin: 0 1rem;
+}
+
+/* Justering för Dark Mode */
+[data-theme="dark"] .profit-dashboard-strip {
+    background-color: rgba(255, 255, 255, 0.05);
+}
 
 
 
