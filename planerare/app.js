@@ -2124,28 +2124,30 @@
 
 			// --- NY FUNKTION: Renderar listan med utgifter i modalen ---
             function renderExpensesList() {
-                expenseListContainer.innerHTML = ''; // Rensa listan
-                
-                if (currentExpenses.length === 0) {
-                    expenseListContainer.innerHTML = `<span style="color: var(--text-color-light); font-style: italic; font-size: 0.9rem;">Inga utgifter tillagda.</span>`;
-                    return;
-                }
-
-                currentExpenses.forEach((item, index) => {
-                    const itemHtml = `
-                        <div class="expense-item">
-                            <span>
-                                <span class="item-name">${item.name}</span>
-                                <span class="item-cost">-${formatCurrency(item.cost)}</span>
-                            </span>
-                            <button type="button" class="delete-expense-btn" data-index="${index}" title="Ta bort utgift">
-                                <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-trash"></use></svg>
-                            </button>
-                        </div>
-                    `;
-                    expenseListContainer.innerHTML += itemHtml;
-                });
-            }
+			    const container = document.getElementById('expenseList');
+			    container.innerHTML = ''; 
+			
+			    if (currentExpenses.length === 0) return;
+			
+			    currentExpenses.forEach((item, index) => {
+			        const tag = document.createElement('div');
+			        tag.className = 'expense-tag';
+			        tag.innerHTML = `
+			            <span class="tag-name">${item.name}</span>
+			            <span class="tag-cost">-${item.cost} kr</span>
+			            <div class="tag-remove" data-index="${index}">✕</div>
+			        `;
+			        
+			        // Ta bort vid klick på krysset
+			        tag.querySelector('.tag-remove').addEventListener('click', (e) => {
+			            currentExpenses.splice(index, 1);
+			            renderExpensesList();
+			            updateLiveProfit();
+			        });
+			        
+			        container.appendChild(tag);
+			    });
+			}
 
             // --- UPPDATERAD FUNKTION: Beräknar vinst & total utgift ---
             function updateLiveProfit() {
