@@ -5003,3 +5003,91 @@ html.privacy-mode-enabled .nav-logo {
     opacity: 1;
 }
 
+/* Container för Sök + Sortering */
+.view-controls {
+    display: flex;
+    gap: 1rem; /* Luft mellan sök och sortering */
+    align-items: center;
+    width: 100%;
+}
+
+/* Anpassa sökfältet så det delar plats */
+.search-wrapper {
+    flex-grow: 1; /* Låt söket ta all ledig plats */
+    /* Behåll dina tidigare snygga stilar för border/shadow här */
+}
+
+/* Sorterings-gruppen */
+.sort-controls {
+    display: flex;
+    gap: 0.5rem;
+    flex-shrink: 0; /* Förhindra att den krymper */
+}
+
+/* Snygg dropdown (Select) */
+.select-wrapper {
+    position: relative;
+    background: #fff;
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    display: flex;
+    align-items: center;
+    transition: all 0.2s ease;
+}
+
+.select-wrapper:hover {
+    border-color: var(--primary-color);
+}
+
+.select-wrapper select {
+    appearance: none;
+    -webkit-appearance: none;
+    background: transparent;
+    border: none;
+    padding: 0 2.5rem 0 1rem; /* Plats för pilen till höger */
+    height: 50px; /* Samma höjd som sökfältet */
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-color);
+    cursor: pointer;
+    outline: none;
+}
+
+/* Vår egen pil-ikon */
+.select-wrapper .chevron {
+    position: absolute;
+    right: 10px;
+    pointer-events: none; /* Klick går igenom till select */
+    color: #9CA3AF;
+    width: 1rem;
+    height: 1rem;
+}
+
+/* Rilktnings-knappen */
+.sort-btn {
+    background: #fff;
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+    width: 50px; /* Kvadratisk */
+    height: 50px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    color: var(--text-color-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sort-btn:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.sort-btn svg {
+    transition: transform 0.3s ease;
+}
+
+/* Klass för att rotera pilen när vi byter håll */
+.sort-btn.descending svg {
+    transform: rotate(180deg);
+}
