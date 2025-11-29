@@ -437,33 +437,39 @@
 			    <div class="economy-section-wrapper">
 				    <label class="section-label-bold">EKONOMI</label>
 				    
-				    <div class="economy-grid-display">
-				        <div class="economy-col">
-				            <label for="kundpris">Kundpris</label>
-				            <input type="number" id="kundpris" value="0" min="0" placeholder="0" class="input-minimalist">
-				        </div>
-				        <div class="economy-col">
-				            <span class="label">Total Utgift</span>
-				            <span class="value" id="liveTotalCost">0 kr</span>
-				        </div>
-				        <div class="economy-col">
-				            <span class="label">Vinst</span>
-				            <span class="value highlight" id="liveProfit">0 kr</span>
-				        </div>
-				    </div>
-				
-				    <label class="section-label-bold" style="margin-top: 1rem;">Specificerade Utgifter</label>
-				    
-				    <div class="expense-input-row">
-				        <input type="text" id="expenseName" placeholder="Lägg till utgift..." class="input-flat">
-				        <input type="number" id="expenseCost" placeholder="Pris" class="input-flat price">
-				        <button type="button" id="addExpenseBtn" class="btn-add-minimal">
-				            <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-plus"></use></svg>
-				        </button>
-				    </div>
-				
-				    <div id="expenseList" class="expense-list-rows"></div>
-				</div>
+				    <div class="economy-pro-wrapper">
+					    <div class="economy-dashboard">
+					        <div class="dash-col">
+					            <label for="kundpris">KUNDPRIS</label>
+					            <div class="input-currency-wrapper">
+					                <input type="number" id="kundpris" value="0" min="0" placeholder="0" class="dash-input">
+					                <span class="currency-suffix">kr</span>
+					            </div>
+					        </div>
+					        <div class="dash-divider"></div>
+					        <div class="dash-col">
+					            <label>UTGIFTER</label>
+					            <div class="dash-value negative" id="liveTotalCost">0 kr</div>
+					        </div>
+					        <div class="dash-divider"></div>
+					        <div class="dash-col">
+					            <label>VINST</label>
+					            <div class="dash-value positive" id="liveProfit">0 kr</div>
+					        </div>
+					    </div>
+					
+					    <div class="expense-manager">
+					        <div class="expense-input-row">
+					            <input type="text" id="expenseName" placeholder="Lägg till utgift (t.ex. Filter)..." class="ex-input name">
+					            <input type="number" id="expenseCost" placeholder="Pris" class="ex-input cost">
+					            <button type="button" id="addExpenseBtn" class="ex-btn-add">
+					                <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-plus"></use></svg>
+					            </button>
+					        </div>
+					        
+					        <div id="expenseList" class="expense-list-container"></div>
+					    </div>
+					</div>
 			
 			    <div class="form-group full-width">
 			        <label for="kommentarer">Arbetsbeskrivning / Notering</label>
