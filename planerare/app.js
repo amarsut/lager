@@ -1840,18 +1840,30 @@
 
             window.addEventListener('popstate', (event) => {
     
+			    // 1. Hämta sökmodalen
 			    const mSearchModal = document.getElementById('mobileSearchModal');
-			    const isSearchVisible = mSearchModal && getComputedStyle(mSearchModal).display !== 'none';
 			    
-			    // HUVUDREGEL: Om sökfönstret syns, OCH vi inte backar "till" sök-läget...
-			    // (Dvs vi backar ut till startsidan)
-			    if (isSearchVisible && (!event.state || event.state.modal !== 'mobileSearch')) {
+			    // 2. Kolla om den faktiskt syns på skärmen just nu
+			    const isSearchVisible = mSearchModal && window.getComputedStyle(mSearchModal).display !== 'none';
+			    
+			    // 3. Kolla om vi är på väg IN i sökläget (då ska vi inte stänga)
+			    const isNavigatingToSearch = event.state && event.state.modal === 'mobileSearch';
+			
+			    // --- HUVUDREGEL FÖR SWIPE/BAKÅT ---
+			    // Om sökrutan syns, MEN vi är inte på väg till den (alltså vi backar bort från den)
+			    if (isSearchVisible && !isNavigatingToSearch) {
 			        
-			        // Kör exakt samma städning som pil-knappen
-			        resetAndCloseSearch();
+			        // Anropa din städ-funktion som rensar allt
+			        if (typeof resetAndCloseSearch === 'function') {
+			            resetAndCloseSearch();
+			        } else {
+			            // Fallback om funktionen inte hittas (säkerhetsåtgärd)
+			            if (mSearchModal) mSearchModal.style.display = 'none';
+			            currentSearchTerm = '';
+			            performSearch();
+			        }
 			        
-			        // Stanna här för att inte krocka med annan logik
-			        return;
+			        return; // VIKTIGT: Stoppa här så ingen annan kod körs!
 			    }
 			    
 			    // Om sökfönstret är synligt när man trycker Bakåt på telefonen...
