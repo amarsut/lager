@@ -2154,31 +2154,27 @@
 			    if (!container) return;
 			    container.innerHTML = ''; 
 			
-			    if (currentExpenses.length === 0) {
-			        container.style.display = 'none';
-			        return;
-			    }
-			    container.style.display = 'flex';
-			
 			    currentExpenses.forEach((item, index) => {
-			        const row = document.createElement('div');
-			        row.className = 'clean-list-row';
+			        const div = document.createElement('div');
+			        div.className = 'expense-item-original';
 			        
-			        row.innerHTML = `
-			            <span class="clean-row-name">${item.name}</span>
+			        div.innerHTML = `
+			            <span class="item-name">${item.name}</span>
 			            <div style="display:flex; align-items:center;">
-			                <span class="clean-row-cost">-${formatCurrency(item.cost)}</span>
-			                <div class="clean-row-remove" title="Ta bort">×</div>
+			                <span class="item-cost">-${formatCurrency(item.cost)}</span>
+			                <button type="button" class="delete-btn" title="Ta bort">
+			                    <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-trash"></use></svg>
+			                </button>
 			            </div>
 			        `;
 			        
-			        row.querySelector('.clean-row-remove').addEventListener('click', (e) => {
+			        div.querySelector('.delete-btn').addEventListener('click', () => {
 			            currentExpenses.splice(index, 1);
 			            renderExpensesList();
 			            updateLiveProfit();
 			        });
 			        
-			        container.appendChild(row);
+			        container.appendChild(div);
 			    });
 			}
 
@@ -2190,21 +2186,17 @@
 			    const totalUtgifter = currentExpenses.reduce((sum, item) => sum + (item.cost || 0), 0);
 			    const vinst = pris - totalUtgifter;
 			    
-			    // Uppdatera de nya fälten
-			    const profitDisplay = document.getElementById('liveProfitDisplay');
-			    const expenseDisplay = document.getElementById('liveExpenseDisplay');
+			    const vinstDiv = document.getElementById('vinstKalkyl');
 			    
-			    if (profitDisplay) {
-			        profitDisplay.textContent = formatCurrency(vinst);
-			        if (vinst < 0) {
-			            profitDisplay.style.color = "var(--danger-color)";
-			        } else {
-			            profitDisplay.style.color = "var(--success-color)";
+			    if (vinstDiv) {
+			        // Skapa HTML-strängen precis som på bilden
+			        let html = `Vinst: <span style="color:${vinst >= 0 ? 'var(--success-color)' : 'var(--danger-color)'}">${formatCurrency(vinst)}</span>`;
+			        
+			        if (totalUtgifter > 0) {
+			            html += ` <span class="expense-summary">(Utgifter: ${formatCurrency(totalUtgifter)})</span>`;
 			        }
-			    }
-			    
-			    if (expenseDisplay) {
-			        expenseDisplay.textContent = totalUtgifter > 0 ? `(${formatCurrency(totalUtgifter)} utgifter)` : '';
+			        
+			        vinstDiv.innerHTML = html;
 			    }
 			}
 
