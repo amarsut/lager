@@ -110,6 +110,23 @@
         		sortDirectionBtn.classList.toggle('descending', currentSortOrder === 'desc');
     		}
 
+			// Lägg i DOMContentLoaded
+			const mInput = document.getElementById('mobileSearchBar');
+			if (mInput) {
+			    mInput.addEventListener('input', debounce(performSearch, 300));
+			}
+			
+			// Koppla "Avbryt"-knappen på mobilen
+			const mClose = document.getElementById('mobileSearchCloseBtn');
+			if (mClose) {
+			    mClose.addEventListener('click', () => {
+			        document.getElementById('mobileSearchModal').style.display = 'none';
+			        // Nollställ sökning när man stänger
+			        if(mInput) mInput.value = '';
+			        performSearch(); // Återställ listan
+			    });
+			}
+
 			let isPrivacyModeEnabled = localStorage.getItem('privacyMode') === 'true';
             const appContainer = document.querySelector('.app-container');
             const toast = document.getElementById('toastNotification');
@@ -2991,50 +3008,55 @@
 
             // --- Sök-hanterare (Med rensa-knappar) ---
 			function performSearch() {
-			    // 1. Hämta sökterm
-			    const desktopQuery = searchBar ? searchBar.value : '';
-			    const mobileQuery = mobileSearchBar ? mobileSearchBar.value : '';
-			    currentSearchTerm = (desktopQuery.length > mobileQuery.length) ? desktopQuery : mobileQuery;
-			
-			    // 2. Visa/Dölj rensa-knappar (Samma som förut)
-			    if (desktopSearchClear) desktopSearchClear.style.display = desktopQuery.length > 0 ? 'flex' : 'none';
-			    if (mobileSearchClear) mobileSearchClear.style.display = mobileQuery.length > 0 ? 'flex' : 'none';
-			
-			    // 3. Om vi är i MOBIL-MODALEN: Rendera resultaten DÄR
-			    const mobileResultsContainer = document.getElementById('mobileSearchResults');
+			    const desktopInput = document.getElementById('searchBar');
+			    const mobileInput = document.getElementById('mobileSearchBar');
 			    
-			    // Kolla om mobil-sökmodalen är öppen
-			    if (mobileResultsContainer && document.getElementById('mobileSearchModal').style.display !== 'none') {
+			    // Hämta värde (om elementet finns)
+			    const desktopVal = desktopInput ? desktopInput.value : '';
+			    const mobileVal = mobileInput ? mobileInput.value : '';
+			    
+			    // Använd det värde som är ifyllt
+			    currentSearchTerm = desktopVal || mobileVal;
+			
+			    // Visa/Dölj rensa-knappar
+			    const dClear = document.getElementById('desktopSearchClear');
+			    const mClear = document.getElementById('mobileSearchClear');
+			    if (dClear) dClear.style.display = desktopVal ? 'flex' : 'none';
+			    if (mClear) mClear.style.display = mobileVal ? 'flex' : 'none';
+			
+			    // KOLLA OM MOBIL-SÖK ÄR ÖPPEN
+			    const mobileModal = document.getElementById('mobileSearchModal');
+			    const mobileResults = document.getElementById('mobileSearchResults');
+			    
+			    // Om mobil-modalen är synlig: Rendera där!
+			    if (mobileModal && getComputedStyle(mobileModal).display !== 'none' && mobileResults) {
 			        
-			        let jobsToSearch = allJobs.filter(job => !job.deleted);
+			        let jobs = allJobs.filter(job => !job.deleted);
 			        
-			        // Filtrera (Samma logik som förut)
 			        if (currentSearchTerm) {
 			            const term = currentSearchTerm.toLowerCase();
-			            /* ... (Din befintliga sök-logik här) ... */
-			            jobsToSearch = jobsToSearch.filter(job => {
-			                 /* Kopiera in din filter-logik här eller bryt ut till en hjälpfunktion */
-			                 // För enkelhetens skull, här är en kortversion:
-			                 return JSON.stringify(job).toLowerCase().includes(term); 
-			            });
+			            // Enkel söklogik
+			            jobs = jobs.filter(job => 
+			                (job.kundnamn && job.kundnamn.toLowerCase().includes(term)) ||
+			                (job.regnr && job.regnr.toLowerCase().includes(term)) ||
+			                (job.kommentarer && job.kommentarer.toLowerCase().includes(term))
+			            );
 			        }
-			
-			        // Sortera (Baserat på dina mobil-chips)
-			        /* ... (Använd din befintliga sorteringslogik här) ... */
 			        
-			        // Rendera i mobil-rutan
-			        if (jobsToSearch.length === 0) {
-			            mobileResultsContainer.innerHTML = '<div class="empty-search-placeholder"><p>Inga träffar.</p></div>';
+			        // Sortera mobilt (använd globala variabler)
+			        // ... (här kan din sorteringskod ligga) ...
+			
+			        if (jobs.length === 0) {
+			            mobileResults.innerHTML = '<p style="text-align:center; color:#999; margin-top:2rem;">Inga träffar.</p>';
 			        } else {
-			            // Använd createJobCard för att skapa HTML
-			            mobileResultsContainer.innerHTML = jobsToSearch.map(job => createJobCard(job)).join('');
+			            // Använd createJobCard för att bygga HTML
+			            mobileResults.innerHTML = jobs.map(job => createJobCard(job)).join('');
 			        }
-			        return; // Stanna här, rör inte bakgrunden
+			        return; // VIKTIGT: Avsluta här så vi inte ritar om desktop-vyn i onödan
 			    }
 			
-			    // 4. Om vi är på DESKTOP: Kör din vanliga renderTimeline()
+			    // Annars: Rendera Desktop (Tidslinjen)
 			    renderTimeline();
-			    // ...
 			}
 
             searchBar.addEventListener('input', debounce(performSearch, 300));
