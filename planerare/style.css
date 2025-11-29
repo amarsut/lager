@@ -5499,8 +5499,63 @@ html.privacy-mode-enabled .nav-logo {
     font-size: 0.9rem !important;
 }
 
+/*Bekräftelse-modal*/
 
+/* --- Snygg Bekräftelse-ruta --- */
 
+.confirm-box {
+    max-width: 380px !important; /* Gör den smal */
+    width: 90%;
+    text-align: center;
+    padding: 2rem 1.5rem 1.5rem 1.5rem !important;
+    border-radius: 20px !important;
+    align-items: center;
+    gap: 0.5rem;
+    height: auto !important; /* Låt den anpassa höjden */
+    max-height: auto !important;
+}
+
+.confirm-icon-wrapper {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.5rem;
+}
+
+/* Varnings-utseende (Röd) */
+.confirm-box.danger .confirm-icon-wrapper {
+    background-color: rgba(255, 69, 58, 0.1);
+    color: var(--danger-color);
+}
+.confirm-box.danger #confirmYesBtn {
+    background-color: var(--danger-color);
+    color: white;
+}
+
+/* Success-utseende (Grön/Blå) */
+.confirm-box.success .confirm-icon-wrapper {
+    background-color: rgba(48, 209, 88, 0.1);
+    color: var(--success-color);
+}
+.confirm-box.success #confirmYesBtn {
+    background-color: var(--success-color);
+}
+
+.confirm-box h3 { margin: 0; font-size: 1.2rem; }
+.confirm-box p { color: var(--text-color-light); margin: 0 0 1rem 0; font-size: 0.95rem; }
+
+.confirm-actions {
+    width: 100%;
+    justify-content: center !important; /* Centrera knapparna */
+    border-top: none !important; /* Ta bort linjen */
+    padding: 0 !important;
+    background: transparent !important;
+    gap: 1rem;
+}
+.confirm-actions .button { flex: 1; }
 
 
 
