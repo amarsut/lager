@@ -294,26 +294,36 @@
 	</nav>
     
     <div id="mobileSearchModal" class="modal-backdrop-mobile" data-modal-id="mobileSearchModal">
-        <div class="search-modal-content" style="flex-direction: column; align-items: stretch; padding-top: 1rem;">
-		    <div class="search-wrapper" style="border-bottom: 1px solid #eee; margin-bottom: 1rem;">
-		        <svg class="icon" viewBox="0 0 24 24"><use href="#icon-search"></use></svg>
-		        <input type="search" id="mobileSearchBar" placeholder="Sök jobb, kund, bil..." style="font-size: 1.1rem;">
-		        <button type="button" class="search-clear-btn" id="mobileSearchClear" title="Rensa"></button>
-		    </div>
-		
-		    <div style="padding: 0 0.5rem;">
-		        <label style="font-size: 0.75rem; color: #9CA3AF; font-weight: 700; text-transform: uppercase; margin-bottom: 0.5rem; display: block;">Sortera efter</label>
-		        <div class="mobile-sort-chips" id="mobileSortOptions">
-		            <button type="button" class="sort-chip active" data-sort="datum">Datum</button>
-		            <button type="button" class="sort-chip" data-sort="kundpris">Pris</button>
-		            <button type="button" class="sort-chip" data-sort="kundnamn">Kund</button>
-		            <button type="button" class="sort-chip" data-sort="status">Status</button>
-		        </div>
-		    </div>
-		
-		    <button id="mobileSearchCloseBtn" class="button secondary" style="margin-top: auto;">Klar</button>
-		</div>
-    </div>
+	    <div class="search-modal-content mobile-search-layout">
+	        
+	        <div class="mobile-search-header">
+	            <div class="search-wrapper">
+	                <svg class="icon" viewBox="0 0 24 24"><use href="#icon-search"></use></svg>
+	                <input type="search" id="mobileSearchBar" placeholder="Sök jobb, kund, bil..." enterkeyhint="search">
+	                <button type="button" class="search-clear-btn" id="mobileSearchClear" title="Rensa"></button>
+	            </div>
+	            <button id="mobileSearchCloseBtn" class="button secondary compact-btn">Avbryt</button>
+	        </div>
+	
+	        <div class="mobile-filter-bar">
+	            <label>Sortera:</label>
+	            <div class="mobile-sort-chips" id="mobileSortOptions">
+	                <button type="button" class="sort-chip active" data-sort="datum">Datum</button>
+	                <button type="button" class="sort-chip" data-sort="kundpris">Pris</button>
+	                <button type="button" class="sort-chip" data-sort="kundnamn">Kund</button>
+	                <button type="button" class="sort-chip" data-sort="status">Status</button>
+	            </div>
+	        </div>
+	
+	        <div id="mobileSearchResults" class="mobile-results-container">
+	            <div class="empty-search-placeholder">
+	                <svg class="icon-lg" viewBox="0 0 24 24"><use href="#icon-search"></use></svg>
+	                <p>Börja skriv för att söka...</p>
+	            </div>
+	        </div>
+	
+	    </div>
+	</div>
 
 
     <button id="fabAddJob" title="Lägg till nytt jobb (N)">
