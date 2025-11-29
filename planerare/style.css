@@ -5948,3 +5948,30 @@ html.privacy-mode-enabled .nav-logo {
     color: var(--text-color-light);
     font-weight: 500;
 }
+
+/* --- NY HEADER FÖR UTGIFTER & VINST --- */
+.expense-header {
+    display: flex;
+    justify-content: space-between; /* Rubrik vänster, Vinst höger */
+    align-items: center; /* Centrera vertikalt */
+    margin-bottom: 0.5rem;
+}
+
+/* Se till att labeln inte har någon marginal neråt som stör */
+.expense-header label {
+    margin-bottom: 0;
+}
+
+/* Styla vinst-texten så den matchar rubriken i storlek */
+.profit-summary-text {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+/* Gör parentesen (Utgifter: ...) lite gråare */
+.profit-summary-text .expense-part {
+    color: var(--text-color-light);
+    font-weight: 500;
+    margin-left: 4px;
+}
