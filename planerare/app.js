@@ -38,15 +38,14 @@
         const debounce = (func, timeout = 300) => {
 		    let timer;
 		    return (...args) => {
-		        // Tänd spinnern direkt när man trycker
-		        const wrapper = document.querySelector('.search-wrapper');
-		        if(wrapper) wrapper.classList.add('is-loading');
+		        // VISA spinner
+		        const spinner = document.getElementById('searchSpinner');
+		        if(spinner) spinner.style.display = 'block';
 		        
 		        clearTimeout(timer);
 		        timer = setTimeout(() => { 
 		            func.apply(this, args); 
-		            // Släck spinnern när sökningen körs
-		            if(wrapper) wrapper.classList.remove('is-loading');
+		            // Spinnern döljs inuti performSearch()
 		        }, timeout);
 		    };
 		};
@@ -1745,6 +1744,25 @@
             window.addEventListener('popstate', (event) => {
                 clearTimeout(backPressTimer); 
 
+				const mSearchModal = document.getElementById('mobileSearchModal');
+			    if (mSearchModal && mSearchModal.style.display === 'flex') {
+			        mSearchModal.style.display = 'none';
+			        return; // Stanna här, stäng inte appen
+			    }
+
+				const mClearBtn = document.getElementById('mobileSearchClear');
+				if (mClearBtn && mInput) {
+				    mClearBtn.addEventListener('click', (e) => {
+				        e.preventDefault();
+				        e.stopPropagation(); // Stoppa klicket
+				        
+				        mInput.value = ''; // Töm texten
+				        mInput.focus();    // Behåll fokus i rutan
+				        
+				        performSearch();   // Kör sökningen (som nu visar "Placeholder" pga koden i Steg A)
+				    });
+				}
+
 				if (isNavigatingBack) {
 			        isNavigatingBack = false; // Återställ flaggan
 			        backPressWarned = false; // Se till att varningen rensas
@@ -3041,55 +3059,62 @@
 			function performSearch() {
 			    const desktopInput = document.getElementById('searchBar');
 			    const mobileInput = document.getElementById('mobileSearchBar');
+			    const wrapper = document.querySelector('.search-wrapper'); // För spinner
 			    
-			    // Hämta värde (om elementet finns)
+			    // Hämta värde
 			    const desktopVal = desktopInput ? desktopInput.value : '';
 			    const mobileVal = mobileInput ? mobileInput.value : '';
-
-				document.querySelector('.search-wrapper').classList.add('is-loading');
-				document.querySelector('.search-wrapper').classList.remove('is-loading');
-			    
-			    // Använd det värde som är ifyllt
 			    currentSearchTerm = desktopVal || mobileVal;
 			
 			    // Visa/Dölj rensa-knappar
-			    const dClear = document.getElementById('desktopSearchClear');
-			    const mClear = document.getElementById('mobileSearchClear');
-			    if (dClear) dClear.style.display = desktopVal ? 'flex' : 'none';
-			    if (mClear) mClear.style.display = mobileVal ? 'flex' : 'none';
+			    if (document.getElementById('desktopSearchClear')) {
+			        document.getElementById('desktopSearchClear').style.display = desktopVal ? 'flex' : 'none';
+			    }
+			    if (document.getElementById('mobileSearchClear')) {
+			        document.getElementById('mobileSearchClear').style.display = mobileVal ? 'flex' : 'none';
+			    }
 			
-			    // KOLLA OM MOBIL-SÖK ÄR ÖPPEN
+			    // --- PUNKT 5: STOPPA SPINNERN ---
+			    // När sökningen körs (här), ta bort ladd-klassen
+			    if (wrapper) wrapper.classList.remove('is-loading'); 
+			    const spinner = document.getElementById('searchSpinner');
+			    if (spinner) spinner.style.display = 'none'; // Dubbel säkerhet
+			
+			    // --- MOBIL LOGIK ---
 			    const mobileModal = document.getElementById('mobileSearchModal');
 			    const mobileResults = document.getElementById('mobileSearchResults');
 			    
-			    // Om mobil-modalen är synlig: Rendera där!
 			    if (mobileModal && getComputedStyle(mobileModal).display !== 'none' && mobileResults) {
 			        
-			        let jobs = allJobs.filter(job => !job.deleted);
-			        
-			        if (currentSearchTerm) {
-			            const term = currentSearchTerm.toLowerCase();
-			            // Enkel söklogik
-			            jobs = jobs.filter(job => 
-			                (job.kundnamn && job.kundnamn.toLowerCase().includes(term)) ||
-			                (job.regnr && job.regnr.toLowerCase().includes(term)) ||
-			                (job.kommentarer && job.kommentarer.toLowerCase().includes(term))
-			            );
+			        // PUNKT 3: Om sökfältet är tomt, visa "Placeholder" istället för alla jobb
+			        if (!currentSearchTerm.trim()) {
+			            mobileResults.innerHTML = `
+			                <div class="empty-search-placeholder" style="text-align: center; padding-top: 3rem; color: #9ca3af;">
+			                    <svg class="icon-lg" viewBox="0 0 24 24"><use href="#icon-search"></use></svg>
+			                    <p>Sök efter kunder, reg.nr eller info...</p>
+			                </div>`;
+			            return;
 			        }
+			
+			        // Annars, sök...
+			        let jobs = allJobs.filter(job => !job.deleted);
+			        const term = currentSearchTerm.toLowerCase();
 			        
-			        // Sortera mobilt (använd globala variabler)
-			        // ... (här kan din sorteringskod ligga) ...
+			        jobs = jobs.filter(job => 
+			            (job.kundnamn && job.kundnamn.toLowerCase().includes(term)) ||
+			            (job.regnr && job.regnr.toLowerCase().includes(term)) ||
+			            (job.kommentarer && job.kommentarer.toLowerCase().includes(term))
+			        );
 			
 			        if (jobs.length === 0) {
 			            mobileResults.innerHTML = '<p style="text-align:center; color:#999; margin-top:2rem;">Inga träffar.</p>';
 			        } else {
-			            // Använd createJobCard för att bygga HTML
 			            mobileResults.innerHTML = jobs.map(job => createJobCard(job)).join('');
 			        }
-			        return; // VIKTIGT: Avsluta här så vi inte ritar om desktop-vyn i onödan
+			        return; 
 			    }
 			
-			    // Annars: Rendera Desktop (Tidslinjen)
+			    // DESKTOP
 			    renderTimeline();
 			}
 
@@ -3793,14 +3818,15 @@
 			
 			// 2. Logik för att ÖPPNA (Knappen i menyn)
 			if (mNavOpenBtn && mSearchModal) {
-			    // Ta bort eventuella gamla lyssnare genom att klona knappen (valfritt trick, men säkrast är att bara lägga till ny lyssnare om du raderat den gamla koden ovan)
 			    mNavOpenBtn.addEventListener('click', (e) => {
 			        e.preventDefault();
 			        
-			        // Tvinga fram modalen med flex (för att layouten ska funka)
+			        // --- PUNKT 2: LÄGG TILL I HISTORIKEN ---
+			        // Detta gör att "Bakåt" på telefonen har något att gå tillbaka till
+			        window.history.pushState({ modal: 'mobileSearch' }, 'Sök', '#search');
+			        
 			        mSearchModal.style.display = 'flex';
 			        
-			        // Fokusera i rutan så tangentbordet åker upp
 			        setTimeout(() => {
 			            if (mInput) mInput.focus();
 			        }, 150); 
