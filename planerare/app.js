@@ -3204,10 +3204,10 @@
 			
 			    // Visa/Dölj rensa-knappar
 			    if (document.getElementById('desktopSearchClear')) {
-			        document.getElementById('desktopSearchClear').style.display = desktopVal ? 'flex' : 'none';
+			        document.getElementById('desktopSearchClear').style.cssText = desktopVal ? 'display: flex !important' : 'display: none !important';
 			    }
 			    if (document.getElementById('mobileSearchClear')) {
-			        document.getElementById('mobileSearchClear').style.display = mobileVal ? 'flex' : 'none';
+			        document.getElementById('mobileSearchClear').style.cssText = mobileVal ? 'display: flex !important' : 'display: none !important';
 			    }
 			
 			    if (wrapper) wrapper.classList.remove('is-loading'); 
@@ -4322,12 +4322,12 @@
 	                openSafe(() => openJobSummaryModal(job));
 	            }
 	        }
-			if (document.getElementById('desktopSearchClear')) {
-		        document.getElementById('desktopSearchClear').style.cssText = desktopVal ? 'display: flex !important' : 'display: none !important';
+			if (searchBar && desktopSearchClear) {
+			    desktopSearchClear.style.cssText = searchBar.value.trim() ? 'display: flex !important' : 'display: none !important';
 			}
-		   if (document.getElementById('mobileSearchClear')) {
-		        document.getElementById('mobileSearchClear').style.cssText = mobileVal ? 'display: flex !important' : 'display: none !important';
-		    }
+			if (mobileSearchBar && mobileSearchClear) {
+			    mobileSearchClear.style.cssText = mobileSearchBar.value.trim() ? 'display: flex !important' : 'display: none !important';
+			}
 	    });
 	}
 
