@@ -3811,12 +3811,21 @@
 			    mHeaderBackBtn.addEventListener('click', (e) => {
 			        e.preventDefault();
 			        
-			        // Dölj modalen helt
+			        // 1. Dölj modalen
 			        mSearchModal.style.display = 'none';
 			        
-			        // Valfritt: Töm sökfältet när man går tillbaka
-			        // if (mInput) mInput.value = '';
-			        // performSearch(); // Nollställ listan
+			        // 2. Töm sökfältet helt
+			        if (mInput) mInput.value = '';
+			        
+			        // 3. NOLLSTÄLL SÖKNINGEN GLOBAL
+			        currentSearchTerm = ''; // Viktigt!
+			        
+			        // 4. Dölj "Rensa"-knappen på hemskärmen (den heter clearDayFilterBtn eller liknande i din HTML)
+			        const globalClearBtn = document.getElementById('clearDayFilterBtn'); // Eller 'desktopSearchClear' om den syns
+			        if (globalClearBtn) globalClearBtn.style.display = 'none';
+			        
+			        // 5. Uppdatera listan så alla jobb syns igen
+			        performSearch(); 
 			    });
 			}
             
@@ -4069,4 +4078,25 @@
     }
     /* --- FELSÄKER MOBIL-SÖK SLUT --- */
 
+	const mobileResultList = document.getElementById('mobileSearchResults');
+
+    if (mobileResultList) {
+        mobileResultList.addEventListener('click', (e) => {
+            // Hitta kortet man klickade på
+            const card = e.target.closest('.mobile-job-card');
+            if (!card) return;
+
+            const jobId = card.dataset.id;
+            const job = findJob(jobId);
+
+            if (job) {
+                // Öppna jobbet (Översikts-modalen)
+                openJobSummaryModal(job);
+                
+                // Valfritt: Stäng tangentbordet om det är öppet
+                if (document.activeElement) document.activeElement.blur();
+            }
         });
+    }
+
+});
