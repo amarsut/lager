@@ -4998,7 +4998,7 @@ html.privacy-mode-enabled .nav-logo {
     height: 100%;
     outline: none;
     font-size: 1rem;
-    padding-left: 3rem !important; /* Mer luft till vänster */
+    padding-left: 1rem !important; /* Mer luft till vänster */
     padding-right: 2.5rem !important; /* Plats för krysset */
 }
 
@@ -5301,3 +5301,4 @@ html.privacy-mode-enabled .nav-logo {
     text-transform: uppercase;
     letter-spacing: 0.05em;
 }
+
