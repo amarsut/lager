@@ -938,6 +938,36 @@
 	    </div>
 	</div>
 
+	<div id="mobileSearchModal" class="modal-backdrop-mobile" style="display: none;">
+		    <div class="mobile-search-layout">
+		        
+		        <div class="mobile-search-header">
+		            <div class="search-wrapper mobile-wrapper">
+		                <svg class="icon" viewBox="0 0 24 24"><use href="#icon-search"></use></svg>
+		                <input type="search" id="mobileSearchBar" placeholder="Sök..." enterkeyhint="search">
+		                <button type="button" class="search-clear-btn" id="mobileSearchClear"></button>
+		            </div>
+		            <button id="mobileSearchCloseBtn" class="button link-btn" style="border:none; padding-right:0;">Avbryt</button>
+		        </div>
+		
+		        <div class="mobile-filter-bar">
+		            <div class="mobile-sort-chips" id="mobileSortOptions">
+		                <button type="button" class="sort-chip active" data-sort="datum">Datum</button>
+		                <button type="button" class="sort-chip" data-sort="kundpris">Pris</button>
+		                <button type="button" class="sort-chip" data-sort="kundnamn">Kund</button>
+		                <button type="button" class="sort-chip" data-sort="status">Status</button>
+		            </div>
+		        </div>
+		
+		        <div id="mobileSearchResults" class="mobile-results-container">
+		            <div class="empty-search-placeholder">
+		                <p style="text-align: center; color: #9ca3af; margin-top: 2rem;">Skriv för att söka...</p>
+		            </div>
+		        </div>
+		
+		    </div>
+		</div>
+
 	<script>
 		// --- Firebase Config (Oförändrad) ---
         const firebaseConfig = {
@@ -987,36 +1017,6 @@
             console.error("Kunde inte initiera Firebase.", e);
             alert("Kunde inte initiera Firebase.");
         }
-
-		<div id="mobileSearchModal" class="modal-backdrop-mobile" style="display: none;">
-		    <div class="mobile-search-layout">
-		        
-		        <div class="mobile-search-header">
-		            <div class="search-wrapper mobile-wrapper">
-		                <svg class="icon" viewBox="0 0 24 24"><use href="#icon-search"></use></svg>
-		                <input type="search" id="mobileSearchBar" placeholder="Sök..." enterkeyhint="search">
-		                <button type="button" class="search-clear-btn" id="mobileSearchClear"></button>
-		            </div>
-		            <button id="mobileSearchCloseBtn" class="button link-btn" style="border:none; padding-right:0;">Avbryt</button>
-		        </div>
-		
-		        <div class="mobile-filter-bar">
-		            <div class="mobile-sort-chips" id="mobileSortOptions">
-		                <button type="button" class="sort-chip active" data-sort="datum">Datum</button>
-		                <button type="button" class="sort-chip" data-sort="kundpris">Pris</button>
-		                <button type="button" class="sort-chip" data-sort="kundnamn">Kund</button>
-		                <button type="button" class="sort-chip" data-sort="status">Status</button>
-		            </div>
-		        </div>
-		
-		        <div id="mobileSearchResults" class="mobile-results-container">
-		            <div class="empty-search-placeholder">
-		                <p style="text-align: center; color: #9ca3af; margin-top: 2rem;">Skriv för att söka...</p>
-		            </div>
-		        </div>
-		
-		    </div>
-		</div>
 	</script>
 
 	<script src="app.js" defer></script>
