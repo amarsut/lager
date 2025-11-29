@@ -5865,6 +5865,10 @@ html.privacy-mode-enabled .nav-logo {
 /* ========================================= */
 
 .economy-clean-wrapper {
+    /* --- HÄR ÄR FIXEN --- */
+    grid-column: 1 / -1; /* Tvingar den att ta upp hela bredden (båda kolumnerna) */
+    /* -------------------- */
+    
     margin-bottom: 1.5rem;
     width: 100%;
 }
@@ -6028,3 +6032,4 @@ html.privacy-mode-enabled .nav-logo {
     display: flex;
 }
 .clean-row-remove:hover { color: var(--danger-color); }
+
