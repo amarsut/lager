@@ -441,33 +441,28 @@
 			        </div>
 			    </div>
 			
-			    <div class="economy-clean-wrapper">
-    
-				    <div class="price-profit-grid">
-				        <div class="grid-item">
-				            <label for="kundpris">KUNDPRIS</label>
-				            <input type="number" id="kundpris" value="0" min="0" placeholder="0" class="clean-price-input">
-				        </div>
-				        
-				        <div class="grid-item profit-item">
-				            <div class="profit-header">
-				                <span class="label">BERÄKNAD VINST</span>
-				                <span class="sub-label" id="liveExpenseDisplay">(0 kr utgifter)</span>
-				            </div>
-				            <span class="profit-value" id="liveProfitDisplay">0 kr</span>
-				        </div>
-				    </div>
+			    <div class="form-group full-width">
+				    <label for="kundpris">Kundpris (kr)</label>
+				    <input type="number" id="kundpris" value="0" min="0" required class="standard-input">
+				</div>
 				
-				    <div class="expense-input-grid">
-				        <input type="text" id="expenseName" placeholder="Lägg till utgift..." class="clean-input name">
-				        <input type="number" id="expenseCost" placeholder="Kostnad" class="clean-input cost">
-				        <button type="button" id="addExpenseBtn" class="clean-add-btn">
+				<div class="form-group full-width money-related" id="expense-tracker">
+				    <label>Specificerade Utgifter</label>
+				    
+				    <div class="expense-add-form-original">
+				        <input type="text" id="expenseName" placeholder="Utgiftens namn (t.ex. Oljefilter)">
+				        <input type="number" id="expenseCost" placeholder="Kostnad">
+				        <button type="button" class="button secondary" id="addExpenseBtn">
 				            <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-plus"></use></svg>
+				            <span>Lägg till</span>
 				        </button>
 				    </div>
+				    
+				    <div id="expenseList" class="expense-list-original"></div>
+				</div>
 				
-				    <div id="expenseList" class="expense-clean-list"></div>
-				
+				<div class="form-group-profit money-related">
+				    <span id="vinstKalkyl">Vinst: 0 kr</span>
 				</div>
 			
 			    <div class="form-group full-width">
