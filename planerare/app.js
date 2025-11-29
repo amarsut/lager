@@ -38,17 +38,11 @@
         const debounce = (func, timeout = 300) => {
 		    let timer;
 		    return (...args) => {
-		        // VISA spinner
-		        const spinner = document.getElementById('searchSpinner');
-		        if(spinner) spinner.style.display = 'block';
-		        
 		        clearTimeout(timer);
-		        timer = setTimeout(() => { 
-		            func.apply(this, args); 
-		            // Spinnern döljs inuti performSearch()
-		        }, timeout);
+		        timer = setTimeout(() => { func.apply(this, args); }, timeout);
 		    };
 		};
+
         function highlightSearchTerm(text, term) {
             if (!term) return text;
             const safeText = String(text).replace(/</g, '&lt;').replace(/>/g, '&gt;');
