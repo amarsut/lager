@@ -5861,158 +5861,177 @@ html.privacy-mode-enabled .nav-logo {
 }
 
 /* ========================================= */
-/* EKONOMI & UTGIFTER (JOBBÖVERSIKT-STIL)    */
+/* EKONOMI PRO (STÄDAD & KOMPAKT)            */
 /* ========================================= */
 
-.economy-section-wrapper {
+.economy-pro-wrapper {
     margin-bottom: 1.5rem;
     width: 100%;
 }
 
-.section-label-bold {
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: #9CA3AF;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    display: block;
-    margin-bottom: 0.5rem;
-}
-
-/* --- 1. Tre-kolumns Grid --- */
-.economy-grid-display {
+/* --- 1. DASHBOARDEN (Pris, Utgift, Vinst) --- */
+.economy-dashboard {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 1rem;
+    grid-template-columns: 1fr auto 1fr auto 1fr; /* Kolumn | Linje | Kolumn | Linje | Kolumn */
+    align-items: center;
+    background-color: #F8F9FA;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1rem;
     margin-bottom: 1rem;
 }
 
-.economy-col {
+.dash-col {
     display: flex;
     flex-direction: column;
-}
-
-/* Etiketter (Kundpris, Total Utgift, Vinst) */
-.economy-col label,
-.economy-col .label {
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--text-color-light);
-    margin-bottom: 0.25rem;
-}
-
-/* Värden (Siffrorna) */
-.economy-col .value {
-    font-size: 1.25rem;
-    font-weight: 800;
-    color: var(--text-color);
-    line-height: 1.2;
-}
-.economy-col .value.highlight {
-    color: var(--primary-color); /* Blå vinst som standard */
-}
-
-/* Input-fält som ser ut som text (Kundpris) */
-.input-minimalist {
-    font-size: 1.25rem !important;
-    font-weight: 800 !important;
-    color: var(--text-color) !important;
-    padding: 0 !important;
-    border: none !important;
-    background: transparent !important;
-    width: 100%;
-    margin: 0 !important;
-    border-bottom: 1px dashed var(--border-color) !important; /* Diskret linje */
-    border-radius: 0 !important;
-}
-.input-minimalist:focus {
-    box-shadow: none !important;
-    border-bottom-color: var(--primary-color) !important;
-}
-
-/* --- 2. Utgiftsinmatning --- */
-.expense-input-row {
-    display: flex;
-    gap: 0.5rem;
-    margin-bottom: 0.5rem;
-    background-color: var(--bg-color);
-    padding: 0.25rem;
-    border-radius: 8px;
-    border: 1px solid var(--border-color);
-}
-
-.input-flat {
-    border: none !important;
-    background: transparent !important;
-    font-size: 0.9rem !important;
-    padding: 0.5rem !important;
-    flex-grow: 1;
-}
-.input-flat:focus { box-shadow: none !important; }
-
-.input-flat.price {
-    width: 80px;
-    flex-grow: 0;
-    text-align: right;
-    font-weight: 600;
-}
-
-.btn-add-minimal {
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
-    border-radius: 6px;
-    width: 36px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
     justify-content: center;
 }
 
-/* --- 3. Utgiftslistan (Rader som på bilden) --- */
-.expense-list-rows {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+.dash-col label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #9CA3AF; /* Ljusgrå text */
+    margin-bottom: 4px;
+    letter-spacing: 0.05em;
 }
 
-.expense-row-item {
+/* Inmatning för Kundpris */
+.input-currency-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.dash-input {
+    border: none;
+    background: transparent;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-color);
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    outline: none;
+    border-bottom: 2px solid transparent; /* Osynlig linje */
+    transition: border-color 0.2s;
+}
+.dash-input:focus {
+    border-bottom-color: var(--primary-color);
+}
+.dash-input::placeholder { color: #D1D5DB; }
+.currency-suffix {
+    font-size: 0.9rem;
+    color: #9CA3AF;
+    font-weight: 500;
+    margin-left: 4px;
+}
+
+/* Read-only värden (Utgift & Vinst) */
+.dash-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+.dash-value.negative { color: var(--text-color); } /* Neutral färg för utgift */
+.dash-value.positive { color: var(--success-color); } /* Grön för vinst */
+
+/* Avdelare (Vertikala streck) */
+.dash-divider {
+    width: 1px;
+    height: 30px;
+    background-color: #E5E7EB;
+    margin: 0 1rem;
+}
+
+/* --- 2. UTGIFTS-INMATNING --- */
+.expense-manager {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.expense-input-row {
+    display: flex;
+    gap: 0.75rem;
+    width: 100%;
+}
+
+.ex-input {
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.6rem 0.8rem;
+    font-size: 0.9rem;
+    outline: none;
+    transition: all 0.2s ease;
+}
+.ex-input:focus {
+    border-color: var(--primary-color);
+    background-color: #fff;
+}
+
+.ex-input.name {
+    flex-grow: 1; /* Tar all plats */
+}
+.ex-input.cost {
+    width: 80px; /* Fast bredd */
+    text-align: right;
+}
+
+.ex-btn-add {
+    width: 42px;
+    flex-shrink: 0;
+    border-radius: 8px;
+    background-color: var(--primary-light);
+    color: var(--primary-color);
+    border: 1px solid var(--primary-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+.ex-btn-add:hover {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+/* --- 3. UTGIFTS-LISTA --- */
+.expense-list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1px; /* Tunn linje effekt */
+    background-color: var(--border-color); /* Ger linjefärg mellan rader */
+    border-radius: 8px;
+    overflow: hidden; /* För runda hörn */
+    border: 1px solid var(--border-color);
+    
+    /* Göm om tom */
+    &:empty { display: none; }
+}
+
+.expense-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: #F3F4F6; /* Ljusgrå bakgrund som på bilden */
+    background-color: #fff; /* Vit bakgrund på raderna */
     padding: 0.6rem 0.8rem;
-    border-radius: 6px;
     font-size: 0.9rem;
 }
 
-.expense-row-item .row-name {
-    font-weight: 500;
-    color: var(--text-color);
-}
+.expense-row-name { font-weight: 500; color: var(--text-color); }
+.expense-row-cost { font-weight: 600; color: var(--text-color); margin-right: 0.75rem; }
 
-.expense-row-item .row-right {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.expense-row-item .row-cost {
-    font-weight: 700;
-    color: var(--text-color); /* Svart text enligt bild */
-}
-
-.expense-row-item .btn-remove {
+.expense-row-remove {
     cursor: pointer;
     color: #9CA3AF;
     display: flex;
     align-items: center;
-    font-size: 1.1rem;
-    line-height: 1;
-    padding: 2px;
+    padding: 4px;
+    border-radius: 4px;
 }
-.expense-row-item .btn-remove:hover { color: var(--danger-color); }
+.expense-row-remove:hover {
+    background-color: var(--danger-light);
+    color: var(--danger-color);
+}
 
-/* Dark mode fix */
-[data-theme="dark"] .expense-row-item { background-color: #2c2c2e; }
-[data-theme="dark"] .expense-input-row { background-color: #2c2c2e; }
+/* Dark mode */
+[data-theme="dark"] .economy-dashboard { background-color: #2c2c2e; }
+[data-theme="dark"] .expense-row { background-color: #1c1c1e; }
