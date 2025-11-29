@@ -252,9 +252,19 @@
 			            currentExpenses = [];
 			            renderExpensesList();
 			        }
-			        else if (template === 'bromsar') {
-			            const nyText = "Byte av bromsar (Belägg/Skivor)";
+			        else if (template === 'bromsbelagg') {
+			            prisInput.value = 500;
+			            const nyText = "Byte av bromsbelägg (Fram el. Bak)";
 			            kommentarInput.value = kommentarInput.value ? kommentarInput.value + "\n" + nyText : nyText;
+			            currentExpenses = []; // Nollställ utgifter om du inte vill lägga till delarna automatiskt
+			            renderExpensesList();
+			        }
+			        else if (template === 'bromsskivorbelagg') {
+			            prisInput.value = 700;
+			            const nyText = "Byte av bromsskivor & belägg (Fram el. Bak)";
+			            kommentarInput.value = kommentarInput.value ? kommentarInput.value + "\n" + nyText : nyText;
+			            currentExpenses = [];
+			            renderExpensesList();
 			        }
 			
 			        updateLiveProfit(); // Uppdatera vinstkalkyl
