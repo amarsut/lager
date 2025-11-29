@@ -5618,3 +5618,81 @@ html.privacy-mode-enabled .nav-logo {
         min-height: 44px; /* Standardhöjd för touch, men inte gigantisk */
     }
 }
+
+/* --- ACCORDION STYLING (Nytt Jobb Modal) --- */
+
+.accordion-header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--bg-color); /* Ljusgrå bakgrund */
+    border: 1px solid var(--border-color);
+    padding: 0.8rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+}
+
+.accordion-header:hover {
+    background-color: #E5E7EB; /* Lite mörkare vid hover */
+    border-color: #D1D5DB;
+}
+
+.accordion-title {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text-color);
+}
+
+.accordion-icon {
+    width: 1.2rem;
+    height: 1.2rem;
+    color: var(--text-color-light);
+    transition: transform 0.3s ease; /* Mjuk rotation */
+}
+
+/* När den är öppen: Rotera pilen */
+.accordion-header.active .accordion-icon {
+    transform: rotate(180deg);
+}
+
+.accordion-header.active {
+    background-color: var(--content-bg); /* Vit bakgrund när öppen */
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-bottom-color: transparent; /* Dölj linjen mot innehållet */
+}
+
+/* Innehållet */
+.accordion-content {
+    max-height: 0; /* Dold höjd */
+    overflow: hidden;
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Supermjuk animation */
+    
+    background-color: var(--content-bg);
+    border: 1px solid var(--border-color);
+    border-top: none; /* Sitter ihop med headern */
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+    padding: 0 1rem; /* Ingen padding vertikalt när stängd */
+}
+
+/* När den är öppen */
+.accordion-content.show {
+    max-height: 1000px; /* Tillräckligt för att visa allt */
+    opacity: 1;
+    padding-bottom: 1.5rem; /* Luft i botten */
+    padding-top: 0.5rem;
+}
+
+/* Mörkt läge fix */
+[data-theme="dark"] .accordion-header {
+    background-color: #2c2c2e;
+}
+[data-theme="dark"] .accordion-header.active,
+[data-theme="dark"] .accordion-content {
+    background-color: #1c1c1e; /* Något mörkare insida */
+}
