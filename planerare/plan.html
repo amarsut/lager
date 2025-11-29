@@ -434,35 +434,35 @@
 			        </div>
 			    </div>
 			
-			    <div class="form-group full-width">
-			        <label for="kundpris">Kundpris (kr)</label>
-			        <input type="number" id="kundpris" value="0" min="0" required>
-			    </div>
-			
-			    <div class="form-group full-width" id="expense-tracker">
-				    <label>Utgifter & Delar</label>
+			    <div class="economy-section-wrapper">
+				    <label class="section-label-bold">EKONOMI</label>
 				    
-				    <div class="expense-input-group">
-				        <input type="text" id="expenseName" placeholder="T.ex. Oljefilter" class="compact-input">
-				        <input type="number" id="expenseCost" placeholder="Pris" class="compact-input cost-input">
-				        <button type="button" id="addExpenseBtn" class="icon-btn-add">
+				    <div class="economy-grid-display">
+				        <div class="economy-col">
+				            <label for="kundpris">Kundpris</label>
+				            <input type="number" id="kundpris" value="0" min="0" placeholder="0" class="input-minimalist">
+				        </div>
+				        <div class="economy-col">
+				            <span class="label">Total Utgift</span>
+				            <span class="value" id="liveTotalCost">0 kr</span>
+				        </div>
+				        <div class="economy-col">
+				            <span class="label">Vinst</span>
+				            <span class="value highlight" id="liveProfit">0 kr</span>
+				        </div>
+				    </div>
+				
+				    <label class="section-label-bold" style="margin-top: 1rem;">Specificerade Utgifter</label>
+				    
+				    <div class="expense-input-row">
+				        <input type="text" id="expenseName" placeholder="Lägg till utgift..." class="input-flat">
+				        <input type="number" id="expenseCost" placeholder="Pris" class="input-flat price">
+				        <button type="button" id="addExpenseBtn" class="btn-add-minimal">
 				            <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-plus"></use></svg>
 				        </button>
 				    </div>
 				
-				    <div id="expenseList" class="expense-tags-container"></div>
-				</div>
-			    
-			   	<div class="profit-dashboard-strip" id="vinstKalkylContainer">
-				    <div class="dashboard-item expense">
-				        <span class="label">Utgifter</span>
-				        <span class="value" id="liveExpenseSum">0 kr</span>
-				    </div>
-				    <div class="dashboard-divider"></div>
-				    <div class="dashboard-item profit">
-				        <span class="label">Beräknad Vinst</span>
-				        <span class="value" id="liveProfitSum">0 kr</span>
-				    </div>
+				    <div id="expenseList" class="expense-list-rows"></div>
 				</div>
 			
 			    <div class="form-group full-width">
