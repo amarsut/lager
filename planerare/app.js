@@ -1888,20 +1888,21 @@
 			        }
 			
 			        // Endast om vi REDAN var på tidslinjen och trycker bakåt, körs detta:
-			        if (backPressWarned) {
-			            backPressWarned = false;
-			            history.back(); 
-			        } else {
-			            backPressWarned = true;
-			            showToast('Tryck bakåt igen för att stänga', 'info');
-			            
-			            // Lägg tillbaka ett state så att man kan trycka bakåt en gång till
-			            history.pushState(null, 'Tidslinje', location.pathname); 
-			            
-			            backPressTimer = setTimeout(() => {
-			                backPressWarned = false;
-			            }, 2000); 
-			        }
+			        if (window.innerWidth <= 768) {
+				        if (backPressWarned) {
+				            backPressWarned = false;
+				            history.back(); 
+				        } else {
+				            backPressWarned = true;
+				            showToast('Tryck bakåt igen för att stänga', 'info');
+				            
+				            history.pushState(null, 'Tidslinje', location.pathname); 
+				            
+				            backPressTimer = setTimeout(() => {
+				                backPressWarned = false;
+				            }, 2000); 
+				        }
+				    }
 			    }
 			});
 
