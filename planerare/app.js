@@ -3783,13 +3783,42 @@
             setupViewToggles();
             
             mobileAddJobBtn.addEventListener('click', () => openJobModal('add'));
-            mobileSearchBtn.addEventListener('click', () => {
-				if (currentView === 'calendar') {
-                    toggleView('timeline');
-                }
-                showModal('mobileSearchModal');
-                mobileSearchBar.focus();
-            });
+
+			// 1. Hämta elementen vi behöver
+			const mSearchModal = document.getElementById('mobileSearchModal');
+			const mNavOpenBtn = document.getElementById('mobileSearchBtn'); // Knappen i botten-menyn
+			const mHeaderBackBtn = document.getElementById('mobileSearchBackBtn'); // Pilen uppe till vänster
+			const mInput = document.getElementById('mobileSearchBar');
+			
+			// 2. Logik för att ÖPPNA (Knappen i menyn)
+			if (mNavOpenBtn && mSearchModal) {
+			    // Ta bort eventuella gamla lyssnare genom att klona knappen (valfritt trick, men säkrast är att bara lägga till ny lyssnare om du raderat den gamla koden ovan)
+			    mNavOpenBtn.addEventListener('click', (e) => {
+			        e.preventDefault();
+			        
+			        // Tvinga fram modalen med flex (för att layouten ska funka)
+			        mSearchModal.style.display = 'flex';
+			        
+			        // Fokusera i rutan så tangentbordet åker upp
+			        setTimeout(() => {
+			            if (mInput) mInput.focus();
+			        }, 150); 
+			    });
+			}
+			
+			// 3. Logik för att STÄNGA (Pilen tillbaka)
+			if (mHeaderBackBtn && mSearchModal) {
+			    mHeaderBackBtn.addEventListener('click', (e) => {
+			        e.preventDefault();
+			        
+			        // Dölj modalen helt
+			        mSearchModal.style.display = 'none';
+			        
+			        // Valfritt: Töm sökfältet när man går tillbaka
+			        // if (mInput) mInput.value = '';
+			        // performSearch(); // Nollställ listan
+			    });
+			}
             
             function setHeaderDate() {
                 let datePart = new Intl.DateTimeFormat(locale, { weekday: 'short', month: 'short', day: 'numeric' }).format(new Date());
