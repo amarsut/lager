@@ -5121,3 +5121,84 @@ html.privacy-mode-enabled .nav-logo {
     color: white;
     box-shadow: 0 2px 5px rgba(10, 132, 255, 0.3);
 }
+
+/* --- MOBIL SÖK LAYOUT FIX --- */
+
+/* 1. Huvudcontainer: Fyll hela skärmen */
+.mobile-search-layout {
+    display: flex;
+    flex-direction: column;
+    height: 100vh; /* Fyll hela höjden */
+    height: 100dvh; /* Bättre stöd för mobila webbläsare */
+    padding: 0 !important; /* Vi sköter padding internt */
+    background-color: var(--bg-color);
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    transform: none !important; /* Överrida gamla animationer som kan störa */
+    z-index: 2000;
+}
+
+/* 2. Header (Sök + Avbryt): Sitter fast i toppen */
+.mobile-search-header {
+    display: flex;
+    gap: 0.75rem;
+    padding: 1rem;
+    background-color: var(--bg-color);
+    border-bottom: 1px solid #E5E7EB; /* Tunn linje under */
+    flex-shrink: 0; /* Får inte krympa */
+}
+
+/* Anpassa sökfältet i headern */
+.mobile-search-header .search-wrapper {
+    flex-grow: 1;
+    margin-bottom: 0;
+    border-bottom: none; /* Vi har ram runt hela istället */
+    border: 1px solid #E5E7EB;
+    border-radius: 8px;
+    background-color: #fff;
+    height: 44px;
+}
+
+/* Avbryt-knappen */
+.compact-btn {
+    padding: 0 0.75rem;
+    font-size: 0.9rem;
+    height: 44px;
+}
+
+/* 3. Filter-bar: Sitter fast under headern */
+.mobile-filter-bar {
+    padding: 0.5rem 1rem;
+    background-color: var(--bg-color);
+    border-bottom: 1px solid #E5E7EB;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.mobile-filter-bar label {
+    font-size: 0.75rem; 
+    font-weight: 700; 
+    color: #9CA3AF; 
+    text-transform: uppercase;
+}
+
+/* 4. Resultat-listan: Det enda som skrollar! */
+.mobile-results-container {
+    flex-grow: 1; /* Ta all plats som blir över */
+    overflow-y: auto; /* Skrolla om innehållet är långt */
+    -webkit-overflow-scrolling: touch; /* Mjuk skroll på iOS */
+    padding: 1rem;
+    background-color: #F9FAFB; /* Ljusgrå bakgrund för listan */
+}
+
+/* Justering för tom sökning */
+.empty-search-placeholder {
+    text-align: center;
+    padding-top: 3rem;
+    color: var(--text-color-light);
+    opacity: 0.5;
+}
+.empty-search-placeholder .icon-lg {
+    margin-bottom: 1rem;
+}
