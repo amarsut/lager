@@ -1752,6 +1752,23 @@
 			        return; // Stanna här, stäng inte appen
 			    }
 
+				// 1. Om vi backar TILL sök-läget (event.state.modal === 'mobileSearch')
+			    if (event.state && event.state.modal === 'mobileSearch') {
+			        // Se till att sökfönstret är ÖPPET
+			        if (mSearchModal) mSearchModal.style.display = 'flex';
+			        // Stäng eventuella andra modaler som ligger ovanpå (t.ex. jobbmodalen)
+			        closeModal({ popHistory: false }); 
+			        return;
+			    }
+
+				// 2. Om vi backar FRÅN sök-läget till HEM (inget state)
+    			// Och sökfönstret är öppet -> Stäng det!
+				if ((!event.state || !event.state.modal) && mSearchModal && mSearchModal.style.display === 'flex') {
+			        mSearchModal.style.display = 'none';
+			        // (Här är vi nu tillbaka på framsidan)
+			        return;
+			    }
+
 				const mClearBtn = document.getElementById('mobileSearchClear');
 				if (mClearBtn && mInput) {
 				    mClearBtn.addEventListener('click', (e) => {
