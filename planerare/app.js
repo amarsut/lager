@@ -36,12 +36,20 @@
         };
         
         const debounce = (func, timeout = 300) => {
-            let timer;
-            return (...args) => {
-                clearTimeout(timer);
-                timer = setTimeout(() => { func.apply(this, args); }, timeout);
-            };
-        };
+		    let timer;
+		    return (...args) => {
+		        // Tänd spinnern direkt när man trycker
+		        const wrapper = document.querySelector('.search-wrapper');
+		        if(wrapper) wrapper.classList.add('is-loading');
+		        
+		        clearTimeout(timer);
+		        timer = setTimeout(() => { 
+		            func.apply(this, args); 
+		            // Släck spinnern när sökningen körs
+		            if(wrapper) wrapper.classList.remove('is-loading');
+		        }, timeout);
+		    };
+		};
         function highlightSearchTerm(text, term) {
             if (!term) return text;
             const safeText = String(text).replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -104,6 +112,28 @@
 			const settingsPrivacyToggle = document.getElementById('settingsPrivacyToggle');
 
 			const sortBySelect = document.getElementById('sortBy');
+			if (sortBySelect) {
+			    sortBySelect.addEventListener('change', (e) => {
+			        // Uppdatera texten man ser (t.ex. "Datum")
+			        const label = e.target.options[e.target.selectedIndex].text;
+			        document.querySelector('.select-value').textContent = label;
+			        
+			        // Uppdatera global variabel och rita om
+			        currentSortField = e.target.value;
+			        renderTimeline();
+			    });
+			}
+
+			// 2. Hantera Tillbaka-pilen på mobil
+			const mobileBackBtn = document.getElementById('mobileSearchBackBtn');
+			if (mobileBackBtn) {
+			    mobileBackBtn.addEventListener('click', () => {
+			        document.getElementById('mobileSearchModal').style.display = 'none';
+			        // Rensa sökning valfritt
+			        // performSearch(); 
+			    });
+			}
+			
 			const sortDirectionBtn = document.getElementById('sortDirectionBtn');
 
 			if (sortDirectionBtn) {
@@ -3014,6 +3044,9 @@
 			    // Hämta värde (om elementet finns)
 			    const desktopVal = desktopInput ? desktopInput.value : '';
 			    const mobileVal = mobileInput ? mobileInput.value : '';
+
+				document.querySelector('.search-wrapper').classList.add('is-loading');
+				document.querySelector('.search-wrapper').classList.remove('is-loading');
 			    
 			    // Använd det värde som är ifyllt
 			    currentSearchTerm = desktopVal || mobileVal;
