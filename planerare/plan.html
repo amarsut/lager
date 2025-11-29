@@ -180,24 +180,65 @@
                     <div class="view-controls" id="view-controls">
 					    <div class="search-wrapper">
 					        <svg class="icon" viewBox="0 0 24 24"><use href="#icon-search"></use></svg>
-					        <div class="search-spinner"></div> 
+					        
+					        <div class="search-spinner" id="searchSpinner"></div> 
+					        
 					        <input type="search" id="searchBar" placeholder="Sök jobb... (F)">
+					        
 					        <button type="button" class="search-clear-btn" id="desktopSearchClear" title="Rensa"></button>
 					    </div>
 					
 					    <div class="sort-controls">
-					        <div class="select-wrapper">
+					        <div class="custom-select-wrapper">
 					            <select id="sortBy">
 					                <option value="datum">Datum</option>
 					                <option value="kundpris">Pris</option>
 					                <option value="kundnamn">Kund</option>
 					                <option value="status">Status</option>
 					            </select>
-					            <svg class="icon-sm chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+					            <div class="select-visual">
+					                <span class="select-label">Sortera:</span>
+					                <span class="select-value">Datum</span>
+					                <svg class="icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+					            </div>
 					        </div>
+					
 					        <button id="sortDirectionBtn" class="icon-btn sort-btn" title="Växla ordning">
 					            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"/></svg>
 					        </button>
+					    </div>
+					</div>
+					
+					<div id="mobileSearchModal" class="modal-backdrop-mobile" style="display: none;">
+					    <div class="mobile-search-layout">
+					        
+					        <div class="mobile-search-header">
+					            <button id="mobileSearchBackBtn" class="icon-btn back-btn">
+					                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 19l-7-7 7-7"/></svg>
+					            </button>
+					            
+					            <div class="search-wrapper mobile-wrapper">
+					                <input type="search" id="mobileSearchBar" placeholder="Sök jobb, kund..." enterkeyhint="search">
+					                <button type="button" class="search-clear-btn" id="mobileSearchClear"></button>
+					            </div>
+					        </div>
+					
+					        <div class="mobile-filter-bar">
+					            <div class="mobile-sort-chips" id="mobileSortOptions">
+					                <button type="button" class="sort-chip active" data-sort="datum">Datum</button>
+					                <button type="button" class="sort-chip" data-sort="kundpris">Pris</button>
+					                <button type="button" class="sort-chip" data-sort="kundnamn">Kund</button>
+					                <button type="button" class="sort-chip" data-sort="status">Status</button>
+					            </div>
+					        </div>
+					
+					        <div id="mobileSearchResults" class="mobile-results-container">
+					            <div class="empty-search-placeholder">
+					                <svg class="icon-lg" viewBox="0 0 24 24"><use href="#icon-search"></use></svg>
+					                <p>Sök efter kunder, reg.nr eller info...</p>
+					            </div>
+					        </div>
+					
 					    </div>
 					</div>
 
@@ -937,36 +978,6 @@
 	        <button id="viewSelectCloseBtn" class="button secondary" style="margin-top: 1rem;">Stäng</button>
 	    </div>
 	</div>
-
-	<div id="mobileSearchModal" class="modal-backdrop-mobile" style="display: none;">
-		    <div class="mobile-search-layout">
-		        
-		        <div class="mobile-search-header">
-		            <div class="search-wrapper mobile-wrapper">
-		                <svg class="icon" viewBox="0 0 24 24"><use href="#icon-search"></use></svg>
-		                <input type="search" id="mobileSearchBar" placeholder="Sök..." enterkeyhint="search">
-		                <button type="button" class="search-clear-btn" id="mobileSearchClear"></button>
-		            </div>
-		            <button id="mobileSearchCloseBtn" class="button link-btn" style="border:none; padding-right:0;">Avbryt</button>
-		        </div>
-		
-		        <div class="mobile-filter-bar">
-		            <div class="mobile-sort-chips" id="mobileSortOptions">
-		                <button type="button" class="sort-chip active" data-sort="datum">Datum</button>
-		                <button type="button" class="sort-chip" data-sort="kundpris">Pris</button>
-		                <button type="button" class="sort-chip" data-sort="kundnamn">Kund</button>
-		                <button type="button" class="sort-chip" data-sort="status">Status</button>
-		            </div>
-		        </div>
-		
-		        <div id="mobileSearchResults" class="mobile-results-container">
-		            <div class="empty-search-placeholder">
-		                <p style="text-align: center; color: #9ca3af; margin-top: 2rem;">Skriv för att söka...</p>
-		            </div>
-		        </div>
-		
-		    </div>
-		</div>
 
 	<script>
 		// --- Firebase Config (Oförändrad) ---
