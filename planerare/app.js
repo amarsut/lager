@@ -1875,26 +1875,26 @@
 			    
 			    // FALL 4: Vi är på väg till Tidslinjen/Startsidan (state är null eller 'timeline')
 			    else if (!state || !state.view || state.view === 'timeline') { 
-			        
-			        // --- HÄR ÄR FIXEN ---
-			        // Vi kör ALLTID städning av sök när vi landar på startsidan.
-			        // Det fixar problemet med tangentbordet och "Anette"-resultatet.
-			        resetAndCloseSearch(); 
-			        // -------------------
+			        if (typeof resetAndCloseSearch === 'function') {
+			            resetAndCloseSearch();
+			        }
 			
-			        // Se till att vi visar tidslinjen
+			        // Om vi INTE är på tidslinjen (t.ex. vi kommer från Kalender/Tavla)
 			        if (currentView !== 'timeline') {
 			            isNavigatingBack = true;
 			            toggleView('timeline');
 			            isNavigatingBack = false;
+			            return; // Stanna här! Visa inte "Stäng"-varningen när vi bara byter vy.
 			        }
 			
-			        // Dubbeltryck för att stänga appen (Android-standard)
+			        // Endast om vi REDAN var på tidslinjen och trycker bakåt, körs detta:
 			        if (backPressWarned) {
 			            backPressWarned = false;
+			            history.back(); 
 			        } else {
 			            backPressWarned = true;
 			            showToast('Tryck bakåt igen för att stänga', 'info');
+			            
 			            // Lägg tillbaka ett state så att man kan trycka bakåt en gång till
 			            history.pushState(null, 'Tidslinje', location.pathname); 
 			            
