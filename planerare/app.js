@@ -71,6 +71,8 @@
             
             // --- Globalt Tillstånd (State) ---
             let allJobs = [];
+			let currentSortField = 'datum'; 
+			let currentSortOrder = 'desc';
 			let currentOilStock = 0;
 			let backPressWarned = false;
             let backPressTimer;
@@ -100,6 +102,9 @@
             const docElement = document.documentElement;
 			const privacyToggle = document.getElementById('privacyToggle');
 			const settingsPrivacyToggle = document.getElementById('settingsPrivacyToggle');
+
+			const sortBySelect = document.getElementById('sortBy');
+			const sortDirectionBtn = document.getElementById('sortDirectionBtn');
 
 			let isPrivacyModeEnabled = localStorage.getItem('privacyMode') === 'true';
             const appContainer = document.querySelector('.app-container');
@@ -1290,14 +1295,31 @@
 
 
                 jobsToDisplay.sort((a, b) => {
-                    const dateA = new Date(a.datum);
-                    const dateB = new Date(b.datum);
-                    if (sortOrder === 'desc') {
-                        return dateB - dateA; 
-                    } else {
-                        return dateA - dateB; 
-                    }
-                });
+				    // Hämta värdena vi ska jämföra (baserat på vad som valts i listan)
+				    let valA = a[currentSortField];
+				    let valB = b[currentSortField];
+				
+				    // Specialhantering för DATUM (gör om till tidpunkter)
+				    if (currentSortField === 'datum') {
+				        valA = new Date(a.datum || 0).getTime();
+				        valB = new Date(b.datum || 0).getTime();
+				    }
+				    // Specialhantering för TEXT (t.ex. Kundnamn, gör om till små bokstäver)
+				    else if (typeof valA === 'string') {
+				        valA = valA.toLowerCase();
+				        valB = valB.toLowerCase();
+				    }
+				    // Specialhantering för SIFFROR (t.ex. Pris, hantera tomma fält som 0)
+				    else {
+				        valA = valA || 0;
+				        valB = valB || 0;
+				    }
+				
+				    // Jämför värdena
+				    if (valA < valB) return currentSortOrder === 'asc' ? -1 : 1;
+				    if (valA > valB) return currentSortOrder === 'asc' ? 1 : -1;
+				    return 0;
+				});
 
                 // (Resten av din funktion är oförändrad)
                 function renderNewContent() {
@@ -2255,6 +2277,26 @@
                 }
             });
 
+			// När du väljer något nytt i listan (t.ex. "Pris")
+			if (sortBySelect) {
+			    sortBySelect.addEventListener('change', (e) => {
+			        currentSortField = e.target.value;
+			        renderTimeline(); // Rita om listan direkt med nya sorteringen
+			    });
+			}
+			
+			// När du klickar på pil-knappen
+			if (sortDirectionBtn) {
+			    sortDirectionBtn.addEventListener('click', () => {
+			        // Byt håll: Om den var 'asc', bli 'desc'. Annars bli 'asc'.
+			        currentSortOrder = (currentSortOrder === 'desc') ? 'asc' : 'desc';
+			        
+			        // Vänd på pil-ikonen visuellt
+			        sortDirectionBtn.classList.toggle('descending', currentSortOrder === 'desc');
+			        
+			        renderTimeline(); // Rita om listan
+			    });
+			}
 
             function openCarModal(regnr) {
                 if (!regnr) return;
