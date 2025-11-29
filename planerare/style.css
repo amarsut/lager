@@ -5228,3 +5228,46 @@ html.privacy-mode-enabled .nav-logo {
     box-shadow: none !important;
     background: transparent !important; /* Låt förälderns vita färg synas */
 }
+
+/* --- KOMPAKTA SÖKRESULTAT (MOBIL) --- */
+
+/* Endast inuti sök-modalen */
+#mobileSearchResults .mobile-job-card {
+    box-shadow: none !important;        /* Ingen skugga */
+    border: none !important;            /* Ingen ram */
+    border-bottom: 1px solid #F3F4F6 !important; /* Tunn linje under */
+    border-radius: 0 !important;        /* Raka hörn */
+    margin: 0 !important;               /* Inget mellanrum */
+    padding: 12px 4px !important;       /* Tajtare padding */
+    background: transparent !important;
+}
+
+/* Tajta till innehållet */
+#mobileSearchResults .mobile-job-card .card-content {
+    padding: 0 !important;
+    gap: 4px !important; /* Mindre luft mellan raderna */
+}
+
+/* Gör kundnamnet tydligare */
+#mobileSearchResults .customer-name {
+    font-size: 1rem;
+    color: #111827;
+}
+
+/* Förminska sekundär text (Regnr, Pris) */
+#mobileSearchResults .card-row {
+    margin-bottom: 2px;
+}
+#mobileSearchResults .card-label {
+    display: none; /* Dölj etiketterna "Kund", "Regnr" för att spara plats */
+}
+#mobileSearchResults .card-value {
+    text-align: left; /* Vänsterställ allt */
+    font-size: 0.9rem;
+    color: #6B7280;
+}
+
+/* Dölj knappraden i söklistan för att hålla det rent (man klickar på raden istället) */
+#mobileSearchResults .action-col {
+    display: none !important;
+}
