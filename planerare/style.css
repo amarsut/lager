@@ -4904,13 +4904,12 @@ html.privacy-mode-enabled .nav-logo {
     .modal-content {
         width: 100%;
         max-width: 100%;
-        height: auto;       /* Ändrat från 100% till auto */
-        min-height: 100%;   /* Ser till att bakgrunden täcker skärmen */
-        max-height: none;   /* Låt den växa om det behövs */
+        height: 100%;       
+        max-height: 100%;
         border-radius: 0;
         box-shadow: none;
         display: flex;
-        flex-direction: column;
+        flex-direction: column; 
     }
     .modal-header {
         padding: 1rem 1.25rem;
@@ -4926,9 +4925,9 @@ html.privacy-mode-enabled .nav-logo {
     }
     .modal-body {
         padding: 1rem 1.25rem;
-        flex-grow: 0; /* Ändrat från 1 till 0 så den inte expanderar i onödan */
-        overflow-y: visible; /* Låt hela sidan scrolla istället för bara mitten */
-        padding-bottom: 2rem; /* Mindre luft här också */
+        flex: 0 1 auto; 
+        overflow-y: auto; 
+        padding-bottom: 2rem; 
     }
     #customerModal .modal-body,
     #statsModal .modal-body,
@@ -5980,4 +5979,5 @@ html.privacy-mode-enabled .nav-logo {
     font-weight: 500;
     margin-left: 4px;
 }
+
 
