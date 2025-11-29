@@ -5861,35 +5861,36 @@ html.privacy-mode-enabled .nav-logo {
 }
 
 /* ========================================= */
-/* UTGIFTER & DELAR (FINAL PRO DESIGN)       */
+/* UTGIFTER & DELAR (BRED & SNYGG DESIGN)    */
 /* ========================================= */
 
-/* 1. Inmatningsraden (Perfekt justerad) */
+/* 1. Inmatningsraden */
 .expense-input-group {
-    display: flex !important; /* Flex är bättre här än Grid */
+    display: flex !important;
     align-items: center;
     gap: 0.75rem;
-    width: 100%;
+    width: 100%; /* Fyller hela bredden */
     margin-bottom: 0.75rem;
+    box-sizing: border-box;
 }
 
-/* Namn-fältet tar all ledig plats */
+/* Namn-fältet fyller ut */
 #expenseName {
     flex-grow: 1; 
-    width: auto; /* Låt flex bestämma bredden */
-    min-width: 0; /* Förhindra overflow */
+    width: 100%; /* VIKTIGT */
+    min-width: 0;
 }
 
-/* Pris-fältet har fast bredd */
+/* Pris-fältet fast bredd */
 #expenseCost {
-    width: 90px !important; /* Tillräckligt för "99999" */
+    width: 90px !important;
     flex-shrink: 0;
 }
 
-/* Lägg till-knappen (Kvadratisk och snygg) */
+/* Knappen */
 #addExpenseBtn {
     width: 44px !important;
-    height: 42px !important; /* Matcha höjden på inputs */
+    height: 42px !important; 
     padding: 0 !important;
     flex-shrink: 0;
     border-radius: 8px;
@@ -5912,7 +5913,7 @@ html.privacy-mode-enabled .nav-logo {
     flex-wrap: wrap;
     gap: 0.5rem;
     margin-bottom: 1rem;
-    min-height: 0;
+    width: 100%;
 }
 
 .expense-tag {
@@ -5941,16 +5942,19 @@ html.privacy-mode-enabled .nav-logo {
 .expense-tag .tag-remove:hover { color: var(--danger-color); }
 
 
-/* 3. Dashboard-remsan (Totalrenoverad) */
+/* 3. Dashboard-remsan (FIXAD BREDD) */
 .profit-dashboard-strip {
     display: grid;
-    grid-template-columns: 1fr auto 1fr; /* Vänster | Linje | Höger */
+    grid-template-columns: 1fr auto 1fr; /* 50% | Linje | 50% */
     align-items: center;
     
-    background-color: #F8F9FA; /* Renare grå */
+    width: 100%; /* VIKTIGT: Tvinga ut bredden */
+    box-sizing: border-box; /* Räkna in padding i bredden */
+    
+    background-color: #F8F9FA; 
     border: 1px solid var(--border-color);
-    border-radius: 12px; /* Mjukare hörn */
-    padding: 1rem 1.25rem;
+    border-radius: 12px; 
+    padding: 1rem 1.5rem; /* Lite mer luft på sidorna */
     margin-top: 0.5rem;
 }
 
@@ -5963,17 +5967,17 @@ html.privacy-mode-enabled .nav-logo {
 
 /* Utgifter (Vänster) */
 .dashboard-item.expense {
-    align-items: flex-start; /* Vänsterställd */
+    align-items: flex-start; 
 }
 .dashboard-item.expense .label { color: var(--text-color-light); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
 .dashboard-item.expense .value { color: var(--text-color); font-size: 1.1rem; font-weight: 700; }
 
 /* Vinst (Höger) */
 .dashboard-item.profit {
-    align-items: flex-end; /* Högerställd */
+    align-items: flex-end; 
 }
 .dashboard-item.profit .label { color: var(--text-color-light); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
-.dashboard-item.profit .value { color: var(--success-color); font-size: 1.3rem; font-weight: 800; } /* Större font */
+.dashboard-item.profit .value { color: var(--success-color); font-size: 1.3rem; font-weight: 800; }
 
 /* Avdelare (Mitten) */
 .dashboard-divider {
