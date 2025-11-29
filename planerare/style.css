@@ -539,6 +539,43 @@ h1, h2, h3, h4, h5, h6 {
 }
 /*SLUT PÅ NY SÖKRUTA*/
 
+/* Knappar */
+.button {
+    padding: 0.625rem 1rem; border: none; border-radius: 8px;
+    font-size: 0.9rem; font-weight: 600; cursor: pointer;
+    transition: all 0.2s ease; display: inline-flex;
+    align-items: center; justify-content: center;
+    gap: 0.5rem;
+	text-decoration: none;
+}
+.button.secondary { background-color: var(--content-bg); color: var(--text-color); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
+.button.secondary:hover { background-color: var(--bg-color); }
+
+/* --- Snyggare "Rensa Filter"-knapp --- */
+.button.clear-filter {
+    background-color: var(--bg-color);
+    color: var(--primary-color);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    padding: 0.5rem 0.8rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border-radius: 8px;
+    transition: all var(--transition-speed-fast) ease;
+    gap: 0.4rem; /* Ger lite utrymme mellan 'x' och texten */
+}
+.button.clear-filter:hover {
+    background-color: var(--content-bg);
+    color: var(--danger-color);
+    border-color: var(--danger-color);
+}
+[data-theme="dark"] .button.clear-filter:hover {
+    background-color: var(--danger-light);
+}
+
+.button.primary { background-color: var(--primary-color); color: white; box-shadow: var(--shadow-sm); }
+.button.primary:hover { background-color: var(--primary-hover); box-shadow: var(--shadow-md); }
+
 mark {
     background-color: var(--warning-color);
     color: black;
@@ -5429,6 +5466,7 @@ html.privacy-mode-enabled .nav-logo {
     text-transform: uppercase;
     letter-spacing: 0.05em;
 }
+
 
 
 
