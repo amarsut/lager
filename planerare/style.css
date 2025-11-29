@@ -5467,6 +5467,37 @@ html.privacy-mode-enabled .nav-logo {
     letter-spacing: 0.05em;
 }
 
+/* LAYOUT FÖR SETTINGS/MOTOROLJA */
+
+/* --- KOMPAKT INSTÄLLNINGS-LAYOUT --- */
+
+/* Lägger fälten bredvid varandra */
+.settings-row-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+/* Den nya smala statusraden för olja */
+.oil-status-bar {
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color);
+    padding: 0.6rem 0.8rem;
+    border-radius: 8px;
+    font-weight: 600;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+    color: var(--text-color);
+}
+
+/* Gör datum/nummer-fält lite mindre i höjd inuti denna vy */
+.settings-row-split input {
+    padding: 0.6rem !important;
+    font-size: 0.9rem !important;
+}
 
 
 
