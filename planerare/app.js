@@ -1565,8 +1565,13 @@
                 const regnrHTML = highlightSearchTerm(job.regnr || 'OKÄNT', currentSearchTerm);
 
                 const timePart = job.datum ? (formatDate(job.datum).split('kl. ')[1] || 'Okänd tid') : 'Okänd tid';
-				const dateDisplay = job.datum ? formatDate(job.datum, { onlyDate: true }) : '';
-
+				let dateDisplay = '';
+				if (job.datum) {
+				    const d = new Date(job.datum);
+				    const day = d.getDate();
+				    const month = d.toLocaleString('sv-SE', { month: 'short' }).replace('.', '');
+				    dateDisplay = `${day} ${month}`;
+				}
                 return `
                     <div class="mobile-job-card job-entry ${prioClass} ${doneClass} ${jobStatusClass}" data-id="${job.id}" data-status="${job.status}">
                         <div class="card-content">
@@ -1596,12 +1601,14 @@
                                 </span>
                             </div>
                             <div class="card-row">
-                                <span class="card-label">Tid / Status</span>
-                                <span class="card-value time-status-wrapper">
-                                    <span class="card-time-badge">${timePart}</span>
-                                    <span class="status-badge status-${job.status || 'bokad'}">${STATUS_TEXT[job.status] || 'Bokad'}</span>
-                                </span>
-                            </div>
+							    <span class="card-label">Tid / Status</span>
+							    <span class="card-value time-status-wrapper">
+							        <span class="search-date-badge" style="display:none; margin-right:8px; color:#374151; font-weight:600;">${dateDisplay}</span>
+							        
+							        <span class="card-time-badge">${timePart}</span>
+							        <span class="status-badge status-${job.status || 'bokad'}">${STATUS_TEXT[job.status] || 'Bokad'}</span>
+							    </span>
+							</div>
                             <div class="card-row money-related">
                                 <span class="card-label">Kundpris</span>
                                 <span class="card-value customer-price">${formatCurrency(job.kundpris)}</span>
