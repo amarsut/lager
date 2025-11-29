@@ -2705,15 +2705,11 @@ input[type="search"]::-webkit-search-results-decoration {
 
 /* --- 2. Sök-Spinner CSS --- */
 .search-spinner {
-    display: none; /* Dold som standard! */
-    width: 18px;
-    height: 18px;
-    border: 2px solid var(--border-color);
-    border-top-color: var(--primary-color);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    position: absolute;
-    right: 40px; /* Till vänster om krysset */
+    right: auto; /* Nollställ höger */
+    left: 2.5rem; /* Placera till vänster */
+    top: 50%;
+    margin-top: -9px; /* Centrera exakt (halva höjden av 18px) */
+    z-index: 5;
 }
 /* Visa bara när vi söker */
 .search-wrapper.is-loading .search-spinner {
@@ -5012,7 +5008,15 @@ html.privacy-mode-enabled .nav-logo {
     height: 100%;
     outline: none;
     font-size: 1rem;
-    padding-right: 30px; /* Plats för X-knappen så text inte åker under */
+    padding-left: 3rem !important; /* Mer luft till vänster */
+    padding-right: 2.5rem !important; /* Plats för krysset */
+}
+
+/* Justera sök-ikonen så den sitter snyggt */
+.search-wrapper .icon-search {
+    left: 0.75rem;
+    position: absolute;
+    color: #9CA3AF;
 }
 
 /* FIX AV X-KNAPPEN */
@@ -5299,3 +5303,27 @@ html.privacy-mode-enabled .nav-logo {
     box-shadow: none !important;
 }
 
+/* --- 1. VISA DATUM I MOBIL SÖKRESULTAT --- */
+/* Se till att tids-badgen syns i söklistan */
+#mobileSearchResults .card-time-badge {
+    display: inline-block !important; /* Tvinga fram den */
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    color: #6B7280 !important; /* Grå text */
+    font-size: 0.85rem !important;
+    font-weight: 500 !important;
+    margin-left: auto; /* Knuffa den till högerkanten */
+}
+
+/* Justera raden så datum hamnar snyggt till höger om namnet */
+#mobileSearchResults .time-status-wrapper {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+/* Dölj själva status-texten ("Bokad") i söklistan för att spara plats, 
+   vi har ju färgen i kanten ändå */
+#mobileSearchResults .status-badge {
+    display: none !important; 
+}
