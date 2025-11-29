@@ -407,22 +407,17 @@
 			        </div>
 			    </div>
 			
-			    <div class="form-group full-width form-group-copyable">
-			        <label for="kundnamn">Kundens Namn</label>
-			        <input type="text" id="kundnamn" placeholder="Eva Svensson" required autocomplete="off">
-			        <button type="button" class="copy-btn" id="copyKundnamn" title="Kopiera Kundnamn">
-			            <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-clipboard"></use></svg>
-			        </button>
-			        <div id="kundnamnSuggestions" class="suggestions-list"></div>
-			    </div>
-			
-			    <div class="form-group full-width form-group-copyable">
-			        <label for="regnr">Registreringsnummer</label>
-			        <input type="text" id="regnr" placeholder="ABC 123">
-			        <button type="button" class="copy-btn" id="copyRegnr" title="Kopiera Reg.nr">
-			            <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-clipboard"></use></svg>
-			        </button>
-			    </div>
+			    <div class="name-reg-wrapper">
+				    <div class="form-group form-group-copyable">
+				        <label for="kundnamn">Kundens Namn</label>
+				        <input type="text" id="kundnamn" placeholder="EVA SVENSSON" required autocomplete="off">
+				    </div>
+				
+				    <div class="form-group form-group-copyable">
+				        <label for="regnr">Registreringsnummer</label>
+				        <input type="text" id="regnr" placeholder="ABC 123">
+				    </div>
+				</div>
 			    
 			    <div class="form-group-split">
 			        <div class="form-group">
@@ -444,17 +439,19 @@
 			        <input type="number" id="kundpris" value="0" min="0" required>
 			    </div>
 			
-			    <div class="form-group full-width money-related" id="expense-tracker">
-			        <label>Utgifter & Delar</label>
-			        <div class="expense-add-form">
-			            <input type="text" id="expenseName" placeholder="Utgift (t.ex. Filter)">
-			            <input type="number" id="expenseCost" placeholder="Kostnad">
-			            <button type="button" class="button secondary" id="addExpenseBtn">
-			                <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-plus"></use></svg>
-			            </button>
-			        </div>
-			        <div id="expenseList" class="expense-list"></div>
-			    </div>
+			    <div class="form-group full-width" id="expense-tracker">
+				    <label>Utgifter & Delar</label>
+				    
+				    <div class="expense-input-group">
+				        <input type="text" id="expenseName" placeholder="T.ex. Oljefilter" class="compact-input">
+				        <input type="number" id="expenseCost" placeholder="Pris" class="compact-input cost-input">
+				        <button type="button" id="addExpenseBtn" class="icon-btn-add">
+				            <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-plus"></use></svg>
+				        </button>
+				    </div>
+				
+				    <div id="expenseList" class="expense-tags-container"></div>
+				</div>
 			    
 			    <div class="form-group-profit money-related">
 			        <span id="vinstKalkyl">Vinst: 0 kr</span>
