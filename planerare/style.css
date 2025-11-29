@@ -5896,12 +5896,13 @@ html.privacy-mode-enabled .nav-logo {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: #F3F4F6; /* Ljusgrå */
-    padding: 0.4rem 0.8rem;
-    border-radius: 8px;
+    background-color: #F3F4F6;
+    padding: 0.3rem 0.6rem !important; /* Mycket mindre luft */
+    min-height: 32px !important;       /* Tvinga den att vara låg */
+    font-size: 0.85rem;                /* Något mindre text passar bättre */   
+    border-radius: 6px;
     border: 1px solid var(--border-color);
-    font-size: 0.9rem;
-	min-height: 36px;
+    margin-bottom: 2px; /* Liten springa mellan raderna */
 }
 
 .expense-item-original .item-name {
@@ -5976,4 +5977,5 @@ html.privacy-mode-enabled .nav-logo {
     font-weight: 500;
     margin-left: 4px;
 }
+
 
