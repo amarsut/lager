@@ -5262,3 +5262,42 @@ html.privacy-mode-enabled .nav-logo {
     border: none !important;
     box-shadow: none !important;
 }
+
+/* --- FIX FÖR SÖKRESULTAT (Kort-design & Inga Knappar) --- */
+
+/* 1. Ge hela listan en ljus bakgrund och lite luft i kanterna */
+#mobileSearchResults {
+    background-color: var(--bg-color) !important; /* Ljusgrå bakgrund */
+    padding: 1rem !important; /* Luft runt kanterna */
+}
+
+/* 2. Gör om resultaten till tydliga KORT */
+#mobileSearchResults .mobile-job-card {
+    /* Skapa separation */
+    margin-bottom: 1rem !important; 
+    
+    /* Återställ kort-utseendet */
+    border-radius: 12px !important; 
+    border: 1px solid var(--border-color) !important; 
+    background-color: #ffffff !important; 
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05) !important; 
+    
+    /* Behåll status-färgen till vänster */
+    border-left-width: 4px !important;
+    border-left-style: solid !important;
+}
+
+/* 3. DÖLJ åtgärdsknapparna (Soptunna, chat, flagga etc.) */
+#mobileSearchResults .action-col {
+    display: none !important;
+}
+
+/* 4. Justera datum-rubrikerna så de ligger snyggt ovanför korten */
+#mobileSearchResults .mobile-date-header {
+    margin-top: 0.5rem !important;
+    padding-left: 0.25rem !important;
+    font-size: 0.9rem !important;
+    color: var(--text-color-light) !important;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
