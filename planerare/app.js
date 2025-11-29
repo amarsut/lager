@@ -1839,8 +1839,20 @@
 			});
 
             window.addEventListener('popstate', (event) => {
-			    // --- NYTT: Huvudregel för Sök-modalen (Samma som "Bakåt"-pilen) ---
+    
 			    const mSearchModal = document.getElementById('mobileSearchModal');
+			    const isSearchVisible = mSearchModal && getComputedStyle(mSearchModal).display !== 'none';
+			    
+			    // HUVUDREGEL: Om sökfönstret syns, OCH vi inte backar "till" sök-läget...
+			    // (Dvs vi backar ut till startsidan)
+			    if (isSearchVisible && (!event.state || event.state.modal !== 'mobileSearch')) {
+			        
+			        // Kör exakt samma städning som pil-knappen
+			        resetAndCloseSearch();
+			        
+			        // Stanna här för att inte krocka med annan logik
+			        return;
+			    }
 			    
 			    // Om sökfönstret är synligt när man trycker Bakåt på telefonen...
 			    if (mSearchModal && getComputedStyle(mSearchModal).display === 'flex') {
@@ -3225,6 +3237,37 @@
             popoverBackdrop.addEventListener('click', hideCommentPopover);
             commentPopoverClose.addEventListener('click', hideCommentPopover);
 
+			function resetAndCloseSearch() {
+			    const mSearchModal = document.getElementById('mobileSearchModal');
+			    
+			    // 1. Dölj modalen
+			    if (mSearchModal) {
+			        mSearchModal.style.cssText = 'display: none !important';
+			        mSearchModal.classList.remove('show');
+			    }
+			
+			    // 2. Töm alla sökfält
+			    const mInput = document.getElementById('mobileSearchBar');
+			    const dInput = document.getElementById('searchBar');
+			    if (mInput) mInput.value = '';
+			    if (dInput) dInput.value = '';
+			
+			    // 3. Nollställ den interna sökvariabeln
+			    currentSearchTerm = '';
+			
+			    // 4. Dölj alla "Rensa"-knappar
+			    const globalClearBtn = document.getElementById('clearDayFilterBtn');
+			    const mClearBtn = document.getElementById('mobileSearchClear');
+			    const dClearBtn = document.getElementById('desktopSearchClear');
+			    
+			    if (globalClearBtn) globalClearBtn.style.display = 'none';
+			    if (mClearBtn) mClearBtn.style.cssText = 'display: none !important';
+			    if (dClearBtn) dClearBtn.style.cssText = 'display: none !important';
+			
+			    // 5. Uppdatera listan så att ALLA jobb visas igen
+			    performSearch();
+			}
+
             // --- Sök-hanterare (Med rensa-knappar) ---
 			function performSearch() {
 			    const desktopInput = document.getElementById('searchBar');
@@ -4025,7 +4068,12 @@
 			// 1. Hämta elementen vi behöver
 			const mSearchModal = document.getElementById('mobileSearchModal');
 			const mNavOpenBtn = document.getElementById('mobileSearchBtn'); // Knappen i botten-menyn
-			const mHeaderBackBtn = document.getElementById('mobileSearchBackBtn'); // Pilen uppe till vänster
+			if (mHeaderBackBtn) {
+			    mHeaderBackBtn.onclick = function(e) {
+			        e.preventDefault();
+			        resetAndCloseSearch(); // Anropar vår nya "super-städare"
+			    };
+			}
 			//const mInput = document.getElementById('mobileSearchBar');
 			
 			// 2. Logik för att ÖPPNA (Knappen i menyn)
