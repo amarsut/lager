@@ -337,27 +337,6 @@
             const settingsBtn = document.getElementById('settingsBtn');
             const mobileSettingsBtn = document.getElementById('mobileSettingsBtn');
             const settingsModal = document.getElementById('settingsModal');
-			const statusSelect = document.getElementById('statusSelect');
-
-		    function updateStatusColor() {
-		        if (!statusSelect) return;
-		        
-		        // Rensa gamla klasser (behåll grundklassen)
-		        statusSelect.className = 'compact-select'; 
-		        
-		        // Lägg till färg-klass baserat på valet (t.ex. "status-klar")
-		        const val = statusSelect.value;
-		        if (val) {
-		            statusSelect.classList.add(`status-${val}`);
-		        }
-		    }
-		
-		    // Kör när man ändrar i listan
-		    if (statusSelect) {
-		        statusSelect.addEventListener('change', updateStatusColor);
-		        // Kör en gång vid start för att sätta rätt färg direkt
-		        updateStatusColor();
-		    }
             const settingsModalCloseBtn = document.getElementById('settingsModalCloseBtn');
             const settingsModalCancelBtn = document.getElementById('settingsModalCancelBtn');
             const settingsModalSaveBtn = document.getElementById('settingsModalSaveBtn');
@@ -2438,11 +2417,7 @@
 			    
 			    // Trigga input-eventet för telefon (visar knappar om nummer finns)
 			    if (modalTelefon) modalTelefon.dispatchEvent(new Event('input')); 
-
-				if (typeof updateStatusColor === 'function') {
-			        updateStatusColor();
-			    }
-				
+			
 			    // Visa modalen
 			    showModal('jobModal', options);
 			}
