@@ -4925,7 +4925,8 @@ html.privacy-mode-enabled .nav-logo {
     }
     .modal-body {
         padding: 1rem 1.25rem;
-        flex: 0 1 auto; 
+        flex: 1 1 auto; 
+        min-height: 0;
         overflow-y: auto; 
         padding-bottom: 2rem; 
     }
@@ -5979,5 +5980,6 @@ html.privacy-mode-enabled .nav-logo {
     font-weight: 500;
     margin-left: 4px;
 }
+
 
 
