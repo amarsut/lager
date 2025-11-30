@@ -6506,7 +6506,7 @@ body.body-scroll-lock {
 /* Knappen (Ovanför FAB Add Job) */
 #fabChat {
     position: fixed; 
-    bottom: 90px; /* 2rem (fab) + 56px (höjd) + mellanrum */
+    bottom: 110px; 
     right: 2rem;
     width: 56px; height: 56px;
     background-color: var(--content-bg); /* Vit/Mörkgrå */
@@ -6589,4 +6589,24 @@ body.body-scroll-lock {
         border-radius: 0;
         border: none;
     }
+}
+
+/* FIX: Skicka-knappen (Behåll vit ikon vid hover) */
+.chat-action-btn.primary:hover {
+    background-color: var(--primary-hover); /* Mörkare blå */
+    color: white !important; /* Tvinga ikonen att vara vit */
+}
+
+/* FIX: Stäng-knappen (X) i headern */
+/* Gör så att den får en halvgenomskinlig bakgrund istället för att ändra färg */
+#closeChatWidget {
+    background-color: transparent;
+    transition: background-color 0.2s ease;
+    border-radius: 50%; /* Gör den rund */
+    padding: 0.5rem;    /* Lite klickyta */
+}
+
+#closeChatWidget:hover {
+    background-color: rgba(255, 255, 255, 0.2); /* Vit, genomskinlig platta */
+    color: white !important; /* Ikonen förblir vit */
 }
