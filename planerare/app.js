@@ -728,6 +728,89 @@
                     console.error(err);
                 }
             }
+
+			let chatUnsubscribe = null; // För att kunna stänga av lyssnaren
+
+			function initChat() {
+			    const chatList = document.getElementById('chatMessages');
+			    const chatForm = document.getElementById('chatForm');
+			    const chatInput = document.getElementById('chatInput');
+			
+			    if (!chatList || !chatForm) return;
+			
+			    // 1. Skicka meddelande
+			    chatForm.addEventListener('submit', async (e) => {
+			        e.preventDefault();
+			        const text = chatInput.value.trim();
+			        if (!text) return;
+			
+			        try {
+			            await db.collection("notes").add({
+			                text: text,
+			                timestamp: new Date().toISOString(),
+			                platform: window.innerWidth <= 768 ? 'mobil' : 'dator' // Kul info att ha
+			            });
+			            chatInput.value = ''; // Töm fältet
+			            // Scrolla längst ner
+			            setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
+			        } catch (err) {
+			            showToast("Kunde inte skicka notis.", "danger");
+			        }
+			    });
+			
+			    // 2. Lyssna på meddelanden (Realtime)
+			    if (chatUnsubscribe) chatUnsubscribe(); // Stäng ev. gammal lyssnare
+			
+			    chatUnsubscribe = db.collection("notes")
+			        .orderBy("timestamp", "asc") // Äldst först (som en chatt)
+			        .onSnapshot(snapshot => {
+			            chatList.innerHTML = ''; // Rensa listan
+			            
+			            if (snapshot.empty) {
+			                chatList.innerHTML = '<div class="empty-state-chat"><p>Skriv din första notis...</p></div>';
+			                return;
+			            }
+			
+			            snapshot.forEach(doc => {
+			                const data = doc.data();
+			                renderChatBubble(doc.id, data, chatList);
+			            });
+			
+			            // Auto-scrolla till botten
+			            chatList.scrollTop = chatList.scrollHeight;
+			        });
+			}
+			
+			function renderChatBubble(id, data, container) {
+			    const bubble = document.createElement('div');
+			    bubble.className = 'chat-bubble';
+			    bubble.textContent = data.text;
+			    
+			    // Lägg till "dubbelklicka för att radera"
+			    bubble.title = "Dubbelklicka för att radera";
+			    bubble.style.cursor = "pointer";
+			    
+			    bubble.addEventListener('dblclick', () => {
+			        if(confirm("Radera denna notis?")) {
+			            db.collection("notes").doc(id).delete();
+			        }
+			    });
+			
+			    const time = document.createElement('div');
+			    time.className = 'chat-time';
+			    
+			    // Snyggt datumformat: "Idag 14:30" eller "30 nov 10:00"
+			    const date = new Date(data.timestamp);
+			    const timeString = date.toLocaleTimeString('sv-SE', {hour: '2-digit', minute:'2-digit'});
+			    const dateString = date.toLocaleDateString('sv-SE', {day: 'numeric', month: 'short'});
+			    
+			    // Om det är idag, visa bara tid
+			    const isToday = new Date().toDateString() === date.toDateString();
+			    time.textContent = isToday ? timeString : `${dateString}, ${timeString}`;
+			
+			    container.appendChild(bubble);
+			    container.appendChild(time);
+			}
             
 			 // --- KORRIGERAD & KOMPLETT toggleView ---
 			function toggleView(view) {
@@ -736,76 +819,83 @@
 			
 			    currentView = view;
 			
-			    // 1. Hantera knappar (Desktop & Mobil)
-			    btnToggleTimeline.classList.toggle('active', view === 'timeline');
-			    btnToggleCalendar.classList.toggle('active', view === 'calendar');
-			    document.getElementById('btnToggleKanban')?.classList.toggle('active', view === 'kanban');
+			    // 1. Hantera knappar (Desktop & Mobil) - Toggla 'active'-klassen
+			    if (btnToggleTimeline) btnToggleTimeline.classList.toggle('active', view === 'timeline');
+			    if (btnToggleCalendar) btnToggleCalendar.classList.toggle('active', view === 'calendar');
+			    
+			    const btnKanban = document.getElementById('btnToggleKanban');
+			    if (btnKanban) btnKanban.classList.toggle('active', view === 'kanban');
+			
+			    // --- NYTT: Hantera Chatt-knappar ---
+			    const mobileChatBtn = document.getElementById('mobileChatBtn');
+			    if (mobileChatBtn) mobileChatBtn.classList.toggle('active', view === 'chat');
+			    
+			    const desktopChatBtn = document.getElementById('btnToggleChat');
+			    if (desktopChatBtn) desktopChatBtn.classList.toggle('active', view === 'chat');
 			
 			    // 2. Dölj alla vyer först
-			    timelineView.style.display = 'none';
-			    calendarView.style.display = 'none';
-			    kanbanView.style.display = 'none'; 
+			    if (timelineView) timelineView.style.display = 'none';
+			    if (calendarView) calendarView.style.display = 'none';
+			    if (kanbanView) kanbanView.style.display = 'none';
+			    
+			    const chatView = document.getElementById('chatView');
+			    if (chatView) chatView.style.display = 'none';
 			
-			    // 3. Visa den valda vyn
+			    // 3. Visa den valda vyn och kör specifik logik
 			    if (view === 'calendar') {
-			        calendarView.style.display = 'block';
-			        calendar.changeView('dayGridTwoWeek'); 
-			
-			        const isMobile = window.innerWidth <= 768;
-			        if (isMobile) {
-			            // ... (din befintliga mobil-kalender-logik) ...
-			        } else {
-			            // ... (din befintliga desktop-kalender-logik) ...
+			        if (calendarView) calendarView.style.display = 'block';
+			        
+			        if (calendar) {
+			            calendar.changeView('dayGridTwoWeek');
+			            
+			            // Uppdatera kalendern så den ritas rätt
+			            setTimeout(() => {
+			                calendar.updateSize();
+			                // Hämta aktiva jobb och uppdatera events
+			                const activeJobs = allJobs.filter(job => !job.deleted);
+			                const calendarEvents = activeJobs.map(mapJobToEvent);
+			                calendar.setOption('events', calendarEvents);
+			                filterCalendarView();
+			            }, 50);
 			        }
 			
-			        setTimeout(() => {
-			            calendar.updateSize();
-			            const calendarEvents = allJobs.map(mapJobToEvent);
-			            calendar.setOption('events', calendarEvents);
-			
-			            filterCalendarView();
-			        }, 50);
-			
 			        if (!isNavigatingBack) {
-			            if (history.state?.view === 'calendar') {
-			                history.replaceState({ view: 'calendar' }, 'Kalender', '#calendar');
-			            } else {
-			                history.pushState({ view: 'calendar' }, 'Kalender', '#calendar');
-			            }
+			            history.pushState({ view: 'calendar' }, 'Kalender', '#calendar');
 			        }
 			
-			    } else if (view === 'kanban') { 
+			    } else if (view === 'kanban') {
+			        if (kanbanView) kanbanView.style.display = 'block';
+			        if (appBrandTitle) appBrandTitle.style.display = 'block';
 			
-			        kanbanView.style.display = 'block';
-			        appBrandTitle.style.display = 'block'; 
-			
-			        // Rendera tavlan med korten
-			        renderKanbanBoard(); 
+			        renderKanbanBoard();
 			
 			        if (!isNavigatingBack) {
-			            if (history.state?.view === 'kanban') {
-			                history.replaceState({ view: 'kanban' }, 'Tavla', '#kanban');
-			            } else {
-			                history.pushState({ view: 'kanban' }, 'Tavla', '#kanban');
-			            }
+			            history.pushState({ view: 'kanban' }, 'Tavla', '#kanban');
 			        }
 			
-			    } else { // (view === 'timeline') - Tvinga rendering av Tidslinje
+			    } else if (view === 'chat') {
+			        // --- NYTT: CHATT-VY ---
+			        if (chatView) chatView.style.display = 'block';
+			        
+			        // Starta chatt-lyssnaren
+			        if (typeof initChat === 'function') {
+			            initChat();
+			        }
+			        
+			        if (!isNavigatingBack) {
+			            history.pushState({ view: 'chat' }, 'Notiser', '#chat');
+			        }
 			
-			        timelineView.style.display = 'block';
-			        appBrandTitle.style.display = 'block'; 
+			    } else { 
+			        // Default: Timeline (Tidslinje)
+			        if (timelineView) timelineView.style.display = 'block';
+			        if (appBrandTitle) appBrandTitle.style.display = 'block';
 			
-			        // FIX: Tvinga rendering av tidslinjen
-			        renderTimeline(); 
+			        renderTimeline();
 			
 			        if (!isNavigatingBack) {
-			            if (history.state && (history.state.view === 'calendar' || history.state.view === 'kanban' || history.state.modal)) {
-			                // Om vi kommer från en annan vy eller modal, lägg till en ny ren post
-			                history.pushState(null, 'Tidslinje', location.pathname); 
-			            } else {
-			                // Annars, ersätt nuvarande state (förhindrar dubbla entries vid start)
-			                history.replaceState(null, 'Tidslinje', location.pathname); 
-			            }
+			            // För startsidan använder vi replaceState för att hålla historiken ren
+			            history.replaceState(null, 'Tidslinje', location.pathname);
 			        }
 			    }
 			}
