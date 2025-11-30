@@ -769,8 +769,6 @@
 			    };
 			};
 			
-			// Kör setup en gång när sidan laddas
-			document.addEventListener('DOMContentLoaded', setupImageModal);
 
 			let chatUnsubscribe = null; // För att kunna stänga av lyssnaren
 
