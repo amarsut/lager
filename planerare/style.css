@@ -6252,3 +6252,19 @@ body.body-scroll-lock {
 #clearChatSearch:hover {
     color: var(--text-color);
 }
+
+/* Styling för bild-bubblor */
+.chat-bubble-image {
+    padding: 0.5rem !important; /* Lite mindre padding runt bilden */
+    background-color: transparent !important; /* Ingen blå bakgrund behövs, bilden täcker */
+    box-shadow: none !important; /* Bilden får tala för sig själv */
+}
+
+.chat-bubble img {
+    max-width: 100%;
+    border-radius: 12px; /* Snygga hörn på bilden */
+    display: block;
+    cursor: zoom-in; /* Visa att man kan klicka */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    background-color: #fff;
+}
