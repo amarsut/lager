@@ -4409,8 +4409,14 @@ html.privacy-mode-enabled .nav-logo {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    height: 50vh; /* Centrera mitt på skärmen */
+    
+    /* ÄNDRING: Starta från toppen istället för mitten */
+    justify-content: flex-start; 
+    
+    /* ÄNDRING: Ge den lite luft från toppen (ca 15-20% av skärmen ser bra ut) */
+    padding-top: 15vh; 
+    
+    height: auto; /* Behöver inte fast höjd längre */
     color: #9CA3AF;
     text-align: center;
 }
@@ -5980,6 +5986,7 @@ html.privacy-mode-enabled .nav-logo {
     font-weight: 500;
     margin-left: 4px;
 }
+
 
 
 
