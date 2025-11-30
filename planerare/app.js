@@ -805,7 +805,14 @@
 			function renderChatBubble(id, data, container) {
 			    const bubble = document.createElement('div');
 			    bubble.className = 'chat-bubble';
-			    bubble.innerHTML = linkify(data.text);
+			    
+			    // Använd vår linkify-funktion för att göra länkar klickbara
+			    // (Se till att du har lagt in linkify-funktionen från förra steget i app.js)
+			    if (typeof linkify === 'function') {
+			        bubble.innerHTML = linkify(data.text);
+			    } else {
+			        bubble.textContent = data.text;
+			    }
 			    
 			    // Lägg till "dubbelklicka för att radera"
 			    bubble.title = "Dubbelklicka för att radera";
@@ -820,14 +827,24 @@
 			    const time = document.createElement('div');
 			    time.className = 'chat-time';
 			    
-			    // Snyggt datumformat: "Idag 14:30" eller "30 nov 10:00"
+			    // Datumhantering
 			    const date = new Date(data.timestamp);
 			    const timeString = date.toLocaleTimeString('sv-SE', {hour: '2-digit', minute:'2-digit'});
 			    const dateString = date.toLocaleDateString('sv-SE', {day: 'numeric', month: 'short'});
 			    
-			    // Om det är idag, visa bara tid
 			    const isToday = new Date().toDateString() === date.toDateString();
-			    time.textContent = isToday ? timeString : `${dateString}, ${timeString}`;
+			    const displayTime = isToday ? timeString : `${dateString}, ${timeString}`;
+			
+			    // --- PLATTFORMS-IKON ---
+			    let platformIconHtml = '';
+			    if (data.platform === 'mobil') {
+			        platformIconHtml = `<svg class="platform-icon"><use href="#icon-mobile"></use></svg>`;
+			    } else if (data.platform === 'dator') {
+			        platformIconHtml = `<svg class="platform-icon"><use href="#icon-desktop"></use></svg>`;
+			    }
+			
+			    // Sätt ihop tid + ikon
+			    time.innerHTML = `${displayTime} ${platformIconHtml}`;
 			
 			    container.appendChild(bubble);
 			    container.appendChild(time);
