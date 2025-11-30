@@ -730,38 +730,44 @@
             }
 
 			// --- HJÄLPFUNKTION: Hantera Bild-modalen ---
-			function setupImageModal() {
+			window.openImageZoom = function(src) {
 			    const modal = document.getElementById('imageZoomModal');
 			    const modalImg = document.getElementById('img01');
 			    const closeBtn = document.getElementById('imageModalClose');
 			
-			    if (!modal || !modalImg || !closeBtn) return;
+			    // Säkerhetskoll
+			    if (!modal || !modalImg) {
+			        console.error("Bild-modalens HTML saknas i plan.html!");
+			        return;
+			    }
 			
-			    // Funktion för att öppna
-			    window.openImageZoom = (src) => {
-			        modal.style.display = "flex";
-			        modal.style.alignItems = "center";
-			        modal.style.justifyContent = "center";
-			        modalImg.src = src;
-			        document.body.style.overflow = 'hidden'; // Lås bakgrundsscroll
-			    };
+			    // Visa modalen
+			    modal.style.display = "flex";
+			    modal.style.alignItems = "center";
+			    modal.style.justifyContent = "center";
+			    
+			    // Sätt bildkällan
+			    modalImg.src = src;
+			    
+			    // Lås bakgrunden så man inte scrollar sidan
+			    document.body.classList.add('body-scroll-lock');
 			
 			    // Funktion för att stänga
-			    const closeModal = () => {
+			    const closeImageModal = () => {
 			        modal.style.display = "none";
-			        document.body.style.overflow = ''; // Släpp scroll
+			        document.body.classList.remove('body-scroll-lock');
 			    };
 			
-			    // Stäng vid klick på X
-			    closeBtn.onclick = closeModal;
+			    // Koppla stäng-händelser (varje gång vi öppnar, för säkerhets skull)
+			    if (closeBtn) closeBtn.onclick = closeImageModal;
 			    
-			    // Stäng vid klick utanför bilden (på bakgrunden)
 			    modal.onclick = (e) => {
+			        // Stäng bara om man klickar på den svarta bakgrunden (inte bilden)
 			        if (e.target === modal) {
-			            closeModal();
+			            closeImageModal();
 			        }
 			    };
-			}
+			};
 			
 			// Kör setup en gång när sidan laddas
 			document.addEventListener('DOMContentLoaded', setupImageModal);
@@ -1025,25 +1031,31 @@
 			        bubble.innerHTML = `<img src="${data.image}" alt="Uppladdad bild" loading="lazy" />`;
 			        const imgElement = bubble.querySelector('img');
 			        
-			        // --- Den nya klick-logiken för bilder ---
+			        // --- KLICK-LOGIK (Separera Enkel/Dubbel) ---
 			        imgElement.addEventListener('click', (e) => {
 			            e.stopPropagation(); // Stoppa bubblans egen logik
 			
-			            // Om vi redan har en timer igång, betyder det att detta är det andra klicket (dubbelklick)
+			            // Om timer redan finns = Dubbelklick!
 			            if (clickTimeout !== null) {
 			                clearTimeout(clickTimeout);
 			                clickTimeout = null;
-			                // DUBBELKLICK-ACTION: Radera
+			                
+			                // ACTION: Radera
 			                if(confirm("Radera bild?")) {
 			                    db.collection("notes").doc(id).delete();
 			                }
 			            } else {
-			                // Detta är första klicket. Starta en timer.
+			                // Första klicket = Starta timer
 			                clickTimeout = setTimeout(() => {
-			                    // Om tiden rinner ut utan ett andra klick, kör ENKELKLICK-ACTION: Zooma
+			                    // Tiden ute utan klick 2 = Enkelklick!
+			                    
+			                    // ACTION: Zooma (Anropar vår nya robusta funktion)
 			                    if (typeof window.openImageZoom === 'function') {
 			                        window.openImageZoom(data.image);
+			                    } else {
+			                        console.error("openImageZoom funktionen hittades inte.");
 			                    }
+			                    
 			                    clickTimeout = null;
 			                }, 250); // Vänta 250ms
 			            }
