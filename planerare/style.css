@@ -6530,7 +6530,7 @@ body.body-scroll-lock {
 /* Själva Popup-fönstret */
 .chat-widget-container {
     position: fixed;
-    bottom: 100px; /* Ligger precis ovanför knapparna */
+    bottom: 180px; /* Ligger precis ovanför knapparna */
     right: 2rem; /* I högra hörnet */
     width: 380px; /* Lagom bredd för en chatt */
     height: 600px; /* Ganska hög */
@@ -6610,3 +6610,4 @@ body.body-scroll-lock {
     background-color: rgba(255, 255, 255, 0.2); /* Vit, genomskinlig platta */
     color: white !important; /* Ikonen förblir vit */
 }
+
