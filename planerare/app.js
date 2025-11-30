@@ -238,25 +238,40 @@
 			        const prisInput = document.getElementById('kundpris');
 			        
 			        if (template === 'oljebyte') {
-			            const literOljaprompt = prompt('Hur många liter olja? (t.ex. 4.3)', '4,3');
-			            if (literOljaprompt) {
-			                const literOlja = parseFloat(literOljaprompt.replace(',', '.')) || 0;
-			                // Exempelpris: Olja 200kr/l + Filter 200 + Arbete 500
-			                const pris = Math.round((literOlja * 200) + 200 + 500);
-			                prisInput.value = pris;
-			                
-			                // Lägg till utgifter
-			                currentExpenses = [
-			                    { name: `Motorolja (${literOlja}L)`, cost: Math.round(literOlja * 65) },
-			                    { name: "Oljefilter", cost: 200 }
-			                ];
-			                renderExpensesList();
-			                
-			                // Lägg till text, behåll gammal text om det finns
-			                const nyText = `Oljebyte (${literOlja}L) & Filter`;
-			                kommentarInput.value = kommentarInput.value ? kommentarInput.value + "\n" + nyText : nyText;
-			            }
-			        } 
+					    const literOljaprompt = prompt('Hur många liter olja? (t.ex. 4.3)', '4,3');
+					    
+					    if (literOljaprompt) {
+					        const literOlja = parseFloat(literOljaprompt.replace(',', '.')) || 0;
+					        
+					        // 1. Räkna ut priset
+					        const pris = Math.round((literOlja * 200) + 200 + 500);
+					        prisInput.value = pris;
+					        
+					        // 2. SÄKERHETSÅTGÄRD: Se till att listan finns
+					        if (typeof currentExpenses === 'undefined') {
+					            window.currentExpenses = [];
+					        }
+					
+					        // 3. Skapa de nya raderna
+					        const nyaUtgifter = [
+					            { name: `Motorolja (${literOlja}L)`, cost: Math.round(literOlja * 65) },
+					            { name: "Oljefilter", cost: 200 }
+					        ];
+					
+					        // 4. LÄGG TILL dem i listan (istället för att ersätta hela listan)
+					        currentExpenses.push(...nyaUtgifter);
+					        
+					        // 5. Rita ut listan på skärmen
+					        renderExpensesList();
+					        
+					        // 6. Uppdatera kommentaren
+					        const nyText = `Oljebyte (${literOlja}L) & Oljefilter`;
+					        kommentarInput.value = kommentarInput.value ? kommentarInput.value + "\n" + nyText : nyText;
+					        
+					        // 7. Uppdatera vinstkalkylen direkt
+					        updateLiveProfit();
+					    }
+					}
 			        else if (template === 'hjulskifte') {
 			            prisInput.value = 200; // Ditt pris
 			            const nyText = "Hjulskifte (Sommar/Vinter)";
