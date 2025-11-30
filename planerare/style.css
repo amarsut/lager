@@ -6007,4 +6007,39 @@ html.privacy-mode-enabled .nav-logo {
     font-weight: 600;
 }
 
+/* --- VARNING FÖR ARBETSKOSTNAD --- */
+
+/* Själva texten/badgen */
+.labor-warning-badge {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #854d0e; /* Mörk gul/brun text */
+    background-color: #fef08a; /* Ljusgul bakgrund */
+    padding: 2px 8px;
+    border-radius: 4px;
+    animation: slideInFade 0.3s ease-out;
+}
+
+/* Dark mode fix för badgen */
+[data-theme="dark"] .labor-warning-badge {
+    background-color: #422006;
+    color: #fde047;
+}
+
+/* Animationen för input-fältet (Gult blink) */
+@keyframes input-flash-warning {
+    0% { background-color: var(--bg-color); border-color: transparent; }
+    20% { background-color: #fef08a; border-color: #eab308; } /* Gult */
+    100% { background-color: var(--bg-color); border-color: transparent; }
+}
+
+/* Klassen vi lägger på input-fältet tillfälligt */
+.input-warning-flash {
+    animation: input-flash-warning 1.2s ease-out;
+}
+
+/* Dark mode flash */
+[data-theme="dark"] @keyframes input-flash-warning {
+    20% { background-color: #422006; border-color: #ca8a04; }
+}
 
