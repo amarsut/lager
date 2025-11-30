@@ -6445,3 +6445,58 @@ body.body-scroll-lock {
         right: 15px;
     }
 }
+
+/* --- CHATT: BILD-KARUSELL --- */
+.chat-carousel {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto; /* Tillåt scroll i sidled */
+    padding-bottom: 5px; /* Plats för scrollbar */
+    max-width: 100%;
+    
+    /* Dölj scrollbar men behåll funktionen (valfritt, snyggare) */
+    scrollbar-width: thin; 
+    scrollbar-color: rgba(255,255,255,0.3) transparent;
+}
+
+.chat-carousel::-webkit-scrollbar {
+    height: 4px;
+}
+.chat-carousel::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.3);
+    border-radius: 4px;
+}
+
+.chat-carousel img {
+    height: 120px; /* Fast höjd i karusellen */
+    width: auto;   /* Bredden anpassas */
+    border-radius: 8px;
+    flex-shrink: 0; /* Hindra bilderna från att krympa */
+    cursor: zoom-in;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* --- CHATT: LÄS MER (Text) --- */
+.chat-text-content.truncated {
+    display: -webkit-box;
+    -webkit-line-clamp: 3; /* Max 3 rader */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.read-more-btn {
+    display: inline-block;
+    margin-top: 4px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: underline;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+}
+.read-more-btn:hover {
+    color: #fff;
+}
