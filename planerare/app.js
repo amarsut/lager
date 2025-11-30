@@ -777,12 +777,10 @@
 			    const chatForm = document.getElementById('chatForm');
 			    const chatInput = document.getElementById('chatInput');
 			    
-			    // Hämta verktyg och knappar
 			    const searchInput = document.getElementById('chatSearchInput');
 			    const clearBtn = document.getElementById('clearChatSearch');
-			    const galleryToggleBtn = document.getElementById('toggleChatGallery'); // Bytte namn för tydlighet
+			    const galleryToggleBtn = document.getElementById('toggleChatGallery');
 			
-			    // Hämta bild-uppladdnings-element
 			    const fileInputGallery = document.getElementById('chatFileInputGallery');
 			    const fileInputCamera = document.getElementById('chatFileInputCamera');
 			    const btnOpenGallery = document.getElementById('chatGalleryBtn');
@@ -790,33 +788,33 @@
 			
 			    if (!chatList || !chatForm) return;
 			
-			    // --- 1. GEMENSAM BILD-HANTERARE ---
-			    // Denna funktion används av både Kamera, Galleri och Klistra in
-			    const handleImageUpload = async (file) => {
-			        if (!file) return;
-			        showToast("Bearbetar bild...", "info");
+			    // --- 1. HANTERA BILDER (Stöd för flera/karusell) ---
+			    const handleImageUpload = async (files) => {
+			        if (!files || files.length === 0) return;
+			        
+			        showToast(`Bearbetar ${files.length} bild(er)...`, "info");
 			
 			        try {
-			            // Använder din globala compressImage-funktion
-			            const base64Image = await compressImage(file);
+			            const imagePromises = Array.from(files).map(file => compressImage(file));
+			            const base64Images = await Promise.all(imagePromises);
 			            
+			            // Om det är flera bilder, spara som en array. Om en, spara som array ändå för konsekvens.
 			            await db.collection("notes").add({
-			                image: base64Image,
+			                images: base64Images, // NYTT: Sparar en array av bilder
 			                type: 'image',
 			                timestamp: new Date().toISOString(),
 			                platform: window.innerWidth <= 768 ? 'mobil' : 'dator'
 			            });
 			            
-			            showToast("Bild skickad!", "success");
+			            showToast("Bilder skickade!", "success");
 			            
-			            // Scrolla ner om vi inte är mitt i en sökning
 			            if (!searchInput || !searchInput.value) {
 			                setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
 			            }
 			
 			        } catch (err) {
 			            console.error(err);
-			            showToast("Kunde inte skicka bilden.", "danger");
+			            showToast("Kunde inte skicka bilder.", "danger");
 			        }
 			    };
 			
@@ -843,52 +841,46 @@
 			        }
 			    };
 			
-			    // --- 3. KOPPLA BILD-KNAPPARNA ---
-			    
-			    // A. Galleri-knappen
+			    // --- 3. KOPPLA KNAPPAR ---
 			    if (btnOpenGallery && fileInputGallery) {
-			        btnOpenGallery.onclick = (e) => {
-			            e.preventDefault();
-			            fileInputGallery.click();
-			        };
+			        btnOpenGallery.onclick = (e) => { e.preventDefault(); fileInputGallery.click(); };
+			        // Notera: 'files' är en lista
 			        fileInputGallery.onchange = (e) => {
-			            handleImageUpload(e.target.files[0]);
-			            fileInputGallery.value = ''; // Återställ för att kunna välja samma igen
+			            handleImageUpload(e.target.files);
+			            fileInputGallery.value = ''; 
 			        };
 			    }
 			
-			    // B. Kamera-knappen
 			    if (btnOpenCamera && fileInputCamera) {
-			        btnOpenCamera.onclick = (e) => {
-			            e.preventDefault();
-			            fileInputCamera.click();
-			        };
+			        btnOpenCamera.onclick = (e) => { e.preventDefault(); fileInputCamera.click(); };
 			        fileInputCamera.onchange = (e) => {
-			            handleImageUpload(e.target.files[0]);
-			            fileInputCamera.value = ''; // Återställ
+			            handleImageUpload(e.target.files);
+			            fileInputCamera.value = '';
 			        };
 			    }
 			
-			    // --- 4. PASTE-HANTERARE (Ctrl+V för bilder) ---
+			    // --- 4. PASTE (Klistra in) ---
 			    chatInput.addEventListener('paste', async (e) => {
 			        const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+			        // Här hanterar vi oftast bara en bild i taget från urklipp
 			        for (let item of items) {
 			            if (item.type.indexOf("image") === 0) {
 			                e.preventDefault();
 			                const blob = item.getAsFile();
-			                handleImageUpload(blob); // Återanvänd funktionen
+			                // Skicka som en lista med 1 fil för att matcha nya logiken
+			                // Vi måste fejka ett FileList-liknande objekt eller array
+			                handleImageUpload([blob]); 
 			                return;
 			            }
 			        }
 			    });
 			
-			    // --- 5. SÖK-FUNKTION ---
+			    // --- 5. SÖK & FILTER ---
 			    if (searchInput && clearBtn) {
 			        const filterChat = () => {
 			            const term = searchInput.value.toLowerCase();
 			            const bubbles = chatList.querySelectorAll('.chat-bubble');
 			            const times = chatList.querySelectorAll('.chat-time');
-			
 			            clearBtn.style.display = term ? 'block' : 'none';
 			
 			            bubbles.forEach((bubble, index) => {
@@ -896,7 +888,6 @@
 			                const isImage = bubble.classList.contains('chat-bubble-image');
 			                const timeElement = times[index];
 			
-			                // Visa om text matchar, ELLER om det är en bild och sökfältet är tomt
 			                if (text.includes(term) || (isImage && !term)) {
 			                    bubble.style.display = 'block';
 			                    if (timeElement) timeElement.style.display = 'block';
@@ -906,66 +897,45 @@
 			                }
 			            });
 			        };
-			        
 			        searchInput.oninput = filterChat;
-			        
-			        clearBtn.onclick = () => {
-			            searchInput.value = '';
-			            filterChat();
-			            searchInput.focus();
-			        };
+			        clearBtn.onclick = () => { searchInput.value = ''; filterChat(); searchInput.focus(); };
 			    }
 			
-			    // --- 6. GALLERI-TOGGLE (Visa bara bilder) ---
+			    // --- 6. GALLERI-TOGGLE ---
 			    if (galleryToggleBtn) {
 			        galleryToggleBtn.onclick = () => {
 			            chatList.classList.toggle('gallery-mode');
 			            const isActive = chatList.classList.contains('gallery-mode');
-			            
-			            // Byt färg på ikonen
 			            galleryToggleBtn.style.color = isActive ? 'var(--primary-color)' : 'var(--text-color-light)';
-			            
-			            // Om vi går tillbaka till list-läge, scrolla ner
-			            if (!isActive) {
-			                setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
-			            }
+			            if (!isActive) setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
 			        };
 			    }
 			
-			    // --- 7. KLICK PÅ REG-NR (Auto-Link) ---
+			    // --- 7. REG-NR KLICK ---
 			    chatList.addEventListener('click', (e) => {
 			        if (e.target.classList.contains('chat-reg-link')) {
 			            e.stopPropagation();
-			            const regnr = e.target.dataset.reg;
-			            if (typeof openCarModal === 'function') {
-			                openCarModal(regnr);
-			            }
+			            if (typeof openCarModal === 'function') openCarModal(e.target.dataset.reg);
 			        }
 			    });
 			
-			    // --- 8. LYSSNA PÅ DATABASEN (Realtime) ---
+			    // --- 8. LYSSNA (Realtime) ---
 			    if (chatUnsubscribe) chatUnsubscribe();
 			
 			    chatUnsubscribe = db.collection("notes")
 			        .orderBy("timestamp", "asc")
 			        .onSnapshot(snapshot => {
-			            chatList.innerHTML = ''; // Rensa först
-			            
+			            chatList.innerHTML = '';
 			            if (snapshot.empty) {
 			                chatList.innerHTML = '<div class="empty-state-chat"><p>Skriv en notis eller ta en bild...</p></div>';
 			                return;
 			            }
-			
 			            snapshot.forEach(doc => {
 			                renderChatBubble(doc.id, doc.data(), chatList);
 			            });
-			
-			            // Om sökning pågår, applicera filtret igen
 			            if (searchInput && searchInput.value) {
 			                searchInput.dispatchEvent(new Event('input'));
-			            } 
-			            // Om vi INTE är i galleriläge, scrolla till botten
-			            else if (!chatList.classList.contains('gallery-mode')) {
+			            } else if (!chatList.classList.contains('gallery-mode')) {
 			                chatList.scrollTop = chatList.scrollHeight;
 			            }
 			        });
@@ -1030,74 +1000,106 @@
 			    const bubble = document.createElement('div');
 			    bubble.className = 'chat-bubble';
 			    
-			    let clickTimeout = null; // Timer för att skilja klick/dubbelklick
-			
-			    // --- 1. INNEHÅLLSHANTERING ---
-			    if (data.type === 'image' && data.image) {
-			        // A. BILD
-			        bubble.classList.add('chat-bubble-image'); 
-			        bubble.innerHTML = `<img src="${data.image}" alt="Uppladdad bild" loading="lazy" />`;
-			        const imgElement = bubble.querySelector('img');
+			    // --- SCENARIO A: BILD-KARUSELL (Flera bilder) ---
+			    if (data.images && Array.isArray(data.images)) {
+			        bubble.classList.add('chat-bubble-image');
 			        
-			        // --- KLICK-LOGIK (Separera Enkel/Dubbel) ---
-			        imgElement.addEventListener('click', (e) => {
-			            e.stopPropagation(); // Stoppa bubblans egen logik
-			
-			            // Om timer redan finns = Dubbelklick!
-			            if (clickTimeout !== null) {
-			                clearTimeout(clickTimeout);
-			                clickTimeout = null;
-			                
-			                // ACTION: Radera
-			                if(confirm("Radera bild?")) {
-			                    db.collection("notes").doc(id).delete();
+			        // Skapa karusell-container
+			        const carousel = document.createElement('div');
+			        carousel.className = 'chat-carousel';
+			        
+			        data.images.forEach(imgSrc => {
+			            const img = document.createElement('img');
+			            img.src = imgSrc;
+			            img.loading = "lazy";
+			            img.alt = "Bild";
+			            
+			            // Klick-logik för varje bild i karusellen
+			            img.onclick = (e) => {
+			                e.stopPropagation();
+			                if (typeof window.openImageZoom === 'function') {
+			                    window.openImageZoom(imgSrc);
 			                }
-			            } else {
-			                // Första klicket = Starta timer
-			                clickTimeout = setTimeout(() => {
-			                    // Tiden ute utan klick 2 = Enkelklick!
-			                    
-			                    // ACTION: Zooma (Anropar vår nya robusta funktion)
-			                    if (typeof window.openImageZoom === 'function') {
-			                        window.openImageZoom(data.image);
-			                    } else {
-			                        console.error("openImageZoom funktionen hittades inte.");
-			                    }
-			                    
-			                    clickTimeout = null;
-			                }, 250); // Vänta 250ms
-			            }
+			            };
+			            carousel.appendChild(img);
 			        });
-			
-			    } else {
-			        // B. TEXT (Samma som förut)
-			        let textContent = data.text || "";
-			        textContent = textContent.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 			        
+			        bubble.appendChild(carousel);
+			    } 
+			    // --- SCENARIO B: ENKEL BILD (Gamla formatet) ---
+			    else if (data.type === 'image' && data.image) {
+			        bubble.classList.add('chat-bubble-image');
+			        bubble.innerHTML = `<img src="${data.image}" alt="Uppladdad bild" loading="lazy" />`;
+			        
+			        const imgElement = bubble.querySelector('img');
+			        imgElement.onclick = (e) => {
+			            e.stopPropagation();
+			            if (typeof window.openImageZoom === 'function') {
+			                window.openImageZoom(data.image);
+			            }
+			        };
+			    } 
+			    // --- SCENARIO C: TEXT (Med Läs mer & Auto-länk) ---
+			    else {
+			        let rawText = data.text || "";
+			        
+			        // Skapa container för texten
+			        const textContentDiv = document.createElement('div');
+			        textContentDiv.className = 'chat-text-content'; // Klass för styling
+			        
+			        // Processa texten (Säkra HTML -> Länkar -> Regnr)
+			        let processedText = rawText
+			            .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+			            
 			        const urlPattern = /(https?:\/\/[^\s]+)/g;
-			        textContent = textContent.replace(urlPattern, (url) => `<a href="${url}" target="_blank" class="chat-link">${url}</a>`);
+			        processedText = processedText.replace(urlPattern, (url) => `<a href="${url}" target="_blank" class="chat-link">${url}</a>`);
 			
 			        const regPattern = /\b([A-Za-z]{3})\s?(\d{2}[0-9A-Za-z])\b/g;
-			        textContent = textContent.replace(regPattern, (match) => {
+			        processedText = processedText.replace(regPattern, (match) => {
 			            const cleanReg = match.replace(/\s/g, '').toUpperCase(); 
 			            return `<span class="chat-reg-link" data-reg="${cleanReg}">${match.toUpperCase()}</span>`;
 			        });
 			
-			        bubble.innerHTML = textContent;
+			        textContentDiv.innerHTML = processedText;
+			        bubble.appendChild(textContentDiv);
 			
-			        // För textbubblor behåller vi standard dubbelklick på själva bubblan
-			        bubble.title = "Dubbelklicka för att radera";
-			        bubble.style.cursor = "pointer";
-			        bubble.addEventListener('dblclick', () => {
-			             if(confirm("Radera denna notis?")) {
-			                 db.collection("notes").doc(id).delete();
-			             }
-			        });
+			        // --- LÄS MER LOGIK ---
+			        // Vi kollar längden på råtexten. Om över 300 tecken -> Kollapsa
+			        if (rawText.length > 300) {
+			            textContentDiv.classList.add('truncated'); // Lägg till CSS-klass som gömmer text
+			            
+			            const readMoreBtn = document.createElement('button');
+			            readMoreBtn.className = 'read-more-btn';
+			            readMoreBtn.textContent = "Visa mer";
+			            
+			            readMoreBtn.onclick = (e) => {
+			                e.stopPropagation(); // Så vi inte raderar bubblan
+			                if (textContentDiv.classList.contains('truncated')) {
+			                    textContentDiv.classList.remove('truncated');
+			                    readMoreBtn.textContent = "Visa mindre";
+			                } else {
+			                    textContentDiv.classList.add('truncated');
+			                    readMoreBtn.textContent = "Visa mer";
+			                }
+			            };
+			            
+			            bubble.appendChild(readMoreBtn);
+			        }
 			    }
 			    
-			    // --- 2. TID & IKON (Samma som förut) ---
+			    // --- RADERA (Dubbelklick på hela bubblan) ---
+			    bubble.title = "Dubbelklicka för att radera";
+			    bubble.style.cursor = "pointer";
+			    bubble.addEventListener('dblclick', () => {
+			        if(confirm("Radera denna notis?")) {
+			            db.collection("notes").doc(id).delete();
+			        }
+			    });
+			
+			    // --- TID & IKON ---
 			    const time = document.createElement('div');
 			    time.className = 'chat-time';
+			    
 			    const date = new Date(data.timestamp);
 			    const timeString = date.toLocaleTimeString('sv-SE', {hour: '2-digit', minute:'2-digit'});
 			    const dateString = date.toLocaleDateString('sv-SE', {day: 'numeric', month: 'short'});
@@ -1109,6 +1111,7 @@
 			    else if (data.platform === 'dator') platformIconHtml = `<svg class="platform-icon"><use href="#icon-desktop"></use></svg>`;
 			
 			    time.innerHTML = `${displayTime} ${platformIconHtml}`;
+			
 			    container.appendChild(bubble);
 			    container.appendChild(time);
 			}
