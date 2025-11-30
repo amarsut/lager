@@ -802,20 +802,49 @@
 			    if (!chatWidget) return;
 			    
 			    const isHidden = chatWidget.style.display === 'none';
+			    const isMobile = window.innerWidth <= 768; // Kolla om det är mobil
 			    
 			    if (isHidden) {
+			        // --- ÖPPNA ---
 			        chatWidget.style.display = 'flex';
-			        // Starta chatten om den inte redan är igång
+			        
+			        // Starta chatten
 			        if (typeof initChat === 'function') initChat();
 			        
-			        // Fokusera på textfältet direkt
+			        // Fokusera
 			        setTimeout(() => {
 			            const input = document.getElementById('chatInput');
 			            if(input) input.focus();
 			        }, 100);
+			
+			        // LÅS BAKGRUNDEN (Endast mobil)
+			        if (isMobile) {
+			            document.body.style.overflow = 'hidden';
+			        }
+			
 			    } else {
+			        // --- STÄNG ---
 			        chatWidget.style.display = 'none';
+			        
+			        // SLÄPP BAKGRUNDEN (Oavsett enhet, för säkerhets skull)
+			        document.body.style.overflow = '';
+			        
+			        // Ta bort aktiv klass från mobilknappen
+			        const mobileChatBtn = document.getElementById('mobileChatBtn');
+			        if(mobileChatBtn) mobileChatBtn.classList.remove('active');
 			    }
+			}
+			
+			// Koppla knapparna
+			if (fabChat) fabChat.addEventListener('click', toggleChatWidget);
+			
+			if (closeChatWidgetBtn) {
+			    closeChatWidgetBtn.addEventListener('click', () => {
+			        // Använd funktionen för att stänga så att scroll-låset släpper
+			        if (chatWidget.style.display !== 'none') {
+			            toggleChatWidget(); 
+			        }
+			    });
 			}
 			
 			// Koppla knapparna
