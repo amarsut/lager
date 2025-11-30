@@ -2173,39 +2173,48 @@
 			        const div = document.createElement('div');
 			        div.className = 'expense-item-original';
 			        
+			        // Visa om det är en manuell del (valfritt, men bra för översikt)
+			        const manualBadge = item.isManual ? '<span style="font-size:0.7em; color:#666; margin-left:5px;">(Manuell)</span>' : '';
+			
 			        div.innerHTML = `
-			            <span class="item-name">${item.name}</span>
+			            <span class="item-name">${item.name} ${manualBadge}</span>
 			            <div style="display:flex; align-items:center;">
 			                <span class="item-cost">-${formatCurrency(item.cost)}</span>
-			                <button type="button" class="delete-btn" title="Ta bort och justera pris">
+			                <button type="button" class="delete-btn" title="Ta bort">
 			                    <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-trash"></use></svg>
 			                </button>
 			            </div>
 			        `;
 			        
-			        // Koppla klick-lyssnare till soptunnan
 			        div.querySelector('.delete-btn').addEventListener('click', () => {
-			            const costToRemove = item.cost || 0;
-			
-			            // 1. Hämta nuvarande kundpris
+			            // Hämta nuvarande kundpris
 			            const prisInput = document.getElementById('kundpris');
-			            // Rensa bort eventuella mellanslag så vi får ett rent nummer
 			            let currentPrice = parseFloat(prisInput.value.replace(/\s/g, '').replace(',', '.')) || 0;
 			
-			            // 2. Dra av kostnaden från priset
-			            let newPrice = currentPrice - costToRemove;
-			            if (newPrice < 0) newPrice = 0; // Säkra så vi inte får minuspris
+			            let deduction = 0;
+			
+			            // --- LOGIKEN FÖR BORTTAGNING ---
+			            if (item.isManual) {
+			                // Om den lades till manuellt, dra av 110% (Kostnad + 10%)
+			                deduction = Math.round(item.cost * 1.10);
+			            } else {
+			                // Om den kom från ett paket, dra av den rena kostnaden
+			                // (Eftersom paketen ofta har fasta priser är detta säkrast)
+			                deduction = Math.round(item.cost);
+			            }
+			
+			            let newPrice = currentPrice - deduction;
+			            if (newPrice < 0) newPrice = 0;
 			
 			            prisInput.value = Math.round(newPrice);
 			
-			            // 3. Ta bort utgiften från listan
+			            // Ta bort från listan
 			            currentExpenses.splice(index, 1);
 			
-			            // 4. Uppdatera UI och Vinstkalkyl
 			            renderExpensesList();
 			            updateLiveProfit();
 			            
-			            showToast(`Utgift borttagen. Pris justerat med -${costToRemove} kr.`);
+			            //showToast(`Borttagen. Priset justerades med -${deduction} kr.`);
 			        });
 			        
 			        container.appendChild(div);
@@ -2310,38 +2319,33 @@
 		                return;
 		            }
 		
-		            // 1. Lägg till i listan
-		            currentExpenses.push({ name: name, cost: cost });
+		            // 1. Lägg till i listan och MARKERA SOM MANUELL
+		            // Vi lägger till "isManual: true" för att veta att denna ska ha påslag vid borttagning
+		            currentExpenses.push({ name: name, cost: cost, isManual: true });
 		
-		            // 2. AUTOMATISK PRISÖKNING
-		            // Hämta nuvarande kundpris (rensa bort ev. mellanslag om du har tusentalsavgränsare)
+		            // 2. AUTOMATISK PRISÖKNING MED 10%
 		            let currentPrice = 0;
 		            if (prisInput.value) {
-		                // Hantera om det står "1 200" eller "1200"
 		                currentPrice = parseFloat(prisInput.value.replace(/\s/g, '').replace(',', '.')) || 0;
 		            }
 		            
-		            // Plussa på utgiftens kostnad
-		            const newPrice = currentPrice + (cost * 1.1); // 10% påslag
+		            // HÄR ÄR ÄNDRINGEN: Plussa på kostnad * 1.10 (10%)
+		            const markupCost = Math.round(cost * 1.10);
+		            const newPrice = currentPrice + markupCost;
+		            
 		            prisInput.value = Math.round(newPrice);
 		
 		            // 3. VISA VARNING & ANIMATION
-		            // Tänd den lilla skylten
 		            if (warningBadge) {
 		                warningBadge.style.display = 'inline-block';
-		                
-		                // Dölj skylten automatiskt efter 8 sekunder (så den inte stör för alltid)
-		                setTimeout(() => {
-		                    warningBadge.style.display = 'none';
-		                }, 8000);
+		                setTimeout(() => { warningBadge.style.display = 'none'; }, 8000);
 		            }
 		
-		            // Få input-fältet att blinka gult
-		            prisInput.classList.remove('input-warning-flash'); // Nollställ om den redan körs
-		            void prisInput.offsetWidth; // Tvinga omritning (magiskt trick för att starta om animation)
+		            prisInput.classList.remove('input-warning-flash');
+		            void prisInput.offsetWidth; 
 		            prisInput.classList.add('input-warning-flash');
 		
-		            // 4. Återställ formulär & Uppdatera UI
+		            // 4. Återställ & Uppdatera
 		            nameInput.value = '';
 		            costInput.value = '';
 		            nameInput.focus();
@@ -2349,8 +2353,7 @@
 		            renderExpensesList();
 		            updateLiveProfit();
 		            
-		            // En liten toast också för tydlighetens skull
-		            //showToast(`Priset ökat med ${cost} kr.`);
+		            //showToast(`Lade till ${cost} kr (+10% påslag: ${markupCost} kr)`);
 		        });
 		    }
 
