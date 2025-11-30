@@ -6500,3 +6500,93 @@ body.body-scroll-lock {
 .read-more-btn:hover {
     color: #fff;
 }
+
+/* --- CHATT WIDGET (POPUP) --- */
+
+/* Knappen (Ovanför FAB Add Job) */
+#fabChat {
+    position: fixed; 
+    bottom: 90px; /* 2rem (fab) + 56px (höjd) + mellanrum */
+    right: 2rem;
+    width: 56px; height: 56px;
+    background-color: var(--content-bg); /* Vit/Mörkgrå */
+    color: var(--primary-color);
+    border: 1px solid var(--border-color);
+    border-radius: 50%;
+    box-shadow: var(--shadow-lg);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s ease; 
+    z-index: 1000;
+}
+
+#fabChat:hover {
+    transform: scale(1.05);
+    color: var(--primary-hover);
+    background-color: var(--bg-color);
+}
+#fabChat .icon { width: 1.6rem; height: 1.6rem; }
+
+/* Själva Popup-fönstret */
+.chat-widget-container {
+    position: fixed;
+    bottom: 100px; /* Ligger precis ovanför knapparna */
+    right: 2rem; /* I högra hörnet */
+    width: 380px; /* Lagom bredd för en chatt */
+    height: 600px; /* Ganska hög */
+    max-height: 70vh; /* Men inte högre än 70% av skärmen */
+    
+    background-color: var(--content-bg);
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    border: 1px solid var(--border-color);
+    
+    display: flex;
+    flex-direction: column;
+    z-index: 2000; /* Ligger över det mesta */
+    overflow: hidden;
+    
+    /* Animation när den öppnas */
+    transform-origin: bottom right;
+    animation: popUpWidget 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes popUpWidget {
+    from { opacity: 0; transform: scale(0.8) translateY(20px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Header i widgeten */
+.chat-widget-header {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 0.8rem 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.chat-widget-header h3 { margin: 0; font-size: 1rem; }
+
+/* Anpassa innehållet så det passar i widgeten */
+.chat-widget-container .chat-messages {
+    flex-grow: 1;
+    background-color: var(--bg-color);
+    padding: 1rem;
+}
+
+/* Mobil-justering: Dölj desktop-FAB på mobil, använd menyn istället */
+@media (max-width: 768px) {
+    #fabChat { display: none; }
+    
+    /* Om man öppnar på mobil via menyn, gör den helskärm istället för widget */
+    .chat-widget-container {
+        bottom: var(--mobile-nav-height); /* Ovanför menyn */
+        right: 0; left: 0;
+        width: 100%;
+        height: auto;
+        top: 0;
+        max-height: none;
+        border-radius: 0;
+        border: none;
+    }
+}
