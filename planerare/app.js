@@ -741,6 +741,44 @@
 			    const clearBtn = document.getElementById('clearChatSearch');
 			
 			    if (!chatList || !chatForm) return;
+
+				// --- NYTT: PASTE-HANTERARE (Klistra in bild) ---
+			    chatInput.addEventListener('paste', async (e) => {
+			        // Hämta urklippet
+			        const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+			        
+			        for (let item of items) {
+			            // Om det är en bild
+			            if (item.type.indexOf("image") === 0) {
+			                e.preventDefault(); // Stoppa att bilden klistras in som konstig text
+			                
+			                const blob = item.getAsFile();
+			                showToast("Bearbetar bild...", "info"); // Visa att vi jobbar
+			
+			                try {
+			                    // 1. Komprimera
+			                    const base64Image = await compressImage(blob);
+			                    
+			                    // 2. Skicka till databasen
+			                    await db.collection("notes").add({
+			                        image: base64Image, // Här sparas bilddatan
+			                        type: 'image',      // Markera att det är en bild
+			                        timestamp: new Date().toISOString(),
+			                        platform: window.innerWidth <= 768 ? 'mobil' : 'dator'
+			                    });
+			                    
+			                    showToast("Bild skickad!", "success");
+			                    // Scrolla ner
+			                    setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
+			
+			                } catch (err) {
+			                    console.error(err);
+			                    showToast("Kunde inte skicka bilden (för stor?)", "danger");
+			                }
+			                return; // Avbryt loopen när vi hittat en bild
+			            }
+			        }
+			    });
 			
 			    // --- 1. SKICKA MEDDELANDE ---
 			    // Vi tar bort gamla lyssnare genom att klona elementet (trick för att undvika dubbla skickningar)
@@ -836,6 +874,40 @@
 			        });
 			}
 
+			// --- HJÄLPFUNKTION: Komprimera Bild ---
+			function compressImage(file) {
+			    return new Promise((resolve, reject) => {
+			        const reader = new FileReader();
+			        reader.readAsDataURL(file);
+			        
+			        reader.onload = (event) => {
+			            const img = new Image();
+			            img.src = event.target.result;
+			            
+			            img.onload = () => {
+			                const maxWidth = 800; // Max bredd i pixlar (håller storleken nere)
+			                const scaleSize = maxWidth / img.width;
+			                const newWidth = (img.width > maxWidth) ? maxWidth : img.width;
+			                const newHeight = (img.width > maxWidth) ? (img.height * scaleSize) : img.height;
+			
+			                const canvas = document.createElement('canvas');
+			                canvas.width = newWidth;
+			                canvas.height = newHeight;
+			
+			                const ctx = canvas.getContext('2d');
+			                ctx.drawImage(img, 0, 0, newWidth, newHeight);
+			
+			                // Konvertera till JPEG med 70% kvalitet
+			                // Detta ger en sträng som ser ut typ: "data:image/jpeg;base64,/9j/4AAQSk..."
+			                const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+			                resolve(dataUrl);
+			            };
+			            img.onerror = (err) => reject(err);
+			        };
+			        reader.onerror = (err) => reject(err);
+			    });
+			}
+
 			// Hjälpfunktion: Gör länkar klickbara
 			function linkify(text) {
 			    if (!text) return "";
@@ -861,13 +933,27 @@
 			    const bubble = document.createElement('div');
 			    bubble.className = 'chat-bubble';
 			    
-			    // Använd vår linkify-funktion för att göra länkar klickbara
-			    // (Se till att du har lagt in linkify-funktionen från förra steget i app.js)
-			    if (typeof linkify === 'function') {
-			        bubble.innerHTML = linkify(data.text);
+			    // --- NY LOGIK: BILD ELLER TEXT? ---
+			    if (data.type === 'image' && data.image) {
+			        // Om det är en bild
+			        bubble.classList.add('chat-bubble-image'); // Ny klass för styling
+			        bubble.innerHTML = `<img src="${data.image}" alt="Uppladdad bild" loading="lazy" />`;
+			        
+			        // Klicka på bilden för att öppna i ny flik (för att se stor)
+			        bubble.querySelector('img').onclick = (e) => {
+			            e.stopPropagation(); // Hindra att man råkar radera
+			            const win = window.open();
+			            win.document.write('<img src="' + data.image + '" style="width:100%">');
+			        };
 			    } else {
-			        bubble.textContent = data.text;
+			        // Om det är text (Gammal logik)
+			        if (typeof linkify === 'function') {
+			            bubble.innerHTML = linkify(data.text);
+			        } else {
+			            bubble.textContent = data.text;
+			        }
 			    }
+			    // ----------------------------------
 			    
 			    // Lägg till "dubbelklicka för att radera"
 			    bubble.title = "Dubbelklicka för att radera";
@@ -882,7 +968,6 @@
 			    const time = document.createElement('div');
 			    time.className = 'chat-time';
 			    
-			    // Datumhantering
 			    const date = new Date(data.timestamp);
 			    const timeString = date.toLocaleTimeString('sv-SE', {hour: '2-digit', minute:'2-digit'});
 			    const dateString = date.toLocaleDateString('sv-SE', {day: 'numeric', month: 'short'});
@@ -890,7 +975,6 @@
 			    const isToday = new Date().toDateString() === date.toDateString();
 			    const displayTime = isToday ? timeString : `${dateString}, ${timeString}`;
 			
-			    // --- PLATTFORMS-IKON ---
 			    let platformIconHtml = '';
 			    if (data.platform === 'mobil') {
 			        platformIconHtml = `<svg class="platform-icon"><use href="#icon-mobile"></use></svg>`;
@@ -898,7 +982,6 @@
 			        platformIconHtml = `<svg class="platform-icon"><use href="#icon-desktop"></use></svg>`;
 			    }
 			
-			    // Sätt ihop tid + ikon
 			    time.innerHTML = `${displayTime} ${platformIconHtml}`;
 			
 			    container.appendChild(bubble);
