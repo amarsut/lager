@@ -248,7 +248,7 @@
 			                // Lägg till utgifter
 			                currentExpenses = [
 			                    { name: `Motorolja (${literOlja}L)`, cost: Math.round(literOlja * 65) },
-			                    { name: "Oljefilter", cost: 150 }
+			                    { name: "Oljefilter", cost: 200 }
 			                ];
 			                renderExpensesList();
 			                
@@ -258,7 +258,7 @@
 			            }
 			        } 
 			        else if (template === 'hjulskifte') {
-			            prisInput.value = 400; // Ditt pris
+			            prisInput.value = 200; // Ditt pris
 			            const nyText = "Hjulskifte (Sommar/Vinter)";
 			            kommentarInput.value = kommentarInput.value ? kommentarInput.value + "\n" + nyText : nyText;
 			            // Rensa utgifter för hjulskifte
