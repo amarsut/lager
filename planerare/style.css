@@ -5991,7 +5991,7 @@ html.privacy-mode-enabled .nav-logo {
 
 /* 1. Kundpris: Stort och Blått */
 #modalSummaryKundpris {
-    color: var(--primary-color) !important;
+    color: var(--info-color) !important;
     font-weight: 800;
 }
 
@@ -6007,6 +6007,7 @@ html.privacy-mode-enabled .nav-logo {
     font-size: 1rem !important; /* Mindre än kundpris */
     font-weight: 600;
 }
+
 
 
 
