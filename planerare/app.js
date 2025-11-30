@@ -2174,7 +2174,7 @@
 			        div.className = 'expense-item-original';
 			        
 			        // Visa om det är en manuell del (valfritt, men bra för översikt)
-			        const manualBadge = item.isManual ? '<span style="font-size:0.7em; color:#666; margin-left:5px;">(Manuell)</span>' : '';
+			        const manualBadge = item.isManual ? '<span style="font-size:0.7em; color:#666; margin-left:5px;">(Tillägg)</span>' : '';
 			
 			        div.innerHTML = `
 			            <span class="item-name">${item.name} ${manualBadge}</span>
