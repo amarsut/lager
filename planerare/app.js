@@ -2271,33 +2271,72 @@
             });
 
 			// --- NY LISTENER: Lägg till en utgift ---
-            addExpenseBtn.addEventListener('click', () => {
-                const name = expenseNameInput.value.trim();
-                const cost = parseFloat(expenseCostInput.value) || 0;
-
-                if (!name) {
-                    showToast('Du måste ange ett namn för utgiften.', 'danger');
-                    expenseNameInput.focus();
-                    return;
-                }
-                if (cost <= 0) {
-                    showToast('Kostnaden måste vara större än 0.', 'danger');
-                    expenseCostInput.focus();
-                    return;
-                }
-
-                // Lägg till i vår temporära array
-                currentExpenses.push({ name: name, cost: cost });
-
-                // Återställ formuläret
-                expenseNameInput.value = '';
-                expenseCostInput.value = '';
-                expenseNameInput.focus(); // Gör det enkelt att lägga till nästa
-
-                // Uppdatera UI
-                renderExpensesList();
-                updateLiveProfit();
-            });
+            const addExpenseBtn = document.getElementById('addExpenseBtn');
+    
+		    if (addExpenseBtn) {
+		        addExpenseBtn.addEventListener('click', () => {
+		            const nameInput = document.getElementById('expenseName');
+		            const costInput = document.getElementById('expenseCost');
+		            const prisInput = document.getElementById('kundpris');
+		            const warningBadge = document.getElementById('laborWarningBadge');
+		
+		            const name = nameInput.value.trim();
+		            const cost = parseFloat(costInput.value) || 0;
+		
+		            if (!name) {
+		                showToast('Du måste ange ett namn för utgiften.', 'danger');
+		                nameInput.focus();
+		                return;
+		            }
+		            if (cost <= 0) {
+		                showToast('Kostnaden måste vara större än 0.', 'danger');
+		                costInput.focus();
+		                return;
+		            }
+		
+		            // 1. Lägg till i listan
+		            currentExpenses.push({ name: name, cost: cost });
+		
+		            // 2. AUTOMATISK PRISÖKNING
+		            // Hämta nuvarande kundpris (rensa bort ev. mellanslag om du har tusentalsavgränsare)
+		            let currentPrice = 0;
+		            if (prisInput.value) {
+		                // Hantera om det står "1 200" eller "1200"
+		                currentPrice = parseFloat(prisInput.value.replace(/\s/g, '').replace(',', '.')) || 0;
+		            }
+		            
+		            // Plussa på utgiftens kostnad
+		            const newPrice = currentPrice + cost;
+		            prisInput.value = Math.round(newPrice);
+		
+		            // 3. VISA VARNING & ANIMATION
+		            // Tänd den lilla skylten
+		            if (warningBadge) {
+		                warningBadge.style.display = 'inline-block';
+		                
+		                // Dölj skylten automatiskt efter 8 sekunder (så den inte stör för alltid)
+		                setTimeout(() => {
+		                    warningBadge.style.display = 'none';
+		                }, 8000);
+		            }
+		
+		            // Få input-fältet att blinka gult
+		            prisInput.classList.remove('input-warning-flash'); // Nollställ om den redan körs
+		            void prisInput.offsetWidth; // Tvinga omritning (magiskt trick för att starta om animation)
+		            prisInput.classList.add('input-warning-flash');
+		
+		            // 4. Återställ formulär & Uppdatera UI
+		            nameInput.value = '';
+		            costInput.value = '';
+		            nameInput.focus();
+		
+		            renderExpensesList();
+		            updateLiveProfit();
+		            
+		            // En liten toast också för tydlighetens skull
+		            showToast(`Priset ökat med ${cost} kr.`);
+		        });
+		    }
 
             // --- NY LISTENER: Ta bort en utgift (med event delegation) ---
             expenseListContainer.addEventListener('click', (e) => {
