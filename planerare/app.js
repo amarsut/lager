@@ -736,17 +736,16 @@
 			    const chatForm = document.getElementById('chatForm');
 			    const chatInput = document.getElementById('chatInput');
 			    
-			    // Hämta sök-element
+			    // Hämta verktyg
 			    const searchInput = document.getElementById('chatSearchInput');
 			    const clearBtn = document.getElementById('clearChatSearch');
-			
-			    // Hämta kamera-element (NYTT)
 			    const fileInput = document.getElementById('chatFileInput');
 			    const cameraBtn = document.getElementById('chatCameraBtn');
+			    const galleryBtn = document.getElementById('toggleChatGallery');
 			
 			    if (!chatList || !chatForm) return;
 			
-			    // --- 1. SKICKA TEXT ---
+			    // --- A. SKICKA TEXT ---
 			    chatForm.onsubmit = async (e) => {
 			        e.preventDefault();
 			        const text = chatInput.value.trim();
@@ -760,6 +759,7 @@
 			            });
 			            chatInput.value = '';
 			            
+			            // Scrolla ner om vi inte söker
 			            if (!searchInput || !searchInput.value) {
 			                setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
 			            }
@@ -769,50 +769,47 @@
 			        }
 			    };
 			
-			    // --- 2. KAMERA-KNAPP LOGIK (NYTT) ---
+			    // --- B. KAMERA-KNAPP (Bifoga bild) ---
 			    if (cameraBtn && fileInput) {
-			        // När man klickar på kamera-ikonen -> Öppna filväljaren
-			        cameraBtn.onclick = () => {
-			            fileInput.click();
+			        cameraBtn.onclick = (e) => {
+			            e.preventDefault();
+			            fileInput.click(); 
 			        };
 			
-			        // När en fil/bild har valts
 			        fileInput.onchange = async (e) => {
+			            if (!e.target.files || e.target.files.length === 0) return;
 			            const file = e.target.files[0];
-			            if (!file) return;
-			
 			            showToast("Bearbetar bild...", "info");
 			
 			            try {
-			                // Återanvänd din compressImage-funktion
+			                // Använder din globala compressImage-funktion
 			                const base64Image = await compressImage(file);
 			                
 			                await db.collection("notes").add({
 			                    image: base64Image,
-			                    type: 'image',
+			                    type: 'image', // Markera som bild
 			                    timestamp: new Date().toISOString(),
 			                    platform: window.innerWidth <= 768 ? 'mobil' : 'dator'
 			                });
 			                
 			                showToast("Bild skickad!", "success");
-			                fileInput.value = ''; // Nollställ så man kan välja samma igen
+			                fileInput.value = ''; 
 			                setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
 			
 			            } catch (err) {
-			                console.error(err);
 			                showToast("Kunde inte skicka bilden.", "danger");
 			            }
 			        };
 			    }
 			
-			    // --- 3. PASTE-HANTERARE (Ctrl+V) ---
+			    // --- C. PASTE-HANTERARE (Ctrl+V) ---
 			    chatInput.addEventListener('paste', async (e) => {
 			        const items = (e.clipboardData || e.originalEvent.clipboardData).items;
 			        for (let item of items) {
 			            if (item.type.indexOf("image") === 0) {
 			                e.preventDefault();
 			                const blob = item.getAsFile();
-			                showToast("Bearbetar bild...", "info");
+			                showToast("Klistrar in bild...", "info");
 			                try {
 			                    const base64Image = await compressImage(blob);
 			                    await db.collection("notes").add({
@@ -831,7 +828,7 @@
 			        }
 			    });
 			
-			    // --- 4. SÖK-FUNKTION ---
+			    // --- D. SÖK-FUNKTION ---
 			    if (searchInput && clearBtn) {
 			        const filterChat = () => {
 			            const term = searchInput.value.toLowerCase();
@@ -841,11 +838,12 @@
 			            clearBtn.style.display = term ? 'block' : 'none';
 			
 			            bubbles.forEach((bubble, index) => {
+			                // Hämta textinnehåll (om det finns) eller kolla om det är en bild
 			                const text = bubble.textContent.toLowerCase();
-			                const timeElement = times[index];
-			                // Visa även om det är en bild-bubbla (ingen text) men sökningen är tom
 			                const isImage = bubble.classList.contains('chat-bubble-image');
-			                
+			                const timeElement = times[index];
+			
+			                // Visa om text matchar, ELLER om det är en bild och vi inte söker på något
 			                if (text.includes(term) || (isImage && !term)) {
 			                    bubble.style.display = 'block';
 			                    if (timeElement) timeElement.style.display = 'block';
@@ -855,7 +853,9 @@
 			                }
 			            });
 			        };
+			        
 			        searchInput.oninput = filterChat;
+			        
 			        clearBtn.onclick = () => {
 			            searchInput.value = '';
 			            filterChat();
@@ -863,13 +863,43 @@
 			        };
 			    }
 			
-			    // --- 5. LYSSNA PÅ DATABASEN ---
+			    // --- E. GALLERI-TOGGLE (Visa bara bilder) ---
+			    if (galleryBtn) {
+			        galleryBtn.onclick = () => {
+			            chatList.classList.toggle('gallery-mode');
+			            const isActive = chatList.classList.contains('gallery-mode');
+			            
+			            // Byt färg på ikonen för att visa status
+			            galleryBtn.style.color = isActive ? 'var(--primary-color)' : 'var(--text-color-light)';
+			            
+			            // Om vi går tillbaka till listan, scrolla ner
+			            if (!isActive) {
+			                setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
+			            }
+			        };
+			    }
+			
+			    // --- F. KLICK-HANTERARE FÖR REG.NR (Auto-Link) ---
+			    // Vi lägger lyssnaren på hela listan (Event Delegation)
+			    chatList.addEventListener('click', (e) => {
+			        if (e.target.classList.contains('chat-reg-link')) {
+			            e.stopPropagation(); // Hindra andra klick (t.ex. radera)
+			            const regnr = e.target.dataset.reg;
+			            
+			            // Öppna bil-modalen med regnumret
+			            if (typeof openCarModal === 'function') {
+			                openCarModal(regnr);
+			            }
+			        }
+			    });
+			
+			    // --- G. LYSSNA PÅ DATABASEN (Realtime) ---
 			    if (chatUnsubscribe) chatUnsubscribe();
 			
 			    chatUnsubscribe = db.collection("notes")
 			        .orderBy("timestamp", "asc")
 			        .onSnapshot(snapshot => {
-			            chatList.innerHTML = '';
+			            chatList.innerHTML = ''; // Rensa först
 			            
 			            if (snapshot.empty) {
 			                chatList.innerHTML = '<div class="empty-state-chat"><p>Skriv en notis eller ta en bild...</p></div>';
@@ -880,9 +910,11 @@
 			                renderChatBubble(doc.id, doc.data(), chatList);
 			            });
 			
+			            // Om sökning pågår, applicera filter igen
 			            if (searchInput && searchInput.value) {
 			                searchInput.dispatchEvent(new Event('input'));
-			            } else {
+			            } else if (!chatList.classList.contains('gallery-mode')) {
+			                // Annars scrolla till botten (om vi inte är i galleri-läge)
 			                chatList.scrollTop = chatList.scrollHeight;
 			            }
 			        });
@@ -947,29 +979,49 @@
 			    const bubble = document.createElement('div');
 			    bubble.className = 'chat-bubble';
 			    
-			    // --- NY LOGIK: BILD ELLER TEXT? ---
+			    // --- 1. INNEHÅLLSHANTERING (BILD vs TEXT) ---
 			    if (data.type === 'image' && data.image) {
-			        // Om det är en bild
-			        bubble.classList.add('chat-bubble-image'); // Ny klass för styling
+			        // A. Om det är en BILD
+			        bubble.classList.add('chat-bubble-image'); 
 			        bubble.innerHTML = `<img src="${data.image}" alt="Uppladdad bild" loading="lazy" />`;
 			        
-			        // Klicka på bilden för att öppna i ny flik (för att se stor)
+			        // Klicka på bilden för att öppna den stor i ny flik
 			        bubble.querySelector('img').onclick = (e) => {
-			            e.stopPropagation(); // Hindra att man råkar radera
+			            e.stopPropagation(); 
 			            const win = window.open();
 			            win.document.write('<img src="' + data.image + '" style="width:100%">');
 			        };
 			    } else {
-			        // Om det är text (Gammal logik)
-			        if (typeof linkify === 'function') {
-			            bubble.innerHTML = linkify(data.text);
-			        } else {
-			            bubble.textContent = data.text;
-			        }
+			        // B. Om det är TEXT (med smart länkning)
+			        let textContent = data.text || "";
+			
+			        // 1. Säkra HTML (XSS-skydd)
+			        textContent = textContent
+			            .replace(/&/g, "&amp;")
+			            .replace(/</g, "&lt;")
+			            .replace(/>/g, "&gt;");
+			
+			        // 2. Hitta URL:er (http/https) och gör klickbara
+			        const urlPattern = /(https?:\/\/[^\s]+)/g;
+			        textContent = textContent.replace(urlPattern, (url) => {
+			            return `<a href="${url}" target="_blank" class="chat-link">${url}</a>`;
+			        });
+			
+			        // 3. Hitta Reg.nr (ABC 123 eller ABC123)
+			        // Regex för: 3 bokstäver, valfritt mellanslag, 2 siffror, 1 siffra eller bokstav
+			        const regPattern = /\b([A-Za-z]{3})\s?(\d{2}[0-9A-Za-z])\b/g;
+			        
+			        textContent = textContent.replace(regPattern, (match) => {
+			            // Snygga till formatet till "ABC 123"
+			            const cleanReg = match.replace(/\s/g, '').toUpperCase(); 
+			            // Skapa en länk med data-attribut
+			            return `<span class="chat-reg-link" data-reg="${cleanReg}">${match.toUpperCase()}</span>`;
+			        });
+			
+			        bubble.innerHTML = textContent;
 			    }
-			    // ----------------------------------
 			    
-			    // Lägg till "dubbelklicka för att radera"
+			    // --- 2. RADERA-HANTERING ---
 			    bubble.title = "Dubbelklicka för att radera";
 			    bubble.style.cursor = "pointer";
 			    
@@ -979,6 +1031,7 @@
 			        }
 			    });
 			
+			    // --- 3. DATUM & PLATTFORMS-IKON ---
 			    const time = document.createElement('div');
 			    time.className = 'chat-time';
 			    
@@ -989,6 +1042,7 @@
 			    const isToday = new Date().toDateString() === date.toDateString();
 			    const displayTime = isToday ? timeString : `${dateString}, ${timeString}`;
 			
+			    // Välj ikon baserat på plattform
 			    let platformIconHtml = '';
 			    if (data.platform === 'mobil') {
 			        platformIconHtml = `<svg class="platform-icon"><use href="#icon-mobile"></use></svg>`;
