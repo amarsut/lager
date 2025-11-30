@@ -780,11 +780,32 @@
 			            chatList.scrollTop = chatList.scrollHeight;
 			        });
 			}
+
+			// Hjälpfunktion: Gör länkar klickbara
+			function linkify(text) {
+			    if (!text) return "";
+			
+			    // 1. Först "säkrar" vi texten (så att <script> inte kan köras om någon skriver det)
+			    let safeText = text
+			        .replace(/&/g, "&amp;")
+			        .replace(/</g, "&lt;")
+			        .replace(/>/g, "&gt;")
+			        .replace(/"/g, "&quot;")
+			        .replace(/'/g, "&#039;");
+			
+			    // 2. Regex för att hitta URL:er (http/https)
+			    const urlPattern = /(https?:\/\/[^\s]+)/g;
+			
+			    // 3. Byt ut URL:en mot en <a> tagg
+			    return safeText.replace(urlPattern, (url) => {
+			        return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="chat-link">${url}</a>`;
+			    });
+			}
 			
 			function renderChatBubble(id, data, container) {
 			    const bubble = document.createElement('div');
 			    bubble.className = 'chat-bubble';
-			    bubble.textContent = data.text;
+			    bubble.innerHTML = linkify(data.text);
 			    
 			    // Lägg till "dubbelklicka för att radera"
 			    bubble.title = "Dubbelklicka för att radera";
