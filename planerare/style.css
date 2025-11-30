@@ -6273,9 +6273,9 @@ body.body-scroll-lock {
     }
 
     /* 4. Dölj "X"-knappen på mobil (man byter vy via menyn istället) */
-    #closeChatWidget {
+    /*#closeChatWidget {
         display: none !important;
-    }
+    }*/
     
     /* 5. Justera rubriken lite för mobil */
     .chat-widget-header {
@@ -6656,6 +6656,7 @@ body.body-scroll-lock {
     background-color: rgba(255, 255, 255, 0.2); /* Vit, genomskinlig platta */
     color: white !important; /* Ikonen förblir vit */
 }
+
 
 
 
