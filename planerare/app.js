@@ -735,37 +735,28 @@
 			    const modalImg = document.getElementById('img01');
 			    const closeBtn = document.getElementById('imageModalClose');
 			
-			    // Säkerhetskoll
-			    if (!modal || !modalImg) {
-			        console.error("Bild-modalens HTML saknas i plan.html!");
-			        return;
-			    }
+			    if (!modal || !modalImg) return;
 			
-			    // Visa modalen
+			    // 1. Lägg till i historiken!
+			    history.pushState({ modal: 'imageZoom' }, 'Bild', '#image');
+			
 			    modal.style.display = "flex";
 			    modal.style.alignItems = "center";
 			    modal.style.justifyContent = "center";
-			    
-			    // Sätt bildkällan
 			    modalImg.src = src;
 			    
-			    // Lås bakgrunden så man inte scrollar sidan
+			    // Lås bakgrund
 			    document.body.classList.add('body-scroll-lock');
 			
-			    // Funktion för att stänga
-			    const closeImageModal = () => {
-			        modal.style.display = "none";
-			        document.body.classList.remove('body-scroll-lock');
+			    // Funktion för att stänga via knapp/klick (Backar historiken)
+			    const triggerClose = () => {
+			        history.back(); // Detta triggar popstate som stänger modalen visuellt
 			    };
 			
-			    // Koppla stäng-händelser (varje gång vi öppnar, för säkerhets skull)
-			    if (closeBtn) closeBtn.onclick = closeImageModal;
+			    if (closeBtn) closeBtn.onclick = triggerClose;
 			    
 			    modal.onclick = (e) => {
-			        // Stäng bara om man klickar på den svarta bakgrunden (inte bilden)
-			        if (e.target === modal) {
-			            closeImageModal();
-			        }
+			        if (e.target === modal) triggerClose();
 			    };
 			};
 
@@ -802,15 +793,16 @@
 			    if (!chatWidget) return;
 			    
 			    const isHidden = chatWidget.style.display === 'none';
-			    const isMobile = window.innerWidth <= 768; 
+			    const isMobile = window.innerWidth <= 768;
 			    
 			    if (isHidden) {
 			        // --- ÖPPNA ---
+			        // 1. Lägg till i historiken!
+			        history.pushState({ modal: 'chatWidget' }, 'Notiser', '#chat');
+			
 			        chatWidget.style.display = 'flex';
-			        
 			        if (typeof initChat === 'function') initChat();
 			        
-			        // --- FIX 1: Fokusera BARA om det är Desktop ---
 			        if (!isMobile) {
 			            setTimeout(() => {
 			                const input = document.getElementById('chatInput');
@@ -818,18 +810,15 @@
 			            }, 100);
 			        }
 			
-			        // LÅS BAKGRUNDEN (Endast mobil)
 			        if (isMobile) {
-			            document.body.style.overflow = 'hidden';
+			            document.body.style.overflow = 'hidden'; // Lås scroll
 			        }
 			
 			    } else {
-			        // --- STÄNG ---
-			        chatWidget.style.display = 'none';
-			        document.body.style.overflow = '';
-			        
-			        const mobileChatBtn = document.getElementById('mobileChatBtn');
-			        if(mobileChatBtn) mobileChatBtn.classList.remove('active');
+			        // --- STÄNG (Via knapp/toggle) ---
+			        // Istället för att bara gömma, backar vi historiken.
+			        // Detta triggar 'popstate'-lyssnaren vi skrev i Steg 1, som stänger fönstret.
+			        history.back();
 			    }
 			}
 			
@@ -838,18 +827,12 @@
 			
 			if (closeChatWidgetBtn) {
 			    closeChatWidgetBtn.addEventListener('click', () => {
-			        // Använd funktionen för att stänga så att scroll-låset släpper
+			        // Använd history.back() för att stänga korrekt
 			        if (chatWidget.style.display !== 'none') {
-			            toggleChatWidget(); 
+			            history.back();
 			        }
 			    });
 			}
-			
-			// Koppla knapparna
-			if (fabChat) fabChat.addEventListener('click', toggleChatWidget);
-			if (closeChatWidgetBtn) closeChatWidgetBtn.addEventListener('click', () => {
-			    chatWidget.style.display = 'none';
-			});
 
 			let chatUnsubscribe = null; // För att kunna stänga av lyssnaren
 
@@ -2516,64 +2499,82 @@
 			});
 
             window.addEventListener('popstate', (event) => {
+			    // Om vi navigerar via kod (isNavigatingBack = true), gör inget manuellt
 			    if (isNavigatingBack) {
 			        isNavigatingBack = false;
-			        return; 
+			        return;
 			    }
 			
-			    clearTimeout(backPressTimer); 
+			    clearTimeout(backPressTimer);
 			
-			    const state = event.state;
+			    // 1. PRIO 1: STÄNG BILD-ZOOM (Om öppen)
+			    const imageModal = document.getElementById('imageZoomModal');
+			    if (imageModal && getComputedStyle(imageModal).display !== 'none') {
+			        imageModal.style.display = 'none';
+			        // Om chatten ligger under, behåll scroll-låset för den, annars släpp det
+			        const chatWidget = document.getElementById('chatWidget');
+			        if (!chatWidget || getComputedStyle(chatWidget).display === 'none') {
+			            document.body.classList.remove('body-scroll-lock');
+			        }
+			        return; // Stanna här, stäng inte mer saker
+			    }
+			
+			    // 2. PRIO 2: STÄNG CHATT-WIDGET (Om öppen)
+			    const chatWidget = document.getElementById('chatWidget');
+			    if (chatWidget && getComputedStyle(chatWidget).display !== 'none') {
+			        // Använd din stäng-logik manuellt här för att slippa loopar
+			        chatWidget.style.display = 'none';
+			        document.body.style.overflow = ''; // Släpp scroll-lås
+			        
+			        const mobileChatBtn = document.getElementById('mobileChatBtn');
+			        if(mobileChatBtn) mobileChatBtn.classList.remove('active');
+			        
+			        return; // Stanna här
+			    }
+			
+			    // 3. PRIO 3: STÄNG SÖK-MODAL
 			    const mSearchModal = document.getElementById('mobileSearchModal');
-			    
-			    // --- NIVÅ 1: SÖK-MODALEN ---
 			    if (mSearchModal && getComputedStyle(mSearchModal).display !== 'none') {
 			        if (typeof resetAndCloseSearch === 'function') {
 			            resetAndCloseSearch();
 			        } else {
 			            mSearchModal.style.display = 'none';
-			            currentSearchTerm = '';
-			            performSearch();
 			        }
-			        return; 
+			        return;
 			    }
 			
-			    // --- NIVÅ 2: VANLIGA MODALER ---
-			    // Om en modal är öppen (och vi trycker FYSISK BAKÅT)
+			    // 4. PRIO 4: STÄNG VANLIGA MODALER (Jobb, Kund, Bil)
 			    if (isModalOpen) {
-			        // Vi sätter flaggan true så att closeModal inte försöker backa historiken igen
-			        isNavigatingBack = true; 
-			        closeModal({ popHistory: false }); 
-			        isNavigatingBack = false; // Återställ direkt efter
-			        
-			        backPressWarned = false; 
-			        return; 
+			        isNavigatingBack = true; // Förhindra loop
+			        closeModal({ popHistory: false }); // Stäng bara visuellt
+			        isNavigatingBack = false;
+			        backPressWarned = false;
+			        return;
 			    }
 			
-			    // --- NIVÅ 3: VY-BYTE ---
+			    // 5. PRIO 5: BYT TILLBAKA TILL TIDSLINJE (Om vi står på kalender/tavla)
 			    if (currentView !== 'timeline') {
-			        isNavigatingBack = true; // Sätt flagga för att inte trigga loop
+			        isNavigatingBack = true;
 			        toggleView('timeline');
 			        isNavigatingBack = false;
 			        backPressWarned = false;
-			        return; 
+			        return;
 			    }
 			
-			    // --- NIVÅ 4: "AVSLUTA APPEN" ---
-			    // Endast om vi är på Tidslinjen, inget är öppet, och det var ett FYSISKT tryck.
+			    // 6. SISTA UTVÄG: AVSLUTA APPEN (Android-varning)
 			    if (window.innerWidth <= 768) {
 			        if (backPressWarned) {
 			            backPressWarned = false;
-			            history.back(); 
+			            history.back(); // Låt webbläsaren stänga/backa på riktigt
 			        } else {
 			            backPressWarned = true;
 			            showToast('Tryck bakåt igen för att stänga', 'info');
-			            
-			            history.pushState(null, 'Tidslinje', location.pathname); 
+			            // Pusha samma state igen för att "stanna kvar" en gång till
+			            history.pushState(null, 'Tidslinje', location.pathname);
 			            
 			            backPressTimer = setTimeout(() => {
 			                backPressWarned = false;
-			            }, 2000); 
+			            }, 2000);
 			        }
 			    }
 			});
