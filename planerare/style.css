@@ -6317,3 +6317,54 @@ body.body-scroll-lock {
     background-color: #fff;
 }
 
+/* Länkade Reg-nummer i chatten */
+.chat-reg-link {
+    color: #ffffff;
+    font-weight: 800;
+    text-decoration: none;
+    border-bottom: 2px dotted rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    text-transform: uppercase;
+}
+.chat-reg-link:hover {
+    border-bottom-style: solid;
+    opacity: 0.9;
+}
+
+/* --- CHATT GALLERI-LÄGE --- */
+
+/* När galleriet är aktivt, dölj allt som INTE är bilder */
+.chat-messages.gallery-mode .chat-bubble:not(.chat-bubble-image),
+.chat-messages.gallery-mode .chat-time,
+.chat-messages.gallery-mode .empty-state-chat {
+    display: none !important;
+}
+
+/* Ändra layouten till rutnät */
+.chat-messages.gallery-mode {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); /* Auto-grid */
+    gap: 0.5rem;
+    padding: 0.5rem;
+    align-content: start; /* Tryck upp bilderna mot toppen */
+}
+
+/* Anpassa bild-bubblorna i galleriet */
+.chat-messages.gallery-mode .chat-bubble-image {
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border-radius: 8px;
+    background: none;
+    box-shadow: none;
+    align-self: auto; /* Återställ flex-position */
+}
+
+/* Gör bilderna kvadratiska (object-fit) för snyggt rutnät */
+.chat-messages.gallery-mode .chat-bubble-image img {
+    width: 100%;
+    height: 100px; /* Fast höjd för tumnaglar */
+    object-fit: cover;
+    border-radius: 8px;
+    margin: 0;
+}
