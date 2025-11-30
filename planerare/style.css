@@ -6056,3 +6056,137 @@ body.body-scroll-lock {
 .mobile-results-container {
     overscroll-behavior: contain; /* Stoppar scrollen från att "smitta" till bakgrunden */
 }
+
+/* --- CHATT / NOTISER (Self-Chat) --- */
+
+/* Huvudbehållare: Maxhöjd och snygg inramning */
+.chat-container {
+    background-color: var(--content-bg);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    height: calc(100vh - 180px); /* Anpassa höjden för desktop */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    max-width: 600px; /* Inte för bred på desktop */
+    margin: 0 auto;
+}
+
+/* Meddelande-listan */
+.chat-messages {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    background-color: var(--bg-color); /* Lite mörkare bakgrund */
+}
+
+/* Tomt läge */
+.empty-state-chat {
+    text-align: center;
+    color: var(--text-color-light);
+    margin-top: 2rem;
+    font-size: 0.9rem;
+    font-style: italic;
+}
+
+/* Pratbubblan (Högställd eftersom det är "jag") */
+.chat-bubble {
+    align-self: flex-end; /* Högerställ */
+    background-color: var(--primary-color);
+    color: white;
+    padding: 0.8rem 1rem;
+    border-radius: 18px 18px 2px 18px; /* "Svans" nere till höger */
+    max-width: 80%;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    position: relative;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    word-wrap: break-word;
+    animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes popIn {
+    from { opacity: 0; transform: scale(0.8) translateY(10px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Datumstämpel under bubblan */
+.chat-time {
+    align-self: flex-end;
+    font-size: 0.7rem;
+    color: var(--text-color-light);
+    margin-right: 5px;
+    margin-top: -4px;
+}
+
+/* Input-området i botten */
+.chat-input-area {
+    display: flex;
+    gap: 0.75rem;
+    padding: 1rem;
+    background-color: var(--content-bg);
+    border-top: 1px solid var(--border-color);
+    align-items: center;
+}
+
+#chatInput {
+    flex-grow: 1;
+    padding: 0.8rem 1.2rem;
+    border-radius: 25px; /* Runda hörn på input */
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-color);
+    font-size: 1rem;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+#chatInput:focus {
+    border-color: var(--primary-color);
+    background-color: var(--content-bg);
+    box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.chat-send-btn {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+/* --- MOBILANPASSNING --- */
+@media (max-width: 768px) {
+    .chat-container {
+        height: calc(100vh - var(--mobile-nav-height) - 100px); /* Fyll skärmen */
+        border: none;
+        box-shadow: none;
+        background: transparent;
+        max-width: 100%;
+    }
+    
+    .chat-messages {
+        padding: 1rem;
+    }
+    
+    /* Flytta input-rutan så den ligger ovanför tangentbordet/menyn */
+    .chat-input-area {
+        position: fixed;
+        bottom: var(--mobile-nav-height); /* Ovanför menyn */
+        left: 0;
+        right: 0;
+        z-index: 50;
+        padding: 0.75rem;
+    }
+    
+    /* Lägg till padding i botten av meddelandelistan så inget döljs bakom input */
+    .chat-messages {
+        padding-bottom: 80px; 
+    }
+}
