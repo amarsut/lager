@@ -6237,6 +6237,52 @@ body.body-scroll-lock {
     .chat-messages {
         padding-bottom: 80px; 
     }
+
+	/* 1. Dölj den flytande desktop-knappen */
+    #fabChat { 
+        display: none !important; 
+    }
+    
+    /* 2. Gör widgeten till helskärm igen (som en vanlig sida) */
+    .chat-widget-container {
+        position: fixed !important;
+        
+        /* Fyll hela ytan ovanför menyn */
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: var(--mobile-nav-height) !important; /* Sluta precis vid menyn */
+        
+        /* Återställ storlek */
+        width: 100% !important;
+        height: auto !important;
+        max-height: none !important;
+        
+        /* Ta bort "kort"-känslan */
+        border-radius: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+        
+        /* Se till att den ligger under eventuella modaler men över innehållet */
+        z-index: 900 !important; 
+    }
+
+    /* 3. Justera innehållet för helskärm */
+    .chat-widget-container .chat-messages {
+        padding-bottom: 80px; /* Se till att sista meddelandet inte döljs av input-fältet */
+    }
+
+    /* 4. Dölj "X"-knappen på mobil (man byter vy via menyn istället) */
+    #closeChatWidget {
+        display: none !important;
+    }
+    
+    /* 5. Justera rubriken lite för mobil */
+    .chat-widget-header {
+        padding: 1rem;
+        /* Om du vill ha den sticky i toppen: */
+        /* position: sticky; top: 0; z-index: 10; */
+    }
 }
 
 /* --- Länkar i Chatten --- */
@@ -6610,4 +6656,5 @@ body.body-scroll-lock {
     background-color: rgba(255, 255, 255, 0.2); /* Vit, genomskinlig platta */
     color: white !important; /* Ikonen förblir vit */
 }
+
 
