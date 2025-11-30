@@ -442,7 +442,12 @@
 			    </div>
 			
 			    <div class="form-group full-width">
-				    <label for="kundpris">Kundpris (kr)</label>
+				    <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+				        <label for="kundpris">Kundpris (kr)</label>
+				        <span id="laborWarningBadge" class="labor-warning-badge" style="display: none;">
+				            ⚠️ 
+				        </span>
+				    </div>
 				    <input type="text" inputmode="decimal" id="kundpris" placeholder="0" class="standard-input" autocomplete="off">
 				</div>
 				
