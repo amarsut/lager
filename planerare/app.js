@@ -729,6 +729,43 @@
                 }
             }
 
+			// --- HJÄLPFUNKTION: Hantera Bild-modalen ---
+			function setupImageModal() {
+			    const modal = document.getElementById('imageZoomModal');
+			    const modalImg = document.getElementById('img01');
+			    const closeBtn = document.getElementById('imageModalClose');
+			
+			    if (!modal || !modalImg || !closeBtn) return;
+			
+			    // Funktion för att öppna
+			    window.openImageZoom = (src) => {
+			        modal.style.display = "flex";
+			        modal.style.alignItems = "center";
+			        modal.style.justifyContent = "center";
+			        modalImg.src = src;
+			        document.body.style.overflow = 'hidden'; // Lås bakgrundsscroll
+			    };
+			
+			    // Funktion för att stänga
+			    const closeModal = () => {
+			        modal.style.display = "none";
+			        document.body.style.overflow = ''; // Släpp scroll
+			    };
+			
+			    // Stäng vid klick på X
+			    closeBtn.onclick = closeModal;
+			    
+			    // Stäng vid klick utanför bilden (på bakgrunden)
+			    modal.onclick = (e) => {
+			        if (e.target === modal) {
+			            closeModal();
+			        }
+			    };
+			}
+			
+			// Kör setup en gång när sidan laddas
+			document.addEventListener('DOMContentLoaded', setupImageModal);
+
 			let chatUnsubscribe = null; // För att kunna stänga av lyssnaren
 
 			function initChat() {
@@ -979,79 +1016,79 @@
 			    const bubble = document.createElement('div');
 			    bubble.className = 'chat-bubble';
 			    
-			    // --- 1. INNEHÅLLSHANTERING (BILD vs TEXT) ---
+			    let clickTimeout = null; // Timer för att skilja klick/dubbelklick
+			
+			    // --- 1. INNEHÅLLSHANTERING ---
 			    if (data.type === 'image' && data.image) {
-			        // A. Om det är en BILD
+			        // A. BILD
 			        bubble.classList.add('chat-bubble-image'); 
 			        bubble.innerHTML = `<img src="${data.image}" alt="Uppladdad bild" loading="lazy" />`;
+			        const imgElement = bubble.querySelector('img');
 			        
-			        // Klicka på bilden för att öppna den stor i ny flik
-			        bubble.querySelector('img').onclick = (e) => {
-			            e.stopPropagation(); 
-			            const win = window.open();
-			            win.document.write('<img src="' + data.image + '" style="width:100%">');
-			        };
-			    } else {
-			        // B. Om det är TEXT (med smart länkning)
-			        let textContent = data.text || "";
+			        // --- Den nya klick-logiken för bilder ---
+			        imgElement.addEventListener('click', (e) => {
+			            e.stopPropagation(); // Stoppa bubblans egen logik
 			
-			        // 1. Säkra HTML (XSS-skydd)
-			        textContent = textContent
-			            .replace(/&/g, "&amp;")
-			            .replace(/</g, "&lt;")
-			            .replace(/>/g, "&gt;");
-			
-			        // 2. Hitta URL:er (http/https) och gör klickbara
-			        const urlPattern = /(https?:\/\/[^\s]+)/g;
-			        textContent = textContent.replace(urlPattern, (url) => {
-			            return `<a href="${url}" target="_blank" class="chat-link">${url}</a>`;
+			            // Om vi redan har en timer igång, betyder det att detta är det andra klicket (dubbelklick)
+			            if (clickTimeout !== null) {
+			                clearTimeout(clickTimeout);
+			                clickTimeout = null;
+			                // DUBBELKLICK-ACTION: Radera
+			                if(confirm("Radera bild?")) {
+			                    db.collection("notes").doc(id).delete();
+			                }
+			            } else {
+			                // Detta är första klicket. Starta en timer.
+			                clickTimeout = setTimeout(() => {
+			                    // Om tiden rinner ut utan ett andra klick, kör ENKELKLICK-ACTION: Zooma
+			                    if (typeof window.openImageZoom === 'function') {
+			                        window.openImageZoom(data.image);
+			                    }
+			                    clickTimeout = null;
+			                }, 250); // Vänta 250ms
+			            }
 			        });
 			
-			        // 3. Hitta Reg.nr (ABC 123 eller ABC123)
-			        // Regex för: 3 bokstäver, valfritt mellanslag, 2 siffror, 1 siffra eller bokstav
-			        const regPattern = /\b([A-Za-z]{3})\s?(\d{2}[0-9A-Za-z])\b/g;
+			    } else {
+			        // B. TEXT (Samma som förut)
+			        let textContent = data.text || "";
+			        textContent = textContent.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 			        
+			        const urlPattern = /(https?:\/\/[^\s]+)/g;
+			        textContent = textContent.replace(urlPattern, (url) => `<a href="${url}" target="_blank" class="chat-link">${url}</a>`);
+			
+			        const regPattern = /\b([A-Za-z]{3})\s?(\d{2}[0-9A-Za-z])\b/g;
 			        textContent = textContent.replace(regPattern, (match) => {
-			            // Snygga till formatet till "ABC 123"
 			            const cleanReg = match.replace(/\s/g, '').toUpperCase(); 
-			            // Skapa en länk med data-attribut
 			            return `<span class="chat-reg-link" data-reg="${cleanReg}">${match.toUpperCase()}</span>`;
 			        });
 			
 			        bubble.innerHTML = textContent;
+			
+			        // För textbubblor behåller vi standard dubbelklick på själva bubblan
+			        bubble.title = "Dubbelklicka för att radera";
+			        bubble.style.cursor = "pointer";
+			        bubble.addEventListener('dblclick', () => {
+			             if(confirm("Radera denna notis?")) {
+			                 db.collection("notes").doc(id).delete();
+			             }
+			        });
 			    }
 			    
-			    // --- 2. RADERA-HANTERING ---
-			    bubble.title = "Dubbelklicka för att radera";
-			    bubble.style.cursor = "pointer";
-			    
-			    bubble.addEventListener('dblclick', () => {
-			        if(confirm("Radera denna notis?")) {
-			            db.collection("notes").doc(id).delete();
-			        }
-			    });
-			
-			    // --- 3. DATUM & PLATTFORMS-IKON ---
+			    // --- 2. TID & IKON (Samma som förut) ---
 			    const time = document.createElement('div');
 			    time.className = 'chat-time';
-			    
 			    const date = new Date(data.timestamp);
 			    const timeString = date.toLocaleTimeString('sv-SE', {hour: '2-digit', minute:'2-digit'});
 			    const dateString = date.toLocaleDateString('sv-SE', {day: 'numeric', month: 'short'});
-			    
 			    const isToday = new Date().toDateString() === date.toDateString();
 			    const displayTime = isToday ? timeString : `${dateString}, ${timeString}`;
 			
-			    // Välj ikon baserat på plattform
 			    let platformIconHtml = '';
-			    if (data.platform === 'mobil') {
-			        platformIconHtml = `<svg class="platform-icon"><use href="#icon-mobile"></use></svg>`;
-			    } else if (data.platform === 'dator') {
-			        platformIconHtml = `<svg class="platform-icon"><use href="#icon-desktop"></use></svg>`;
-			    }
+			    if (data.platform === 'mobil') platformIconHtml = `<svg class="platform-icon"><use href="#icon-mobile"></use></svg>`;
+			    else if (data.platform === 'dator') platformIconHtml = `<svg class="platform-icon"><use href="#icon-desktop"></use></svg>`;
 			
 			    time.innerHTML = `${displayTime} ${platformIconHtml}`;
-			
 			    container.appendChild(bubble);
 			    container.appendChild(time);
 			}
