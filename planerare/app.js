@@ -735,11 +735,18 @@
 			    const chatList = document.getElementById('chatMessages');
 			    const chatForm = document.getElementById('chatForm');
 			    const chatInput = document.getElementById('chatInput');
+			    
+			    // Hämta sök-elementen
+			    const searchInput = document.getElementById('chatSearchInput');
+			    const clearBtn = document.getElementById('clearChatSearch');
 			
 			    if (!chatList || !chatForm) return;
 			
-			    // 1. Skicka meddelande
-			    chatForm.addEventListener('submit', async (e) => {
+			    // --- 1. SKICKA MEDDELANDE ---
+			    // Vi tar bort gamla lyssnare genom att klona elementet (trick för att undvika dubbla skickningar)
+			    // eller så litar vi på att initChat bara körs en gång per session/vy-byte.
+			    // Enklast här är att bara lägga till lyssnaren en gång, men för säkerhets skull:
+			    chatForm.onsubmit = async (e) => {
 			        e.preventDefault();
 			        const text = chatInput.value.trim();
 			        if (!text) return;
@@ -748,36 +755,84 @@
 			            await db.collection("notes").add({
 			                text: text,
 			                timestamp: new Date().toISOString(),
-			                platform: window.innerWidth <= 768 ? 'mobil' : 'dator' // Kul info att ha
+			                // Här sätter vi plattformen automatiskt
+			                platform: window.innerWidth <= 768 ? 'mobil' : 'dator'
 			            });
 			            chatInput.value = ''; // Töm fältet
-			            // Scrolla längst ner
-			            setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
+			            
+			            // Scrolla längst ner om vi inte söker just nu
+			            if (!searchInput || !searchInput.value) {
+			                setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
+			            }
 			        } catch (err) {
+			            console.error(err);
 			            showToast("Kunde inte skicka notis.", "danger");
 			        }
-			    });
+			    };
 			
-			    // 2. Lyssna på meddelanden (Realtime)
+			    // --- 2. SÖK-FUNKTION ---
+			    if (searchInput && clearBtn) {
+			        
+			        const filterChat = () => {
+			            const term = searchInput.value.toLowerCase();
+			            const bubbles = chatList.querySelectorAll('.chat-bubble');
+			            const times = chatList.querySelectorAll('.chat-time');
+			
+			            // Visa kryss om det finns text
+			            clearBtn.style.display = term ? 'block' : 'none';
+			
+			            bubbles.forEach((bubble, index) => {
+			                const text = bubble.textContent.toLowerCase();
+			                const timeElement = times[index]; // Hämta tidsstämpeln som hör till bubblan
+			
+			                // Om sökordet finns i texten (eller om sökfältet är tomt)
+			                if (text.includes(term)) {
+			                    bubble.style.display = 'block';
+			                    if (timeElement) timeElement.style.display = 'block';
+			                } else {
+			                    bubble.style.display = 'none';
+			                    if (timeElement) timeElement.style.display = 'none';
+			                }
+			            });
+			        };
+			
+			        // Lyssna på skrivande
+			        searchInput.oninput = filterChat;
+			
+			        // Lyssna på rensa-knappen
+			        clearBtn.onclick = () => {
+			            searchInput.value = '';
+			            filterChat(); // Återställ listan
+			            searchInput.focus();
+			        };
+			    }
+			
+			    // --- 3. LYSSNA PÅ DATABASEN (Realtime) ---
 			    if (chatUnsubscribe) chatUnsubscribe(); // Stäng ev. gammal lyssnare
 			
 			    chatUnsubscribe = db.collection("notes")
-			        .orderBy("timestamp", "asc") // Äldst först (som en chatt)
+			        .orderBy("timestamp", "asc") // Äldst först (kronologisk ordning)
 			        .onSnapshot(snapshot => {
-			            chatList.innerHTML = ''; // Rensa listan
+			            chatList.innerHTML = ''; // Rensa listan först
 			            
 			            if (snapshot.empty) {
-			                chatList.innerHTML = '<div class="empty-state-chat"><p>Skriv din första notis...</p></div>';
+			                chatList.innerHTML = '<div class="empty-state-chat"><p>Skriv en notis till dig själv...</p></div>';
 			                return;
 			            }
 			
 			            snapshot.forEach(doc => {
 			                const data = doc.data();
+			                // Anropa din render-funktion (som vi uppdaterade tidigare)
 			                renderChatBubble(doc.id, data, chatList);
 			            });
 			
-			            // Auto-scrolla till botten
-			            chatList.scrollTop = chatList.scrollHeight;
+			            // Om vi har en aktiv sökning, applicera filtret igen på den nya datan
+			            if (searchInput && searchInput.value) {
+			                searchInput.dispatchEvent(new Event('input'));
+			            } else {
+			                // Annars scrolla till botten
+			                chatList.scrollTop = chatList.scrollHeight;
+			            }
 			        });
 			}
 
