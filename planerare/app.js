@@ -2269,9 +2269,6 @@
             expenseNameInput.addEventListener('input', (e) => {
                 e.target.value = e.target.value.toUpperCase();
             });
-
-			// --- NY LISTENER: Lägg till en utgift ---
-            const addExpenseBtn = document.getElementById('addExpenseBtn');
     
 		    if (addExpenseBtn) {
 		        addExpenseBtn.addEventListener('click', () => {
