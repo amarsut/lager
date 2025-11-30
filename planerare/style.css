@@ -5997,13 +5997,14 @@ html.privacy-mode-enabled .nav-logo {
 
 /* 2. Vinst: Svart och Mindre */
 #modalSummaryVinst {
-    font-size: 1.2rem !important; /* Mindre än kundpris */
+    font-size: 1.1rem !important; /* Mindre än kundpris */
     font-weight: 600;
 }
 
 /* 3. Total Utgift: Mindre */
 #modalSummaryTotalUtgift {
-    font-size: 1.2rem !important; /* Mindre än kundpris */
+    font-size: 1.1rem !important; /* Mindre än kundpris */
     font-weight: 600;
 }
+
 
