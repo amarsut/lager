@@ -2173,6 +2173,7 @@
 			        const div = document.createElement('div');
 			        div.className = 'expense-item-original';
 			        
+			        // Visa om det är en manuell del (valfritt, men bra för översikt)
 			        const manualBadge = item.isManual ? '<span style="font-size:0.7em; color:#666; margin-left:5px;">(Manuell)</span>' : '';
 			
 			        div.innerHTML = `
@@ -2186,60 +2187,34 @@
 			        `;
 			        
 			        div.querySelector('.delete-btn').addEventListener('click', () => {
+			            // Hämta nuvarande kundpris
 			            const prisInput = document.getElementById('kundpris');
-			            const commentInput = document.getElementById('kommentarer'); // <--- Hämta fältet
-			            
 			            let currentPrice = parseFloat(prisInput.value.replace(/\s/g, '').replace(',', '.')) || 0;
+			
 			            let deduction = 0;
 			
+			            // --- LOGIKEN FÖR BORTTAGNING ---
 			            if (item.isManual) {
+			                // Om den lades till manuellt, dra av 110% (Kostnad + 10%)
 			                deduction = Math.round(item.cost * 1.10);
 			            } else {
+			                // Om den kom från ett paket, dra av den rena kostnaden
+			                // (Eftersom paketen ofta har fasta priser är detta säkrast)
 			                deduction = Math.round(item.cost);
 			            }
 			
 			            let newPrice = currentPrice - deduction;
 			            if (newPrice < 0) newPrice = 0;
+			
 			            prisInput.value = Math.round(newPrice);
 			
-			            // --- NYTT: TA BORT TEXT UR KOMMENTARER ---
-			            if (commentInput && commentInput.value) {
-			                let text = commentInput.value;
-			                const nameToRemove = item.name;
-			
-			                // Vi måste "escapa" namnet om det innehåller parenteser t.ex. "(4.3L)"
-			                // annars kraschar RegExp
-			                const safeName = nameToRemove.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-			
-			                // 1. Försök ta bort ", Namn" (Om det ligger i slutet eller mitten)
-			                // 'gi' betyder globalt och case-insensitive (okänsligt för stor/liten bokstav)
-			                let regex = new RegExp(',\\s*' + safeName, 'gi');
-			                if (regex.test(text)) {
-			                    text = text.replace(regex, '');
-			                } 
-			                else {
-			                    // 2. Försök ta bort "Namn, " (Om det ligger i början)
-			                    regex = new RegExp(safeName + ',\\s*', 'gi');
-			                    if (regex.test(text)) {
-			                        text = text.replace(regex, '');
-			                    }
-			                    else {
-			                        // 3. Försök ta bort bara "Namn" (Om det står ensamt)
-			                        regex = new RegExp(safeName, 'gi');
-			                        text = text.replace(regex, '');
-			                    }
-			                }
-			                
-			                // Städa upp eventuella dubbla mellanslag
-			                commentInput.value = text.trim();
-			            }
-			            // -----------------------------------------
-			
+			            // Ta bort från listan
 			            currentExpenses.splice(index, 1);
+			
 			            renderExpensesList();
 			            updateLiveProfit();
 			            
-			            //showToast(`Borttagen. Justerat: -${deduction} kr.`);
+			            //showToast(`Borttagen. Priset justerades med -${deduction} kr.`);
 			        });
 			        
 			        container.appendChild(div);
@@ -2328,10 +2303,8 @@
 		            const nameInput = document.getElementById('expenseName');
 		            const costInput = document.getElementById('expenseCost');
 		            const prisInput = document.getElementById('kundpris');
-		            const commentInput = document.getElementById('kommentarer'); // <--- Hämta kommentarsfältet
 		            const warningBadge = document.getElementById('laborWarningBadge');
 		
-		            // Spara original-casing för listan, men använd gemener för logik om du vill
 		            const name = nameInput.value.trim();
 		            const cost = parseFloat(costInput.value) || 0;
 		
@@ -2346,36 +2319,23 @@
 		                return;
 		            }
 		
-		            // 1. Lägg till i listan
+		            // 1. Lägg till i listan och MARKERA SOM MANUELL
+		            // Vi lägger till "isManual: true" för att veta att denna ska ha påslag vid borttagning
 		            currentExpenses.push({ name: name, cost: cost, isManual: true });
 		
-		            // 2. LÄGG TILL I KOMMENTARER (NYTT)
-		            // Om fältet inte är tomt, lägg till ", " före namnet. Annars bara namnet.
-		            if (commentInput) {
-		                const currentText = commentInput.value.trim();
-		                // Gör första bokstaven i utgiften liten om den läggs till mitt i en mening (valfritt)
-		                // Men oftast vill man behålla namnet som det är skrivet (t.ex. "DSG Olja")
-		                
-		                if (currentText.length > 0) {
-		                    // Kolla om sista tecknet är en punkt, ta bort den tillfälligt eller lägg till efter
-		                    // Enklast: Bara lägg till ", " + namn
-		                    commentInput.value = currentText + ", " + name;
-		                } else {
-		                    commentInput.value = name;
-		                }
-		            }
-		
-		            // 3. AUTOMATISK PRISÖKNING (10% påslag)
+		            // 2. AUTOMATISK PRISÖKNING MED 10%
 		            let currentPrice = 0;
 		            if (prisInput.value) {
 		                currentPrice = parseFloat(prisInput.value.replace(/\s/g, '').replace(',', '.')) || 0;
 		            }
 		            
+		            // HÄR ÄR ÄNDRINGEN: Plussa på kostnad * 1.10 (10%)
 		            const markupCost = Math.round(cost * 1.10);
 		            const newPrice = currentPrice + markupCost;
+		            
 		            prisInput.value = Math.round(newPrice);
 		
-		            // 4. VISA VARNING & ANIMATION
+		            // 3. VISA VARNING & ANIMATION
 		            if (warningBadge) {
 		                warningBadge.style.display = 'inline-block';
 		                setTimeout(() => { warningBadge.style.display = 'none'; }, 8000);
@@ -2385,7 +2345,7 @@
 		            void prisInput.offsetWidth; 
 		            prisInput.classList.add('input-warning-flash');
 		
-		            // 5. Återställ & Uppdatera UI
+		            // 4. Återställ & Uppdatera
 		            nameInput.value = '';
 		            costInput.value = '';
 		            nameInput.focus();
@@ -2393,7 +2353,7 @@
 		            renderExpensesList();
 		            updateLiveProfit();
 		            
-		            //showToast(`Lade till ${name} (+${markupCost} kr på priset)`);
+		            //showToast(`Lade till ${cost} kr (+10% påslag: ${markupCost} kr)`);
 		        });
 		    }
 
