@@ -736,54 +736,17 @@
 			    const chatForm = document.getElementById('chatForm');
 			    const chatInput = document.getElementById('chatInput');
 			    
-			    // Hämta sök-elementen
+			    // Hämta sök-element
 			    const searchInput = document.getElementById('chatSearchInput');
 			    const clearBtn = document.getElementById('clearChatSearch');
 			
+			    // Hämta kamera-element (NYTT)
+			    const fileInput = document.getElementById('chatFileInput');
+			    const cameraBtn = document.getElementById('chatCameraBtn');
+			
 			    if (!chatList || !chatForm) return;
-
-				// --- NYTT: PASTE-HANTERARE (Klistra in bild) ---
-			    chatInput.addEventListener('paste', async (e) => {
-			        // Hämta urklippet
-			        const items = (e.clipboardData || e.originalEvent.clipboardData).items;
-			        
-			        for (let item of items) {
-			            // Om det är en bild
-			            if (item.type.indexOf("image") === 0) {
-			                e.preventDefault(); // Stoppa att bilden klistras in som konstig text
-			                
-			                const blob = item.getAsFile();
-			                showToast("Bearbetar bild...", "info"); // Visa att vi jobbar
 			
-			                try {
-			                    // 1. Komprimera
-			                    const base64Image = await compressImage(blob);
-			                    
-			                    // 2. Skicka till databasen
-			                    await db.collection("notes").add({
-			                        image: base64Image, // Här sparas bilddatan
-			                        type: 'image',      // Markera att det är en bild
-			                        timestamp: new Date().toISOString(),
-			                        platform: window.innerWidth <= 768 ? 'mobil' : 'dator'
-			                    });
-			                    
-			                    showToast("Bild skickad!", "success");
-			                    // Scrolla ner
-			                    setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
-			
-			                } catch (err) {
-			                    console.error(err);
-			                    showToast("Kunde inte skicka bilden (för stor?)", "danger");
-			                }
-			                return; // Avbryt loopen när vi hittat en bild
-			            }
-			        }
-			    });
-			
-			    // --- 1. SKICKA MEDDELANDE ---
-			    // Vi tar bort gamla lyssnare genom att klona elementet (trick för att undvika dubbla skickningar)
-			    // eller så litar vi på att initChat bara körs en gång per session/vy-byte.
-			    // Enklast här är att bara lägga till lyssnaren en gång, men för säkerhets skull:
+			    // --- 1. SKICKA TEXT ---
 			    chatForm.onsubmit = async (e) => {
 			        e.preventDefault();
 			        const text = chatInput.value.trim();
@@ -793,12 +756,10 @@
 			            await db.collection("notes").add({
 			                text: text,
 			                timestamp: new Date().toISOString(),
-			                // Här sätter vi plattformen automatiskt
 			                platform: window.innerWidth <= 768 ? 'mobil' : 'dator'
 			            });
-			            chatInput.value = ''; // Töm fältet
+			            chatInput.value = '';
 			            
-			            // Scrolla längst ner om vi inte söker just nu
 			            if (!searchInput || !searchInput.value) {
 			                setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
 			            }
@@ -808,23 +769,84 @@
 			        }
 			    };
 			
-			    // --- 2. SÖK-FUNKTION ---
+			    // --- 2. KAMERA-KNAPP LOGIK (NYTT) ---
+			    if (cameraBtn && fileInput) {
+			        // När man klickar på kamera-ikonen -> Öppna filväljaren
+			        cameraBtn.onclick = () => {
+			            fileInput.click();
+			        };
+			
+			        // När en fil/bild har valts
+			        fileInput.onchange = async (e) => {
+			            const file = e.target.files[0];
+			            if (!file) return;
+			
+			            showToast("Bearbetar bild...", "info");
+			
+			            try {
+			                // Återanvänd din compressImage-funktion
+			                const base64Image = await compressImage(file);
+			                
+			                await db.collection("notes").add({
+			                    image: base64Image,
+			                    type: 'image',
+			                    timestamp: new Date().toISOString(),
+			                    platform: window.innerWidth <= 768 ? 'mobil' : 'dator'
+			                });
+			                
+			                showToast("Bild skickad!", "success");
+			                fileInput.value = ''; // Nollställ så man kan välja samma igen
+			                setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
+			
+			            } catch (err) {
+			                console.error(err);
+			                showToast("Kunde inte skicka bilden.", "danger");
+			            }
+			        };
+			    }
+			
+			    // --- 3. PASTE-HANTERARE (Ctrl+V) ---
+			    chatInput.addEventListener('paste', async (e) => {
+			        const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+			        for (let item of items) {
+			            if (item.type.indexOf("image") === 0) {
+			                e.preventDefault();
+			                const blob = item.getAsFile();
+			                showToast("Bearbetar bild...", "info");
+			                try {
+			                    const base64Image = await compressImage(blob);
+			                    await db.collection("notes").add({
+			                        image: base64Image,
+			                        type: 'image',
+			                        timestamp: new Date().toISOString(),
+			                        platform: window.innerWidth <= 768 ? 'mobil' : 'dator'
+			                    });
+			                    showToast("Bild skickad!", "success");
+			                    setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
+			                } catch (err) {
+			                    showToast("Fel vid bildhantering.", "danger");
+			                }
+			                return;
+			            }
+			        }
+			    });
+			
+			    // --- 4. SÖK-FUNKTION ---
 			    if (searchInput && clearBtn) {
-			        
 			        const filterChat = () => {
 			            const term = searchInput.value.toLowerCase();
 			            const bubbles = chatList.querySelectorAll('.chat-bubble');
 			            const times = chatList.querySelectorAll('.chat-time');
 			
-			            // Visa kryss om det finns text
 			            clearBtn.style.display = term ? 'block' : 'none';
 			
 			            bubbles.forEach((bubble, index) => {
 			                const text = bubble.textContent.toLowerCase();
-			                const timeElement = times[index]; // Hämta tidsstämpeln som hör till bubblan
-			
-			                // Om sökordet finns i texten (eller om sökfältet är tomt)
-			                if (text.includes(term)) {
+			                const timeElement = times[index];
+			                // Visa även om det är en bild-bubbla (ingen text) men sökningen är tom
+			                const isImage = bubble.classList.contains('chat-bubble-image');
+			                
+			                if (text.includes(term) || (isImage && !term)) {
 			                    bubble.style.display = 'block';
 			                    if (timeElement) timeElement.style.display = 'block';
 			                } else {
@@ -833,42 +855,34 @@
 			                }
 			            });
 			        };
-			
-			        // Lyssna på skrivande
 			        searchInput.oninput = filterChat;
-			
-			        // Lyssna på rensa-knappen
 			        clearBtn.onclick = () => {
 			            searchInput.value = '';
-			            filterChat(); // Återställ listan
+			            filterChat();
 			            searchInput.focus();
 			        };
 			    }
 			
-			    // --- 3. LYSSNA PÅ DATABASEN (Realtime) ---
-			    if (chatUnsubscribe) chatUnsubscribe(); // Stäng ev. gammal lyssnare
+			    // --- 5. LYSSNA PÅ DATABASEN ---
+			    if (chatUnsubscribe) chatUnsubscribe();
 			
 			    chatUnsubscribe = db.collection("notes")
-			        .orderBy("timestamp", "asc") // Äldst först (kronologisk ordning)
+			        .orderBy("timestamp", "asc")
 			        .onSnapshot(snapshot => {
-			            chatList.innerHTML = ''; // Rensa listan först
+			            chatList.innerHTML = '';
 			            
 			            if (snapshot.empty) {
-			                chatList.innerHTML = '<div class="empty-state-chat"><p>Skriv en notis till dig själv...</p></div>';
+			                chatList.innerHTML = '<div class="empty-state-chat"><p>Skriv en notis eller ta en bild...</p></div>';
 			                return;
 			            }
 			
 			            snapshot.forEach(doc => {
-			                const data = doc.data();
-			                // Anropa din render-funktion (som vi uppdaterade tidigare)
-			                renderChatBubble(doc.id, data, chatList);
+			                renderChatBubble(doc.id, doc.data(), chatList);
 			            });
 			
-			            // Om vi har en aktiv sökning, applicera filtret igen på den nya datan
 			            if (searchInput && searchInput.value) {
 			                searchInput.dispatchEvent(new Event('input'));
 			            } else {
-			                // Annars scrolla till botten
 			                chatList.scrollTop = chatList.scrollHeight;
 			            }
 			        });
