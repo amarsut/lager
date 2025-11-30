@@ -875,16 +875,33 @@
 			    // Detta hindrar menyn från att åka upp ovanför tangentbordet
 			    if (window.innerWidth <= 768 && chatInput) {
 			        const mobileNav = document.getElementById('mobileNav');
-			        
+			        const timelineView = document.getElementById('timelineView'); // Hämta jobb-listan
+			        const fabAddJob = document.getElementById('fabAddJob'); // Hämta FAB-knappen
+			
 			        if (mobileNav) {
+			            // NÄR TANGENTBORDET ÖPPNAS (Fokus)
 			            chatInput.addEventListener('focus', () => {
+			                // 1. Dölj menyn
 			                mobileNav.style.display = 'none';
+			                
+			                // 2. Dölj bakgrunden (Jobb-korten) så de inte trycks upp!
+			                if (timelineView) timelineView.style.display = 'none';
+			                
+			                // 3. Dölj flytande knappar
+			                if (fabAddJob) fabAddJob.style.display = 'none';
 			            });
 			
+			            // NÄR TANGENTBORDET STÄNGS (Blur)
 			            chatInput.addEventListener('blur', () => {
-			                // Liten fördröjning så layouten hinner sätta sig
+			                // Liten fördröjning för att undvika "hopp"
 			                setTimeout(() => {
+			                    // Återställ allt
 			                    mobileNav.style.display = 'flex';
+			                    if (timelineView) timelineView.style.display = 'block'; // Eller 'block' beroende på din layout
+			                    if (fabAddJob) fabAddJob.style.display = 'flex';
+			                    
+			                    // Scrolla chatten till botten igen ifall vyn ändrades
+			                    if (chatList) chatList.scrollTop = chatList.scrollHeight;
 			                }, 100);
 			            });
 			        }
