@@ -207,11 +207,18 @@
 				        </div>
 				        
 				        <form id="chatForm" class="chat-input-area">
-				            <input type="text" id="chatInput" placeholder="Skriv en påminnelse..." autocomplete="off">
-				            <button type="submit" class="button primary chat-send-btn">
-				                <svg class="icon-sm" viewBox="0 0 24 24" style="transform: rotate(-90deg); margin:0;"><path fill="currentColor" d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
-				            </button>
-				        </form>
+						    <input type="file" id="chatFileInput" accept="image/*" style="display: none;">
+						    
+						    <button type="button" id="chatCameraBtn" class="icon-btn" style="padding: 0.5rem; margin-right: 0.5rem; color: var(--text-color-light);">
+						        <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-camera"></use></svg>
+						    </button>
+						
+						    <input type="text" id="chatInput" placeholder="Skriv en påminnelse..." autocomplete="off">
+						    
+						    <button type="submit" class="button primary chat-send-btn">
+						        <svg class="icon-sm" viewBox="0 0 24 24" style="transform: rotate(-90deg); margin:0;"><path fill="currentColor" d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+						    </button>
+						</form>
 				    </div>
 				</div>
                 
