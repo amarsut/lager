@@ -2382,6 +2382,7 @@
 			        modalTitle.textContent = 'Lägg till nytt jobb';
 			        modalSaveBtn.textContent = 'Spara'; 
 			        modalJobId.value = '';
+					modalKundpris.value = '';
 			        
 			        // Standardvärden
 			        if(statusSelect) statusSelect.value = 'bokad'; 
