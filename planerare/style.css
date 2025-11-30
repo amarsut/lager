@@ -6246,25 +6246,32 @@ body.body-scroll-lock {
     /* 2. Gör widgeten till helskärm igen (som en vanlig sida) */
     .chat-widget-container {
         position: fixed !important;
-        
-        /* Fyll hela ytan ovanför menyn */
         top: 0 !important;
         left: 0 !important;
         right: 0 !important;
-        bottom: var(--mobile-nav-height) !important; /* Sluta precis vid menyn */
+        /* VIKTIGT: Sätt bottom till 0 för att täcka hela vägen ner */
+        bottom: 0 !important; 
         
-        /* Återställ storlek */
         width: 100% !important;
-        height: auto !important;
-        max-height: none !important;
+        height: 100% !important; /* Tvinga full höjd */
         
-        /* Ta bort "kort"-känslan */
+        /* VIKTIGT: Solid bakgrund så inget syns igenom */
+        background-color: var(--bg-color) !important; 
+        
         border-radius: 0 !important;
         border: none !important;
         box-shadow: none !important;
+        z-index: 5000 !important; /* Extremt högt för att ligga över allt */
         
-        /* Se till att den ligger under eventuella modaler men över innehållet */
-        z-index: 900 !important; 
+        display: flex;
+        flex-direction: column;
+    }
+    
+    /* Flytta upp input-fältet så det inte täcks av tangentbordet */
+    .chat-input-area {
+        position: sticky; /* Sticky istället för fixed kan fungera bättre med tangentbord */
+        bottom: 0;
+        background-color: var(--content-bg);
     }
 
     /* 3. Justera innehållet för helskärm */
@@ -6656,6 +6663,7 @@ body.body-scroll-lock {
     background-color: rgba(255, 255, 255, 0.2); /* Vit, genomskinlig platta */
     color: white !important; /* Ikonen förblir vit */
 }
+
 
 
 
