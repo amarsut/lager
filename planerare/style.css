@@ -5991,8 +5991,7 @@ html.privacy-mode-enabled .nav-logo {
 
 /* 1. Kundpris: Stort och Blått */
 #modalSummaryKundpris {
-    color: var(--primary-color) !important; /* Tvinga blå färg */
-    font-size: 1.5rem !important; /* Gör den störst */
+    color: var(--primary-color) !important;
     font-weight: 800;
 }
 
@@ -6005,10 +6004,10 @@ html.privacy-mode-enabled .nav-logo {
 
 /* 3. Total Utgift: Mindre */
 #modalSummaryTotalUtgift {
-    font-size: 1rem !important;
-    font-weight: 500;
-    opacity: 0.8; /* Gör den lite diskretare */
+    font-size: 1rem !important; /* Mindre än kundpris */
+    font-weight: 600;
 }
+
 
 
 
