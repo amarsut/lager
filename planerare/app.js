@@ -2201,6 +2201,55 @@
 			    }
 			}
 
+			// --- NY FUNKTION: Kalkylator i Kundpris-fältet ---
+		    const prisMathInput = document.getElementById('kundpris');
+		
+		    if (prisMathInput) {
+		        const calculatePriceMath = () => {
+		            let val = prisMathInput.value;
+		            
+		            // Kolla om fältet innehåller matte-tecken (+, -, *, /)
+		            // Tillåter t.ex. "500+200" eller "1000*1.25"
+		            if (val && val.match(/[+\-*/]/)) {
+		                try {
+		                    // Ersätt kommatecken med punkt för att JS ska förstå (om man skriver 12,50)
+		                    val = val.replace(',', '.');
+		                    
+		                    // Rensa bort allt som inte är siffror eller matte-tecken (säkerhet)
+		                    const safeMath = val.replace(/[^0-9+\-*/().]/g, '');
+		                    
+		                    // Räkna ut summan säkert
+		                    const result = new Function('return ' + safeMath)();
+		                    
+		                    if (!isNaN(result)) {
+		                        // Sätt värdet (avrundat till heltal)
+		                        prisMathInput.value = Math.round(result);
+		                        
+		                        // Uppdatera vinstkalkylen direkt
+		                        updateLiveProfit(); 
+		                        
+		                        // Visa en liten notis (valfritt, men trevligt)
+		                        // showToast(`Utraknat: ${Math.round(result)} kr`, 'info'); 
+		                    }
+		                } catch (e) {
+		                    console.log("Kunde inte räkna ut matte:", e);
+		                }
+		            }
+		        };
+		
+		        // Kör uträkningen när man klickar utanför fältet (blur)
+		        prisMathInput.addEventListener('blur', calculatePriceMath);
+		
+		        // Kör uträkningen när man trycker Enter
+		        prisMathInput.addEventListener('keydown', (e) => {
+		            if (e.key === 'Enter') {
+		                e.preventDefault(); // Hindra att hela formuläret sparas direkt
+		                calculatePriceMath();
+		                prisMathInput.blur(); // Tar bort fokus så man ser att det är klart
+		            }
+		        });
+		    }
+
 			// --- NY LISTENER: Gör utgiftsnamn till stora bokstäver ---
             expenseNameInput.addEventListener('input', (e) => {
                 e.target.value = e.target.value.toUpperCase();
