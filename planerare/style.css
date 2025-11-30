@@ -6043,3 +6043,16 @@ html.privacy-mode-enabled .nav-logo {
     20% { background-color: #422006; border-color: #ca8a04; }
 }
 
+/* --- FIX: Lås bakgrundsscroll vid öppen modal --- */
+body.body-scroll-lock {
+    overflow: hidden !important;
+    height: 100vh; /* Tvinga höjden för att säkra mobila webbläsare */
+    touch-action: none; /* Stoppar vissa touch-rörelser på bakgrunden */
+}
+
+/* Bonus: Gör scrollningen inuti modalen mjukare och stoppa kedje-effekten */
+.modal-body, 
+.kanban-column-cards, 
+.mobile-results-container {
+    overscroll-behavior: contain; /* Stoppar scrollen från att "smitta" till bakgrunden */
+}
