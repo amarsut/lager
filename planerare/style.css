@@ -6190,3 +6190,16 @@ body.body-scroll-lock {
         padding-bottom: 80px; 
     }
 }
+
+/* --- Länkar i Chatten --- */
+.chat-link {
+    color: #ffffff; /* Vit text */
+    text-decoration: underline;
+    font-weight: 600;
+    word-break: break-all; /* Bryt långa länkar så de inte spräcker bubblan */
+}
+
+.chat-link:hover {
+    opacity: 0.9;
+    text-decoration: none;
+}
