@@ -769,6 +769,30 @@
 			    };
 			};
 
+			// --- STÄNG CHATT VID KLICK UTANFÖR ---
+			document.addEventListener('click', (e) => {
+			    const chatWidget = document.getElementById('chatWidget');
+			    const fabChat = document.getElementById('fabChat');
+			    const mobileChatBtn = document.getElementById('mobileChatBtn'); // Om du har den i menyn
+			
+			    // Om chatten är öppen...
+			    if (chatWidget && chatWidget.style.display === 'flex') {
+			        // ...och vi INTE klickade inuti chatten...
+			        if (!chatWidget.contains(e.target) && 
+			            // ...och INTE klickade på öppna-knappen (Desktop)...
+			            (!fabChat || !fabChat.contains(e.target)) &&
+			            // ...och INTE klickade på öppna-knappen (Mobil)...
+			            (!mobileChatBtn || !mobileChatBtn.contains(e.target))) {
+			            
+			            // Då stänger vi den!
+			            chatWidget.style.display = 'none';
+			            
+			            // Ta bort active från mobilknappen om den finns
+			            if(mobileChatBtn) mobileChatBtn.classList.remove('active');
+			        }
+			    }
+			});
+
 			// --- HANTERA CHATT-WIDGET ---
 			const chatWidget = document.getElementById('chatWidget');
 			const fabChat = document.getElementById('fabChat');
