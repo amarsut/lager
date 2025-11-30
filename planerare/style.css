@@ -6203,3 +6203,12 @@ body.body-scroll-lock {
     opacity: 0.9;
     text-decoration: none;
 }
+
+.platform-icon {
+    width: 0.8rem;
+    height: 0.8rem;
+    vertical-align: middle;
+    margin-left: 4px;
+    opacity: 0.7;
+    color: var(--text-color-light);
+}
