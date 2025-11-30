@@ -768,7 +768,37 @@
 			        }
 			    };
 			};
+
+			// --- HANTERA CHATT-WIDGET ---
+			const chatWidget = document.getElementById('chatWidget');
+			const fabChat = document.getElementById('fabChat');
+			const closeChatWidgetBtn = document.getElementById('closeChatWidget');
 			
+			function toggleChatWidget() {
+			    if (!chatWidget) return;
+			    
+			    const isHidden = chatWidget.style.display === 'none';
+			    
+			    if (isHidden) {
+			        chatWidget.style.display = 'flex';
+			        // Starta chatten om den inte redan är igång
+			        if (typeof initChat === 'function') initChat();
+			        
+			        // Fokusera på textfältet direkt
+			        setTimeout(() => {
+			            const input = document.getElementById('chatInput');
+			            if(input) input.focus();
+			        }, 100);
+			    } else {
+			        chatWidget.style.display = 'none';
+			    }
+			}
+			
+			// Koppla knapparna
+			if (fabChat) fabChat.addEventListener('click', toggleChatWidget);
+			if (closeChatWidgetBtn) closeChatWidgetBtn.addEventListener('click', () => {
+			    chatWidget.style.display = 'none';
+			});
 
 			let chatUnsubscribe = null; // För att kunna stänga av lyssnaren
 
@@ -1145,48 +1175,65 @@
             
 			 // --- KORRIGERAD & KOMPLETT toggleView ---
 			function toggleView(view) {
-			    // Om vi redan är på denna vy OCH vi inte navigerar (via bakåtknapp), gör inget.
+			    // 1. HANTERA CHATT (Specialfall: Widget/Popup)
+			    if (view === 'chat') {
+			        // Öppna widgeten (hanteras av CSS som helskärm på mobil, popup på desktop)
+			        if (typeof toggleChatWidget === 'function') {
+			            toggleChatWidget();
+			        }
+			
+			        // Uppdatera endast mobil-knappen visuellt
+			        const mobileChatBtn = document.getElementById('mobileChatBtn');
+			        
+			        // Ta bort active från alla knappar först för tydlighet
+			        document.querySelectorAll('.mobile-nav-btn').forEach(b => b.classList.remove('active'));
+			        
+			        // Markera chatt-knappen
+			        if (mobileChatBtn) mobileChatBtn.classList.add('active');
+			
+			        return; // VIKTIGT: Avbryt här. Vi byter inte bort bakgrundsvyn.
+			    }
+			
+			    // 2. STANDARD VY-BYTE (Tidslinje, Kalender, Tavla)
+			    // Om vi redan är på denna vy OCH inte navigerar bakåt, gör inget.
 			    if (view === currentView && !isNavigatingBack) return;
 			
 			    currentView = view;
 			
-			    // 1. Hantera knappar (Desktop & Mobil) - Toggla 'active'-klassen
+			    // --- Hantera knappar (Visuell status) ---
 			    const btnToggleTimeline = document.getElementById('btnToggleTimeline');
 			    const btnToggleCalendar = document.getElementById('btnToggleCalendar');
 			    const btnKanban = document.getElementById('btnToggleKanban');
-			    
+			
+			    // Nollställ mobilknappar (så inte chatten lyser om vi byter till tidslinje)
+			    document.querySelectorAll('.mobile-nav-btn').forEach(b => b.classList.remove('active'));
+			
+			    // Sätt aktiv klass på Desktop-knappar
 			    if (btnToggleTimeline) btnToggleTimeline.classList.toggle('active', view === 'timeline');
 			    if (btnToggleCalendar) btnToggleCalendar.classList.toggle('active', view === 'calendar');
 			    if (btnKanban) btnKanban.classList.toggle('active', view === 'kanban');
 			
-			    const mobileChatBtn = document.getElementById('mobileChatBtn');
-			    if (mobileChatBtn) mobileChatBtn.classList.toggle('active', view === 'chat');
-			    
-			    const desktopChatBtn = document.getElementById('btnToggleChat');
-			    if (desktopChatBtn) desktopChatBtn.classList.toggle('active', view === 'chat');
-			
-			    // 2. Hantera Statistik-baren (Dölj i chatt, visa annars)
-			    const statBar = document.getElementById('statBar');
-			    if (statBar) {
-			        if (view === 'chat') {
-			            statBar.style.display = 'none';
-			        } else {
-			            statBar.style.display = 'grid'; // Återställ för Tidslinje/Kalender/Tavla
-			        }
+			    // Sätt aktiv klass på Mobil "Vy"-knapp (för Timeline/Kalender/Kanban)
+			    const mobileViewToggle = document.getElementById('mobileViewToggle');
+			    if (mobileViewToggle && (view === 'timeline' || view === 'calendar' || view === 'kanban')) {
+			        mobileViewToggle.classList.add('active');
 			    }
 			
-			    // 3. Dölj alla vyer först
+			    // --- Dölj alla huvud-vyer ---
 			    const timelineView = document.getElementById('timelineView');
 			    const calendarView = document.getElementById('calendarView');
 			    const kanbanView = document.getElementById('kanbanView');
-			    const chatView = document.getElementById('chatView');
-			
+			    
+			    // OBS: Vi rör inte chatWidget här, den lever sitt eget liv
 			    if (timelineView) timelineView.style.display = 'none';
 			    if (calendarView) calendarView.style.display = 'none';
 			    if (kanbanView) kanbanView.style.display = 'none';
-			    if (chatView) chatView.style.display = 'none';
 			
-			    // 4. Visa den valda vyn och kör specifik logik
+			    // Se till att Statistik-baren syns (om den varit dold)
+			    const statBar = document.getElementById('statBar');
+			    if (statBar) statBar.style.display = 'grid';
+			
+			    // --- Visa vald vy och kör logik ---
 			    if (view === 'calendar') {
 			        if (calendarView) calendarView.style.display = 'block';
 			        
@@ -1214,17 +1261,6 @@
 			
 			        if (!isNavigatingBack) {
 			            history.pushState({ view: 'kanban' }, 'Tavla', '#kanban');
-			        }
-			
-			    } else if (view === 'chat') {
-			        if (chatView) chatView.style.display = 'block';
-			        
-			        if (typeof initChat === 'function') {
-			            initChat();
-			        }
-			        
-			        if (!isNavigatingBack) {
-			            history.pushState({ view: 'chat' }, 'Notiser', '#chat');
 			        }
 			
 			    } else { 
