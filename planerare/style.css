@@ -6578,7 +6578,7 @@ body.body-scroll-lock {
     position: fixed;
     bottom: 180px; /* Ligger precis ovanför knapparna */
     right: 2rem; /* I högra hörnet */
-    width: 380px; /* Lagom bredd för en chatt */
+    width: 500px; /* Lagom bredd för en chatt */
     height: 600px; /* Ganska hög */
     max-height: 70vh; /* Men inte högre än 70% av skärmen */
     
@@ -6656,5 +6656,6 @@ body.body-scroll-lock {
     background-color: rgba(255, 255, 255, 0.2); /* Vit, genomskinlig platta */
     color: white !important; /* Ikonen förblir vit */
 }
+
 
 
