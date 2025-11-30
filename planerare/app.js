@@ -820,38 +820,49 @@
 			    currentView = view;
 			
 			    // 1. Hantera knappar (Desktop & Mobil) - Toggla 'active'-klassen
+			    const btnToggleTimeline = document.getElementById('btnToggleTimeline');
+			    const btnToggleCalendar = document.getElementById('btnToggleCalendar');
+			    const btnKanban = document.getElementById('btnToggleKanban');
+			    
 			    if (btnToggleTimeline) btnToggleTimeline.classList.toggle('active', view === 'timeline');
 			    if (btnToggleCalendar) btnToggleCalendar.classList.toggle('active', view === 'calendar');
-			    
-			    const btnKanban = document.getElementById('btnToggleKanban');
 			    if (btnKanban) btnKanban.classList.toggle('active', view === 'kanban');
 			
-			    // --- NYTT: Hantera Chatt-knappar ---
 			    const mobileChatBtn = document.getElementById('mobileChatBtn');
 			    if (mobileChatBtn) mobileChatBtn.classList.toggle('active', view === 'chat');
 			    
 			    const desktopChatBtn = document.getElementById('btnToggleChat');
 			    if (desktopChatBtn) desktopChatBtn.classList.toggle('active', view === 'chat');
 			
-			    // 2. Dölj alla vyer först
+			    // 2. Hantera Statistik-baren (Dölj i chatt, visa annars)
+			    const statBar = document.getElementById('statBar');
+			    if (statBar) {
+			        if (view === 'chat') {
+			            statBar.style.display = 'none';
+			        } else {
+			            statBar.style.display = 'grid'; // Återställ för Tidslinje/Kalender/Tavla
+			        }
+			    }
+			
+			    // 3. Dölj alla vyer först
+			    const timelineView = document.getElementById('timelineView');
+			    const calendarView = document.getElementById('calendarView');
+			    const kanbanView = document.getElementById('kanbanView');
+			    const chatView = document.getElementById('chatView');
+			
 			    if (timelineView) timelineView.style.display = 'none';
 			    if (calendarView) calendarView.style.display = 'none';
 			    if (kanbanView) kanbanView.style.display = 'none';
-			    
-			    const chatView = document.getElementById('chatView');
 			    if (chatView) chatView.style.display = 'none';
 			
-			    // 3. Visa den valda vyn och kör specifik logik
+			    // 4. Visa den valda vyn och kör specifik logik
 			    if (view === 'calendar') {
 			        if (calendarView) calendarView.style.display = 'block';
 			        
 			        if (calendar) {
 			            calendar.changeView('dayGridTwoWeek');
-			            
-			            // Uppdatera kalendern så den ritas rätt
 			            setTimeout(() => {
 			                calendar.updateSize();
-			                // Hämta aktiva jobb och uppdatera events
 			                const activeJobs = allJobs.filter(job => !job.deleted);
 			                const calendarEvents = activeJobs.map(mapJobToEvent);
 			                calendar.setOption('events', calendarEvents);
@@ -865,6 +876,7 @@
 			
 			    } else if (view === 'kanban') {
 			        if (kanbanView) kanbanView.style.display = 'block';
+			        const appBrandTitle = document.getElementById('appBrandTitle');
 			        if (appBrandTitle) appBrandTitle.style.display = 'block';
 			
 			        renderKanbanBoard();
@@ -874,10 +886,8 @@
 			        }
 			
 			    } else if (view === 'chat') {
-			        // --- NYTT: CHATT-VY ---
 			        if (chatView) chatView.style.display = 'block';
 			        
-			        // Starta chatt-lyssnaren
 			        if (typeof initChat === 'function') {
 			            initChat();
 			        }
@@ -889,12 +899,12 @@
 			    } else { 
 			        // Default: Timeline (Tidslinje)
 			        if (timelineView) timelineView.style.display = 'block';
+			        const appBrandTitle = document.getElementById('appBrandTitle');
 			        if (appBrandTitle) appBrandTitle.style.display = 'block';
 			
 			        renderTimeline();
 			
 			        if (!isNavigatingBack) {
-			            // För startsidan använder vi replaceState för att hålla historiken ren
 			            history.replaceState(null, 'Tidslinje', location.pathname);
 			        }
 			    }
