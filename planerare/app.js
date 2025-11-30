@@ -2177,16 +2177,35 @@
 			            <span class="item-name">${item.name}</span>
 			            <div style="display:flex; align-items:center;">
 			                <span class="item-cost">-${formatCurrency(item.cost)}</span>
-			                <button type="button" class="delete-btn" title="Ta bort">
+			                <button type="button" class="delete-btn" title="Ta bort och justera pris">
 			                    <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-trash"></use></svg>
 			                </button>
 			            </div>
 			        `;
 			        
+			        // Koppla klick-lyssnare till soptunnan
 			        div.querySelector('.delete-btn').addEventListener('click', () => {
+			            const costToRemove = item.cost || 0;
+			
+			            // 1. Hämta nuvarande kundpris
+			            const prisInput = document.getElementById('kundpris');
+			            // Rensa bort eventuella mellanslag så vi får ett rent nummer
+			            let currentPrice = parseFloat(prisInput.value.replace(/\s/g, '').replace(',', '.')) || 0;
+			
+			            // 2. Dra av kostnaden från priset
+			            let newPrice = currentPrice - costToRemove;
+			            if (newPrice < 0) newPrice = 0; // Säkra så vi inte får minuspris
+			
+			            prisInput.value = Math.round(newPrice);
+			
+			            // 3. Ta bort utgiften från listan
 			            currentExpenses.splice(index, 1);
+			
+			            // 4. Uppdatera UI och Vinstkalkyl
 			            renderExpensesList();
 			            updateLiveProfit();
+			            
+			            showToast(`Utgift borttagen. Pris justerat med -${costToRemove} kr.`);
 			        });
 			        
 			        container.appendChild(div);
@@ -2303,7 +2322,7 @@
 		            }
 		            
 		            // Plussa på utgiftens kostnad
-		            const newPrice = currentPrice + cost;
+		            const newPrice = currentPrice + (cost * 1.1); // 10% påslag
 		            prisInput.value = Math.round(newPrice);
 		
 		            // 3. VISA VARNING & ANIMATION
@@ -2331,7 +2350,7 @@
 		            updateLiveProfit();
 		            
 		            // En liten toast också för tydlighetens skull
-		            showToast(`Priset ökat med ${cost} kr.`);
+		            //showToast(`Priset ökat med ${cost} kr.`);
 		        });
 		    }
 
