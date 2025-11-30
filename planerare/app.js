@@ -1000,11 +1000,13 @@
 			    const bubble = document.createElement('div');
 			    bubble.className = 'chat-bubble';
 			    
+			    // Timer för att skilja på klick och dubbelklick
+			    let clickTimeout = null;
+			
 			    // --- SCENARIO A: BILD-KARUSELL (Flera bilder) ---
 			    if (data.images && Array.isArray(data.images)) {
 			        bubble.classList.add('chat-bubble-image');
 			        
-			        // Skapa karusell-container
 			        const carousel = document.createElement('div');
 			        carousel.className = 'chat-carousel';
 			        
@@ -1014,11 +1016,26 @@
 			            img.loading = "lazy";
 			            img.alt = "Bild";
 			            
-			            // Klick-logik för varje bild i karusellen
+			            // KLICK-LOGIK MED TIMER (Fix för dubbelklick)
 			            img.onclick = (e) => {
-			                e.stopPropagation();
-			                if (typeof window.openImageZoom === 'function') {
-			                    window.openImageZoom(imgSrc);
+			                e.stopPropagation(); // Stoppa bubblans händelser
+			                
+			                if (clickTimeout !== null) {
+			                    // Detta är andra klicket -> DUBBELKLICK -> RADERA
+			                    clearTimeout(clickTimeout);
+			                    clickTimeout = null;
+			                    if(confirm("Radera denna notis?")) {
+			                        db.collection("notes").doc(id).delete();
+			                    }
+			                } else {
+			                    // Detta är första klicket -> VÄNTA PÅ NÄSTA
+			                    clickTimeout = setTimeout(() => {
+			                        // Tiden gick ut, inget andra klick -> ENKELKLICK -> ZOOMA
+			                        if (typeof window.openImageZoom === 'function') {
+			                            window.openImageZoom(imgSrc);
+			                        }
+			                        clickTimeout = null;
+			                    }, 250); // Väntar 250ms
 			                }
 			            };
 			            carousel.appendChild(img);
@@ -1032,10 +1049,24 @@
 			        bubble.innerHTML = `<img src="${data.image}" alt="Uppladdad bild" loading="lazy" />`;
 			        
 			        const imgElement = bubble.querySelector('img');
+			        
+			        // KLICK-LOGIK MED TIMER (Samma fix här)
 			        imgElement.onclick = (e) => {
 			            e.stopPropagation();
-			            if (typeof window.openImageZoom === 'function') {
-			                window.openImageZoom(data.image);
+			            
+			            if (clickTimeout !== null) {
+			                clearTimeout(clickTimeout);
+			                clickTimeout = null;
+			                if(confirm("Radera denna notis?")) {
+			                    db.collection("notes").doc(id).delete();
+			                }
+			            } else {
+			                clickTimeout = setTimeout(() => {
+			                    if (typeof window.openImageZoom === 'function') {
+			                        window.openImageZoom(data.image);
+			                    }
+			                    clickTimeout = null;
+			                }, 250);
 			            }
 			        };
 			    } 
@@ -1043,11 +1074,9 @@
 			    else {
 			        let rawText = data.text || "";
 			        
-			        // Skapa container för texten
 			        const textContentDiv = document.createElement('div');
-			        textContentDiv.className = 'chat-text-content'; // Klass för styling
+			        textContentDiv.className = 'chat-text-content';
 			        
-			        // Processa texten (Säkra HTML -> Länkar -> Regnr)
 			        let processedText = rawText
 			            .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 			            
@@ -1063,17 +1092,14 @@
 			        textContentDiv.innerHTML = processedText;
 			        bubble.appendChild(textContentDiv);
 			
-			        // --- LÄS MER LOGIK ---
-			        // Vi kollar längden på råtexten. Om över 300 tecken -> Kollapsa
 			        if (rawText.length > 300) {
-			            textContentDiv.classList.add('truncated'); // Lägg till CSS-klass som gömmer text
-			            
+			            textContentDiv.classList.add('truncated');
 			            const readMoreBtn = document.createElement('button');
 			            readMoreBtn.className = 'read-more-btn';
 			            readMoreBtn.textContent = "Visa mer";
 			            
 			            readMoreBtn.onclick = (e) => {
-			                e.stopPropagation(); // Så vi inte raderar bubblan
+			                e.stopPropagation();
 			                if (textContentDiv.classList.contains('truncated')) {
 			                    textContentDiv.classList.remove('truncated');
 			                    readMoreBtn.textContent = "Visa mindre";
@@ -1082,19 +1108,20 @@
 			                    readMoreBtn.textContent = "Visa mer";
 			                }
 			            };
-			            
 			            bubble.appendChild(readMoreBtn);
 			        }
+			        
+			        // För textbubblor behåller vi standard dubbelklick (ingen timer behövs här)
+			        bubble.addEventListener('dblclick', () => {
+			            if(confirm("Radera denna notis?")) {
+			                db.collection("notes").doc(id).delete();
+			            }
+			        });
 			    }
 			    
-			    // --- RADERA (Dubbelklick på hela bubblan) ---
+			    // Gemensamma inställningar
 			    bubble.title = "Dubbelklicka för att radera";
 			    bubble.style.cursor = "pointer";
-			    bubble.addEventListener('dblclick', () => {
-			        if(confirm("Radera denna notis?")) {
-			            db.collection("notes").doc(id).delete();
-			        }
-			    });
 			
 			    // --- TID & IKON ---
 			    const time = document.createElement('div');
