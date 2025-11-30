@@ -196,10 +196,18 @@
 				<div id="chatView" style="display: none;">
 				    <div class="chat-container">
 						<div class="chat-search-bar">
-					        <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-search"></use></svg>
-					        <input type="text" id="chatSearchInput" placeholder="Sök i dina notiser...">
-					        <button id="clearChatSearch" style="display:none;">&times;</button>
-					    </div>
+						    <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-search"></use></svg>
+						    <input type="text" id="chatSearchInput" placeholder="Sök i dina notiser...">
+						    <button id="clearChatSearch" style="display:none;">&times;</button>
+						    
+						    <button id="toggleChatGallery" class="icon-btn" title="Visa bildgalleri" style="margin-left: 0.5rem;">
+						        <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						            <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+						            <circle cx="8.5" cy="8.5" r="1.5" />
+						            <polyline points="21 15 16 10 5 21" />
+						        </svg>
+						    </button>
+						</div>
 				        <div class="chat-messages" id="chatMessages">
 				            <div class="empty-state-chat">
 				                <p>Skriv en notis till dig själv...</p>
