@@ -2499,7 +2499,7 @@
 			});
 
             window.addEventListener('popstate', (event) => {
-			    // Om vi navigerar via kod (isNavigatingBack = true), gör inget manuellt
+			    // Undvik att hantera navigering som vi själva triggar via kod
 			    if (isNavigatingBack) {
 			        isNavigatingBack = false;
 			        return;
@@ -2507,71 +2507,90 @@
 			
 			    clearTimeout(backPressTimer);
 			
-			    // 1. PRIO 1: STÄNG BILD-ZOOM (Om öppen)
+			    const state = event.state || {}; // Hämta nuvarande state (t.ex. { modal: 'chatWidget' })
+			    const currentHash = window.location.hash;
+			
+			    // Hämta element
 			    const imageModal = document.getElementById('imageZoomModal');
-			    if (imageModal && getComputedStyle(imageModal).display !== 'none') {
+			    const chatWidget = document.getElementById('chatWidget');
+			    const mSearchModal = document.getElementById('mobileSearchModal');
+			    const mobileChatBtn = document.getElementById('mobileChatBtn');
+			
+			    // --- 1. HANTERA BILD-MODAL ---
+			    // Om vi INTE är på #image, men bilden är öppen -> Stäng den!
+			    if (currentHash !== '#image' && imageModal && imageModal.style.display !== 'none') {
 			        imageModal.style.display = 'none';
-			        // Om chatten ligger under, behåll scroll-låset för den, annars släpp det
-			        const chatWidget = document.getElementById('chatWidget');
-			        if (!chatWidget || getComputedStyle(chatWidget).display === 'none') {
+			        
+			        // Om vi landar i chatten (state: chatWidget), behåll scroll-låset på mobil.
+			        // Annars släpp det.
+			        if (state.modal !== 'chatWidget') {
 			            document.body.classList.remove('body-scroll-lock');
 			        }
-			        return; // Stanna här, stäng inte mer saker
 			    }
 			
-			    // 2. PRIO 2: STÄNG CHATT-WIDGET (Om öppen)
-			    const chatWidget = document.getElementById('chatWidget');
-			    if (chatWidget && getComputedStyle(chatWidget).display !== 'none') {
-			        // Använd din stäng-logik manuellt här för att slippa loopar
-			        chatWidget.style.display = 'none';
-			        document.body.style.overflow = ''; // Släpp scroll-lås
-			        
-			        const mobileChatBtn = document.getElementById('mobileChatBtn');
-			        if(mobileChatBtn) mobileChatBtn.classList.remove('active');
-			        
-			        return; // Stanna här
-			    }
-			
-			    // 3. PRIO 3: STÄNG SÖK-MODAL
-			    const mSearchModal = document.getElementById('mobileSearchModal');
-			    if (mSearchModal && getComputedStyle(mSearchModal).display !== 'none') {
-			        if (typeof resetAndCloseSearch === 'function') {
-			            resetAndCloseSearch();
-			        } else {
-			            mSearchModal.style.display = 'none';
+			    // --- 2. HANTERA CHATTEN ---
+			    // Om historiken säger att vi ska vara i chatten -> Se till att den är ÖPPEN
+			    if (state.modal === 'chatWidget' || currentHash === '#chat') {
+			        if (chatWidget && chatWidget.style.display === 'none') {
+			            chatWidget.style.display = 'flex';
+			            
+			            // Fokusera om det behövs (och inte är mobil, för att undvika tangentbord)
+			            if (window.innerWidth > 768) {
+			                setTimeout(() => {
+			                    const input = document.getElementById('chatInput');
+			                    if(input) input.focus();
+			                }, 100);
+			            }
+			            
+			            // Lås scroll på mobil
+			            if (window.innerWidth <= 768) {
+			                document.body.style.overflow = 'hidden';
+			            }
 			        }
-			        return;
+			        // Markera knappen
+			        if (mobileChatBtn) mobileChatBtn.classList.add('active');
+			        
+			        // VIKTIGT: Returnera här så vi inte stänger chatten av misstag nedan
+			        return; 
+			    } 
+			    // Om vi INTE ska vara i chatten, men den är öppen -> STÄNG den
+			    else if (chatWidget && chatWidget.style.display !== 'none') {
+			        chatWidget.style.display = 'none';
+			        document.body.style.overflow = ''; // Släpp alltid scrollen
+			        if (mobileChatBtn) mobileChatBtn.classList.remove('active');
 			    }
 			
-			    // 4. PRIO 4: STÄNG VANLIGA MODALER (Jobb, Kund, Bil)
-			    if (isModalOpen) {
-			        isNavigatingBack = true; // Förhindra loop
-			        closeModal({ popHistory: false }); // Stäng bara visuellt
+			    // --- 3. HANTERA SÖK-MODAL ---
+			    if (mSearchModal && getComputedStyle(mSearchModal).display !== 'none') {
+			        if (state.modal !== 'mobileSearch') {
+			            if (typeof resetAndCloseSearch === 'function') {
+			                resetAndCloseSearch();
+			            } else {
+			                mSearchModal.style.display = 'none';
+			            }
+			        }
+			    }
+			
+			    // --- 4. HANTERA VANLIGA MODALER ---
+			    // Stäng andra modaler (Jobb, Kund, Bil) om de är öppna och vi backar
+			    if (isModalOpen && !state.modal) {
+			        isNavigatingBack = true; 
+			        closeModal({ popHistory: false });
 			        isNavigatingBack = false;
 			        backPressWarned = false;
 			        return;
 			    }
 			
-			    // 5. PRIO 5: BYT TILLBAKA TILL TIDSLINJE (Om vi står på kalender/tavla)
-			    if (currentView !== 'timeline') {
-			        isNavigatingBack = true;
-			        toggleView('timeline');
-			        isNavigatingBack = false;
-			        backPressWarned = false;
-			        return;
-			    }
-			
-			    // 6. SISTA UTVÄG: AVSLUTA APPEN (Android-varning)
-			    if (window.innerWidth <= 768) {
+			    // --- 5. HANTERA AVSLUTA APP (Android) ---
+			    // Om vi är på startsidan (inget hash, ingen modal) och trycker bakåt på mobil
+			    if (window.innerWidth <= 768 && !state.modal && !currentHash && !isModalOpen) {
 			        if (backPressWarned) {
 			            backPressWarned = false;
-			            history.back(); // Låt webbläsaren stänga/backa på riktigt
+			            history.back(); // Avsluta
 			        } else {
 			            backPressWarned = true;
 			            showToast('Tryck bakåt igen för att stänga', 'info');
-			            // Pusha samma state igen för att "stanna kvar" en gång till
-			            history.pushState(null, 'Tidslinje', location.pathname);
-			            
+			            history.pushState(null, document.title, location.pathname); // Stanna kvar
 			            backPressTimer = setTimeout(() => {
 			                backPressWarned = false;
 			            }, 2000);
