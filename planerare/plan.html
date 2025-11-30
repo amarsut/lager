@@ -36,7 +36,10 @@
         <symbol id="icon-close" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></symbol>
         <symbol id="icon-chat" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.76c0 1.6 1.123 2.994 2.707 3.227 1.068.157 2.148.279 3.238.364.466.037.893.281 1.153.671L12 21l3.66-3.938c.26-.29.687-.534 1.153-.67 1.09-.086 2.17-.208 3.238-.365 1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.344 48.344 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.74v6.02z" /></symbol>
         <symbol id="icon-calendar-day" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3.75 8.25h16.5M4.5 1.5h15A2.25 2.25 0 0121.75 3.75v16.5A2.25 2.25 0 0119.5 22.5h-15A2.25 2.25 0 012.25 20.25V3.75A2.25 2.25 0 014.5 1.5zM12 12.75h.007v.008H12v-.008z" /></symbol>
-        <symbol id="icon-kanban-view" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+        <symbol id="icon-chat-bubble" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+		    <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+		</symbol>
+		<symbol id="icon-kanban-view" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
 		    <path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v-9.75a.75.75 0 01.75-.75h2.5a.75.75 0 01.75.75v9.75a.75.75 0 01-.75.75h-2.5a.75.75 0 01-.75-.75z" />
 		    <path stroke-linecap="round" stroke-linejoin="round" d="M3 17.25v-7.5a.75.75 0 01.75-.75h2.5a.75.75 0 01.75.75v7.5a.75.75 0 01-.75.75h-2.5a.75.75 0 01-.75-.75z" />
 		    <path stroke-linecap="round" stroke-linejoin="round" d="M15 17.25v-3.75a.75.75 0 01.75-.75h2.5a.75.75 0 01.75.75v3.75a.75.75 0 01-.75.75h-2.5a.75.75 0 01-.75-.75z" />
@@ -118,6 +121,10 @@
 						    <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-kanban-view"></use></svg>
 						    <span>Tavla</span>
 						</button>
+						<button class="button-toggle-view" id="btnToggleChat" data-view="chat">
+						    <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-chat-bubble"></use></svg>
+						    <span>Notiser</span>
+						</button>
                     </div>
                 </div>
             </div>
@@ -175,6 +182,23 @@
                         <p class="stat-card-value" id="stat-all">0</p>
                     </div>
                 </div>
+
+				<div id="chatView" style="display: none;">
+				    <div class="chat-container">
+				        <div class="chat-messages" id="chatMessages">
+				            <div class="empty-state-chat">
+				                <p>Skriv en notis till dig själv...</p>
+				            </div>
+				        </div>
+				        
+				        <form id="chatForm" class="chat-input-area">
+				            <input type="text" id="chatInput" placeholder="Skriv en påminnelse..." autocomplete="off">
+				            <button type="submit" class="button primary chat-send-btn">
+				                <svg class="icon-sm" viewBox="0 0 24 24" style="transform: rotate(-90deg); margin:0;"><path fill="currentColor" d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+				            </button>
+				        </form>
+				    </div>
+				</div>
                 
                 <div id="timelineView">
                     <div class="view-controls" id="view-controls">
@@ -315,6 +339,11 @@
 		<button class="mobile-nav-btn" id="mobileAddJobBtn" data-modal="jobModal">
 		    <svg class="icon" viewBox="0 0 24 24"><use href="#icon-plus"></use></svg>
 		    <span>Nytt Jobb</span>
+		</button>
+
+		<button class="mobile-nav-btn" id="mobileChatBtn" data-view="chat">
+		    <svg class="icon" viewBox="0 0 24 24"><use href="#icon-chat-bubble"></use></svg>
+		    <span>Notiser</span>
 		</button>
 		
 		<button class="mobile-nav-btn" id="mobileSearchBtn" data-modal="mobileSearchModal">
