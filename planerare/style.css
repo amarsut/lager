@@ -6212,3 +6212,43 @@ body.body-scroll-lock {
     opacity: 0.7;
     color: var(--text-color-light);
 }
+
+/* --- CHATT SÖKFÄLT --- */
+.chat-search-bar {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background-color: var(--bg-color); /* Eller vit om du föredrar */
+    border-bottom: 1px solid var(--border-color);
+    gap: 0.5rem;
+}
+
+.chat-search-bar .icon-sm {
+    color: var(--text-color-light);
+}
+
+.chat-search-bar input {
+    border: none;
+    background: transparent;
+    flex-grow: 1;
+    font-size: 0.9rem;
+    outline: none;
+    color: var(--text-color);
+}
+
+.chat-search-bar input::placeholder {
+    color: var(--text-color-light);
+}
+
+#clearChatSearch {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    color: var(--text-color-light);
+    cursor: pointer;
+    padding: 0 0.25rem;
+}
+
+#clearChatSearch:hover {
+    color: var(--text-color);
+}
