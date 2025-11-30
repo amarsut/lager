@@ -213,6 +213,44 @@
 			        e.target.setSelectionRange(start, end);
 			    });
 			}
+			if (modalKundpris) {
+			    modalKundpris.addEventListener('blur', (e) => {
+			        const input = e.target.value.trim();
+			        
+			        // Hoppa över om fältet är tomt eller redan är ett ensamt nummer
+			        if (!input || !isNaN(input)) {
+			            return;
+			        }
+			
+			        // 1. Ersätt kommatecken med punkt och ta bort mellanslag för aritmetik
+			        const cleanedInput = input.replace(/,/g, '.').replace(/\s/g, '');
+			
+			        // 2. Kontrollera om det finns aritmetiska operatorer (+, -, *, /)
+			        if (/[+\-*/]/.test(cleanedInput)) {
+			            try {
+			                // Säker utvärdering av uttrycket (endast för uträkningar)
+			                let result = Function('return ' + cleanedInput)();
+			                
+			                // Avrunda resultatet till närmaste heltal för priset
+			                result = Math.round(result); 
+			
+			                if (!isNaN(result) && isFinite(result)) {
+			                    // Uppdatera fältet med det uträknade heltalet
+			                    e.target.value = result;
+			
+			                    // 3. Manuell uppdatering av vinstkalkylen 
+			                    // (Antar att du har en funktion som heter updateLiveProfit)
+			                    if (typeof updateLiveProfit === 'function') {
+			                        updateLiveProfit();
+			                    }
+			                }
+			            } catch (error) {
+			                // Ignorera felaktiga uttryck
+			                console.warn("Ogiltigt uttryck i Kundpris-fältet:", cleanedInput);
+			            }
+			        }
+			    });
+			}
             const kundnamnSuggestions = document.getElementById('kundnamnSuggestions');
             const modalTelefon = document.getElementById('telefon');
 			const jobModalCallBtn = document.getElementById('jobModalCallBtn'); // <-- NY
