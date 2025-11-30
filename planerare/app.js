@@ -254,8 +254,8 @@
 					
 					        // 3. Skapa de nya raderna
 					        const nyaUtgifter = [
-					            { name: `Motorolja (${literOlja}L)`, cost: Math.round(literOlja * 65) },
-					            { name: "Oljefilter", cost: 200 }
+					            { name: `MOTOROLJA (${literOlja}L)`, cost: Math.round(literOlja * 65) },
+					            { name: "OLJEFILTER", cost: 200 }
 					        ];
 					
 					        // 4. LÄGG TILL dem i listan (istället för att ersätta hela listan)
