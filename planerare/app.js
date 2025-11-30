@@ -1870,6 +1870,8 @@
 			            mSearch.classList.remove('show');
 			        }
 			    }
+
+				document.body.classList.remove('body-scroll-lock');
 			
 			    if (!isModalOpen) return;
 			
@@ -2007,6 +2009,8 @@
                 if (isModalOpen) {
                     closeModal({ popHistory: false }); 
                 }
+
+				document.body.classList.add('body-scroll-lock');
                 
                 const modalElement = document.getElementById(modalId);
                 if (!modalElement) {
