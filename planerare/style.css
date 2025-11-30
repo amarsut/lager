@@ -6126,17 +6126,19 @@ body.body-scroll-lock {
 /* Input-området i botten */
 .chat-input-area {
     display: flex;
-    gap: 0.75rem;
-    padding: 1rem;
+    gap: 0.5rem; /* Lite tajtare mellanrum */
+    padding: 0.75rem; /* Lite mindre padding för mobil */
     background-color: var(--content-bg);
     border-top: 1px solid var(--border-color);
     align-items: center;
 }
 
 #chatInput {
-    flex-grow: 1;
-    padding: 0.8rem 1.2rem;
-    border-radius: 25px; /* Runda hörn på input */
+    /* "flex: 1 1 auto" betyder: Väx om det finns plats, krymp om det behövs */
+    flex: 1 1 auto; 
+    min-width: 0; /* VIKTIGT: Låter fältet krympa ordentligt på små mobiler */
+    padding: 0.8rem 1rem;
+    border-radius: 25px;
     border: 1px solid var(--border-color);
     background-color: var(--bg-color);
     font-size: 1rem;
@@ -6147,7 +6149,53 @@ body.body-scroll-lock {
 #chatInput:focus {
     border-color: var(--primary-color);
     background-color: var(--content-bg);
-    box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.chat-action-btn {
+    width: 42px; /* Något mindre än förut för att få plats */
+    height: 42px;
+    border-radius: 50%; /* Perfekt runda */
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* VIKTIGT: "flex-shrink: 0" hindrar dem från att mosas på mobil */
+    flex-shrink: 0; 
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+/* Primär knapp (Skicka - Blå) */
+.chat-action-btn.primary {
+    background-color: var(--primary-color);
+    color: white;
+    box-shadow: 0 2px 5px rgba(var(--primary-color-rgb), 0.3);
+}
+.chat-action-btn.primary:hover {
+    background-color: var(--primary-dark);
+    transform: scale(1.05);
+}
+.chat-action-btn.primary:active { transform: scale(0.95); }
+
+
+/* Sekundär knapp (Kamera - Grå/Tema-anpassad) */
+.chat-action-btn.secondary {
+    background-color: var(--bg-color); /* Smälter in i bakgrunden */
+    border: 1px solid var(--border-color);
+    color: var(--text-color-light);
+}
+.chat-action-btn.secondary:hover {
+    background-color: var(--border-color); /* Lite mörkare vid hover */
+    color: var(--text-color);
+}
+.chat-action-btn.secondary:active { background-color: var(--content-bg); }
+.chat-action-btn.secondary .icon-sm { stroke-width: 1.5px; } /* Lite tunnare ikon */
+
+/* Dark mode justering för kameraknappen */
+[data-theme="dark"] .chat-action-btn.secondary {
+    background-color: #3a3a3c;
+    border-color: #48484a;
 }
 
 .chat-send-btn {
@@ -6268,3 +6316,4 @@ body.body-scroll-lock {
     box-shadow: 0 2px 8px rgba(0,0,0,0.15);
     background-color: #fff;
 }
+
