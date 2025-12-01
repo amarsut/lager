@@ -6363,11 +6363,23 @@ body.body-scroll-lock {
 
 .chat-bubble img {
     max-width: 100%;
-    border-radius: 12px; /* Snygga hörn på bilden */
+    
+    /* --- NYTT: Tumnagel-storlek --- */
+    height: 180px;       /* Fast höjd (gör den mindre) */
+    width: 100%;         /* Fyll bredden på bubblan */
+    object-fit: cover;   /* "Klipp" bilden snyggt för att passa rutan (zoomar in mitten) */
+    /* ------------------------------ */
+    
+    border-radius: 12px;
     display: block;
-    cursor: zoom-in; /* Visa att man kan klicka */
+    cursor: zoom-in;     /* Visar förstoringsglas-markör */
     box-shadow: 0 2px 8px rgba(0,0,0,0.15);
     background-color: #fff;
+    transition: transform 0.2s ease;
+}
+
+.chat-bubble img:hover {
+    filter: brightness(0.95);
 }
 
 /* Länkade Reg-nummer i chatten */
@@ -6779,6 +6791,7 @@ body.body-scroll-lock {
     -webkit-touch-callout: none; /* Stoppar iOS förstoringsglas/meny */
     user-select: none; /* Stoppar textmarkering */
 }
+
 
 
 
