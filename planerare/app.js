@@ -1040,17 +1040,26 @@
                             }
                         });
                     };
-			        searchInput.oninput = filterChat;
-			        clearBtn.onclick = () => { searchInput.value = ''; filterChat(); searchInput.focus(); };
-			    }
+                    searchInput.oninput = filterChat;
+                    clearBtn.onclick = () => { searchInput.value = ''; filterChat(); searchInput.focus(); };
+
+                    // --- NYTT: Hantera Enter-tryck i sökfältet ---
+                    searchInput.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter') {
+                            e.preventDefault(); // Stoppa formulär-submit/omladdning
+                            searchInput.blur(); // Stäng tangentbordet
+                        }
+                    });
+                }
+
                 if (galleryToggleBtn) {
-			        galleryToggleBtn.onclick = () => {
-			            chatList.classList.toggle('gallery-mode');
-			            const isActive = chatList.classList.contains('gallery-mode');
-			            galleryToggleBtn.style.color = isActive ? 'var(--primary-color)' : 'var(--text-color-light)';
-			            if (!isActive) setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
-			        };
-			    }
+                    galleryToggleBtn.onclick = () => {
+                        chatList.classList.toggle('gallery-mode');
+                        const isActive = chatList.classList.contains('gallery-mode');
+                        galleryToggleBtn.style.color = isActive ? 'var(--primary-color)' : 'var(--text-color-light)';
+                        if (!isActive) setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
+                    };
+                }
 
                 // --- 6. PAGINERING & SETUP ---
                 
