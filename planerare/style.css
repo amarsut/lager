@@ -6685,22 +6685,28 @@ body.body-scroll-lock {
 /* Menyn som dyker upp vid långtryck */
 .reaction-menu {
     position: fixed;
-    background-color: var(--content-bg);
-    border-radius: 50px;
-    padding: 8px 16px; /* Lite större träffyta */
+    background-color: var(--content-bg); /* Anpassar sig efter tema */
+    
+    /* Samsung-liknande pillerform */
+    border-radius: 24px; 
+    padding: 8px 14px; 
+    
     display: flex;
-    gap: 12px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.25); /* Tydligare skugga */
+    align-items: center; /* Centrera vertikalt */
+    gap: 10px; /* Jämnare mellanrum */
+    
+    /* Tydligare djupskugga */
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15); 
     border: 1px solid var(--border-color);
-    z-index: 20000; /* Se till att den ligger över allt */
+    
+    z-index: 20000;
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.2s ease, transform 0.2s ease;
-    transform: scale(0.9);
+    transition: opacity 0.15s ease, transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transform: scale(0.8);
     
-    /* NYA RADER: */
-    white-space: nowrap; /* Förhindra radbrytning */
-    user-select: none;   /* Förhindra markering */
+    white-space: nowrap;
+    user-select: none;
     -webkit-user-select: none;
 }
 
@@ -6711,15 +6717,36 @@ body.body-scroll-lock {
 }
 
 .reaction-option {
-    font-size: 1.5rem;
+    font-size: 1.4rem; /* Lite större ikoner */
     cursor: pointer;
-    transition: transform 0.2s ease;
-    user-select: none;
+    transition: transform 0.1s ease;
     line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.reaction-option:active {
+    transform: scale(1.3);
 }
 
 .reaction-option:hover {
     transform: scale(1.3);
+}
+
+.reaction-divider {
+    width: 1px;
+    height: 24px; /* Höjden på linjen */
+    background-color: var(--border-color); /* Färg från ditt tema */
+    margin: 0 2px; /* Lite extra luft runt linjen */
+    display: block;
+}
+
+/* Desktop-hover (frivilligt) */
+@media (min-width: 769px) {
+    .reaction-option:hover {
+        transform: scale(1.2);
+    }
 }
 
 /* Justera pratbubblan för att klara positionering */
@@ -6728,6 +6755,7 @@ body.body-scroll-lock {
     -webkit-touch-callout: none; /* Stoppar iOS förstoringsglas/meny */
     user-select: none; /* Stoppar textmarkering */
 }
+
 
 
 
