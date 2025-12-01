@@ -542,11 +542,8 @@
 	        
 	        <div class="header-search-wrapper">
 	            <svg class="icon-sm search-icon" viewBox="0 0 24 24"><use href="#icon-search"></use></svg>
-	            
 	            <input type="text" id="chatSearchInput" placeholder="Sök..." autocomplete="off">
-	            
 	            <button id="clearChatSearch" class="clear-search-btn" style="display: none;">&times;</button>
-	            
 	            <button id="toggleChatGallery" class="header-gallery-btn" title="Visa bildgalleri">
 	                <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 	                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
@@ -567,15 +564,16 @@
 	        
 	        <div class="chat-input-pill">
 	            
-	            <button type="button" id="chatPlusBtn" class="chat-inner-btn big-icon" title="Bifoga">
-	                <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-plus"></use></svg>
-	            </button>
+	            <input type="text" id="chatInput" placeholder="Meddelande" autocomplete="off">
 	
-	            <button type="button" id="chatCameraBtn" class="chat-inner-btn big-icon" title="Ta foto">
-	                <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-camera"></use></svg>
-	            </button>
-	
-	            <input type="text" id="chatInput" placeholder="Skriv..." autocomplete="off">
+	            <div class="inner-input-actions right-side">
+	                <button type="button" id="chatPlusBtn" class="chat-inner-btn" title="Bifoga">
+	                    <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-plus"></use></svg>
+	                </button>
+	                <button type="button" id="chatCameraBtn" class="chat-inner-btn" title="Ta foto">
+	                    <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-camera"></use></svg>
+	                </button>
+	            </div>
 	        </div>
 	        
 	        <button type="submit" class="chat-action-btn primary circle-btn send-btn-rotated" title="Skicka">
