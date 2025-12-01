@@ -2552,7 +2552,7 @@
 			    }
 			    clearTimeout(backPressTimer);
 			
-			    const state = event.state || {}; // Hämta state (t.ex. { modal: 'chatWidget' })
+			    const state = event.state || {}; // Hämta state
 			    
 			    // Hämta element
 			    const chatWidget = document.getElementById('chatWidget');
@@ -2563,57 +2563,77 @@
 			
 			    // FALL 1: Vi ska visa CHATTEN (Vi backade från bild, eller gick fram till chatt)
 			    if (state.modal === 'chatWidget') {
-			        // 1. Se till att bilden är stängd
 			        if (imageModal) imageModal.style.display = 'none';
-			        
-			        // 2. Se till att chatten är öppen
 			        if (chatWidget) chatWidget.style.display = 'flex';
-			        
-			        // 3. Markera knapp
 			        if (mobileChatBtn) mobileChatBtn.classList.add('active');
+			        
+			        updateScrollLock(); // Lås scroll
+			        return; // Stanna här
 			    }
 			    
 			    // FALL 2: Vi ska visa BILDEN (Vi gick framåt till bild)
 			    else if (state.modal === 'imageZoom') {
 			        if (imageModal) imageModal.style.display = 'flex';
-			        // Chatten får ligga kvar under
+			        updateScrollLock(); // Lås scroll
+			        return; // Stanna här
 			    }
 			    
 			    // FALL 3: Vi ska till TIDSLINJEN (State är tomt/null)
 			    else {
-			        // Stäng allt!
-			        if (imageModal) imageModal.style.display = 'none';
-			        if (chatWidget) chatWidget.style.display = 'none';
-			        if (mobileChatBtn) mobileChatBtn.classList.remove('active');
+			        // Vi använder en flagga för att se om vi faktiskt stängde något
+			        let didCloseSomething = false;
+			
+			        // 1. Stäng Bild om öppen
+			        if (imageModal && imageModal.style.display !== 'none') {
+			            imageModal.style.display = 'none';
+			            didCloseSomething = true;
+			        }
+			
+			        // 2. Stäng Chatt om öppen
+			        if (chatWidget && chatWidget.style.display !== 'none') {
+			            chatWidget.style.display = 'none';
+			            if (mobileChatBtn) mobileChatBtn.classList.remove('active');
+			            didCloseSomething = true;
+			        }
 			        
-			        // Hantera sök-modalen också
+			        // 3. Stäng Sök-modal
 			        const mSearchModal = document.getElementById('mobileSearchModal');
-			        if (mSearchModal) mSearchModal.style.display = 'none';
+			        if (mSearchModal && getComputedStyle(mSearchModal).display !== 'none') {
+			            mSearchModal.style.display = 'none';
+			            didCloseSomething = true;
+			        }
 			        
-			        // Hantera vanliga modaler
+			        // 4. Stäng vanliga modaler
 			        if (isModalOpen) {
 			            isNavigatingBack = true;
 			            closeModal({ popHistory: false });
 			            isNavigatingBack = false;
+			            didCloseSomething = true;
+			        }
+			
+			        // Släpp alltid scrollen när vi går till tidslinjen
+			        updateScrollLock();
+			
+			        // --- HÄR ÄR FIXEN ---
+			        // Om vi stängde något (dvs vi navigerade internt i appen), 
+			        // avbryt här så vi INTE visar "Avsluta app"-toasten.
+			        if (didCloseSomething) {
+			            return;
 			        }
 			    }
 			
-			    // --- VIKTIGT: KÖR SCROLL-CHECK EFTER VARJE FÖRÄNDRING ---
-			    // Detta garanterar att scrollen släpps om vi hamnar i Fall 3,
-			    // och låses om vi hamnar i Fall 1 (på mobil) eller Fall 2.
-			    updateScrollLock();
-			
-			    // --- MOBIL "AVSLUTA APP" VARNING (Endast om allt är stängt) ---
+			    // --- 4. AVSLUTA APP (Endast om vi redan var på "roten" och inget stängdes) ---
+			    // Denna kod nås bara om didCloseSomething var false ovan.
 			    const isRoot = !state.modal && !isModalOpen;
 			    if (window.innerWidth <= 768 && isRoot) {
-			        // (Din vanliga logik för "Tryck igen för att stänga")
 			        if (backPressWarned) {
 			            backPressWarned = false;
-			            history.back();
+			            history.back(); // Avsluta på riktigt
 			        } else {
 			            backPressWarned = true;
 			            showToast('Tryck bakåt igen för att stänga', 'info');
-			            history.pushState(null, null, location.pathname);
+			            history.pushState(null, null, location.pathname); // Pusha state för att stanna kvar
+			            
 			            backPressTimer = setTimeout(() => {
 			                backPressWarned = false;
 			            }, 2000);
