@@ -909,31 +909,39 @@
 			    menu.id = 'reactionMenu';
 			    menu.className = 'reaction-menu';
 			    
-			    // Lista med reaktioner + KOPIERA (📋) sist
-			    const reactions = ['✅', '⚠️', '👀', '❤️', '📋']; 
+			    // Endast emojier här
+			    const emojis = ['✅', '⚠️', '👀', '❤️', '❌']; 
 			    
-			    reactions.forEach(icon => {
+			    // Lägg till emojier
+			    emojis.forEach(icon => {
 			        const span = document.createElement('span');
 			        span.className = 'reaction-option';
 			        span.textContent = icon;
-			        
-			        // Särskild hantering för Kopiera-ikonen
-			        if (icon === '📋') {
-			            span.title = "Kopiera text";
-			            span.onclick = (e) => {
-			                e.stopPropagation();
-			                copyMessageText(menu.dataset.targetId);
-			                hideReactionMenu();
-			            };
-			        } else {
-			            span.onclick = (e) => {
-			                e.stopPropagation();
-			                applyReaction(menu.dataset.targetId, icon);
-			                hideReactionMenu();
-			            };
-			        }
+			        span.onclick = (e) => {
+			            e.stopPropagation();
+			            applyReaction(menu.dataset.targetId, icon);
+			            hideReactionMenu();
+			        };
 			        menu.appendChild(span);
 			    });
+			
+			    // --- LÄGG TILL LINJEN ---
+			    const divider = document.createElement('div');
+			    divider.className = 'reaction-divider';
+			    menu.appendChild(divider);
+			    // ------------------------
+			
+			    // --- LÄGG TILL KOPIERA-KNAPPEN ---
+			    const copySpan = document.createElement('span');
+			    copySpan.className = 'reaction-option';
+			    copySpan.textContent = '📋';
+			    copySpan.title = "Kopiera text";
+			    copySpan.onclick = (e) => {
+			        e.stopPropagation();
+			        copyMessageText(menu.dataset.targetId);
+			        hideReactionMenu();
+			    };
+			    menu.appendChild(copySpan);
 			
 			    document.body.appendChild(menu);
 			
@@ -948,19 +956,28 @@
 			        const doc = await db.collection("notes").doc(id).get();
 			        if (doc.exists) {
 			            const data = doc.data();
-			            // Kopiera text om det finns, annars bild-URL (eller en platshållare)
 			            const textToCopy = data.text || (data.image ? "[Bild]" : "");
 			            
 			            if (textToCopy) {
 			                await navigator.clipboard.writeText(textToCopy);
-			                showToast("Notis kopierad till urklipp!", "success");
+			                
+			                // --- FIX: Visa BARA notis om vi är på Desktop ---
+			                if (window.innerWidth > 768) {
+			                    showToast("Notis kopierad till urklipp!", "success");
+			                }
+			                // ------------------------------------------------
+			                
 			            } else {
-			                showToast("Inget textinnehåll att kopiera.", "info");
+			                if (window.innerWidth > 768) {
+			                    showToast("Inget textinnehåll att kopiera.", "info");
+			                }
 			            }
 			        }
 			    } catch (err) {
 			        console.error("Kunde inte kopiera", err);
-			        showToast("Misslyckades att kopiera.", "danger");
+			        if (window.innerWidth > 768) {
+			            showToast("Misslyckades att kopiera.", "danger");
+			        }
 			    }
 			}
 			
@@ -970,31 +987,37 @@
 			    const menu = document.getElementById('reactionMenu');
 			    
 			    menu.dataset.targetId = messageId;
-			    menu.classList.add('show'); // Visa den först så vi kan mäta bredden
+			    
+			    // Vi måste göra den synlig (men genomskinlig) för att kunna mäta bredden
+			    menu.style.opacity = '0';
+			    menu.style.display = 'flex';
+			    menu.classList.add('show');
 			
-			    // Hämta bredd på menyn och skärmen
 			    const menuRect = menu.getBoundingClientRect();
 			    const screenWidth = window.innerWidth;
-			    const screenHeight = window.innerHeight;
-			
-			    // --- PUNKT 3 FIX: Håll menyn innanför skärmen ---
 			    
-			    // 1. Centrera X baserat på klicket (startvärde)
+			    // Återställ opacity för animationen
+			    menu.style.removeProperty('opacity');
+			    menu.style.removeProperty('display');
+			
+			    // --- FIX: BÄTTRE MATEMATIK FÖR HÖGERKANTEN ---
+			    
+			    // 1. Centrera X baserat på trycket
 			    let left = x - (menuRect.width / 2);
 			    
-			    // 2. Justera om den går utanför VÄNSTER kant
+			    // 2. Vänster kant-koll (minst 10px marginal)
 			    if (left < 10) left = 10;
 			    
-			    // 3. Justera om den går utanför HÖGER kant
+			    // 3. Höger kant-koll (VIKTIGT: Se till att hela bredden får plats)
+			    // Om (vänster kant + bredd) är mer än skärmbredden -> flytta den inåt
 			    if (left + menuRect.width > screenWidth - 10) {
 			        left = screenWidth - menuRect.width - 10;
 			    }
 			
-			    // 4. Justera Y (visa ovanför fingret, men om det är för högt upp, visa under)
+			    // 4. Y-positionering
 			    let top = y - 70;
-			    if (top < 50) top = y + 20; // Om vi klickar högst upp på skärmen, visa menyn under fingret
+			    if (top < 50) top = y + 20;
 			
-			    // Applicera positionerna
 			    menu.style.left = `${left}px`;
 			    menu.style.top = `${top}px`;
 			    
