@@ -1149,17 +1149,21 @@
 			    const searchInput = document.getElementById('chatSearchInput');
 			    const clearBtn = document.getElementById('clearChatSearch');
 			    
-			    const plusBtn = document.getElementById('chatPlusBtn');     // Vänster (+)
-			    const galleryBtn = document.getElementById('chatGalleryBtn'); // Inuti fältet
-			    const galleryToggleBtn = document.getElementById('toggleChatGallery'); // I headern
+			    const plusBtn = document.getElementById('chatPlusBtn');     
+			    const galleryBtn = document.getElementById('chatGalleryBtn'); 
+			    const galleryToggleBtn = document.getElementById('toggleChatGallery'); 
 			    
 			    const fileInputGallery = document.getElementById('chatFileInputGallery');
 			    const fileInputCamera = document.getElementById('chatFileInputCamera');
 			
 			    if (!chatList || !chatForm) return;
 			    
-			    // Återställ gräns vid öppning
-			    currentChatLimit = 50;
+			    // Använd global variabel eller definiera den här om den saknas
+			    if (typeof currentChatLimit === 'undefined') {
+			        window.currentChatLimit = 50;
+			    } else {
+			        currentChatLimit = 50;
+			    }
 			
 			    // --- 1. HANTERA KNAPPAR (NY DESIGN) ---
 			
@@ -1189,13 +1193,16 @@
 			        };
 			    }
 			
-			    // Plus-knappen (+) -> Öppnar Kamera (eller meny i framtiden)
+			    // Plus-knappen (+) -> Öppnar Kamera
 			    if (plusBtn && fileInputCamera) {
 			        plusBtn.onclick = (e) => {
 			            e.preventDefault();
 			            fileInputCamera.click();
 			        };
-			        fileInputCamera.onchange = (e) => { handleImageUpload(e.target.files[0]); fileInputCamera.value = ''; };
+			        fileInputCamera.onchange = (e) => { 
+			            handleImageUpload(e.target.files[0]); 
+			            fileInputCamera.value = ''; 
+			        };
 			    }
 			
 			    // Galleri-knappen (Inuti fältet) -> Öppnar Galleri
@@ -1204,7 +1211,10 @@
 			            e.preventDefault();
 			            fileInputGallery.click();
 			        };
-			        fileInputGallery.onchange = (e) => { handleImageUpload(e.target.files[0]); fileInputGallery.value = ''; };
+			        fileInputGallery.onchange = (e) => { 
+			            handleImageUpload(e.target.files[0]); 
+			            fileInputGallery.value = ''; 
+			        };
 			    }
 			
 			    // Galleri-läge (Rutnät)
@@ -1226,7 +1236,6 @@
 			        const fabAddJob = document.getElementById('fabAddJob'); 
 			        
 			        chatInput.addEventListener('focus', () => {
-			            // *** FIXEN: Avbryt direkt om vi är på en dator (> 768px) ***
 			            if (window.innerWidth > 768) return; 
 			
 			            if (mobileNav) mobileNav.style.display = 'none';
@@ -1235,12 +1244,10 @@
 			        });
 			
 			        chatInput.addEventListener('blur', () => {
-			            // *** FIXEN: Avbryt direkt om vi är på en dator ***
 			            if (window.innerWidth > 768) return;
 			
 			            setTimeout(() => {
 			                if (mobileNav) mobileNav.style.display = 'flex';
-			                // Visa bara tidslinjen om vi faktiskt var i den vyn
 			                if (timelineView && currentView === 'timeline') timelineView.style.display = 'block'; 
 			                if (fabAddJob) fabAddJob.style.display = 'flex';
 			                if (chatList) chatList.scrollTop = chatList.scrollHeight;
@@ -1303,7 +1310,6 @@
 			                platform: window.innerWidth <= 768 ? 'mobil' : 'dator'
 			            });
 			            showToast("Bild skickad!", "success");
-			            // Scrolla ner manuellt vid sändning
 			            setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
 			        } catch (err) {
 			            console.error(err);
@@ -1323,7 +1329,6 @@
 			                platform: window.innerWidth <= 768 ? 'mobil' : 'dator'
 			            });
 			            chatInput.value = '';
-			            // Scrolla ner manuellt vid sändning
 			            setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
 			        } catch (err) {
 			            showToast("Kunde inte skicka notis.", "danger");
@@ -1339,6 +1344,7 @@
 			            clearBtn.style.display = term ? 'block' : 'none';
 			            
 			            bubbles.forEach((bubble, index) => {
+			                // Använd dataset.originalHtml om det finns, annars innerHTML
 			                const originalHTML = bubble.dataset.originalHtml || bubble.innerHTML;
 			                const textContent = bubble.textContent.toLowerCase();
 			                const isMatch = textContent.includes(term);
@@ -1379,16 +1385,15 @@
 			                
 			                // --- SCROLL FIX START ---
 			                const threshold = 150; 
-			                // Kolla var vi är INNAN vi ritar om
 			                const scrollBottom = chatList.scrollHeight - chatList.scrollTop - chatList.clientHeight;
 			                const wasAtBottom = scrollBottom <= threshold || chatList.childElementCount === 0;
-			                const previousScrollTop = chatList.scrollTop; // Spara position
+			                const previousScrollTop = chatList.scrollTop;
 			
 			                const docs = [];
 			                snapshot.forEach(doc => docs.push({ id: doc.id, ...doc.data() }));
 			                docs.reverse(); 
 			
-			                chatList.innerHTML = ''; // Rensa listan
+			                chatList.innerHTML = ''; 
 			                
 			                if (docs.length === 0) {
 			                    chatList.innerHTML = '<div class="empty-state-chat"><p>Skriv en notis eller ta en bild...</p></div>';
@@ -1399,7 +1404,6 @@
 			                    renderChatBubble(data.id, data, chatList);
 			                });
 			
-			                // Återställ filter vid uppdatering
 			                if (searchInput && searchInput.value.trim() !== "") {
 			                    searchInput.dispatchEvent(new Event('input'));
 			                }
@@ -1408,20 +1412,14 @@
 			                
 			                if (!isSearching) {
 			                    if (isLoadMore && isFetchingOlderChat) {
-			                        // Om vi laddade äldre, behåll relativ position
 			                        const newScrollHeight = chatList.scrollHeight;
-			                        chatList.scrollTop = newScrollHeight - chatList.scrollTop; // Fixerad logik kan variera, men detta brukar funka
-			                        // Eller: chatList.scrollTop = newScrollHeight - (gammal höjd); 
-			                        // Men eftersom vi rensade innerHTML är det svårare. 
-			                        // Enklast för "Ladda mer": Låt användaren scrolla lite till.
+			                        chatList.scrollTop = newScrollHeight - chatList.scrollTop; 
 			                        isFetchingOlderChat = false; 
 			                    } else if (!isLoadMore) {
 			                        if (!chatList.classList.contains('gallery-mode')) {
 			                            if (wasAtBottom) {
-			                                // Var vi längst ner? -> Scrolla ner
 			                                chatList.scrollTop = chatList.scrollHeight;
 			                            } else {
-			                                // Var vi uppe? -> Återställ positionen
 			                                chatList.scrollTop = previousScrollTop;
 			                            }
 			                        }
@@ -1446,7 +1444,6 @@
 			    if (!chatList.dataset.clickListenerAttached) {
 			        chatList.addEventListener('click', (e) => {
 			            
-			            // Reg-nr länk
 			            const regLink = e.target.closest('.chat-reg-link');
 			            if (regLink) {
 			                e.preventDefault(); e.stopPropagation();
@@ -1458,7 +1455,6 @@
 			                return; 
 			            }
 			
-			            // Kund-länk (NY)
 			            const customerLink = e.target.closest('.chat-customer-link');
 			            if (customerLink) {
 			                e.preventDefault(); e.stopPropagation();
@@ -1472,111 +1468,6 @@
 			        });
 			        chatList.dataset.clickListenerAttached = "true";
 			    }
-			}
-
-                const setupChatListener = (limit) => {
-                    if (chatUnsubscribe) chatUnsubscribe(); 
-                    const isLoadMore = limit > 50; 
-                    const oldScrollHeight = chatList.scrollHeight; 
-
-                    chatUnsubscribe = db.collection("notes")
-					    .orderBy("timestamp", "desc") 
-					    .limit(limit)                 
-					    .onSnapshot(snapshot => {
-					        
-					        // 1. SPARA STATUS INNAN VI RÖR DOM:en
-					        const threshold = 150; // Hur nära botten måste man vara för att autoscrlla?
-					        const scrollBottom = chatList.scrollHeight - chatList.scrollTop - chatList.clientHeight;
-					        const wasAtBottom = scrollBottom <= threshold || chatList.childElementCount === 0;
-					        const previousScrollTop = chatList.scrollTop; // VIKTIGT: Spara exakt var du var
-					
-					        const docs = [];
-					        snapshot.forEach(doc => docs.push({ id: doc.id, ...doc.data() }));
-					        docs.reverse(); 
-					
-					        // Nu rensar vi (detta nollställer normalt scrollen)
-					        chatList.innerHTML = '';
-					        
-					        if (docs.length === 0) {
-					            chatList.innerHTML = '<div class="empty-state-chat"><p>Skriv en notis eller ta en bild...</p></div>';
-					            return;
-					        }
-					
-					        docs.forEach(data => {
-					            renderChatBubble(data.id, data, chatList);
-					        });
-					
-					        // Om sökning är aktiv, applicera filtret
-					        if (searchInput && searchInput.value.trim() !== "") {
-					            searchInput.dispatchEvent(new Event('input'));
-					        }
-					
-					        const isSearching = searchInput && searchInput.value.trim() !== "";
-					        
-					        if (!isSearching) {
-					            // SCENARIO 1: Vi laddar äldre meddelanden (scrollar uppåt)
-					            if (isLoadMore && isFetchingOlderChat) {
-					                const newScrollHeight = chatList.scrollHeight;
-					                // Behåll relativ position så listan inte hoppar
-					                chatList.scrollTop = newScrollHeight - oldScrollHeight;
-					                isFetchingOlderChat = false; 
-					            } 
-					            // SCENARIO 2: Vanlig uppdatering / Nytt meddelande
-					            else if (!isLoadMore) {
-					                if (!chatList.classList.contains('gallery-mode')) {
-					                    if (wasAtBottom) {
-					                        // Om vi var längst ner -> Åk till botten (för att se nytt)
-					                        chatList.scrollTop = chatList.scrollHeight;
-					                    } else {
-					                        // OM VI INTE VAR LÄNGST NER -> STANNA KVAR!
-					                        // Återställ den sparade positionen
-					                        chatList.scrollTop = previousScrollTop;
-					                    }
-					                }
-					            }
-					        }
-					    });
-                };
-
-                setupChatListener(currentChatLimit);
-
-                chatList.addEventListener('scroll', () => {
-                    if (chatList.scrollTop === 0 && !isFetchingOlderChat && !chatList.classList.contains('gallery-mode')) {
-                        isFetchingOlderChat = true;
-                        currentChatLimit += 50; 
-                        setTimeout(() => { setupChatListener(currentChatLimit); }, 200);
-                    }
-                });
-
-                if (!chatList.dataset.clickListenerAttached) {
-                    chatList.addEventListener('click', (e) => {
-                        const link = e.target.closest('.chat-reg-link');
-                        if (link) {
-                            e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
-                            const regnr = link.dataset.reg;
-                            if (typeof openCarModal === 'function') {
-                                if (typeof isModalOpen !== 'undefined') isModalOpen = true; 
-                                openCarModal(regnr);
-                            }
-                            return false; 
-                        }
-						const customerLink = e.target.closest('.chat-customer-link');
-				        if (customerLink) {
-				            e.preventDefault(); e.stopPropagation();
-				            const kundnamn = customerLink.dataset.kund;
-				            
-				            if (typeof openCustomerModal === 'function') {
-				                // Sätt flaggan så att modal-systemet vet att en modal är på väg upp
-				                // (Hjälper din "tillbaka"-knapps logik)
-				                if (typeof isModalOpen !== 'undefined') isModalOpen = true; 
-				                
-				                openCustomerModal(kundnamn);
-				            }
-				            return;
-				        }
-                    });
-                    chatList.dataset.clickListenerAttached = "true";
-                }
 			}
 
 			// --- HJÄLPFUNKTION: Komprimera Bild ---
