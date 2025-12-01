@@ -6815,150 +6815,96 @@ body.body-scroll-lock {
     transform: scale(1.1);
 }
 
-/* --- CHATT LAYOUT (SAMSUNG STYLE v2) --- */
+/* --- CHATT LAYOUT (FLOATING & RIGHT ICONS) --- */
 
-/* 1. Header Design */
+/* 1. Header Design (Behålls samma) */
 .chat-widget-header {
     background-color: var(--content-bg);
     padding: 0.5rem 1rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+    display: flex; align-items: center; gap: 0.5rem;
     border-bottom: 1px solid var(--border-color);
-    height: 60px;
-    box-sizing: border-box;
-    flex-shrink: 0;
+    height: 60px; box-sizing: border-box; flex-shrink: 0;
 }
-
 .back-btn-chat {
-    background: transparent;
-    border: none;
-    padding: 0.5rem;
-    margin-left: -0.5rem;
-    cursor: pointer;
-    color: var(--text-color);
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
+    background: transparent; border: none; padding: 0.5rem; margin-left: -0.5rem;
+    cursor: pointer; color: var(--text-color);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
 .back-btn-chat .icon { width: 1.5rem; height: 1.5rem; }
 
-/* Sökruta med inbyggd galleri-ikon */
 .header-search-wrapper {
-    flex-grow: 1;
-    display: flex;
-    align-items: center;
-    background-color: var(--bg-color);
-    border-radius: 20px;
-    padding: 0 0.5rem 0 0.75rem;
-    height: 40px;
-    position: relative;
-    border: 1px solid transparent;
-    transition: all 0.2s ease;
+    flex-grow: 1; display: flex; align-items: center;
+    background-color: var(--bg-color); border-radius: 20px;
+    padding: 0 0.5rem 0 0.75rem; height: 40px; position: relative;
+    border: 1px solid transparent; transition: all 0.2s ease;
 }
 .header-search-wrapper:focus-within {
-    background-color: var(--content-bg);
-    border-color: var(--primary-color);
+    background-color: var(--content-bg); border-color: var(--primary-color);
     box-shadow: 0 0 0 2px var(--primary-light);
 }
-
 .header-search-wrapper .search-icon {
-    color: var(--text-color-light);
-    margin-right: 0.5rem;
-    width: 1.1rem; height: 1.1rem;
-    flex-shrink: 0;
+    color: var(--text-color-light); margin-right: 0.5rem;
+    width: 1.1rem; height: 1.1rem; flex-shrink: 0;
 }
-
 .header-search-wrapper input {
-    background: transparent;
-    border: none;
-    outline: none;
-    font-size: 0.95rem;
-    color: var(--text-color);
-    width: 100%;
-    padding: 0; margin: 0;
-    height: 100%;
+    background: transparent; border: none; outline: none;
+    font-size: 0.95rem; color: var(--text-color);
+    width: 100%; padding: 0; margin: 0; height: 100%;
 }
-
 .clear-search-btn {
-    background: #d1d5db;
-    border: none;
-    color: white;
-    border-radius: 50%;
-    width: 18px; height: 18px;
+    background: #d1d5db; border: none; color: white;
+    border-radius: 50%; width: 18px; height: 18px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 12px;
-    cursor: pointer;
-    flex-shrink: 0;
-    margin-right: 0.5rem;
+    font-size: 12px; cursor: pointer; flex-shrink: 0; margin-right: 0.5rem;
 }
-
-/* Galleri-ikon i headern */
 .header-gallery-btn {
-    background: transparent;
-    border: none;
-    color: var(--text-color-light); /* Eller primary om du vill */
-    padding: 0.4rem;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-    border-left: 1px solid rgba(0,0,0,0.05); /* Liten avdelare */
-    margin-left: 0.25rem;
+    background: transparent; border: none; color: var(--text-color-light);
+    padding: 0.4rem; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    border-left: 1px solid rgba(0,0,0,0.05); margin-left: 0.25rem;
 }
 .header-gallery-btn:hover { color: var(--primary-color); }
 
 
-/* 2. Input Area Design (Hög "Piller"-design) */
+/* 2. Input Area Design (FLOATING - Ingen bakgrund) */
 .chat-input-area.samsung-style {
     display: flex;
-    align-items: center; /* Centrerar skicka-knappen vertikalt mot fältet */
+    align-items: center;
     gap: 0.6rem;
     padding: 0.75rem 1rem;
-    background-color: var(--content-bg);
-    border-top: 1px solid var(--border-color);
-    min-height: 70px; /* Lite högre footer */
+    
+    /* ÄNDRING: Genomskinlig bakgrund och ingen kantlinje */
+    background-color: transparent; 
+    border-top: none;
+    
+    min-height: 70px;
+    
+    /* Lägg till lite "fade" bakom om du vill att texten under ska tonas ut, annars transparent */
+    /* background: linear-gradient(to top, var(--content-bg) 80%, transparent); */
 }
 
-/* Den stora grå "Pillern" som håller knappar och text */
+/* Den stora grå "Pillern" */
 .chat-input-pill {
     flex-grow: 1;
-    background-color: #F3F4F6;
-    border-radius: 26px; /* Rundare hörn */
+    background-color: #F3F4F6; /* Pillerfärg */
+    border-radius: 26px;
     display: flex;
     align-items: center;
-    padding: 0 0.5rem; /* Padding runt knapparna */
-    height: 52px; /* Högre fält enligt önskemål */
+    padding: 0 0.5rem 0 1.25rem; /* Mer padding vänster för texten */
+    height: 52px;
     border: 1px solid transparent;
     transition: all 0.2s ease;
     min-width: 0;
+    
+    /* Skugga för att separera den från bakgrunden nu när arean är transparent */
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05); 
 }
 [data-theme="dark"] .chat-input-pill { background-color: #2c2c2e; }
 
 .chat-input-pill:focus-within {
     background-color: var(--content-bg);
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px var(--primary-light);
-}
-
-/* Knappar INUTI pillern (+ och Kamera) */
-.chat-inner-btn {
-    background: transparent;
-    border: none;
-    color: #4B5563; /* Mörkgrå */
-    width: 40px; /* Större tryckyta */
-    height: 40px;
-    border-radius: 50%;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-    transition: background-color 0.2s;
-}
-.chat-inner-btn:hover { background-color: rgba(0,0,0,0.05); color: var(--primary-color); }
-
-/* Gör ikonerna inuti lite större/tydligare */
-.chat-inner-btn.big-icon .icon-sm {
-    width: 1.4rem;
-    height: 1.4rem;
-    stroke-width: 2;
+    box-shadow: 0 4px 15px rgba(0, 102, 255, 0.15);
 }
 
 /* Textfältet */
@@ -6967,35 +6913,51 @@ body.body-scroll-lock {
     background: transparent;
     border: none;
     outline: none;
-    font-size: 1.05rem; /* Lite större text */
-    padding: 0 0.75rem;
+    font-size: 1.05rem;
+    padding: 0;
     color: var(--text-color);
     min-width: 0;
     margin: 0;
     height: 100%;
 }
 
-/* Skicka-knappen (Utanför) */
+/* Behållare för ikonerna (Högerställda) */
+.inner-input-actions.right-side {
+    display: flex;
+    align-items: center;
+    gap: 2px; /* TAJT mellan ikonerna */
+    padding-left: 0.5rem;
+    flex-shrink: 0;
+}
+
+/* Knappar INUTI pillern */
+.chat-inner-btn {
+    background: transparent;
+    border: none;
+    color: #4B5563;
+    width: 36px; /* Något mindre touch-yta för att sitta tajt */
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: background-color 0.2s;
+}
+.chat-inner-btn:hover { background-color: rgba(0,0,0,0.05); color: var(--primary-color); }
+.chat-inner-btn .icon-sm { width: 1.35rem; height: 1.35rem; }
+
+/* Skicka-knappen (Flytande) */
 .chat-action-btn.primary {
-    width: 48px; /* Lite större än förut */
-    height: 48px;
+    width: 48px; height: 48px;
     border-radius: 50%;
     background-color: var(--primary-color);
-    color: white;
-    border: none;
+    color: white; border: none;
     display: flex; align-items: center; justify-content: center;
-    cursor: pointer;
-    flex-shrink: 0;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    cursor: pointer; flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(0, 102, 255, 0.3); /* Skugga för flytande känsla */
 }
-.chat-action-btn.primary:hover { background-color: var(--primary-hover); }
-
-/* Rotera pilen */
-.send-btn-rotated svg {
-    transform: rotate(0deg); 
-    margin-left: 2px;
-    width: 1.3rem; height: 1.3rem;
-}
+.chat-action-btn.primary:hover { background-color: var(--primary-hover); transform: scale(1.05); }
+.send-btn-rotated svg { transform: rotate(0deg); margin-left: 2px; width: 1.3rem; height: 1.3rem; }
 
 /* Mobilanpassning */
 @media (max-width: 768px) {
@@ -7005,11 +6967,13 @@ body.body-scroll-lock {
         width: 100% !important; height: 100% !important;
         max-width: 100% !important; border-radius: 0 !important;
         display: flex; flex-direction: column;
+        background-color: var(--bg-color); /* Säkra bakgrundsfärgen */
     }
     
     .chat-messages {
         flex-grow: 1;
-        padding-bottom: 0.5rem;
+        /* Lägg till padding i botten så text inte hamnar bakom den flytande inputen */
+        padding-bottom: 1rem; 
     }
     
     .chat-input-area.samsung-style {
