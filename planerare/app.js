@@ -925,17 +925,27 @@
 			        menu.appendChild(span);
 			    });
 			
-			    // --- LÄGG TILL LINJEN ---
 			    const divider = document.createElement('div');
 			    divider.className = 'reaction-divider';
 			    menu.appendChild(divider);
-			    // ------------------------
 			
-			    // --- LÄGG TILL KOPIERA-KNAPPEN ---
+			    // --- NYTT: REDIGERA (✎) ---
+			    const editSpan = document.createElement('span');
+			    editSpan.className = 'reaction-option';
+			    editSpan.textContent = '✎';
+			    editSpan.title = "Redigera";
+			    editSpan.onclick = (e) => {
+			        e.stopPropagation();
+			        editMessage(menu.dataset.targetId); // Anropar ny funktion
+			        hideReactionMenu();
+			    };
+			    menu.appendChild(editSpan);
+			
+			    // KOPIERA (📋)
 			    const copySpan = document.createElement('span');
 			    copySpan.className = 'reaction-option';
 			    copySpan.textContent = '📋';
-			    copySpan.title = "Kopiera text";
+			    copySpan.title = "Kopiera";
 			    copySpan.onclick = (e) => {
 			        e.stopPropagation();
 			        copyMessageText(menu.dataset.targetId);
@@ -947,6 +957,40 @@
 			
 			    window.addEventListener('click', hideReactionMenu);
 			    window.addEventListener('scroll', hideReactionMenu, true); 
+			}
+			
+			// --- NY HJÄLPFUNKTION: REDIGERA MEDDELANDE ---
+			async function editMessage(id) {
+			    if (!id) return;
+			    
+			    try {
+			        const doc = await db.collection("notes").doc(id).get();
+			        if (!doc.exists) return;
+			        
+			        const data = doc.data();
+			        
+			        // Hämta befintlig text eller bildtext
+			        const currentText = data.text || data.caption || "";
+			        
+			        // Enkel prompt för redigering (kan bytas mot modal om du vill ha snyggare)
+			        const newText = prompt("Redigera text:", currentText);
+			        
+			        // Om användaren trycker "Avbryt" (null), gör inget. Tom sträng "" är ok (radera text).
+			        if (newText === null) return;
+			
+			        // Uppdatera rätt fält beroende på typ
+			        if (data.type === 'image' || data.images) {
+			            await db.collection("notes").doc(id).update({ caption: newText });
+			        } else {
+			            await db.collection("notes").doc(id).update({ text: newText });
+			        }
+			        
+			        showToast("Meddelande uppdaterat!", "success");
+			        
+			    } catch (err) {
+			        console.error("Kunde inte redigera:", err);
+			        showToast("Något gick fel.", "danger");
+			    }
 			}
 			
 			// NY HJÄLPFUNKTION: Kopiera text
@@ -1071,34 +1115,27 @@
 			    const chatList = document.getElementById('chatMessages');
 			    const chatForm = document.getElementById('chatForm');
 			    const chatInput = document.getElementById('chatInput');
-			    
 			    const searchInput = document.getElementById('chatSearchInput');
 			    const clearBtn = document.getElementById('clearChatSearch');
 			    const galleryToggleBtn = document.getElementById('toggleChatGallery');
-			
 			    const fileInputGallery = document.getElementById('chatFileInputGallery');
 			    const fileInputCamera = document.getElementById('chatFileInputCamera');
 			    const btnOpenGallery = document.getElementById('chatGalleryBtn');
 			    const btnOpenCamera = document.getElementById('chatCameraBtn');
 			
 			    if (!chatList || !chatForm) return;
-
-                // Återställ limit när chatten öppnas på nytt
                 currentChatLimit = 50;
 			
-			    // --- 1. MOBIL-FIX: DÖLJ MENY VID SKRIVANDE ---
 			    if (window.innerWidth <= 768 && chatInput) {
 			        const mobileNav = document.getElementById('mobileNav');
 			        const timelineView = document.getElementById('timelineView'); 
 			        const fabAddJob = document.getElementById('fabAddJob'); 
-			
 			        if (mobileNav) {
 			            chatInput.addEventListener('focus', () => {
 			                mobileNav.style.display = 'none';
 			                if (timelineView) timelineView.style.display = 'none';
 			                if (fabAddJob) fabAddJob.style.display = 'none';
 			            });
-			
 			            chatInput.addEventListener('blur', () => {
 			                setTimeout(() => {
 			                    mobileNav.style.display = 'flex';
@@ -1110,23 +1147,27 @@
 			        }
 			    }
 			
-			    // --- 2. GEMENSAM BILD-HANTERARE ---
+			    // --- FIX: BILDUPPLADDNING MED TEXT (CAPTION) ---
 			    const handleImageUpload = async (file) => {
 			        if (!file) return;
-			        showToast("Bearbetar bild...", "info");
+			        
+                    // 1. Fråga efter bildtext direkt
+                    const caption = prompt("Vill du lägga till en bildtext?", "");
+                    
+                    showToast("Bearbetar bild...", "info");
 			
 			        try {
 			            const base64Image = await compressImage(file);
 			            
 			            await db.collection("notes").add({
 			                image: base64Image,
+                            caption: caption || "", // Spara bildtexten
 			                type: 'image',
 			                timestamp: new Date().toISOString(),
 			                platform: window.innerWidth <= 768 ? 'mobil' : 'dator'
 			            });
 			            
 			            showToast("Bild skickad!", "success");
-                        // Scrolla till botten
                         setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
 			
 			        } catch (err) {
@@ -1134,13 +1175,12 @@
 			            showToast("Kunde inte skicka bilden.", "danger");
 			        }
 			    };
+			    // -----------------------------------------------
 			
-			    // --- 3. SKICKA TEXT ---
 			    chatForm.onsubmit = async (e) => {
 			        e.preventDefault();
 			        const text = chatInput.value.trim();
 			        if (!text) return;
-			
 			        try {
 			            await db.collection("notes").add({
 			                text: text,
@@ -1148,16 +1188,12 @@
 			                platform: window.innerWidth <= 768 ? 'mobil' : 'dator'
 			            });
 			            chatInput.value = '';
-                        // Scrolla till botten
                         setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
 			        } catch (err) {
-			            console.error(err);
 			            showToast("Kunde inte skicka notis.", "danger");
 			        }
 			    };
 			
-			    // --- 4. KOPPLA KNAPPAR & PASTE ---
-                // (Paste-lyssnaren med din fix från förra steget)
                 if (!chatInput.dataset.pasteListenerAttached) {
                     chatInput.addEventListener('paste', async (e) => {
                         const items = (e.clipboardData || e.originalEvent.clipboardData).items;
@@ -1173,7 +1209,6 @@
                     chatInput.dataset.pasteListenerAttached = "true";
                 }
 
-                // Galleri/Kamera knappar
 			    if (btnOpenGallery && fileInputGallery) {
 			        btnOpenGallery.onclick = (e) => { e.preventDefault(); fileInputGallery.click(); };
 			        fileInputGallery.onchange = (e) => { handleImageUpload(e.target.files[0]); fileInputGallery.value = ''; };
@@ -1183,68 +1218,79 @@
 			        fileInputCamera.onchange = (e) => { handleImageUpload(e.target.files[0]); fileInputCamera.value = ''; };
 			    }
 			
-			    // --- 5. SÖK & GALLERI-TOGGLE (Oförändrad) ---
+			    // --- FIX: SÖK-MARKERING LOGIK ---
 			    if (searchInput && clearBtn) {
                     const filterChat = () => {
                         const term = searchInput.value.toLowerCase();
                         const bubbles = chatList.querySelectorAll('.chat-bubble');
                         const times = chatList.querySelectorAll('.chat-time');
                         clearBtn.style.display = term ? 'block' : 'none';
+                        
                         bubbles.forEach((bubble, index) => {
-                            const text = bubble.textContent.toLowerCase();
+                            // Vi söker i den sparade "Original HTML" för att inte förstöra länkar
+                            // Om data-original-html saknas (gamla bubblor), använd innerHTML
+                            const originalHTML = bubble.dataset.originalHtml || bubble.innerHTML;
+                            const textContent = bubble.textContent.toLowerCase();
+                            
+                            // Vi måste söka i textinnehållet, inte HTML-koden, för att avgöra synlighet
+                            const isMatch = textContent.includes(term);
                             const isImage = bubble.classList.contains('chat-bubble-image');
                             const timeElement = times[index];
-                            if (text.includes(term) || (isImage && !term)) {
+
+                            if (isMatch || (isImage && !term)) {
                                 bubble.style.display = 'block';
                                 if (timeElement) timeElement.style.display = 'block';
+
+                                // APPLICERA MARKERING (HIGHLIGHT)
+                                if (term && !isImage) { // Markera bara textbubblor
+                                    // Enkel regex som ersätter texten men försöker undvika HTML-taggar
+                                    // OBS: Detta är en enkel lösning. För perfektion behövs en text-node parser.
+                                    const regex = new RegExp(`(${term})`, 'gi');
+                                    // Vi applicerar på original-HTML för att kunna "sudda" genom att återställa
+                                    bubble.innerHTML = originalHTML.replace(regex, '<mark>$1</mark>');
+                                } else {
+                                    // Återställ om ingen sökterm eller om det är en bild
+                                    bubble.innerHTML = originalHTML;
+                                }
+
                             } else {
                                 bubble.style.display = 'none';
                                 if (timeElement) timeElement.style.display = 'none';
                             }
                         });
                     };
-                    searchInput.oninput = filterChat;
-                    clearBtn.onclick = () => { searchInput.value = ''; filterChat(); searchInput.focus(); };
-
-                    // --- NYTT: Hantera Enter-tryck i sökfältet ---
+			        searchInput.oninput = filterChat;
+			        clearBtn.onclick = () => { searchInput.value = ''; filterChat(); searchInput.focus(); };
+                    
                     searchInput.addEventListener('keydown', (e) => {
-                        if (e.key === 'Enter') {
-                            e.preventDefault(); // Stoppa formulär-submit/omladdning
-                            searchInput.blur(); // Stäng tangentbordet
-                        }
+                        if (e.key === 'Enter') { e.preventDefault(); searchInput.blur(); }
                     });
-                }
+			    }
+                // ---------------------------------
 
                 if (galleryToggleBtn) {
-                    galleryToggleBtn.onclick = () => {
-                        chatList.classList.toggle('gallery-mode');
-                        const isActive = chatList.classList.contains('gallery-mode');
-                        galleryToggleBtn.style.color = isActive ? 'var(--primary-color)' : 'var(--text-color-light)';
-                        if (!isActive) setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
-                    };
-                }
+			        galleryToggleBtn.onclick = () => {
+			            chatList.classList.toggle('gallery-mode');
+			            const isActive = chatList.classList.contains('gallery-mode');
+			            galleryToggleBtn.style.color = isActive ? 'var(--primary-color)' : 'var(--text-color-light)';
+			            if (!isActive) setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
+			        };
+			    }
 
-                // --- 6. PAGINERING & SETUP ---
-                
-                // Funktion för att sätta upp lyssnaren med en specifik limit
                 const setupChatListener = (limit) => {
-                    if (chatUnsubscribe) chatUnsubscribe(); // Stäng gammal lyssnare
-
-                    const isLoadMore = limit > 50; // Om gränsen är högre än start, laddar vi mer
-                    const oldScrollHeight = chatList.scrollHeight; // Spara höjd för att återställa position
+                    if (chatUnsubscribe) chatUnsubscribe(); 
+                    const isLoadMore = limit > 50; 
+                    const oldScrollHeight = chatList.scrollHeight; 
 
                     chatUnsubscribe = db.collection("notes")
-                        .orderBy("timestamp", "desc") // Hämta nyaste först
-                        .limit(limit)                 // Men bara X antal
+                        .orderBy("timestamp", "desc") 
+                        .limit(limit)                 
                         .onSnapshot(snapshot => {
-                            
-                            // Vi får datan "baklänges" (nyast först). Vänd på den.
                             const docs = [];
                             snapshot.forEach(doc => docs.push({ id: doc.id, ...doc.data() }));
-                            docs.reverse(); // Nu är äldst först (som i en vanlig chatt)
+                            docs.reverse(); 
 
                             chatList.innerHTML = '';
-                            
                             if (docs.length === 0) {
                                 chatList.innerHTML = '<div class="empty-state-chat"><p>Skriv en notis eller ta en bild...</p></div>';
                                 return;
@@ -1254,26 +1300,18 @@
                                 renderChatBubble(data.id, data, chatList);
                             });
 
-                            // --- FIX: APPLICERA SÖKNING IGEN ---
-                            // Om användaren har skrivit något i sökfältet, filtrera de nya bubblorna direkt
+                            // Om sökning är aktiv, applicera filtret direkt på nya bubblor
                             if (searchInput && searchInput.value.trim() !== "") {
-                                // Vi triggar 'input'-händelsen manuellt så att filterChat-funktionen körs
                                 searchInput.dispatchEvent(new Event('input'));
                             }
-                            // -----------------------------------
 
-                            // --- SCROLL-LOGIK ---
-                            // Vi scrollar bara om vi INTE söker (för att inte hoppa runt när man skriver)
                             const isSearching = searchInput && searchInput.value.trim() !== "";
-
                             if (!isSearching) {
                                 if (isLoadMore && isFetchingOlderChat) {
-                                    // Om vi laddade äldre meddelanden: Justera scroll
                                     const newScrollHeight = chatList.scrollHeight;
                                     chatList.scrollTop = newScrollHeight - oldScrollHeight;
                                     isFetchingOlderChat = false; 
                                 } else if (!isLoadMore) {
-                                    // Första laddningen eller nytt meddelande: scrolla till botten
                                     if (!chatList.classList.contains('gallery-mode')) {
                                         chatList.scrollTop = chatList.scrollHeight;
                                     }
@@ -1282,23 +1320,16 @@
                         });
                 };
 
-                // Starta lyssnaren med 50
                 setupChatListener(currentChatLimit);
 
-                // Lyssna på scroll för att hämta fler
                 chatList.addEventListener('scroll', () => {
-                    // Om vi är i toppen (scrollTop = 0) OCH inte redan laddar
                     if (chatList.scrollTop === 0 && !isFetchingOlderChat && !chatList.classList.contains('gallery-mode')) {
                         isFetchingOlderChat = true;
-                        currentChatLimit += 50; // Öka gränsen
-                        // Sätt en liten timeout för att simulera laddning och inte spam-anropa
-                        setTimeout(() => {
-                            setupChatListener(currentChatLimit);
-                        }, 200);
+                        currentChatLimit += 50; 
+                        setTimeout(() => { setupChatListener(currentChatLimit); }, 200);
                     }
                 });
 
-                // Auto-link lyssnare (Med din fix)
                 if (!chatList.dataset.clickListenerAttached) {
                     chatList.addEventListener('click', (e) => {
                         const link = e.target.closest('.chat-reg-link');
@@ -1375,20 +1406,13 @@
 			    const bubble = document.createElement('div');
 			    bubble.className = 'chat-bubble';
 			    
-                // Förhindra system-menyn (Kopiera/Dela) vid långtryck
-                bubble.addEventListener('contextmenu', (e) => {
-                    e.preventDefault();
-                    return false;
-                });
+                bubble.addEventListener('contextmenu', (e) => { e.preventDefault(); return false; });
 
                 if (data.reaction) {
                     const badge = document.createElement('span');
                     badge.className = 'reaction-badge';
                     badge.textContent = data.reaction;
-                    badge.onclick = (e) => {
-                        e.stopPropagation(); 
-                        applyReaction(id, data.reaction); 
-                    };
+                    badge.onclick = (e) => { e.stopPropagation(); applyReaction(id, data.reaction); };
                     bubble.appendChild(badge);
                 }
 
@@ -1399,33 +1423,22 @@
                 const startLongPress = (e) => {
                     if (e.button === 2) return; 
                     isPressing = true; 
-
                     longPressTimer = setTimeout(() => {
                         if (isPressing) {
                             let clientX, clientY;
                             if (e.touches && e.touches.length > 0) {
-                                clientX = e.touches[0].clientX;
-                                clientY = e.touches[0].clientY;
+                                clientX = e.touches[0].clientX; clientY = e.touches[0].clientY;
                             } else {
-                                clientX = e.clientX;
-                                clientY = e.clientY;
+                                clientX = e.clientX; clientY = e.clientY;
                             }
-                            
-                            // Se till att du har funktionen showReactionMenu med "Boundary Check" från förra svaret
-                            if (typeof showReactionMenu === 'function') {
-                                showReactionMenu(clientX, clientY, id);
-                            }
+                            if (typeof showReactionMenu === 'function') showReactionMenu(clientX, clientY, id);
                             bubble.dataset.longPressed = "true"; 
                         }
                     }, 500); 
                 };
-
                 const cancelLongPress = () => {
                     isPressing = false; 
-                    if (longPressTimer) {
-                        clearTimeout(longPressTimer);
-                        longPressTimer = null;
-                    }
+                    if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
                 };
 			
 			    // --- SCENARIO A: BILD-KARUSELL ---
@@ -1436,33 +1449,21 @@
 			        
 			        data.images.forEach(imgSrc => {
 			            const img = document.createElement('img');
-			            img.src = imgSrc;
-			            img.loading = "lazy";
-			            img.alt = "Bild";
-			            
+			            img.src = imgSrc; img.loading = "lazy"; img.alt = "Bild";
                         img.onload = () => {
                             const chatList = document.getElementById('chatMessages');
                             if(chatList && !chatList.classList.contains('gallery-mode')) {
-                                if (chatList.scrollHeight - chatList.scrollTop - chatList.clientHeight < 200) {
-                                    chatList.scrollTop = chatList.scrollHeight;
-                                }
+                                if (chatList.scrollHeight - chatList.scrollTop - chatList.clientHeight < 200) chatList.scrollTop = chatList.scrollHeight;
                             }
                         };
-
 			            img.onclick = (e) => {
-                            // --- FIX 1: STOPPA KLICK OM VI PRECIS HÅLLIT IN ---
                             if (bubble.dataset.longPressed === "true") {
-                                e.stopPropagation(); // Stoppa fönstret från att stänga menyn
-                                e.preventDefault();
-                                setTimeout(() => { bubble.dataset.longPressed = "false"; }, 100);
-                                return;
+                                e.stopPropagation(); e.preventDefault();
+                                setTimeout(() => { bubble.dataset.longPressed = "false"; }, 100); return;
                             }
-                            // --------------------------------------------------
 			                e.stopPropagation(); 
-			                
 			                if (clickTimeout !== null) {
-			                    clearTimeout(clickTimeout);
-			                    clickTimeout = null;
+			                    clearTimeout(clickTimeout); clickTimeout = null;
 			                    if(confirm("Radera denna notis?")) db.collection("notes").doc(id).delete();
 			                } else {
 			                    clickTimeout = setTimeout(() => {
@@ -1471,47 +1472,48 @@
 			                    }, 250); 
 			                }
 			            };
-                        
                         img.addEventListener('touchstart', startLongPress, {passive: true});
                         img.addEventListener('touchend', cancelLongPress);
                         img.addEventListener('touchmove', cancelLongPress);
                         img.addEventListener('mousedown', startLongPress);
                         img.addEventListener('mouseup', cancelLongPress);
-
 			            carousel.appendChild(img);
 			        });
 			        bubble.appendChild(carousel);
+
+                    // --- NYTT: Bildtext för karusell ---
+                    if (data.caption) {
+                        const captionDiv = document.createElement('div');
+                        captionDiv.className = 'chat-caption';
+                        captionDiv.textContent = data.caption;
+                        bubble.appendChild(captionDiv);
+                    }
 			    } 
 			    // --- SCENARIO B: ENKEL BILD ---
 			    else if (data.type === 'image' && data.image) {
 			        bubble.classList.add('chat-bubble-image');
-			        bubble.innerHTML = `<img src="${data.image}" alt="Uppladdad bild" loading="lazy" />`;
+                    // Lägg till bild
+			        const imgElement = document.createElement('img');
+                    imgElement.src = data.image;
+                    imgElement.alt = "Uppladdad bild";
+                    imgElement.loading = "lazy";
+                    bubble.appendChild(imgElement);
 			        
-			        const imgElement = bubble.querySelector('img');
-                    
                     imgElement.onload = () => {
                         const chatList = document.getElementById('chatMessages');
                         if(chatList && !chatList.classList.contains('gallery-mode')) {
-                             if (chatList.scrollHeight - chatList.scrollTop - chatList.clientHeight < 200) {
-                                chatList.scrollTop = chatList.scrollHeight;
-                            }
+                             if (chatList.scrollHeight - chatList.scrollTop - chatList.clientHeight < 200) chatList.scrollTop = chatList.scrollHeight;
                         }
                     };
 			        
 			        imgElement.onclick = (e) => {
-                        // --- FIX 1: STOPPA KLICK OM VI PRECIS HÅLLIT IN ---
                         if (bubble.dataset.longPressed === "true") {
-                            e.stopPropagation();
-                            e.preventDefault();
-                            setTimeout(() => { bubble.dataset.longPressed = "false"; }, 100);
-                            return;
+                            e.stopPropagation(); e.preventDefault();
+                            setTimeout(() => { bubble.dataset.longPressed = "false"; }, 100); return;
                         }
-                        // --------------------------------------------------
 			            e.stopPropagation();
-			            
 			            if (clickTimeout !== null) {
-			                clearTimeout(clickTimeout);
-			                clickTimeout = null;
+			                clearTimeout(clickTimeout); clickTimeout = null;
 			                if(confirm("Radera denna notis?")) db.collection("notes").doc(id).delete();
 			            } else {
 			                clickTimeout = setTimeout(() => {
@@ -1526,6 +1528,17 @@
                     imgElement.addEventListener('touchmove', cancelLongPress);
                     imgElement.addEventListener('mousedown', startLongPress);
                     imgElement.addEventListener('mouseup', cancelLongPress);
+
+                    // --- NYTT: Bildtext för enkel bild ---
+                    if (data.caption) {
+                        const captionDiv = document.createElement('div');
+                        captionDiv.className = 'chat-caption';
+                        captionDiv.textContent = data.caption;
+                        bubble.appendChild(captionDiv);
+                    }
+                    
+                    // Spara HTML för sökmarkering
+                    bubble.dataset.originalHtml = bubble.innerHTML;
 			    } 
 			    // --- SCENARIO C: TEXT ---
 			    else {
@@ -1566,16 +1579,11 @@
 			            bubble.appendChild(readMoreBtn);
 			        }
 			        
-                    // Klick-logik för text
 			        bubble.addEventListener('click', (e) => {
-                        // --- FIX 1: STOPPA KLICK OM VI PRECIS HÅLLIT IN ---
                         if (bubble.dataset.longPressed === "true") {
-                            e.stopPropagation(); // Stoppa fönstret från att stänga menyn
-                            e.preventDefault();
-                            setTimeout(() => { bubble.dataset.longPressed = "false"; }, 100);
-                            return;
+                            e.stopPropagation(); e.preventDefault();
+                            setTimeout(() => { bubble.dataset.longPressed = "false"; }, 100); return;
                         }
-                        // --------------------------------------------------
 			        });
 
                     bubble.addEventListener('dblclick', () => {
@@ -1587,9 +1595,12 @@
                     bubble.addEventListener('touchmove', cancelLongPress);
                     bubble.addEventListener('mousedown', startLongPress);
                     bubble.addEventListener('mouseup', cancelLongPress);
+
+                    // --- NYTT: Spara original HTML för sökmarkering ---
+                    bubble.dataset.originalHtml = bubble.innerHTML;
 			    }
 			    
-			    bubble.title = "Långtryck för reaktion och meny, dubbelklicka för att radera";
+			    bubble.title = "Långtryck för meny, dubbelklicka för att radera";
 			    bubble.style.cursor = "pointer";
 			
 			    const time = document.createElement('div');
