@@ -760,11 +760,18 @@
 
 			// --- STÄNG CHATT VID KLICK UTANFÖR ---
 			document.addEventListener('click', (e) => {
-			    // 1. IGNORERA KLICK PÅ LÄNKAR OCH MODALER
-			    // Om vi klickade på något som ser ut som en länk eller knapp inuti chatten -> Gör inget.
+			    // 1. IGNORERA KLICK PÅ LÄNKAR OCH KNAPPAR
 			    if (e.target.closest('a') || e.target.closest('.chat-reg-link') || e.target.closest('button')) {
 			        return;
 			    }
+
+                // --- FIX HÄR: Klickade vi på en modal-bakgrund? ---
+                // Om vi klickar på den mörka bakgrunden av en modal, låt modalen hantera stängningen själv.
+                // Stäng INTE chatten i detta läge.
+                if (e.target.classList.contains('modal-backdrop')) {
+                    return;
+                }
+                // --------------------------------------------------
 			
 			    // 2. SÄKERHETSKOLL: Är någon modal öppen?
 			    const activeModal = document.querySelector('.modal-backdrop.show');
