@@ -1293,16 +1293,20 @@
 					    .orderBy("timestamp", "desc") 
 					    .limit(limit)                 
 					    .onSnapshot(snapshot => {
-					        // 1. NYTT: Kolla om vi är nära botten INNAN vi ritar om
-					        // Vi tillåter en buffert på 200px. Om listan är tom räknas det som botten.
-					        const threshold = 200;
-					        const wasAtBottom = chatList.scrollHeight - chatList.scrollTop - chatList.clientHeight <= threshold || chatList.childElementCount === 0;
+					        
+					        // 1. SPARA STATUS INNAN VI RÖR DOM:en
+					        const threshold = 150; // Hur nära botten måste man vara för att autoscrlla?
+					        const scrollBottom = chatList.scrollHeight - chatList.scrollTop - chatList.clientHeight;
+					        const wasAtBottom = scrollBottom <= threshold || chatList.childElementCount === 0;
+					        const previousScrollTop = chatList.scrollTop; // VIKTIGT: Spara exakt var du var
 					
 					        const docs = [];
 					        snapshot.forEach(doc => docs.push({ id: doc.id, ...doc.data() }));
 					        docs.reverse(); 
 					
+					        // Nu rensar vi (detta nollställer normalt scrollen)
 					        chatList.innerHTML = '';
+					        
 					        if (docs.length === 0) {
 					            chatList.innerHTML = '<div class="empty-state-chat"><p>Skriv en notis eller ta en bild...</p></div>';
 					            return;
@@ -1312,22 +1316,31 @@
 					            renderChatBubble(data.id, data, chatList);
 					        });
 					
-					        // Om sökning är aktiv, applicera filtret direkt på nya bubblor
+					        // Om sökning är aktiv, applicera filtret
 					        if (searchInput && searchInput.value.trim() !== "") {
 					            searchInput.dispatchEvent(new Event('input'));
 					        }
 					
 					        const isSearching = searchInput && searchInput.value.trim() !== "";
+					        
 					        if (!isSearching) {
+					            // SCENARIO 1: Vi laddar äldre meddelanden (scrollar uppåt)
 					            if (isLoadMore && isFetchingOlderChat) {
 					                const newScrollHeight = chatList.scrollHeight;
+					                // Behåll relativ position så listan inte hoppar
 					                chatList.scrollTop = newScrollHeight - oldScrollHeight;
 					                isFetchingOlderChat = false; 
-					            } else if (!isLoadMore) {
+					            } 
+					            // SCENARIO 2: Vanlig uppdatering / Nytt meddelande
+					            else if (!isLoadMore) {
 					                if (!chatList.classList.contains('gallery-mode')) {
-					                    // 2. NYTT: Scrolla BARA ner om vi var där innan
 					                    if (wasAtBottom) {
+					                        // Om vi var längst ner -> Åk till botten (för att se nytt)
 					                        chatList.scrollTop = chatList.scrollHeight;
+					                    } else {
+					                        // OM VI INTE VAR LÄNGST NER -> STANNA KVAR!
+					                        // Återställ den sparade positionen
+					                        chatList.scrollTop = previousScrollTop;
 					                    }
 					                }
 					            }
@@ -1466,10 +1479,10 @@
 			            const img = document.createElement('img');
 			            img.src = imgSrc; img.loading = "lazy"; img.alt = "Bild";
                         img.onload = () => {
-                            const chatList = document.getElementById('chatMessages');
+                            /*const chatList = document.getElementById('chatMessages');
                             if(chatList && !chatList.classList.contains('gallery-mode')) {
                                 if (chatList.scrollHeight - chatList.scrollTop - chatList.clientHeight < 200) chatList.scrollTop = chatList.scrollHeight;
-                            }
+                            }*/
                         };
 			            img.onclick = (e) => {
                             if (bubble.dataset.longPressed === "true") {
@@ -1515,10 +1528,10 @@
                     bubble.appendChild(imgElement);
 			        
                     imgElement.onload = () => {
-                        const chatList = document.getElementById('chatMessages');
+                        /*const chatList = document.getElementById('chatMessages');
                         if(chatList && !chatList.classList.contains('gallery-mode')) {
                              if (chatList.scrollHeight - chatList.scrollTop - chatList.clientHeight < 200) chatList.scrollTop = chatList.scrollHeight;
-                        }
+                        }*/
                     };
 			        
 			        imgElement.onclick = (e) => {
