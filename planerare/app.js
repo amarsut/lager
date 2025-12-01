@@ -1142,23 +1142,22 @@
 			    const chatForm = document.getElementById('chatForm');
 			    const chatInput = document.getElementById('chatInput');
 			    
-			    // --- KNAPPAR (NY STRUKTUR) ---
+			    // --- KNAPPAR & ELEMENT ---
 			    const chatBackBtn = document.getElementById('chatBackBtn');
-			    
-			    // Sök & Header
 			    const searchInput = document.getElementById('chatSearchInput');
 			    const clearBtn = document.getElementById('clearChatSearch');
-			    const galleryToggleBtn = document.getElementById('toggleChatGallery'); // I headern
+			    const galleryToggleBtn = document.getElementById('toggleChatGallery'); 
 			    
 			    // Input-fältets knappar
-			    const plusBtn = document.getElementById('chatPlusBtn');     // Nu kopplad till Galleri
-			    const cameraBtn = document.getElementById('chatCameraBtn'); // Kopplad till Kamera
+			    const plusBtn = document.getElementById('chatPlusBtn');     
+			    const cameraBtn = document.getElementById('chatCameraBtn'); 
 			    
 			    const fileInputGallery = document.getElementById('chatFileInputGallery');
 			    const fileInputCamera = document.getElementById('chatFileInputCamera');
 			
 			    if (!chatList || !chatForm) return;
 			    
+			    // Sätt gräns
 			    if (typeof currentChatLimit === 'undefined') {
 			        window.currentChatLimit = 50;
 			    } else {
@@ -1167,7 +1166,6 @@
 			
 			    // --- 1. HANTERA KNAPPAR ---
 			
-			    // Tillbaka-pilen
 			    if (chatBackBtn) {
 			        chatBackBtn.onclick = (e) => {
 			            e.preventDefault();
@@ -1179,7 +1177,7 @@
 			        };
 			    }
 			
-			    // Plus-knappen (+) -> Öppnar Galleri (Bifoga)
+			    // Plus-knappen -> Galleri
 			    if (plusBtn && fileInputGallery) {
 			        plusBtn.onclick = (e) => {
 			            e.preventDefault();
@@ -1191,7 +1189,7 @@
 			        };
 			    }
 			
-			    // Kamera-knappen (Kamera ikon) -> Öppnar Kamera
+			    // Kamera-knappen -> Kamera
 			    if (cameraBtn && fileInputCamera) {
 			        cameraBtn.onclick = (e) => {
 			            e.preventDefault();
@@ -1203,27 +1201,24 @@
 			        };
 			    }
 			
-			    // Galleri-läge (Ikon i headern)
+			    // Galleri-läge (Header)
 			    if (galleryToggleBtn) {
 			        galleryToggleBtn.onclick = (e) => {
 			            e.preventDefault();
 			            chatList.classList.toggle('gallery-mode');
 			            const isActive = chatList.classList.contains('gallery-mode');
-			            // Byt färg för att visa att det är aktivt
 			            galleryToggleBtn.style.color = isActive ? 'var(--primary-color)' : 'var(--text-color-light)';
-			            
 			            if (!isActive) setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
 			        };
 			    }
 			
-			    // --- 2. SÖKFUNKTION (ALLTID SYNLIG NU) ---
+			    // --- 2. SÖKFUNKTION ---
 			    if (searchInput) {
 			        const filterChat = () => {
 			            const term = searchInput.value.toLowerCase();
 			            const bubbles = chatList.querySelectorAll('.chat-bubble');
 			            const times = chatList.querySelectorAll('.chat-time');
 			            
-			            // Visa/dölj kryss-knappen
 			            if (clearBtn) clearBtn.style.display = term ? 'flex' : 'none';
 			            
 			            bubbles.forEach((bubble, index) => {
@@ -1250,7 +1245,6 @@
 			        };
 			        
 			        searchInput.oninput = filterChat;
-			        
 			        if (clearBtn) {
 			            clearBtn.onclick = () => { 
 			                searchInput.value = ''; 
@@ -1258,16 +1252,11 @@
 			                searchInput.focus(); 
 			            };
 			        }
-			        
-			        searchInput.addEventListener('keydown', (e) => {
-			            if (e.key === 'Enter') { e.preventDefault(); searchInput.blur(); }
-			        });
 			    }
 			
 			    // --- 3. FOCUS/BLUR LOGIK (DATOR FIX) ---
 			    if (chatInput && !chatInput.dataset.focusListenerAttached) {
 			        chatInput.dataset.focusListenerAttached = "true";
-			
 			        const mobileNav = document.getElementById('mobileNav');
 			        const timelineView = document.getElementById('timelineView'); 
 			        const fabAddJob = document.getElementById('fabAddJob'); 
@@ -1285,7 +1274,6 @@
 			                if (mobileNav) mobileNav.style.display = 'flex';
 			                if (timelineView && currentView === 'timeline') timelineView.style.display = 'block'; 
 			                if (fabAddJob) fabAddJob.style.display = 'flex';
-			                if (chatList) chatList.scrollTop = chatList.scrollHeight;
 			            }, 100);
 			        });
 			    }
@@ -1344,6 +1332,7 @@
 			                platform: window.innerWidth <= 768 ? 'mobil' : 'dator'
 			            });
 			            showToast("Bild skickad!", "success");
+			            // Scrolla alltid ner när JAG skickar
 			            setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
 			        } catch (err) {
 			            console.error(err);
@@ -1363,13 +1352,14 @@
 			                platform: window.innerWidth <= 768 ? 'mobil' : 'dator'
 			            });
 			            chatInput.value = '';
+			            // Scrolla alltid ner när JAG skickar
 			            setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
 			        } catch (err) {
 			            showToast("Kunde inte skicka notis.", "danger");
 			        }
 			    };
 			
-			    // --- 7. HUVUDLYSSNAREN (SCROLL-FIXAD) ---
+			    // --- 7. HUVUDLYSSNAREN (SUPER-FIXAD SCROLL) ---
 			    const setupChatListener = (limit) => {
 			        if (chatUnsubscribe) chatUnsubscribe(); 
 			        const isLoadMore = limit > 50; 
@@ -1378,10 +1368,16 @@
 			            .orderBy("timestamp", "desc") 
 			            .limit(limit)                 
 			            .onSnapshot(snapshot => {
-			                const threshold = 150; 
-			                const scrollBottom = chatList.scrollHeight - chatList.scrollTop - chatList.clientHeight;
-			                const wasAtBottom = scrollBottom <= threshold || chatList.childElementCount === 0;
-			                const previousScrollTop = chatList.scrollTop;
+			                
+			                // --- SCROLL-LOGIK 2.0 ---
+			                // Vi måste spara exakt position INNAN vi rör något
+			                const currentScrollTop = chatList.scrollTop;
+			                const scrollHeightBefore = chatList.scrollHeight;
+			                const clientHeight = chatList.clientHeight;
+			                
+			                // Är användaren i botten? (Med 100px marginal)
+			                const distanceToBottom = scrollHeightBefore - currentScrollTop - clientHeight;
+			                const wasAtBottom = distanceToBottom < 150 || chatList.childElementCount === 0;
 			
 			                const docs = [];
 			                snapshot.forEach(doc => docs.push({ id: doc.id, ...doc.data() }));
@@ -1406,15 +1402,21 @@
 			                
 			                if (!isSearching) {
 			                    if (isLoadMore && isFetchingOlderChat) {
+			                        // SCENARIO: Vi laddade äldre meddelanden
+			                        // Återställ positionen så vi stannar på "samma ställe" visuellt
 			                        const newScrollHeight = chatList.scrollHeight;
-			                        chatList.scrollTop = newScrollHeight - chatList.scrollTop; 
+			                        chatList.scrollTop = newScrollHeight - scrollHeightBefore + currentScrollTop;
 			                        isFetchingOlderChat = false; 
-			                    } else if (!isLoadMore) {
+			                    } else {
+			                        // SCENARIO: Nytt meddelande eller första laddning
 			                        if (!chatList.classList.contains('gallery-mode')) {
 			                            if (wasAtBottom) {
+			                                // Om vi var i botten -> Åk till botten
 			                                chatList.scrollTop = chatList.scrollHeight;
 			                            } else {
-			                                chatList.scrollTop = previousScrollTop;
+			                                // Om vi hade scrollat upp -> Rör ingenting!
+			                                // Vi sätter tillbaka scrollTop till vad den var
+			                                chatList.scrollTop = currentScrollTop; 
 			                            }
 			                        }
 			                    }
@@ -1424,7 +1426,7 @@
 			
 			    setupChatListener(currentChatLimit);
 			
-			    // --- 8. LADDA ÄLDRE ---
+			    // --- 8. LADDA ÄLDRE (SCROLL EVENT) ---
 			    chatList.addEventListener('scroll', () => {
 			        if (chatList.scrollTop === 0 && !isFetchingOlderChat && !chatList.classList.contains('gallery-mode')) {
 			            isFetchingOlderChat = true;
