@@ -899,6 +899,79 @@
 			    }, 300);
 			}
 
+			// --- REAKTION / TAPBACK FUNKTIONER ---
+
+			// 1. Skapa menyn (körs en gång)
+			function createReactionMenu() {
+			    if (document.getElementById('reactionMenu')) return; // Finns redan
+			
+			    const menu = document.createElement('div');
+			    menu.id = 'reactionMenu';
+			    menu.className = 'reaction-menu';
+			    
+			    // De ikoner du vill ha
+			    const reactions = ['✅', '⚠️', '👀', '❤️', '❌']; 
+			    
+			    reactions.forEach(icon => {
+			        const span = document.createElement('span');
+			        span.className = 'reaction-option';
+			        span.textContent = icon;
+			        span.onclick = (e) => {
+			            e.stopPropagation();
+			            applyReaction(menu.dataset.targetId, icon);
+			            hideReactionMenu();
+			        };
+			        menu.appendChild(span);
+			    });
+			
+			    document.body.appendChild(menu);
+			
+			    // Stäng menyn om man klickar någon annanstans
+			    window.addEventListener('click', hideReactionMenu);
+			    window.addEventListener('scroll', hideReactionMenu, true); // Stäng vid scroll
+			}
+			
+			// 2. Visa menyn vid långtryck
+			function showReactionMenu(x, y, messageId) {
+			    createReactionMenu(); // Säkra att den finns
+			    const menu = document.getElementById('reactionMenu');
+			    
+			    // Spara vilket ID vi reagerar på
+			    menu.dataset.targetId = messageId;
+			
+			    // Positionera menyn precis ovanför fingret/musen
+			    menu.style.left = `${x - 70}px`; // Centrera ungefär
+			    menu.style.top = `${y - 60}px`;  // Lite ovanför
+			    
+			    menu.classList.add('show');
+			    
+			    // Liten vibration (Haptic feedback) om mobilen stödjer det
+			    if (navigator.vibrate) navigator.vibrate(10); 
+			}
+			
+			function hideReactionMenu() {
+			    const menu = document.getElementById('reactionMenu');
+			    if (menu) menu.classList.remove('show');
+			}
+			
+			// 3. Spara till Firebase
+			function applyReaction(id, icon) {
+			    if (!id) return;
+			    
+			    // Hämta nuvarande reaktion först för att kunna "toggla" (ta bort om man klickar samma)
+			    db.collection("notes").doc(id).get().then(doc => {
+			        if (doc.exists) {
+			            const current = doc.data().reaction;
+			            // Om man klickar på samma ikon igen -> Ta bort den (null). Annars sätt ny.
+			            const newReaction = (current === icon) ? null : icon;
+			            
+			            db.collection("notes").doc(id).update({
+			                reaction: newReaction
+			            }).catch(err => console.error("Kunde inte spara reaktion", err));
+			        }
+			    });
+			}
+
 			let chatUnsubscribe = null; // För att kunna stänga av lyssnaren
 
 			let currentChatLimit = 50; // Hur många meddelanden vi laddar
@@ -1212,13 +1285,58 @@
 			    const bubble = document.createElement('div');
 			    bubble.className = 'chat-bubble';
 			    
+                // --- NYTT: Visa reaktion om det finns ---
+                if (data.reaction) {
+                    const badge = document.createElement('span');
+                    badge.className = 'reaction-badge';
+                    badge.textContent = data.reaction;
+                    // Klick på ikonen tar bort den direkt
+                    badge.onclick = (e) => {
+                        e.stopPropagation(); // Stoppa bubbel-klick
+                        applyReaction(id, data.reaction); // Detta togglar bort den
+                    };
+                    bubble.appendChild(badge);
+                }
+                // ----------------------------------------
+
 			    // Timer för att skilja på klick och dubbelklick
 			    let clickTimeout = null;
+                // Timer för långtryck (Tapback)
+                let longPressTimer = null;
+
+                // --- NYTT: Starta långtryck ---
+                const startLongPress = (e) => {
+                    // Ignorera om det var högerklick (används av contextmenu på desktop)
+                    if (e.button === 2) return; 
+
+                    longPressTimer = setTimeout(() => {
+                        // Hitta position (Touch eller Mus)
+                        let clientX, clientY;
+                        if (e.touches && e.touches.length > 0) {
+                            clientX = e.touches[0].clientX;
+                            clientY = e.touches[0].clientY;
+                        } else {
+                            clientX = e.clientX;
+                            clientY = e.clientY;
+                        }
+                        
+                        showReactionMenu(clientX, clientY, id);
+                        
+                        // Förhindra att "click" körs efteråt
+                        bubble.dataset.longPressed = "true"; 
+                    }, 500); // 500ms för långtryck
+                };
+
+                const cancelLongPress = () => {
+                    if (longPressTimer) {
+                        clearTimeout(longPressTimer);
+                        longPressTimer = null;
+                    }
+                };
 			
 			    // --- SCENARIO A: BILD-KARUSELL (Flera bilder) ---
 			    if (data.images && Array.isArray(data.images)) {
 			        bubble.classList.add('chat-bubble-image');
-			        
 			        const carousel = document.createElement('div');
 			        carousel.className = 'chat-carousel';
 			        
@@ -1227,71 +1345,87 @@
 			            img.src = imgSrc;
 			            img.loading = "lazy";
 			            img.alt = "Bild";
-
-						img.onload = () => {
-                            // Scrolla bara om vi redan var nära botten (eller om chatten precis öppnats)
+			            
+                        // Lyssna på bildens laddning
+                        img.onload = () => {
                             const chatList = document.getElementById('chatMessages');
                             if(chatList) chatList.scrollTop = chatList.scrollHeight;
                         };
-			            
-			            // KLICK-LOGIK MED TIMER (Fix för dubbelklick)
+
+			            // Klick-logik för bild
 			            img.onclick = (e) => {
-			                e.stopPropagation(); // Stoppa bubblans händelser
+			                e.stopPropagation(); 
+                            if (bubble.dataset.longPressed === "true") {
+                                bubble.dataset.longPressed = "false";
+                                return;
+                            }
 			                
 			                if (clickTimeout !== null) {
-			                    // Detta är andra klicket -> DUBBELKLICK -> RADERA
 			                    clearTimeout(clickTimeout);
 			                    clickTimeout = null;
-			                    if(confirm("Radera denna notis?")) {
-			                        db.collection("notes").doc(id).delete();
-			                    }
+			                    if(confirm("Radera denna notis?")) db.collection("notes").doc(id).delete();
 			                } else {
-			                    // Detta är första klicket -> VÄNTA PÅ NÄSTA
 			                    clickTimeout = setTimeout(() => {
-			                        // Tiden gick ut, inget andra klick -> ENKELKLICK -> ZOOMA
-			                        if (typeof window.openImageZoom === 'function') {
-			                            window.openImageZoom(imgSrc);
-			                        }
+			                        if (typeof window.openImageZoom === 'function') window.openImageZoom(imgSrc);
 			                        clickTimeout = null;
-			                    }, 250); // Väntar 250ms
+			                    }, 250); 
 			                }
 			            };
+                        
+                        // Långtryck på bild
+                        img.addEventListener('touchstart', startLongPress, {passive: true});
+                        img.addEventListener('touchend', cancelLongPress);
+                        img.addEventListener('touchmove', cancelLongPress);
+                        img.addEventListener('mousedown', startLongPress);
+                        img.addEventListener('mouseup', cancelLongPress);
+                        img.addEventListener('mouseleave', cancelLongPress);
+
 			            carousel.appendChild(img);
 			        });
-			        
 			        bubble.appendChild(carousel);
 			    } 
-			    // --- SCENARIO B: ENKEL BILD (Gamla formatet) ---
+			    // --- SCENARIO B: ENKEL BILD ---
 			    else if (data.type === 'image' && data.image) {
 			        bubble.classList.add('chat-bubble-image');
 			        bubble.innerHTML = `<img src="${data.image}" alt="Uppladdad bild" loading="lazy" />`;
 			        
 			        const imgElement = bubble.querySelector('img');
+                    
+                    imgElement.onload = () => {
+                        const chatList = document.getElementById('chatMessages');
+                        if(chatList) chatList.scrollTop = chatList.scrollHeight;
+                    };
 			        
-			        // KLICK-LOGIK MED TIMER (Samma fix här)
 			        imgElement.onclick = (e) => {
 			            e.stopPropagation();
+                        if (bubble.dataset.longPressed === "true") {
+                            bubble.dataset.longPressed = "false";
+                            return;
+                        }
 			            
 			            if (clickTimeout !== null) {
 			                clearTimeout(clickTimeout);
 			                clickTimeout = null;
-			                if(confirm("Radera denna notis?")) {
-			                    db.collection("notes").doc(id).delete();
-			                }
+			                if(confirm("Radera denna notis?")) db.collection("notes").doc(id).delete();
 			            } else {
 			                clickTimeout = setTimeout(() => {
-			                    if (typeof window.openImageZoom === 'function') {
-			                        window.openImageZoom(data.image);
-			                    }
+			                    if (typeof window.openImageZoom === 'function') window.openImageZoom(data.image);
 			                    clickTimeout = null;
 			                }, 250);
 			            }
 			        };
+
+                    // Långtryck på enkel bild
+                    imgElement.addEventListener('touchstart', startLongPress, {passive: true});
+                    imgElement.addEventListener('touchend', cancelLongPress);
+                    imgElement.addEventListener('touchmove', cancelLongPress);
+                    imgElement.addEventListener('mousedown', startLongPress);
+                    imgElement.addEventListener('mouseup', cancelLongPress);
+                    imgElement.addEventListener('mouseleave', cancelLongPress);
 			    } 
-			    // --- SCENARIO C: TEXT (Med Läs mer & Auto-länk) ---
+			    // --- SCENARIO C: TEXT ---
 			    else {
 			        let rawText = data.text || "";
-			        
 			        const textContentDiv = document.createElement('div');
 			        textContentDiv.className = 'chat-text-content';
 			        
@@ -1315,7 +1449,6 @@
 			            const readMoreBtn = document.createElement('button');
 			            readMoreBtn.className = 'read-more-btn';
 			            readMoreBtn.textContent = "Visa mer";
-			            
 			            readMoreBtn.onclick = (e) => {
 			                e.stopPropagation();
 			                if (textContentDiv.classList.contains('truncated')) {
@@ -1329,16 +1462,31 @@
 			            bubble.appendChild(readMoreBtn);
 			        }
 			        
-			        // För textbubblor behåller vi standard dubbelklick (ingen timer behövs här)
-			        bubble.addEventListener('dblclick', () => {
-			            if(confirm("Radera denna notis?")) {
-			                db.collection("notes").doc(id).delete();
-			            }
+                    // Klick-logik för text (hantera om det var långtryck)
+			        bubble.addEventListener('click', () => {
+                        if (bubble.dataset.longPressed === "true") {
+                            bubble.dataset.longPressed = "false";
+                            return;
+                        }
+                        // Använd timer även här för text om man vill, 
+                        // men dubbelklick-eventet nedan brukar fungera bra parallellt.
 			        });
+
+                    bubble.addEventListener('dblclick', () => {
+			            if(confirm("Radera denna notis?")) db.collection("notes").doc(id).delete();
+			        });
+
+                    // Långtryck på text-bubbla
+                    bubble.addEventListener('touchstart', startLongPress, {passive: true});
+                    bubble.addEventListener('touchend', cancelLongPress);
+                    bubble.addEventListener('touchmove', cancelLongPress);
+                    bubble.addEventListener('mousedown', startLongPress);
+                    bubble.addEventListener('mouseup', cancelLongPress);
+                    bubble.addEventListener('mouseleave', cancelLongPress);
 			    }
 			    
 			    // Gemensamma inställningar
-			    bubble.title = "Dubbelklicka för att radera";
+			    bubble.title = "Långtryck för reaktion, dubbelklicka för att radera";
 			    bubble.style.cursor = "pointer";
 			
 			    // --- TID & IKON ---
