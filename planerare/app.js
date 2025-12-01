@@ -910,7 +910,7 @@
 			    menu.className = 'reaction-menu';
 			    
 			    // Emojis
-			    const emojis = ['✅', '⚠️', '👀', '❤️', '❌']; 
+			    const emojis = ['✅', '❌', '⚠️', '🕓']; 
 			    
 			    emojis.forEach(icon => {
 			        const span = document.createElement('span');
