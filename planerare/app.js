@@ -1071,9 +1071,6 @@
                             snapshot.forEach(doc => docs.push({ id: doc.id, ...doc.data() }));
                             docs.reverse(); // Nu är äldst först (som i en vanlig chatt)
 
-                            // Spara scroll-status om vi inte laddar mer (dvs om vi är i botten)
-                            const wasAtBottom = chatList.scrollHeight - chatList.scrollTop <= chatList.clientHeight + 100;
-
                             chatList.innerHTML = '';
                             
                             if (docs.length === 0) {
@@ -1081,24 +1078,33 @@
                                 return;
                             }
 
-                            // Om vi laddat max (finns fler att hämta), visa en liten "laddar mer"-spinner i toppen (valfritt)
-                            // Här renderar vi bara bubblorna
                             docs.forEach(data => {
                                 renderChatBubble(data.id, data, chatList);
                             });
 
+                            // --- FIX: APPLICERA SÖKNING IGEN ---
+                            // Om användaren har skrivit något i sökfältet, filtrera de nya bubblorna direkt
+                            if (searchInput && searchInput.value.trim() !== "") {
+                                // Vi triggar 'input'-händelsen manuellt så att filterChat-funktionen körs
+                                searchInput.dispatchEvent(new Event('input'));
+                            }
+                            // -----------------------------------
+
                             // --- SCROLL-LOGIK ---
-                            if (isLoadMore && isFetchingOlderChat) {
-                                // Om vi laddade äldre meddelanden:
-                                // Justera scroll så vi står kvar på samma ställe visuellt
-                                const newScrollHeight = chatList.scrollHeight;
-                                chatList.scrollTop = newScrollHeight - oldScrollHeight;
-                                isFetchingOlderChat = false; // Klar
-                            } else if (!isLoadMore) {
-                                // Första laddningen eller nytt meddelande: scrolla till botten
-                                // (Men bara om vi inte söker eller tittar på bilder)
-                                if ((!searchInput || !searchInput.value) && !chatList.classList.contains('gallery-mode')) {
-                                    chatList.scrollTop = chatList.scrollHeight;
+                            // Vi scrollar bara om vi INTE söker (för att inte hoppa runt när man skriver)
+                            const isSearching = searchInput && searchInput.value.trim() !== "";
+
+                            if (!isSearching) {
+                                if (isLoadMore && isFetchingOlderChat) {
+                                    // Om vi laddade äldre meddelanden: Justera scroll
+                                    const newScrollHeight = chatList.scrollHeight;
+                                    chatList.scrollTop = newScrollHeight - oldScrollHeight;
+                                    isFetchingOlderChat = false; 
+                                } else if (!isLoadMore) {
+                                    // Första laddningen eller nytt meddelande: scrolla till botten
+                                    if (!chatList.classList.contains('gallery-mode')) {
+                                        chatList.scrollTop = chatList.scrollHeight;
+                                    }
                                 }
                             }
                         });
