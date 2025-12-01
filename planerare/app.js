@@ -988,38 +988,53 @@
 			    
 			    menu.dataset.targetId = messageId;
 			    
-			    // Vi måste göra den synlig (men genomskinlig) för att kunna mäta bredden
-			    menu.style.opacity = '0';
+			    // 1. Återställ stilar för att kunna mäta den "sanna" storleken
 			    menu.style.display = 'flex';
-			    menu.classList.add('show');
+			    menu.style.visibility = 'hidden'; // Dölj den medan vi mäter
+			    menu.style.transform = 'none';    // Ta bort ev. skalning
+			    menu.classList.remove('show');    // Ta bort animationsklassen
 			
-			    const menuRect = menu.getBoundingClientRect();
+			    // 2. Mät bredd och höjd på skärm och meny
+			    const menuWidth = menu.offsetWidth; // Använd offsetWidth för faktisk bredd
+			    const menuHeight = menu.offsetHeight;
 			    const screenWidth = window.innerWidth;
-			    
-			    // Återställ opacity för animationen
-			    menu.style.removeProperty('opacity');
-			    menu.style.removeProperty('display');
 			
-			    // --- FIX: BÄTTRE MATEMATIK FÖR HÖGERKANTEN ---
+			    // 3. Beräkna X (Vänster/Höger)
+			    // Centrera menyn över klicket till en början
+			    let left = x - (menuWidth / 2);
 			    
-			    // 1. Centrera X baserat på trycket
-			    let left = x - (menuRect.width / 2);
+			    // JUSTERA HÖGER KANT (Viktigast)
+			    // Om menyn sticker ut till höger -> Fäst den mot högerkanten minus 15px marginal
+			    if (left + menuWidth > screenWidth - 15) {
+			        left = screenWidth - menuWidth - 15;
+			    }
 			    
-			    // 2. Vänster kant-koll (minst 10px marginal)
-			    if (left < 10) left = 10;
-			    
-			    // 3. Höger kant-koll (VIKTIGT: Se till att hela bredden får plats)
-			    // Om (vänster kant + bredd) är mer än skärmbredden -> flytta den inåt
-			    if (left + menuRect.width > screenWidth - 10) {
-			        left = screenWidth - menuRect.width - 10;
+			    // JUSTERA VÄNSTER KANT
+			    // Om menyn sticker ut till vänster -> Fäst den mot vänsterkanten plus 15px marginal
+			    if (left < 15) {
+			        left = 15;
 			    }
 			
-			    // 4. Y-positionering
+			    // 4. Beräkna Y (Upp/Ner)
 			    let top = y - 70;
-			    if (top < 50) top = y + 20;
+			    // Om det är för nära toppen av skärmen, visa menyn under fingret istället
+			    if (top < 20) {
+			        top = y + 20;
+			    }
 			
+			    // 5. Applicera positionerna
 			    menu.style.left = `${left}px`;
 			    menu.style.top = `${top}px`;
+			    
+			    // 6. Starta animationen
+			    // Vi måste ta bort 'visibility' och låta CSS sköta resten
+			    menu.style.removeProperty('visibility');
+			    menu.style.removeProperty('transform'); // Låt CSS-klassen sköta skalan igen
+			    
+			    // Ett litet hack för att webbläsaren ska uppfatta ändringen innan klassen läggs på
+			    void menu.offsetWidth; 
+			    
+			    menu.classList.add('show');
 			    
 			    if (navigator.vibrate) navigator.vibrate(10); 
 			}
