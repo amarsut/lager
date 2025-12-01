@@ -910,7 +910,7 @@
 			    menu.className = 'reaction-menu';
 			    
 			    // Endast emojier här
-			    const emojis = ['✅', '⚠️', '👀', '❤️', '❌']; 
+			    const emojis = ['✅', '⚠️', '❌']; 
 			    
 			    // Lägg till emojier
 			    emojis.forEach(icon => {
