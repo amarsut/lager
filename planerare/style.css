@@ -6245,27 +6245,33 @@ body.body-scroll-lock {
     
     /* 2. Gör widgeten till helskärm igen (som en vanlig sida) */
     .chat-widget-container {
-        position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
-        /* VIKTIGT: Sätt bottom till 0 för att täcka hela vägen ner */
-        bottom: 0 !important; 
-        
-        width: 100% !important;
-        height: 100% !important; /* Tvinga full höjd */
-        
-        /* VIKTIGT: Solid bakgrund så inget syns igenom */
-        background-color: var(--bg-color) !important; 
-        
-        border-radius: 0 !important;
-        border: none !important;
-        box-shadow: none !important;
-        z-index: 5000 !important; /* Extremt högt för att ligga över allt */
-        
-        display: flex;
-        flex-direction: column;
-    }
+	    position: fixed;
+	    
+	    /* --- FIX: POSITIONERING VÄNSTER OM KNAPPEN --- */
+	    bottom: 110px; /* Samma höjd som knappen #fabChat */
+	    right: calc(2rem + 75px); /* Placera den till vänster om knappen (Marginal + Knappbredd + Luft) */
+	    /* --------------------------------------------- */
+	    
+	    width: 500px; /* Lagom bredd för en chatt */
+	    height: 600px; /* Ganska hög */
+	    max-height: 70vh; /* Men inte högre än 70% av skärmen */
+	    
+	    background-color: var(--content-bg);
+	    border-radius: 16px;
+	    
+	    /* Lägg till en liten pil-effekt (valfritt, men snyggt) genom skuggan */
+	    box-shadow: 0 5px 40px rgba(0,0,0,0.15);
+	    border: 1px solid var(--border-color);
+	    
+	    display: flex;
+	    flex-direction: column;
+	    z-index: 2000; /* Ligger över det mesta */
+	    overflow: hidden;
+	    
+	    /* Animation när den öppnas (Växer från höger botten) */
+	    transform-origin: bottom right;
+	    animation: popUpWidget 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+	}
     
     /* Flytta upp input-fältet så det inte täcks av tangentbordet */
     .chat-input-area {
@@ -6771,6 +6777,7 @@ body.body-scroll-lock {
     -webkit-touch-callout: none; /* Stoppar iOS förstoringsglas/meny */
     user-select: none; /* Stoppar textmarkering */
 }
+
 
 
 
