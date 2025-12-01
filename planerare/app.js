@@ -909,14 +909,16 @@
 			    menu.id = 'reactionMenu';
 			    menu.className = 'reaction-menu';
 			    
-			    // Endast emojier här
-			    const emojis = ['✅', '⚠️', '❌', '🕖']; 
+			    // Emojis
+			    const emojis = ['✅', '⚠️', '👀', '❤️', '❌']; 
 			    
-			    // Lägg till emojier
 			    emojis.forEach(icon => {
 			        const span = document.createElement('span');
 			        span.className = 'reaction-option';
 			        span.textContent = icon;
+			        // Emojis kan vara lite större
+			        span.style.fontSize = "1.4rem"; 
+			        
 			        span.onclick = (e) => {
 			            e.stopPropagation();
 			            applyReaction(menu.dataset.targetId, icon);
@@ -925,27 +927,32 @@
 			        menu.appendChild(span);
 			    });
 			
+			    // Avdelare
 			    const divider = document.createElement('div');
 			    divider.className = 'reaction-divider';
 			    menu.appendChild(divider);
 			
-			    // --- NYTT: REDIGERA (✎) ---
+			    // --- REDIGERA (SVG-IKON) ---
 			    const editSpan = document.createElement('span');
 			    editSpan.className = 'reaction-option';
-			    editSpan.textContent = '✎';
 			    editSpan.title = "Redigera";
+			    // Använder din befintliga #icon-pencil
+			    editSpan.innerHTML = `<svg class="icon icon-action" viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-pencil"></use></svg>`;
+			    
 			    editSpan.onclick = (e) => {
 			        e.stopPropagation();
-			        editMessage(menu.dataset.targetId); // Anropar ny funktion
+			        editMessage(menu.dataset.targetId);
 			        hideReactionMenu();
 			    };
 			    menu.appendChild(editSpan);
 			
-			    // KOPIERA (📋)
+			    // --- KOPIERA (SVG-IKON) ---
 			    const copySpan = document.createElement('span');
 			    copySpan.className = 'reaction-option';
-			    copySpan.textContent = '📋';
 			    copySpan.title = "Kopiera";
+			    // Använder din befintliga #icon-duplicate (ser ut som två papper)
+			    copySpan.innerHTML = `<svg class="icon icon-action" viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-duplicate"></use></svg>`;
+			    
 			    copySpan.onclick = (e) => {
 			        e.stopPropagation();
 			        copyMessageText(menu.dataset.targetId);
