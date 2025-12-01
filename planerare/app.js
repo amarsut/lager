@@ -1001,17 +1001,22 @@
 			    }
 			
 			    // --- 5. PASTE-HANTERARE (Ctrl+V) ---
-			    chatInput.addEventListener('paste', async (e) => {
-			        const items = (e.clipboardData || e.originalEvent.clipboardData).items;
-			        for (let item of items) {
-			            if (item.type.indexOf("image") === 0) {
-			                e.preventDefault();
-			                const blob = item.getAsFile();
-			                handleImageUpload(blob);
-			                return;
+			    if (!chatInput.dataset.pasteListenerAttached) {
+			        chatInput.addEventListener('paste', async (e) => {
+			            const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+			            for (let item of items) {
+			                if (item.type.indexOf("image") === 0) {
+			                    e.preventDefault();
+			                    const blob = item.getAsFile();
+			                    handleImageUpload(blob);
+			                    return;
+			                }
 			            }
-			        }
-			    });
+			        });
+			
+			        // Markera att vi har lagt till lyssnaren
+			        chatInput.dataset.pasteListenerAttached = "true";
+			    }
 			
 			    // --- 6. SÖK-FUNKTION ---
 			    if (searchInput && clearBtn) {
@@ -1061,27 +1066,30 @@
 			    }
 			
 			    // --- 8. KLICK PÅ REG-NR (Auto-Link) ---
-			    chatList.addEventListener('click', (e) => {
-			        // Kolla om vi klickade på en länk ELLER inuti en länk
-			        const link = e.target.closest('.chat-reg-link');
-			        
-			        if (link) {
-			            // STOPPA ALLT! Låt inte dokumentet veta att vi klickade.
-			            e.preventDefault();
-			            e.stopPropagation();
-			            e.stopImmediatePropagation();
+			    if (!chatList.dataset.clickListenerAttached) {
+			        chatList.addEventListener('click', (e) => {
+			            // Kolla om vi klickade på en länk ELLER inuti en länk
+			            const link = e.target.closest('.chat-reg-link');
 			            
-			            const regnr = link.dataset.reg;
-			            
-			            // Öppna modalen direkt
-			            if (typeof openCarModal === 'function') {
-			                // Sätt flaggan manuellt så inte "klicka utanför" tror att det är fritt fram
-			                if (typeof isModalOpen !== 'undefined') isModalOpen = true; 
-			                openCarModal(regnr);
+			            if (link) {
+			                // STOPPA ALLT! Låt inte dokumentet veta att vi klickade.
+			                e.preventDefault();
+			                e.stopPropagation();
+			                e.stopImmediatePropagation();
+			                
+			                const regnr = link.dataset.reg;
+			                
+			                // Öppna modalen direkt
+			                if (typeof openCarModal === 'function') {
+			                    // Sätt flaggan manuellt så inte "klicka utanför" tror att det är fritt fram
+			                    if (typeof isModalOpen !== 'undefined') isModalOpen = true; 
+			                    openCarModal(regnr);
+			                }
+			                return false; // Extra säkerhet
 			            }
-			            return false; // Extra säkerhet
-			        }
-			    });
+			        });
+			        chatList.dataset.clickListenerAttached = "true";
+			    }
 			
 			    // --- 9. LYSSNA PÅ DATABASEN ---
 			    if (chatUnsubscribe) chatUnsubscribe();
