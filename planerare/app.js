@@ -877,54 +877,46 @@
 
 			let chatUnsubscribe = null; // För att kunna stänga av lyssnaren
 
+			let currentChatLimit = 50; // Hur många meddelanden vi laddar
+            let isFetchingOlderChat = false;
+
 			function initChat() {
 			    const chatList = document.getElementById('chatMessages');
 			    const chatForm = document.getElementById('chatForm');
 			    const chatInput = document.getElementById('chatInput');
 			    
-			    // Hämta verktyg och knappar
 			    const searchInput = document.getElementById('chatSearchInput');
 			    const clearBtn = document.getElementById('clearChatSearch');
 			    const galleryToggleBtn = document.getElementById('toggleChatGallery');
 			
-			    // Hämta bild-uppladdnings-element
 			    const fileInputGallery = document.getElementById('chatFileInputGallery');
 			    const fileInputCamera = document.getElementById('chatFileInputCamera');
 			    const btnOpenGallery = document.getElementById('chatGalleryBtn');
 			    const btnOpenCamera = document.getElementById('chatCameraBtn');
 			
 			    if (!chatList || !chatForm) return;
+
+                // Återställ limit när chatten öppnas på nytt
+                currentChatLimit = 50;
 			
 			    // --- 1. MOBIL-FIX: DÖLJ MENY VID SKRIVANDE ---
-			    // Detta hindrar menyn från att åka upp ovanför tangentbordet
 			    if (window.innerWidth <= 768 && chatInput) {
 			        const mobileNav = document.getElementById('mobileNav');
-			        const timelineView = document.getElementById('timelineView'); // Hämta jobb-listan
-			        const fabAddJob = document.getElementById('fabAddJob'); // Hämta FAB-knappen
+			        const timelineView = document.getElementById('timelineView'); 
+			        const fabAddJob = document.getElementById('fabAddJob'); 
 			
 			        if (mobileNav) {
-			            // NÄR TANGENTBORDET ÖPPNAS (Fokus)
 			            chatInput.addEventListener('focus', () => {
-			                // 1. Dölj menyn
 			                mobileNav.style.display = 'none';
-			                
-			                // 2. Dölj bakgrunden (Jobb-korten) så de inte trycks upp!
 			                if (timelineView) timelineView.style.display = 'none';
-			                
-			                // 3. Dölj flytande knappar
 			                if (fabAddJob) fabAddJob.style.display = 'none';
 			            });
 			
-			            // NÄR TANGENTBORDET STÄNGS (Blur)
 			            chatInput.addEventListener('blur', () => {
-			                // Liten fördröjning för att undvika "hopp"
 			                setTimeout(() => {
-			                    // Återställ allt
 			                    mobileNav.style.display = 'flex';
-			                    if (timelineView) timelineView.style.display = 'block'; // Eller 'block' beroende på din layout
+			                    if (timelineView) timelineView.style.display = 'block'; 
 			                    if (fabAddJob) fabAddJob.style.display = 'flex';
-			                    
-			                    // Scrolla chatten till botten igen ifall vyn ändrades
 			                    if (chatList) chatList.scrollTop = chatList.scrollHeight;
 			                }, 100);
 			            });
@@ -947,10 +939,8 @@
 			            });
 			            
 			            showToast("Bild skickad!", "success");
-			            
-			            if (!searchInput || !searchInput.value) {
-			                setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
-			            }
+                        // Scrolla till botten
+                        setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
 			
 			        } catch (err) {
 			            console.error(err);
@@ -971,157 +961,157 @@
 			                platform: window.innerWidth <= 768 ? 'mobil' : 'dator'
 			            });
 			            chatInput.value = '';
-			            
-			            if (!searchInput || !searchInput.value) {
-			                setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
-			            }
+                        // Scrolla till botten
+                        setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
 			        } catch (err) {
 			            console.error(err);
 			            showToast("Kunde inte skicka notis.", "danger");
 			        }
 			    };
 			
-			    // --- 4. KOPPLA BILD-KNAPPARNA ---
-			    
-			    // A. Galleri
+			    // --- 4. KOPPLA KNAPPAR & PASTE ---
+                // (Paste-lyssnaren med din fix från förra steget)
+                if (!chatInput.dataset.pasteListenerAttached) {
+                    chatInput.addEventListener('paste', async (e) => {
+                        const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+                        for (let item of items) {
+                            if (item.type.indexOf("image") === 0) {
+                                e.preventDefault();
+                                const blob = item.getAsFile();
+                                handleImageUpload(blob);
+                                return;
+                            }
+                        }
+                    });
+                    chatInput.dataset.pasteListenerAttached = "true";
+                }
+
+                // Galleri/Kamera knappar
 			    if (btnOpenGallery && fileInputGallery) {
-			        btnOpenGallery.onclick = (e) => {
-			            e.preventDefault();
-			            fileInputGallery.click();
-			        };
-			        fileInputGallery.onchange = (e) => {
-			            handleImageUpload(e.target.files[0]);
-			            fileInputGallery.value = ''; 
-			        };
+			        btnOpenGallery.onclick = (e) => { e.preventDefault(); fileInputGallery.click(); };
+			        fileInputGallery.onchange = (e) => { handleImageUpload(e.target.files[0]); fileInputGallery.value = ''; };
 			    }
-			
-			    // B. Kamera
 			    if (btnOpenCamera && fileInputCamera) {
-			        btnOpenCamera.onclick = (e) => {
-			            e.preventDefault();
-			            fileInputCamera.click();
-			        };
-			        fileInputCamera.onchange = (e) => {
-			            handleImageUpload(e.target.files[0]);
-			            fileInputCamera.value = ''; 
-			        };
+			        btnOpenCamera.onclick = (e) => { e.preventDefault(); fileInputCamera.click(); };
+			        fileInputCamera.onchange = (e) => { handleImageUpload(e.target.files[0]); fileInputCamera.value = ''; };
 			    }
 			
-			    // --- 5. PASTE-HANTERARE (Ctrl+V) ---
-			    if (!chatInput.dataset.pasteListenerAttached) {
-			        chatInput.addEventListener('paste', async (e) => {
-			            const items = (e.clipboardData || e.originalEvent.clipboardData).items;
-			            for (let item of items) {
-			                if (item.type.indexOf("image") === 0) {
-			                    e.preventDefault();
-			                    const blob = item.getAsFile();
-			                    handleImageUpload(blob);
-			                    return;
-			                }
-			            }
-			        });
-			
-			        // Markera att vi har lagt till lyssnaren
-			        chatInput.dataset.pasteListenerAttached = "true";
-			    }
-			
-			    // --- 6. SÖK-FUNKTION ---
+			    // --- 5. SÖK & GALLERI-TOGGLE (Oförändrad) ---
 			    if (searchInput && clearBtn) {
-			        const filterChat = () => {
-			            const term = searchInput.value.toLowerCase();
-			            const bubbles = chatList.querySelectorAll('.chat-bubble');
-			            const times = chatList.querySelectorAll('.chat-time');
-			
-			            clearBtn.style.display = term ? 'block' : 'none';
-			
-			            bubbles.forEach((bubble, index) => {
-			                const text = bubble.textContent.toLowerCase();
-			                const isImage = bubble.classList.contains('chat-bubble-image');
-			                const timeElement = times[index];
-			
-			                if (text.includes(term) || (isImage && !term)) {
-			                    bubble.style.display = 'block';
-			                    if (timeElement) timeElement.style.display = 'block';
-			                } else {
-			                    bubble.style.display = 'none';
-			                    if (timeElement) timeElement.style.display = 'none';
-			                }
-			            });
-			        };
-			        
+                    const filterChat = () => {
+                        const term = searchInput.value.toLowerCase();
+                        const bubbles = chatList.querySelectorAll('.chat-bubble');
+                        const times = chatList.querySelectorAll('.chat-time');
+                        clearBtn.style.display = term ? 'block' : 'none';
+                        bubbles.forEach((bubble, index) => {
+                            const text = bubble.textContent.toLowerCase();
+                            const isImage = bubble.classList.contains('chat-bubble-image');
+                            const timeElement = times[index];
+                            if (text.includes(term) || (isImage && !term)) {
+                                bubble.style.display = 'block';
+                                if (timeElement) timeElement.style.display = 'block';
+                            } else {
+                                bubble.style.display = 'none';
+                                if (timeElement) timeElement.style.display = 'none';
+                            }
+                        });
+                    };
 			        searchInput.oninput = filterChat;
-			        
-			        clearBtn.onclick = () => {
-			            searchInput.value = '';
-			            filterChat();
-			            searchInput.focus();
-			        };
+			        clearBtn.onclick = () => { searchInput.value = ''; filterChat(); searchInput.focus(); };
 			    }
-			
-			    // --- 7. GALLERI-TOGGLE ---
-			    if (galleryToggleBtn) {
+                if (galleryToggleBtn) {
 			        galleryToggleBtn.onclick = () => {
 			            chatList.classList.toggle('gallery-mode');
 			            const isActive = chatList.classList.contains('gallery-mode');
-			            
 			            galleryToggleBtn.style.color = isActive ? 'var(--primary-color)' : 'var(--text-color-light)';
-			            
-			            if (!isActive) {
-			                setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
-			            }
+			            if (!isActive) setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
 			        };
 			    }
-			
-			    // --- 8. KLICK PÅ REG-NR (Auto-Link) ---
-			    if (!chatList.dataset.clickListenerAttached) {
-			        chatList.addEventListener('click', (e) => {
-			            // Kolla om vi klickade på en länk ELLER inuti en länk
-			            const link = e.target.closest('.chat-reg-link');
-			            
-			            if (link) {
-			                // STOPPA ALLT! Låt inte dokumentet veta att vi klickade.
-			                e.preventDefault();
-			                e.stopPropagation();
-			                e.stopImmediatePropagation();
-			                
-			                const regnr = link.dataset.reg;
-			                
-			                // Öppna modalen direkt
-			                if (typeof openCarModal === 'function') {
-			                    // Sätt flaggan manuellt så inte "klicka utanför" tror att det är fritt fram
-			                    if (typeof isModalOpen !== 'undefined') isModalOpen = true; 
-			                    openCarModal(regnr);
-			                }
-			                return false; // Extra säkerhet
-			            }
-			        });
-			        chatList.dataset.clickListenerAttached = "true";
-			    }
-			
-			    // --- 9. LYSSNA PÅ DATABASEN ---
-			    if (chatUnsubscribe) chatUnsubscribe();
-			
-			    chatUnsubscribe = db.collection("notes")
-			        .orderBy("timestamp", "asc")
-			        .onSnapshot(snapshot => {
-			            chatList.innerHTML = ''; 
-			            
-			            if (snapshot.empty) {
-			                chatList.innerHTML = '<div class="empty-state-chat"><p>Skriv en notis eller ta en bild...</p></div>';
-			                return;
-			            }
-			
-			            snapshot.forEach(doc => {
-			                renderChatBubble(doc.id, doc.data(), chatList);
-			            });
-			
-			            if (searchInput && searchInput.value) {
-			                searchInput.dispatchEvent(new Event('input'));
-			            } 
-			            else if (!chatList.classList.contains('gallery-mode')) {
-			                chatList.scrollTop = chatList.scrollHeight;
-			            }
-			        });
+
+                // --- 6. PAGINERING & SETUP ---
+                
+                // Funktion för att sätta upp lyssnaren med en specifik limit
+                const setupChatListener = (limit) => {
+                    if (chatUnsubscribe) chatUnsubscribe(); // Stäng gammal lyssnare
+
+                    const isLoadMore = limit > 50; // Om gränsen är högre än start, laddar vi mer
+                    const oldScrollHeight = chatList.scrollHeight; // Spara höjd för att återställa position
+
+                    chatUnsubscribe = db.collection("notes")
+                        .orderBy("timestamp", "desc") // Hämta nyaste först
+                        .limit(limit)                 // Men bara X antal
+                        .onSnapshot(snapshot => {
+                            
+                            // Vi får datan "baklänges" (nyast först). Vänd på den.
+                            const docs = [];
+                            snapshot.forEach(doc => docs.push({ id: doc.id, ...doc.data() }));
+                            docs.reverse(); // Nu är äldst först (som i en vanlig chatt)
+
+                            // Spara scroll-status om vi inte laddar mer (dvs om vi är i botten)
+                            const wasAtBottom = chatList.scrollHeight - chatList.scrollTop <= chatList.clientHeight + 100;
+
+                            chatList.innerHTML = '';
+                            
+                            if (docs.length === 0) {
+                                chatList.innerHTML = '<div class="empty-state-chat"><p>Skriv en notis eller ta en bild...</p></div>';
+                                return;
+                            }
+
+                            // Om vi laddat max (finns fler att hämta), visa en liten "laddar mer"-spinner i toppen (valfritt)
+                            // Här renderar vi bara bubblorna
+                            docs.forEach(data => {
+                                renderChatBubble(data.id, data, chatList);
+                            });
+
+                            // --- SCROLL-LOGIK ---
+                            if (isLoadMore && isFetchingOlderChat) {
+                                // Om vi laddade äldre meddelanden:
+                                // Justera scroll så vi står kvar på samma ställe visuellt
+                                const newScrollHeight = chatList.scrollHeight;
+                                chatList.scrollTop = newScrollHeight - oldScrollHeight;
+                                isFetchingOlderChat = false; // Klar
+                            } else if (!isLoadMore) {
+                                // Första laddningen eller nytt meddelande: scrolla till botten
+                                // (Men bara om vi inte söker eller tittar på bilder)
+                                if ((!searchInput || !searchInput.value) && !chatList.classList.contains('gallery-mode')) {
+                                    chatList.scrollTop = chatList.scrollHeight;
+                                }
+                            }
+                        });
+                };
+
+                // Starta lyssnaren med 50
+                setupChatListener(currentChatLimit);
+
+                // Lyssna på scroll för att hämta fler
+                chatList.addEventListener('scroll', () => {
+                    // Om vi är i toppen (scrollTop = 0) OCH inte redan laddar
+                    if (chatList.scrollTop === 0 && !isFetchingOlderChat && !chatList.classList.contains('gallery-mode')) {
+                        isFetchingOlderChat = true;
+                        currentChatLimit += 50; // Öka gränsen
+                        // Sätt en liten timeout för att simulera laddning och inte spam-anropa
+                        setTimeout(() => {
+                            setupChatListener(currentChatLimit);
+                        }, 200);
+                    }
+                });
+
+                // Auto-link lyssnare (Med din fix)
+                if (!chatList.dataset.clickListenerAttached) {
+                    chatList.addEventListener('click', (e) => {
+                        const link = e.target.closest('.chat-reg-link');
+                        if (link) {
+                            e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
+                            const regnr = link.dataset.reg;
+                            if (typeof openCarModal === 'function') {
+                                if (typeof isModalOpen !== 'undefined') isModalOpen = true; 
+                                openCarModal(regnr);
+                            }
+                            return false; 
+                        }
+                    });
+                    chatList.dataset.clickListenerAttached = "true";
+                }
 			}
 
 			// --- HJÄLPFUNKTION: Komprimera Bild ---
@@ -2615,6 +2605,11 @@
 			
 			    // --- 3. GRUNDLÄGE (Tidslinjen) ---
 			    else {
+                    // --- FIX HÄR: Tvinga bort scroll-låsning ---
+                    document.body.classList.remove('body-scroll-lock');
+                    document.body.style.overflow = '';
+                    // ------------------------------------------
+
 			        // Stäng Chatten
 			        if (chatWidget) chatWidget.style.display = 'none';
 			        if (mobileChatBtn) mobileChatBtn.classList.remove('active');
@@ -2632,8 +2627,6 @@
 			        isModalOpen = false;
 			        currentOpenModalId = null;
 			        
-			        updateScrollLock();
-			
 			        // Mobil "Avsluta app"
 			        if (window.innerWidth <= 768 && !currentHash && !state.modal) {
 			            if (typeof backPressWarned !== 'undefined') {
