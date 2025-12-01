@@ -1132,26 +1132,38 @@
 			
 			    if (!chatList || !chatForm) return;
                 currentChatLimit = 50;
+			    
+			    // Vi kollar om chatInput finns och om vi redan lagt till lyssnare (för att slippa dubbletter)
+			    if (chatInput && !chatInput.dataset.focusListenerAttached) {
+			        chatInput.dataset.focusListenerAttached = "true"; // Markera att vi är klara
 			
-			    if (window.innerWidth <= 768 && chatInput) {
 			        const mobileNav = document.getElementById('mobileNav');
 			        const timelineView = document.getElementById('timelineView'); 
 			        const fabAddJob = document.getElementById('fabAddJob'); 
-			        if (mobileNav) {
-			            chatInput.addEventListener('focus', () => {
-			                mobileNav.style.display = 'none';
-			                if (timelineView) timelineView.style.display = 'none';
-			                if (fabAddJob) fabAddJob.style.display = 'none';
-			            });
-			            chatInput.addEventListener('blur', () => {
-			                setTimeout(() => {
-			                    mobileNav.style.display = 'flex';
-			                    if (timelineView) timelineView.style.display = 'block'; 
-			                    if (fabAddJob) fabAddJob.style.display = 'flex';
-			                    if (chatList) chatList.scrollTop = chatList.scrollHeight;
-			                }, 100);
-			            });
-			        }
+			        
+			        chatInput.addEventListener('focus', () => {
+			            // *** FIXEN: Avbryt direkt om vi är på en dator (> 768px) ***
+			            if (window.innerWidth > 768) return; 
+			
+			            if (mobileNav) mobileNav.style.display = 'none';
+			            if (timelineView) timelineView.style.display = 'none';
+			            if (fabAddJob) fabAddJob.style.display = 'none';
+			        });
+			
+			        chatInput.addEventListener('blur', () => {
+			            // *** FIXEN: Avbryt direkt om vi är på en dator ***
+			            if (window.innerWidth > 768) return;
+			
+			            setTimeout(() => {
+			                if (mobileNav) mobileNav.style.display = 'flex';
+			                // Visa bara tidslinjen om vi faktiskt var i den vyn
+			                if (timelineView && currentView === 'timeline') timelineView.style.display = 'block'; 
+			                if (fabAddJob) fabAddJob.style.display = 'flex';
+			                
+			                // Scrolla rätt om tangentbordet ställde till det
+			                if (chatList) chatList.scrollTop = chatList.scrollHeight;
+			            }, 100);
+			        });
 			    }
 			
 			    // --- FIX: BILDUPPLADDNING MED TEXT (CAPTION) ---
