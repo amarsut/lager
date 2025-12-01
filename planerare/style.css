@@ -6792,6 +6792,34 @@ body.body-scroll-lock {
     user-select: none; /* Stoppar textmarkering */
 }
 
+/* --- MOBIL FIX: TVINGA HELSKÄRM FÖR CHATT --- */
+@media (max-width: 768px) {
+    .chat-widget-container {
+        /* Nollställ positionering från desktop */
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        
+        /* Tvinga full bredd och höjd */
+        width: 100% !important;
+        height: 100% !important;
+        
+        /* VIKTIGT: Återställ begränsningar vi satte för desktop */
+        max-width: 100% !important; /* Fixar den grå kanten */
+        max-height: none !important;
+        min-height: 0 !important;
+        
+        /* Ta bort runda hörn och ramar */
+        border-radius: 0 !important;
+        border: none !important;
+        margin: 0 !important;
+        
+        /* Se till att den täcker allt */
+        z-index: 5000 !important;
+        background-color: var(--bg-color) !important;
+    }
+}
 
 
 
