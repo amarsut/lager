@@ -1290,41 +1290,49 @@
                     const oldScrollHeight = chatList.scrollHeight; 
 
                     chatUnsubscribe = db.collection("notes")
-                        .orderBy("timestamp", "desc") 
-                        .limit(limit)                 
-                        .onSnapshot(snapshot => {
-                            const docs = [];
-                            snapshot.forEach(doc => docs.push({ id: doc.id, ...doc.data() }));
-                            docs.reverse(); 
-
-                            chatList.innerHTML = '';
-                            if (docs.length === 0) {
-                                chatList.innerHTML = '<div class="empty-state-chat"><p>Skriv en notis eller ta en bild...</p></div>';
-                                return;
-                            }
-
-                            docs.forEach(data => {
-                                renderChatBubble(data.id, data, chatList);
-                            });
-
-                            // Om sökning är aktiv, applicera filtret direkt på nya bubblor
-                            if (searchInput && searchInput.value.trim() !== "") {
-                                searchInput.dispatchEvent(new Event('input'));
-                            }
-
-                            const isSearching = searchInput && searchInput.value.trim() !== "";
-                            if (!isSearching) {
-                                if (isLoadMore && isFetchingOlderChat) {
-                                    const newScrollHeight = chatList.scrollHeight;
-                                    chatList.scrollTop = newScrollHeight - oldScrollHeight;
-                                    isFetchingOlderChat = false; 
-                                } else if (!isLoadMore) {
-                                    if (!chatList.classList.contains('gallery-mode')) {
-                                        chatList.scrollTop = chatList.scrollHeight;
-                                    }
-                                }
-                            }
-                        });
+					    .orderBy("timestamp", "desc") 
+					    .limit(limit)                 
+					    .onSnapshot(snapshot => {
+					        // 1. NYTT: Kolla om vi är nära botten INNAN vi ritar om
+					        // Vi tillåter en buffert på 200px. Om listan är tom räknas det som botten.
+					        const threshold = 200;
+					        const wasAtBottom = chatList.scrollHeight - chatList.scrollTop - chatList.clientHeight <= threshold || chatList.childElementCount === 0;
+					
+					        const docs = [];
+					        snapshot.forEach(doc => docs.push({ id: doc.id, ...doc.data() }));
+					        docs.reverse(); 
+					
+					        chatList.innerHTML = '';
+					        if (docs.length === 0) {
+					            chatList.innerHTML = '<div class="empty-state-chat"><p>Skriv en notis eller ta en bild...</p></div>';
+					            return;
+					        }
+					
+					        docs.forEach(data => {
+					            renderChatBubble(data.id, data, chatList);
+					        });
+					
+					        // Om sökning är aktiv, applicera filtret direkt på nya bubblor
+					        if (searchInput && searchInput.value.trim() !== "") {
+					            searchInput.dispatchEvent(new Event('input'));
+					        }
+					
+					        const isSearching = searchInput && searchInput.value.trim() !== "";
+					        if (!isSearching) {
+					            if (isLoadMore && isFetchingOlderChat) {
+					                const newScrollHeight = chatList.scrollHeight;
+					                chatList.scrollTop = newScrollHeight - oldScrollHeight;
+					                isFetchingOlderChat = false; 
+					            } else if (!isLoadMore) {
+					                if (!chatList.classList.contains('gallery-mode')) {
+					                    // 2. NYTT: Scrolla BARA ner om vi var där innan
+					                    if (wasAtBottom) {
+					                        chatList.scrollTop = chatList.scrollHeight;
+					                    }
+					                }
+					            }
+					        }
+					    });
                 };
 
                 setupChatListener(currentChatLimit);
