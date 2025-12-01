@@ -6684,19 +6684,24 @@ body.body-scroll-lock {
 
 /* Menyn som dyker upp vid långtryck */
 .reaction-menu {
-    position: fixed; /* Ligger över allt */
+    position: fixed;
     background-color: var(--content-bg);
     border-radius: 50px;
-    padding: 6px 12px;
+    padding: 8px 16px; /* Lite större träffyta */
     display: flex;
     gap: 12px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.25); /* Tydligare skugga */
     border: 1px solid var(--border-color);
-    z-index: 10000;
+    z-index: 20000; /* Se till att den ligger över allt */
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.2s ease, transform 0.2s ease;
     transform: scale(0.9);
+    
+    /* NYA RADER: */
+    white-space: nowrap; /* Förhindra radbrytning */
+    user-select: none;   /* Förhindra markering */
+    -webkit-user-select: none;
 }
 
 .reaction-menu.show {
@@ -6719,10 +6724,11 @@ body.body-scroll-lock {
 
 /* Justera pratbubblan för att klara positionering */
 .chat-bubble {
-    position: relative; /* Viktigt för att badgen ska hamna rätt */
-    /* Se till att bubblan inte klipper innehållet utanför (för badgen) */
-    overflow: visible !important; 
+    /* ... dina gamla stilar ... */
+    -webkit-touch-callout: none; /* Stoppar iOS förstoringsglas/meny */
+    user-select: none; /* Stoppar textmarkering */
 }
+
 
 
 
