@@ -534,46 +534,56 @@
 	</button>
 	
 	<div id="chatWidget" class="chat-widget-container" style="display: none;">
-	    
+    
 	    <div class="chat-widget-header">
-	        <h3>Notiser</h3>
-	        <button id="closeChatWidget" class="icon-btn" style="color: white;">
-	            <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-close"></use></svg>
-	        </button>
+	        <div class="header-left-group">
+	            <button id="chatBackBtn" class="icon-btn back-btn-chat">
+	                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 19l-7-7 7-7"/></svg>
+	            </button>
+	            <h3>Notiser</h3>
+	        </div>
+	        
+	        <div class="header-right-group">
+	            <button id="toggleChatSearch" class="icon-btn">
+	                <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-search"></use></svg>
+	            </button>
+	            <button id="toggleChatGallery" class="icon-btn" title="Visa bildgalleri">
+	                <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+	                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+	                    <circle cx="8.5" cy="8.5" r="1.5" />
+	                    <polyline points="21 15 16 10 5 21" />
+	                </svg>
+	            </button>
+	        </div>
 	    </div>
 	
-	    <div class="chat-search-bar">
-	        <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-search"></use></svg>
-	        <input type="text" id="chatSearchInput" placeholder="Sök...">
-	        <button id="clearChatSearch" style="display:none;">&times;</button>
-	        <button id="toggleChatGallery" class="icon-btn" title="Visa bildgalleri" style="margin-left: 0.5rem;">
-	            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-	                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-	                <circle cx="8.5" cy="8.5" r="1.5" />
-	                <polyline points="21 15 16 10 5 21" />
-	            </svg>
-	        </button>
+	    <div class="chat-search-bar" id="chatSearchBarArea" style="display: none;">
+	        <input type="text" id="chatSearchInput" placeholder="Sök i konversationen...">
+	        <button id="clearChatSearch">&times;</button>
 	    </div>
 	
 	    <div class="chat-messages" id="chatMessages">
 	        <div class="empty-state-chat"><p>Laddar...</p></div>
 	    </div>
 	    
-	    <form id="chatForm" class="chat-input-area">
+	    <form id="chatForm" class="chat-input-area samsung-style">
 	        <input type="file" id="chatFileInputGallery" accept="image/*" multiple style="display: none;">
 	        <input type="file" id="chatFileInputCamera" accept="image/*" capture="environment" style="display: none;">
 	        
-	        <button type="button" id="chatGalleryBtn" class="chat-action-btn secondary" title="Välj bild">
-	            <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-image"></use></svg>
-	        </button>
-	        <button type="button" id="chatCameraBtn" class="chat-action-btn secondary" title="Ta foto">
-	            <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-camera"></use></svg>
+	        <button type="button" id="chatPlusBtn" class="chat-action-btn secondary circle-btn">
+	            <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-plus"></use></svg>
 	        </button>
 	
-	        <input type="text" id="chatInput" placeholder="Skriv..." autocomplete="off">
+	        <div class="chat-input-wrapper">
+	            <input type="text" id="chatInput" placeholder="Skriv..." autocomplete="off">
+	            
+	            <button type="button" id="chatGalleryBtn" class="chat-inner-btn" title="Välj bild">
+	                <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-image"></use></svg>
+	            </button>
+	        </div>
 	        
-	        <button type="submit" class="chat-action-btn primary" title="Skicka">
-	            <svg class="icon-sm" viewBox="0 0 24 24" style="transform: rotate(-90deg); margin:0;"><path fill="currentColor" d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+	        <button type="submit" class="chat-action-btn primary circle-btn send-btn-rotated" title="Skicka">
+	            <svg class="icon-sm" viewBox="0 0 24 24"><path fill="currentColor" d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
 	        </button>
 	    </form>
 	</div>
