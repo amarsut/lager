@@ -6713,13 +6713,33 @@ body.body-scroll-lock {
 }
 
 .reaction-option {
-    font-size: 1.4rem; /* Lite större ikoner */
+    font-size: 1.4rem; /* Behåll storleken för emojis */
     cursor: pointer;
     transition: transform 0.1s ease;
-    line-height: 1;
+    
+    /* Flexbox för centrering */
     display: flex;
     align-items: center;
     justify-content: center;
+    
+    /* Tvinga samma höjd så de linjerar med SVG-ikonerna */
+    height: 24px; 
+    line-height: 1;
+}
+
+/* Gör ikonerna mörkgrå och lagom stora */
+.reaction-option .icon-action {
+    width: 1.25rem; /* Ca 20px */
+    height: 1.25rem;
+    color: var(--text-color-light); /* Diskret grå */
+    stroke-width: 2;
+    transition: all 0.2s ease;
+}
+
+/* Vid hover: Bli din primära blå färg */
+.reaction-option:hover .icon-action {
+    color: var(--primary-color);
+    transform: scale(1.1); /* Liten förstoring */
 }
 
 .reaction-option:active {
@@ -6751,6 +6771,7 @@ body.body-scroll-lock {
     -webkit-touch-callout: none; /* Stoppar iOS förstoringsglas/meny */
     user-select: none; /* Stoppar textmarkering */
 }
+
 
 
 
