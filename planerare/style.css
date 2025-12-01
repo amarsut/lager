@@ -6088,7 +6088,7 @@ body.body-scroll-lock {
     
     /* VIKTIGT: Ökad padding i botten (110px) så att sista meddelandet syns ovanför input-fältet */
     /* Ordningen är: Topp, Höger, Botten, Vänster */
-    padding: 1rem 1rem 110px 1rem; 
+    padding: 1rem 1rem 140px 1rem;
     
     /* Gör scrollningen mjuk när nya meddelanden kommer */
     scroll-behavior: smooth;
@@ -6861,12 +6861,28 @@ body.body-scroll-lock {
     font-size: 12px; cursor: pointer; flex-shrink: 0; margin-right: 0.5rem;
 }
 .header-gallery-btn {
-    background: transparent; border: none; color: var(--text-color-light);
-    padding: 0.4rem; cursor: pointer;
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-    border-left: 1px solid rgba(0,0,0,0.05); margin-left: 0.25rem;
+    background: transparent;
+    border: none;
+    color: var(--text-color-light);
+    
+    /* ÄNDRAD: Större klickyta */
+    width: 40px; 
+    height: 40px;
+    
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    
+    border-left: 1px solid rgba(0,0,0,0.1); /* Avskiljare */
+    margin-left: 0.25rem;
 }
 .header-gallery-btn:hover { color: var(--primary-color); }
+
+/* ÄNDRAD: Större ikon inuti */
+.header-gallery-btn .icon-sm { 
+    width: 1.4rem; 
+    height: 1.4rem; 
+}
 
 
 /* 2. Input Area Design (FLOATING - Ingen bakgrund) */
@@ -6960,9 +6976,18 @@ body.body-scroll-lock {
     display: flex;
     align-items: center;
     gap: 0; 
-    padding-left: 0.25rem;
-    padding-right: 0.25rem;
+    
+    /* NYTT: Avskiljare (Linje) */
+    border-left: 1px solid rgba(0,0,0,0.1); 
+    padding-left: 0.25rem; 
+    margin-left: 0.25rem; /* Lite luft från texten */
+    
     flex-shrink: 0;
+    height: 60%; /* Linjen blir inte lika hög som fältet, ser snyggare ut */
+}
+/* Justering för Dark Mode så linjen syns */
+[data-theme="dark"] .inner-input-actions.right-side {
+    border-left-color: rgba(255,255,255,0.15);
 }
 
 /* Knappar INUTI pillern */
@@ -7025,5 +7050,6 @@ body.body-scroll-lock {
         padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
     }
 }
+
 
 
