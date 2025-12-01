@@ -833,9 +833,14 @@
 			// Hjälpfunktioner (Se till att du har dessa, eller skapa dem nu)
 			function openChatUI() {
 			    chatWidget.style.display = 'flex';
-			    if (typeof initChat === 'function') initChat();
-			    // (Resten av din fokus/mobil-logik här...)
-			    // Nollställ modal-status för säkerhets skull
+			    
+                // Starta/Ladda om chatten
+                if (typeof initChat === 'function') initChat();
+			    
+                // --- NYTT: Tvinga scroll till botten ---
+                forceChatScrollBottom();
+                // ---------------------------------------
+
 			    isModalOpen = false;
 			    updateScrollLock();
 			}
@@ -873,6 +878,25 @@
 			    } else {
 			        document.body.style.overflow = '';
 			    }
+			}
+
+			// --- Ny Hjälpfunktion: Tvinga chatten till botten ---
+			function forceChatScrollBottom() {
+			    const chatList = document.getElementById('chatMessages');
+			    if (!chatList) return;
+			
+			    // Gör omedelbart
+			    chatList.scrollTop = chatList.scrollHeight;
+			
+			    // Gör det igen efter en kort stund (om layouten ändras/tangentbord)
+			    setTimeout(() => {
+			        chatList.scrollTop = chatList.scrollHeight;
+			    }, 50);
+			    
+			    // En sista gång för säkerhets skull (om bilder laddas)
+			    setTimeout(() => {
+			        chatList.scrollTop = chatList.scrollHeight;
+			    }, 300);
 			}
 
 			let chatUnsubscribe = null; // För att kunna stänga av lyssnaren
@@ -1188,6 +1212,12 @@
 			            img.src = imgSrc;
 			            img.loading = "lazy";
 			            img.alt = "Bild";
+
+						img.onload = () => {
+                            // Scrolla bara om vi redan var nära botten (eller om chatten precis öppnats)
+                            const chatList = document.getElementById('chatMessages');
+                            if(chatList) chatList.scrollTop = chatList.scrollHeight;
+                        };
 			            
 			            // KLICK-LOGIK MED TIMER (Fix för dubbelklick)
 			            img.onclick = (e) => {
@@ -2575,7 +2605,6 @@
 			    // --- 2. CHATT-HANTERING (Vi är i chatt-läget) ---
 			    if (state.modal === 'chatWidget' || currentHash === '#chat') {
 			        
-			        // A. STÄNG ALLA ANDRA MODALER
 			        document.querySelectorAll('.modal-backdrop').forEach(el => {
 			            if (el.id !== 'chatWidget' && el.id !== 'imageZoomModal') {
 			                el.classList.remove('show');
@@ -2583,15 +2612,19 @@
 			            }
 			        });
 			
-			        // B. VIKTIGT: Återställ modal-variablerna
 			        isModalOpen = false;
 			        currentOpenModalId = null;
 			
-			        // C. Tvinga fram chatten
 			        if (chatWidget) chatWidget.style.display = 'flex';
 			        if (mobileChatBtn) mobileChatBtn.classList.add('active');
+
+                    // --- NYTT: Tvinga scroll till botten ---
+                    // (Säkerställ att du har lagt till forceChatScrollBottom-funktionen i din kod)
+                    if (typeof forceChatScrollBottom === 'function') {
+                        forceChatScrollBottom();
+                    }
+                    // ---------------------------------------
 			        
-			        // D. Fokus (Desktop)
 			        if (window.innerWidth > 768) {
 			            setTimeout(() => {
 			                const input = document.getElementById('chatInput');
@@ -2605,11 +2638,15 @@
 			
 			    // --- 3. GRUNDLÄGE (Tidslinjen) ---
 			    else {
-                    // --- FIX HÄR: Tvinga bort scroll-låsning ---
+                    // --- FIX 1: KOLLA OM NÅGOT VAR ÖPPET ---
+                    // Om chatten eller en modal är synlig JUST NU, så användes bakåt-knappen för att stänga den.
+                    const wasChatOpen = chatWidget && chatWidget.style.display === 'flex';
+                    const wasModalOpen = isModalOpen || document.querySelector('.modal-backdrop.show');
+
+                    // --- FIX 2: Tvinga bort scroll-låsning ---
                     document.body.classList.remove('body-scroll-lock');
                     document.body.style.overflow = '';
-                    // ------------------------------------------
-
+			
 			        // Stäng Chatten
 			        if (chatWidget) chatWidget.style.display = 'none';
 			        if (mobileChatBtn) mobileChatBtn.classList.remove('active');
@@ -2627,19 +2664,25 @@
 			        isModalOpen = false;
 			        currentOpenModalId = null;
 			        
+			        updateScrollLock();
+			
 			        // Mobil "Avsluta app"
 			        if (window.innerWidth <= 768 && !currentHash && !state.modal) {
-			            if (typeof backPressWarned !== 'undefined') {
-			                 if (backPressWarned) {
-			                    backPressWarned = false;
-			                    history.back();
-			                } else {
-			                    backPressWarned = true;
-			                    showToast('Tryck bakåt igen för att stänga', 'info');
-			                    history.pushState(null, null, location.pathname);
-			                    backPressTimer = setTimeout(() => { backPressWarned = false; }, 2000);
-			                }
-			            }
+                        
+                        // --- FIX 3: VARNA BARA OM INGET STÄNGDES NYSS ---
+                        if (!wasChatOpen && !wasModalOpen) {
+                            if (typeof backPressWarned !== 'undefined') {
+                                if (backPressWarned) {
+                                    backPressWarned = false;
+                                    history.back();
+                                } else {
+                                    backPressWarned = true;
+                                    showToast('Tryck bakåt igen för att stänga', 'info');
+                                    history.pushState(null, null, location.pathname);
+                                    backPressTimer = setTimeout(() => { backPressWarned = false; }, 2000);
+                                }
+                            }
+                        }
 			        }
 			    }
 			});
