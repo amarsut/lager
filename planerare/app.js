@@ -959,6 +959,25 @@
 			        hideReactionMenu();
 			    };
 			    menu.appendChild(copySpan);
+
+				// --- NYTT: RADERA (SOPTUNNA) ---
+			    const deleteSpan = document.createElement('span');
+			    deleteSpan.className = 'reaction-option danger'; // Lägg till 'danger' för röd färg
+			    deleteSpan.title = "Radera";
+			    deleteSpan.innerHTML = `<svg class="icon icon-action" viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-trash"></use></svg>`;
+			    
+			    deleteSpan.onclick = (e) => {
+			        e.stopPropagation();
+			        const msgId = menu.dataset.targetId;
+			        hideReactionMenu();
+			        
+			        if (confirm("Vill du radera detta meddelande permanent?")) {
+			            db.collection("notes").doc(msgId).delete()
+			                .then(() => showToast("Meddelande raderat", "info"))
+			                .catch(err => showToast("Kunde inte radera: " + err.message, "danger"));
+			        }
+			    };
+			    menu.appendChild(deleteSpan);
 			
 			    document.body.appendChild(menu);
 			
@@ -1382,6 +1401,20 @@
                             }
                             return false; 
                         }
+						const customerLink = e.target.closest('.chat-customer-link');
+				        if (customerLink) {
+				            e.preventDefault(); e.stopPropagation();
+				            const kundnamn = customerLink.dataset.kund;
+				            
+				            if (typeof openCustomerModal === 'function') {
+				                // Sätt flaggan så att modal-systemet vet att en modal är på väg upp
+				                // (Hjälper din "tillbaka"-knapps logik)
+				                if (typeof isModalOpen !== 'undefined') isModalOpen = true; 
+				                
+				                openCustomerModal(kundnamn);
+				            }
+				            return;
+				        }
                     });
                     chatList.dataset.clickListenerAttached = "true";
                 }
@@ -1439,6 +1472,34 @@
 			    // 3. Byt ut URL:en mot en <a> tagg
 			    return safeText.replace(urlPattern, (url) => {
 			        return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="chat-link">${url}</a>`;
+			    });
+			}
+
+			function highlightCustomerNames(text) {
+			    if (!text || !allJobs || allJobs.length === 0) return text;
+			
+			    // 1. Hämta alla unika kundnamn, rensa tomma, och ta bort väldigt korta namn (mindre än 3 bokstäver) för att undvika felträffar
+			    const uniqueNames = [...new Set(allJobs.map(j => j.kundnamn))]
+			        .filter(name => name && name.length > 2);
+			
+			    // 2. Sortera namnen så att längsta namnen matchas först 
+			    // (För att "Anders Svensson" ska bli en länk, inte bara "Anders")
+			    uniqueNames.sort((a, b) => b.length - a.length);
+			
+			    // 3. Om inga namn finns, returnera
+			    if (uniqueNames.length === 0) return text;
+			
+			    // 4. Skapa en stor Regex för alla namn (escapa specialtecken)
+			    // Vi använder \b för att matcha hela ord, så att "Bo" inte matchar i "Boll"
+			    const escapedNames = uniqueNames.map(name => name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+			    const pattern = new RegExp(`\\b(${escapedNames.join('|')})\\b`, 'gi');
+			
+			    // 5. Ersätt träffar med länk-HTML
+			    return text.replace(pattern, (match) => {
+			        // Behåll original-casing i texten, men spara det fullständiga namnet i data-attributet
+			        // Vi måste hitta det "äkta" namnet från listan för att openCustomerModal ska funka bäst
+			        const realName = uniqueNames.find(n => n.toLowerCase() === match.toLowerCase());
+			        return `<span class="chat-customer-link" data-kund="${realName}">${match}</span>`;
 			    });
 			}
 			
@@ -1597,6 +1658,8 @@
 			            const cleanReg = match.replace(/\s/g, '').toUpperCase(); 
 			            return `<span class="chat-reg-link" data-reg="${cleanReg}">${match.toUpperCase()}</span>`;
 			        });
+
+					processedText = highlightCustomerNames(processedText);
 			
 			        textContentDiv.innerHTML = processedText;
 			        bubble.appendChild(textContentDiv);
