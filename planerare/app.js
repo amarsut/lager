@@ -1393,6 +1393,11 @@
 			                docs.forEach(data => {
 			                    renderChatBubble(data.id, data, chatList);
 			                });
+
+							const spacer = document.createElement('div');
+								spacer.style.height = "100px"; // Tvinga 100px tomrum i botten
+								spacer.style.flexShrink = "0"; // Se till att den inte krymper
+								chatList.appendChild(spacer);
 			
 			                if (searchInput && searchInput.value.trim() !== "") {
 			                    searchInput.dispatchEvent(new Event('input'));
