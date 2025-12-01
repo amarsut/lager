@@ -542,8 +542,18 @@
 	        
 	        <div class="header-search-wrapper">
 	            <svg class="icon-sm search-icon" viewBox="0 0 24 24"><use href="#icon-search"></use></svg>
+	            
 	            <input type="text" id="chatSearchInput" placeholder="Sök..." autocomplete="off">
+	            
 	            <button id="clearChatSearch" class="clear-search-btn" style="display: none;">&times;</button>
+	            
+	            <button id="toggleChatGallery" class="header-gallery-btn" title="Visa bildgalleri">
+	                <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+	                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+	                    <circle cx="8.5" cy="8.5" r="1.5" />
+	                    <polyline points="21 15 16 10 5 21" />
+	                </svg>
+	            </button>
 	        </div>
 	    </div>
 	
@@ -555,21 +565,17 @@
 	        <input type="file" id="chatFileInputGallery" accept="image/*" multiple style="display: none;">
 	        <input type="file" id="chatFileInputCamera" accept="image/*" capture="environment" style="display: none;">
 	        
-	        <button type="button" id="chatPlusBtn" class="chat-action-btn secondary circle-btn">
-	            <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-plus"></use></svg>
-	        </button>
-	
-	        <div class="chat-input-wrapper">
-	            <input type="text" id="chatInput" placeholder="Skriv..." autocomplete="off">
+	        <div class="chat-input-pill">
 	            
-	            <div class="inner-input-actions">
-	                <button type="button" id="chatGalleryBtn" class="chat-inner-btn" title="Välj bild">
-	                    <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-image"></use></svg>
-	                </button>
-	                <button type="button" id="chatCameraBtn" class="chat-inner-btn" title="Ta foto">
-	                    <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-camera"></use></svg>
-	                </button>
-	            </div>
+	            <button type="button" id="chatPlusBtn" class="chat-inner-btn big-icon" title="Bifoga">
+	                <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-plus"></use></svg>
+	            </button>
+	
+	            <button type="button" id="chatCameraBtn" class="chat-inner-btn big-icon" title="Ta foto">
+	                <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-camera"></use></svg>
+	            </button>
+	
+	            <input type="text" id="chatInput" placeholder="Skriv..." autocomplete="off">
 	        </div>
 	        
 	        <button type="submit" class="chat-action-btn primary circle-btn send-btn-rotated" title="Skicka">
