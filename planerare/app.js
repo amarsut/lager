@@ -1395,7 +1395,7 @@
 			                });
 
 							const spacer = document.createElement('div');
-								spacer.style.height = "47px"; // Tvinga 100px tomrum i botten
+								spacer.style.height = "50px"; // Tvinga 100px tomrum i botten
 								spacer.style.flexShrink = "0"; // Se till att den inte krymper
 								chatList.appendChild(spacer);
 			
