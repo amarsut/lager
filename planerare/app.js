@@ -903,32 +903,65 @@
 
 			// 1. Skapa menyn (körs en gång)
 			function createReactionMenu() {
-			    if (document.getElementById('reactionMenu')) return; // Finns redan
+			    if (document.getElementById('reactionMenu')) return; 
 			
 			    const menu = document.createElement('div');
 			    menu.id = 'reactionMenu';
 			    menu.className = 'reaction-menu';
 			    
-			    // De ikoner du vill ha
-			    const reactions = ['✅', '⚠️', '👀', '❤️', '❌']; 
+			    // Lista med reaktioner + KOPIERA (📋) sist
+			    const reactions = ['✅', '⚠️', '👀', '❤️', '📋']; 
 			    
 			    reactions.forEach(icon => {
 			        const span = document.createElement('span');
 			        span.className = 'reaction-option';
 			        span.textContent = icon;
-			        span.onclick = (e) => {
-			            e.stopPropagation();
-			            applyReaction(menu.dataset.targetId, icon);
-			            hideReactionMenu();
-			        };
+			        
+			        // Särskild hantering för Kopiera-ikonen
+			        if (icon === '📋') {
+			            span.title = "Kopiera text";
+			            span.onclick = (e) => {
+			                e.stopPropagation();
+			                copyMessageText(menu.dataset.targetId);
+			                hideReactionMenu();
+			            };
+			        } else {
+			            span.onclick = (e) => {
+			                e.stopPropagation();
+			                applyReaction(menu.dataset.targetId, icon);
+			                hideReactionMenu();
+			            };
+			        }
 			        menu.appendChild(span);
 			    });
 			
 			    document.body.appendChild(menu);
 			
-			    // Stäng menyn om man klickar någon annanstans
 			    window.addEventListener('click', hideReactionMenu);
-			    window.addEventListener('scroll', hideReactionMenu, true); // Stäng vid scroll
+			    window.addEventListener('scroll', hideReactionMenu, true); 
+			}
+			
+			// NY HJÄLPFUNKTION: Kopiera text
+			async function copyMessageText(id) {
+			    if (!id) return;
+			    try {
+			        const doc = await db.collection("notes").doc(id).get();
+			        if (doc.exists) {
+			            const data = doc.data();
+			            // Kopiera text om det finns, annars bild-URL (eller en platshållare)
+			            const textToCopy = data.text || (data.image ? "[Bild]" : "");
+			            
+			            if (textToCopy) {
+			                await navigator.clipboard.writeText(textToCopy);
+			                showToast("Notis kopierad till urklipp!", "success");
+			            } else {
+			                showToast("Inget textinnehåll att kopiera.", "info");
+			            }
+			        }
+			    } catch (err) {
+			        console.error("Kunde inte kopiera", err);
+			        showToast("Misslyckades att kopiera.", "danger");
+			    }
 			}
 			
 			// 2. Visa menyn vid långtryck
@@ -1304,12 +1337,11 @@
 			    const bubble = document.createElement('div');
 			    bubble.className = 'chat-bubble';
 			    
-                // --- NYTT: Förhindra system-menyn (Kopiera/Dela) vid långtryck ---
+                // Förhindra system-menyn (Kopiera/Dela) vid långtryck
                 bubble.addEventListener('contextmenu', (e) => {
                     e.preventDefault();
                     return false;
                 });
-                // ----------------------------------------------------------------
 
                 if (data.reaction) {
                     const badge = document.createElement('span');
@@ -1324,16 +1356,13 @@
 
 			    let clickTimeout = null;
                 let longPressTimer = null;
-                
-                // Variabel för att spåra om vi håller nere (för desktop-fixen)
                 let isPressing = false; 
 
                 const startLongPress = (e) => {
-                    if (e.button === 2) return; // Ignorera högerklick
-                    isPressing = true; // Vi har börjat trycka
+                    if (e.button === 2) return; 
+                    isPressing = true; 
 
                     longPressTimer = setTimeout(() => {
-                        // Om vi fortfarande trycker när tiden gått ut -> Visa meny
                         if (isPressing) {
                             let clientX, clientY;
                             if (e.touches && e.touches.length > 0) {
@@ -1344,14 +1373,17 @@
                                 clientY = e.clientY;
                             }
                             
-                            showReactionMenu(clientX, clientY, id);
+                            // Se till att du har funktionen showReactionMenu med "Boundary Check" från förra svaret
+                            if (typeof showReactionMenu === 'function') {
+                                showReactionMenu(clientX, clientY, id);
+                            }
                             bubble.dataset.longPressed = "true"; 
                         }
                     }, 500); 
                 };
 
                 const cancelLongPress = () => {
-                    isPressing = false; // Släppte trycket
+                    isPressing = false; 
                     if (longPressTimer) {
                         clearTimeout(longPressTimer);
                         longPressTimer = null;
@@ -1373,7 +1405,6 @@
                         img.onload = () => {
                             const chatList = document.getElementById('chatMessages');
                             if(chatList && !chatList.classList.contains('gallery-mode')) {
-                                // Scrolla bara om vi är nära botten
                                 if (chatList.scrollHeight - chatList.scrollTop - chatList.clientHeight < 200) {
                                     chatList.scrollTop = chatList.scrollHeight;
                                 }
@@ -1381,12 +1412,15 @@
                         };
 
 			            img.onclick = (e) => {
-			                e.stopPropagation(); 
+                            // --- FIX 1: STOPPA KLICK OM VI PRECIS HÅLLIT IN ---
                             if (bubble.dataset.longPressed === "true") {
-                                // Återställ flaggan men gör inget annat
+                                e.stopPropagation(); // Stoppa fönstret från att stänga menyn
+                                e.preventDefault();
                                 setTimeout(() => { bubble.dataset.longPressed = "false"; }, 100);
                                 return;
                             }
+                            // --------------------------------------------------
+			                e.stopPropagation(); 
 			                
 			                if (clickTimeout !== null) {
 			                    clearTimeout(clickTimeout);
@@ -1400,17 +1434,11 @@
 			                }
 			            };
                         
-                        // --- FIX 1 (Desktop): Ta bort 'mouseleave' ---
-                        // Vi använder bara mouseup/touchend för att avbryta. 
-                        // Om man rör musen lite (drag) är det ok, men vi avbryter vid touchmove (scroll).
-                        
                         img.addEventListener('touchstart', startLongPress, {passive: true});
                         img.addEventListener('touchend', cancelLongPress);
-                        img.addEventListener('touchmove', cancelLongPress); // Avbryt om man scrollar
-                        
+                        img.addEventListener('touchmove', cancelLongPress);
                         img.addEventListener('mousedown', startLongPress);
                         img.addEventListener('mouseup', cancelLongPress);
-                        // img.addEventListener('mouseleave', cancelLongPress); <-- BORTTAGEN för att fixa desktop-buggen
 
 			            carousel.appendChild(img);
 			        });
@@ -1433,11 +1461,15 @@
                     };
 			        
 			        imgElement.onclick = (e) => {
-			            e.stopPropagation();
+                        // --- FIX 1: STOPPA KLICK OM VI PRECIS HÅLLIT IN ---
                         if (bubble.dataset.longPressed === "true") {
+                            e.stopPropagation();
+                            e.preventDefault();
                             setTimeout(() => { bubble.dataset.longPressed = "false"; }, 100);
                             return;
                         }
+                        // --------------------------------------------------
+			            e.stopPropagation();
 			            
 			            if (clickTimeout !== null) {
 			                clearTimeout(clickTimeout);
@@ -1454,10 +1486,8 @@
                     imgElement.addEventListener('touchstart', startLongPress, {passive: true});
                     imgElement.addEventListener('touchend', cancelLongPress);
                     imgElement.addEventListener('touchmove', cancelLongPress);
-                    
                     imgElement.addEventListener('mousedown', startLongPress);
                     imgElement.addEventListener('mouseup', cancelLongPress);
-                    // imgElement.addEventListener('mouseleave', cancelLongPress); <-- BORTTAGEN
 			    } 
 			    // --- SCENARIO C: TEXT ---
 			    else {
@@ -1499,11 +1529,15 @@
 			        }
 			        
                     // Klick-logik för text
-			        bubble.addEventListener('click', () => {
+			        bubble.addEventListener('click', (e) => {
+                        // --- FIX 1: STOPPA KLICK OM VI PRECIS HÅLLIT IN ---
                         if (bubble.dataset.longPressed === "true") {
+                            e.stopPropagation(); // Stoppa fönstret från att stänga menyn
+                            e.preventDefault();
                             setTimeout(() => { bubble.dataset.longPressed = "false"; }, 100);
                             return;
                         }
+                        // --------------------------------------------------
 			        });
 
                     bubble.addEventListener('dblclick', () => {
@@ -1513,16 +1547,13 @@
                     bubble.addEventListener('touchstart', startLongPress, {passive: true});
                     bubble.addEventListener('touchend', cancelLongPress);
                     bubble.addEventListener('touchmove', cancelLongPress);
-                    
                     bubble.addEventListener('mousedown', startLongPress);
                     bubble.addEventListener('mouseup', cancelLongPress);
-                    // bubble.addEventListener('mouseleave', cancelLongPress); <-- BORTTAGEN
 			    }
 			    
-			    bubble.title = "Långtryck för reaktion, dubbelklicka för att radera";
+			    bubble.title = "Långtryck för reaktion och meny, dubbelklicka för att radera";
 			    bubble.style.cursor = "pointer";
 			
-			    // --- TID & IKON ---
 			    const time = document.createElement('div');
 			    time.className = 'chat-time';
 			    
