@@ -6795,6 +6795,25 @@ body.body-scroll-lock {
     user-select: none; /* Stoppar textmarkering */
 }
 
+.chat-customer-link {
+    font-weight: 700;
+    color: #ffffff;
+    cursor: pointer;
+    border-bottom: 1px dotted rgba(255, 255, 255, 0.7);
+    transition: all 0.2s ease;
+}
+
+.chat-customer-link:hover {
+    border-bottom-style: solid;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+/* Lägg detta i slutet av style.css */
+.reaction-option.danger:hover .icon-action {
+    color: var(--danger-color);
+    transform: scale(1.1);
+}
 
 
 
