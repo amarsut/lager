@@ -2593,24 +2593,43 @@
 			    const imageModal = document.getElementById('imageZoomModal');
 			    const mobileChatBtn = document.getElementById('mobileChatBtn');
 			
-			    // --- 1. BILD-HANTERING ---
+			    // --- 1. BILD-HANTERING (Om vi går FRAMÅT till en bild) ---
 			    if (state.modal === 'imageZoom') {
 			        if (imageModal) imageModal.style.display = 'flex';
 			        updateScrollLock();
 			        return;
-			    } else if (imageModal) {
-			        imageModal.style.display = 'none';
+			    } else if (imageModal && state.modal !== 'imageZoom') {
+                    // Om vi inte ska visa bild, se till att den döljs (för säkerhets skull)
+                    // Men vi gör det "tyst" här, själva logiken hanteras nedan
 			    }
 			
 			    // --- 2. CHATT-HANTERING (Vi är i chatt-läget) ---
 			    if (state.modal === 'chatWidget' || currentHash === '#chat') {
 			        
+                    // --- NY FIX: Kolla om vi kommer från en "Child"-vy ---
+                    let isReturningFromChild = false;
+
+                    // 1. Är bild-zoomen öppen?
+                    if (imageModal && getComputedStyle(imageModal).display !== 'none') {
+                        isReturningFromChild = true;
+                    }
+
+                    // 2. Är någon annan modal öppen (t.ex. bil/kund-info som öppnades via chatt)?
+                    // Vi letar efter en modal som har klassen 'show', men som INTE är själva chatten.
+                    const openChildModal = document.querySelector('.modal-backdrop.show');
+                    if (openChildModal && openChildModal.id !== 'chatWidget') {
+                        isReturningFromChild = true;
+                    }
+                    // ----------------------------------------------------
+
+			        // Stäng alla andra modaler (inklusive bildzoom)
 			        document.querySelectorAll('.modal-backdrop').forEach(el => {
-			            if (el.id !== 'chatWidget' && el.id !== 'imageZoomModal') {
+			            if (el.id !== 'chatWidget') {
 			                el.classList.remove('show');
 			                el.style.display = 'none';
 			            }
 			        });
+                    if (imageModal) imageModal.style.display = 'none';
 			
 			        isModalOpen = false;
 			        currentOpenModalId = null;
@@ -2618,12 +2637,14 @@
 			        if (chatWidget) chatWidget.style.display = 'flex';
 			        if (mobileChatBtn) mobileChatBtn.classList.add('active');
 
-                    // --- NYTT: Tvinga scroll till botten ---
-                    // (Säkerställ att du har lagt till forceChatScrollBottom-funktionen i din kod)
-                    if (typeof forceChatScrollBottom === 'function') {
-                        forceChatScrollBottom();
+                    // --- SCROLL-LOGIK ---
+                    // Scrolla BARA ner om vi INTE kommer tillbaka från en bild/modal
+                    if (!isReturningFromChild) {
+                        if (typeof forceChatScrollBottom === 'function') {
+                            forceChatScrollBottom();
+                        }
                     }
-                    // ---------------------------------------
+                    // --------------------
 			        
 			        if (window.innerWidth > 768) {
 			            setTimeout(() => {
@@ -2638,38 +2659,34 @@
 			
 			    // --- 3. GRUNDLÄGE (Tidslinjen) ---
 			    else {
-                    // --- FIX 1: KOLLA OM NÅGOT VAR ÖPPET ---
-                    // Om chatten eller en modal är synlig JUST NU, så användes bakåt-knappen för att stänga den.
+                    // Kolla om något stängdes precis (för att undvika "tryck igen"-varning)
                     const wasChatOpen = chatWidget && chatWidget.style.display === 'flex';
                     const wasModalOpen = isModalOpen || document.querySelector('.modal-backdrop.show');
 
-                    // --- FIX 2: Tvinga bort scroll-låsning ---
+                    // Tvinga bort scroll-låsning
                     document.body.classList.remove('body-scroll-lock');
                     document.body.style.overflow = '';
 			
-			        // Stäng Chatten
+			        // Stäng allt
 			        if (chatWidget) chatWidget.style.display = 'none';
 			        if (mobileChatBtn) mobileChatBtn.classList.remove('active');
 			        
-			        // Stäng Sök
 			        const mSearchModal = document.getElementById('mobileSearchModal');
 			        if (mSearchModal) mSearchModal.style.display = 'none';
 			
-			        // Stäng alla andra modaler
 			        document.querySelectorAll('.modal-backdrop').forEach(el => {
 			            el.classList.remove('show');
 			            el.style.display = 'none';
 			        });
+                    if (imageModal) imageModal.style.display = 'none';
 			        
 			        isModalOpen = false;
 			        currentOpenModalId = null;
 			        
 			        updateScrollLock();
 			
-			        // Mobil "Avsluta app"
+			        // Mobil "Avsluta app" - Visa bara om vi INTE stängde något precis
 			        if (window.innerWidth <= 768 && !currentHash && !state.modal) {
-                        
-                        // --- FIX 3: VARNA BARA OM INGET STÄNGDES NYSS ---
                         if (!wasChatOpen && !wasModalOpen) {
                             if (typeof backPressWarned !== 'undefined') {
                                 if (backPressWarned) {
