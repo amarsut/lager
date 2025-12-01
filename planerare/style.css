@@ -6815,6 +6815,188 @@ body.body-scroll-lock {
     transform: scale(1.1);
 }
 
+/* --- CHATT NY DESIGN (Samsung Style + Search Header) --- */
+
+/* 1. Header Design */
+.chat-widget-header {
+    background-color: var(--content-bg); /* Vit bakgrund för renare look */
+    color: var(--text-color);
+    padding: 0.75rem 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    height: 60px; /* Fast höjd matchar din sök-modal */
+    box-sizing: border-box;
+}
+
+.header-left-group, .header-right-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.chat-widget-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.back-btn-chat {
+    background: transparent;
+    border: none;
+    padding: 0.5rem;
+    margin-left: -0.5rem; /* Justera för att ligga kant i kant */
+    cursor: pointer;
+    color: var(--text-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.back-btn-chat .icon {
+    width: 1.5rem;
+    height: 1.5rem;
+}
+
+/* Sökrutan inuti chatten (om man klickar på sök) */
+.chat-search-bar {
+    background-color: var(--bg-color);
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+}
+.chat-search-bar input {
+    width: 100%;
+    padding: 0.5rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+/* 2. Input Area Design (Samsung Style) */
+.chat-input-area.samsung-style {
+    display: flex;
+    align-items: flex-end; /* Håll knappar i botten om texten växer */
+    gap: 0.6rem;
+    padding: 0.75rem 1rem;
+    background-color: var(--content-bg);
+    border-top: 1px solid var(--border-color);
+}
+
+/* Cirkel-knappar (Plus & Skicka) */
+.chat-action-btn.circle-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+/* Plus-knappen (Sekundär) */
+.chat-action-btn.secondary {
+    background-color: #E5E7EB; /* Ljusgrå */
+    color: var(--text-color-light);
+}
+[data-theme="dark"] .chat-action-btn.secondary {
+    background-color: #3a3a3c;
+}
+
+/* Skicka-knappen (Primär) */
+.chat-action-btn.primary {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+/* ROTERA skicka-ikonen så den pekar höger */
+.send-btn-rotated svg {
+    transform: rotate(0deg) !important; /* Återställ ev. tidigare rotation */
+    margin-left: 2px; /* Finjustera optiskt */
+}
+
+/* Input-wrapper (Piller-formad) */
+.chat-input-wrapper {
+    flex-grow: 1;
+    background-color: #F3F4F6; /* Mycket ljus grå */
+    border-radius: 24px; /* Piller-form */
+    display: flex;
+    align-items: center;
+    padding: 0.2rem 0.5rem 0.2rem 1rem; /* Padding för texten */
+    min-height: 40px;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+}
+[data-theme="dark"] .chat-input-wrapper {
+    background-color: #2c2c2e;
+}
+
+.chat-input-wrapper:focus-within {
+    border-color: var(--primary-color);
+    background-color: var(--content-bg);
+    box-shadow: 0 0 0 2px var(--primary-light);
+}
+
+/* Själva textfältet */
+#chatInput {
+    flex-grow: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-size: 1rem;
+    padding: 0.5rem 0;
+    color: var(--text-color);
+    min-width: 0;
+    margin: 0;
+}
+
+/* Ikon inuti fältet (Galleri) */
+.chat-inner-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-color-light);
+    padding: 0.5rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.7;
+}
+.chat-inner-btn:hover {
+    opacity: 1;
+    color: var(--primary-color);
+}
+
+/* Mobil-anpassning */
+@media (max-width: 768px) {
+    .chat-widget-container {
+        /* Fullskärm på mobil */
+        top: 0 !important;
+        bottom: 0 !important;
+        right: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        height: 100% !important;
+        border-radius: 0 !important;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .chat-messages {
+        flex-grow: 1;
+        padding-bottom: 1rem; /* Lite luft innan input */
+    }
+    
+    /* Input ligger sticky i botten */
+    .chat-input-area.samsung-style {
+        padding-bottom: max(0.75rem, env(safe-area-inset-bottom)); /* iPhone X fix */
+    }
+}
 
 
 
