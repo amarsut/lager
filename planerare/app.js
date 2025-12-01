@@ -1141,20 +1141,85 @@
 			    const chatList = document.getElementById('chatMessages');
 			    const chatForm = document.getElementById('chatForm');
 			    const chatInput = document.getElementById('chatInput');
+			    
+			    // --- NYA ID:n FÖR SAMSUNG-DESIGNEN ---
+			    const chatBackBtn = document.getElementById('chatBackBtn');
+			    const toggleSearchBtn = document.getElementById('toggleChatSearch');
+			    const searchArea = document.getElementById('chatSearchBarArea');
 			    const searchInput = document.getElementById('chatSearchInput');
 			    const clearBtn = document.getElementById('clearChatSearch');
-			    const galleryToggleBtn = document.getElementById('toggleChatGallery');
+			    
+			    const plusBtn = document.getElementById('chatPlusBtn');     // Vänster (+)
+			    const galleryBtn = document.getElementById('chatGalleryBtn'); // Inuti fältet
+			    const galleryToggleBtn = document.getElementById('toggleChatGallery'); // I headern
+			    
 			    const fileInputGallery = document.getElementById('chatFileInputGallery');
 			    const fileInputCamera = document.getElementById('chatFileInputCamera');
-			    const btnOpenGallery = document.getElementById('chatGalleryBtn');
-			    const btnOpenCamera = document.getElementById('chatCameraBtn');
 			
 			    if (!chatList || !chatForm) return;
-                currentChatLimit = 50;
 			    
-			    // Vi kollar om chatInput finns och om vi redan lagt till lyssnare (för att slippa dubbletter)
+			    // Återställ gräns vid öppning
+			    currentChatLimit = 50;
+			
+			    // --- 1. HANTERA KNAPPAR (NY DESIGN) ---
+			
+			    // Tillbaka-pilen
+			    if (chatBackBtn) {
+			        chatBackBtn.onclick = (e) => {
+			            e.preventDefault();
+			            if (window.location.hash === '#chat') {
+			                history.back();
+			            } else {
+			                closeChatUI();
+			            }
+			        };
+			    }
+			
+			    // Sök-toggle (Visa/Dölj sökruta)
+			    if (toggleSearchBtn && searchArea) {
+			        toggleSearchBtn.onclick = (e) => {
+			            e.preventDefault();
+			            const isHidden = searchArea.style.display === 'none';
+			            searchArea.style.display = isHidden ? 'flex' : 'none';
+			            if (isHidden) {
+			                setTimeout(() => {
+			                    if (searchInput) searchInput.focus();
+			                }, 50);
+			            }
+			        };
+			    }
+			
+			    // Plus-knappen (+) -> Öppnar Kamera (eller meny i framtiden)
+			    if (plusBtn && fileInputCamera) {
+			        plusBtn.onclick = (e) => {
+			            e.preventDefault();
+			            fileInputCamera.click();
+			        };
+			        fileInputCamera.onchange = (e) => { handleImageUpload(e.target.files[0]); fileInputCamera.value = ''; };
+			    }
+			
+			    // Galleri-knappen (Inuti fältet) -> Öppnar Galleri
+			    if (galleryBtn && fileInputGallery) {
+			        galleryBtn.onclick = (e) => {
+			            e.preventDefault();
+			            fileInputGallery.click();
+			        };
+			        fileInputGallery.onchange = (e) => { handleImageUpload(e.target.files[0]); fileInputGallery.value = ''; };
+			    }
+			
+			    // Galleri-läge (Rutnät)
+			    if (galleryToggleBtn) {
+			        galleryToggleBtn.onclick = () => {
+			            chatList.classList.toggle('gallery-mode');
+			            const isActive = chatList.classList.contains('gallery-mode');
+			            galleryToggleBtn.style.color = isActive ? 'var(--primary-color)' : 'var(--text-color-light)';
+			            if (!isActive) setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
+			        };
+			    }
+			
+			    // --- 2. FOCUS/BLUR LOGIK (FIXAD FÖR DATOR) ---
 			    if (chatInput && !chatInput.dataset.focusListenerAttached) {
-			        chatInput.dataset.focusListenerAttached = "true"; // Markera att vi är klara
+			        chatInput.dataset.focusListenerAttached = "true";
 			
 			        const mobileNav = document.getElementById('mobileNav');
 			        const timelineView = document.getElementById('timelineView'); 
@@ -1178,43 +1243,75 @@
 			                // Visa bara tidslinjen om vi faktiskt var i den vyn
 			                if (timelineView && currentView === 'timeline') timelineView.style.display = 'block'; 
 			                if (fabAddJob) fabAddJob.style.display = 'flex';
-			                
-			                // Scrolla rätt om tangentbordet ställde till det
 			                if (chatList) chatList.scrollTop = chatList.scrollHeight;
 			            }, 100);
 			        });
 			    }
 			
-			    // --- FIX: BILDUPPLADDNING MED TEXT (CAPTION) ---
+			    // --- 3. TEXT-GENVÄGAR (Shortcuts) ---
+			    const textShortcuts = {
+			        ':olja': '🛢', ':däck': '🛞', ':bil': '🚗',
+			        ':nyckel': '🔑', ':ok': '✅', ':fel': '❌',
+			        ':varning': '⚠️', ':pengar': '💸', ':mek': '👨‍🔧'
+			    };
+			
+			    if (chatInput) {
+			        chatInput.addEventListener('input', (e) => {
+			            let val = e.target.value;
+			            if (val.endsWith(' ')) {
+			                const words = val.split(' ');
+			                const lastWord = words[words.length - 2]; 
+			                if (textShortcuts[lastWord]) {
+			                    const newVal = val.slice(0, - (lastWord.length + 1)) + textShortcuts[lastWord] + ' ';
+			                    const cursorPos = e.target.selectionStart - (lastWord.length + 1) + textShortcuts[lastWord].length + 1;
+			                    e.target.value = newVal;
+			                    e.target.setSelectionRange(cursorPos, cursorPos);
+			                }
+			            }
+			        });
+			        
+			        // Klistra in bild-stöd
+			        if (!chatInput.dataset.pasteListenerAttached) {
+			            chatInput.addEventListener('paste', async (e) => {
+			                const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+			                for (let item of items) {
+			                    if (item.type.indexOf("image") === 0) {
+			                        e.preventDefault();
+			                        const blob = item.getAsFile();
+			                        handleImageUpload(blob);
+			                        return;
+			                    }
+			                }
+			            });
+			            chatInput.dataset.pasteListenerAttached = "true";
+			        }
+			    }
+			
+			    // --- 4. BILDUPPLADDNING ---
 			    const handleImageUpload = async (file) => {
 			        if (!file) return;
-			        
-                    // 1. Fråga efter bildtext direkt
-                    const caption = prompt("Vill du lägga till en bildtext?", "");
-                    
-                    showToast("Bearbetar bild...", "info");
+			        const caption = prompt("Vill du lägga till en bildtext?", "");
+			        showToast("Bearbetar bild...", "info");
 			
 			        try {
 			            const base64Image = await compressImage(file);
-			            
 			            await db.collection("notes").add({
 			                image: base64Image,
-                            caption: caption || "", // Spara bildtexten
+			                caption: caption || "",
 			                type: 'image',
 			                timestamp: new Date().toISOString(),
 			                platform: window.innerWidth <= 768 ? 'mobil' : 'dator'
 			            });
-			            
 			            showToast("Bild skickad!", "success");
-                        setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
-			
+			            // Scrolla ner manuellt vid sändning
+			            setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
 			        } catch (err) {
 			            console.error(err);
 			            showToast("Kunde inte skicka bilden.", "danger");
 			        }
 			    };
-			    // -----------------------------------------------
 			
+			    // --- 5. SKICKA MEDDELANDE ---
 			    chatForm.onsubmit = async (e) => {
 			        e.preventDefault();
 			        const text = chatInput.value.trim();
@@ -1226,94 +1323,156 @@
 			                platform: window.innerWidth <= 768 ? 'mobil' : 'dator'
 			            });
 			            chatInput.value = '';
-                        setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
+			            // Scrolla ner manuellt vid sändning
+			            setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
 			        } catch (err) {
 			            showToast("Kunde inte skicka notis.", "danger");
 			        }
 			    };
 			
-                if (!chatInput.dataset.pasteListenerAttached) {
-                    chatInput.addEventListener('paste', async (e) => {
-                        const items = (e.clipboardData || e.originalEvent.clipboardData).items;
-                        for (let item of items) {
-                            if (item.type.indexOf("image") === 0) {
-                                e.preventDefault();
-                                const blob = item.getAsFile();
-                                handleImageUpload(blob);
-                                return;
-                            }
-                        }
-                    });
-                    chatInput.dataset.pasteListenerAttached = "true";
-                }
-
-			    if (btnOpenGallery && fileInputGallery) {
-			        btnOpenGallery.onclick = (e) => { e.preventDefault(); fileInputGallery.click(); };
-			        fileInputGallery.onchange = (e) => { handleImageUpload(e.target.files[0]); fileInputGallery.value = ''; };
-			    }
-			    if (btnOpenCamera && fileInputCamera) {
-			        btnOpenCamera.onclick = (e) => { e.preventDefault(); fileInputCamera.click(); };
-			        fileInputCamera.onchange = (e) => { handleImageUpload(e.target.files[0]); fileInputCamera.value = ''; };
-			    }
-			
-			    // --- FIX: SÖK-MARKERING LOGIK ---
+			    // --- 6. SÖKFUNKTION ---
 			    if (searchInput && clearBtn) {
-                    const filterChat = () => {
-                        const term = searchInput.value.toLowerCase();
-                        const bubbles = chatList.querySelectorAll('.chat-bubble');
-                        const times = chatList.querySelectorAll('.chat-time');
-                        clearBtn.style.display = term ? 'block' : 'none';
-                        
-                        bubbles.forEach((bubble, index) => {
-                            // Vi söker i den sparade "Original HTML" för att inte förstöra länkar
-                            // Om data-original-html saknas (gamla bubblor), använd innerHTML
-                            const originalHTML = bubble.dataset.originalHtml || bubble.innerHTML;
-                            const textContent = bubble.textContent.toLowerCase();
-                            
-                            // Vi måste söka i textinnehållet, inte HTML-koden, för att avgöra synlighet
-                            const isMatch = textContent.includes(term);
-                            const isImage = bubble.classList.contains('chat-bubble-image');
-                            const timeElement = times[index];
-
-                            if (isMatch || (isImage && !term)) {
-                                bubble.style.display = 'block';
-                                if (timeElement) timeElement.style.display = 'block';
-
-                                // APPLICERA MARKERING (HIGHLIGHT)
-                                if (term && !isImage) { // Markera bara textbubblor
-                                    // Enkel regex som ersätter texten men försöker undvika HTML-taggar
-                                    // OBS: Detta är en enkel lösning. För perfektion behövs en text-node parser.
-                                    const regex = new RegExp(`(${term})`, 'gi');
-                                    // Vi applicerar på original-HTML för att kunna "sudda" genom att återställa
-                                    bubble.innerHTML = originalHTML.replace(regex, '<mark>$1</mark>');
-                                } else {
-                                    // Återställ om ingen sökterm eller om det är en bild
-                                    bubble.innerHTML = originalHTML;
-                                }
-
-                            } else {
-                                bubble.style.display = 'none';
-                                if (timeElement) timeElement.style.display = 'none';
-                            }
-                        });
-                    };
+			        const filterChat = () => {
+			            const term = searchInput.value.toLowerCase();
+			            const bubbles = chatList.querySelectorAll('.chat-bubble');
+			            const times = chatList.querySelectorAll('.chat-time');
+			            clearBtn.style.display = term ? 'block' : 'none';
+			            
+			            bubbles.forEach((bubble, index) => {
+			                const originalHTML = bubble.dataset.originalHtml || bubble.innerHTML;
+			                const textContent = bubble.textContent.toLowerCase();
+			                const isMatch = textContent.includes(term);
+			                const isImage = bubble.classList.contains('chat-bubble-image');
+			                const timeElement = times[index];
+			
+			                if (isMatch || (isImage && !term)) {
+			                    bubble.style.display = 'block';
+			                    if (timeElement) timeElement.style.display = 'block';
+			                    if (term && !isImage) {
+			                        const regex = new RegExp(`(${term})`, 'gi');
+			                        bubble.innerHTML = originalHTML.replace(regex, '<mark>$1</mark>');
+			                    } else {
+			                        bubble.innerHTML = originalHTML;
+			                    }
+			                } else {
+			                    bubble.style.display = 'none';
+			                    if (timeElement) timeElement.style.display = 'none';
+			                }
+			            });
+			        };
 			        searchInput.oninput = filterChat;
 			        clearBtn.onclick = () => { searchInput.value = ''; filterChat(); searchInput.focus(); };
-                    
-                    searchInput.addEventListener('keydown', (e) => {
-                        if (e.key === 'Enter') { e.preventDefault(); searchInput.blur(); }
-                    });
+			        searchInput.addEventListener('keydown', (e) => {
+			            if (e.key === 'Enter') { e.preventDefault(); searchInput.blur(); }
+			        });
 			    }
-                // ---------------------------------
-
-                if (galleryToggleBtn) {
-			        galleryToggleBtn.onclick = () => {
-			            chatList.classList.toggle('gallery-mode');
-			            const isActive = chatList.classList.contains('gallery-mode');
-			            galleryToggleBtn.style.color = isActive ? 'var(--primary-color)' : 'var(--text-color-light)';
-			            if (!isActive) setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
-			        };
+			
+			    // --- 7. HUVUDLYSSNAREN (SCROLL-FIXAD) ---
+			    const setupChatListener = (limit) => {
+			        if (chatUnsubscribe) chatUnsubscribe(); 
+			        const isLoadMore = limit > 50; 
+			        
+			        chatUnsubscribe = db.collection("notes")
+			            .orderBy("timestamp", "desc") 
+			            .limit(limit)                 
+			            .onSnapshot(snapshot => {
+			                
+			                // --- SCROLL FIX START ---
+			                const threshold = 150; 
+			                // Kolla var vi är INNAN vi ritar om
+			                const scrollBottom = chatList.scrollHeight - chatList.scrollTop - chatList.clientHeight;
+			                const wasAtBottom = scrollBottom <= threshold || chatList.childElementCount === 0;
+			                const previousScrollTop = chatList.scrollTop; // Spara position
+			
+			                const docs = [];
+			                snapshot.forEach(doc => docs.push({ id: doc.id, ...doc.data() }));
+			                docs.reverse(); 
+			
+			                chatList.innerHTML = ''; // Rensa listan
+			                
+			                if (docs.length === 0) {
+			                    chatList.innerHTML = '<div class="empty-state-chat"><p>Skriv en notis eller ta en bild...</p></div>';
+			                    return;
+			                }
+			
+			                docs.forEach(data => {
+			                    renderChatBubble(data.id, data, chatList);
+			                });
+			
+			                // Återställ filter vid uppdatering
+			                if (searchInput && searchInput.value.trim() !== "") {
+			                    searchInput.dispatchEvent(new Event('input'));
+			                }
+			
+			                const isSearching = searchInput && searchInput.value.trim() !== "";
+			                
+			                if (!isSearching) {
+			                    if (isLoadMore && isFetchingOlderChat) {
+			                        // Om vi laddade äldre, behåll relativ position
+			                        const newScrollHeight = chatList.scrollHeight;
+			                        chatList.scrollTop = newScrollHeight - chatList.scrollTop; // Fixerad logik kan variera, men detta brukar funka
+			                        // Eller: chatList.scrollTop = newScrollHeight - (gammal höjd); 
+			                        // Men eftersom vi rensade innerHTML är det svårare. 
+			                        // Enklast för "Ladda mer": Låt användaren scrolla lite till.
+			                        isFetchingOlderChat = false; 
+			                    } else if (!isLoadMore) {
+			                        if (!chatList.classList.contains('gallery-mode')) {
+			                            if (wasAtBottom) {
+			                                // Var vi längst ner? -> Scrolla ner
+			                                chatList.scrollTop = chatList.scrollHeight;
+			                            } else {
+			                                // Var vi uppe? -> Återställ positionen
+			                                chatList.scrollTop = previousScrollTop;
+			                            }
+			                        }
+			                    }
+			                }
+			                // --- SCROLL FIX SLUT ---
+			            });
+			    };
+			
+			    setupChatListener(currentChatLimit);
+			
+			    // --- 8. LADDA ÄLDRE (INFINITE SCROLL) ---
+			    chatList.addEventListener('scroll', () => {
+			        if (chatList.scrollTop === 0 && !isFetchingOlderChat && !chatList.classList.contains('gallery-mode')) {
+			            isFetchingOlderChat = true;
+			            currentChatLimit += 50; 
+			            setTimeout(() => { setupChatListener(currentChatLimit); }, 200);
+			        }
+			    });
+			
+			    // --- 9. KLICK-HANTERARE (LÄNKAR) ---
+			    if (!chatList.dataset.clickListenerAttached) {
+			        chatList.addEventListener('click', (e) => {
+			            
+			            // Reg-nr länk
+			            const regLink = e.target.closest('.chat-reg-link');
+			            if (regLink) {
+			                e.preventDefault(); e.stopPropagation();
+			                const regnr = regLink.dataset.reg;
+			                if (typeof openCarModal === 'function') {
+			                    if (typeof isModalOpen !== 'undefined') isModalOpen = true; 
+			                    openCarModal(regnr);
+			                }
+			                return; 
+			            }
+			
+			            // Kund-länk (NY)
+			            const customerLink = e.target.closest('.chat-customer-link');
+			            if (customerLink) {
+			                e.preventDefault(); e.stopPropagation();
+			                const kundnamn = customerLink.dataset.kund;
+			                if (typeof openCustomerModal === 'function') {
+			                    if (typeof isModalOpen !== 'undefined') isModalOpen = true; 
+			                    openCustomerModal(kundnamn);
+			                }
+			                return;
+			            }
+			        });
+			        chatList.dataset.clickListenerAttached = "true";
 			    }
+			}
 
                 const setupChatListener = (limit) => {
                     if (chatUnsubscribe) chatUnsubscribe(); 
