@@ -6584,28 +6584,30 @@ body.body-scroll-lock {
 .chat-widget-container {
     position: fixed;
     
-    /* --- FIX: POSITIONERING VÄNSTER OM KNAPPEN --- */
-    bottom: 110px; /* Samma höjd som knappen #fabChat */
-    right: calc(2rem + 75px); /* Placera den till vänster om knappen (Marginal + Knappbredd + Luft) */
-    /* --------------------------------------------- */
+    /* Positionering (Oförändrad) */
+    bottom: 110px; 
+    right: calc(2rem + 75px); 
     
-    width: 500px; /* Lagom bredd för en chatt */
-    height: 600px; /* Ganska hög */
-    max-height: 70vh; /* Men inte högre än 70% av skärmen */
+    /* --- FIX: HÖJD & ANPASSNING --- */
+    width: 500px; 
+    max-width: 90vw; /* Säkerhet: Bli aldrig bredare än 90% av skärmen (bra för små laptops) */
+    
+    height: 80vh;      /* Sätt höjden till 80% av skärmens höjd (Gör den hög!) */
+    max-height: 900px; /* Men sätt ett tak så den inte blir gigantisk på en 4K-skärm */
+    min-height: 400px; /* Och ett golv så den inte blir oanvändbar på en väldigt låg skärm */
+    /* ------------------------------ */
     
     background-color: var(--content-bg);
     border-radius: 16px;
     
-    /* Lägg till en liten pil-effekt (valfritt, men snyggt) genom skuggan */
     box-shadow: 0 5px 40px rgba(0,0,0,0.15);
     border: 1px solid var(--border-color);
     
     display: flex;
     flex-direction: column;
-    z-index: 2000; /* Ligger över det mesta */
+    z-index: 2000; 
     overflow: hidden;
     
-    /* Animation när den öppnas (Växer från höger botten) */
     transform-origin: bottom right;
     animation: popUpWidget 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
@@ -6777,6 +6779,7 @@ body.body-scroll-lock {
     -webkit-touch-callout: none; /* Stoppar iOS förstoringsglas/meny */
     user-select: none; /* Stoppar textmarkering */
 }
+
 
 
 
