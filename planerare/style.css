@@ -6088,10 +6088,10 @@ body.body-scroll-lock {
     
     /* VIKTIGT: Ökad padding i botten (110px) så att sista meddelandet syns ovanför input-fältet */
     /* Ordningen är: Topp, Höger, Botten, Vänster */
-    padding: 1rem 1rem 140px 1rem;
+    padding: 1rem 1rem 160px 1rem;
     
     /* Gör scrollningen mjuk när nya meddelanden kommer */
-    scroll-behavior: smooth;
+    /*scroll-behavior: smooth;*/
 }
 
 /* Tomt läge */
@@ -7050,6 +7050,7 @@ body.body-scroll-lock {
         padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
     }
 }
+
 
 
 
