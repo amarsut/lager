@@ -760,30 +760,37 @@
 
 			// --- STÄNG CHATT VID KLICK UTANFÖR ---
 			document.addEventListener('click', (e) => {
-		    // 1. Om en modal (t.ex. Bil-modalen) är öppen, strunta i klicket!
-		    // Detta förhindrar att chatten stängs när man interagerar med modalen
-		    if (typeof isModalOpen !== 'undefined' && isModalOpen) return;
-		
-		    const chatWidget = document.getElementById('chatWidget');
-		    const fabChat = document.getElementById('fabChat');
-		    const mobileChatBtn = document.getElementById('mobileChatBtn');
-		
-		    // Om chatten är öppen...
-		    if (chatWidget && chatWidget.style.display === 'flex') {
-		        
-		        // ...och vi INTE klickade inuti chatten...
-		        if (!chatWidget.contains(e.target) && 
-		            // ...och INTE klickade på skrivbords-knappen...
-		            (!fabChat || !fabChat.contains(e.target)) &&
-		            // ...och INTE klickade på mobil-knappen...
-		            (!mobileChatBtn || !mobileChatBtn.contains(e.target))) {
-		            
-		            // Då stänger vi den genom att backa historiken
-		            // (Detta triggar vår popstate-lyssnare som sköter städningen)
-		            history.back();
-		        }
-		    }
-		});
+			    // 1. SÄKERHETSKOLL: Om en modal är öppen eller på väg att öppnas, gör inget.
+			    // Vi kollar både variabeln och om det finns en synlig modal i DOM:en
+			    if ((typeof isModalOpen !== 'undefined' && isModalOpen) || document.querySelector('.modal-backdrop.show')) {
+			        return;
+			    }
+			
+			    // 2. SÄKERHETSKOLL: Om vi klickade på en LÄNK (t.ex. Reg.nr), gör inget.
+			    // Detta hindrar dokumentet från att tro att vi klickade "utanför".
+			    if (e.target.closest('.chat-reg-link') || e.target.closest('a')) {
+			        return;
+			    }
+			
+			    const chatWidget = document.getElementById('chatWidget');
+			    const fabChat = document.getElementById('fabChat');
+			    const mobileChatBtn = document.getElementById('mobileChatBtn');
+			
+			    // Om chatten är öppen...
+			    if (chatWidget && chatWidget.style.display === 'flex') {
+			        
+			        // ...och vi INTE klickade inuti chatten...
+			        if (!chatWidget.contains(e.target) && 
+			            // ...och INTE klickade på skrivbords-knappen...
+			            (!fabChat || !fabChat.contains(e.target)) &&
+			            // ...och INTE klickade på mobil-knappen...
+			            (!mobileChatBtn || !mobileChatBtn.contains(e.target))) {
+			            
+			            // Då stänger vi den genom att backa historiken
+			            history.back();
+			        }
+			    }
+			});
 
 			// --- HANTERA CHATT-WIDGET ---
 			const chatWidget = document.getElementById('chatWidget');
@@ -1078,11 +1085,20 @@
 			    // --- 8. KLICK PÅ REG-NR (Auto-Link) ---
 			    chatList.addEventListener('click', (e) => {
 			        if (e.target.classList.contains('chat-reg-link')) {
+			            // VIKTIGT: Stoppa klicket från att nå dokumentet!
+			            e.preventDefault();
 			            e.stopPropagation();
+			            e.stopImmediatePropagation();
+			            
 			            const regnr = e.target.dataset.reg;
-			            if (typeof openCarModal === 'function') {
-			                openCarModal(regnr);
-			            }
+			            
+			            // Vi använder en timeout för att låta eventet dö ut innan vi öppnar modalen
+			            // Detta separerar händelserna och förhindrar krockar.
+			            setTimeout(() => {
+			                if (typeof openCarModal === 'function') {
+			                    openCarModal(regnr);
+			                }
+			            }, 10);
 			        }
 			    });
 			
@@ -2565,13 +2581,27 @@
 			    // --- LOGIK: VAD SKA VISAS NU? ---
 			
 			    // FALL 1: Vi ska visa CHATTEN (Vi backade från bild, eller gick fram till chatt)
-			    if (state.modal === 'chatWidget') {
+			    if (state.modal === 'chatWidget' || currentHash === '#chat') {
+			        // Se till att bildmodalen är stängd om vi backat från den
 			        if (imageModal) imageModal.style.display = 'none';
-			        if (chatWidget) chatWidget.style.display = 'flex';
+			
+			        if (chatWidget && chatWidget.style.display === 'none') {
+			            chatWidget.style.display = 'flex';
+			            
+			            if (window.innerWidth > 768) {
+			                setTimeout(() => {
+			                    const input = document.getElementById('chatInput');
+			                    if(input) input.focus();
+			                }, 100);
+			            }
+			        }
+			        
+			        // Markera knappen
 			        if (mobileChatBtn) mobileChatBtn.classList.add('active');
 			        
-			        updateScrollLock(); // Lås scroll
-			        return; // Stanna här
+			        // Uppdatera scroll och AVSLUTA FUNKTIONEN HÄR
+			        updateScrollLock(); 
+			        return; 
 			    }
 			    
 			    // FALL 2: Vi ska visa BILDEN (Vi gick framåt till bild)
