@@ -1142,30 +1142,30 @@
 			    const chatForm = document.getElementById('chatForm');
 			    const chatInput = document.getElementById('chatInput');
 			    
-			    // --- NYA ID:n FÖR SAMSUNG-DESIGNEN ---
+			    // --- KNAPPAR (NY STRUKTUR) ---
 			    const chatBackBtn = document.getElementById('chatBackBtn');
-			    const toggleSearchBtn = document.getElementById('toggleChatSearch');
-			    const searchArea = document.getElementById('chatSearchBarArea');
+			    
+			    // Sök & Header
 			    const searchInput = document.getElementById('chatSearchInput');
 			    const clearBtn = document.getElementById('clearChatSearch');
+			    const galleryToggleBtn = document.getElementById('toggleChatGallery'); // I headern
 			    
-			    const plusBtn = document.getElementById('chatPlusBtn');     
-			    const galleryBtn = document.getElementById('chatGalleryBtn'); 
-			    const galleryToggleBtn = document.getElementById('toggleChatGallery'); 
+			    // Input-fältets knappar
+			    const plusBtn = document.getElementById('chatPlusBtn');     // Nu kopplad till Galleri
+			    const cameraBtn = document.getElementById('chatCameraBtn'); // Kopplad till Kamera
 			    
 			    const fileInputGallery = document.getElementById('chatFileInputGallery');
 			    const fileInputCamera = document.getElementById('chatFileInputCamera');
 			
 			    if (!chatList || !chatForm) return;
 			    
-			    // Använd global variabel eller definiera den här om den saknas
 			    if (typeof currentChatLimit === 'undefined') {
 			        window.currentChatLimit = 50;
 			    } else {
 			        currentChatLimit = 50;
 			    }
 			
-			    // --- 1. HANTERA KNAPPAR (NY DESIGN) ---
+			    // --- 1. HANTERA KNAPPAR ---
 			
 			    // Tillbaka-pilen
 			    if (chatBackBtn) {
@@ -1179,35 +1179,9 @@
 			        };
 			    }
 			
-			    // Sök-toggle (Visa/Dölj sökruta)
-			    if (toggleSearchBtn && searchArea) {
-			        toggleSearchBtn.onclick = (e) => {
-			            e.preventDefault();
-			            const isHidden = searchArea.style.display === 'none';
-			            searchArea.style.display = isHidden ? 'flex' : 'none';
-			            if (isHidden) {
-			                setTimeout(() => {
-			                    if (searchInput) searchInput.focus();
-			                }, 50);
-			            }
-			        };
-			    }
-			
-			    // Plus-knappen (+) -> Öppnar Kamera
-			    if (plusBtn && fileInputCamera) {
+			    // Plus-knappen (+) -> Öppnar Galleri (Bifoga)
+			    if (plusBtn && fileInputGallery) {
 			        plusBtn.onclick = (e) => {
-			            e.preventDefault();
-			            fileInputCamera.click();
-			        };
-			        fileInputCamera.onchange = (e) => { 
-			            handleImageUpload(e.target.files[0]); 
-			            fileInputCamera.value = ''; 
-			        };
-			    }
-			
-			    // Galleri-knappen (Inuti fältet) -> Öppnar Galleri
-			    if (galleryBtn && fileInputGallery) {
-			        galleryBtn.onclick = (e) => {
 			            e.preventDefault();
 			            fileInputGallery.click();
 			        };
@@ -1217,17 +1191,80 @@
 			        };
 			    }
 			
-			    // Galleri-läge (Rutnät)
+			    // Kamera-knappen (Kamera ikon) -> Öppnar Kamera
+			    if (cameraBtn && fileInputCamera) {
+			        cameraBtn.onclick = (e) => {
+			            e.preventDefault();
+			            fileInputCamera.click();
+			        };
+			        fileInputCamera.onchange = (e) => { 
+			            handleImageUpload(e.target.files[0]); 
+			            fileInputCamera.value = ''; 
+			        };
+			    }
+			
+			    // Galleri-läge (Ikon i headern)
 			    if (galleryToggleBtn) {
-			        galleryToggleBtn.onclick = () => {
+			        galleryToggleBtn.onclick = (e) => {
+			            e.preventDefault();
 			            chatList.classList.toggle('gallery-mode');
 			            const isActive = chatList.classList.contains('gallery-mode');
+			            // Byt färg för att visa att det är aktivt
 			            galleryToggleBtn.style.color = isActive ? 'var(--primary-color)' : 'var(--text-color-light)';
+			            
 			            if (!isActive) setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
 			        };
 			    }
 			
-			    // --- 2. FOCUS/BLUR LOGIK (FIXAD FÖR DATOR) ---
+			    // --- 2. SÖKFUNKTION (ALLTID SYNLIG NU) ---
+			    if (searchInput) {
+			        const filterChat = () => {
+			            const term = searchInput.value.toLowerCase();
+			            const bubbles = chatList.querySelectorAll('.chat-bubble');
+			            const times = chatList.querySelectorAll('.chat-time');
+			            
+			            // Visa/dölj kryss-knappen
+			            if (clearBtn) clearBtn.style.display = term ? 'flex' : 'none';
+			            
+			            bubbles.forEach((bubble, index) => {
+			                const originalHTML = bubble.dataset.originalHtml || bubble.innerHTML;
+			                const textContent = bubble.textContent.toLowerCase();
+			                const isMatch = textContent.includes(term);
+			                const isImage = bubble.classList.contains('chat-bubble-image');
+			                const timeElement = times[index];
+			
+			                if (isMatch || (isImage && !term)) {
+			                    bubble.style.display = 'block';
+			                    if (timeElement) timeElement.style.display = 'block';
+			                    if (term && !isImage) {
+			                        const regex = new RegExp(`(${term})`, 'gi');
+			                        bubble.innerHTML = originalHTML.replace(regex, '<mark>$1</mark>');
+			                    } else {
+			                        bubble.innerHTML = originalHTML;
+			                    }
+			                } else {
+			                    bubble.style.display = 'none';
+			                    if (timeElement) timeElement.style.display = 'none';
+			                }
+			            });
+			        };
+			        
+			        searchInput.oninput = filterChat;
+			        
+			        if (clearBtn) {
+			            clearBtn.onclick = () => { 
+			                searchInput.value = ''; 
+			                filterChat(); 
+			                searchInput.focus(); 
+			            };
+			        }
+			        
+			        searchInput.addEventListener('keydown', (e) => {
+			            if (e.key === 'Enter') { e.preventDefault(); searchInput.blur(); }
+			        });
+			    }
+			
+			    // --- 3. FOCUS/BLUR LOGIK (DATOR FIX) ---
 			    if (chatInput && !chatInput.dataset.focusListenerAttached) {
 			        chatInput.dataset.focusListenerAttached = "true";
 			
@@ -1237,7 +1274,6 @@
 			        
 			        chatInput.addEventListener('focus', () => {
 			            if (window.innerWidth > 768) return; 
-			
 			            if (mobileNav) mobileNav.style.display = 'none';
 			            if (timelineView) timelineView.style.display = 'none';
 			            if (fabAddJob) fabAddJob.style.display = 'none';
@@ -1245,7 +1281,6 @@
 			
 			        chatInput.addEventListener('blur', () => {
 			            if (window.innerWidth > 768) return;
-			
 			            setTimeout(() => {
 			                if (mobileNav) mobileNav.style.display = 'flex';
 			                if (timelineView && currentView === 'timeline') timelineView.style.display = 'block'; 
@@ -1255,7 +1290,7 @@
 			        });
 			    }
 			
-			    // --- 3. TEXT-GENVÄGAR (Shortcuts) ---
+			    // --- 4. TEXT-GENVÄGAR ---
 			    const textShortcuts = {
 			        ':olja': '🛢', ':däck': '🛞', ':bil': '🚗',
 			        ':nyckel': '🔑', ':ok': '✅', ':fel': '❌',
@@ -1277,7 +1312,6 @@
 			            }
 			        });
 			        
-			        // Klistra in bild-stöd
 			        if (!chatInput.dataset.pasteListenerAttached) {
 			            chatInput.addEventListener('paste', async (e) => {
 			                const items = (e.clipboardData || e.originalEvent.clipboardData).items;
@@ -1294,7 +1328,7 @@
 			        }
 			    }
 			
-			    // --- 4. BILDUPPLADDNING ---
+			    // --- 5. BILDUPPLADDNING ---
 			    const handleImageUpload = async (file) => {
 			        if (!file) return;
 			        const caption = prompt("Vill du lägga till en bildtext?", "");
@@ -1317,7 +1351,7 @@
 			        }
 			    };
 			
-			    // --- 5. SKICKA MEDDELANDE ---
+			    // --- 6. SKICKA MEDDELANDE ---
 			    chatForm.onsubmit = async (e) => {
 			        e.preventDefault();
 			        const text = chatInput.value.trim();
@@ -1335,44 +1369,6 @@
 			        }
 			    };
 			
-			    // --- 6. SÖKFUNKTION ---
-			    if (searchInput && clearBtn) {
-			        const filterChat = () => {
-			            const term = searchInput.value.toLowerCase();
-			            const bubbles = chatList.querySelectorAll('.chat-bubble');
-			            const times = chatList.querySelectorAll('.chat-time');
-			            clearBtn.style.display = term ? 'block' : 'none';
-			            
-			            bubbles.forEach((bubble, index) => {
-			                // Använd dataset.originalHtml om det finns, annars innerHTML
-			                const originalHTML = bubble.dataset.originalHtml || bubble.innerHTML;
-			                const textContent = bubble.textContent.toLowerCase();
-			                const isMatch = textContent.includes(term);
-			                const isImage = bubble.classList.contains('chat-bubble-image');
-			                const timeElement = times[index];
-			
-			                if (isMatch || (isImage && !term)) {
-			                    bubble.style.display = 'block';
-			                    if (timeElement) timeElement.style.display = 'block';
-			                    if (term && !isImage) {
-			                        const regex = new RegExp(`(${term})`, 'gi');
-			                        bubble.innerHTML = originalHTML.replace(regex, '<mark>$1</mark>');
-			                    } else {
-			                        bubble.innerHTML = originalHTML;
-			                    }
-			                } else {
-			                    bubble.style.display = 'none';
-			                    if (timeElement) timeElement.style.display = 'none';
-			                }
-			            });
-			        };
-			        searchInput.oninput = filterChat;
-			        clearBtn.onclick = () => { searchInput.value = ''; filterChat(); searchInput.focus(); };
-			        searchInput.addEventListener('keydown', (e) => {
-			            if (e.key === 'Enter') { e.preventDefault(); searchInput.blur(); }
-			        });
-			    }
-			
 			    // --- 7. HUVUDLYSSNAREN (SCROLL-FIXAD) ---
 			    const setupChatListener = (limit) => {
 			        if (chatUnsubscribe) chatUnsubscribe(); 
@@ -1382,8 +1378,6 @@
 			            .orderBy("timestamp", "desc") 
 			            .limit(limit)                 
 			            .onSnapshot(snapshot => {
-			                
-			                // --- SCROLL FIX START ---
 			                const threshold = 150; 
 			                const scrollBottom = chatList.scrollHeight - chatList.scrollTop - chatList.clientHeight;
 			                const wasAtBottom = scrollBottom <= threshold || chatList.childElementCount === 0;
@@ -1425,13 +1419,12 @@
 			                        }
 			                    }
 			                }
-			                // --- SCROLL FIX SLUT ---
 			            });
 			    };
 			
 			    setupChatListener(currentChatLimit);
 			
-			    // --- 8. LADDA ÄLDRE (INFINITE SCROLL) ---
+			    // --- 8. LADDA ÄLDRE ---
 			    chatList.addEventListener('scroll', () => {
 			        if (chatList.scrollTop === 0 && !isFetchingOlderChat && !chatList.classList.contains('gallery-mode')) {
 			            isFetchingOlderChat = true;
@@ -1440,29 +1433,21 @@
 			        }
 			    });
 			
-			    // --- 9. KLICK-HANTERARE (LÄNKAR) ---
+			    // --- 9. KLICK-HANTERARE ---
 			    if (!chatList.dataset.clickListenerAttached) {
 			        chatList.addEventListener('click', (e) => {
-			            
 			            const regLink = e.target.closest('.chat-reg-link');
 			            if (regLink) {
 			                e.preventDefault(); e.stopPropagation();
 			                const regnr = regLink.dataset.reg;
-			                if (typeof openCarModal === 'function') {
-			                    if (typeof isModalOpen !== 'undefined') isModalOpen = true; 
-			                    openCarModal(regnr);
-			                }
+			                if (typeof openCarModal === 'function') openCarModal(regnr);
 			                return; 
 			            }
-			
 			            const customerLink = e.target.closest('.chat-customer-link');
 			            if (customerLink) {
 			                e.preventDefault(); e.stopPropagation();
 			                const kundnamn = customerLink.dataset.kund;
-			                if (typeof openCustomerModal === 'function') {
-			                    if (typeof isModalOpen !== 'undefined') isModalOpen = true; 
-			                    openCustomerModal(kundnamn);
-			                }
+			                if (typeof openCustomerModal === 'function') openCustomerModal(kundnamn);
 			                return;
 			            }
 			        });
