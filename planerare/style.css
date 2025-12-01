@@ -6664,6 +6664,65 @@ body.body-scroll-lock {
     color: white !important; /* Ikonen förblir vit */
 }
 
+/* --- REAKTIONER / TAPBACK --- */
+
+/* Den lilla ikonen på bubblan */
+.reaction-badge {
+    position: absolute;
+    bottom: -8px;
+    right: -4px;
+    background-color: var(--content-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 2px 5px;
+    font-size: 0.85rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    z-index: 2;
+    animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    cursor: pointer;
+}
+
+/* Menyn som dyker upp vid långtryck */
+.reaction-menu {
+    position: fixed; /* Ligger över allt */
+    background-color: var(--content-bg);
+    border-radius: 50px;
+    padding: 6px 12px;
+    display: flex;
+    gap: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    border: 1px solid var(--border-color);
+    z-index: 10000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    transform: scale(0.9);
+}
+
+.reaction-menu.show {
+    opacity: 1;
+    pointer-events: auto;
+    transform: scale(1);
+}
+
+.reaction-option {
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    user-select: none;
+    line-height: 1;
+}
+
+.reaction-option:hover {
+    transform: scale(1.3);
+}
+
+/* Justera pratbubblan för att klara positionering */
+.chat-bubble {
+    position: relative; /* Viktigt för att badgen ska hamna rätt */
+    /* Se till att bubblan inte klipper innehållet utanför (för badgen) */
+    overflow: visible !important; 
+}
 
 
 
