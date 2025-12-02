@@ -1111,7 +1111,7 @@
 			        if (menu.classList.contains('show')) {
 			            menu.style.pointerEvents = 'auto';
 			        }
-			    }, 400);
+			    }, 300);
 			    // ----------------------------------
 			    
 			    if (navigator.vibrate) navigator.vibrate(10); 
@@ -1752,8 +1752,8 @@
 				            if (typeof showReactionMenu === 'function') {
 				                showReactionMenu(startX, startY, id);
 				            }
-				            if (navigator.vibrate) navigator.vibrate(10);
-				        }, 500); // 500ms
+				            if (navigator.vibrate) navigator.vibrate(15); // Ökade vibrationen lite för bättre feedback
+				        }, 250); // <--- ÄNDRAD FRÅN 500 TILL 250
 				    }
 				};
 			
