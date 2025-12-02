@@ -558,14 +558,14 @@
 	        <div class="empty-state-chat"><p>Laddar...</p></div>
 	    </div>
 	    
-	    <form id="chatForm" class="chat-input-area samsung-style" autocomplete="off">
+	    <div id="chatInputArea" class="chat-input-area samsung-style">
 	        
 	        <input type="file" id="chatFileInputGallery" accept="image/*" multiple style="display: none;">
 	        <input type="file" id="chatFileInputCamera" accept="image/*" capture="environment" style="display: none;">
 	        
 	        <div class="chat-input-pill">
 	            
-	            <input type="text" id="chatInput" name="chat_message_field_v1" placeholder="Meddelande" autocomplete="off" spellcheck="true">
+	            <input type="text" id="chatInput" placeholder="Meddelande" autocomplete="off" enterkeyhint="send">
 	
 	            <div class="inner-input-actions right-side">
 	                <button type="button" id="chatPlusBtn" class="chat-inner-btn" title="Bifoga">
@@ -577,10 +577,10 @@
 	            </div>
 	        </div>
 	        
-	        <button type="submit" class="chat-action-btn primary circle-btn send-btn-rotated" title="Skicka">
+	        <button type="button" id="chatSendBtn" class="chat-action-btn primary circle-btn send-btn-rotated" title="Skicka">
 	            <svg class="icon-sm" viewBox="0 0 24 24"><path fill="currentColor" d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
 	        </button>
-	    </form>
+	    </div>
 	</div>
     
     <div id="customerModal" class="modal-backdrop" data-modal-id="customerModal">
