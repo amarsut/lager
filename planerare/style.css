@@ -7213,62 +7213,58 @@ body.body-scroll-lock {
 }
 
 
-/* --- REAKTIONSMENY (STOR & MOBILVÄNLIG - OVERRIDE) --- */
+/* --- REAKTIONSMENY (BALANSERAD STORLEK - NY) --- */
 
 /* 1. Själva menyrutan */
 .reaction-menu {
-    /* Tvingar storlek och luft */
-    padding: 16px 20px !important;
-    border-radius: 24px !important;
-    gap: 16px !important;
-    min-width: 300px !important;
+    padding: 12px 16px !important; /* Lite tajtare än förut */
+    border-radius: 20px !important; /* Något mindre rundning */
+    gap: 12px !important;
+    min-width: 260px !important; /* Inte lika bred, passar bättre på små skärmar */
     
-    /* Layout fix */
     flex-direction: column !important;
     align-items: stretch !important;
-    
-    /* Utseende */
     box-shadow: 0 10px 40px rgba(0,0,0,0.25) !important;
-    background-color: var(--content-bg) !important; /* Säkerställ bakgrund */
+    background-color: var(--content-bg) !important;
 }
 
 /* 2. Emojis (Övre raden) */
 .reaction-option {
-    font-size: 2rem !important; /* Stora emojis */
-    padding: 4px 8px !important;
+    font-size: 1.6rem !important; /* Lagom stora (var 2rem) */
+    padding: 2px 6px !important;
     height: auto !important;
-    line-height: normal !important; /* Fixar höjdproblem */
+    line-height: normal !important;
     transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 .reaction-option:active {
-    transform: scale(1.4);
+    transform: scale(1.3);
 }
 
-/* 3. Åtgärds-raden (Nedre raden: Redigera, Kopiera...) */
+/* 3. Åtgärds-raden (Nedre raden) */
 .reaction-actions-row {
-    padding-top: 12px !important;
-    margin-top: 4px !important;
+    padding-top: 10px !important;
+    margin-top: 2px !important;
     border-top: 1px solid var(--border-color) !important;
     
     display: flex !important;
     justify-content: space-between !important;
-    gap: 8px !important;
+    gap: 4px !important; /* Mindre gap så knapparna får plats */
 }
 
-/* 4. Behållare för varje knapp (Ikon + Text) */
+/* 4. Behållare för knapp */
 .action-item {
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
-    gap: 6px !important;
-    flex: 1 !important; /* Dela lika på bredden */
+    gap: 4px !important; /* Tajtare mellan ikon och text */
+    flex: 1 !important;
     cursor: pointer;
 }
 
 /* 5. Cirkel-knapparna */
 .action-item .icon-circle {
-    width: 56px !important;  /* Stor träffyta */
-    height: 56px !important;
+    width: 44px !important;  /* Standard storlek för touch (var 56px) */
+    height: 44px !important;
     border-radius: 50% !important;
     background-color: var(--bg-color) !important;
     
@@ -7278,10 +7274,10 @@ body.body-scroll-lock {
     transition: all 0.2s ease;
 }
 
-/* 6. Ikonerna inuti cirklarna */
+/* 6. Ikoner */
 .action-item .icon-sm {
-    width: 1.6rem !important;
-    height: 1.6rem !important;
+    width: 1.25rem !important; /* Lite mindre ikoner */
+    height: 1.25rem !important;
     stroke-width: 2px !important;
     color: var(--text-color) !important;
 }
@@ -7289,17 +7285,18 @@ body.body-scroll-lock {
     color: var(--danger-color) !important;
 }
 
-/* 7. Texten under knapparna */
+/* 7. Text under knapp */
 .action-item span {
-    font-size: 0.85rem !important;
+    font-size: 0.75rem !important; /* Lite mindre text */
     font-weight: 600 !important;
     color: var(--text-color-light) !important;
 }
 
-/* 8. Dark mode justering */
+/* 8. Dark mode */
 [data-theme="dark"] .action-item .icon-circle {
     background-color: rgba(255, 255, 255, 0.1) !important;
 }
+
 
 
 
