@@ -6119,6 +6119,11 @@ body.body-scroll-lock {
     animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
+.chat-bubble {
+    /* ... dina gamla stilar ... */
+    touch-action: pan-y !important; /* <--- LÄGG TILL DENNA */
+}
+
 @keyframes popIn {
     from { opacity: 0; transform: scale(0.8) translateY(10px); }
     to { opacity: 1; transform: scale(1) translateY(0); }
@@ -7204,6 +7209,7 @@ body.body-scroll-lock {
     -webkit-user-select: none !important;
     user-select: none !important;
 }
+
 
 
 
