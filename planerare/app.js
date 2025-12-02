@@ -1050,62 +1050,70 @@
 			    }
 			}
 			
-			// 2. Visa menyn vid långtryck
-			function showReactionMenu(x, y, messageId, isTouch = false) {
-			    createReactionMenu(); 
-			    const menu = document.getElementById('reactionMenu');
-			    
-			    menu.dataset.targetId = messageId;
-			    
-			    // --- FIX: Nollställ position och klasser ---
-			    menu.style.display = 'flex';
-			    menu.style.visibility = 'hidden'; 
-			    menu.classList.remove('show');
-			    
-			    // SÄKERHETSÅTGÄRD: Gör menyn oklickbar i 300ms
-			    // Detta förhindrar att "släppet" av fingret registreras som ett klick på menyn
-			    menu.style.pointerEvents = 'none';
-			    setTimeout(() => {
-			        menu.style.pointerEvents = 'auto';
-			    }, 300);
+			// Variabel för att hålla koll på säkerhetstimern globalt
+            let reactionSafetyTimer = null;
 
-			    // Mät storlek
-			    const menuWidth = menu.offsetWidth;
-			    const menuHeight = menu.offsetHeight;
-			    const screenWidth = window.innerWidth;
-			    const screenHeight = window.innerHeight;
-			
-			    // Beräkna X
-			    let left = x - (menuWidth / 2);
-			    if (left + menuWidth > screenWidth - 15) left = screenWidth - menuWidth - 15;
-			    if (left < 15) left = 15;
-			
-			    // Beräkna Y (Flytta upp den lite extra om det är touch, så fingret inte skymmer)
-			    let top = y - 70;
+            function showReactionMenu(x, y, messageId, isTouch = false) {
+                createReactionMenu(); 
+                const menu = document.getElementById('reactionMenu');
                 
-                // Om touch, flytta upp lite till för att undvika fingret
-                if (isTouch) top -= 20;
+                // Rensa ev. gammal timer så vi inte låser fel meny
+                if (reactionSafetyTimer) clearTimeout(reactionSafetyTimer);
 
-			    if (top < 20) top = y + 20;
+                menu.dataset.targetId = messageId;
                 
-                // Krockar den med botten?
-                if (top + menuHeight > screenHeight - 20) {
-                    top = y - menuHeight - 20;
-                }
-			
-			    menu.style.left = `${left}px`;
-			    menu.style.top = `${top}px`;
-			    
-			    menu.style.removeProperty('visibility');
-			    void menu.offsetWidth; // Trigger reflow
-			    
-			    menu.classList.add('show');
-			}
+                // Nollställ
+                menu.style.display = 'flex';
+                menu.style.visibility = 'hidden'; 
+                menu.classList.remove('show');
+                
+                // 1. Gör menyn oklickbar direkt (Säkerhetsåtgärd)
+                menu.style.pointerEvents = 'none';
+                
+                // 2. Släpp på klickspärren efter 400ms
+                reactionSafetyTimer = setTimeout(() => {
+                    menu.style.pointerEvents = 'auto';
+                    reactionSafetyTimer = null;
+                }, 400);
+
+                // Positionering (Oförändrad)
+                const menuWidth = menu.offsetWidth;
+                const menuHeight = menu.offsetHeight;
+                const screenWidth = window.innerWidth;
+                const screenHeight = window.innerHeight;
+            
+                let left = x - (menuWidth / 2);
+                if (left + menuWidth > screenWidth - 15) left = screenWidth - menuWidth - 15;
+                if (left < 15) left = 15;
+            
+                let top = y - 70;
+                if (isTouch) top -= 25; // Lite mer marginal för fingret
+
+                if (top < 20) top = y + 20;
+                if (top + menuHeight > screenHeight - 20) top = y - menuHeight - 20;
+            
+                menu.style.left = `${left}px`;
+                menu.style.top = `${top}px`;
+                
+                menu.style.removeProperty('visibility');
+                void menu.offsetWidth; 
+                menu.classList.add('show');
+            }
 			
 			function hideReactionMenu() {
-			    const menu = document.getElementById('reactionMenu');
-			    if (menu) menu.classList.remove('show');
-			}
+                const menu = document.getElementById('reactionMenu');
+                if (menu) {
+                    menu.classList.remove('show');
+                    
+                    // Återställ klickbarhet direkt när vi stänger
+                    menu.style.pointerEvents = 'auto';
+                }
+                // Döda säkerhetstimern om den är igång
+                if (typeof reactionSafetyTimer !== 'undefined' && reactionSafetyTimer) {
+                    clearTimeout(reactionSafetyTimer);
+                    reactionSafetyTimer = null;
+                }
+            }
 			
 			// 3. Spara till Firebase
 			function applyReaction(id, icon) {
@@ -1714,50 +1722,76 @@
 			
 			    // --- MOBIL: LÅNGTRYCK (Endast Touch) ---
 			    let pressTimer = null;
-			    let startX = 0, startY = 0;
-			
-			    const handleTouchStart = (e) => {
-			        if (e.touches && e.touches.length > 0) {
-			            startX = e.touches[0].clientX;
-			            startY = e.touches[0].clientY;
-			            
-			            pressTimer = setTimeout(() => {
-			                // Tiden gick ut = Långtryck!
-			                if (typeof showReactionMenu === 'function') {
-			                    // Skicka med flagga 'true' för att indikera touch-öppning
-			                    showReactionMenu(startX, startY, id, true);
-			                }
-			                if (navigator.vibrate) navigator.vibrate(10);
-			            }, 500); // 500ms
-			        }
-			    };
-			
-			    const handleTouchMove = (e) => {
-			        if (!pressTimer) return;
-			        const currentX = e.touches[0].clientX;
-			        const currentY = e.touches[0].clientY;
-			        
-			        // FIX: Öka känsligheten. Om man rör sig mer än 5px (en swipe börjar), avbryt direkt.
-			        if (Math.abs(currentX - startX) > 5 || Math.abs(currentY - startY) > 5) {
-			            clearTimeout(pressTimer);
-			            pressTimer = null;
-			        }
-			    };
-			
-			    const handleTouchEnd = (e) => {
-			        // Avbryt alltid timern när man släpper
-			        if (pressTimer) {
-			            clearTimeout(pressTimer);
-			            pressTimer = null;
-			        }
-			    };
-			
-			    // Koppla händelser
-			    bubble.addEventListener('touchstart', handleTouchStart, {passive: true});
-			    bubble.addEventListener('touchmove', handleTouchMove, {passive: true});
-			    bubble.addEventListener('touchend', handleTouchEnd, {passive: true});
-			    // Lägg till touchcancel för säkerhets skull (om en swipe avbryter touchen)
-			    bubble.addEventListener('touchcancel', handleTouchEnd, {passive: true});
+                let startX = 0, startY = 0;
+                let longPressTriggered = false; // NY FLAGGA
+
+                const handleTouchStart = (e) => {
+                    if (e.touches && e.touches.length > 0) {
+                        startX = e.touches[0].clientX;
+                        startY = e.touches[0].clientY;
+                        longPressTriggered = false; // Återställ
+                        
+                        pressTimer = setTimeout(() => {
+                            // Tiden gick ut = Vi kör vårt långtryck!
+                            longPressTriggered = true; // Markera att vi hanterat det
+                            
+                            if (typeof showReactionMenu === 'function') {
+                                showReactionMenu(startX, startY, id, true);
+                            }
+                            if (navigator.vibrate) navigator.vibrate(10);
+                        }, 500); 
+                    }
+                };
+
+                const handleTouchMove = (e) => {
+                    // Om vi redan har triggat menyn, gör inget
+                    if (longPressTriggered) return;
+
+                    if (!pressTimer) return;
+                    const currentX = e.touches[0].clientX;
+                    const currentY = e.touches[0].clientY;
+                    
+                    // Avbryt om man rör fingret mer än 5px (swipe)
+                    if (Math.abs(currentX - startX) > 5 || Math.abs(currentY - startY) > 5) {
+                        clearTimeout(pressTimer);
+                        pressTimer = null;
+                    }
+                };
+
+                const handleTouchEnd = (e) => {
+                    // Städa upp
+                    if (pressTimer) {
+                        clearTimeout(pressTimer);
+                        pressTimer = null;
+                    }
+                    // Vi behåller longPressTriggered=true en kort stund till
+                    // för att blockera 'contextmenu' som kommer strax efter
+                    setTimeout(() => { longPressTriggered = false; }, 200);
+                };
+
+                // Koppla touch-händelser
+                bubble.addEventListener('touchstart', handleTouchStart, {passive: true});
+                bubble.addEventListener('touchmove', handleTouchMove, {passive: true});
+                bubble.addEventListener('touchend', handleTouchEnd, {passive: true});
+                bubble.addEventListener('touchcancel', handleTouchEnd, {passive: true});
+
+                // --- VIKTIGT: Blockera standard-menyn om vi redan kört vår egen ---
+                bubble.addEventListener('contextmenu', (e) => {
+                    // Om vår timer redan har kört -> DÖDA denna händelse
+                    if (longPressTriggered) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        return false;
+                    }
+                    
+                    // Annars (på dator eller om timern inte hann klart), visa menyn som vanligt
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (typeof showReactionMenu === 'function') {
+                        showReactionMenu(e.clientX, e.clientY, id);
+                    }
+                    return false;
+                });
 			
 			
 			    // --- INNEHÅLL (Samma som tidigare) ---
