@@ -1707,102 +1707,9 @@
 			function renderChatBubble(id, data, container) {
 			    const bubble = document.createElement('div');
 			    bubble.className = 'chat-bubble';
-			    
-			    // --- DATOR: HÖGERKLICK ÖPPNAR MENYN ---
-			    bubble.addEventListener('contextmenu', (e) => {
-			        e.preventDefault(); // Stoppa webbläsarens vanliga högerklicksmeny
-			        e.stopPropagation();
-			        
-			        if (typeof showReactionMenu === 'function') {
-			            showReactionMenu(e.clientX, e.clientY, id);
-			        }
-			        return false;
-			    });
 			
-			    if (data.reaction) {
-			        const badge = document.createElement('span');
-			        badge.className = 'reaction-badge';
-			        badge.textContent = data.reaction;
-			        badge.onclick = (e) => { e.stopPropagation(); applyReaction(id, data.reaction); };
-			        bubble.appendChild(badge);
-			    }
-			
-			    // --- MOBIL: LÅNGTRYCK (Endast Touch) ---
-			    let pressTimer = null;
-			    let startX = 0, startY = 0;
-			    let isScrolling = false;
-			
-			    // 1. Starta timern
-			    const handleTouchStart = (e) => {
-			        // Om flera fingrar används (zoom etc), avbryt direkt
-			        if (e.touches.length > 1) return;
-			
-			        startX = e.touches[0].clientX;
-			        startY = e.touches[0].clientY;
-			        isScrolling = false; // Nollställ scroll-status
-			
-			        // Rensa eventuell gammal timer för säkerhets skull
-			        if (pressTimer) clearTimeout(pressTimer);
-			
-			        // Starta ny timer för långtryck (250ms = snabb respons)
-			        pressTimer = setTimeout(() => {
-			            // Om vi inte har börjat scrolla, visa menyn
-			            if (!isScrolling) {
-			                if (typeof showReactionMenu === 'function') {
-			                    showReactionMenu(startX, startY, id);
-			                }
-			                if (navigator.vibrate) navigator.vibrate(15);
-			            }
-			        }, 250);
-			    };
-			
-			    // 2. Om fingret rör sig -> Det är scroll, avbryt menyn!
-			    const handleTouchMove = (e) => {
-			        if (!pressTimer) return;
-			
-			        const currentX = e.touches[0].clientX;
-			        const currentY = e.touches[0].clientY;
-			        
-			        // Räkna ut hur långt fingret rört sig
-			        const diffX = Math.abs(currentX - startX);
-			        const diffY = Math.abs(currentY - startY);
-			
-			        // Om fingret rört sig mer än 10px räknar vi det som scroll/swipe
-			        if (diffX > 10 || diffY > 10) {
-			            isScrolling = true;
-			            clearTimeout(pressTimer);
-			            pressTimer = null;
-			        }
-			    };
-			
-			    // 3. Om man släpper fingret -> Avbryt timern
-			    const handleTouchEnd = (e) => {
-			        if (pressTimer) {
-			            clearTimeout(pressTimer);
-			            pressTimer = null;
-			        }
-			    };
-			
-			    // 4. BLOCKERA inbyggd högerklicksmeny på mobilen (Viktig fix för bugg 2)
-			    // Detta förhindrar att telefonens egen meny krockar med din meny vid upprepade tryck.
-			    bubble.addEventListener('contextmenu', (e) => {
-			        // Blockera bara om det är touch (låt desktop-högerklick fungera om du vill)
-			        // Eller blockera alltid för konsekvens:
-			        e.preventDefault();
-			        e.stopPropagation();
-			        return false;
-			    });
-			
-			    // Koppla listeners med passive: true för att scrollen ska flyta på bra
-			    bubble.addEventListener('touchstart', handleTouchStart, { passive: true });
-			    bubble.addEventListener('touchmove', handleTouchMove, { passive: true });
-			    bubble.addEventListener('touchend', handleTouchEnd, { passive: true });
-			    bubble.addEventListener('touchcancel', handleTouchEnd, { passive: true });
-			    
-			    // Fånga klicket för att stoppa "spök-klick"
-			    bubble.addEventListener('click', handleClick);
-			
-			    // --- INNEHÅLL (Samma som tidigare) ---
+			    // 1. --- LOGIK FÖR INNEHÅLL (TEXT & BILD) ---
+			    // (Detta saknades troligen i din kod nu)
 			    
 			    if (data.images && Array.isArray(data.images)) {
 			        bubble.classList.add('chat-bubble-image');
@@ -1884,14 +1791,101 @@
 			        }
 			        bubble.dataset.originalHtml = bubble.innerHTML;
 			    }
+			
+			    // Lägg till reaktion om det finns
+			    if (data.reaction) {
+			        const badge = document.createElement('span');
+			        badge.className = 'reaction-badge';
+			        badge.textContent = data.reaction;
+			        badge.onclick = (e) => { e.stopPropagation(); applyReaction(id, data.reaction); };
+			        bubble.appendChild(badge);
+			    }
+			
+			    // 2. --- NY BUGGFRI TOUCH-LOGIK ---
 			    
-			    // Tidsstämpel
+			    let pressTimer = null;
+			    let startX = 0, startY = 0;
+			    let isScrolling = false;
+			
+			    // Starta timern
+			    const handleTouchStart = (e) => {
+			        // Om flera fingrar används (zoom etc), avbryt direkt
+			        if (e.touches.length > 1) return;
+			
+			        startX = e.touches[0].clientX;
+			        startY = e.touches[0].clientY;
+			        isScrolling = false; // Nollställ scroll-status
+			
+			        if (pressTimer) clearTimeout(pressTimer);
+			
+			        // Starta ny timer för långtryck
+			        pressTimer = setTimeout(() => {
+			            // Om vi inte har börjat scrolla, visa menyn
+			            if (!isScrolling) {
+			                if (typeof showReactionMenu === 'function') {
+			                    showReactionMenu(startX, startY, id);
+			                }
+			                if (navigator.vibrate) navigator.vibrate(15);
+			            }
+			        }, 250);
+			    };
+			
+			    // Om fingret rör sig -> Det är scroll, avbryt menyn!
+			    const handleTouchMove = (e) => {
+			        if (!pressTimer) return;
+			
+			        const currentX = e.touches[0].clientX;
+			        const currentY = e.touches[0].clientY;
+			        
+			        const diffX = Math.abs(currentX - startX);
+			        const diffY = Math.abs(currentY - startY);
+			
+			        // Om fingret rör sig mer än 10px räknar vi det som scroll
+			        if (diffX > 10 || diffY > 10) {
+			            isScrolling = true;
+			            clearTimeout(pressTimer);
+			            pressTimer = null;
+			        }
+			    };
+			
+			    // Om man släpper fingret -> Avbryt timern
+			    const handleTouchEnd = (e) => {
+			        if (pressTimer) {
+			            clearTimeout(pressTimer);
+			            pressTimer = null;
+			        }
+			    };
+			
+			    // DATOR: Högerklick
+			    bubble.addEventListener('contextmenu', (e) => {
+			        // Blockera alltid mobilens inbyggda meny så den inte krockar
+			        if (window.innerWidth <= 768) {
+			            e.preventDefault();
+			            e.stopPropagation();
+			            return false;
+			        }
+			        // På dator, öppna vår meny vid högerklick
+			        e.preventDefault();
+			        e.stopPropagation();
+			        if (typeof showReactionMenu === 'function') {
+			            showReactionMenu(e.clientX, e.clientY, id);
+			        }
+			        return false;
+			    });
+			
+			    // Koppla mobil-lyssnare med passive: true (VIKTIGT FÖR SCROLL)
+			    bubble.addEventListener('touchstart', handleTouchStart, { passive: true });
+			    bubble.addEventListener('touchmove', handleTouchMove, { passive: true });
+			    bubble.addEventListener('touchend', handleTouchEnd, { passive: true });
+			    bubble.addEventListener('touchcancel', handleTouchEnd, { passive: true });
+			
+			    // 3. --- SKAPA TIDSSTÄMPEL ---
 			    const time = document.createElement('div');
 			    time.className = 'chat-time';
-			    const date = new Date(data.timestamp);
-			    const timeString = date.toLocaleTimeString('sv-SE', {hour: '2-digit', minute:'2-digit'});
-			    const dateString = date.toLocaleDateString('sv-SE', {day: 'numeric', month: 'short'});
-			    const isToday = new Date().toDateString() === date.toDateString();
+			    const dateObj = new Date(data.timestamp);
+			    const timeString = dateObj.toLocaleTimeString('sv-SE', {hour: '2-digit', minute:'2-digit'});
+			    const dateString = dateObj.toLocaleDateString('sv-SE', {day: 'numeric', month: 'short'});
+			    const isToday = new Date().toDateString() === dateObj.toDateString();
 			    const displayTime = isToday ? timeString : `${dateString}, ${timeString}`;
 			
 			    let platformIconHtml = '';
@@ -1903,6 +1897,7 @@
 			        time.innerHTML += ` <span style="font-style:italic; opacity:0.7;">(redigerad)</span>`;
 			    }
 			
+			    // 4. --- LÄGG TILL ALLT I LISTAN ---
 			    container.appendChild(bubble);
 			    container.appendChild(time);
 			}
