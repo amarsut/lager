@@ -3101,6 +3101,7 @@
 			});
 
             window.addEventListener('popstate', (event) => {
+                // Skydd mot loopar om vi backar via kod
                 if (isNavigatingBack) {
                     isNavigatingBack = false;
                     return;
@@ -3110,34 +3111,41 @@
                 const state = event.state || {};
                 const currentHash = window.location.hash;
                 
-                // 1. Hämta element och nuvarande synlighet (Snapshot)
+                // Hämta element
                 const chatWidget = document.getElementById('chatWidget');
                 const imageModal = document.getElementById('imageZoomModal');
-                const mobileChatBtn = document.getElementById('mobileChatBtn');
                 const mobileSearch = document.getElementById('mobileSearchModal');
+                const mobileChatBtn = document.getElementById('mobileChatBtn');
                 const anyOpenModal = document.querySelector('.modal-backdrop.show');
 
-                // Använd getComputedStyle för 100% sanning om vad som syns
-                const isChatVisible = chatWidget && window.getComputedStyle(chatWidget).display === 'flex';
+                // Kontrollera synlighet (Sanningen om vad som visas)
                 const isImageVisible = imageModal && window.getComputedStyle(imageModal).display !== 'none';
                 const isMobileSearchVisible = mobileSearch && window.getComputedStyle(mobileSearch).display === 'flex';
-                const isDesktop = window.innerWidth > 768;
+                
+                // --- 1. SÖK-HANTERING (Mobil) ---
+                if (isMobileSearchVisible && state.modal !== 'mobileSearch') {
+                    resetAndCloseSearch();
+                    updateScrollLock();
+                    return;
+                }
 
-                // --- SCENARIO A: NAVIGERA TILL BILD ---
-                if (state.modal === 'imageZoom' || currentHash === '#image') {
+                // --- 2. BILD-HANTERING (Framåt) ---
+                if (state.modal === 'imageZoom') {
                     if (imageModal) imageModal.style.display = 'flex';
                     updateScrollLock();
                     return;
                 }
 
-                // --- SCENARIO B: NAVIGERA TILL CHATT (#chat i URL) ---
+                // --- 3. CHATT-HANTERING (Tillbaka till Chatten) ---
+                // Detta gäller både när vi öppnar chatten OCH när vi stänger en bild/modal ovanpå den
                 if (state.modal === 'chatWidget' || currentHash === '#chat') {
-                    // Stäng bild om den ligger överst
+                    
+                    // A. Stäng bildzoom om den ligger överst (Samma logik som RegNr-modalen)
                     if (isImageVisible) {
                         imageModal.style.display = 'none';
                     }
-                    
-                    // Dölj andra modaler
+
+                    // B. Stäng andra modaler (RegNr, Kund etc)
                     if (anyOpenModal && anyOpenModal.id !== 'chatWidget') {
                         anyOpenModal.classList.remove('show');
                         setTimeout(() => { anyOpenModal.style.display = 'none'; }, 200);
@@ -3145,55 +3153,64 @@
                         currentOpenModalId = null;
                     }
 
-                    // Visa chatten (om den inte redan syns)
-                    if (chatWidget && !isChatVisible) {
+                    // C. FIXEN: Rör inte chatten om den redan är öppen
+                    // Vi kollar inline-stilen 'flex'. Om den är satt, låt den vara.
+                    // Detta stoppar animationen från att starta om.
+                    if (chatWidget && chatWidget.style.display !== 'flex') {
                         chatWidget.style.display = 'flex';
                     }
+                    
                     if (mobileChatBtn) mobileChatBtn.classList.add('active');
 
+                    // Återställ scroll/variabler
                     updateScrollLock();
-                    return;
-                }
-
-                // --- SCENARIO C: NAVIGERA TILL HEM/TOMT (Stängning) ---
-                
-                // 1. Stäng alltid Bilden (om den är öppen)
-                if (imageModal) imageModal.style.display = 'none';
-
-                // 2. Hantera Chatten (Här är fixen för Datorn)
-                if (chatWidget) {
-                    // Om vi är på Dator, precis stängde en bild, och chatten ligger under...
-                    // ...Låt chatten vara kvar (Rör inte display-propertyn).
-                    if (isDesktop && isImageVisible && isChatVisible) {
-                        // Gör ingenting = Chatten stannar kvar och ingen animation spelas upp.
-                    } else {
-                        // Annars (Mobil, eller vi stänger chatten medvetet): Stäng den.
-                        chatWidget.style.display = 'none';
-                        if (mobileChatBtn) mobileChatBtn.classList.remove('active');
+                    
+                    // Fokusera bara input om vi INTE kom från en bild (behåll position)
+                    if (!isImageVisible && window.innerWidth > 768) {
+                        setTimeout(() => {
+                            const input = document.getElementById('chatInput');
+                            if(input) input.focus();
+                        }, 50);
                     }
+
+                    return; // VIKTIGT: Stanna här!
                 }
 
-                // 3. Stäng övrigt
-                if (isMobileSearchVisible) resetAndCloseSearch();
+                // --- 4. GRUNDLÄGE (Stäng allt) ---
+                // Hit kommer vi bara om URL är tom/home (inte #chat eller #image)
+                
+                // Spara status för mobil-toast innan vi stänger
+                const isChatActuallyVisible = chatWidget && window.getComputedStyle(chatWidget).display === 'flex';
+                const wasSomethingOpen = isChatActuallyVisible || isImageVisible || anyOpenModal || isMobileSearchVisible;
 
+                // Stäng Bild
+                if (imageModal) imageModal.style.display = 'none';
+                
+                // Stäng Chatt
+                if (chatWidget) {
+                    chatWidget.style.display = 'none';
+                    if (mobileChatBtn) mobileChatBtn.classList.remove('active');
+                }
+
+                // Stäng Modaler
                 if (anyOpenModal) {
                     anyOpenModal.classList.remove('show');
                     setTimeout(() => { anyOpenModal.style.display = 'none'; }, 200);
                 }
+                
+                if (mobileSearch) resetAndCloseSearch();
 
                 isModalOpen = false;
                 currentOpenModalId = null;
                 updateScrollLock();
 
-                // --- 4. MOBIL "TRYCK IGEN"-VARNING ---
-                // Körs bara om ingenting viktigt var öppet nyss
-                const wasSomethingOpen = isChatVisible || isImageVisible || anyOpenModal || isMobileSearchVisible;
-                
-                if (!isDesktop && !wasSomethingOpen) {
+                // --- 5. MOBIL TOAST (Endast om inget var öppet) ---
+                if (window.innerWidth <= 768 && !wasSomethingOpen) {
                     if (backPressWarned) {
                         backPressWarned = false; // Stäng appen
+                        history.back(); // Tvinga en extra back för att säkra stängning
                     } else {
-                        history.pushState({ page: 'home' }, 'Home', location.pathname); // Stanna kvar
+                        history.pushState({ page: 'home' }, 'Home', location.pathname);
                         backPressWarned = true;
                         showToast('Tryck bakåt igen för att stänga', 'info');
                         backPressTimer = setTimeout(() => { backPressWarned = false; }, 2000);
