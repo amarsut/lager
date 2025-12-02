@@ -762,7 +762,7 @@
 			    document.getElementById('mmCloseBtn').onclick = () => history.back();
 			    document.getElementById('mmShareBtn').onclick = downloadCurrentPhoto;
 			    document.getElementById('mmForwardBtn').onclick = () => {
-			        showToast("Vidarebefordra: Kommer snart!", "info");
+			        document.getElementById('mmForwardBtn').onclick = forwardCurrentPhoto;
 			    };
 			
 			    // 4. KLICKA UTANFÖR FÖR ATT STÄNGA
