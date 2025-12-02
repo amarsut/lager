@@ -1098,8 +1098,21 @@
 			    
 			    // Ett litet hack för att webbläsaren ska uppfatta ändringen innan klassen läggs på
 			    void menu.offsetWidth; 
-			    
+    
 			    menu.classList.add('show');
+			    
+			    // --- FIX: SÄKERHETSFÖRDRÖJNING ---
+			    // Gör menyn oklickbar i 400ms så man inte råkar välja något 
+			    // när man släpper fingret.
+			    menu.style.pointerEvents = 'none';
+			    
+			    setTimeout(() => {
+			        // Om menyn fortfarande är öppen, gör den klickbar igen
+			        if (menu.classList.contains('show')) {
+			            menu.style.pointerEvents = 'auto';
+			        }
+			    }, 400);
+			    // ----------------------------------
 			    
 			    if (navigator.vibrate) navigator.vibrate(10); 
 			}
