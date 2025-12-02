@@ -1716,22 +1716,30 @@
 			
 			    // --- MOBIL: LÅNGTRYCK (Endast Touch) ---
 			    let pressTimer = null;
-			    let startX = 0, startY = 0;
-			
-			    const handleTouchStart = (e) => {
-			        if (e.touches && e.touches.length > 0) {
-			            startX = e.touches[0].clientX;
-			            startY = e.touches[0].clientY;
-			            
-			            pressTimer = setTimeout(() => {
-			                // Tiden gick ut = Långtryck!
-			                if (typeof showReactionMenu === 'function') {
-			                    showReactionMenu(startX, startY, id);
-			                }
-			                if (navigator.vibrate) navigator.vibrate(10);
-			            }, 500); // 500ms
-			        }
-			    };
+				let startX = 0, startY = 0;
+				
+				const handleTouchStart = (e) => {
+				    if (e.touches && e.touches.length > 0) {
+				        startX = e.touches[0].clientX;
+				        startY = e.touches[0].clientY;
+				        
+				        // --- FIX: IGNORERA KANT-SWIPE ---
+				        // Om användaren trycker inom 40px från vänsterkanten, 
+				        // anta att det är en "swipe back" och starta inte menyn.
+				        if (startX < 40) {
+				            return;
+				        }
+				        // --------------------------------
+				
+				        pressTimer = setTimeout(() => {
+				            // Tiden gick ut = Långtryck!
+				            if (typeof showReactionMenu === 'function') {
+				                showReactionMenu(startX, startY, id);
+				            }
+				            if (navigator.vibrate) navigator.vibrate(10);
+				        }, 500); // 500ms
+				    }
+				};
 			
 			    const handleTouchMove = (e) => {
 			        if (!pressTimer) return;
