@@ -765,6 +765,10 @@
 			        return;
 			    }
 
+				if (e.target.closest('#reactionMenu')) {
+			        return;
+			    }
+
                 // --- FIX HÄR: Klickade vi på en modal-bakgrund? ---
                 // Om vi klickar på den mörka bakgrunden av en modal, låt modalen hantera stängningen själv.
                 // Stäng INTE chatten i detta läge.
