@@ -1051,61 +1051,55 @@
 			}
 			
 			// 2. Visa menyn vid långtryck
-			function showReactionMenu(x, y, messageId) {
+			function showReactionMenu(x, y, messageId, isTouch = false) {
 			    createReactionMenu(); 
 			    const menu = document.getElementById('reactionMenu');
 			    
 			    menu.dataset.targetId = messageId;
 			    
-			    // 1. Återställ stilar för att kunna mäta den "sanna" storleken
+			    // --- FIX: Nollställ position och klasser ---
 			    menu.style.display = 'flex';
-			    menu.style.visibility = 'hidden'; // Dölj den medan vi mäter
-			    menu.style.transform = 'none';    // Ta bort ev. skalning
-			    menu.classList.remove('show');    // Ta bort animationsklassen
-			
-			    // 2. Mät bredd och höjd på skärm och meny
-			    const menuWidth = menu.offsetWidth; // Använd offsetWidth för faktisk bredd
+			    menu.style.visibility = 'hidden'; 
+			    menu.classList.remove('show');
+			    
+			    // SÄKERHETSÅTGÄRD: Gör menyn oklickbar i 300ms
+			    // Detta förhindrar att "släppet" av fingret registreras som ett klick på menyn
+			    menu.style.pointerEvents = 'none';
+			    setTimeout(() => {
+			        menu.style.pointerEvents = 'auto';
+			    }, 300);
+
+			    // Mät storlek
+			    const menuWidth = menu.offsetWidth;
 			    const menuHeight = menu.offsetHeight;
 			    const screenWidth = window.innerWidth;
+			    const screenHeight = window.innerHeight;
 			
-			    // 3. Beräkna X (Vänster/Höger)
-			    // Centrera menyn över klicket till en början
+			    // Beräkna X
 			    let left = x - (menuWidth / 2);
-			    
-			    // JUSTERA HÖGER KANT (Viktigast)
-			    // Om menyn sticker ut till höger -> Fäst den mot högerkanten minus 15px marginal
-			    if (left + menuWidth > screenWidth - 15) {
-			        left = screenWidth - menuWidth - 15;
-			    }
-			    
-			    // JUSTERA VÄNSTER KANT
-			    // Om menyn sticker ut till vänster -> Fäst den mot vänsterkanten plus 15px marginal
-			    if (left < 15) {
-			        left = 15;
-			    }
+			    if (left + menuWidth > screenWidth - 15) left = screenWidth - menuWidth - 15;
+			    if (left < 15) left = 15;
 			
-			    // 4. Beräkna Y (Upp/Ner)
+			    // Beräkna Y (Flytta upp den lite extra om det är touch, så fingret inte skymmer)
 			    let top = y - 70;
-			    // Om det är för nära toppen av skärmen, visa menyn under fingret istället
-			    if (top < 20) {
-			        top = y + 20;
-			    }
+                
+                // Om touch, flytta upp lite till för att undvika fingret
+                if (isTouch) top -= 20;
+
+			    if (top < 20) top = y + 20;
+                
+                // Krockar den med botten?
+                if (top + menuHeight > screenHeight - 20) {
+                    top = y - menuHeight - 20;
+                }
 			
-			    // 5. Applicera positionerna
 			    menu.style.left = `${left}px`;
 			    menu.style.top = `${top}px`;
 			    
-			    // 6. Starta animationen
-			    // Vi måste ta bort 'visibility' och låta CSS sköta resten
 			    menu.style.removeProperty('visibility');
-			    menu.style.removeProperty('transform'); // Låt CSS-klassen sköta skalan igen
-			    
-			    // Ett litet hack för att webbläsaren ska uppfatta ändringen innan klassen läggs på
-			    void menu.offsetWidth; 
+			    void menu.offsetWidth; // Trigger reflow
 			    
 			    menu.classList.add('show');
-			    
-			    if (navigator.vibrate) navigator.vibrate(10); 
 			}
 			
 			function hideReactionMenu() {
@@ -1730,7 +1724,8 @@
 			            pressTimer = setTimeout(() => {
 			                // Tiden gick ut = Långtryck!
 			                if (typeof showReactionMenu === 'function') {
-			                    showReactionMenu(startX, startY, id);
+			                    // Skicka med flagga 'true' för att indikera touch-öppning
+			                    showReactionMenu(startX, startY, id, true);
 			                }
 			                if (navigator.vibrate) navigator.vibrate(10);
 			            }, 500); // 500ms
@@ -1742,24 +1737,27 @@
 			        const currentX = e.touches[0].clientX;
 			        const currentY = e.touches[0].clientY;
 			        
-			        // Avbryt om fingret rör sig mer än 10 pixlar (scrollar)
-			        if (Math.abs(currentX - startX) > 10 || Math.abs(currentY - startY) > 10) {
+			        // FIX: Öka känsligheten. Om man rör sig mer än 5px (en swipe börjar), avbryt direkt.
+			        if (Math.abs(currentX - startX) > 5 || Math.abs(currentY - startY) > 5) {
 			            clearTimeout(pressTimer);
 			            pressTimer = null;
 			        }
 			    };
 			
 			    const handleTouchEnd = (e) => {
+			        // Avbryt alltid timern när man släpper
 			        if (pressTimer) {
 			            clearTimeout(pressTimer);
 			            pressTimer = null;
 			        }
 			    };
 			
-			    // Koppla ENDAST touch-händelser för långtryck
+			    // Koppla händelser
 			    bubble.addEventListener('touchstart', handleTouchStart, {passive: true});
 			    bubble.addEventListener('touchmove', handleTouchMove, {passive: true});
 			    bubble.addEventListener('touchend', handleTouchEnd, {passive: true});
+			    // Lägg till touchcancel för säkerhets skull (om en swipe avbryter touchen)
+			    bubble.addEventListener('touchcancel', handleTouchEnd, {passive: true});
 			
 			
 			    // --- INNEHÅLL (Samma som tidigare) ---
@@ -3106,6 +3104,7 @@
                     isNavigatingBack = false;
                     return;
                 }
+				if (typeof hideReactionMenu === 'function') hideReactionMenu();
                 clearTimeout(backPressTimer); // Rensa gammal toast-timer
 
                 const state = event.state || {};
