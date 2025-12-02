@@ -355,7 +355,7 @@
 	        <div class="mobile-search-header">
 	            <div class="search-wrapper">
 	                <svg class="icon" viewBox="0 0 24 24"><use href="#icon-search"></use></svg>
-	                <input type="search" id="mobileSearchBar" placeholder="Sök jobb, kund, bil..." enterkeyhint="search">
+	                <input type="search" id="mobileSearchBar" name="search_query_mobile" placeholder="Sök jobb, kund, bil..." autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="search">
 	                <button type="button" class="search-clear-btn" id="mobileSearchClear" title="Rensa"></button>
 	            </div>
 	            <button id="mobileSearchCloseBtn" class="button secondary compact-btn">Avbryt</button>
@@ -565,7 +565,7 @@
 	        
 	        <div class="chat-input-pill">
 	            
-	            <input type="text" id="chatInput" placeholder="Meddelande" autocomplete="off" enterkeyhint="send">
+	            <input type="text" id="chatInput" name="chat_msg_field_unique" placeholder="Meddelande" autocomplete="off" autocorrect="off" autocapitalize="sentences" spellcheck="false" enterkeyhint="send">
 	
 	            <div class="inner-input-actions right-side">
 	                <button type="button" id="chatPlusBtn" class="chat-inner-btn" title="Bifoga">
