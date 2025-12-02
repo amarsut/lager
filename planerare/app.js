@@ -1830,7 +1830,7 @@
 			        startY = e.touches[0].clientY;
 			
 			        // Edge Guard
-			        if (startX < 20 || startX > window.innerWidth - 20) return;
+			        if (startX < 30 || startX > window.innerWidth - 30) return;
 			
 			        if (pressTimer) clearTimeout(pressTimer);
 			
