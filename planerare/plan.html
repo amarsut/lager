@@ -1079,13 +1079,37 @@
 	</div>
 
 	<div id="imageZoomModal" class="image-modal-backdrop" style="display: none;">
-	    <span id="imageModalClose">&times;</span>
-	    
-	    <div id="imgCounter" class="img-counter"></div>
+    
+	    <div class="img-modal-header">
+	        <button id="imageModalDoneBtn" class="img-header-btn">Färdig</button>
+	        <div id="imgCounter" class="img-header-counter">Letar bilder...</div>
+	        <div style="width: 60px;"> </div>
+	    </div>
 	
-	    <button id="imgNavPrev" class="img-nav-btn prev">&#10094;</button> 
-	    <img class="image-modal-content" id="img01">
-	    <button id="imgNavNext" class="img-nav-btn next">&#10095;</button> 
+	    <div class="img-modal-main-container">
+	        <button id="imgNavPrev" class="img-nav-btn prev">&#10094;</button> 
+	        <img class="image-modal-content" id="img01">
+	        <button id="imgNavNext" class="img-nav-btn next">&#10095;</button> 
+	    </div>
+	
+	    <div class="img-modal-footer">
+	        
+	        <button class="img-footer-action" id="imgBtnForward">
+	            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="12" x2="11" y2="12"></line><polyline points="18 5 22 12 18 19"></polyline><line x1="22" y1="12" x2="2" y2="12"></line></svg>
+	            <span>Vidarebefordra</span>
+	        </button>
+	
+	        <button class="img-footer-action" id="imgBtnDownload">
+	            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg>
+	            <span>Dela</span>
+	        </button>
+	
+	        <button class="img-footer-action" id="imgBtnMore">
+	            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+	            <span>Mer</span>
+	        </button>
+	
+	    </div>
 	</div>
 
 	<script>
