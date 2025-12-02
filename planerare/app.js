@@ -1119,9 +1119,25 @@
 			    if (navigator.vibrate) navigator.vibrate(10); 
 			}
 			
+			let menuHideTimer = null; // Global timer för att inte krocka om man klickar snabbt
+
 			function hideReactionMenu() {
 			    const menu = document.getElementById('reactionMenu');
-			    if (menu) menu.classList.remove('show');
+			    if (!menu) return;
+			
+			    // 1. Starta "ut"-animationen (krymper och tonar ut)
+			    menu.classList.remove('show');
+			    
+			    // 2. Gör den oklickbar direkt så den inte stör
+			    menu.style.pointerEvents = 'none';
+			
+			    // 3. Vänta tills animationen är klar (200ms), sen dölj den helt
+			    if (menuHideTimer) clearTimeout(menuHideTimer);
+			    
+			    menuHideTimer = setTimeout(() => {
+			        menu.style.display = 'none';
+			        menu.style.visibility = 'hidden';
+			    }, 200); // Matchar CSS-transitionen
 			}
 			
 			// 3. Spara till Firebase
