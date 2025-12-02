@@ -729,132 +729,110 @@
                 }
             }
 
-			// --- BILD-GALLERI LOGIK (SWIPE & NAVIGERING) ---
+			// --- MESSENGER KARUSELL LOGIK (NY) ---
 
-			let currentGalleryImages = []; // Lista med alla bild-URL:er
-			let currentImageIndex = 0;     // Vilken bild vi tittar på
+			let currentGalleryImages = [];
+			let currentImageIndex = 0;
 			
 			window.openImageZoom = function(src) {
 			    const modal = document.getElementById('imageZoomModal');
-			    const modalImg = document.getElementById('img01');
-			    
-			    // NYA Element-referenser
-			    const doneBtn = document.getElementById('imageModalDoneBtn');
-			    const downloadBtn = document.getElementById('imgBtnDownload');
-			    const forwardBtn = document.getElementById('imgBtnForward');
-			    const moreBtn = document.getElementById('imgBtnMore');
-			    
-			    const prevBtn = document.getElementById('imgNavPrev');
-			    const nextBtn = document.getElementById('imgNavNext');
+			    if (!modal) return;
 			
-			    if (!modal || !modalImg) return;
-			
-			    // 1. Hämta bilder
+			    // 1. Hämta alla bilder och hitta index
 			    const allImages = document.querySelectorAll('.chat-bubble-image img');
-			    currentGalleryImages = Array.from(allImages).map(img => img.src);
-			    
-			    // Hitta index
-			    currentImageIndex = currentGalleryImages.findIndex(s => s === src);
+			    currentGalleryImages = Array.from(allImages).map(img => ({
+			        src: img.src,
+			        // Här kan vi senare hämta bildtext/avsändare om vi vill visa det i footern
+			        caption: "" 
+			    }));
+			
+			    currentImageIndex = currentGalleryImages.findIndex(img => img.src === src);
 			    if (currentImageIndex === -1) {
-			        currentGalleryImages = [src];
+			        currentGalleryImages = [{ src: src, caption: "" }];
 			        currentImageIndex = 0;
 			    }
 			
-			    // Uppdatera UI
-			    updateGalleryUI(); 
+			    // 2. Uppdatera hela karusellen (Huvudbild + Sidor)
+			    updateCarouselUI();
 			
+			    // 3. Visa modalen
 			    history.pushState({ modal: 'imageZoom' }, 'Bild', '#image');
-			
 			    modal.style.display = "flex";
-			    // modal.style.alignItems... behövs ej längre pga ny CSS
-			    modalImg.src = currentGalleryImages[currentImageIndex];
-			    
 			    updateScrollLock();
 			
-			    // --- KOPPLA KNAPPAR ---
-			    
-			    // Stäng / "Färdig"
-			    const triggerClose = () => history.back();
-			    if (doneBtn) doneBtn.onclick = triggerClose;
-			    
-			    // Klick på själva bilden (eller bakgrunden) stänger INTE längre i denna stil
-			    // modal.onclick = ... (Borttaget för att efterlikna Messenger)
-			
-			    // Navigation
-			    if (prevBtn) prevBtn.onclick = (e) => { e.stopPropagation(); navigateGallery(-1); };
-			    if (nextBtn) nextBtn.onclick = (e) => { e.stopPropagation(); navigateGallery(1); };
-			
-			    // Footer-knappar
-			    if (downloadBtn) downloadBtn.onclick = downloadCurrentPhoto;
-			    if (forwardBtn) forwardBtn.onclick = () => showToast("Vidarebefordra: Kommer snart!", "info");
-			    if (moreBtn) moreBtn.onclick = () => showToast("Fler alternativ: Kommer snart!", "info");
+			    // 4. Koppla knappar
+			    document.getElementById('mmCloseBtn').onclick = () => history.back();
+			    document.getElementById('mmShareBtn').onclick = downloadCurrentPhoto;
+			    document.getElementById('mmForwardBtn').onclick = () => showToast("Vidarebefordra: Kommer snart!", "info");
+			    document.getElementById('mmMoreBtn').onclick = () => showToast("Fler alternativ...", "info");
 			};
+			
+			// Funktion som räknar ut och visar rätt bilder i de 3 slotsen
+			function updateCarouselUI() {
+			    const total = currentGalleryImages.length;
+			    const counter = document.getElementById('mmCounter');
+			    counter.textContent = `${currentImageIndex + 1} av ${total}`;
+			
+			    const imgMain = document.getElementById('mmImgMain');
+			    const imgPrev = document.getElementById('mmImgPrev');
+			    const imgNext = document.getElementById('mmImgNext');
+			    const captionText = document.getElementById('mmCaptionText');
+			
+			    // Huvudbilden
+			    imgMain.src = currentGalleryImages[currentImageIndex].src;
+			    // captionText.textContent = currentGalleryImages[currentImageIndex].caption; // (För framtida bruk)
+			
+			    if (total > 1) {
+			        // Räkna ut index för föregående (loopa runt)
+			        let prevIndex = currentImageIndex - 1;
+			        if (prevIndex < 0) prevIndex = total - 1;
+			        imgPrev.src = currentGalleryImages[prevIndex].src;
+			        imgPrev.parentElement.style.display = 'flex'; // Visa sidobild
+			
+			        // Räkna ut index för nästa (loopa runt)
+			        let nextIndex = currentImageIndex + 1;
+			        if (nextIndex >= total) nextIndex = 0;
+			        imgNext.src = currentGalleryImages[nextIndex].src;
+			        imgNext.parentElement.style.display = 'flex'; // Visa sidobild
+			    } else {
+			        // Om bara 1 bild, dölj sidorna
+			        imgPrev.parentElement.style.display = 'none';
+			        imgNext.parentElement.style.display = 'none';
+			    }
+			}
 			
 			function navigateGallery(direction) {
 			    if (currentGalleryImages.length <= 1) return;
 			
 			    currentImageIndex += direction;
-			
+			    // Loopa runt
 			    if (currentImageIndex < 0) currentImageIndex = currentGalleryImages.length - 1;
 			    if (currentImageIndex >= currentGalleryImages.length) currentImageIndex = 0;
 			
-			    const modalImg = document.getElementById('img01');
-			    
-			    modalImg.style.opacity = '0.5';
-			    setTimeout(() => {
-			        modalImg.src = currentGalleryImages[currentImageIndex];
-			        modalImg.style.opacity = '1';
-			        updateGalleryUI(); 
-			    }, 150);
+			    updateCarouselUI();
 			}
 			
-			function updateGalleryUI() {
-			    const prevBtn = document.getElementById('imgNavPrev');
-			    const nextBtn = document.getElementById('imgNavNext');
-			    const counterDiv = document.getElementById('imgCounter'); // Notera nytt ID i HTML
-			    
-			    const total = currentGalleryImages.length;
-			    const current = currentImageIndex + 1;
-			
-			    // Uppdatera räknaren i headern
-			    if (counterDiv) {
-			        counterDiv.textContent = `${current} av ${total}`;
-			    }
-			    
-			    // Visa/dölj pilar
-			    if (total > 1) {
-			        if(prevBtn) prevBtn.classList.remove('hidden');
-			        if(nextBtn) nextBtn.classList.remove('hidden');
-			    } else {
-			        if(prevBtn) prevBtn.classList.add('hidden');
-			        if(nextBtn) nextBtn.classList.add('hidden');
-			    }
-			}
-			
-			// --- NY FUNKTION: Ladda ner bild ---
 			function downloadCurrentPhoto() {
 			    if (currentGalleryImages.length === 0) return;
-			    
-			    const imgUrl = currentGalleryImages[currentImageIndex];
-			    
-			    // Skapa en temporär länk för att trigga nedladdning
+			    const imgUrl = currentGalleryImages[currentImageIndex].src;
 			    const a = document.createElement('a');
 			    a.href = imgUrl;
-			    // Försök gissa filnamn från URL, annars 'bild.jpg'
 			    a.download = imgUrl.split('/').pop().split('?')[0] || 'bild.jpg';
-			    document.body.appendChild(a); // Krävs för Firefox
+			    document.body.appendChild(a);
 			    a.click();
 			    document.body.removeChild(a);
 			}
 			
-			// --- SWIPE & KEYBOARD (Behålls oförändrat) ---
+			// --- SWIPE & KEYBOARD ---
 			const imageModal = document.getElementById('imageZoomModal');
 			let imgTouchStartX = 0; let imgTouchEndX = 0;
 			if (imageModal) {
 			    imageModal.addEventListener('touchstart', (e) => imgTouchStartX = e.changedTouches[0].screenX, {passive: true});
 			    imageModal.addEventListener('touchend', (e) => {
 			        imgTouchEndX = e.changedTouches[0].screenX;
+			        // Swipa Vänster -> Nästa bild
 			        if (imgTouchEndX < imgTouchStartX - 50) navigateGallery(1);
+			        // Swipa Höger -> Föregående bild
 			        if (imgTouchEndX > imgTouchStartX + 50) navigateGallery(-1);
 			    }, {passive: true});
 			}
@@ -1085,9 +1063,8 @@
 			    }, true)); // true = danger class
 			
 			    // 4. Mer (Placeholder)
-			    actionRow.appendChild(createAction('Vidarebefordra', '#icon-forward', () => {
-			         // Här kan du senare lägga in logik för att välja vem man ska skicka till
-			         showToast("Vidarebefordra meddelande: Kommer snart!", "info");
+			    actionRow.appendChild(createAction('Vidarebefordra', '#icon-forward-arrow', () => {
+			         showToast("Vidarebefordra: Kommer snart!", "info");
 			         hideReactionMenu();
 			    }));
 			
