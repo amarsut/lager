@@ -976,8 +976,23 @@
 			    menu.appendChild(actionRow);
 			    document.body.appendChild(menu);
 			
-			    window.addEventListener('click', hideReactionMenu);
-			    window.addEventListener('scroll', hideReactionMenu, true); 
+			    const handleGlobalClick = (e) => {
+		        const menu = document.getElementById('reactionMenu');
+		        
+		        // Om menyn är öppen och vi klickar utanför den...
+		        if (menu && menu.classList.contains('show') && !menu.contains(e.target)) {
+		            // Om klicket inte träffade menyn -> Stäng den!
+		            e.preventDefault(); 
+		            e.stopPropagation();
+		            hideReactionMenu();
+		        }
+		    };
+		
+		    // Använd "touchstart" för snabbare respons på mobil, annars "click"
+		    // passive: false är viktigt här för att kunna använda e.preventDefault()
+		    window.addEventListener('touchstart', handleGlobalClick, { passive: false });
+		    window.addEventListener('click', handleGlobalClick);
+		    window.addEventListener('scroll', hideReactionMenu, true);
 			}
 			
 			// --- NY HJÄLPFUNKTION: REDIGERA MEDDELANDE ---
@@ -1051,93 +1066,69 @@
 			    createReactionMenu(); 
 			    const menu = document.getElementById('reactionMenu');
 			    
+			    // Avbryt eventuell pågående stängning!
+			    if (menuHideTimer) clearTimeout(menuHideTimer);
+			
 			    menu.dataset.targetId = messageId;
 			    
-			    // 1. Återställ stilar för att kunna mäta den "sanna" storleken
+			    // 1. Återställ menyn för mätning (men osynlig)
 			    menu.style.display = 'flex';
 			    menu.style.visibility = 'hidden'; 
-			    menu.style.pointerEvents = 'auto'; // Se till att den är klickbar
-			    menu.style.opacity = '1';          // Se till att den är synlig
-			    menu.style.transform = 'none';    
-			    menu.classList.remove('show');
+			    menu.style.opacity = '0';          
+			    menu.style.transform = 'scale(0.8)'; // Starta liten
+			    menu.style.pointerEvents = 'none';   // Ej klickbar under mätning
+			    menu.classList.remove('show');    
 			
-			    // 2. Mät bredd och höjd på skärm och meny
-			    const menuWidth = menu.offsetWidth; // Använd offsetWidth för faktisk bredd
-			    const menuHeight = menu.offsetHeight;
+			    // ... (HÄR LIGGER DIN BEFINTLIGA LOGIK FÖR X/Y POSITIONERING) ...
+			    // ... Behåll koden som räknar ut 'left' och 'top' här ...
+			    // (Kopiera den logiken från din nuvarande fil eller se nedan för referens)
+			    
+			    // EXEMPEL PÅ POSITIONERING (Klistra in din logik här):
+			    const menuWidth = menu.offsetWidth;
 			    const screenWidth = window.innerWidth;
-			
-			    // 3. Beräkna X (Vänster/Höger)
-			    // Centrera menyn över klicket till en början
 			    let left = x - (menuWidth / 2);
-			    
-			    // JUSTERA HÖGER KANT (Viktigast)
-			    // Om menyn sticker ut till höger -> Fäst den mot högerkanten minus 15px marginal
-			    if (left + menuWidth > screenWidth - 15) {
-			        left = screenWidth - menuWidth - 15;
-			    }
-			    
-			    // JUSTERA VÄNSTER KANT
-			    // Om menyn sticker ut till vänster -> Fäst den mot vänsterkanten plus 15px marginal
-			    if (left < 15) {
-			        left = 15;
-			    }
-			
-			    // 4. Beräkna Y (Upp/Ner)
+			    if (left + menuWidth > screenWidth - 15) left = screenWidth - menuWidth - 15;
+			    if (left < 15) left = 15;
 			    let top = y - 70;
-			    // Om det är för nära toppen av skärmen, visa menyn under fingret istället
-			    if (top < 20) {
-			        top = y + 20;
-			    }
-			
-			    // 5. Applicera positionerna
+			    if (top < 20) top = y + 20;
 			    menu.style.left = `${left}px`;
 			    menu.style.top = `${top}px`;
-			    
-			    // 6. Starta animationen
-			    // Vi måste ta bort 'visibility' och låta CSS sköta resten
-			    menu.style.removeProperty('visibility');
-			    menu.style.removeProperty('transform'); // Låt CSS-klassen sköta skalan igen
-			    
-			    // Ett litet hack för att webbläsaren ska uppfatta ändringen innan klassen läggs på
-			    void menu.offsetWidth; 
-    
-			    menu.classList.add('show');
-			    
-			    // --- FIX: SÄKERHETSFÖRDRÖJNING ---
-			    // Gör menyn oklickbar i 400ms så man inte råkar välja något 
-			    // när man släpper fingret.
-			    menu.style.pointerEvents = 'none';
-			    
-			    setTimeout(() => {
-			        // Om menyn fortfarande är öppen, gör den klickbar igen
-			        if (menu.classList.contains('show')) {
-			            menu.style.pointerEvents = 'auto';
-			        }
-			    }, 300);
-			    // ----------------------------------
+			    // ... SLUT POSITIONERING ...
+			
+			    // 2. Visa menyn (Animation)
+			    // Vi använder requestAnimationFrame för att garantera att webbläsaren hinner uppfatta "display: flex" innan vi lägger på klassen
+			    requestAnimationFrame(() => {
+			        menu.style.visibility = 'visible';
+			        menu.style.opacity = '1';
+			        menu.classList.add('show');
+			        
+			        // Aktivera klick efter en kort stund (Säkerhetsbuffert mot spök-klick)
+			        setTimeout(() => {
+			            if (menu.classList.contains('show')) {
+			                menu.style.pointerEvents = 'auto';
+			            }
+			        }, 150); // Kortare tid (150ms) för rappare känsla
+			    });
 			    
 			    if (navigator.vibrate) navigator.vibrate(10); 
 			}
 			
-			let menuHideTimer = null; // Global timer för att inte krocka om man klickar snabbt
+			let menuHideTimer = null; // Global variabel (läggs utanför funktionen)
 
 			function hideReactionMenu() {
 			    const menu = document.getElementById('reactionMenu');
 			    if (!menu) return;
 			
-			    // 1. Starta "ut"-animationen (krymper och tonar ut)
 			    menu.classList.remove('show');
-			    
-			    // 2. Gör den oklickbar direkt så den inte stör
-			    menu.style.pointerEvents = 'none';
+			    menu.style.pointerEvents = 'none'; // Gör oklickbar direkt
 			
-			    // 3. Vänta tills animationen är klar (200ms), sen dölj den helt
 			    if (menuHideTimer) clearTimeout(menuHideTimer);
 			    
+			    // Vänta på animationen (200ms) innan den döljs helt
 			    menuHideTimer = setTimeout(() => {
 			        menu.style.display = 'none';
 			        menu.style.visibility = 'hidden';
-			    }, 200); // Matchar CSS-transitionen
+			    }, 200);
 			}
 			
 			// 3. Spara till Firebase
