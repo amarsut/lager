@@ -3109,16 +3109,14 @@
                 const state = event.state || {};
                 const currentHash = window.location.hash;
 
-                // --- 1. STATE-BASERAD HANTERING (Vart är vi på väg?) ---
-                
-                // A. Om vi backar TILL CHATTEN (t.ex. från bild eller bil-modal)
+                // --- 1. STATE-BASERAD HANTERING (Destination: CHATTEN) ---
                 if (state.modal === 'chatWidget' || currentHash === '#chat') {
                     
                     // Stäng bildzoom om den ligger överst
                     const imageModal = document.getElementById('imageZoomModal');
                     if (imageModal) imageModal.style.display = 'none';
                     
-                    // Stäng eventuella andra modaler (som bil-info) men låt chatten vara
+                    // Stäng eventuella andra modaler
                     document.querySelectorAll('.modal-backdrop').forEach(el => {
                         if (el.id !== 'chatWidget') {
                             el.classList.remove('show');
@@ -3126,9 +3124,16 @@
                         }
                     });
 
-                    // VIKTIGT: Säkerställ att chatten är SYNLIG
                     const chatWidget = document.getElementById('chatWidget');
-                    if (chatWidget) chatWidget.style.display = 'flex';
+                    
+                    // --- HÄR ÄR FIXEN FÖR DATORN ---
+                    // Vi kollar: Är chatten INTE redan synlig? Då visar vi den.
+                    // Är den redan 'flex' (öppen i bakgrunden), så gör vi INGET.
+                    // Detta förhindrar att "pop-up"-animationen startar om.
+                    if (chatWidget && chatWidget.style.display !== 'flex') {
+                        chatWidget.style.display = 'flex';
+                    }
+                    // -------------------------------
                     
                     // Tänd mobil-knappen
                     const mobileChatBtn = document.getElementById('mobileChatBtn');
@@ -3136,10 +3141,11 @@
 
                     isModalOpen = false; 
                     updateScrollLock();
-                    return; // Stanna här! Vi är klara.
+                    
+                    return; // Vi stannar här. Allt är klart.
                 }
 
-                // B. Om vi landar på #image (Sällsynt, men om man navigerar framåt)
+                // --- 2. STATE-BASERAD HANTERING (Destination: BILD) ---
                 if (state.modal === 'imageZoom') {
                     const imageModal = document.getElementById('imageZoomModal');
                     if (imageModal) imageModal.style.display = 'flex';
@@ -3147,10 +3153,9 @@
                     return;
                 }
 
-                // --- 2. NOLLSTÄLLNING (Vi är på "Home" / Tidslinjen) ---
-                // Om vi kommer hit betyder det att URL:en är ren. Vi ska stänga allt.
-
-                // Kolla vad som VAR öppet innan vi stänger (för mobil-toastens skull)
+                // --- 3. NOLLSTÄLLNING (Destination: HEM/TIDSLINJE) ---
+                
+                // Kolla vad som VAR öppet (för att styra mobil-toasten)
                 const chatWidget = document.getElementById('chatWidget');
                 const imageModal = document.getElementById('imageZoomModal');
                 const anyOpenModal = document.querySelector('.modal-backdrop.show');
@@ -3163,7 +3168,7 @@
                     (mobileSearch && getComputedStyle(mobileSearch).display === 'flex')
                 );
 
-                // Nu stänger vi allt skoningslöst
+                // Stäng allt skoningslöst
                 if (imageModal) imageModal.style.display = 'none';
                 
                 if (chatWidget) {
@@ -3183,13 +3188,13 @@
                 currentOpenModalId = null;
                 updateScrollLock();
 
-                // --- 3. MOBIL "AVSLUTA"-TOAST ---
-                // Visa endast om vi är på mobil OCH inget stängdes precis (dvs vi var redan på Home)
+                // --- 4. MOBIL "TRYCK IGEN FÖR ATT STÄNGA" ---
+                // Körs bara om vi är på mobil OCH vi inte precis stängde något fönster
                 if (window.innerWidth <= 768 && !wasSomethingOpen) {
                     if (backPressWarned) {
-                        backPressWarned = false; // Låt webbläsaren stänga/backa på riktigt
+                        backPressWarned = false; // Låt webbläsaren stänga appen
                     } else {
-                        // Tryck in oss själva i historiken igen för att stanna kvar
+                        // Tryck tillbaka oss i historiken
                         history.pushState({ page: 'home' }, 'Home', location.pathname);
                         
                         backPressWarned = true;
