@@ -1491,26 +1491,28 @@
 			
 			    // --- 5. BILDUPPLADDNING ---
 			    const handleImageUpload = async (file) => {
-			        if (!file) return;
-			        const caption = prompt("Vill du lägga till en bildtext?", "");
-			        showToast("Bearbetar bild...", "info");
-			
-			        try {
-			            const base64Image = await compressImage(file);
-			            await db.collection("notes").add({
-			                image: base64Image,
-			                caption: caption || "",
-			                type: 'image',
-			                timestamp: new Date().toISOString(),
-			                platform: window.innerWidth <= 768 ? 'mobil' : 'dator'
-			            });
-			            showToast("Bild skickad!", "success");
-			            setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
-			        } catch (err) {
-			            console.error(err);
-			            showToast("Kunde inte skicka bilden.", "danger");
-			        }
-			    };
+	                if (!file) return;
+	                
+	                // HÄR TOG VI BORT: const caption = prompt(...)
+	                
+	                showToast("Bearbetar bild...", "info");
+	        
+	                try {
+	                    const base64Image = await compressImage(file);
+	                    await db.collection("notes").add({
+	                        image: base64Image,
+	                        caption: "", // Vi skickar tom text automatiskt
+	                        type: 'image',
+	                        timestamp: new Date().toISOString(),
+	                        platform: window.innerWidth <= 768 ? 'mobil' : 'dator'
+	                    });
+	                    showToast("Bild skickad!", "success");
+	                    setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
+	                } catch (err) {
+	                    console.error(err);
+	                    showToast("Kunde inte skicka bilden.", "danger");
+	                }
+	            };
 			
 			    // --- 6. HUVUDLYSSNAREN ---
 			    const setupChatListener = (limit) => {
