@@ -1695,12 +1695,16 @@
 			    const bubble = document.createElement('div');
 			    bubble.className = 'chat-bubble';
 			    
-			    // 1. Förhindra den inbyggda menyn på mobilen (Viktigt för långtryck)
-			    bubble.oncontextmenu = (e) => { 
-			        e.preventDefault(); 
-			        e.stopPropagation(); 
-			        return false; 
-			    };
+			    // --- DATOR: HÖGERKLICK ÖPPNAR MENYN ---
+			    bubble.addEventListener('contextmenu', (e) => {
+			        e.preventDefault(); // Stoppa webbläsarens vanliga högerklicksmeny
+			        e.stopPropagation();
+			        
+			        if (typeof showReactionMenu === 'function') {
+			            showReactionMenu(e.clientX, e.clientY, id);
+			        }
+			        return false;
+			    });
 			
 			    if (data.reaction) {
 			        const badge = document.createElement('span');
@@ -1710,19 +1714,7 @@
 			        bubble.appendChild(badge);
 			    }
 			
-			    // --- DATOR: DUBBELKLICK ---
-			    bubble.addEventListener('dblclick', (e) => {
-			        // Förhindra att text markeras vid dubbelklick
-			        e.preventDefault(); 
-			        e.stopPropagation(); 
-			        
-			        if (typeof showReactionMenu === 'function') {
-			            // Visa menyn där musen är
-			            showReactionMenu(e.clientX, e.clientY, id);
-			        }
-			    });
-			
-			    // --- MOBIL: LÅNGTRYCK ---
+			    // --- MOBIL: LÅNGTRYCK (Endast Touch) ---
 			    let pressTimer = null;
 			    let startX = 0, startY = 0;
 			
@@ -1754,21 +1746,19 @@
 			    };
 			
 			    const handleTouchEnd = (e) => {
-			        // Om man släpper fingret innan 500ms
 			        if (pressTimer) {
 			            clearTimeout(pressTimer);
 			            pressTimer = null;
 			        }
 			    };
 			
-			    // Koppla mobil-händelser
+			    // Koppla ENDAST touch-händelser för långtryck
 			    bubble.addEventListener('touchstart', handleTouchStart, {passive: true});
 			    bubble.addEventListener('touchmove', handleTouchMove, {passive: true});
 			    bubble.addEventListener('touchend', handleTouchEnd, {passive: true});
 			
 			
-			    // --- INNEHÅLL (Bilder & Text) ---
-			    // Samma innehållslogik som tidigare, men med förenklade klick-händelser
+			    // --- INNEHÅLL (Samma som tidigare) ---
 			    
 			    if (data.images && Array.isArray(data.images)) {
 			        bubble.classList.add('chat-bubble-image');
@@ -1777,7 +1767,6 @@
 			        data.images.forEach(imgSrc => {
 			            const img = document.createElement('img');
 			            img.src = imgSrc; img.loading = "lazy"; img.alt = "Bild";
-			            // Enkelklick på bild = Zoom
 			            img.onclick = (e) => {
 			                e.stopPropagation(); 
 			                if (typeof window.openImageZoom === 'function') window.openImageZoom(imgSrc);
@@ -1796,7 +1785,6 @@
 			        bubble.classList.add('chat-bubble-image');
 			        const imgElement = document.createElement('img');
 			        imgElement.src = data.image; imgElement.alt = "Bild"; imgElement.loading = "lazy";
-			        // Enkelklick på bild = Zoom
 			        imgElement.onclick = (e) => {
 			            e.stopPropagation(); 
 			            if (typeof window.openImageZoom === 'function') window.openImageZoom(data.image);
@@ -1811,7 +1799,7 @@
 			        bubble.dataset.originalHtml = bubble.innerHTML;
 			
 			    } else {
-			        // Text-innehåll
+			        // Text
 			        let rawText = data.text || "";
 			        const textContentDiv = document.createElement('div');
 			        textContentDiv.className = 'chat-text-content';
@@ -1853,7 +1841,7 @@
 			        bubble.dataset.originalHtml = bubble.innerHTML;
 			    }
 			    
-			    // Tidsstämpel och "redigerad"-status
+			    // Tidsstämpel
 			    const time = document.createElement('div');
 			    time.className = 'chat-time';
 			    const date = new Date(data.timestamp);
