@@ -1708,7 +1708,10 @@
 			    const bubble = document.createElement('div');
 			    bubble.className = 'chat-bubble';
 			
-			    // --- INNEHÅLL (TEXT & BILD) ---
+			    // --- 1. INNEHÅLL (TEXT & BILD) ---
+			    // Vi använder en enkel metod för att kolla om vi får klicka på bilden
+			    const canClickImage = () => bubble.dataset.longPressHandled !== "true";
+			
 			    if (data.images && Array.isArray(data.images)) {
 			        bubble.classList.add('chat-bubble-image');
 			        const carousel = document.createElement('div');
@@ -1717,8 +1720,7 @@
 			            const img = document.createElement('img');
 			            img.src = imgSrc; img.loading = "lazy"; img.alt = "Bild";
 			            img.onclick = (e) => {
-			                // Öppna bara bild om det INTE var ett långtryck
-			                if (!bubble.dataset.longPressHandled) {
+			                if (canClickImage()) {
 			                    e.stopPropagation(); 
 			                    if (typeof window.openImageZoom === 'function') window.openImageZoom(imgSrc);
 			                }
@@ -1738,7 +1740,7 @@
 			        const imgElement = document.createElement('img');
 			        imgElement.src = data.image; imgElement.alt = "Bild"; imgElement.loading = "lazy";
 			        imgElement.onclick = (e) => {
-			            if (!bubble.dataset.longPressHandled) {
+			            if (canClickImage()) {
 			                e.stopPropagation(); 
 			                if (typeof window.openImageZoom === 'function') window.openImageZoom(data.image);
 			            }
@@ -1753,7 +1755,7 @@
 			        bubble.dataset.originalHtml = bubble.innerHTML;
 			
 			    } else {
-			        // Text
+			        // Text-logik
 			        let rawText = data.text || "";
 			        const textContentDiv = document.createElement('div');
 			        textContentDiv.className = 'chat-text-content';
@@ -1795,7 +1797,6 @@
 			        bubble.dataset.originalHtml = bubble.innerHTML;
 			    }
 			
-			    // Reaktion
 			    if (data.reaction) {
 			        const badge = document.createElement('span');
 			        badge.className = 'reaction-badge';
@@ -1804,29 +1805,31 @@
 			        bubble.appendChild(badge);
 			    }
 			
-			    // --- FIXAD TOUCH-LOGIK ---
+			    // --- 2. BUGGFRI TOUCH-LOGIK (Fixad State) ---
+			    
 			    let pressTimer = null;
 			    let startX = 0, startY = 0;
 			    
-			    // Vi använder dataset för att hålla koll på status (säkrare än lokala variabler)
+			    // Nollställ direkt från start
 			    bubble.dataset.longPressHandled = "false"; 
 			
 			    const handleTouchStart = (e) => {
-			        // Avbryt om fler än 1 finger
-			        if (e.touches.length > 1) return;
+			        if (e.touches.length > 1) return; // Ignorera multitouch
 			
 			        startX = e.touches[0].clientX;
 			        startY = e.touches[0].clientY;
-			        bubble.dataset.longPressHandled = "false"; // Nollställ flaggan
-			
-			        // Edge Guard (Swipe skydd)
-			        if (startX < 50 || startX > window.innerWidth - 50) return;
+			        
+			        // VIKTIGT: Nollställ alltid status när fingret rör skärmen!
+			        // Detta fixar buggen att den "fastnar" efter att menyn stängts.
+			        bubble.dataset.longPressHandled = "false"; 
 			
 			        if (pressTimer) clearTimeout(pressTimer);
 			
-			        // Starta timer (250ms)
+			        // Edge Guard
+			        if (startX < 50 || startX > window.innerWidth - 50) return;
+			
 			        pressTimer = setTimeout(() => {
-			            // Markera att vi nu har triggat en long-press
+			            // Sätt flaggan att vi nu har gjort ett långtryck
 			            bubble.dataset.longPressHandled = "true"; 
 			            
 			            if (typeof showReactionMenu === 'function') {
@@ -1838,12 +1841,11 @@
 			
 			    const handleTouchMove = (e) => {
 			        if (!pressTimer) return;
-			
-			        const diffX = Math.abs(e.touches[0].clientX - startX);
-			        const diffY = Math.abs(e.touches[0].clientY - startY);
-			
-			        // Om fingret rör sig mer än 10px = scroll = avbryt
-			        if (diffX > 10 || diffY > 10) {
+			        const currentX = e.touches[0].clientX;
+			        const currentY = e.touches[0].clientY;
+			        
+			        // Avbryt vid scroll
+			        if (Math.abs(currentX - startX) > 10 || Math.abs(currentY - startY) > 10) {
 			            clearTimeout(pressTimer);
 			            pressTimer = null;
 			        }
@@ -1854,17 +1856,18 @@
 			            clearTimeout(pressTimer);
 			            pressTimer = null;
 			        }
-			        // Vi nollställer INTE 'longPressHandled' här, den behövs i click-eventet strax efter!
+			        // OBS: Vi nollställer INTE flaggan här, den behövs för att blockera klicket nedan!
 			    };
 			
 			    const handleClick = (e) => {
-			        // Om vi precis gjorde ett långtryck, döda klicket!
+			        // Om flaggan är satt, betyder det att vi nyss öppnade menyn.
+			        // Då ska vi döda detta klick så att inte menyn stängs direkt.
 			        if (bubble.dataset.longPressHandled === "true") {
 			            e.preventDefault();
 			            e.stopPropagation();
 			            e.stopImmediatePropagation();
 			            
-			            // Återställ flaggan efter en kort stund så man kan klicka igen senare
+			            // Återställ flaggan efter en kort stund så bubblan blir klickbar igen
 			            setTimeout(() => {
 			                bubble.dataset.longPressHandled = "false";
 			            }, 100);
@@ -1881,33 +1884,38 @@
 			            return false;
 			        }
 			        e.preventDefault();
-			        showReactionMenu(e.clientX, e.clientY, id);
+			        if (typeof showReactionMenu === 'function') {
+			            showReactionMenu(e.clientX, e.clientY, id);
+			        }
 			        return false;
 			    });
 			
 			    // MOBIL: Touch lyssnare
-			    // passive: true på touchstart/move är avgörande för att scrollen ska fungera mjukt
 			    bubble.addEventListener('touchstart', handleTouchStart, { passive: true });
 			    bubble.addEventListener('touchmove', handleTouchMove, { passive: true });
 			    bubble.addEventListener('touchend', handleTouchEnd, { passive: true });
+			    bubble.addEventListener('touchcancel', handleTouchEnd, { passive: true });
 			    
-			    // Fånga klicket i "capture"-fasen (tidigt) för att hinna stoppa det
+			    // Fånga klicket i "capture"-fasen (tidigt)
 			    bubble.addEventListener('click', handleClick, true); 
 			
-			    // --- TIDSSTÄMPEL ---
+			    // --- 3. TIDSSTÄMPEL ---
 			    const time = document.createElement('div');
 			    time.className = 'chat-time';
 			    const dateObj = new Date(data.timestamp);
 			    const timeString = dateObj.toLocaleTimeString('sv-SE', {hour: '2-digit', minute:'2-digit'});
 			    const dateString = dateObj.toLocaleDateString('sv-SE', {day: 'numeric', month: 'short'});
-			    const displayTime = (new Date().toDateString() === dateObj.toDateString()) ? timeString : `${dateString}, ${timeString}`;
+			    const isToday = new Date().toDateString() === dateObj.toDateString();
+			    const displayTime = isToday ? timeString : `${dateString}, ${timeString}`;
 			
 			    let platformIconHtml = '';
 			    if (data.platform === 'mobil') platformIconHtml = `<svg class="platform-icon"><use href="#icon-mobile"></use></svg>`;
 			    else if (data.platform === 'dator') platformIconHtml = `<svg class="platform-icon"><use href="#icon-desktop"></use></svg>`;
 			
 			    time.innerHTML = `${displayTime} ${platformIconHtml}`;
-			    if (data.isEdited) time.innerHTML += ` <span style="font-style:italic; opacity:0.7;">(redigerad)</span>`;
+			    if (data.isEdited) {
+			        time.innerHTML += ` <span style="font-style:italic; opacity:0.7;">(redigerad)</span>`;
+			    }
 			
 			    container.appendChild(bubble);
 			    container.appendChild(time);
