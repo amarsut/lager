@@ -5423,6 +5423,7 @@
                 }
                 
                 closeModal({ popHistory: false }); 
+				history.replaceState(null, document.title, location.pathname);
                 localStorage.setItem(PIN_LAST_UNLOCKED_KEY, Date.now().toString());
             }
             
