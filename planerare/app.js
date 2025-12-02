@@ -737,14 +737,19 @@
 			window.openImageZoom = function(src) {
 			    const modal = document.getElementById('imageZoomModal');
 			    const modalImg = document.getElementById('img01');
-			    const closeBtn = document.getElementById('imageModalClose');
+			    
+			    // NYA Element-referenser
+			    const doneBtn = document.getElementById('imageModalDoneBtn');
+			    const downloadBtn = document.getElementById('imgBtnDownload');
+			    const forwardBtn = document.getElementById('imgBtnForward');
+			    const moreBtn = document.getElementById('imgBtnMore');
+			    
 			    const prevBtn = document.getElementById('imgNavPrev');
 			    const nextBtn = document.getElementById('imgNavNext');
-			    const counterDiv = document.getElementById('imgCounter'); // <--- NY
 			
 			    if (!modal || !modalImg) return;
 			
-			    // 1. Hämta alla bilder
+			    // 1. Hämta bilder
 			    const allImages = document.querySelectorAll('.chat-bubble-image img');
 			    currentGalleryImages = Array.from(allImages).map(img => img.src);
 			    
@@ -755,27 +760,34 @@
 			        currentImageIndex = 0;
 			    }
 			
-			    // Uppdatera knappar och RÄKNARE
-			    updateGalleryUI(); // <--- NY FUNKTION
+			    // Uppdatera UI
+			    updateGalleryUI(); 
 			
 			    history.pushState({ modal: 'imageZoom' }, 'Bild', '#image');
 			
 			    modal.style.display = "flex";
-			    modal.style.alignItems = "center";
-			    modal.style.justifyContent = "center";
+			    // modal.style.alignItems... behövs ej längre pga ny CSS
 			    modalImg.src = currentGalleryImages[currentImageIndex];
 			    
 			    updateScrollLock();
 			
-			    const triggerClose = () => history.back();
-			    if (closeBtn) closeBtn.onclick = triggerClose;
+			    // --- KOPPLA KNAPPAR ---
 			    
-			    modal.onclick = (e) => {
-			        if (e.target === modal) triggerClose();
-			    };
+			    // Stäng / "Färdig"
+			    const triggerClose = () => history.back();
+			    if (doneBtn) doneBtn.onclick = triggerClose;
+			    
+			    // Klick på själva bilden (eller bakgrunden) stänger INTE längre i denna stil
+			    // modal.onclick = ... (Borttaget för att efterlikna Messenger)
 			
+			    // Navigation
 			    if (prevBtn) prevBtn.onclick = (e) => { e.stopPropagation(); navigateGallery(-1); };
 			    if (nextBtn) nextBtn.onclick = (e) => { e.stopPropagation(); navigateGallery(1); };
+			
+			    // Footer-knappar
+			    if (downloadBtn) downloadBtn.onclick = downloadCurrentPhoto;
+			    if (forwardBtn) forwardBtn.onclick = () => showToast("Vidarebefordra: Kommer snart!", "info");
+			    if (moreBtn) moreBtn.onclick = () => showToast("Fler alternativ: Kommer snart!", "info");
 			};
 			
 			function navigateGallery(direction) {
@@ -792,66 +804,66 @@
 			    setTimeout(() => {
 			        modalImg.src = currentGalleryImages[currentImageIndex];
 			        modalImg.style.opacity = '1';
-			        updateGalleryUI(); // Uppdatera räknaren vid byte
+			        updateGalleryUI(); 
 			    }, 150);
 			}
 			
-			// NY FUNKTION: Uppdaterar både knappar och text
 			function updateGalleryUI() {
 			    const prevBtn = document.getElementById('imgNavPrev');
 			    const nextBtn = document.getElementById('imgNavNext');
-			    const counterDiv = document.getElementById('imgCounter');
+			    const counterDiv = document.getElementById('imgCounter'); // Notera nytt ID i HTML
 			    
 			    const total = currentGalleryImages.length;
 			    const current = currentImageIndex + 1;
 			
-			    // Uppdatera texten (t.ex. "7 / 19")
+			    // Uppdatera räknaren i headern
 			    if (counterDiv) {
-			        if (total > 1) {
-			            counterDiv.textContent = `${current} / ${total}`;
-			            counterDiv.style.display = 'block';
-			        } else {
-			            counterDiv.style.display = 'none';
-			        }
+			        counterDiv.textContent = `${current} av ${total}`;
 			    }
 			    
 			    // Visa/dölj pilar
 			    if (total > 1) {
-			        if(prevBtn) prevBtn.style.display = 'flex';
-			        if(nextBtn) nextBtn.style.display = 'flex';
+			        if(prevBtn) prevBtn.classList.remove('hidden');
+			        if(nextBtn) nextBtn.classList.remove('hidden');
 			    } else {
-			        if(prevBtn) prevBtn.style.display = 'none';
-			        if(nextBtn) nextBtn.style.display = 'none';
+			        if(prevBtn) prevBtn.classList.add('hidden');
+			        if(nextBtn) nextBtn.classList.add('hidden');
 			    }
 			}
 			
-			// --- SWIPE LOGIK (Oförändrad, men behåll den här under) ---
+			// --- NY FUNKTION: Ladda ner bild ---
+			function downloadCurrentPhoto() {
+			    if (currentGalleryImages.length === 0) return;
+			    
+			    const imgUrl = currentGalleryImages[currentImageIndex];
+			    
+			    // Skapa en temporär länk för att trigga nedladdning
+			    const a = document.createElement('a');
+			    a.href = imgUrl;
+			    // Försök gissa filnamn från URL, annars 'bild.jpg'
+			    a.download = imgUrl.split('/').pop().split('?')[0] || 'bild.jpg';
+			    document.body.appendChild(a); // Krävs för Firefox
+			    a.click();
+			    document.body.removeChild(a);
+			}
+			
+			// --- SWIPE & KEYBOARD (Behålls oförändrat) ---
 			const imageModal = document.getElementById('imageZoomModal');
-			let imgTouchStartX = 0;
-			let imgTouchEndX = 0;
-			
+			let imgTouchStartX = 0; let imgTouchEndX = 0;
 			if (imageModal) {
-			    imageModal.addEventListener('touchstart', (e) => {
-			        imgTouchStartX = e.changedTouches[0].screenX;
-			    }, {passive: true});
-			
+			    imageModal.addEventListener('touchstart', (e) => imgTouchStartX = e.changedTouches[0].screenX, {passive: true});
 			    imageModal.addEventListener('touchend', (e) => {
 			        imgTouchEndX = e.changedTouches[0].screenX;
-			        handleImageSwipe();
+			        if (imgTouchEndX < imgTouchStartX - 50) navigateGallery(1);
+			        if (imgTouchEndX > imgTouchStartX + 50) navigateGallery(-1);
 			    }, {passive: true});
 			}
-			
-			function handleImageSwipe() {
-			    const threshold = 50;
-			    if (imgTouchEndX < imgTouchStartX - threshold) navigateGallery(1);
-			    if (imgTouchEndX > imgTouchStartX + threshold) navigateGallery(-1);
-			}
-			
 			document.addEventListener('keydown', (e) => {
 			    const modal = document.getElementById('imageZoomModal');
 			    if (modal && modal.style.display !== 'none') {
 			        if (e.key === 'ArrowLeft') navigateGallery(-1);
 			        if (e.key === 'ArrowRight') navigateGallery(1);
+			        if (e.key === 'Escape') history.back();
 			    }
 			});
 
@@ -1073,7 +1085,11 @@
 			    }, true)); // true = danger class
 			
 			    // 4. Mer (Placeholder)
-			    actionRow.appendChild(createAction('Mer', '#icon-list', () => showToast("Kommer snart!", "info")));
+			    actionRow.appendChild(createAction('Vidarebefordra', '#icon-forward', () => {
+			         // Här kan du senare lägga in logik för att välja vem man ska skicka till
+			         showToast("Vidarebefordra meddelande: Kommer snart!", "info");
+			         hideReactionMenu();
+			    }));
 			
 			    menu.appendChild(actionRow);
 			    document.body.appendChild(menu);
