@@ -3101,6 +3101,7 @@
 			});
 
             window.addEventListener('popstate', (event) => {
+                // Hindra kod-driven navigering från att skapa loopar
                 if (isNavigatingBack) {
                     isNavigatingBack = false;
                     return;
@@ -3110,112 +3111,108 @@
                 const state = event.state || {};
                 const currentHash = window.location.hash;
                 
+                // Elementreferenser
                 const chatWidget = document.getElementById('chatWidget');
                 const imageModal = document.getElementById('imageZoomModal');
-                const mobileChatBtn = document.getElementById('mobileChatBtn');
                 const mobileSearch = document.getElementById('mobileSearchModal');
+                const mobileChatBtn = document.getElementById('mobileChatBtn');
                 const anyOpenModal = document.querySelector('.modal-backdrop.show');
 
-                // Kontrollera vad som är visuellt öppet JUST NU (innan vi ändrar något)
-                // Vi använder getComputedStyle för att vara helt säkra på om de syns.
-                const isChatVisible = chatWidget && window.getComputedStyle(chatWidget).display === 'flex';
-                const isImageVisible = imageModal && window.getComputedStyle(imageModal).display !== 'none';
-                const isMobileSearchVisible = mobileSearch && window.getComputedStyle(mobileSearch).display === 'flex';
-                
-                // --- 1. SÖK-MODAL (Mobil) ---
-                // Om sök är öppen och vi navigerar bort från den -> Stäng.
-                if (isMobileSearchVisible && state.modal !== 'mobileSearch') {
-                    resetAndCloseSearch();
-                    updateScrollLock();
-                    return;
-                }
-
-                // --- 2. DESTINATION: BILD (Om vi går FRAMÅT till en bild) ---
-                if (state.modal === 'imageZoom') {
+                // --- 1. NAVIGERING TILL BILD (#image) ---
+                if (state.modal === 'imageZoom' || currentHash === '#image') {
                     if (imageModal) imageModal.style.display = 'flex';
                     updateScrollLock();
                     return;
                 }
 
-                // --- 3. DESTINATION: CHATTEN ---
-                // Hit kommer vi om vi trycker "bakåt" från en bild, eller öppnar chatten.
+                // --- 2. NAVIGERING TILL CHATT (#chat) ---
+                // Detta sker om vi öppnar chatten, ELLER om vi backar från en bild/modal
                 if (state.modal === 'chatWidget' || currentHash === '#chat') {
                     
-                    // Om en bild var öppen ovanpå -> Dölj den.
-                    if (isImageVisible) {
+                    // A. Stäng bildzoom om den är öppen
+                    // (Vi använder getComputedStyle för att vara säkra på om den syns)
+                    if (imageModal && getComputedStyle(imageModal).display !== 'none') {
                         imageModal.style.display = 'none';
                     }
 
-                    // Stäng eventuella andra modaler (t.ex. om man klickat på Regnr i chatten)
-                    if (anyOpenModal && anyOpenModal.id !== 'chatWidget') {
-                        anyOpenModal.classList.remove('show');
-                        setTimeout(() => { anyOpenModal.style.display = 'none'; }, 200);
-                        isModalOpen = false;
-                        currentOpenModalId = null;
-                    }
+                    // B. Stäng eventuella andra modaler (t.ex. om du klickat på ett regnr i chatten)
+                    document.querySelectorAll('.modal-backdrop').forEach(el => {
+                        if (el.id !== 'chatWidget') {
+                            el.classList.remove('show');
+                            el.style.display = 'none';
+                        }
+                    });
 
-                    // --- FIXEN FÖR DATOR-ANIMATIONEN ---
-                    // Öppna bara chatten om den INTE redan syns.
-                    // Om isChatVisible är true (den är redan öppen i bakgrunden), gör vi INGET.
-                    if (chatWidget && !isChatVisible) {
+                    // C. Säkerställ att Chatten är synlig (UTAN att starta om animationen)
+                    // Vi kollar inline-stilen. Om den redan är 'flex', rör vi den inte.
+                    if (chatWidget && chatWidget.style.display !== 'flex') {
                         chatWidget.style.display = 'flex';
                     }
                     
-                    // Tänd mobil-knappen
+                    // Se till att mobil-knappen lyser
                     if (mobileChatBtn) mobileChatBtn.classList.add('active');
 
-                    // Scrolla bara ner om vi INTE kom från en bild (för att behålla läspositionen)
-                    if (!isImageVisible && window.innerWidth > 768) {
+                    // D. Återställ variabler och scroll
+                    isModalOpen = false;
+                    currentOpenModalId = null;
+                    updateScrollLock();
+                    
+                    // Fokusera input på desktop
+                    if (window.innerWidth > 768) {
                         setTimeout(() => {
                             const input = document.getElementById('chatInput');
                             if(input) input.focus();
                         }, 50);
                     }
-                    
-                    updateScrollLock();
-                    return; // Stanna här, vi är klara.
+
+                    return; // VIKTIGT: Stanna här! Gå inte vidare till "Stäng allt".
                 }
 
-                // --- 4. DESTINATION: HEM / TIDSLINJE (Stäng allt) ---
-                else {
-                    // Stäng allt skoningslöst
-                    if (imageModal) imageModal.style.display = 'none';
-                    
-                    if (chatWidget) {
-                        chatWidget.style.display = 'none';
-                        if (mobileChatBtn) mobileChatBtn.classList.remove('active');
-                    }
+                // --- 3. GRUNDLÄGE / TIDSLINJE (Stäng allt) ---
+                // Hit kommer vi bara om vi INTE är på #image eller #chat.
+                
+                // Kolla vad som var öppet innan vi stänger (för mobil-toastens skull)
+                const wasChatOpen = chatWidget && chatWidget.style.display === 'flex';
+                const wasImageOpen = imageModal && getComputedStyle(imageModal).display !== 'none';
+                const wasModalOpen = isModalOpen || anyOpenModal;
+                const wasSearchOpen = mobileSearch && getComputedStyle(mobileSearch).display === 'flex';
 
-                    if (anyOpenModal) {
-                        anyOpenModal.classList.remove('show');
-                        setTimeout(() => { anyOpenModal.style.display = 'none'; }, 200);
-                    }
-                    
-                    if (mobileSearch) resetAndCloseSearch();
+                const somethingWasOpen = wasChatOpen || wasImageOpen || wasModalOpen || wasSearchOpen;
 
-                    isModalOpen = false;
-                    currentOpenModalId = null;
-                    updateScrollLock();
+                // Stäng allt skoningslöst
+                if (imageModal) imageModal.style.display = 'none';
+                
+                if (chatWidget) {
+                    chatWidget.style.display = 'none';
+                    if (mobileChatBtn) mobileChatBtn.classList.remove('active');
+                }
 
-                    // --- 5. MOBIL TOAST (Back-swipe) ---
-                    // Visa endast toast om vi är på mobil OCH inget viktigt fönster var öppet precis nyss.
-                    if (window.innerWidth <= 768 && !isChatVisible && !isImageVisible && !anyOpenModal && !isMobileSearchVisible) {
-                        if (typeof backPressWarned !== 'undefined') {
-                            if (backPressWarned) {
-                                // Andra trycket: Låt webbläsaren gå bakåt (stänga appen)
-                                backPressWarned = false;
-                                history.back();
-                            } else {
-                                // Första trycket: Visa varning
-                                backPressWarned = true;
-                                showToast('Tryck bakåt igen för att stänga', 'info');
-                                
-                                // Tryck in oss själva i historiken igen för att "studsa" stängningen
-                                history.pushState({ page: 'home' }, 'Home', location.pathname);
-                                
-                                backPressTimer = setTimeout(() => { backPressWarned = false; }, 2000);
-                            }
-                        }
+                if (anyOpenModal) {
+                    anyOpenModal.classList.remove('show');
+                    setTimeout(() => { anyOpenModal.style.display = 'none'; }, 200);
+                }
+                
+                if (mobileSearch) resetAndCloseSearch();
+
+                isModalOpen = false;
+                currentOpenModalId = null;
+                updateScrollLock();
+
+                // --- 4. MOBIL "TRYCK IGEN FÖR ATT STÄNGA" ---
+                // Visa endast om vi är på mobil OCH inget fönster stängdes precis nyss
+                if (window.innerWidth <= 768 && !somethingWasOpen) {
+                    if (backPressWarned) {
+                        backPressWarned = false; // Låt webbläsaren stänga appen
+                    } else {
+                        // Tryck tillbaka oss i historiken
+                        history.pushState({ page: 'home' }, 'Home', location.pathname);
+                        
+                        backPressWarned = true;
+                        showToast('Tryck bakåt igen för att stänga', 'info');
+                        clearTimeout(backPressTimer);
+                        backPressTimer = setTimeout(() => { 
+                            backPressWarned = false; 
+                        }, 2000);
                     }
                 }
             });
