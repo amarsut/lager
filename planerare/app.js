@@ -3126,14 +3126,13 @@
 
                     const chatWidget = document.getElementById('chatWidget');
                     
-                    // --- HÄR ÄR FIXEN FÖR DATORN ---
-                    // Vi kollar: Är chatten INTE redan synlig? Då visar vi den.
-                    // Är den redan 'flex' (öppen i bakgrunden), så gör vi INGET.
-                    // Detta förhindrar att "pop-up"-animationen startar om.
-                    if (chatWidget && chatWidget.style.display !== 'flex') {
+                    // --- FIXEN FÖR DATOR-ANIMATIONEN ---
+                    // Vi använder offsetParent. Om det INTE är null, så syns redan elementet.
+                    // Då rör vi inte display-propertyn alls, vilket förhindrar omstart av animationen.
+                    if (chatWidget && chatWidget.offsetParent === null) {
                         chatWidget.style.display = 'flex';
                     }
-                    // -------------------------------
+                    // -----------------------------------
                     
                     // Tänd mobil-knappen
                     const mobileChatBtn = document.getElementById('mobileChatBtn');
@@ -3142,7 +3141,7 @@
                     isModalOpen = false; 
                     updateScrollLock();
                     
-                    return; // Vi stannar här. Allt är klart.
+                    return; // Stanna här
                 }
 
                 // --- 2. STATE-BASERAD HANTERING (Destination: BILD) ---
@@ -3155,20 +3154,21 @@
 
                 // --- 3. NOLLSTÄLLNING (Destination: HEM/TIDSLINJE) ---
                 
-                // Kolla vad som VAR öppet (för att styra mobil-toasten)
+                // Hämta status FÖRE vi stänger, för att veta om vi ska visa mobil-toast
                 const chatWidget = document.getElementById('chatWidget');
                 const imageModal = document.getElementById('imageZoomModal');
                 const anyOpenModal = document.querySelector('.modal-backdrop.show');
                 const mobileSearch = document.getElementById('mobileSearchModal');
                 
+                // Kontrollera om något var öppet (använd offsetParent för säkerhets skull även här)
                 const wasSomethingOpen = (
-                    (chatWidget && getComputedStyle(chatWidget).display === 'flex') ||
+                    (chatWidget && chatWidget.offsetParent !== null) ||
                     (imageModal && getComputedStyle(imageModal).display !== 'none') ||
                     anyOpenModal ||
                     (mobileSearch && getComputedStyle(mobileSearch).display === 'flex')
                 );
 
-                // Stäng allt skoningslöst
+                // Stäng allt
                 if (imageModal) imageModal.style.display = 'none';
                 
                 if (chatWidget) {
@@ -3189,10 +3189,10 @@
                 updateScrollLock();
 
                 // --- 4. MOBIL "TRYCK IGEN FÖR ATT STÄNGA" ---
-                // Körs bara om vi är på mobil OCH vi inte precis stängde något fönster
+                // Visas endast om vi är på mobil OCH vi inte precis stängde ett fönster
                 if (window.innerWidth <= 768 && !wasSomethingOpen) {
                     if (backPressWarned) {
-                        backPressWarned = false; // Låt webbläsaren stänga appen
+                        backPressWarned = false; // Släpp igenom stängning
                     } else {
                         // Tryck tillbaka oss i historiken
                         history.pushState({ page: 'home' }, 'Home', location.pathname);
