@@ -1632,14 +1632,13 @@
 			    const bubble = document.createElement('div');
 			    bubble.className = 'chat-bubble';
 			    
-			    // Stäng av den inbyggda menyn (Kopiera/Dela) på mobilen
+			    // Stäng av den vanliga högerklicksmenyn så den inte stör
 			    bubble.oncontextmenu = function(event) {
 			        event.preventDefault();
 			        event.stopPropagation();
 			        return false;
 			    };
 			
-			    // Visa reaktion-badge om det finns
 			    if (data.reaction) {
 			        const badge = document.createElement('span');
 			        badge.className = 'reaction-badge';
@@ -1648,115 +1647,122 @@
 			        bubble.appendChild(badge);
 			    }
 			
-			    // --- FIXAD TOUCH & PRESS LOGIK ---
+			    // --- UNIFIERAD PRESS-LOGIK (MOBIL & DATOR) ---
 			    let pressTimer = null;
-			    let isLongPress = false; // Flagga för att veta om vi öppnat menyn
+			    let isLongPress = false;
 			    let startX = 0;
 			    let startY = 0;
 			
-			    // 1. När fingret landar
-			    const handleTouchStart = (e) => {
-			        isLongPress = false; // Nollställ alltid först
+			    // 1. START (Finger nuddar eller Musknapp trycks ner)
+			    const handleStart = (e) => {
+			        // Ignorera högerklick (button 2)
+			        if (e.type === 'mousedown' && e.button !== 0) return;
+			
+			        isLongPress = false;
 			        
-			        if(e.touches && e.touches[0]) {
+			        // Hämta koordinater oavsett om det är touch eller mus
+			        if (e.touches && e.touches.length > 0) {
 			            startX = e.touches[0].clientX;
 			            startY = e.touches[0].clientY;
+			        } else {
+			            startX = e.clientX;
+			            startY = e.clientY;
 			        }
 			
 			        pressTimer = setTimeout(() => {
-			            // Tiden har gått - Nu aktiverar vi menyn!
 			            isLongPress = true; 
 			            
-			            // Hitta koordinater för menyn
-			            let clientX = startX;
-			            let clientY = startY;
-			            // Uppdatera om vi har färska touch-data (oftast samma som start)
-			            if (e.touches && e.touches[0]) {
-			                clientX = e.touches[0].clientX;
-			                clientY = e.touches[0].clientY;
-			            }
-			
-			            // Visa menyn
+			            // Visa menyn vid koordinaterna
 			            if (typeof showReactionMenu === 'function') {
-			                showReactionMenu(clientX, clientY, id);
+			                showReactionMenu(startX, startY, id);
 			            }
 			            
-			            // Vibrera (Haptisk feedback)
 			            if (navigator.vibrate) navigator.vibrate(10);
-			
-			        }, 500); // 500ms = Långtryck
+			        }, 500); 
 			    };
 			
-			    // 2. När fingret flyttar sig (Scrollar)
-			    const handleTouchMove = (e) => {
-			        if (pressTimer) {
-			            const currentX = e.touches[0].clientX;
-			            const currentY = e.touches[0].clientY;
-			            // Om man rör fingret mer än 10px, avbryt långtrycket (man scrollar troligen)
-			            if (Math.abs(currentX - startX) > 10 || Math.abs(currentY - startY) > 10) {
-			                clearTimeout(pressTimer);
-			                pressTimer = null;
-			            }
+			    // 2. MOVE (Om man drar fingret/musen för mycket = avbryt)
+			    const handleMove = (e) => {
+			        if (!pressTimer) return;
+			
+			        let currentX, currentY;
+			        
+			        if (e.touches && e.touches.length > 0) {
+			            currentX = e.touches[0].clientX;
+			            currentY = e.touches[0].clientY;
+			        } else {
+			            currentX = e.clientX;
+			            currentY = e.clientY;
+			        }
+			
+			        // Tolerans på 10px rörelse
+			        if (Math.abs(currentX - startX) > 10 || Math.abs(currentY - startY) > 10) {
+			            clearTimeout(pressTimer);
+			            pressTimer = null;
 			        }
 			    };
 			
-			    // 3. När fingret släpps - HÄR ÄR FIXEN
-			    const handleTouchEnd = (e) => {
-			        // Rensa timern så vi inte öppnar menyn om man släppte snabbt
+			    // 3. END (Släpp finger/mus)
+			    const handleEnd = (e) => {
 			        if (pressTimer) {
 			            clearTimeout(pressTimer);
 			            pressTimer = null;
 			        }
 			
-			        // MAGIN: Om isLongPress är sant, betyder det att menyn REDAN har öppnats.
-			        // Då måste vi DÖDA händelsen här så att den inte blir ett "klick".
+			        // Om vi precis triggat menyn, döda klicket så menyn inte stängs direkt
 			        if (isLongPress) {
-			            e.preventDefault(); // Stoppa webbläsaren från att generera ett 'click'
-			            e.stopPropagation(); // Stoppa bubblandet
+			            if(e.cancelable) e.preventDefault(); 
+			            e.stopPropagation();
 			            
-			            // Återställ flaggan efter en kort stund för säkerhets skull
+			            // Liten fördröjning innan vi nollställer, för att blockera eventuella eftersläntrande 'click'
 			            setTimeout(() => { isLongPress = false; }, 100);
 			            return false;
 			        }
 			    };
 			
-			    // 4. Vanligt klick (Körs bara om isLongPress var false i TouchEnd)
+			    // 4. CLICK (Det som händer om man INTE höll inne)
 			    const handleClick = (e) => {
-			        // Dubbelkoll: Om vi ändå hamnade här trots långtryck, avbryt.
 			        if (isLongPress) {
 			            e.preventDefault();
 			            e.stopPropagation();
 			            return;
 			        }
-			
-			        // Här hamnar vi vid ett vanligt, snabbt tryck.
-			        // Exempel: Öppna bildzoom om det är en bild.
+			        
+			        // Här kan du lägga in vad som händer vid ett vanligt snabbt klick
+			        // T.ex. öppna bildzoom
 			        if (data.type === 'image' || (data.images && data.images.length > 0)) {
-			             // Bild-logiken hanteras separat på img-taggen nedan, 
-			             // men om du vill ha klick på hela bubblan kan du lägga det här.
+			             // Bild-klick hanteras på img-taggarna nedan, men vill du att hela bubblan ska klickas kan du göra det här.
 			        }
 			    };
 			
-			    // Koppla händelserna
-			    bubble.addEventListener('touchstart', handleTouchStart, {passive: true});
-			    bubble.addEventListener('touchmove', handleTouchMove, {passive: true});
-			    bubble.addEventListener('touchend', handleTouchEnd, {passive: false}); // passive: false krävs för e.preventDefault()
+			    // --- KOPPLA ALLA HÄNDELSER ---
+			    
+			    // Touch
+			    bubble.addEventListener('touchstart', handleStart, {passive: true});
+			    bubble.addEventListener('touchmove', handleMove, {passive: true});
+			    bubble.addEventListener('touchend', handleEnd, {passive: false});
+			
+			    // Mus (Desktop)
+			    bubble.addEventListener('mousedown', handleStart);
+			    bubble.addEventListener('mousemove', handleMove);
+			    bubble.addEventListener('mouseup', handleEnd);
+			    bubble.addEventListener('mouseleave', handleEnd); // Om man drar musen utanför bubblan
+			
+			    // Klick
 			    bubble.addEventListener('click', handleClick);
 			
 			
-			    // --- INNEHÅLL (TEXT/BILD) ---
+			    // --- INNEHÅLL (Samma som förut) ---
 			    
 			    if (data.images && Array.isArray(data.images)) {
-			        // KARUSELL
 			        bubble.classList.add('chat-bubble-image');
 			        const carousel = document.createElement('div');
 			        carousel.className = 'chat-carousel';
 			        data.images.forEach(imgSrc => {
 			            const img = document.createElement('img');
 			            img.src = imgSrc; img.loading = "lazy"; img.alt = "Bild";
-			            
-			            // VIKTIGT: Klick på bilden ska inte heller stänga menyn om det var långtryck
 			            img.onclick = (e) => {
+			                // Skydda även bildklicket från att stänga menyn vid long-press
 			                if (isLongPress) { e.preventDefault(); e.stopPropagation(); return; }
 			                if (typeof window.openImageZoom === 'function') window.openImageZoom(imgSrc);
 			            };
@@ -1771,7 +1777,6 @@
 			        }
 			
 			    } else if (data.type === 'image' && data.image) {
-			        // ENKEL BILD
 			        bubble.classList.add('chat-bubble-image');
 			        const imgElement = document.createElement('img');
 			        imgElement.src = data.image; imgElement.alt = "Bild"; imgElement.loading = "lazy";
@@ -1790,12 +1795,10 @@
 			        bubble.dataset.originalHtml = bubble.innerHTML;
 			
 			    } else {
-			        // TEXT
 			        let rawText = data.text || "";
 			        const textContentDiv = document.createElement('div');
 			        textContentDiv.className = 'chat-text-content';
 			        
-			        // Processa text (länkar, regnr)
 			        let processedText = rawText
 			            .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 			            
@@ -1821,7 +1824,7 @@
 			            readMoreBtn.className = 'read-more-btn';
 			            readMoreBtn.textContent = "Visa mer";
 			            readMoreBtn.onclick = (e) => {
-			                e.stopPropagation(); 
+			                e.stopPropagation();
 			                if (textContentDiv.classList.contains('truncated')) {
 			                    textContentDiv.classList.remove('truncated');
 			                    readMoreBtn.textContent = "Visa mindre";
@@ -1836,7 +1839,6 @@
 			        bubble.dataset.originalHtml = bubble.innerHTML;
 			    }
 			    
-			    // Tidsstämpel
 			    const time = document.createElement('div');
 			    time.className = 'chat-time';
 			    const date = new Date(data.timestamp);
