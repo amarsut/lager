@@ -853,6 +853,7 @@
 			    chatWidget.style.display = 'none';
 			    const mobileChatBtn = document.getElementById('mobileChatBtn');
 			    if(mobileChatBtn) mobileChatBtn.classList.remove('active');
+				if (typeof hideReactionMenu === 'function') hideReactionMenu();
 			    updateScrollLock();
 			}
 			
@@ -1722,10 +1723,12 @@
 			    bubble.className = 'chat-bubble';
 			
 			    // Variabel för att minnas om vi har gjort ett långtryck
-			    // Vi använder en lokal variabel istället för dataset för att undvika att den "fastnar" i DOMen
 			    let isLongPressActive = false;
 			
 			    // --- 1. INNEHÅLL (TEXT & BILD) ---
+			    // Samma innehållslogik som du redan har (kopiera in den om du vill, eller använd din befintliga del 1)
+			    // För att spara plats här visar jag bara logiken, men se till att Text/Bild-koden är med!
+			    
 			    if (data.images && Array.isArray(data.images)) {
 			        bubble.classList.add('chat-bubble-image');
 			        const carousel = document.createElement('div');
@@ -1734,7 +1737,6 @@
 			            const img = document.createElement('img');
 			            img.src = imgSrc; img.loading = "lazy"; img.alt = "Bild";
 			            img.onclick = (e) => {
-			                // Öppna bara om det INTE är ett långtryck
 			                if (!isLongPressActive) {
 			                    e.stopPropagation(); 
 			                    if (typeof window.openImageZoom === 'function') window.openImageZoom(imgSrc);
@@ -1749,7 +1751,6 @@
 			            captionDiv.textContent = data.caption;
 			            bubble.appendChild(captionDiv);
 			        }
-			
 			    } else if (data.type === 'image' && data.image) {
 			        bubble.classList.add('chat-bubble-image');
 			        const imgElement = document.createElement('img');
@@ -1768,30 +1769,24 @@
 			            bubble.appendChild(captionDiv);
 			        }
 			        bubble.dataset.originalHtml = bubble.innerHTML;
-			
 			    } else {
-			        // Text
+			        // Text-logik (Klistra in din befintliga text-logik här)
 			        let rawText = data.text || "";
 			        const textContentDiv = document.createElement('div');
 			        textContentDiv.className = 'chat-text-content';
-			        
 			        let processedText = rawText.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 			        const urlPattern = /(https?:\/\/[^\s]+)/g;
 			        processedText = processedText.replace(urlPattern, (url) => `<a href="${url}" target="_blank" class="chat-link">${url}</a>`);
-			
 			        const regPattern = /\b([A-Za-z]{3})\s?(\d{2}[0-9A-Za-z])\b/g;
 			        processedText = processedText.replace(regPattern, (match) => {
 			            const cleanReg = match.replace(/\s/g, '').toUpperCase(); 
 			            return `<span class="chat-reg-link" data-reg="${cleanReg}">${match.toUpperCase()}</span>`;
 			        });
-			
 			        if (typeof highlightCustomerNames === 'function') {
 			            processedText = highlightCustomerNames(processedText);
 			        }
-			
 			        textContentDiv.innerHTML = processedText;
 			        bubble.appendChild(textContentDiv);
-			
 			        if (rawText.length > 300) {
 			            textContentDiv.classList.add('truncated');
 			            const readMoreBtn = document.createElement('button');
@@ -1820,31 +1815,27 @@
 			        bubble.appendChild(badge);
 			    }
 			
-			    // --- 2. DEN NYA TOUCH-LOGIKEN ---
+			    // --- 2. TOUCH-LOGIK (FIXAD) ---
 			    
 			    let pressTimer = null;
 			    let startX = 0, startY = 0;
 			
 			    const handleTouchStart = (e) => {
-			        // Ignorera multitouch (zoom etc)
-			        if (e.touches.length > 1) return;
+			        if (e.touches.length > 1) return; 
 			
-			        // VIKTIGT: Nollställ ALLTID flaggan vid ny touch. 
-			        // Detta löser problemet med att menyn "fastnar" andra gången.
+			        // NOLLSTÄLL
 			        isLongPressActive = false;
 			
-			        const touch = e.touches[0];
-			        startX = touch.clientX;
-			        startY = touch.clientY;
+			        startX = e.touches[0].clientX;
+			        startY = e.touches[0].clientY;
 			
-			        // Edge Guard (Swipe skydd)
-			        const screenWidth = window.innerWidth;
-			        if (startX < 50 || startX > screenWidth - 50) return;
+			        // Edge Guard
+			        if (startX < 50 || startX > window.innerWidth - 50) return;
 			
 			        if (pressTimer) clearTimeout(pressTimer);
 			
 			        pressTimer = setTimeout(() => {
-			            // Nu har vi hållit tillräckligt länge!
+			            // Långtryck aktiverat!
 			            isLongPressActive = true; 
 			            
 			            if (typeof showReactionMenu === 'function') {
@@ -1856,11 +1847,9 @@
 			
 			    const handleTouchMove = (e) => {
 			        if (!pressTimer) return;
-			
+			        // Om vi rör oss, avbryt timern direkt
 			        const currentX = e.touches[0].clientX;
 			        const currentY = e.touches[0].clientY;
-			        
-			        // Om fingret rör sig mer än 10px räknar vi det som scroll och avbryter
 			        if (Math.abs(currentX - startX) > 10 || Math.abs(currentY - startY) > 10) {
 			            clearTimeout(pressTimer);
 			            pressTimer = null;
@@ -1868,53 +1857,42 @@
 			    };
 			
 			    const handleTouchEnd = (e) => {
-			        // Rensa timern så inte menyn dyker upp om man släpper tidigt
+			        // Rensa timer om vi släppte tidigt
 			        if (pressTimer) {
 			            clearTimeout(pressTimer);
 			            pressTimer = null;
 			        }
-			        // OBS: Vi nollställer INTE isLongPressActive här. 
-			        // Den måste vara 'true' en liten stund till för att handleClick ska kunna blockera klicket.
-			    };
 			
-			    const handleClick = (e) => {
-			        // Om isLongPressActive är true, betyder det att vi nyss öppnade menyn.
-			        // Då måste vi DÖDA detta klick så att det inte bubblar upp och stänger menyn direkt.
+			        // HÄR ÄR NYCKELN:
+			        // Om vi precis triggade ett långtryck, döda ALLT som händer efteråt (klick, bubblande events)
 			        if (isLongPressActive) {
-			            e.preventDefault();
-			            e.stopPropagation();
-			            e.stopImmediatePropagation();
+			            if (e.cancelable) e.preventDefault(); // Stoppa mus-eventet från att skapas
+			            e.stopPropagation(); // Stoppa bubblande
 			            
-			            // Återställ flaggan efter en kort fördröjning så man kan klicka normalt nästa gång
-			            setTimeout(() => {
-			                isLongPressActive = false;
-			            }, 50);
-			            
+			            // Vi nollställer flaggan direkt här, eftersom preventDefault() 
+			            // har gjort sitt jobb med att stoppa spök-klicket.
+			            isLongPressActive = false;
 			            return false;
 			        }
 			    };
 			
-			    // Blockera inbyggd högerklicksmeny på mobil så den inte stör
+			    // Kontextmeny (Högerklick)
 			    bubble.addEventListener('contextmenu', (e) => {
 			        if (window.innerWidth <= 768) {
 			            e.preventDefault();
 			            e.stopPropagation();
 			            return false;
 			        }
-			        // På dator: Öppna vår meny vid högerklick
 			        e.preventDefault();
 			        showReactionMenu(e.clientX, e.clientY, id);
 			        return false;
 			    });
 			
-			    // Koppla lyssnare
-			    // passive: true på touchstart/move/end är viktigt för mjuk scroll
+			    // Koppla listeners
+			    // passive: false på touchend är nödvändigt för att kunna köra e.preventDefault()
 			    bubble.addEventListener('touchstart', handleTouchStart, { passive: true });
 			    bubble.addEventListener('touchmove', handleTouchMove, { passive: true });
-			    bubble.addEventListener('touchend', handleTouchEnd, { passive: true });
-			    
-			    // Fånga klicket för att stoppa "spök-stängning"
-			    bubble.addEventListener('click', handleClick, true); 
+			    bubble.addEventListener('touchend', handleTouchEnd, { passive: false }); 
 			
 			    // --- 3. TIDSSTÄMPEL ---
 			    const time = document.createElement('div');
@@ -1922,17 +1900,14 @@
 			    const dateObj = new Date(data.timestamp);
 			    const timeString = dateObj.toLocaleTimeString('sv-SE', {hour: '2-digit', minute:'2-digit'});
 			    const dateString = dateObj.toLocaleDateString('sv-SE', {day: 'numeric', month: 'short'});
-			    const isToday = new Date().toDateString() === dateObj.toDateString();
-			    const displayTime = isToday ? timeString : `${dateString}, ${timeString}`;
+			    const displayTime = (new Date().toDateString() === dateObj.toDateString()) ? timeString : `${dateString}, ${timeString}`;
 			
 			    let platformIconHtml = '';
 			    if (data.platform === 'mobil') platformIconHtml = `<svg class="platform-icon"><use href="#icon-mobile"></use></svg>`;
 			    else if (data.platform === 'dator') platformIconHtml = `<svg class="platform-icon"><use href="#icon-desktop"></use></svg>`;
 			
 			    time.innerHTML = `${displayTime} ${platformIconHtml}`;
-			    if (data.isEdited) {
-			        time.innerHTML += ` <span style="font-style:italic; opacity:0.7;">(redigerad)</span>`;
-			    }
+			    if (data.isEdited) time.innerHTML += ` <span style="font-style:italic; opacity:0.7;">(redigerad)</span>`;
 			
 			    container.appendChild(bubble);
 			    container.appendChild(time);
