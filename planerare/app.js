@@ -1404,7 +1404,7 @@
 			
 			                // --- SPACER (SÅ INGET DÖLJS) ---
 			                const spacer = document.createElement('div');
-			                spacer.style.height = "100px"; 
+			                spacer.style.height = "50px"; 
 			                spacer.style.flexShrink = "0"; 
 			                chatList.appendChild(spacer);
 			
