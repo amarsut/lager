@@ -1216,6 +1216,67 @@
 			            exitEditMode();
 			        };
 			    }
+
+				// --- LOGIK FÖR ATT DÖLJA KNAPPAR VID SKRIVNING (MOBIL) ---
+			    const innerInputActions = document.querySelector('.inner-input-actions');
+			    let inputFocusTimer = null;
+			
+			    if (chatInput && innerInputActions) {
+			        
+			        // Hjälpfunktion för att visa/dölja
+			        const toggleInputButtons = (show) => {
+			            // Kör bara detta på mobil (skärmbredd under 768px)
+			            if (window.innerWidth > 768) return; 
+			
+			            if (show) {
+			                innerInputActions.style.display = 'flex';
+			                innerInputActions.style.opacity = '1';
+			                // Justera padding så texten inte överlappar knapparna när de syns
+			                chatInput.style.paddingRight = '3rem'; // Plats för ikonerna
+			            } else {
+			                innerInputActions.style.display = 'none';
+			                innerInputActions.style.opacity = '0';
+			                // Ge mer plats åt texten när knapparna är borta
+			                chatInput.style.paddingRight = '1rem'; 
+			            }
+			        };
+			
+			        // 1. När man klickar i fältet (Focus)
+			        chatInput.addEventListener('focus', () => {
+			            // Om fältet är tomt, dölj tillfälligt i 4 sekunder
+			            if (chatInput.value.trim() === "") {
+			                toggleInputButtons(false);
+			                
+			                clearTimeout(inputFocusTimer);
+			                inputFocusTimer = setTimeout(() => {
+			                    // Om det fortfarande är tomt efter 4 sek, visa igen och återställ padding
+			                    if (chatInput.value.trim() === "") {
+			                        toggleInputButtons(true);
+			                    }
+			                }, 4000);
+			            } else {
+			                // Om det redan finns text, dölj direkt
+			                toggleInputButtons(false);
+			            }
+			        });
+			
+			        // 2. När man skriver (Input)
+			        chatInput.addEventListener('input', () => {
+			            clearTimeout(inputFocusTimer); // Avbryt 4-sekunders timern
+			
+			            if (chatInput.value.trim() !== "") {
+			                toggleInputButtons(false);
+			            } else {
+			                toggleInputButtons(true);
+			            }
+			        });
+			
+			        // 3. När man lämnar fältet (Blur)
+			        chatInput.addEventListener('blur', () => {
+			            // Återställ alltid knapparna när man är klar
+			            setTimeout(() => toggleInputButtons(true), 200); 
+			        });
+			    }
 			
 			    // --- NY FUNKTION FÖR ATT SKICKA ---
 			    const sendMessage = async () => {
