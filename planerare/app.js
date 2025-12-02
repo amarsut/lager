@@ -3101,73 +3101,99 @@
 			});
 
             window.addEventListener('popstate', (event) => {
-                // Om vi redan håller på att backa via kod, avbryt för att undvika loopar
                 if (isNavigatingBack) {
                     isNavigatingBack = false;
                     return;
                 }
 
-                // 1. Hämta elementen
+                const state = event.state || {};
+                const currentHash = window.location.hash;
+
+                // --- 1. STATE-BASERAD HANTERING (Vart är vi på väg?) ---
+                
+                // A. Om vi backar TILL CHATTEN (t.ex. från bild eller bil-modal)
+                if (state.modal === 'chatWidget' || currentHash === '#chat') {
+                    
+                    // Stäng bildzoom om den ligger överst
+                    const imageModal = document.getElementById('imageZoomModal');
+                    if (imageModal) imageModal.style.display = 'none';
+                    
+                    // Stäng eventuella andra modaler (som bil-info) men låt chatten vara
+                    document.querySelectorAll('.modal-backdrop').forEach(el => {
+                        if (el.id !== 'chatWidget') {
+                            el.classList.remove('show');
+                            el.style.display = 'none';
+                        }
+                    });
+
+                    // VIKTIGT: Säkerställ att chatten är SYNLIG
+                    const chatWidget = document.getElementById('chatWidget');
+                    if (chatWidget) chatWidget.style.display = 'flex';
+                    
+                    // Tänd mobil-knappen
+                    const mobileChatBtn = document.getElementById('mobileChatBtn');
+                    if (mobileChatBtn) mobileChatBtn.classList.add('active');
+
+                    isModalOpen = false; 
+                    updateScrollLock();
+                    return; // Stanna här! Vi är klara.
+                }
+
+                // B. Om vi landar på #image (Sällsynt, men om man navigerar framåt)
+                if (state.modal === 'imageZoom') {
+                    const imageModal = document.getElementById('imageZoomModal');
+                    if (imageModal) imageModal.style.display = 'flex';
+                    updateScrollLock();
+                    return;
+                }
+
+                // --- 2. NOLLSTÄLLNING (Vi är på "Home" / Tidslinjen) ---
+                // Om vi kommer hit betyder det att URL:en är ren. Vi ska stänga allt.
+
+                // Kolla vad som VAR öppet innan vi stänger (för mobil-toastens skull)
                 const chatWidget = document.getElementById('chatWidget');
                 const imageModal = document.getElementById('imageZoomModal');
-                const mobileSearch = document.getElementById('mobileSearchModal');
                 const anyOpenModal = document.querySelector('.modal-backdrop.show');
+                const mobileSearch = document.getElementById('mobileSearchModal');
+                
+                const wasSomethingOpen = (
+                    (chatWidget && getComputedStyle(chatWidget).display === 'flex') ||
+                    (imageModal && getComputedStyle(imageModal).display !== 'none') ||
+                    anyOpenModal ||
+                    (mobileSearch && getComputedStyle(mobileSearch).display === 'flex')
+                );
 
-                // 2. Kontrollera vad som faktiskt är synligt
-                const isImageOpen = imageModal && getComputedStyle(imageModal).display !== 'none';
-                const isChatOpen = chatWidget && getComputedStyle(chatWidget).display === 'flex';
-                const isMobileSearchOpen = mobileSearch && getComputedStyle(mobileSearch).display === 'flex';
-
-                // --- NIVÅ 1: BILD-ZOOM (Ligger överst) ---
-                // Om en bild är öppen: Stäng BARA bilden och avbryt (return).
-                // Då rör vi inte chatten som ligger under.
-                if (isImageOpen) {
-                    imageModal.style.display = 'none';
-                    updateScrollLock(); // Uppdatera scroll (låst om chatten är under)
-                    return; // <--- VIKTIGT: Stoppa här!
-                }
-
-                // --- NIVÅ 2: SÖK-MODAL ---
-                if (isMobileSearchOpen) {
-                    resetAndCloseSearch();
-                    updateScrollLock();
-                    return; // Stoppa här
-                }
-
-                // --- NIVÅ 3: VANLIGA MODALER (Kundkort, Inställningar etc) ---
-                if (anyOpenModal) {
-                    anyOpenModal.classList.remove('show');
-                    setTimeout(() => { anyOpenModal.style.display = 'none'; }, 200);
-                    isModalOpen = false;
-                    currentOpenModalId = null;
-                    updateScrollLock();
-                    return; // Stoppa här
-                }
-
-                // --- NIVÅ 4: CHATTEN ---
-                // Stängs bara om inget annat (bild/modal) låg ovanpå
-                if (isChatOpen) {
+                // Nu stänger vi allt skoningslöst
+                if (imageModal) imageModal.style.display = 'none';
+                
+                if (chatWidget) {
                     chatWidget.style.display = 'none';
                     const mobileChatBtn = document.getElementById('mobileChatBtn');
                     if (mobileChatBtn) mobileChatBtn.classList.remove('active');
-                    updateScrollLock();
-                    return; // Stoppa här
                 }
 
-                // --- NIVÅ 5: HEMSKÄRMEN (Toast-varning) ---
-                // Hit kommer vi bara om INGET annat var öppet
-                if (window.innerWidth <= 768) {
+                if (anyOpenModal) {
+                    anyOpenModal.classList.remove('show');
+                    setTimeout(() => { anyOpenModal.style.display = 'none'; }, 200);
+                }
+                
+                if (mobileSearch) resetAndCloseSearch();
+
+                isModalOpen = false;
+                currentOpenModalId = null;
+                updateScrollLock();
+
+                // --- 3. MOBIL "AVSLUTA"-TOAST ---
+                // Visa endast om vi är på mobil OCH inget stängdes precis (dvs vi var redan på Home)
+                if (window.innerWidth <= 768 && !wasSomethingOpen) {
                     if (backPressWarned) {
-                        // Andra trycket: Låt webbläsaren stänga appen/gå bakåt på riktigt
-                        backPressWarned = false; 
+                        backPressWarned = false; // Låt webbläsaren stänga/backa på riktigt
                     } else {
-                        // Första trycket: Visa varning och stoppa stängning
-                        backPressWarned = true;
-                        showToast('Tryck bakåt igen för att stänga', 'info');
-                        
-                        // Tryck tillbaka oss i historiken så vi stannar på sidan
+                        // Tryck in oss själva i historiken igen för att stanna kvar
                         history.pushState({ page: 'home' }, 'Home', location.pathname);
                         
+                        backPressWarned = true;
+                        showToast('Tryck bakåt igen för att stänga', 'info');
                         clearTimeout(backPressTimer);
                         backPressTimer = setTimeout(() => { 
                             backPressWarned = false; 
