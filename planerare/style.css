@@ -6117,11 +6117,13 @@ body.body-scroll-lock {
     box-shadow: 0 1px 2px rgba(0,0,0,0.1);
     word-wrap: break-word;
     animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
 
-.chat-bubble {
-    /* ... dina gamla stilar ... */
-    touch-action: pan-y !important; /* <--- LÄGG TILL DENNA */
+	/* --- FIXAR SCROLL & TOUCH --- */
+    touch-action: pan-y !important;       /* Tillåter vertikal scroll direkt */
+    -webkit-touch-callout: none;          /* Stänger av iOS förstoringsglas/meny */
+    -webkit-user-select: none;            /* Stänger av textmarkering */
+    user-select: none;
+    -webkit-tap-highlight-color: transparent; /* Tar bort grå ruta vid klick */
 }
 
 @keyframes popIn {
@@ -7209,6 +7211,7 @@ body.body-scroll-lock {
     -webkit-user-select: none !important;
     user-select: none !important;
 }
+
 
 
 
