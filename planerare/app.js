@@ -1730,31 +1730,30 @@
 			    // --- MOBIL: LÅNGTRYCK (Endast Touch) ---
 			    let pressTimer = null;
 			    let startX = 0, startY = 0;
-			    let isLongPress = false; // Ny flagga för att hålla koll
+			    let isLongPress = false; 
 			
 			    const handleTouchStart = (e) => {
-			        if (e.touches && e.touches.length > 0) {
-			            startX = e.touches[0].clientX;
-			            startY = e.touches[0].clientY;
-			            isLongPress = false; // Nollställ alltid vid start
+			        // Om det är multitouch (flera fingrar), avbryt
+			        if (e.touches.length > 1) return;
 			
-			            // 1. Edge Guard: Ignorera om vi är för nära kanterna (för swipe)
-			            const screenWidth = window.innerWidth;
-			            const edgeZone = 50; 
-			            if (startX < edgeZone || startX > screenWidth - edgeZone) {
-			                return;
-			            }
-			            
-			            pressTimer = setTimeout(() => {
-			                // Tiden gick ut = Detta ÄR ett långtryck
-			                isLongPress = true; 
-			                
-			                if (typeof showReactionMenu === 'function') {
-			                    showReactionMenu(startX, startY, id);
-			                }
-			                if (navigator.vibrate) navigator.vibrate(15);
-			            }, 250); // Snabb reaktion (Messenger-style)
+			        startX = e.touches[0].clientX;
+			        startY = e.touches[0].clientY;
+			        isLongPress = false; 
+			
+			        // 1. Edge Guard: Låt bli om vi är nära kanterna (för swipe)
+			        const screenWidth = window.innerWidth;
+			        const edgeZone = 50; 
+			        if (startX < edgeZone || startX > screenWidth - edgeZone) {
+			            return;
 			        }
+			        
+			        pressTimer = setTimeout(() => {
+			            isLongPress = true; // Markera att vi gjort ett långtryck
+			            if (typeof showReactionMenu === 'function') {
+			                showReactionMenu(startX, startY, id);
+			            }
+			            if (navigator.vibrate) navigator.vibrate(15);
+			        }, 250); 
 			    };
 			
 			    const handleTouchMove = (e) => {
@@ -1762,7 +1761,7 @@
 			        const currentX = e.touches[0].clientX;
 			        const currentY = e.touches[0].clientY;
 			        
-			        // Om fingret rör sig mer än 10px, avbryt långtrycket
+			        // Om fingret rör sig (skrollar), avbryt direkt
 			        if (Math.abs(currentX - startX) > 10 || Math.abs(currentY - startY) > 10) {
 			            clearTimeout(pressTimer);
 			            pressTimer = null;
@@ -1770,24 +1769,32 @@
 			    };
 			
 			    const handleTouchEnd = (e) => {
-			        // Om vi precis lyckades göra ett långtryck...
-			        if (isLongPress) {
-			            // ...DÖDA det efterföljande "spök-klicket"!
-			            if (e.cancelable) e.preventDefault();
-			            isLongPress = false;
-			        }
-			
-			        // Rensa timern om man släppte för snabbt
+			        // Rensa bara timern, men rör inte eventet här
 			        if (pressTimer) {
 			            clearTimeout(pressTimer);
 			            pressTimer = null;
 			        }
 			    };
 			
-			    // VIKTIGT: touchend får INTE vara 'passive: true' för att preventDefault ska funka
+			    // "KLICK-VAKT": Detta körs EFTER touchend. 
+			    // Om vi har gjort ett långtryck, dödar vi klicket här.
+			    const handleClick = (e) => {
+			        if (isLongPress) {
+			            e.preventDefault();
+			            e.stopPropagation();
+			            isLongPress = false; // Återställ
+			            return false;
+			        }
+			    };
+			
+			    // Koppla lyssnare (OBS: passive: true på touch ger bättre prestanda/scroll)
 			    bubble.addEventListener('touchstart', handleTouchStart, {passive: true});
 			    bubble.addEventListener('touchmove', handleTouchMove, {passive: true});
-			    bubble.addEventListener('touchend', handleTouchEnd, {passive: false});
+			    bubble.addEventListener('touchend', handleTouchEnd, {passive: true});
+			    bubble.addEventListener('touchcancel', handleTouchEnd, {passive: true}); // Hantera avbrott
+			    
+			    // Fånga klicket för att stoppa "spök-klick"
+			    bubble.addEventListener('click', handleClick);
 			
 			    // --- INNEHÅLL (Samma som tidigare) ---
 			    
