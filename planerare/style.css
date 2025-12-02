@@ -7195,6 +7195,15 @@ body.body-scroll-lock {
     z-index: 20; /* Över overlayen */
 }
 
+/* Lägg till detta i style.css */
+.chat-bubble {
+    /* ... dina gamla stilar ... */
+    
+    /* NYTT: Stäng av systemets inbyggda meny vid långtryck */
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+    user-select: none !important;
+}
 
 
 
