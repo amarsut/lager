@@ -7213,7 +7213,93 @@ body.body-scroll-lock {
 }
 
 
+/* --- REAKTIONSMENY (STOR & MOBILVÄNLIG - OVERRIDE) --- */
 
+/* 1. Själva menyrutan */
+.reaction-menu {
+    /* Tvingar storlek och luft */
+    padding: 16px 20px !important;
+    border-radius: 24px !important;
+    gap: 16px !important;
+    min-width: 300px !important;
+    
+    /* Layout fix */
+    flex-direction: column !important;
+    align-items: stretch !important;
+    
+    /* Utseende */
+    box-shadow: 0 10px 40px rgba(0,0,0,0.25) !important;
+    background-color: var(--content-bg) !important; /* Säkerställ bakgrund */
+}
+
+/* 2. Emojis (Övre raden) */
+.reaction-option {
+    font-size: 2rem !important; /* Stora emojis */
+    padding: 4px 8px !important;
+    height: auto !important;
+    line-height: normal !important; /* Fixar höjdproblem */
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.reaction-option:active {
+    transform: scale(1.4);
+}
+
+/* 3. Åtgärds-raden (Nedre raden: Redigera, Kopiera...) */
+.reaction-actions-row {
+    padding-top: 12px !important;
+    margin-top: 4px !important;
+    border-top: 1px solid var(--border-color) !important;
+    
+    display: flex !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+}
+
+/* 4. Behållare för varje knapp (Ikon + Text) */
+.action-item {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 6px !important;
+    flex: 1 !important; /* Dela lika på bredden */
+    cursor: pointer;
+}
+
+/* 5. Cirkel-knapparna */
+.action-item .icon-circle {
+    width: 56px !important;  /* Stor träffyta */
+    height: 56px !important;
+    border-radius: 50% !important;
+    background-color: var(--bg-color) !important;
+    
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.2s ease;
+}
+
+/* 6. Ikonerna inuti cirklarna */
+.action-item .icon-sm {
+    width: 1.6rem !important;
+    height: 1.6rem !important;
+    stroke-width: 2px !important;
+    color: var(--text-color) !important;
+}
+.action-item.danger .icon-sm {
+    color: var(--danger-color) !important;
+}
+
+/* 7. Texten under knapparna */
+.action-item span {
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+    color: var(--text-color-light) !important;
+}
+
+/* 8. Dark mode justering */
+[data-theme="dark"] .action-item .icon-circle {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+}
 
 
 
