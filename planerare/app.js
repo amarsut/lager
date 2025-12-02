@@ -1730,68 +1730,74 @@
 			    // --- MOBIL: LÅNGTRYCK (Endast Touch) ---
 			    let pressTimer = null;
 			    let startX = 0, startY = 0;
-			    let isLongPress = false; 
+			    let isScrolling = false;
 			
+			    // 1. Starta timern
 			    const handleTouchStart = (e) => {
-			        // Om det är multitouch (flera fingrar), avbryt
+			        // Om flera fingrar används (zoom etc), avbryt direkt
 			        if (e.touches.length > 1) return;
 			
 			        startX = e.touches[0].clientX;
 			        startY = e.touches[0].clientY;
-			        isLongPress = false; 
+			        isScrolling = false; // Nollställ scroll-status
 			
-			        // 1. Edge Guard: Låt bli om vi är nära kanterna (för swipe)
-			        const screenWidth = window.innerWidth;
-			        const edgeZone = 50; 
-			        if (startX < edgeZone || startX > screenWidth - edgeZone) {
-			            return;
-			        }
-			        
+			        // Rensa eventuell gammal timer för säkerhets skull
+			        if (pressTimer) clearTimeout(pressTimer);
+			
+			        // Starta ny timer för långtryck (250ms = snabb respons)
 			        pressTimer = setTimeout(() => {
-			            isLongPress = true; // Markera att vi gjort ett långtryck
-			            if (typeof showReactionMenu === 'function') {
-			                showReactionMenu(startX, startY, id);
+			            // Om vi inte har börjat scrolla, visa menyn
+			            if (!isScrolling) {
+			                if (typeof showReactionMenu === 'function') {
+			                    showReactionMenu(startX, startY, id);
+			                }
+			                if (navigator.vibrate) navigator.vibrate(15);
 			            }
-			            if (navigator.vibrate) navigator.vibrate(15);
-			        }, 250); 
+			        }, 250);
 			    };
 			
+			    // 2. Om fingret rör sig -> Det är scroll, avbryt menyn!
 			    const handleTouchMove = (e) => {
 			        if (!pressTimer) return;
+			
 			        const currentX = e.touches[0].clientX;
 			        const currentY = e.touches[0].clientY;
 			        
-			        // Om fingret rör sig (skrollar), avbryt direkt
-			        if (Math.abs(currentX - startX) > 10 || Math.abs(currentY - startY) > 10) {
+			        // Räkna ut hur långt fingret rört sig
+			        const diffX = Math.abs(currentX - startX);
+			        const diffY = Math.abs(currentY - startY);
+			
+			        // Om fingret rört sig mer än 10px räknar vi det som scroll/swipe
+			        if (diffX > 10 || diffY > 10) {
+			            isScrolling = true;
 			            clearTimeout(pressTimer);
 			            pressTimer = null;
 			        }
 			    };
 			
+			    // 3. Om man släpper fingret -> Avbryt timern
 			    const handleTouchEnd = (e) => {
-			        // Rensa bara timern, men rör inte eventet här
 			        if (pressTimer) {
 			            clearTimeout(pressTimer);
 			            pressTimer = null;
 			        }
 			    };
 			
-			    // "KLICK-VAKT": Detta körs EFTER touchend. 
-			    // Om vi har gjort ett långtryck, dödar vi klicket här.
-			    const handleClick = (e) => {
-			        if (isLongPress) {
-			            e.preventDefault();
-			            e.stopPropagation();
-			            isLongPress = false; // Återställ
-			            return false;
-			        }
-			    };
+			    // 4. BLOCKERA inbyggd högerklicksmeny på mobilen (Viktig fix för bugg 2)
+			    // Detta förhindrar att telefonens egen meny krockar med din meny vid upprepade tryck.
+			    bubble.addEventListener('contextmenu', (e) => {
+			        // Blockera bara om det är touch (låt desktop-högerklick fungera om du vill)
+			        // Eller blockera alltid för konsekvens:
+			        e.preventDefault();
+			        e.stopPropagation();
+			        return false;
+			    });
 			
-			    // Koppla lyssnare (OBS: passive: true på touch ger bättre prestanda/scroll)
-			    bubble.addEventListener('touchstart', handleTouchStart, {passive: true});
-			    bubble.addEventListener('touchmove', handleTouchMove, {passive: true});
-			    bubble.addEventListener('touchend', handleTouchEnd, {passive: true});
-			    bubble.addEventListener('touchcancel', handleTouchEnd, {passive: true}); // Hantera avbrott
+			    // Koppla listeners med passive: true för att scrollen ska flyta på bra
+			    bubble.addEventListener('touchstart', handleTouchStart, { passive: true });
+			    bubble.addEventListener('touchmove', handleTouchMove, { passive: true });
+			    bubble.addEventListener('touchend', handleTouchEnd, { passive: true });
+			    bubble.addEventListener('touchcancel', handleTouchEnd, { passive: true });
 			    
 			    // Fånga klicket för att stoppa "spök-klick"
 			    bubble.addEventListener('click', handleClick);
