@@ -1632,7 +1632,7 @@
 			    const bubble = document.createElement('div');
 			    bubble.className = 'chat-bubble';
 			    
-			    // Stäng av den vanliga högerklicksmenyn så den inte stör
+			    // Stäng av högerklicksmeny
 			    bubble.oncontextmenu = function(event) {
 			        event.preventDefault();
 			        event.stopPropagation();
@@ -1647,20 +1647,19 @@
 			        bubble.appendChild(badge);
 			    }
 			
-			    // --- UNIFIERAD PRESS-LOGIK (MOBIL & DATOR) ---
+			    // --- FIXAD TOUCH & PRESS LOGIK v3 (Stabilare) ---
 			    let pressTimer = null;
-			    let isLongPress = false;
+			    let isLongPress = false; 
 			    let startX = 0;
 			    let startY = 0;
 			
-			    // 1. START (Finger nuddar eller Musknapp trycks ner)
+			    // 1. START
 			    const handleStart = (e) => {
-			        // Ignorera högerklick (button 2)
+			        // Ignorera högerklick
 			        if (e.type === 'mousedown' && e.button !== 0) return;
 			
 			        isLongPress = false;
 			        
-			        // Hämta koordinater oavsett om det är touch eller mus
 			        if (e.touches && e.touches.length > 0) {
 			            startX = e.touches[0].clientX;
 			            startY = e.touches[0].clientY;
@@ -1670,23 +1669,30 @@
 			        }
 			
 			        pressTimer = setTimeout(() => {
-			            isLongPress = true; 
+			            isLongPress = true; // Nu är vi i långtrycks-läge
 			            
-			            // Visa menyn vid koordinaterna
-			            if (typeof showReactionMenu === 'function') {
-			                showReactionMenu(startX, startY, id);
+			            // Hämta koordinater
+			            let clientX = startX;
+			            let clientY = startY;
+			            if (e.touches && e.touches.length > 0) {
+			                clientX = e.touches[0].clientX; clientY = e.touches[0].clientY;
+			            } else if (e.clientX) {
+			                // Uppdatera om musen rört sig lite men fortfarande är inom gränsen
+			                clientX = e.clientX; clientY = e.clientY; 
 			            }
-			            
+			
+			            if (typeof showReactionMenu === 'function') {
+			                showReactionMenu(clientX, clientY, id);
+			            }
 			            if (navigator.vibrate) navigator.vibrate(10);
 			        }, 500); 
 			    };
 			
-			    // 2. MOVE (Om man drar fingret/musen för mycket = avbryt)
+			    // 2. MOVE
 			    const handleMove = (e) => {
 			        if (!pressTimer) return;
 			
 			        let currentX, currentY;
-			        
 			        if (e.touches && e.touches.length > 0) {
 			            currentX = e.touches[0].clientX;
 			            currentY = e.touches[0].clientY;
@@ -1695,65 +1701,67 @@
 			            currentY = e.clientY;
 			        }
 			
-			        // Tolerans på 10px rörelse
+			        // Avbryt om man drar mer än 10px
 			        if (Math.abs(currentX - startX) > 10 || Math.abs(currentY - startY) > 10) {
 			            clearTimeout(pressTimer);
 			            pressTimer = null;
 			        }
 			    };
 			
-			    // 3. END (Släpp finger/mus)
+			    // 3. END (Släpp)
 			    const handleEnd = (e) => {
 			        if (pressTimer) {
 			            clearTimeout(pressTimer);
 			            pressTimer = null;
 			        }
-			
-			        // Om vi precis triggat menyn, döda klicket så menyn inte stängs direkt
+			        
+			        // Om långtryck har skett:
 			        if (isLongPress) {
-			            if(e.cancelable) e.preventDefault(); 
+			            // Försök döda eventet här
+			            if (e.cancelable) e.preventDefault();
 			            e.stopPropagation();
 			            
-			            // Liten fördröjning innan vi nollställer, för att blockera eventuella eftersläntrande 'click'
-			            setTimeout(() => { isLongPress = false; }, 100);
+			            // VIKTIGT: Vi nollställer INTE isLongPress här direkt.
+			            // Vi låter handleClick göra det, eftersom 'click' kommer strax efter 'mouseup'.
 			            return false;
 			        }
 			    };
 			
-			    // 4. CLICK (Det som händer om man INTE höll inne)
+			    // 4. CLICK (Fångar upp spök-klicket)
 			    const handleClick = (e) => {
+			        // Om flaggan är uppe = Detta är spök-klicket från långtrycket
 			        if (isLongPress) {
 			            e.preventDefault();
+			            e.stopImmediatePropagation(); // Döda det helt
 			            e.stopPropagation();
-			            return;
+			            
+			            isLongPress = false; // NU är vi klara, återställ flaggan
+			            return false;
 			        }
+			
+			        // --- HÄR HAMNAR VI BARA VID ETT ÄKTA SNABBT KLICK ---
 			        
-			        // Här kan du lägga in vad som händer vid ett vanligt snabbt klick
-			        // T.ex. öppna bildzoom
+			        // Exempel: Klick på bild för zoom (om man inte långtrycker)
 			        if (data.type === 'image' || (data.images && data.images.length > 0)) {
-			             // Bild-klick hanteras på img-taggarna nedan, men vill du att hela bubblan ska klickas kan du göra det här.
+			             // Bild-klick hanteras på img-taggen, men om du vill ha logik för bubblan lägg den här.
 			        }
 			    };
 			
-			    // --- KOPPLA ALLA HÄNDELSER ---
-			    
-			    // Touch
+			    // --- KOPPLA ---
 			    bubble.addEventListener('touchstart', handleStart, {passive: true});
 			    bubble.addEventListener('touchmove', handleMove, {passive: true});
 			    bubble.addEventListener('touchend', handleEnd, {passive: false});
 			
-			    // Mus (Desktop)
 			    bubble.addEventListener('mousedown', handleStart);
 			    bubble.addEventListener('mousemove', handleMove);
 			    bubble.addEventListener('mouseup', handleEnd);
-			    bubble.addEventListener('mouseleave', handleEnd); // Om man drar musen utanför bubblan
+			    bubble.addEventListener('mouseleave', handleEnd);
 			
-			    // Klick
+			    // Klicket sist
 			    bubble.addEventListener('click', handleClick);
 			
 			
-			    // --- INNEHÅLL (Samma som förut) ---
-			    
+			    // --- RITA UT INNEHÅLL (Samma som förut) ---
 			    if (data.images && Array.isArray(data.images)) {
 			        bubble.classList.add('chat-bubble-image');
 			        const carousel = document.createElement('div');
@@ -1762,7 +1770,7 @@
 			            const img = document.createElement('img');
 			            img.src = imgSrc; img.loading = "lazy"; img.alt = "Bild";
 			            img.onclick = (e) => {
-			                // Skydda även bildklicket från att stänga menyn vid long-press
+			                // Skydda bildklick mot långtryck
 			                if (isLongPress) { e.preventDefault(); e.stopPropagation(); return; }
 			                if (typeof window.openImageZoom === 'function') window.openImageZoom(imgSrc);
 			            };
@@ -1775,12 +1783,10 @@
 			            captionDiv.textContent = data.caption;
 			            bubble.appendChild(captionDiv);
 			        }
-			
 			    } else if (data.type === 'image' && data.image) {
 			        bubble.classList.add('chat-bubble-image');
 			        const imgElement = document.createElement('img');
 			        imgElement.src = data.image; imgElement.alt = "Bild"; imgElement.loading = "lazy";
-			        
 			        imgElement.onclick = (e) => {
 			            if (isLongPress) { e.preventDefault(); e.stopPropagation(); return; }
 			            if (typeof window.openImageZoom === 'function') window.openImageZoom(data.image);
@@ -1793,24 +1799,20 @@
 			            bubble.appendChild(captionDiv);
 			        }
 			        bubble.dataset.originalHtml = bubble.innerHTML;
-			
 			    } else {
 			        let rawText = data.text || "";
 			        const textContentDiv = document.createElement('div');
 			        textContentDiv.className = 'chat-text-content';
-			        
-			        let processedText = rawText
-			            .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-			            
+			        let processedText = rawText.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 			        const urlPattern = /(https?:\/\/[^\s]+)/g;
 			        processedText = processedText.replace(urlPattern, (url) => `<a href="${url}" target="_blank" class="chat-link">${url}</a>`);
-			
+			        
+			        // Kund/Regnr länkar...
 			        const regPattern = /\b([A-Za-z]{3})\s?(\d{2}[0-9A-Za-z])\b/g;
 			        processedText = processedText.replace(regPattern, (match) => {
 			            const cleanReg = match.replace(/\s/g, '').toUpperCase(); 
 			            return `<span class="chat-reg-link" data-reg="${cleanReg}">${match.toUpperCase()}</span>`;
 			        });
-			
 			        if (typeof highlightCustomerNames === 'function') {
 			            processedText = highlightCustomerNames(processedText);
 			        }
@@ -1835,7 +1837,6 @@
 			            };
 			            bubble.appendChild(readMoreBtn);
 			        }
-			        
 			        bubble.dataset.originalHtml = bubble.innerHTML;
 			    }
 			    
