@@ -1729,40 +1729,40 @@
 			
 			    // --- MOBIL: LÅNGTRYCK (Endast Touch) ---
 			    let pressTimer = null;
-				let startX = 0, startY = 0;
-				
-				const handleTouchStart = (e) => {
-				    if (e.touches && e.touches.length > 0) {
-				        startX = e.touches[0].clientX;
-				        startY = e.touches[0].clientY;
-				        
-				        // --- FIX: IGNORERA KANT-SWIPE (BÅDA SIDOR) ---
-				        // Hämta skärmens bredd
-				        const screenWidth = window.innerWidth;
-				        const edgeZone = 50; // Antal pixlar från kanten som är "fredad zon"
-				
-				        // Om fingret landar i vänstra zonen ELLER högra zonen -> Avbryt.
-				        if (startX < edgeZone || startX > screenWidth - edgeZone) {
-				            return;
-				        }
-				        // ----------------------------------------------
-				
-				        pressTimer = setTimeout(() => {
-				            // Tiden gick ut = Långtryck!
-				            if (typeof showReactionMenu === 'function') {
-				                showReactionMenu(startX, startY, id);
-				            }
-				            if (navigator.vibrate) navigator.vibrate(15); // Ökade vibrationen lite för bättre feedback
-				        }, 250); // <--- ÄNDRAD FRÅN 500 TILL 250
-				    }
-				};
+			    let startX = 0, startY = 0;
+			    let isLongPress = false; // Ny flagga för att hålla koll
+			
+			    const handleTouchStart = (e) => {
+			        if (e.touches && e.touches.length > 0) {
+			            startX = e.touches[0].clientX;
+			            startY = e.touches[0].clientY;
+			            isLongPress = false; // Nollställ alltid vid start
+			
+			            // 1. Edge Guard: Ignorera om vi är för nära kanterna (för swipe)
+			            const screenWidth = window.innerWidth;
+			            const edgeZone = 50; 
+			            if (startX < edgeZone || startX > screenWidth - edgeZone) {
+			                return;
+			            }
+			            
+			            pressTimer = setTimeout(() => {
+			                // Tiden gick ut = Detta ÄR ett långtryck
+			                isLongPress = true; 
+			                
+			                if (typeof showReactionMenu === 'function') {
+			                    showReactionMenu(startX, startY, id);
+			                }
+			                if (navigator.vibrate) navigator.vibrate(15);
+			            }, 250); // Snabb reaktion (Messenger-style)
+			        }
+			    };
 			
 			    const handleTouchMove = (e) => {
 			        if (!pressTimer) return;
 			        const currentX = e.touches[0].clientX;
 			        const currentY = e.touches[0].clientY;
 			        
-			        // Avbryt om fingret rör sig mer än 10 pixlar (scrollar)
+			        // Om fingret rör sig mer än 10px, avbryt långtrycket
 			        if (Math.abs(currentX - startX) > 10 || Math.abs(currentY - startY) > 10) {
 			            clearTimeout(pressTimer);
 			            pressTimer = null;
@@ -1770,17 +1770,24 @@
 			    };
 			
 			    const handleTouchEnd = (e) => {
+			        // Om vi precis lyckades göra ett långtryck...
+			        if (isLongPress) {
+			            // ...DÖDA det efterföljande "spök-klicket"!
+			            if (e.cancelable) e.preventDefault();
+			            isLongPress = false;
+			        }
+			
+			        // Rensa timern om man släppte för snabbt
 			        if (pressTimer) {
 			            clearTimeout(pressTimer);
 			            pressTimer = null;
 			        }
 			    };
 			
-			    // Koppla ENDAST touch-händelser för långtryck
+			    // VIKTIGT: touchend får INTE vara 'passive: true' för att preventDefault ska funka
 			    bubble.addEventListener('touchstart', handleTouchStart, {passive: true});
 			    bubble.addEventListener('touchmove', handleTouchMove, {passive: true});
-			    bubble.addEventListener('touchend', handleTouchEnd, {passive: true});
-			
+			    bubble.addEventListener('touchend', handleTouchEnd, {passive: false});
 			
 			    // --- INNEHÅLL (Samma som tidigare) ---
 			    
