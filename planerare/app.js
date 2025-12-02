@@ -1057,40 +1057,44 @@
                 createReactionMenu(); 
                 const menu = document.getElementById('reactionMenu');
                 
-                // Rensa ev. gammal timer så vi inte låser fel meny
-                if (reactionSafetyTimer) clearTimeout(reactionSafetyTimer);
-
                 menu.dataset.targetId = messageId;
                 
-                // Nollställ
+                // Nollställ stilar
                 menu.style.display = 'flex';
                 menu.style.visibility = 'hidden'; 
                 menu.classList.remove('show');
                 
-                // 1. Gör menyn oklickbar direkt (Säkerhetsåtgärd)
-                menu.style.pointerEvents = 'none';
-                
-                // 2. Släpp på klickspärren efter 400ms
-                reactionSafetyTimer = setTimeout(() => {
-                    menu.style.pointerEvents = 'auto';
-                    reactionSafetyTimer = null;
-                }, 400);
+                // Se till att menyn är klickbar (återställ om den fastnat)
+                menu.style.pointerEvents = 'auto';
 
-                // Positionering (Oförändrad)
+                // Mät storlek
                 const menuWidth = menu.offsetWidth;
                 const menuHeight = menu.offsetHeight;
                 const screenWidth = window.innerWidth;
                 const screenHeight = window.innerHeight;
             
+                // X-position (Håll inom skärmen)
                 let left = x - (menuWidth / 2);
-                if (left + menuWidth > screenWidth - 15) left = screenWidth - menuWidth - 15;
-                if (left < 15) left = 15;
+                if (left + menuWidth > screenWidth - 10) left = screenWidth - menuWidth - 10;
+                if (left < 10) left = 10;
             
-                let top = y - 70;
-                if (isTouch) top -= 25; // Lite mer marginal för fingret
+                // Y-position
+                let top = y - 70; // Standard för mus
 
-                if (top < 20) top = y + 20;
-                if (top + menuHeight > screenHeight - 20) top = y - menuHeight - 20;
+                // MOBIL-FIX: Flytta upp menyn rejält om det är touch (så den inte hamnar under fingret)
+                if (isTouch) {
+                    top = y - menuHeight - 40; // 40px ovanför fingret
+                }
+
+                // Krockar den med toppen? Lägg den under istället
+                if (top < 10) {
+                    top = y + 20;
+                }
+                
+                // Krockar den med botten? Lägg den över
+                if (top + menuHeight > screenHeight - 10) {
+                    top = screenHeight - menuHeight - 10;
+                }
             
                 menu.style.left = `${left}px`;
                 menu.style.top = `${top}px`;
@@ -1104,14 +1108,6 @@
                 const menu = document.getElementById('reactionMenu');
                 if (menu) {
                     menu.classList.remove('show');
-                    
-                    // Återställ klickbarhet direkt när vi stänger
-                    menu.style.pointerEvents = 'auto';
-                }
-                // Döda säkerhetstimern om den är igång
-                if (typeof reactionSafetyTimer !== 'undefined' && reactionSafetyTimer) {
-                    clearTimeout(reactionSafetyTimer);
-                    reactionSafetyTimer = null;
                 }
             }
 			
