@@ -3101,7 +3101,7 @@
 			});
 
             window.addEventListener('popstate', (event) => {
-                // Skydd mot loopar om vi backar via kod
+                // Skydd mot loopar
                 if (isNavigatingBack) {
                     isNavigatingBack = false;
                     return;
@@ -3111,77 +3111,82 @@
                 const state = event.state || {};
                 const currentHash = window.location.hash;
                 
-                // Hämta element
+                // Element
                 const chatWidget = document.getElementById('chatWidget');
                 const imageModal = document.getElementById('imageZoomModal');
                 const mobileSearch = document.getElementById('mobileSearchModal');
                 const mobileChatBtn = document.getElementById('mobileChatBtn');
-                const anyOpenModal = document.querySelector('.modal-backdrop.show');
-
-                // Kontrollera synlighet (Sanningen om vad som visas)
-                const isImageVisible = imageModal && window.getComputedStyle(imageModal).display !== 'none';
-                const isMobileSearchVisible = mobileSearch && window.getComputedStyle(mobileSearch).display === 'flex';
                 
-                // --- 1. SÖK-HANTERING (Mobil) ---
-                if (isMobileSearchVisible && state.modal !== 'mobileSearch') {
+                // --- 1. SÖK (Mobil) ---
+                // Måste hanteras först då den ligger "utanför" det vanliga flödet
+                if (mobileSearch && mobileSearch.style.display === 'flex' && state.modal !== 'mobileSearch') {
                     resetAndCloseSearch();
                     updateScrollLock();
                     return;
                 }
 
-                // --- 2. BILD-HANTERING (Framåt) ---
-                if (state.modal === 'imageZoom') {
+                // --- 2. BILD-HANTERING (#image) ---
+                // Om vi navigerar FRAMÅT till en bild
+                if (state.modal === 'imageZoom' || currentHash === '#image') {
                     if (imageModal) imageModal.style.display = 'flex';
                     updateScrollLock();
                     return;
                 }
 
-                // --- 3. CHATT-HANTERING (Tillbaka till Chatten) ---
-                // Detta gäller både när vi öppnar chatten OCH när vi stänger en bild/modal ovanpå den
+                // --- 3. CHATT-HANTERING (#chat) ---
+                // Detta gäller när vi backar från bild -> chatt, eller öppnar chatt
                 if (state.modal === 'chatWidget' || currentHash === '#chat') {
                     
-                    // A. Stäng bildzoom om den ligger överst (Samma logik som RegNr-modalen)
-                    if (isImageVisible) {
-                        imageModal.style.display = 'none';
-                    }
+                    // A. Dölj alltid bilden (om den ligger överst)
+                    if (imageModal) imageModal.style.display = 'none';
 
-                    // B. Stäng andra modaler (RegNr, Kund etc)
-                    if (anyOpenModal && anyOpenModal.id !== 'chatWidget') {
-                        anyOpenModal.classList.remove('show');
-                        setTimeout(() => { anyOpenModal.style.display = 'none'; }, 200);
-                        isModalOpen = false;
-                        currentOpenModalId = null;
-                    }
+                    // B. Dölj eventuella andra modaler
+                    document.querySelectorAll('.modal-backdrop').forEach(el => {
+                        if (el.id !== 'chatWidget') {
+                            el.classList.remove('show');
+                            el.style.display = 'none';
+                        }
+                    });
 
-                    // C. FIXEN: Rör inte chatten om den redan är öppen
-                    // Vi kollar inline-stilen 'flex'. Om den är satt, låt den vara.
-                    // Detta stoppar animationen från att starta om.
-                    if (chatWidget && chatWidget.style.display !== 'flex') {
-                        chatWidget.style.display = 'flex';
+                    // C. Hantera Chatten (FIXEN)
+                    // Vi kollar BARA inline-stilen. Om den redan är 'flex', RÖR DEN INTE.
+                    // Detta garanterar att ingen animation startar om.
+                    if (chatWidget) {
+                        if (chatWidget.style.display !== 'flex') {
+                            chatWidget.style.display = 'flex';
+                        }
                     }
                     
                     if (mobileChatBtn) mobileChatBtn.classList.add('active');
 
-                    // Återställ scroll/variabler
+                    isModalOpen = false;
+                    currentOpenModalId = null;
                     updateScrollLock();
                     
-                    // Fokusera bara input om vi INTE kom från en bild (behåll position)
-                    if (!isImageVisible && window.innerWidth > 768) {
+                    // Fokusera input på desktop (valfritt, bra UX)
+                    if (window.innerWidth > 768) {
                         setTimeout(() => {
                             const input = document.getElementById('chatInput');
-                            if(input) input.focus();
+                            if (input && document.activeElement !== input) input.focus();
                         }, 50);
                     }
 
                     return; // VIKTIGT: Stanna här!
                 }
 
-                // --- 4. GRUNDLÄGE (Stäng allt) ---
-                // Hit kommer vi bara om URL är tom/home (inte #chat eller #image)
+                // --- 4. GRUNDLÄGE / TIDSLINJE (Stäng allt) ---
+                // Hit kommer vi bara om URL är tom (inte #chat eller #image)
                 
                 // Spara status för mobil-toast innan vi stänger
-                const isChatActuallyVisible = chatWidget && window.getComputedStyle(chatWidget).display === 'flex';
-                const wasSomethingOpen = isChatActuallyVisible || isImageVisible || anyOpenModal || isMobileSearchVisible;
+                // Här använder vi inline-stilar för att avgöra vad som var öppet
+                const wasChatOpen = chatWidget && chatWidget.style.display === 'flex';
+                const wasImageOpen = imageModal && imageModal.style.display === 'flex'; // OBS: flex, inte block (beroende på din CSS)
+                // För säkerhets skull, kolla om display inte är 'none' för bilden
+                const wasImageVisible = imageModal && imageModal.style.display !== 'none';
+                
+                const anyBackdropOpen = document.querySelector('.modal-backdrop.show');
+                
+                const wasSomethingOpen = wasChatOpen || wasImageVisible || anyBackdropOpen;
 
                 // Stäng Bild
                 if (imageModal) imageModal.style.display = 'none';
@@ -3193,9 +3198,9 @@
                 }
 
                 // Stäng Modaler
-                if (anyOpenModal) {
-                    anyOpenModal.classList.remove('show');
-                    setTimeout(() => { anyOpenModal.style.display = 'none'; }, 200);
+                if (anyBackdropOpen) {
+                    anyBackdropOpen.classList.remove('show');
+                    setTimeout(() => { anyBackdropOpen.style.display = 'none'; }, 200);
                 }
                 
                 if (mobileSearch) resetAndCloseSearch();
@@ -3208,9 +3213,11 @@
                 if (window.innerWidth <= 768 && !wasSomethingOpen) {
                     if (backPressWarned) {
                         backPressWarned = false; // Stäng appen
-                        history.back(); // Tvinga en extra back för att säkra stängning
+                        history.back(); 
                     } else {
+                        // Tryck in oss i historiken igen
                         history.pushState({ page: 'home' }, 'Home', location.pathname);
+                        
                         backPressWarned = true;
                         showToast('Tryck bakåt igen för att stänga', 'info');
                         backPressTimer = setTimeout(() => { backPressWarned = false; }, 2000);
