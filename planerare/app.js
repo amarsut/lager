@@ -1632,8 +1632,12 @@
 			    const bubble = document.createElement('div');
 			    bubble.className = 'chat-bubble';
 			    
-			    // Stäng av högerklicksmeny
-			    bubble.oncontextmenu = (e) => { e.preventDefault(); return false; };
+			    // 1. Förhindra den inbyggda menyn på mobilen (Viktigt för långtryck)
+			    bubble.oncontextmenu = (e) => { 
+			        e.preventDefault(); 
+			        e.stopPropagation(); 
+			        return false; 
+			    };
 			
 			    if (data.reaction) {
 			        const badge = document.createElement('span');
@@ -1643,107 +1647,66 @@
 			        bubble.appendChild(badge);
 			    }
 			
-			    // --- STABIL PRESS-LOGIK ---
-			    let pressTimer = null;
-			    let isLongPress = false; // "Vakten"
-			    let startX = 0;
-			    let startY = 0;
-			
-			    // 1. START: Starta klockan
-			    const handleStart = (e) => {
-			        // Ignorera högerklick
-			        if (e.type === 'mousedown' && e.button !== 0) return;
-			
-			        isLongPress = false; // Återställ vakten
+			    // --- DATOR: DUBBELKLICK ---
+			    bubble.addEventListener('dblclick', (e) => {
+			        // Förhindra att text markeras vid dubbelklick
+			        e.preventDefault(); 
+			        e.stopPropagation(); 
 			        
-			        if (e.touches && e.touches[0]) {
+			        if (typeof showReactionMenu === 'function') {
+			            // Visa menyn där musen är
+			            showReactionMenu(e.clientX, e.clientY, id);
+			        }
+			    });
+			
+			    // --- MOBIL: LÅNGTRYCK ---
+			    let pressTimer = null;
+			    let startX = 0, startY = 0;
+			
+			    const handleTouchStart = (e) => {
+			        if (e.touches && e.touches.length > 0) {
 			            startX = e.touches[0].clientX;
 			            startY = e.touches[0].clientY;
-			        } else {
-			            startX = e.clientX;
-			            startY = e.clientY;
+			            
+			            pressTimer = setTimeout(() => {
+			                // Tiden gick ut = Långtryck!
+			                if (typeof showReactionMenu === 'function') {
+			                    showReactionMenu(startX, startY, id);
+			                }
+			                if (navigator.vibrate) navigator.vibrate(10);
+			            }, 500); // 500ms
 			        }
-			
-			        pressTimer = setTimeout(() => {
-			            // KLOCKAN SLOG: Det är ett långtryck!
-			            isLongPress = true; 
-			            
-			            // Hämta position
-			            let clientX = startX;
-			            let clientY = startY;
-			            if (e.touches && e.touches[0]) {
-			                clientX = e.touches[0].clientX; clientY = e.touches[0].clientY;
-			            } else if (e.clientX) {
-			                clientX = e.clientX; clientY = e.clientY;
-			            }
-			
-			            // Visa menyn
-			            if (typeof showReactionMenu === 'function') {
-			                showReactionMenu(clientX, clientY, id);
-			            }
-			            if (navigator.vibrate) navigator.vibrate(10);
-			            
-			        }, 500); // 500ms
 			    };
 			
-			    // 2. MOVE: Avbryt om man rör sig för mycket
-			    const handleMove = (e) => {
+			    const handleTouchMove = (e) => {
 			        if (!pressTimer) return;
+			        const currentX = e.touches[0].clientX;
+			        const currentY = e.touches[0].clientY;
 			        
-			        let cx, cy;
-			        if (e.touches) { cx = e.touches[0].clientX; cy = e.touches[0].clientY; }
-			        else { cx = e.clientX; cy = e.clientY; }
-			
-			        if (Math.abs(cx - startX) > 10 || Math.abs(cy - startY) > 10) {
+			        // Avbryt om fingret rör sig mer än 10 pixlar (scrollar)
+			        if (Math.abs(currentX - startX) > 10 || Math.abs(currentY - startY) > 10) {
 			            clearTimeout(pressTimer);
 			            pressTimer = null;
 			        }
 			    };
 			
-			    // 3. END: Stoppa klockan (men rör inte isLongPress om den redan är satt!)
-			    const handleEnd = (e) => {
+			    const handleTouchEnd = (e) => {
+			        // Om man släpper fingret innan 500ms
 			        if (pressTimer) {
 			            clearTimeout(pressTimer);
 			            pressTimer = null;
 			        }
-			        // OBS: Vi nollställer INTE isLongPress här. Vi låter 'click'-eventet hantera det.
 			    };
 			
-			    // 4. CLICK: Vakten stoppar klicket om det var ett långtryck
-			    const handleClick = (e) => {
-			        if (isLongPress) {
-			            // STOPPA ALLT! Låt inte detta klick nå fönstret och stänga menyn.
-			            e.preventDefault();
-			            e.stopPropagation();
-			            e.stopImmediatePropagation();
-			            
-			            // Nu när vi har dödat klicket kan vi sänka vakten.
-			            isLongPress = false; 
-			            return false;
-			        }
-			
-			        // --- VANLIGT KLICK ---
-			        // (Om vi kommer hit var det ett snabbt klick)
-			        if (data.type === 'image' || (data.images && data.images.length > 0)) {
-			             // Här kan bild-logik ligga om du vill klicka på hela bubblan
-			        }
-			    };
-			
-			    // Koppla events
-			    bubble.addEventListener('touchstart', handleStart, {passive: true});
-			    bubble.addEventListener('touchmove', handleMove, {passive: true});
-			    bubble.addEventListener('touchend', handleEnd, {passive: true}); // passive true här är ok för touchend
-			
-			    bubble.addEventListener('mousedown', handleStart);
-			    bubble.addEventListener('mousemove', handleMove);
-			    bubble.addEventListener('mouseup', handleEnd);
-			    bubble.addEventListener('mouseleave', handleEnd);
-			
-			    // Klicket (Vakten)
-			    bubble.addEventListener('click', handleClick);
+			    // Koppla mobil-händelser
+			    bubble.addEventListener('touchstart', handleTouchStart, {passive: true});
+			    bubble.addEventListener('touchmove', handleTouchMove, {passive: true});
+			    bubble.addEventListener('touchend', handleTouchEnd, {passive: true});
 			
 			
-			    // --- INNEHÅLL (OFÖRÄNDRAT) ---
+			    // --- INNEHÅLL (Bilder & Text) ---
+			    // Samma innehållslogik som tidigare, men med förenklade klick-händelser
+			    
 			    if (data.images && Array.isArray(data.images)) {
 			        bubble.classList.add('chat-bubble-image');
 			        const carousel = document.createElement('div');
@@ -1751,8 +1714,9 @@
 			        data.images.forEach(imgSrc => {
 			            const img = document.createElement('img');
 			            img.src = imgSrc; img.loading = "lazy"; img.alt = "Bild";
+			            // Enkelklick på bild = Zoom
 			            img.onclick = (e) => {
-			                if (isLongPress) { e.preventDefault(); e.stopPropagation(); return; }
+			                e.stopPropagation(); 
 			                if (typeof window.openImageZoom === 'function') window.openImageZoom(imgSrc);
 			            };
 			            carousel.appendChild(img);
@@ -1764,12 +1728,14 @@
 			            captionDiv.textContent = data.caption;
 			            bubble.appendChild(captionDiv);
 			        }
+			
 			    } else if (data.type === 'image' && data.image) {
 			        bubble.classList.add('chat-bubble-image');
 			        const imgElement = document.createElement('img');
 			        imgElement.src = data.image; imgElement.alt = "Bild"; imgElement.loading = "lazy";
+			        // Enkelklick på bild = Zoom
 			        imgElement.onclick = (e) => {
-			            if (isLongPress) { e.preventDefault(); e.stopPropagation(); return; }
+			            e.stopPropagation(); 
 			            if (typeof window.openImageZoom === 'function') window.openImageZoom(data.image);
 			        };
 			        bubble.appendChild(imgElement);
@@ -1780,21 +1746,30 @@
 			            bubble.appendChild(captionDiv);
 			        }
 			        bubble.dataset.originalHtml = bubble.innerHTML;
+			
 			    } else {
+			        // Text-innehåll
 			        let rawText = data.text || "";
 			        const textContentDiv = document.createElement('div');
 			        textContentDiv.className = 'chat-text-content';
+			        
 			        let processedText = rawText.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 			        const urlPattern = /(https?:\/\/[^\s]+)/g;
 			        processedText = processedText.replace(urlPattern, (url) => `<a href="${url}" target="_blank" class="chat-link">${url}</a>`);
+			
 			        const regPattern = /\b([A-Za-z]{3})\s?(\d{2}[0-9A-Za-z])\b/g;
 			        processedText = processedText.replace(regPattern, (match) => {
 			            const cleanReg = match.replace(/\s/g, '').toUpperCase(); 
 			            return `<span class="chat-reg-link" data-reg="${cleanReg}">${match.toUpperCase()}</span>`;
 			        });
-			        if (typeof highlightCustomerNames === 'function') processedText = highlightCustomerNames(processedText);
+			
+			        if (typeof highlightCustomerNames === 'function') {
+			            processedText = highlightCustomerNames(processedText);
+			        }
+			
 			        textContentDiv.innerHTML = processedText;
 			        bubble.appendChild(textContentDiv);
+			
 			        if (rawText.length > 300) {
 			            textContentDiv.classList.add('truncated');
 			            const readMoreBtn = document.createElement('button');
@@ -1815,6 +1790,7 @@
 			        bubble.dataset.originalHtml = bubble.innerHTML;
 			    }
 			    
+			    // Tidsstämpel och "redigerad"-status
 			    const time = document.createElement('div');
 			    time.className = 'chat-time';
 			    const date = new Date(data.timestamp);
@@ -1822,11 +1798,16 @@
 			    const dateString = date.toLocaleDateString('sv-SE', {day: 'numeric', month: 'short'});
 			    const isToday = new Date().toDateString() === date.toDateString();
 			    const displayTime = isToday ? timeString : `${dateString}, ${timeString}`;
+			
 			    let platformIconHtml = '';
 			    if (data.platform === 'mobil') platformIconHtml = `<svg class="platform-icon"><use href="#icon-mobile"></use></svg>`;
 			    else if (data.platform === 'dator') platformIconHtml = `<svg class="platform-icon"><use href="#icon-desktop"></use></svg>`;
+			
 			    time.innerHTML = `${displayTime} ${platformIconHtml}`;
-			    if (data.isEdited) time.innerHTML += ` <span style="font-style:italic; opacity:0.7;">(redigerad)</span>`;
+			    if (data.isEdited) {
+			        time.innerHTML += ` <span style="font-style:italic; opacity:0.7;">(redigerad)</span>`;
+			    }
+			
 			    container.appendChild(bubble);
 			    container.appendChild(time);
 			}
