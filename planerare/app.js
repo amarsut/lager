@@ -909,76 +909,71 @@
 			    menu.id = 'reactionMenu';
 			    menu.className = 'reaction-menu';
 			    
-			    // Emojis
-			    const emojis = ['✅', '❌', '⚠️', '🕓']; 
+			    // --- RAD 1: EMOJIS (Oförändrad) ---
+			    const emojiRow = document.createElement('div');
+			    emojiRow.style.display = 'flex';
+			    emojiRow.style.justifyContent = 'space-between';
+			    emojiRow.style.width = '100%';
+			    emojiRow.style.marginBottom = '8px';
 			    
+			    const emojis = ['✅', '❌', '⚠️', '🕓', '❤️', '👍']; 
 			    emojis.forEach(icon => {
 			        const span = document.createElement('span');
 			        span.className = 'reaction-option';
 			        span.textContent = icon;
-			        // Emojis kan vara lite större
-			        span.style.fontSize = "1.4rem"; 
-			        
 			        span.onclick = (e) => {
 			            e.stopPropagation();
 			            applyReaction(menu.dataset.targetId, icon);
 			            hideReactionMenu();
 			        };
-			        menu.appendChild(span);
+			        emojiRow.appendChild(span);
 			    });
+			    menu.appendChild(emojiRow);
 			
-			    // Avdelare
-			    const divider = document.createElement('div');
-			    divider.className = 'reaction-divider';
-			    menu.appendChild(divider);
+			    // --- RAD 2: ACTIONS (Messenger Style) ---
+			    const actionRow = document.createElement('div');
+			    actionRow.className = 'reaction-actions-row';
 			
-			    // --- REDIGERA (SVG-IKON) ---
-			    const editSpan = document.createElement('span');
-			    editSpan.className = 'reaction-option';
-			    editSpan.title = "Redigera";
-			    // Använder din befintliga #icon-pencil
-			    editSpan.innerHTML = `<svg class="icon icon-action" viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-pencil"></use></svg>`;
-			    
-			    editSpan.onclick = (e) => {
-			        e.stopPropagation();
-			        editMessage(menu.dataset.targetId);
-			        hideReactionMenu();
-			    };
-			    menu.appendChild(editSpan);
+			    // Helper för att skapa action-knappar
+			    const createAction = (label, iconId, onClick, isDanger = false) => {
+			        const wrapper = document.createElement('div');
+			        wrapper.className = `action-item ${isDanger ? 'danger' : ''}`;
+			        wrapper.onclick = (e) => {
+			            e.stopPropagation();
+			            onClick(menu.dataset.targetId);
+			            hideReactionMenu();
+			        };
 			
-			    // --- KOPIERA (SVG-IKON) ---
-			    const copySpan = document.createElement('span');
-			    copySpan.className = 'reaction-option';
-			    copySpan.title = "Kopiera";
-			    // Använder din befintliga #icon-duplicate (ser ut som två papper)
-			    copySpan.innerHTML = `<svg class="icon icon-action" viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-duplicate"></use></svg>`;
-			    
-			    copySpan.onclick = (e) => {
-			        e.stopPropagation();
-			        copyMessageText(menu.dataset.targetId);
-			        hideReactionMenu();
-			    };
-			    menu.appendChild(copySpan);
-
-				// --- NYTT: RADERA (SOPTUNNA) ---
-			    const deleteSpan = document.createElement('span');
-			    deleteSpan.className = 'reaction-option danger'; // Lägg till 'danger' för röd färg
-			    deleteSpan.title = "Radera";
-			    deleteSpan.innerHTML = `<svg class="icon icon-action" viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-trash"></use></svg>`;
-			    
-			    deleteSpan.onclick = (e) => {
-			        e.stopPropagation();
-			        const msgId = menu.dataset.targetId;
-			        hideReactionMenu();
+			        const circle = document.createElement('div');
+			        circle.className = 'icon-circle';
+			        // Om du inte har alla ikoner, använd #icon-pencil som fallback eller lägg till nya i HTML
+			        circle.innerHTML = `<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="${iconId}"></use></svg>`;
 			        
-			        if (confirm("Vill du radera detta meddelande permanent?")) {
-			            db.collection("notes").doc(msgId).delete()
-			                .then(() => showToast("Meddelande raderat", "info"))
-			                .catch(err => showToast("Kunde inte radera: " + err.message, "danger"));
-			        }
-			    };
-			    menu.appendChild(deleteSpan);
+			        const text = document.createElement('span');
+			        text.textContent = label;
 			
+			        wrapper.appendChild(circle);
+			        wrapper.appendChild(text);
+			        return wrapper;
+			    };
+			
+			    // 1. Redigera
+			    actionRow.appendChild(createAction('Redigera', '#icon-pencil', (id) => enterEditMode(id)));
+			    
+			    // 2. Kopiera
+			    actionRow.appendChild(createAction('Kopiera', '#icon-duplicate', (id) => copyMessageText(id)));
+			    
+			    // 3. Ta bort (Soptunna)
+			    actionRow.appendChild(createAction('Ta bort', '#icon-trash', (id) => {
+			        if (confirm("Radera detta meddelande permanent?")) {
+			            db.collection("notes").doc(id).delete().catch(err => showToast("Fel: " + err.message, "danger"));
+			        }
+			    }, true)); // true = danger class
+			
+			    // 4. Mer (Placeholder)
+			    actionRow.appendChild(createAction('Mer', '#icon-list', () => showToast("Kommer snart!", "info")));
+			
+			    menu.appendChild(actionRow);
 			    document.body.appendChild(menu);
 			
 			    window.addEventListener('click', hideReactionMenu);
@@ -1163,26 +1158,110 @@
 			    } else {
 			        currentChatLimit = 50;
 			    }
+
+				let editingMessageId = null; // Håller koll på vilket ID vi redigerar
+
+			    // Hämta de nya elementen vi skapade i HTML
+			    const chatEditHeader = document.getElementById('chatEditHeader');
+			    const chatEditOverlay = document.getElementById('chatEditOverlay');
+			    const cancelEditBtn = document.getElementById('cancelEditBtn');
+			    const chatInputArea = document.getElementById('chatInputArea');
+			
+			    // Funktion för att STARTA redigering (Måste vara window. för att menyn ska hitta den)
+			    window.enterEditMode = async (id) => {
+			        if (!id) return;
+			        try {
+			            const doc = await db.collection("notes").doc(id).get();
+			            if (!doc.exists) return;
+			            const data = doc.data();
+			
+			            // Spara ID och fyll i text
+			            editingMessageId = id;
+			            
+			            // Fyll input med texten (eller bildtexten om det är en bild)
+			            chatInput.value = data.text || data.caption || "";
+			            
+			            // Visa UI för redigering
+			            if(chatEditHeader) chatEditHeader.style.display = 'flex';
+			            if(chatEditOverlay) chatEditOverlay.classList.add('show');
+			            if(chatInputArea) chatInputArea.classList.add('editing-mode');
+			            
+			            // Fokusera och flytta markören till slutet
+			            chatInput.focus();
+			            // Litet hack för att sätta markören sist
+			            /*const val = chatInput.value; 
+			            chatInput.value = ''; 
+			            chatInput.value = val;*/ 
+			
+			        } catch (err) {
+			            console.error(err);
+			            showToast("Kunde inte hämta meddelande", "danger");
+			        }
+			    };
+			
+			    // Funktion för att AVBRYTA redigering
+			    const exitEditMode = () => {
+			        editingMessageId = null;
+			        chatInput.value = '';
+			        
+			        if(chatEditHeader) chatEditHeader.style.display = 'none';
+			        if(chatEditOverlay) chatEditOverlay.classList.remove('show');
+			        if(chatInputArea) chatInputArea.classList.remove('editing-mode');
+			    };
+			
+			    // Koppla krysset i redigerings-headern
+			    if (cancelEditBtn) {
+			        cancelEditBtn.onclick = (e) => {
+			            e.preventDefault();
+			            exitEditMode();
+			        };
+			    }
 			
 			    // --- NY FUNKTION FÖR ATT SKICKA ---
 			    const sendMessage = async () => {
-			        const text = chatInput.value.trim();
-			        if (!text) return;
-			        
-			        try {
-			            await db.collection("notes").add({
-			                text: text,
-			                timestamp: new Date().toISOString(),
-			                platform: window.innerWidth <= 768 ? 'mobil' : 'dator'
-			            });
-			            chatInput.value = '';
-			            // Scrolla ner och fokusera tillbaka (om man är på desktop)
-			            setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
-			            if(window.innerWidth > 768) chatInput.focus();
-			        } catch (err) {
-			            showToast("Kunde inte skicka notis.", "danger");
-			        }
-			    };
+				    const text = chatInput.value.trim();
+				    if (!text) return; // Skicka inget tomt
+				    
+				    // --- REDIGERINGSLÄGE ---
+				    if (editingMessageId) {
+				        try {
+				            // Uppdatera befintligt
+				            // Kolla först om det var en bild (caption) eller text
+				            // För enkelhetens skull, uppdatera 'text' om den finns, annars 'caption'
+				            // Men enklast är att göra en get() först eller bara köra update
+				            
+				            // Vi antar att det är ett textfält vi redigerar.
+				            // Om din datastruktur skiljer på text/caption, måste vi veta vilken.
+				            // En enkel lösning: Uppdatera 'text' fältet.
+				            
+				            await db.collection("notes").doc(editingMessageId).update({
+				                text: text, // Eller caption beroende på din datamodell
+				                isEdited: true // Bra att ha för framtiden
+				            });
+				            
+				            showToast("Meddelande uppdaterat", "success");
+				            exitEditMode(); // Stäng läget
+				        } catch (err) {
+				            console.error(err);
+				            showToast("Kunde inte spara ändring", "danger");
+				        }
+				        return; // VIKTIGT: Avbryt här så vi inte skapar nytt
+				    }
+				
+				    // --- VANLIGT NYTT MEDDELANDE ---
+				    try {
+				        await db.collection("notes").add({
+				            text: text,
+				            timestamp: new Date().toISOString(),
+				            platform: window.innerWidth <= 768 ? 'mobil' : 'dator'
+				        });
+				        chatInput.value = '';
+				        setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
+				        if(window.innerWidth > 768) chatInput.focus();
+				    } catch (err) {
+				        showToast("Kunde inte skicka notis.", "danger");
+				    }
+				};
 			
 			    // Koppla Skicka-knappen (Klick)
 			    if (chatSendBtn) {
