@@ -3101,60 +3101,61 @@
 			});
 
             window.addEventListener('popstate', (event) => {
+                // Om vi redan håller på att backa via kod, avbryt för att undvika loopar
                 if (isNavigatingBack) {
                     isNavigatingBack = false;
                     return;
                 }
 
-                // 1. Hämta status för alla fönster
+                // 1. Hämta elementen
                 const chatWidget = document.getElementById('chatWidget');
                 const imageModal = document.getElementById('imageZoomModal');
                 const mobileSearch = document.getElementById('mobileSearchModal');
                 const anyOpenModal = document.querySelector('.modal-backdrop.show');
 
-                // Kontrollera vad som är synligt
+                // 2. Kontrollera vad som faktiskt är synligt
                 const isImageOpen = imageModal && getComputedStyle(imageModal).display !== 'none';
                 const isChatOpen = chatWidget && getComputedStyle(chatWidget).display === 'flex';
                 const isMobileSearchOpen = mobileSearch && getComputedStyle(mobileSearch).display === 'flex';
 
                 // --- NIVÅ 1: BILD-ZOOM (Ligger överst) ---
-                // Om en bild är öppen, stäng BARA bilden och avbryt.
-                // Chatten ligger kvar under eftersom vi inte rör den här.
+                // Om en bild är öppen: Stäng BARA bilden och avbryt (return).
+                // Då rör vi inte chatten som ligger under.
                 if (isImageOpen) {
                     imageModal.style.display = 'none';
-                    updateScrollLock();
-                    return; // VIKTIGT: Stanna här!
+                    updateScrollLock(); // Uppdatera scroll (låst om chatten är under)
+                    return; // <--- VIKTIGT: Stoppa här!
                 }
 
                 // --- NIVÅ 2: SÖK-MODAL ---
                 if (isMobileSearchOpen) {
                     resetAndCloseSearch();
                     updateScrollLock();
-                    return;
+                    return; // Stoppa här
                 }
 
                 // --- NIVÅ 3: VANLIGA MODALER (Kundkort, Inställningar etc) ---
-                // Vi kollar dessa innan chatten, ifall man öppnat en modal FRÅN chatten.
                 if (anyOpenModal) {
                     anyOpenModal.classList.remove('show');
                     setTimeout(() => { anyOpenModal.style.display = 'none'; }, 200);
                     isModalOpen = false;
                     currentOpenModalId = null;
                     updateScrollLock();
-                    return;
+                    return; // Stoppa här
                 }
 
                 // --- NIVÅ 4: CHATTEN ---
-                // Stängs bara om ingen bild eller annan modal ligger ovanpå
+                // Stängs bara om inget annat (bild/modal) låg ovanpå
                 if (isChatOpen) {
                     chatWidget.style.display = 'none';
                     const mobileChatBtn = document.getElementById('mobileChatBtn');
                     if (mobileChatBtn) mobileChatBtn.classList.remove('active');
                     updateScrollLock();
-                    return;
+                    return; // Stoppa här
                 }
 
                 // --- NIVÅ 5: HEMSKÄRMEN (Toast-varning) ---
+                // Hit kommer vi bara om INGET annat var öppet
                 if (window.innerWidth <= 768) {
                     if (backPressWarned) {
                         // Andra trycket: Låt webbläsaren stänga appen/gå bakåt på riktigt
