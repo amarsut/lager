@@ -7297,6 +7297,48 @@ body.body-scroll-lock {
     background-color: rgba(255, 255, 255, 0.1) !important;
 }
 
+/* --- BILD-GALLERI NAVIGATION --- */
+
+/* Pil-knapparna */
+.img-nav-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(0, 0, 0, 0.3);
+    color: white;
+    border: none;
+    font-size: 2rem;
+    padding: 1rem 0.8rem;
+    cursor: pointer;
+    z-index: 30002; /* Över bilden */
+    border-radius: 50%; /* Runda knappar */
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.3s;
+    user-select: none;
+}
+
+.img-nav-btn:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.img-nav-btn.prev { left: 10px; }
+.img-nav-btn.next { right: 10px; }
+
+/* Dölj knapparna om det bara finns en bild (sköts via JS, men bra att ha) */
+.img-nav-btn.hidden { display: none !important; }
+
+/* På mobil: Gör knapparna lite mer diskreta eller lita på swipe */
+@media (max-width: 768px) {
+    .img-nav-btn {
+        background-color: transparent; /* Osynlig bakgrund på mobil */
+        font-size: 3rem; /* Större pilar */
+        padding: 2rem;   /* Större träffyta */
+    }
+}
 
 
 
