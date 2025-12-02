@@ -1723,13 +1723,16 @@
 				        startX = e.touches[0].clientX;
 				        startY = e.touches[0].clientY;
 				        
-				        // --- FIX: IGNORERA KANT-SWIPE ---
-				        // Om användaren trycker inom 40px från vänsterkanten, 
-				        // anta att det är en "swipe back" och starta inte menyn.
-				        if (startX < 40) {
+				        // --- FIX: IGNORERA KANT-SWIPE (BÅDA SIDOR) ---
+				        // Hämta skärmens bredd
+				        const screenWidth = window.innerWidth;
+				        const edgeZone = 50; // Antal pixlar från kanten som är "fredad zon"
+				
+				        // Om fingret landar i vänstra zonen ELLER högra zonen -> Avbryt.
+				        if (startX < edgeZone || startX > screenWidth - edgeZone) {
 				            return;
 				        }
-				        // --------------------------------
+				        // ----------------------------------------------
 				
 				        pressTimer = setTimeout(() => {
 				            // Tiden gick ut = Långtryck!
