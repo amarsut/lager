@@ -69,11 +69,7 @@
 		}
         
         document.addEventListener('DOMContentLoaded', function() {
-            if (!history.state || history.state.page !== 'home') {
-		        history.replaceState({ page: 'home' }, 'Home', location.pathname);
-		        history.pushState({ page: 'home' }, 'Home', location.pathname);
-		    }
-			
+            
             // --- Globalt Tillstånd (State) ---
             let allJobs = [];
 			let currentSortField = 'datum'; 
@@ -1050,66 +1046,68 @@
 			    }
 			}
 			
-			// Variabel för att hålla koll på säkerhetstimern globalt
-            let reactionSafetyTimer = null;
-
-            function showReactionMenu(x, y, messageId, isTouch = false) {
-                createReactionMenu(); 
-                const menu = document.getElementById('reactionMenu');
-                
-                menu.dataset.targetId = messageId;
-                
-                // Nollställ stilar
-                menu.style.display = 'flex';
-                menu.style.visibility = 'hidden'; 
-                menu.classList.remove('show');
-                
-                // Se till att menyn är klickbar (återställ om den fastnat)
-                menu.style.pointerEvents = 'auto';
-
-                // Mät storlek
-                const menuWidth = menu.offsetWidth;
-                const menuHeight = menu.offsetHeight;
-                const screenWidth = window.innerWidth;
-                const screenHeight = window.innerHeight;
-            
-                // X-position (Håll inom skärmen)
-                let left = x - (menuWidth / 2);
-                if (left + menuWidth > screenWidth - 10) left = screenWidth - menuWidth - 10;
-                if (left < 10) left = 10;
-            
-                // Y-position
-                let top = y - 70; // Standard för mus
-
-                // MOBIL-FIX: Flytta upp menyn rejält om det är touch (så den inte hamnar under fingret)
-                if (isTouch) {
-                    top = y - menuHeight - 40; // 40px ovanför fingret
-                }
-
-                // Krockar den med toppen? Lägg den under istället
-                if (top < 10) {
-                    top = y + 20;
-                }
-                
-                // Krockar den med botten? Lägg den över
-                if (top + menuHeight > screenHeight - 10) {
-                    top = screenHeight - menuHeight - 10;
-                }
-            
-                menu.style.left = `${left}px`;
-                menu.style.top = `${top}px`;
-                
-                menu.style.removeProperty('visibility');
-                void menu.offsetWidth; 
-                menu.classList.add('show');
-            }
+			// 2. Visa menyn vid långtryck
+			function showReactionMenu(x, y, messageId) {
+			    createReactionMenu(); 
+			    const menu = document.getElementById('reactionMenu');
+			    
+			    menu.dataset.targetId = messageId;
+			    
+			    // 1. Återställ stilar för att kunna mäta den "sanna" storleken
+			    menu.style.display = 'flex';
+			    menu.style.visibility = 'hidden'; // Dölj den medan vi mäter
+			    menu.style.transform = 'none';    // Ta bort ev. skalning
+			    menu.classList.remove('show');    // Ta bort animationsklassen
+			
+			    // 2. Mät bredd och höjd på skärm och meny
+			    const menuWidth = menu.offsetWidth; // Använd offsetWidth för faktisk bredd
+			    const menuHeight = menu.offsetHeight;
+			    const screenWidth = window.innerWidth;
+			
+			    // 3. Beräkna X (Vänster/Höger)
+			    // Centrera menyn över klicket till en början
+			    let left = x - (menuWidth / 2);
+			    
+			    // JUSTERA HÖGER KANT (Viktigast)
+			    // Om menyn sticker ut till höger -> Fäst den mot högerkanten minus 15px marginal
+			    if (left + menuWidth > screenWidth - 15) {
+			        left = screenWidth - menuWidth - 15;
+			    }
+			    
+			    // JUSTERA VÄNSTER KANT
+			    // Om menyn sticker ut till vänster -> Fäst den mot vänsterkanten plus 15px marginal
+			    if (left < 15) {
+			        left = 15;
+			    }
+			
+			    // 4. Beräkna Y (Upp/Ner)
+			    let top = y - 70;
+			    // Om det är för nära toppen av skärmen, visa menyn under fingret istället
+			    if (top < 20) {
+			        top = y + 20;
+			    }
+			
+			    // 5. Applicera positionerna
+			    menu.style.left = `${left}px`;
+			    menu.style.top = `${top}px`;
+			    
+			    // 6. Starta animationen
+			    // Vi måste ta bort 'visibility' och låta CSS sköta resten
+			    menu.style.removeProperty('visibility');
+			    menu.style.removeProperty('transform'); // Låt CSS-klassen sköta skalan igen
+			    
+			    // Ett litet hack för att webbläsaren ska uppfatta ändringen innan klassen läggs på
+			    void menu.offsetWidth; 
+			    
+			    menu.classList.add('show');
+			    
+			    if (navigator.vibrate) navigator.vibrate(10); 
+			}
 			
 			function hideReactionMenu() {
-                const menu = document.getElementById('reactionMenu');
-                if (menu) {
-                    menu.classList.remove('show');
-                }
-            }
+			    const menu = document.getElementById('reactionMenu');
+			    if (menu) menu.classList.remove('show');
+			}
 			
 			// 3. Spara till Firebase
 			function applyReaction(id, icon) {
@@ -1718,75 +1716,47 @@
 			
 			    // --- MOBIL: LÅNGTRYCK (Endast Touch) ---
 			    let pressTimer = null;
-                let startX = 0, startY = 0;
-                let lastTouchTime = 0; // Håller koll på när vi senast rörde skärmen
-
-                const handleTouchStart = (e) => {
-                    if (e.touches && e.touches.length > 0) {
-                        startX = e.touches[0].clientX;
-                        startY = e.touches[0].clientY;
-                        lastTouchTime = Date.now(); // Stämpla tiden
-                        
-                        pressTimer = setTimeout(() => {
-                            // Tiden gick ut = Vi kör vårt långtryck manuellt!
-                            if (typeof showReactionMenu === 'function') {
-                                showReactionMenu(startX, startY, id, true);
-                            }
-                            if (navigator.vibrate) navigator.vibrate(10);
-                        }, 500); 
-                    }
-                };
-
-                const handleTouchMove = (e) => {
-                    lastTouchTime = Date.now(); // Uppdatera tiden så vi vet att touch pågår
-                    if (!pressTimer) return;
-                    
-                    const currentX = e.touches[0].clientX;
-                    const currentY = e.touches[0].clientY;
-                    
-                    // Känslig swipe-detektor (avbryt direkt vid rörelse)
-                    if (Math.abs(currentX - startX) > 5 || Math.abs(currentY - startY) > 5) {
-                        clearTimeout(pressTimer);
-                        pressTimer = null;
-                    }
-                };
-
-                const handleTouchEnd = (e) => {
-                    lastTouchTime = Date.now();
-                    // Avbryt alltid timern när fingret släpper
-                    if (pressTimer) {
-                        clearTimeout(pressTimer);
-                        pressTimer = null;
-                    }
-                };
-
-                // Koppla touch-händelser
-                bubble.addEventListener('touchstart', handleTouchStart, {passive: true});
-                bubble.addEventListener('touchmove', handleTouchMove, {passive: true});
-                bubble.addEventListener('touchend', handleTouchEnd, {passive: true});
-                bubble.addEventListener('touchcancel', handleTouchEnd, {passive: true});
-
-                // --- HÖGERKLICK (DATOR) & BLOCKERING (MOBIL) ---
-                bubble.addEventListener('contextmenu', (e) => {
-                    // 1. Kolla om en touch-händelse skett de senaste 1000ms
-                    const isTouch = (Date.now() - lastTouchTime) < 1000;
-
-                    // 2. Om det var touch: BLOCKERA ALLT.
-                    // Vi litar 100% på vår timer ovan för mobilen.
-                    if (isTouch) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        return false; 
-                    }
-                    
-                    // 3. Om det INTE var touch (dvs Mus på Dator): Öppna menyn.
-                    e.preventDefault();
-                    e.stopPropagation();
-                    if (typeof showReactionMenu === 'function') {
-                        showReactionMenu(e.clientX, e.clientY, id, false);
-                    }
-                    return false;
-                });
+			    let startX = 0, startY = 0;
+			
+			    const handleTouchStart = (e) => {
+			        if (e.touches && e.touches.length > 0) {
+			            startX = e.touches[0].clientX;
+			            startY = e.touches[0].clientY;
+			            
+			            pressTimer = setTimeout(() => {
+			                // Tiden gick ut = Långtryck!
+			                if (typeof showReactionMenu === 'function') {
+			                    showReactionMenu(startX, startY, id);
+			                }
+			                if (navigator.vibrate) navigator.vibrate(10);
+			            }, 500); // 500ms
+			        }
+			    };
+			
+			    const handleTouchMove = (e) => {
+			        if (!pressTimer) return;
+			        const currentX = e.touches[0].clientX;
+			        const currentY = e.touches[0].clientY;
+			        
+			        // Avbryt om fingret rör sig mer än 10 pixlar (scrollar)
+			        if (Math.abs(currentX - startX) > 10 || Math.abs(currentY - startY) > 10) {
+			            clearTimeout(pressTimer);
+			            pressTimer = null;
+			        }
+			    };
+			
+			    const handleTouchEnd = (e) => {
+			        if (pressTimer) {
+			            clearTimeout(pressTimer);
+			            pressTimer = null;
+			        }
+			    };
+			
+			    // Koppla ENDAST touch-händelser för långtryck
+			    bubble.addEventListener('touchstart', handleTouchStart, {passive: true});
+			    bubble.addEventListener('touchmove', handleTouchMove, {passive: true});
+			    bubble.addEventListener('touchend', handleTouchEnd, {passive: true});
+			
 			
 			    // --- INNEHÅLL (Samma som tidigare) ---
 			    
@@ -3127,123 +3097,129 @@
 			});
 
             window.addEventListener('popstate', (event) => {
-                // 1. Skydd mot loopar
-                if (isNavigatingBack) {
-                    isNavigatingBack = false;
-                    return;
-                }
-				if (typeof hideReactionMenu === 'function') hideReactionMenu();
-                clearTimeout(backPressTimer); // Rensa gammal toast-timer
+			    if (isNavigatingBack) {
+			        isNavigatingBack = false;
+			        return;
+			    }
+			    clearTimeout(backPressTimer);
+			
+			    const state = event.state || {}; 
+			    const currentHash = window.location.hash;
+			    
+			    const chatWidget = document.getElementById('chatWidget');
+			    const imageModal = document.getElementById('imageZoomModal');
+			    const mobileChatBtn = document.getElementById('mobileChatBtn');
+			
+			    // --- 1. BILD-HANTERING (Om vi går FRAMÅT till en bild) ---
+			    if (state.modal === 'imageZoom') {
+			        if (imageModal) imageModal.style.display = 'flex';
+			        updateScrollLock();
+			        return;
+			    } else if (imageModal && state.modal !== 'imageZoom') {
+                    // Om vi inte ska visa bild, se till att den döljs (för säkerhets skull)
+                    // Men vi gör det "tyst" här, själva logiken hanteras nedan
+			    }
+			
+			    // --- 2. CHATT-HANTERING (Vi är i chatt-läget) ---
+			    if (state.modal === 'chatWidget' || currentHash === '#chat') {
+			        
+                    // --- NY FIX: Kolla om vi kommer från en "Child"-vy ---
+                    let isReturningFromChild = false;
 
-                const state = event.state || {};
-                const currentHash = window.location.hash;
-                
-                // Elementreferenser
-                const chatWidget = document.getElementById('chatWidget');
-                const imageModal = document.getElementById('imageZoomModal');
-                const mobileChatBtn = document.getElementById('mobileChatBtn');
-                const mobileSearch = document.getElementById('mobileSearchModal');
-                const anyOpenModal = document.querySelector('.modal-backdrop.show');
-
-                // --- SCENARIO 1: VI SKA TILL EN BILD (#image) ---
-                if (state.modal === 'imageZoom' || currentHash === '#image') {
-                    if (imageModal) imageModal.style.display = 'flex';
-                    updateScrollLock();
-                    return; // Stanna här!
-                }
-
-                // --- SCENARIO 2: VI SKA TILL CHATTEN (#chat) ---
-                // (Sker när vi öppnar chatten ELLER backar från en bild/modal)
-                if (state.modal === 'chatWidget' || currentHash === '#chat') {
-                    
-                    // A. Stäng bild om den ligger överst
+                    // 1. Är bild-zoomen öppen?
                     if (imageModal && getComputedStyle(imageModal).display !== 'none') {
-                        imageModal.style.display = 'none';
+                        isReturningFromChild = true;
                     }
 
-                    // B. Stäng andra modaler (om du öppnat t.ex. Regnr via chatten)
-                    document.querySelectorAll('.modal-backdrop').forEach(el => {
-                        if (el.id !== 'chatWidget') {
-                            el.classList.remove('show');
-                            el.style.display = 'none';
-                        }
-                    });
-
-                    // C. Visa chatten
-                    // Vi sätter den till 'flex' rakt av (precis som i din fungerande kod).
-                    // Eftersom vi kör 'return' nedan kommer inget annat störa animationen.
-                    if (chatWidget) chatWidget.style.display = 'flex';
-                    if (mobileChatBtn) mobileChatBtn.classList.add('active');
-
-                    // D. Fixa scroll och fokus
-                    updateScrollLock();
-                    isModalOpen = false;
-                    currentOpenModalId = null;
-
-                    if (window.innerWidth > 768) {
-                        setTimeout(() => {
-                            const input = document.getElementById('chatInput');
-                            if(input) input.focus();
-                        }, 50);
+                    // 2. Är någon annan modal öppen (t.ex. bil/kund-info som öppnades via chatt)?
+                    // Vi letar efter en modal som har klassen 'show', men som INTE är själva chatten.
+                    const openChildModal = document.querySelector('.modal-backdrop.show');
+                    if (openChildModal && openChildModal.id !== 'chatWidget') {
+                        isReturningFromChild = true;
                     }
+                    // ----------------------------------------------------
 
-                    return; // VIKTIGT: Avbryt här så vi inte hamnar i "Stäng allt"
-                }
-
-                // --- SCENARIO 3: VI SKA TILL HEM/TIDSLINJE (Stäng allt) ---
-                else {
-                    
-                    // 1. Kolla vad som var öppet NNU (för mobil-toasten)
-                    // Vi kollar detta INNAN vi stänger, så vi vet om användaren "stängde något" eller "försöker stänga appen"
-                    const wasChatOpen = chatWidget && getComputedStyle(chatWidget).display === 'flex';
-                    const wasImageOpen = imageModal && getComputedStyle(imageModal).display !== 'none';
-                    const wasModalOpen = isModalOpen || anyOpenModal;
-                    const wasSearchOpen = mobileSearch && getComputedStyle(mobileSearch).display === 'flex';
-                    
-                    const somethingWasOpen = wasChatOpen || wasImageOpen || wasModalOpen || wasSearchOpen;
-
-                    // 2. Stäng/Dölj allt
+			        // Stäng alla andra modaler (inklusive bildzoom)
+			        document.querySelectorAll('.modal-backdrop').forEach(el => {
+			            if (el.id !== 'chatWidget') {
+			                el.classList.remove('show');
+			                el.style.display = 'none';
+			            }
+			        });
                     if (imageModal) imageModal.style.display = 'none';
-                    
-                    if (chatWidget) {
-                        chatWidget.style.display = 'none';
-                        if (mobileChatBtn) mobileChatBtn.classList.remove('active');
-                    }
+			
+			        isModalOpen = false;
+			        currentOpenModalId = null;
+			
+			        if (chatWidget) chatWidget.style.display = 'flex';
+			        if (mobileChatBtn) mobileChatBtn.classList.add('active');
 
-                    if (anyOpenModal) {
-                        anyOpenModal.classList.remove('show');
-                        setTimeout(() => { anyOpenModal.style.display = 'none'; }, 200);
-                    }
-                    
-                    if (mobileSearch) resetAndCloseSearch();
-
-                    // 3. Återställ variabler
-                    isModalOpen = false;
-                    currentOpenModalId = null;
-                    updateScrollLock();
-
-                    // --- 4. MOBIL-SPECIFIKT: "Tryck igen för att stänga" ---
-                    // Körs bara om användaren är på mobil OCH inget fönster stängdes precis.
-                    if (window.innerWidth <= 768 && !somethingWasOpen) {
-                        if (backPressWarned) {
-                            // Andra trycket: Låt webbläsaren backa ut (stänger appen)
-                            backPressWarned = false;
-                            history.back(); 
-                        } else {
-                            // Första trycket: Visa varning och stanna kvar
-                            backPressWarned = true;
-                            showToast('Tryck bakåt igen för att stänga', 'info');
-                            
-                            // Tryck in oss i historiken igen för att "studsa" stängningen
-                            history.pushState({ page: 'home' }, 'Home', location.pathname);
-                            
-                            backPressTimer = setTimeout(() => { 
-                                backPressWarned = false; 
-                            }, 2000);
+                    // --- SCROLL-LOGIK ---
+                    // Scrolla BARA ner om vi INTE kommer tillbaka från en bild/modal
+                    if (!isReturningFromChild) {
+                        if (typeof forceChatScrollBottom === 'function') {
+                            forceChatScrollBottom();
                         }
                     }
-                }
-            });
+                    // --------------------
+			        
+			        if (window.innerWidth > 768) {
+			            setTimeout(() => {
+			                const input = document.getElementById('chatInput');
+			                if(input) input.focus();
+			            }, 50);
+			        }
+			        
+			        updateScrollLock();
+			        return; 
+			    }
+			
+			    // --- 3. GRUNDLÄGE (Tidslinjen) ---
+			    else {
+                    // Kolla om något stängdes precis (för att undvika "tryck igen"-varning)
+                    const wasChatOpen = chatWidget && chatWidget.style.display === 'flex';
+                    const wasModalOpen = isModalOpen || document.querySelector('.modal-backdrop.show');
+
+                    // Tvinga bort scroll-låsning
+                    document.body.classList.remove('body-scroll-lock');
+                    document.body.style.overflow = '';
+			
+			        // Stäng allt
+			        if (chatWidget) chatWidget.style.display = 'none';
+			        if (mobileChatBtn) mobileChatBtn.classList.remove('active');
+			        
+			        const mSearchModal = document.getElementById('mobileSearchModal');
+			        if (mSearchModal) mSearchModal.style.display = 'none';
+			
+			        document.querySelectorAll('.modal-backdrop').forEach(el => {
+			            el.classList.remove('show');
+			            el.style.display = 'none';
+			        });
+                    if (imageModal) imageModal.style.display = 'none';
+			        
+			        isModalOpen = false;
+			        currentOpenModalId = null;
+			        
+			        updateScrollLock();
+			
+			        // Mobil "Avsluta app" - Visa bara om vi INTE stängde något precis
+			        if (window.innerWidth <= 768 && !currentHash && !state.modal) {
+                        if (!wasChatOpen && !wasModalOpen) {
+                            if (typeof backPressWarned !== 'undefined') {
+                                if (backPressWarned) {
+                                    backPressWarned = false;
+                                    history.back();
+                                } else {
+                                    backPressWarned = true;
+                                    showToast('Tryck bakåt igen för att stänga', 'info');
+                                    history.pushState(null, null, location.pathname);
+                                    backPressTimer = setTimeout(() => { backPressWarned = false; }, 2000);
+                                }
+                            }
+                        }
+			        }
+			    }
+			});
 
             function showModal(modalId, options = {}) {
 				if (modalId === 'mobileSearchModal') {
