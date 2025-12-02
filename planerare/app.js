@@ -729,7 +729,7 @@
                 }
             }
 
-			// --- MESSENGER KARUSELL LOGIK (NY) ---
+			// --- MESSENGER KARUSELL LOGIK (UPDATERAD) ---
 
 			let currentGalleryImages = [];
 			let currentImageIndex = 0;
@@ -738,11 +738,10 @@
 			    const modal = document.getElementById('imageZoomModal');
 			    if (!modal) return;
 			
-			    // 1. Hämta alla bilder och hitta index
+			    // 1. Hämta alla bilder
 			    const allImages = document.querySelectorAll('.chat-bubble-image img');
 			    currentGalleryImages = Array.from(allImages).map(img => ({
 			        src: img.src,
-			        // Här kan vi senare hämta bildtext/avsändare om vi vill visa det i footern
 			        caption: "" 
 			    }));
 			
@@ -752,50 +751,65 @@
 			        currentImageIndex = 0;
 			    }
 			
-			    // 2. Uppdatera hela karusellen (Huvudbild + Sidor)
+			    // 2. Uppdatera UI
 			    updateCarouselUI();
 			
-			    // 3. Visa modalen
 			    history.pushState({ modal: 'imageZoom' }, 'Bild', '#image');
 			    modal.style.display = "flex";
 			    updateScrollLock();
 			
-			    // 4. Koppla knappar
+			    // 3. Koppla knappar
 			    document.getElementById('mmCloseBtn').onclick = () => history.back();
 			    document.getElementById('mmShareBtn').onclick = downloadCurrentPhoto;
-			    document.getElementById('mmForwardBtn').onclick = () => showToast("Vidarebefordra: Kommer snart!", "info");
-			    document.getElementById('mmMoreBtn').onclick = () => showToast("Fler alternativ...", "info");
+			    document.getElementById('mmForwardBtn').onclick = () => {
+			        showToast("Vidarebefordra: Kommer snart!", "info");
+			    };
+			
+			    // 4. KLICKA UTANFÖR FÖR ATT STÄNGA
+			    // Vi lägger lyssnaren på containern bakom bilderna
+			    const backdrop = document.getElementById('mmCarouselBackdrop');
+			    if (backdrop) {
+			        backdrop.onclick = (e) => {
+			            // Om vi klickar direkt på backdropen (inte på en bild) -> Stäng
+			            // e.target är det element vi klickade på. 
+			            // Bilderna ligger i divvar (.mm-carousel-item).
+			            // Om vi klickar på en bild, kommer e.target vara img.
+			            if (e.target === backdrop || e.target.classList.contains('mm-carousel-item')) {
+			                history.back();
+			            }
+			        };
+			    }
 			};
 			
-			// Funktion som räknar ut och visar rätt bilder i de 3 slotsen
 			function updateCarouselUI() {
 			    const total = currentGalleryImages.length;
 			    const counter = document.getElementById('mmCounter');
-			    counter.textContent = `${currentImageIndex + 1} av ${total}`;
+			    counter.textContent = total > 1 ? `${currentImageIndex + 1} av ${total}` : "";
 			
 			    const imgMain = document.getElementById('mmImgMain');
 			    const imgPrev = document.getElementById('mmImgPrev');
 			    const imgNext = document.getElementById('mmImgNext');
-			    const captionText = document.getElementById('mmCaptionText');
 			
 			    // Huvudbilden
 			    imgMain.src = currentGalleryImages[currentImageIndex].src;
-			    // captionText.textContent = currentGalleryImages[currentImageIndex].caption; // (För framtida bruk)
 			
 			    if (total > 1) {
 			        // Räkna ut index för föregående (loopa runt)
 			        let prevIndex = currentImageIndex - 1;
 			        if (prevIndex < 0) prevIndex = total - 1;
-			        imgPrev.src = currentGalleryImages[prevIndex].src;
-			        imgPrev.parentElement.style.display = 'flex'; // Visa sidobild
-			
+			        
 			        // Räkna ut index för nästa (loopa runt)
 			        let nextIndex = currentImageIndex + 1;
 			        if (nextIndex >= total) nextIndex = 0;
+			
+			        imgPrev.src = currentGalleryImages[prevIndex].src;
 			        imgNext.src = currentGalleryImages[nextIndex].src;
-			        imgNext.parentElement.style.display = 'flex'; // Visa sidobild
+			        
+			        // Visa sidobilderna
+			        imgPrev.parentElement.style.display = 'flex';
+			        imgNext.parentElement.style.display = 'flex';
 			    } else {
-			        // Om bara 1 bild, dölj sidorna
+			        // Dölj sidobilderna om det bara finns en
 			        imgPrev.parentElement.style.display = 'none';
 			        imgNext.parentElement.style.display = 'none';
 			    }
@@ -805,7 +819,6 @@
 			    if (currentGalleryImages.length <= 1) return;
 			
 			    currentImageIndex += direction;
-			    // Loopa runt
 			    if (currentImageIndex < 0) currentImageIndex = currentGalleryImages.length - 1;
 			    if (currentImageIndex >= currentGalleryImages.length) currentImageIndex = 0;
 			
@@ -830,10 +843,8 @@
 			    imageModal.addEventListener('touchstart', (e) => imgTouchStartX = e.changedTouches[0].screenX, {passive: true});
 			    imageModal.addEventListener('touchend', (e) => {
 			        imgTouchEndX = e.changedTouches[0].screenX;
-			        // Swipa Vänster -> Nästa bild
-			        if (imgTouchEndX < imgTouchStartX - 50) navigateGallery(1);
-			        // Swipa Höger -> Föregående bild
-			        if (imgTouchEndX > imgTouchStartX + 50) navigateGallery(-1);
+			        if (imgTouchEndX < imgTouchStartX - 50) navigateGallery(1); // Swipe Vänster -> Nästa
+			        if (imgTouchEndX > imgTouchStartX + 50) navigateGallery(-1); // Swipe Höger -> Föregående
 			    }, {passive: true});
 			}
 			document.addEventListener('keydown', (e) => {
