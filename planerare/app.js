@@ -1723,18 +1723,16 @@
 			    // --- MOBIL: LÅNGTRYCK (Endast Touch) ---
 			    let pressTimer = null;
                 let startX = 0, startY = 0;
-                let longPressTriggered = false; // NY FLAGGA
+                let isTouchAction = false; // Flagga: Var detta en touch-handling?
 
                 const handleTouchStart = (e) => {
                     if (e.touches && e.touches.length > 0) {
                         startX = e.touches[0].clientX;
                         startY = e.touches[0].clientY;
-                        longPressTriggered = false; // Återställ
+                        isTouchAction = true; // Markera att vi använder fingret
                         
                         pressTimer = setTimeout(() => {
-                            // Tiden gick ut = Vi kör vårt långtryck!
-                            longPressTriggered = true; // Markera att vi hanterat det
-                            
+                            // Tiden gick ut = Vi kör vårt långtryck manuellt!
                             if (typeof showReactionMenu === 'function') {
                                 showReactionMenu(startX, startY, id, true);
                             }
@@ -1744,29 +1742,28 @@
                 };
 
                 const handleTouchMove = (e) => {
-                    // Om vi redan har triggat menyn, gör inget
-                    if (longPressTriggered) return;
-
                     if (!pressTimer) return;
                     const currentX = e.touches[0].clientX;
                     const currentY = e.touches[0].clientY;
                     
-                    // Avbryt om man rör fingret mer än 5px (swipe)
-                    if (Math.abs(currentX - startX) > 5 || Math.abs(currentY - startY) > 5) {
+                    // Om man rör fingret mer än 10px (scrollar), avbryt direkt.
+                    if (Math.abs(currentX - startX) > 10 || Math.abs(currentY - startY) > 10) {
                         clearTimeout(pressTimer);
                         pressTimer = null;
                     }
                 };
 
                 const handleTouchEnd = (e) => {
-                    // Städa upp
+                    // Städa upp om man släppte innan 500ms
                     if (pressTimer) {
                         clearTimeout(pressTimer);
                         pressTimer = null;
                     }
-                    // Vi behåller longPressTriggered=true en kort stund till
-                    // för att blockera 'contextmenu' som kommer strax efter
-                    setTimeout(() => { longPressTriggered = false; }, 200);
+                    
+                    // VIKTIGT: Återställ inte flaggan direkt här!
+                    // 'contextmenu'-eventet kommer ofta precis EFTER touchend.
+                    // Vi väntar lite innan vi tillåter mus-klick igen.
+                    setTimeout(() => { isTouchAction = false; }, 500);
                 };
 
                 // Koppla touch-händelser
@@ -1775,24 +1772,25 @@
                 bubble.addEventListener('touchend', handleTouchEnd, {passive: true});
                 bubble.addEventListener('touchcancel', handleTouchEnd, {passive: true});
 
-                // --- VIKTIGT: Blockera standard-menyn om vi redan kört vår egen ---
+                // --- HÖGERKLICK / CONTEXT MENU ---
                 bubble.addEventListener('contextmenu', (e) => {
-                    // Om vår timer redan har kört -> DÖDA denna händelse
-                    if (longPressTriggered) {
-                        e.preventDefault();
-                        e.stopPropagation();
+                    // Stoppa ALLTID den inbyggda menyn
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    // FIXEN: Om detta triggades av touch (isTouchAction är true),
+                    // så har vår timer ovan redan öppnat menyn. GÖR INGENTING HÄR.
+                    if (isTouchAction) {
                         return false;
                     }
                     
-                    // Annars (på dator eller om timern inte hann klart), visa menyn som vanligt
-                    e.preventDefault();
-                    e.stopPropagation();
+                    // Om isTouchAction är false, betyder det att vi använder mus (Dator).
+                    // Då öppnar vi menyn här.
                     if (typeof showReactionMenu === 'function') {
                         showReactionMenu(e.clientX, e.clientY, id);
                     }
                     return false;
                 });
-			
 			
 			    // --- INNEHÅLL (Samma som tidigare) ---
 			    
