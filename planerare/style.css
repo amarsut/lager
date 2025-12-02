@@ -7051,6 +7051,132 @@ body.body-scroll-lock {
     }
 }
 
+/* --- MESSENGER STIL MENY --- */
+.reaction-menu {
+    flex-direction: column; /* Stapla reaktioner och åtgärder */
+    padding: 12px;
+    border-radius: 16px;
+    gap: 12px;
+    align-items: stretch; /* Fyll bredden */
+    min-width: 250px;
+}
+
+/* Behållare för ikon-raden (Svara, Kopiera, etc) */
+.reaction-actions-row {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 8px;
+    border-top: 1px solid var(--border-color);
+}
+
+.action-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    color: var(--text-color);
+    font-size: 0.75rem;
+    font-weight: 500;
+    min-width: 50px;
+}
+
+.action-item .icon-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: var(--bg-color); /* Ljusgrå */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.action-item:hover .icon-circle {
+    background-color: var(--border-color);
+}
+
+.action-item .icon-sm {
+    width: 1.2rem;
+    height: 1.2rem;
+    color: var(--text-color);
+}
+
+/* Röd soptunna */
+.action-item.danger .icon-sm { color: var(--danger-color); }
+
+
+/* --- REDIGERINGSLÄGE (Messenger Style) --- */
+
+/* Mörk overlay över chatten */
+.chat-edit-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5); /* Halvgenomskinlig svart */
+    z-index: 9; /* Ligger över meddelanden men under input */
+    display: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+.chat-edit-overlay.show {
+    display: block;
+    opacity: 1;
+}
+
+/* Headern ovanför input-fältet */
+.chat-edit-header {
+    position: absolute;
+    top: -45px; /* Flytta upp den ovanför input-fältet */
+    left: 0;
+    right: 0;
+    height: 45px;
+    background-color: var(--content-bg);
+    border-top: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    padding: 0 1rem;
+    z-index: 5;
+    animation: slideUpFade 0.2s ease;
+}
+
+@keyframes slideUpFade {
+    from { transform: translateY(10px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.edit-info {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.edit-title {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text-color);
+}
+
+.close-edit-btn {
+    background: #e5e7eb;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #666;
+}
+
+/* När man redigerar ska Input-området se "solitt" ut */
+.chat-input-area.editing-mode {
+    background-color: var(--content-bg); /* Vit bakgrund */
+    border-top: none; 
+    z-index: 20; /* Över overlayen */
+}
 
 
 
