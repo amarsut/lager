@@ -835,6 +835,59 @@
 			    a.click();
 			    document.body.removeChild(a);
 			}
+
+			// --- NY FUNKTION: Vidarebefordra/Dela Bild ---
+			async function forwardCurrentPhoto() {
+			    if (currentGalleryImages.length === 0) return;
+			    
+			    const imgUrl = currentGalleryImages[currentImageIndex].src;
+			
+			    // Feedback direkt så man vet att något händer
+			    showToast("Förbereder bild...", "info");
+			
+			    try {
+			        // 1. Hämta bilden och gör om den till en fil
+			        const response = await fetch(imgUrl);
+			        const blob = await response.blob();
+			        
+			        // Skapa ett fil-objekt (behövs för att dela själva bilden, inte bara länken)
+			        const file = new File([blob], "bild.jpg", { type: blob.type });
+			
+			        // 2. Kontrollera om enheten stödjer delning (Mobil / Surfplatta)
+			        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+			            await navigator.share({
+			                files: [file],
+			                title: 'Bild från Jobbplanerare',
+			                text: '' 
+			            });
+			            // Om vi kommer hit har del-menyn öppnats (eller delning slutförts)
+			        } 
+			        // 3. Fallback för Desktop (Kopiera bild till urklipp)
+			        else {
+			            try {
+			                await navigator.clipboard.write([
+			                    new ClipboardItem({ [blob.type]: blob })
+			                ]);
+			                showToast("Bild kopierad till urklipp!", "success");
+			            } catch (clipboardErr) {
+			                console.error(clipboardErr);
+			                // Sista utväg: Kopiera länken om det går
+			                if (imgUrl.startsWith('http')) {
+			                    await navigator.clipboard.writeText(imgUrl);
+			                    showToast("Bildlänk kopierad!", "info");
+			                } else {
+			                    showToast("Kunde inte dela bilden på denna enhet.", "warning");
+			                }
+			            }
+			        }
+			    } catch (err) {
+			        console.error("Delning misslyckades:", err);
+			        // Ignorera "AbortError" (om användaren stängde delningsmenyn utan att välja)
+			        if (err.name !== 'AbortError') {
+			            showToast("Ett fel uppstod vid delning.", "danger");
+			        }
+			    }
+			}
 			
 			// --- SWIPE & KEYBOARD ---
 			const imageModal = document.getElementById('imageZoomModal');
@@ -1075,7 +1128,7 @@
 			
 			    // 4. Mer (Placeholder)
 			    actionRow.appendChild(createAction('Vidarebefordra', '#icon-forward-arrow', () => {
-			         showToast("Vidarebefordra: Kommer snart!", "info");
+			         document.getElementById('mmForwardBtn').onclick = forwardCurrentPhoto;
 			         hideReactionMenu();
 			    }));
 			
