@@ -740,79 +740,83 @@
 			    const closeBtn = document.getElementById('imageModalClose');
 			    const prevBtn = document.getElementById('imgNavPrev');
 			    const nextBtn = document.getElementById('imgNavNext');
+			    const counterDiv = document.getElementById('imgCounter'); // <--- NY
 			
 			    if (!modal || !modalImg) return;
 			
-			    // 1. Hämta ALLA bilder som finns i chatten just nu
-			    // Vi letar efter img-taggar inuti .chat-bubble-image
+			    // 1. Hämta alla bilder
 			    const allImages = document.querySelectorAll('.chat-bubble-image img');
-			    
-			    // Skapa en lista av URL:er
 			    currentGalleryImages = Array.from(allImages).map(img => img.src);
 			    
-			    // Hitta index för bilden du klickade på
-			    // (Vi jämför src, ibland kan URL-kodning skilja, så vi kollar 'includes' eller exakt match)
+			    // Hitta index
 			    currentImageIndex = currentGalleryImages.findIndex(s => s === src);
-			    
-			    // Fallback om den inte hittas exakt (t.ex. pga base64 skillnader)
 			    if (currentImageIndex === -1) {
 			        currentGalleryImages = [src];
 			        currentImageIndex = 0;
 			    }
 			
-			    // Uppdatera knapparnas synlighet (dölj om bara 1 bild)
-			    updateGalleryButtons();
+			    // Uppdatera knappar och RÄKNARE
+			    updateGalleryUI(); // <--- NY FUNKTION
 			
-			    // Lägg till historik
 			    history.pushState({ modal: 'imageZoom' }, 'Bild', '#image');
 			
-			    // Visa modalen
 			    modal.style.display = "flex";
 			    modal.style.alignItems = "center";
 			    modal.style.justifyContent = "center";
-			    modalImg.src = currentGalleryImages[currentImageIndex]; // Visa rätt bild
+			    modalImg.src = currentGalleryImages[currentImageIndex];
 			    
 			    updateScrollLock();
 			
-			    // Koppla stäng-knapp
 			    const triggerClose = () => history.back();
 			    if (closeBtn) closeBtn.onclick = triggerClose;
 			    
-			    // Klick utanför bilden stänger
 			    modal.onclick = (e) => {
 			        if (e.target === modal) triggerClose();
 			    };
 			
-			    // Navigering med knappar
 			    if (prevBtn) prevBtn.onclick = (e) => { e.stopPropagation(); navigateGallery(-1); };
 			    if (nextBtn) nextBtn.onclick = (e) => { e.stopPropagation(); navigateGallery(1); };
 			};
 			
-			// Funktion för att byta bild
 			function navigateGallery(direction) {
 			    if (currentGalleryImages.length <= 1) return;
 			
 			    currentImageIndex += direction;
 			
-			    // Loopa runt om man går förbi slutet/början
 			    if (currentImageIndex < 0) currentImageIndex = currentGalleryImages.length - 1;
 			    if (currentImageIndex >= currentGalleryImages.length) currentImageIndex = 0;
 			
 			    const modalImg = document.getElementById('img01');
 			    
-			    // Liten fade-effekt (valfritt)
 			    modalImg.style.opacity = '0.5';
 			    setTimeout(() => {
 			        modalImg.src = currentGalleryImages[currentImageIndex];
 			        modalImg.style.opacity = '1';
+			        updateGalleryUI(); // Uppdatera räknaren vid byte
 			    }, 150);
 			}
 			
-			function updateGalleryButtons() {
+			// NY FUNKTION: Uppdaterar både knappar och text
+			function updateGalleryUI() {
 			    const prevBtn = document.getElementById('imgNavPrev');
 			    const nextBtn = document.getElementById('imgNavNext');
+			    const counterDiv = document.getElementById('imgCounter');
 			    
-			    if (currentGalleryImages.length > 1) {
+			    const total = currentGalleryImages.length;
+			    const current = currentImageIndex + 1;
+			
+			    // Uppdatera texten (t.ex. "7 / 19")
+			    if (counterDiv) {
+			        if (total > 1) {
+			            counterDiv.textContent = `${current} / ${total}`;
+			            counterDiv.style.display = 'block';
+			        } else {
+			            counterDiv.style.display = 'none';
+			        }
+			    }
+			    
+			    // Visa/dölj pilar
+			    if (total > 1) {
 			        if(prevBtn) prevBtn.style.display = 'flex';
 			        if(nextBtn) nextBtn.style.display = 'flex';
 			    } else {
@@ -821,7 +825,7 @@
 			    }
 			}
 			
-			// --- SWIPE LOGIK FÖR BILDEN ---
+			// --- SWIPE LOGIK (Oförändrad, men behåll den här under) ---
 			const imageModal = document.getElementById('imageZoomModal');
 			let imgTouchStartX = 0;
 			let imgTouchEndX = 0;
@@ -838,21 +842,11 @@
 			}
 			
 			function handleImageSwipe() {
-			    // Känslighet: Hur långt måste man dra? (50px)
 			    const threshold = 50;
-			    
-			    if (imgTouchEndX < imgTouchStartX - threshold) {
-			        // Swipat VÄNSTER -> Nästa bild
-			        navigateGallery(1);
-			    }
-			    
-			    if (imgTouchEndX > imgTouchStartX + threshold) {
-			        // Swipat HÖGER -> Föregående bild
-			        navigateGallery(-1);
-			    }
+			    if (imgTouchEndX < imgTouchStartX - threshold) navigateGallery(1);
+			    if (imgTouchEndX > imgTouchStartX + threshold) navigateGallery(-1);
 			}
 			
-			// Tangentbordsstyrning (Pilvänster/Pilhöger)
 			document.addEventListener('keydown', (e) => {
 			    const modal = document.getElementById('imageZoomModal');
 			    if (modal && modal.style.display !== 'none') {
