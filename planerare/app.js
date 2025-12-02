@@ -3101,79 +3101,72 @@
 			});
 
             window.addEventListener('popstate', (event) => {
-                // Om vi navigerar bakåt programmatiskt (via closeModal), ignorera logiken
                 if (isNavigatingBack) {
                     isNavigatingBack = false;
                     return;
                 }
 
-                // Hämta aktuella element för att se vad som är öppet
+                // 1. Hämta status för alla fönster
                 const chatWidget = document.getElementById('chatWidget');
                 const imageModal = document.getElementById('imageZoomModal');
-                const anyOpenModal = document.querySelector('.modal-backdrop.show'); // Hittar vanliga modaler
                 const mobileSearch = document.getElementById('mobileSearchModal');
-                
-                // Är sök-modalen visuellt öppen? (Specialfall då den har display:flex men kanske inte klassen show)
-                const isMobileSearchOpen = mobileSearch && getComputedStyle(mobileSearch).display === 'flex';
-                
-                // Är chatten öppen?
-                const isChatOpen = chatWidget && getComputedStyle(chatWidget).display === 'flex';
+                const anyOpenModal = document.querySelector('.modal-backdrop.show');
 
-                // Är en bild öppen?
+                // Kontrollera vad som är synligt
                 const isImageOpen = imageModal && getComputedStyle(imageModal).display !== 'none';
+                const isChatOpen = chatWidget && getComputedStyle(chatWidget).display === 'flex';
+                const isMobileSearchOpen = mobileSearch && getComputedStyle(mobileSearch).display === 'flex';
 
-                // --- SCENARIO 1: Något är öppet (Modal, Chatt, Bild, Sök) ---
-                // Då ska bakåtknappen BARA stänga det, inte visa toast.
-                if (anyOpenModal || isChatOpen || isImageOpen || isMobileSearchOpen) {
-                    
-                    // Stäng bild
-                    if (isImageOpen) {
-                        imageModal.style.display = 'none';
-                    }
-                    
-                    // Stäng sök
-                    if (isMobileSearchOpen) {
-                        resetAndCloseSearch();
-                    }
-
-                    // Stäng chatt
-                    if (isChatOpen) {
-                        // Om vi är på mobil, stäng widgeten helt
-                        chatWidget.style.display = 'none';
-                        const mobileChatBtn = document.getElementById('mobileChatBtn');
-                        if (mobileChatBtn) mobileChatBtn.classList.remove('active');
-                    }
-
-                    // Stäng vanliga modaler
-                    if (anyOpenModal) {
-                        anyOpenModal.classList.remove('show');
-                        setTimeout(() => { anyOpenModal.style.display = 'none'; }, 200);
-                        isModalOpen = false;
-                        currentOpenModalId = null;
-                    }
-
+                // --- NIVÅ 1: BILD-ZOOM (Ligger överst) ---
+                // Om en bild är öppen, stäng BARA bilden och avbryt.
+                // Chatten ligger kvar under eftersom vi inte rör den här.
+                if (isImageOpen) {
+                    imageModal.style.display = 'none';
                     updateScrollLock();
-                    return; // VIKTIGT: Stanna här, visa ingen toast.
+                    return; // VIKTIGT: Stanna här!
                 }
 
-                // --- SCENARIO 2: Vi är på Hemskärmen (Ingenting är öppet) ---
-                // Här hanterar vi "Tryck igen för att stänga"
-                
-                // Om användaren är på mobil
+                // --- NIVÅ 2: SÖK-MODAL ---
+                if (isMobileSearchOpen) {
+                    resetAndCloseSearch();
+                    updateScrollLock();
+                    return;
+                }
+
+                // --- NIVÅ 3: VANLIGA MODALER (Kundkort, Inställningar etc) ---
+                // Vi kollar dessa innan chatten, ifall man öppnat en modal FRÅN chatten.
+                if (anyOpenModal) {
+                    anyOpenModal.classList.remove('show');
+                    setTimeout(() => { anyOpenModal.style.display = 'none'; }, 200);
+                    isModalOpen = false;
+                    currentOpenModalId = null;
+                    updateScrollLock();
+                    return;
+                }
+
+                // --- NIVÅ 4: CHATTEN ---
+                // Stängs bara om ingen bild eller annan modal ligger ovanpå
+                if (isChatOpen) {
+                    chatWidget.style.display = 'none';
+                    const mobileChatBtn = document.getElementById('mobileChatBtn');
+                    if (mobileChatBtn) mobileChatBtn.classList.remove('active');
+                    updateScrollLock();
+                    return;
+                }
+
+                // --- NIVÅ 5: HEMSKÄRMEN (Toast-varning) ---
                 if (window.innerWidth <= 768) {
                     if (backPressWarned) {
-                        // Användaren har redan fått varning och trycker igen -> Låt appen stängas.
-                        // Vi gör ingenting här, webbläsaren backar naturligt ut ur historiken.
-                        backPressWarned = false; // Återställ för nästa gång
+                        // Andra trycket: Låt webbläsaren stänga appen/gå bakåt på riktigt
+                        backPressWarned = false; 
                     } else {
-                        // Första trycket -> Visa varning och återställ historiken
+                        // Första trycket: Visa varning och stoppa stängning
                         backPressWarned = true;
                         showToast('Tryck bakåt igen för att stänga', 'info');
                         
-                        // MAGIN: Vi trycker in oss själva i historiken igen så vi stannar kvar på sidan
+                        // Tryck tillbaka oss i historiken så vi stannar på sidan
                         history.pushState({ page: 'home' }, 'Home', location.pathname);
                         
-                        // Starta timer: Om man inte trycker igen inom 2 sek, nollställs varningen
                         clearTimeout(backPressTimer);
                         backPressTimer = setTimeout(() => { 
                             backPressWarned = false; 
