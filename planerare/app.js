@@ -1723,17 +1723,21 @@
 			    // --- MOBIL: LÅNGTRYCK (Endast Touch) ---
 			    let pressTimer = null;
                 let startX = 0, startY = 0;
-                let isTouchAction = false; // Flagga: Var detta en touch-handling?
+                // Denna variabel delas mellan touch och contextmenu för att förhindra krockar
+                let longPressHandled = false; 
 
                 const handleTouchStart = (e) => {
                     if (e.touches && e.touches.length > 0) {
                         startX = e.touches[0].clientX;
                         startY = e.touches[0].clientY;
-                        isTouchAction = true; // Markera att vi använder fingret
+                        longPressHandled = false; // Nollställ inför nytt tryck
                         
                         pressTimer = setTimeout(() => {
-                            // Tiden gick ut = Vi kör vårt långtryck manuellt!
+                            // Tiden gick ut = Vi öppnar menyn manuellt!
+                            longPressHandled = true; // Sätt låset!
+                            
                             if (typeof showReactionMenu === 'function') {
+                                // true = Detta är ett touch-anrop
                                 showReactionMenu(startX, startY, id, true);
                             }
                             if (navigator.vibrate) navigator.vibrate(10);
@@ -1746,7 +1750,7 @@
                     const currentX = e.touches[0].clientX;
                     const currentY = e.touches[0].clientY;
                     
-                    // Om man rör fingret mer än 10px (scrollar), avbryt direkt.
+                    // Avbryt om man rör sig mer än 10px
                     if (Math.abs(currentX - startX) > 10 || Math.abs(currentY - startY) > 10) {
                         clearTimeout(pressTimer);
                         pressTimer = null;
@@ -1754,40 +1758,34 @@
                 };
 
                 const handleTouchEnd = (e) => {
-                    // Städa upp om man släppte innan 500ms
                     if (pressTimer) {
                         clearTimeout(pressTimer);
                         pressTimer = null;
                     }
-                    
-                    // VIKTIGT: Återställ inte flaggan direkt här!
-                    // 'contextmenu'-eventet kommer ofta precis EFTER touchend.
-                    // Vi väntar lite innan vi tillåter mus-klick igen.
-                    setTimeout(() => { isTouchAction = false; }, 500);
+                    // Vi nollställer INTE longPressHandled här direkt.
+                    // Vi väntar 200ms eftersom 'contextmenu' kommer precis efter att man släppt.
+                    setTimeout(() => { longPressHandled = false; }, 200);
                 };
 
-                // Koppla touch-händelser
+                // Koppla touch
                 bubble.addEventListener('touchstart', handleTouchStart, {passive: true});
                 bubble.addEventListener('touchmove', handleTouchMove, {passive: true});
                 bubble.addEventListener('touchend', handleTouchEnd, {passive: true});
                 bubble.addEventListener('touchcancel', handleTouchEnd, {passive: true});
 
-                // --- HÖGERKLICK / CONTEXT MENU ---
+                // Koppla högerklick (Dator + Mobil fallback)
                 bubble.addEventListener('contextmenu', (e) => {
-                    // Stoppa ALLTID den inbyggda menyn
-                    e.preventDefault();
+                    e.preventDefault(); // Stoppa alltid standardmenyn
                     e.stopPropagation();
 
-                    // FIXEN: Om detta triggades av touch (isTouchAction är true),
-                    // så har vår timer ovan redan öppnat menyn. GÖR INGENTING HÄR.
-                    if (isTouchAction) {
+                    // FIXEN: Om vi redan har hanterat detta via touch-timern -> AVBRYT
+                    if (longPressHandled) {
                         return false;
                     }
                     
-                    // Om isTouchAction är false, betyder det att vi använder mus (Dator).
-                    // Då öppnar vi menyn här.
+                    // Annars (Dator), öppna menyn
                     if (typeof showReactionMenu === 'function') {
-                        showReactionMenu(e.clientX, e.clientY, id);
+                        showReactionMenu(e.clientX, e.clientY, id, false);
                     }
                     return false;
                 });
