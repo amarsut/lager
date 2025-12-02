@@ -1055,9 +1055,11 @@
 			    
 			    // 1. Återställ stilar för att kunna mäta den "sanna" storleken
 			    menu.style.display = 'flex';
-			    menu.style.visibility = 'hidden'; // Dölj den medan vi mäter
-			    menu.style.transform = 'none';    // Ta bort ev. skalning
-			    menu.classList.remove('show');    // Ta bort animationsklassen
+			    menu.style.visibility = 'hidden'; 
+			    menu.style.pointerEvents = 'auto'; // Se till att den är klickbar
+			    menu.style.opacity = '1';          // Se till att den är synlig
+			    menu.style.transform = 'none';    
+			    menu.classList.remove('show');
 			
 			    // 2. Mät bredd och höjd på skärm och meny
 			    const menuWidth = menu.offsetWidth; // Använd offsetWidth för faktisk bredd
@@ -1708,10 +1710,11 @@
 			    const bubble = document.createElement('div');
 			    bubble.className = 'chat-bubble';
 			
-			    // --- 1. INNEHÅLL (TEXT & BILD) ---
-			    // Vi använder en enkel metod för att kolla om vi får klicka på bilden
-			    const canClickImage = () => bubble.dataset.longPressHandled !== "true";
+			    // Variabel för att minnas om vi har gjort ett långtryck
+			    // Vi använder en lokal variabel istället för dataset för att undvika att den "fastnar" i DOMen
+			    let isLongPressActive = false;
 			
+			    // --- 1. INNEHÅLL (TEXT & BILD) ---
 			    if (data.images && Array.isArray(data.images)) {
 			        bubble.classList.add('chat-bubble-image');
 			        const carousel = document.createElement('div');
@@ -1720,7 +1723,8 @@
 			            const img = document.createElement('img');
 			            img.src = imgSrc; img.loading = "lazy"; img.alt = "Bild";
 			            img.onclick = (e) => {
-			                if (canClickImage()) {
+			                // Öppna bara om det INTE är ett långtryck
+			                if (!isLongPressActive) {
 			                    e.stopPropagation(); 
 			                    if (typeof window.openImageZoom === 'function') window.openImageZoom(imgSrc);
 			                }
@@ -1740,7 +1744,7 @@
 			        const imgElement = document.createElement('img');
 			        imgElement.src = data.image; imgElement.alt = "Bild"; imgElement.loading = "lazy";
 			        imgElement.onclick = (e) => {
-			            if (canClickImage()) {
+			            if (!isLongPressActive) {
 			                e.stopPropagation(); 
 			                if (typeof window.openImageZoom === 'function') window.openImageZoom(data.image);
 			            }
@@ -1755,7 +1759,7 @@
 			        bubble.dataset.originalHtml = bubble.innerHTML;
 			
 			    } else {
-			        // Text-logik
+			        // Text
 			        let rawText = data.text || "";
 			        const textContentDiv = document.createElement('div');
 			        textContentDiv.className = 'chat-text-content';
@@ -1805,32 +1809,32 @@
 			        bubble.appendChild(badge);
 			    }
 			
-			    // --- 2. BUGGFRI TOUCH-LOGIK (Fixad State) ---
+			    // --- 2. DEN NYA TOUCH-LOGIKEN ---
 			    
 			    let pressTimer = null;
 			    let startX = 0, startY = 0;
-			    
-			    // Nollställ direkt från start
-			    bubble.dataset.longPressHandled = "false"; 
 			
 			    const handleTouchStart = (e) => {
-			        if (e.touches.length > 1) return; // Ignorera multitouch
+			        // Ignorera multitouch (zoom etc)
+			        if (e.touches.length > 1) return;
 			
-			        startX = e.touches[0].clientX;
-			        startY = e.touches[0].clientY;
-			        
-			        // VIKTIGT: Nollställ alltid status när fingret rör skärmen!
-			        // Detta fixar buggen att den "fastnar" efter att menyn stängts.
-			        bubble.dataset.longPressHandled = "false"; 
+			        // VIKTIGT: Nollställ ALLTID flaggan vid ny touch. 
+			        // Detta löser problemet med att menyn "fastnar" andra gången.
+			        isLongPressActive = false;
+			
+			        const touch = e.touches[0];
+			        startX = touch.clientX;
+			        startY = touch.clientY;
+			
+			        // Edge Guard (Swipe skydd)
+			        const screenWidth = window.innerWidth;
+			        if (startX < 50 || startX > screenWidth - 50) return;
 			
 			        if (pressTimer) clearTimeout(pressTimer);
 			
-			        // Edge Guard
-			        if (startX < 50 || startX > window.innerWidth - 50) return;
-			
 			        pressTimer = setTimeout(() => {
-			            // Sätt flaggan att vi nu har gjort ett långtryck
-			            bubble.dataset.longPressHandled = "true"; 
+			            // Nu har vi hållit tillräckligt länge!
+			            isLongPressActive = true; 
 			            
 			            if (typeof showReactionMenu === 'function') {
 			                showReactionMenu(startX, startY, id);
@@ -1841,10 +1845,11 @@
 			
 			    const handleTouchMove = (e) => {
 			        if (!pressTimer) return;
+			
 			        const currentX = e.touches[0].clientX;
 			        const currentY = e.touches[0].clientY;
 			        
-			        // Avbryt vid scroll
+			        // Om fingret rör sig mer än 10px räknar vi det som scroll och avbryter
 			        if (Math.abs(currentX - startX) > 10 || Math.abs(currentY - startY) > 10) {
 			            clearTimeout(pressTimer);
 			            pressTimer = null;
@@ -1852,51 +1857,52 @@
 			    };
 			
 			    const handleTouchEnd = (e) => {
+			        // Rensa timern så inte menyn dyker upp om man släpper tidigt
 			        if (pressTimer) {
 			            clearTimeout(pressTimer);
 			            pressTimer = null;
 			        }
-			        // OBS: Vi nollställer INTE flaggan här, den behövs för att blockera klicket nedan!
+			        // OBS: Vi nollställer INTE isLongPressActive här. 
+			        // Den måste vara 'true' en liten stund till för att handleClick ska kunna blockera klicket.
 			    };
 			
 			    const handleClick = (e) => {
-			        // Om flaggan är satt, betyder det att vi nyss öppnade menyn.
-			        // Då ska vi döda detta klick så att inte menyn stängs direkt.
-			        if (bubble.dataset.longPressHandled === "true") {
+			        // Om isLongPressActive är true, betyder det att vi nyss öppnade menyn.
+			        // Då måste vi DÖDA detta klick så att det inte bubblar upp och stänger menyn direkt.
+			        if (isLongPressActive) {
 			            e.preventDefault();
 			            e.stopPropagation();
 			            e.stopImmediatePropagation();
 			            
-			            // Återställ flaggan efter en kort stund så bubblan blir klickbar igen
+			            // Återställ flaggan efter en kort fördröjning så man kan klicka normalt nästa gång
 			            setTimeout(() => {
-			                bubble.dataset.longPressHandled = "false";
-			            }, 100);
+			                isLongPressActive = false;
+			            }, 50);
 			            
 			            return false;
 			        }
 			    };
 			
-			    // DATOR: Högerklick
+			    // Blockera inbyggd högerklicksmeny på mobil så den inte stör
 			    bubble.addEventListener('contextmenu', (e) => {
 			        if (window.innerWidth <= 768) {
 			            e.preventDefault();
 			            e.stopPropagation();
 			            return false;
 			        }
+			        // På dator: Öppna vår meny vid högerklick
 			        e.preventDefault();
-			        if (typeof showReactionMenu === 'function') {
-			            showReactionMenu(e.clientX, e.clientY, id);
-			        }
+			        showReactionMenu(e.clientX, e.clientY, id);
 			        return false;
 			    });
 			
-			    // MOBIL: Touch lyssnare
+			    // Koppla lyssnare
+			    // passive: true på touchstart/move/end är viktigt för mjuk scroll
 			    bubble.addEventListener('touchstart', handleTouchStart, { passive: true });
 			    bubble.addEventListener('touchmove', handleTouchMove, { passive: true });
 			    bubble.addEventListener('touchend', handleTouchEnd, { passive: true });
-			    bubble.addEventListener('touchcancel', handleTouchEnd, { passive: true });
 			    
-			    // Fånga klicket i "capture"-fasen (tidigt)
+			    // Fånga klicket för att stoppa "spök-stängning"
 			    bubble.addEventListener('click', handleClick, true); 
 			
 			    // --- 3. TIDSSTÄMPEL ---
