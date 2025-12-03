@@ -2532,7 +2532,7 @@
                     
                 }, error => {
                     console.error("Fel vid hämtning av jobb: ", error);
-                    alert("Kunde inte ansluta till databasen.");
+                    //alert("Kunde inte ansluta till databasen.");
                 });
             }
 
