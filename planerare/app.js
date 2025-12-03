@@ -5932,19 +5932,19 @@
 
             // Funktion: Visa låsskärmen
             function showPinLock(message = "") {
-                // 1. Dölj huvudinnehållet
+                // 1. Dölj huvudinnehåll
                 if (appContainer) appContainer.style.display = 'none'; 
                 
-                // 2. SÄKERHETS-FIX: Dölj ALLA flytande knappar och menyer
-                if (typeof fabAddJob !== 'undefined' && fabAddJob) fabAddJob.style.display = 'none';
-                if (typeof mobileNav !== 'undefined' && mobileNav) mobileNav.style.display = 'none';
-                
-                // --- HÄR ÄR FIXEN FÖR CHATTEN ---
+                // 2. SLÄCK KNAPPARNA (Här är fixen)
                 const fabChat = document.getElementById('fabChat');
+                const fabAddJob = document.getElementById('fabAddJob');
+                const mobileNav = document.getElementById('mobileNav');
                 const chatWidget = document.getElementById('chatWidget');
-                if (fabChat) fabChat.style.display = 'none'; 
-                if (chatWidget) chatWidget.style.display = 'none'; // Tvångsstäng widgeten
-                // --------------------------------
+
+                if (fabChat) fabChat.style.setProperty('display', 'none', 'important');
+                if (fabAddJob) fabAddJob.style.setProperty('display', 'none', 'important');
+                if (mobileNav) mobileNav.style.setProperty('display', 'none', 'important');
+                if (chatWidget) chatWidget.style.display = 'none'; // Stäng widgeten
                 
                 // 3. Visa modal
                 const pinLockModal = document.getElementById('pinLockModal');
@@ -5954,10 +5954,9 @@
                 }
                 
                 // 4. Fokusera input
-                const pinInput = document.getElementById('pinInput'); // Eller authEmail om du bytt
                 const emailInput = document.getElementById('authEmail');
+                const pinInput = document.getElementById('pinInput');
                 
-                // Fokusera på rätt fält beroende på vilken inloggning du använder
                 if (emailInput) {
                     setTimeout(() => emailInput.focus(), 100);
                 } else if (pinInput) {
@@ -5991,25 +5990,28 @@
                 // Sätt session-token
                 sessionStorage.setItem(SECURITY_CONFIG.sessionKey, 'active');
                 
-                // Visa innehållet
+                // 1. Visa huvudinnehållet
                 if (appContainer) {
                     appContainer.style.display = 'block'; 
                     appContainer.style.filter = "none";
                     appContainer.style.pointerEvents = "auto";
                 }
 
-                // Visa navigationsknappar
-                if (typeof fabAddJob !== 'undefined' && fabAddJob) fabAddJob.style.display = 'flex';
-                if (typeof mobileNav !== 'undefined' && mobileNav && window.innerWidth <= 768) {
-                    mobileNav.style.display = 'flex';
-                }
-
-                // --- HÄR ÄR FIXEN: Visa Chatt-knappen igen ---
+                // 2. TÄND KNAPPARNA MANUELLT (Här är fixen)
                 const fabChat = document.getElementById('fabChat');
-                if (fabChat) fabChat.style.display = 'flex';
-                // ---------------------------------------------
+                const fabAddJob = document.getElementById('fabAddJob');
+                const mobileNav = document.getElementById('mobileNav');
+
+                // Vi använder setProperty för att köra över !important från CSS
+                if (fabChat) fabChat.style.setProperty('display', 'flex', 'important');
+                if (fabAddJob) fabAddJob.style.setProperty('display', 'flex', 'important');
                 
-                // Dölj modal
+                // Visa mobilmenyn bara om vi är på mobil
+                if (mobileNav && window.innerWidth <= 768) {
+                    mobileNav.style.setProperty('display', 'flex', 'important');
+                }
+                
+                // 3. Dölj lås-modalen
                 const pinLockModal = document.getElementById('pinLockModal');
                 if (pinLockModal) {
                     pinLockModal.classList.remove('show');
@@ -6028,7 +6030,6 @@
                     if (typeof initInventoryListener === 'function') initInventoryListener();
                     if (typeof toggleView === 'function') toggleView(currentView);
                     
-                    // Starta chatten om den finns
                     if (typeof initChat === 'function') initChat();
                 }
                 
