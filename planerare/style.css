@@ -7449,3 +7449,10 @@ body.body-scroll-lock {
     box-shadow: none;
     border-bottom-width: 4px;
 }
+
+/* Gör loggan inuti låsrutan oklickbar */
+.pin-lock-container .nav-logo {
+    pointer-events: none;
+    cursor: default;
+    text-decoration: none;
+}
