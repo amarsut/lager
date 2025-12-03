@@ -3464,49 +3464,56 @@
 			
 			    // --- 3. GRUNDLÄGE (Tidslinjen) ---
 			    else {
-                    // Kolla om något stängdes precis (för att undvika "tryck igen"-varning)
-                    const wasChatOpen = chatWidget && chatWidget.style.display === 'flex';
-                    const wasModalOpen = isModalOpen || document.querySelector('.modal-backdrop.show');
-
-                    // Tvinga bort scroll-låsning
-                    document.body.classList.remove('body-scroll-lock');
-                    document.body.style.overflow = '';
-			
-			        // Stäng allt
-			        if (chatWidget) chatWidget.style.display = 'none';
-			        if (mobileChatBtn) mobileChatBtn.classList.remove('active');
-			        
-			        const mSearchModal = document.getElementById('mobileSearchModal');
-			        if (mSearchModal) mSearchModal.style.display = 'none';
-			
-			        document.querySelectorAll('.modal-backdrop').forEach(el => {
-			            el.classList.remove('show');
-			            el.style.display = 'none';
-			        });
-                    if (imageModal) imageModal.style.display = 'none';
-			        
-			        isModalOpen = false;
-			        currentOpenModalId = null;
-			        
-			        updateScrollLock();
-			
-			        // Mobil "Avsluta app" - Visa bara om vi INTE stängde något precis
-			        if (window.innerWidth <= 768 && !currentHash && !state.modal) {
-                        if (!wasChatOpen && !wasModalOpen) {
-                            if (typeof backPressWarned !== 'undefined') {
-                                if (backPressWarned) {
-                                    backPressWarned = false;
-                                    history.back();
-                                } else {
-                                    backPressWarned = true;
-                                    showToast('Tryck bakåt igen för att stänga', 'info');
-                                    history.pushState(null, null, location.pathname);
-                                    backPressTimer = setTimeout(() => { backPressWarned = false; }, 2000);
-                                }
-                            }
-                        }
-			        }
-			    }
+				    const mSearchModal = document.getElementById('mobileSearchModal');
+				
+				    // NYTT: Kolla om mobil-sök var öppen precis innan back
+				    const wasSearchOpen = mSearchModal && getComputedStyle(mSearchModal).display !== 'none';
+				
+				    // Kolla om något stängdes precis (för att undvika "tryck igen"-varning)
+				    const wasChatOpen = chatWidget && chatWidget.style.display === 'flex';
+				    const wasModalOpen = wasSearchOpen || isModalOpen || document.querySelector('.modal-backdrop.show');
+				
+				    // Tvinga bort scroll-låsning
+				    document.body.classList.remove('body-scroll-lock');
+				    document.body.style.overflow = '';
+				
+				    // Stäng allt
+				    if (chatWidget) chatWidget.style.display = 'none';
+				    if (mobileChatBtn) mobileChatBtn.classList.remove('active');
+				
+				    if (mSearchModal) mSearchModal.style.display = 'none';
+				
+				    document.querySelectorAll('.modal-backdrop').forEach(el => {
+				        el.classList.remove('show');
+				        el.style.display = 'none';
+				    });
+				    if (imageModal) imageModal.style.display = 'none';
+				
+				    isModalOpen = false;
+				    currentOpenModalId = null;
+				
+				    updateScrollLock();
+				
+				    // Mobil "Avsluta app" - Visa bara om vi inte just stängde något (inkl. sök)
+				    if (window.innerWidth <= 768 && !currentHash && !state.modal) {
+				        if (!wasChatOpen && !wasModalOpen) {
+				            if (typeof backPressWarned !== 'undefined') {
+				                if (backPressWarned) {
+				                    backPressWarned = false;
+				                    history.back();
+				                } else {
+				                    backPressWarned = true;
+				                    showToast('Tryck bakåt igen för att stänga', 'info');
+				                    	backPressTimer = setTimeout(() => {
+								    backPressWarned = false;
+								}, 2500);
+								
+								history.pushState(null, null, location.pathname);
+				                }
+				            }
+				        }
+				    }
+				}
 			});
 
             function showModal(modalId, options = {}) {
