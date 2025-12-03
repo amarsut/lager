@@ -5867,7 +5867,7 @@
 
                 if (isModalOpen || isInputFocused || contextMenu.classList.contains('show')) return;
                 
-                switch(e.key.toLowerCase()) {
+                switch((e.key || '').toLowerCase()) {
                     case 'n': e.preventDefault(); openJobModal('add'); break;
                     case 'f': 
                         e.preventDefault(); 
