@@ -5927,24 +5927,27 @@
 
             // Funktion: Visa låsskärmen
             function showPinLock(message = "") {
-                appContainer.style.filter = "blur(10px)"; // Snygg blur-effekt på bakgrunden
-                appContainer.style.pointerEvents = "none"; // Förhindra klick bakom
+                // SÄKERHETS-FIX: Dölj innehållet helt (inget blur) för att stoppa blinkande
+                if (appContainer) appContainer.style.display = 'none'; 
                 
                 // Dölj flytande knappar
-                if (typeof fabAddJob !== 'undefined') fabAddJob.style.display = 'none';
-                if (typeof mobileNav !== 'undefined') mobileNav.style.display = 'none';
+                if (typeof fabAddJob !== 'undefined' && fabAddJob) fabAddJob.style.display = 'none';
+                if (typeof mobileNav !== 'undefined' && mobileNav) mobileNav.style.display = 'none';
                 
                 // Visa modal
                 const pinLockModal = document.getElementById('pinLockModal');
                 pinLockModal.style.display = 'flex';
+                // Liten delay för animering
                 setTimeout(() => pinLockModal.classList.add('show'), 10);
                 
                 // Fokusera input
                 const pinInput = document.getElementById('pinInput');
-                pinInput.value = '';
-                setTimeout(() => pinInput.focus(), 100);
+                if (pinInput) {
+                    pinInput.value = '';
+                    setTimeout(() => pinInput.focus(), 100);
+                }
 
-                // Visa felmeddelande om vi blev utkastade
+                // Visa felmeddelande om vi blev utkastade (t.ex. vid inaktivitet)
                 const pinError = document.getElementById('pinError');
                 if (message && pinError) {
                     pinError.textContent = message;
@@ -5970,14 +5973,16 @@
                 // Sätt session-token
                 sessionStorage.setItem(SECURITY_CONFIG.sessionKey, 'active');
                 
-                // Ta bort blur
-                appContainer.style.filter = "none";
-                appContainer.style.pointerEvents = "auto";
-                appContainer.style.display = ''; // Återställ display
+                // SÄKERHETS-FIX: Visa innehållet nu när vi är inloggade
+                if (appContainer) {
+                    appContainer.style.display = 'block'; 
+                    appContainer.style.filter = "none"; // Ta bort eventuell gammal blur
+                    appContainer.style.pointerEvents = "auto";
+                }
 
-                // Visa knappar
-                if (typeof fabAddJob !== 'undefined') fabAddJob.style.display = 'flex';
-                if (typeof mobileNav !== 'undefined' && window.innerWidth <= 768) {
+                // Visa knappar igen
+                if (typeof fabAddJob !== 'undefined' && fabAddJob) fabAddJob.style.display = 'flex';
+                if (typeof mobileNav !== 'undefined' && mobileNav && window.innerWidth <= 768) {
                     mobileNav.style.display = 'flex';
                 }
                 
@@ -5986,10 +5991,10 @@
                 pinLockModal.classList.remove('show');
                 setTimeout(() => { pinLockModal.style.display = 'none'; }, 300);
 
-                // Starta timers
+                // Starta timers för inaktivitet
                 resetIdleTimer();
                 
-                // Initiera data om det är första gången
+                // Initiera data om det är första gången (så listan laddas)
                 if (!appInitialized) {
                     appInitialized = true;
                     console.log("Appen upplåst -> Initierar system...");
@@ -5997,7 +6002,7 @@
                     if (typeof initRealtimeListener === 'function') initRealtimeListener();
                     if (typeof initInventoryListener === 'function') initInventoryListener();
                     
-                    // VIKTIGT: Sätt vy korrekt
+                    // Se till att rätt vy visas
                     if (typeof toggleView === 'function') toggleView(currentView);
                 }
                 
