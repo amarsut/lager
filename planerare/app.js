@@ -2486,15 +2486,13 @@
 			}
 
 			function calculateOilStock() {
-                // 1. Hämta startvärden från inputs (eller state om modalen är stängd)
+                // 1. Hämta startvärden
                 const amountInput = document.getElementById('oilStartAmount');
                 const dateInput = document.getElementById('oilStartDate');
                 
-                // SÄKERHETSÅTGÄRD: Om elementen inte finns (appen laddas), avbryt inte, använd 0
                 const startAmount = amountInput ? (parseFloat(amountInput.value) || 0) : 0;
                 const startDateVal = dateInput ? dateInput.value : '';
                 
-                // Om vi inte har data i fälten än (t.ex. vid start), försök inte räkna
                 if (!startDateVal && startAmount === 0) return;
 
                 const startDate = new Date(startDateVal);
@@ -2502,21 +2500,15 @@
 
                 let totalUsed = 0;
 
-                // 2. Loopa igenom ALLA jobb
+                // 2. Beräkna förbrukning
                 allJobs.forEach(job => {
-                    // Ignorera raderade jobb och avbokade jobb
                     if (job.deleted || job.status === 'avbokad') return;
 
-                    // Kolla om jobbets datum är EFTER startdatumet
                     const jobDate = new Date(job.datum);
                     if (jobDate >= startDate) {
-                        
-                        // 3. Leta efter olja i utgiftslistan
                         if (job.expenseItems && Array.isArray(job.expenseItems)) {
                             job.expenseItems.forEach(item => {
-                                // Kollar om namnet innehåller "olja"
                                 if (item.name && item.name.toLowerCase().includes('motorolja')) {
-                                    // Extrahera siffran: "Motorolja (4.3L)" -> 4.3
                                     const match = item.name.match(/([\d.,]+)\s*L/i);
                                     if (match) {
                                         let liters = parseFloat(match[1].replace(',', '.'));
@@ -2530,13 +2522,12 @@
                     }
                 });
 
-                // 4. Visa resultatet
+                // 3. Visa resultatet i inställningarna (som förut)
                 const currentStock = startAmount - totalUsed;
                 const stockElement = document.getElementById('calculatedOilStock');
                 
                 if (stockElement) {
                     stockElement.textContent = `${currentStock.toFixed(1)} Liter kvar`;
-                    
                     if (currentStock < 20) {
                         stockElement.style.color = "var(--danger-color)";
                         stockElement.textContent += " (LÅGT!)";
@@ -2546,6 +2537,49 @@
                 }
                 
                 currentOilStock = currentStock;
+
+                // --- NYTT: SKICKA SYSTEM-MEDDELANDE TILL CHATTEN ---
+                checkAndSendLowStockWarning(currentStock);
+            }
+
+			// --- NY FUNKTION: Hantera Varningar i Chatten ---
+            async function checkAndSendLowStockWarning(currentLevel) {
+                // Gräns för varning (t.ex. 20 liter)
+                const WARNING_THRESHOLD = 20;
+                
+                if (currentLevel > WARNING_THRESHOLD) {
+                    // Om nivån är bra, rensa eventuell "idag har vi varnat"-flagga
+                    localStorage.removeItem('oilWarningSentDate');
+                    return; 
+                }
+
+                // Om nivån är låg...
+                const today = new Date().toISOString().split('T')[0];
+                const lastWarningDate = localStorage.getItem('oilWarningSentDate');
+
+                // ...och vi inte redan har varnat IDAG
+                if (lastWarningDate !== today) {
+                    
+                    console.log("Låg oljenivå detekterad. Skapar systemmeddelande...");
+
+                    try {
+                        // Skapa ett system-meddelande i chatten
+                        await db.collection("notes").add({
+                            text: `⚠️ **SYSTEMVARNING: LÅGT OLJELAGER**\n\nNivån ligger nu på **${currentLevel.toFixed(1)} liter**.\nDags att beställa nytt fat?`,
+                            timestamp: new Date().toISOString(),
+                            platform: 'system', // Vi markerar detta som system
+                            reaction: '🛢' // Sätter en liten olje-ikon automatiskt
+                        });
+
+                        // Spara att vi har varnat idag så vi inte spammar
+                        localStorage.setItem('oilWarningSentDate', today);
+                        
+                        showToast('Varning skickad till chatten!', 'warning');
+
+                    } catch (err) {
+                        console.error("Kunde inte skicka systemvarning:", err);
+                    }
+                }
             }
 
             // --- Firebase Listener ---
