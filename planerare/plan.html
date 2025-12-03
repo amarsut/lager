@@ -124,30 +124,22 @@
 			    </svg>
 				</a>
                 <div class="header-titles">
-				    <span class="app-brand-title" id="appBrandTitle"></span>
-				    
-				    <div id="urgentTicker" class="urgent-ticker" style="display: none;">
-				        <span class="ticker-icon">🕓</span>
-				        <div class="ticker-text-wrapper">
-				            <span id="tickerText">Laddar...</span>
-				        </div>
-				    </div>
-				
-				    <div class="view-toggle-buttons" id="viewToggleButtons">
-				        <button class="button-toggle-view active" id="btnToggleTimeline" data-view="timeline">
-				            <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-timeline-view"></use></svg>
-				            <span>Tidslinje</span>
-				        </button>
-				        <button class="button-toggle-view" id="btnToggleCalendar" data-view="calendar">
-				            <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-calendar-view"></use></svg>
-				            <span>Kalender</span>
-				        </button>
-				        <button class="button-toggle-view" id="btnToggleKanban" data-view="kanban">
-				            <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-kanban-view"></use></svg>
-				            <span>Tavla</span>
-				        </button>
-				    </div>
-				</div>
+                    <span class="app-brand-title" id="appBrandTitle"></span>
+                    <div class="view-toggle-buttons" id="viewToggleButtons">
+                        <button class="button-toggle-view active" id="btnToggleTimeline" data-view="timeline">
+                            <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-timeline-view"></use></svg>
+                            <span>Tidslinje</span>
+                        </button>
+                        <button class="button-toggle-view" id="btnToggleCalendar" data-view="calendar">
+                            <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-calendar-view"></use></svg>
+                            <span>Kalender</span>
+                        </button>
+						<button class="button-toggle-view" id="btnToggleKanban" data-view="kanban">
+						    <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-kanban-view"></use></svg>
+						    <span>Tavla</span>
+						</button>
+                    </div>
+                </div>
             </div>
             
             <div class="header-right">
@@ -541,18 +533,8 @@
         </div>
     </div>
 
-	<span class="app-brand-title" id="appBrandTitle"></span>
-    
-    <div id="urgentTicker" class="urgent-ticker" style="display: none;">
-        <span class="ticker-icon">🕓</span>
-        <div class="ticker-text-wrapper">
-            <span id="tickerText">Laddar...</span>
-        </div>
-    </div>
-
 	<button id="fabChat" title="Öppna notiser/chatt">
 	    <svg class="icon" viewBox="0 0 24 24"><use href="#icon-chat-bubble"></use></svg>
-	    <span id="chatBadge" class="chat-badge" style="display: none;">0</span>
 	</button>
 	
 	<div id="chatWidget" class="chat-widget-container" style="display: none;">
