@@ -338,7 +338,10 @@
 		</button>
 
 		<button class="mobile-nav-btn" id="mobileChatBtn" data-view="chat">
-		    <svg class="icon" viewBox="0 0 24 24"><use href="#icon-chat-bubble"></use></svg>
+		    <div class="icon-wrapper" style="position: relative;">
+		        <svg class="icon" viewBox="0 0 24 24"><use href="#icon-chat-bubble"></use></svg>
+		        <span id="chatBadgeMobile" class="notification-badge mobile-badge" style="display: none;">0</span>
+		    </div>
 		    <span>Notiser</span>
 		</button>
 		
@@ -535,6 +538,7 @@
 
 	<button id="fabChat" title="Öppna notiser/chatt">
 	    <svg class="icon" viewBox="0 0 24 24"><use href="#icon-chat-bubble"></use></svg>
+	    <span id="chatBadgeDesktop" class="notification-badge" style="display: none;">0</span>
 	</button>
 	
 	<div id="chatWidget" class="chat-widget-container" style="display: none;">
