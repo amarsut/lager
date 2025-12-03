@@ -7413,3 +7413,39 @@ body.body-scroll-lock {
     font-size: 0.9rem;
     padding: 0 20px;
 }
+
+/* --- SÄKERHETSUPPDATERING --- */
+
+/* När appen är låst, gör bakgrunden suddig */
+.app-container {
+    transition: filter 0.3s ease;
+}
+
+/* Förstärk säkerhetsmodalen så den täcker allt */
+#pinLockModal {
+    z-index: 2147483647 !important; /* Maxvärde för Z-index */
+    background-color: rgba(255, 255, 255, 0.95); /* Mindre genomskinlig */
+    backdrop-filter: blur(15px); /* Extra blur på själva modal-bakgrunden */
+    -webkit-backdrop-filter: blur(15px);
+}
+
+[data-theme="dark"] #pinLockModal {
+    background-color: rgba(20, 20, 23, 0.98);
+}
+
+/* Snyggare input för PIN */
+#pinInput {
+    font-size: 2rem; /* Större siffror */
+    letter-spacing: 0.8rem;
+    border: none;
+    border-bottom: 2px solid var(--primary-color);
+    border-radius: 0;
+    background: transparent;
+    padding: 0.5rem;
+    width: 200px;
+    margin: 0 auto 1.5rem auto;
+}
+#pinInput:focus {
+    box-shadow: none;
+    border-bottom-width: 4px;
+}
