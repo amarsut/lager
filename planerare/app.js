@@ -6319,4 +6319,22 @@
     // Initiera vid start
     recordActivity();
 
+	// --- OFFLINE HANTERING ---
+    function updateOnlineStatus() {
+        const isOffline = !navigator.onLine;
+        
+        if (isOffline) {
+            document.body.classList.add('offline-mode');
+        } else {
+            document.body.classList.remove('offline-mode');
+        }
+    }
+
+    // Lyssna på förändringar
+    window.addEventListener('online', updateOnlineStatus);
+    window.addEventListener('offline', updateOnlineStatus);
+
+    // Kör en koll direkt
+    updateOnlineStatus();
+
 });
