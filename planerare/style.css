@@ -7559,3 +7559,12 @@ body.app-locked #pinLockModal {
     background-color: rgba(255, 159, 10, 0.25);
     color: #fbbf24;
 }
+
+#tickerText { transition: opacity 0.3s ease; }
+/* Mobil meny badge style */
+.mobile-nav-btn.has-unread { position: relative; }
+.mobile-nav-btn.has-unread::after {
+    content: ''; position: absolute; top: 5px; right: 25%;
+    width: 8px; height: 8px; background: var(--danger-color);
+    border-radius: 50%;
+}
