@@ -5962,37 +5962,44 @@
 
             // Funktion: Lås upp appen
             function unlockApp() {
-                // Sätt session-token
-                sessionStorage.setItem(SECURITY_CONFIG.sessionKey, 'active');
-                
-                // TA BORT lås-klassen. Nu visas allt automatiskt!
-                document.body.classList.remove('app-locked');
-
-                // Dölj lås-modalen snyggt
-                const pinLockModal = document.getElementById('pinLockModal');
-                if (pinLockModal) {
-                    pinLockModal.classList.remove('show');
-                    // CSS-regeln i style.css slutar gälla när 'app-locked' försvinner, 
-                    // så vi döljer den manuellt efter animationen
-                    setTimeout(() => { pinLockModal.style.display = 'none'; }, 300);
-                }
-
-                // Starta timers
-                resetIdleTimer();
-                
-                // Initiera data om det är första gången
-                if (!appInitialized) {
-                    appInitialized = true;
-                    console.log("Appen upplåst -> Initierar system...");
-                    if (typeof initializeCalendar === 'function') initializeCalendar();
-                    if (typeof initRealtimeListener === 'function') initRealtimeListener();
-                    if (typeof initInventoryListener === 'function') initInventoryListener();
-                    if (typeof toggleView === 'function') toggleView(currentView);
-                    if (typeof initChat === 'function') initChat();
-                }
-                
-                //if (typeof showToast === 'function') showToast("Välkommen tillbaka!", "success");
-            }
+			    // Sätt session-token
+			    sessionStorage.setItem(SECURITY_CONFIG.sessionKey, 'active');
+			    
+			    // 1. TA BORT lås-klassen från body
+			    document.body.classList.remove('app-locked');
+			
+			    // 2. Tvinga fram knapparna manuellt (Hängsle och livrem)
+			    const fabChat = document.getElementById('fabChat');
+			    const fabAddJob = document.getElementById('fabAddJob');
+			    const mobileNav = document.getElementById('mobileNav');
+			
+			    if (fabChat) fabChat.style.display = ''; // Rensa eventuell inline-style
+			    if (fabAddJob) fabAddJob.style.display = ''; 
+			    if (mobileNav) mobileNav.style.display = '';
+			
+			    // Dölj lås-modalen snyggt
+			    const pinLockModal = document.getElementById('pinLockModal');
+			    if (pinLockModal) {
+			        pinLockModal.classList.remove('show');
+			        setTimeout(() => { pinLockModal.style.display = 'none'; }, 300);
+			    }
+			
+			    // Starta timers
+			    resetIdleTimer();
+			    
+			    // Initiera data om det är första gången
+			    if (!appInitialized) {
+			        appInitialized = true;
+			        console.log("Appen upplåst -> Initierar system...");
+			        if (typeof initializeCalendar === 'function') initializeCalendar();
+			        if (typeof initRealtimeListener === 'function') initRealtimeListener();
+			        if (typeof initInventoryListener === 'function') initInventoryListener();
+			        if (typeof toggleView === 'function') toggleView(currentView);
+			        if (typeof initChat === 'function') initChat();
+			    }
+			    
+			    //if (typeof showToast === 'function') showToast("Välkommen tillbaka!", "success");
+			}
             
             // Funktion: Lås appen (Rensa session)
             function lockApp(reason = "") {
