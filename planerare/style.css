@@ -7460,11 +7460,40 @@ body.body-scroll-lock {
 /* --- SÄKERHETS-FIX: Göm flytande element som standard --- */
 /* Detta gör att de ALDRIG syns innan JS har godkänt inloggningen */
 
-#fabChat, 
-#fabAddJob, 
-#mobileNav, 
-#chatWidget {
-    display: none !important; /* !important tvingar bort dem vid start */
+/* --- SÄKERHETSSYSTEM (KORREKT) --- */
+
+/* 1. När appen är LÅST (klassen finns på body) -> Göm innehåll */
+body.app-locked .app-container,
+body.app-locked #fabChat,
+body.app-locked #fabAddJob,
+body.app-locked #mobileNav,
+body.app-locked #chatWidget {
+    display: none !important;
+}
+
+/* 2. När appen är LÅST -> Visa låsrutan */
+body.app-locked #pinLockModal {
+    display: flex !important;
+    opacity: 1 !important;
+    z-index: 2147483647;
+}
+
+/* 3. Grundläge för knapparna (När appen är UPPLÅST) */
+/* Detta tvingar fram dem om något annat döljer dem */
+#fabChat, #fabAddJob {
+    display: flex; /* FABs ska vara flex */
+}
+
+/* Mobilmenyn ska bara synas på mobil */
+@media (max-width: 768px) {
+    #mobileNav {
+        display: flex;
+    }
+}
+@media (min-width: 769px) {
+    #mobileNav {
+        display: none; /* Dölj på desktop */
+    }
 }
 
 /* Extra säkerhet för loggan i låsläge */
@@ -7506,3 +7535,4 @@ body.app-locked #pinLockModal {
     opacity: 1 !important;
     z-index: 2147483647;
 }
+
