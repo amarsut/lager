@@ -6037,14 +6037,20 @@
             
             // Funktion: Lås appen (Rensa session)
             function lockApp(reason = "") {
-                // Ta bort session-token
-                sessionStorage.removeItem(SECURITY_CONFIG.sessionKey);
-                
-                // Stäng eventuella öppna modaler (för säkerhet)
-                if (typeof closeModal === 'function') closeModal({ popHistory: false });
-                
-                showPinLock(reason);
-            }
+			    // 1. Rensa session token för din egen logik
+			    sessionStorage.removeItem(SECURITY_CONFIG.sessionKey);
+			    
+			    // 2. STÄNG MODALER (Din befintliga kod)
+			    if (typeof closeModal === 'function') closeModal({ popHistory: false });
+			
+			    // 3. SÄKERHETSHÖJANDE ÄNDRING: Logga ut från Firebase på riktigt
+			    firebase.auth().signOut().then(() => {
+			        console.log("Användaren utloggad pga inaktivitet");
+			    });
+			
+			    // 4. Visa PIN-låset (eller tvinga dem till inloggningsrutan)
+			    showPinLock(reason); 
+			}
             
             // --- SÄKERHETSSYSTEM (FIREBASE AUTH) ---
 
@@ -6093,49 +6099,54 @@
 
             // 2. Hantera inloggning (När du trycker på knappen)
             if (authForm) {
-                authForm.addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    
-                    const email = document.getElementById('authEmail').value;
-                    const password = document.getElementById('authPassword').value;
-                    const btn = document.getElementById('authBtn');
-
-                    // Visa att vi jobbar
-                    btn.disabled = true;
-                    btn.textContent = "Loggar in...";
-                    authError.textContent = "";
-
-                    auth.signInWithEmailAndPassword(email, password)
-                        .then((userCredential) => {
-                            // Lyckad inloggning! 
-                            // (onAuthStateChanged ovan kommer köras automatiskt och låsa upp appen)
-                            authForm.reset();
-                            btn.disabled = false;
-                            btn.textContent = "Logga in";
-                        })
-                        .catch((error) => {
-                            btn.disabled = false;
-                            btn.textContent = "Logga in";
-                            console.error("Inloggningsfel:", error);
-                            
-                            // Visa felmeddelande
-                            if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
-                                authError.textContent = "Fel e-post eller lösenord.";
-                            } else if (error.code === 'auth/too-many-requests') {
-                                authError.textContent = "För många försök. Vänta en stund.";
-                            } else {
-                                authError.textContent = "Något gick fel. Försök igen.";
-                            }
-                            
-                            // Skaka rutan (visuell feedback)
-                            const container = document.querySelector('.pin-lock-container');
-                            if(container) {
-                                container.classList.add('shake-error');
-                                setTimeout(() => container.classList.remove('shake-error'), 500);
-                            }
-                        });
-                });
-            }
+			    authForm.addEventListener('submit', (e) => {
+			        e.preventDefault();
+			        
+			        const email = document.getElementById('authEmail').value;
+			        const password = document.getElementById('authPassword').value;
+			        const btn = document.getElementById('authBtn');
+			
+			        // Visa att vi jobbar
+			        btn.disabled = true;
+			        btn.textContent = "Loggar in...";
+			        authError.textContent = "";
+			
+			        // --- HÄR BÖRJAR ÄNDRINGEN ---
+			        // Steg 1: Berätta för Firebase att vi bara vill vara inloggade under denna session
+			        auth.setPersistence(firebase.auth.Auth.Persistence.SESSION)
+			            .then(() => {
+			                // Steg 2: När inställningen är klar, utför inloggningen
+			                return auth.signInWithEmailAndPassword(email, password);
+			            })
+			            .then((userCredential) => {
+			                // --- Lyckad inloggning (Samma kod som du hade innan) ---
+			                authForm.reset();
+			                btn.disabled = false;
+			                btn.textContent = "Logga in";
+			            })
+			            .catch((error) => {
+			                // --- Felhantering (Samma kod som du hade innan) ---
+			                btn.disabled = false;
+			                btn.textContent = "Logga in";
+			                console.error("Inloggningsfel:", error);
+			                
+			                if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+			                    authError.textContent = "Fel e-post eller lösenord.";
+			                } else if (error.code === 'auth/too-many-requests') {
+			                    authError.textContent = "För många försök. Vänta en stund.";
+			                } else {
+			                    authError.textContent = "Något gick fel. Försök igen.";
+			                }
+			                
+			                const container = document.querySelector('.pin-lock-container');
+			                if(container) {
+			                    container.classList.add('shake-error');
+			                    setTimeout(() => container.classList.remove('shake-error'), 500);
+			                }
+			            });
+			        // --- SLUT PÅ ÄNDRINGEN ---
+			    });
+			}
 
             // 3. Hantera manuell låsning (Logga ut)
             if (lockAppBtn) {
