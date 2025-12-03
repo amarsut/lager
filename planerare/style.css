@@ -7510,3 +7510,52 @@ body.app-locked #pinLockModal {
     cursor: default !important;
 }
 
+/* Badge på FAB */
+.chat-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: var(--danger-color);
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 700;
+    min-width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--content-bg);
+    animation: popIn 0.3s ease;
+}
+
+/* Slider i Header */
+.urgent-ticker {
+    display: flex;
+    align-items: center;
+    background-color: rgba(255, 159, 10, 0.15); /* Warning light bg */
+    color: #b45309; /* Mörkare orange/brun */
+    border-radius: 99px;
+    padding: 4px 10px;
+    margin-top: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    max-width: 250px;
+    overflow: hidden;
+    cursor: pointer;
+}
+.ticker-icon { margin-right: 6px; font-size: 1rem; }
+.ticker-text-wrapper {
+    overflow: hidden;
+    white-space: nowrap;
+}
+#tickerText {
+    display: inline-block;
+    animation: slideText 10s linear infinite; /* Enkel scroll om texten är lång */
+}
+
+/* Anpassa för Dark Mode */
+[data-theme="dark"] .urgent-ticker {
+    background-color: rgba(255, 159, 10, 0.25);
+    color: #fbbf24;
+}
