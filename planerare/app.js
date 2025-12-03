@@ -364,7 +364,6 @@
             const mobileSettingsGroup = document.getElementById('mobileSettingsGroup');
             const settingsThemeToggle = document.getElementById('settingsThemeToggle');
             const settingsToggleCompactView = document.getElementById('settingsToggleCompactView');
-            const settingsLockAppBtn = document.getElementById('settingsLockAppBtn');
             const exportCsvBtn = document.getElementById('exportCsvBtn');
 
 
