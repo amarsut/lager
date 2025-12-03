@@ -836,56 +836,115 @@
 			    document.body.removeChild(a);
 			}
 
-			// --- NY FUNKTION: Vidarebefordra/Dela Bild ---
-			async function forwardCurrentPhoto() {
-			    if (currentGalleryImages.length === 0) return;
-			    
-			    const imgUrl = currentGalleryImages[currentImageIndex].src;
-			
-			    // Feedback direkt så man vet att något händer
-			    showToast("Förbereder bild...", "info");
+			// --- NY FUNKTION: Vidarebefordra från Chatt-menyn ---
+			async function handleChatForward(messageId) {
+			    if (!messageId) return;
 			
 			    try {
-			        // 1. Hämta bilden och gör om den till en fil
+			        // 1. Hämta meddelandet från databasen
+			        const doc = await db.collection("notes").doc(messageId).get();
+			        if (!doc.exists) return;
+			        const data = doc.data();
+			
+			        // 2. Kolla om det är BILD eller TEXT
+			        if (data.type === 'image' || (data.images && data.images.length > 0)) {
+			            // --- DET ÄR EN BILD ---
+			            const imgUrl = (data.images && data.images.length > 0) ? data.images[0] : data.image;
+			            
+			            // Återanvänd logiken: Ladda ner blob och dela/kopiera
+			            showToast("Hämtar bild...", "info");
+			            const response = await fetch(imgUrl);
+			            const blob = await response.blob();
+			            const file = new File([blob], "bild.jpg", { type: blob.type });
+			            
+			            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+			
+			            if (isMobile && navigator.canShare && navigator.canShare({ files: [file] })) {
+			                await navigator.share({ files: [file] });
+			            } else {
+			                await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
+			                showToast("Bild kopierad!", "success");
+			            }
+			
+			        } else {
+			            // --- DET ÄR TEXT ---
+			            const textToShare = data.text || "";
+			            if (!textToShare) return;
+			
+			            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+			
+			            // På mobil: Öppna dela-meny för text
+			            if (isMobile && navigator.share) {
+			                await navigator.share({ text: textToShare });
+			            } else {
+			                // På dator: Kopiera text
+			                await navigator.clipboard.writeText(textToShare);
+			                showToast("Text kopierad!", "success");
+			            }
+			        }
+			
+			    } catch (err) {
+			        console.error(err);
+			        if (err.name !== 'AbortError') showToast("Kunde inte vidarebefordra.", "danger");
+			    }
+			}
+
+			// --- UPPDATERAD FUNKTION: Vidarebefordra/Dela Bild ---
+			let isSharingInProgress = false; // Förhindra dubbelklick
+			
+			async function forwardCurrentPhoto() {
+			    if (isSharingInProgress) return; // Stoppa om vi redan jobbar
+			    if (currentGalleryImages.length === 0) return;
+			
+			    isSharingInProgress = true;
+			    showToast("Hämtar bild...", "info");
+			
+			    const imgUrl = currentGalleryImages[currentImageIndex].src;
+			
+			    try {
+			        // 1. Hämta bilden som en Blob
 			        const response = await fetch(imgUrl);
 			        const blob = await response.blob();
 			        
-			        // Skapa ett fil-objekt (behövs för att dela själva bilden, inte bara länken)
+			        // Konvertera till File (krävs för delning)
 			        const file = new File([blob], "bild.jpg", { type: blob.type });
 			
-			        // 2. Kontrollera om enheten stödjer delning (Mobil / Surfplatta)
-			        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+			        // 2. Kolla om det är Mobil eller Dator
+			        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+			        const canSystemShare = navigator.canShare && navigator.canShare({ files: [file] });
+			
+			        // --- MOBIL: Använd systemets Dela-meny ---
+			        if (isMobile && canSystemShare) {
 			            await navigator.share({
 			                files: [file],
 			                title: 'Bild från Jobbplanerare',
 			                text: '' 
 			            });
-			            // Om vi kommer hit har del-menyn öppnats (eller delning slutförts)
 			        } 
-			        // 3. Fallback för Desktop (Kopiera bild till urklipp)
+			        // --- DATOR: Kopiera till Urklipp (Ctrl+V) ---
 			        else {
 			            try {
+			                // Vi måste använda ClipboardItem
 			                await navigator.clipboard.write([
 			                    new ClipboardItem({ [blob.type]: blob })
 			                ]);
-			                showToast("Bild kopierad till urklipp!", "success");
+			                showToast("Bild kopierad! (Ctrl+V)", "success");
 			            } catch (clipboardErr) {
-			                console.error(clipboardErr);
-			                // Sista utväg: Kopiera länken om det går
-			                if (imgUrl.startsWith('http')) {
-			                    await navigator.clipboard.writeText(imgUrl);
-			                    showToast("Bildlänk kopierad!", "info");
-			                } else {
-			                    showToast("Kunde inte dela bilden på denna enhet.", "warning");
-			                }
+			                console.error("Urklippsfel:", clipboardErr);
+			                // Fallback: Kopiera länk
+			                await navigator.clipboard.writeText(imgUrl);
+			                showToast("Bildlänk kopierad istället.", "info");
 			            }
 			        }
+			
 			    } catch (err) {
-			        console.error("Delning misslyckades:", err);
-			        // Ignorera "AbortError" (om användaren stängde delningsmenyn utan att välja)
+			        // Ignorera om användaren avbröt delningsmenyn
 			        if (err.name !== 'AbortError') {
-			            showToast("Ett fel uppstod vid delning.", "danger");
+			            console.error("Delning misslyckades:", err);
+			            showToast("Kunde inte dela bilden.", "danger");
 			        }
+			    } finally {
+			        isSharingInProgress = false; // Lås upp knappen igen
 			    }
 			}
 			
@@ -1126,10 +1185,12 @@
 			        }
 			    }, true)); // true = danger class
 			
-			    // 4. Mer (Placeholder)
-			    actionRow.appendChild(createAction('Vidarebefordra', '#icon-forward-arrow', () => {
-			         document.getElementById('mmForwardBtn').onclick = forwardCurrentPhoto;
-			         hideReactionMenu();
+			    // 4. Vidarebefodra
+			    actionRow.appendChild(createAction('Vidarebefordra', '#icon-forward-arrow', (id) => {
+			         // Anropa den nya funktionen och skicka med ID
+			         handleChatForward(id); 
+			         // hideReactionMenu() anropas automatiskt av createAction-hjälparen i din kod,
+			         // men om menyn inte stängs kan du lägga till hideReactionMenu() här.
 			    }));
 			
 			    menu.appendChild(actionRow);
