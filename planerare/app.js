@@ -6001,7 +6001,7 @@
                     if (typeof toggleView === 'function') toggleView(currentView);
                 }
                 
-                if (typeof showToast === 'function') showToast("Välkommen tillbaka!", "success");
+                //if (typeof showToast === 'function') showToast("Välkommen tillbaka!", "success");
             }
             
             // --- EVENT LISTENERS FÖR SÄKERHET ---
