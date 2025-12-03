@@ -381,7 +381,6 @@
             const toggleCompactView = document.getElementById('toggleCompactView');
             
             const pinLockModal = document.getElementById('pinLockModal');
-            const pinLockForm = document.getElementById('pinLockForm');
             const pinInput = document.getElementById('pinInput');
             const pinError = document.getElementById('pinError');
             const lockAppBtn = document.getElementById('lockAppBtn');
