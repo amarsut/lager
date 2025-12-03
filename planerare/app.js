@@ -5932,28 +5932,14 @@
 
             // Funktion: Visa låsskärmen
             function showPinLock(message = "") {
-                // 1. Dölj huvudinnehåll
-                if (appContainer) appContainer.style.display = 'none'; 
+                // LÄGG TILL lås-klassen på body. CSS sköter resten (gömmer knappar etc).
+                document.body.classList.add('app-locked');
                 
-                // 2. SLÄCK KNAPPARNA (Här är fixen)
-                const fabChat = document.getElementById('fabChat');
-                const fabAddJob = document.getElementById('fabAddJob');
-                const mobileNav = document.getElementById('mobileNav');
-                const chatWidget = document.getElementById('chatWidget');
-
-                if (fabChat) fabChat.style.setProperty('display', 'none', 'important');
-                if (fabAddJob) fabAddJob.style.setProperty('display', 'none', 'important');
-                if (mobileNav) mobileNav.style.setProperty('display', 'none', 'important');
-                if (chatWidget) chatWidget.style.display = 'none'; // Stäng widgeten
-                
-                // 3. Visa modal
+                // Visa modalen (CSS hjälper till, men vi sätter klassen för animation)
                 const pinLockModal = document.getElementById('pinLockModal');
-                if (pinLockModal) {
-                    pinLockModal.style.display = 'flex';
-                    setTimeout(() => pinLockModal.classList.add('show'), 10);
-                }
+                if (pinLockModal) pinLockModal.classList.add('show');
                 
-                // 4. Fokusera input
+                // Fokusera input
                 const emailInput = document.getElementById('authEmail');
                 const pinInput = document.getElementById('pinInput');
                 
@@ -5964,7 +5950,7 @@
                     setTimeout(() => pinInput.focus(), 100);
                 }
 
-                // 5. Visa felmeddelande
+                // Visa felmeddelande
                 const pinError = document.getElementById('pinError') || document.getElementById('authError');
                 if (message && pinError) {
                     pinError.textContent = message;
@@ -5972,6 +5958,40 @@
                 } else if (pinError) {
                     pinError.textContent = "";
                 }
+            }
+
+            // Funktion: Lås upp appen
+            function unlockApp() {
+                // Sätt session-token
+                sessionStorage.setItem(SECURITY_CONFIG.sessionKey, 'active');
+                
+                // TA BORT lås-klassen. Nu visas allt automatiskt!
+                document.body.classList.remove('app-locked');
+
+                // Dölj lås-modalen snyggt
+                const pinLockModal = document.getElementById('pinLockModal');
+                if (pinLockModal) {
+                    pinLockModal.classList.remove('show');
+                    // CSS-regeln i style.css slutar gälla när 'app-locked' försvinner, 
+                    // så vi döljer den manuellt efter animationen
+                    setTimeout(() => { pinLockModal.style.display = 'none'; }, 300);
+                }
+
+                // Starta timers
+                resetIdleTimer();
+                
+                // Initiera data om det är första gången
+                if (!appInitialized) {
+                    appInitialized = true;
+                    console.log("Appen upplåst -> Initierar system...");
+                    if (typeof initializeCalendar === 'function') initializeCalendar();
+                    if (typeof initRealtimeListener === 'function') initRealtimeListener();
+                    if (typeof initInventoryListener === 'function') initInventoryListener();
+                    if (typeof toggleView === 'function') toggleView(currentView);
+                    if (typeof initChat === 'function') initChat();
+                }
+                
+                //if (typeof showToast === 'function') showToast("Välkommen tillbaka!", "success");
             }
             
             // Funktion: Lås appen (Rensa session)
@@ -5983,53 +6003,6 @@
                 if (typeof closeModal === 'function') closeModal({ popHistory: false });
                 
                 showPinLock(reason);
-            }
-
-            // Funktion: Lås upp appen
-            function unlockApp() {
-                // Sätt session-token
-                sessionStorage.setItem(SECURITY_CONFIG.sessionKey, 'active');
-                
-                // 1. Visa huvudinnehåll
-                if (appContainer) {
-                    appContainer.style.display = 'block'; 
-                    appContainer.style.filter = "none";
-                    appContainer.style.pointerEvents = "auto";
-                }
-
-                // 2. Tvinga fram knapparna (Kör över !important)
-                const fabChat = document.getElementById('fabChat');
-                const fabAddJob = document.getElementById('fabAddJob');
-                const mobileNav = document.getElementById('mobileNav');
-
-                if (fabChat) fabChat.style.setProperty('display', 'flex', 'important');
-                if (fabAddJob) fabAddJob.style.setProperty('display', 'flex', 'important');
-                
-                if (mobileNav && window.innerWidth <= 768) {
-                    mobileNav.style.setProperty('display', 'flex', 'important');
-                }
-                
-                // 3. Dölj lås-modalen
-                const pinLockModal = document.getElementById('pinLockModal');
-                if (pinLockModal) {
-                    pinLockModal.classList.remove('show');
-                    setTimeout(() => { pinLockModal.style.display = 'none'; }, 300);
-                }
-
-                // Starta timers och initiera data...
-                resetIdleTimer();
-                
-                if (!appInitialized) {
-                    appInitialized = true;
-                    // ... (resten av din initieringskod) ...
-                    initializeCalendar();
-                    initRealtimeListener();
-                    initInventoryListener();
-                    toggleView(currentView);
-                    initChat();
-                }
-                
-                //if (typeof showToast === 'function') showToast("Välkommen tillbaka!", "success");
             }
             
             // --- SÄKERHETSSYSTEM (FIREBASE AUTH) ---
