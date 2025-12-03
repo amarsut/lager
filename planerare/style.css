@@ -7488,3 +7488,21 @@ body.body-scroll-lock {
     pointer-events: none !important;
     cursor: default !important;
 }
+
+/* --- SÄKERHETSSYSTEM (KLASS-BASERAT) --- */
+
+/* När denna klass finns på body (vid start eller låsning), göm allt */
+body.app-locked .app-container,
+body.app-locked #fabChat,
+body.app-locked #fabAddJob,
+body.app-locked #mobileNav,
+body.app-locked #chatWidget {
+    display: none !important;
+}
+
+/* Se till att låsrutan alltid syns om appen är låst */
+body.app-locked #pinLockModal {
+    display: flex !important;
+    opacity: 1 !important;
+    z-index: 2147483647;
+}
