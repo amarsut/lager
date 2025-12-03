@@ -5305,7 +5305,12 @@
 
             navLogo.addEventListener('click', (e) => {
 			    e.preventDefault();
-			    // NY KONTROLL: Blockera i privat läge
+                
+                // --- NY SÄKERHETSKOLL ---
+                // Om användaren inte är inloggad via Firebase, gör ingenting!
+                if (!firebase.auth().currentUser) return; 
+                // ------------------------
+
 			    if (isPrivacyModeEnabled) {
 			        showToast('Statistiköversikten är dold i privat läge.', 'info');
 			        return;
@@ -5927,28 +5932,41 @@
 
             // Funktion: Visa låsskärmen
             function showPinLock(message = "") {
-                // SÄKERHETS-FIX: Dölj innehållet helt (inget blur) för att stoppa blinkande
+                // 1. Dölj huvudinnehållet
                 if (appContainer) appContainer.style.display = 'none'; 
                 
-                // Dölj flytande knappar
+                // 2. SÄKERHETS-FIX: Dölj ALLA flytande knappar och menyer
                 if (typeof fabAddJob !== 'undefined' && fabAddJob) fabAddJob.style.display = 'none';
                 if (typeof mobileNav !== 'undefined' && mobileNav) mobileNav.style.display = 'none';
                 
-                // Visa modal
-                const pinLockModal = document.getElementById('pinLockModal');
-                pinLockModal.style.display = 'flex';
-                // Liten delay för animering
-                setTimeout(() => pinLockModal.classList.add('show'), 10);
+                // --- HÄR ÄR FIXEN FÖR CHATTEN ---
+                const fabChat = document.getElementById('fabChat');
+                const chatWidget = document.getElementById('chatWidget');
+                if (fabChat) fabChat.style.display = 'none'; 
+                if (chatWidget) chatWidget.style.display = 'none'; // Tvångsstäng widgeten
+                // --------------------------------
                 
-                // Fokusera input
-                const pinInput = document.getElementById('pinInput');
-                if (pinInput) {
+                // 3. Visa modal
+                const pinLockModal = document.getElementById('pinLockModal');
+                if (pinLockModal) {
+                    pinLockModal.style.display = 'flex';
+                    setTimeout(() => pinLockModal.classList.add('show'), 10);
+                }
+                
+                // 4. Fokusera input
+                const pinInput = document.getElementById('pinInput'); // Eller authEmail om du bytt
+                const emailInput = document.getElementById('authEmail');
+                
+                // Fokusera på rätt fält beroende på vilken inloggning du använder
+                if (emailInput) {
+                    setTimeout(() => emailInput.focus(), 100);
+                } else if (pinInput) {
                     pinInput.value = '';
                     setTimeout(() => pinInput.focus(), 100);
                 }
 
-                // Visa felmeddelande om vi blev utkastade (t.ex. vid inaktivitet)
-                const pinError = document.getElementById('pinError');
+                // 5. Visa felmeddelande
+                const pinError = document.getElementById('pinError') || document.getElementById('authError');
                 if (message && pinError) {
                     pinError.textContent = message;
                     pinError.style.color = "var(--warning-color)";
@@ -5973,37 +5991,45 @@
                 // Sätt session-token
                 sessionStorage.setItem(SECURITY_CONFIG.sessionKey, 'active');
                 
-                // SÄKERHETS-FIX: Visa innehållet nu när vi är inloggade
+                // Visa innehållet
                 if (appContainer) {
                     appContainer.style.display = 'block'; 
-                    appContainer.style.filter = "none"; // Ta bort eventuell gammal blur
+                    appContainer.style.filter = "none";
                     appContainer.style.pointerEvents = "auto";
                 }
 
-                // Visa knappar igen
+                // Visa navigationsknappar
                 if (typeof fabAddJob !== 'undefined' && fabAddJob) fabAddJob.style.display = 'flex';
                 if (typeof mobileNav !== 'undefined' && mobileNav && window.innerWidth <= 768) {
                     mobileNav.style.display = 'flex';
                 }
+
+                // --- HÄR ÄR FIXEN: Visa Chatt-knappen igen ---
+                const fabChat = document.getElementById('fabChat');
+                if (fabChat) fabChat.style.display = 'flex';
+                // ---------------------------------------------
                 
                 // Dölj modal
                 const pinLockModal = document.getElementById('pinLockModal');
-                pinLockModal.classList.remove('show');
-                setTimeout(() => { pinLockModal.style.display = 'none'; }, 300);
+                if (pinLockModal) {
+                    pinLockModal.classList.remove('show');
+                    setTimeout(() => { pinLockModal.style.display = 'none'; }, 300);
+                }
 
-                // Starta timers för inaktivitet
+                // Starta timers
                 resetIdleTimer();
                 
-                // Initiera data om det är första gången (så listan laddas)
+                // Initiera data om det är första gången
                 if (!appInitialized) {
                     appInitialized = true;
                     console.log("Appen upplåst -> Initierar system...");
                     if (typeof initializeCalendar === 'function') initializeCalendar();
                     if (typeof initRealtimeListener === 'function') initRealtimeListener();
                     if (typeof initInventoryListener === 'function') initInventoryListener();
-                    
-                    // Se till att rätt vy visas
                     if (typeof toggleView === 'function') toggleView(currentView);
+                    
+                    // Starta chatten om den finns
+                    if (typeof initChat === 'function') initChat();
                 }
                 
                 //if (typeof showToast === 'function') showToast("Välkommen tillbaka!", "success");
