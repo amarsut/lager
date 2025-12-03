@@ -5790,56 +5790,6 @@
                 appBrandTitle.textContent = datePart.charAt(0).toUpperCase() + datePart.slice(1);
             }
             setHeaderDate();
-
-
-            // --- PIN-lås & Initiering ---
-            function showPinLock() {
-                appContainer.style.display = 'none';
-                fabAddJob.style.display = 'none';
-                mobileNav.style.display = 'none';
-                
-                showModal('pinLockModal');
-                setTimeout(() => pinInput.focus(), 100);
-            }
-            
-            function hidePinLock() {
-                appContainer.style.display = '';
-                fabAddJob.style.display = 'flex';
-                if(window.innerWidth <= 768) {
-                    mobileNav.style.display = 'flex';
-                }
-                
-                closeModal({ popHistory: false }); 
-				history.replaceState(null, document.title, location.pathname);
-                localStorage.setItem(PIN_LAST_UNLOCKED_KEY, Date.now().toString());
-            }
-            
-            pinLockForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const storedPin = localStorage.getItem(APP_PIN_KEY);
-                const enteredPin = pinInput.value;
-                if (enteredPin === storedPin) {
-                    pinError.textContent = ''; pinInput.value = '';
-                    hidePinLock();
-                    if (!appInitialized) {
-                        appInitialized = true;
-                        initializeCalendar();
-                        initRealtimeListener();
-						initInventoryListener();
-						toggleView(currentView);
-                    }
-                } else {
-                    pinError.textContent = 'Fel PIN-kod. Försök igen.';
-                    pinLockModal.classList.add('shake-error');
-                    pinInput.value = ''; pinInput.focus();
-                    setTimeout(() => pinLockModal.classList.remove('shake-error'), 500);
-                }
-            });
-            lockAppBtn.addEventListener('click', () => {
-            	localStorage.removeItem(PIN_LAST_UNLOCKED_KEY);
-                showPinLock();
-                showToast('Appen är nu låst.', 'info');
-            });
             
             document.addEventListener('keydown', (e) => {
                 if (currentOpenModalId === 'pinLockModal' && e.key === 'Escape') {
@@ -5950,62 +5900,205 @@
                 }
             });
          
-            const storedPin = localStorage.getItem(APP_PIN_KEY);
-            const lastUnlockedTimestamp = localStorage.getItem(PIN_LAST_UNLOCKED_KEY);
-            let isUnlocked = false; 
+            // --- SÄKERHETSSYSTEM (REVIDERAD & PROFFSIG) ---
+            
+            // Konfiguration
+            const SECURITY_CONFIG = {
+                pinKey: 'jobbPlannerarePin',
+                sessionKey: 'jobbPlannerareSessionToken', // Används för att se om vi är inloggade just nu
+                idleTimeoutMs: 5 * 60 * 1000,    // 5 minuter inaktivitet = Lås
+                backgroundLockMs: 60 * 1000,     // 1 minut i bakgrunden (annan flik) = Lås
+                defaultPin: '0912'
+            };
 
-            if (lastUnlockedTimestamp) {
-                const lastUnlocked = parseInt(lastUnlockedTimestamp, 10);
-                const elapsedHours = (Date.now() - lastUnlocked) / (1000 * 60 * 60);
+            let idleTimer;
+            let backgroundTimer;
+
+            // Funktion: Starta om inaktivitets-timern
+            function resetIdleTimer() {
+                clearTimeout(idleTimer);
+                // Om appen är låst, gör inget
+                if (isAppLocked()) return;
+
+                idleTimer = setTimeout(() => {
+                    console.log("Inaktivitet detekterad. Låser appen.");
+                    lockApp("Du har varit inaktiv för länge.");
+                }, SECURITY_CONFIG.idleTimeoutMs);
+            }
+
+            // Funktion: Kontrollera om appen är låst
+            function isAppLocked() {
+                return !sessionStorage.getItem(SECURITY_CONFIG.sessionKey);
+            }
+
+            // Funktion: Visa låsskärmen
+            function showPinLock(message = "") {
+                appContainer.style.filter = "blur(10px)"; // Snygg blur-effekt på bakgrunden
+                appContainer.style.pointerEvents = "none"; // Förhindra klick bakom
                 
-                if (elapsedHours <= 1) {
-                    isUnlocked = true;
-                } else {
-                    localStorage.removeItem(PIN_LAST_UNLOCKED_KEY);
+                // Dölj flytande knappar
+                if (typeof fabAddJob !== 'undefined') fabAddJob.style.display = 'none';
+                if (typeof mobileNav !== 'undefined') mobileNav.style.display = 'none';
+                
+                // Visa modal
+                const pinLockModal = document.getElementById('pinLockModal');
+                pinLockModal.style.display = 'flex';
+                setTimeout(() => pinLockModal.classList.add('show'), 10);
+                
+                // Fokusera input
+                const pinInput = document.getElementById('pinInput');
+                pinInput.value = '';
+                setTimeout(() => pinInput.focus(), 100);
+
+                // Visa felmeddelande om vi blev utkastade
+                const pinError = document.getElementById('pinError');
+                if (message && pinError) {
+                    pinError.textContent = message;
+                    pinError.style.color = "var(--warning-color)";
+                } else if (pinError) {
+                    pinError.textContent = "";
                 }
             }
             
-            if (storedPin) {
-                if (isUnlocked) {
+            // Funktion: Lås appen (Rensa session)
+            function lockApp(reason = "") {
+                // Ta bort session-token
+                sessionStorage.removeItem(SECURITY_CONFIG.sessionKey);
+                
+                // Stäng eventuella öppna modaler (för säkerhet)
+                if (typeof closeModal === 'function') closeModal({ popHistory: false });
+                
+                showPinLock(reason);
+            }
+
+            // Funktion: Lås upp appen
+            function unlockApp() {
+                // Sätt session-token
+                sessionStorage.setItem(SECURITY_CONFIG.sessionKey, 'active');
+                
+                // Ta bort blur
+                appContainer.style.filter = "none";
+                appContainer.style.pointerEvents = "auto";
+                appContainer.style.display = ''; // Återställ display
+
+                // Visa knappar
+                if (typeof fabAddJob !== 'undefined') fabAddJob.style.display = 'flex';
+                if (typeof mobileNav !== 'undefined' && window.innerWidth <= 768) {
+                    mobileNav.style.display = 'flex';
+                }
+                
+                // Dölj modal
+                const pinLockModal = document.getElementById('pinLockModal');
+                pinLockModal.classList.remove('show');
+                setTimeout(() => { pinLockModal.style.display = 'none'; }, 300);
+
+                // Starta timers
+                resetIdleTimer();
+                
+                // Initiera data om det är första gången
+                if (!appInitialized) {
                     appInitialized = true;
-                    initializeCalendar();
-                    initRealtimeListener();
-					initInventoryListener();
-					toggleView(currentView);
-                } else {
-                    showPinLock();
+                    console.log("Appen upplåst -> Initierar system...");
+                    if (typeof initializeCalendar === 'function') initializeCalendar();
+                    if (typeof initRealtimeListener === 'function') initRealtimeListener();
+                    if (typeof initInventoryListener === 'function') initInventoryListener();
+                    
+                    // VIKTIGT: Sätt vy korrekt
+                    if (typeof toggleView === 'function') toggleView(currentView);
                 }
-            } else {
-                localStorage.setItem(APP_PIN_KEY, '0912');
-                localStorage.setItem(PIN_LAST_UNLOCKED_KEY, Date.now().toString());
-                //showToast('Standard PIN "0912" har ställts in.', 'info');
-                appInitialized = true;
-                initializeCalendar();
-                initRealtimeListener();
-				toggleView(currentView);
+                
+                if (typeof showToast === 'function') showToast("Välkommen tillbaka!", "success");
             }
             
+            // --- EVENT LISTENERS FÖR SÄKERHET ---
+
+            // 1. PIN-Form Submit
+            const pinLockForm = document.getElementById('pinLockForm');
+            if (pinLockForm) {
+                pinLockForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const storedPin = localStorage.getItem(SECURITY_CONFIG.pinKey) || SECURITY_CONFIG.defaultPin;
+                    const enteredPin = document.getElementById('pinInput').value;
+                    const pinError = document.getElementById('pinError');
+
+                    if (enteredPin === storedPin) {
+                        if(pinError) pinError.textContent = '';
+                        unlockApp();
+                    } else {
+                        if(pinError) {
+                            pinError.textContent = 'Fel PIN-kod.';
+                            pinError.style.color = "var(--danger-color)";
+                        }
+                        
+                        const modal = document.getElementById('pinLockModal');
+                        modal.classList.add('shake-error');
+                        document.getElementById('pinInput').value = '';
+                        setTimeout(() => modal.classList.remove('shake-error'), 500);
+                    }
+                });
+            }
+
+            // 2. Lås-knapp i menyn
+            const lockAppBtn = document.getElementById('lockAppBtn');
+            if (lockAppBtn) {
+                lockAppBtn.addEventListener('click', () => {
+                    lockApp("Appen låstes manuellt.");
+                });
+            }
+
+            // 3. Inaktivitets-lyssnare (Nollställer timern vid aktivitet)
+            const inputEvents = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
+            inputEvents.forEach(name => {
+                document.addEventListener(name, resetIdleTimer, true);
+            });
+
+            // 4. Bakgrunds-skydd (Visibility API)
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) {
+                    // Användaren bytte flik eller minimerade
+                    // Starta en kort timer för att låsa
+                    backgroundTimer = setTimeout(() => {
+                        if (isAppLocked()) return;
+                        console.log("Appen var i bakgrunden för länge. Låser.");
+                        lockApp("Sessionen gick ut (bakgrund)."); 
+                    }, SECURITY_CONFIG.backgroundLockMs);
+                } else {
+                    // Användaren kom tillbaka
+                    clearTimeout(backgroundTimer);
+                    // Om vi inte hann låsa, återställ inaktivitets-timern
+                    if (!isAppLocked()) {
+                        resetIdleTimer();
+                    }
+                }
+            });
+            
+            // Fönsterstorlek hanterare (kvar från original)
             window.addEventListener('resize', debounce(() => {
-                renderTimeline();
-                if (calendar && currentView === 'calendar') {
+                if (typeof renderTimeline === 'function') renderTimeline();
+                if (typeof calendar !== 'undefined' && calendar && currentView === 'calendar') {
                     calendar.rerenderEvents();
                 }
             }, 200));
 
-			// --- NY KOD: Lås vid inaktivitet ---
-            document.addEventListener('visibilitychange', () => {
-                if (document.hidden) {
-                    // Användaren lämnade appen, starta en kort timer
-                    clearTimeout(lockOnHideTimer); // Rensa gammal timer
-                    lockOnHideTimer = setTimeout(() => {
-                        // Ta bort "olåst"-nyckeln efter 30 sek
-                        localStorage.removeItem(PIN_LAST_UNLOCKED_KEY); 
-                    }, 300000); // 5 minuter
-                } else {
-                    // Användaren kom tillbaka, avbryt timern
-                    clearTimeout(lockOnHideTimer);
-                }
-            });
+            // --- INITIERING VID START ---
+            
+            // 1. Kolla om PIN finns, annars skapa (för nya enheter)
+            if (!localStorage.getItem(SECURITY_CONFIG.pinKey)) {
+                localStorage.setItem(SECURITY_CONFIG.pinKey, SECURITY_CONFIG.defaultPin);
+                console.log("Ny enhet detekterad. Standard PIN satt.");
+                // OBS: Vi låser INTE upp automatiskt här längre!
+            }
+
+            // 2. Kolla om vi har en aktiv session (Flik-refresh)
+            if (sessionStorage.getItem(SECURITY_CONFIG.sessionKey) === 'active') {
+                // Vi är redan inloggade i denna flik
+                unlockApp();
+            } else {
+                // Inte inloggad -> Visa lås
+                showPinLock();
+            }
+            
+            /* --- SLUT PÅ SÄKERHETSSYSTEM --- */
 
 			/* --- KLICK-HANTERARE FÖR MOBIL SÖKLISTA (RENSAD) --- */
 		    const mobileResultList = document.getElementById('mobileSearchResults');
