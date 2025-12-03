@@ -7587,3 +7587,17 @@ body.offline-mode .offline-dot {
         right: 20px; /* Längst upp till höger */
     }
 }
+
+/* Styling för system-meddelanden i chatten */
+/* Vi kollar på en data-attribut eller så kan vi göra det enkelt via JS */
+
+/* Det enklaste är att låta app.js sätta en klass, men eftersom vi använder din befintliga renderChatBubble
+   kan vi fuska lite. Systemmeddelanden får en specifik stil om du vill. 
+   Annars ser de ut som vanliga meddelanden vilket också funkar bra! 
+*/
+
+/* Om du vill att meddelanden med "⚠️" ska se annorlunda ut: */
+.chat-bubble:has(.chat-text-content:contains("⚠️")) {
+    background-color: var(--warning-color);
+    color: #000;
+}
