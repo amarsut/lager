@@ -5940,7 +5940,7 @@
 			    pinKey: 'jobbPlannerarePin',
 			    sessionKey: 'jobbPlannerareSessionToken',
 			    idleTimeoutMs: 5 * 60 * 1000,
-			    backgroundLockMs: 60 * 1000,
+			    backgroundLockMs: 5 * 60 * 1000, // 5 minuter
 			    defaultPin: '0912'
 			};
 
@@ -6120,54 +6120,75 @@
 
             // 2. Hantera inloggning (När du trycker på knappen)
             if (authForm) {
-			    authForm.addEventListener('submit', (e) => {
-			        e.preventDefault();
-			        
-			        const email = document.getElementById('authEmail').value;
-			        const password = document.getElementById('authPassword').value;
-			        const btn = document.getElementById('authBtn');
-			
-			        // Visa att vi jobbar
-			        btn.disabled = true;
-			        btn.textContent = "Loggar in...";
-			        authError.textContent = "";
-			
-			        // --- HÄR BÖRJAR ÄNDRINGEN ---
-			        // Steg 1: Berätta för Firebase att vi bara vill vara inloggade under denna session
-			        auth.setPersistence(firebase.auth.Auth.Persistence.SESSION)
-			            .then(() => {
-			                // Steg 2: När inställningen är klar, utför inloggningen
-			                return auth.signInWithEmailAndPassword(email, password);
-			            })
-			            .then((userCredential) => {
-			                // --- Lyckad inloggning (Samma kod som du hade innan) ---
-			                authForm.reset();
-			                btn.disabled = false;
-			                btn.textContent = "Logga in";
-			            })
-			            .catch((error) => {
-			                // --- Felhantering (Samma kod som du hade innan) ---
-			                btn.disabled = false;
-			                btn.textContent = "Logga in";
-			                console.error("Inloggningsfel:", error);
-			                
-			                if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
-			                    authError.textContent = "Fel e-post eller lösenord.";
-			                } else if (error.code === 'auth/too-many-requests') {
-			                    authError.textContent = "För många försök. Vänta en stund.";
-			                } else {
-			                    authError.textContent = "Något gick fel. Försök igen.";
-			                }
-			                
-			                const container = document.querySelector('.pin-lock-container');
-			                if(container) {
-			                    container.classList.add('shake-error');
-			                    setTimeout(() => container.classList.remove('shake-error'), 500);
-			                }
-			            });
-			        // --- SLUT PÅ ÄNDRINGEN ---
-			    });
-			}
+                authForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    
+                    const email = document.getElementById('authEmail').value;
+                    const password = document.getElementById('authPassword').value;
+                    const btn = document.getElementById('authBtn');
+
+                    // Visa att vi jobbar
+                    btn.disabled = true;
+                    btn.textContent = "Loggar in...";
+                    authError.textContent = "";
+
+                    // Steg 1: Sätt session persistence
+                    auth.setPersistence(firebase.auth.Auth.Persistence.SESSION)
+                        .then(() => {
+                            // Steg 2: Logga in
+                            return auth.signInWithEmailAndPassword(email, password);
+                        })
+                        .then((userCredential) => {
+                            // --- Lyckad inloggning ---
+                            console.log("Inloggning lyckades!");
+                            authForm.reset();
+                            btn.disabled = false;
+                            btn.textContent = "Logga in";
+
+                            // --- NYTT: TVINGA UI ATT UPPDATERAS DIREKT ---
+                            // Vi väntar inte på onAuthStateChanged, vi låser upp direkt.
+                            
+                            // 1. Sätt sessionen som aktiv
+                            sessionStorage.setItem(SECURITY_CONFIG.sessionKey, 'active');
+                            
+                            // 2. Starta tidsräknaren (för din smarta timer)
+                            if (typeof recordActivity === 'function') recordActivity();
+
+                            // 3. Göm inloggningsrutan manuellt
+                            const pinLockModal = document.getElementById('pinLockModal');
+                            const appContainer = document.querySelector('.app-container');
+                            
+                            if (pinLockModal) {
+                                pinLockModal.classList.remove('show');
+                                setTimeout(() => { 
+                                    pinLockModal.style.display = 'none'; 
+                                    // Visa appen
+                                    if (appContainer) appContainer.style.display = 'block';
+                                }, 300);
+                            }
+                        })
+                        .catch((error) => {
+                            // --- Felhantering ---
+                            btn.disabled = false;
+                            btn.textContent = "Logga in";
+                            console.error("Inloggningsfel:", error);
+                            
+                            if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+                                authError.textContent = "Fel e-post eller lösenord.";
+                            } else if (error.code === 'auth/too-many-requests') {
+                                authError.textContent = "För många försök. Vänta en stund.";
+                            } else {
+                                authError.textContent = "Något gick fel. Försök igen.";
+                            }
+                            
+                            const container = document.querySelector('.pin-lock-container');
+                            if(container) {
+                                container.classList.add('shake-error');
+                                setTimeout(() => container.classList.remove('shake-error'), 500);
+                            }
+                        });
+                });
+            }
 
             // 3. Hantera manuell låsning (Logga ut)
             if (lockAppBtn) {
@@ -6220,35 +6241,82 @@
 	    });
 	}
 
-	// --- 1. AKTIVITETSLYSSNARE (Gör att timern startar om när du rör dig) ---
-    const activityEvents = ['mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart'];
+	// --- SMARTARE SÄKERHETSSYSTEM (Fungerar även om mobilen sover) ---
 
+    const STORAGE_ACTIVITY_KEY = 'lastActivityTime';
+
+    // 1. Spara tiden (stämpel) varje gång du gör något
+    function recordActivity() {
+        if (!isAppLocked()) {
+            localStorage.setItem(STORAGE_ACTIVITY_KEY, Date.now());
+        }
+    }
+
+    // 2. Kontrollera om tiden har gått ut (Körs var 10:e sekund)
+    function checkInactivity() {
+        if (isAppLocked()) return; // Gör inget om redan låst
+
+        // Hämta när vi senast rörde skärmen (eller använd nuvarande tid om inget finns)
+        const lastActive = parseInt(localStorage.getItem(STORAGE_ACTIVITY_KEY) || Date.now());
+        const now = Date.now();
+        const diff = now - lastActive;
+
+        // Om skillnaden är större än din inställda tid (5 min)
+        if (diff > SECURITY_CONFIG.idleTimeoutMs) {
+            console.log("Tiden ute (tidsstämpel). Låser appen.");
+            lockApp("Du har varit inaktiv för länge.");
+        }
+    }
+
+    // --- LYSSNARE ---
+    
+    // A. Registrera aktivitet vid klick/tryck
+    const activityEvents = ['mousedown', 'keydown', 'touchstart', 'scroll'];
     activityEvents.forEach(event => {
         document.addEventListener(event, () => {
-            // Varje gång du rör musen eller skriver, starta om 5-minutersklockan
-            resetIdleTimer();
-        }, true);
+            recordActivity();
+        }, true); // 'true' fångar händelsen tidigt
     });
 
-    // --- 2. BAKGRUNDSLYSSNARE (Lås om man byter flik i mer än 1 min) ---
+    // B. Kolla tiden regelbundet (var 10:e sekund)
+    // Detta fångar inaktivitet även om skärmen varit släckt
+    setInterval(checkInactivity, 10000);
+
+    // C. Kolla DIREKT när man kommer tillbaka till fliken/appen (Mobil-fixen)
     document.addEventListener('visibilitychange', () => {
-        if (document.hidden) {
-            // Om man lämnar fliken -> Starta en timer på 1 minut
-            if (!isAppLocked()) {
-                backgroundTimer = setTimeout(() => {
-                    console.log("Bakgrundstid ute. Låser appen.");
-                    lockApp("Du var borta för länge.");
-                }, SECURITY_CONFIG.backgroundLockMs || 60000);
-            }
+        if (!document.hidden) {
+            // Appen blev precis synlig (man öppnade mobilen eller bytte flik tillbaka)
+            console.log("Appen vaknade. Kollar tid...");
+            checkInactivity(); 
+            // Uppdatera aktivitet så vi inte låser direkt igen om vi var inom tidsgränsen
+            recordActivity();
         } else {
-            // Om man kommer tillbaka -> Avbryt låsningen
-            clearTimeout(backgroundTimer);
-            // Starta om den vanliga 5-minuters inaktivitets-timern
-            resetIdleTimer();
+            // Appen gömdes (man bytte flik eller släckte skärmen)
+            // Här kan vi kolla din "1 minuts bakgrundsregel"
+            sessionStorage.setItem('backgroundStartTime', Date.now());
+        }
+    });
+    
+    // D. Extra kontroll för bakgrundstid (när man kommer tillbaka efter > 1 min)
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+            const bgStart = parseInt(sessionStorage.getItem('backgroundStartTime') || 0);
+            if (bgStart > 0) {
+                const bgDiff = Date.now() - bgStart;
+                // Om vi var i bakgrunden mer än 1 minut (din inställning)
+                // Vi kollar att SECURITY_CONFIG.backgroundLockMs finns, annars default 60 sek
+                const lockTime = SECURITY_CONFIG.backgroundLockMs || 60000;
+                
+                if (bgDiff > lockTime) {
+                    console.log("Varit i bakgrunden för länge. Låser.");
+                    lockApp("Du var borta för länge.");
+                }
+                sessionStorage.removeItem('backgroundStartTime'); // Rensa
+            }
         }
     });
 
-    // Starta timern första gången koden laddas
-    resetIdleTimer();
+    // Initiera vid start
+    recordActivity();
 
 });
