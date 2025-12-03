@@ -2,7 +2,7 @@
   "name": "Översikt Pro",
   "short_name": "Översikt",
   "description": "Översikt i realtid.",
-  "start_url": "./plan.html",
+  "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "background_color": "#f7f8fa",
