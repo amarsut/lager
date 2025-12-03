@@ -1389,7 +1389,7 @@
 			// --- NY FUNKTION: Notis-räknare ---
 			function initChatBadgeListener() {
 			    // Lyssna på alla meddelanden som har reaktionen "🕓"
-			    db.collection("notes")
+			    badgeUnsubscribe = db.collection("notes")
 			        .where("reaction", "==", "🕓")
 			        .onSnapshot(snapshot => {
 			            const count = snapshot.size; // Antal träffar
@@ -1418,6 +1418,8 @@
 			    }
 			}
 
+			let jobUnsubscribe = null;
+			let badgeUnsubscribe = null;
 			let chatUnsubscribe = null; // För att kunna stänga av lyssnaren
 
 			let currentChatLimit = 50; // Hur många meddelanden vi laddar
@@ -2554,7 +2556,7 @@
                     showSkeletonLoader();
                 }
                 
-                db.collection("jobs").onSnapshot(snapshot => {
+                jobUnsubscribe = db.collection("jobs").onSnapshot(snapshot => {
                     allJobs = [];
                     snapshot.forEach(doc => {
                         allJobs.push({ id: doc.id, ...doc.data() });
@@ -6099,6 +6101,10 @@
                 } else {
                     // --- ANVÄNDAREN ÄR UTLOGGAD ---
                     console.log("Utloggad.");
+
+					if (jobUnsubscribe) jobUnsubscribe();
+				    if (badgeUnsubscribe) badgeUnsubscribe();
+				    if (chatUnsubscribe) chatUnsubscribe();
                     
                     // Rensa session
                     sessionStorage.removeItem(SECURITY_CONFIG.sessionKey);
