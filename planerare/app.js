@@ -379,10 +379,6 @@
             
             const toggleCompactView = document.getElementById('toggleCompactView');
             
-            const pinLockModal = document.getElementById('pinLockModal');
-            const pinInput = document.getElementById('pinInput');
-            const pinError = document.getElementById('pinError');
-            const lockAppBtn = document.getElementById('lockAppBtn');
             const APP_PIN_KEY = 'jobbPlannerarePin';
             const PIN_LAST_UNLOCKED_KEY = 'jobbPlannerareLastUnlocked';
 
