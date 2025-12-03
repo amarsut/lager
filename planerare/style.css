@@ -7501,3 +7501,44 @@ body.app-locked #pinLockModal {
     pointer-events: none !important;
     cursor: default !important;
 }
+
+/* --- NOTIS BADGE (Röd siffra) --- */
+.notification-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: var(--danger-color); /* Röd */
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 700;
+    min-width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--content-bg); /* Skapar en "cutout"-effekt mot knappen */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    z-index: 10;
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    padding: 0 4px; /* Om siffran blir > 9 */
+    box-sizing: border-box;
+    line-height: 1;
+}
+
+/* Specifik justering för mobilmenyn */
+.notification-badge.mobile-badge {
+    top: -4px;
+    right: -6px;
+    border-color: var(--content-bg-transparent); /* Matchar mobilmenyns bakgrund */
+    width: 18px;
+    height: 18px;
+    font-size: 0.7rem;
+    min-width: 18px;
+}
+
+/* Animation när den dyker upp */
+@keyframes popIn {
+    from { transform: scale(0); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
