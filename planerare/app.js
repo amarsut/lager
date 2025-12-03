@@ -5935,32 +5935,40 @@
             
             // Konfiguration
             const SECURITY_CONFIG = {
-                pinKey: 'jobbPlannerarePin',
-                sessionKey: 'jobbPlannerareSessionToken', // Används för att se om vi är inloggade just nu
-                idleTimeoutMs: 5 * 60 * 1000,    // 5 minuter inaktivitet = Lås
-                backgroundLockMs: 60 * 1000,     // 1 minut i bakgrunden (annan flik) = Lås
-                defaultPin: '0912'
-            };
+			    pinKey: 'jobbPlannerarePin',
+			    sessionKey: 'jobbPlannerareSessionToken',
+			    idleTimeoutMs: 10000,    // <--- ÄNDRA TILL 10000 (10 sek) FÖR TEST
+			    backgroundLockMs: 60 * 1000,
+			    defaultPin: '0912'
+			};
 
             let idleTimer;
             let backgroundTimer;
 
             // Funktion: Starta om inaktivitets-timern
             function resetIdleTimer() {
-                clearTimeout(idleTimer);
-                // Om appen är låst, gör inget
-                if (isAppLocked()) return;
-
-                idleTimer = setTimeout(() => {
-                    console.log("Inaktivitet detekterad. Låser appen.");
-                    lockApp("Du har varit inaktiv för länge.");
-                }, SECURITY_CONFIG.idleTimeoutMs);
-            }
+			    clearTimeout(idleTimer);
+			    
+			    // Debug: Se om funktionen körs
+			    // console.log("Aktivitet registrerad. Nollställer timer...");
+			
+			    // Om sessionsnyckeln saknas, räknas appen som låst. Då ska ingen timer starta.
+			    if (isAppLocked()) {
+			        // console.log("Appen är låst (ingen session). Startar inte timern.");
+			        return;
+			    }
+			
+			    idleTimer = setTimeout(() => {
+			        console.log("Tiden ute (Inaktivitet). Låser appen nu!");
+			        lockApp("Du har varit inaktiv för länge.");
+			    }, SECURITY_CONFIG.idleTimeoutMs);
+			}
 
             // Funktion: Kontrollera om appen är låst
             function isAppLocked() {
-                return !sessionStorage.getItem(SECURITY_CONFIG.sessionKey);
-            }
+			    // Returnerar true om nyckeln INTE finns
+			    return !sessionStorage.getItem(SECURITY_CONFIG.sessionKey);
+			}
 
             // Funktion: Visa låsskärmen
             function showPinLock(message = "") {
