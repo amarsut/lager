@@ -6145,27 +6145,43 @@
                             btn.disabled = false;
                             btn.textContent = "Logga in";
 
-                            // --- NYTT: TVINGA UI ATT UPPDATERAS DIREKT ---
-                            // Vi väntar inte på onAuthStateChanged, vi låser upp direkt.
+                            // --- HÄR ÄR FIXEN ---
                             
                             // 1. Sätt sessionen som aktiv
                             sessionStorage.setItem(SECURITY_CONFIG.sessionKey, 'active');
                             
-                            // 2. Starta tidsräknaren (för din smarta timer)
-                            if (typeof recordActivity === 'function') recordActivity();
+                            // 2. VIKTIGAST: Ta bort lås-klassen från body direkt!
+                            document.body.classList.remove('app-locked'); 
 
-                            // 3. Göm inloggningsrutan manuellt
-                            const pinLockModal = document.getElementById('pinLockModal');
+                            // 3. Tvinga fram element som kan ha dolts av CSS
                             const appContainer = document.querySelector('.app-container');
+                            const fabChat = document.getElementById('fabChat');
+                            const fabAddJob = document.getElementById('fabAddJob');
+                            const mobileNav = document.getElementById('mobileNav');
                             
+                            if (appContainer) appContainer.style.display = 'block';
+                            
+                            // Visa knappar igen (om vi är på desktop eller mobil)
+                            if (window.innerWidth > 768) {
+                                if (fabChat) fabChat.style.display = ''; 
+                                if (fabAddJob) fabAddJob.style.display = '';
+                            } else {
+                                if (mobileNav) mobileNav.style.display = '';
+                            }
+
+                            // 4. Göm inloggningsrutan manuellt
+                            const pinLockModal = document.getElementById('pinLockModal');
                             if (pinLockModal) {
                                 pinLockModal.classList.remove('show');
                                 setTimeout(() => { 
                                     pinLockModal.style.display = 'none'; 
-                                    // Visa appen
-                                    if (appContainer) appContainer.style.display = 'block';
                                 }, 300);
                             }
+
+                            // 5. Starta aktivitetstimern igen
+                            if (typeof recordActivity === 'function') recordActivity();
+                            resetIdleTimer();
+
                         })
                         .catch((error) => {
                             // --- Felhantering ---
