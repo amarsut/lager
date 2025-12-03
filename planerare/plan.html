@@ -386,9 +386,9 @@
 	</div>
 
 
-    <button id="fabAddJob" title="Lägg till nytt jobb (N)">
-        <svg class="icon" viewBox="0 0 24 24"><use href="#icon-plus"></use></svg>
-    </button>
+    <button id="fabAddJob" title="Lägg till nytt jobb (N)" style="display: none !important;">
+	    <svg class="icon" viewBox="0 0 24 24"><use href="#icon-plus"></use></svg>
+	</button>
 
     <div id="jobModal" class="modal-backdrop" data-modal-id="jobModal">
         <div class="modal-content">
@@ -533,7 +533,7 @@
         </div>
     </div>
 
-	<button id="fabChat" title="Öppna notiser/chatt">
+	<button id="fabChat" title="Öppna notiser/chatt" style="display: none !important;">
 	    <svg class="icon" viewBox="0 0 24 24"><use href="#icon-chat-bubble"></use></svg>
 	</button>
 	
@@ -1006,7 +1006,7 @@
 
     <div id="pinLockModal" class="modal-backdrop" data-modal-id="pinLockModal">
         <div class="pin-lock-container">
-            <a href="#" tabindex="-1" class="nav-logo" style="margin: 0 auto 1.5rem auto;">
+            <a href="#" tabindex="-1" class="nav-logo" style="margin: 0 auto 1.5rem auto; pointer-events: none; cursor: default;">
                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 			        <path d="M8 7H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3"/>
 			        <path d="M16 2v6h-4V2h4zM12 11h.01"/>
