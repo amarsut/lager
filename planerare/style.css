@@ -7456,3 +7456,19 @@ body.body-scroll-lock {
     cursor: default;
     text-decoration: none;
 }
+
+/* --- SÄKERHETS-FIX: Göm flytande element som standard --- */
+/* Detta gör att de ALDRIG syns innan JS har godkänt inloggningen */
+
+#fabChat, 
+#fabAddJob, 
+#mobileNav, 
+#chatWidget {
+    display: none !important; /* !important tvingar bort dem vid start */
+}
+
+/* Extra säkerhet för loggan i låsläge */
+.pin-lock-container .nav-logo {
+    pointer-events: none !important;
+    cursor: default !important;
+}
