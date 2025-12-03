@@ -5937,7 +5937,7 @@
             const SECURITY_CONFIG = {
 			    pinKey: 'jobbPlannerarePin',
 			    sessionKey: 'jobbPlannerareSessionToken',
-			    idleTimeoutMs: 10000,    // <--- ÄNDRA TILL 10000 (10 sek) FÖR TEST
+			    idleTimeoutMs: 5 * 60 * 1000,
 			    backgroundLockMs: 60 * 1000,
 			    defaultPin: '0912'
 			};
