@@ -6009,95 +6009,108 @@
                 //if (typeof showToast === 'function') showToast("Välkommen tillbaka!", "success");
             }
             
-            // --- EVENT LISTENERS FÖR SÄKERHET ---
+            // --- SÄKERHETSSYSTEM (FIREBASE AUTH) ---
 
-            // 1. PIN-Form Submit
-            const pinLockForm = document.getElementById('pinLockForm');
-            if (pinLockForm) {
-                pinLockForm.addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    const storedPin = localStorage.getItem(SECURITY_CONFIG.pinKey) || SECURITY_CONFIG.defaultPin;
-                    const enteredPin = document.getElementById('pinInput').value;
-                    const pinError = document.getElementById('pinError');
+            const auth = firebase.auth();
+            const pinLockModal = document.getElementById('pinLockModal');
+            const authForm = document.getElementById('authForm');
+            const authError = document.getElementById('authError');
+            const lockAppBtn = document.getElementById('lockAppBtn');
 
-                    if (enteredPin === storedPin) {
-                        if(pinError) pinError.textContent = '';
-                        unlockApp();
-                    } else {
-                        if(pinError) {
-                            pinError.textContent = 'Fel PIN-kod.';
-                            pinError.style.color = "var(--danger-color)";
-                        }
-                        
-                        const modal = document.getElementById('pinLockModal');
-                        modal.classList.add('shake-error');
-                        document.getElementById('pinInput').value = '';
-                        setTimeout(() => modal.classList.remove('shake-error'), 500);
+            // 1. Lyssna på inloggningsstatus (Detta är hjärtat i säkerheten)
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    // --- ANVÄNDAREN ÄR INLOGGAD ---
+                    console.log("Inloggad som:", user.email);
+                    
+                    // Dölj låsskärmen
+                    pinLockModal.classList.remove('show');
+                    setTimeout(() => { 
+                        pinLockModal.style.display = 'none'; 
+                        // Visa appens innehåll
+                        appContainer.style.display = 'block';
+                    }, 300);
+
+                    // Initiera appen om det inte redan är gjort
+                    if (!appInitialized) {
+                        appInitialized = true;
+                        initializeCalendar();
+                        initRealtimeListener();
+                        initInventoryListener();
+                        toggleView(currentView);
                     }
+                } else {
+                    // --- ANVÄNDAREN ÄR UTLOGGAD ---
+                    console.log("Utloggad.");
+                    
+                    // Dölj appens innehåll
+                    appContainer.style.display = 'none';
+                    
+                    // Visa låsskärmen
+                    pinLockModal.style.display = 'flex';
+                    setTimeout(() => pinLockModal.classList.add('show'), 10);
+                }
+            });
+
+            // 2. Hantera inloggning (När du trycker på knappen)
+            if (authForm) {
+                authForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    
+                    const email = document.getElementById('authEmail').value;
+                    const password = document.getElementById('authPassword').value;
+                    const btn = document.getElementById('authBtn');
+
+                    // Visa att vi jobbar
+                    btn.disabled = true;
+                    btn.textContent = "Loggar in...";
+                    authError.textContent = "";
+
+                    auth.signInWithEmailAndPassword(email, password)
+                        .then((userCredential) => {
+                            // Lyckad inloggning! 
+                            // (onAuthStateChanged ovan kommer köras automatiskt och låsa upp appen)
+                            authForm.reset();
+                            btn.disabled = false;
+                            btn.textContent = "Logga in";
+                        })
+                        .catch((error) => {
+                            btn.disabled = false;
+                            btn.textContent = "Logga in";
+                            console.error("Inloggningsfel:", error);
+                            
+                            // Visa felmeddelande
+                            if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+                                authError.textContent = "Fel e-post eller lösenord.";
+                            } else if (error.code === 'auth/too-many-requests') {
+                                authError.textContent = "För många försök. Vänta en stund.";
+                            } else {
+                                authError.textContent = "Något gick fel. Försök igen.";
+                            }
+                            
+                            // Skaka rutan (visuell feedback)
+                            const container = document.querySelector('.pin-lock-container');
+                            if(container) {
+                                container.classList.add('shake-error');
+                                setTimeout(() => container.classList.remove('shake-error'), 500);
+                            }
+                        });
                 });
             }
 
-            // 2. Lås-knapp i menyn
-            const lockAppBtn = document.getElementById('lockAppBtn');
+            // 3. Hantera manuell låsning (Logga ut)
             if (lockAppBtn) {
                 lockAppBtn.addEventListener('click', () => {
-                    lockApp("Appen låstes manuellt.");
+                    // Stäng menyn först
+                    closeModal();
+                    // Logga ut från Firebase
+                    auth.signOut().then(() => {
+                        showToast('Du har loggats ut.', 'info');
+                    }).catch((error) => {
+                        console.error("Utloggningsfel:", error);
+                    });
                 });
             }
-
-            // 3. Inaktivitets-lyssnare (Nollställer timern vid aktivitet)
-            const inputEvents = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
-            inputEvents.forEach(name => {
-                document.addEventListener(name, resetIdleTimer, true);
-            });
-
-            // 4. Bakgrunds-skydd (Visibility API)
-            document.addEventListener('visibilitychange', () => {
-                if (document.hidden) {
-                    // Användaren bytte flik eller minimerade
-                    // Starta en kort timer för att låsa
-                    backgroundTimer = setTimeout(() => {
-                        if (isAppLocked()) return;
-                        console.log("Appen var i bakgrunden för länge. Låser.");
-                        lockApp("Sessionen gick ut (bakgrund)."); 
-                    }, SECURITY_CONFIG.backgroundLockMs);
-                } else {
-                    // Användaren kom tillbaka
-                    clearTimeout(backgroundTimer);
-                    // Om vi inte hann låsa, återställ inaktivitets-timern
-                    if (!isAppLocked()) {
-                        resetIdleTimer();
-                    }
-                }
-            });
-            
-            // Fönsterstorlek hanterare (kvar från original)
-            window.addEventListener('resize', debounce(() => {
-                if (typeof renderTimeline === 'function') renderTimeline();
-                if (typeof calendar !== 'undefined' && calendar && currentView === 'calendar') {
-                    calendar.rerenderEvents();
-                }
-            }, 200));
-
-            // --- INITIERING VID START ---
-            
-            // 1. Kolla om PIN finns, annars skapa (för nya enheter)
-            if (!localStorage.getItem(SECURITY_CONFIG.pinKey)) {
-                localStorage.setItem(SECURITY_CONFIG.pinKey, SECURITY_CONFIG.defaultPin);
-                console.log("Ny enhet detekterad. Standard PIN satt.");
-                // OBS: Vi låser INTE upp automatiskt här längre!
-            }
-
-            // 2. Kolla om vi har en aktiv session (Flik-refresh)
-            if (sessionStorage.getItem(SECURITY_CONFIG.sessionKey) === 'active') {
-                // Vi är redan inloggade i denna flik
-                unlockApp();
-            } else {
-                // Inte inloggad -> Visa lås
-                showPinLock();
-            }
-            
-            /* --- SLUT PÅ SÄKERHETSSYSTEM --- */
 
 			/* --- KLICK-HANTERARE FÖR MOBIL SÖKLISTA (RENSAD) --- */
 		    const mobileResultList = document.getElementById('mobileSearchResults');
