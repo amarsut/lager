@@ -5948,18 +5948,13 @@
             // Funktion: Starta om inaktivitets-timern
             function resetIdleTimer() {
 			    clearTimeout(idleTimer);
-			    
-			    // Debug: Se om funktionen körs
-			    // console.log("Aktivitet registrerad. Nollställer timer...");
 			
 			    // Om sessionsnyckeln saknas, räknas appen som låst. Då ska ingen timer starta.
 			    if (isAppLocked()) {
-			        // console.log("Appen är låst (ingen session). Startar inte timern.");
 			        return;
 			    }
 			
 			    idleTimer = setTimeout(() => {
-			        console.log("Tiden ute (Inaktivitet). Låser appen nu!");
 			        lockApp("Du har varit inaktiv för länge.");
 			    }, SECURITY_CONFIG.idleTimeoutMs);
 			}
