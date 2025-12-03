@@ -5990,23 +5990,21 @@
                 // Sätt session-token
                 sessionStorage.setItem(SECURITY_CONFIG.sessionKey, 'active');
                 
-                // 1. Visa huvudinnehållet
+                // 1. Visa huvudinnehåll
                 if (appContainer) {
                     appContainer.style.display = 'block'; 
                     appContainer.style.filter = "none";
                     appContainer.style.pointerEvents = "auto";
                 }
 
-                // 2. TÄND KNAPPARNA MANUELLT (Här är fixen)
+                // 2. Tvinga fram knapparna (Kör över !important)
                 const fabChat = document.getElementById('fabChat');
                 const fabAddJob = document.getElementById('fabAddJob');
                 const mobileNav = document.getElementById('mobileNav');
 
-                // Vi använder setProperty för att köra över !important från CSS
                 if (fabChat) fabChat.style.setProperty('display', 'flex', 'important');
                 if (fabAddJob) fabAddJob.style.setProperty('display', 'flex', 'important');
                 
-                // Visa mobilmenyn bara om vi är på mobil
                 if (mobileNav && window.innerWidth <= 768) {
                     mobileNav.style.setProperty('display', 'flex', 'important');
                 }
@@ -6018,19 +6016,17 @@
                     setTimeout(() => { pinLockModal.style.display = 'none'; }, 300);
                 }
 
-                // Starta timers
+                // Starta timers och initiera data...
                 resetIdleTimer();
                 
-                // Initiera data om det är första gången
                 if (!appInitialized) {
                     appInitialized = true;
-                    console.log("Appen upplåst -> Initierar system...");
-                    if (typeof initializeCalendar === 'function') initializeCalendar();
-                    if (typeof initRealtimeListener === 'function') initRealtimeListener();
-                    if (typeof initInventoryListener === 'function') initInventoryListener();
-                    if (typeof toggleView === 'function') toggleView(currentView);
-                    
-                    if (typeof initChat === 'function') initChat();
+                    // ... (resten av din initieringskod) ...
+                    initializeCalendar();
+                    initRealtimeListener();
+                    initInventoryListener();
+                    toggleView(currentView);
+                    initChat();
                 }
                 
                 //if (typeof showToast === 'function') showToast("Välkommen tillbaka!", "success");
