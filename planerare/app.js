@@ -893,58 +893,81 @@
 			let isSharingInProgress = false; // Förhindra dubbelklick
 			
 			async function forwardCurrentPhoto() {
-			    if (isSharingInProgress) return; // Stoppa om vi redan jobbar
+			    // 1. SÄKERHETSKOLL: Om vi redan delar, avbryt.
+			    if (isSharingInProgress) {
+			        console.log("Delning pågår redan, ignorerar klick.");
+			        return; 
+			    }
+			    
 			    if (currentGalleryImages.length === 0) return;
 			
+			    // 2. LÅS KNAPPEN
 			    isSharingInProgress = true;
+			    
+			    // Hämta knapp-elementet för att kunna ge visuell feedback (valfritt)
+			    const btn = document.getElementById('mmForwardBtn');
+			    if (btn) btn.style.opacity = "0.5"; // Visa att den jobbar
+			
 			    showToast("Hämtar bild...", "info");
 			
 			    const imgUrl = currentGalleryImages[currentImageIndex].src;
 			
 			    try {
-			        // 1. Hämta bilden som en Blob
+			        // 3. HÄMTA BILDEN
 			        const response = await fetch(imgUrl);
 			        const blob = await response.blob();
-			        
-			        // Konvertera till File (krävs för delning)
 			        const file = new File([blob], "bild.jpg", { type: blob.type });
 			
-			        // 2. Kolla om det är Mobil eller Dator
+			        // 4. DETEKTION: Mobil eller Dator
 			        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-			        const canSystemShare = navigator.canShare && navigator.canShare({ files: [file] });
+			        
+			        // Kontrollera om enheten faktiskt KAN dela filer
+			        const canShareFiles = navigator.canShare && navigator.canShare({ files: [file] });
 			
-			        // --- MOBIL: Använd systemets Dela-meny ---
-			        if (isMobile && canSystemShare) {
-			            await navigator.share({
-			                files: [file],
-			                title: 'Bild från Jobbplanerare',
-			                text: '' 
-			            });
+			        // --- SCENARIO A: MOBIL MED STÖD FÖR FIL-DELNING ---
+			        if (isMobile && canShareFiles) {
+			            try {
+			                await navigator.share({
+			                    files: [file],
+			                    title: 'Bild från Jobbplanerare',
+			                    text: '' 
+			                });
+			                // Om vi kommer hit har delnings-menyn öppnats/slutförts framgångsrikt
+			            } catch (shareError) {
+			                if (shareError.name !== 'AbortError') {
+			                    console.error("Systemdelning misslyckades:", shareError);
+			                    showToast("Kunde inte öppna delningsmenyn.", "danger");
+			                }
+			            }
 			        } 
-			        // --- DATOR: Kopiera till Urklipp (Ctrl+V) ---
+			        // --- SCENARIO B: DATOR ELLER MOBIL UTAN FIL-DELNING (Använd Urklipp) ---
 			        else {
 			            try {
-			                // Vi måste använda ClipboardItem
+			                // Försök skriva bild-blob till urklipp
 			                await navigator.clipboard.write([
 			                    new ClipboardItem({ [blob.type]: blob })
 			                ]);
-			                showToast("Bild kopierad! (Ctrl+V)", "success");
+			                showToast("Bild kopierad! (Klistra in med Ctrl+V)", "success");
 			            } catch (clipboardErr) {
 			                console.error("Urklippsfel:", clipboardErr);
-			                // Fallback: Kopiera länk
-			                await navigator.clipboard.writeText(imgUrl);
-			                showToast("Bildlänk kopierad istället.", "info");
+			                
+			                // Fallback: Kopiera länk om bild inte gick
+			                try {
+			                    await navigator.clipboard.writeText(imgUrl);
+			                    showToast("Bildlänk kopierad istället.", "info");
+			                } catch (linkErr) {
+			                    showToast("Kunde inte kopiera bild eller länk.", "warning");
+			                }
 			            }
 			        }
 			
 			    } catch (err) {
-			        // Ignorera om användaren avbröt delningsmenyn
-			        if (err.name !== 'AbortError') {
-			            console.error("Delning misslyckades:", err);
-			            showToast("Kunde inte dela bilden.", "danger");
-			        }
+			        console.error("Huvudfel vid delning:", err);
+			        showToast("Ett fel uppstod.", "danger");
 			    } finally {
-			        isSharingInProgress = false; // Lås upp knappen igen
+			        // 5. VIKTIGT: LÅS ALLTID UPP KNAPPEN (Oavsett vad som hände)
+			        isSharingInProgress = false;
+			        if (btn) btn.style.opacity = "1"; // Återställ knappens utseende
 			    }
 			}
 			
