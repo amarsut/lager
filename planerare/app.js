@@ -1885,22 +1885,21 @@
 			    const badge = document.getElementById('chatBadge');
 			    const ticker = document.getElementById('urgentTicker');
 			    const tickerText = document.getElementById('tickerText');
-			    const mobileChatBtn = document.getElementById('mobileChatBtn'); // Din knapp i bottenmenyn
+			    const mobileChatBtn = document.getElementById('mobileChatBtn');
 			
-			    // 1. Uppdatera Badge på FAB
+			    // 1. Uppdatera Badge på FAB & Mobilmeny
 			    if (messages.length > 0) {
 			        if(badge) {
 			            badge.style.display = 'flex';
 			            badge.textContent = messages.length;
 			        }
-			        // Lägg till en röd prick på mobilmenyn också
-			        if(mobileChatBtn) mobileChatBtn.classList.add('has-unread'); // Du får stajla denna i CSS
+			        if(mobileChatBtn) mobileChatBtn.classList.add('has-unread');
 			    } else {
 			        if(badge) badge.style.display = 'none';
 			        if(mobileChatBtn) mobileChatBtn.classList.remove('has-unread');
 			    }
 			
-			    // 2. Uppdatera Slidern
+			    // 2. Uppdatera Slidern (Tickern)
 			    if (messages.length > 0) {
 			        if(ticker) {
 			            ticker.style.display = 'flex';
@@ -1910,26 +1909,46 @@
 			                 if(typeof toggleChatWidget === 'function') toggleChatWidget();
 			            };
 			
-			            // Starta rotation om det finns mer än ett meddelande, annars visa det enda
+			            // Rensa eventuell gammal timer så de inte krockar
 			            if (urgentInterval) clearInterval(urgentInterval);
 			            
 			            const cycleText = () => {
+			                // Tona ut texten
 			                tickerText.style.opacity = 0;
+			                
 			                setTimeout(() => {
-			                    tickerText.textContent = messages[urgentMessageIndex];
+			                    const textContent = messages[urgentMessageIndex];
+			                    tickerText.textContent = textContent;
+			
+			                    // --- NY LOGIK: Hantera lång text ---
+			                    // Om texten är längre än 30 tecken, aktivera scroll-animationen
+			                    if (textContent.length > 30) {
+			                        tickerText.style.animation = "slideText 10s linear infinite";
+			                        // Lägg till lite padding så texten inte klipper tvärt vid scroll
+			                        tickerText.style.paddingRight = "20px"; 
+			                    } else {
+			                        tickerText.style.animation = "none";
+			                        tickerText.style.paddingRight = "0";
+			                    }
+			                    
+			                    // Tona in texten
 			                    tickerText.style.opacity = 1;
+			                    
+			                    // Byt till nästa meddelande i listan
 			                    urgentMessageIndex = (urgentMessageIndex + 1) % messages.length;
-			                }, 300); // Vänta på fade-out
+			                }, 300); // Vänta 300ms (fade out tid)
 			            };
 			
-			            // Initiera första
+			            // Kör direkt första gången
 			            cycleText();
 			
+			            // Om det finns FLER än 1 meddelande, rotera var 5:e sekund
 			            if (messages.length > 1) {
-			                urgentInterval = setInterval(cycleText, 4000); // Byt var 4:e sekund
+			                urgentInterval = setInterval(cycleText, 5000); 
 			            }
 			        }
 			    } else {
+			        // Inga klock-meddelanden -> Dölj tickern
 			        if(ticker) ticker.style.display = 'none';
 			        if (urgentInterval) clearInterval(urgentInterval);
 			    }
