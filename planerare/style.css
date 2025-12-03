@@ -7472,3 +7472,19 @@ body.body-scroll-lock {
     pointer-events: none !important;
     cursor: default !important;
 }
+
+/* --- EXTRA SÄKERHET --- */
+
+/* Gömmer elementen "hårt" tills inloggning sker */
+#fabChat, 
+#fabAddJob, 
+#mobileNav, 
+#chatWidget {
+    display: none !important;
+}
+
+/* Gör loggan i låsrutan stendöd */
+#pinLockModal .nav-logo {
+    pointer-events: none !important;
+    cursor: default !important;
+}
