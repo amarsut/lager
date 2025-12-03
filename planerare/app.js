@@ -6061,11 +6061,15 @@
             const lockAppBtn = document.getElementById('lockAppBtn');
 
             // 1. Lyssna på inloggningsstatus (Detta är hjärtat i säkerheten)
+            // 1. Lyssna på inloggningsstatus (UPPDATERAD)
             auth.onAuthStateChanged(user => {
                 if (user) {
                     // --- ANVÄNDAREN ÄR INLOGGAD ---
                     console.log("Inloggad som:", user.email);
                     
+                    // VIKTIGT: Markera sessionen som aktiv så att timern förstår att vi är igång
+                    sessionStorage.setItem(SECURITY_CONFIG.sessionKey, 'active');
+
                     // Dölj låsskärmen
                     pinLockModal.classList.remove('show');
                     setTimeout(() => { 
@@ -6074,6 +6078,9 @@
                         appContainer.style.display = 'block';
                     }, 300);
 
+                    // Starta inaktivitets-timern direkt!
+                    resetIdleTimer();
+
                     // Initiera appen om det inte redan är gjort
                     if (!appInitialized) {
                         appInitialized = true;
@@ -6081,12 +6088,17 @@
                         initRealtimeListener();
                         initInventoryListener();
                         toggleView(currentView);
-
-						initChatBadgeListener();
+                        
+                        // Starta badge-lyssnaren (om du lade till den förut)
+                        if (typeof initChatBadgeListener === 'function') initChatBadgeListener();
+                        if (typeof initChat === 'function') initChat();
                     }
                 } else {
                     // --- ANVÄNDAREN ÄR UTLOGGAD ---
                     console.log("Utloggad.");
+                    
+                    // Rensa session
+                    sessionStorage.removeItem(SECURITY_CONFIG.sessionKey);
                     
                     // Dölj appens innehåll
                     appContainer.style.display = 'none';
