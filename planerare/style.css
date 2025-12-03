@@ -7479,19 +7479,11 @@ body.app-locked #pinLockModal {
 }
 
 /* 3. Grundläge för knapparna (När appen är UPPLÅST) */
-/* Detta tvingar fram dem om något annat döljer dem - MEN BARA PÅ DESKTOP */
-@media (min-width: 769px) {
-    #fabChat, #fabAddJob {
-        display: flex; /* FABs ska vara flex */
-    }
+/* Detta tvingar fram dem om något annat döljer dem */
+#fabChat, #fabAddJob {
+    display: flex; /* FABs ska vara flex */
 }
 
-/* Säkerställ att de är dolda på mobil */
-@media (max-width: 768px) {
-    #fabChat, #fabAddJob {
-        display: none !important;
-    }
-}
 /* Mobilmenyn ska bara synas på mobil */
 @media (max-width: 768px) {
     #mobileNav {
@@ -7508,59 +7500,4 @@ body.app-locked #pinLockModal {
 .pin-lock-container .nav-logo {
     pointer-events: none !important;
     cursor: default !important;
-}
-
-/* Badge på FAB */
-.chat-badge {
-    position: absolute;
-    top: -5px;
-    right: -5px;
-    background-color: var(--danger-color);
-    color: white;
-    font-size: 0.75rem;
-    font-weight: 700;
-    min-width: 20px;
-    height: 20px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 2px solid var(--content-bg);
-    animation: popIn 0.3s ease;
-}
-
-/* Ta bort den gamla textrutan helt */
-.chat-text-box {
-    display: none !important;
-}
-
-/* Design för den röda cirkeln (Badgen) */
-.notification-badge {
-    position: absolute;
-    top: -5px;          /* Justera beroende på din ikon */
-    right: -5px;        /* Justera beroende på din ikon */
-    background-color: red;
-    color: white;
-    border-radius: 50%;
-    width: 20px;
-    height: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    font-weight: bold;
-    z-index: 100;
-    
-    /* Dölj som standard, JS plockar fram den om det finns meddelanden */
-    display: none; 
-}
-
-/* Tvinga fram synlighet när klassen 'active' läggs på (av JS) */
-.notification-badge.active {
-    display: flex !important;
-}
-
-/* MOBIL-SPECIFIKT: Se till att föräldern i mobilen har position: relative */
-.mobile-chat-icon-container {
-    position: relative; /* Detta krävs för att cirkeln ska hamna rätt */
 }
