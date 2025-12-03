@@ -1782,6 +1782,17 @@
 			            .orderBy("timestamp", "desc") 
 			            .limit(limit)                 
 			            .onSnapshot(snapshot => {
+
+							const urgentDocs = [];
+					        snapshot.forEach(doc => {
+					            const d = doc.data();
+					            // Byt ut '🕓' mot exakt den emoji du använder i din reaction-meny
+					            if (d.reaction === '🕓' || d.reaction === '⚠️') { 
+					                urgentDocs.push(d.text || (d.image ? "Bildmeddelande" : "Notis"));
+					            }
+					        });
+					
+					        updateUrgentUI(urgentDocs);
 			                
 			                const threshold = 150; 
 			                const scrollBottom = chatList.scrollHeight - chatList.scrollTop - chatList.clientHeight;
@@ -1864,6 +1875,63 @@
 			            }
 			        });
 			        chatList.dataset.clickListenerAttached = "true";
+			    }
+			}
+
+			let urgentMessageIndex = 0;
+			let urgentInterval;
+			
+			function updateUrgentUI(messages) {
+			    const badge = document.getElementById('chatBadge');
+			    const ticker = document.getElementById('urgentTicker');
+			    const tickerText = document.getElementById('tickerText');
+			    const mobileChatBtn = document.getElementById('mobileChatBtn'); // Din knapp i bottenmenyn
+			
+			    // 1. Uppdatera Badge på FAB
+			    if (messages.length > 0) {
+			        if(badge) {
+			            badge.style.display = 'flex';
+			            badge.textContent = messages.length;
+			        }
+			        // Lägg till en röd prick på mobilmenyn också
+			        if(mobileChatBtn) mobileChatBtn.classList.add('has-unread'); // Du får stajla denna i CSS
+			    } else {
+			        if(badge) badge.style.display = 'none';
+			        if(mobileChatBtn) mobileChatBtn.classList.remove('has-unread');
+			    }
+			
+			    // 2. Uppdatera Slidern
+			    if (messages.length > 0) {
+			        if(ticker) {
+			            ticker.style.display = 'flex';
+			            
+			            // Klick på slidern öppnar chatten
+			            ticker.onclick = () => {
+			                 if(typeof toggleChatWidget === 'function') toggleChatWidget();
+			            };
+			
+			            // Starta rotation om det finns mer än ett meddelande, annars visa det enda
+			            if (urgentInterval) clearInterval(urgentInterval);
+			            
+			            const cycleText = () => {
+			                tickerText.style.opacity = 0;
+			                setTimeout(() => {
+			                    tickerText.textContent = messages[urgentMessageIndex];
+			                    tickerText.style.opacity = 1;
+			                    urgentMessageIndex = (urgentMessageIndex + 1) % messages.length;
+			                }, 300); // Vänta på fade-out
+			            };
+			
+			            // Initiera första
+			            cycleText();
+			
+			            if (messages.length > 1) {
+			                urgentInterval = setInterval(cycleText, 4000); // Byt var 4:e sekund
+			            }
+			        }
+			    } else {
+			        if(ticker) ticker.style.display = 'none';
+			        if (urgentInterval) clearInterval(urgentInterval);
 			    }
 			}
 
