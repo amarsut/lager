@@ -1386,6 +1386,38 @@
 			    });
 			}
 
+			// --- NY FUNKTION: Notis-räknare ---
+			function initChatBadgeListener() {
+			    // Lyssna på alla meddelanden som har reaktionen "🕓"
+			    db.collection("notes")
+			        .where("reaction", "==", "🕓")
+			        .onSnapshot(snapshot => {
+			            const count = snapshot.size; // Antal träffar
+			            updateBadges(count);
+			        }, error => {
+			            console.error("Kunde inte hämta notis-räknare:", error);
+			        });
+			}
+			
+			function updateBadges(count) {
+			    const desktopBadge = document.getElementById('chatBadgeDesktop');
+			    const mobileBadge = document.getElementById('chatBadgeMobile');
+			    
+			    // Om count är större än 0, visa badge. Annars dölj.
+			    const displayStyle = count > 0 ? 'flex' : 'none';
+			    const textContent = count > 99 ? '99+' : count; // Sätt tak på 99+
+			
+			    if (desktopBadge) {
+			        desktopBadge.style.display = displayStyle;
+			        desktopBadge.textContent = textContent;
+			    }
+			
+			    if (mobileBadge) {
+			        mobileBadge.style.display = displayStyle;
+			        mobileBadge.textContent = textContent;
+			    }
+			}
+
 			let chatUnsubscribe = null; // För att kunna stänga av lyssnaren
 
 			let currentChatLimit = 50; // Hur många meddelanden vi laddar
@@ -5996,6 +6028,8 @@
 			        if (typeof initInventoryListener === 'function') initInventoryListener();
 			        if (typeof toggleView === 'function') toggleView(currentView);
 			        if (typeof initChat === 'function') initChat();
+
+					initChatBadgeListener();
 			    }
 			    
 			    //if (typeof showToast === 'function') showToast("Välkommen tillbaka!", "success");
@@ -6041,6 +6075,8 @@
                         initRealtimeListener();
                         initInventoryListener();
                         toggleView(currentView);
+
+						initChatBadgeListener();
                     }
                 } else {
                     // --- ANVÄNDAREN ÄR UTLOGGAD ---
