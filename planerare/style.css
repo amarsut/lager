@@ -7529,42 +7529,76 @@ body.app-locked #pinLockModal {
     animation: popIn 0.3s ease;
 }
 
-/* Slider i Header */
+/* --- UPDATERAD SLIDER (FIXAR SYNLIGHET) --- */
 .urgent-ticker {
     display: flex;
     align-items: center;
+    justify-content: center;
+    
+    /* Färger och Stil */
     background-color: rgba(255, 159, 10, 0.15); /* Warning light bg */
     color: #b45309; /* Mörkare orange/brun */
-    border-radius: 99px;
-    padding: 4px 10px;
-    margin-top: 4px;
-    font-size: 0.8rem;
     font-weight: 600;
-    max-width: 250px;
-    overflow: hidden;
     cursor: pointer;
-}
-.ticker-icon { margin-right: 6px; font-size: 1rem; }
-.ticker-text-wrapper {
     overflow: hidden;
-    white-space: nowrap;
-}
-#tickerText {
-    display: inline-block;
-    animation: slideText 10s linear infinite; /* Enkel scroll om texten är lång */
+    z-index: 900; /* Ligger över det mesta */
+    
+    /* Animation för att glida in snyggt */
+    animation: fadeIn 0.5s ease;
 }
 
-/* Anpassa för Dark Mode */
+.ticker-icon { margin-right: 8px; font-size: 1rem; }
+.ticker-text-wrapper { overflow: hidden; white-space: nowrap; max-width: 100%; }
+#tickerText { display: inline-block; }
+
+/* DESKTOP (Större skärmar) */
+@media (min-width: 769px) {
+    .urgent-ticker {
+        position: absolute; /* Centrera absolut i headern */
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%); /* Exakt mitten */
+        
+        height: 36px;
+        max-width: 350px;
+        padding: 0 16px;
+        border-radius: 99px;
+        font-size: 0.85rem;
+    }
+}
+
+/* MOBIL (Mindre skärmar) */
+@media (max-width: 768px) {
+    .urgent-ticker {
+        position: fixed; /* Lås fast den på skärmen */
+        top: var(--header-height); /* Precis under headern (ca 60px) */
+        left: 0;
+        right: 0;
+        
+        width: 100%;
+        border-radius: 0; /* Raka hörn */
+        padding: 8px 12px;
+        font-size: 0.8rem;
+        
+        background-color: #fff7ed; /* Solid färg för läsbarhet */
+        border-bottom: 1px solid rgba(255, 159, 10, 0.2);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    
+    /* Justera texten för mobil */
+    .ticker-text-wrapper {
+        text-overflow: ellipsis;
+    }
+}
+
+/* Dark mode justeringar */
 [data-theme="dark"] .urgent-ticker {
     background-color: rgba(255, 159, 10, 0.25);
     color: #fbbf24;
 }
-
-#tickerText { transition: opacity 0.3s ease; }
-/* Mobil meny badge style */
-.mobile-nav-btn.has-unread { position: relative; }
-.mobile-nav-btn.has-unread::after {
-    content: ''; position: absolute; top: 5px; right: 25%;
-    width: 8px; height: 8px; background: var(--danger-color);
-    border-radius: 50%;
+[data-theme="dark"] @media (max-width: 768px) {
+    .urgent-ticker {
+        background-color: #2c1e0b; /* Mörkare bakgrund på mobil */
+        border-bottom-color: #452c08;
+    }
 }
