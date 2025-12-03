@@ -7480,8 +7480,10 @@ body.app-locked #pinLockModal {
 
 /* 3. Grundläge för knapparna (När appen är UPPLÅST) */
 /* Detta tvingar fram dem om något annat döljer dem */
-#fabChat, #fabAddJob {
-    display: flex; /* FABs ska vara flex */
+@media (min-width: 769px) {
+    #fabChat, #fabAddJob {
+        display: flex;
+    }
 }
 
 /* Mobilmenyn ska bara synas på mobil */
@@ -7542,3 +7544,4 @@ body.app-locked #pinLockModal {
     from { transform: scale(0); opacity: 0; }
     to { transform: scale(1); opacity: 1; }
 }
+
