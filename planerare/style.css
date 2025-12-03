@@ -7479,11 +7479,19 @@ body.app-locked #pinLockModal {
 }
 
 /* 3. Grundläge för knapparna (När appen är UPPLÅST) */
-/* Detta tvingar fram dem om något annat döljer dem */
-#fabChat, #fabAddJob {
-    display: flex; /* FABs ska vara flex */
+/* Detta tvingar fram dem om något annat döljer dem - MEN BARA PÅ DESKTOP */
+@media (min-width: 769px) {
+    #fabChat, #fabAddJob {
+        display: flex; /* FABs ska vara flex */
+    }
 }
 
+/* Säkerställ att de är dolda på mobil */
+@media (max-width: 768px) {
+    #fabChat, #fabAddJob {
+        display: none !important;
+    }
+}
 /* Mobilmenyn ska bara synas på mobil */
 @media (max-width: 768px) {
     #mobileNav {
@@ -7501,3 +7509,4 @@ body.app-locked #pinLockModal {
     pointer-events: none !important;
     cursor: default !important;
 }
+
