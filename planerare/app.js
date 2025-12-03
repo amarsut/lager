@@ -2302,9 +2302,9 @@
                         const regMatch = (job.regnr && job.regnr.toLowerCase().replace(/\s/g, '').includes(normalizedTerm));
                         
                         return (
-                            (job.kundnamn && job.kundnamn.toLowerCase().includes(term)) || 
+                            (job.kundnamn && (job.kundnamn || '').toLowerCase().includes(term)) || 
                             regMatch || 
-                            (job.kommentarer && job.kommentarer.toLowerCase().includes(term)) ||
+                            (job.kommentarer && (job.kommentarer || '').toLowerCase().includes(term)) ||
                             (normalizedPhone && normalizedPhone.includes(normalizedTerm)) || 
                             (STATUS_TEXT[job.status] || '').toLowerCase().includes(term)
                         );
@@ -2901,9 +2901,9 @@
                         const regMatch = (job.regnr && job.regnr.toLowerCase().replace(/\s/g, '').includes(normalizedTerm));
                         
                         return (
-                            (job.kundnamn && job.kundnamn.toLowerCase().includes(term)) || 
+                            (job.kundnamn && (job.kundnamn || '').toLowerCase().includes(term)) || 
                             regMatch || 
-                            (job.kommentarer && job.kommentarer.toLowerCase().includes(term)) ||
+                            (job.kommentarer && (job.kommentarer || '').toLowerCase().includes(term)) ||
                             (normalizedPhone && normalizedPhone.includes(normalizedTerm)) || 
                             (STATUS_TEXT[job.status] || '').toLowerCase().includes(term)
                         );
@@ -4115,9 +4115,9 @@
                     const term = filterTerm.toLowerCase();
                     return !term ||
                            formatDate(job.datum).toLowerCase().includes(term) ||
-                           (job.regnr && job.regnr.toLowerCase().includes(term)) ||
-                           job.kundnamn.toLowerCase().includes(term) ||
-                           (job.kommentarer && job.kommentarer.toLowerCase().includes(term));
+                           (job.regnr && (job.regnr || '').toLowerCase().includes(term)) ||
+                           (job.kundnamn || '').toLowerCase().includes(term) ||
+                           (job.kommentarer && (job.kommentarer || '').toLowerCase().includes(term));
                 });
 
                 let tableHTML = `
@@ -5042,9 +5042,9 @@
 			            const regMatch = (job.regnr && job.regnr.toLowerCase().replace(/\s/g, '').includes(normalizedTerm));
 			            
 			            return (
-			                (job.kundnamn && job.kundnamn.toLowerCase().includes(term)) || 
+			                (job.kundnamn && (job.kundnamn || '').toLowerCase().includes(term)) || 
 			                regMatch || 
-			                (job.kommentarer && job.kommentarer.toLowerCase().includes(term)) ||
+			                (job.kommentarer && (job.kommentarer || '').toLowerCase().includes(term)) ||
 			                (normalizedPhone && normalizedPhone.includes(normalizedTerm))
 			            );
 			        });
