@@ -6199,4 +6199,35 @@
 	    });
 	}
 
+	// --- 1. AKTIVITETSLYSSNARE (Gör att timern startar om när du rör dig) ---
+    const activityEvents = ['mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart'];
+
+    activityEvents.forEach(event => {
+        document.addEventListener(event, () => {
+            // Varje gång du rör musen eller skriver, starta om 5-minutersklockan
+            resetIdleTimer();
+        }, true);
+    });
+
+    // --- 2. BAKGRUNDSLYSSNARE (Lås om man byter flik i mer än 1 min) ---
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            // Om man lämnar fliken -> Starta en timer på 1 minut
+            if (!isAppLocked()) {
+                backgroundTimer = setTimeout(() => {
+                    console.log("Bakgrundstid ute. Låser appen.");
+                    lockApp("Du var borta för länge.");
+                }, SECURITY_CONFIG.backgroundLockMs || 60000);
+            }
+        } else {
+            // Om man kommer tillbaka -> Avbryt låsningen
+            clearTimeout(backgroundTimer);
+            // Starta om den vanliga 5-minuters inaktivitets-timern
+            resetIdleTimer();
+        }
+    });
+
+    // Starta timern första gången koden laddas
+    resetIdleTimer();
+
 });
