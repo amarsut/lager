@@ -7545,3 +7545,45 @@ body.app-locked #pinLockModal {
     to { transform: scale(1); opacity: 1; }
 }
 
+/* --- OFFLINE INDIKATOR --- */
+.offline-dot {
+    display: none; /* Dold när man har internet */
+    width: 12px;
+    height: 12px;
+    background-color: var(--danger-color); /* Röd */
+    border-radius: 50%;
+    
+    /* Pulserande animation */
+    animation: offline-pulse 2s infinite;
+    z-index: 2000;
+}
+
+/* Visa pricken när body har klassen 'offline-mode' */
+body.offline-mode .offline-dot {
+    display: block;
+}
+
+/* Animationen */
+@keyframes offline-pulse {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 69, 58, 0.7); }
+    70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(255, 69, 58, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 69, 58, 0); }
+}
+
+/* --- DESKTOP POSITIONERING --- */
+@media (min-width: 769px) {
+    .offline-dot {
+        /* Placera den till vänster om höger-gruppen */
+        margin-left: auto; 
+        margin-right: 1.5rem; /* Luft mot Privacy-knappen */
+    }
+}
+
+/* --- MOBIL POSITIONERING --- */
+@media (max-width: 768px) {
+    .offline-dot {
+        position: absolute;
+        top: 22px;  /* Justera så den ligger i linje med titeln */
+        right: 20px; /* Längst upp till höger */
+    }
+}
