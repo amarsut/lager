@@ -7424,11 +7424,6 @@ body.body-scroll-lock {
     text-shadow: 0 1px 2px rgba(0,0,0,0.5);
 }
 
-/* Detta gör att räknaren inte tar plats mellan X och knapparna där uppe */
-.mm-header .mm-counter {
-    position: static; /* Nollställ position i headern om den ligger där i HTML */
-}
-
 .mm-icon-btn {
     background: transparent; border: none;
     color: #ffffff; cursor: pointer; padding: 10px;
@@ -7743,6 +7738,7 @@ body.offline-mode .offline-dot {
     background-color: rgba(255, 69, 58, 0.15); /* Svag röd bakgrund */
     border-radius: 50%;
 }
+
 
 
 
