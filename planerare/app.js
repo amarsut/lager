@@ -1987,20 +1987,17 @@
 			function renderChatBubble(id, data, container) {
 			    const bubble = document.createElement('div');
 			
-			    // --- LOGIK: Bestäm typ ---
-			    let msgType = 'me'; // Default: Jag (Blå/Höger)
+			    // --- LOGIK: Bestäm typ (me/other/system) ---
+			    let msgType = 'me'; 
 			
 			    if (data.platform === 'system') {
-			        msgType = 'system'; // Kommer nu se ut som 'other' (Grå/Vänster) via CSS
+			        msgType = 'system'; // Ser ut som 'other' (Grå/Vänster) i CSS
 			    } else if (data.sender === 'other') { 
 			        msgType = 'other';
 			    }
 			
 			    // Sätt klasser
 			    bubble.className = `chat-bubble ${msgType}`;
-			
-			    // OBS: Vi lägger INTE till någon system-label här längre, 
-			    // så den ser exakt ut som ett vanligt meddelande.
 			
 			    let isLongPressActive = false;
 			
@@ -2051,7 +2048,6 @@
 			        const textContentDiv = document.createElement('div');
 			        textContentDiv.className = 'chat-text-content';
 			        
-			        // Här renderas texten precis som vanligt
 			        let processedText = rawText.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 			        
 			        const urlPattern = /(https?:\/\/[^\s]+)/g;
@@ -2098,7 +2094,7 @@
 			        bubble.appendChild(badge);
 			    }
 			
-			    // Touch-logik
+			    // --- 2. TOUCH-LOGIK ---
 			    let pressTimer = null;
 			    let startX = 0, startY = 0;
 			
@@ -2154,7 +2150,7 @@
 			    bubble.addEventListener('touchmove', handleTouchMove, { passive: true });
 			    bubble.addEventListener('touchend', handleTouchEnd, { passive: false }); 
 			
-			    // --- 3. TIDSSTÄMPEL ---
+			    // --- 3. TIDSSTÄMPEL (UPPDATERAD MED "SYSTEM"-TEXT) ---
 			    const time = document.createElement('div');
 			    time.className = `chat-time ${msgType}`; // Sätt klass för positionering
 			    
@@ -2164,13 +2160,18 @@
 			    const displayTime = (new Date().toDateString() === dateObj.toDateString()) ? timeString : `${dateString}, ${timeString}`;
 			
 			    let platformIconHtml = '';
-			    // Visa bara mobil/dator-ikon om det INTE är systemmeddelande
-			    if (msgType !== 'system') {
+			    
+			    // --- NY LOGIK HÄR ---
+			    if (msgType === 'system') {
+			        // Om det är system, lägg till texten bredvid tiden (fetstilt)
+			        platformIconHtml = ` <span style="font-weight: 700; opacity: 0.9; margin-left: 4px;">• SYSTEM</span>`;
+			    } else {
+			        // Annars visa mobil/dator ikon
 			        if (data.platform === 'mobil') platformIconHtml = `<svg class="platform-icon"><use href="#icon-mobile"></use></svg>`;
 			        else if (data.platform === 'dator') platformIconHtml = `<svg class="platform-icon"><use href="#icon-desktop"></use></svg>`;
 			    }
 			
-			    time.innerHTML = `${displayTime} ${platformIconHtml}`;
+			    time.innerHTML = `${displayTime}${platformIconHtml}`;
 			    if (data.isEdited) time.innerHTML += ` <span style="font-style:italic; opacity:0.7;">(redigerad)</span>`;
 			
 			    container.appendChild(bubble);
