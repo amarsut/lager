@@ -7409,66 +7409,74 @@ body.body-scroll-lock {
     pointer-events: none; 
 }
 
-/* 4. Bild-kortet */
-.mm-carousel-item {
-    /* Vi måste ha kvar dessa för att fylla skärmen! */
-    position: absolute;
-    top: 0; 
-    left: 0; 
-    width: 100%; 
-    height: 100%;
-    
-    /* Flexbox för att centrera bilden */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    
-    /* Padding skapar "luft" runt bilden så man kan klicka utanför */
-    padding: 60px 20px 100px 20px; 
-    box-sizing: border-box;
-    
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-    opacity: 0;
-    pointer-events: none; /* Släpp igenom klick när den är osynlig */
+/* --- 1. SÄKERHET OCH LAYOUT --- */
+.messenger-modal-backdrop {
+    background-color: rgba(0, 0, 0, 0.95); /* Mörkare bakgrund */
+    backdrop-filter: blur(5px);
+    /* Tar bort fördröjning vid klick på mobiler (fixar "3 klick"-problemet) */
+    touch-action: manipulation; 
 }
 
-/* 5. BILDEN (STOR FIX HÄR) */
-.mm-carousel-item img {
-    padding: 0 !important; /* Nollställ gammal padding */
+/* --- 2. HUVUDCONTAINER FÖR BILDEN --- */
+.mm-carousel-item {
+    position: absolute;
+    top: 0; left: 0; 
+    width: 100%; height: 100%;
     
-    /* Låt bilden anpassa sig efter den tillgängliga ytan (minus paddingen ovan) */
+    display: flex;
+    align-items: center; /* Centrerar vertikalt */
+    justify-content: center; /* Centrerar horisontellt */
+    
+    /* VIKTIGT: Gör så att klick på den tomma ytan går igenom till backdrop */
+    pointer-events: none; 
+    
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.mm-carousel-item.main {
+    opacity: 1;
+    z-index: 10;
+}
+
+/* --- 3. BILDEN (Maxstorlek för att undvika krock) --- */
+.mm-carousel-item img {
+    pointer-events: auto; /* Gör bilden klickbar (så man INTE stänger när man klickar på den) */
+    
+    /* Tvingar bilden att aldrig vara större än 75% av höjden */
+    /* Detta lämnar automatiskt 12.5% luft uppe och 12.5% nere */
+    max-height: 75vh !important; 
+    max-width: 95vw !important;
+    
     width: auto;
     height: auto;
-    max-width: 100%;
-    max-height: 100%;
     
     object-fit: contain;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
     
-    /* Design: Runda hörn & Skugga */
-    border-radius: 12px; 
-    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-    
-    display: block;
+    /* Tar bort all padding som störde förut */
+    padding: 0 !important; 
 }
 
-/* --- 2. FLYTTA OCH STYLA RÄKNAREN (2 av 2) --- */
+/* --- 4. RÄKNAREN (Piller i botten) --- */
 .mm-counter {
-    position: fixed; 
-    bottom: 30px;    /* Ligger alltid i botten */
-    left: 50%;       
-    transform: translateX(-50%); /* Perfekt centrerad */
+    position: fixed;
+    bottom: 40px; /* Flyttad lite högre upp från kanten */
+    left: 50%;
+    transform: translateX(-50%);
     
-    background-color: rgba(40, 40, 40, 0.85); /* Mörk platta */
+    background-color: rgba(30, 30, 30, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     color: #fff;
-    font-weight: 600;
-    font-size: 0.9rem;
-    padding: 6px 14px;
-    border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.15);
     
-    z-index: 30050; 
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 50px;
+    
+    z-index: 20;
     pointer-events: none; /* Klick går igenom */
-    white-space: nowrap;
 }
 
 /* Detta gör att räknaren inte tar plats mellan X och knapparna där uppe */
@@ -7715,6 +7723,7 @@ body.offline-mode .offline-dot {
     background-color: rgba(255, 69, 58, 0.15); /* Svag röd bakgrund */
     border-radius: 50%;
 }
+
 
 
 
