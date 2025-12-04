@@ -2146,9 +2146,8 @@
 								Analysera: "${query}".
 								
 								VIKTIGT OM FORMATERING:
-								Använd HTML-taggar för struktur.
 								1. Använd <b> för rubriker.
-								2. Använd <ul> och <li> för listan (använd INTE siffror manuellt, använd <li>).
+								2. Använd <ul> och <li> för listan (använd INTE siffror, använd punktlista).
 								3. Inga onödiga radbrytningar.
 								
 								Följ denna mall exakt:
