@@ -7397,6 +7397,13 @@ body.body-scroll-lock {
     color: #fff;
 }
 
+/* Raderingsknapp i bildmodal */
+.mm-icon-btn.danger-hover:hover {
+    color: #ff453a; /* Röd färg vid hover */
+    background-color: rgba(255, 69, 58, 0.15); /* Svag röd bakgrund */
+    border-radius: 50%;
+}
+
 /* Gruppera höger-ikonerna */
 .mm-header-actions {
     display: flex;
@@ -7684,6 +7691,7 @@ body.offline-mode .offline-dot {
     background-color: rgba(255, 69, 58, 0.15); /* Svag röd bakgrund */
     border-radius: 50%;
 }
+
 
 
 
