@@ -7444,9 +7444,12 @@ body.body-scroll-lock {
 .mm-carousel-item img {
     border-radius: 4px;
     box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-    max-width: 100%;
-    max-height: 85vh; /* Se till att bilden inte blir högre än skärmen */
-    object-fit: contain; /* Visa hela bilden */
+    max-width: 95vw; /* Säkerställer att den inte går utanför skärmen i sidled */
+    
+    /* VIKTIG FIX: Använd 'calc' för att ge utrymme för header och footer */
+    max-height: calc(100vh - 120px); 
+    
+    object-fit: contain; /* Säkerställer att hela bilden syns */
 }
 
 /* HUVUDBILDEN */
@@ -7691,6 +7694,7 @@ body.offline-mode .offline-dot {
     background-color: rgba(255, 69, 58, 0.15); /* Svag röd bakgrund */
     border-radius: 50%;
 }
+
 
 
 
