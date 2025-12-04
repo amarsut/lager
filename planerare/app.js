@@ -2104,10 +2104,16 @@
 			        };
 			    }
 			
-			    // --- AI MEKANIKER (Google Gemini) ---
+			    // --- AI MEKANIKER (FIXAD: Dubbla meddelanden & Kvota) ---
 			    const askAiBtn = document.getElementById('askAiBtn');
 			
-			    if (askAiBtn) {
+			    // 1. FIX FÖR DUBBLA MEDDELANDEN:
+			    // Vi kollar om vi redan har kopplat knappen. Om ja, hoppa över.
+			    if (askAiBtn && !askAiBtn.dataset.aiListenerAttached) {
+			        
+			        // Markera att vi nu har kopplat den, så vi inte gör det igen
+			        askAiBtn.dataset.aiListenerAttached = "true";
+			
 			        askAiBtn.addEventListener('click', async (e) => {
 			            e.preventDefault();
 			            
@@ -2117,6 +2123,7 @@
 			                return;
 			            }
 			
+			            // Visa din fråga i chatten
 			            await db.collection("notes").add({
 			                text: `🤖 Frågar AI: "${query}"...`,
 			                timestamp: new Date().toISOString(),
@@ -2126,77 +2133,81 @@
 			
 			            chatInput.value = '';
 			
-			            // --- NY SÄKER VERSION MED GOOGLE BIBLIOTEK ---
-                    
-	                    try {
-	                        // --- GOOGLE GEMINI API (REST API via fetch) ---
-	                        
-	                        const apiKey = "AIzaSyD5T7D7EBgNb8jwARxcG7xZLWwbqy80Qf0"; // Replace with your actual API key
-	                        
-	                        // Using gemini-2.5-flash as per the documentation provided
-	                        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-	
-	                        const prompt = `Du är en expertmekaniker. Svara kortfattat, proffsigt och på svenska. 
-	                                        Analysera följande felkod/symptom och lista de 3 mest sannolika orsakerna: 
-	                                        "${query}"`;
-	
-	                        const response = await fetch(url, {
-	                            method: 'POST',
-	                            headers: { 
-	                                'Content-Type': 'application/json' 
-	                            },
-	                            body: JSON.stringify({
-	                                contents: [{ 
-	                                    parts: [{ text: prompt }] 
-	                                }]
-	                            })
-	                        });
-	
-	                        if (!response.ok) {
-	                            const errorData = await response.json().catch(() => ({}));
-	                            console.error("Google API Error:", errorData);
-	                            // Fallback error message if the specific error structure isn't present
-	                            let errorMessage = response.statusText;
-	                            if (errorData.error && errorData.error.message) {
-	                                errorMessage = errorData.error.message;
-	                            }
-	                            throw new Error(`Serverfel: ${response.status} - ${errorMessage}`);
-	                        }
-	
-	                        const data = await response.json();
-	
-	                        if (data.candidates && data.candidates.length > 0 && data.candidates[0].content && data.candidates[0].content.parts.length > 0) {
-	                            const aiAnswer = data.candidates[0].content.parts[0].text;
-	
-	                            await db.collection("notes").add({
-	                                text: aiAnswer,
-	                                timestamp: new Date().toISOString(),
-	                                platform: 'system',
-	                                reaction: '🤖'
-	                            });
-	                            
-	                            setTimeout(() => {
-	                                const chatList = document.getElementById('chatMessages');
-	                                if(chatList) chatList.scrollTop = chatList.scrollHeight;
-	                            }, 100);
-	
-	                        } else {
-	                            throw new Error("Inget svar från AI (Tom data)");
-	                        }
-	
-	                    } catch (err) {
-	                        console.error("AI CRITICAL ERROR:", err);
-	                        showToast("Kunde inte nå AI-mekanikern.", "danger");
-	                        
-	                        let errorMsg = "⚠️ AI-tjänsten svarade inte.";
-	                        if(err.message) errorMsg += ` (${err.message})`;
-	                        
-	                        await db.collection("notes").add({
-	                            text: errorMsg,
-	                            timestamp: new Date().toISOString(),
-	                            platform: 'system'
-	                        });
-	                    }
+			            try {
+			                const apiKey = "AIzaSyD5T7D7EBgNb8jwARxcG7xZLWwbqy80Qf0"; // <--- Klistra in din nyckel
+			                
+			                // 2. FIX FÖR KVOTA (429):
+			                // Vi byter till "gemini-1.5-flash". Den är stabil, snabb och har högre gratis-gränser.
+			                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+			
+			                const prompt = `Du är en expertmekaniker. Svara kortfattat, proffsigt och på svenska. 
+			                                Analysera följande felkod/symptom och lista de 3 mest sannolika orsakerna: 
+			                                "${query}"`;
+			
+			                const response = await fetch(url, {
+			                    method: 'POST',
+			                    headers: { 
+			                        'Content-Type': 'application/json' 
+			                    },
+			                    body: JSON.stringify({
+			                        contents: [{ 
+			                            parts: [{ text: prompt }] 
+			                        }]
+			                    })
+			                });
+			
+			                if (!response.ok) {
+			                    const errorData = await response.json().catch(() => ({}));
+			                    console.error("Google API Error:", errorData);
+			                    
+			                    let msg = `Serverfel: ${response.status}`;
+			                    // Om det är kvota-fel (429)
+			                    if (response.status === 429) {
+			                        msg = "AI-gränsen nådd (för många frågor). Vänta en stund.";
+			                    } else if (errorData.error && errorData.error.message) {
+			                        msg += ` - ${errorData.error.message}`;
+			                    }
+			                    throw new Error(msg);
+			                }
+			
+			                const data = await response.json();
+			
+			                if (data.candidates && data.candidates.length > 0) {
+			                    const aiAnswer = data.candidates[0].content.parts[0].text;
+			
+			                    await db.collection("notes").add({
+			                        text: aiAnswer,
+			                        timestamp: new Date().toISOString(),
+			                        platform: 'system',
+			                        reaction: '🤖'
+			                    });
+			                    
+			                    setTimeout(() => {
+			                        const chatList = document.getElementById('chatMessages');
+			                        if(chatList) chatList.scrollTop = chatList.scrollHeight;
+			                    }, 100);
+			
+			                } else {
+			                    throw new Error("Inget svar från AI (Tom data)");
+			                }
+			
+			            } catch (err) {
+			                console.error("AI CRITICAL ERROR:", err);
+			                
+			                // Snyggare felmeddelande till användaren
+			                let userMsg = "⚠️ AI-tjänsten kunde inte svara.";
+			                if (err.message.includes("AI-gränsen")) {
+			                    userMsg = "⚠️ " + err.message;
+			                } else if (err.message.includes("404")) {
+			                    userMsg += " (Modellfel/Ogiltig nyckel).";
+			                }
+			                
+			                await db.collection("notes").add({
+			                    text: userMsg,
+			                    timestamp: new Date().toISOString(),
+			                    platform: 'system'
+			                });
+			            }
 			        });
 			    }
 			
