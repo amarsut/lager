@@ -1838,57 +1838,53 @@
 
 			// --- FIX FÖR BILDMODALENS KNAPPAR ---
 			const imageZoomModal = document.getElementById('imageZoomModal');
-			
+
 			if (imageZoomModal) {
-			    // Vi lägger en enda lyssnare på hela modalen
 			    imageZoomModal.addEventListener('click', function(e) {
 			        
-			        // 1. STÄNG-KNAPPEN (Eller klick på den svarta bakgrunden)
-			        if (e.target === imageZoomModal || e.target.closest('#mmCloseBtn')) {
+			        // --- UPPDATERAD LOGIK FÖR ATT STÄNGA ---
+			        // Vi kollar om man klickar på:
+			        // 1. Själva modal-bakgrunden
+			        // 2. Stäng-knappen
+			        // 3. Behållaren runt bilden (.mm-carousel-item) -> Detta är "ytan utanför bilden"
+			        // 4. Huvud-containern (.mm-carousel-container)
+			        
+			        const isBackgroundClick = 
+			            e.target === imageZoomModal || 
+			            e.target.classList.contains('mm-carousel-item') || 
+			            e.target.classList.contains('mm-carousel-container');
+			
+			        if (isBackgroundClick || e.target.closest('#mmCloseBtn')) {
 			            e.preventDefault();
-			            // Om bilden laddas som en del av history-state, backa:
+			            
 			            if (history.state && history.state.modal === 'imageZoom') {
 			                history.back();
 			            } else {
-			                // Fallback om history inte stämmer
 			                imageZoomModal.style.display = 'none';
 			                if (typeof updateScrollLock === 'function') updateScrollLock();
 			            }
 			            return;
 			        }
 			
-			        // 2. VIDAREBEFORDRA-KNAPPEN
+			        // ... (Resten av knapparna: mmForwardBtn, mmShareBtn, mmDeleteBtn är samma som förut) ...
 			        const forwardBtn = e.target.closest('#mmForwardBtn');
 			        if (forwardBtn) {
-			            e.preventDefault();
-			            e.stopPropagation(); // Stoppa så vi inte råkar stänga modalen
-			            if (typeof forwardCurrentPhoto === 'function') {
-			                forwardCurrentPhoto();
-			            } else {
-			                console.error("Funktionen forwardCurrentPhoto saknas.");
-			            }
+			            e.preventDefault(); e.stopPropagation();
+			            if (typeof forwardCurrentPhoto === 'function') forwardCurrentPhoto();
 			            return;
 			        }
 			
-			        // 3. DELA/SPARA-KNAPPEN
 			        const shareBtn = e.target.closest('#mmShareBtn');
 			        if (shareBtn) {
-			            e.preventDefault();
-			            e.stopPropagation();
-			            if (typeof downloadCurrentPhoto === 'function') {
-			                downloadCurrentPhoto();
-			            }
+			            e.preventDefault(); e.stopPropagation();
+			            if (typeof downloadCurrentPhoto === 'function') downloadCurrentPhoto();
 			            return;
 			        }
 			
-			        // 4. RADERA-KNAPPEN
 			        const deleteBtn = e.target.closest('#mmDeleteBtn');
 			        if (deleteBtn) {
-			            e.preventDefault();
-			            e.stopPropagation();
-			            if (typeof deleteCurrentPhoto === 'function') {
-			                deleteCurrentPhoto();
-			            }
+			            e.preventDefault(); e.stopPropagation();
+			            if (typeof deleteCurrentPhoto === 'function') deleteCurrentPhoto();
 			            return;
 			        }
 			    });
