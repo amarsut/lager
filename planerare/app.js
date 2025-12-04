@@ -1887,6 +1887,51 @@
 			    });
 			}
 
+			// Hjälpfunktion: Skriver ut HTML tecken för tecken
+			function typeWriterHTML(element, html, speed = 10) {
+			    return new Promise(resolve => {
+			        let i = 0;
+			        element.innerHTML = ""; // Töm elementet först
+			        element.classList.add('typing-cursor'); // Lägg till markör
+			        
+			        function type() {
+			            if (i >= html.length) {
+			                element.classList.remove('typing-cursor'); // Ta bort markör när klar
+			                return resolve();
+			            }
+			            
+			            // Om vi stöter på en HTML-tagg (börjar med <)
+			            if (html.charAt(i) === '<') {
+			                // Hitta var taggen slutar (>)
+			                let tagEnd = html.indexOf('>', i);
+			                if (tagEnd !== -1) {
+			                    // Lägg till HELA taggen på en gång (så vi inte pajjar layouten)
+			                    element.innerHTML += html.substring(i, tagEnd + 1);
+			                    i = tagEnd + 1;
+			                    // Ingen fördröjning för taggar, fortsätt direkt
+			                    type(); 
+			                } else {
+			                    // Fallback om taggen är trasig
+			                    element.innerHTML += html.charAt(i);
+			                    i++;
+			                    setTimeout(type, speed);
+			                }
+			            } else {
+			                // Vanligt tecken: Skriv ut och vänta lite
+			                element.innerHTML += html.charAt(i);
+			                i++;
+			                
+			                // Scrolla ner automatiskt medan den skriver
+			                const chatList = document.getElementById('chatMessages');
+			                if(chatList) chatList.scrollTop = chatList.scrollHeight;
+			                
+			                setTimeout(type, speed);
+			            }
+			        }
+			        type();
+			    });
+			}
+
 			let jobUnsubscribe = null;
 			let badgeUnsubscribe = null;
 			let chatUnsubscribe = null; // För att kunna stänga av lyssnaren
@@ -2117,6 +2162,7 @@
 			            e.preventDefault();
 			
 			            const chatInput = document.getElementById('chatInput');
+			            const chatList = document.getElementById('chatMessages'); // Behövs för att lägga till temp-bubbla
 			            const query = chatInput.value.trim();
 			            
 			            if (!query) {
@@ -2124,7 +2170,7 @@
 			                return;
 			            }
 			
-			            // Skapa "Tänker"-meddelandet
+			            // 1. Starta "Tänker..."
 			            const loadingMsgRef = await db.collection("notes").add({
 			                text: `🤖 Frågar AI: "${query}"...`,
 			                timestamp: new Date().toISOString(),
@@ -2160,9 +2206,7 @@
 			                const response = await fetch(url, {
 			                    method: 'POST',
 			                    headers: { 'Content-Type': 'application/json' },
-			                    body: JSON.stringify({
-			                        contents: [{ parts: [{ text: prompt }] }]
-			                    })
+			                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
 			                });
 			
 			                if (!response.ok) { throw new Error("AI-tjänsten svarade inte"); }
@@ -2172,6 +2216,28 @@
 			                if (data.candidates && data.candidates.length > 0) {
 			                    const aiAnswer = data.candidates[0].content.parts[0].text;
 			
+			                    // --- HÄR BÖRJAR MAGIN ---
+			                    
+			                    // 1. Skapa en tillfällig bubbla manuellt (för animationen)
+			                    const tempBubbleDiv = document.createElement('div');
+			                    tempBubbleDiv.className = 'chat-bubble system'; // Använd system-stil
+			                    tempBubbleDiv.style.marginBottom = '20px'; // Lite luft
+			                    
+			                    // Skapa inre text-div
+			                    const tempTextDiv = document.createElement('div');
+			                    tempTextDiv.className = 'chat-text-content';
+			                    tempBubbleDiv.appendChild(tempTextDiv);
+			                    
+			                    // Lägg till i listan
+			                    chatList.appendChild(tempBubbleDiv);
+			                    
+			                    // 2. Kör skrivmaskins-effekten (vänta tills den är klar)
+			                    // Speed 10ms är ganska snabbt och lagom för läsning
+			                    await typeWriterHTML(tempTextDiv, aiAnswer, 10);
+			
+			                    // 3. När animationen är klar: Ta bort temp-bubblan och spara på riktigt
+			                    tempBubbleDiv.remove();
+			
 			                    await db.collection("notes").add({
 			                        text: aiAnswer,
 			                        timestamp: new Date().toISOString(),
@@ -2179,13 +2245,8 @@
 			                        reaction: '🤖'
 			                    });
 			
-			                    // Uppdatera timglaset till en bock
+			                    // Uppdatera timglaset till bock
 			                    await loadingMsgRef.update({ reaction: '✅' });
-			
-			                    setTimeout(() => {
-			                        const chatList = document.getElementById('chatMessages');
-			                        if (chatList) chatList.scrollTop = chatList.scrollHeight;
-			                    }, 100);
 			
 			                } else {
 			                    throw new Error("Inget svar från AI");
@@ -2193,7 +2254,6 @@
 			
 			            } catch (err) {
 			                console.error(err);
-			                // Uppdatera timglaset till ett kryss
 			                await loadingMsgRef.update({ reaction: '❌' });
 			                showToast("Kunde inte nå AI just nu", "danger");
 			            }
