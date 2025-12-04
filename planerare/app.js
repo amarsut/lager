@@ -1679,6 +1679,23 @@
 			            }
 			        }).catch(err => console.error("Kunde inte räkna bilder:", err));
 			    }
+				// 33. INKOGNITO / NY ENHET VARNING
+			    // Vi kollar om en specifik "persistent" nyckel saknas.
+			    // Om den saknas är det troligen en ny session/inkognito.
+			    if (!localStorage.getItem('device_known')) {
+			        
+			        // Sätt flaggan direkt så vi inte varnar igen i denna session
+			        localStorage.setItem('device_known', 'true');
+			        
+			        // Vi använder sessionStorage för att se om vi redan visat den i just denna flik
+			        if (!sessionStorage.getItem('incognito_warned')) {
+			            sendSystemMessage(
+			                `🕵️‍♂️ Ny enhet? Det verkar som du kör på en ny enhet eller i 'Privat läge'. Kom ihåg att vissa inställningar nollställs om du stänger webbläsaren.`,
+			                'warning'
+			            );
+			            sessionStorage.setItem('incognito_warned', 'true');
+			        }
+			    }
 			}
 
 			let jobUnsubscribe = null;
