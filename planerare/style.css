@@ -7371,17 +7371,56 @@ body.body-scroll-lock {
 .mm-header {
     position: absolute;      
     top: 0; left: 0; width: 100%;             
+    height: 60px; /* Fast höjd för stabilitet */
     box-sizing: border-box; 
+    
     display: flex;
-    justify-content: space-between;
+    justify-content: space-between; /* Knappar i varsin ände */
     align-items: center;
-    padding: 15px 20px;
+    padding: 0 15px; /* Lite luft på sidorna */
     
-    /* VIKTIGT: Högre z-index och fånga klick */
-    z-index: 30030 !important; /* Måste vara högre än bild-containern */
-    pointer-events: auto !important; /* Tvinga att klick registreras */
+    z-index: 30030; 
     
-    background: linear-gradient(to bottom, rgba(0,0,0,0.5), transparent);
+    /* VIKTIGT: Låt klick gå IGENOM headerns tomma ytor (så man kan stänga bilden) */
+    pointer-events: none; 
+    
+    /* Snygg toning i toppen */
+    background: linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, transparent 100%);
+}
+
+/* Gör knapparna klickbara igen (eftersom headern har pointer-events: none) */
+.mm-icon-btn, .mm-header-actions {
+    pointer-events: auto;
+}
+
+/* --- RÄKNAREN: Centrerad i mitten av Headern --- */
+.mm-counter {
+    /* Absolut positionering för att hamna EXAKT i mitten av skärmen */
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%); /* Centrera exakt */
+    
+    /* Design: Ren text med skugga (Snyggast i header) */
+    color: #f2f2f7;
+    font-weight: 600;
+    font-size: 16px; /* Tydlig storlek */
+    letter-spacing: 0.5px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5); /* Gör texten läsbar mot ljusa bilder */
+    
+    /* Nollställ gamla stilar */
+    background-color: transparent;
+    border: none;
+    margin: 0;
+    padding: 0;
+    bottom: auto; /* Ta bort botten-positionering */
+    
+    z-index: 30031;
+}
+
+/* Detta gör att räknaren inte tar plats mellan X och knapparna där uppe */
+.mm-header .mm-counter {
+    position: static; /* Nollställ position i headern om den ligger där i HTML */
 }
 
 .mm-icon-btn {
@@ -7457,45 +7496,6 @@ body.body-scroll-lock {
     
     /* Tar bort all padding som störde förut */
     padding: 0 !important; 
-}
-
-/* --- 4. RÄKNAREN (Piller i botten) --- */
-.mm-counter {
-    position: fixed; 
-    
-    /* Placering i botten med marginal för iPhone-strecket */
-    bottom: 30px;    
-    bottom: calc(30px + env(safe-area-inset-bottom)); 
-    
-    /* EXAKT CENTRERING */
-    left: 50%;       
-    transform: translateX(-50%); 
-    margin: 0; /* Ta bort alla gamla marginaler som kan störa */
-    
-    /* Utseende */
-    background-color: rgba(20, 20, 20, 0.85); /* Lite mörkare för bättre kontrast */
-    color: #fff;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; /* Systemfont */
-    font-weight: 500;
-    font-size: 14px; /* Pixel-värde för exakthet */
-    letter-spacing: 0.5px;
-    
-    padding: 6px 14px;
-    border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    
-    /* Säkerställ att den ligger över allt annat men under modal-bakgrunden */
-    z-index: 30050; 
-    pointer-events: none; /* Klick går igenom */
-    white-space: nowrap;  /* Tvinga texten att stanna på en rad */
-    
-    /* Skugga för att synas mot ljusa bilder */
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-}
-
-/* Detta gör att räknaren inte tar plats mellan X och knapparna där uppe */
-.mm-header .mm-counter {
-    position: static; /* Nollställ position i headern om den ligger där i HTML */
 }
 
 /* Synlighets-klasser */
@@ -7737,6 +7737,7 @@ body.offline-mode .offline-dot {
     background-color: rgba(255, 69, 58, 0.15); /* Svag röd bakgrund */
     border-radius: 50%;
 }
+
 
 
 
