@@ -735,76 +735,39 @@
 			    let startSrc = "";
 			    let startId = null;
 			
-			    // 1. Kontrollera om vi fick ett HTML-element (från nya koden) eller en textsträng
 			    if (clickedImgElement instanceof HTMLElement) {
 			        startSrc = clickedImgElement.src;
-			        startId = clickedImgElement.dataset.id; // VIKTIGT: Hämta ID:t här
+			        startId = clickedImgElement.dataset.id;
 			    } else {
-			        startSrc = clickedImgElement; // Fallback
+			        startSrc = clickedImgElement;
 			    }
 			
-			    // 2. Bygg gallerilistan från alla synliga bilder i chatten
+			    // Bygg gallerilistan
 			    const allImages = document.querySelectorAll('.chat-bubble-image img');
-			    
 			    currentGalleryImages = Array.from(allImages).map(img => ({
 			        src: img.src,
 			        caption: "", 
-			        id: img.dataset.id || null // Spara ID i vår galleri-lista
+			        id: img.dataset.id || null
 			    }));
 			
-			    // 3. Hitta rätt bild i listan
+			    // Hitta rätt bild
 			    currentImageIndex = currentGalleryImages.findIndex(item => item.src === startSrc);
-			
-			    // Om vi inte hittar bilden via URL, försök via ID (säkerhetsåtgärd)
 			    if (currentImageIndex === -1 && startId) {
 			        currentImageIndex = currentGalleryImages.findIndex(item => item.id === startId);
 			    }
-			
-			    // Om inget matchar (extremfall), skapa en temporär lista
 			    if (currentImageIndex === -1) {
 			        currentGalleryImages = [{ src: startSrc, caption: "", id: startId }];
 			        currentImageIndex = 0;
 			    }
 			
-			    // 4. Uppdatera UI och öppna
-			    updateCarouselUI();
+			    // Uppdatera UI
+			    if (typeof updateCarouselUI === 'function') updateCarouselUI();
 			
-			    // Hantera historik och visa modal
+			    // Hantera historik och visa
 			    history.pushState({ modal: 'imageZoom' }, 'Bild', '#image');
-			    
-			    // *** FIX: Se till att display sätts till flex ***
 			    modal.style.display = "flex"; 
 			    
-			    updateScrollLock();
-			
-			    // 5. Koppla knappar
-			    const closeBtn = document.getElementById('mmCloseBtn');
-			    const shareBtn = document.getElementById('mmShareBtn');
-			    const deleteBtn = document.getElementById('mmDeleteBtn');
-			
-			    if (closeBtn) {
-			        closeBtn.addEventListener('click', function() {
-			            history.back(); // Stänger modalen
-			        });
-			    }
-			
-			    if (shareBtn) {
-			        shareBtn.addEventListener('click', function() {
-			            downloadCurrentPhoto(); // Dela bild
-			        });
-			    }
-			
-			    if (deleteBtn) {
-			        deleteBtn.addEventListener('click', function() {
-			            deleteCurrentPhoto(); // Radera bild
-			        });
-			    }
-
-				modal.addEventListener('click', function(e) {
-				    if (e.target === modal || e.target.classList.contains('mm-carousel-item')) {
-				        history.back(); // Gå tillbaka och stäng modalen
-				    }
-				});
+			    if (typeof updateScrollLock === 'function') updateScrollLock();
 			};
 			
 			async function deleteCurrentPhoto() {
@@ -2555,18 +2518,22 @@
 			        }
 			    } else {
 			        // --- FALL 3: TEXT ---
-			        let rawText = data.text || "";
-			        const textContentDiv = document.createElement('div');
-			        textContentDiv.className = 'chat-text-content';
-			        
-			        // Hantera kundlänkar om funktionen finns
-			        if (typeof highlightCustomerNames === 'function') {
-			             rawText = highlightCustomerNames(rawText);
-			        }
-			        
-			        // Hantera vanliga länkar
-			        textContentDiv.innerHTML = typeof linkify === 'function' ? linkify(rawText) : rawText;
-			        bubble.appendChild(textContentDiv);
+					let rawText = data.text || "";
+					const textContentDiv = document.createElement('div');
+					textContentDiv.className = 'chat-text-content';
+					
+					// 1. Kör linkify FÖRST. Den "säkrar" texten och skapar länkar av URL:er.
+					let processedText = typeof linkify === 'function' ? linkify(rawText) : rawText;
+					
+					// 2. Kör highlightCustomerNames SENARE på resultatet.
+					// Eftersom texten nu redan är "säker" (escaped av linkify) kan vi säkert lägga in HTML för namnen.
+					if (typeof highlightCustomerNames === 'function') {
+					     processedText = highlightCustomerNames(processedText);
+					}
+					
+					// 3. Sätt resultatet som HTML
+					textContentDiv.innerHTML = processedText;
+					bubble.appendChild(textContentDiv);
 			    }
 			
 			    // Reaktioner (Ikonen nere till höger)
@@ -3366,6 +3333,47 @@
 			    setTimeout(() => {
 			        checkSmartNotifications(allJobs);
 			    }, 2000);
+
+				// Koppla knapparna i bildmodalen EN GÅNG (Globalt)
+				const mmCloseBtn = document.getElementById('mmCloseBtn');
+				const mmForwardBtn = document.getElementById('mmForwardBtn');
+				const mmShareBtn = document.getElementById('mmShareBtn'); // Används för nedladdning/dela
+				const mmDeleteBtn = document.getElementById('mmDeleteBtn');
+				const imageModalBackdrop = document.getElementById('imageZoomModal'); // Din modal container
+				
+				if (mmCloseBtn) mmCloseBtn.onclick = () => history.back();
+				
+				if (mmForwardBtn) {
+				    mmForwardBtn.onclick = (e) => {
+				        e.stopPropagation();
+				        // Använd din befintliga funktion för att dela/vidarebefordra
+				        if (typeof forwardCurrentPhoto === 'function') forwardCurrentPhoto(); 
+				    };
+				}
+				
+				if (mmShareBtn) {
+				    mmShareBtn.onclick = (e) => {
+				        e.stopPropagation();
+				        // Använd din befintliga funktion för nedladdning
+				        if (typeof downloadCurrentPhoto === 'function') downloadCurrentPhoto(); 
+				    };
+				}
+				
+				if (mmDeleteBtn) {
+				    mmDeleteBtn.onclick = (e) => {
+				        e.stopPropagation();
+				        if (typeof deleteCurrentPhoto === 'function') deleteCurrentPhoto();
+				    };
+				}
+				
+				// Stäng om man klickar på bakgrunden (men inte på bilden)
+				if (imageModalBackdrop) {
+				    imageModalBackdrop.onclick = (e) => {
+				        if (e.target === imageModalBackdrop || e.target.classList.contains('mm-carousel-item')) {
+				            history.back();
+				        }
+				    };
+				}
 			}
 
             function renderGlobalStats(jobs) {
