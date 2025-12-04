@@ -7347,138 +7347,129 @@ body.body-scroll-lock {
 
 /* --- MESSENGER KARUSELL MODAL (NY & FIXAD) --- */
 
-/* 1. Huvud-bakgrunden (Fixad positionering) */
+/* 1. Huvud-bakgrunden */
 .messenger-modal-backdrop {
-    display: none; /* Dold som standard */
-    position: fixed; /* Lås fast över hela skärmen */
+    display: none; /* JS ändrar denna till flex vid öppning */
+    position: fixed;
     top: 0; 
     left: 0; 
     width: 100%; 
     height: 100%;
-    height: 100dvh; /* VIKTIGT: Hanterar mobilens adressfält bättre */
+    height: 100dvh; /* Täcker hela skärmen inkl adressfält */
     
-    background-color: rgba(0, 0, 0, 0.95); /* Mörk bakgrund */
+    background-color: #000000; /* Helt svart bakgrund */
     z-index: 2147483647 !important; /* Allra överst */
-    
-    /* Centrera innehållet */
-    display: flex; /* Säkerställ att flex används direkt */
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
 }
 
-/* 2. Headern (Sprid ut knapparna) */
+/* 2. Headern (Absolut längst upp) */
 .mm-header {
-    width: 100%;             
-    box-sizing: border-box; 
-    display: flex;
-    justify-content: space-between; /* X till vänster, ikoner till höger */
-    align-items: center;
-    padding: 15px 20px;
-    
     position: absolute;      
     top: 0;
     left: 0;
-    z-index: 30005; /* Över bilden */
+    width: 100%;             
+    box-sizing: border-box; 
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    z-index: 30020; /* Måste ligga över bilden */
+    background: linear-gradient(to bottom, rgba(0,0,0,0.5), transparent); /* Liten skugga för läsbarhet */
 }
 
-/* Ikon-knapparna i headern */
+/* Ikon-knapparna */
 .mm-icon-btn {
     background: transparent;
     border: none;
-    color: rgba(255, 255, 255, 0.9);
+    color: #ffffff;
     cursor: pointer;
-    padding: 8px;
+    padding: 10px; /* Större träffyta */
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: transform 0.2s ease, color 0.2s ease;
 }
 .mm-icon-btn:hover {
     transform: scale(1.1);
-    color: #fff;
+    opacity: 0.8;
 }
-
-/* Raderingsknapp i bildmodal */
 .mm-icon-btn.danger-hover:hover {
-    color: #ff453a; /* Röd färg vid hover */
-    background-color: rgba(255, 69, 58, 0.15); /* Svag röd bakgrund */
-    border-radius: 50%;
+    color: #ff453a;
 }
-
-/* Gruppera höger-ikonerna */
 .mm-header-actions {
     display: flex;
-    gap: 15px; /* Luft mellan Vidarebefordra, Dela och Radera */
+    gap: 15px;
 }
 
-/* 3. Bild-containern */
+/* 3. Bild-containern (Fyller HELA skärmen) */
 .mm-carousel-container {
-    flex: 1; 
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    overflow: hidden;
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
-    height: 100%; /* VIKTIGT: Tvinga containern att fylla höjden */
-    padding-bottom: 0; /* Ta bort padding som kan knuffa bilden */
+    height: 100%;
+    z-index: 30010; /* Under headern, över bakgrunden */
+    overflow: hidden;
 }
 
-/* Bild-kort */
+/* 4. Bild-kortet (Centrerar bilden) */
 .mm-carousel-item {
     position: absolute;
-    top: 0;      /* VIKTIGT: Tvinga position till toppen */
-    left: 0;     /* VIKTIGT: Tvinga position till vänster */
-    
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-    display: flex;
-    align-items: center; /* Centrera bilden vertikalt i kortet */
-    justify-content: center; /* Centrera bilden horisontellt i kortet */
+    top: 0; 
+    left: 0; 
     width: 100%; 
     height: 100%;
-}
-
-/* Bild-styling */
-.mm-carousel-item img {
-    border-radius: 4px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-    max-width: 100%;
-    max-height: 85vh; /* Se till att bilden inte blir högre än skärmen */
-    object-fit: contain; /* Visa hela bilden utan att beskära */
     
-    /* Förhindra att bilden vidrör kanterna på mobilen */
-    padding: 0 10px; 
-    box-sizing: border-box;
+    display: flex;
+    align-items: center; /* Centrera vertikalt */
+    justify-content: center; /* Centrera horisontellt */
+    
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    opacity: 0; /* Osynlig som standard */
+    pointer-events: none; /* Klick går igenom om den inte syns */
 }
 
-/* HUVUDBILDEN */
+/* Bilden */
+.mm-carousel-item img {
+    max-width: 100%;
+    max-height: 100%; /* Tillåt bilden att bli så stor den behöver */
+    
+    /* Viktigt för att bilden inte ska klippas eller sträckas */
+    object-fit: contain; 
+    
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    padding: 0; 
+    
+    /* Om du vill ha lite luft till kanterna på mobil, avkommentera raden nedan: */
+    /* padding: 10px; box-sizing: border-box; */
+}
+
+/* Klasser för att visa/dölja bilder */
 .mm-carousel-item.main {
-    z-index: 30002;
     opacity: 1;
-    transform: translateX(0) scale(1);
+    z-index: 2;
+    transform: scale(1);
+    pointer-events: auto;
 }
 
-/* SIDOBILDERNA */
 .mm-carousel-item.side {
-    z-index: 30001;
-    opacity: 0.3;
+    opacity: 0; /* Dölj sidobilderna helt för renare look, eller sätt 0.1 */
+    z-index: 1;
 }
-.mm-carousel-item.prev { transform: translateX(-100%) scale(0.85); }
-.mm-carousel-item.next { transform: translateX(100%) scale(0.85); }
+.mm-carousel-item.prev { transform: translateX(-100%); }
+.mm-carousel-item.next { transform: translateX(100%); }
 
-/* 4. Footer Text */
+/* 5. Footer Text */
 .mm-footer-text {
     position: absolute;
-    bottom: 30px;
+    bottom: 40px; /* En bit upp från botten */
     left: 0;
     width: 100%;
     text-align: center;
-    color: rgba(255, 255, 255, 0.8);
-    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1rem;
     padding: 0 20px;
-    z-index: 30005;
-    pointer-events: none; /* Låt klick gå igenom texten */
+    z-index: 30020; /* Samma nivå som header */
+    text-shadow: 0 1px 3px rgba(0,0,0,0.8); /* Skugga för läsbarhet */
+    pointer-events: none;
 }
 
 /* --- SÄKERHETSUPPDATERING --- */
@@ -7695,6 +7686,7 @@ body.offline-mode .offline-dot {
     background-color: rgba(255, 69, 58, 0.15); /* Svag röd bakgrund */
     border-radius: 50%;
 }
+
 
 
 
