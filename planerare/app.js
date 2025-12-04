@@ -2127,60 +2127,69 @@
 			            chatInput.value = '';
 			
 			            try {
-			                // --- DIN API NYCKEL ---
-			                const apiKey = "AIzaSyAm3gc0-iASCKsz0xw5-P3Xofr2kGglors"; 
-			                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-			
-			                const prompt = `Du är en expertmekaniker. Svara kortfattat, proffsigt och på svenska. 
-			                                Analysera följande felkod/symptom och lista de 3 mest sannolika orsakerna: 
-			                                "${query}"`;
-			
-			                const response = await fetch(url, {
-			                    method: 'POST',
-			                    headers: { 
-			                        'Content-Type': 'application/json' 
-			                    },
-			                    body: JSON.stringify({
-			                        contents: [{ 
-			                            parts: [{ text: prompt }] 
-			                        }]
-			                    })
-			                });
-			
-			                const data = await response.json();
-			
-			                if (data.candidates && data.candidates.length > 0) {
-			                    const aiAnswer = data.candidates[0].content.parts[0].text;
-			
-			                    await db.collection("notes").add({
-			                        text: aiAnswer,
-			                        timestamp: new Date().toISOString(),
-			                        platform: 'system',
-			                        reaction: '🤖'
-			                    });
-			                    
-			                    setTimeout(() => {
-			                        const chatList = document.getElementById('chatMessages');
-			                        if(chatList) chatList.scrollTop = chatList.scrollHeight;
-			                    }, 100);
-			
-			                } else {
-			                    throw new Error("Inget svar från AI (Tom data)");
-			                }
-			
-			            } catch (err) {
-			                console.error("AI Fel:", err);
-			                showToast("Kunde inte nå AI-mekanikern.", "danger");
-			                
-			                let errorMsg = "⚠️ AI-tjänsten svarade inte.";
-			                if(err.message) errorMsg += ` (${err.message})`;
-			                
-			                await db.collection("notes").add({
-			                    text: errorMsg,
-			                    timestamp: new Date().toISOString(),
-			                    platform: 'system'
-			                });
-			            }
+	                        // --- GOOGLE GEMINI API ---
+	                        // 1. Byt ut TEXTEN nedan mot din (gärna en nygenererad) nyckel
+	                        const apiKey = "AIzaSyAm3gc0-iASCKsz0xw5-P3Xofr2kGglors"; 
+	                        
+	                        // 2. VIKTIG ÄNDRING: Vi byter till 'gemini-pro' för att slippa 404-felet
+	                        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`;
+	
+	                        const prompt = `Du är en expertmekaniker. Svara kortfattat, proffsigt och på svenska. 
+	                                        Analysera följande felkod/symptom och lista de 3 mest sannolika orsakerna: 
+	                                        "${query}"`;
+	
+	                        const response = await fetch(url, {
+	                            method: 'POST',
+	                            headers: { 
+	                                'Content-Type': 'application/json' 
+	                            },
+	                            body: JSON.stringify({
+	                                contents: [{ 
+	                                    parts: [{ text: prompt }] 
+	                                }]
+	                            })
+	                        });
+	
+	                        // Om svaret inte är OK (t.ex. 404 eller 400), kasta ett fel direkt
+	                        if (!response.ok) {
+	                            throw new Error(`Serverfel: ${response.status} ${response.statusText}`);
+	                        }
+	
+	                        const data = await response.json();
+	
+	                        if (data.candidates && data.candidates.length > 0) {
+	                            const aiAnswer = data.candidates[0].content.parts[0].text;
+	
+	                            await db.collection("notes").add({
+	                                text: aiAnswer,
+	                                timestamp: new Date().toISOString(),
+	                                platform: 'system',
+	                                reaction: '🤖'
+	                            });
+	                            
+	                            setTimeout(() => {
+	                                const chatList = document.getElementById('chatMessages');
+	                                if(chatList) chatList.scrollTop = chatList.scrollHeight;
+	                            }, 100);
+	
+	                        } else {
+	                            // Ibland blockerar Google svaret pga "säkerhet" (SafetyRatings), då är candidates tomt
+	                            throw new Error("Inget svar (kan ha filtrerats av AI-säkerhetsfilter)");
+	                        }
+	
+	                    } catch (err) {
+	                        console.error("AI Fel:", err);
+	                        showToast("Kunde inte nå AI-mekanikern.", "danger");
+	                        
+	                        let errorMsg = "⚠️ AI-tjänsten svarade inte.";
+	                        if(err.message) errorMsg += ` (${err.message})`;
+	                        
+	                        await db.collection("notes").add({
+	                            text: errorMsg,
+	                            timestamp: new Date().toISOString(),
+	                            platform: 'system'
+	                        });
+	                    }
 			        });
 			    }
 			
