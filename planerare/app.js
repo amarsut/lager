@@ -2008,7 +2008,7 @@
 				            // Detta tvingar listan att ha mycket luft i botten så sista meddelandet
 				            // och dess tidsstämpel hamnar OVANFÖR din textruta.
 				            const spacer = document.createElement('div');
-				            spacer.style.height = "55px"; // <-- ÄNDRAD TILL 140px
+				            spacer.style.height = "50px"; // <-- ÄNDRAD TILL 140px
 				            spacer.style.flexShrink = "0"; 
 				            chatList.appendChild(spacer);
 				
