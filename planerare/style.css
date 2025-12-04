@@ -7395,31 +7395,32 @@ body.body-scroll-lock {
 
 /* --- RÄKNAREN: Centrerad i mitten av Headern --- */
 .mm-counter {
-    /* Använd fixed för att centrera relativt till skärmen, inte headern */
-    position: fixed; 
-    top: 22px;       /* Justera höjden så den linjerar med knapparna */
-    left: 50%;
-    transform: translateX(-50%);
+    /* Använd absolute för att placera den fritt ovanpå headern */
+    position: absolute; 
     
-    /* Nollställ botten-regler om de finns kvar */
-    bottom: auto; 
+    /* Centrera exakt i mitten av föräldern (.mm-header) */
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    
+    /* Nollställ marginaler */
     margin: 0;
+    bottom: auto; 
     
     /* Design */
-    background-color: rgba(0, 0, 0, 0.5); /* Mer transparent för att smälta in */
+    background-color: rgba(0, 0, 0, 0.5); 
     color: #f2f2f7;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     font-weight: 600;
-    font-size: 15px; 
+    font-size: 14px; /* Lite mindre för att se bra ut på mobil */
     letter-spacing: 0.5px;
     
     padding: 4px 12px;
     border-radius: 20px;
-    /* border: 1px solid rgba(255, 255, 255, 0.1); */ /* Valfritt: Ta bort kant för renare look */
     
     z-index: 30050; 
     pointer-events: none;
-    white-space: nowrap;
+    white-space: nowrap; /* Förhindra radbrytning */
     text-shadow: 0 1px 2px rgba(0,0,0,0.5);
 }
 
@@ -7742,6 +7743,7 @@ body.offline-mode .offline-dot {
     background-color: rgba(255, 69, 58, 0.15); /* Svag röd bakgrund */
     border-radius: 50%;
 }
+
 
 
 
