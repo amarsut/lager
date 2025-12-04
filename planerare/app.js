@@ -1826,7 +1826,7 @@
 			        if (!sessionStorage.getItem('incognito_warned')) {
 			            sendSystemMessage(
 			                `🕵️‍♂️ Ny enhet? Det verkar som du kör på en ny enhet eller i 'Privat läge'. Kom ihåg att vissa inställningar nollställs om du stänger webbläsaren.`,
-			                'warning'
+			                'info'
 			            );
 			            sessionStorage.setItem('incognito_warned', 'true');
 			        }
