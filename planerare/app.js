@@ -2127,12 +2127,13 @@
 			            chatInput.value = '';
 			
 			            try {
-	                        // --- GOOGLE GEMINI API ---
-	                        // 1. Byt ut TEXTEN nedan mot din (gärna en nygenererad) nyckel
-	                        const apiKey = "AIzaSyAm3gc0-iASCKsz0xw5-P3Xofr2kGglors"; 
+	                        // --- GOOGLE GEMINI API (FIXAD URL) ---
 	                        
-	                        // 2. VIKTIG ÄNDRING: Vi byter till 'gemini-pro' för att slippa 404-felet
-	                        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`;
+	                        // 1. Klistra in din NYA nyckel här (från aistudio.google.com)
+	                        const apiKey = "AIzaSyD5T7D7EBgNb8jwARxcG7xZLWwbqy80Qf0"; 
+	                        
+	                        // 2. Vi använder den senaste stabila gratis-modellen
+	                        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 	
 	                        const prompt = `Du är en expertmekaniker. Svara kortfattat, proffsigt och på svenska. 
 	                                        Analysera följande felkod/symptom och lista de 3 mest sannolika orsakerna: 
@@ -2150,9 +2151,14 @@
 	                            })
 	                        });
 	
-	                        // Om svaret inte är OK (t.ex. 404 eller 400), kasta ett fel direkt
+	                        // --- FELHANTERING ---
 	                        if (!response.ok) {
-	                            throw new Error(`Serverfel: ${response.status} ${response.statusText}`);
+	                            // Detta loggar exakt vad Google klagar på i konsolen
+	                            const errorData = await response.json().catch(() => ({}));
+	                            console.error("Google API Error:", errorData);
+	                            
+	                            // Kasta ett tydligt fel
+	                            throw new Error(`Serverfel: ${response.status} (${errorData.error?.message || response.statusText})`);
 	                        }
 	
 	                        const data = await response.json();
@@ -2173,16 +2179,15 @@
 	                            }, 100);
 	
 	                        } else {
-	                            // Ibland blockerar Google svaret pga "säkerhet" (SafetyRatings), då är candidates tomt
-	                            throw new Error("Inget svar (kan ha filtrerats av AI-säkerhetsfilter)");
+	                            throw new Error("Inget svar från AI (Tom data)");
 	                        }
 	
 	                    } catch (err) {
-	                        console.error("AI Fel:", err);
+	                        console.error("AI CRITICAL ERROR:", err);
 	                        showToast("Kunde inte nå AI-mekanikern.", "danger");
 	                        
 	                        let errorMsg = "⚠️ AI-tjänsten svarade inte.";
-	                        if(err.message) errorMsg += ` (${err.message})`;
+	                        if(err.message) errorMsg += ` ${err.message}`;
 	                        
 	                        await db.collection("notes").add({
 	                            text: errorMsg,
