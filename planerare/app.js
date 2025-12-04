@@ -2146,18 +2146,19 @@
 								Analysera: "${query}".
 								
 								VIKTIGT OM FORMATERING:
-								1. Använd <b> för rubriker.
-								2. Använd <ul> och <li> för listan (använd INTE siffror, använd punktlista).
-								3. Inga onödiga radbrytningar.
+								1. Håll det KORT och KONCIST. Max 1 mening per punkt.
+								2. Använd <b> för rubriker.
+								3. Använd <ul> och <li> för listan (använd INTE siffror, använd punktlista).
+								4. Inga onödiga radbrytningar.
 								
 								Följ denna mall exakt:
-								<b>Kort analys:</b> Kort sammanfattning.
+								<b>Kort Analys:</b> [Max 2 meningar]
 								<ul></ul>
 								<b>Möjliga orsaker:</b>
 								<ul>
-								<li><b>[Orsak]</b> - Kort förklaring.</li>
-								<li><b>[Orsak]</b> - Kort förklaring.</li>
-								<li><b>[Orsak]</b> - Kort förklaring.</li>
+								<li><b>[Orsak]</b> - [Kort förklaring, max 10 ord]</li>
+								<li><b>[Orsak]</b> - [Kort förklaring, max 10 ord]</li>
+								<li><b>[Orsak]</b> - [Kort förklaring, max 10 ord]</li>
 								</ul>`;
 			
 			                const response = await fetch(url, {
@@ -2740,12 +2741,18 @@
 			    }
 			
 			    // Reaktioner (Ikonen nere till höger)
-			    if (data.reaction) {
-			        const badge = document.createElement('span');
-			        badge.className = 'reaction-badge';
-			        badge.textContent = data.reaction;
-			        bubble.appendChild(badge);
-			    }
+				if (data.reaction) {
+				    const badge = document.createElement('span');
+				    badge.className = 'reaction-badge';
+				    
+				    // Om reaktionen är ett timglas, lägg till snurr-klassen
+				    if (data.reaction === '⏳') {
+				        badge.classList.add('loading');
+				    }
+				    
+				    badge.textContent = data.reaction;
+				    bubble.appendChild(badge);
+				}
 			
 			    // --- 3. EVENT LISTENERS (HÖGERKLICK & LÅNGTRYCK) ---
 			    
