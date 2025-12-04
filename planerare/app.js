@@ -2146,10 +2146,10 @@
 								Analysera: "${query}".
 								
 								VIKTIGT OM FORMATERING:
-								Använd HTML-taggar.
-								1. Använd <b> för rubriker och viktiga delar.
-								2. Använd <ul> och <li> för listan (inga siffror, använd punktlista).
-								3. Håll det kompakt.
+								Använd HTML-taggar för struktur.
+								1. Använd <b> för rubriker.
+								2. Använd <ul> och <li> för listan (använd INTE siffror manuellt, använd <li>).
+								3. Inga onödiga radbrytningar.
 								
 								Följ denna mall exakt:
 								<b>Analys:</b> Kort sammanfattning.
@@ -2559,7 +2559,7 @@
 			function linkify(text) {
 			    if (!text) return "";
 			
-			    // 1. Säkra texten
+			    // 1. Säkra texten (gör om ALLA < och > till ofarlig text)
 			    let safeText = text
 			        .replace(/&/g, "&amp;")
 			        .replace(/</g, "&lt;")
@@ -2573,13 +2573,20 @@
 			        return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="chat-link">${url}</a>`;
 			    });
 			
-			    // 3. Återställ tillåten HTML (Nu med listor!)
+			    // 3. ÅTERSTÄLL HTML (Detta är delen som fixar din bild!)
+			    // Vi gör tillbaka &lt;b&gt; till <b> så webbläsaren förstår det.
 			    safeText = safeText
-			        .replace(/&lt;b&gt;/g, '<b>').replace(/&lt;\/b&gt;/g, '</b>')
-			        .replace(/&lt;br&gt;/g, '<br>').replace(/&lt;br\s*\/&gt;/g, '<br>')
-			        // NYTT: Tillåt punktlistor
-			        .replace(/&lt;ul&gt;/g, '<ul>').replace(/&lt;\/ul&gt;/g, '</ul>')
-			        .replace(/&lt;li&gt;/g, '<li>').replace(/&lt;\/li&gt;/g, '</li>');
+			        // Fetstil
+			        .replace(/&lt;b&gt;/g, '<b>')
+			        .replace(/&lt;\/b&gt;/g, '</b>')
+			        // Listor (Ul och Li)
+			        .replace(/&lt;ul&gt;/g, '<ul>')
+			        .replace(/&lt;\/ul&gt;/g, '</ul>')
+			        .replace(/&lt;li&gt;/g, '<li>')
+			        .replace(/&lt;\/li&gt;/g, '</li>')
+			        // Radbrytningar (om AI använder dem)
+			        .replace(/&lt;br&gt;/g, '<br>')
+			        .replace(/&lt;br\s*\/&gt;/g, '<br>');
 			
 			    return safeText;
 			}
