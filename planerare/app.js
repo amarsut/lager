@@ -2141,45 +2141,76 @@
 			
 			    // --- 2. SÖKFUNKTION ---
 			    if (searchInput) {
-			        const filterChat = () => {
-			            const term = searchInput.value.toLowerCase();
-			            const bubbles = chatList.querySelectorAll('.chat-bubble');
-			            const times = chatList.querySelectorAll('.chat-time');
-			            
-			            if (clearBtn) clearBtn.style.display = term ? 'flex' : 'none';
-			            
-			            bubbles.forEach((bubble, index) => {
-			                const originalHTML = bubble.dataset.originalHtml || bubble.innerHTML;
-			                const textContent = bubble.textContent.toLowerCase();
-			                const isMatch = textContent.includes(term);
-			                const isImage = bubble.classList.contains('chat-bubble-image');
-			                const timeElement = times[index];
-			
-			                if (isMatch || (isImage && !term)) {
-			                    bubble.style.display = 'block';
-			                    if (timeElement) timeElement.style.display = 'block';
-			                    if (term && !isImage) {
-			                        const regex = new RegExp(`(${term})`, 'gi');
-			                        bubble.innerHTML = originalHTML.replace(regex, '<mark>$1</mark>');
-			                    } else {
-			                        bubble.innerHTML = originalHTML;
-			                    }
-			                } else {
-			                    bubble.style.display = 'none';
-			                    if (timeElement) timeElement.style.display = 'none';
-			                }
-			            });
-			        };
-			        
-			        searchInput.oninput = filterChat;
-			        if (clearBtn) {
-			            clearBtn.onclick = () => { 
-			                searchInput.value = ''; 
-			                filterChat(); 
-			                searchInput.focus(); 
-			            };
-			        }
-			    }
+	                const filterChat = () => {
+	                    const term = searchInput.value.toLowerCase();
+	                    const bubbles = Array.from(chatList.querySelectorAll('.chat-bubble'));
+	                    const times = chatList.querySelectorAll('.chat-time');
+	                    const separators = chatList.querySelectorAll('.chat-date-separator');
+	                    
+	                    // Visa/Dölj kryss-knappen
+	                    if (clearBtn) clearBtn.style.display = term ? 'flex' : 'none';
+	                    
+	                    // 1. Återställ alla datum-separatorer till DOLD först (om vi söker)
+	                    if (term) {
+	                        separators.forEach(sep => sep.style.display = 'none');
+	                    } else {
+	                        separators.forEach(sep => sep.style.display = 'block');
+	                    }
+	
+	                    // 2. Loopa igenom meddelanden
+	                    bubbles.forEach((bubble, index) => {
+	                        const originalHTML = bubble.dataset.originalHtml || bubble.innerHTML;
+	                        // Spara originalet om det inte finns (för att kunna ta bort highlight)
+	                        if (!bubble.dataset.originalHtml) bubble.dataset.originalHtml = originalHTML;
+	
+	                        const textContent = bubble.textContent.toLowerCase();
+	                        const isMatch = textContent.includes(term);
+	                        const isImage = bubble.classList.contains('chat-bubble-image');
+	                        const timeElement = times[index];
+	
+	                        if (isMatch || (isImage && !term)) {
+	                            // --- MATCH! ---
+	                            bubble.style.display = 'block';
+	                            if (timeElement) timeElement.style.display = 'block';
+	                            
+	                            // Highlighting
+	                            if (term && !isImage) {
+	                                const regex = new RegExp(`(${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+	                                bubble.innerHTML = originalHTML.replace(regex, '<mark>$1</mark>');
+	                            } else {
+	                                bubble.innerHTML = originalHTML;
+	                            }
+	
+	                            // --- NY LOGIK: Visa tillhörande datum-rubrik ---
+	                            if (term) {
+	                                // Gå bakåt i listan för att hitta närmaste separator
+	                                let prev = bubble.previousElementSibling;
+	                                while (prev) {
+	                                    if (prev.classList.contains('chat-date-separator')) {
+	                                        prev.style.display = 'block'; // Visa rubriken!
+	                                        break; // Vi hittade den, sluta leta
+	                                    }
+	                                    prev = prev.previousElementSibling;
+	                                }
+	                            }
+	
+	                        } else {
+	                            // --- INGEN MATCH ---
+	                            bubble.style.display = 'none';
+	                            if (timeElement) timeElement.style.display = 'none';
+	                        }
+	                    });
+	                };
+	                
+	                searchInput.oninput = filterChat;
+	                if (clearBtn) {
+	                    clearBtn.onclick = () => { 
+	                        searchInput.value = ''; 
+	                        filterChat(); 
+	                        searchInput.focus(); 
+	                    };
+	                }
+	            }
 			
 			    // --- 3. FOCUS/BLUR LOGIK ---
 			    if (chatInput && !chatInput.dataset.focusListenerAttached) {
