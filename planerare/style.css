@@ -6480,40 +6480,61 @@ body.body-scroll-lock {
 
 /* --- CHATT GALLERI-LÄGE --- */
 
-/* När galleriet är aktivt, dölj allt som INTE är bilder */
+/* 1. Dölj allt som INTE är bilder (Inklusive datum-separatorer!) */
 .chat-messages.gallery-mode .chat-bubble:not(.chat-bubble-image),
 .chat-messages.gallery-mode .chat-time,
-.chat-messages.gallery-mode .empty-state-chat {
+.chat-messages.gallery-mode .empty-state-chat,
+.chat-messages.gallery-mode .chat-date-separator { /* <-- VIKTIGT: Denna saknades */
     display: none !important;
 }
 
-/* Ändra layouten till rutnät */
+/* 2. Ändra layouten till ett snyggt rutnät */
 .chat-messages.gallery-mode {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); /* Auto-grid */
-    gap: 0.5rem;
-    padding: 0.5rem;
+    /* På mobil: 3 bilder i bredd ser oftast bäst ut (Instagram-stil) */
+    grid-template-columns: repeat(3, 1fr); 
+    gap: 4px; /* Lite mindre mellanrum */
+    padding: 4px;
     align-content: start; /* Tryck upp bilderna mot toppen */
 }
 
-/* Anpassa bild-bubblorna i galleriet */
+/* Anpassning för större skärmar (Desktop) */
+@media (min-width: 769px) {
+    .chat-messages.gallery-mode {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 10px;
+        padding: 10px;
+    }
+}
+
+/* 3. Anpassa "Bubblan" så den inte ser ut som en chattbubbla i detta läge */
 .chat-messages.gallery-mode .chat-bubble-image {
     max-width: 100% !important;
     margin: 0 !important;
     padding: 0 !important;
-    border-radius: 8px;
-    background: none;
-    box-shadow: none;
-    align-self: auto; /* Återställ flex-position */
+    border-radius: 0; /* Vi rundar bilden istället */
+    background: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+    
+    /* För att bilden ska fylla rutan */
+    display: flex;
+    align-items: stretch;
+    justify-content: stretch;
 }
 
-/* Gör bilderna kvadratiska (object-fit) för snyggt rutnät */
+/* 4. Gör bilderna perfekt kvadratiska (Instagram-stil) */
 .chat-messages.gallery-mode .chat-bubble-image img {
     width: 100%;
-    height: 100px; /* Fast höjd för tumnaglar */
-    object-fit: cover;
-    border-radius: 8px;
+    height: 100%;
+    aspect-ratio: 1 / 1; /* Tvingar bilden till en kvadrat */
+    object-fit: cover;   /* Beskär bilden snyggt så den fyller kvadraten */
+    border-radius: 4px;  /* Liten rundning på hörnen */
     margin: 0;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    
+    /* Ta bort den fasta höjden vi har i chatt-läget */
+    max-height: none !important; 
 }
 
 /* --- BILD-ZOOM MODAL --- */
@@ -7753,6 +7774,7 @@ body.offline-mode .offline-dot {
     background-color: rgba(255, 69, 58, 0.15); /* Svag röd bakgrund */
     border-radius: 50%;
 }
+
 
 
 
