@@ -7352,12 +7352,12 @@ body.body-scroll-lock {
     display: none;
     position: fixed;
     top: 0; left: 0; width: 100%; height: 100%;
-    
-    /* Använd dvh för att hantera mobila webbläsare bättre */
     height: 100dvh; 
-    
     background-color: #000000;
     z-index: 2147483647 !important;
+    
+    /* VIKTIGT: Gör bakgrunden klickbar för att stänga */
+    pointer-events: auto; 
 }
 
 /* 2. Headern (Oförändrad eftersom du var nöjd med knapparna) */
@@ -7369,7 +7369,11 @@ body.body-scroll-lock {
     justify-content: space-between;
     align-items: center;
     padding: 15px 20px;
-    z-index: 30020; 
+    
+    /* VIKTIGT: Högre z-index och fånga klick */
+    z-index: 30030; 
+    pointer-events: auto; 
+    
     background: linear-gradient(to bottom, rgba(0,0,0,0.5), transparent);
 }
 
@@ -7384,11 +7388,14 @@ body.body-scroll-lock {
 
 /* 3. Bild-containern (FIXAD: Position fixed för att garantera fullskärm) */
 .mm-carousel-container {
-    position: fixed; /* Ändrat till fixed */
+    position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
     width: 100%;
     height: 100%;
-    z-index: 30010; /* Ligger under headern */
+    
+    /* VIKTIGT: Ligger under headern och låter klick passera */
+    z-index: 30010; 
+    pointer-events: none; 
 }
 
 /* 4. Bild-kortet */
@@ -7664,6 +7671,7 @@ body.offline-mode .offline-dot {
     background-color: rgba(255, 69, 58, 0.15); /* Svag röd bakgrund */
     border-radius: 50%;
 }
+
 
 
 
