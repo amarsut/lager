@@ -728,65 +728,63 @@
 			let currentGalleryImages = [];
 			let currentImageIndex = 0;
 			
-			window.openImageZoom = function(src) {
+			window.openImageZoom = function(clickedImgElement) {
 			    const modal = document.getElementById('imageZoomModal');
 			    if (!modal) return;
 			
-			    // 1. Hämta alla bilder
+			    // 1. Hämta källan (src) och ID från det klickade elementet
+			    // Vi hanterar fall där man skickar en sträng (för bakåtkompatibilitet) eller ett element
+			    let startSrc = "";
+			    let startId = null;
+			
+			    if (clickedImgElement instanceof HTMLElement) {
+			        startSrc = clickedImgElement.src;
+			        startId = clickedImgElement.dataset.id;
+			    } else {
+			        startSrc = clickedImgElement; // Om det råkar vara en sträng
+			    }
+			
+			    // 2. Bygg gallerilistan från alla synliga bilder i chatten
 			    const allImages = document.querySelectorAll('.chat-bubble-image img');
-				currentGalleryImages = Array.from(allImages).map(img => ({
-			        src: img.src,
-			        caption: "", 
-			        id: img.dataset.id // Vi hämtar ID:t från datasetet vi lade till
-			    }));
-							
+			    
 			    currentGalleryImages = Array.from(allImages).map(img => ({
 			        src: img.src,
-			        caption: "" 
+			        caption: "", 
+			        id: img.dataset.id || null // Hämta ID från dataset, eller null
 			    }));
 			
-			    currentImageIndex = currentGalleryImages.findIndex(img => img.src === src);
+			    // 3. Hitta rätt startindex
+			    // Vi försöker matcha exakt src först
+			    currentImageIndex = currentGalleryImages.findIndex(item => item.src === startSrc);
+			
+			    // Om vi inte hittar bilden (URL-kodningsfel), men vi har ett ID, försök matcha på ID
+			    if (currentImageIndex === -1 && startId) {
+			        currentImageIndex = currentGalleryImages.findIndex(item => item.id === startId);
+			    }
+			
+			    // Om det fortfarande misslyckas (extremfall), skapa en temporär lista
 			    if (currentImageIndex === -1) {
-			        currentGalleryImages = [{ src: src, caption: "" }];
+			        console.warn("Kunde inte matcha bild i galleriet, skapar temporär visning.");
+			        currentGalleryImages = [{ src: startSrc, caption: "", id: startId }];
 			        currentImageIndex = 0;
 			    }
 			
-			    // 2. Uppdatera UI
+			    // 4. Uppdatera UI och öppna
 			    updateCarouselUI();
 			
 			    history.pushState({ modal: 'imageZoom' }, 'Bild', '#image');
 			    modal.style.display = "flex";
 			    updateScrollLock();
 			
-			    // 3. Koppla knappar
+			    // 5. Koppla knappar (samma som förut)
 			    document.getElementById('mmCloseBtn').onclick = () => history.back();
 			    document.getElementById('mmShareBtn').onclick = downloadCurrentPhoto;
-			    document.getElementById('mmForwardBtn').onclick = () => {
-			        document.getElementById('mmForwardBtn').onclick = forwardCurrentPhoto;
-			    };
-
-				// --- NY KOPPLING: VIDAREBEFORDRA ---
+			    
 			    const fwdBtn = document.getElementById('mmForwardBtn');
 			    if (fwdBtn) fwdBtn.onclick = forwardCurrentPhoto;
 			
-			    // --- NY KOPPLING: RADERA ---
 			    const delBtn = document.getElementById('mmDeleteBtn');
-			    if (delBtn) delBtn.onclick = deleteCurrentPhoto; // Koppla den nya funktionen
-			
-			    // 4. KLICKA UTANFÖR FÖR ATT STÄNGA
-			    // Vi lägger lyssnaren på containern bakom bilderna
-			    const backdrop = document.getElementById('mmCarouselBackdrop');
-			    if (backdrop) {
-			        backdrop.onclick = (e) => {
-			            // Om vi klickar direkt på backdropen (inte på en bild) -> Stäng
-			            // e.target är det element vi klickade på. 
-			            // Bilderna ligger i divvar (.mm-carousel-item).
-			            // Om vi klickar på en bild, kommer e.target vara img.
-			            if (e.target === backdrop || e.target.classList.contains('mm-carousel-item')) {
-			                history.back();
-			            }
-			        };
-			    }
+			    if (delBtn) delBtn.onclick = deleteCurrentPhoto;
 			};
 			
 			function updateCarouselUI() {
@@ -2426,10 +2424,12 @@
 			            img.src = imgSrc; 
 			            img.loading = "lazy";
 			            
-			            // *** NYTT: Spara ID på bilden för radering ***
+			            // *** FIX: Spara ID på bilden för radering ***
 			            img.dataset.id = id; 
 			            
-			            img.onclick = (e) => { e.stopPropagation(); window.openImageZoom(imgSrc); };
+			            // *** FIX: Skicka med HELA elementet (img), inte bara länken ***
+			            img.onclick = (e) => { e.stopPropagation(); window.openImageZoom(img); };
+			            
 			            carousel.appendChild(img);
 			        });
 			        bubble.appendChild(carousel);
@@ -2448,10 +2448,12 @@
 			        imgElement.src = data.image; 
 			        imgElement.loading = "lazy";
 			        
-			        // *** NYTT: Spara ID på bilden för radering ***
+			        // *** FIX: Spara ID på bilden för radering ***
 			        imgElement.dataset.id = id;
 			        
-			        imgElement.onclick = (e) => { e.stopPropagation(); window.openImageZoom(data.image); };
+			        // *** FIX: Skicka med HELA elementet (imgElement), inte bara länken ***
+			        imgElement.onclick = (e) => { e.stopPropagation(); window.openImageZoom(imgElement); };
+			        
 			        bubble.appendChild(imgElement);
 			        
 			        // Bildtext
@@ -2467,13 +2469,12 @@
 			        const textContentDiv = document.createElement('div');
 			        textContentDiv.className = 'chat-text-content';
 			        
-			        // Använd linkify om den finns, annars råtext
-			        // Vi antar att du har linkify-funktionen definierad i din kod sedan tidigare
+			        // Hantera kundlänkar om funktionen finns
 			        if (typeof highlightCustomerNames === 'function') {
-			             // Om du använder kundnamns-länkning
 			             rawText = highlightCustomerNames(rawText);
 			        }
 			        
+			        // Hantera vanliga länkar
 			        textContentDiv.innerHTML = typeof linkify === 'function' ? linkify(rawText) : rawText;
 			        bubble.appendChild(textContentDiv);
 			    }
