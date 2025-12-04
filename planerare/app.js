@@ -1894,42 +1894,43 @@
 			let currentChatLimit = 50; // Hur många meddelanden vi laddar
             let isFetchingOlderChat = false;
 
+			// --- INITIERA CHATTEN (Huvudfunktion) ---
 			function initChat() {
 			    const chatList = document.getElementById('chatMessages');
 			    
-			    // OBS: Vi hämtar inte längre 'chatForm' eftersom det är en div nu
+			    // Input & Skicka
 			    const chatInput = document.getElementById('chatInput');
-			    const chatSendBtn = document.getElementById('chatSendBtn'); // Ny knapp
+			    const chatSendBtn = document.getElementById('chatSendBtn');
 			    
-			    // --- KNAPPAR & ELEMENT ---
+			    // Knappar & Element
 			    const chatBackBtn = document.getElementById('chatBackBtn');
 			    const searchInput = document.getElementById('chatSearchInput');
 			    const clearBtn = document.getElementById('clearChatSearch');
 			    const galleryToggleBtn = document.getElementById('toggleChatGallery'); 
 			    
-			    const plusBtn = document.getElementById('chatPlusBtn');     
+			    const plusBtn = document.getElementById('chatPlusBtn');      
 			    const cameraBtn = document.getElementById('chatCameraBtn'); 
 			    
 			    const fileInputGallery = document.getElementById('chatFileInputGallery');
 			    const fileInputCamera = document.getElementById('chatFileInputCamera');
 			
-			    if (!chatList) return; // Tog bort check för chatForm
+			    if (!chatList) return; 
 			    
 			    if (typeof currentChatLimit === 'undefined') {
 			        window.currentChatLimit = 50;
 			    } else {
 			        currentChatLimit = 50;
 			    }
-
-				let editingMessageId = null; // Håller koll på vilket ID vi redigerar
-
-			    // Hämta de nya elementen vi skapade i HTML
+			
+			    let editingMessageId = null; // Håller koll på redigering
+			
+			    // Redigerings-element
 			    const chatEditHeader = document.getElementById('chatEditHeader');
 			    const chatEditOverlay = document.getElementById('chatEditOverlay');
 			    const cancelEditBtn = document.getElementById('cancelEditBtn');
 			    const chatInputArea = document.getElementById('chatInputArea');
 			
-			    // Funktion för att STARTA redigering (Måste vara window. för att menyn ska hitta den)
+			    // --- FUNKTION: Starta redigering ---
 			    window.enterEditMode = async (id) => {
 			        if (!id) return;
 			        try {
@@ -1937,23 +1938,15 @@
 			            if (!doc.exists) return;
 			            const data = doc.data();
 			
-			            // Spara ID och fyll i text
 			            editingMessageId = id;
 			            
-			            // Fyll input med texten (eller bildtexten om det är en bild)
 			            chatInput.value = data.text || data.caption || "";
 			            
-			            // Visa UI för redigering
 			            if(chatEditHeader) chatEditHeader.style.display = 'flex';
 			            if(chatEditOverlay) chatEditOverlay.classList.add('show');
 			            if(chatInputArea) chatInputArea.classList.add('editing-mode');
 			            
-			            // Fokusera och flytta markören till slutet
 			            chatInput.focus();
-			            // Litet hack för att sätta markören sist
-			            /*const val = chatInput.value; 
-			            chatInput.value = ''; 
-			            chatInput.value = val;*/ 
 			
 			        } catch (err) {
 			            console.error(err);
@@ -1961,7 +1954,7 @@
 			        }
 			    };
 			
-			    // Funktion för att AVBRYTA redigering
+			    // --- FUNKTION: Avbryt redigering ---
 			    const exitEditMode = () => {
 			        editingMessageId = null;
 			        chatInput.value = '';
@@ -1971,61 +1964,48 @@
 			        if(chatInputArea) chatInputArea.classList.remove('editing-mode');
 			    };
 			
-			    // Koppla krysset i redigerings-headern
 			    if (cancelEditBtn) {
 			        cancelEditBtn.onclick = (e) => {
 			            e.preventDefault();
 			            exitEditMode();
 			        };
 			    }
-
-				// --- LOGIK FÖR ATT DÖLJA KNAPPAR VID SKRIVNING (MOBIL) ---
+			
+			    // --- MOBIL: Dölj knappar vid skrivning ---
 			    const innerInputActions = document.querySelector('.inner-input-actions');
 			    let inputFocusTimer = null;
 			
 			    if (chatInput && innerInputActions) {
-			        
-			        // Hjälpfunktion för att visa/dölja
 			        const toggleInputButtons = (show) => {
-			            // Kör bara detta på mobil (skärmbredd under 768px)
 			            if (window.innerWidth > 768) return; 
 			
 			            if (show) {
 			                innerInputActions.style.display = 'flex';
 			                innerInputActions.style.opacity = '1';
-			                // Justera padding så texten inte överlappar knapparna när de syns
-			                chatInput.style.paddingRight = '3rem'; // Plats för ikonerna
+			                chatInput.style.paddingRight = '3rem'; 
 			            } else {
 			                innerInputActions.style.display = 'none';
 			                innerInputActions.style.opacity = '0';
-			                // Ge mer plats åt texten när knapparna är borta
 			                chatInput.style.paddingRight = '1rem'; 
 			            }
 			        };
 			
-			        // 1. När man klickar i fältet (Focus)
 			        chatInput.addEventListener('focus', () => {
-			            // Om fältet är tomt, dölj tillfälligt i 4 sekunder
 			            if (chatInput.value.trim() === "") {
 			                toggleInputButtons(false);
-			                
 			                clearTimeout(inputFocusTimer);
 			                inputFocusTimer = setTimeout(() => {
-			                    // Om det fortfarande är tomt efter 4 sek, visa igen och återställ padding
 			                    if (chatInput.value.trim() === "") {
 			                        toggleInputButtons(true);
 			                    }
 			                }, 4000);
 			            } else {
-			                // Om det redan finns text, dölj direkt
 			                toggleInputButtons(false);
 			            }
 			        });
 			
-			        // 2. När man skriver (Input)
 			        chatInput.addEventListener('input', () => {
-			            clearTimeout(inputFocusTimer); // Avbryt 4-sekunders timern
-			
+			            clearTimeout(inputFocusTimer); 
 			            if (chatInput.value.trim() !== "") {
 			                toggleInputButtons(false);
 			            } else {
@@ -2033,60 +2013,46 @@
 			            }
 			        });
 			
-			        // 3. När man lämnar fältet (Blur)
 			        chatInput.addEventListener('blur', () => {
-			            // Återställ alltid knapparna när man är klar
 			            setTimeout(() => toggleInputButtons(true), 200); 
 			        });
 			    }
 			
-			    // --- NY FUNKTION FÖR ATT SKICKA ---
+			    // --- FUNKTION: Skicka Meddelande ---
 			    const sendMessage = async () => {
-				    const text = chatInput.value.trim();
-				    if (!text) return; // Skicka inget tomt
-				    
-				    // --- REDIGERINGSLÄGE ---
-				    if (editingMessageId) {
-				        try {
-				            // Uppdatera befintligt
-				            // Kolla först om det var en bild (caption) eller text
-				            // För enkelhetens skull, uppdatera 'text' om den finns, annars 'caption'
-				            // Men enklast är att göra en get() först eller bara köra update
-				            
-				            // Vi antar att det är ett textfält vi redigerar.
-				            // Om din datastruktur skiljer på text/caption, måste vi veta vilken.
-				            // En enkel lösning: Uppdatera 'text' fältet.
-				            
-				            await db.collection("notes").doc(editingMessageId).update({
-				                text: text, // Eller caption beroende på din datamodell
-				                isEdited: true // Bra att ha för framtiden
-				            });
-				            
-				            showToast("Meddelande uppdaterat", "success");
-				            exitEditMode(); // Stäng läget
-				        } catch (err) {
-				            console.error(err);
-				            showToast("Kunde inte spara ändring", "danger");
-				        }
-				        return; // VIKTIGT: Avbryt här så vi inte skapar nytt
-				    }
-				
-				    // --- VANLIGT NYTT MEDDELANDE ---
-				    try {
-				        await db.collection("notes").add({
-				            text: text,
-				            timestamp: new Date().toISOString(),
-				            platform: window.innerWidth <= 768 ? 'mobil' : 'dator'
-				        });
-				        chatInput.value = '';
-				        setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
-				        if(window.innerWidth > 768) chatInput.focus();
-				    } catch (err) {
-				        showToast("Kunde inte skicka notis.", "danger");
-				    }
-				};
+			        const text = chatInput.value.trim();
+			        if (!text) return; 
+			        
+			        if (editingMessageId) {
+			            try {
+			                await db.collection("notes").doc(editingMessageId).update({
+			                    text: text, 
+			                    isEdited: true 
+			                });
+			                
+			                showToast("Meddelande uppdaterat", "success");
+			                exitEditMode(); 
+			            } catch (err) {
+			                console.error(err);
+			                showToast("Kunde inte spara ändring", "danger");
+			            }
+			            return; 
+			        }
+			    
+			        try {
+			            await db.collection("notes").add({
+			                text: text,
+			                timestamp: new Date().toISOString(),
+			                platform: window.innerWidth <= 768 ? 'mobil' : 'dator'
+			            });
+			            chatInput.value = '';
+			            setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
+			            if(window.innerWidth > 768) chatInput.focus();
+			        } catch (err) {
+			            showToast("Kunde inte skicka notis.", "danger");
+			        }
+			    };
 			
-			    // Koppla Skicka-knappen (Klick)
 			    if (chatSendBtn) {
 			        chatSendBtn.onclick = (e) => {
 			            e.preventDefault();
@@ -2094,8 +2060,7 @@
 			        };
 			    }
 			
-			    // --- 1. HANTERA KNAPPAR ---
-			
+			    // --- KNAPP-HANTERARE ---
 			    if (chatBackBtn) {
 			        chatBackBtn.onclick = (e) => {
 			            e.preventDefault();
@@ -2138,169 +2103,152 @@
 			            if (!isActive) setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
 			        };
 			    }
-
-				const askAiBtn = document.getElementById('askAiBtn');
-
-	            if (askAiBtn) {
-	                askAiBtn.addEventListener('click', async (e) => {
-	                    e.preventDefault();
-	                    
-	                    const query = chatInput.value.trim();
-	                    if (!query) {
-	                        showToast("Skriv en felkod eller fråga först.", "warning");
-	                        return;
-	                    }
-	
-	                    // Visa din egen fråga i chatten
-	                    await db.collection("notes").add({
-	                        text: `🤖 Frågar AI: "${query}"...`,
-	                        timestamp: new Date().toISOString(),
-	                        platform: 'system',
-	                        reaction: '⏳'
-	                    });
-	
-	                    // Töm inputfältet
-	                    chatInput.value = '';
-	
-	                    try {
-	                        // --- GOOGLE GEMINI API ---
-	                        // Byt ut texten nedan mot din riktiga nyckel (börjar på AIza...)
-	                        const apiKey = "AIzaSyAm3gc0-iASCKsz0xw5-P3Xofr2kGglors"; 
-	                        
-	                        // OBS: Använd backticks (`) här, inte vanliga citattecken (')
-	                        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-	
-	                        const prompt = `Du är en expertmekaniker. Svara kortfattat, proffsigt och på svenska. 
-	                                        Analysera följande felkod/symptom och lista de 3 mest sannolika orsakerna: 
-	                                        "${query}"`;
-	
-	                        // Här sker anropet (kolla att kommatecknet efter url finns med!)
-	                        const response = await fetch(url, {
-	                            method: 'POST',
-	                            headers: { 
-	                                'Content-Type': 'application/json' 
-	                            },
-	                            body: JSON.stringify({
-	                                contents: [{ 
-	                                    parts: [{ text: prompt }] 
-	                                }]
-	                            })
-	                        });
-	
-	                        const data = await response.json();
-	
-	                        // Kontrollera om vi fick ett giltigt svar
-	                        if (data.candidates && data.candidates.length > 0) {
-	                            const aiAnswer = data.candidates[0].content.parts[0].text;
-	
-	                            // Spara svaret i databasen
-	                            await db.collection("notes").add({
-	                                text: aiAnswer,
-	                                timestamp: new Date().toISOString(),
-	                                platform: 'system',
-	                                reaction: '🤖'
-	                            });
-	                            
-	                            // Scrolla ner till botten
-	                            setTimeout(() => {
-	                                const chatList = document.getElementById('chatMessages');
-	                                if(chatList) chatList.scrollTop = chatList.scrollHeight;
-	                            }, 100);
-	
-	                        } else {
-	                            throw new Error("Inget svar från AI (Tom data)");
-	                        }
-	
-	                    } catch (err) {
-	                        console.error("AI Fel:", err);
-	                        showToast("Kunde inte nå AI-mekanikern.", "danger");
-	                        
-	                        let errorMsg = "⚠️ AI-tjänsten svarade inte.";
-	                        if(err.message) errorMsg += ` (${err.message})`;
-	                        
-	                        await db.collection("notes").add({
-	                            text: errorMsg,
-	                            timestamp: new Date().toISOString(),
-	                            platform: 'system'
-	                        });
-	                    }
-	                });
-	            }
 			
-			    // --- 2. SÖKFUNKTION ---
+			    // --- AI MEKANIKER (Google Gemini) ---
+			    const askAiBtn = document.getElementById('askAiBtn');
+			
+			    if (askAiBtn) {
+			        askAiBtn.addEventListener('click', async (e) => {
+			            e.preventDefault();
+			            
+			            const query = chatInput.value.trim();
+			            if (!query) {
+			                showToast("Skriv en felkod eller fråga först.", "warning");
+			                return;
+			            }
+			
+			            await db.collection("notes").add({
+			                text: `🤖 Frågar AI: "${query}"...`,
+			                timestamp: new Date().toISOString(),
+			                platform: 'system',
+			                reaction: '⏳'
+			            });
+			
+			            chatInput.value = '';
+			
+			            try {
+			                // --- DIN API NYCKEL ---
+			                const apiKey = "AIzaSyAm3gc0-iASCKsz0xw5-P3Xofr2kGglors"; 
+			                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+			
+			                const prompt = `Du är en expertmekaniker. Svara kortfattat, proffsigt och på svenska. 
+			                                Analysera följande felkod/symptom och lista de 3 mest sannolika orsakerna: 
+			                                "${query}"`;
+			
+			                const response = await fetch(url, {
+			                    method: 'POST',
+			                    headers: { 
+			                        'Content-Type': 'application/json' 
+			                    },
+			                    body: JSON.stringify({
+			                        contents: [{ 
+			                            parts: [{ text: prompt }] 
+			                        }]
+			                    })
+			                });
+			
+			                const data = await response.json();
+			
+			                if (data.candidates && data.candidates.length > 0) {
+			                    const aiAnswer = data.candidates[0].content.parts[0].text;
+			
+			                    await db.collection("notes").add({
+			                        text: aiAnswer,
+			                        timestamp: new Date().toISOString(),
+			                        platform: 'system',
+			                        reaction: '🤖'
+			                    });
+			                    
+			                    setTimeout(() => {
+			                        const chatList = document.getElementById('chatMessages');
+			                        if(chatList) chatList.scrollTop = chatList.scrollHeight;
+			                    }, 100);
+			
+			                } else {
+			                    throw new Error("Inget svar från AI (Tom data)");
+			                }
+			
+			            } catch (err) {
+			                console.error("AI Fel:", err);
+			                showToast("Kunde inte nå AI-mekanikern.", "danger");
+			                
+			                let errorMsg = "⚠️ AI-tjänsten svarade inte.";
+			                if(err.message) errorMsg += ` (${err.message})`;
+			                
+			                await db.collection("notes").add({
+			                    text: errorMsg,
+			                    timestamp: new Date().toISOString(),
+			                    platform: 'system'
+			                });
+			            }
+			        });
+			    }
+			
+			    // --- SÖKFUNKTION ---
 			    if (searchInput) {
-	                const filterChat = () => {
-	                    const term = searchInput.value.toLowerCase();
-	                    const bubbles = Array.from(chatList.querySelectorAll('.chat-bubble'));
-	                    const times = chatList.querySelectorAll('.chat-time');
-	                    const separators = chatList.querySelectorAll('.chat-date-separator');
-	                    
-	                    // Visa/Dölj kryss-knappen
-	                    if (clearBtn) clearBtn.style.display = term ? 'flex' : 'none';
-	                    
-	                    // 1. Återställ alla datum-separatorer till DOLD först (om vi söker)
-	                    if (term) {
-	                        separators.forEach(sep => sep.style.display = 'none');
-	                    } else {
-	                        separators.forEach(sep => sep.style.display = 'block');
-	                    }
-	
-	                    // 2. Loopa igenom meddelanden
-	                    bubbles.forEach((bubble, index) => {
-	                        const originalHTML = bubble.dataset.originalHtml || bubble.innerHTML;
-	                        // Spara originalet om det inte finns (för att kunna ta bort highlight)
-	                        if (!bubble.dataset.originalHtml) bubble.dataset.originalHtml = originalHTML;
-	
-	                        const textContent = bubble.textContent.toLowerCase();
-	                        const isMatch = textContent.includes(term);
-	                        const isImage = bubble.classList.contains('chat-bubble-image');
-	                        const timeElement = times[index];
-	
-	                        if (isMatch || (isImage && !term)) {
-	                            // --- MATCH! ---
-	                            bubble.style.display = 'block';
-	                            if (timeElement) timeElement.style.display = 'block';
-	                            
-	                            // Highlighting
-	                            if (term && !isImage) {
-	                                const regex = new RegExp(`(${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
-	                                bubble.innerHTML = originalHTML.replace(regex, '<mark>$1</mark>');
-	                            } else {
-	                                bubble.innerHTML = originalHTML;
-	                            }
-	
-	                            // --- NY LOGIK: Visa tillhörande datum-rubrik ---
-	                            if (term) {
-	                                // Gå bakåt i listan för att hitta närmaste separator
-	                                let prev = bubble.previousElementSibling;
-	                                while (prev) {
-	                                    if (prev.classList.contains('chat-date-separator')) {
-	                                        prev.style.display = 'block'; // Visa rubriken!
-	                                        break; // Vi hittade den, sluta leta
-	                                    }
-	                                    prev = prev.previousElementSibling;
-	                                }
-	                            }
-	
-	                        } else {
-	                            // --- INGEN MATCH ---
-	                            bubble.style.display = 'none';
-	                            if (timeElement) timeElement.style.display = 'none';
-	                        }
-	                    });
-	                };
-	                
-	                searchInput.oninput = filterChat;
-	                if (clearBtn) {
-	                    clearBtn.onclick = () => { 
-	                        searchInput.value = ''; 
-	                        filterChat(); 
-	                        searchInput.focus(); 
-	                    };
-	                }
-	            }
+			        const filterChat = () => {
+			            const term = searchInput.value.toLowerCase();
+			            const bubbles = Array.from(chatList.querySelectorAll('.chat-bubble'));
+			            const times = chatList.querySelectorAll('.chat-time');
+			            const separators = chatList.querySelectorAll('.chat-date-separator');
+			            
+			            if (clearBtn) clearBtn.style.display = term ? 'flex' : 'none';
+			            
+			            if (term) {
+			                separators.forEach(sep => sep.style.display = 'none');
+			            } else {
+			                separators.forEach(sep => sep.style.display = 'block');
+			            }
 			
-			    // --- 3. FOCUS/BLUR LOGIK ---
+			            bubbles.forEach((bubble, index) => {
+			                const originalHTML = bubble.dataset.originalHtml || bubble.innerHTML;
+			                if (!bubble.dataset.originalHtml) bubble.dataset.originalHtml = originalHTML;
+			
+			                const textContent = bubble.textContent.toLowerCase();
+			                const isMatch = textContent.includes(term);
+			                const isImage = bubble.classList.contains('chat-bubble-image');
+			                const timeElement = times[index];
+			
+			                if (isMatch || (isImage && !term)) {
+			                    bubble.style.display = 'block';
+			                    if (timeElement) timeElement.style.display = 'block';
+			                    
+			                    if (term && !isImage) {
+			                        const regex = new RegExp(`(${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+			                        bubble.innerHTML = originalHTML.replace(regex, '<mark>$1</mark>');
+			                    } else {
+			                        bubble.innerHTML = originalHTML;
+			                    }
+			
+			                    if (term) {
+			                        let prev = bubble.previousElementSibling;
+			                        while (prev) {
+			                            if (prev.classList.contains('chat-date-separator')) {
+			                                prev.style.display = 'block'; 
+			                                break; 
+			                            }
+			                            prev = prev.previousElementSibling;
+			                        }
+			                    }
+			
+			                } else {
+			                    bubble.style.display = 'none';
+			                    if (timeElement) timeElement.style.display = 'none';
+			                }
+			            });
+			        };
+			        
+			        searchInput.oninput = filterChat;
+			        if (clearBtn) {
+			            clearBtn.onclick = () => { 
+			                searchInput.value = ''; 
+			                filterChat(); 
+			                searchInput.focus(); 
+			            };
+			        }
+			    }
+			
+			    // --- FOCUS/BLUR (Mobil) ---
 			    if (chatInput && !chatInput.dataset.focusListenerAttached) {
 			        chatInput.dataset.focusListenerAttached = "true";
 			        const mobileNav = document.getElementById('mobileNav');
@@ -2323,16 +2271,15 @@
 			            }, 100);
 			        });
 			        
-			        // --- NYTT: Lyssna på ENTER eftersom vi inte har ett formulär ---
 			        chatInput.addEventListener('keydown', (e) => {
 			            if (e.key === 'Enter') {
-			                e.preventDefault(); // Stoppa radbrytning
+			                e.preventDefault(); 
 			                sendMessage();
 			            }
 			        });
 			    }
 			
-			    // --- 4. TEXT-GENVÄGAR ---
+			    // --- TEXT-GENVÄGAR ---
 			    const textShortcuts = {
 			        ':olja': '🛢', ':däck': '🛞', ':bil': '🚗',
 			        ':nyckel': '🔑', ':ok': '✅', ':fel': '❌',
@@ -2370,143 +2317,133 @@
 			        }
 			    }
 			
-			    // --- 5. BILDUPPLADDNING ---
+			    // --- BILDUPPLADDNING ---
 			    const handleImageUpload = async (file) => {
-	                if (!file) return;
-	                
-	                // HÄR TOG VI BORT: const caption = prompt(...)
-	                
-	                showToast("Bearbetar bild...", "info");
-	        
-	                try {
-	                    const base64Image = await compressImage(file);
-	                    await db.collection("notes").add({
-	                        image: base64Image,
-	                        caption: "", // Vi skickar tom text automatiskt
-	                        type: 'image',
-	                        timestamp: new Date().toISOString(),
-	                        platform: window.innerWidth <= 768 ? 'mobil' : 'dator'
-	                    });
-	                    showToast("Bild skickad!", "success");
-	                    setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
-	                } catch (err) {
-	                    console.error(err);
-	                    showToast("Kunde inte skicka bilden.", "danger");
-	                }
-	            };
+			        if (!file) return;
+			        
+			        showToast("Bearbetar bild...", "info");
 			
-			    // --- 6. HUVUDLYSSNAREN (MED DATUM & SPACER-FIX) ---
-				const setupChatListener = (limit) => {
-				    if (chatUnsubscribe) chatUnsubscribe(); 
-				    const isLoadMore = limit > 50; 
-				    
-				    // Hjälpfunktion för att jämföra datum
-				    const isSameDay = (d1, d2) => {
-				        return d1.getFullYear() === d2.getFullYear() &&
-				               d1.getMonth() === d2.getMonth() &&
-				               d1.getDate() === d2.getDate();
-				    };
-				
-				    chatUnsubscribe = db.collection("notes")
-				        .orderBy("timestamp", "desc") 
-				        .limit(limit)                 
-				        .onSnapshot(snapshot => {
-				            
-				            const threshold = 150; 
-				            const scrollBottom = chatList.scrollHeight - chatList.scrollTop - chatList.clientHeight;
-				            const wasAtBottom = scrollBottom <= threshold || chatList.childElementCount === 0;
-				            const previousScrollTop = chatList.scrollTop;
-				            const previousScrollHeight = chatList.scrollHeight;
-				
-				            const docs = [];
-				            snapshot.forEach(doc => docs.push({ id: doc.id, ...doc.data() }));
-				            docs.reverse(); 
-				
-				            chatList.innerHTML = ''; 
-				            
-				            if (docs.length === 0) {
-				                chatList.innerHTML = '<div class="empty-state-chat"><p>Skriv en notis eller ta en bild...</p></div>';
-				                return;
-				            }
-				
-				            let lastDate = null;
-				
-				            docs.forEach(data => {
-				                // --- DATUM-SEPARATOR ---
-				                if (data.timestamp) {
-				                    const msgDate = new Date(data.timestamp);
-				                    
-				                    if (!lastDate || !isSameDay(lastDate, msgDate)) {
-				                        const separator = document.createElement('div');
-				                        separator.className = 'chat-date-separator';
-				                        
-				                        const today = new Date();
-				                        const yesterday = new Date(); 
-				                        yesterday.setDate(yesterday.getDate() - 1);
-				                        
-				                        if (isSameDay(msgDate, today)) {
-				                            separator.textContent = 'Idag';
-				                        } else if (isSameDay(msgDate, yesterday)) {
-				                            separator.textContent = 'Igår';
-				                        } else {
-				                            let dateStr = msgDate.toLocaleDateString('sv-SE', { 
-				                                weekday: 'long', 
-				                                day: 'numeric', 
-				                                month: 'short' 
-				                            });
-				                            dateStr = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
-				                            if (msgDate.getFullYear() !== today.getFullYear()) {
-				                                dateStr += ` ${msgDate.getFullYear()}`;
-				                            }
-				                            separator.textContent = dateStr;
-				                        }
-				                        chatList.appendChild(separator);
-				                    }
-				                    lastDate = msgDate;
-				                }
-				
-				                renderChatBubble(data.id, data, chatList);
-				            });
-				
-				            // --- SPACER-FIX (GÖR DENNA STOR!) ---
-				            // Detta tvingar listan att ha mycket luft i botten så sista meddelandet
-				            // och dess tidsstämpel hamnar OVANFÖR din textruta.
-				            const spacer = document.createElement('div');
-				            spacer.style.height = "50px"; // <-- ÄNDRAD TILL 140px
-				            spacer.style.flexShrink = "0"; 
-				            chatList.appendChild(spacer);
-				
-				            // Sökfilter-logik
-				            if (searchInput && searchInput.value.trim() !== "") {
-				                searchInput.dispatchEvent(new Event('input'));
-				            }
-				
-				            const isSearching = searchInput && searchInput.value.trim() !== "";
-				            
-				            // Scroll-hantering
-				            if (!isSearching) {
-				                if (isLoadMore && isFetchingOlderChat) {
-				                    const newScrollHeight = chatList.scrollHeight;
-				                    chatList.scrollTop = newScrollHeight - previousScrollHeight + previousScrollTop;
-				                    isFetchingOlderChat = false; 
-				                } else if (!isLoadMore) {
-				                    if (!chatList.classList.contains('gallery-mode')) {
-				                        if (wasAtBottom) {
-				                            setTimeout(() => {
-				                                chatList.scrollTop = chatList.scrollHeight;
-				                            }, 50);
-				                        } else {
-				                            chatList.scrollTop = previousScrollTop; 
-				                        }
-				                    }
-				                }
-				            }
-				        });
-				};
+			        try {
+			            const base64Image = await compressImage(file);
+			            await db.collection("notes").add({
+			                image: base64Image,
+			                caption: "", 
+			                type: 'image',
+			                timestamp: new Date().toISOString(),
+			                platform: window.innerWidth <= 768 ? 'mobil' : 'dator'
+			            });
+			            showToast("Bild skickad!", "success");
+			            setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
+			        } catch (err) {
+			            console.error(err);
+			            showToast("Kunde inte skicka bilden.", "danger");
+			        }
+			    };
+			
+			    // --- LYSSNARE (Firestore) ---
+			    const setupChatListener = (limit) => {
+			        if (chatUnsubscribe) chatUnsubscribe(); 
+			        const isLoadMore = limit > 50; 
+			        
+			        const isSameDay = (d1, d2) => {
+			            return d1.getFullYear() === d2.getFullYear() &&
+			                   d1.getMonth() === d2.getMonth() &&
+			                   d1.getDate() === d2.getDate();
+			        };
+			    
+			        chatUnsubscribe = db.collection("notes")
+			            .orderBy("timestamp", "desc") 
+			            .limit(limit)                 
+			            .onSnapshot(snapshot => {
+			                
+			                const threshold = 150; 
+			                const scrollBottom = chatList.scrollHeight - chatList.scrollTop - chatList.clientHeight;
+			                const wasAtBottom = scrollBottom <= threshold || chatList.childElementCount === 0;
+			                const previousScrollTop = chatList.scrollTop;
+			                const previousScrollHeight = chatList.scrollHeight;
+			    
+			                const docs = [];
+			                snapshot.forEach(doc => docs.push({ id: doc.id, ...doc.data() }));
+			                docs.reverse(); 
+			    
+			                chatList.innerHTML = ''; 
+			                
+			                if (docs.length === 0) {
+			                    chatList.innerHTML = '<div class="empty-state-chat"><p>Skriv en notis eller ta en bild...</p></div>';
+			                    return;
+			                }
+			    
+			                let lastDate = null;
+			    
+			                docs.forEach(data => {
+			                    if (data.timestamp) {
+			                        const msgDate = new Date(data.timestamp);
+			                        
+			                        if (!lastDate || !isSameDay(lastDate, msgDate)) {
+			                            const separator = document.createElement('div');
+			                            separator.className = 'chat-date-separator';
+			                            
+			                            const today = new Date();
+			                            const yesterday = new Date(); 
+			                            yesterday.setDate(yesterday.getDate() - 1);
+			                            
+			                            if (isSameDay(msgDate, today)) {
+			                                separator.textContent = 'Idag';
+			                            } else if (isSameDay(msgDate, yesterday)) {
+			                                separator.textContent = 'Igår';
+			                            } else {
+			                                let dateStr = msgDate.toLocaleDateString('sv-SE', { 
+			                                    weekday: 'long', 
+			                                    day: 'numeric', 
+			                                    month: 'short' 
+			                                });
+			                                dateStr = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
+			                                if (msgDate.getFullYear() !== today.getFullYear()) {
+			                                    dateStr += ` ${msgDate.getFullYear()}`;
+			                                }
+			                                separator.textContent = dateStr;
+			                            }
+			                            chatList.appendChild(separator);
+			                        }
+			                        lastDate = msgDate;
+			                    }
+			    
+			                    renderChatBubble(data.id, data, chatList);
+			                });
+			    
+			                const spacer = document.createElement('div');
+			                spacer.style.height = "50px"; 
+			                spacer.style.flexShrink = "0"; 
+			                chatList.appendChild(spacer);
+			    
+			                if (searchInput && searchInput.value.trim() !== "") {
+			                    searchInput.dispatchEvent(new Event('input'));
+			                }
+			    
+			                const isSearching = searchInput && searchInput.value.trim() !== "";
+			                
+			                if (!isSearching) {
+			                    if (isLoadMore && isFetchingOlderChat) {
+			                        const newScrollHeight = chatList.scrollHeight;
+			                        chatList.scrollTop = newScrollHeight - previousScrollHeight + previousScrollTop;
+			                        isFetchingOlderChat = false; 
+			                    } else if (!isLoadMore) {
+			                        if (!chatList.classList.contains('gallery-mode')) {
+			                            if (wasAtBottom) {
+			                                setTimeout(() => {
+			                                    chatList.scrollTop = chatList.scrollHeight;
+			                                }, 50);
+			                            } else {
+			                                chatList.scrollTop = previousScrollTop; 
+			                            }
+			                        }
+			                    }
+			                }
+			            });
+			    };
 			
 			    setupChatListener(currentChatLimit);
 			
-			    // --- 7. LADDA ÄLDRE ---
 			    chatList.addEventListener('scroll', () => {
 			        if (chatList.scrollTop === 0 && !isFetchingOlderChat && !chatList.classList.contains('gallery-mode')) {
 			            isFetchingOlderChat = true;
@@ -2515,7 +2452,6 @@
 			        }
 			    });
 			
-			    // --- 8. KLICK-HANTERARE ---
 			    if (!chatList.dataset.clickListenerAttached) {
 			        chatList.addEventListener('click', (e) => {
 			            const regLink = e.target.closest('.chat-reg-link');
@@ -2535,13 +2471,12 @@
 			        });
 			        chatList.dataset.clickListenerAttached = "true";
 			    }
-				// --- 9. UX: DÖLJ TANGENTBORD VID SCROLL ---
-			    // Om man rör vid listan (för att scrolla) medan man skriver -> Stäng tangentbordet
+			
+			    // --- DÖLJ TANGENTBORD VID SCROLL ---
 			    if (chatList && chatInput) {
 			        chatList.addEventListener('touchstart', () => {
-			            // Om input-fältet är aktivt (tangentbordet uppe)
 			            if (document.activeElement === chatInput) {
-			                chatInput.blur(); // Detta tvingar ner tangentbordet
+			                chatInput.blur(); 
 			            }
 			        }, { passive: true });
 			    }
