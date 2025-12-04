@@ -1125,33 +1125,26 @@
 
 			// --- STÄNG CHATT VID KLICK UTANFÖR ---
 			document.addEventListener('click', (e) => {
-			    // 1. IGNORERA KLICK PÅ LÄNKAR OCH KNAPPAR
-			    if (e.target.closest('a') || e.target.closest('.chat-reg-link') || e.target.closest('button')) {
-			        return;
-			    }
-			
-			    if (e.target.closest('#reactionMenu')) {
-			        return;
-			    }
-			
-			    // --- FIX HÄR: Klickade vi på en modal-bakgrund? ---
-			    // Om vi klickar på den mörka bakgrunden av en modal (inklusive bildmodalen), gör inget här.
-			    if (e.target.classList.contains('modal-backdrop') || 
-			        e.target.classList.contains('messenger-modal-backdrop') || // Bild-modalens bakgrund
-			        e.target.classList.contains('mm-carousel-item')) {       // Bild-containern
-			        return;
-			    }
-			    
-			    // --- NY SÄKERHET: Om bildmodalen är öppen, stäng ALDRIG chatten ---
+    
+			    // --- 1. SPÄRR: Om Bild-modalen är öppen -> GÖR INGENTING ---
+			    // Detta hindrar chatten från att stängas när du klickar utanför bilden.
 			    const imageModal = document.getElementById('imageZoomModal');
 			    if (imageModal && getComputedStyle(imageModal).display !== 'none') {
+			        return; 
+			    }
+			    // -----------------------------------------------------------
+			
+			    // 2. Ignorera klick på länkar/knappar/menyer
+			    if (e.target.closest('a') || 
+			        e.target.closest('.chat-reg-link') || 
+			        e.target.closest('button') ||
+			        e.target.closest('#reactionMenu')) {
 			        return;
 			    }
-			    // --------------------------------------------------
 			
-			    // 2. SÄKERHETSKOLL: Är någon modal öppen?
-			    const activeModal = document.querySelector('.modal-backdrop.show');
-			    if (activeModal && activeModal.id !== 'chatWidget' && activeModal.id !== 'mobileSearchModal') {
+			    // 3. Ignorera klick på andra modaler
+			    if (e.target.classList.contains('modal-backdrop') || 
+			        e.target.classList.contains('modal-content')) {
 			        return;
 			    }
 			
@@ -1159,19 +1152,17 @@
 			    const fabChat = document.getElementById('fabChat');
 			    const mobileChatBtn = document.getElementById('mobileChatBtn');
 			
-			    // 3. Om chatten är öppen...
+			    // 4. Stäng Chatten (Endast om vi kommit förbi spärrarna ovan)
 			    if (chatWidget && chatWidget.style.display === 'flex') {
 			        
-			        // ...och vi klickar utanför själva rutan...
+			        // Om vi klickar utanför chatten...
 			        if (!chatWidget.contains(e.target) && 
 			            (!fabChat || !fabChat.contains(e.target)) &&
 			            (!mobileChatBtn || !mobileChatBtn.contains(e.target))) {
 			            
-			            // Stäng via historik om vi är i chatt-läget
 			            if (window.location.hash === '#chat') {
 			                history.back();
 			            } else {
-			                // Fallback
 			                chatWidget.style.display = 'none';
 			                if (typeof updateScrollLock === 'function') updateScrollLock();
 			                if (mobileChatBtn) mobileChatBtn.classList.remove('active');
