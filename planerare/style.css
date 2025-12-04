@@ -7877,10 +7877,10 @@ body.offline-mode .offline-dot {
 
 /* Gör rubriker (Analys/Orsaker) mindre och integrerade */
 .chat-text-content b {
-    color: var(--primary-color);
+    color: var(--text-color); /* <--- ÄNDRAD TILL SVART (följer temat) */
     font-weight: 700;
-    font-size: 0.9em; /* Något mindre rubrik */
-    text-transform: uppercase; /* Gör den tydlig utan att ta plats */
+    font-size: 0.9em;
+    text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
@@ -7940,4 +7940,5 @@ body.offline-mode .offline-dot {
     justify-content: center;
     border-radius: 50%;
 }
+
 
