@@ -2129,52 +2129,64 @@
 			            // --- NY SÄKER VERSION MED GOOGLE BIBLIOTEK ---
                     
 	                    try {
-	                        const API_KEY = "AIzaSyD5T7D7EBgNb8jwARxcG7xZLWwbqy80Qf0"; // <--- Klistra in nyckeln här
-	
-	                        // Om biblioteket inte laddades korrekt (fallback)
-	                        if (!window.GoogleGenerativeAI) {
-	                            throw new Error("AI-biblioteket kunde inte laddas. Kontrollera din internetanslutning.");
-	                        }
-	
-	                        // Initiera modellen (Detta hanterar URL:er automatiskt åt dig)
-	                        const genAI = new window.GoogleGenerativeAI(API_KEY);
-	                        // Vi testar standardmodellen 'gemini-pro' som är mest stabil
-	                        const model = genAI.getGenerativeModel({ model: "gemini-pro"});
+	                        // --- GOOGLE GEMINI 2.0 (Baserat på din bild) ---
+	                        
+	                        const apiKey = "AIzaSyD5T7D7EBgNb8jwARxcG7xZLWwbqy80Qf0"; // <--- Klistra in nyckeln från Google AI Studio
+	                        
+	                        // Vi använder den nya modellen "gemini-2.0-flash-exp" som din studio föreslog
+	                        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`;
 	
 	                        const prompt = `Du är en expertmekaniker. Svara kortfattat, proffsigt och på svenska. 
 	                                        Analysera följande felkod/symptom och lista de 3 mest sannolika orsakerna: 
 	                                        "${query}"`;
 	
-	                        const result = await model.generateContent(prompt);
-	                        const response = await result.response;
-	                        const aiAnswer = response.text();
-	
-	                        // Spara svaret
-	                        await db.collection("notes").add({
-	                            text: aiAnswer,
-	                            timestamp: new Date().toISOString(),
-	                            platform: 'system',
-	                            reaction: '🤖'
+	                        const response = await fetch(url, {
+	                            method: 'POST',
+	                            headers: { 
+	                                'Content-Type': 'application/json' 
+	                            },
+	                            body: JSON.stringify({
+	                                contents: [{ 
+	                                    parts: [{ text: prompt }] 
+	                                }]
+	                            })
 	                        });
-	                        
-	                        setTimeout(() => {
-	                            const chatList = document.getElementById('chatMessages');
-	                            if(chatList) chatList.scrollTop = chatList.scrollHeight;
-	                        }, 100);
+	
+	                        // Detaljerad felhantering om det fortfarande strular
+	                        if (!response.ok) {
+	                            const errorData = await response.json().catch(() => ({}));
+	                            console.error("Google AI Error:", errorData);
+	                            throw new Error(`Serverfel: ${response.status} - ${errorData.error?.message || response.statusText}`);
+	                        }
+	
+	                        const data = await response.json();
+	
+	                        if (data.candidates && data.candidates.length > 0) {
+	                            // Gemini 2.0 strukturen är oftast samma, men vi säkrar upp
+	                            const aiAnswer = data.candidates[0].content.parts[0].text;
+	
+	                            await db.collection("notes").add({
+	                                text: aiAnswer,
+	                                timestamp: new Date().toISOString(),
+	                                platform: 'system',
+	                                reaction: '🤖'
+	                            });
+	                            
+	                            setTimeout(() => {
+	                                const chatList = document.getElementById('chatMessages');
+	                                if(chatList) chatList.scrollTop = chatList.scrollHeight;
+	                            }, 100);
+	
+	                        } else {
+	                            throw new Error("Inget svar från AI (Tom data)");
+	                        }
 	
 	                    } catch (err) {
-	                        console.error("AI Error:", err);
+	                        console.error("AI CRITICAL ERROR:", err);
 	                        showToast("Kunde inte nå AI-mekanikern.", "danger");
 	                        
 	                        let errorMsg = "⚠️ AI-tjänsten svarade inte.";
-	                        // Visa ett mer hjälpsamt felmeddelande om nyckeln är fel
-	                        if (err.message && (err.message.includes("403") || err.message.includes("API key"))) {
-	                            errorMsg += " (Ogiltig API-nyckel)";
-	                        } else if (err.message && err.message.includes("404")) {
-	                            errorMsg += " (Modellen hittades inte)";
-	                        } else {
-	                            errorMsg += ` (${err.message})`;
-	                        }
+	                        if(err.message) errorMsg += ` (${err.message})`;
 	                        
 	                        await db.collection("notes").add({
 	                            text: errorMsg,
