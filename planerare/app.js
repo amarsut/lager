@@ -2127,13 +2127,13 @@
 			            chatInput.value = '';
 			
 			            try {
-	                        // --- GOOGLE GEMINI API (FIXAD URL) ---
+	                        // --- GOOGLE GEMINI API ---
+	                        const apiKey = "AIzaSyD5T7D7EBgNb8jwARxcG7xZLWwbqy80Qf0"; // <--- Klistra in din nyckel här
 	                        
-	                        // 1. Klistra in din NYA nyckel här (från aistudio.google.com)
-	                        const apiKey = "AIzaSyD5T7D7EBgNb8jwARxcG7xZLWwbqy80Qf0"; 
-	                        
-	                        // 2. Vi använder den senaste stabila gratis-modellen
-	                        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+	                        // Vi använder standardmodellen 'gemini-pro'
+	                        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`;
+	
+	                        console.log("Försöker anropa URL:", url); // <--- Kollar vilken URL som används
 	
 	                        const prompt = `Du är en expertmekaniker. Svara kortfattat, proffsigt och på svenska. 
 	                                        Analysera följande felkod/symptom och lista de 3 mest sannolika orsakerna: 
@@ -2151,13 +2151,9 @@
 	                            })
 	                        });
 	
-	                        // --- FELHANTERING ---
 	                        if (!response.ok) {
-	                            // Detta loggar exakt vad Google klagar på i konsolen
 	                            const errorData = await response.json().catch(() => ({}));
-	                            console.error("Google API Error:", errorData);
-	                            
-	                            // Kasta ett tydligt fel
+	                            console.error("Google API Error Detaljer:", errorData);
 	                            throw new Error(`Serverfel: ${response.status} (${errorData.error?.message || response.statusText})`);
 	                        }
 	
@@ -2187,7 +2183,7 @@
 	                        showToast("Kunde inte nå AI-mekanikern.", "danger");
 	                        
 	                        let errorMsg = "⚠️ AI-tjänsten svarade inte.";
-	                        if(err.message) errorMsg += ` ${err.message}`;
+	                        if(err.message) errorMsg += ` (${err.message})`;
 	                        
 	                        await db.collection("notes").add({
 	                            text: errorMsg,
