@@ -2500,6 +2500,35 @@
 			        return `<span class="chat-customer-link" data-kund="${realName}">${match}</span>`;
 			    });
 			}
+
+			// --- NY FUNKTION: Gör reg-nr klickbara ---
+			function highlightRegNumbers(text) {
+			    // Säkerhetskoll
+			    if (!text || !allJobs || allJobs.length === 0) return text;
+			
+			    // 1. Hämta alla unika regnr från systemet, rensa bort tomma/okända
+			    const uniqueRegs = [...new Set(allJobs.map(j => j.regnr))]
+			        .filter(r => r && r.length > 2 && r.toUpperCase() !== 'OKÄNT');
+			
+			    // Om inga finns, returnera texten som den är
+			    if (uniqueRegs.length === 0) return text;
+			
+			    // 2. Sortera så att längst matchas först (för att undvika del-träffar)
+			    uniqueRegs.sort((a, b) => b.length - a.length);
+			
+			    // 3. Skapa en Regex som hittar dessa nummer i texten
+			    const escapedRegs = uniqueRegs.map(r => r.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+			    const pattern = new RegExp(`\\b(${escapedRegs.join('|')})\\b`, 'gi');
+			
+			    // 4. Ersätt träffar med HTML-span
+			    return text.replace(pattern, (match) => {
+			        // Hitta det "äkta" numret (för att få rätt casing i data-attributet)
+			        const realReg = uniqueRegs.find(r => r.toUpperCase() === match.toUpperCase());
+			        
+			        // Returnera HTML för reg-skylten (tvinga UPPERCASE visuellt)
+			        return `<span class="chat-reg-link" data-reg="${realReg}">${match.toUpperCase()}</span>`;
+			    });
+			}
 			
 			function renderChatBubble(id, data, container) {
 			    const bubble = document.createElement('div');
@@ -2575,6 +2604,11 @@
 					
 					// 1. Kör linkify FÖRST. Den "säkrar" texten och skapar länkar av URL:er.
 					let processedText = typeof linkify === 'function' ? linkify(rawText) : rawText;
+
+					// --- NYTT: Kör highlightRegNumbers HÄR ---
+					if (typeof highlightRegNumbers === 'function') {
+                        processedText = highlightRegNumbers(processedText);
+                    }
 					
 					// 2. Kör highlightCustomerNames SENARE på resultatet.
 					// Eftersom texten nu redan är "säker" (escaped av linkify) kan vi säkert lägga in HTML för namnen.
