@@ -7436,10 +7436,36 @@ body.body-scroll-lock {
     background-color: transparent;
     
     /* Lägg till padding så bilden inte hamnar under knapparna */
-    padding: 60px 0 60px 0; 
+    padding: 120px 20px 140px 20px !important;
     box-sizing: border-box;
     
     display: block;
+}
+
+/* --- 2. FLYTTA OCH STYLA RÄKNAREN (2 av 2) --- */
+.mm-counter {
+    position: fixed; /* Lås fast i skärmen */
+    bottom: 40px;    /* Placera nära botten */
+    left: 50%;       /* Centrera horisontellt */
+    transform: translateX(-50%);
+    
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.9rem;
+    
+    /* Ge den en snygg mörk bakgrundsplatta */
+    background-color: rgba(30, 30, 30, 0.8);
+    padding: 6px 16px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    
+    z-index: 30050; /* Se till att den ligger över bilden */
+    pointer-events: none; /* Låt klick gå igenom den (så man kan stänga) */
+}
+
+/* Detta gör att räknaren inte tar plats mellan X och knapparna där uppe */
+.mm-header .mm-counter {
+    position: static; /* Nollställ position i headern om den ligger där i HTML */
 }
 
 /* Synlighets-klasser */
@@ -7681,6 +7707,7 @@ body.offline-mode .offline-dot {
     background-color: rgba(255, 69, 58, 0.15); /* Svag röd bakgrund */
     border-radius: 50%;
 }
+
 
 
 
