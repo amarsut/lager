@@ -6103,13 +6103,11 @@ body.body-scroll-lock {
     font-style: italic;
 }
 
-/* Pratbubblan (Högställd eftersom det är "jag") */
+/* --- CHATT / NOTISER (Uppdaterad) --- */
+
+/* Grundstil för bubblan (Gemensam) */
 .chat-bubble {
-    align-self: flex-end; /* Högerställ */
-    background-color: var(--primary-color);
-    color: white;
     padding: 0.8rem 1rem;
-    border-radius: 18px 18px 2px 18px; /* "Svans" nere till höger */
     max-width: 80%;
     font-size: 0.95rem;
     line-height: 1.4;
@@ -6117,27 +6115,92 @@ body.body-scroll-lock {
     box-shadow: 0 1px 2px rgba(0,0,0,0.1);
     word-wrap: break-word;
     animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    margin-bottom: 2px; /* Tajtare mot tiden */
 
-	/* --- FIXAR SCROLL & TOUCH --- */
-    touch-action: pan-y !important;       /* Tillåter vertikal scroll direkt */
-    -webkit-touch-callout: none;          /* Stänger av iOS förstoringsglas/meny */
-    -webkit-user-select: none;            /* Stänger av textmarkering */
-    user-select: none;
-    -webkit-tap-highlight-color: transparent; /* Tar bort grå ruta vid klick */
+    /* Touch fixar */
+    touch-action: pan-y !important;
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+    user-select: none !important;
+}
+
+/* --- 1. MINA MEDDELANDEN (Höger, Blå) --- */
+.chat-bubble.me {
+    align-self: flex-end;
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 18px 18px 2px 18px; /* Svans nere höger */
+}
+
+/* --- 2. MOTPARTENS MEDDELANDEN (Vänster, Ljusgrå) --- */
+.chat-bubble.other {
+    align-self: flex-start;
+    background-color: #E5E5EA; /* Klassisk iOS ljusgrå */
+    color: #000;
+    border-radius: 18px 18px 18px 2px; /* Svans nere vänster */
+}
+/* Dark mode för grå bubbla */
+[data-theme="dark"] .chat-bubble.other {
+    background-color: #3a3a3c;
+    color: #fff;
+}
+
+/* --- 3. SYSTEM-MEDDELANDEN (Vänster, Varning) --- */
+.chat-bubble.system {
+    align-self: flex-start;
+    background-color: #FFF4E5; /* Ljusgul/orange bakgrund */
+    color: #2c2c2e;
+    border: 1px solid #FFCC00; /* Guld/Gul kant */
+    border-radius: 12px; /* Lite kantigare för att skilja sig */
+    border-top-left-radius: 2px;
+}
+[data-theme="dark"] .chat-bubble.system {
+    background-color: #422006; /* Mörkbrun/gul i dark mode */
+    border-color: #ca8a04;
+    color: #fef08a;
+}
+
+/* Etiketten "System-meddelande" */
+.system-label {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: #d48806; /* Mörkare orange text */
+    margin-bottom: 4px;
+    letter-spacing: 0.5px;
+    display: flex; 
+    align-items: center; 
+    gap: 4px;
+}
+[data-theme="dark"] .system-label {
+    color: #facc15;
+}
+
+/* Tidsstämpel styling */
+.chat-time {
+    font-size: 0.7rem;
+    color: var(--text-color-light);
+    margin-bottom: 8px; /* Luft till nästa bubbla */
+    opacity: 0.8;
+}
+
+.chat-time.me {
+    align-self: flex-end;
+    text-align: right;
+    margin-right: 5px;
+}
+
+.chat-time.other,
+.chat-time.system {
+    align-self: flex-start;
+    text-align: left;
+    margin-left: 5px;
 }
 
 @keyframes popIn {
     from { opacity: 0; transform: scale(0.8) translateY(10px); }
     to { opacity: 1; transform: scale(1) translateY(0); }
-}
-
-/* Datumstämpel under bubblan */
-.chat-time {
-    align-self: flex-end;
-    font-size: 0.7rem;
-    color: var(--text-color-light);
-    margin-right: 5px;
-    margin-top: -4px;
 }
 
 /* Input-området i botten */
@@ -7601,3 +7664,4 @@ body.offline-mode .offline-dot {
     background-color: var(--warning-color);
     color: #000;
 }
+
