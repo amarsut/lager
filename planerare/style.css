@@ -7359,7 +7359,8 @@ body.body-scroll-lock {
     position: fixed;
     top: 0; left: 0; width: 100%; height: 100%;
     height: 100dvh; 
-    background-color: #000000;
+    background-color: rgba(0, 0, 0, 0.92); /* Lite genomsläpp */
+    backdrop-filter: blur(8px); /* Snygg oskärpa bakom */
     z-index: 2147483647 !important;
     
     /* VIKTIGT: Gör bakgrunden klickbar för att stänga */
@@ -7410,57 +7411,54 @@ body.body-scroll-lock {
 
 /* 4. Bild-kortet */
 .mm-carousel-item {
-    position: absolute;
-    top: 0; left: 0; width: 100%; height: 100%;
-    
     display: flex;
     align-items: center;
     justify-content: center;
-    
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-    opacity: 0;
-    pointer-events: none;
+    /* Lägg till padding så bilden aldrig nuddar kanten */
+    padding: 60px 20px 80px 20px; 
+    box-sizing: border-box;
 }
 
 /* 5. BILDEN (STOR FIX HÄR) */
 .mm-carousel-item img {
-    /* Tvinga bilden att fylla utrymmet, men behåll proportioner */
-    width: 100%;
-    height: 100%;
+    /* Ta bort den gamla paddingen inuti bilden */
+    padding: 0 !important; 
     
-    /* Detta gör att bilden skalas upp/ner korrekt och centreras automatiskt */
-    object-fit: contain; 
+    /* Istället för width:100%, låt bilden anpassa sig */
+    width: auto;
+    height: auto;
     
-    /* Ta bort skugga och bakgrund då bilden nu fyller skärmen */
-    box-shadow: none; 
-    background-color: transparent;
+    /* Maxgränser så man kan klicka utanför */
+    max-width: 100%;
+    max-height: 100%; 
     
-    /* Lägg till padding så bilden inte hamnar under knapparna */
-    padding: 120px 20px 140px 20px !important;
-    box-sizing: border-box;
+    object-fit: contain;
+    
+    /* --- DESIGN: Runda hörn & Skugga --- */
+    border-radius: 12px; 
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
     
     display: block;
 }
 
 /* --- 2. FLYTTA OCH STYLA RÄKNAREN (2 av 2) --- */
 .mm-counter {
-    position: fixed; /* Lås fast i skärmen */
-    bottom: 40px;    /* Placera nära botten */
-    left: 50%;       /* Centrera horisontellt */
-    transform: translateX(-50%);
+    position: fixed; 
+    bottom: 30px;    /* Ligger alltid i botten */
+    left: 50%;       
+    transform: translateX(-50%); /* Perfekt centrerad */
     
-    color: #ffffff;
+    background-color: rgba(40, 40, 40, 0.85); /* Mörk platta */
+    color: #fff;
     font-weight: 600;
     font-size: 0.9rem;
-    
-    /* Ge den en snygg mörk bakgrundsplatta */
-    background-color: rgba(30, 30, 30, 0.8);
-    padding: 6px 16px;
+    padding: 6px 14px;
     border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
     
-    z-index: 30050; /* Se till att den ligger över bilden */
-    pointer-events: none; /* Låt klick gå igenom den (så man kan stänga) */
+    z-index: 30050; 
+    pointer-events: none; /* Klick går igenom */
+    white-space: nowrap;
 }
 
 /* Detta gör att räknaren inte tar plats mellan X och knapparna där uppe */
@@ -7707,6 +7705,7 @@ body.offline-mode .offline-dot {
     background-color: rgba(255, 69, 58, 0.15); /* Svag röd bakgrund */
     border-radius: 50%;
 }
+
 
 
 
