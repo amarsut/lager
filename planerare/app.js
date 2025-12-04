@@ -1542,6 +1542,36 @@
 			            sendSystemMessage(msg, 'stats', `weekly_sum_${todayString}`);
 			        }
 			    }
+				// 14. MÅNADSMÅL (50% och 100%)
+			    // Hämta målet från minnet (samma som används i statistik-modalen)
+			    const goal = parseFloat(localStorage.getItem('profitGoal')) || 0;
+			
+			    if (goal > 0) {
+			        // Skapa en nyckel för nuvarande månad (t.ex. "2023-12")
+			        const currentMonthKey = now.toISOString().slice(0, 7);
+			
+			        // Räkna ihop vinsten för alla jobb som är 'klar' denna månad
+			        const thisMonthProfit = activeJobs
+			            .filter(j => j.status === 'klar' && j.datum && j.datum.startsWith(currentMonthKey))
+			            .reduce((sum, j) => sum + (j.vinst || 0), 0);
+			
+			        // --- NIVÅ 1: 100% UPPNÅTT ---
+			        if (thisMonthProfit >= goal) {
+			            const msg = `🎉 MÅL UPPNÅTT! Du har passerat ditt vinstmål på ${goal.toLocaleString()} kr för månaden. Fantastiskt jobbat!`;
+			            
+			            // Unik nyckel per månad (så vi bara firar en gång per månad)
+			            sendSystemMessage(msg, 'success', `goal_100_${currentMonthKey}`);
+			        }
+			        
+			        // --- NIVÅ 2: 50% HALVVÄGS ---
+			        // Vi kör 'else if' så att man inte får 50%-notisen exakt samtidigt som 100% om man gör ett jätteklipp.
+			        else if (thisMonthProfit >= (goal * 0.5)) {
+			            const msg = `🚀 Halvvägs! Du har nu nått 50% av ditt vinstmål för månaden (${thisMonthProfit.toLocaleString()} kr). Fortsätt så!`;
+			            
+			            // Unik nyckel per månad
+			            sendSystemMessage(msg, 'stats', `goal_50_${currentMonthKey}`);
+			        }
+			    }
 			}
 
 			let jobUnsubscribe = null;
