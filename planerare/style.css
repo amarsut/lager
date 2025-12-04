@@ -7878,7 +7878,7 @@ body.offline-mode .offline-dot {
 
 /* Gör rubriker (Analys/Orsaker) blåa och tydliga */
 .chat-text-content b {
-    color: var(--primary-color);
+    color: inherit; /* Behåller samma färg som resten av texten */
     font-weight: 700;
 }
 
@@ -7899,3 +7899,4 @@ body.offline-mode .offline-dot {
     font-size: 0.95rem;
     line-height: 1.4;
 }
+
