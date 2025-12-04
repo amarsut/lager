@@ -2143,21 +2143,22 @@
 			                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 			
 			                const prompt = `Du är en expertmekaniker. Svara på svenska.
-                                Analysera: "${query}".
-                                
-                                VIKTIGT OM FORMATERING:
-                                Svaret ska vara kort, luftigt och lättläst i en chatt.
-                                Använd HTML-taggar för struktur:
-                                1. Använd <b> för att fetmarkera rubriker och reservdelar.
-                                2. Använd <br> för att göra radbrytningar.
-                                
-                                Följ denna mall:
-                                <b>Analys:</b> Kort sammanfattning (max 1 mening).
-                                <br><br>
-                                <b>Möjliga orsaker:</b><br>
-                                1. <b>[Orsak]</b> - Förklaring.<br>
-                                2. <b>[Orsak]</b> - Förklaring.<br>
-                                3. <b>[Orsak]</b> - Förklaring.`;
+								Analysera: "${query}".
+								
+								VIKTIGT OM FORMATERING:
+								Använd HTML-taggar.
+								1. Använd <b> för rubriker och viktiga delar.
+								2. Använd <ul> och <li> för listan (inga siffror, använd punktlista).
+								3. Håll det kompakt.
+								
+								Följ denna mall exakt:
+								<b>Analys:</b> Kort sammanfattning.
+								<b>Möjliga orsaker:</b>
+								<ul>
+								<li><b>[Orsak]</b> - Förklaring.</li>
+								<li><b>[Orsak]</b> - Förklaring.</li>
+								<li><b>[Orsak]</b> - Förklaring.</li>
+								</ul>`;
 			
 			                const response = await fetch(url, {
 			                    method: 'POST',
@@ -2558,7 +2559,7 @@
 			function linkify(text) {
 			    if (!text) return "";
 			
-			    // 1. Först "säkrar" vi texten (så att <script> inte kan köras om någon skriver det)
+			    // 1. Säkra texten
 			    let safeText = text
 			        .replace(/&/g, "&amp;")
 			        .replace(/</g, "&lt;")
@@ -2566,21 +2567,19 @@
 			        .replace(/"/g, "&quot;")
 			        .replace(/'/g, "&#039;");
 			
-			    // 2. Regex för att hitta URL:er (http/https)
+			    // 2. Länka URL:er
 			    const urlPattern = /(https?:\/\/[^\s]+)/g;
-			
-			    // 3. Gör om länkar till <a> taggar
 			    safeText = safeText.replace(urlPattern, (url) => {
 			        return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="chat-link">${url}</a>`;
 			    });
 			
-			    // --- NYTT: Återställ säkra HTML-taggar från AI:n ---
-			    // Detta gör att <b> blir fetstilt och <br> blir radbrytning igen
+			    // 3. Återställ tillåten HTML (Nu med listor!)
 			    safeText = safeText
-			        .replace(/&lt;b&gt;/g, '<b>')       // Återställ start-tagg för fetstil
-			        .replace(/&lt;\/b&gt;/g, '</b>')    // Återställ slut-tagg för fetstil
-			        .replace(/&lt;br&gt;/g, '<br>')     // Återställ radbrytning
-			        .replace(/&lt;br\s*\/&gt;/g, '<br>'); // Hantera varianter av br
+			        .replace(/&lt;b&gt;/g, '<b>').replace(/&lt;\/b&gt;/g, '</b>')
+			        .replace(/&lt;br&gt;/g, '<br>').replace(/&lt;br\s*\/&gt;/g, '<br>')
+			        // NYTT: Tillåt punktlistor
+			        .replace(/&lt;ul&gt;/g, '<ul>').replace(/&lt;\/ul&gt;/g, '</ul>')
+			        .replace(/&lt;li&gt;/g, '<li>').replace(/&lt;\/li&gt;/g, '</li>');
 			
 			    return safeText;
 			}
