@@ -2225,6 +2225,7 @@
 				            });
 				        }
 					}
+				}
 			
 			    // --- 2. SÖKFUNKTION ---
 			    if (searchInput) {
