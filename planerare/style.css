@@ -7395,27 +7395,32 @@ body.body-scroll-lock {
 
 /* --- RÄKNAREN: Centrerad i mitten av Headern --- */
 .mm-counter {
-    /* Absolut positionering för att hamna EXAKT i mitten av skärmen */
-    position: absolute;
+    /* Använd fixed för att centrera relativt till skärmen, inte headern */
+    position: fixed; 
+    top: 22px;       /* Justera höjden så den linjerar med knapparna */
     left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%); /* Centrera exakt */
+    transform: translateX(-50%);
     
-    /* Design: Ren text med skugga (Snyggast i header) */
-    color: #f2f2f7;
-    font-weight: 600;
-    font-size: 16px; /* Tydlig storlek */
-    letter-spacing: 0.5px;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.5); /* Gör texten läsbar mot ljusa bilder */
-    
-    /* Nollställ gamla stilar */
-    background-color: transparent;
-    border: none;
+    /* Nollställ botten-regler om de finns kvar */
+    bottom: auto; 
     margin: 0;
-    padding: 0;
-    bottom: auto; /* Ta bort botten-positionering */
     
-    z-index: 30031;
+    /* Design */
+    background-color: rgba(0, 0, 0, 0.5); /* Mer transparent för att smälta in */
+    color: #f2f2f7;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-weight: 600;
+    font-size: 15px; 
+    letter-spacing: 0.5px;
+    
+    padding: 4px 12px;
+    border-radius: 20px;
+    /* border: 1px solid rgba(255, 255, 255, 0.1); */ /* Valfritt: Ta bort kant för renare look */
+    
+    z-index: 30050; 
+    pointer-events: none;
+    white-space: nowrap;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
 }
 
 /* Detta gör att räknaren inte tar plats mellan X och knapparna där uppe */
@@ -7737,6 +7742,7 @@ body.offline-mode .offline-dot {
     background-color: rgba(255, 69, 58, 0.15); /* Svag röd bakgrund */
     border-radius: 50%;
 }
+
 
 
 
