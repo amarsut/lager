@@ -6089,6 +6089,7 @@ body.body-scroll-lock {
     /* VIKTIGT: Ökad padding i botten (110px) så att sista meddelandet syns ovanför input-fältet */
     /* Ordningen är: Topp, Höger, Botten, Vänster */
     padding: 1rem 1rem 1rem 1rem;
+	padding-bottom: 140px !important;
     
     /* Gör scrollningen mjuk när nya meddelanden kommer */
     /*scroll-behavior: smooth;*/
@@ -7668,4 +7669,5 @@ body.offline-mode .offline-dot {
     vertical-align: middle;
     margin: 0 10px;
 }
+
 
