@@ -1388,9 +1388,11 @@
 
 			// --- NY FUNKTION: Notis-räknare ---
 			function initChatBadgeListener() {
-			    // Lyssna på alla meddelanden som har reaktionen "🕓"
+			    // ÄNDRING: Vi lyssnar nu på BÅDE "🕓" (gamla) och "🤖" (nya roboten)
+			    // "in"-operatorn låter oss kolla efter flera olika emojis samtidigt.
+			    
 			    badgeUnsubscribe = db.collection("notes")
-			        .where("reaction", "==", "🕓")
+			        .where("reaction", "in", ["🕓", "🤖"]) 
 			        .onSnapshot(snapshot => {
 			            const count = snapshot.size; // Antal träffar
 			            updateBadges(count);
@@ -2685,7 +2687,7 @@
             }
 
 			// --- NY FUNKTION: Hantera Varningar i Chatten ---
-            async function checkAndSendLowStockWarning(currentLevel) {
+			async function checkAndSendLowStockWarning(currentLevel) {
 			    // Gräns för varning (t.ex. 20 liter)
 			    const WARNING_THRESHOLD = 20;
 			    
@@ -2698,27 +2700,19 @@
 			    const lastWarningDate = localStorage.getItem('oilWarningSentDate');
 			
 			    if (lastWarningDate !== today) {
-			        // --- FIX HÄR: Sätt flaggan DIREKT för att stoppa dubbla anrop ---
 			        localStorage.setItem('oilWarningSentDate', today);
-			        // ---------------------------------------------------------------
 			
 			        console.log("Låg oljenivå detekterad. Skapar systemmeddelande...");
 			
-			        try {
-			            await db.collection("notes").add({
-			                text: `⚠️ Motoroljenivån ligger nu på ${currentLevel.toFixed(1)} liter.`,
-			                timestamp: new Date().toISOString(),
-			                platform: 'system',
-			                reaction: '🕓' // Triggar notis-siffran
-			            });
-			
-			            showToast('Varning skickad till chatten!', 'warning');
-			
-			        } catch (err) {
-			            console.error("Kunde inte skicka systemvarning:", err);
-			            // Om det misslyckades, ta bort flaggan så den försöker igen nästa gång
-			            localStorage.removeItem('oilWarningSentDate');
-			        }
+			        // Vi använder nu sendSystemMessage för att få rätt "SYSTEM"-design och Robot-emoji
+			        // Vi sätter typen till 'info' för att få 🤖 (eller 'warning' om du vill ha ⚠️)
+			        // Vi lägger också till en unik nyckel för extra säkerhet mot dubbletter
+			        
+			        sendSystemMessage(
+			            `⚠️ Motoroljenivån ligger nu på ${currentLevel.toFixed(1)} liter.`, 
+			            'info', // 'info' ger 🤖 som reaktion baserat på din sendSystemMessage-kod
+			            `oil_warning_${today}`
+			        );
 			    }
 			}
 
