@@ -1648,6 +1648,37 @@
 			            }
 			        }).catch(err => console.log("Kunde inte räkna chatt:", err));
 			    }
+				// 30. RENSA BILDER (Lagringsutrymme)
+			    // Kollar om det finns mer än 15 bilder i chatten
+			    const imageCheckKey = `image_cleanup_check_${todayString}`; // Unik per dag
+			    
+			    // Om vi inte redan kollat idag...
+			    if (!localStorage.getItem(imageCheckKey)) {
+			        
+			        db.collection("notes").get().then(snap => {
+			            let imageCount = 0;
+			            
+			            snap.forEach(doc => {
+			                const data = doc.data();
+			                // Vi räknar både singel-bilder (type: 'image') och gallerier (images array)
+			                if (data.type === 'image' || (data.images && data.images.length > 0)) {
+			                    imageCount++;
+			                }
+			            });
+			
+			            // Om antalet bilder överstiger din gräns (15)
+			            if (imageCount > 15) {
+			                sendSystemMessage(
+			                    `📷 Utrymmesvarning: Du har ${imageCount} bilder sparade i chatten. Dags att rensa gamla bilder för att spara utrymme?`,
+			                    'warning', 
+			                    imageCheckKey
+			                );
+			            } else {
+			                // Spara att vi kollat (så vi inte gör tunga databasanrop varje gång du byter vy)
+			                localStorage.setItem(imageCheckKey, 'checked');
+			            }
+			        }).catch(err => console.error("Kunde inte räkna bilder:", err));
+			    }
 			}
 
 			let jobUnsubscribe = null;
