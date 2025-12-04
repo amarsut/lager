@@ -1842,19 +1842,35 @@
 			if (imageZoomModal) {
 			    imageZoomModal.addEventListener('click', function(e) {
 			        
-			        // --- UPPDATERAD LOGIK FÖR ATT STÄNGA ---
-			        // Vi kollar om man klickar på:
-			        // 1. Själva modal-bakgrunden
-			        // 2. Stäng-knappen
-			        // 3. Behållaren runt bilden (.mm-carousel-item) -> Detta är "ytan utanför bilden"
-			        // 4. Huvud-containern (.mm-carousel-container)
-			        
-			        const isBackgroundClick = 
-			            e.target === imageZoomModal || 
-			            e.target.classList.contains('mm-carousel-item') || 
-			            e.target.classList.contains('mm-carousel-container');
+			        // 1. HANTERA KNAPPAR FÖRST (Så de inte triggar stängning)
+			        const closeBtn = e.target.closest('#mmCloseBtn');
+			        const forwardBtn = e.target.closest('#mmForwardBtn');
+			        const shareBtn = e.target.closest('#mmShareBtn');
+			        const deleteBtn = e.target.closest('#mmDeleteBtn');
 			
-			        if (isBackgroundClick || e.target.closest('#mmCloseBtn')) {
+			        if (forwardBtn) {
+			            e.preventDefault(); e.stopPropagation();
+			            if (typeof forwardCurrentPhoto === 'function') forwardCurrentPhoto();
+			            return;
+			        }
+			        if (shareBtn) {
+			            e.preventDefault(); e.stopPropagation();
+			            if (typeof downloadCurrentPhoto === 'function') downloadCurrentPhoto();
+			            return;
+			        }
+			        if (deleteBtn) {
+			            e.preventDefault(); e.stopPropagation();
+			            if (typeof deleteCurrentPhoto === 'function') deleteCurrentPhoto();
+			            return;
+			        }
+			
+			        // 2. STÄNGNINGS-LOGIK
+			        // Om man klickar på X-knappen ELLER om man klickar på något som INTE är själva bilden (IMG)
+			        // Då stänger vi.
+			        
+			        const isImage = e.target.tagName === 'IMG';
+			        
+			        if (closeBtn || !isImage) {
 			            e.preventDefault();
 			            
 			            if (history.state && history.state.modal === 'imageZoom') {
@@ -1863,29 +1879,6 @@
 			                imageZoomModal.style.display = 'none';
 			                if (typeof updateScrollLock === 'function') updateScrollLock();
 			            }
-			            return;
-			        }
-			
-			        // ... (Resten av knapparna: mmForwardBtn, mmShareBtn, mmDeleteBtn är samma som förut) ...
-			        const forwardBtn = e.target.closest('#mmForwardBtn');
-			        if (forwardBtn) {
-			            e.preventDefault(); e.stopPropagation();
-			            if (typeof forwardCurrentPhoto === 'function') forwardCurrentPhoto();
-			            return;
-			        }
-			
-			        const shareBtn = e.target.closest('#mmShareBtn');
-			        if (shareBtn) {
-			            e.preventDefault(); e.stopPropagation();
-			            if (typeof downloadCurrentPhoto === 'function') downloadCurrentPhoto();
-			            return;
-			        }
-			
-			        const deleteBtn = e.target.closest('#mmDeleteBtn');
-			        if (deleteBtn) {
-			            e.preventDefault(); e.stopPropagation();
-			            if (typeof deleteCurrentPhoto === 'function') deleteCurrentPhoto();
-			            return;
 			        }
 			    });
 			}
