@@ -1420,41 +1420,39 @@
 
 			// --- HJÄLPFUNKTION FÖR SYSTEMNOTISER ---
 			async function sendSystemMessage(text, type = 'info', uniqueKey = null) {
-			    // Om en unik nyckel anges (t.ex. "morgon_2023-12-01"), kolla om den redan skickats
+			    // Spam-skydd: Skicka inte om vi redan gjort det idag
 			    if (uniqueKey && localStorage.getItem(uniqueKey)) {
 			        return; 
 			    }
 			
-			    let reaction = '🤖'; // Standard robot-ikon
-			    
-			    // Välj reaktion baserat på typ
+			    let reaction = '🤖'; 
 			    if (type === 'success') reaction = '🎉';
 			    if (type === 'warning') reaction = '⚠️';
 			    if (type === 'alert') reaction = '🚨';
 			    if (type === 'stats') reaction = '📊';
+			    if (type === 'season') reaction = '❄️';
 			
 			    try {
 			        await db.collection("notes").add({
 			            text: text,
 			            timestamp: new Date().toISOString(),
-			            platform: 'system',
+			            platform: 'system', // <--- VIKTIGT: Detta gör att "• SYSTEM" visas vid tiden
 			            reaction: reaction
 			        });
 			        
-			        // Om det gick bra, spara flaggan så vi inte skickar igen
 			        if (uniqueKey) {
 			            localStorage.setItem(uniqueKey, 'sent');
 			        }
 			        
-			        // Visa en liten toast också
-			        showToast('Ny systemnotis i chatten', 'info');
+			        // Uppdatera notis-badgen direkt om möjligt (frivilligt)
+			        // updateBadges(1); 
 			        
 			    } catch (e) {
 			        console.error("Kunde inte skicka systemnotis", e);
 			    }
 			}
 			
-						// --- SMART NOTIS-CHECKER ---
+			// --- SMART NOTIS-CHECKER ---
 			function checkSmartNotifications(jobs) {
 			    if (!jobs || jobs.length === 0) return;
 			
