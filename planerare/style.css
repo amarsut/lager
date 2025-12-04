@@ -7411,30 +7411,40 @@ body.body-scroll-lock {
 
 /* 4. Bild-kortet */
 .mm-carousel-item {
+    /* Vi måste ha kvar dessa för att fylla skärmen! */
+    position: absolute;
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%;
+    
+    /* Flexbox för att centrera bilden */
     display: flex;
     align-items: center;
     justify-content: center;
-    /* Lägg till padding så bilden aldrig nuddar kanten */
-    padding: 60px 20px 80px 20px; 
+    
+    /* Padding skapar "luft" runt bilden så man kan klicka utanför */
+    padding: 60px 20px 100px 20px; 
     box-sizing: border-box;
+    
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    opacity: 0;
+    pointer-events: none; /* Släpp igenom klick när den är osynlig */
 }
 
 /* 5. BILDEN (STOR FIX HÄR) */
 .mm-carousel-item img {
-    /* Ta bort den gamla paddingen inuti bilden */
-    padding: 0 !important; 
+    padding: 0 !important; /* Nollställ gammal padding */
     
-    /* Istället för width:100%, låt bilden anpassa sig */
+    /* Låt bilden anpassa sig efter den tillgängliga ytan (minus paddingen ovan) */
     width: auto;
     height: auto;
-    
-    /* Maxgränser så man kan klicka utanför */
     max-width: 100%;
-    max-height: 100%; 
+    max-height: 100%;
     
     object-fit: contain;
     
-    /* --- DESIGN: Runda hörn & Skugga --- */
+    /* Design: Runda hörn & Skugga */
     border-radius: 12px; 
     box-shadow: 0 10px 40px rgba(0,0,0,0.5);
     
@@ -7471,7 +7481,7 @@ body.body-scroll-lock {
     opacity: 1;
     z-index: 2;
     transform: scale(1);
-    pointer-events: auto;
+    pointer-events: auto; /* Aktivera klick (för JS-logiken) */
 }
 .mm-carousel-item.side { opacity: 0; z-index: 1; }
 .mm-carousel-item.prev { transform: translateX(-100%); }
@@ -7705,6 +7715,7 @@ body.offline-mode .offline-dot {
     background-color: rgba(255, 69, 58, 0.15); /* Svag röd bakgrund */
     border-radius: 50%;
 }
+
 
 
 
