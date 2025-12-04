@@ -2569,10 +2569,20 @@
 			    // 2. Regex för att hitta URL:er (http/https)
 			    const urlPattern = /(https?:\/\/[^\s]+)/g;
 			
-			    // 3. Byt ut URL:en mot en <a> tagg
-			    return safeText.replace(urlPattern, (url) => {
+			    // 3. Gör om länkar till <a> taggar
+			    safeText = safeText.replace(urlPattern, (url) => {
 			        return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="chat-link">${url}</a>`;
 			    });
+			
+			    // --- NYTT: Återställ säkra HTML-taggar från AI:n ---
+			    // Detta gör att <b> blir fetstilt och <br> blir radbrytning igen
+			    safeText = safeText
+			        .replace(/&lt;b&gt;/g, '<b>')       // Återställ start-tagg för fetstil
+			        .replace(/&lt;\/b&gt;/g, '</b>')    // Återställ slut-tagg för fetstil
+			        .replace(/&lt;br&gt;/g, '<br>')     // Återställ radbrytning
+			        .replace(/&lt;br\s*\/&gt;/g, '<br>'); // Hantera varianter av br
+			
+			    return safeText;
 			}
 
 			function highlightCustomerNames(text) {
