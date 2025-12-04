@@ -732,16 +732,15 @@
 			    const modal = document.getElementById('imageZoomModal');
 			    if (!modal) return;
 			
-			    // 1. Hämta källan (src) och ID från det klickade elementet
-			    // Vi hanterar fall där man skickar en sträng (för bakåtkompatibilitet) eller ett element
 			    let startSrc = "";
 			    let startId = null;
 			
+			    // 1. Kontrollera om vi fick ett HTML-element (från nya koden) eller en textsträng (gammalt sätt)
 			    if (clickedImgElement instanceof HTMLElement) {
 			        startSrc = clickedImgElement.src;
-			        startId = clickedImgElement.dataset.id;
+			        startId = clickedImgElement.dataset.id; // Hämta ID:t vi sparade i renderChatBubble
 			    } else {
-			        startSrc = clickedImgElement; // Om det råkar vara en sträng
+			        startSrc = clickedImgElement; // Fallback om det är en sträng
 			    }
 			
 			    // 2. Bygg gallerilistan från alla synliga bilder i chatten
@@ -750,21 +749,19 @@
 			    currentGalleryImages = Array.from(allImages).map(img => ({
 			        src: img.src,
 			        caption: "", 
-			        id: img.dataset.id || null // Hämta ID från dataset, eller null
+			        id: img.dataset.id || null // Spara ID i vår galleri-lista
 			    }));
 			
-			    // 3. Hitta rätt startindex
-			    // Vi försöker matcha exakt src först
+			    // 3. Hitta rätt bild i listan
 			    currentImageIndex = currentGalleryImages.findIndex(item => item.src === startSrc);
 			
-			    // Om vi inte hittar bilden (URL-kodningsfel), men vi har ett ID, försök matcha på ID
+			    // Om vi inte hittar bilden via URL, försök via ID (säkerhetsåtgärd)
 			    if (currentImageIndex === -1 && startId) {
 			        currentImageIndex = currentGalleryImages.findIndex(item => item.id === startId);
 			    }
 			
-			    // Om det fortfarande misslyckas (extremfall), skapa en temporär lista
+			    // Om inget matchar (extremfall), visa bara den klickade bilden
 			    if (currentImageIndex === -1) {
-			        console.warn("Kunde inte matcha bild i galleriet, skapar temporär visning.");
 			        currentGalleryImages = [{ src: startSrc, caption: "", id: startId }];
 			        currentImageIndex = 0;
 			    }
@@ -772,20 +769,100 @@
 			    // 4. Uppdatera UI och öppna
 			    updateCarouselUI();
 			
+			    // Hantera historik och visa modal
 			    history.pushState({ modal: 'imageZoom' }, 'Bild', '#image');
 			    modal.style.display = "flex";
 			    updateScrollLock();
 			
-			    // 5. Koppla knappar (samma som förut)
+			    // 5. Koppla knappar
 			    document.getElementById('mmCloseBtn').onclick = () => history.back();
-			    document.getElementById('mmShareBtn').onclick = downloadCurrentPhoto;
+			    
+			    const shareBtn = document.getElementById('mmShareBtn');
+			    if (shareBtn) shareBtn.onclick = downloadCurrentPhoto;
 			    
 			    const fwdBtn = document.getElementById('mmForwardBtn');
 			    if (fwdBtn) fwdBtn.onclick = forwardCurrentPhoto;
 			
+			    // Koppla den nya raderingsknappen
 			    const delBtn = document.getElementById('mmDeleteBtn');
 			    if (delBtn) delBtn.onclick = deleteCurrentPhoto;
+			    
+			    // Stäng om man klickar på bakgrunden
+			    const backdrop = document.getElementById('mmCarouselBackdrop');
+			    if (backdrop) {
+			        backdrop.onclick = (e) => {
+			            if (e.target === backdrop || e.target.classList.contains('mm-carousel-item')) {
+			                history.back();
+			            }
+			        };
+			    }
 			};
+			
+			// --- NY FUNKTION: Radera bild ---
+			async function deleteCurrentPhoto() {
+			    if (currentGalleryImages.length === 0) return;
+			
+			    const currentItem = currentGalleryImages[currentImageIndex];
+			    
+			    // Säkerhetskoll: Har vi ett ID?
+			    if (!currentItem || !currentItem.id) {
+			        showToast("Kan inte radera denna bild (saknar ID).", "warning");
+			        return;
+			    }
+			
+			    if (!confirm("Vill du radera den här bilden permanent?")) return;
+			
+			    showToast("Raderar bild...", "info");
+			
+			    const docRef = db.collection("notes").doc(currentItem.id);
+			    const imgUrl = currentItem.src;
+			
+			    try {
+			        const doc = await docRef.get();
+			        if (!doc.exists) {
+			            showToast("Bilden finns inte längre.", "danger");
+			            return;
+			        }
+			        
+			        const data = doc.data();
+			
+			        // SCENARIO 1: Det är en lista av bilder (Karussell)
+			        if (data.images && Array.isArray(data.images) && data.images.includes(imgUrl)) {
+			            // Om det är sista bilden i arrayen -> Radera hela dokumentet
+			            if (data.images.length === 1) {
+			                await docRef.delete();
+			            } else {
+			                // Annars ta bort bara denna bildlänk
+			                await docRef.update({
+			                    images: firebase.firestore.FieldValue.arrayRemove(imgUrl)
+			                });
+			            }
+			        } 
+			        // SCENARIO 2: Det är en enstaka bild
+			        else {
+			            await docRef.delete();
+			        }
+			
+			        showToast("Bild raderad!", "success");
+			
+			        // Uppdatera galleriet direkt utan att stänga (om det finns fler bilder)
+			        currentGalleryImages.splice(currentImageIndex, 1);
+			
+			        if (currentGalleryImages.length === 0) {
+			            history.back(); // Stäng om tomt
+			        } else {
+			            // Justera index om vi stod sist
+			            if (currentImageIndex >= currentGalleryImages.length) {
+			                currentImageIndex = currentGalleryImages.length - 1;
+			            }
+			            updateCarouselUI();
+			        }
+			
+			    } catch (err) {
+			        console.error("Fel vid radering:", err);
+			        showToast("Kunde inte radera bilden.", "danger");
+			    }
+			}
 			
 			function updateCarouselUI() {
 			    const total = currentGalleryImages.length;
@@ -829,79 +906,6 @@
 			    if (currentImageIndex >= currentGalleryImages.length) currentImageIndex = 0;
 			
 			    updateCarouselUI();
-			}
-
-			// --- NY FUNKTION: Radera bild från modal ---
-			async function deleteCurrentPhoto() {
-			    if (currentGalleryImages.length === 0) return;
-			
-			    const currentItem = currentGalleryImages[currentImageIndex];
-			    
-			    // Säkerhetskoll
-			    if (!currentItem || !currentItem.id) {
-			        showToast("Kan inte radera denna bild (saknar ID).", "warning");
-			        return;
-			    }
-			
-			    if (!confirm("Vill du radera den här bilden permanent?")) return;
-			
-			    showToast("Raderar bild...", "info");
-			
-			    const docRef = db.collection("notes").doc(currentItem.id);
-			    const imgUrl = currentItem.src;
-			
-			    try {
-			        // 1. Hämta dokumentet för att se om det är en enstaka bild eller array
-			        const doc = await docRef.get();
-			        if (!doc.exists) {
-			            showToast("Bilden finns inte längre.", "danger");
-			            return;
-			        }
-			        
-			        const data = doc.data();
-			
-			        // SCENARIO 1: Det är en Array av bilder (Karussell)
-			        if (data.images && Array.isArray(data.images) && data.images.includes(imgUrl)) {
-			            
-			            // Om det är den SISTA bilden i arrayen -> Radera hela dokumentet
-			            if (data.images.length === 1) {
-			                await docRef.delete();
-			            } else {
-			                // Annars ta bort bara denna URL från arrayen
-			                await docRef.update({
-			                    images: firebase.firestore.FieldValue.arrayRemove(imgUrl)
-			                });
-			            }
-			        } 
-			        // SCENARIO 2: Det är en enstaka bild (gammalt format eller enkel uppladdning)
-			        else {
-			            // Radera hela dokumentet
-			            await docRef.delete();
-			        }
-			
-			        showToast("Bild raderad!", "success");
-			
-			        // 2. UPPDATERA GALLERIET VISUELLT (Utan att stänga om det finns fler)
-			        
-			        // Ta bort bilden från vår lokala lista
-			        currentGalleryImages.splice(currentImageIndex, 1);
-			
-			        // Om inga bilder finns kvar -> Stäng modalen
-			        if (currentGalleryImages.length === 0) {
-			            history.back(); // Stänger modalen via historik-hanteraren
-			        } else {
-			            // Om vi raderade sista bilden i listan, backa index ett steg
-			            if (currentImageIndex >= currentGalleryImages.length) {
-			                currentImageIndex = currentGalleryImages.length - 1;
-			            }
-			            // Visa nästa bild
-			            updateCarouselUI();
-			        }
-			
-			    } catch (err) {
-			        console.error("Fel vid radering:", err);
-			        showToast("Kunde inte radera bilden.", "danger");
-			    }
 			}
 			
 			function downloadCurrentPhoto() {
