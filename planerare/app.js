@@ -2107,14 +2107,15 @@
 			    // --- AI MEKANIKER (FIXAD: Modell Gemini 2.5) ---
 			    newAiBtn.addEventListener('click', async (e) => {
 				    e.preventDefault();
-				    
+				
+				    const chatInput = document.getElementById('chatInput');
 				    const query = chatInput.value.trim();
+				    
 				    if (!query) {
-				        showToast("Skriv en felkod eller fråga först.", "warning");
+				        showToast("Skriv en fråga först", "warning");
 				        return;
 				    }
 				
-				    // 1. Skapa meddelandet med timglas
 				    const loadingMsgRef = await db.collection("notes").add({
 				        text: `🤖 Frågar AI: "${query}"...`,
 				        timestamp: new Date().toISOString(),
@@ -2125,11 +2126,9 @@
 				    chatInput.value = '';
 				
 				    try {
-				        const apiKey = "AIzaSyD5T7D7EBgNb8jwARxcG7xZLWwbqy80Qf0"; // Din nyckel
-				        
+				        const apiKey = "AIzaSyD5T7D7EBgNb8jwARxcG7xZLWwbqy80Qf0";
 				        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 				
-				        // Prompten som ger korta, strukturerade svar
 				        const prompt = `Du är en expertmekaniker. Svara på svenska.
 								Analysera: "${query}".
 								
@@ -2149,16 +2148,23 @@
 								<li><b>[Orsak]</b> - [Kort förklaring, max 10 ord]</li>
 								</ul>`;
 				
-				        // HÄR brukar felet uppstå - kontrollera kommatecknet efter url
-				        const response = await fetch(url, { 
+				        const response = await fetch(url, {
 				            method: 'POST',
-				            headers: { 'Content-Type': 'application/json' },
+				            headers: {
+				                'Content-Type': 'application/json'
+				            },
 				            body: JSON.stringify({
-				                contents: [{ parts: [{ text: prompt }] }]
+				                contents: [{
+				                    parts: [{
+				                        text: prompt
+				                    }]
+				                }]
 				            })
 				        });
 				
-				        if (!response.ok) throw new Error("AI-tjänsten svarade inte.");
+				        if (!response.ok) {
+				            throw new Error("AI-tjänsten svarade inte");
+				        }
 				
 				        const data = await response.json();
 				
@@ -2171,33 +2177,28 @@
 				                platform: 'system',
 				                reaction: '🤖'
 				            });
-				            
-				            // Uppdatera timglas till bock
-				            await loadingMsgRef.update({ reaction: '✅' });
+				
+				            await loadingMsgRef.update({
+				                reaction: '✅'
+				            });
 				
 				            setTimeout(() => {
 				                const chatList = document.getElementById('chatMessages');
-				                if(chatList) chatList.scrollTop = chatList.scrollHeight;
+				                if (chatList) chatList.scrollTop = chatList.scrollHeight;
 				            }, 100);
 				
 				        } else {
-				            throw new Error("Inget svar från AI.");
+				            throw new Error("Inget svar från AI");
 				        }
 				
 				    } catch (err) {
-				        console.error("AI ERROR:", err);
-				        
-				        // Uppdatera timglas till kryss vid fel
-				        await loadingMsgRef.update({ reaction: '❌' });
-				
-				        await db.collection("notes").add({
-				            text: "⚠️ Kunde inte få kontakt med AI-mekanikern just nu.",
-				            timestamp: new Date().toISOString(),
-				            platform: 'system'
+				        console.error(err);
+				        await loadingMsgRef.update({
+				            reaction: '❌'
 				        });
+				        showToast("Kunde inte nå AI just nu", "danger");
 				    }
 				});
-			    }
 			
 			    // --- SÖKFUNKTION ---
 			    if (searchInput) {
