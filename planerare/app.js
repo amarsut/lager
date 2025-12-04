@@ -1837,47 +1837,46 @@
 			const imageZoomModal = document.getElementById('imageZoomModal');
 
 			if (imageZoomModal) {
-			    // Använd 'click' (fungerar bra på både mobil och desktop nu när vi har touch-action i CSS)
 			    imageZoomModal.addEventListener('click', function(e) {
 			        
-			        // 1. KOLLA VAD VI KLICKADE PÅ
 			        const target = e.target;
 			
-			        // Om vi klickar på själva bilden -> GÖR INGET (Stäng inte)
+			        // 1. OM VI KLICKAR PÅ BILDEN -> GÖR INGET
 			        if (target.tagName === 'IMG') {
 			            return; 
 			        }
 			
-			        // Om vi klickar på en knapp -> Hantera knappen
+			        // 2. HANTERA KNAPPAR
 			        const forwardBtn = target.closest('#mmForwardBtn');
 			        const shareBtn = target.closest('#mmShareBtn');
 			        const deleteBtn = target.closest('#mmDeleteBtn');
-			        const closeBtn = target.closest('#mmCloseBtn');
+			        const closeBtn = target.closest('#mmCloseBtn'); // X-knappen
 			
 			        if (forwardBtn) {
-			            e.preventDefault();
+			            e.preventDefault(); e.stopPropagation();
 			            if (typeof forwardCurrentPhoto === 'function') forwardCurrentPhoto();
 			            return;
 			        }
 			        if (shareBtn) {
-			            e.preventDefault();
+			            e.preventDefault(); e.stopPropagation();
 			            if (typeof downloadCurrentPhoto === 'function') downloadCurrentPhoto();
 			            return;
 			        }
 			        if (deleteBtn) {
-			            e.preventDefault();
+			            e.preventDefault(); e.stopPropagation();
 			            if (typeof deleteCurrentPhoto === 'function') deleteCurrentPhoto();
 			            return;
 			        }
 			
-			        // 2. STÄNG-LOGIK
-			        // Om vi kommer hit har vi klickat på antingen:
-			        // A) Det svarta området (backdrop/container)
-			        // B) Stäng-knappen (X)
+			        // 3. STÄNGNINGS-LOGIK (Klick utanför eller på X)
+			        // Detta körs om vi klickade på det svarta eller på X-knappen
 			        
-			        // Vi stänger direkt!
 			        e.preventDefault();
-			        e.stopPropagation();
+			        
+			        // *** HÄR ÄR FIXEN: ***
+			        // Vi stoppar händelsen här. Den får INTE bubbla upp till document.
+			        // Då kan inte "Stäng Chatt"-funktionen triggas.
+			        e.stopPropagation(); 
 			
 			        if (history.state && history.state.modal === 'imageZoom') {
 			            history.back();
