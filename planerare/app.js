@@ -2151,12 +2151,12 @@
 								3. Inga onödiga radbrytningar.
 								
 								Följ denna mall exakt:
-								<b>Analys:</b> Kort sammanfattning.
+								<b>Kort analys:</b> Kort sammanfattning.
 								<b>Möjliga orsaker:</b>
 								<ul>
-								<li><b>[Orsak]</b> - Förklaring.</li>
-								<li><b>[Orsak]</b> - Förklaring.</li>
-								<li><b>[Orsak]</b> - Förklaring.</li>
+								<li><b>[Orsak]</b> - Kort förklaring.</li>
+								<li><b>[Orsak]</b> - Kort förklaring.</li>
+								<li><b>[Orsak]</b> - Kort förklaring.</li>
 								</ul>`;
 			
 			                const response = await fetch(url, {
