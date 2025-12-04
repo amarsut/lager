@@ -1987,29 +1987,21 @@
 			function renderChatBubble(id, data, container) {
 			    const bubble = document.createElement('div');
 			
-			    // --- NY LOGIK: Bestäm typ (me/other/system) ---
-			    // Detta styr om den hamnar till höger (me) eller vänster (system/other) och färgen.
-			    let msgType = 'me'; 
+			    // --- LOGIK: Bestäm typ ---
+			    let msgType = 'me'; // Default: Jag (Blå/Höger)
 			
 			    if (data.platform === 'system') {
-			        msgType = 'system';
+			        msgType = 'system'; // Kommer nu se ut som 'other' (Grå/Vänster) via CSS
 			    } else if (data.sender === 'other') { 
-			        // För framtida bruk om du lägger till chatt med andra
 			        msgType = 'other';
 			    }
 			
-			    // Sätt klasser: .chat-bubble + .me / .system / .other
+			    // Sätt klasser
 			    bubble.className = `chat-bubble ${msgType}`;
 			
-			    // --- OM DET ÄR SYSTEM: LÄGG TILL ETIKETT FÖRST ---
-			    if (msgType === 'system') {
-			        const sysLabel = document.createElement('span');
-			        sysLabel.className = 'system-label';
-			        sysLabel.innerHTML = `⚠️ SYSTEM-MEDDELANDE`;
-			        bubble.appendChild(sysLabel);
-			    }
+			    // OBS: Vi lägger INTE till någon system-label här längre, 
+			    // så den ser exakt ut som ett vanligt meddelande.
 			
-			    // Variabel för att minnas om vi har gjort ett långtryck
 			    let isLongPressActive = false;
 			
 			    // --- 1. INNEHÅLL (TEXT & BILD) ---
@@ -2059,6 +2051,7 @@
 			        const textContentDiv = document.createElement('div');
 			        textContentDiv.className = 'chat-text-content';
 			        
+			        // Här renderas texten precis som vanligt
 			        let processedText = rawText.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 			        
 			        const urlPattern = /(https?:\/\/[^\s]+)/g;
@@ -2105,7 +2098,7 @@
 			        bubble.appendChild(badge);
 			    }
 			
-			    // --- 2. TOUCH-LOGIK ---
+			    // Touch-logik
 			    let pressTimer = null;
 			    let startX = 0, startY = 0;
 			
@@ -2114,11 +2107,8 @@
 			        isLongPressActive = false;
 			        startX = e.touches[0].clientX;
 			        startY = e.touches[0].clientY;
-			
 			        if (startX < 30 || startX > window.innerWidth - 30) return;
-			
 			        if (pressTimer) clearTimeout(pressTimer);
-			
 			        pressTimer = setTimeout(() => {
 			            isLongPressActive = true; 
 			            if (typeof showReactionMenu === 'function') {
@@ -2151,12 +2141,9 @@
 			        }
 			    };
 			
-			    // Kontextmeny (Högerklick)
 			    bubble.addEventListener('contextmenu', (e) => {
 			        if (window.innerWidth <= 768) {
-			            e.preventDefault();
-			            e.stopPropagation();
-			            return false;
+			            e.preventDefault(); e.stopPropagation(); return false;
 			        }
 			        e.preventDefault();
 			        showReactionMenu(e.clientX, e.clientY, id);
@@ -2167,11 +2154,9 @@
 			    bubble.addEventListener('touchmove', handleTouchMove, { passive: true });
 			    bubble.addEventListener('touchend', handleTouchEnd, { passive: false }); 
 			
-			    // --- 3. TIDSSTÄMPEL (UPPDATERAD) ---
+			    // --- 3. TIDSSTÄMPEL ---
 			    const time = document.createElement('div');
-			    
-			    // Vi lägger till msgType här också så att tiden hamnar på rätt sida (vänster/höger)
-			    time.className = `chat-time ${msgType}`;
+			    time.className = `chat-time ${msgType}`; // Sätt klass för positionering
 			    
 			    const dateObj = new Date(data.timestamp);
 			    const timeString = dateObj.toLocaleTimeString('sv-SE', {hour: '2-digit', minute:'2-digit'});
@@ -2179,7 +2164,6 @@
 			    const displayTime = (new Date().toDateString() === dateObj.toDateString()) ? timeString : `${dateString}, ${timeString}`;
 			
 			    let platformIconHtml = '';
-			    
 			    // Visa bara mobil/dator-ikon om det INTE är systemmeddelande
 			    if (msgType !== 'system') {
 			        if (data.platform === 'mobil') platformIconHtml = `<svg class="platform-icon"><use href="#icon-mobile"></use></svg>`;
@@ -2558,36 +2542,41 @@
 
 			// --- NY FUNKTION: Hantera Varningar i Chatten ---
             async function checkAndSendLowStockWarning(currentLevel) {
-                // Gräns för varning (t.ex. 20 liter)
-                const WARNING_THRESHOLD = 20;
-                
-                if (currentLevel > WARNING_THRESHOLD) {
-                    localStorage.removeItem('oilWarningSentDate');
-                    return; 
-                }
-
-                const today = new Date().toISOString().split('T')[0];
-                const lastWarningDate = localStorage.getItem('oilWarningSentDate');
-
-                if (lastWarningDate !== today) {
-                    console.log("Låg oljenivå detekterad. Skapar systemmeddelande...");
-
-                    try {
-                        await db.collection("notes").add({
-                            text: `Nivån ligger nu på **${currentLevel.toFixed(1)} liter**.\nDags att beställa nytt fat?`,
-                            timestamp: new Date().toISOString(),
-                            platform: 'system', // VIKTIGT: Detta styr färgen
-                            reaction: '🕓' // VIKTIGT: Detta triggar notis-siffran (1)
-                        });
-
-                        localStorage.setItem('oilWarningSentDate', today);
-                        showToast('Varning skickad till chatten!', 'warning');
-
-                    } catch (err) {
-                        console.error("Kunde inte skicka systemvarning:", err);
-                    }
-                }
-            }
+			    // Gräns för varning (t.ex. 20 liter)
+			    const WARNING_THRESHOLD = 20;
+			    
+			    if (currentLevel > WARNING_THRESHOLD) {
+			        localStorage.removeItem('oilWarningSentDate');
+			        return; 
+			    }
+			
+			    const today = new Date().toISOString().split('T')[0];
+			    const lastWarningDate = localStorage.getItem('oilWarningSentDate');
+			
+			    if (lastWarningDate !== today) {
+			        // --- FIX HÄR: Sätt flaggan DIREKT för att stoppa dubbla anrop ---
+			        localStorage.setItem('oilWarningSentDate', today);
+			        // ---------------------------------------------------------------
+			
+			        console.log("Låg oljenivå detekterad. Skapar systemmeddelande...");
+			
+			        try {
+			            await db.collection("notes").add({
+			                text: `⚠️ **SYSTEMVARNING**\nNivån ligger nu på **${currentLevel.toFixed(1)} liter**.\nDags att beställa nytt fat?`,
+			                timestamp: new Date().toISOString(),
+			                platform: 'system',
+			                reaction: '🕓' // Triggar notis-siffran
+			            });
+			
+			            showToast('Varning skickad till chatten!', 'warning');
+			
+			        } catch (err) {
+			            console.error("Kunde inte skicka systemvarning:", err);
+			            // Om det misslyckades, ta bort flaggan så den försöker igen nästa gång
+			            localStorage.removeItem('oilWarningSentDate');
+			        }
+			    }
+			}
 
             // --- Firebase Listener ---
             function initRealtimeListener() {
