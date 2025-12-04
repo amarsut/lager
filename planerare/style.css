@@ -6148,33 +6148,17 @@ body.body-scroll-lock {
 /* --- 3. SYSTEM-MEDDELANDEN (Vänster, Varning) --- */
 .chat-bubble.system {
     align-self: flex-start;
-    background-color: #FFF4E5; /* Ljusgul/orange bakgrund */
-    color: #2c2c2e;
-    border: 1px solid #FFCC00; /* Guld/Gul kant */
-    border-radius: 12px; /* Lite kantigare för att skilja sig */
-    border-top-left-radius: 2px;
-}
-[data-theme="dark"] .chat-bubble.system {
-    background-color: #422006; /* Mörkbrun/gul i dark mode */
-    border-color: #ca8a04;
-    color: #fef08a;
+    background-color: #E5E5EA; /* Samma grå som 'other' */
+    color: #000;
+    border-radius: 18px 18px 18px 2px; /* Svans nere vänster */
+    border: none; /* Ingen gul kant */
 }
 
-/* Etiketten "System-meddelande" */
-.system-label {
-    display: block;
-    font-size: 0.7rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    color: #d48806; /* Mörkare orange text */
-    margin-bottom: 4px;
-    letter-spacing: 0.5px;
-    display: flex; 
-    align-items: center; 
-    gap: 4px;
-}
-[data-theme="dark"] .system-label {
-    color: #facc15;
+/* Dark mode för system */
+[data-theme="dark"] .chat-bubble.system {
+    background-color: #3a3a3c;
+    color: #fff;
+    border: none;
 }
 
 /* Tidsstämpel styling */
@@ -7664,4 +7648,5 @@ body.offline-mode .offline-dot {
     background-color: var(--warning-color);
     color: #000;
 }
+
 
