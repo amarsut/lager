@@ -1129,22 +1129,28 @@
 			    if (e.target.closest('a') || e.target.closest('.chat-reg-link') || e.target.closest('button')) {
 			        return;
 			    }
-
-				if (e.target.closest('#reactionMenu')) {
+			
+			    if (e.target.closest('#reactionMenu')) {
 			        return;
 			    }
-
-                // --- FIX HÄR: Klickade vi på en modal-bakgrund? ---
-                // Om vi klickar på den mörka bakgrunden av en modal, låt modalen hantera stängningen själv.
-                // Stäng INTE chatten i detta läge.
-                if (e.target.classList.contains('modal-backdrop')) {
-                    return;
-                }
-                // --------------------------------------------------
+			
+			    // --- FIX HÄR: Klickade vi på en modal-bakgrund? ---
+			    // Om vi klickar på den mörka bakgrunden av en modal (inklusive bildmodalen), gör inget här.
+			    if (e.target.classList.contains('modal-backdrop') || 
+			        e.target.classList.contains('messenger-modal-backdrop') || // Bild-modalens bakgrund
+			        e.target.classList.contains('mm-carousel-item')) {       // Bild-containern
+			        return;
+			    }
+			    
+			    // --- NY SÄKERHET: Om bildmodalen är öppen, stäng ALDRIG chatten ---
+			    const imageModal = document.getElementById('imageZoomModal');
+			    if (imageModal && getComputedStyle(imageModal).display !== 'none') {
+			        return;
+			    }
+			    // --------------------------------------------------
 			
 			    // 2. SÄKERHETSKOLL: Är någon modal öppen?
 			    const activeModal = document.querySelector('.modal-backdrop.show');
-			    // Om en modal är öppen (och det inte är sök-modalen eller chatten själv), rör inget.
 			    if (activeModal && activeModal.id !== 'chatWidget' && activeModal.id !== 'mobileSearchModal') {
 			        return;
 			    }
@@ -1167,7 +1173,7 @@
 			            } else {
 			                // Fallback
 			                chatWidget.style.display = 'none';
-			                updateScrollLock();
+			                if (typeof updateScrollLock === 'function') updateScrollLock();
 			                if (mobileChatBtn) mobileChatBtn.classList.remove('active');
 			            }
 			        }
