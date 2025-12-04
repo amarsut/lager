@@ -2159,73 +2159,73 @@
 	                        reaction: '⏳'
 	                    });
 	
+	                    // Töm inputfältet
 	                    chatInput.value = '';
 	
 	                    try {
-				            // --- GOOGLE GEMINI API (GRATIS) ---
-				            
-				            const apiKey = "AIzaSyAm3gc0-iASCKsz0xw5-P3Xofr2kGglors"; // <--- Klistra in din AIza-nyckel här!
-				            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-				
-				            // Förbered prompten (instruktionen)
-				            const prompt = `Du är en expertmekaniker. Svara kortfattat, proffsigt och på svenska. 
-				                            Analysera följande felkod/symptom och lista de 3 mest sannolika orsakerna: 
-				                            "${query}"`;
-				
-				            const response = await fetch(url, {
-				                method: 'POST',
-				                headers: {
-				                    'Content-Type': 'application/json'
-				                },
-				                body: JSON.stringify({
-				                    contents: [{
-				                        parts: [{
-				                            text: prompt
-				                        }]
-				                    }]
-				                })
-				            });
-				
-				            const data = await response.json();
-				
-				            // Kontrollera om vi fick ett svar
-				            if (data.candidates && data.candidates.length > 0) {
-				                const aiAnswer = data.candidates[0].content.parts[0].text;
-				
-				                // 3. Posta svaret i chatten
-				                await db.collection("notes").add({
-				                    text: aiAnswer,
-				                    timestamp: new Date().toISOString(),
-				                    platform: 'system',
-				                    reaction: '🤖'
-				                });
-				                
-				                // Scrolla ner
-				                setTimeout(() => {
-				                    const chatList = document.getElementById('chatMessages');
-				                    if(chatList) chatList.scrollTop = chatList.scrollHeight;
-				                }, 100);
-				
-				            } else {
-				                throw new Error("Inget svar från AI");
-				            }
-				
-				        } catch (err) {
-				            console.error("AI Fel:", err);
-				            showToast("Kunde inte nå AI-mekanikern.", "danger");
-				            
-				            // Visa felmeddelande i chatten (hjälper vid felsökning)
-				            let errorMsg = "⚠️ AI-tjänsten svarade inte.";
-				            if(err.message) errorMsg += ` (${err.message})`;
-				            
-				            await db.collection("notes").add({
-				                text: errorMsg,
-				                timestamp: new Date().toISOString(),
-				                platform: 'system'
-				            });
-				        }
-					}
-				}
+	                        // --- GOOGLE GEMINI API ---
+	                        // Byt ut texten nedan mot din riktiga nyckel (börjar på AIza...)
+	                        const apiKey = "AIzaSyAm3gc0-iASCKsz0xw5-P3Xofr2kGglors"; 
+	                        
+	                        // OBS: Använd backticks (`) här, inte vanliga citattecken (')
+	                        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+	
+	                        const prompt = `Du är en expertmekaniker. Svara kortfattat, proffsigt och på svenska. 
+	                                        Analysera följande felkod/symptom och lista de 3 mest sannolika orsakerna: 
+	                                        "${query}"`;
+	
+	                        // Här sker anropet (kolla att kommatecknet efter url finns med!)
+	                        const response = await fetch(url, {
+	                            method: 'POST',
+	                            headers: { 
+	                                'Content-Type': 'application/json' 
+	                            },
+	                            body: JSON.stringify({
+	                                contents: [{ 
+	                                    parts: [{ text: prompt }] 
+	                                }]
+	                            })
+	                        });
+	
+	                        const data = await response.json();
+	
+	                        // Kontrollera om vi fick ett giltigt svar
+	                        if (data.candidates && data.candidates.length > 0) {
+	                            const aiAnswer = data.candidates[0].content.parts[0].text;
+	
+	                            // Spara svaret i databasen
+	                            await db.collection("notes").add({
+	                                text: aiAnswer,
+	                                timestamp: new Date().toISOString(),
+	                                platform: 'system',
+	                                reaction: '🤖'
+	                            });
+	                            
+	                            // Scrolla ner till botten
+	                            setTimeout(() => {
+	                                const chatList = document.getElementById('chatMessages');
+	                                if(chatList) chatList.scrollTop = chatList.scrollHeight;
+	                            }, 100);
+	
+	                        } else {
+	                            throw new Error("Inget svar från AI (Tom data)");
+	                        }
+	
+	                    } catch (err) {
+	                        console.error("AI Fel:", err);
+	                        showToast("Kunde inte nå AI-mekanikern.", "danger");
+	                        
+	                        let errorMsg = "⚠️ AI-tjänsten svarade inte.";
+	                        if(err.message) errorMsg += ` (${err.message})`;
+	                        
+	                        await db.collection("notes").add({
+	                            text: errorMsg,
+	                            timestamp: new Date().toISOString(),
+	                            platform: 'system'
+	                        });
+	                    }
+	                });
+	            }
 			
 			    // --- 2. SÖKFUNKTION ---
 			    if (searchInput) {
