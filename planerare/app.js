@@ -735,62 +735,62 @@
 			    let startSrc = "";
 			    let startId = null;
 			
-			    // 1. Hämta data från elementet som klickades
+			    // 1. Kontrollera om vi fick ett HTML-element (från nya koden) eller en textsträng
 			    if (clickedImgElement instanceof HTMLElement) {
 			        startSrc = clickedImgElement.src;
-			        startId = clickedImgElement.dataset.id; // VIKTIGT: ID för radering
+			        startId = clickedImgElement.dataset.id; // VIKTIGT: Hämta ID:t här
 			    } else {
 			        startSrc = clickedImgElement; // Fallback
 			    }
 			
-			    // 2. Bygg lista av alla bilder i chatten
+			    // 2. Bygg gallerilistan från alla synliga bilder i chatten
 			    const allImages = document.querySelectorAll('.chat-bubble-image img');
 			    
 			    currentGalleryImages = Array.from(allImages).map(img => ({
 			        src: img.src,
 			        caption: "", 
-			        id: img.dataset.id || null 
+			        id: img.dataset.id || null // Spara ID i vår galleri-lista
 			    }));
 			
-			    // 3. Hitta rätt startindex
+			    // 3. Hitta rätt bild i listan
 			    currentImageIndex = currentGalleryImages.findIndex(item => item.src === startSrc);
 			
-			    // Säkerhetskoll om src skiljer sig (t.ex. encoded URL)
+			    // Om vi inte hittar bilden via URL, försök via ID (säkerhetsåtgärd)
 			    if (currentImageIndex === -1 && startId) {
 			        currentImageIndex = currentGalleryImages.findIndex(item => item.id === startId);
 			    }
-			    
-			    // Fallback
+			
+			    // Om inget matchar (extremfall), skapa en temporär lista
 			    if (currentImageIndex === -1) {
 			        currentGalleryImages = [{ src: startSrc, caption: "", id: startId }];
 			        currentImageIndex = 0;
 			    }
 			
-			    // 4. Visa modalen
+			    // 4. Uppdatera UI och öppna
 			    updateCarouselUI();
+			
+			    // Hantera historik och visa modal
+			    history.pushState({ modal: 'imageZoom' }, 'Bild', '#image');
 			    
-			    // VIKTIGT: Sätt display flex här (CSS position:fixed sköter resten)
+			    // *** FIX: Se till att display sätts till flex ***
 			    modal.style.display = "flex"; 
 			    
-			    history.pushState({ modal: 'imageZoom' }, 'Bild', '#image');
 			    updateScrollLock();
 			
 			    // 5. Koppla knappar
 			    document.getElementById('mmCloseBtn').onclick = () => history.back();
 			    
-			    // Dela
 			    const shareBtn = document.getElementById('mmShareBtn');
 			    if (shareBtn) shareBtn.onclick = downloadCurrentPhoto;
 			    
-			    // Vidarebefordra
 			    const fwdBtn = document.getElementById('mmForwardBtn');
 			    if (fwdBtn) fwdBtn.onclick = forwardCurrentPhoto;
 			
-			    // Radera
+			    // Koppla den nya raderingsknappen
 			    const delBtn = document.getElementById('mmDeleteBtn');
 			    if (delBtn) delBtn.onclick = deleteCurrentPhoto;
 			    
-			    // Klick på bakgrunden stänger (men inte på bilden)
+			    // Stäng om man klickar på bakgrunden (men inte på bilden)
 			    modal.onclick = (e) => {
 			        if (e.target === modal || e.target.classList.contains('mm-carousel-item')) {
 			            history.back();
@@ -910,6 +910,79 @@
 			    if (currentImageIndex >= currentGalleryImages.length) currentImageIndex = 0;
 			
 			    updateCarouselUI();
+			}
+
+			// --- NY FUNKTION: Radera bild från modal ---
+			async function deleteCurrentPhoto() {
+			    if (currentGalleryImages.length === 0) return;
+			
+			    const currentItem = currentGalleryImages[currentImageIndex];
+			    
+			    // Säkerhetskoll
+			    if (!currentItem || !currentItem.id) {
+			        showToast("Kan inte radera denna bild (saknar ID).", "warning");
+			        return;
+			    }
+			
+			    if (!confirm("Vill du radera den här bilden permanent?")) return;
+			
+			    showToast("Raderar bild...", "info");
+			
+			    const docRef = db.collection("notes").doc(currentItem.id);
+			    const imgUrl = currentItem.src;
+			
+			    try {
+			        // 1. Hämta dokumentet för att se om det är en enstaka bild eller array
+			        const doc = await docRef.get();
+			        if (!doc.exists) {
+			            showToast("Bilden finns inte längre.", "danger");
+			            return;
+			        }
+			        
+			        const data = doc.data();
+			
+			        // SCENARIO 1: Det är en Array av bilder (Karussell)
+			        if (data.images && Array.isArray(data.images) && data.images.includes(imgUrl)) {
+			            
+			            // Om det är den SISTA bilden i arrayen -> Radera hela dokumentet
+			            if (data.images.length === 1) {
+			                await docRef.delete();
+			            } else {
+			                // Annars ta bort bara denna URL från arrayen
+			                await docRef.update({
+			                    images: firebase.firestore.FieldValue.arrayRemove(imgUrl)
+			                });
+			            }
+			        } 
+			        // SCENARIO 2: Det är en enstaka bild (gammalt format eller enkel uppladdning)
+			        else {
+			            // Radera hela dokumentet
+			            await docRef.delete();
+			        }
+			
+			        showToast("Bild raderad!", "success");
+			
+			        // 2. UPPDATERA GALLERIET VISUELLT (Utan att stänga om det finns fler)
+			        
+			        // Ta bort bilden från vår lokala lista
+			        currentGalleryImages.splice(currentImageIndex, 1);
+			
+			        // Om inga bilder finns kvar -> Stäng modalen
+			        if (currentGalleryImages.length === 0) {
+			            history.back(); // Stänger modalen via historik-hanteraren
+			        } else {
+			            // Om vi raderade sista bilden i listan, backa index ett steg
+			            if (currentImageIndex >= currentGalleryImages.length) {
+			                currentImageIndex = currentGalleryImages.length - 1;
+			            }
+			            // Visa nästa bild
+			            updateCarouselUI();
+			        }
+			
+			    } catch (err) {
+			        console.error("Fel vid radering:", err);
+			        showToast("Kunde inte radera bilden.", "danger");
+			    }
 			}
 			
 			function downloadCurrentPhoto() {
@@ -2432,10 +2505,10 @@
 			            img.src = imgSrc; 
 			            img.loading = "lazy";
 			            
-			            // *** FIX: Spara ID på bilden för radering ***
+			            // *** VIKTIGT: Spara ID på bilden för radering ***
 			            img.dataset.id = id; 
 			            
-			            // *** FIX: Skicka med HELA elementet (img), inte bara länken ***
+			            // *** VIKTIGT: Skicka med HELA elementet (img), inte bara länken ***
 			            img.onclick = (e) => { e.stopPropagation(); window.openImageZoom(img); };
 			            
 			            carousel.appendChild(img);
@@ -2456,10 +2529,10 @@
 			        imgElement.src = data.image; 
 			        imgElement.loading = "lazy";
 			        
-			        // *** FIX: Spara ID på bilden för radering ***
+			        // *** VIKTIGT: Spara ID på bilden för radering ***
 			        imgElement.dataset.id = id;
 			        
-			        // *** FIX: Skicka med HELA elementet (imgElement), inte bara länken ***
+			        // *** VIKTIGT: Skicka med HELA elementet (imgElement), inte bara länken ***
 			        imgElement.onclick = (e) => { e.stopPropagation(); window.openImageZoom(imgElement); };
 			        
 			        bubble.appendChild(imgElement);
