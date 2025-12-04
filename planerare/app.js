@@ -2224,6 +2224,7 @@
 				                platform: 'system'
 				            });
 				        }
+					}
 			
 			    // --- 2. SÖKFUNKTION ---
 			    if (searchInput) {
