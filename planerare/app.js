@@ -2129,12 +2129,12 @@
 			            // --- NY SÄKER VERSION MED GOOGLE BIBLIOTEK ---
                     
 	                    try {
-	                        // --- GOOGLE GEMINI 2.0 (Baserat på din bild) ---
+	                        // --- GOOGLE GEMINI API (REST API via fetch) ---
 	                        
-	                        const apiKey = "AIzaSyD5T7D7EBgNb8jwARxcG7xZLWwbqy80Qf0"; // <--- Klistra in nyckeln från Google AI Studio
+	                        const apiKey = "AIzaSyD5T7D7EBgNb8jwARxcG7xZLWwbqy80Qf0"; // Replace with your actual API key
 	                        
-	                        // Vi använder den nya modellen "gemini-2.0-flash-exp" som din studio föreslog
-	                        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`;
+	                        // Using gemini-2.5-flash as per the documentation provided
+	                        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 	
 	                        const prompt = `Du är en expertmekaniker. Svara kortfattat, proffsigt och på svenska. 
 	                                        Analysera följande felkod/symptom och lista de 3 mest sannolika orsakerna: 
@@ -2152,17 +2152,20 @@
 	                            })
 	                        });
 	
-	                        // Detaljerad felhantering om det fortfarande strular
 	                        if (!response.ok) {
 	                            const errorData = await response.json().catch(() => ({}));
-	                            console.error("Google AI Error:", errorData);
-	                            throw new Error(`Serverfel: ${response.status} - ${errorData.error?.message || response.statusText}`);
+	                            console.error("Google API Error:", errorData);
+	                            // Fallback error message if the specific error structure isn't present
+	                            let errorMessage = response.statusText;
+	                            if (errorData.error && errorData.error.message) {
+	                                errorMessage = errorData.error.message;
+	                            }
+	                            throw new Error(`Serverfel: ${response.status} - ${errorMessage}`);
 	                        }
 	
 	                        const data = await response.json();
 	
-	                        if (data.candidates && data.candidates.length > 0) {
-	                            // Gemini 2.0 strukturen är oftast samma, men vi säkrar upp
+	                        if (data.candidates && data.candidates.length > 0 && data.candidates[0].content && data.candidates[0].content.parts.length > 0) {
 	                            const aiAnswer = data.candidates[0].content.parts[0].text;
 	
 	                            await db.collection("notes").add({
