@@ -2138,6 +2138,82 @@
 			            if (!isActive) setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
 			        };
 			    }
+
+				const askAiBtn = document.getElementById('askAiBtn');
+
+	            if (askAiBtn) {
+	                askAiBtn.addEventListener('click', async (e) => {
+	                    e.preventDefault();
+	                    
+	                    const query = chatInput.value.trim();
+	                    if (!query) {
+	                        showToast("Skriv en felkod eller fråga först.", "warning");
+	                        return;
+	                    }
+	
+	                    // Visa din egen fråga i chatten
+	                    await db.collection("notes").add({
+	                        text: `🤖 Frågar AI: "${query}"...`,
+	                        timestamp: new Date().toISOString(),
+	                        platform: 'system',
+	                        reaction: '⏳'
+	                    });
+	
+	                    chatInput.value = '';
+	
+	                    try {
+	                        // --- GOOGLE GEMINI API (GRATIS) ---
+	                        const apiKey = "AIzaSyAm3gc0-iASCKsz0xw5-P3Xofr2kGglors"; // <--- KOM IHÅG ATT BYTA UT DENNA!
+	                        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+	
+	                        const prompt = `Du är en expertmekaniker. Svara kortfattat, proffsigt och på svenska. 
+	                                        Analysera följande felkod/symptom och lista de 3 mest sannolika orsakerna: 
+	                                        "${query}"`;
+	
+	                        const response = await fetch(url, {
+	                            method: 'POST',
+	                            headers: { 'Content-Type': 'application/json' },
+	                            body: JSON.stringify({
+	                                contents: [{ parts: [{ text: prompt }] }]
+	                            })
+	                        });
+	
+	                        const data = await response.json();
+	
+	                        if (data.candidates && data.candidates.length > 0) {
+	                            const aiAnswer = data.candidates[0].content.parts[0].text;
+	
+	                            await db.collection("notes").add({
+	                                text: aiAnswer,
+	                                timestamp: new Date().toISOString(),
+	                                platform: 'system',
+	                                reaction: '🤖'
+	                            });
+	                            
+	                            setTimeout(() => {
+	                                const chatList = document.getElementById('chatMessages');
+	                                if(chatList) chatList.scrollTop = chatList.scrollHeight;
+	                            }, 100);
+	
+	                        } else {
+	                            throw new Error("Inget svar från AI");
+	                        }
+	
+	                    } catch (err) {
+	                        console.error("AI Fel:", err);
+	                        showToast("Kunde inte nå AI-mekanikern.", "danger");
+	                        
+	                        let errorMsg = "⚠️ AI-tjänsten svarade inte.";
+	                        if(err.message) errorMsg += ` (${err.message})`;
+	                        
+	                        await db.collection("notes").add({
+	                            text: errorMsg,
+	                            timestamp: new Date().toISOString(),
+	                            platform: 'system'
+	                        });
+	                    }
+	                });
+	            }
 			
 			    // --- 2. SÖKFUNKTION ---
 			    if (searchInput) {
