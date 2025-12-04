@@ -2563,7 +2563,7 @@
 			
 			        try {
 			            await db.collection("notes").add({
-			                text: `⚠️ Motoroljenivån ligger nu på **${currentLevel.toFixed(1)} liter**.`,
+			                text: `⚠️ Motoroljenivån ligger nu på ${currentLevel.toFixed(1)} liter.`,
 			                timestamp: new Date().toISOString(),
 			                platform: 'system',
 			                reaction: '🕓' // Triggar notis-siffran
