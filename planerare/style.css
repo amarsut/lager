@@ -929,39 +929,33 @@ mark {
 
 
 /* --- Modal-design --- */
-.modal-backdrop { 
+.modal-backdrop {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-    
-    /* Klassisk mörk toning */
-    background-color: rgba(0, 0, 0, 0.6); 
-    
-    /* Ingen blur */
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-    
-    display: none; align-items: flex-start;
-    justify-content: center; z-index: 1000; 
-    opacity: 0; transition: opacity 0.3s ease; 
-    padding-top: 5vh;
-	z-index: 9500 !important;
+    background-color: rgba(0, 0, 0, 0.6); /* Justera mörk bakgrund */
+    display: none; align-items: center; justify-content: center; z-index: 9999; 
+    opacity: 0; transition: opacity 0.3s ease; padding-top: 5vh;
 }
-.modal-backdrop.show { opacity: 1; }
 
-.modal-content { 
+.modal-backdrop.show {
+    opacity: 1;
+}
+.modal-content {
     background-color: var(--content-bg); 
     border-radius: var(--border-radius); 
     box-shadow: var(--shadow-lg); 
     width: 90%; 
     max-width: 580px; 
-    max-height: 90vh; overflow: hidden;
-    display: flex; flex-direction: column;
+    max-height: 90vh; 
+    overflow: hidden;
+    display: flex; 
+    flex-direction: column;
     transform: scale(0.98) translateY(-10px); 
     opacity: 0; 
     animation: modalFadeIn 0.2s ease-in-out forwards;
 }
-.modal-backdrop.show .modal-content { 
+.modal-backdrop.show .modal-content {
     transform: scale(1) translateY(0); 
-    opacity: 1; 
+    opacity: 1;
 }
 @keyframes modalFadeIn {
     from { transform: scale(0.98) translateY(-10px); opacity: 0; }
@@ -7671,6 +7665,7 @@ body.offline-mode .offline-dot {
     background-color: rgba(255, 69, 58, 0.15); /* Svag röd bakgrund */
     border-radius: 50%;
 }
+
 
 
 
