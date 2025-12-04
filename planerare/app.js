@@ -2126,7 +2126,9 @@
 			
 			            chatInput.value = '';
 			
-			            try {
+			            // --- NY SÄKER VERSION MED GOOGLE BIBLIOTEK ---
+                    
+	                    try {
 	                        const API_KEY = "AIzaSyD5T7D7EBgNb8jwARxcG7xZLWwbqy80Qf0"; // <--- Klistra in nyckeln här
 	
 	                        // Om biblioteket inte laddades korrekt (fallback)
@@ -2136,6 +2138,7 @@
 	
 	                        // Initiera modellen (Detta hanterar URL:er automatiskt åt dig)
 	                        const genAI = new window.GoogleGenerativeAI(API_KEY);
+	                        // Vi testar standardmodellen 'gemini-pro' som är mest stabil
 	                        const model = genAI.getGenerativeModel({ model: "gemini-pro"});
 	
 	                        const prompt = `Du är en expertmekaniker. Svara kortfattat, proffsigt och på svenska. 
@@ -2165,9 +2168,9 @@
 	                        
 	                        let errorMsg = "⚠️ AI-tjänsten svarade inte.";
 	                        // Visa ett mer hjälpsamt felmeddelande om nyckeln är fel
-	                        if (err.message.includes("403") || err.message.includes("API key")) {
+	                        if (err.message && (err.message.includes("403") || err.message.includes("API key"))) {
 	                            errorMsg += " (Ogiltig API-nyckel)";
-	                        } else if (err.message.includes("404")) {
+	                        } else if (err.message && err.message.includes("404")) {
 	                            errorMsg += " (Modellen hittades inte)";
 	                        } else {
 	                            errorMsg += ` (${err.message})`;
