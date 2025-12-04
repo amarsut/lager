@@ -19,6 +19,18 @@
 	<script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
+	<script type="importmap">
+	  {
+	    "imports": {
+	      "@google/generative-ai": "https://esm.run/@google/generative-ai"
+	    }
+	  }
+	</script>
+	<script type="module">
+	  import { GoogleGenerativeAI } from "@google/generative-ai";
+	  window.GoogleGenerativeAI = GoogleGenerativeAI;
+	</script>
+
 </head>
 <body>
 
