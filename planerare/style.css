@@ -7876,6 +7876,21 @@ body.offline-mode .offline-dot {
     border-radius: 50%;
 }
 
+/* Förbättra läsbarheten i AI-svar */
+.chat-text-content b {
+    font-weight: 700;
+    color: inherit; /* Behåll textfärgen */
+}
+
+/* Om det är systemmeddelanden (som AI), ge lite mer radavstånd */
+.chat-bubble.system .chat-text-content {
+    line-height: 1.5;
+}
+
+/* Se till att listor ser bra ut (om AI använder <br> för listor) */
+.chat-text-content {
+    white-space: pre-wrap; /* Bevarar radbrytningar */
+}
 
 
 
