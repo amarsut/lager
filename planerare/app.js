@@ -2104,17 +2104,20 @@
 			        };
 			    }
 			
-			    // --- AI MEKANIKER (FIXAD: Dubbla meddelanden & Kvota) ---
-			    const askAiBtn = document.getElementById('askAiBtn');
+			    // --- AI MEKANIKER (FIXAD: Inga dubbla svar + Rätt Modell) ---
+    
+			    // 1. Hämta den nuvarande knappen
+			    const oldAiBtn = document.getElementById('askAiBtn');
 			
-			    // 1. FIX FÖR DUBBLA MEDDELANDEN:
-			    // Vi kollar om vi redan har kopplat knappen. Om ja, hoppa över.
-			    if (askAiBtn && !askAiBtn.dataset.aiListenerAttached) {
+			    if (oldAiBtn) {
+			        // 2. SKAPA EN KLON (Detta rensar alla gamla lyssnare direkt!)
+			        const newAiBtn = oldAiBtn.cloneNode(true);
 			        
-			        // Markera att vi nu har kopplat den, så vi inte gör det igen
-			        askAiBtn.dataset.aiListenerAttached = "true";
+			        // 3. BYT UT DEN GAMLA MOT DEN NYA
+			        oldAiBtn.parentNode.replaceChild(newAiBtn, oldAiBtn);
 			
-			        askAiBtn.addEventListener('click', async (e) => {
+			        // 4. KOPPLA LYSSNAREN TILL DEN NYA KNAPPEN
+			        newAiBtn.addEventListener('click', async (e) => {
 			            e.preventDefault();
 			            
 			            const query = chatInput.value.trim();
@@ -2134,10 +2137,11 @@
 			            chatInput.value = '';
 			
 			            try {
-			                const apiKey = "AIzaSyD5T7D7EBgNb8jwARxcG7xZLWwbqy80Qf0"; // <--- Klistra in din nyckel
+			                // VIKTIGT: Klistra in din API-nyckel här
+			                const apiKey = "AIzaSyD5T7D7EBgNb8jwARxcG7xZLWwbqy80Qf0"; 
 			                
-			                // 2. FIX FÖR KVOTA (429):
-			                // Vi byter till "gemini-1.5-flash". Den är stabil, snabb och har högre gratis-gränser.
+			                // VIKTIGT: Vi använder "gemini-1.5-flash" (Gratis & Stabil)
+			                // Detta löser "Quota exceeded"-felet
 			                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 			
 			                const prompt = `Du är en expertmekaniker. Svara kortfattat, proffsigt och på svenska. 
@@ -2146,13 +2150,9 @@
 			
 			                const response = await fetch(url, {
 			                    method: 'POST',
-			                    headers: { 
-			                        'Content-Type': 'application/json' 
-			                    },
+			                    headers: { 'Content-Type': 'application/json' },
 			                    body: JSON.stringify({
-			                        contents: [{ 
-			                            parts: [{ text: prompt }] 
-			                        }]
+			                        contents: [{ parts: [{ text: prompt }] }]
 			                    })
 			                });
 			
@@ -2161,9 +2161,8 @@
 			                    console.error("Google API Error:", errorData);
 			                    
 			                    let msg = `Serverfel: ${response.status}`;
-			                    // Om det är kvota-fel (429)
 			                    if (response.status === 429) {
-			                        msg = "AI-gränsen nådd (för många frågor). Vänta en stund.";
+			                        msg = "AI-tjänsten är upptagen (Quota). Försök igen senare.";
 			                    } else if (errorData.error && errorData.error.message) {
 			                        msg += ` - ${errorData.error.message}`;
 			                    }
@@ -2194,12 +2193,11 @@
 			            } catch (err) {
 			                console.error("AI CRITICAL ERROR:", err);
 			                
-			                // Snyggare felmeddelande till användaren
 			                let userMsg = "⚠️ AI-tjänsten kunde inte svara.";
-			                if (err.message.includes("AI-gränsen")) {
-			                    userMsg = "⚠️ " + err.message;
+			                if (err.message.includes("Quota")) {
+			                    userMsg = "⚠️ AI-gränsen nådd för stunden.";
 			                } else if (err.message.includes("404")) {
-			                    userMsg += " (Modellfel/Ogiltig nyckel).";
+			                    userMsg = "⚠️ Modellfel (404). Kontrollera API-nyckeln.";
 			                }
 			                
 			                await db.collection("notes").add({
