@@ -7347,36 +7347,35 @@ body.body-scroll-lock {
 
 /* --- MESSENGER KARUSELL MODAL (NY) --- */
 
-/* Bakgrunden (Mörk overlay, likt referensbilden) */
-/* Se till att modalen ligger ABSOLUT överst (högre än sök/chatt) */
+/* Se till att modalen ligger ABSOLUT överst och har mörk bakgrund */
 .messenger-modal-backdrop {
-    z-index: 2147483647 !important; /* Max-värde */
-    background-color: rgba(0, 0, 0, 0.95); /* Lite mörkare för fokus */
+    z-index: 2147483647 !important; 
+    background-color: rgba(0, 0, 0, 0.95); 
 }
 
-/* Fixa header-layouten så knapparna sprids ut */
+/* Fixa header-layouten så knapparna sprids ut (Vänster - Höger) */
 .mm-header {
-    width: 100%;             /* Tvinga full bredd */
-    box-sizing: border-box;  /* Så padding inte spräcker bredden */
+    width: 100%;             
+    box-sizing: border-box; 
     display: flex;
-    justify-content: space-between; /* Sprid ut: Vänster - Mitten - Höger */
+    justify-content: space-between; 
     align-items: center;
     padding: 15px 20px;
-    position: absolute;      /* Fäst i toppen */
+    position: absolute;      
     top: 0;
     left: 0;
-    z-index: 30005;
+    z-index: 30005; /* Måste ligga över bilden */
 }
 
-/* Fixa bilden så den syns tydligt */
+/* Fixa bilden så den syns tydligt (var tidigare genomskinlig/bakom) */
 .mm-carousel-item.main {
-    opacity: 1 !important;   /* Tvinga full synlighet */
-    z-index: 30002;          /* Ligg över sidobilderna */
+    opacity: 1 !important;   
+    z-index: 30002;          
     transform: scale(1);
-    filter: none;            /* Ta bort eventuella filter */
+    filter: none;            
 }
 
-/* Fixa hover-effekt på raderingsknappen */
+/* Röd hover-effekt på raderingsknappen */
 .mm-icon-btn.danger-hover:hover {
     color: #ff453a;
     background-color: rgba(255, 69, 58, 0.15);
@@ -7664,6 +7663,7 @@ body.offline-mode .offline-dot {
     background-color: rgba(255, 69, 58, 0.15); /* Svag röd bakgrund */
     border-radius: 50%;
 }
+
 
 
 
