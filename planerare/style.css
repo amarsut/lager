@@ -7941,4 +7941,57 @@ body.offline-mode .offline-dot {
     border-radius: 50%;
 }
 
+/* --- AI FILTER & VISA MER --- */
+
+/* 1. "VISA MER" KNAPP & UTSEENDE */
+.chat-text-content.truncated-ai {
+    max-height: 120px; /* Visa bara ca 4-5 rader */
+    overflow: hidden;
+    position: relative;
+    /* Skapa en snygg "fade out" effekt i botten */
+    mask-image: linear-gradient(180deg, #000 60%, transparent 100%);
+    -webkit-mask-image: linear-gradient(180deg, #000 60%, transparent 100%);
+}
+
+.ai-read-more-btn {
+    display: block;
+    width: 100%;
+    background-color: transparent;
+    border: none;
+    border-top: 1px solid rgba(0,0,0,0.05);
+    color: var(--primary-color);
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 6px 0;
+    margin-top: 4px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+.ai-read-more-btn:hover {
+    background-color: rgba(0,0,0,0.02);
+}
+
+/* 2. TOGGLE-LÄGEN (Filtrering) */
+
+/* LÄGE 1: Normalt (Visa Notiser, Dölj AI) */
+/* Om du vill att AI ska vara DOLD som standard och bara visas när man klickar på roboten: */
+/* Avkommentera nedan om du vill dölja AI som standard: */
+/* .chat-messages:not(.ai-mode) .is-ai-message,
+.chat-messages:not(.ai-mode) .is-ai-time {
+    display: none !important;
+}
+*/
+
+/* LÄGE 2: AI-Läge (Visa AI, Dölj Notiser) */
+/* När klassen .ai-mode är aktiv på listan: */
+.chat-messages.ai-mode .chat-bubble:not(.is-ai-message),
+.chat-messages.ai-mode .chat-time:not(.is-ai-time),
+.chat-messages.ai-mode .chat-date-separator {
+    display: none !important;
+}
+
+/* Fix för att "Frågar AI..." (dina frågor) också ska synas i AI-läget?
+   Då måste vi tagga dina frågor till AI också. 
+   Men det enklaste nu är att AI-läget visar BARA robotens svar. */
 
