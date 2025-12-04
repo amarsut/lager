@@ -2152,8 +2152,9 @@
 								
 								Följ denna mall exakt:
 								<b>Kort analys:</b> Kort sammanfattning.
-								<ul>
+								<ul></ul>
 								<b>Möjliga orsaker:</b>
+								<ul>
 								<li><b>[Orsak]</b> - Kort förklaring.</li>
 								<li><b>[Orsak]</b> - Kort förklaring.</li>
 								<li><b>[Orsak]</b> - Kort förklaring.</li>
