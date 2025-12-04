@@ -7900,3 +7900,24 @@ body.offline-mode .offline-dot {
     line-height: 1.4;
 }
 
+/* --- AI LADDAR-ANIMATION --- */
+
+/* Definiera snurren */
+@keyframes spin-slow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Klassen som appliceras på timglaset */
+.reaction-badge.loading {
+    animation: spin-slow 2s linear infinite;
+    background-color: var(--primary-light); /* Ljusblå bakgrund för extra tydlighet */
+    border-color: var(--primary-color);
+    font-size: 1rem; /* Lite större så man ser att den snurrar */
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
