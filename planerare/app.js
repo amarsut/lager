@@ -778,24 +778,33 @@
 			    updateScrollLock();
 			
 			    // 5. Koppla knappar
-			    document.getElementById('mmCloseBtn').onclick = () => history.back();
-			    
+			    const closeBtn = document.getElementById('mmCloseBtn');
 			    const shareBtn = document.getElementById('mmShareBtn');
-			    if (shareBtn) shareBtn.onclick = downloadCurrentPhoto;
-			    
-			    const fwdBtn = document.getElementById('mmForwardBtn');
-			    if (fwdBtn) fwdBtn.onclick = forwardCurrentPhoto;
+			    const deleteBtn = document.getElementById('mmDeleteBtn');
 			
-			    // Koppla den nya raderingsknappen
-			    const delBtn = document.getElementById('mmDeleteBtn');
-			    if (delBtn) delBtn.onclick = deleteCurrentPhoto;
-			    
-			    // Stäng om man klickar på bakgrunden (men inte på bilden)
-			    modal.onclick = (e) => {
-			        if (e.target === modal || e.target.classList.contains('mm-carousel-item')) {
-			            history.back();
-			        }
-			    };
+			    if (closeBtn) {
+			        closeBtn.addEventListener('click', function() {
+			            history.back(); // Stänger modalen
+			        });
+			    }
+			
+			    if (shareBtn) {
+			        shareBtn.addEventListener('click', function() {
+			            downloadCurrentPhoto(); // Dela bild
+			        });
+			    }
+			
+			    if (deleteBtn) {
+			        deleteBtn.addEventListener('click', function() {
+			            deleteCurrentPhoto(); // Radera bild
+			        });
+			    }
+
+				modal.addEventListener('click', function(e) {
+				    if (e.target === modal || e.target.classList.contains('mm-carousel-item')) {
+				        history.back(); // Gå tillbaka och stäng modalen
+				    }
+				});
 			};
 			
 			async function deleteCurrentPhoto() {
