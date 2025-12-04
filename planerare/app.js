@@ -1809,64 +1809,120 @@
 			
 			    // --- 6. HUVUDLYSSNAREN ---
 			    const setupChatListener = (limit) => {
-			        if (chatUnsubscribe) chatUnsubscribe(); 
-			        const isLoadMore = limit > 50; 
-			        
-			        chatUnsubscribe = db.collection("notes")
-			            .orderBy("timestamp", "desc") 
-			            .limit(limit)                 
-			            .onSnapshot(snapshot => {
-			                
-			                const threshold = 150; 
-			                const scrollBottom = chatList.scrollHeight - chatList.scrollTop - chatList.clientHeight;
-			                const wasAtBottom = scrollBottom <= threshold || chatList.childElementCount === 0;
-			                const previousScrollTop = chatList.scrollTop;
-			
-			                const docs = [];
-			                snapshot.forEach(doc => docs.push({ id: doc.id, ...doc.data() }));
-			                docs.reverse(); 
-			
-			                chatList.innerHTML = ''; 
-			                
-			                if (docs.length === 0) {
-			                    chatList.innerHTML = '<div class="empty-state-chat"><p>Skriv en notis eller ta en bild...</p></div>';
-			                    return;
-			                }
-			
-			                docs.forEach(data => {
-			                    renderChatBubble(data.id, data, chatList);
-			                });
-			
-			                // --- SPACER (SÅ INGET DÖLJS) ---
-			                const spacer = document.createElement('div');
-			                spacer.style.height = "50px"; 
-			                spacer.style.flexShrink = "0"; 
-			                chatList.appendChild(spacer);
-			
-			                if (searchInput && searchInput.value.trim() !== "") {
-			                    searchInput.dispatchEvent(new Event('input'));
-			                }
-			
-			                const isSearching = searchInput && searchInput.value.trim() !== "";
-			                
-			                if (!isSearching) {
-			                    if (isLoadMore && isFetchingOlderChat) {
-			                        const newScrollHeight = chatList.scrollHeight;
-			                        // Justering eftersom vi lade till spacern, scrollTop kan bete sig annorlunda.
-			                        // Enkel lösning: Låt användaren scrolla lite till.
-			                        isFetchingOlderChat = false; 
-			                    } else if (!isLoadMore) {
-			                        if (!chatList.classList.contains('gallery-mode')) {
-			                            if (wasAtBottom) {
-			                                chatList.scrollTop = chatList.scrollHeight;
-			                            } else {
-			                                chatList.scrollTop = previousScrollTop; 
-			                            }
-			                        }
-			                    }
-			                }
-			            });
-			    };
+	                if (chatUnsubscribe) chatUnsubscribe(); 
+	                const isLoadMore = limit > 50; 
+	                
+	                // Hjälpfunktion för att jämföra datum (ignorerar tid)
+	                const isSameDay = (d1, d2) => {
+	                    return d1.getFullYear() === d2.getFullYear() &&
+	                           d1.getMonth() === d2.getMonth() &&
+	                           d1.getDate() === d2.getDate();
+	                };
+	
+	                chatUnsubscribe = db.collection("notes")
+	                    .orderBy("timestamp", "desc") 
+	                    .limit(limit)                 
+	                    .onSnapshot(snapshot => {
+	                        
+	                        const threshold = 150; 
+	                        const scrollBottom = chatList.scrollHeight - chatList.scrollTop - chatList.clientHeight;
+	                        const wasAtBottom = scrollBottom <= threshold || chatList.childElementCount === 0;
+	                        const previousScrollTop = chatList.scrollTop;
+	                        const previousScrollHeight = chatList.scrollHeight;
+	
+	                        const docs = [];
+	                        snapshot.forEach(doc => docs.push({ id: doc.id, ...doc.data() }));
+	                        docs.reverse(); // Vänd så vi får äldst först (kronologisk ordning)
+	
+	                        chatList.innerHTML = ''; 
+	                        
+	                        if (docs.length === 0) {
+	                            chatList.innerHTML = '<div class="empty-state-chat"><p>Skriv en notis eller ta en bild...</p></div>';
+	                            return;
+	                        }
+	
+	                        let lastDate = null; // Håller koll på föregående meddelandes datum
+	
+	                        docs.forEach(data => {
+	                            // --- NY LOGIK: Datum-separator ---
+	                            if (data.timestamp) {
+	                                const msgDate = new Date(data.timestamp);
+	                                
+	                                // Om det är första meddelandet eller nytt datum -> Skapa rubrik
+	                                if (!lastDate || !isSameDay(lastDate, msgDate)) {
+	                                    const separator = document.createElement('div');
+	                                    separator.className = 'chat-date-separator';
+	                                    
+	                                    const today = new Date();
+	                                    const yesterday = new Date(); 
+	                                    yesterday.setDate(yesterday.getDate() - 1);
+	                                    
+	                                    if (isSameDay(msgDate, today)) {
+	                                        separator.textContent = 'Idag';
+	                                    } else if (isSameDay(msgDate, yesterday)) {
+	                                        separator.textContent = 'Igår';
+	                                    } else {
+	                                        // Format: "måndag 12 okt"
+	                                        let dateStr = msgDate.toLocaleDateString('sv-SE', { 
+	                                            weekday: 'long', 
+	                                            day: 'numeric', 
+	                                            month: 'short' 
+	                                        });
+	                                        // Stor bokstav i början
+	                                        dateStr = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
+	                                        // Lägg till år om det inte är i år
+	                                        if (msgDate.getFullYear() !== today.getFullYear()) {
+	                                            dateStr += ` ${msgDate.getFullYear()}`;
+	                                        }
+	                                        separator.textContent = dateStr;
+	                                    }
+	                                    
+	                                    chatList.appendChild(separator);
+	                                }
+	                                lastDate = msgDate; // Uppdatera datumspåraren
+	                            }
+	                            // ---------------------------------
+	
+	                            renderChatBubble(data.id, data, chatList);
+	                        });
+	
+	                        // --- SPACER (SÅ INGET DÖLJS BAKOM INPUT) ---
+	                        const spacer = document.createElement('div');
+	                        spacer.style.height = "20px"; 
+	                        spacer.style.flexShrink = "0"; 
+	                        chatList.appendChild(spacer);
+	
+	                        // Uppdatera sökresultat om man söker
+	                        if (searchInput && searchInput.value.trim() !== "") {
+	                            searchInput.dispatchEvent(new Event('input'));
+	                        }
+	
+	                        const isSearching = searchInput && searchInput.value.trim() !== "";
+	                        
+	                        // Scroll-hantering
+	                        if (!isSearching) {
+	                            if (isLoadMore && isFetchingOlderChat) {
+	                                // Om vi laddade äldre meddelanden, behåll scrollpositionen
+	                                const newScrollHeight = chatList.scrollHeight;
+	                                chatList.scrollTop = newScrollHeight - previousScrollHeight + previousScrollTop;
+	                                isFetchingOlderChat = false; 
+	                            } else if (!isLoadMore) {
+	                                // Om det är nya meddelanden (realtid)
+	                                if (!chatList.classList.contains('gallery-mode')) {
+	                                    if (wasAtBottom) {
+	                                        // Scrolla till botten om vi redan var där
+	                                        setTimeout(() => {
+	                                            chatList.scrollTop = chatList.scrollHeight;
+	                                        }, 50);
+	                                    } else {
+	                                        // Annars stå kvar
+	                                        chatList.scrollTop = previousScrollTop; 
+	                                    }
+	                                }
+	                            }
+	                        }
+	                    });
+	            };
 			
 			    setupChatListener(currentChatLimit);
 			
