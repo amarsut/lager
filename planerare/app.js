@@ -734,6 +734,12 @@
 			
 			    // 1. Hämta alla bilder
 			    const allImages = document.querySelectorAll('.chat-bubble-image img');
+				currentGalleryImages = Array.from(allImages).map(img => ({
+			        src: img.src,
+			        caption: "", 
+			        id: img.dataset.id // Vi hämtar ID:t från datasetet vi lade till
+			    }));
+							
 			    currentGalleryImages = Array.from(allImages).map(img => ({
 			        src: img.src,
 			        caption: "" 
@@ -758,6 +764,14 @@
 			    document.getElementById('mmForwardBtn').onclick = () => {
 			        document.getElementById('mmForwardBtn').onclick = forwardCurrentPhoto;
 			    };
+
+				// --- NY KOPPLING: VIDAREBEFORDRA ---
+			    const fwdBtn = document.getElementById('mmForwardBtn');
+			    if (fwdBtn) fwdBtn.onclick = forwardCurrentPhoto;
+			
+			    // --- NY KOPPLING: RADERA ---
+			    const delBtn = document.getElementById('mmDeleteBtn');
+			    if (delBtn) delBtn.onclick = deleteCurrentPhoto; // Koppla den nya funktionen
 			
 			    // 4. KLICKA UTANFÖR FÖR ATT STÄNGA
 			    // Vi lägger lyssnaren på containern bakom bilderna
@@ -817,6 +831,79 @@
 			    if (currentImageIndex >= currentGalleryImages.length) currentImageIndex = 0;
 			
 			    updateCarouselUI();
+			}
+
+			// --- NY FUNKTION: Radera bild från modal ---
+			async function deleteCurrentPhoto() {
+			    if (currentGalleryImages.length === 0) return;
+			
+			    const currentItem = currentGalleryImages[currentImageIndex];
+			    
+			    // Säkerhetskoll
+			    if (!currentItem || !currentItem.id) {
+			        showToast("Kan inte radera denna bild (saknar ID).", "warning");
+			        return;
+			    }
+			
+			    if (!confirm("Vill du radera den här bilden permanent?")) return;
+			
+			    showToast("Raderar bild...", "info");
+			
+			    const docRef = db.collection("notes").doc(currentItem.id);
+			    const imgUrl = currentItem.src;
+			
+			    try {
+			        // 1. Hämta dokumentet för att se om det är en enstaka bild eller array
+			        const doc = await docRef.get();
+			        if (!doc.exists) {
+			            showToast("Bilden finns inte längre.", "danger");
+			            return;
+			        }
+			        
+			        const data = doc.data();
+			
+			        // SCENARIO 1: Det är en Array av bilder (Karussell)
+			        if (data.images && Array.isArray(data.images) && data.images.includes(imgUrl)) {
+			            
+			            // Om det är den SISTA bilden i arrayen -> Radera hela dokumentet
+			            if (data.images.length === 1) {
+			                await docRef.delete();
+			            } else {
+			                // Annars ta bort bara denna URL från arrayen
+			                await docRef.update({
+			                    images: firebase.firestore.FieldValue.arrayRemove(imgUrl)
+			                });
+			            }
+			        } 
+			        // SCENARIO 2: Det är en enstaka bild (gammalt format eller enkel uppladdning)
+			        else {
+			            // Radera hela dokumentet
+			            await docRef.delete();
+			        }
+			
+			        showToast("Bild raderad!", "success");
+			
+			        // 2. UPPDATERA GALLERIET VISUELLT (Utan att stänga om det finns fler)
+			        
+			        // Ta bort bilden från vår lokala lista
+			        currentGalleryImages.splice(currentImageIndex, 1);
+			
+			        // Om inga bilder finns kvar -> Stäng modalen
+			        if (currentGalleryImages.length === 0) {
+			            history.back(); // Stänger modalen via historik-hanteraren
+			        } else {
+			            // Om vi raderade sista bilden i listan, backa index ett steg
+			            if (currentImageIndex >= currentGalleryImages.length) {
+			                currentImageIndex = currentGalleryImages.length - 1;
+			            }
+			            // Visa nästa bild
+			            updateCarouselUI();
+			        }
+			
+			    } catch (err) {
+			        console.error("Fel vid radering:", err);
+			        showToast("Kunde inte radera bilden.", "danger");
+			    }
 			}
 			
 			function downloadCurrentPhoto() {
@@ -2329,16 +2416,24 @@
 			
 			    // --- 2. INNEHÅLL (BILD/TEXT) ---
 			    if (data.images && Array.isArray(data.images)) {
+			        // --- FALL 1: BILD-KARUSELL (Flera bilder) ---
 			        bubble.classList.add('chat-bubble-image');
 			        const carousel = document.createElement('div');
 			        carousel.className = 'chat-carousel';
+			        
 			        data.images.forEach(imgSrc => {
 			            const img = document.createElement('img');
-			            img.src = imgSrc; img.loading = "lazy";
+			            img.src = imgSrc; 
+			            img.loading = "lazy";
+			            
+			            // *** NYTT: Spara ID på bilden för radering ***
+			            img.dataset.id = id; 
+			            
 			            img.onclick = (e) => { e.stopPropagation(); window.openImageZoom(imgSrc); };
 			            carousel.appendChild(img);
 			        });
 			        bubble.appendChild(carousel);
+			        
 			        // Bildtext
 			        if (data.caption) {
 			            const captionDiv = document.createElement('div');
@@ -2347,11 +2442,18 @@
 			            bubble.appendChild(captionDiv);
 			        }
 			    } else if (data.type === 'image' && data.image) {
+			        // --- FALL 2: ENSTAKA BILD ---
 			        bubble.classList.add('chat-bubble-image');
 			        const imgElement = document.createElement('img');
-			        imgElement.src = data.image; imgElement.loading = "lazy";
+			        imgElement.src = data.image; 
+			        imgElement.loading = "lazy";
+			        
+			        // *** NYTT: Spara ID på bilden för radering ***
+			        imgElement.dataset.id = id;
+			        
 			        imgElement.onclick = (e) => { e.stopPropagation(); window.openImageZoom(data.image); };
 			        bubble.appendChild(imgElement);
+			        
 			        // Bildtext
 			        if (data.caption) {
 			            const captionDiv = document.createElement('div');
@@ -2360,11 +2462,18 @@
 			            bubble.appendChild(captionDiv);
 			        }
 			    } else {
-			        // Text
+			        // --- FALL 3: TEXT ---
 			        let rawText = data.text || "";
 			        const textContentDiv = document.createElement('div');
 			        textContentDiv.className = 'chat-text-content';
+			        
 			        // Använd linkify om den finns, annars råtext
+			        // Vi antar att du har linkify-funktionen definierad i din kod sedan tidigare
+			        if (typeof highlightCustomerNames === 'function') {
+			             // Om du använder kundnamns-länkning
+			             rawText = highlightCustomerNames(rawText);
+			        }
+			        
 			        textContentDiv.innerHTML = typeof linkify === 'function' ? linkify(rawText) : rawText;
 			        bubble.appendChild(textContentDiv);
 			    }
@@ -2377,7 +2486,7 @@
 			        bubble.appendChild(badge);
 			    }
 			
-			    // --- 3. FIXEN: ÅTERSTÄLL EVENT LISTENERS (HÖGERKLICK & LÅNGTRYCK) ---
+			    // --- 3. EVENT LISTENERS (HÖGERKLICK & LÅNGTRYCK) ---
 			    
 			    let pressTimer = null;
 			    let startX = 0, startY = 0;
@@ -2430,8 +2539,6 @@
 			
 			    // B. Hantera Högerklick (Desktop)
 			    bubble.addEventListener('contextmenu', (e) => {
-			        // På mobil hanterar vi detta via long-press, så vi kan ignorera contextmenu där
-			        // eller låta den vara kvar om man har mus till mobilen.
 			        e.preventDefault();
 			        e.stopPropagation();
 			        if (typeof showReactionMenu === 'function') {
@@ -2445,9 +2552,7 @@
 			    bubble.addEventListener('touchmove', handleTouchMove, { passive: true });
 			    bubble.addEventListener('touchend', handleTouchEnd, { passive: false }); 
 			
-			    // -----------------------------------------------------------------------
-			
-			    // --- 4. TIDSSTÄMPEL & SYSTEM-TEXT (Din design) ---
+			    // --- 4. TIDSSTÄMPEL & SYSTEM-TEXT ---
 			    const time = document.createElement('div');
 			    time.className = `chat-time ${msgType}`; 
 			    
