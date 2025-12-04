@@ -2104,19 +2104,14 @@
 			        };
 			    }
 			
-			    // --- AI MEKANIKER (FIXAD: Inga dubbla svar + Rätt Modell) ---
-    
-			    // 1. Hämta den nuvarande knappen
+			    // --- AI MEKANIKER (FIXAD: Modell Gemini 2.5) ---
 			    const oldAiBtn = document.getElementById('askAiBtn');
 			
 			    if (oldAiBtn) {
-			        // 2. SKAPA EN KLON (Detta rensar alla gamla lyssnare direkt!)
+			        // Kloning för att rensa gamla lyssnare (som vi gjorde sist)
 			        const newAiBtn = oldAiBtn.cloneNode(true);
-			        
-			        // 3. BYT UT DEN GAMLA MOT DEN NYA
 			        oldAiBtn.parentNode.replaceChild(newAiBtn, oldAiBtn);
 			
-			        // 4. KOPPLA LYSSNAREN TILL DEN NYA KNAPPEN
 			        newAiBtn.addEventListener('click', async (e) => {
 			            e.preventDefault();
 			            
@@ -2126,7 +2121,7 @@
 			                return;
 			            }
 			
-			            // Visa din fråga i chatten
+			            // Visa din fråga
 			            await db.collection("notes").add({
 			                text: `🤖 Frågar AI: "${query}"...`,
 			                timestamp: new Date().toISOString(),
@@ -2137,12 +2132,11 @@
 			            chatInput.value = '';
 			
 			            try {
-			                // VIKTIGT: Klistra in din API-nyckel här
+			                // 1. DIN API-NYCKEL HÄR
 			                const apiKey = "AIzaSyD5T7D7EBgNb8jwARxcG7xZLWwbqy80Qf0"; 
 			                
-			                // VIKTIGT: Vi använder "gemini-1.5-flash" (Gratis & Stabil)
-			                // Detta löser "Quota exceeded"-felet
-			                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+			                // 2. MODELL: Vi byter till "gemini-2.5-flash" enligt din dokumentation
+			                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 			
 			                const prompt = `Du är en expertmekaniker. Svara kortfattat, proffsigt och på svenska. 
 			                                Analysera följande felkod/symptom och lista de 3 mest sannolika orsakerna: 
@@ -2161,8 +2155,10 @@
 			                    console.error("Google API Error:", errorData);
 			                    
 			                    let msg = `Serverfel: ${response.status}`;
-			                    if (response.status === 429) {
-			                        msg = "AI-tjänsten är upptagen (Quota). Försök igen senare.";
+			                    if (response.status === 404) {
+			                        msg = "Modellen hittades inte (Kontrollera API-nyckel/URL).";
+			                    } else if (response.status === 429) {
+			                        msg = "AI-tjänsten är upptagen (Quota).";
 			                    } else if (errorData.error && errorData.error.message) {
 			                        msg += ` - ${errorData.error.message}`;
 			                    }
@@ -2194,10 +2190,10 @@
 			                console.error("AI CRITICAL ERROR:", err);
 			                
 			                let userMsg = "⚠️ AI-tjänsten kunde inte svara.";
-			                if (err.message.includes("Quota")) {
-			                    userMsg = "⚠️ AI-gränsen nådd för stunden.";
-			                } else if (err.message.includes("404")) {
-			                    userMsg = "⚠️ Modellfel (404). Kontrollera API-nyckeln.";
+			                if (err.message.includes("404") || err.message.includes("not found")) {
+			                    userMsg = "⚠️ Modellfel (404). Försök skapa en ny API-nyckel.";
+			                } else {
+			                    userMsg = "⚠️ " + err.message;
 			                }
 			                
 			                await db.collection("notes").add({
