@@ -1986,15 +1986,33 @@
 			
 			function renderChatBubble(id, data, container) {
 			    const bubble = document.createElement('div');
-			    bubble.className = 'chat-bubble';
+			
+			    // --- NY LOGIK: Bestäm typ (me/other/system) ---
+			    // Detta styr om den hamnar till höger (me) eller vänster (system/other) och färgen.
+			    let msgType = 'me'; 
+			
+			    if (data.platform === 'system') {
+			        msgType = 'system';
+			    } else if (data.sender === 'other') { 
+			        // För framtida bruk om du lägger till chatt med andra
+			        msgType = 'other';
+			    }
+			
+			    // Sätt klasser: .chat-bubble + .me / .system / .other
+			    bubble.className = `chat-bubble ${msgType}`;
+			
+			    // --- OM DET ÄR SYSTEM: LÄGG TILL ETIKETT FÖRST ---
+			    if (msgType === 'system') {
+			        const sysLabel = document.createElement('span');
+			        sysLabel.className = 'system-label';
+			        sysLabel.innerHTML = `⚠️ SYSTEM-MEDDELANDE`;
+			        bubble.appendChild(sysLabel);
+			    }
 			
 			    // Variabel för att minnas om vi har gjort ett långtryck
 			    let isLongPressActive = false;
 			
 			    // --- 1. INNEHÅLL (TEXT & BILD) ---
-			    // Samma innehållslogik som du redan har (kopiera in den om du vill, eller använd din befintliga del 1)
-			    // För att spara plats här visar jag bara logiken, men se till att Text/Bild-koden är med!
-			    
 			    if (data.images && Array.isArray(data.images)) {
 			        bubble.classList.add('chat-bubble-image');
 			        const carousel = document.createElement('div');
@@ -2036,23 +2054,29 @@
 			        }
 			        bubble.dataset.originalHtml = bubble.innerHTML;
 			    } else {
-			        // Text-logik (Klistra in din befintliga text-logik här)
+			        // Text-logik
 			        let rawText = data.text || "";
 			        const textContentDiv = document.createElement('div');
 			        textContentDiv.className = 'chat-text-content';
+			        
 			        let processedText = rawText.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+			        
 			        const urlPattern = /(https?:\/\/[^\s]+)/g;
 			        processedText = processedText.replace(urlPattern, (url) => `<a href="${url}" target="_blank" class="chat-link">${url}</a>`);
+			        
 			        const regPattern = /\b([A-Za-z]{3})\s?(\d{2}[0-9A-Za-z])\b/g;
 			        processedText = processedText.replace(regPattern, (match) => {
 			            const cleanReg = match.replace(/\s/g, '').toUpperCase(); 
 			            return `<span class="chat-reg-link" data-reg="${cleanReg}">${match.toUpperCase()}</span>`;
 			        });
+			        
 			        if (typeof highlightCustomerNames === 'function') {
 			            processedText = highlightCustomerNames(processedText);
 			        }
+			        
 			        textContentDiv.innerHTML = processedText;
 			        bubble.appendChild(textContentDiv);
+			        
 			        if (rawText.length > 300) {
 			            textContentDiv.classList.add('truncated');
 			            const readMoreBtn = document.createElement('button');
@@ -2081,29 +2105,22 @@
 			        bubble.appendChild(badge);
 			    }
 			
-			    // --- 2. TOUCH-LOGIK (FIXAD) ---
-			    
+			    // --- 2. TOUCH-LOGIK ---
 			    let pressTimer = null;
 			    let startX = 0, startY = 0;
 			
 			    const handleTouchStart = (e) => {
 			        if (e.touches.length > 1) return; 
-			
-			        // NOLLSTÄLL
 			        isLongPressActive = false;
-			
 			        startX = e.touches[0].clientX;
 			        startY = e.touches[0].clientY;
 			
-			        // Edge Guard
 			        if (startX < 30 || startX > window.innerWidth - 30) return;
 			
 			        if (pressTimer) clearTimeout(pressTimer);
 			
 			        pressTimer = setTimeout(() => {
-			            // Långtryck aktiverat!
 			            isLongPressActive = true; 
-			            
 			            if (typeof showReactionMenu === 'function') {
 			                showReactionMenu(startX, startY, id);
 			            }
@@ -2113,7 +2130,6 @@
 			
 			    const handleTouchMove = (e) => {
 			        if (!pressTimer) return;
-			        // Om vi rör oss, avbryt timern direkt
 			        const currentX = e.touches[0].clientX;
 			        const currentY = e.touches[0].clientY;
 			        if (Math.abs(currentX - startX) > 10 || Math.abs(currentY - startY) > 10) {
@@ -2123,20 +2139,13 @@
 			    };
 			
 			    const handleTouchEnd = (e) => {
-			        // Rensa timer om vi släppte tidigt
 			        if (pressTimer) {
 			            clearTimeout(pressTimer);
 			            pressTimer = null;
 			        }
-			
-			        // HÄR ÄR NYCKELN:
-			        // Om vi precis triggade ett långtryck, döda ALLT som händer efteråt (klick, bubblande events)
 			        if (isLongPressActive) {
-			            if (e.cancelable) e.preventDefault(); // Stoppa mus-eventet från att skapas
-			            e.stopPropagation(); // Stoppa bubblande
-			            
-			            // Vi nollställer flaggan direkt här, eftersom preventDefault() 
-			            // har gjort sitt jobb med att stoppa spök-klicket.
+			            if (e.cancelable) e.preventDefault(); 
+			            e.stopPropagation(); 
 			            isLongPressActive = false;
 			            return false;
 			        }
@@ -2154,23 +2163,28 @@
 			        return false;
 			    });
 			
-			    // Koppla listeners
-			    // passive: false på touchend är nödvändigt för att kunna köra e.preventDefault()
 			    bubble.addEventListener('touchstart', handleTouchStart, { passive: true });
 			    bubble.addEventListener('touchmove', handleTouchMove, { passive: true });
 			    bubble.addEventListener('touchend', handleTouchEnd, { passive: false }); 
 			
-			    // --- 3. TIDSSTÄMPEL ---
+			    // --- 3. TIDSSTÄMPEL (UPPDATERAD) ---
 			    const time = document.createElement('div');
-			    time.className = 'chat-time';
+			    
+			    // Vi lägger till msgType här också så att tiden hamnar på rätt sida (vänster/höger)
+			    time.className = `chat-time ${msgType}`;
+			    
 			    const dateObj = new Date(data.timestamp);
 			    const timeString = dateObj.toLocaleTimeString('sv-SE', {hour: '2-digit', minute:'2-digit'});
 			    const dateString = dateObj.toLocaleDateString('sv-SE', {day: 'numeric', month: 'short'});
 			    const displayTime = (new Date().toDateString() === dateObj.toDateString()) ? timeString : `${dateString}, ${timeString}`;
 			
 			    let platformIconHtml = '';
-			    if (data.platform === 'mobil') platformIconHtml = `<svg class="platform-icon"><use href="#icon-mobile"></use></svg>`;
-			    else if (data.platform === 'dator') platformIconHtml = `<svg class="platform-icon"><use href="#icon-desktop"></use></svg>`;
+			    
+			    // Visa bara mobil/dator-ikon om det INTE är systemmeddelande
+			    if (msgType !== 'system') {
+			        if (data.platform === 'mobil') platformIconHtml = `<svg class="platform-icon"><use href="#icon-mobile"></use></svg>`;
+			        else if (data.platform === 'dator') platformIconHtml = `<svg class="platform-icon"><use href="#icon-desktop"></use></svg>`;
+			    }
 			
 			    time.innerHTML = `${displayTime} ${platformIconHtml}`;
 			    if (data.isEdited) time.innerHTML += ` <span style="font-style:italic; opacity:0.7;">(redigerad)</span>`;
@@ -2548,32 +2562,25 @@
                 const WARNING_THRESHOLD = 20;
                 
                 if (currentLevel > WARNING_THRESHOLD) {
-                    // Om nivån är bra, rensa eventuell "idag har vi varnat"-flagga
                     localStorage.removeItem('oilWarningSentDate');
                     return; 
                 }
 
-                // Om nivån är låg...
                 const today = new Date().toISOString().split('T')[0];
                 const lastWarningDate = localStorage.getItem('oilWarningSentDate');
 
-                // ...och vi inte redan har varnat IDAG
                 if (lastWarningDate !== today) {
-                    
                     console.log("Låg oljenivå detekterad. Skapar systemmeddelande...");
 
                     try {
-                        // Skapa ett system-meddelande i chatten
                         await db.collection("notes").add({
-                            text: `⚠️ **SYSTEMVARNING: LÅGT OLJELAGER**\n\nNivån ligger nu på **${currentLevel.toFixed(1)} liter**.\nDags att beställa nytt fat?`,
+                            text: `Nivån ligger nu på **${currentLevel.toFixed(1)} liter**.\nDags att beställa nytt fat?`,
                             timestamp: new Date().toISOString(),
-                            platform: 'system', // Vi markerar detta som system
-                            reaction: '🛢' // Sätter en liten olje-ikon automatiskt
+                            platform: 'system', // VIKTIGT: Detta styr färgen
+                            reaction: '🕓' // VIKTIGT: Detta triggar notis-siffran (1)
                         });
 
-                        // Spara att vi har varnat idag så vi inte spammar
                         localStorage.setItem('oilWarningSentDate', today);
-                        
                         showToast('Varning skickad till chatten!', 'warning');
 
                     } catch (err) {
