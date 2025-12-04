@@ -3416,17 +3416,6 @@
 				        if (typeof deleteCurrentPhoto === 'function') deleteCurrentPhoto();
 				    };
 				}
-				
-				// Stäng om man klickar på bakgrunden (men inte på bilden)
-				if (imageModalBackdrop) {
-				    imageModalBackdrop.onclick = (e) => {
-				        if (e.target === imageModalBackdrop || e.target.classList.contains('mm-carousel-item')) {
-				            e.preventDefault();     // Förhindra standardbeteende
-				            e.stopPropagation();    // <--- NYCKELN: Stoppa klicket från att nå chatten!
-				            history.back();
-				        }
-				    };
-				}
 			}
 
             function renderGlobalStats(jobs) {
