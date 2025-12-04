@@ -2447,6 +2447,16 @@
 			        });
 			        chatList.dataset.clickListenerAttached = "true";
 			    }
+				// --- 9. UX: DÖLJ TANGENTBORD VID SCROLL ---
+			    // Om man rör vid listan (för att scrolla) medan man skriver -> Stäng tangentbordet
+			    if (chatList && chatInput) {
+			        chatList.addEventListener('touchstart', () => {
+			            // Om input-fältet är aktivt (tangentbordet uppe)
+			            if (document.activeElement === chatInput) {
+			                chatInput.blur(); // Detta tvingar ner tangentbordet
+			            }
+			        }, { passive: true });
+			    }
 			}
 
 			// --- HJÄLPFUNKTION: Komprimera Bild ---
