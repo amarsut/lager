@@ -1418,6 +1418,129 @@
 			    }
 			}
 
+			// --- HJÄLPFUNKTION FÖR SYSTEMNOTISER ---
+			async function sendSystemMessage(text, type = 'info', uniqueKey = null) {
+			    // Om en unik nyckel anges (t.ex. "morgon_2023-12-01"), kolla om den redan skickats
+			    if (uniqueKey && localStorage.getItem(uniqueKey)) {
+			        return; 
+			    }
+			
+			    let reaction = '🤖'; // Standard robot-ikon
+			    
+			    // Välj reaktion baserat på typ
+			    if (type === 'success') reaction = '🎉';
+			    if (type === 'warning') reaction = '⚠️';
+			    if (type === 'alert') reaction = '🚨';
+			    if (type === 'stats') reaction = '📊';
+			
+			    try {
+			        await db.collection("notes").add({
+			            text: text,
+			            timestamp: new Date().toISOString(),
+			            platform: 'system',
+			            reaction: reaction
+			        });
+			        
+			        // Om det gick bra, spara flaggan så vi inte skickar igen
+			        if (uniqueKey) {
+			            localStorage.setItem(uniqueKey, 'sent');
+			        }
+			        
+			        // Visa en liten toast också
+			        showToast('Ny systemnotis i chatten', 'info');
+			        
+			    } catch (e) {
+			        console.error("Kunde inte skicka systemnotis", e);
+			    }
+			}
+			
+						// --- SMART NOTIS-CHECKER ---
+			function checkSmartNotifications(jobs) {
+			    if (!jobs || jobs.length === 0) return;
+			
+			    const now = new Date();
+			    const todayString = now.toISOString().split('T')[0];
+			    const hour = now.getHours();
+			    
+			    // Aktiva jobb (ej raderade)
+			    const activeJobs = jobs.filter(j => !j.deleted);
+			
+			    // 1. STARTA DAGEN (Morgon-briefing)
+			    // Körs bara mellan kl 06:00 och 11:00
+			    if (hour >= 6 && hour <= 11) {
+			        const todaysJobs = activeJobs.filter(j => j.datum && j.datum.startsWith(todayString) && j.status === 'bokad');
+			        
+			        if (todaysJobs.length > 0) {
+			            // Hitta tiden för första jobbet
+			            const sorted = [...todaysJobs].sort((a, b) => a.datum.localeCompare(b.datum));
+			            const firstTime = sorted[0].datum.split('T')[1].substring(0, 5);
+			            
+			            const msg = `☕ God morgon! Idag har du ${todaysJobs.length} jobb inbokade. Första kunden kommer kl ${firstTime}.`;
+			            
+			            // Nyckel: "brief_2023-12-01" (Skickas max en gång per dag)
+			            sendSystemMessage(msg, 'info', `brief_${todayString}`);
+			        }
+			    }
+			
+			    // 2. MISSAT JOBB (Backlog)
+			    // Kollar jobb som har datum FÖRE idag men fortfarande står som 'bokad'
+			    const backlogJobs = activeJobs.filter(j => {
+			        if (j.status !== 'bokad' || !j.datum) return false;
+			        const jobDate = j.datum.split('T')[0];
+			        return jobDate < todayString; // Datum är mindre än idag (dåtid)
+			    });
+			
+			    if (backlogJobs.length > 0) {
+			        const count = backlogJobs.length;
+			        // Ta det äldsta som exempel
+			        const example = backlogJobs[0].kundnamn; 
+			        const extraText = count > 1 ? ` (och ${count - 1} till)` : '';
+			        
+			        const msg = `📅 Missade jobb: Du har ${count} jobb från tidigare datum som fortfarande står som 'Bokad'. Exempel: ${example}${extraText}. Är de klara eller ombokade?`;
+			        
+			        // Nyckel: "backlog_2023-12-01" (Påminn max en gång per dag)
+			        sendSystemMessage(msg, 'warning', `backlog_${todayString}`);
+			    }
+			
+			    // 3. STÄDPATRULLEN
+			    // Kollar papperskorgen
+			    const trashJobs = jobs.filter(j => j.deleted);
+			    if (trashJobs.length >= 10) { // Säg till om det ligger mer än 10 skräpjobb
+			        const msg = `🗑️ Städpatrullen: Papperskorgen innehåller nu ${trashJobs.length} gamla jobb. Kom ihåg att systemet rensar jobb äldre än 30 dagar automatiskt.`;
+			        
+			        // Nyckel: "trash_alert_2023-12-01" (En gång per dag är nog, eller kanske per vecka)
+			        sendSystemMessage(msg, 'info', `trash_alert_${todayString}`);
+			    }
+			
+			    // 4. VECKOSUMMERING (Söndag kväll)
+			    // Körs om det är Söndag (0) och klockan är efter 18:00
+			    if (now.getDay() === 0 && hour >= 18) {
+			        // Räkna ut datum för måndagen denna vecka
+			        const monday = new Date(now);
+			        monday.setDate(now.getDate() - 6); // Backa 6 dagar från söndag
+			        monday.setHours(0,0,0,0);
+			        
+			        // Hitta veckans slutförda jobb
+			        const finishedThisWeek = activeJobs.filter(j => {
+			            if (j.status !== 'klar' || !j.datum) return false;
+			            const jobDate = new Date(j.datum);
+			            return jobDate >= monday && jobDate <= now;
+			        });
+			
+			        if (finishedThisWeek.length > 0) {
+			            const totalProfit = finishedThisWeek.reduce((sum, j) => sum + (j.vinst || 0), 0);
+			            
+			            // Formatera pengar snyggt
+			            const profitStr = totalProfit.toLocaleString('sv-SE');
+			            
+			            const msg = `📊 Veckosummering: Bra jobbat denna vecka! ${finishedThisWeek.length} jobb slutförda med en total vinst på ${profitStr} kr. Nu tar vi helg!`;
+			            
+			            // Nyckel: "weekly_sum_2023-12-01" (Använd dagens datum som unik nyckel för denna söndag)
+			            sendSystemMessage(msg, 'stats', `weekly_sum_${todayString}`);
+			        }
+			    }
+			}
+
 			let jobUnsubscribe = null;
 			let badgeUnsubscribe = null;
 			let chatUnsubscribe = null; // För att kunna stänga av lyssnaren
@@ -2930,6 +3053,11 @@
 			        timelineView.style.display = 'block';
 			    }
 				calculateOilStock();
+
+				// Kör smarta notiser (men vänta lite så UI hinner ritas upp först)
+			    setTimeout(() => {
+			        checkSmartNotifications(allJobs);
+			    }, 2000);
 			}
 
             function renderGlobalStats(jobs) {
