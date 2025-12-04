@@ -7461,22 +7461,36 @@ body.body-scroll-lock {
 
 /* --- 4. RÄKNAREN (Piller i botten) --- */
 .mm-counter {
-    position: fixed;
-    bottom: 40px; /* Flyttad lite högre upp från kanten */
-    left: 50%;
-    transform: translateX(-50%);
+    position: fixed; 
     
-    background-color: rgba(30, 30, 30, 0.9);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    /* Placering i botten med marginal för iPhone-strecket */
+    bottom: 30px;    
+    bottom: calc(30px + env(safe-area-inset-bottom)); 
+    
+    /* EXAKT CENTRERING */
+    left: 50%;       
+    transform: translateX(-50%); 
+    margin: 0; /* Ta bort alla gamla marginaler som kan störa */
+    
+    /* Utseende */
+    background-color: rgba(20, 20, 20, 0.85); /* Lite mörkare för bättre kontrast */
     color: #fff;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; /* Systemfont */
+    font-weight: 500;
+    font-size: 14px; /* Pixel-värde för exakthet */
+    letter-spacing: 0.5px;
     
-    font-size: 0.9rem;
-    font-weight: 600;
-    padding: 8px 16px;
-    border-radius: 50px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
     
-    z-index: 20;
+    /* Säkerställ att den ligger över allt annat men under modal-bakgrunden */
+    z-index: 30050; 
     pointer-events: none; /* Klick går igenom */
+    white-space: nowrap;  /* Tvinga texten att stanna på en rad */
+    
+    /* Skugga för att synas mot ljusa bilder */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
 }
 
 /* Detta gör att räknaren inte tar plats mellan X och knapparna där uppe */
@@ -7723,6 +7737,7 @@ body.offline-mode .offline-dot {
     background-color: rgba(255, 69, 58, 0.15); /* Svag röd bakgrund */
     border-radius: 50%;
 }
+
 
 
 
