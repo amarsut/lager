@@ -1572,6 +1572,82 @@
 			            sendSystemMessage(msg, 'stats', `goal_50_${currentMonthKey}`);
 			        }
 			    }
+
+			    // 19. SNITT-FÖRÄNDRING (Trendanalys)
+			    // Vi jämför de senaste 7 dagarna med 7 dagar innan dess.
+			    const oneWeekAgo = new Date(); oneWeekAgo.setDate(now.getDate() - 7);
+			    const twoWeeksAgo = new Date(); twoWeeksAgo.setDate(now.getDate() - 14);
+			
+			    // Hjälpfunktion: Räkna ut snittvinst för en period
+			    const getAverageProfit = (startDate, endDate) => {
+			        const jobsInPeriod = activeJobs.filter(j => {
+			            if (j.status !== 'klar' || !j.datum) return false;
+			            const d = new Date(j.datum);
+			            return d >= startDate && d < endDate;
+			        });
+			        
+			        if (jobsInPeriod.length === 0) return 0;
+			        const total = jobsInPeriod.reduce((sum, j) => sum + (j.vinst || 0), 0);
+			        return total / jobsInPeriod.length;
+			    };
+			
+			    const currentAvg = getAverageProfit(oneWeekAgo, now);
+			    const prevAvg = getAverageProfit(twoWeeksAgo, oneWeekAgo);
+			
+			    // Kör bara om vi har data för båda veckorna att jämföra med
+			    if (currentAvg > 0 && prevAvg > 0) {
+			        // Räkna ut skillnaden i procent
+			        const diffPercent = ((currentAvg - prevAvg) / prevAvg) * 100;
+			        const absDiff = Math.abs(diffPercent).toFixed(0); // Avrunda till heltal
+			        
+			        // Nyckel: Varna max en gång per vecka (vi använder måndagens datum som bas eller dagens)
+			        const trendKey = `profit_trend_alert_${todayString}`;
+			
+			        // Gräns: Reagera bara om förändringen är större än 10%
+			        if (Math.abs(diffPercent) > 10) {
+			            
+			            if (diffPercent > 0) {
+			                // POSITIV TREND
+			                sendSystemMessage(
+			                    `📈 Bra trend! Ditt snitt per jobb de senaste 7 dagarna (${currentAvg.toFixed(0)} kr) har ökat med ${absDiff}% jämfört med veckan innan.`,
+			                    'success',
+			                    trendKey
+			                );
+			            } else {
+			                // NEGATIV TREND
+			                sendSystemMessage(
+			                    `📉 Tappad lönsamhet: Snittvinsten per jobb har sjunkit med ${absDiff}% jämfört med förra veckan. Har vi haft många småjobb?`,
+			                    'warning',
+			                    trendKey
+			                );
+			            }
+			        }
+			    }
+				// 20. CHATT-RENSNING
+			    // Kollar om det börjar bli fullt i chatten (bilder tar plats!)
+			    // Vi kollar detta sällan, t.ex. var 7:e dag för att spara prestanda
+			    const chatCheckKey = `chat_cleanup_check_${todayString}`; // Unik per dag (men vi kan styra det hårdare)
+			    
+			    // Om vi INTE kollat idag...
+			    if (!localStorage.getItem(chatCheckKey)) {
+			        
+			        // Gör en snabb räkning mot databasen
+			        db.collection("notes").get().then(snap => {
+			            const count = snap.size;
+			            
+			            // Sätt din gräns här (t.ex. 200 eller 500 meddelanden)
+			            if (count > 200) {
+			                sendSystemMessage(
+			                    `🧹 Dags att städa? Chatten innehåller nu ${count} meddelanden/bilder. Om appen känns seg kan det vara dags att rensa gammalt material.`,
+			                    'info',
+			                    chatCheckKey
+			                );
+			            } else {
+			                // Spara att vi kollat ändå, så vi inte kollar igen vid omladdning
+			                localStorage.setItem(chatCheckKey, 'checked');
+			            }
+			        }).catch(err => console.log("Kunde inte räkna chatt:", err));
+			    }
 			}
 
 			let jobUnsubscribe = null;
