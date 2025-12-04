@@ -1840,45 +1840,53 @@
 			const imageZoomModal = document.getElementById('imageZoomModal');
 
 			if (imageZoomModal) {
+			    // Använd 'click' (fungerar bra på både mobil och desktop nu när vi har touch-action i CSS)
 			    imageZoomModal.addEventListener('click', function(e) {
 			        
-			        // 1. HANTERA KNAPPAR FÖRST (Så de inte triggar stängning)
-			        const closeBtn = e.target.closest('#mmCloseBtn');
-			        const forwardBtn = e.target.closest('#mmForwardBtn');
-			        const shareBtn = e.target.closest('#mmShareBtn');
-			        const deleteBtn = e.target.closest('#mmDeleteBtn');
+			        // 1. KOLLA VAD VI KLICKADE PÅ
+			        const target = e.target;
+			
+			        // Om vi klickar på själva bilden -> GÖR INGET (Stäng inte)
+			        if (target.tagName === 'IMG') {
+			            return; 
+			        }
+			
+			        // Om vi klickar på en knapp -> Hantera knappen
+			        const forwardBtn = target.closest('#mmForwardBtn');
+			        const shareBtn = target.closest('#mmShareBtn');
+			        const deleteBtn = target.closest('#mmDeleteBtn');
+			        const closeBtn = target.closest('#mmCloseBtn');
 			
 			        if (forwardBtn) {
-			            e.preventDefault(); e.stopPropagation();
+			            e.preventDefault();
 			            if (typeof forwardCurrentPhoto === 'function') forwardCurrentPhoto();
 			            return;
 			        }
 			        if (shareBtn) {
-			            e.preventDefault(); e.stopPropagation();
+			            e.preventDefault();
 			            if (typeof downloadCurrentPhoto === 'function') downloadCurrentPhoto();
 			            return;
 			        }
 			        if (deleteBtn) {
-			            e.preventDefault(); e.stopPropagation();
+			            e.preventDefault();
 			            if (typeof deleteCurrentPhoto === 'function') deleteCurrentPhoto();
 			            return;
 			        }
 			
-			        // 2. STÄNGNINGS-LOGIK
-			        // Om man klickar på X-knappen ELLER om man klickar på något som INTE är själva bilden (IMG)
-			        // Då stänger vi.
+			        // 2. STÄNG-LOGIK
+			        // Om vi kommer hit har vi klickat på antingen:
+			        // A) Det svarta området (backdrop/container)
+			        // B) Stäng-knappen (X)
 			        
-			        const isImage = e.target.tagName === 'IMG';
-			        
-			        if (closeBtn || !isImage) {
-			            e.preventDefault();
-			            
-			            if (history.state && history.state.modal === 'imageZoom') {
-			                history.back();
-			            } else {
-			                imageZoomModal.style.display = 'none';
-			                if (typeof updateScrollLock === 'function') updateScrollLock();
-			            }
+			        // Vi stänger direkt!
+			        e.preventDefault();
+			        e.stopPropagation();
+			
+			        if (history.state && history.state.modal === 'imageZoom') {
+			            history.back();
+			        } else {
+			            imageZoomModal.style.display = 'none';
+			            if (typeof updateScrollLock === 'function') updateScrollLock();
 			        }
 			    });
 			}
