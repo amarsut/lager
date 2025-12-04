@@ -2133,14 +2133,31 @@
 			
 			            try {
 			                // 1. DIN API-NYCKEL HÄR
+							/*
+							Sida för att hantera API-key: https://aistudio.google.com/app/api-keys
+							Mejl för att hantera API-key: asut.ytube
+							*/
 			                const apiKey = "AIzaSyD5T7D7EBgNb8jwARxcG7xZLWwbqy80Qf0"; 
 			                
 			                // 2. MODELL: Vi byter till "gemini-2.5-flash" enligt din dokumentation
 			                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 			
-			                const prompt = `Du är en expertmekaniker. Svara kortfattat, proffsigt och på svenska. 
-			                                Analysera följande felkod/symptom och lista de 3 mest sannolika orsakerna: 
-			                                "${query}"`;
+			                const prompt = `Du är en expertmekaniker. Svara på svenska.
+                                Analysera: "${query}".
+                                
+                                VIKTIGT OM FORMATERING:
+                                Svaret ska vara kort, luftigt och lättläst i en chatt.
+                                Använd HTML-taggar för struktur:
+                                1. Använd <b> för att fetmarkera rubriker och reservdelar.
+                                2. Använd <br> för att göra radbrytningar.
+                                
+                                Följ denna mall:
+                                <b>Analys:</b> Kort sammanfattning (max 1 mening).
+                                <br><br>
+                                <b>Möjliga orsaker:</b><br>
+                                1. <b>[Orsak]</b> - Förklaring.<br>
+                                2. <b>[Orsak]</b> - Förklaring.<br>
+                                3. <b>[Orsak]</b> - Förklaring.`;
 			
 			                const response = await fetch(url, {
 			                    method: 'POST',
