@@ -7649,4 +7649,23 @@ body.offline-mode .offline-dot {
     color: #000;
 }
 
+.chat-date-separator {
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--text-color-light);
+    margin: 1rem 0;
+    font-weight: 600;
+    text-transform: capitalize;
+    position: relative;
+}
+.chat-date-separator::before,
+.chat-date-separator::after {
+    content: '';
+    display: inline-block;
+    width: 30px;
+    height: 1px;
+    background-color: var(--border-color);
+    vertical-align: middle;
+    margin: 0 10px;
+}
 
