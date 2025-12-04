@@ -2105,14 +2105,7 @@
 			    }
 			
 			    // --- AI MEKANIKER (FIXAD: Modell Gemini 2.5) ---
-			    const oldAiBtn = document.getElementById('askAiBtn');
-			
-			    if (oldAiBtn) {
-			        // Kloning för att rensa gamla lyssnare (som vi gjorde sist)
-			        const newAiBtn = oldAiBtn.cloneNode(true);
-			        oldAiBtn.parentNode.replaceChild(newAiBtn, oldAiBtn);
-			
-			        newAiBtn.addEventListener('click', async (e) => {
+			    newAiBtn.addEventListener('click', async (e) => {
 			            e.preventDefault();
 			            
 			            const query = chatInput.value.trim();
@@ -2121,22 +2114,17 @@
 			                return;
 			            }
 			
-			            // Visa din fråga
-			            await db.collection("notes").add({
+                        // 1. Skapa meddelandet och SPARA REFERENSEN (loadingMsgRef)
+			            const loadingMsgRef = await db.collection("notes").add({
 			                text: `🤖 Frågar AI: "${query}"...`,
 			                timestamp: new Date().toISOString(),
 			                platform: 'system',
-			                reaction: '⏳'
+			                reaction: '⏳' // Detta startar snurren
 			            });
 			
 			            chatInput.value = '';
 			
 			            try {
-			                // 1. DIN API-NYCKEL HÄR
-							/*
-							Sida för att hantera API-key: https://aistudio.google.com/app/api-keys
-							Mejl för att hantera API-key: asut.ytube
-							*/
 			                const apiKey = "AIzaSyD5T7D7EBgNb8jwARxcG7xZLWwbqy80Qf0"; 
 			                
 			                // 2. MODELL: Vi byter till "gemini-2.5-flash" enligt din dokumentation
@@ -2169,20 +2157,7 @@
 			                    })
 			                });
 			
-			                if (!response.ok) {
-			                    const errorData = await response.json().catch(() => ({}));
-			                    console.error("Google API Error:", errorData);
-			                    
-			                    let msg = `Serverfel: ${response.status}`;
-			                    if (response.status === 404) {
-			                        msg = "Modellen hittades inte (Kontrollera API-nyckel/URL).";
-			                    } else if (response.status === 429) {
-			                        msg = "AI-tjänsten är upptagen (Quota).";
-			                    } else if (errorData.error && errorData.error.message) {
-			                        msg += ` - ${errorData.error.message}`;
-			                    }
-			                    throw new Error(msg);
-			                }
+			                if (!response.ok) throw new Error("AI-tjänsten svarade inte.");
 			
 			                const data = await response.json();
 			
@@ -2196,27 +2171,26 @@
 			                        reaction: '🤖'
 			                    });
 			                    
+                                // 2. LYCKAT SVAR: Uppdatera timglaset till en bock
+                                await loadingMsgRef.update({ reaction: '✅' });
+
 			                    setTimeout(() => {
 			                        const chatList = document.getElementById('chatMessages');
 			                        if(chatList) chatList.scrollTop = chatList.scrollHeight;
 			                    }, 100);
 			
 			                } else {
-			                    throw new Error("Inget svar från AI (Tom data)");
+			                    throw new Error("Inget svar från AI.");
 			                }
 			
 			            } catch (err) {
-			                console.error("AI CRITICAL ERROR:", err);
+			                console.error("AI ERROR:", err);
 			                
-			                let userMsg = "⚠️ AI-tjänsten kunde inte svara.";
-			                if (err.message.includes("404") || err.message.includes("not found")) {
-			                    userMsg = "⚠️ Modellfel (404). Försök skapa en ny API-nyckel.";
-			                } else {
-			                    userMsg = "⚠️ " + err.message;
-			                }
-			                
+                            // 3. VID FEL: Uppdatera timglaset till ett kryss
+                            await loadingMsgRef.update({ reaction: '❌' });
+
 			                await db.collection("notes").add({
-			                    text: userMsg,
+			                    text: "⚠️ Kunde inte få kontakt med AI-mekanikern just nu.",
 			                    timestamp: new Date().toISOString(),
 			                    platform: 'system'
 			                });
