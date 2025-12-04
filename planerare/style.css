@@ -7493,95 +7493,127 @@ body.body-scroll-lock {
     touch-action: manipulation; 
 }
 
-/* --- HUVUDCONTAINER FÖR BILDERNA (KARUSELL) --- */
-/* --- 1. CONTAINERN --- */
+/* =========================================
+   MODERN BILD-KARUSELL
+========================================= */
+
+/* --- 1. CONTAINERN (Ytan där allt händer) --- */
 .mm-carousel-container {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
     width: 100%; height: 100%;
     z-index: 30010;
-    pointer-events: none;
+    pointer-events: none; /* Klick går igenom tomma ytor */
     overflow: hidden;
+    /* Förbered för 3D-effekter */
+    perspective: 1000px;
 }
 
-/* --- 2. OBJEKTEN (Wrapper för varje bild) --- */
+/* --- 2. OBJEKTEN (Wrappers för varje bild) --- */
 .mm-carousel-item {
     position: absolute;
     top: 0; left: 0;
     width: 100%; height: 100%;
     
-    /* Centrera innehållet */
-    display: flex !important; /* Tvinga flex om JS bråkar */
+    display: flex !important;
     align-items: center;
     justify-content: center;
     
     pointer-events: none;
-    transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.3s ease;
+    /* Mjuk, modern "ease-out" animation */
+    transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), 
+                opacity 0.4s ease,
+                filter 0.4s ease;
+    /* Hårdvaruacceleration */
+    will-change: transform, opacity, filter;
 }
 
-/* --- 3. BILD-STYLING (Gemensam) --- */
+/* --- 3. BILD-STYLING (Gemensam grund) --- */
 .mm-carousel-item img {
-    pointer-events: auto; /* Gör bilden klickbar */
-    border-radius: 8px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    pointer-events: auto; /* Bilden måste gå att klicka på */
+    border-radius: 12px;  /* Lite rundare hörn */
     object-fit: contain;
-    
-    /* Grundstorlek */
     width: auto;
     height: auto;
+    /* Mjuk basskugga */
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    transition: box-shadow 0.3s ease;
 }
 
-/* --- 4. HUVUDBILDEN (Mitten) --- */
+/* --- 4. HUVUDBILDEN (I fokus) --- */
 .mm-carousel-item.main {
-    z-index: 20; /* Ligg överst */
+    z-index: 30; /* Ligg överst */
     opacity: 1 !important;
-    transform: translateX(0) scale(1) !important;
+    /* translate3d för bättre prestanda */
+    transform: translate3d(0, 0, 0) scale(1) !important;
+    filter: none !important;
 }
 
-/* DATOR: Begränsa bredden så vi ser sidorna */
+/* Gör huvudbildens skugga större så den "poppar" */
 .mm-carousel-item.main img {
-    max-height: 85vh !important;
-    max-width: 60vw !important; /* Smalare för att visa grannarna */
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
 }
 
-/* --- 5. FÖREGÅENDE (Vänster) --- */
-.mm-carousel-item.prev {
-    z-index: 10; /* Bakom main */
-    opacity: 0.5 !important;
-    /* Flytta 55% av skärmbredden åt vänster */
-    transform: translateX(-55%) scale(0.85) !important;
-    filter: brightness(0.6); /* Mörkare */
+/* DATOR-SPECIFIKT: Storlek och positionering */
+@media (min-width: 769px) {
+    /* Begränsa huvudbilden så vi ser sidorna */
+    .mm-carousel-item.main img {
+        max-height: 85vh !important;
+        max-width: 65vw !important; 
+    }
+
+    /* --- FÖREGÅENDE (Vänster) --- */
+    .mm-carousel-item.prev {
+        z-index: 20;
+        opacity: 0.6 !important;
+        /* Flytta 45% vänster (tajtare), skala ner till 85% */
+        transform: translate3d(-45%, 0, 0) scale(0.85) !important;
+        /* Gör mörkare OCH suddig för djup */
+        filter: brightness(0.5) blur(2px); 
+    }
+
+    /* --- NÄSTA (Höger) --- */
+    .mm-carousel-item.next {
+        z-index: 20;
+        opacity: 0.6 !important;
+        /* Flytta 45% höger (tajtare), skala ner till 85% */
+        transform: translate3d(45%, 0, 0) scale(0.85) !important;
+        filter: brightness(0.5) blur(2px);
+    }
 }
 
-/* --- 6. NÄSTA (Höger) --- */
-.mm-carousel-item.next {
-    z-index: 10; /* Bakom main */
-    opacity: 0.5 !important;
-    /* Flytta 55% av skärmbredden åt höger */
-    transform: translateX(55%) scale(0.85) !important;
-    filter: brightness(0.6);
+
+/* --- 5. MOBILANPASSNING --- */
+@media (max-width: 768px) {
+    /* Huvudbilden får ta mer plats på mobil */
+    .mm-carousel-item.main img {
+        max-width: 88vw !important; 
+        max-height: 75vh !important;
+    }
+
+    /* --- SIDOBILDER MOBIL --- */
+    /* Vi vill bara se en liten "flik" av dem på kanten */
+    .mm-carousel-item.prev {
+        opacity: 0.5 !important;
+        z-index: 20;
+        /* Flytta ut 82%, skala ner mer */
+        transform: translate3d(-82%, 0, 0) scale(0.75) !important;
+        filter: brightness(0.5) blur(1px);
+    }
+    
+    .mm-carousel-item.next {
+        opacity: 0.5 !important;
+        z-index: 20;
+        /* Flytta ut 82%, skala ner mer */
+        transform: translate3d(82%, 0, 0) scale(0.75) !important;
+        filter: brightness(0.5) blur(1px);
+    }
 }
 
-/* Dölj övriga (om de finns) */
+/* Dölj bilder som inte är main, prev eller next */
 .mm-carousel-item.side:not(.prev):not(.next) {
     opacity: 0 !important;
-}
-
-/* --- 7. MOBILANPASSNING --- */
-@media (max-width: 768px) {
-    /* På mobil vill vi att huvudbilden tar mer plats */
-    .mm-carousel-item.main img {
-        max-width: 85vw !important; /* Bredare än på desktop */
-        max-height: 70vh !important;
-    }
-
-    /* Tryck ut sidobilderna mer mot kanterna på mobil */
-    .mm-carousel-item.prev {
-        transform: translateX(-85%) scale(0.8) !important;
-    }
-    .mm-carousel-item.next {
-        transform: translateX(85%) scale(0.8) !important;
-    }
+    pointer-events: none !important;
 }
 
 /* --- 3. BILDEN (Maxstorlek för att undvika krock) --- */
@@ -7843,6 +7875,7 @@ body.offline-mode .offline-dot {
     background-color: rgba(255, 69, 58, 0.15); /* Svag röd bakgrund */
     border-radius: 50%;
 }
+
 
 
 
