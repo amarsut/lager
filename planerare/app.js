@@ -1836,6 +1836,64 @@
 			    }
 			}
 
+			// --- FIX FÖR BILDMODALENS KNAPPAR ---
+			const imageZoomModal = document.getElementById('imageZoomModal');
+			
+			if (imageZoomModal) {
+			    // Vi lägger en enda lyssnare på hela modalen
+			    imageZoomModal.addEventListener('click', function(e) {
+			        
+			        // 1. STÄNG-KNAPPEN (Eller klick på den svarta bakgrunden)
+			        if (e.target === imageZoomModal || e.target.closest('#mmCloseBtn')) {
+			            e.preventDefault();
+			            // Om bilden laddas som en del av history-state, backa:
+			            if (history.state && history.state.modal === 'imageZoom') {
+			                history.back();
+			            } else {
+			                // Fallback om history inte stämmer
+			                imageZoomModal.style.display = 'none';
+			                if (typeof updateScrollLock === 'function') updateScrollLock();
+			            }
+			            return;
+			        }
+			
+			        // 2. VIDAREBEFORDRA-KNAPPEN
+			        const forwardBtn = e.target.closest('#mmForwardBtn');
+			        if (forwardBtn) {
+			            e.preventDefault();
+			            e.stopPropagation(); // Stoppa så vi inte råkar stänga modalen
+			            if (typeof forwardCurrentPhoto === 'function') {
+			                forwardCurrentPhoto();
+			            } else {
+			                console.error("Funktionen forwardCurrentPhoto saknas.");
+			            }
+			            return;
+			        }
+			
+			        // 3. DELA/SPARA-KNAPPEN
+			        const shareBtn = e.target.closest('#mmShareBtn');
+			        if (shareBtn) {
+			            e.preventDefault();
+			            e.stopPropagation();
+			            if (typeof downloadCurrentPhoto === 'function') {
+			                downloadCurrentPhoto();
+			            }
+			            return;
+			        }
+			
+			        // 4. RADERA-KNAPPEN
+			        const deleteBtn = e.target.closest('#mmDeleteBtn');
+			        if (deleteBtn) {
+			            e.preventDefault();
+			            e.stopPropagation();
+			            if (typeof deleteCurrentPhoto === 'function') {
+			                deleteCurrentPhoto();
+			            }
+			            return;
+			        }
+			    });
+			}
+
 			let jobUnsubscribe = null;
 			let badgeUnsubscribe = null;
 			let chatUnsubscribe = null; // För att kunna stänga av lyssnaren
@@ -3341,7 +3399,7 @@
 				const mmDeleteBtn = document.getElementById('mmDeleteBtn');
 				const imageModalBackdrop = document.getElementById('imageZoomModal'); // Din modal container
 				
-				if (mmCloseBtn) mmCloseBtn.onclick = () => history.back();
+				//if (mmCloseBtn) mmCloseBtn.onclick = () => history.back();
 				
 				if (mmForwardBtn) {
 				    mmForwardBtn.onclick = (e) => {
