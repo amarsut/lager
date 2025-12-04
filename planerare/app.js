@@ -3421,6 +3421,8 @@
 				if (imageModalBackdrop) {
 				    imageModalBackdrop.onclick = (e) => {
 				        if (e.target === imageModalBackdrop || e.target.classList.contains('mm-carousel-item')) {
+				            e.preventDefault();     // Förhindra standardbeteende
+				            e.stopPropagation();    // <--- NYCKELN: Stoppa klicket från att nå chatten!
 				            history.back();
 				        }
 				    };
