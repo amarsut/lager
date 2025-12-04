@@ -2159,10 +2159,9 @@
 			function renderChatBubble(id, data, container) {
 			    const bubble = document.createElement('div');
 			
-			    // --- LOGIK: Bestäm typ (me/other/system) ---
+			    // --- 1. LOGIK: Bestäm typ (me/other/system) ---
 			    let msgType = 'me'; 
 			
-			    // Om platform är 'system' (från våra automatiska notiser)
 			    if (data.platform === 'system') {
 			        msgType = 'system'; 
 			    } else if (data.sender === 'other') { 
@@ -2172,11 +2171,7 @@
 			    // Sätt klasser
 			    bubble.className = `chat-bubble ${msgType}`;
 			
-			    // ... (Din existerande kod för bilder/text/klick) ...
-			    // För enkelhetens skull, klistra in din text/bild-logik här eller behåll den gamla.
-			    // Det viktiga är slutet av funktionen nedan:
-			
-			    // 1. Renderar innehåll (Text/Bild) - Samma som du har idag
+			    // --- 2. INNEHÅLL (BILD/TEXT) ---
 			    if (data.images && Array.isArray(data.images)) {
 			        bubble.classList.add('chat-bubble-image');
 			        const carousel = document.createElement('div');
@@ -2188,21 +2183,37 @@
 			            carousel.appendChild(img);
 			        });
 			        bubble.appendChild(carousel);
+			        // Bildtext
+			        if (data.caption) {
+			            const captionDiv = document.createElement('div');
+			            captionDiv.className = 'chat-caption';
+			            captionDiv.textContent = data.caption;
+			            bubble.appendChild(captionDiv);
+			        }
 			    } else if (data.type === 'image' && data.image) {
 			        bubble.classList.add('chat-bubble-image');
 			        const imgElement = document.createElement('img');
 			        imgElement.src = data.image; imgElement.loading = "lazy";
 			        imgElement.onclick = (e) => { e.stopPropagation(); window.openImageZoom(data.image); };
 			        bubble.appendChild(imgElement);
+			        // Bildtext
+			        if (data.caption) {
+			            const captionDiv = document.createElement('div');
+			            captionDiv.className = 'chat-caption';
+			            captionDiv.textContent = data.caption;
+			            bubble.appendChild(captionDiv);
+			        }
 			    } else {
+			        // Text
 			        let rawText = data.text || "";
 			        const textContentDiv = document.createElement('div');
 			        textContentDiv.className = 'chat-text-content';
+			        // Använd linkify om den finns, annars råtext
 			        textContentDiv.innerHTML = typeof linkify === 'function' ? linkify(rawText) : rawText;
 			        bubble.appendChild(textContentDiv);
 			    }
 			
-			    // Reaktioner
+			    // Reaktioner (Ikonen nere till höger)
 			    if (data.reaction) {
 			        const badge = document.createElement('span');
 			        badge.className = 'reaction-badge';
@@ -2210,25 +2221,92 @@
 			        bubble.appendChild(badge);
 			    }
 			
-			    // --- HÄR ÄR FIXEN FÖR TIDSSTÄMPELN ---
+			    // --- 3. FIXEN: ÅTERSTÄLL EVENT LISTENERS (HÖGERKLICK & LÅNGTRYCK) ---
+			    
+			    let pressTimer = null;
+			    let startX = 0, startY = 0;
+			    let isLongPressActive = false;
+			
+			    // A. Hantera Touch (Långtryck på mobil)
+			    const handleTouchStart = (e) => {
+			        if (e.touches.length > 1) return; 
+			        isLongPressActive = false;
+			        startX = e.touches[0].clientX;
+			        startY = e.touches[0].clientY;
+			        
+			        // Ignorera om man trycker för nära kanten (swipe-gest)
+			        if (startX < 30 || startX > window.innerWidth - 30) return;
+			
+			        if (pressTimer) clearTimeout(pressTimer);
+			        
+			        pressTimer = setTimeout(() => {
+			            isLongPressActive = true; 
+			            if (typeof showReactionMenu === 'function') {
+			                showReactionMenu(startX, startY, id);
+			            }
+			            if (navigator.vibrate) navigator.vibrate(15);
+			        }, 300); // 300ms för långtryck
+			    };
+			
+			    const handleTouchMove = (e) => {
+			        if (!pressTimer) return;
+			        const currentX = e.touches[0].clientX;
+			        const currentY = e.touches[0].clientY;
+			        // Om man rör fingret mer än 10px, avbryt långtrycket
+			        if (Math.abs(currentX - startX) > 10 || Math.abs(currentY - startY) > 10) {
+			            clearTimeout(pressTimer);
+			            pressTimer = null;
+			        }
+			    };
+			
+			    const handleTouchEnd = (e) => {
+			        if (pressTimer) {
+			            clearTimeout(pressTimer);
+			            pressTimer = null;
+			        }
+			        if (isLongPressActive) {
+			            if (e.cancelable) e.preventDefault(); 
+			            e.stopPropagation(); 
+			            isLongPressActive = false;
+			            return false;
+			        }
+			    };
+			
+			    // B. Hantera Högerklick (Desktop)
+			    bubble.addEventListener('contextmenu', (e) => {
+			        // På mobil hanterar vi detta via long-press, så vi kan ignorera contextmenu där
+			        // eller låta den vara kvar om man har mus till mobilen.
+			        e.preventDefault();
+			        e.stopPropagation();
+			        if (typeof showReactionMenu === 'function') {
+			            showReactionMenu(e.clientX, e.clientY, id);
+			        }
+			        return false;
+			    });
+			
+			    // Koppla touch-lyssnare
+			    bubble.addEventListener('touchstart', handleTouchStart, { passive: true });
+			    bubble.addEventListener('touchmove', handleTouchMove, { passive: true });
+			    bubble.addEventListener('touchend', handleTouchEnd, { passive: false }); 
+			
+			    // -----------------------------------------------------------------------
+			
+			    // --- 4. TIDSSTÄMPEL & SYSTEM-TEXT (Din design) ---
 			    const time = document.createElement('div');
-			    time.className = `chat-time ${msgType}`; // Viktigt: msgType måste vara 'system' här
+			    time.className = `chat-time ${msgType}`; 
 			    
 			    let dateObj;
 			    try {
 			        dateObj = new Date(data.timestamp);
 			    } catch(e) { dateObj = new Date(); }
 			
-			    // Formatera tiden
 			    const timeString = dateObj.toLocaleTimeString('sv-SE', {hour: '2-digit', minute:'2-digit'});
 			    const dateString = dateObj.toLocaleDateString('sv-SE', {day: 'numeric', month: 'short'});
 			    const isToday = (new Date().toDateString() === dateObj.toDateString());
 			    const displayTime = isToday ? timeString : `${dateString}, ${timeString}`;
 			
-			    // Lägg till "SYSTEM" texten om det är ett systemmeddelande
 			    let platformIconHtml = '';
 			    if (msgType === 'system') {
-			        // Detta skapar den feta texten bredvid tiden
 			        platformIconHtml = ` <span style="font-weight: 700; opacity: 0.9; margin-left: 4px; letter-spacing: 0.5px;">• SYSTEM</span>`;
 			    } else {
 			        if (data.platform === 'mobil') platformIconHtml = `<svg class="platform-icon"><use href="#icon-mobile"></use></svg>`;
@@ -2236,6 +2314,7 @@
 			    }
 			
 			    time.innerHTML = `${displayTime}${platformIconHtml}`;
+			    if (data.isEdited) time.innerHTML += ` <span style="font-style:italic; opacity:0.7;">(redigerad)</span>`;
 			    
 			    // Lägg till i listan
 			    container.appendChild(bubble);
