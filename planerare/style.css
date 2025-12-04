@@ -7493,26 +7493,96 @@ body.body-scroll-lock {
     touch-action: manipulation; 
 }
 
-/* --- 2. HUVUDCONTAINER FÖR BILDEN --- */
+/* --- HUVUDCONTAINER FÖR BILDERNA (KARUSELL) --- */
+.mm-carousel-container {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    width: 100%; height: 100%;
+    z-index: 30010; 
+    pointer-events: none; /* Klick går igenom tomma ytor */
+    overflow: hidden; /* Dölj det som hamnar utanför skärmen */
+}
+
 .mm-carousel-item {
     position: absolute;
     top: 0; left: 0; 
     width: 100%; height: 100%;
     
     display: flex;
-    align-items: center; /* Centrerar vertikalt */
-    justify-content: center; /* Centrerar horisontellt */
+    align-items: center; 
+    justify-content: center;
     
-    /* VIKTIGT: Gör så att klick på den tomma ytan går igenom till backdrop */
     pointer-events: none; 
     
-    opacity: 0;
-    transition: opacity 0.2s ease;
+    /* Mjuk animation för förflyttning */
+    transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), 
+                opacity 0.3s ease, 
+                filter 0.3s ease;
 }
 
+/* --- HUVUDBILDEN (Center) --- */
 .mm-carousel-item.main {
     opacity: 1;
     z-index: 10;
+    transform: translateX(0) scale(1);
+    filter: none;
+}
+
+/* --- FÖREGÅENDE BILD (Vänster, bakom) --- */
+.mm-carousel-item.prev {
+    opacity: 0.4;
+    z-index: 5;
+    /* Flytta 65% åt vänster och krymp till 85% storlek */
+    transform: translateX(-65%) scale(0.85); 
+    filter: blur(1px) grayscale(60%); /* Lite suddig och svartvit */
+}
+
+/* --- NÄSTA BILD (Höger, bakom) --- */
+.mm-carousel-item.next {
+    opacity: 0.4;
+    z-index: 5;
+    /* Flytta 65% åt höger och krymp till 85% storlek */
+    transform: translateX(65%) scale(0.85); 
+    filter: blur(1px) grayscale(60%);
+}
+
+/* Dölj övriga bilder om de finns i DOM:en (säkerhetsåtgärd) */
+.mm-carousel-item.side:not(.prev):not(.next) {
+    opacity: 0;
+    z-index: 1;
+}
+
+/* --- JUSTERING AV BILD-STORLEK --- */
+.mm-carousel-item img {
+    pointer-events: auto; /* Gör bilden klickbar (för att inte stänga) */
+    
+    /* Desktop: Begränsa bredden så man ser sidorna */
+    max-height: 80vh !important; 
+    max-width: 65vw !important; /* Lämna plats åt sidorna */
+    
+    width: auto;
+    height: auto;
+    
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5); /* Djupare skugga */
+}
+
+/* --- MOBILANPASSNING --- */
+@media (max-width: 768px) {
+    /* På mobil vill vi att huvudbilden ska vara större */
+    .mm-carousel-item img {
+        max-width: 85vw !important; /* Bredare på mobil */
+        max-height: 70vh !important;
+    }
+
+    /* Flytta ut sidobilderna lite mer så de inte stör, men syns i kanten */
+    .mm-carousel-item.prev {
+        transform: translateX(-85%) scale(0.8); 
+    }
+    .mm-carousel-item.next {
+        transform: translateX(85%) scale(0.8); 
+    }
 }
 
 /* --- 3. BILDEN (Maxstorlek för att undvika krock) --- */
@@ -7774,6 +7844,7 @@ body.offline-mode .offline-dot {
     background-color: rgba(255, 69, 58, 0.15); /* Svag röd bakgrund */
     border-radius: 50%;
 }
+
 
 
 
