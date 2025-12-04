@@ -4,7 +4,7 @@
 		    'klar': 'Slutfört', // Ändra texten för att tydliggöra
 		    'offererad': 'Offererad', 
 		    'avbokad': 'Avbokad',
-		    'faktureras': 'Faktureras' // Ny
+		    'faktureras': 'Faktureras' // Ny.
 		};
 		// Lägg till dina företagskunder här (små bokstäver för sökning)
 		const CORPORATE_CLIENTS = ['fogarolli', 'bmg'];
