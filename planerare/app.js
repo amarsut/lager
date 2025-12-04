@@ -2104,32 +2104,41 @@
 			        };
 			    }
 			
-			    // --- AI MEKANIKER (FIXAD: Modell Gemini 2.5) ---
-			    newAiBtn.addEventListener('click', async (e) => {
-				    e.preventDefault();
-				
-				    const chatInput = document.getElementById('chatInput');
-				    const query = chatInput.value.trim();
-				    
-				    if (!query) {
-				        showToast("Skriv en fråga först", "warning");
-				        return;
-				    }
-				
-				    const loadingMsgRef = await db.collection("notes").add({
-				        text: `🤖 Frågar AI: "${query}"...`,
-				        timestamp: new Date().toISOString(),
-				        platform: 'system',
-				        reaction: '⏳'
-				    });
-				
-				    chatInput.value = '';
-				
-				    try {
-				        const apiKey = "AIzaSyD5T7D7EBgNb8jwARxcG7xZLWwbqy80Qf0";
-				        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-				
-				        const prompt = `Du är en expertmekaniker. Svara på svenska.
+			    // --- AI MEKANIKER (FIXAD) ---
+			    const oldAiBtn = document.getElementById('askAiBtn');
+			
+			    if (oldAiBtn) {
+			        // 1. Skapa newAiBtn genom att klona den gamla (för att rensa gamla klick-lyssnare)
+			        const newAiBtn = oldAiBtn.cloneNode(true);
+			        oldAiBtn.parentNode.replaceChild(newAiBtn, oldAiBtn);
+			
+			        // 2. Koppla på lyssnaren på den NYA knappen
+			        newAiBtn.addEventListener('click', async (e) => {
+			            e.preventDefault();
+			
+			            const chatInput = document.getElementById('chatInput');
+			            const query = chatInput.value.trim();
+			            
+			            if (!query) {
+			                showToast("Skriv en fråga först", "warning");
+			                return;
+			            }
+			
+			            // Skapa "Tänker"-meddelandet
+			            const loadingMsgRef = await db.collection("notes").add({
+			                text: `🤖 Frågar AI: "${query}"...`,
+			                timestamp: new Date().toISOString(),
+			                platform: 'system',
+			                reaction: '⏳'
+			            });
+			
+			            chatInput.value = '';
+			
+			            try {
+			                const apiKey = "AIzaSyD5T7D7EBgNb8jwARxcG7xZLWwbqy80Qf0";
+			                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+			
+			                const prompt = `Du är en expertmekaniker. Svara på svenska.
 								Analysera: "${query}".
 								
 								VIKTIGT OM FORMATERING:
@@ -2147,58 +2156,49 @@
 								<li><b>[Orsak]</b> - [Kort förklaring, max 10 ord]</li>
 								<li><b>[Orsak]</b> - [Kort förklaring, max 10 ord]</li>
 								</ul>`;
-				
-				        const response = await fetch(url, {
-				            method: 'POST',
-				            headers: {
-				                'Content-Type': 'application/json'
-				            },
-				            body: JSON.stringify({
-				                contents: [{
-				                    parts: [{
-				                        text: prompt
-				                    }]
-				                }]
-				            })
-				        });
-				
-				        if (!response.ok) {
-				            throw new Error("AI-tjänsten svarade inte");
-				        }
-				
-				        const data = await response.json();
-				
-				        if (data.candidates && data.candidates.length > 0) {
-				            const aiAnswer = data.candidates[0].content.parts[0].text;
-				
-				            await db.collection("notes").add({
-				                text: aiAnswer,
-				                timestamp: new Date().toISOString(),
-				                platform: 'system',
-				                reaction: '🤖'
-				            });
-				
-				            await loadingMsgRef.update({
-				                reaction: '✅'
-				            });
-				
-				            setTimeout(() => {
-				                const chatList = document.getElementById('chatMessages');
-				                if (chatList) chatList.scrollTop = chatList.scrollHeight;
-				            }, 100);
-				
-				        } else {
-				            throw new Error("Inget svar från AI");
-				        }
-				
-				    } catch (err) {
-				        console.error(err);
-				        await loadingMsgRef.update({
-				            reaction: '❌'
-				        });
-				        showToast("Kunde inte nå AI just nu", "danger");
-				    }
-				});
+			
+			                const response = await fetch(url, {
+			                    method: 'POST',
+			                    headers: { 'Content-Type': 'application/json' },
+			                    body: JSON.stringify({
+			                        contents: [{ parts: [{ text: prompt }] }]
+			                    })
+			                });
+			
+			                if (!response.ok) { throw new Error("AI-tjänsten svarade inte"); }
+			
+			                const data = await response.json();
+			
+			                if (data.candidates && data.candidates.length > 0) {
+			                    const aiAnswer = data.candidates[0].content.parts[0].text;
+			
+			                    await db.collection("notes").add({
+			                        text: aiAnswer,
+			                        timestamp: new Date().toISOString(),
+			                        platform: 'system',
+			                        reaction: '🤖'
+			                    });
+			
+			                    // Uppdatera timglaset till en bock
+			                    await loadingMsgRef.update({ reaction: '✅' });
+			
+			                    setTimeout(() => {
+			                        const chatList = document.getElementById('chatMessages');
+			                        if (chatList) chatList.scrollTop = chatList.scrollHeight;
+			                    }, 100);
+			
+			                } else {
+			                    throw new Error("Inget svar från AI");
+			                }
+			
+			            } catch (err) {
+			                console.error(err);
+			                // Uppdatera timglaset till ett kryss
+			                await loadingMsgRef.update({ reaction: '❌' });
+			                showToast("Kunde inte nå AI just nu", "danger");
+			            }
+			        });
+			    }
 			
 			    // --- SÖKFUNKTION ---
 			    if (searchInput) {
