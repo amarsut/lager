@@ -7377,8 +7377,8 @@ body.body-scroll-lock {
     padding: 15px 20px;
     
     /* VIKTIGT: Högre z-index och fånga klick */
-    z-index: 30030; 
-    pointer-events: auto; 
+    z-index: 30030 !important; /* Måste vara högre än bild-containern */
+    pointer-events: auto !important; /* Tvinga att klick registreras */
     
     background: linear-gradient(to bottom, rgba(0,0,0,0.5), transparent);
 }
@@ -7387,6 +7387,10 @@ body.body-scroll-lock {
     background: transparent; border: none;
     color: #ffffff; cursor: pointer; padding: 10px;
     display: flex; align-items: center; justify-content: center;
+
+	pointer-events: auto !important; /* Säkerställ att knappen tar emot klick */
+    position: relative; /* Hjälper ibland med z-index */
+    z-index: 30040; /* Ännu högre än headern för säkerhets skull */
 }
 .mm-icon-btn:hover { transform: scale(1.1); opacity: 0.8; }
 .mm-icon-btn.danger-hover:hover { color: #ff453a; }
@@ -7677,6 +7681,7 @@ body.offline-mode .offline-dot {
     background-color: rgba(255, 69, 58, 0.15); /* Svag röd bakgrund */
     border-radius: 50%;
 }
+
 
 
 
