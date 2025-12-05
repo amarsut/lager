@@ -2059,6 +2059,48 @@
 			
 			    // --- FUNKTION: Skicka Meddelande ---
 			    const sendMessage = async () => {
+			        
+			        // --- START PÅ NY KOD (Klistra in här) ---
+			        const rawInput = chatInput.value.trim();
+			        
+			        if (rawInput.toLowerCase().startsWith('/olja')) {
+			            // Hitta regnr: Antingen det man skrev ("/olja ABC 123") eller det från en öppen modal
+			            let regToSearch = rawInput.replace('/olja', '').trim();
+			            
+			            // Om man bara skrev "/olja" utan regnr, försök hitta det från context
+			            if (!regToSearch) {
+			                const modalRegEl = document.getElementById('regnr'); // Jobb-modal
+			                const carModalRegEl = document.getElementById('carModalRegnr'); // Bil-modal
+			                const summaryRegEl = document.getElementById('modalSummaryRegnr'); // Översikts-modal
+			                
+			                if (modalRegEl && modalRegEl.offsetParent !== null) { // offsetParent kollar om den är synlig
+			                    regToSearch = modalRegEl.value;
+			                } else if (carModalRegEl && carModalRegEl.offsetParent !== null) {
+			                    regToSearch = carModalRegEl.textContent;
+			                } else if (summaryRegEl && summaryRegEl.offsetParent !== null) {
+			                    regToSearch = summaryRegEl.textContent;
+			                }
+			            }
+			
+			            if (regToSearch && regToSearch.length > 2) {
+			                chatInput.value = ''; // Töm rutan
+			                
+			                // Visa i chatten att vi söker
+			                db.collection("notes").add({
+			                    text: `🔍 Söker oljedata för ${regToSearch}...`,
+			                    timestamp: new Date().toISOString(),
+			                    platform: window.innerWidth <= 768 ? 'mobil' : 'dator'
+			                });
+			
+			                lookupOilByReg(regToSearch); // Kör funktionen från Steg 1
+			                return; // STOPPA här så det inte skickas som ett vanligt chatt-meddelande
+			            } else {
+			                showToast("Ange regnr (t.ex. /olja ABC 123) eller öppna ett jobb.", "warning");
+			                return;
+			            }
+			        }
+			        // --- SLUT PÅ NY KOD ---
+					
 			        const text = chatInput.value.trim();
 			        if (!text) return; 
 			        
@@ -7160,5 +7202,85 @@
 
     // Kör en koll direkt
     updateOnlineStatus();
+
+	// --- NY FUNKTION: Hämta oljedata via Regnr & Motorkod ---
+    // Klistra in detta precis OVANFÖR den sista "});" i filen.
+    async function lookupOilByReg(regnr) {
+        regnr = regnr.replace(/\s/g, '').toUpperCase();
+        
+        showToast(`Söker teknisk data för ${regnr}...`, 'info');
+        
+        try {
+            // 1. Hämta rådata från webben via proxy
+            const targetUrl = `https://biluppgifter.se/fordon/${regnr}`;
+            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
+            
+            const response = await fetch(proxyUrl);
+            const data = await response.json();
+            
+            if (!data.contents) throw new Error("Kunde inte hämta fordonsdata.");
+
+            // 2. Rensa HTML för att spara tokens
+            const tempDiv = document.createElement("div");
+            tempDiv.innerHTML = data.contents;
+            const scripts = tempDiv.querySelectorAll('script, style, meta, svg, path');
+            scripts.forEach(el => el.remove());
+            const rawText = tempDiv.innerText.replace(/\s+/g, ' ').substring(0, 6000);
+
+            // 3. Fråga Gemini
+            const prompt = `
+                Du är en expertmekaniker. Här är en rå textdump från en webbsida om bilen ${regnr}:
+                """${rawText}"""
+                
+                UPPGIFT:
+                1. Hitta "Motorkod" eller "Motorbeteckning" i texten (t.ex. D4204T, B4204T, D5244T4).
+                2. Baserat PÅ DEN MOTORKODEN, ange exakt oljevolym vid service (inkl filter) och rekommenderad viskositet.
+                
+                Svara EXAKT enligt denna mall:
+                🚗 **Fordon:** [Identifierad Modell]
+                ⚙️ **Motorkod:** [Hittad kod]
+                🛢️ **Volym:** [Antal] liter
+                💧 **Viskositet:** [T.ex. 0W-20, 5W-30]
+                ⚠️ [Eventuell varning]
+            `;
+
+            // VIKTIGT: Byt ut denna rad mot din riktiga API-nyckel om den inte är global
+            // (Du har nyckeln längre upp i din kod runt rad 1457, kopiera den hit)
+            const apiKey = "AIzaSyC9agxEp_nLv0PiXrWRdGkE0gGyn1wHpKk"; 
+            
+            const aiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+            
+            const aiResponse = await fetch(aiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+            });
+            
+            const aiData = await aiResponse.json();
+            
+            if (!aiData.candidates || aiData.candidates.length === 0) {
+                throw new Error("AI kunde inte svara.");
+            }
+
+            const answer = aiData.candidates[0].content.parts[0].text;
+
+            // 4. Spara svaret i chatten
+            db.collection("notes").add({
+                text: answer,
+                timestamp: new Date().toISOString(),
+                platform: 'system',
+                reaction: '🛢️'
+            });
+
+        } catch (err) {
+            console.error(err);
+            showToast("Kunde inte hämta oljedata.", "danger");
+            db.collection("notes").add({
+                text: `❌ Misslyckades att hämta data för ${regnr}. Prova att söka manuellt.`,
+                timestamp: new Date().toISOString(),
+                platform: 'system'
+            });
+        }
+    }
 
 });
