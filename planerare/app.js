@@ -6560,10 +6560,17 @@
 			    copyRegnrBtn.addEventListener('click', () => copyToClipboard(modalRegnr.value, 'Reg.nr'));
 			}
 
-            copyCarRegnrBtn.addEventListener('click', (e) => {
-                e.stopPropagation(); // Förhindra att klicket går vidare
-                copyToClipboard(carModalRegnr.textContent, 'Reg.nr');
-            });
+            if (copyCarRegnrBtn) {
+			    copyCarRegnrBtn.addEventListener('click', (e) => {
+			        e.stopPropagation(); // Förhindra att klicket går vidare
+			        
+			        // Vi hämtar texten säkert (eftersom vi bytte ID på rubriken också)
+			        const titleEl = document.getElementById('carModalTitle') || carModalRegnr;
+			        if (titleEl) {
+			            copyToClipboard(titleEl.textContent, 'Reg.nr');
+			        }
+			    });
+			}
 
 			// --- NYTT: Kopiera Reg.nr vid klick på Oljemagasinet ---
             function handleOljemagasinetClick(e) {
