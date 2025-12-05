@@ -7217,51 +7217,40 @@
 
         // Visa ladd-ikon
 	    db.collection("notes").add({
-	        text: `🔍 Söker "Åtgång: Oljesump" för ${regnr}...`,
+	        text: `🔍 Söker exakta specifikationer på Car.info för ${regnr}...`,
 	        timestamp: new Date().toISOString(),
 	        platform: 'system',
 	        reaction: '⏳'
 	    });
 	    
-	    // Proxy-funktion
-	    const fetchViaProxy = async (targetUrl) => {
+	    // Vi använder 'corsproxy.io' igen men med en specifik header-inställning i prompten
+	    // för att Gemini ska förstå strukturen på Car.info bättre.
+	    const fetchCarInfo = async (reg) => {
+	        // Vi går direkt på fliken "specs" som innehåller tabellerna
+	        const targetUrl = `https://www.car.info/sv-se/license-plate/S/${reg}/specs`;
 	        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
+	        
 	        const response = await fetch(proxyUrl);
-	        if (!response.ok) throw new Error("Proxy-fel");
+	        if (!response.ok) throw new Error("Kunde inte nå Car.info");
 	        const data = await response.json();
-	        return data.contents; 
+	        return data.contents;
 	    };
 	
 	    try {
-	        let rawHtml = "";
-	        let sourceName = "Oljemagasinet";
+	        const rawHtml = await fetchCarInfo(regnr);
 	
-	        try {
-	            // FÖRSÖK 1: Oljemagasinet
-	            // Vi använder en specifik sök-URL
-	            rawHtml = await fetchViaProxy(`https://www.oljemagasinet.se/motorolja?license_plate=${regnr}`);
-	            
-	            // Om HTML:en är för kort, har vi antagligen blivit blockerade eller fått en tom sida
-	            if (!rawHtml || rawHtml.length < 2000) throw new Error("Tomt svar från Oljemagasinet");
-	
-	        } catch (e) {
-	            console.warn("Oljemagasinet misslyckades, testar Car.info...", e);
-	            // FÖRSÖK 2: Car.info (Specs-sidan är ofta statisk och bra)
-	            sourceName = "Car.info";
-	            rawHtml = await fetchViaProxy(`https://www.car.info/sv-se/license-plate/S/${regnr}/specs`);
+	        if (!rawHtml || rawHtml.length < 2000) {
+	            throw new Error("Sidan verkar blockerad eller tom.");
 	        }
-
-            if (!rawHtml) throw new Error("Kunde inte hämta data.");
-
-	        // 2. Städa HTML (Men var försiktig så vi inte tar bort texten vi letar efter)
+	
+	        // 2. Rensa HTML (Behåll tabell-struktur men ta bort skräp)
 	        const tempDiv = document.createElement("div");
 	        tempDiv.innerHTML = rawHtml;
-	        
-	        // Ta bort skräp som kan förvirra AI
-	        const junk = tempDiv.querySelectorAll('script, style, svg, path, footer, nav, .cookie-banner');
+	        const junk = tempDiv.querySelectorAll('script, style, svg, path, nav, footer, .ads, .cookie-consent');
 	        junk.forEach(el => el.remove());
 	        
-	        const rawText = tempDiv.innerText.replace(/\s+/g, ' ').substring(0, 20000);
+	        // Vi tar en större bit text för att vara säkra på att få med allt
+	        const rawText = tempDiv.innerText.replace(/\s+/g, ' ').substring(0, 25000);
 
             // 3. Fråga Gemini (OBS: Här använder vi din NYA nyckel och RÄTT modell)
 			const prompt = `
@@ -7309,8 +7298,12 @@
 	
 	    } catch (err) {
 	        console.error(err);
+	        
+	        // Backup: Om Car.info misslyckas, ge en länk så man kan kolla själv
+	        const manualLink = `https://www.car.info/sv-se/license-plate/S/${regnr}/specs`;
+	        
 	        db.collection("notes").add({
-	            text: `❌ Kunde inte hitta data för ${regnr}. Sidan laddas troligen via JavaScript som proxyn inte ser.`,
+	            text: `❌ Kunde inte läsa av datan automatiskt. <a href="${manualLink}" target="_blank" style="color:white;text-decoration:underline;">Klicka här för att öppna Car.info</a>`,
 	            timestamp: new Date().toISOString(),
 	            platform: 'system',
 	            reaction: '🤖'
