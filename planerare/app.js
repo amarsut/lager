@@ -7214,34 +7214,38 @@
 	async function lookupOilByReg(regnr) {
         regnr = regnr.replace(/\s/g, '').toUpperCase();
         
-        showToast(`Söker teknisk data för ${regnr}...`, 'info');
+        // Visa "Söker..." i chatten
+        db.collection("notes").add({
+            text: `🔍 Söker teknisk data för ${regnr} på Car.info...`,
+            timestamp: new Date().toISOString(),
+            platform: 'system',
+            reaction: '⏳'
+        });
         
         try {
-            // 1. Proxy-anrop (Vi byter till corsproxy.io som är stabilare för text)
-            const targetUrl = `https://biluppgifter.se/fordon/${regnr}`;
+            // 1. VI BYTER KÄLLA TILL CAR.INFO (Specs-sidan)
+            // Denna sida har ofta tabeller med exakta volymer
+            const targetUrl = `https://www.car.info/sv-se/license-plate/S/${regnr}/specs`;
             const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
             
             const response = await fetch(proxyUrl);
             
-            if (!response.ok) {
-                throw new Error(`Kunde inte nå sidan (Status: ${response.status})`);
-            }
+            if (!response.ok) throw new Error("Kunde inte nå databasen");
 
-            // Vi hämtar TEXT, inte JSON (detta fixar "Unexpected token"-felet)
             const rawHtml = await response.text();
-
-            if (!rawHtml || rawHtml.length < 500) {
-                throw new Error("Sidan verkar tom eller blockerad.");
-            }
-
-            // 2. Rensa HTML
+            
+            // 2. Aggressiv städning av HTML för att Gemini ska hitta rätt
             const tempDiv = document.createElement("div");
             tempDiv.innerHTML = rawHtml;
-            const scripts = tempDiv.querySelectorAll('script, style, meta, svg, path, footer, nav');
-            scripts.forEach(el => el.remove());
-            const rawText = tempDiv.innerText.replace(/\s+/g, ' ').substring(0, 8000);
+            
+            // Ta bort menyer och reklam så Gemini inte blir förvirrad
+            const junk = tempDiv.querySelectorAll('nav, footer, script, style, svg, .ads, .cookie-consent');
+            junk.forEach(el => el.remove());
+            
+            // Vi hämtar texten men behåller lite struktur
+            const rawText = tempDiv.innerText.replace(/\s+/g, ' ').substring(0, 15000);
 
-            // 3. Fråga Gemini (OBS: Här använder vi din NYA nyckel och RÄTT modell)
+            // 3. Prompt specifikt anpassad för tekniska specifikationer
             const prompt = `
                 Du är en databas-robot. Du ska extrahera oljedata för bilen ${regnr} från texten nedan.
                 TEXT: """${rawText}"""
@@ -7256,14 +7260,13 @@
                 <li>⚙️ <b>Motor:</b> [Kod] (eller [HK/Liter])</li>
                 <li>🛢️ <b>Mängd:</b> [Antal] Liter</li>
                 <li>💧 <b>Viskositet:</b> [T.ex. 5W-30]</li>
-                <li>⚠️ <b>Notis:</b> [Kort varning om osäkerhet, annars tomt]</li>
+                <li⚠️ <b>Notis:</b> [Kort varning om osäkerhet, annars tomt]</li>
                 </ul>
             `;
 
-            // KLISTRA IN DIN NYA API-NYCKEL HÄR:
+            // DIN NYCKEL HÄR (Jag har lagt in den du visade i tidigare kod)
             const apiKey = "AIzaSyAiJsl5jBp_TaQlXlXKsTxvW-RFNd5OnUg"; 
             
-            // HÄR ÄR MODELL-ÄNDRINGEN (Vi kör på säkra 1.5-flash):
             const aiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
             
             const aiResponse = await fetch(aiUrl, {
@@ -7272,13 +7275,10 @@
                 body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
             });
             
-            if (!aiResponse.ok) {
-                const errData = await aiResponse.json();
-                console.error("AI Error:", errData);
-                throw new Error("Kunde inte ansluta till AI (Kontrollera API-nyckel).");
-            }
-
             const aiData = await aiResponse.json();
+            
+            if (!aiData.candidates) throw new Error("AI kunde inte tolka datan.");
+
             const answer = aiData.candidates[0].content.parts[0].text;
 
             // 4. Spara svaret
@@ -7286,16 +7286,18 @@
                 text: answer,
                 timestamp: new Date().toISOString(),
                 platform: 'system',
-                reaction: '🛢️'
+                reaction: '🤖'
             });
 
         } catch (err) {
             console.error(err);
-            showToast("Kunde inte hämta data.", "danger");
+            
+            // Vid fel, ge ett snyggt felmeddelande
             db.collection("notes").add({
-                text: `❌ Kunde inte läsa data för ${regnr}. Fel: ${err.message}`,
+                text: `❌ Kunde inte hitta specifikationer på Car.info för ${regnr}.`,
                 timestamp: new Date().toISOString(),
-                platform: 'system'
+                platform: 'system',
+                reaction: '🤖'
             });
         }
     }
