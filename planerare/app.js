@@ -2249,7 +2249,7 @@
 			            chatInput.value = '';
 			
 			            try {
-			                const apiKey = "AIzaSyC9agxEp_nLv0PiXrWRdGkE0gGyn1wHpKk"; //https://aistudio.google.com/app/api-keys
+			                const apiKey = "AIzaSyAiJsl5jBp_TaQlXlXKsTxvW-RFNd5OnUg"; //https://aistudio.google.com/app/api-keys
 			                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 			
 			                const prompt = `Du är en expertmekaniker. Svara på svenska.
@@ -7202,16 +7202,17 @@
 
     // Kör en koll direkt
     updateOnlineStatus();
-
-	// --- NY FUNKTION: Hämta oljedata via Regnr (Uppdaterad V2) ---
-    async function lookupOilByReg(regnr) {
+	
+    //const aiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+    //const aiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+            
+	async function lookupOilByReg(regnr) {
         regnr = regnr.replace(/\s/g, '').toUpperCase();
         
         showToast(`Söker teknisk data för ${regnr}...`, 'info');
         
         try {
-            // 1. Använd en annan proxy (corsproxy.io) som levererar rå HTML direkt
-            // Detta är ofta snabbare och stabilare än allorigins
+            // 1. Proxy-anrop
             const targetUrl = `https://biluppgifter.se/fordon/${regnr}`;
             const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
             
@@ -7221,25 +7222,20 @@
                 throw new Error(`Kunde inte nå sidan (Status: ${response.status})`);
             }
 
-            // 2. Hämta svaret som TEXT (inte JSON)
             const rawHtml = await response.text();
 
             if (!rawHtml || rawHtml.length < 500) {
                 throw new Error("Sidan verkar tom eller blockerad.");
             }
 
-            // 3. Rensa HTML för att spara tokens (vi vill bara ha texten)
+            // 2. Rensa HTML
             const tempDiv = document.createElement("div");
             tempDiv.innerHTML = rawHtml;
-            
-            // Ta bort onödigt skräp
             const scripts = tempDiv.querySelectorAll('script, style, meta, svg, path, footer, nav');
             scripts.forEach(el => el.remove());
-            
-            // Hämta ren text och begränsa längden (Gemini behöver inte hela sidfoten)
             const rawText = tempDiv.innerText.replace(/\s+/g, ' ').substring(0, 8000);
 
-            // 4. Fråga Gemini
+            // 3. Fråga Gemini (OBS: Här använder vi din NYA nyckel och RÄTT modell)
             const prompt = `
                 Du är en expertmekaniker. Här är en rå textdump från en webbsida om bilen ${regnr}:
                 """${rawText}"""
@@ -7255,28 +7251,32 @@
                 💧 **Viskositet:** [T.ex. 0W-20, 5W-30]
                 ⚠️ [Eventuell varning]
                 
-                Om du inte hittar motorkoden i texten, försök avgöra oljemängd baserat på modellnamnet och hästkrafterna i texten istället.
+                Om du inte hittar motorkoden, försök avgöra oljemängd baserat på modellnamn och hästkrafter.
             `;
 
-            const apiKey = "AIzaSyC9agxEp_nLv0PiXrWRdGkE0gGyn1wHpKk"; 
+            // KLISTRA IN DIN NYA NYCKEL HÄR MELLAN CITATTECKNEN:
+            const apiKey = "AIzaSyAiJsl5jBp_TaQlXlXKsTxvW-RFNd5OnUg"; 
             
-            //const aiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-            const aiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+            // HÄR ÄR MODELL-ÄNDRINGEN (1.5-flash):
+            const aiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+            
             const aiResponse = await fetch(aiUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
             });
             
-            const aiData = await aiResponse.json();
-            
-            if (!aiData.candidates || aiData.candidates.length === 0) {
-                throw new Error("AI kunde inte svara.");
+            if (!aiResponse.ok) {
+                // Fånga felet om nyckeln fortfarande strular
+                const errData = await aiResponse.json();
+                console.error("AI Error:", errData);
+                throw new Error("Kunde inte ansluta till AI (Kontrollera API-nyckel).");
             }
 
+            const aiData = await aiResponse.json();
             const answer = aiData.candidates[0].content.parts[0].text;
 
-            // 5. Spara svaret i chatten
+            // 4. Spara svaret
             db.collection("notes").add({
                 text: answer,
                 timestamp: new Date().toISOString(),
@@ -7286,15 +7286,13 @@
 
         } catch (err) {
             console.error(err);
-            showToast("Kunde inte hämta data automatiskt.", "danger");
-            
-            // Ge användaren ett hjälpsamt felmeddelande i chatten
+            showToast("Kunde inte hämta data.", "danger");
             db.collection("notes").add({
-                text: `❌ Kunde inte läsa av data för ${regnr}. (Serverfel eller blockerad). Skriv in motorkod manuellt om du vet den.`,
+                text: `❌ Kunde inte läsa data för ${regnr}. Fel: ${err.message}`,
                 timestamp: new Date().toISOString(),
                 platform: 'system'
             });
         }
-    }
+    }		
 
 });
