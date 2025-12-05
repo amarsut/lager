@@ -5184,8 +5184,37 @@
 
                 carSearch.value = ''; 
                 renderDetailJobList(carModalJobList, carJobs, ''); 
-                showModal('carModal'); 
-            }
+
+				// --- NYTT: Hantera Teknisk Data ---
+			    const specsContainer = document.getElementById('carTechSpecsContainer');
+			    const fetchBtn = document.getElementById('btnFetchTechData');
+			    
+			    // Nollställ visningen först
+			    specsContainer.style.display = 'none';
+			    specsContainer.innerHTML = '';
+			    fetchBtn.style.display = 'none';
+			    
+			    // Koppla knappen till rätt regnr (ta bort gamla listeners genom kloning eller smart logik)
+			    // Enklast: Vi sätter onclick direkt här
+			    fetchBtn.onclick = function() {
+			        fetchAndSaveTechData(regnr);
+			    };
+			
+			    // KOLLA DATABASEN: Har vi redan data för denna bil?
+			    // Vi använder en ny samling "vehicleSpecs" där ID är regnr
+			    db.collection("vehicleSpecs").doc(regnr).get().then(doc => {
+			        if (doc.exists) {
+			            // DATA FINNS! Visa den direkt.
+			            specsContainer.innerHTML = doc.data().htmlContent;
+			            specsContainer.style.display = 'block';
+			        } else {
+			            // DATA SAKNAS. Visa "Hämta"-knappen.
+			            fetchBtn.style.display = 'flex';
+			        }
+			    }).catch(err => console.log("Kunde inte hämta specs:", err));
+			
+			    showModal('carModal'); 
+			}
 
 			// --- NY HJÄLPFUNKTION FÖR TOPPLISTOR ---
 			function calculateTopList(jobs, key) {
@@ -7248,6 +7277,95 @@
 
     // Kör en koll direkt
     updateOnlineStatus();
+
+	async function fetchAndSaveTechData(regnr) {
+	    const fetchBtn = document.getElementById('btnFetchTechData');
+	    const specsContainer = document.getElementById('carTechSpecsContainer');
+	    
+	    // Visa att vi jobbar
+	    fetchBtn.disabled = true;
+	    fetchBtn.innerHTML = `<span>🔍 Söker fakta...</span>`;
+	
+	    try {
+	        // 1. Hämta rådata (Samma proxy som förut)
+	        const targetUrl = `https://biluppgifter.se/fordon/${regnr}`;
+	        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
+	        const response = await fetch(proxyUrl);
+	        if (!response.ok) throw new Error("Kunde inte nå fordonsdatabasen.");
+	        
+	        const rawHtml = await response.text();
+	        const tempDiv = document.createElement("div");
+	        tempDiv.innerHTML = rawHtml;
+	        // Städa texten
+	        const scripts = tempDiv.querySelectorAll('script, style, meta, svg, path, footer, nav');
+	        scripts.forEach(el => el.remove());
+	        const rawText = tempDiv.innerText.replace(/\s+/g, ' ').substring(0, 8000);
+	
+	        // 2. Använd din "Mega-Prompt" (Återanvänd samma text som i lookupOilByReg)
+	        // OBS: Se till att prompt-variabeln är definierad här, eller kopiera in den:
+	        const prompt = `
+				Du är en expertmekaniker med tillgång till alla fabriksdatablad.
+			    Här är rådata om bilen ${regnr} från Transportstyrelsen/Biluppgifter:
+			    """${rawText}"""
+			    
+			    Ditt uppdrag är att identifiera vilken motor bilen har och vilken olja den ska ha.
+	            
+	            Analysera datan och ta fram TEKNISKA SPECIFIKATIONER.
+	            
+	            1. 🛠️ SERVICE: Olja (Volym/Viskositet), Kamrem (Intervall), Växellåda.
+	            2. ❄️ VÄTSKOR: AC (Gas/Mängd), Kylvätska, Bromsvätska.
+	            3. ⚡ EL: Batteri (Placering/Typ), Säkring 12V.
+	            4. 🔧 VERKSTAD: Moment Hjulbultar, Moment Oljeplugg, P-Broms typ.
+	            5. ⚖️ DRAG: Max dragvikt.
+	
+	            FORMAT (Svara ENDAST med denna HTML, ingen inledande text):
+	            <b>Teknisk Data ${regnr}</b>
+	            <hr style="margin: 5px 0; opacity: 0.2;">
+	            <ul>
+	              <li>🚗 <b>Bil:</b> [Märke] [Modell] ([Motor])</li>
+	              <li>🛢️ <b>Olja:</b> [Volym] L &bull; [Viskositet]</li>
+	              <li>❄️ <b>AC:</b> [Gas] ([Mängd]g)</li>
+	              <li>⏲️ <b>Kamrem:</b> [Intervall]</li>
+	              <li>🔧 <b>Moment:</b> Hjul [Nm] &bull; Plugg [Nm]</li>
+	              <li>🔋 <b>Batteri:</b> [Placering]</li>
+	              <li>⚖️ <b>Dragvikt:</b> [Kg]</li>
+	            </ul>
+	        `;
+	
+	        const apiKey = ""; // DIN API-NYCKEL HÄR
+	        const aiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+	
+	        const aiResponse = await fetch(aiUrl, {
+	            method: 'POST',
+	            headers: { 'Content-Type': 'application/json' },
+	            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+	        });
+	
+	        const aiData = await aiResponse.json();
+	        const htmlContent = aiData.candidates[0].content.parts[0].text;
+	
+	        // 3. SPARA till Firebase "vehicleSpecs"
+	        // Vi sparar både HTML och tidsstämpel (om du vill uppdatera den om ett år)
+	        await db.collection("vehicleSpecs").doc(regnr).set({
+	            htmlContent: htmlContent,
+	            updatedAt: new Date().toISOString()
+	        });
+	
+	        // 4. Uppdatera UI direkt
+	        specsContainer.innerHTML = htmlContent;
+	        specsContainer.style.display = 'block';
+	        fetchBtn.style.display = 'none'; // Göm knappen, nu har vi datan!
+	        
+	        showToast("Teknisk data sparad för framtiden!", "success");
+	
+	    } catch (err) {
+	        console.error(err);
+	        showToast("Kunde inte hämta data: " + err.message, "danger");
+	        fetchBtn.innerHTML = `<span>Försök igen</span>`;
+	    } finally {
+	        fetchBtn.disabled = false;
+	    }
+	}
 	
     //const aiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
     //const aiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
