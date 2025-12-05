@@ -7212,93 +7212,92 @@
     //const aiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
             
 	async function lookupOilByReg(regnr) {
-	    regnr = regnr.replace(/\s/g, '').toUpperCase();
-	    
-	    // Använd '🤖' här så att även "Söker..."-meddelandet syns i AI-filtret
-	    db.collection("notes").add({
-	        text: `🔍 Söker teknisk data för ${regnr}...`,
-	        timestamp: new Date().toISOString(),
-	        platform: 'system',
-	        reaction: '⏳' // Timglas visar att det jobbas
-	    });
-	    
-	    try {
-	        // 1. Proxy-anrop (Samma som förut, fungerade bra)
-	        const targetUrl = `https://biluppgifter.se/fordon/${regnr}`;
-	        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
-	        
-	        const response = await fetch(proxyUrl);
-	        
-	        if (!response.ok) throw new Error("Kunde inte nå databasen");
-	
-	        const rawHtml = await response.text();
-	        if (!rawHtml || rawHtml.length < 500) throw new Error("Tomt svar från databas");
-	
-	        // 2. Rensa HTML
-	        const tempDiv = document.createElement("div");
-	        tempDiv.innerHTML = rawHtml;
-	        const scripts = tempDiv.querySelectorAll('script, style, meta, svg, path, footer, nav');
-	        scripts.forEach(el => el.remove());
-	        const rawText = tempDiv.innerText.replace(/\s+/g, ' ').substring(0, 10000); // Lite mer text för säkerhets skull
-	
-	        // 3. Den nya, strikta Prompten
-	        const prompt = `
-	            Du är en databas-robot. Du ska extrahera oljedata för bilen ${regnr} från texten nedan.
-	            
-	            TEXT: """${rawText}"""
-	            
-	            INSTRUKTIONER:
-	            1. Hitta Motorkod, Oljevolym och Viskositet.
-	            2. Om exakt volym saknas, gör en kvalificerad uppskattning baserat på motorstorlek/hästkrafter i texten.
-	            3. Svara ENDAST med en HTML-lista (<ul>). Inget prat. Inga inledande meningar.
-	            4. Håll det extremt kort.
-	            
-	            FORMAT (Följ exakt):
-	            <b>Oljespecifikation ${regnr}:</b>
-	            <ul>
-	            <li>🚗 <b>Bil:</b> [Modell & År]</li>
-	            <li>⚙️ <b>Motor:</b> [Kod] (eller [Hästkrafter/Liter] om kod saknas)</li>
-	            <li>🛢️ <b>Mängd:</b> [Antal] Liter (inkl. filter)</li>
-	            <li>💧 <b>Viskositet:</b> [T.ex. 0W-30, 5W-30]</li>
-	            <li>⚠️ <b>Notis:</b> [Max 5 ord om osäkerhet, annars tomt]</li>
-	            </ul>
-	        `;
-	
-	        const apiKey = "AIzaSyC9agxEp_nLv0PiXrWRdGkE0gGyn1wHpKk"; // Din nyckel
-	        const aiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-	        
-	        const aiResponse = await fetch(aiUrl, {
-	            method: 'POST',
-	            headers: { 'Content-Type': 'application/json' },
-	            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-	        });
-	        
-	        const aiData = await aiResponse.json();
-	        
-	        if (!aiData.candidates) throw new Error("AI svarade inte");
-	
-	        const answer = aiData.candidates[0].content.parts[0].text;
-	
-	        // 4. Spara svaret med '🤖' så det hamnar i AI-filtret och får rätt färg
-	        db.collection("notes").add({
-	            text: answer,
-	            timestamp: new Date().toISOString(),
-	            platform: 'system',
-	            reaction: '🤖' // VIKTIGT: Detta gör att CSS klassar det som AI
-	        });
-	
-	    } catch (err) {
-	        console.error(err);
-	        showToast("Kunde inte hämta data.", "danger");
-	        
-	        // Även felmeddelanden kan få vara '🤖' så de syns i filtret om man felsöker
-	        db.collection("notes").add({
-	            text: `❌ Kunde inte hitta data för ${regnr}. Skriv in manuellt.`,
-	            timestamp: new Date().toISOString(),
-	            platform: 'system',
-	            reaction: '🤖'
-	        });
-	    }
-	}	
+        regnr = regnr.replace(/\s/g, '').toUpperCase();
+        
+        showToast(`Söker teknisk data för ${regnr}...`, 'info');
+        
+        try {
+            // 1. Proxy-anrop (Vi byter till corsproxy.io som är stabilare för text)
+            const targetUrl = `https://biluppgifter.se/fordon/${regnr}`;
+            const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
+            
+            const response = await fetch(proxyUrl);
+            
+            if (!response.ok) {
+                throw new Error(`Kunde inte nå sidan (Status: ${response.status})`);
+            }
+
+            // Vi hämtar TEXT, inte JSON (detta fixar "Unexpected token"-felet)
+            const rawHtml = await response.text();
+
+            if (!rawHtml || rawHtml.length < 500) {
+                throw new Error("Sidan verkar tom eller blockerad.");
+            }
+
+            // 2. Rensa HTML
+            const tempDiv = document.createElement("div");
+            tempDiv.innerHTML = rawHtml;
+            const scripts = tempDiv.querySelectorAll('script, style, meta, svg, path, footer, nav');
+            scripts.forEach(el => el.remove());
+            const rawText = tempDiv.innerText.replace(/\s+/g, ' ').substring(0, 8000);
+
+            // 3. Fråga Gemini (OBS: Här använder vi din NYA nyckel och RÄTT modell)
+            const prompt = `
+                Du är en expertmekaniker. Här är en rå textdump från en webbsida om bilen ${regnr}:
+                """${rawText}"""
+                
+                UPPGIFT:
+                1. Hitta "Motorkod" eller "Motorbeteckning" i texten (t.ex. D4204T, B4204T, D5244T4).
+                2. Baserat PÅ DEN MOTORKODEN, ange exakt oljevolym vid service (inkl filter) och rekommenderad viskositet.
+                
+                Svara EXAKT enligt denna mall:
+                🚗 **Fordon:** [Identifierad Modell]
+                ⚙️ **Motorkod:** [Hittad kod]
+                🛢️ **Volym:** [Antal] liter
+                💧 **Viskositet:** [T.ex. 0W-20, 5W-30]
+                ⚠️ [Eventuell varning]
+                
+                Om du inte hittar motorkoden, försök avgöra oljemängd baserat på modellnamn och hästkrafter.
+            `;
+
+            // KLISTRA IN DIN NYA API-NYCKEL HÄR:
+            const apiKey = "KLISTRA_IN_DIN_NYA_NYCKEL_HÄR"; 
+            
+            // HÄR ÄR MODELL-ÄNDRINGEN (Vi kör på säkra 1.5-flash):
+            const aiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+            
+            const aiResponse = await fetch(aiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+            });
+            
+            if (!aiResponse.ok) {
+                const errData = await aiResponse.json();
+                console.error("AI Error:", errData);
+                throw new Error("Kunde inte ansluta till AI (Kontrollera API-nyckel).");
+            }
+
+            const aiData = await aiResponse.json();
+            const answer = aiData.candidates[0].content.parts[0].text;
+
+            // 4. Spara svaret
+            db.collection("notes").add({
+                text: answer,
+                timestamp: new Date().toISOString(),
+                platform: 'system',
+                reaction: '🛢️'
+            });
+
+        } catch (err) {
+            console.error(err);
+            showToast("Kunde inte hämta data.", "danger");
+            db.collection("notes").add({
+                text: `❌ Kunde inte läsa data för ${regnr}. Fel: ${err.message}`,
+                timestamp: new Date().toISOString(),
+                platform: 'system'
+            });
+        }
+    }
 
 });
