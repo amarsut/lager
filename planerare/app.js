@@ -7215,18 +7215,40 @@
         regnr = regnr.replace(/\s/g, '').toUpperCase();
         showToast(`Söker teknisk data för ${regnr}...`, 'info');
 
-        try {
-            // 1. Proxy-anrop (Vi byter till corsproxy.io som är stabilare för text)
-            const targetUrl = `https://biluppgifter.se/fordon/${regnr}`;
-            const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
-            const response = await fetch(proxyUrl);
-
-            if (!response.ok) {
-                throw new Error(`Kunde inte nå sidan (Status: ${response.status})`);
-            }
-
-            // Vi hämtar TEXT, inte JSON (detta fixar "Unexpected token"-felet)
-            const rawHtml = await response.text();
+        db.collection("notes").add({
+	        text: `🔍 Söker oljerekommendation för ${regnr} på Oljemagasinet...`,
+	        timestamp: new Date().toISOString(),
+	        platform: 'system',
+	        reaction: '⏳'
+	    });
+	    
+	    // Hjälpfunktion för proxy
+	    const fetchViaProxy = async (targetUrl) => {
+	        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
+	        const response = await fetch(proxyUrl);
+	        if (!response.ok) throw new Error("Proxy-fel");
+	        const data = await response.json();
+	        return data.contents; 
+	    };
+	
+	    try {
+	        let rawHtml = "";
+	        let sourceName = "Oljemagasinet.se";
+	
+	        try {
+	            // FÖRSÖK 1: Oljemagasinet
+	            // Vi använder deras sök-url som filtrerar produkter direkt på regnr
+	            rawHtml = await fetchViaProxy(`https://www.oljemagasinet.se/motorolja?license_plate=${regnr}`);
+	            
+	            // Kontrollera om vi fick ett vettigt svar (inte bara en tom sida)
+	            if (!rawHtml || rawHtml.length < 2000) throw new Error("Tomt svar från Oljemagasinet");
+	            
+	        } catch (e) {
+	            console.warn("Oljemagasinet fail, kör backup...", e);
+	            // FÖRSÖK 2: Biluppgifter (Backup)
+	            sourceName = "Biluppgifter.se";
+	            rawHtml = await fetchViaProxy(`https://biluppgifter.se/fordon/${regnr}`);
+	        }
 
             if (!rawHtml || rawHtml.length < 500) {
                 throw new Error("Sidan verkar tom eller blockerad.");
@@ -7282,11 +7304,11 @@
 
             // 4. Spara svaret
             db.collection("notes").add({
-                text: answer,
-                timestamp: new Date().toISOString(),
-                platform: 'system',
-                reaction: '🛢️'
-            });
+	            text: answer,
+	            timestamp: new Date().toISOString(),
+	            platform: 'system',
+	            reaction: '🤖'
+	        });
 
         } catch (err) {
             console.error(err);
