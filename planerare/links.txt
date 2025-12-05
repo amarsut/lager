@@ -1,0 +1,3 @@
+https://aistudio.google.com/app/u/1/api-keys
+https://console.cloud.google.com/apis/credentials
+https://amarsut.github.io/lager/planerare/plan.html
