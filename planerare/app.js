@@ -1568,7 +1568,7 @@
 			        localStorage.setItem(uniqueKey, 'sent');
 			    }
 			
-			    let reaction = '🤖'; 
+			    let reaction = '🔔';
 			    if (type === 'success') reaction = '🎉';
 			    if (type === 'warning') reaction = '⚠️';
 			    if (type === 'alert') reaction = '🚨';
@@ -2681,16 +2681,23 @@
 			function renderChatBubble(id, data, container) {
 			    const bubble = document.createElement('div');
 			
-			    // --- 1. SMART IDENTIFIERING AV AI-MEDDELANDEN ---
-			    // En striktare koll: Det är AI om:
-			    // A. Reaktionen är en Robot eller Timglas
-			    // B. Reaktionen är en Bock OCH avsändaren är 'system' (Detta fixar ditt problem med "Fixa oljefilter")
-			    // C. Plattformen är 'system' OCH texten innehåller specifika AI-fraser
-			    const isAiReaction = data.reaction === '🤖' || data.reaction === '⏳';
-			    const isAiCompletion = data.reaction === '✅' && data.platform === 'system';
-			    const isAiText = data.platform === 'system' && (data.text.includes('Analys:') || data.text.includes('Frågar AI:'));
+			    // --- 1. IDENTIFIERING AV AI ---
+			    // AI är BARA dessa specifika emojis.
+			    // Vi exkluderar explicit '🔔', '⚠️', '📊' etc för att vara säkra.
 			    
-			    const isAi = isAiReaction || isAiCompletion || isAiText;
+			    const isAiReaction = data.reaction === '🤖' || data.reaction === '⏳';
+			    
+			    // AI-svar som är klara (Grön bock) MEN vi måste vara säkra på att det inte är en systemnotis
+			    // Vi kollar om texten ser ut som ett AI-svar (innehåller fetstilt Analys/Orsaker eller "Frågar AI")
+			    const hasAiContent = data.text && (
+			        data.text.includes('<b>Analys:') || 
+			        data.text.includes('<b>Kort Analys:') || 
+			        data.text.includes('Frågar AI:')
+			    );
+			
+			    const isAiCompletion = data.reaction === '✅' && data.platform === 'system' && hasAiContent;
+			    
+			    const isAi = isAiReaction || isAiCompletion;
 			    
 			    if (isAi) {
 			        bubble.classList.add('is-ai-message');
@@ -2835,18 +2842,21 @@
 			    const displayTime = isToday ? timeString : `${dateObj.toLocaleDateString('sv-SE', {day:'numeric', month:'short'})}, ${timeString}`;
 			
 			    let platformIconHtml = '';
-			
-			    // --- HÄR ÄR ÄNDRINGEN FÖR ETIKETTER ---
+
 			    if (isAi) {
-			        // Om det är identifierat som AI (via logiken i toppen av funktionen)
+			        // AI-meddelanden
 			        platformIconHtml = ` <span style="font-weight: 800; opacity: 1; margin-left: 4px; color: var(--primary-color); letter-spacing: 0.5px;">• AI</span>`;
 			    } 
 			    else if (msgType === 'system') {
-			        // Om det är system men INTE AI (t.ex. "God morgon")
+			        // Alla andra systemmeddelanden (Notiser, Varningar, Statistik)
 			        platformIconHtml = ` <span style="font-weight: 700; opacity: 0.9; margin-left: 4px;">• SYSTEM</span>`;
 			    } 
-			    else if (data.platform === 'mobil') platformIconHtml = ` <span style="opacity:0.7">📱</span>`;
-			    else if (data.platform === 'dator') platformIconHtml = ` <span style="opacity:0.7">💻</span>`;
+			    else if (data.platform === 'mobil') {
+			        platformIconHtml = ` <span style="opacity:0.7">📱</span>`;
+			    }
+			    else if (data.platform === 'dator') {
+			        platformIconHtml = ` <span style="opacity:0.7">💻</span>`;
+			    }
 			
 			    time.innerHTML = `${displayTime}${platformIconHtml}`;
 			    if (data.isEdited) time.innerHTML += ` <span style="font-style:italic; opacity:0.7;">(redigerad)</span>`;
