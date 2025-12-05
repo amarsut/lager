@@ -1900,7 +1900,6 @@
 			    // --- 1. HÄMTA ELEMENTEN (Så att closeChat hittar dem) ---
 			    const chatWindow = document.getElementById('chatWidget');
 			    const overlay = document.getElementById('chatWidget'); // Samma element agerar overlay
-			    const aiFilterBtn = document.getElementById('toggleAiFilter');
 			    const chatBackBtn = document.getElementById('chatBackBtn');
 			    
 			    const chatList = document.getElementById('chatMessages');
