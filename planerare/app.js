@@ -1523,13 +1523,14 @@
 
 			// --- NY FUNKTION: Notis-räknare ---
 			function initChatBadgeListener() {
-			    // ÄNDRING: Vi lyssnar nu på BÅDE "🕓" (gamla) och "🤖" (nya roboten)
-			    // "in"-operatorn låter oss kolla efter flera olika emojis samtidigt.
+			    // VIKTIG ÄNDRING HÄR:
+			    // Vi tar bort '🤖' (AI) och lägger till '🔔' (Systemnotiser)
+			    // '🕓' behåller vi för att gamla notiser också ska räknas
 			    
 			    badgeUnsubscribe = db.collection("notes")
-			        .where("reaction", "in", ["🕓", "🤖"]) 
+			        .where("reaction", "in", ["🕓", "🔔"]) 
 			        .onSnapshot(snapshot => {
-			            const count = snapshot.size; // Antal träffar
+			            const count = snapshot.size; 
 			            updateBadges(count);
 			        }, error => {
 			            console.error("Kunde inte hämta notis-räknare:", error);
