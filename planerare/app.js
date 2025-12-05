@@ -7213,31 +7213,52 @@
             
 	async function lookupOilByReg(regnr) {
         regnr = regnr.replace(/\s/g, '').toUpperCase();
-        showToast(`Söker teknisk data för ${regnr}...`, 'info');
-
-        try {
-            // 1. Proxy-anrop (Vi byter till corsproxy.io som är stabilare för text)
-            const targetUrl = `https://biluppgifter.se/fordon/${regnr}`;
-            const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
-            const response = await fetch(proxyUrl);
-
-            if (!response.ok) {
-                throw new Error(`Kunde inte nå sidan (Status: ${response.status})`);
-            }
-
-            // Vi hämtar TEXT, inte JSON (detta fixar "Unexpected token"-felet)
-            const rawHtml = await response.text();
-
-            if (!rawHtml || rawHtml.length < 500) {
-                throw new Error("Sidan verkar tom eller blockerad.");
-            }
-
-            // 2. Rensa HTML
-            const tempDiv = document.createElement("div");
-            tempDiv.innerHTML = rawHtml;
-            const scripts = tempDiv.querySelectorAll('script, style, meta, svg, path, footer, nav');
-            scripts.forEach(el => el.remove());
-            const rawText = tempDiv.innerText.replace(/\s+/g, ' ').substring(0, 8000);
+		
+        // 1. Skapa visuellt "Laddar"-meddelande i chatten direkt
+	    let loadingMsgRef = null;
+	    try {
+	        loadingMsgRef = await db.collection("notes").add({
+	            text: `🔍 Söker teknisk data för ${regnr}...`, // Texten som visas
+	            timestamp: new Date().toISOString(),
+	            platform: 'system',
+	            reaction: '⏳' // Detta triggar din snurr-animation i CSS
+	        });
+	
+	        // Tvinga scroll till botten så man ser att det händer något
+	        setTimeout(() => {
+	            const chatList = document.getElementById('chatMessages');
+	            if (chatList) chatList.scrollTop = chatList.scrollHeight;
+	        }, 150);
+	
+	    } catch (e) {
+	        console.error("Kunde inte skapa ladd-meddelande", e);
+	    }
+	
+	    // Behåll även toasten för extra tydlighet
+	    showToast(`Söker teknisk data för ${regnr}...`, 'info');
+	
+	    try {
+	        // 2. Proxy-anrop (Hämta rådata)
+	        const targetUrl = `https://biluppgifter.se/fordon/${regnr}`;
+	        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
+	        const response = await fetch(proxyUrl);
+	
+	        if (!response.ok) {
+	            throw new Error(`Kunde inte nå sidan (Status: ${response.status})`);
+	        }
+	
+	        const rawHtml = await response.text();
+	
+	        if (!rawHtml || rawHtml.length < 500) {
+	            throw new Error("Sidan verkar tom eller blockerad.");
+	        }
+	
+	        // 3. Rensa HTML
+	        const tempDiv = document.createElement("div");
+	        tempDiv.innerHTML = rawHtml;
+	        const scripts = tempDiv.querySelectorAll('script, style, meta, svg, path, footer, nav');
+	        scripts.forEach(el => el.remove());
+	        const rawText = tempDiv.innerText.replace(/\s+/g, ' ').substring(0, 8000);
 
             // 3. Fråga Gemini (OBS: Här använder vi din NYA nyckel och RÄTT modell)
 			const prompt = `
@@ -7266,37 +7287,60 @@
             const aiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 
             const aiResponse = await fetch(aiUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-            });
-
-            if (!aiResponse.ok) {
-                const errData = await aiResponse.json();
-                console.error("AI Error:", errData);
-                throw new Error("Kunde inte ansluta till AI (Kontrollera API-nyckel).");
-            }
-
-            const aiData = await aiResponse.json();
-            const answer = aiData.candidates[0].content.parts[0].text;
-
-            // 4. Spara svaret
-			db.collection("notes").add({
-                text: answer,
-                timestamp: new Date().toISOString(),
-                platform: 'system',
-                reaction: '🤖'
-            });
-
-        } catch (err) {
-            console.error(err);
-            showToast("Kunde inte hämta data.", "danger");
-            db.collection("notes").add({
-                text: `❌ Kunde inte läsa data för ${regnr}. Fel: ${err.message}`,
-                timestamp: new Date().toISOString(),
-                platform: 'system'
-            });
-        }
-    }
+	            method: 'POST',
+	            headers: { 'Content-Type': 'application/json' },
+	            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+	        });
+	
+	        if (!aiResponse.ok) {
+	            const errData = await aiResponse.json();
+	            console.error("AI Error:", errData);
+	            throw new Error("Kunde inte ansluta till AI (Kontrollera API-nyckel).");
+	        }
+	
+	        const aiData = await aiResponse.json();
+	        const answer = aiData.candidates[0].content.parts[0].text;
+	
+	        // 5. Vid LYCKAT resultat:
+	        
+	        // A. Uppdatera ladd-meddelandet till en grön bock ✅
+	        if (loadingMsgRef) {
+	            await loadingMsgRef.update({ reaction: '✅' });
+	        }
+	
+	        // B. Lägg till det faktiska svaret som ett nytt meddelande
+	        await db.collection("notes").add({
+	            text: answer,
+	            timestamp: new Date().toISOString(),
+	            platform: 'system',
+	            reaction: '🤖'
+	        });
+	        
+	        // Scrolla ner igen för att visa svaret
+	        setTimeout(() => {
+	            const chatList = document.getElementById('chatMessages');
+	            if (chatList) chatList.scrollTop = chatList.scrollHeight;
+	        }, 100);
+	
+	    } catch (err) {
+	        console.error(err);
+	        showToast("Kunde inte hämta data.", "danger");
+	        
+	        // 6. Vid FEL: Uppdatera ladd-meddelandet till ett felmeddelande ❌
+	        if (loadingMsgRef) {
+	            await loadingMsgRef.update({
+	                text: `❌ Kunde inte läsa data för ${regnr}. Fel: ${err.message}`,
+	                reaction: '❌'
+	            });
+	        } else {
+	            // Fallback om loadingMsgRef inte skapades
+	            db.collection("notes").add({
+	                text: `❌ Kunde inte läsa data för ${regnr}. Fel: ${err.message}`,
+	                timestamp: new Date().toISOString(),
+	                platform: 'system'
+	            });
+	        }
+	    }
+	}
 
 });
