@@ -2675,7 +2675,7 @@
 			function linkify(text) {
 			    if (!text) return "";
 			
-			    // 1. Säkra texten (gör om ALLA < och > till ofarlig text)
+			    // 1. Säkra texten (gör om ALLA < och > till ofarlig text för säkerhet)
 			    let safeText = text
 			        .replace(/&/g, "&amp;")
 			        .replace(/</g, "&lt;")
@@ -2683,26 +2683,53 @@
 			        .replace(/"/g, "&quot;")
 			        .replace(/'/g, "&#039;");
 			
-			    // 2. Länka URL:er
+			    // 2. Länka vanliga URL:er (som http://...)
 			    const urlPattern = /(https?:\/\/[^\s]+)/g;
 			    safeText = safeText.replace(urlPattern, (url) => {
+			        // Undvik att dubbellänka om vi råkar träffa vår egen knapp-länk
+			        if (url.includes('oljemagasinet') && url.includes('route=product')) return url;
 			        return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="chat-link">${url}</a>`;
 			    });
 			
-			    // 3. ÅTERSTÄLL HTML (Detta är delen som fixar din bild!)
-			    // Vi gör tillbaka &lt;b&gt; till <b> så webbläsaren förstår det.
+			    // 3. ÅTERSTÄLL AI-FORMATERING (Fetstil, Listor)
 			    safeText = safeText
-			        // Fetstil
-			        .replace(/&lt;b&gt;/g, '<b>')
-			        .replace(/&lt;\/b&gt;/g, '</b>')
-			        // Listor (Ul och Li)
-			        .replace(/&lt;ul&gt;/g, '<ul>')
-			        .replace(/&lt;\/ul&gt;/g, '</ul>')
-			        .replace(/&lt;li&gt;/g, '<li>')
-			        .replace(/&lt;\/li&gt;/g, '</li>')
-			        // Radbrytningar (om AI använder dem)
-			        .replace(/&lt;br&gt;/g, '<br>')
-			        .replace(/&lt;br\s*\/&gt;/g, '<br>');
+			        .replace(/&lt;b&gt;/g, '<b>').replace(/&lt;\/b&gt;/g, '</b>')
+			        .replace(/&lt;ul&gt;/g, '<ul>').replace(/&lt;\/ul&gt;/g, '</ul>')
+			        .replace(/&lt;li&gt;/g, '<li>').replace(/&lt;\/li&gt;/g, '</li>')
+			        .replace(/&lt;br&gt;/g, '<br>').replace(/&lt;br\s*\/&gt;/g, '<br>');
+			
+			    // 4. NYTT: SKAPA SHOP-KNAPPEN (Detta är delen som saknas/inte körs)
+			    // Här letar vi efter texten [SHOP_BUTTON:XYZ] och gör om den till HTML
+			    safeText = safeText.replace(/\[SHOP_BUTTON:([a-zA-Z0-9]+)\]/g, (match, regnr) => {
+			        const url = `https://www.oljemagasinet.se/index.php?route=product/search&search=${regnr}`;
+			        
+			        return `
+			            <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(0,0,0,0.1);">
+			                <a href="${url}" target="_blank" style="
+			                    display: inline-flex; 
+			                    align-items: center; 
+			                    gap: 8px; 
+			                    background-color: #f3f4f6; 
+			                    color: #111; 
+			                    text-decoration: none; 
+			                    padding: 10px 14px; 
+			                    border-radius: 8px; 
+			                    font-weight: 600; 
+			                    font-size: 0.9rem;
+			                    border: 1px solid #e5e7eb;
+			                    transition: background-color 0.2s ease;
+			                    cursor: pointer;
+			                " onmouseover="this.style.backgroundColor='#e5e7eb'" onmouseout="this.style.backgroundColor='#f3f4f6'">
+			                    
+			                    <img src="images/oljemagasinet-favico.png" style="width: 18px; height: 18px; border-radius: 2px;" onerror="this.style.display='none'">
+			                    
+			                    <span>Köp delar till ${regnr}</span>
+			                    
+			                    <svg style="width:16px;height:16px;color:#6b7280" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+			                </a>
+			            </div>
+			        `;
+			    });
 			
 			    return safeText;
 			}
