@@ -7331,7 +7331,7 @@
 	
 	        // --- ÄNDRING: LÄGG TILL EN PLATSHÅLLARE ISTÄLLET FÖR HTML ---
 	        // Vi lägger till en "tagg" som vi senare byter ut mot knappen
-	        answer += `\n\n[SHOP_BUTTON:${regnr}]`;
+	        //answer += `\n\n[SHOP_BUTTON:${regnr}]`;
 	
 	        // 5. Vid LYCKAT resultat:
 	        
