@@ -7203,31 +7203,43 @@
     // Kör en koll direkt
     updateOnlineStatus();
 
-	// --- NY FUNKTION: Hämta oljedata via Regnr & Motorkod ---
-    // Klistra in detta precis OVANFÖR den sista "});" i filen.
+	// --- NY FUNKTION: Hämta oljedata via Regnr (Uppdaterad V2) ---
     async function lookupOilByReg(regnr) {
         regnr = regnr.replace(/\s/g, '').toUpperCase();
         
         showToast(`Söker teknisk data för ${regnr}...`, 'info');
         
         try {
-            // 1. Hämta rådata från webben via proxy
+            // 1. Använd en annan proxy (corsproxy.io) som levererar rå HTML direkt
+            // Detta är ofta snabbare och stabilare än allorigins
             const targetUrl = `https://biluppgifter.se/fordon/${regnr}`;
-            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
+            const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
             
             const response = await fetch(proxyUrl);
-            const data = await response.json();
             
-            if (!data.contents) throw new Error("Kunde inte hämta fordonsdata.");
+            if (!response.ok) {
+                throw new Error(`Kunde inte nå sidan (Status: ${response.status})`);
+            }
 
-            // 2. Rensa HTML för att spara tokens
+            // 2. Hämta svaret som TEXT (inte JSON)
+            const rawHtml = await response.text();
+
+            if (!rawHtml || rawHtml.length < 500) {
+                throw new Error("Sidan verkar tom eller blockerad.");
+            }
+
+            // 3. Rensa HTML för att spara tokens (vi vill bara ha texten)
             const tempDiv = document.createElement("div");
-            tempDiv.innerHTML = data.contents;
-            const scripts = tempDiv.querySelectorAll('script, style, meta, svg, path');
+            tempDiv.innerHTML = rawHtml;
+            
+            // Ta bort onödigt skräp
+            const scripts = tempDiv.querySelectorAll('script, style, meta, svg, path, footer, nav');
             scripts.forEach(el => el.remove());
-            const rawText = tempDiv.innerText.replace(/\s+/g, ' ').substring(0, 6000);
+            
+            // Hämta ren text och begränsa längden (Gemini behöver inte hela sidfoten)
+            const rawText = tempDiv.innerText.replace(/\s+/g, ' ').substring(0, 8000);
 
-            // 3. Fråga Gemini
+            // 4. Fråga Gemini
             const prompt = `
                 Du är en expertmekaniker. Här är en rå textdump från en webbsida om bilen ${regnr}:
                 """${rawText}"""
@@ -7242,10 +7254,10 @@
                 🛢️ **Volym:** [Antal] liter
                 💧 **Viskositet:** [T.ex. 0W-20, 5W-30]
                 ⚠️ [Eventuell varning]
+                
+                Om du inte hittar motorkoden i texten, försök avgöra oljemängd baserat på modellnamnet och hästkrafterna i texten istället.
             `;
 
-            // VIKTIGT: Byt ut denna rad mot din riktiga API-nyckel om den inte är global
-            // (Du har nyckeln längre upp i din kod runt rad 1457, kopiera den hit)
             const apiKey = "AIzaSyC9agxEp_nLv0PiXrWRdGkE0gGyn1wHpKk"; 
             
             const aiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
@@ -7264,7 +7276,7 @@
 
             const answer = aiData.candidates[0].content.parts[0].text;
 
-            // 4. Spara svaret i chatten
+            // 5. Spara svaret i chatten
             db.collection("notes").add({
                 text: answer,
                 timestamp: new Date().toISOString(),
@@ -7274,9 +7286,11 @@
 
         } catch (err) {
             console.error(err);
-            showToast("Kunde inte hämta oljedata.", "danger");
+            showToast("Kunde inte hämta data automatiskt.", "danger");
+            
+            // Ge användaren ett hjälpsamt felmeddelande i chatten
             db.collection("notes").add({
-                text: `❌ Misslyckades att hämta data för ${regnr}. Prova att söka manuellt.`,
+                text: `❌ Kunde inte läsa av data för ${regnr}. (Serverfel eller blockerad). Skriv in motorkod manuellt om du vet den.`,
                 timestamp: new Date().toISOString(),
                 platform: 'system'
             });
