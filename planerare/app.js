@@ -7308,7 +7308,7 @@
 			    Här är rådata om bilen ${regnr} från Transportstyrelsen/Biluppgifter:
 			    """${rawText}"""
 			    
-			    Ditt uppdrag är att identifiera vilken motor bilen har och vilken olja den ska ha.
+			    Ditt uppdrag är att identifiera vilken motor bilen har och vilken motorolja den ska ha.
 	            
 	            Analysera datan och ta fram TEKNISKA SPECIFIKATIONER.
 	            
@@ -7323,6 +7323,7 @@
 	            <hr style="margin: 5px 0; opacity: 0.2;">
 	            <ul>
 	              <li>🚗 <b>Bil:</b> [Märke] [Modell] ([Motor])</li>
+				  <li>⚙️ <b>Motorkod:</b> [Hittad kod]</li>
 	              <li>🛢️ <b>Olja:</b> [Volym] L &bull; [Viskositet]</li>
 	              <li>❄️ <b>AC:</b> [Gas] ([Mängd]g)</li>
 	              <li>⏲️ <b>Kamrem:</b> [Intervall]</li>
@@ -7441,7 +7442,7 @@
 			    Här är rådata om bilen ${regnr} från Transportstyrelsen/Biluppgifter:
 			    """${rawText}"""
 			    
-			    Ditt uppdrag är att identifiera vilken motor bilen har och vilken olja den ska ha.
+			    Ditt uppdrag är att identifiera vilken motor bilen har och vilken motorolja och hur många liter den ska ha.
 			    
 			    STEG 1: IDENTIFIERA BILEN
 			    Leta i texten efter Modell, Årsmodell, Effekt (hk/kw), Slagvolym och Drivmedel.
@@ -7450,9 +7451,9 @@
 			    Om "Motorkod" står i texten: Använd den.
 			    Om den INTE står i texten: Använd din expertkunskap för att avgöra vilken motorkod det måste vara baserat på hk, år och modell (t.ex. Volvo V70 2015 181hk Diesel = D4204T5).
 			    
-			    STEG 3: REKOMMENDERA OLJA
+			    STEG 3: REKOMMENDERA MOTOROLJA
 			    Baserat på den identifierade motorn, ange:
-			    - Oljemängd (Servicevolym inkl filter)
+			    - Motoroljemängd (Servicevolym inkl filter)
 			    - Viskositet & Klassning (t.ex. 0W-20 VCC RBS0-2AE eller 5W-30 LL).
 
 				4. 🔧 VERKSTADSDATA:
@@ -7464,7 +7465,7 @@
 	            <ul>
 	            <li>🚗 <b>Fordon:</b> [Identifierad Modell]</li>
 	            <li>⚙️ <b>Motorkod:</b> [Hittad kod]</li>
-	            <li>🛢️ <b>Volym:</b> [Antal] liter</li>
+	            <li>🛢️ <b>Motorolja:</b> [Antal] liter</li>
 	            <li>💧 <b>Viskositet:</b> [T.ex. 0W-20, 5W-30]</li>
 				<li>🔧 <b>Moment:</b> Hjul [Nm] & Oljelugg [Nm]</li>
 	            </ul>
