@@ -5166,49 +5166,72 @@
 
             function openCarModal(regnr) {
 			    if (!regnr) return;
+			    
+			    // Hämta jobb och senaste ägare/modell
 			    const carJobs = allJobs.filter(j => !j.deleted && j.regnr === regnr).sort((a, b) => new Date(b.datum) - new Date(a.datum));
-			    if (carJobs.length === 0) return;
-			
-			    const latestOwner = carJobs[0].kundnamn;
-			    const totalVinst = carJobs.reduce((sum, j) => sum + (j.vinst || 0), 0);
 			    
+			    // Försök hitta bilmodell från sparad teknisk data, annars ta från senaste jobbet
+			    let carModel = "";
+			    // Om vi har jobb, kolla om vi sparat någon modell-info i 'kundnamn' eller liknande, annars tomt tills vi laddat tech-data
+			    
+			    // URL:er
 			    const biluppgifterUrl = `https://biluppgifter.se/fordon/${regnr}#vehicle-data`;
-			    
-			    carModalRegnr.textContent = regnr;
-			    carModalExternalLink.href = biluppgifterUrl;
-			    carModalExternalLinkMobile.href = biluppgifterUrl; 
-			    carModalOwner.textContent = `Senaste ägare: ${latestOwner}`;
-			    carModalTotalProfit.textContent = isPrivacyModeEnabled ? "---" : formatCurrency(totalVinst);
-			    carModalTotalProfit.className = totalVinst > 0 ? 'stat-value money-related positive' : 'stat-value money-related';
-			    carModalJobCount.textContent = carJobs.length;
+			    document.getElementById('carModalExternalLink').href = biluppgifterUrl;
+			    document.getElementById('carModalOljemagasinetLink').href = `https://www.oljemagasinet.se/index.php?route=product/search&search=${regnr}`;
 			
-			    // --- NY KOD: Hantera Teknisk Data-kortet ---
+			    // --- SÄTT RUBRIK (Regnr) ---
+			    const modalTitle = document.getElementById('carModalTitle');
+			    modalTitle.textContent = `${regnr}`; 
+			
+			    // --- HANTERA TEKNISK DATA (Kortet) ---
 			    const specsContainer = document.getElementById('carTechSpecsContainer');
-			    
-			    // Kontrollera att behållaren finns (så koden inte kraschar om du missat HTML-steget)
+			    const fetchBtn = document.getElementById('btnFetchTechData');
+			
 			    if (specsContainer) {
-			        // Återställ till standardläget (visa platshållar-text först)
 			        specsContainer.style.display = 'block'; 
+			        // Standardtext medan vi letar
 			        specsContainer.innerHTML = `
 			           <p style="opacity: 0.6; text-align: center; font-style: italic; padding: 10px;">
-			               Ingen teknisk data hämtad än. <br> Gör en sökning i chatten (/${regnr}) för att hämta.
+			               Hämtar data...
 			           </p>`;
+			        
+			        if(fetchBtn) fetchBtn.style.display = 'none'; // Göm knappen medan vi kollar
 			
-			        // Kolla om vi har sparat data för denna bil i Firebase
 			        db.collection("vehicleSpecs").doc(regnr).get().then(doc => {
 			            if (doc.exists && doc.data().htmlContent) {
-			                // Vi har data! Byt ut platshållaren mot den sparade HTML-koden.
+			                // VI HAR DATA!
 			                specsContainer.innerHTML = doc.data().htmlContent;
+			                
+			                // Försök extrahera bilmodellen ur HTML:en för att uppdatera titeln snyggt
+			                // T.ex. leta efter "Fordon: Volvo V70"
+			                const tempDiv = document.createElement('div');
+			                tempDiv.innerHTML = doc.data().htmlContent;
+			                const carRow = tempDiv.textContent.match(/Bil:\s*(.*?)(?=\n|$)/i);
+			                if (carRow && carRow[1]) {
+			                     // Uppdatera titeln till "MLB844 (Volvo V70...)"
+			                     modalTitle.textContent = `${regnr} (${carRow[1].split(',')[0].trim()})`;
+			                }
+			
+			            } else {
+			                // INGEN DATA FINNS
+			                specsContainer.style.display = 'none'; // Dölj kortet
+			                if(fetchBtn) {
+			                    fetchBtn.style.display = 'flex'; // Visa hämta-knappen
+			                    fetchBtn.onclick = () => fetchAndSaveTechData(regnr);
+			                }
 			            }
-			            // Om ingen data finns, ligger platshållar-texten kvar.
 			        }).catch(err => {
-			            console.log("Kunde inte hämta vehicleSpecs:", err);
+			            console.log("Error specs:", err);
+			            specsContainer.innerHTML = "<p>Kunde inte ladda data.</p>";
 			        });
 			    }
-			    // -------------------------------------------
 			
-			    carSearch.value = ''; 
-			    renderDetailJobList(carModalJobList, carJobs, ''); 
+			    // Rensa sök och rendera listan
+			    const carSearch = document.getElementById('carSearch');
+			    if(carSearch) carSearch.value = ''; 
+			    
+			    renderDetailJobList(document.getElementById('carModalJobList'), carJobs, ''); 
+			    
 			    showModal('carModal'); 
 			}
 
