@@ -2162,7 +2162,7 @@
 			            chatInput.value = '';
 			
 			            try {
-			                const apiKey = "AIzaSyD5T7D7EBgNb8jwARxcG7xZLWwbqy80Qf0";
+			                const apiKey = "AIzaSyD8WRHXxCJUlDQJZE5uxJQjKqx9khf6x7k"; //https://aistudio.google.com/app/api-keys
 			                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 			
 			                const prompt = `Du är en expertmekaniker. Svara på svenska.
@@ -2675,9 +2675,16 @@
 			function renderChatBubble(id, data, container) {
 			    const bubble = document.createElement('div');
 			
-			    // 1. Identifiera om det är AI (för filtrering)
-			    // Vi kollar på reaktionen eller om plattformen är 'system' OCH texten innehåller "Analys" eller "Frågar AI"
-			    const isAi = data.reaction === '🤖' || data.reaction === '⏳' || data.reaction === '✅' || (data.platform === 'system' && data.text.includes('Analys'));
+			    // --- 1. SMART IDENTIFIERING AV AI-MEDDELANDEN ---
+			    // En striktare koll: Det är AI om:
+			    // A. Reaktionen är en Robot eller Timglas
+			    // B. Reaktionen är en Bock OCH avsändaren är 'system' (Detta fixar ditt problem med "Fixa oljefilter")
+			    // C. Plattformen är 'system' OCH texten innehåller specifika AI-fraser
+			    const isAiReaction = data.reaction === '🤖' || data.reaction === '⏳';
+			    const isAiCompletion = data.reaction === '✅' && data.platform === 'system';
+			    const isAiText = data.platform === 'system' && (data.text.includes('Analys:') || data.text.includes('Frågar AI:'));
+			    
+			    const isAi = isAiReaction || isAiCompletion || isAiText;
 			    
 			    if (isAi) {
 			        bubble.classList.add('is-ai-message');
@@ -2690,37 +2697,34 @@
 			        msgType = 'other';
 			    }
 			
-			    bubble.className = `chat-bubble ${msgType} ${isAi ? 'is-ai-message' : ''}`; // Lägg till AI-klass
+			    bubble.className = `chat-bubble ${msgType} ${isAi ? 'is-ai-message' : ''}`;
 			
-			    // --- TEXTINNEHÅLL MED "VISA MER" ---
+			    // --- 2. TEXTINNEHÅLL MED "VISA MER" ---
 			    if (data.text) {
 			        const textContentDiv = document.createElement('div');
 			        textContentDiv.className = 'chat-text-content';
 			        
-			        // Din formaterings-kod (linkify, listor, fetstil etc)
 			        let processedText = typeof linkify === 'function' ? linkify(data.text) : data.text;
+			        
+			        // Lägg till sökmarkering om det behövs (från din globala sökfunktion)
+			        // OBS: Om du har en global variabel currentSearchTerm kan du använda den här, annars hoppar vi över det.
+			        
 			        textContentDiv.innerHTML = processedText;
-			
 			        bubble.appendChild(textContentDiv);
 			
-			        // --- NYTT: "Visa mer"-logik för långa AI-svar ---
-			        // Vi gör detta BARA om det är AI eller väldigt lång systemtext
-			        if (isAi && data.text.length > 300) { // Gräns på ca 300 tecken
-			            
-			            textContentDiv.classList.add('truncated-ai'); // Starta som ihopdragen
+			        // "Visa mer"-knapp för långa AI-svar
+			        if (isAi && data.text.length > 300) { 
+			            textContentDiv.classList.add('truncated-ai');
 			            
 			            const expandBtn = document.createElement('button');
 			            expandBtn.className = 'ai-read-more-btn';
 			            expandBtn.textContent = 'Visa mer...';
 			            expandBtn.onclick = (e) => {
-			                e.stopPropagation(); // Stoppa klicket från att trigga annat
-			                
+			                e.stopPropagation();
 			                if (textContentDiv.classList.contains('truncated-ai')) {
-			                    // Öppna
 			                    textContentDiv.classList.remove('truncated-ai');
 			                    expandBtn.textContent = 'Visa mindre';
 			                } else {
-			                    // Stäng
 			                    textContentDiv.classList.add('truncated-ai');
 			                    expandBtn.textContent = 'Visa mer...';
 			                }
@@ -2728,20 +2732,37 @@
 			            bubble.appendChild(expandBtn);
 			        }
 			    } 
-			    // ... (Bildhantering ligger kvar här, oförändrad) ...
-			    else if (data.images || data.type === 'image') {
-			       // (Din befintliga bildkod här...)
-			       // Kopiera in din gamla bild-kod här om du skriver över hela funktionen
-			       // För att spara plats i detta svar, antas den koden vara kvar.
-			       if (data.image) {
-			           const img = document.createElement('img');
-			           img.src = data.image;
-			           img.onclick = (e) => { e.stopPropagation(); window.openImageZoom(img); };
-			           bubble.appendChild(img);
-			       }
+			    // --- 3. BILDHANTERING ---
+			    else if (data.images && Array.isArray(data.images)) {
+			        // Karusell
+			        bubble.classList.add('chat-bubble-image');
+			        const carousel = document.createElement('div');
+			        carousel.className = 'chat-carousel';
+			        data.images.forEach(imgSrc => {
+			            const img = document.createElement('img');
+			            img.src = imgSrc; img.loading = "lazy";
+			            img.dataset.id = id;
+			            img.onclick = (e) => { e.stopPropagation(); window.openImageZoom(img); };
+			            carousel.appendChild(img);
+			        });
+			        bubble.appendChild(carousel);
+			        if (data.caption) {
+			            const cap = document.createElement('div'); cap.className = 'chat-caption'; cap.textContent = data.caption; bubble.appendChild(cap);
+			        }
+			    } else if (data.type === 'image' && data.image) {
+			        // Enstaka bild
+			        bubble.classList.add('chat-bubble-image');
+			        const img = document.createElement('img');
+			        img.src = data.image; img.loading = "lazy";
+			        img.dataset.id = id;
+			        img.onclick = (e) => { e.stopPropagation(); window.openImageZoom(img); };
+			        bubble.appendChild(img);
+			        if (data.caption) {
+			            const cap = document.createElement('div'); cap.className = 'chat-caption'; cap.textContent = data.caption; bubble.appendChild(cap);
+			        }
 			    }
 			
-			    // Reaktioner (Ikonen nere till höger)
+			    // --- 4. REAKTIONER (Badge) ---
 			    if (data.reaction) {
 			        const badge = document.createElement('span');
 			        badge.className = 'reaction-badge';
@@ -2750,15 +2771,72 @@
 			        bubble.appendChild(badge);
 			    }
 			
-			    // Event listeners (Långtryck etc) - Behåll din gamla kod här
-			    // ...
+			    // --- 5. ÅTERSTÄLLD: HÖGERKLICK & LÅNGTRYCK (Detta saknades sist!) ---
+			    
+			    // A. Touch (Mobil)
+			    let pressTimer = null;
+			    let startX = 0, startY = 0;
+			    
+			    bubble.addEventListener('touchstart', (e) => {
+			        if (e.touches.length > 1) return;
+			        startX = e.touches[0].clientX;
+			        startY = e.touches[0].clientY;
+			        if (startX < 30 || startX > window.innerWidth - 30) return; // Ignorera kant-svep
 			
-			    // Tidsstämpel
+			        if (pressTimer) clearTimeout(pressTimer);
+			        pressTimer = setTimeout(() => {
+			            if (typeof showReactionMenu === 'function') {
+			                showReactionMenu(startX, startY, id);
+			            }
+			            if (navigator.vibrate) navigator.vibrate(15);
+			        }, 400); // 400ms långtryck
+			    }, { passive: true });
+			
+			    bubble.addEventListener('touchmove', (e) => {
+			        if (!pressTimer) return;
+			        const currentX = e.touches[0].clientX;
+			        const currentY = e.touches[0].clientY;
+			        if (Math.abs(currentX - startX) > 10 || Math.abs(currentY - startY) > 10) {
+			            clearTimeout(pressTimer);
+			            pressTimer = null;
+			        }
+			    }, { passive: true });
+			
+			    bubble.addEventListener('touchend', () => {
+			        if (pressTimer) clearTimeout(pressTimer);
+			    });
+			
+			    // B. Högerklick (Dator)
+			    bubble.addEventListener('contextmenu', (e) => {
+			        e.preventDefault();
+			        e.stopPropagation();
+			        if (typeof showReactionMenu === 'function') {
+			            showReactionMenu(e.clientX, e.clientY, id);
+			        }
+			        return false;
+			    });
+			
+			    // --- 6. TIDSSTÄMPEL ---
 			    const time = document.createElement('div');
-			    time.className = `chat-time ${msgType} ${isAi ? 'is-ai-time' : ''}`; // Lägg till AI-klass på tiden också
-			    // ... (Din tidskod här) ...
-			    let dateObj = new Date(data.timestamp);
-			    time.textContent = dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+			    time.className = `chat-time ${msgType} ${isAi ? 'is-ai-time' : ''}`;
+			    
+			    let dateObj;
+			    try { dateObj = new Date(data.timestamp); } catch(e) { dateObj = new Date(); }
+			    
+			    const timeString = dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+			    const isToday = (new Date().toDateString() === dateObj.toDateString());
+			    const displayTime = isToday ? timeString : `${dateObj.toLocaleDateString('sv-SE', {day:'numeric', month:'short'})}, ${timeString}`;
+			
+			    let platformIconHtml = '';
+			    if (msgType === 'system') {
+			        platformIconHtml = ` <span style="font-weight: 700; opacity: 0.9; margin-left: 4px;">• SYSTEM</span>`;
+			    } 
+			    // Om du vill ha ikoner för mobil/dator på vanliga meddelanden:
+			    else if (data.platform === 'mobil') platformIconHtml = ` <span style="opacity:0.7">📱</span>`;
+			    else if (data.platform === 'dator') platformIconHtml = ` <span style="opacity:0.7">💻</span>`;
+			
+			    time.innerHTML = `${displayTime}${platformIconHtml}`;
+			    if (data.isEdited) time.innerHTML += ` <span style="font-style:italic; opacity:0.7;">(redigerad)</span>`;
 			    
 			    container.appendChild(bubble);
 			    container.appendChild(time);
