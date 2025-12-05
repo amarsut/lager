@@ -7307,6 +7307,10 @@
 			    Baserat på den identifierade motorn, ange:
 			    - Oljemängd (Servicevolym inkl filter)
 			    - Viskositet & Klassning (t.ex. 0W-20 VCC RBS0-2AE eller 5W-30 LL).
+
+				4. 🔧 VERKSTADSDATA:
+		       - Moment Hjulbultar: (Nm).
+		       - Moment Oljeplugg: (Nm).
 				
 	            FORMAT (Svara ENDAST med denna HTML):
 	            <b>Oljespecifikation ${regnr}</b>
@@ -7315,6 +7319,7 @@
 	            <li>⚙️ <b>Motorkod:</b> [Hittad kod]</li>
 	            <li>🛢️ <b>Volym:</b> [Antal] liter</li>
 	            <li>💧 <b>Viskositet:</b> [T.ex. 0W-20, 5W-30]</li>
+				<li>🔧 <b>Moment:</b> Hjul [Nm] &bull; Plugg [Nm]</li>
 	            </ul>
 	        `;
 
