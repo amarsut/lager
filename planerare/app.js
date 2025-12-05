@@ -2060,11 +2060,12 @@
 			    // --- FUNKTION: Skicka Meddelande ---
 			    const sendMessage = async () => {
 			        
-			        // --- START PÅ NY KOD (Klistra in här) ---
-			        const rawInput = chatInput.value.trim();
-			        
-			        if (rawInput.toLowerCase().startsWith('/olja')) {
-			            let regToSearch = rawInput.replace('/olja', '').trim();
+			        const text = chatInput.value.trim();
+			        if (!text) return; 
+			
+			        // --- 1. KOLLA OM DET ÄR ETT OLJE-KOMMANDO ---
+			        if (text.toLowerCase().startsWith('/olja')) {
+			            let regToSearch = text.replace('/olja', '').trim();
 			            
 			            // Försök hitta regnr automatiskt om man inte skrev något
 			            if (!regToSearch) {
@@ -2078,58 +2079,48 @@
 			            }
 			
 			            if (regToSearch && regToSearch.length > 2) {
-			                chatInput.value = ''; // Töm rutan direkt
+			                chatInput.value = ''; // Töm rutan
 			                
-			                // Om vi är i AI-filtret, se till att vi stannar där
+			                // Auto-aktivera AI-filtret för snyggare vy
 			                const chatList = document.getElementById('chatMessages');
 			                const aiFilterBtn = document.getElementById('toggleAiFilter');
-			                
-			                // Auto-aktivera AI-filtret om det inte är på (Valfritt, ta bort om du inte vill ha det)
 			                if (chatList && !chatList.classList.contains('ai-mode')) {
 			                    chatList.classList.add('ai-mode');
 			                    if(aiFilterBtn) aiFilterBtn.style.color = 'var(--primary-color)';
 			                }
 			
-			                // Kör funktionen (Den sköter nu "Söker..."-meddelandet själv)
+			                // Kör oljesökningen
 			                lookupOilByReg(regToSearch); 
-			                return; 
+			                return; // Stoppa här, skicka inget vanligt meddelande
 			            } else {
 			                showToast("Ange regnr (/olja ABC 123) eller öppna ett jobb.", "warning");
 			                return;
 			            }
 			        }
 			
-			            if (regToSearch && regToSearch.length > 2) {
-			                chatInput.value = ''; // Töm rutan
-			                
-			                // Visa i chatten att vi söker
-			                db.collection("notes").add({
-			                    text: `🔍 Söker oljedata för ${regToSearch}...`,
-			                    timestamp: new Date().toISOString(),
-			                    platform: window.innerWidth <= 768 ? 'mobil' : 'dator'
-			                });
-			
-			                lookupOilByReg(regToSearch); // Kör funktionen från Steg 1
-			                return; // STOPPA här så det inte skickas som ett vanligt chatt-meddelande
-			            } else {
-			                showToast("Ange regnr (t.ex. /olja ABC 123) eller öppna ett jobb.", "warning");
-			                return;
-			            }
-			        }
-			        // --- SLUT PÅ NY KOD ---
-					
-			        const text = chatInput.value.trim();
-			        if (!text) return; 
-			        
+			        // --- 2. HANTERA REDIGERING AV GAMLA MEDDELANDEN ---
 			        if (editingMessageId) {
 			            try {
+			                // HÄR VAR FELET: 'await' kräver att funktionen är 'async'
 			                await db.collection("notes").doc(editingMessageId).update({
 			                    text: text, 
 			                    isEdited: true 
 			                });
 			                
 			                showToast("Meddelande uppdaterat", "success");
-			                exitEditMode(); 
+			                
+			                // Återställ redigeringsläget (du behöver ha exitEditMode definierad i närheten)
+			                // Om exitEditMode ligger utanför scope, se till att den är tillgänglig
+			                editingMessageId = null;
+			                chatInput.value = '';
+			                const chatEditHeader = document.getElementById('chatEditHeader');
+			                const chatEditOverlay = document.getElementById('chatEditOverlay');
+			                const chatInputArea = document.getElementById('chatInputArea');
+			                
+			                if(chatEditHeader) chatEditHeader.style.display = 'none';
+			                if(chatEditOverlay) chatEditOverlay.classList.remove('show');
+			                if(chatInputArea) chatInputArea.classList.remove('editing-mode');
+			
 			            } catch (err) {
 			                console.error(err);
 			                showToast("Kunde inte spara ändring", "danger");
@@ -2137,6 +2128,7 @@
 			            return; 
 			        }
 			    
+			        // --- 3. SKICKA NYTT MEDDELANDE (STANDARD) ---
 			        try {
 			            await db.collection("notes").add({
 			                text: text,
@@ -2144,19 +2136,15 @@
 			                platform: window.innerWidth <= 768 ? 'mobil' : 'dator'
 			            });
 			            chatInput.value = '';
-			            setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
+			            setTimeout(() => {
+			                const chatList = document.getElementById('chatMessages');
+			                if(chatList) chatList.scrollTop = chatList.scrollHeight;
+			            }, 100);
 			            if(window.innerWidth > 768) chatInput.focus();
 			        } catch (err) {
 			            showToast("Kunde inte skicka notis.", "danger");
 			        }
 			    };
-			
-			    if (chatSendBtn) {
-			        chatSendBtn.onclick = (e) => {
-			            e.preventDefault();
-			            sendMessage();
-			        };
-			    }
 			
 			    // --- KNAPP-HANTERARE ---
 			    if (chatBackBtn) {
