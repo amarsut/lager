@@ -7281,12 +7281,12 @@
             const answer = aiData.candidates[0].content.parts[0].text;
 
             // 4. Spara svaret
-            db.collection("notes").add({
-	            text: `❌ Kunde inte identifiera motorn automatiskt. <a href="${manualLink}" target="_blank" style="color:white;text-decoration:underline;">Öppna Car.info manuellt</a>`,
-	            timestamp: new Date().toISOString(),
-	            platform: 'system',
-	            reaction: '🤖'
-	        });
+			db.collection("notes").add({
+                text: answer,
+                timestamp: new Date().toISOString(),
+                platform: 'system',
+                reaction: '🤖'
+            });
 
         } catch (err) {
             console.error(err);
