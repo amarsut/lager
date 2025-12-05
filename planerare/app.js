@@ -7215,14 +7215,15 @@
         regnr = regnr.replace(/\s/g, '').toUpperCase();
         showToast(`Söker teknisk data för ${regnr}...`, 'info');
 
-        db.collection("notes").add({
-	        text: `🔍 Söker oljerekommendation för ${regnr} på Oljemagasinet...`,
+        // Visa ladd-ikon
+	    db.collection("notes").add({
+	        text: `🔍 Söker "Åtgång: Oljesump" för ${regnr}...`,
 	        timestamp: new Date().toISOString(),
 	        platform: 'system',
 	        reaction: '⏳'
 	    });
 	    
-	    // Hjälpfunktion för proxy
+	    // Proxy-funktion
 	    const fetchViaProxy = async (targetUrl) => {
 	        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
 	        const response = await fetch(proxyUrl);
@@ -7233,33 +7234,34 @@
 	
 	    try {
 	        let rawHtml = "";
-	        let sourceName = "Oljemagasinet.se";
+	        let sourceName = "Oljemagasinet";
 	
 	        try {
 	            // FÖRSÖK 1: Oljemagasinet
-	            // Vi använder deras sök-url som filtrerar produkter direkt på regnr
+	            // Vi använder en specifik sök-URL
 	            rawHtml = await fetchViaProxy(`https://www.oljemagasinet.se/motorolja?license_plate=${regnr}`);
 	            
-	            // Kontrollera om vi fick ett vettigt svar (inte bara en tom sida)
+	            // Om HTML:en är för kort, har vi antagligen blivit blockerade eller fått en tom sida
 	            if (!rawHtml || rawHtml.length < 2000) throw new Error("Tomt svar från Oljemagasinet");
-	            
+	
 	        } catch (e) {
-	            console.warn("Oljemagasinet fail, kör backup...", e);
-	            // FÖRSÖK 2: Biluppgifter (Backup)
-	            sourceName = "Biluppgifter.se";
-	            rawHtml = await fetchViaProxy(`https://biluppgifter.se/fordon/${regnr}`);
+	            console.warn("Oljemagasinet misslyckades, testar Car.info...", e);
+	            // FÖRSÖK 2: Car.info (Specs-sidan är ofta statisk och bra)
+	            sourceName = "Car.info";
+	            rawHtml = await fetchViaProxy(`https://www.car.info/sv-se/license-plate/S/${regnr}/specs`);
 	        }
 
-            if (!rawHtml || rawHtml.length < 500) {
-                throw new Error("Sidan verkar tom eller blockerad.");
-            }
+            if (!rawHtml) throw new Error("Kunde inte hämta data.");
 
-            // 2. Rensa HTML
-            const tempDiv = document.createElement("div");
-            tempDiv.innerHTML = rawHtml;
-            const scripts = tempDiv.querySelectorAll('script, style, meta, svg, path, footer, nav');
-            scripts.forEach(el => el.remove());
-            const rawText = tempDiv.innerText.replace(/\s+/g, ' ').substring(0, 8000);
+	        // 2. Städa HTML (Men var försiktig så vi inte tar bort texten vi letar efter)
+	        const tempDiv = document.createElement("div");
+	        tempDiv.innerHTML = rawHtml;
+	        
+	        // Ta bort skräp som kan förvirra AI
+	        const junk = tempDiv.querySelectorAll('script, style, svg, path, footer, nav, .cookie-banner');
+	        junk.forEach(el => el.remove());
+	        
+	        const rawText = tempDiv.innerText.replace(/\s+/g, ' ').substring(0, 20000);
 
             // 3. Fråga Gemini (OBS: Här använder vi din NYA nyckel och RÄTT modell)
 			const prompt = `
@@ -7288,37 +7290,32 @@
             const aiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 
             const aiResponse = await fetch(aiUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-            });
-
-            if (!aiResponse.ok) {
-                const errData = await aiResponse.json();
-                console.error("AI Error:", errData);
-                throw new Error("Kunde inte ansluta till AI (Kontrollera API-nyckel).");
-            }
-
-            const aiData = await aiResponse.json();
-            const answer = aiData.candidates[0].content.parts[0].text;
-
-            // 4. Spara svaret
-            db.collection("notes").add({
+	            method: 'POST',
+	            headers: { 'Content-Type': 'application/json' },
+	            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+	        });
+	        
+	        if (!aiResponse.ok) throw new Error("AI nekade anropet.");
+	
+	        const aiData = await aiResponse.json();
+	        const answer = aiData.candidates[0].content.parts[0].text;
+	
+	        db.collection("notes").add({
 	            text: answer,
 	            timestamp: new Date().toISOString(),
 	            platform: 'system',
 	            reaction: '🤖'
 	        });
-
-        } catch (err) {
-            console.error(err);
-            showToast("Kunde inte hämta data.", "danger");
-            db.collection("notes").add({
-                text: `❌ Kunde inte läsa data för ${regnr}. Fel: ${err.message}`,
-                timestamp: new Date().toISOString(),
-                platform: 'system'
-            });
-        }
-    }
+	
+	    } catch (err) {
+	        console.error(err);
+	        db.collection("notes").add({
+	            text: `❌ Kunde inte hitta data för ${regnr}. Sidan laddas troligen via JavaScript som proxyn inte ser.`,
+	            timestamp: new Date().toISOString(),
+	            platform: 'system',
+	            reaction: '🤖'
+	        });
+	    }
+	}
 
 });
