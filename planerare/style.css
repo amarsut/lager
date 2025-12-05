@@ -8181,3 +8181,54 @@ body.offline-mode .offline-dot {
         grid-template-columns: 1fr; /* En kolumn på mobil */
     }
 }
+
+/* --- Footer Knappar (Externa länkar) --- */
+.modal-footer-actions {
+    display: flex;
+    gap: 12px; /* Luft mellan knapparna */
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e5e5e5; /* En tunn linje ovanför */
+    justify-content: flex-start; /* Vänsterställ knapparna */
+}
+
+/* Design för själva knapparna */
+.footer-link-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px; /* Avstånd mellan ikon och text */
+    padding: 10px 16px;
+    background-color: #f5f5f7; /* Samma ljusgrå som teknikkortet */
+    color: #1c1c1e; /* Mörk text */
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    border: 1px solid transparent; /* Förbereder för hover */
+}
+
+/* Hover-effekt */
+.footer-link-btn:hover {
+    background-color: #e5e5ea; /* Lite mörkare vid hover */
+    transform: translateY(-2px); /* Lyft upp knappen lite */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+}
+
+/* Bilderna (Ikonerna) */
+.footer-link-btn img {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    object-fit: contain;
+}
+
+/* Dark mode anpassning */
+[data-theme="dark"] .footer-link-btn {
+    background-color: #2c2c2e;
+    color: #ffffff;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+[data-theme="dark"] .footer-link-btn:hover {
+    background-color: #3a3a3c;
+}
