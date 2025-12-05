@@ -7941,14 +7941,13 @@ body.offline-mode .offline-dot {
     border-radius: 50%;
 }
 
-/* --- AI FILTER & VISA MER --- */
+/* --- AI FILTER, DESIGN & VISA MER --- */
 
-/* 1. "VISA MER" KNAPP & UTSEENDE */
+/* 1. VISA MER KNAPP */
 .chat-text-content.truncated-ai {
-    max-height: 120px; /* Visa bara ca 4-5 rader */
+    max-height: 120px;
     overflow: hidden;
     position: relative;
-    /* Skapa en snygg "fade out" effekt i botten */
     mask-image: linear-gradient(180deg, #000 60%, transparent 100%);
     -webkit-mask-image: linear-gradient(180deg, #000 60%, transparent 100%);
 }
@@ -7966,32 +7965,53 @@ body.offline-mode .offline-dot {
     margin-top: 4px;
     cursor: pointer;
     text-align: center;
-    transition: all 0.2s ease;
-}
-.ai-read-more-btn:hover {
-    background-color: rgba(0,0,0,0.02);
 }
 
-/* 2. TOGGLE-LÄGEN (Filtrering) */
+/* 2. FILTRERINGS-LOGIK (Hjärtat i lösningen) */
 
-/* LÄGE 1: Normalt (Visa Notiser, Dölj AI) */
-/* Om du vill att AI ska vara DOLD som standard och bara visas när man klickar på roboten: */
-/* Avkommentera nedan om du vill dölja AI som standard: */
-/* .chat-messages:not(.ai-mode) .is-ai-message,
-.chat-messages:not(.ai-mode) .is-ai-time {
+/* LÄGE A: NORMAL NOTIS-CHATT (Standard) */
+/* Dölj ALLA AI-relaterade meddelanden och deras tidsstämplar */
+.chat-messages:not(.ai-mode) .chat-bubble.is-ai-message,
+.chat-messages:not(.ai-mode) .chat-time.is-ai-time {
     display: none !important;
 }
-*/
 
-/* LÄGE 2: AI-Läge (Visa AI, Dölj Notiser) */
-/* När klassen .ai-mode är aktiv på listan: */
+/* LÄGE B: AI-ZON (När klassen .ai-mode är aktiv) */
+/* Dölj alla VANLIGA meddelanden */
 .chat-messages.ai-mode .chat-bubble:not(.is-ai-message),
 .chat-messages.ai-mode .chat-time:not(.is-ai-time),
 .chat-messages.ai-mode .chat-date-separator {
     display: none !important;
 }
 
-/* Fix för att "Frågar AI..." (dina frågor) också ska synas i AI-läget?
-   Då måste vi tagga dina frågor till AI också. 
-   Men det enklaste nu är att AI-läget visar BARA robotens svar. */
+/* Visa AI-meddelanden i AI-läget (överskriv display: none) */
+.chat-messages.ai-mode .chat-bubble.is-ai-message,
+.chat-messages.ai-mode .chat-time.is-ai-time {
+    display: block !important; /* Eller flex beroende på din layout */
+}
 
+/* 3. DESIGN FÖR "AI-ZONEN" */
+.chat-messages.ai-mode {
+    /* En subtil, teknisk blåtonad bakgrund */
+    background-color: #f0f7ff; 
+    background-image: 
+        radial-gradient(at 0% 0%, rgba(0, 102, 255, 0.05) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(0, 102, 255, 0.05) 0px, transparent 50%);
+    transition: background-color 0.3s ease;
+}
+
+/* Dark mode justering för AI-zonen */
+[data-theme="dark"] .chat-messages.ai-mode {
+    background-color: #10151d; /* Mycket mörk blå */
+    background-image: 
+        radial-gradient(at 0% 0%, rgba(10, 132, 255, 0.08) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(10, 132, 255, 0.08) 0px, transparent 50%);
+}
+
+/* När vi söker (.is-searching-mode) ska vi ignorera flikarna och visa allt som matchar */
+.chat-messages.is-searching-mode .chat-bubble, 
+.chat-messages.is-searching-mode .chat-time {
+    /* display: block hanteras av JS inline-styles vid sökning, 
+       så vi behöver bara se till att CSS-reglerna för .ai-mode inte döljer dem */
+    display: block; 
+}
