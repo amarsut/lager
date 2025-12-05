@@ -8074,3 +8074,110 @@ body.offline-mode .offline-dot {
         gap: 10px;
     }
 }
+
+/* --- MODERN MODAL DESIGN (Referens-stil) --- */
+
+/* 1. Modal Header (Mörk) */
+.modern-header {
+    background-color: #1c1c1e; /* Mörkgrå/Svart som på bilden */
+    color: #ffffff;
+    border-bottom: none;
+    padding: 1.5rem;
+}
+.modern-header h2 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #ffffff;
+    margin: 0;
+}
+.white-close {
+    color: rgba(255, 255, 255, 0.7);
+}
+.white-close:hover {
+    color: #ffffff;
+    background-color: rgba(255,255,255,0.1);
+}
+
+/* 2. Teknisk Data Kortet */
+.tech-specs-card {
+    background-color: #f5f5f7; /* Ljusgrå (nästan vit) */
+    color: #1c1c1e; /* Mörk text */
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.02); /* Mycket subtil skugga */
+    font-size: 0.9rem;
+}
+
+.tech-specs-title {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    display: block;
+    color: #000;
+}
+
+.tech-specs-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Två kolumner */
+    gap: 0.8rem 1.5rem;
+}
+
+.tech-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    line-height: 1.4;
+}
+.tech-item .icon {
+    font-size: 1.1rem;
+    min-width: 1.2rem;
+    opacity: 0.8;
+}
+
+/* 3. Jobblistan (Snygga rader) */
+.modern-list {
+    margin-top: 1rem;
+    border-top: 1px solid #e5e5e5;
+}
+
+.modern-list li {
+    padding: 1rem 0.5rem;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.2s;
+    border-radius: 6px;
+    margin-bottom: 4px;
+}
+.modern-list li:hover {
+    background-color: #f9f9f9;
+}
+
+/* Sökrutan */
+.modern-search {
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    box-shadow: none;
+}
+
+/* Footer länkar (små diskreta i botten) */
+.modal-footer-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+}
+.footer-link {
+    font-size: 0.8rem;
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+/* Mobilanpassning */
+@media (max-width: 600px) {
+    .tech-specs-grid {
+        grid-template-columns: 1fr; /* En kolumn på mobil */
+    }
+}
