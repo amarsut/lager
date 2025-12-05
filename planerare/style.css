@@ -8015,3 +8015,39 @@ body.offline-mode .offline-dot {
        så vi behöver bara se till att CSS-reglerna för .ai-mode inte döljer dem */
     display: block; 
 }
+
+/* --- Teknisk Spec i Modal --- */
+.tech-specs-box {
+    background-color: var(--bg-color); /* Ljusgrå bakgrund */
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+/* Anpassa HTML-innehållet från AI:n */
+.tech-specs-box ul {
+    margin: 0;
+    padding-left: 1.2rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Två kolumner på större skärmar */
+    gap: 0.5rem;
+}
+
+.tech-specs-box li {
+    margin-bottom: 0.25rem;
+}
+
+/* Mobilanpassning */
+@media (max-width: 600px) {
+    .tech-specs-box ul {
+        grid-template-columns: 1fr; /* En kolumn på mobil */
+    }
+}
+
+.full-width-btn {
+    width: 100%;
+    justify-content: center;
+}
