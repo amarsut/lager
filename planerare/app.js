@@ -7313,7 +7313,10 @@
 		       - Moment Oljeplugg: (Nm).
 				
 	            FORMAT (Svara ENDAST med denna HTML):
-	            <b>Oljespecifikation ${regnr}</b>
+	            <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+				   <b>Teknisk Data</b> 
+				   <span class="chat-reg-link" style="font-size:1em;">${regnr}</span>
+				</div>
 	            <ul>
 	            <li>🚗 <b>Fordon:</b> [Identifierad Modell]</li>
 	            <li>⚙️ <b>Motorkod:</b> [Hittad kod]</li>
