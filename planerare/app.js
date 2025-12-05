@@ -7308,15 +7308,39 @@
 			    Här är rådata om bilen ${regnr} från Transportstyrelsen/Biluppgifter:
 			    """${rawText}"""
 			    
-			    Ditt uppdrag är att identifiera vilken motor bilen har och vilken motorolja den ska ha.
-	            
-	            Analysera datan och ta fram TEKNISKA SPECIFIKATIONER.
-	            
-	            1. 🛠️ SERVICE: Olja (Volym/Viskositet), Kamrem (Intervall), Växellåda.
-	            2. ❄️ VÄTSKOR: AC (Gas/Mängd), Kylvätska, Bromsvätska.
-	            3. ⚡ EL: Batteri (Placering/Typ), Säkring 12V.
-	            4. 🔧 VERKSTAD: Moment Hjulbultar, Moment Oljeplugg, P-Broms typ.
-	            5. ⚖️ DRAG: Max dragvikt.
+			    Ditt uppdrag är att identifiera vilken motor bilen har och vilken motorolja och hur många liter den ska ha.
+			    
+			    STEG 1: IDENTIFIERA BILEN
+			    Leta i texten efter Modell, Årsmodell, Effekt (hk/kw), Slagvolym och Drivmedel.
+			    
+			    STEG 2: BESTÄM MOTORKOD (Deduktion)
+			    Om "Motorkod" står i texten: Använd den.
+			    Om den INTE står i texten: Använd din expertkunskap för att avgöra vilken motorkod det måste vara baserat på hk, år och modell (t.ex. Volvo V70 2015 181hk Diesel = D4204T5).
+			    
+			    STEG 3: REKOMMENDERA MOTOROLJA
+			    Baserat på den identifierade motorn, ange:
+			    - Motoroljemängd (Servicevolym inkl filter)
+			    - Viskositet & Klassning (t.ex. 0W-20 VCC RBS0-2AE eller 5W-30 LL).
+
+				4. 🔧 VERKSTADSDATA:
+		       - Moment Hjulbultar: (Nm).
+		       - Moment Oljeplugg: (Nm).
+
+			   5. 🛠️ SERVICE
+			   - Kamrem (Intervall).
+		       - Växellåda.
+
+			   6. ❄️ VÄTSKOR
+			   - AC (Gas/Mängd).
+			   - Kylvätska.
+			   - Bromsvätska.
+
+			   7. ⚡ EL
+			   - Batteri (Placering/Typ).
+			   - Säkring 12V.
+
+			   8. ⚖️ DRAG
+			   - Max dragvikt.
 	
 	            FORMAT (Svara ENDAST med denna HTML, ingen inledande text):
 	            <b>Teknisk Data ${regnr}</b>
@@ -7324,7 +7348,7 @@
 	            <ul>
 	              <li>🚗 <b>Bil:</b> [Märke] [Modell] ([Motor])</li>
 				  <li>⚙️ <b>Motorkod:</b> [Hittad kod]</li>
-	              <li>🛢️ <b>Olja:</b> [Volym] L &bull; [Viskositet]</li>
+	              <li>🛢️ <b>Motorolja:</b> [Volym] L &bull; [Viskositet]</li>
 	              <li>❄️ <b>AC:</b> [Gas] ([Mängd]g)</li>
 	              <li>⏲️ <b>Kamrem:</b> [Intervall]</li>
 	              <li>🔧 <b>Moment:</b> Hjul [Nm] &bull; Plugg [Nm]</li>
