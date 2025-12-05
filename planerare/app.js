@@ -7240,24 +7240,6 @@
             const rawText = tempDiv.innerText.replace(/\s+/g, ' ').substring(0, 8000);
 
             // 3. Fråga Gemini (OBS: Här använder vi din NYA nyckel och RÄTT modell)
-            const prompt = `
-                Du är en expertmekaniker. Här är en rå textdump från en webbsida om bilen ${regnr}:
-                """${rawText}"""
-
-                UPPGIFT:
-                1. Hitta "Motorkod" eller "Motorbeteckning" i texten (t.ex. D4204T, B4204T, D5244T4).
-                2. Baserat PÅ DEN MOTORKODEN, ange exakt oljevolym vid service (inkl filter) och rekommenderad viskositet.
-
-                Svara EXAKT enligt denna mall:
-                🚗 **Fordon:** [Identifierad Modell]
-                ⚙️ **Motorkod:** [Hittad kod]
-                🛢️ **Volym:** [Antal] liter
-                💧 **Viskositet:** [T.ex. 0W-20, 5W-30]
-                ⚠️ [Eventuell varning]
-
-                Om du inte hittar motorkoden, försök avgöra oljemängd baserat på modellnamn och hästkrafter.
-            `;
-
 			const prompt = `
 	            Du är en expertmekaniker. Här är en rå textdump från en webbsida om bilen ${regnr}:
                 """${rawText}"""
