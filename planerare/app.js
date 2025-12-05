@@ -2132,16 +2132,16 @@
 			        // 2. Koppla på lyssnaren på den NYA knappen
 			        newAiBtn.addEventListener('click', async (e) => {
 			            e.preventDefault();
-
-						const chatList = document.getElementById('chatMessages');
-					    const aiFilterBtn = document.getElementById('toggleAiFilter');
-					    
-					    // Om vi inte redan är i AI-läge, byt till det!
-					    if (chatList && !chatList.classList.contains('ai-mode')) {
-					        chatList.classList.add('ai-mode');
-					        // Uppdatera färgen på robot-ikonen också
-					        if(aiFilterBtn) aiFilterBtn.style.color = 'var(--primary-color)';
-					    }			
+			
+			            // --- AUTO-VÄXLING TILL AI-LÄGE ---
+			            const chatList = document.getElementById('chatMessages');
+			            const aiFilterBtn = document.getElementById('toggleAiFilter');
+			            
+			            if (chatList && !chatList.classList.contains('ai-mode')) {
+			                chatList.classList.add('ai-mode');
+			                if(aiFilterBtn) aiFilterBtn.style.color = 'var(--primary-color)';
+			            }
+			            // ----------------------------------------
 			
 			            const chatInput = document.getElementById('chatInput');
 			            const query = chatInput.value.trim();
@@ -2151,13 +2151,19 @@
 			                return;
 			            }
 			
-			            // Skapa "Tänker"-meddelandet
+			            // 1. Skapa "Tänker"-meddelandet
 			            const loadingMsgRef = await db.collection("notes").add({
 			                text: `🤖 Frågar AI: "${query}"...`,
 			                timestamp: new Date().toISOString(),
 			                platform: 'system',
 			                reaction: '⏳'
 			            });
+			
+			            // --- NYTT: TVINGA SCROLL EFTER ATT VI LAGT TILL MEDDELANDET ---
+			            setTimeout(() => {
+			                if (chatList) chatList.scrollTop = chatList.scrollHeight;
+			            }, 150); // En liten fördröjning så att bubblan hinner ritas ut
+			            // --------------------------------------------------------------
 			
 			            chatInput.value = '';
 			
@@ -2818,6 +2824,7 @@
 			
 			    // --- 6. TIDSSTÄMPEL ---
 			    const time = document.createElement('div');
+			    // Lägg till is-ai-time klassen om det är AI, så CSS kan filtrera det
 			    time.className = `chat-time ${msgType} ${isAi ? 'is-ai-time' : ''}`;
 			    
 			    let dateObj;
@@ -2828,10 +2835,16 @@
 			    const displayTime = isToday ? timeString : `${dateObj.toLocaleDateString('sv-SE', {day:'numeric', month:'short'})}, ${timeString}`;
 			
 			    let platformIconHtml = '';
-			    if (msgType === 'system') {
+			
+			    // --- HÄR ÄR ÄNDRINGEN FÖR ETIKETTER ---
+			    if (isAi) {
+			        // Om det är identifierat som AI (via logiken i toppen av funktionen)
+			        platformIconHtml = ` <span style="font-weight: 800; opacity: 1; margin-left: 4px; color: var(--primary-color); letter-spacing: 0.5px;">• AI</span>`;
+			    } 
+			    else if (msgType === 'system') {
+			        // Om det är system men INTE AI (t.ex. "God morgon")
 			        platformIconHtml = ` <span style="font-weight: 700; opacity: 0.9; margin-left: 4px;">• SYSTEM</span>`;
 			    } 
-			    // Om du vill ha ikoner för mobil/dator på vanliga meddelanden:
 			    else if (data.platform === 'mobil') platformIconHtml = ` <span style="opacity:0.7">📱</span>`;
 			    else if (data.platform === 'dator') platformIconHtml = ` <span style="opacity:0.7">💻</span>`;
 			
