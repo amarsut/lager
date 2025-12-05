@@ -7300,38 +7300,11 @@
 	        }
 	
 	        const aiData = await aiResponse.json();
-	        let answer = aiData.candidates[0].content.parts[0].text; // Notera 'let' istället för 'const'
-
-	        // --- NYTT: LÄGG TILL KNAPP TILL OLJEMAGASINET ---
-	        // Vi skapar en URL som söker direkt på regnumret
-	        const oljemagasinetUrl = `https://www.oljemagasinet.se/index.php?route=product/search&search=${regnr}`;
-	        
-	        // Vi skapar en snygg knapp med HTML (med lite inline-stilar för att vara säkra på utseendet i chatten)
-	        const shopLinkHtml = `
-	            <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(0,0,0,0.1);">
-	                <a href="${oljemagasinetUrl}" target="_blank" style="
-	                    display: inline-flex; 
-	                    align-items: center; 
-	                    gap: 6px; 
-	                    background-color: #f3f4f6; 
-	                    color: #111; 
-	                    text-decoration: none; 
-	                    padding: 8px 12px; 
-	                    border-radius: 8px; 
-	                    font-weight: 600; 
-	                    font-size: 0.9rem;
-	                    border: 1px solid #e5e7eb;
-	                    transition: all 0.2s ease;
-	                ">
-	                    <img src="images/oljemagasinet-favico.png" style="width: 16px; height: 16px; border-radius: 2px;" onerror="this.style.display='none'">
-	                    <span>Köp delar till ${regnr}</span>
-	                    <svg style="width:14px;height:14px;color:#6b7280" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
-	                </a>
-	            </div>
-	        `;
+	        let answer = aiData.candidates[0].content.parts[0].text;
 	
-	        // Lägg ihop AI-svaret med knappen
-	        answer += shopLinkHtml;
+	        // --- ÄNDRING: LÄGG TILL EN PLATSHÅLLARE ISTÄLLET FÖR HTML ---
+	        // Vi lägger till en "tagg" som vi senare byter ut mot knappen
+	        answer += `\n\n[SHOP_BUTTON:${regnr}]`;
 	
 	        // 5. Vid LYCKAT resultat:
 	        
