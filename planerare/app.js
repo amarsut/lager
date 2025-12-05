@@ -7217,40 +7217,42 @@
 
         // Visa ladd-ikon
 	    db.collection("notes").add({
-	        text: `🔍 Söker exakta specifikationer på Car.info för ${regnr}...`,
+	        text: `🔍 Identifierar motor och hämtar specifikationer för ${regnr}...`,
 	        timestamp: new Date().toISOString(),
 	        platform: 'system',
 	        reaction: '⏳'
 	    });
 	    
-	    // Vi använder 'corsproxy.io' igen men med en specifik header-inställning i prompten
-	    // för att Gemini ska förstå strukturen på Car.info bättre.
-	    const fetchCarInfo = async (reg) => {
-	        // Vi går direkt på fliken "specs" som innehåller tabellerna
-	        const targetUrl = `https://www.car.info/sv-se/license-plate/S/${reg}/specs`;
+	    // Proxy-funktion
+	    const fetchViaProxy = async (targetUrl) => {
 	        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
-	        
 	        const response = await fetch(proxyUrl);
-	        if (!response.ok) throw new Error("Kunde inte nå Car.info");
+	        if (!response.ok) throw new Error("Proxy-fel");
 	        const data = await response.json();
-	        return data.contents;
+	        return data.contents; 
 	    };
 	
 	    try {
-	        const rawHtml = await fetchCarInfo(regnr);
+	        // STEG 1: Identifiera bilen via Biluppgifter.se (Lättare att komma åt än Car.info)
+	        // Vi behöver bara få fram "Volkswagen Tiguan 2.0 TDI" härifrån.
+	        let rawHtml = await fetchViaProxy(`https://biluppgifter.se/fordon/${regnr}`);
+	        let sourceName = "Biluppgifter + AI Databas";
 	
+	        // Om Biluppgifter misslyckas, testa Car.info som backup för identifiering
 	        if (!rawHtml || rawHtml.length < 2000) {
-	            throw new Error("Sidan verkar blockerad eller tom.");
+	            console.log("Byter källa till Car.info...");
+	            rawHtml = await fetchViaProxy(`https://www.car.info/sv-se/license-plate/S/${regnr}`);
+	            sourceName = "Car.info + AI Databas";
 	        }
 	
-	        // 2. Rensa HTML (Behåll tabell-struktur men ta bort skräp)
+	        if (!rawHtml || rawHtml.length < 1000) throw new Error("Kunde inte identifiera bilen.");
+	
+	        // Städa HTML
 	        const tempDiv = document.createElement("div");
 	        tempDiv.innerHTML = rawHtml;
-	        const junk = tempDiv.querySelectorAll('script, style, svg, path, nav, footer, .ads, .cookie-consent');
-	        junk.forEach(el => el.remove());
-	        
-	        // Vi tar en större bit text för att vara säkra på att få med allt
-	        const rawText = tempDiv.innerText.replace(/\s+/g, ' ').substring(0, 25000);
+	        const scripts = tempDiv.querySelectorAll('script, style, meta, svg, path, footer, nav, .ads');
+	        scripts.forEach(el => el.remove());
+	        const rawText = tempDiv.innerText.replace(/\s+/g, ' ').substring(0, 15000);
 
             // 3. Fråga Gemini (OBS: Här använder vi din NYA nyckel och RÄTT modell)
 			const prompt = `
@@ -7284,7 +7286,7 @@
 	            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
 	        });
 	        
-	        if (!aiResponse.ok) throw new Error("AI nekade anropet.");
+	        if (!aiResponse.ok) throw new Error("AI Error");
 	
 	        const aiData = await aiResponse.json();
 	        const answer = aiData.candidates[0].content.parts[0].text;
@@ -7299,11 +7301,11 @@
 	    } catch (err) {
 	        console.error(err);
 	        
-	        // Backup: Om Car.info misslyckas, ge en länk så man kan kolla själv
+	        // Fallback-länk om allt skiter sig
 	        const manualLink = `https://www.car.info/sv-se/license-plate/S/${regnr}/specs`;
 	        
 	        db.collection("notes").add({
-	            text: `❌ Kunde inte läsa av datan automatiskt. <a href="${manualLink}" target="_blank" style="color:white;text-decoration:underline;">Klicka här för att öppna Car.info</a>`,
+	            text: `❌ Kunde inte identifiera motorn automatiskt. <a href="${manualLink}" target="_blank" style="color:white;text-decoration:underline;">Öppna Car.info manuellt</a>`,
 	            timestamp: new Date().toISOString(),
 	            platform: 'system',
 	            reaction: '🤖'
