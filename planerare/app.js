@@ -2778,7 +2778,8 @@
 			    const hasAiContent = data.text && (
 			        data.text.includes('<b>Analys:') || 
 			        data.text.includes('<b>Kort Analys:') || 
-			        data.text.includes('Frågar AI:')
+			        data.text.includes('Frågar AI:') ||
+			        data.text.includes('🔍 Söker teknisk data')
 			    );
 			
 			    const isAiCompletion = data.reaction === '✅' && data.platform === 'system' && hasAiContent;
