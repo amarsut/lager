@@ -2207,7 +2207,7 @@
 			            chatInput.value = '';
 			
 			            try {
-			                const apiKey = "AIzaSyD8WRHXxCJUlDQJZE5uxJQjKqx9khf6x7k"; //https://aistudio.google.com/app/api-keys
+			                const apiKey = "AIzaSyC9agxEp_nLv0PiXrWRdGkE0gGyn1wHpKk"; //https://aistudio.google.com/app/api-keys
 			                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 			
 			                const prompt = `Du är en expertmekaniker. Svara på svenska.
