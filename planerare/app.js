@@ -7268,7 +7268,7 @@
 	        const apiKey = "AIzaSyAiJsl5jBp_TaQlXlXKsTxvW-RFNd5OnUg"; 
 	        
 	        // ANVÄND 1.5 FLASH (2.5 fungerar inte publikt än)
-	        const aiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+	        const aiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 	        
 	        const aiResponse = await fetch(aiUrl, {
 	            method: 'POST',
