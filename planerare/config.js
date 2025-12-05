@@ -1,0 +1,3 @@
+const CONFIG = {
+    AI_API_KEY: "DIN_NYA_LÅSTA_NYCKEL_HÄR"
+};
