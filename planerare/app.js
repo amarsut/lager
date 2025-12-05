@@ -2132,6 +2132,16 @@
 			        // 2. Koppla på lyssnaren på den NYA knappen
 			        newAiBtn.addEventListener('click', async (e) => {
 			            e.preventDefault();
+
+						const chatList = document.getElementById('chatMessages');
+					    const aiFilterBtn = document.getElementById('toggleAiFilter');
+					    
+					    // Om vi inte redan är i AI-läge, byt till det!
+					    if (chatList && !chatList.classList.contains('ai-mode')) {
+					        chatList.classList.add('ai-mode');
+					        // Uppdatera färgen på robot-ikonen också
+					        if(aiFilterBtn) aiFilterBtn.style.color = 'var(--primary-color)';
+					    }			
 			
 			            const chatInput = document.getElementById('chatInput');
 			            const query = chatInput.value.trim();
@@ -2227,13 +2237,19 @@
 			            
 			            if (clearBtn) clearBtn.style.display = term ? 'flex' : 'none';
 			            
+			            // Om vi söker: Stäng av CSS-filtreringen tillfälligt genom att lägga till en klass
 			            if (term) {
-			                separators.forEach(sep => sep.style.display = 'none');
+			                chatList.classList.add('is-searching-mode');
+			                separators.forEach(sep => sep.style.display = 'none'); // Dölj datum vid sök
 			            } else {
-			                separators.forEach(sep => sep.style.display = 'block');
+			                chatList.classList.remove('is-searching-mode');
+			                separators.forEach(sep => sep.style.display = 'block'); // Visa datum igen
 			            }
 			
+			            let foundAiMatch = false;
+			
 			            bubbles.forEach((bubble, index) => {
+			                // ... (Din befintliga kod för att hämta originalHTML) ...
 			                const originalHTML = bubble.dataset.originalHtml || bubble.innerHTML;
 			                if (!bubble.dataset.originalHtml) bubble.dataset.originalHtml = originalHTML;
 			
@@ -2242,26 +2258,30 @@
 			                const isImage = bubble.classList.contains('chat-bubble-image');
 			                const timeElement = times[index];
 			
-			                if (isMatch || (isImage && !term)) {
+			                // --- NY LOGIK HÄR ---
+			                
+			                // Om sökfältet är tomt: Låt CSS (style.css) sköta visningen baserat på .ai-mode
+			                if (!term) {
+			                    bubble.style.display = ''; // Rensa inline-style
+			                    if (timeElement) timeElement.style.display = ''; // Rensa inline-style
+			                    bubble.innerHTML = originalHTML; // Återställ text
+			                    return; 
+			                }
+			
+			                // Om vi söker: Bestäm manuellt vad som ska visas
+			                if (isMatch || (isImage && !term)) { // (isImage && !term) är lite redundant här men behåll för säkerhet
 			                    bubble.style.display = 'block';
 			                    if (timeElement) timeElement.style.display = 'block';
 			                    
-			                    if (term && !isImage) {
+			                    // Markera sökord
+			                    if (!isImage) {
 			                        const regex = new RegExp(`(${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
 			                        bubble.innerHTML = originalHTML.replace(regex, '<mark>$1</mark>');
-			                    } else {
-			                        bubble.innerHTML = originalHTML;
 			                    }
 			
-			                    if (term) {
-			                        let prev = bubble.previousElementSibling;
-			                        while (prev) {
-			                            if (prev.classList.contains('chat-date-separator')) {
-			                                prev.style.display = 'block'; 
-			                                break; 
-			                            }
-			                            prev = prev.previousElementSibling;
-			                        }
+			                    // Om vi hittar en träff i ett AI-meddelande, notera det
+			                    if (bubble.classList.contains('is-ai-message')) {
+			                        foundAiMatch = true;
 			                    }
 			
 			                } else {
@@ -2269,6 +2289,16 @@
 			                    if (timeElement) timeElement.style.display = 'none';
 			                }
 			            });
+			
+			            // AUTO-VÄXLING VID SÖKTRÄFF (Valfritt)
+			            // Om du vill att den ska byta till AI-läget visuellt om du söker och hittar AI-svar:
+			            /*
+			            if (term && foundAiMatch && !chatList.classList.contains('ai-mode')) {
+			                 // Här kan du välja att tvinga över till AI-läge, 
+			                 // men min lösning med 'is-searching-mode' ovan är oftast bättre
+			                 // då den visar ALLA träffar (både notis och AI) samtidigt.
+			            }
+			            */
 			        };
 			        
 			        searchInput.oninput = filterChat;
