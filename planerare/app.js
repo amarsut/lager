@@ -7332,17 +7332,33 @@
 	            </ul>
 	        `;
 	
-	        const apiKey = "AIzaSyAiJsl5jBp_TaQlXlXKsTxvW"; // DIN API-NYCKEL HÄR
-	        const aiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-	
-	        const aiResponse = await fetch(aiUrl, {
-	            method: 'POST',
-	            headers: { 'Content-Type': 'application/json' },
-	            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-	        });
-	
-	        const aiData = await aiResponse.json();
-	        const htmlContent = aiData.candidates[0].content.parts[0].text;
+	        // 1. RÄTTAD NYCKEL (Den var avklippt i din kod)
+			const apiKey = "AIzaSyAiJsl5jBp_TaQlXlXKsTxvW-RFNd5OnUg"; 
+
+            // HÄR ÄR MODELL-ÄNDRINGEN (Vi kör på säkra 1.5-flash):
+            const aiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+			
+			const aiResponse = await fetch(aiUrl, {
+			    method: 'POST',
+			    headers: { 'Content-Type': 'application/json' },
+			    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+			});
+			
+			if (!aiResponse.ok) {
+			    // Lägg till detta för att se exakt vad som går fel i konsolen om det händer igen
+			    const errData = await aiResponse.json();
+			    console.error("AI Error Details:", errData);
+			    throw new Error(`API Error: ${aiResponse.status}`);
+			}
+			
+			const aiData = await aiResponse.json();
+			
+			// Säkerställ att vi faktiskt fick ett svar innan vi försöker läsa [0]
+			if (!aiData.candidates || aiData.candidates.length === 0) {
+			    throw new Error("AI gav inget svar.");
+			}
+			
+			const htmlContent = aiData.candidates[0].content.parts[0].text;
 	
 	        // 3. SPARA till Firebase "vehicleSpecs"
 	        // Vi sparar både HTML och tidsstämpel (om du vill uppdatera den om ett år)
