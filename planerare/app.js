@@ -7294,7 +7294,7 @@
                 """${rawText}"""
 	            
 	            UPPGIFT:
-                1. Hitta "Motorkod" eller "Motorbeteckning" i texten (t.ex. D4204T, B4204T, D5244T4).
+                1. Hitta "Motorkod" eller "Motorbeteckning" i texten (t.ex. CFGB, DRDC, DFSB, BLS, D4204T, B4204T, D5244T4).
                 2. Baserat PÅ DEN MOTORKODEN, ange exakt oljevolym vid service (inkl filter) och rekommenderad viskositet.
 				3. Om du inte hittar motorkoden, försök avgöra oljemängd baserat på modellnamn och hästkrafter med ett * på slutet.
 				
