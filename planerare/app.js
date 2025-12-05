@@ -7290,21 +7290,36 @@
 
             // 3. Fråga Gemini (OBS: Här använder vi din NYA nyckel och RÄTT modell)
 			const prompt = `
-	            Du är en expertmekaniker. Här är en rå textdump från en webbsida om bilen ${regnr}:
-                """${rawText}"""
-	            
-	            UPPGIFT:
-                1. Hitta "Motorkod" eller "Motorbeteckning" i texten (t.ex. CFGB, DRDC, DFSB, BLS, D4204T, B4204T, D5244T4).
-                2. Baserat PÅ DEN MOTORKODEN, ange exakt oljevolym vid service (inkl filter) och rekommenderad viskositet.
-				3. Om du inte hittar motorkoden, försök avgöra oljemängd baserat på modellnamn och hästkrafter med ett * på slutet.
+	            Du är en expertmekaniker med tillgång till alla fabriksdatablad.
+			    Här är rådata om bilen ${regnr} från Transportstyrelsen/Biluppgifter:
+			    """${rawText}"""
+			    
+			    Ditt uppdrag är att identifiera vilken motor bilen har och vilken olja den ska ha.
+			    
+			    STEG 1: IDENTIFIERA BILEN
+			    Leta i texten efter Modell, Årsmodell, Effekt (hk/kw), Slagvolym och Drivmedel.
+			    
+			    STEG 2: BESTÄM MOTORKOD (Deduktion)
+			    Om "Motorkod" står i texten: Använd den.
+			    Om den INTE står i texten: Använd din expertkunskap för att avgöra vilken motorkod det måste vara baserat på hk, år och modell (t.ex. Volvo V70 2015 181hk Diesel = D4204T5).
+			    
+			    STEG 3: REKOMMENDERA OLJA
+			    Baserat på den identifierade motorn, ange:
+			    - Oljemängd (Servicevolym inkl filter)
+			    - Viskositet & Klassning (t.ex. 0W-20 VCC RBS0-2AE eller 5W-30 LL).
+
+				4. 🔧 VERKSTADSDATA:
+		       - Moment Hjulbultar: (Nm).
+		       - Moment Oljeplugg: (Nm).
 				
 	            FORMAT (Svara ENDAST med denna HTML):
-	            <b>Oljespecifikation ${regnr}</b>
+				<b>Fordonsspecifikation ${regnr}</b>
 	            <ul>
 	            <li>🚗 <b>Fordon:</b> [Identifierad Modell]</li>
 	            <li>⚙️ <b>Motorkod:</b> [Hittad kod]</li>
 	            <li>🛢️ <b>Volym:</b> [Antal] liter</li>
 	            <li>💧 <b>Viskositet:</b> [T.ex. 0W-20, 5W-30]</li>
+				<li>🔧 <b>Moment:</b> Hjul [Nm] & Oljelugg [Nm]</li>
 	            </ul>
 	        `;
 
