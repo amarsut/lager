@@ -7261,7 +7261,7 @@
             `;
 
             // KLISTRA IN DIN NYA API-NYCKEL HÄR:
-            const apiKey = "KLISTRA_IN_DIN_NYA_NYCKEL_HÄR"; 
+            const apiKey = "AIzaSyAiJsl5jBp_TaQlXlXKsTxvW-RFNd5OnUg"; 
             
             // HÄR ÄR MODELL-ÄNDRINGEN (Vi kör på säkra 1.5-flash):
             const aiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
