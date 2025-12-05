@@ -71,6 +71,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             
             // --- Globalt Tillstånd (State) ---
+			let expandedMessageIds = new Set();
             let allJobs = [];
 			let currentSortField = 'datum'; 
 			let currentSortOrder = 'asc';
@@ -2772,19 +2773,34 @@
 			
 			        // "Visa mer"-knapp för långa AI-svar
 			        if (isAi && data.text.length > 300) { 
-			            textContentDiv.classList.add('truncated-ai');
+            
+			            // 1. KOLLA MINNET: Är detta meddelande redan öppnat?
+			            const isExpanded = expandedMessageIds.has(id);
+			
+			            // Om det INTE är öppnat, lägg till klassen som döljer texten
+			            if (!isExpanded) {
+			                textContentDiv.classList.add('truncated-ai');
+			            }
 			            
 			            const expandBtn = document.createElement('button');
 			            expandBtn.className = 'ai-read-more-btn';
-			            expandBtn.textContent = 'Visa mer...';
+			            
+			            // Sätt rätt text på knappen direkt
+			            expandBtn.textContent = isExpanded ? 'Visa mindre' : 'Visa mer...';
+			            
 			            expandBtn.onclick = (e) => {
 			                e.stopPropagation();
+			                
 			                if (textContentDiv.classList.contains('truncated-ai')) {
+			                    // --- ÖPPNA ---
 			                    textContentDiv.classList.remove('truncated-ai');
 			                    expandBtn.textContent = 'Visa mindre';
+			                    expandedMessageIds.add(id); // SPARA I MINNET
 			                } else {
+			                    // --- STÄNG ---
 			                    textContentDiv.classList.add('truncated-ai');
 			                    expandBtn.textContent = 'Visa mer...';
+			                    expandedMessageIds.delete(id); // TA BORT FRÅN MINNET
 			                }
 			            };
 			            bubble.appendChild(expandBtn);
