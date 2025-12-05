@@ -7332,7 +7332,7 @@
 	            </ul>
 	        `;
 	
-	        const apiKey = ""; // DIN API-NYCKEL HÄR
+	        const apiKey = "AIzaSyAiJsl5jBp_TaQlXlXKsTxvW"; // DIN API-NYCKEL HÄR
 	        const aiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 	
 	        const aiResponse = await fetch(aiUrl, {
