@@ -1914,6 +1914,31 @@
 			    
 			    const fileInputGallery = document.getElementById('chatFileInputGallery');
 			    const fileInputCamera = document.getElementById('chatFileInputCamera');
+
+				const closeChat = () => {
+			        chatWindow.classList.remove('active');
+			        overlay.classList.remove('active');
+			        document.body.style.overflow = ''; // Återställ scroll på sidan
+			        
+			        // Valfritt: Återställ AI-filtret när man stänger, så man möts av "vanliga" chatten nästa gång.
+			        if (chatList.classList.contains('ai-mode')) {
+			             chatList.classList.remove('ai-mode');
+			             if(aiFilterBtn) aiFilterBtn.style.color = 'var(--text-color-light)';
+			        }
+			    };
+			
+			    if (chatBackBtn) {
+			        chatBackBtn.addEventListener('click', closeChat);
+			    }
+			
+			    if (overlay) {
+			        overlay.addEventListener('click', (e) => {
+			            // Stäng bara om man klickar på själva bakgrunden, inte på chattfönstret
+			            if (e.target === overlay) {
+			                closeChat();
+			            }
+			        });
+			    }
 			
 			    if (!chatList) return; 
 			    
