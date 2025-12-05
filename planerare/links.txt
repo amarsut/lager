@@ -1,3 +1,6 @@
 https://aistudio.google.com/app/u/1/api-keys
 https://console.cloud.google.com/apis/credentials
 https://amarsut.github.io/lager/planerare/plan.html
+
+const apiKey = "AIzaSyAiJsl5jBp_TaQlXlXKsTxvW-RFNd5OnUg";
+//https://aistudio.google.com/app/api-keysconst url = https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
