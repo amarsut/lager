@@ -2063,19 +2063,12 @@
 			        const text = chatInput.value.trim();
 			        if (!text) return; 
 			
-			        // Regex som hittar: Slash (/) följt av 3 bokstäver, ev mellanrum, 2 siffror, 1 siffra/bokstav
-			        // T.ex: /ABC123, /abc 123, /MLB88A
-			        const regnrMatch = text.match(/^\/([a-zA-Z]{3}\s*\d{2}[a-zA-Z\d])$/);
-			
-			        // Om vi hittar en matchning ELLER om man skriver gamla /olja
-			        if (regnrMatch || text.toLowerCase().startsWith('/olja')) {
+			        // --- 1. KOLLA OM DET ÄR ETT OLJE-KOMMANDO ---
+			        if (text.toLowerCase().startsWith('/olja')) {
+			            let regToSearch = text.replace('/olja', '').trim();
 			            
-			            // Om det var en matchning på /ABC123, ta ut numret från matchningen (grupp 1)
-			            // Annars (om man skrev /olja ABC123), ta bort "/olja" och rensa
-			            let regToSearch = regnrMatch ? regnrMatch[1] : text.replace('/olja', '').trim();
-			            
-			            // Försök hitta regnr automatiskt om man bara skrev "/olja" utan nummer (din gamla logik)
-			            if (!regToSearch && text.toLowerCase().startsWith('/olja')) {
+			            // Försök hitta regnr automatiskt om man inte skrev något
+			            if (!regToSearch) {
 			                const modalRegEl = document.getElementById('regnr');
 			                const carModalRegEl = document.getElementById('carModalRegnr');
 			                const summaryRegEl = document.getElementById('modalSummaryRegnr');
@@ -2085,9 +2078,7 @@
 			                else if (summaryRegEl && summaryRegEl.offsetParent !== null) regToSearch = summaryRegEl.textContent;
 			            }
 			
-			            // Sista kollen: Har vi ett giltigt nummer nu?
-			            // Vi tar bort mellanslag för att kolla längden korrekt (6 tecken)
-			            if (regToSearch && regToSearch.replace(/\s/g, '').length === 6) {
+			            if (regToSearch && regToSearch.length > 2) {
 			                chatInput.value = ''; // Töm rutan
 			                
 			                // Auto-aktivera AI-filtret för snyggare vy
@@ -2098,17 +2089,13 @@
 			                    if(aiFilterBtn) aiFilterBtn.style.color = 'var(--primary-color)';
 			                }
 			
-			                // Kör sökningen
+			                // Kör oljesökningen
 			                lookupOilByReg(regToSearch); 
 			                return; // Stoppa här, skicka inget vanligt meddelande
-			            } 
-			            
-			            // Om man skrev /olja men vi inte hittade något nummer
-			            else if (text.toLowerCase().startsWith('/olja')) {
-			                showToast("Ange regnr (/ABC123) eller öppna ett jobb.", "warning");
+			            } else {
+			                showToast("Ange regnr (/olja ABC 123) eller öppna ett jobb.", "warning");
 			                return;
 			            }
-			            // Om man skrev /ABC men formatet var fel, låt det gå vidare som vanligt meddelande
 			        }
 			
 			        // --- 2. HANTERA REDIGERING AV GAMLA MEDDELANDEN ---
@@ -5165,75 +5152,27 @@
 			}
 
             function openCarModal(regnr) {
-			    if (!regnr) return;
-			    
-			    // Hämta jobb och senaste ägare/modell
-			    const carJobs = allJobs.filter(j => !j.deleted && j.regnr === regnr).sort((a, b) => new Date(b.datum) - new Date(a.datum));
-			    
-			    // Försök hitta bilmodell från sparad teknisk data, annars ta från senaste jobbet
-			    let carModel = "";
-			    // Om vi har jobb, kolla om vi sparat någon modell-info i 'kundnamn' eller liknande, annars tomt tills vi laddat tech-data
-			    
-			    // URL:er
-			    const biluppgifterUrl = `https://biluppgifter.se/fordon/${regnr}#vehicle-data`;
-			    document.getElementById('carModalExternalLink').href = biluppgifterUrl;
-			    document.getElementById('carModalOljemagasinetLink').href = `https://www.oljemagasinet.se/index.php?route=product/search&search=${regnr}`;
-			
-			    // --- SÄTT RUBRIK (Regnr) ---
-			    const modalTitle = document.getElementById('carModalTitle');
-			    modalTitle.textContent = `${regnr}`; 
-			
-			    // --- HANTERA TEKNISK DATA (Kortet) ---
-			    const specsContainer = document.getElementById('carTechSpecsContainer');
-			    const fetchBtn = document.getElementById('btnFetchTechData');
-			
-			    if (specsContainer) {
-			        specsContainer.style.display = 'block'; 
-			        // Standardtext medan vi letar
-			        specsContainer.innerHTML = `
-			           <p style="opacity: 0.6; text-align: center; font-style: italic; padding: 10px;">
-			               Hämtar data...
-			           </p>`;
-			        
-			        if(fetchBtn) fetchBtn.style.display = 'none'; // Göm knappen medan vi kollar
-			
-			        db.collection("vehicleSpecs").doc(regnr).get().then(doc => {
-			            if (doc.exists && doc.data().htmlContent) {
-			                // VI HAR DATA!
-			                specsContainer.innerHTML = doc.data().htmlContent;
-			                
-			                // Försök extrahera bilmodellen ur HTML:en för att uppdatera titeln snyggt
-			                // T.ex. leta efter "Fordon: Volvo V70"
-			                const tempDiv = document.createElement('div');
-			                tempDiv.innerHTML = doc.data().htmlContent;
-			                const carRow = tempDiv.textContent.match(/Bil:\s*(.*?)(?=\n|$)/i);
-			                if (carRow && carRow[1]) {
-			                     // Uppdatera titeln till "MLB844 (Volvo V70...)"
-			                     modalTitle.textContent = `${regnr} (${carRow[1].split(',')[0].trim()})`;
-			                }
-			
-			            } else {
-			                // INGEN DATA FINNS
-			                specsContainer.style.display = 'none'; // Dölj kortet
-			                if(fetchBtn) {
-			                    fetchBtn.style.display = 'flex'; // Visa hämta-knappen
-			                    fetchBtn.onclick = () => fetchAndSaveTechData(regnr);
-			                }
-			            }
-			        }).catch(err => {
-			            console.log("Error specs:", err);
-			            specsContainer.innerHTML = "<p>Kunde inte ladda data.</p>";
-			        });
-			    }
-			
-			    // Rensa sök och rendera listan
-			    const carSearch = document.getElementById('carSearch');
-			    if(carSearch) carSearch.value = ''; 
-			    
-			    renderDetailJobList(document.getElementById('carModalJobList'), carJobs, ''); 
-			    
-			    showModal('carModal'); 
-			}
+                if (!regnr) return;
+                const carJobs = allJobs.filter(j => !j.deleted && j.regnr === regnr).sort((a, b) => new Date(b.datum) - new Date(a.datum));
+                if (carJobs.length === 0) return;
+
+                const latestOwner = carJobs[0].kundnamn;
+                const totalVinst = carJobs.reduce((sum, j) => sum + (j.vinst || 0), 0);
+                
+                const biluppgifterUrl = `https://biluppgifter.se/fordon/${regnr}#vehicle-data`;
+                
+                carModalRegnr.textContent = regnr;
+                carModalExternalLink.href = biluppgifterUrl;
+                carModalExternalLinkMobile.href = biluppgifterUrl; 
+                carModalOwner.textContent = `Senaste ägare: ${latestOwner}`;
+                carModalTotalProfit.textContent = isPrivacyModeEnabled ? "---" : formatCurrency(totalVinst);
+                carModalTotalProfit.className = totalVinst > 0 ? 'stat-value money-related positive' : 'stat-value money-related';
+                carModalJobCount.textContent = carJobs.length;
+
+                carSearch.value = ''; 
+                renderDetailJobList(carModalJobList, carJobs, ''); 
+                showModal('carModal'); 
+            }
 
 			// --- NY HJÄLPFUNKTION FÖR TOPPLISTOR ---
 			function calculateTopList(jobs, key) {
@@ -6560,17 +6499,10 @@
 			    copyRegnrBtn.addEventListener('click', () => copyToClipboard(modalRegnr.value, 'Reg.nr'));
 			}
 
-            if (copyCarRegnrBtn) {
-			    copyCarRegnrBtn.addEventListener('click', (e) => {
-			        e.stopPropagation(); // Förhindra att klicket går vidare
-			        
-			        // Vi hämtar texten säkert (eftersom vi bytte ID på rubriken också)
-			        const titleEl = document.getElementById('carModalTitle') || carModalRegnr;
-			        if (titleEl) {
-			            copyToClipboard(titleEl.textContent, 'Reg.nr');
-			        }
-			    });
-			}
+            copyCarRegnrBtn.addEventListener('click', (e) => {
+                e.stopPropagation(); // Förhindra att klicket går vidare
+                copyToClipboard(carModalRegnr.textContent, 'Reg.nr');
+            });
 
 			// --- NYTT: Kopiera Reg.nr vid klick på Oljemagasinet ---
             function handleOljemagasinetClick(e) {
@@ -7358,36 +7290,21 @@
 
             // 3. Fråga Gemini (OBS: Här använder vi din NYA nyckel och RÄTT modell)
 			const prompt = `
-	            Du är en expertmekaniker med tillgång till alla fabriksdatablad.
-			    Här är rådata om bilen ${regnr} från Transportstyrelsen/Biluppgifter:
-			    """${rawText}"""
-			    
-			    Ditt uppdrag är att identifiera vilken motor bilen har och vilken olja den ska ha.
-			    
-			    STEG 1: IDENTIFIERA BILEN
-			    Leta i texten efter Modell, Årsmodell, Effekt (hk/kw), Slagvolym och Drivmedel.
-			    
-			    STEG 2: BESTÄM MOTORKOD (Deduktion)
-			    Om "Motorkod" står i texten: Använd den.
-			    Om den INTE står i texten: Använd din expertkunskap för att avgöra vilken motorkod det måste vara baserat på hk, år och modell (t.ex. Volvo V70 2015 181hk Diesel = D4204T5).
-			    
-			    STEG 3: REKOMMENDERA OLJA
-			    Baserat på den identifierade motorn, ange:
-			    - Oljemängd (Servicevolym inkl filter)
-			    - Viskositet & Klassning (t.ex. 0W-20 VCC RBS0-2AE eller 5W-30 LL).
-
-				4. 🔧 VERKSTADSDATA:
-		       - Moment Hjulbultar: (Nm).
-		       - Moment Oljeplugg: (Nm).
+	            Du är en expertmekaniker. Här är en rå textdump från en webbsida om bilen ${regnr}:
+                """${rawText}"""
+	            
+	            UPPGIFT:
+                1. Hitta "Motorkod" eller "Motorbeteckning" i texten (t.ex. CFGB, DRDC, DFSB, BLS, D4204T, B4204T, D5244T4).
+                2. Baserat PÅ DEN MOTORKODEN, ange exakt oljevolym vid service (inkl filter) och rekommenderad viskositet.
+				3. Om du inte hittar motorkoden, försök avgöra oljemängd baserat på modellnamn och hästkrafter med ett * på slutet.
 				
 	            FORMAT (Svara ENDAST med denna HTML):
-				<b>Fordonsspecifikation ${regnr}</b>
+	            <b>Oljespecifikation ${regnr}</b>
 	            <ul>
 	            <li>🚗 <b>Fordon:</b> [Identifierad Modell]</li>
 	            <li>⚙️ <b>Motorkod:</b> [Hittad kod]</li>
 	            <li>🛢️ <b>Volym:</b> [Antal] liter</li>
 	            <li>💧 <b>Viskositet:</b> [T.ex. 0W-20, 5W-30]</li>
-				<li>🔧 <b>Moment:</b> Hjul [Nm] & Oljelugg [Nm]</li>
 	            </ul>
 	        `;
 
@@ -7429,12 +7346,6 @@
 	            timestamp: new Date().toISOString(),
 	            platform: 'system',
 	            reaction: '🤖'
-	        });
-
-			// --- 6. VIKTIGT: SPARA TILL MODALEN (vehicleSpecs) ---
-	        await db.collection("vehicleSpecs").doc(regnr).set({
-	            htmlContent: answer,
-	            updatedAt: new Date().toISOString()
 	        });
 	        
 	        // Scrolla ner igen för att visa svaret
