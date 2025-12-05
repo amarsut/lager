@@ -7214,59 +7214,56 @@
 	async function lookupOilByReg(regnr) {
         regnr = regnr.replace(/\s/g, '').toUpperCase();
         
-        // Visa "Söker..." i chatten
-        db.collection("notes").add({
-            text: `🔍 Söker teknisk data för ${regnr} på Car.info...`,
-            timestamp: new Date().toISOString(),
-            platform: 'system',
-            reaction: '⏳'
-        });
+        showToast(`Söker teknisk data för ${regnr}...`, 'info');
         
         try {
-            // 1. VI BYTER KÄLLA TILL CAR.INFO (Specs-sidan)
-            // Denna sida har ofta tabeller med exakta volymer
-            const targetUrl = `https://www.car.info/sv-se/license-plate/S/${regnr}/specs`;
+            // 1. Proxy-anrop (Vi byter till corsproxy.io som är stabilare för text)
+            const targetUrl = `https://biluppgifter.se/fordon/${regnr}`;
             const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
             
             const response = await fetch(proxyUrl);
             
-            if (!response.ok) throw new Error("Kunde inte nå databasen");
+            if (!response.ok) {
+                throw new Error(`Kunde inte nå sidan (Status: ${response.status})`);
+            }
 
+            // Vi hämtar TEXT, inte JSON (detta fixar "Unexpected token"-felet)
             const rawHtml = await response.text();
-            
-            // 2. Aggressiv städning av HTML för att Gemini ska hitta rätt
+
+            if (!rawHtml || rawHtml.length < 500) {
+                throw new Error("Sidan verkar tom eller blockerad.");
+            }
+
+            // 2. Rensa HTML
             const tempDiv = document.createElement("div");
             tempDiv.innerHTML = rawHtml;
-            
-            // Ta bort menyer och reklam så Gemini inte blir förvirrad
-            const junk = tempDiv.querySelectorAll('nav, footer, script, style, svg, .ads, .cookie-consent');
-            junk.forEach(el => el.remove());
-            
-            // Vi hämtar texten men behåller lite struktur
-            const rawText = tempDiv.innerText.replace(/\s+/g, ' ').substring(0, 15000);
+            const scripts = tempDiv.querySelectorAll('script, style, meta, svg, path, footer, nav');
+            scripts.forEach(el => el.remove());
+            const rawText = tempDiv.innerText.replace(/\s+/g, ' ').substring(0, 8000);
 
-            // 3. Prompt specifikt anpassad för tekniska specifikationer
+            // 3. Fråga Gemini (OBS: Här använder vi din NYA nyckel och RÄTT modell)
             const prompt = `
-                Du är en databas-robot. Du ska extrahera oljedata för bilen ${regnr} från texten nedan.
-                TEXT: """${rawText}"""
-                INSTRUKTIONER:
-                1. Hitta Motorkod, Oljevolym och Viskositet.
-                2. Svara ENDAST med en HTML-lista (<ul>). Inget prat.
+                Du är en expertmekaniker. Här är en rå textdump från en webbsida om bilen ${regnr}:
+                """${rawText}"""
                 
-                FORMAT:
-                <b>Oljespecifikation ${regnr}:</b>
-                <ul>
-                <li>🚗 <b>Bil:</b> [Modell & År]</li>
-                <li>⚙️ <b>Motor:</b> [Kod] (eller [HK/Liter])</li>
-                <li>🛢️ <b>Mängd:</b> [Antal] Liter</li>
-                <li>💧 <b>Viskositet:</b> [T.ex. 5W-30]</li>
-                <li⚠️ <b>Notis:</b> [Kort varning om osäkerhet, annars tomt]</li>
-                </ul>
+                UPPGIFT:
+                1. Hitta "Motorkod" eller "Motorbeteckning" i texten (t.ex. D4204T, B4204T, D5244T4).
+                2. Baserat PÅ DEN MOTORKODEN, ange exakt oljevolym vid service (inkl filter) och rekommenderad viskositet.
+                
+                Svara EXAKT enligt denna mall:
+                🚗 **Fordon:** [Identifierad Modell]
+                ⚙️ **Motorkod:** [Hittad kod]
+                🛢️ **Volym:** [Antal] liter
+                💧 **Viskositet:** [T.ex. 0W-20, 5W-30]
+                ⚠️ [Eventuell varning]
+                
+                Om du inte hittar motorkoden, försök avgöra oljemängd baserat på modellnamn och hästkrafter.
             `;
 
-            // DIN NYCKEL HÄR (Jag har lagt in den du visade i tidigare kod)
+            // KLISTRA IN DIN NYA API-NYCKEL HÄR:
             const apiKey = "AIzaSyAiJsl5jBp_TaQlXlXKsTxvW-RFNd5OnUg"; 
             
+            // HÄR ÄR MODELL-ÄNDRINGEN (Vi kör på säkra 1.5-flash):
             const aiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
             
             const aiResponse = await fetch(aiUrl, {
@@ -7275,10 +7272,13 @@
                 body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
             });
             
-            const aiData = await aiResponse.json();
-            
-            if (!aiData.candidates) throw new Error("AI kunde inte tolka datan.");
+            if (!aiResponse.ok) {
+                const errData = await aiResponse.json();
+                console.error("AI Error:", errData);
+                throw new Error("Kunde inte ansluta till AI (Kontrollera API-nyckel).");
+            }
 
+            const aiData = await aiResponse.json();
             const answer = aiData.candidates[0].content.parts[0].text;
 
             // 4. Spara svaret
@@ -7286,18 +7286,16 @@
                 text: answer,
                 timestamp: new Date().toISOString(),
                 platform: 'system',
-                reaction: '🤖'
+                reaction: '🛢️'
             });
 
         } catch (err) {
             console.error(err);
-            
-            // Vid fel, ge ett snyggt felmeddelande
+            showToast("Kunde inte hämta data.", "danger");
             db.collection("notes").add({
-                text: `❌ Kunde inte hitta specifikationer på Car.info för ${regnr}.`,
+                text: `❌ Kunde inte läsa data för ${regnr}. Fel: ${err.message}`,
                 timestamp: new Date().toISOString(),
-                platform: 'system',
-                reaction: '🤖'
+                platform: 'system'
             });
         }
     }
