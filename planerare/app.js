@@ -7243,21 +7243,21 @@
 
             // 3. Fråga Gemini (OBS: Här använder vi din NYA nyckel och RÄTT modell)
             const prompt = `
-                Du är en expertmekaniker. Här är en rå textdump från en webbsida om bilen ${regnr}:
-                """${rawText}"""
+                Du är en databas-robot. Du ska extrahera oljedata för bilen ${regnr} från texten nedan.
+                TEXT: """${rawText}"""
+                INSTRUKTIONER:
+                1. Hitta Motorkod, Oljevolym och Viskositet.
+                2. Svara ENDAST med en HTML-lista (<ul>). Inget prat.
                 
-                UPPGIFT:
-                1. Hitta "Motorkod" eller "Motorbeteckning" i texten (t.ex. D4204T, B4204T, D5244T4).
-                2. Baserat PÅ DEN MOTORKODEN, ange exakt oljevolym vid service (inkl filter) och rekommenderad viskositet.
-                
-                Svara EXAKT enligt denna mall:
-                🚗 **Fordon:** [Identifierad Modell]
-                ⚙️ **Motorkod:** [Hittad kod]
-                🛢️ **Volym:** [Antal] liter
-                💧 **Viskositet:** [T.ex. 0W-20, 5W-30]
-                ⚠️ [Eventuell varning]
-                
-                Om du inte hittar motorkoden, försök avgöra oljemängd baserat på modellnamn och hästkrafter.
+                FORMAT:
+                <b>Oljespecifikation ${regnr}:</b>
+                <ul>
+                <li>🚗 <b>Bil:</b> [Modell & År]</li>
+                <li>⚙️ <b>Motor:</b> [Kod] (eller [HK/Liter])</li>
+                <li>🛢️ <b>Mängd:</b> [Antal] Liter</li>
+                <li>💧 <b>Viskositet:</b> [T.ex. 5W-30]</li>
+                <li>⚠️ <b>Notis:</b> [Kort varning om osäkerhet, annars tomt]</li>
+                </ul>
             `;
 
             // KLISTRA IN DIN NYA API-NYCKEL HÄR:
