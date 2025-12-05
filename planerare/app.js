@@ -1917,7 +1917,6 @@
 
 				const chatWindow = document.getElementById('chatWidget'); 
 			    const overlay = document.getElementById('chatWidget'); // I din kod är "overlay" samma som själva widget-containern
-			    const aiFilterBtn = document.getElementById('toggleAiFilter');
 				
 				const closeChat = () => {
 			        chatWindow.classList.remove('active');
