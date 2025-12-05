@@ -7247,7 +7247,8 @@
 	            UPPGIFT:
                 1. Hitta "Motorkod" eller "Motorbeteckning" i texten (t.ex. D4204T, B4204T, D5244T4).
                 2. Baserat PÅ DEN MOTORKODEN, ange exakt oljevolym vid service (inkl filter) och rekommenderad viskositet.
-	
+				3. Om du inte hittar motorkoden, försök avgöra oljemängd baserat på modellnamn och hästkrafter med ett * på slutet.
+				
 	            FORMAT (Svara ENDAST med denna HTML):
 	            <b>Oljespecifikation ${regnr}</b>
 	            <ul>
@@ -7256,8 +7257,6 @@
 	            <li>🛢️ <b>Volym:</b> [Antal] liter</li>
 	            <li>💧 <b>Viskositet:</b> [T.ex. 0W-20, 5W-30]</li>
 	            </ul>
-	            <br>
-	            <i>⚠️ Om du inte hittar motorkoden, försök avgöra oljemängd baserat på modellnamn och hästkrafter med ett * på slutet.</i>
 	        `;
 
             // KLISTRA IN DIN NYA API-NYCKEL HÄR:
