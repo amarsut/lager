@@ -5165,27 +5165,52 @@
 			}
 
             function openCarModal(regnr) {
-                if (!regnr) return;
-                const carJobs = allJobs.filter(j => !j.deleted && j.regnr === regnr).sort((a, b) => new Date(b.datum) - new Date(a.datum));
-                if (carJobs.length === 0) return;
-
-                const latestOwner = carJobs[0].kundnamn;
-                const totalVinst = carJobs.reduce((sum, j) => sum + (j.vinst || 0), 0);
-                
-                const biluppgifterUrl = `https://biluppgifter.se/fordon/${regnr}#vehicle-data`;
-                
-                carModalRegnr.textContent = regnr;
-                carModalExternalLink.href = biluppgifterUrl;
-                carModalExternalLinkMobile.href = biluppgifterUrl; 
-                carModalOwner.textContent = `Senaste ägare: ${latestOwner}`;
-                carModalTotalProfit.textContent = isPrivacyModeEnabled ? "---" : formatCurrency(totalVinst);
-                carModalTotalProfit.className = totalVinst > 0 ? 'stat-value money-related positive' : 'stat-value money-related';
-                carModalJobCount.textContent = carJobs.length;
-
-                carSearch.value = ''; 
-                renderDetailJobList(carModalJobList, carJobs, ''); 
-                showModal('carModal'); 
-            }
+			    if (!regnr) return;
+			    const carJobs = allJobs.filter(j => !j.deleted && j.regnr === regnr).sort((a, b) => new Date(b.datum) - new Date(a.datum));
+			    if (carJobs.length === 0) return;
+			
+			    const latestOwner = carJobs[0].kundnamn;
+			    const totalVinst = carJobs.reduce((sum, j) => sum + (j.vinst || 0), 0);
+			    
+			    const biluppgifterUrl = `https://biluppgifter.se/fordon/${regnr}#vehicle-data`;
+			    
+			    carModalRegnr.textContent = regnr;
+			    carModalExternalLink.href = biluppgifterUrl;
+			    carModalExternalLinkMobile.href = biluppgifterUrl; 
+			    carModalOwner.textContent = `Senaste ägare: ${latestOwner}`;
+			    carModalTotalProfit.textContent = isPrivacyModeEnabled ? "---" : formatCurrency(totalVinst);
+			    carModalTotalProfit.className = totalVinst > 0 ? 'stat-value money-related positive' : 'stat-value money-related';
+			    carModalJobCount.textContent = carJobs.length;
+			
+			    // --- NY KOD: Hantera Teknisk Data-kortet ---
+			    const specsContainer = document.getElementById('carTechSpecsContainer');
+			    
+			    // Kontrollera att behållaren finns (så koden inte kraschar om du missat HTML-steget)
+			    if (specsContainer) {
+			        // Återställ till standardläget (visa platshållar-text först)
+			        specsContainer.style.display = 'block'; 
+			        specsContainer.innerHTML = `
+			           <p style="opacity: 0.6; text-align: center; font-style: italic; padding: 10px;">
+			               Ingen teknisk data hämtad än. <br> Gör en sökning i chatten (/${regnr}) för att hämta.
+			           </p>`;
+			
+			        // Kolla om vi har sparat data för denna bil i Firebase
+			        db.collection("vehicleSpecs").doc(regnr).get().then(doc => {
+			            if (doc.exists && doc.data().htmlContent) {
+			                // Vi har data! Byt ut platshållaren mot den sparade HTML-koden.
+			                specsContainer.innerHTML = doc.data().htmlContent;
+			            }
+			            // Om ingen data finns, ligger platshållar-texten kvar.
+			        }).catch(err => {
+			            console.log("Kunde inte hämta vehicleSpecs:", err);
+			        });
+			    }
+			    // -------------------------------------------
+			
+			    carSearch.value = ''; 
+			    renderDetailJobList(carModalJobList, carJobs, ''); 
+			    showModal('carModal'); 
+			}
 
 			// --- NY HJÄLPFUNKTION FÖR TOPPLISTOR ---
 			function calculateTopList(jobs, key) {
