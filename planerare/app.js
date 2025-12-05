@@ -2063,12 +2063,19 @@
 			        const text = chatInput.value.trim();
 			        if (!text) return; 
 			
-			        // --- 1. KOLLA OM DET ÄR ETT OLJE-KOMMANDO ---
-			        if (text.toLowerCase().startsWith('/olja')) {
-			            let regToSearch = text.replace('/olja', '').trim();
+			        // Regex som hittar: Slash (/) följt av 3 bokstäver, ev mellanrum, 2 siffror, 1 siffra/bokstav
+			        // T.ex: /ABC123, /abc 123, /MLB88A
+			        const regnrMatch = text.match(/^\/([a-zA-Z]{3}\s*\d{2}[a-zA-Z\d])$/);
+			
+			        // Om vi hittar en matchning ELLER om man skriver gamla /olja
+			        if (regnrMatch || text.toLowerCase().startsWith('/olja')) {
 			            
-			            // Försök hitta regnr automatiskt om man inte skrev något
-			            if (!regToSearch) {
+			            // Om det var en matchning på /ABC123, ta ut numret från matchningen (grupp 1)
+			            // Annars (om man skrev /olja ABC123), ta bort "/olja" och rensa
+			            let regToSearch = regnrMatch ? regnrMatch[1] : text.replace('/olja', '').trim();
+			            
+			            // Försök hitta regnr automatiskt om man bara skrev "/olja" utan nummer (din gamla logik)
+			            if (!regToSearch && text.toLowerCase().startsWith('/olja')) {
 			                const modalRegEl = document.getElementById('regnr');
 			                const carModalRegEl = document.getElementById('carModalRegnr');
 			                const summaryRegEl = document.getElementById('modalSummaryRegnr');
@@ -2078,7 +2085,9 @@
 			                else if (summaryRegEl && summaryRegEl.offsetParent !== null) regToSearch = summaryRegEl.textContent;
 			            }
 			
-			            if (regToSearch && regToSearch.length > 2) {
+			            // Sista kollen: Har vi ett giltigt nummer nu?
+			            // Vi tar bort mellanslag för att kolla längden korrekt (6 tecken)
+			            if (regToSearch && regToSearch.replace(/\s/g, '').length === 6) {
 			                chatInput.value = ''; // Töm rutan
 			                
 			                // Auto-aktivera AI-filtret för snyggare vy
@@ -2089,13 +2098,17 @@
 			                    if(aiFilterBtn) aiFilterBtn.style.color = 'var(--primary-color)';
 			                }
 			
-			                // Kör oljesökningen
+			                // Kör sökningen
 			                lookupOilByReg(regToSearch); 
 			                return; // Stoppa här, skicka inget vanligt meddelande
-			            } else {
-			                showToast("Ange regnr (/olja ABC 123) eller öppna ett jobb.", "warning");
+			            } 
+			            
+			            // Om man skrev /olja men vi inte hittade något nummer
+			            else if (text.toLowerCase().startsWith('/olja')) {
+			                showToast("Ange regnr (/ABC123) eller öppna ett jobb.", "warning");
 			                return;
 			            }
+			            // Om man skrev /ABC men formatet var fel, låt det gå vidare som vanligt meddelande
 			        }
 			
 			        // --- 2. HANTERA REDIGERING AV GAMLA MEDDELANDEN ---
@@ -7314,7 +7327,7 @@
 				
 	            FORMAT (Svara ENDAST med denna HTML):
 	            <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
-				   <b>Teknisk Data</b> 
+				   <b>Fordonsspecifikation</b> 
 				   <span class="chat-reg-link" style="font-size:1em;">${regnr}</span>
 				</div>
 	            <ul>
