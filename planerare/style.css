@@ -8015,3 +8015,62 @@ body.offline-mode .offline-dot {
        så vi behöver bara se till att CSS-reglerna för .ai-mode inte döljer dem */
     display: block; 
 }
+
+/* --- NYTT: Styling för Teknisk Data i Modalen --- */
+
+/* Själva kortet/rutan */
+.tech-specs-card {
+    background-color: #f2f4f8; /* Ljus, kontrasterande bakgrund mot mörk modal */
+    color: #1c1c1e; /* Mörk text för läsbarhet */
+    border-radius: 12px; /* Mjuka hörn */
+    padding: 20px;
+    margin-bottom: 25px; /* Luft ner till sökfältet */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+/* Titeln inuti kortet */
+.tech-specs-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+    display: block;
+}
+
+/* Rutnätet för datan (2 kolumner) */
+.tech-specs-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Två lika breda kolumner */
+    gap: 12px 24px; /* Avstånd mellan rader (12px) och kolumner (24px) */
+}
+
+/* Varje enskild rad med data (ikon + text) */
+.tech-item {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Avstånd mellan ikon och text */
+    font-size: 0.95rem;
+    line-height: 1.4;
+}
+
+/* Ikonerna (emojis) */
+.tech-item span.icon {
+    font-size: 1.2rem;
+    min-width: 24px; /* För att linjera texten snyggt */
+    text-align: center;
+}
+
+/* Anpassning för Dark Mode (om din app växlar tema) */
+/* Vi gör kortet lite mörkare, men fortfarande ljusare än bakgrunden för kontrast */
+[data-theme="dark"] .tech-specs-card {
+    background-color: #2c2c2e; 
+    color: #ffffff;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* Mobilanpassning: Byt till 1 kolumn på små skärmar */
+@media (max-width: 600px) {
+    .tech-specs-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+}
