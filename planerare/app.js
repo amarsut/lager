@@ -1897,14 +1897,16 @@
 
 			// --- INITIERA CHATTEN (Huvudfunktion) ---
 			function initChat() {
-			    const chatList = document.getElementById('chatMessages');
+			    // --- 1. HÄMTA ELEMENTEN (Så att closeChat hittar dem) ---
+			    const chatWindow = document.getElementById('chatWidget');
+			    const overlay = document.getElementById('chatWidget'); // Samma element agerar overlay
+			    const aiFilterBtn = document.getElementById('toggleAiFilter');
+			    const chatBackBtn = document.getElementById('chatBackBtn');
 			    
-			    // Input & Skicka
+			    const chatList = document.getElementById('chatMessages');
 			    const chatInput = document.getElementById('chatInput');
 			    const chatSendBtn = document.getElementById('chatSendBtn');
 			    
-			    // Knappar & Element
-			    const chatBackBtn = document.getElementById('chatBackBtn');
 			    const searchInput = document.getElementById('chatSearchInput');
 			    const clearBtn = document.getElementById('clearChatSearch');
 			    const galleryToggleBtn = document.getElementById('toggleChatGallery'); 
@@ -1914,36 +1916,44 @@
 			    
 			    const fileInputGallery = document.getElementById('chatFileInputGallery');
 			    const fileInputCamera = document.getElementById('chatFileInputCamera');
-
-				const chatWindow = document.getElementById('chatWidget'); 
-			    const overlay = document.getElementById('chatWidget'); // I din kod är "overlay" samma som själva widget-containern
-				
-				const closeChat = () => {
-			        chatWindow.classList.remove('active');
-			        overlay.classList.remove('active');
-			        document.body.style.overflow = ''; // Återställ scroll på sidan
+			
+			    // --- 2. CLOSE-FUNKTIONEN ---
+			    const closeChat = () => {
+			        if (chatWindow) chatWindow.style.display = 'none';
+			        document.body.style.overflow = ''; // Återställ scroll
 			        
-			        // Valfritt: Återställ AI-filtret när man stänger, så man möts av "vanliga" chatten nästa gång.
-			        if (chatList.classList.contains('ai-mode')) {
+			        const mobileChatBtn = document.getElementById('mobileChatBtn');
+			        if(mobileChatBtn) mobileChatBtn.classList.remove('active');
+			
+			        // Återställ AI-filtret
+			        if (chatList && chatList.classList.contains('ai-mode')) {
 			             chatList.classList.remove('ai-mode');
 			             if(aiFilterBtn) aiFilterBtn.style.color = 'var(--text-color-light)';
 			        }
+			
+			        if (window.location.hash === '#chat') {
+			            history.back();
+			        }
 			    };
 			
+			    // --- 3. KOPPLA LYSSNARE (Använd onclick för att undvika dubbletter) ---
 			    if (chatBackBtn) {
-			        chatBackBtn.addEventListener('click', closeChat);
+			        chatBackBtn.onclick = (e) => {
+			            e.preventDefault();
+			            closeChat();
+			        };
 			    }
 			
 			    if (overlay) {
-			        overlay.addEventListener('click', (e) => {
-			            // Stäng bara om man klickar på själva bakgrunden, inte på chattfönstret
+			        overlay.onclick = (e) => {
+			            // Stäng bara om man klickar på bakgrunden, inte på meddelanden
 			            if (e.target === overlay) {
 			                closeChat();
 			            }
-			        });
+			        };
 			    }
 			
-			    if (!chatList) return; 
+			    if (!chatList) return;
 			    
 			    if (typeof currentChatLimit === 'undefined') {
 			        window.currentChatLimit = 50;
@@ -2746,10 +2756,17 @@
 			        const textContentDiv = document.createElement('div');
 			        textContentDiv.className = 'chat-text-content';
 			        
+			        // 1. Kör linkify först (säkrar texten)
 			        let processedText = typeof linkify === 'function' ? linkify(data.text) : data.text;
 			        
-			        // Lägg till sökmarkering om det behövs (från din globala sökfunktion)
-			        // OBS: Om du har en global variabel currentSearchTerm kan du använda den här, annars hoppar vi över det.
+			        // --- TILLBAKALAGT: 2. Hitta Regnr och Kundnamn ---
+			        if (typeof highlightRegNumbers === 'function') {
+			            processedText = highlightRegNumbers(processedText);
+			        }
+			        if (typeof highlightCustomerNames === 'function') {
+			            processedText = highlightCustomerNames(processedText);
+			        }
+			        // ------------------------------------------------
 			        
 			        textContentDiv.innerHTML = processedText;
 			        bubble.appendChild(textContentDiv);
