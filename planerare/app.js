@@ -7400,6 +7400,12 @@
 	            platform: 'system',
 	            reaction: '🤖'
 	        });
+
+			// --- 6. VIKTIGT: SPARA TILL MODALEN (vehicleSpecs) ---
+	        await db.collection("vehicleSpecs").doc(regnr).set({
+	            htmlContent: answer,
+	            updatedAt: new Date().toISOString()
+	        });
 	        
 	        // Scrolla ner igen för att visa svaret
 	        setTimeout(() => {
