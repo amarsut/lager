@@ -7319,7 +7319,7 @@
 	            <li>⚙️ <b>Motorkod:</b> [Hittad kod]</li>
 	            <li>🛢️ <b>Volym:</b> [Antal] liter</li>
 	            <li>💧 <b>Viskositet:</b> [T.ex. 0W-20, 5W-30]</li>
-				<li>🔧 <b>Moment:</b> Hjul [Nm] &bull; Plugg [Nm]</li>
+				<li>🔧 <b>Moment:</b> Hjul [Nm] & Oljelugg [Nm]</li>
 	            </ul>
 	        `;
 
