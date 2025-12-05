@@ -7215,44 +7215,29 @@
         regnr = regnr.replace(/\s/g, '').toUpperCase();
         showToast(`Söker teknisk data för ${regnr}...`, 'info');
 
-        // Visa ladd-ikon
-	    db.collection("notes").add({
-	        text: `🔍 Identifierar motor och hämtar specifikationer för ${regnr}...`,
-	        timestamp: new Date().toISOString(),
-	        platform: 'system',
-	        reaction: '⏳'
-	    });
-	    
-	    // Proxy-funktion
-	    const fetchViaProxy = async (targetUrl) => {
-	        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
-	        const response = await fetch(proxyUrl);
-	        if (!response.ok) throw new Error("Proxy-fel");
-	        const data = await response.json();
-	        return data.contents; 
-	    };
-	
-	    try {
-	        // STEG 1: Identifiera bilen via Biluppgifter.se (Lättare att komma åt än Car.info)
-	        // Vi behöver bara få fram "Volkswagen Tiguan 2.0 TDI" härifrån.
-	        let rawHtml = await fetchViaProxy(`https://biluppgifter.se/fordon/${regnr}`);
-	        let sourceName = "Biluppgifter + AI Databas";
-	
-	        // Om Biluppgifter misslyckas, testa Car.info som backup för identifiering
-	        if (!rawHtml || rawHtml.length < 2000) {
-	            console.log("Byter källa till Car.info...");
-	            rawHtml = await fetchViaProxy(`https://www.car.info/sv-se/license-plate/S/${regnr}`);
-	            sourceName = "Car.info + AI Databas";
-	        }
-	
-	        if (!rawHtml || rawHtml.length < 1000) throw new Error("Kunde inte identifiera bilen.");
-	
-	        // Städa HTML
-	        const tempDiv = document.createElement("div");
-	        tempDiv.innerHTML = rawHtml;
-	        const scripts = tempDiv.querySelectorAll('script, style, meta, svg, path, footer, nav, .ads');
-	        scripts.forEach(el => el.remove());
-	        const rawText = tempDiv.innerText.replace(/\s+/g, ' ').substring(0, 15000);
+        try {
+            // 1. Proxy-anrop (Vi byter till corsproxy.io som är stabilare för text)
+            const targetUrl = `https://biluppgifter.se/fordon/${regnr}`;
+            const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
+            const response = await fetch(proxyUrl);
+
+            if (!response.ok) {
+                throw new Error(`Kunde inte nå sidan (Status: ${response.status})`);
+            }
+
+            // Vi hämtar TEXT, inte JSON (detta fixar "Unexpected token"-felet)
+            const rawHtml = await response.text();
+
+            if (!rawHtml || rawHtml.length < 500) {
+                throw new Error("Sidan verkar tom eller blockerad.");
+            }
+
+            // 2. Rensa HTML
+            const tempDiv = document.createElement("div");
+            tempDiv.innerHTML = rawHtml;
+            const scripts = tempDiv.querySelectorAll('script, style, meta, svg, path, footer, nav');
+            scripts.forEach(el => el.remove());
+            const rawText = tempDiv.innerText.replace(/\s+/g, ' ').substring(0, 8000);
 
             // 3. Fråga Gemini (OBS: Här använder vi din NYA nyckel och RÄTT modell)
 			const prompt = `
@@ -7280,37 +7265,40 @@
             // HÄR ÄR MODELL-ÄNDRINGEN (Vi kör på säkra 1.5-flash):
             const aiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 
+            const aiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+
             const aiResponse = await fetch(aiUrl, {
-	            method: 'POST',
-	            headers: { 'Content-Type': 'application/json' },
-	            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-	        });
-	        
-	        if (!aiResponse.ok) throw new Error("AI Error");
-	
-	        const aiData = await aiResponse.json();
-	        const answer = aiData.candidates[0].content.parts[0].text;
-	
-	        db.collection("notes").add({
-	            text: answer,
-	            timestamp: new Date().toISOString(),
-	            platform: 'system',
-	            reaction: '🤖'
-	        });
-	
-	    } catch (err) {
-	        console.error(err);
-	        
-	        // Fallback-länk om allt skiter sig
-	        const manualLink = `https://www.car.info/sv-se/license-plate/S/${regnr}/specs`;
-	        
-	        db.collection("notes").add({
-	            text: `❌ Kunde inte identifiera motorn automatiskt. <a href="${manualLink}" target="_blank" style="color:white;text-decoration:underline;">Öppna Car.info manuellt</a>`,
-	            timestamp: new Date().toISOString(),
-	            platform: 'system',
-	            reaction: '🤖'
-	        });
-	    }
-	}
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+            });
+
+            if (!aiResponse.ok) {
+                const errData = await aiResponse.json();
+                console.error("AI Error:", errData);
+                throw new Error("Kunde inte ansluta till AI (Kontrollera API-nyckel).");
+            }
+
+            const aiData = await aiResponse.json();
+            const answer = aiData.candidates[0].content.parts[0].text;
+
+            // 4. Spara svaret
+            db.collection("notes").add({
+                text: answer,
+                timestamp: new Date().toISOString(),
+                platform: 'system',
+                reaction: '🛢️'
+            });
+
+        } catch (err) {
+            console.error(err);
+            showToast("Kunde inte hämta data.", "danger");
+            db.collection("notes").add({
+                text: `❌ Kunde inte läsa data för ${regnr}. Fel: ${err.message}`,
+                timestamp: new Date().toISOString(),
+                platform: 'system'
+            });
+        }
+    }
 
 });
