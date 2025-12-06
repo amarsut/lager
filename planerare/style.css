@@ -8201,3 +8201,26 @@ body.offline-mode .offline-dot {
 [data-theme="dark"] .tech-specs-card span {
     color: #E5E7EB;
 }
+
+/* --- FIX: TA BORT TOMRUM MELLAN HEADER & TEKNISK DATA --- */
+
+/* 1. Ta bort padding i toppen av modal-kroppen (bara för bil-modalen) */
+#carModal .modal-body {
+    padding-top: 0 !important;
+}
+
+/* 2. Ta bort marginalen ovanför teknisk data-kortet */
+.tech-specs-card {
+    margin-top: 0 !important;
+    
+    /* Valfritt: Om du vill att den ska smälta ihop ännu mer, 
+       kan du ta bort de övre rundade hörnen: */
+    /* border-top-left-radius: 0; */
+    /* border-top-right-radius: 0; */
+}
+
+/* 3. Justera headerns botten (om det fortfarande är glipa) */
+#carModalHeader {
+    padding-bottom: 0.5rem !important; /* Litet säkerhetsavstånd, eller sätt 0 */
+    border-bottom: none !important;    /* Ingen linje ivägen */
+}
