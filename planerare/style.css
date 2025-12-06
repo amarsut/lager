@@ -8368,57 +8368,56 @@ body.offline-mode .offline-dot {
     color: #fff;
 }
 
-/* Justera rubriken så ikonen linjerar snyggt */
-.tech-specs-card h4 {
-    display: flex;
-    align-items: center; 
-    gap: 4px;
+/* --- SUPER-FIX FÖR AVSTÅND (V3) --- */
+
+/* 1. Nollställ ALLA standard-marginaler i kortet */
+.tech-specs-card * {
+    margin-block-start: 0 !important;
+    margin-block-end: 0 !important;
 }
 
-/* 1. Ta bort standard-luft högst upp i modalen */
-#carModal .modal-body {
-    padding-top: 0 !important; 
-}
-
-/* 2. Dra ihop Teknisk Data-kortet */
+/* 2. Styr upp yttre ramarna (Kortet) */
 .tech-specs-card {
-    /* Minska avståndet uppåt mot linjen (var ca 1.5rem) */
-    margin-top: 0.8rem !important; 
-    
-    /* Minska avståndet nedåt mot sökfältet */
-    margin-bottom: 0.8rem !important;
-    
-    /* (Valfritt) Gör själva kortet lite kompaktare inuti också */
+    /* Minska inre luft i toppen och botten */
     padding: 1rem 1.25rem !important; 
-}
-
-/* 3. Se till att historik-listan under inte puttar ifrån sig */
-.job-history-container {
-    margin-top: 0 !important;
-}
-
-/* 1. GULA STRECKET: Minska avståndet mellan Header och Kortet */
-#carModal .modal-body {
-    padding-top: 0.25rem !important; /* Nästan ingen luft högst upp i modalen */
-}
-
-/* 1. DRA IHOP RUBRIK OCH LISTA (ÖVRE) */
-.tech-specs-card h4 {
-    margin-bottom: 0 !important; /* Tar bort all luft under rubriken */
-    padding-bottom: 0 !important;
-    min-height: 0 !important;
-}
-
-.tech-specs-card ul {
-    margin-top: 0.5rem !important; /* Endast lite luft upp mot rubriken */
-    padding-top: 0 !important;
-}
-
-/* 2. MINSKA LUFT I BOTTEN (NEDRE) */
-.tech-specs-card {
-    /* Minska den inre luften i botten av det grå kortet */
-    padding-bottom: 1rem !important; 
     
-    /* Minska avståndet ner till sökfältet */
-    margin-bottom: 0.5rem !important;
+    /* Justera yttre avstånd mot headern och sökfältet */
+    margin-top: 0.5rem !important; 
+    margin-bottom: 0.75rem !important;
+}
+
+/* 3. Rubriken (Teknisk Data...) */
+.tech-specs-card h4 {
+    /* Exakt avstånd ner till listan */
+    margin-bottom: 0.75rem !important; 
+    
+    /* Se till att den inte har någon padding */
+    padding: 0 !important;
+    border: none !important;
+    
+    /* Centrera vertikalt med loggan */
+    display: flex !important;
+    align-items: center !important;
+    min-height: 24px !important;
+}
+
+/* 4. Listan (Punktlistan) */
+.tech-specs-card ul {
+    /* VIKTIGT: Ta bort webbläsarens standard-luft */
+    margin: 0 !important;
+    padding: 0 !important;
+    
+    /* Rutnätets inställningar */
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    column-gap: 2rem !important;
+    row-gap: 0.5rem !important; /* Tajtare rader */
+}
+
+/* 5. Varje rad i listan */
+.tech-specs-card li {
+    margin: 0 !important; /* Ingen extra marginal per rad */
+    padding: 0 !important;
+    display: flex !important;
+    align-items: flex-start !important;
 }
