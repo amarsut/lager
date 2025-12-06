@@ -7386,6 +7386,9 @@
 					- Audi: #icon-brand-audi
 					- Volkswagen/VW: #icon-brand-vw
 					- Mercedes: #icon-brand-merc
+					- SEAT: #icon-brand-seat
+					- Skoda: #icon-brand-skoda
+					- Fiat: #icon-brand-fiat
 					- Annat: #icon-brand-generic
 					):
 					
