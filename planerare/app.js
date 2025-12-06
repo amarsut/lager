@@ -7340,100 +7340,99 @@
 	        if (mode === 'modal') {
 	            // --- MODAL PROMPT (Fullständig teknisk data) ---
 	            prompt = `
-					Du är en expertmekaniker med tillgång till alla fabriksdatablad.
-					Här är rådata om bilen ${regnr} från Transportstyrelsen/Biluppgifter:
-					"""${combinedRawText}"""
-
-    				Ditt uppdrag är att identifiera vilken motor bilen har och vilken motorolja och hur många liter den ska ha.
-
-    				STEG 1: IDENTIFIERA BILEN
-    				Leta i texten efter Modell, Årsmodell, Effekt (hk/kw), Slagvolym och Drivmedel.
-
-					STEG 2: BESTÄM MOTORKOD (Deduktion)
-    				Om "Motorkod" står i texten: Använd den.
-    				Om den INTE står i texten: Använd din expertkunskap för att avgöra vilken motorkod det måste vara baserat på hk, år och modell (t.ex. Volvo V70 2015 181hk Diesel = D4204T5).
-
-    				STEG 3: REKOMMENDERA MOTOROLJA
-
-				    Baserat på den identifierade motorn, ange:
-				    - Motoroljemängd (Servicevolym inkl filter)
-				    - Viskositet & Klassning (t.ex. 0W-20, 5W-40 eller 5W-30 LL).
-				
-					4. 🔧 VERKSTADSDATA:
-					- Moment Hjulbultar: (Nm).
-					- Moment Oljeplugg: (Nm).
-					
-					5. 🛠️ SERVICE
-					- Kamrem (Intervall).
-					- Växellåda.
-					
-					6. ❄️ VÄTSKOR
-					- AC (Gas/Mängd).
-					- Kylvätska.
-					- Bromsvätska.
-					
-					7. ⚡ EL
-					- Batteri (Placering/Typ).
-					- Säkring 12V.
-					
-					8. ⚖️ DRAG
-					- Max dragvikt.
-
-		            FORMAT (Svara ENDAST med denna HTML, ingen inledande text, svara med den mest relevanta informationen 
-					begränsad till 25 bokstäver/siffror om informationen blir lång):
-		            <b>Teknisk Data ${regnr}</b>
-		            <hr style="margin: 5px 0; opacity: 0.2;">
-		            <ul>
-		        	<li>🚗 <b>Bil:</b> [Märke] [Modell] ([Årsmodell])</li>
-		  			<li>⚙️ <b>Motorkod:</b> [Hittad kod] (Effekt HK)</li>
-		            <li>🛢️ <b>Motorolja:</b> [Volym] L &bull; [Viskositet]</li>
-		            <li>❄️ <b>AC:</b> [Gas] ([Mängd]g)</li>
-		            <li>⏲️ <b>Kamrem:</b> [Intervall]</li>
-		            <li>🔧 <b>Moment:</b> Hjul [Nm] &bull; Plugg [Nm]</li>
-		            <li>🔋 <b>Batteri:</b> [Placering] ([Kapacitet 50Ah], [CCA 420A], [Typ AGM/EFB/EFB+])</li>
-		            <li>⚖️ <b>Dragvikt:</b> [Kg]</li>
-		            </ul>
-		        `;
+	                Du är en expertmekaniker med tillgång till alla fabriksdatablad.
+	                Här är rådata om bilen ${regnr} från Transportstyrelsen/Biluppgifter:
+	                """${combinedRawText}"""
+	
+	                Ditt uppdrag är att identifiera vilken motor bilen har och vilken motorolja och hur många liter den ska ha.
+	
+	                STEG 1: IDENTIFIERA BILEN
+	                Leta i texten efter Modell, Årsmodell, Effekt (hk/kw), Slagvolym och Drivmedel.
+	
+	                STEG 2: BESTÄM MOTORKOD (Deduktion)
+	                Om "Motorkod" står i texten: Använd den.
+	                Om den INTE står i texten: Använd din expertkunskap för att avgöra vilken motorkod det måste vara baserat på hk, år och modell (t.ex. Volvo V70 2015 181hk Diesel = D4204T5).
+	
+	                STEG 3: REKOMMENDERA MOTOROLJA
+	                Baserat på den identifierade motorn, ange:
+	                - Motoroljemängd (Servicevolym inkl filter)
+	                - Viskositet & Klassning (t.ex. 0W-20, 5W-40 eller 5W-30 LL).
+	            
+	                4. 🔧 VERKSTADSDATA:
+	                - Moment Hjulbultar: (Nm).
+	                - Moment Oljeplugg: (Nm).
+	                
+	                5. 🛠️ SERVICE
+	                - Kamrem (Intervall).
+	                - Växellåda.
+	                
+	                6. ❄️ VÄTSKOR
+	                - AC (Gas/Mängd).
+	                - Kylvätska.
+	                - Bromsvätska.
+	                
+	                7. ⚡ EL
+	                - Batteri (Placering/Typ).
+	                - Säkring 12V.
+	                
+	                8. ⚖️ DRAG
+	                - Max dragvikt.
+	
+	                FORMAT (Svara ENDAST med denna HTML, ingen inledande text, svara med den mest relevanta informationen 
+	                begränsad till 25 bokstäver/siffror om informationen blir lång):
+	                <b>Teknisk Data ${regnr}</b>
+	                <hr style="margin: 5px 0; opacity: 0.2;">
+	                <ul>
+	                <li>🚗 <b>Bil:</b> [Märke] [Modell] ([Årsmodell])</li>
+	                <li>⚙️ <b>Motorkod:</b> [Hittad kod] (Effekt HK)</li>
+	                <li>🛢️ <b>Motorolja:</b> [Volym] L &bull; [Viskositet]</li>
+	                <li>❄️ <b>AC:</b> [Gas] ([Mängd]g)</li>
+	                <li>⏲️ <b>Kamrem:</b> [Intervall]</li>
+	                <li>🔧 <b>Moment:</b> Hjul [Nm] &bull; Plugg [Nm]</li>
+	                <li>🔋 <b>Batteri:</b> [Placering] ([Kapacitet 50Ah], [CCA 420A], [Typ AGM/EFB/EFB+])</li>
+	                <li>⚖️ <b>Dragvikt:</b> [Kg]</li>
+	                </ul>
+	            `;
 	        } else {
 	            // --- CHAT PROMPT (Fokus på olja/service) ---
 	            prompt = `
 	                Du är en expertmekaniker med tillgång till alla fabriksdatablad.
-				    Här är rådata om bilen ${regnr} från Transportstyrelsen/Biluppgifter:
-					"""${combinedRawText}"""
-				    
-				    Ditt uppdrag är att identifiera vilken motor bilen har och vilken motorolja och hur många liter den ska ha.
-				    
-				    STEG 1: IDENTIFIERA BILEN
-				    Leta i texten efter Modell, Årsmodell, Effekt (hk/kw), Slagvolym och Drivmedel.
-				    
-				    STEG 2: BESTÄM MOTORKOD (Deduktion)
-				    Om "Motorkod" står i texten: Använd den.
-				    Om den INTE står i texten: Använd din expertkunskap för att avgöra vilken motorkod det måste vara baserat på hk, år och modell (t.ex. Volvo V70 2015 181hk Diesel = D4204T5).
-				    
-				    STEG 3: REKOMMENDERA MOTOROLJA
-				    Baserat på den identifierade motorn, ange:
-				    - Motoroljemängd (Servicevolym inkl filter)
-				    - Viskositet & Klassning (t.ex. 0W-20 VCC RBS0-2AE eller 5W-30 LL).
+	                Här är rådata om bilen ${regnr} från Transportstyrelsen/Biluppgifter:
+	                """${combinedRawText}"""
+	                
+	                Ditt uppdrag är att identifiera vilken motor bilen har och vilken motorolja och hur många liter den ska ha.
+	                
+	                STEG 1: IDENTIFIERA BILEN
+	                Leta i texten efter Modell, Årsmodell, Effekt (hk/kw), Slagvolym och Drivmedel.
+	                
+	                STEG 2: BESTÄM MOTORKOD (Deduktion)
+	                Om "Motorkod" står i texten: Använd den.
+	                Om den INTE står i texten: Använd din expertkunskap för att avgöra vilken motorkod det måste vara baserat på hk, år och modell (t.ex. Volvo V70 2015 181hk Diesel = D4204T5).
+	                
+	                STEG 3: REKOMMENDERA MOTOROLJA
+	                Baserat på den identifierade motorn, ange:
+	                - Motoroljemängd (Servicevolym inkl filter)
+	                - Viskositet & Klassning (t.ex. 0W-20 VCC RBS0-2AE eller 5W-30 LL).
 	
-					4. 🔧 VERKSTADSDATA:
-			       - Moment Hjulbultar: (Nm).
-			       - Moment Oljeplugg: (Nm).
-					
-		            FORMAT (Svara ENDAST med denna HTML):
-					<b>Fordonsspecifikation ${regnr}</b>
-		            <ul>
-		            <li>🚗 <b>Fordon:</b> [Identifierad Modell]</li>
-		            <li>⚙️ <b>Motorkod:</b> [Hittad kod]</li>
-		            <li>🛢️ <b>Motorolja:</b> [Antal] liter</li>
-		            <li>💧 <b>Viskositet:</b> [T.ex. 0W-20, 5W-30]</li>
-					<li>🔧 <b>Moment:</b> Hjul [Nm] & Oljelugg [Nm]</li>
-		            </ul>
+	                4. 🔧 VERKSTADSDATA:
+	                - Moment Hjulbultar: (Nm).
+	                - Moment Oljeplugg: (Nm).
+	                
+	                FORMAT (Svara ENDAST med denna HTML):
+	                <b>Fordonsspecifikation ${regnr}</b>
+	                <ul>
+	                <li>🚗 <b>Fordon:</b> [Identifierad Modell]</li>
+	                <li>⚙️ <b>Motorkod:</b> [Hittad kod]</li>
+	                <li>🛢️ <b>Motorolja:</b> [Antal] liter</li>
+	                <li>💧 <b>Viskositet:</b> [T.ex. 0W-20, 5W-30]</li>
+	                <li>🔧 <b>Moment:</b> Hjul [Nm] & Oljelugg [Nm]</li>
+	                </ul>
 	            `;
 	        }
 	
 	        // --- 4. ANROPA AI (Gemini 1.5 Flash) ---
 	        const apiKey = CONFIG.AI_API_KEY; 
-			const aiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+	        const aiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 	
 	        const aiResponse = await fetch(aiUrl, {
 	            method: 'POST',
@@ -7453,10 +7452,12 @@
 	        // --- 5. HANTERA RESULTAT BASERAT PÅ MODE ---
 	        
 	        if (mode === 'chat') {
-	            // Uppdatera ladd-meddelandet
-	            if (loadingMsgRef) await loadingMsgRef.update({ reaction: '✅' });
+	            // A. RADERA ladd-meddelandet ("Söker...") helt
+	            if (loadingMsgRef) {
+	                await loadingMsgRef.delete(); 
+	            }
 	            
-	            // Lägg till svaret i chatten
+	            // Lägg till svaret i chatten med robot-ikonen
 	            await db.collection("notes").add({
 	                text: htmlContent,
 	                timestamp: new Date().toISOString(),
@@ -7490,7 +7491,19 @@
 	
 	        if (mode === 'chat') {
 	            showToast("Analys misslyckades.", "danger");
-	            if (loadingMsgRef) await loadingMsgRef.update({ text: `❌ ${errMsg}`, reaction: '❌' });
+	            
+	            // 1. Ta bort "Söker..." meddelandet även vid fel
+	            if (loadingMsgRef) {
+	                await loadingMsgRef.delete(); 
+	            }
+	
+	            // 2. Skapa nytt felmeddelande MED '🤖' så det hamnar i AI-filtret
+	            await db.collection("notes").add({
+	                text: `⚠️ <b>AI FEL:</b> ${errMsg}`,
+	                timestamp: new Date().toISOString(),
+	                platform: 'system',
+	                reaction: '🤖' // <--- Nyckeln för att visas i AI-fliken
+	            });
 	        } 
 	        else if (mode === 'modal') {
 	            showToast(errMsg, "danger");
