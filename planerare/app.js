@@ -7463,7 +7463,7 @@
             // 3. Fråga Gemini (OBS: Här använder vi din NYA nyckel och RÄTT modell)
 			const prompt = `
 	            Du är en expertmekaniker med tillgång till alla fabriksdatablad.
-			    Här är rådata om bilen ${regnr} från Transportstyrelsen/Biluppgifter:
+			    Här är rådata om bilen ${regnr} från Transportstyrelsen/Biluppgifter/Car.info/Castrol:
 			    """${rawText}"""
 			    
 			    Ditt uppdrag är att identifiera vilken motor bilen har och vilken motorolja och hur många liter den ska ha.
@@ -7473,9 +7473,12 @@
 			    
 			    STEG 2: BESTÄM MOTORKOD (Deduktion)
 			    Om "Motorkod" står i texten: Använd den.
-			    Om den INTE står i texten: Använd din expertkunskap för att avgöra vilken motorkod det måste vara baserat på hk, år och modell (t.ex. Volvo V70 2015 181hk Diesel = D4204T5).
+			    Om den INTE står i texten: Använd din expertkunskap för att avgöra vilken motorkod det måste vara baserat på bränsle, effekt (hk/kw), år och modell (t.ex. Volvo V70 2015 181hk Diesel = D4204T5).
 			    
 			    STEG 3: REKOMMENDERA MOTOROLJA
+				Oljevolymen är kopplad till MOTORKODEN, inte registreringsnumret.
+				Använd din interna databas för att hitta servicevolym (inkl filter) för den specifika motorkoden.
+				Om du är osäker på exakt volym, ange ett intervall (t.ex. 5.2 - 5.7 L) och skriv "❗".
 			    Baserat på den identifierade motorn, ange:
 			    - Motoroljemängd (Servicevolym inkl filter)
 			    - Viskositet & Klassning (t.ex. 0W-20 VCC RBS0-2AE eller 5W-30 LL).
@@ -7483,6 +7486,8 @@
 				4. 🔧 VERKSTADSDATA:
 		       - Moment Hjulbultar: (Nm).
 		       - Moment Oljeplugg: (Nm).
+
+			   VIKTIGT: Om du gissar volymen, skriv "❗". Om du är säker baserat på motorkod, skriv "✅".
 				
 	            FORMAT (Svara ENDAST med denna HTML):
 				<b>Fordonsspecifikation ${regnr}</b>
