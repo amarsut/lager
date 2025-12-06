@@ -8051,3 +8051,70 @@ body.offline-mode .offline-dot {
     width: 100%;
     justify-content: center;
 }
+
+/* --- Teknisk Data Kort-Design i Modalen --- */
+
+/* Själva behållaren för datan */
+#carTechSpecsContainer {
+    background-color: #f8f9fb; /* Ljus, modern gråblå ton */
+    border-radius: 12px; /* Mjuka hörn */
+    padding: 20px; /* Luft inuti boxen */
+    margin-top: 20px; /* Avstånd från registreringsnumret ovanför */
+    border: 1px solid #eef0f5; /* En subtil ram */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03); /* En mycket lätt skugga för djup */
+}
+
+/* Rubriken (Det som är <b>Teknisk Data...</b> i HTML-koden) */
+#carTechSpecsContainer > b:first-child {
+    display: block;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1a2a3a; /* Mörk, proffsig färg */
+    margin-bottom: 15px;
+    text-align: center; /* Centrera rubriken */
+    letter-spacing: 0.5px;
+}
+
+/* Dölj den gamla <hr> linjen, vi använder borders på listan istället */
+#carTechSpecsContainer hr {
+    display: none;
+}
+
+/* Ta bort standard punktlist-stil */
+#carTechSpecsContainer ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+/* Styla varje rad i listan */
+#carTechSpecsContainer li {
+    padding: 12px 0; /* Luft över och under varje rad */
+    border-bottom: 1px solid #e1e5eb; /* En snygg avdelare mellan raderna */
+    font-size: 0.95rem;
+    color: #4a5568; /* Något mjukare textfärg för värdena */
+    display: flex;
+    align-items: flex-start; /* Se till att texten linjerar snyggt i toppen om den bryts */
+    line-height: 1.5;
+}
+
+/* Ta bort linjen på sista raden */
+#carTechSpecsContainer li:last-child {
+    border-bottom: none;
+}
+
+/* Styla etiketterna (Det som är fetstilt, t.ex. <b>Motorolja:</b>) */
+#carTechSpecsContainer li b {
+    color: #2d3748; /* Mörkare färg för etiketten för kontrast */
+    font-weight: 600;
+    margin-right: 8px; /* Avstånd mellan etikett och värde */
+    white-space: nowrap; /* Förhindra att korta etiketter bryts */
+}
+
+/* Justera emojin lite så den inte känns för "blaffig" */
+/* Vi antar att emojin är det första tecknet i listan */
+#carTechSpecsContainer li {
+    /* Vi ökar indraget något för att ge plats åt emojin */
+    text-indent: -4px; 
+    padding-left: 4px;
+}
