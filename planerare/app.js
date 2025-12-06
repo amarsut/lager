@@ -7357,7 +7357,7 @@
 
 				    Baserat på den identifierade motorn, ange:
 				    - Motoroljemängd (Servicevolym inkl filter)
-				    - Viskositet & Klassning (t.ex. 0W-20 VCC RBS0-2AE eller 5W-30 LL).
+				    - Viskositet & Klassning (t.ex. 0W-20, 5W-40 eller 5W-30 LL).
 				
 					4. 🔧 VERKSTADSDATA:
 					- Moment Hjulbultar: (Nm).
@@ -7379,12 +7379,13 @@
 					8. ⚖️ DRAG
 					- Max dragvikt.
 
-		            FORMAT (Svara ENDAST med denna HTML, ingen inledande text, svara med den mest relevanta informationen begränsad till 25 bokstäver/siffror om informationen blir lång):
+		            FORMAT (Svara ENDAST med denna HTML, ingen inledande text, svara med den mest relevanta informationen 
+					begränsad till 25 bokstäver/siffror om informationen blir lång):
 		            <b>Teknisk Data ${regnr}</b>
 		            <hr style="margin: 5px 0; opacity: 0.2;">
 		            <ul>
-		        	<li>🚗 <b>Bil:</b> [Märke] [Modell] ([Motor])</li>
-		  			<li>⚙️ <b>Motorkod:</b> [Hittad kod]</li>
+		        	<li>🚗 <b>Bil:</b> [Märke] [Modell] ([Årsmodell])</li>
+		  			<li>⚙️ <b>Motorkod:</b> [Hittad kod] (Effekt HK)</li>
 		            <li>🛢️ <b>Motorolja:</b> [Volym] L &bull; [Viskositet]</li>
 		            <li>❄️ <b>AC:</b> [Gas] ([Mängd]g)</li>
 		            <li>⏲️ <b>Kamrem:</b> [Intervall]</li>
