@@ -7390,7 +7390,7 @@
 		            <li>❄️ <b>AC:</b> [Gas] ([Mängd]g)</li>
 		            <li>⏲️ <b>Kamrem:</b> [Intervall]</li>
 		            <li>🔧 <b>Moment:</b> Hjul [Nm] &bull; Plugg [Nm]</li>
-		            <li>🔋 <b>Batteri:</b> [Placering] (Kapacitet 50Ah, CCA 420A, Typ AGM/EFB/EFB+)</li>
+		            <li>🔋 <b>Batteri:</b> [Placering] ([Kapacitet 50Ah], [CCA 420A], [Typ AGM/EFB/EFB+])</li>
 		            <li>⚖️ <b>Dragvikt:</b> [Kg]</li>
 		            </ul>
 		        `;
