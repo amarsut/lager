@@ -8353,6 +8353,34 @@ body.offline-mode .offline-dot {
     color: #9CA3AF; /* Ljusare grå i dark mode (Cool Gray 400) */
 }
 
+/* --- UPPDATERAD RUBRIK MED LOGO --- */
+.tech-specs-card h4 {
+    display: flex; /* Lägger logga och text på rad */
+    align-items: center; /* Centrerar dem vertikalt */
+    gap: 10px; /* Luft mellan logga och text */
+    
+    margin: 0 0 1.5rem 0 !important;
+    font-size: 0.95rem; /* Lite större text för att matcha loggan */
+    font-weight: 700;
+    color: #111827;
+    border: none !important; 
+    padding-bottom: 0 !important;
+}
+
+/* Stil för bilmärkes-loggan */
+.brand-logo {
+    width: 28px;
+    height: 28px;
+    object-fit: contain; /* Ser till att loggan inte klipps */
+    border-radius: 4px; /* Mjuka hörn om loggan är fyrkantig */
+}
+
+/* Dark mode fix (om loggan är svart kan den behöva en ljus bakgrund) */
+[data-theme="dark"] .brand-logo {
+    background-color: rgba(255,255,255,0.9);
+    padding: 2px;
+    border-radius: 50%; /* Gör den rund i dark mode för snyggare kontrast */
+}
 
 
 
