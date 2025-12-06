@@ -8163,14 +8163,6 @@ body.offline-mode .offline-dot {
     line-height: 1.4;
 }
 
-.tech-specs-card .spec-icon {
-    flex-shrink: 0;
-    width: 20px;
-    margin-right: 8px;
-    text-align: center;
-    opacity: 0.8;
-}
-
 .tech-specs-card .spec-content {
     display: flex;
     flex-direction: row;
@@ -8182,9 +8174,6 @@ body.offline-mode .offline-dot {
     font-weight: 600;
     color: #374151;
     margin-right: 2px;
-}
-.tech-specs-card strong::after {
-    content: ":";
 }
 
 .tech-specs-card span {
@@ -8348,6 +8337,21 @@ body.offline-mode .offline-dot {
     text-align: center;
 }
 
+/* NY CSS FÖR SVG-IKONERNA I TEKNISK DATA */
+.spec-icon-svg {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px; /* Avstånd till texten */
+    flex-shrink: 0;     /* Krymp inte */
+    color: #4B5563;     /* Mörkgrå färg (Cool Gray 600) */
+    stroke-width: 1.5;  /* Lite tunnare linjer för en modern look */
+    margin-top: 1px;    /* Finjustera höjd mot texten */
+}
+
+/* Anpassa för Dark Mode */
+[data-theme="dark"] .spec-icon-svg {
+    color: #9CA3AF; /* Ljusare grå i dark mode (Cool Gray 400) */
+}
 
 
 
