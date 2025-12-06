@@ -668,21 +668,17 @@
     <div id="carModal" class="modal-backdrop" data-modal-id="carModal">
     <div class="modal-content">
         <div class="modal-header detail-modal-header" id="carModalHeader">
-    
 		    <div class="detail-modal-header-titles">
-		        
 		        <div class="reg-title-row">
 		            <h2 id="carModalRegnr"></h2>
 		            <button class="icon-btn copy-icon-btn" id="copyCarRegnrBtn" title="Kopiera Reg.nr">
 		                <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-clipboard"></use></svg>
 		            </button>
 		        </div>
-		
 		        <div id="carModalOwner" class="owner-badge"></div> 
 		    </div>
 		
 		    <div class="header-right-group">
-		        
 		        <div class="header-actions-desktop">
 		             <a id="carModalExternalLink" href="#" target="_blank" class="button secondary external-pill small">
 		                <img src="https://biluppgifter.se/favicon/favicon.ico" alt="Ikon">
@@ -690,12 +686,10 @@
 		            </a>
 		            <a id="carModalOljemagasinetLink" href="#" target="_blank" class="button secondary external-pill small">
 		                <img src="images/oljemagasinet-favico.png" alt="Ikon">
-		                <span>Oljemagasinet</span>
+		                <span>Delar</span>
 		            </a>
 		        </div>
-		
 		        <div class="divider-vertical"></div>
-		
 		        <button class="modal-close-btn" id="carModalCloseBtn" aria-label="Stäng modal">
 		            <svg class="icon" viewBox="0 0 24 24"><use href="#icon-close"></use></svg>
 		        </button>
@@ -703,22 +697,24 @@
 		</div>
         
         <div class="modal-body">
-            <div id="carTechSpecsContainer" class="tech-specs-card" style="display: none;">
-                </div>
-            
-            <button id="btnFetchTechData" class="button secondary full-width-btn" style="display: none; margin-bottom: 1.5rem;">
-                <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-search"></use></svg>
-                <span>Hämta Teknisk AI-Data</span>
-            </button>
-            
-            <div class="search-wrapper" style="margin-bottom: 1rem;">
-                <svg class="icon icon-search" viewBox="0 0 24 24"><use href="#icon-search"></use></svg>
-                <input type="search" id="carSearch" placeholder="Filtrera historik...">
-            </div>
-
-            <ul class="detail-job-list" id="carModalJobList">
-            </ul>
-        </div>
+		    <div id="carTechSpecsContainer" class="tech-specs-card" style="display: none;">
+		        </div>
+		    
+		    <button id="btnFetchTechData" class="button secondary full-width-btn" style="display: none; margin-bottom: 1rem;">
+		        <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-search"></use></svg>
+		        <span>Hämta Teknisk AI-Data</span>
+		    </button>
+		    
+		    <div class="job-history-container">
+		        <div class="search-wrapper embedded-search">
+		            <svg class="icon icon-search" viewBox="0 0 24 24"><use href="#icon-search"></use></svg>
+		            <input type="search" id="carSearch" placeholder="Filtrera historik...">
+		        </div>
+		
+		        <ul class="detail-job-list" id="carModalJobList">
+		        </ul>
+		    </div>
+		</div>
         
         <div class="sticky-link-buttons">
              <a id="carModalExternalLinkMobile" href="#" target="_blank" class="button secondary">
