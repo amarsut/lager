@@ -8142,4 +8142,100 @@ body.offline-mode .offline-dot {
     color: #FFFFFF; /* Vit etikett */
 }
 
+/* --- MODERN REG-MODAL DESIGN (Referensbild-stil) --- */
+
+/* 1. Huvudkortet för Teknisk Data */
+.tech-specs-card {
+    background-color: #F9FAFB; /* Mycket ljus grå (Ljust läge) */
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+/* Anpassning för Dark Mode (Mörkgrå bakgrund som bilden) */
+[data-theme="dark"] .tech-specs-card {
+    background-color: #1C1C1E; /* Mörk bakgrund */
+    border-color: #2C2C2E;
+}
+
+/* 2. Rubriken ("Teknisk Data...") */
+.tech-specs-card h4 {
+    margin: 0 0 1rem 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-color);
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+/* 3. Listan (Grid-layout) */
+.tech-specs-card ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    /* Två kolumner på desktop, justera gap för luftighet */
+    grid-template-columns: 1fr 1fr; 
+    column-gap: 2rem; 
+    row-gap: 0.75rem; 
+}
+
+/* 4. List-objekten (Raden med Bil, Olja etc) */
+.tech-specs-card li {
+    display: flex;
+    align-items: flex-start; /* VIKTIGT: Detta gör att ikonen stannar uppe vid radbrytning */
+    font-size: 0.85rem;
+    line-height: 1.4;
+    color: var(--text-color);
+}
+
+/* Ikon/Emoji justering */
+.tech-specs-card li .spec-icon {
+    flex-shrink: 0; /* Förhindra att ikonen krymper */
+    width: 1.2rem;
+    margin-right: 0.5rem;
+    margin-top: 1px; /* Finjustera höjden mot texten */
+    text-align: center;
+}
+
+/* Innehålls-wrapper (Etikett + Värde) */
+.tech-specs-card li .spec-content {
+    display: flex;
+    flex-direction: column; /* Stapla på mobil om det är extremt trångt, annars rad */
+}
+
+/* Etiketten (t.ex. "Bil:") */
+.tech-specs-card li strong {
+    font-weight: 600;
+    color: var(--text-color);
+    margin-right: 4px;
+    white-space: nowrap; /* Förhindra att etiketten bryts */
+}
+
+/* Värdet (t.ex. "Volvo V70...") */
+.tech-specs-card li span {
+    color: var(--text-color-light); /* Lite ljusare text för värdet */
+    word-break: break-word; /* Bryt långa ord om det behövs */
+}
+
+/* --- Mobilanpassning för Modal --- */
+@media (max-width: 600px) {
+    .tech-specs-card ul {
+        grid-template-columns: 1fr; /* En kolumn på mobil */
+        row-gap: 0.75rem;
+    }
+    
+    /* Dölj desktop-knapparna i headern på mobil */
+    .header-actions-desktop {
+        display: none !important;
+    }
+}
+
+/* --- Justera Header Titel --- */
+#carModalHeader h2 {
+    font-size: 1.1rem;
+    font-weight: 700;
+}
 
