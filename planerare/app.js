@@ -7381,17 +7381,18 @@
 
 		            FORMAT (Svara ENDAST med denna HTML, ingen inledande text, svara med den mest relevanta informationen 
 					begränsad till 25 bokstäver/siffror om informationen blir lång):
-		            <h4>Teknisk Data ${regnr}</h4>
-				    <ul>
-				      <li><div class="spec-icon">🚗</div><div class="spec-content"><strong>Bil</strong><span>[Märke] [Modell] ([Motor])</span></div></li>
-				      <li><div class="spec-icon">⚙️</div><div class="spec-content"><strong>Motorkod</strong><span>[Kod]</span></div></li>
-				      <li><div class="spec-icon">🛢️</div><div class="spec-content"><strong>Motorolja</strong><span>[Volym] L &bull; [Viskositet]</span></div></li>
-				      <li><div class="spec-icon">❄️</div><div class="spec-content"><strong>AC</strong><span>[Gas] ([Mängd]g)</span></div></li>
-				      <li><div class="spec-icon">⏲️</div><div class="spec-content"><strong>Kamrem</strong><span>[Intervall]</span></div></li>
-				      <li><div class="spec-icon">🔧</div><div class="spec-content"><strong>Moment</strong><span>Hjul [Nm] &bull; Plugg [Nm]</span></div></li>
-				      <li><div class="spec-icon">🔋</div><div class="spec-content"><strong>Batteri</strong><span>[Placering/Typ]</span></div></li>
-				      <li><div class="spec-icon">⚖️</div><div class="spec-content"><strong>Dragvikt</strong><span>[Kg]</span></div></li>
-				    </ul>
+		            <b>Teknisk Data ${regnr}</b>
+		            <hr style="margin: 5px 0; opacity: 0.2;">
+		            <ul>
+		        	<li>🚗 <b>Bil:</b> [Märke] [Modell] ([Årsmodell])</li>
+		  			<li>⚙️ <b>Motorkod:</b> [Hittad kod] (Effekt HK)</li>
+		            <li>🛢️ <b>Motorolja:</b> [Volym] L &bull; [Viskositet]</li>
+		            <li>❄️ <b>AC:</b> [Gas] ([Mängd]g)</li>
+		            <li>⏲️ <b>Kamrem:</b> [Intervall]</li>
+		            <li>🔧 <b>Moment:</b> Hjul [Nm] &bull; Plugg [Nm]</li>
+		            <li>🔋 <b>Batteri:</b> [Placering] (Kapacitet 50Ah, CCA 420A, Typ AGM/EFB/EFB+)</li>
+		            <li>⚖️ <b>Dragvikt:</b> [Kg]</li>
+		            </ul>
 		        `;
 	        } else {
 	            // --- CHAT PROMPT (Fokus på olja/service) ---
