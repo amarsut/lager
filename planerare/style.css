@@ -335,20 +335,6 @@ h1, h2, h3, h4, h5, h6 {
 .stat-card[data-filter="offererad"] .icon-sm { color: var(--info-color); }
 .stat-card[data-filter="alla"] .icon-sm { color: var(--text-color-light); }
 
-
-/*NY SÖKRUTA*/
-/* --- MODERN SÖK & FILTER-PANEL --- */
-
-/* Huvudbehållaren för raden */
-.view-controls {
-    display: flex;
-    justify-content: stretch;
-    align-items: center; /* Centrera vertikalt */
-    width: 100%;
-    margin-bottom: 2rem;
-    gap: 1rem; /* Luft mellan sök och filter */
-}
-
 /* --- 1. SÖKFÄLTET (Modern Look) --- */
 .search-wrapper {
     position: relative;
@@ -677,15 +663,6 @@ mark {
 
 /* Ta bort linjer inuti raderna */
 #jobbOversikt td { border-bottom: none; }
-
-/* Hover-effekt: Lyft raden */
-#jobbOversikt tbody tr[data-id]:hover {
-    transform: translateY(-3px) scale(1.005); /* Lyft och förstora minimalt */
-    box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.1); /* Snygg djupskugga */
-    background-color: var(--content-bg); /* Behåll vit bakgrund */
-    z-index: 10;
-    position: relative;
-}
 
 /* Anpassa Prio-raden för den nya stilen */
 #jobbOversikt tbody tr.prio-row {
@@ -1093,41 +1070,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     grid-column: 1 / -1; text-align: right;
     font-size: 1.125rem; font-weight: 600; padding: 0.5rem 0;
 }
-
-/* Prio Toggle (nu i modal body) */
-.prio-toggle-wrapper {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 0.8rem;
-    border-radius: 8px;
-    border: 1px solid var(--border-color);
-    background-color: var(--bg-color);
-    color: var(--text-color-light);
-    font-size: 0.8rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all var(--transition-speed-fast) ease;
-    white-space: nowrap;
-    margin-left: auto; /* Knuffa till höger */
-}
-.prio-toggle-wrapper .icon-sm {
-    transition: all var(--transition-speed-fast) ease;
-    width: 0.9rem;
-    height: 0.9rem;
-}
-.prio-toggle-wrapper:hover {
-    border-color: var(--danger-color);
-    color: var(--danger-color);
-}
-.prio-toggle-wrapper input[type="checkbox"] {
-    display: none;
-}
-.prio-toggle-wrapper input[type="checkbox"]:checked + .icon-sm,
-.prio-toggle-wrapper input[type="checkbox"]:checked + .icon-sm + span {
-    color: var(--danger-color);
-}
-
 
 .modal-actions {
     grid-column: 1 / -1; display: flex;
@@ -2827,77 +2769,6 @@ input[type="search"]::-webkit-search-results-decoration {
 /* Se till att "idag"-markeringen alltid vinner över "ledig dag" */
 .fc .fc-day-today {
     background-color: var(--primary-light) !important;
-}
-
-/* --- NYTT: Stil för Detaljerad Utgifts-spårning --- */
-
-.expense-add-form {
-    display: grid;
-    /* ÄNDRAD: Ge kostnad-fältet en fast bredd (t.ex. 120px) och låt namn-fältet (1fr) ta resten */
-    grid-template-columns: 1fr 120px auto; 
-    gap: 0.75rem;
-    align-items: center;
-    margin-bottom: 1rem;
-}
-
-/* Mobil-anpassning för formuläret */
-@media (max-width: 480px) {
-    .expense-add-form {
-        grid-template-columns: 1fr; /* Stapla allt på mobilen */
-    }
-    .expense-add-form #addExpenseBtn {
-        justify-content: center; /* Centrera "Lägg till"-knappen */
-    }
-}
-
-.expense-add-form input {
-    margin: 0;
-}
-
-.expense-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
-.expense-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: var(--bg-color);
-    padding: 0.5rem 0.75rem;
-    border-radius: 6px;
-    border: 1px solid var(--border-color);
-}
-
-.expense-item span {
-    font-weight: 500;
-}
-
-.expense-item .item-name {
-    color: var(--text-color);
-    padding-right: 1rem;
-}
-
-.expense-item .item-cost {
-    color: var(--danger-color); /* Gör kostnaden röd */
-    font-weight: 600;
-    flex-shrink: 0;
-    margin-right: 0.5rem;
-}
-
-.expense-item .delete-expense-btn {
-    background: transparent;
-    border: none;
-    color: var(--text-color-light);
-    cursor: pointer;
-    padding: 0.25rem;
-    display: flex;
-    border-radius: 4px;
-}
-.expense-item .delete-expense-btn:hover {
-    color: var(--danger-color);
-    background-color: var(--danger-light);
 }
 
 /* --- NYTT: Stilar för Jobb-mallarnas ikoner --- */
@@ -8112,89 +7983,6 @@ body.offline-mode .offline-dot {
     display: flex;
 }
 
-/* --- 3. TEKNISK DATA KORTET --- */
-.tech-specs-card {
-    /* Mörkare bakgrund så den syns mot vit modal */
-    background-color: #F3F4F6; 
-    border-radius: 12px;
-    padding: 1.25rem;
-    
-    /* Minskat avstånd mot headern */
-    margin-top: 1rem; 
-    margin-bottom: 1rem;
-    
-    border: none; /* Ingen ram */
-}
-
-/* Rubriken i kortet */
-.tech-specs-card h4 {
-    padding-bottom: 2rem !important; 
-    margin-bottom: 0 !important;
-    font-size: 0.9rem;
-    font-weight: 700;
-    color: #111827;
-    border: none !important; 
-}
-
-/* Säkerhetsåtgärd: Om det råkar finnas en <hr>-linje, dölj den */
-.tech-specs-card ul {
-    margin-top: 0 !important;
-}
-
-/* Listan */
-.tech-specs-card ul {
-    display: grid;
-    grid-template-columns: 1fr 1fr; /* Två kolumner */
-    column-gap: 2rem;
-    row-gap: 0.8rem;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-
-    /* Detta tvingar listan att fylla vertikalt först (1-4 vänster, 5-8 höger) */
-    grid-auto-flow: column; 
-    grid-template-rows: repeat(4, auto); /* Vi låser den till 4 rader */
-}
-
-.tech-specs-card li {
-    display: flex;
-    align-items: flex-start;
-    font-size: 0.85rem;
-    line-height: 1.4;
-}
-
-.tech-specs-card .spec-content {
-    display: flex;
-    flex-direction: row;
-    gap: 4px;
-    flex-wrap: wrap;
-}
-
-.tech-specs-card strong {
-    font-weight: 600;
-    color: #374151;
-    margin-right: 2px;
-}
-
-.tech-specs-card span {
-    color: #111827;
-    font-weight: 500;
-}
-
-/* --- 4. DARK MODE FIXAR --- */
-[data-theme="dark"] .owner-badge {
-    background-color: rgba(255,255,255,0.1);
-    color: #E5E7EB;
-}
-[data-theme="dark"] .tech-specs-card {
-    background-color: #1C1C1E; /* Mörk bakgrund i dark mode */
-}
-[data-theme="dark"] .tech-specs-card h4,
-[data-theme="dark"] .tech-specs-card strong,
-[data-theme="dark"] .tech-specs-card span {
-    color: #E5E7EB;
-}
-
 /* --- FIX: ÅTERSTÄLL LINJER & RAMAR --- */
 
 /* 1. Header: Linjen är tillbaka */
@@ -8452,3 +8240,4 @@ body.offline-mode .offline-dot {
         padding: 1rem !important;
     }
 }
+
