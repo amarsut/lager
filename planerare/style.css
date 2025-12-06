@@ -8339,6 +8339,14 @@ body.offline-mode .offline-dot {
     color: #E5E7EB;
 }
 
+/* --- FIX: CENTRERA AI-KNAPPEN --- */
+#btnFetchTechData {
+    display: flex !important;
+    justify-content: center !important; /* Tvingar innehållet till mitten */
+    align-items: center !important;
+    width: 100%;
+    text-align: center;
+}
 
 
 
