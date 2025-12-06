@@ -8244,3 +8244,10 @@ body.offline-mode .offline-dot {
     margin: 0 !important;
     border: none !important; /* Ingen ram på själva listan, containern sköter det */
 }
+
+/* --- FIX: MELLANRUM I TEKNISK DATA --- */
+.tech-specs-card b, 
+.tech-specs-card strong {
+    margin-right: 6px !important; /* Skapar luft till höger om "Bil:", "Olja:" osv */
+    display: inline-block; /* Säkerställer att marginalen respekteras */
+}
