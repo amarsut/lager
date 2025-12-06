@@ -7379,7 +7379,7 @@
 					8. ⚖️ DRAG
 					- Max dragvikt.
 
-		            FORMAT (Svara ENDAST med denna HTML, ingen inledande text):
+		            FORMAT (Svara ENDAST med denna HTML, ingen inledande text, svara med den mest relevanta informationen begränsad till 25 bokstäver/siffror om informationen blir lång):
 		            <b>Teknisk Data ${regnr}</b>
 		            <hr style="margin: 5px 0; opacity: 0.2;">
 		            <ul>
