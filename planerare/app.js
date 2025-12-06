@@ -7342,7 +7342,7 @@
 	            prompt = `
 					Du är en expertmekaniker med tillgång till alla fabriksdatablad.
 					Här är rådata om bilen ${regnr} från Transportstyrelsen/Biluppgifter:
-					"""${rawText}"""
+					"""${combinedRawText}"""
 
     				Ditt uppdrag är att identifiera vilken motor bilen har och vilken motorolja och hur många liter den ska ha.
 
@@ -7398,7 +7398,7 @@
 	            prompt = `
 	                Du är en expertmekaniker med tillgång till alla fabriksdatablad.
 				    Här är rådata om bilen ${regnr} från Transportstyrelsen/Biluppgifter:
-				    """${rawText}"""
+					"""${combinedRawText}"""
 				    
 				    Ditt uppdrag är att identifiera vilken motor bilen har och vilken motorolja och hur många liter den ska ha.
 				    
