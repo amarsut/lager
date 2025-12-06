@@ -8128,12 +8128,13 @@ body.offline-mode .offline-dot {
 
 /* Rubriken i kortet */
 .tech-specs-card h4 {
-    margin: 0 0 1.2rem 0 !important; /* <--- ÖKAT AVSTÅND HÄR */
+    margin: 0 0 1.5rem 0; 
+    
     font-size: 0.9rem;
     font-weight: 700;
     color: #111827;
     border-bottom: none !important; 
-    padding-bottom: 0 !important;
+    padding-bottom: 0;
 }
 
 /* Säkerhetsåtgärd: Om det råkar finnas en <hr>-linje, dölj den */
@@ -8298,6 +8299,7 @@ body.offline-mode .offline-dot {
         font-size: 1.5rem;
     }
 }
+
 
 
 
