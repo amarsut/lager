@@ -7440,7 +7440,8 @@
 	
 	    try {
 	        // 2. Proxy-anrop (Hämta rådata)
-	        const targetUrl = `https://biluppgifter.se/fordon/${regnr}`;
+	        //const targetUrl = `https://biluppgifter.se/fordon/${regnr}`;
+			const targetUrl = `https://www.car.info/sv-se/license-plate/S/${regnr}/specs`;
 	        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
 	        const response = await fetch(proxyUrl);
 	
