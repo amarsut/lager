@@ -7379,9 +7379,13 @@
 	                - Max dragvikt.
 	
 	                FORMAT (Svara ENDAST med denna HTML, ingen inledande text, svara med den mest relevanta informationen 
-	                begränsad till 25 bokstäver/siffror om informationen blir lång):
-	                <b>Teknisk Data ${regnr}</b>
-	                <hr style="margin: 5px 0; opacity: 0.2;">
+	                begränsad till 25 bokstäver/siffror om informationen blir lång).
+					Identifiera bilmärket (t.ex. Volvo, BMW, Audi) för att skapa bildlänken.
+                	Om märket är "Volkswagen", använd "vw.com".)::
+	                <h4>
+	                    <img src="https://logo.clearbit.com/[Varumärke].com" class="brand-logo" onerror="this.style.display='none'"> 
+	                    Teknisk Data ${regnr}
+	                </h4>
 	                <ul>
 					 <li><svg class="spec-icon-svg"><use href="#icon-car-tech"></use></svg> <b>Bil:</b> [Märke] [Modell] ([Årsmodell])</li>
 					 <li><svg class="spec-icon-svg"><use href="#icon-engine-tech"></use></svg> <b>Motorkod:</b> [Hittad kod] (Effekt HK)</li>
