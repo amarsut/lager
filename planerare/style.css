@@ -7836,6 +7836,89 @@ body.offline-mode .offline-dot {
     display: flex;
 }
 
+/* --- 3. TEKNISK DATA KORTET --- */
+.tech-specs-card {
+    /* Mörkare bakgrund så den syns mot vit modal */
+    background-color: #F3F4F6; 
+    border-radius: 12px;
+    padding: 1.25rem;
+    
+    /* Minskat avstånd mot headern */
+    margin-top: 1rem; 
+    margin-bottom: 1rem;
+    
+    border: none; /* Ingen ram */
+}
+
+/* Rubriken i kortet */
+.tech-specs-card h4 {
+    padding-bottom: 2rem !important; 
+    margin-bottom: 0 !important;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #111827;
+    border: none !important; 
+}
+
+/* Säkerhetsåtgärd: Om det råkar finnas en <hr>-linje, dölj den */
+.tech-specs-card ul {
+    margin-top: 0 !important;
+}
+
+/* Listan */
+.tech-specs-card ul {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Två kolumner */
+    column-gap: 2rem;
+    row-gap: 0.8rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    /* Detta tvingar listan att fylla vertikalt först (1-4 vänster, 5-8 höger) */
+    grid-auto-flow: column; 
+    grid-template-rows: repeat(4, auto); /* Vi låser den till 4 rader */
+}
+
+.tech-specs-card li {
+    display: flex;
+    align-items: flex-start;
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+.tech-specs-card .spec-content {
+    display: flex;
+    flex-direction: row;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.tech-specs-card strong {
+    font-weight: 600;
+    color: #374151;
+    margin-right: 2px;
+}
+
+.tech-specs-card span {
+    color: #111827;
+    font-weight: 500;
+}
+
+/* --- 4. DARK MODE FIXAR --- */
+[data-theme="dark"] .owner-badge {
+    background-color: rgba(255,255,255,0.1);
+    color: #E5E7EB;
+}
+[data-theme="dark"] .tech-specs-card {
+    background-color: #1C1C1E; /* Mörk bakgrund i dark mode */
+}
+[data-theme="dark"] .tech-specs-card h4,
+[data-theme="dark"] .tech-specs-card strong,
+[data-theme="dark"] .tech-specs-card span {
+    color: #E5E7EB;
+}
+
 /* --- FIX: ÅTERSTÄLL LINJER & RAMAR --- */
 
 /* 1. Header: Linjen är tillbaka */
@@ -8093,6 +8176,7 @@ body.offline-mode .offline-dot {
         padding: 1rem !important;
     }
 }
+
 
 
 
