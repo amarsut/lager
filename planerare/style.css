@@ -8052,85 +8052,103 @@ body.offline-mode .offline-dot {
     justify-content: center;
 }
 
-/* --- Teknisk Data "Kort-Design" (Exakt som Bild 2) --- */
+/* --- Teknisk Data "Dashboard-Design" (Fixad) --- */
 
-/* Huvudboxen */
+/* 1. Huvudboxen */
 #carTechSpecsContainer {
-    background-color: #f9fafb; /* Mycket ljus grå (som på bilden) */
-    border: 1px solid #e5e7eb; /* Tunn ram */
-    border-radius: 12px;       /* Rundade hörn */
-    padding: 20px;             /* Luft inuti */
-    margin-top: 1rem;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    background-color: #ffffff; /* Helt vit bakgrund för renhet */
+    border: 1px solid #e5e7eb; /* Tunn grå ram */
+    border-radius: 12px;       /* Mjuka hörn */
+    padding: 20px 24px;        /* Rejält med luft inuti */
+    margin-top: 1.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); /* En mjukare skugga (Card-stil) */
 }
 
-/* Rubriken "Teknisk Data..." */
+/* 2. Rubriken ("Teknisk Data...") */
 #carTechSpecsContainer > b:first-child {
     display: block;
-    font-size: 1rem;
+    font-size: 1.05rem;
     font-weight: 700;
-    color: #111827; /* Mörkare text */
-    margin-bottom: 16px; /* Luft ner till listan */
+    color: #111827; /* Nästan svart text */
+    margin-bottom: 20px;
     padding-bottom: 12px;
-    border-bottom: 1px solid #e5e7eb; /* En tunn linje under rubriken */
+    border-bottom: 2px solid #f3f4f6; /* Tydligare linje under rubriken */
+    text-align: left; /* Vänsterställd rubrik ser ofta proffsigare ut */
 }
 
-/* Dölj <hr> om den finns kvar i HTML */
-#carTechSpecsContainer hr {
-    display: none;
-}
+/* Dölj <hr> om den finns */
+#carTechSpecsContainer hr { display: none; }
 
-/* Listan - HÄR SKAPAR VI 2 KOLUMNER */
+/* 3. Listan (Rutnätet) */
 #carTechSpecsContainer ul {
     display: grid;
-    grid-template-columns: 1fr 1fr; /* Skapar två lika stora kolumner */
-    column-gap: 32px; /* Luft mellan vänster och höger kolumn */
+    grid-template-columns: 1fr 1fr; /* Två kolumner */
+    column-gap: 40px; /* Mer luft mellan vänster och höger kolumn */
     row-gap: 16px;    /* Luft mellan raderna */
-    padding: 0;
-    margin: 0;
-    list-style-type: none; /* Tar bort punkterna (•) */
+    padding: 0 !important;
+    margin: 0 !important;
+    list-style: none !important; /* VIKTIGT: Tar bort punkterna */
 }
 
-/* Varje rad i listan */
+/* 4. Varje rad (Items) */
 #carTechSpecsContainer li {
     font-size: 0.9rem;
-    color: #374151; /* Mörkgrå text */
-    display: flex;
-    align-items: flex-start;
+    color: #4b5563; /* Mörkgrå text */
+    display: flex;  /* Flexbox för att linjera emoji och text */
+    align-items: baseline; /* Texten linjerar snyggt med emojin */
     line-height: 1.5;
-    padding: 0; /* Nollställ padding */
-    border: none; /* Inga linjer mellan varje liten rad */
+    padding: 0;
+    border: none;
+    
+    /* Hack för att ta bort eventuella kvarvarande punkter */
+    list-style-type: none !important;
+    background: none !important;
 }
 
-/* Fetstilt text (Etiketten, t.ex. "Bil:") */
+/* 5. Fetstilt text (Etiketten, t.ex. "Bil:") */
 #carTechSpecsContainer li b {
-    color: #111827; /* Svart för kontrast */
+    color: #111827; /* Svart färg på etiketten */
     font-weight: 700;
     margin-right: 6px;
+    margin-left: 2px; /* Liten justering från emojin */
     white-space: nowrap; /* Håll ihop etiketten */
 }
 
-/* MOBILANPASSNING */
-/* På små skärmar vill vi stapla dem i 1 kolumn så det inte blir trångt */
-@media (max-width: 600px) {
+/* 6. Mobilanpassning */
+@media (max-width: 640px) {
+    #carTechSpecsContainer {
+        padding: 16px; /* Lite mindre padding på mobil */
+    }
+    
     #carTechSpecsContainer ul {
-        grid-template-columns: 1fr; /* 1 kolumn på mobil */
-        row-gap: 12px;
+        grid-template-columns: 1fr; /* En kolumn på mobil */
+        row-gap: 12px; /* Lite tajtare på höjden */
+    }
+    
+    /* Lägg till en tunn linje mellan raderna på mobil för läsbarhet */
+    #carTechSpecsContainer li {
+        border-bottom: 1px solid #f3f4f6;
+        padding-bottom: 8px;
+    }
+    #carTechSpecsContainer li:last-child {
+        border-bottom: none;
     }
 }
 
-/* Dark Mode stöd (om du vill att det ska se bra ut i mörkt läge också) */
+/* Dark Mode */
 [data-theme="dark"] #carTechSpecsContainer {
-    background-color: #2c2c2e;
+    background-color: #1c1c1e;
     border-color: #3a3a3c;
+    box-shadow: none;
 }
 [data-theme="dark"] #carTechSpecsContainer > b:first-child {
     color: #fff;
     border-bottom-color: #3a3a3c;
 }
 [data-theme="dark"] #carTechSpecsContainer li {
-    color: #d1d5db;
+    color: #9ca3af;
+    border-bottom-color: #2c2c2e;
 }
 [data-theme="dark"] #carTechSpecsContainer li b {
-    color: #fff;
+    color: #f3f4f6;
 }
