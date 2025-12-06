@@ -8421,3 +8421,34 @@ body.offline-mode .offline-dot {
     display: flex !important;
     align-items: flex-start !important;
 }
+
+@media (max-width: 600px) {
+    
+    /* 1. Tvinga listan till EN kolumn */
+    .tech-specs-card ul {
+        grid-template-columns: 1fr !important; /* En kolumn */
+        grid-auto-flow: row !important;        /* Stapla uppifrån och ner (inte sida till sida) */
+        grid-template-rows: auto !important;   /* Låt höjden anpassa sig */
+        row-gap: 1rem !important;              /* Luft mellan raderna */
+    }
+
+    /* 2. Dölj de stora knapparna i headern på mobil (om du vill ha det rent) */
+    .header-actions-desktop {
+        display: none !important;
+    }
+    
+    /* 3. Dölj den lilla vertikala linjen i headern */
+    .divider-vertical {
+        display: none !important;
+    }
+
+    /* 4. Justera storlek på Reg-nummer så det får plats */
+    #carModalRegnr {
+        font-size: 1.5rem !important;
+    }
+    
+    /* 5. Justera padding i headern */
+    #carModalHeader {
+        padding: 1rem !important;
+    }
+}
