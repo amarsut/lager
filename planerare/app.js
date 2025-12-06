@@ -1126,47 +1126,37 @@
 
 			// --- STÄNG CHATT VID KLICK UTANFÖR ---
 			document.addEventListener('click', (e) => {
-    
-			    // --- 1. SPÄRR: Om Bild-modalen är öppen -> GÖR INGENTING ---
-			    // Detta hindrar chatten från att stängas när du klickar utanför bilden.
+			    
+			    // 1. Ignorera klick om Bild-zoom eller reaktionsmenyn är öppen
 			    const imageModal = document.getElementById('imageZoomModal');
-			    if (imageModal && getComputedStyle(imageModal).display !== 'none') {
-			        return; 
-			    }
-			    // -----------------------------------------------------------
+			    const reactionMenu = document.getElementById('reactionMenu');
+			    
+			    if (imageModal && getComputedStyle(imageModal).display !== 'none') return;
+			    if (reactionMenu && reactionMenu.classList.contains('show') && reactionMenu.contains(e.target)) return;
 			
-			    // 2. Ignorera klick på länkar/knappar/menyer
-			    if (e.target.closest('a') || 
-			        e.target.closest('.chat-reg-link') || 
-			        e.target.closest('button') ||
-			        e.target.closest('#reactionMenu')) {
-			        return;
-			    }
-			
-			    // 3. Ignorera klick på andra modaler
-			    if (e.target.classList.contains('modal-backdrop') || 
-			        e.target.classList.contains('modal-content')) {
-			        return;
-			    }
+			    // 2. Ignorera klick på knappar som öppnar chatten
+			    if (e.target.closest('#fabChat') || e.target.closest('#mobileChatBtn')) return;
 			
 			    const chatWidget = document.getElementById('chatWidget');
-			    const fabChat = document.getElementById('fabChat');
-			    const mobileChatBtn = document.getElementById('mobileChatBtn');
 			
-			    // 4. Stäng Chatten (Endast om vi kommit förbi spärrarna ovan)
+			    // 3. Om chatten är öppen...
 			    if (chatWidget && chatWidget.style.display === 'flex') {
 			        
-			        // Om vi klickar utanför chatten...
-			        if (!chatWidget.contains(e.target) && 
-			            (!fabChat || !fabChat.contains(e.target)) &&
-			            (!mobileChatBtn || !mobileChatBtn.contains(e.target))) {
-			            
+			        // Hämta själva innehålls-arean (där bubblorna och headern är)
+			        // Vi antar att chatWidget är behållaren. 
+			        // Om du klickar på 'chatWidget' och den täcker hela skärmen (overlay), då ska den stängas.
+			        // Men om du klickar INUTI den (på header, input, meddelanden) ska den INTE stängas.
+			        
+			        // På mobil (fullscreen): Vi stänger INTE på klick utanför (för det finns inget utanför).
+			        if (window.innerWidth <= 768) return; 
+			
+			        // På Desktop (Popup):
+			        // Om klicket INTE är inuti widgeten -> Stäng
+			        if (!chatWidget.contains(e.target)) {
 			            if (window.location.hash === '#chat') {
 			                history.back();
 			            } else {
-			                chatWidget.style.display = 'none';
-			                if (typeof updateScrollLock === 'function') updateScrollLock();
-			                if (mobileChatBtn) mobileChatBtn.classList.remove('active');
+			                closeChatUI();
 			            }
 			        }
 			    }
@@ -1444,43 +1434,43 @@
 			
 			    menu.dataset.targetId = messageId;
 			    
-			    // 1. Återställ menyn för mätning (men osynlig)
+			    // 1. Förbered menyn (gör den synlig för mätning men genomskinlig)
 			    menu.style.display = 'flex';
 			    menu.style.visibility = 'hidden'; 
 			    menu.style.opacity = '0';          
-			    menu.style.transform = 'scale(0.8)'; // Starta liten
-			    menu.style.pointerEvents = 'none';   // Ej klickbar under mätning
 			    menu.classList.remove('show');    
 			
-			    // ... (HÄR LIGGER DIN BEFINTLIGA LOGIK FÖR X/Y POSITIONERING) ...
-			    // ... Behåll koden som räknar ut 'left' och 'top' här ...
-			    // (Kopiera den logiken från din nuvarande fil eller se nedan för referens)
-			    
-			    // EXEMPEL PÅ POSITIONERING (Klistra in din logik här):
-			    const menuWidth = menu.offsetWidth;
+			    // 2. BERÄKNA POSITION (Denna kod saknades/var bortkommenterad)
+			    const menuWidth = menu.offsetWidth || 260; // Fallback bredd
+			    const menuHeight = menu.offsetHeight || 100; // Fallback höjd
 			    const screenWidth = window.innerWidth;
-			    let left = x - (menuWidth / 2);
-			    if (left + menuWidth > screenWidth - 15) left = screenWidth - menuWidth - 15;
-			    if (left < 15) left = 15;
-			    let top = y - 70;
-			    if (top < 20) top = y + 20;
+			    const screenHeight = window.innerHeight;
+			
+			    // X-position (Horizontal)
+			    let left = x - (menuWidth / 2); // Centrera vid klicket
+			    // Förhindra att den går utanför vänster kant
+			    if (left < 10) left = 10;
+			    // Förhindra att den går utanför höger kant
+			    if (left + menuWidth > screenWidth - 10) left = screenWidth - menuWidth - 10;
+			
+			    // Y-position (Vertical) - Försök visa OVANFÖR klicket först
+			    let top = y - menuHeight - 20; 
+			    
+			    // Om det är för nära toppen av skärmen, visa NEDANFÖR klicket istället
+			    if (top < 20) {
+			        top = y + 20;
+			    }
+			
+			    // Applicera position
 			    menu.style.left = `${left}px`;
 			    menu.style.top = `${top}px`;
-			    // ... SLUT POSITIONERING ...
 			
-			    // 2. Visa menyn (Animation)
-			    // Vi använder requestAnimationFrame för att garantera att webbläsaren hinner uppfatta "display: flex" innan vi lägger på klassen
+			    // 3. Visa menyn (Animation)
 			    requestAnimationFrame(() => {
 			        menu.style.visibility = 'visible';
 			        menu.style.opacity = '1';
+			        menu.style.pointerEvents = 'auto'; // VIKTIGT: Gör den klickbar!
 			        menu.classList.add('show');
-			        
-			        // Aktivera klick efter en kort stund (Säkerhetsbuffert mot spök-klick)
-			        setTimeout(() => {
-			            if (menu.classList.contains('show')) {
-			                menu.style.pointerEvents = 'auto';
-			            }
-			        }, 150); // Kortare tid (150ms) för rappare känsla
 			    });
 			    
 			    if (navigator.vibrate) navigator.vibrate(10); 
@@ -2194,31 +2184,48 @@
 			    }
 			
 			    if (galleryToggleBtn) {
-			        galleryToggleBtn.onclick = (e) => {
-			            e.preventDefault();
-			            chatList.classList.toggle('gallery-mode');
-			            const isActive = chatList.classList.contains('gallery-mode');
-			            galleryToggleBtn.style.color = isActive ? 'var(--primary-color)' : 'var(--text-color-light)';
-			            if (!isActive) setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
-			        };
-			    }
+				    galleryToggleBtn.onclick = (e) => {
+				        e.preventDefault();
+				        
+				        // 1. STÄNG AV AI-LÄGET OM DET ÄR PÅ (FIXEN)
+				        if (chatList.classList.contains('ai-mode')) {
+				            chatList.classList.remove('ai-mode');
+				            const aiBtn = document.getElementById('toggleAiFilter');
+				            if(aiBtn) aiBtn.style.color = 'var(--text-color-light)';
+				            showToast("AI-filter inaktiverat för gallerivy", "info");
+				        }
+				
+				        // 2. Växla Galleri-läge
+				        chatList.classList.toggle('gallery-mode');
+				        const isActive = chatList.classList.contains('gallery-mode');
+				        galleryToggleBtn.style.color = isActive ? 'var(--primary-color)' : 'var(--text-color-light)';
+				        
+				        if (!isActive) setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
+				    };
+				}
 
 				// Läggs inuti initChat()
 			    const aiFilterBtn = document.getElementById('toggleAiFilter');
 			    
 			    if (aiFilterBtn) {
-			        aiFilterBtn.onclick = (e) => {
-			            e.preventDefault();
-			            chatList.classList.toggle('ai-mode'); // Växlar läge
-			            
-			            // Byt färg på ikonen när den är aktiv
-			            const isActive = chatList.classList.contains('ai-mode');
-			            aiFilterBtn.style.color = isActive ? 'var(--primary-color)' : 'var(--text-color-light)';
-			            
-			            // Scrolla till botten om vi byter vy
-			            setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
-			        };
-			    }
+				    aiFilterBtn.onclick = (e) => {
+				        e.preventDefault();
+				
+				        // 1. STÄNG AV GALLERI-LÄGET OM DET ÄR PÅ (FIXEN)
+				        if (chatList.classList.contains('gallery-mode')) {
+				            chatList.classList.remove('gallery-mode');
+				            const galBtn = document.getElementById('toggleChatGallery');
+				            if(galBtn) galBtn.style.color = 'var(--text-color-light)';
+				        }
+				
+				        // 2. Växla AI-läge
+				        chatList.classList.toggle('ai-mode'); 
+				        const isActive = chatList.classList.contains('ai-mode');
+				        aiFilterBtn.style.color = isActive ? 'var(--primary-color)' : 'var(--text-color-light)';
+				        
+				        setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
+				    };
+				}
 			
 			    // --- AI MEKANIKER (FIXAD) ---
 			    const oldAiBtn = document.getElementById('askAiBtn');
@@ -3018,22 +3025,26 @@
 			function toggleView(view) {
 			    // 1. HANTERA CHATT (Specialfall: Widget/Popup)
 			    if (view === 'chat') {
-			        // Öppna widgeten (hanteras av CSS som helskärm på mobil, popup på desktop)
-			        if (typeof toggleChatWidget === 'function') {
-			            toggleChatWidget();
-			        }
-			
-			        // Uppdatera endast mobil-knappen visuellt
-			        const mobileChatBtn = document.getElementById('mobileChatBtn');
-			        
-			        // Ta bort active från alla knappar först för tydlighet
-			        document.querySelectorAll('.mobile-nav-btn').forEach(b => b.classList.remove('active'));
-			        
-			        // Markera chatt-knappen
-			        if (mobileChatBtn) mobileChatBtn.classList.add('active');
-			
-			        return; // VIKTIGT: Avbryt här. Vi byter inte bort bakgrundsvyn.
-			    }
+				    const chatWidget = document.getElementById('chatWidget');
+				    // Om chatten redan är öppen -> Stäng den (Gå bakåt i historiken om möjligt)
+				    if (chatWidget && chatWidget.style.display === 'flex') {
+				        if (window.location.hash === '#chat') {
+				            history.back();
+				        } else {
+				            closeChatUI();
+				        }
+				    } else {
+				        // Annars öppna
+				        toggleChatWidget();
+				    }
+				    
+				    // Uppdatera mobil-ikonen visuellt
+				    const mobileChatBtn = document.getElementById('mobileChatBtn');
+				    document.querySelectorAll('.mobile-nav-btn').forEach(b => b.classList.remove('active'));
+				    if (mobileChatBtn && chatWidget.style.display !== 'flex') mobileChatBtn.classList.add('active'); // Notera logiken här
+				
+				    return; 
+				}
 			
 			    // 2. STANDARD VY-BYTE (Tidslinje, Kalender, Tavla)
 			    // Om vi redan är på denna vy OCH inte navigerar bakåt, gör inget.
