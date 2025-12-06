@@ -8202,14 +8202,45 @@ body.offline-mode .offline-dot {
     color: #E5E7EB;
 }
 
-/* --- FIX: TA BORT TOMRUM MELLAN HEADER & TEKNISK DATA --- */
+/* --- FIX: ÅTERSTÄLL LINJER & RAMAR --- */
 
-/* 2. Ta bort marginalen ovanför teknisk data-kortet */
+/* 1. Header: Linjen är tillbaka */
+#carModalHeader {
+    border-bottom: 1px solid var(--border-color) !important; /* Linjen tillbaka */
+    padding-bottom: 1rem !important; /* Lite luft ovanför linjen */
+    margin-bottom: 0 !important; /* Inget extra avstånd under linjen */
+}
+
+/* 2. Modal Body: Justera avstånd till linjen */
+#carModal .modal-body {
+    padding-top: 1rem !important; /* Lite luft mellan linjen och kortet */
+}
+
+/* 3. Teknisk Data: Nollställ marginal uppåt */
 .tech-specs-card {
-    margin-top: 0.5 !important;
-    
-    /* Valfritt: Om du vill att den ska smälta ihop ännu mer, 
-       kan du ta bort de övre rundade hörnen: */
-    /* border-top-left-radius: 0; */
-    /* border-top-right-radius: 0; */
+    margin-top: 0 !important; /* Ligg nära toppen */
+}
+
+/* 4. SÖK & LISTA-CONTAINER (Ramen runt listan) */
+/* Om denna saknades i din CSS, läggs den till nu */
+.job-history-container {
+    border: 1px solid var(--border-color) !important; /* Ramen du saknade */
+    border-radius: 12px;
+    overflow: hidden; /* Klipp innehållet så hörnen är runda */
+    margin-top: 1rem;
+    background-color: var(--content-bg); /* Säkra bakgrundsfärgen */
+}
+
+/* Säkra att sökfältet inte har dubbla ramar inuti containern */
+.search-wrapper.embedded-search {
+    border: none !important;
+    border-bottom: 1px solid var(--border-color) !important; /* Endast linje neråt */
+    box-shadow: none !important;
+    border-radius: 0 !important;
+}
+
+/* Säkra att listan fyller ut containern */
+.detail-job-list {
+    margin: 0 !important;
+    border: none !important; /* Ingen ram på själva listan, containern sköter det */
 }
