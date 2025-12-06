@@ -8052,69 +8052,85 @@ body.offline-mode .offline-dot {
     justify-content: center;
 }
 
-/* --- Teknisk Data Kort-Design i Modalen --- */
+/* --- Teknisk Data "Kort-Design" (Exakt som Bild 2) --- */
 
-/* Själva behållaren för datan */
+/* Huvudboxen */
 #carTechSpecsContainer {
-    background-color: #f8f9fb; /* Ljus, modern gråblå ton */
-    border-radius: 12px; /* Mjuka hörn */
-    padding: 20px; /* Luft inuti boxen */
-    margin-top: 20px; /* Avstånd från registreringsnumret ovanför */
-    border: 1px solid #eef0f5; /* En subtil ram */
-    box-shadow: 0 2px 8px rgba(0,0,0,0.03); /* En mycket lätt skugga för djup */
+    background-color: #f9fafb; /* Mycket ljus grå (som på bilden) */
+    border: 1px solid #e5e7eb; /* Tunn ram */
+    border-radius: 12px;       /* Rundade hörn */
+    padding: 20px;             /* Luft inuti */
+    margin-top: 1rem;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
 
-/* Rubriken (Det som är <b>Teknisk Data...</b> i HTML-koden) */
+/* Rubriken "Teknisk Data..." */
 #carTechSpecsContainer > b:first-child {
     display: block;
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 700;
-    color: #1a2a3a; /* Mörk, proffsig färg */
-    margin-bottom: 15px;
-    text-align: center; /* Centrera rubriken */
-    letter-spacing: 0.5px;
+    color: #111827; /* Mörkare text */
+    margin-bottom: 16px; /* Luft ner till listan */
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e5e7eb; /* En tunn linje under rubriken */
 }
 
-/* Dölj den gamla <hr> linjen, vi använder borders på listan istället */
+/* Dölj <hr> om den finns kvar i HTML */
 #carTechSpecsContainer hr {
     display: none;
 }
 
-/* Ta bort standard punktlist-stil */
+/* Listan - HÄR SKAPAR VI 2 KOLUMNER */
 #carTechSpecsContainer ul {
-    list-style-type: none;
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Skapar två lika stora kolumner */
+    column-gap: 32px; /* Luft mellan vänster och höger kolumn */
+    row-gap: 16px;    /* Luft mellan raderna */
     padding: 0;
     margin: 0;
+    list-style-type: none; /* Tar bort punkterna (•) */
 }
 
-/* Styla varje rad i listan */
+/* Varje rad i listan */
 #carTechSpecsContainer li {
-    padding: 12px 0; /* Luft över och under varje rad */
-    border-bottom: 1px solid #e1e5eb; /* En snygg avdelare mellan raderna */
-    font-size: 0.95rem;
-    color: #4a5568; /* Något mjukare textfärg för värdena */
+    font-size: 0.9rem;
+    color: #374151; /* Mörkgrå text */
     display: flex;
-    align-items: flex-start; /* Se till att texten linjerar snyggt i toppen om den bryts */
+    align-items: flex-start;
     line-height: 1.5;
+    padding: 0; /* Nollställ padding */
+    border: none; /* Inga linjer mellan varje liten rad */
 }
 
-/* Ta bort linjen på sista raden */
-#carTechSpecsContainer li:last-child {
-    border-bottom: none;
-}
-
-/* Styla etiketterna (Det som är fetstilt, t.ex. <b>Motorolja:</b>) */
+/* Fetstilt text (Etiketten, t.ex. "Bil:") */
 #carTechSpecsContainer li b {
-    color: #2d3748; /* Mörkare färg för etiketten för kontrast */
-    font-weight: 600;
-    margin-right: 8px; /* Avstånd mellan etikett och värde */
-    white-space: nowrap; /* Förhindra att korta etiketter bryts */
+    color: #111827; /* Svart för kontrast */
+    font-weight: 700;
+    margin-right: 6px;
+    white-space: nowrap; /* Håll ihop etiketten */
 }
 
-/* Justera emojin lite så den inte känns för "blaffig" */
-/* Vi antar att emojin är det första tecknet i listan */
-#carTechSpecsContainer li {
-    /* Vi ökar indraget något för att ge plats åt emojin */
-    text-indent: -4px; 
-    padding-left: 4px;
+/* MOBILANPASSNING */
+/* På små skärmar vill vi stapla dem i 1 kolumn så det inte blir trångt */
+@media (max-width: 600px) {
+    #carTechSpecsContainer ul {
+        grid-template-columns: 1fr; /* 1 kolumn på mobil */
+        row-gap: 12px;
+    }
+}
+
+/* Dark Mode stöd (om du vill att det ska se bra ut i mörkt läge också) */
+[data-theme="dark"] #carTechSpecsContainer {
+    background-color: #2c2c2e;
+    border-color: #3a3a3c;
+}
+[data-theme="dark"] #carTechSpecsContainer > b:first-child {
+    color: #fff;
+    border-bottom-color: #3a3a3c;
+}
+[data-theme="dark"] #carTechSpecsContainer li {
+    color: #d1d5db;
+}
+[data-theme="dark"] #carTechSpecsContainer li b {
+    color: #fff;
 }
