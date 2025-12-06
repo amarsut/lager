@@ -615,55 +615,49 @@
 	</div>
     
     <div id="customerModal" class="modal-backdrop" data-modal-id="customerModal">
-        <div class="modal-content">
-            <div class="modal-header detail-modal-header" id="customerModalHeader">
-                
-                <div class="detail-modal-header-titles">
-                    <h2 id="customerModalName"></h2>
-                    <div class="customer-phone-wrapper">
-                        <span id="customerModalPhone"></span>
-                        
-                        <div class="icon-button-group">
-                            <a href="#" id="customerModalCallBtn" class="icon-btn" title="Ring kund">
-                                <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-phone"></use></svg>
-                            </a>
-                            <a href="#" id="customerModalSmsBtn" class="icon-btn" title="Skicka SMS till kund">
-                                <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-chat"></use></svg>
-                            </a>
-                            <button class="icon-btn" id="editCustomerPhoneBtn" title="Redigera telefonnummer">
-                                <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-pencil"></use></svg>
-                            </button>
-                        </div>
-
-                    </div>
-                </div>
-
-                <button class="modal-close-btn" id="customerModalCloseBtn" aria-label="Stäng modal">
-                    <svg class="icon" viewBox="0 0 24 24"><use href="#icon-close"></use></svg>
-                </button>
-            </div>
-            
-            <div class="detail-stats">
-			    <div>
-			        <span class="stat-title">Total Vinst</span>
-			        <span class="stat-value money-related" id="customerModalTotalProfit"></span>
-			    </div>
-			    <div>
-			        <span class="stat-title">Antal Jobb</span>
-			        <span class="stat-value" id="customerModalJobCount"></span>
-			    </div>
-			</div>
-            
-            <div class="modal-body">
-                <div class="search-wrapper">
-                    <svg class="icon icon-search" viewBox="0 0 24 24"><use href="#icon-search"></use></svg>
-                    <input type="search" id="customerSearch" placeholder="Filtrera jobb...">
-                </div>
-                <ul class="detail-job-list" id="customerModalJobList">
-                    </ul>
-            </div>
-        </div>
-    </div>
+	    <div class="modal-content">
+	        
+	        <div class="modal-header detail-modal-header" id="customerModalHeader">
+	            
+	            <div class="detail-modal-header-titles">
+	                <h2 id="customerModalName" style="margin:0; font-size: 1.6rem; letter-spacing: -0.5px;"></h2>
+	                
+	                <div class="customer-phone-wrapper owner-badge" style="margin-top: 8px; display: inline-flex; align-items: center; gap: 8px;">
+	                    <span id="customerModalPhone"></span>
+	                    
+	                    <div class="icon-button-group">
+	                        <a href="#" id="customerModalCallBtn" class="icon-btn" title="Ring" style="padding: 2px;">
+	                            <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-phone"></use></svg>
+	                        </a>
+	                        <a href="#" id="customerModalSmsBtn" class="icon-btn" title="SMS" style="padding: 2px;">
+	                            <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-chat"></use></svg>
+	                        </a>
+	                        <button class="icon-btn" id="editCustomerPhoneBtn" title="Redigera" style="padding: 2px;">
+	                            <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-pencil"></use></svg>
+	                        </button>
+	                    </div>
+	                </div>
+	            </div>
+	
+	            <button class="modal-close-btn" id="customerModalCloseBtn" aria-label="Stäng modal">
+	                <svg class="icon" viewBox="0 0 24 24"><use href="#icon-close"></use></svg>
+	            </button>
+	        </div>
+	        
+	        <div class="modal-body">
+	            
+	            <div class="job-history-container">
+	                <div class="search-wrapper embedded-search">
+	                    <svg class="icon icon-search" viewBox="0 0 24 24"><use href="#icon-search"></use></svg>
+	                    <input type="search" id="customerSearch" placeholder="Filtrera historik...">
+	                </div>
+	                <ul class="detail-job-list" id="customerModalJobList">
+	                </ul>
+	            </div>
+	
+	        </div>
+	    </div>
+	</div>
     
     <div id="carModal" class="modal-backdrop" data-modal-id="carModal">
     <div class="modal-content">
