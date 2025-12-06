@@ -668,31 +668,38 @@
     <div id="carModal" class="modal-backdrop" data-modal-id="carModal">
     <div class="modal-content">
         <div class="modal-header detail-modal-header" id="carModalHeader">
+    
 		    <div class="detail-modal-header-titles">
-		        <div class="modal-title-with-link">
-		            <h2 id="carModalRegnr" style="margin:0; font-size: 1.5rem; letter-spacing: 0.5px;"></h2>
-		            
-		            <button class="icon-btn" id="copyCarRegnrBtn" title="Kopiera Reg.nr" style="padding:4px; opacity: 0.6;">
+		        
+		        <div class="reg-title-row">
+		            <h2 id="carModalRegnr"></h2>
+		            <button class="icon-btn copy-icon-btn" id="copyCarRegnrBtn" title="Kopiera Reg.nr">
 		                <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-clipboard"></use></svg>
 		            </button>
 		        </div>
-		        <p id="carModalOwner" class="owner-badge"></p> 
+		
+		        <div id="carModalOwner" class="owner-badge"></div> 
 		    </div>
 		
-		    <div class="header-actions-desktop" style="display:flex; gap:10px;">
-		         <a id="carModalExternalLink" href="#" target="_blank" class="button secondary external-pill small">
-		            <img src="https://biluppgifter.se/favicon/favicon.ico" style="width:16px; border-radius:2px;">
-		            <span>Biluppgifter</span>
-		        </a>
-		        <a id="carModalOljemagasinetLink" href="#" target="_blank" class="button secondary external-pill small">
-		            <img src="images/oljemagasinet-favico.png" style="width:16px; border-radius:2px;">
-		            <span>Oljemagasinet</span>
-		        </a>
-		    </div>
+		    <div class="header-right-group">
+		        
+		        <div class="header-actions-desktop">
+		             <a id="carModalExternalLink" href="#" target="_blank" class="button secondary external-pill small">
+		                <img src="https://biluppgifter.se/favicon/favicon.ico" alt="Ikon">
+		                <span>Biluppgifter</span>
+		            </a>
+		            <a id="carModalOljemagasinetLink" href="#" target="_blank" class="button secondary external-pill small">
+		                <img src="images/oljemagasinet-favico.png" alt="Ikon">
+		                <span>Oljemagasinet</span>
+		            </a>
+		        </div>
 		
-		    <button class="modal-close-btn" id="carModalCloseBtn" aria-label="Stäng modal">
-		        <svg class="icon" viewBox="0 0 24 24"><use href="#icon-close"></use></svg>
-		    </button>
+		        <div class="divider-vertical"></div>
+		
+		        <button class="modal-close-btn" id="carModalCloseBtn" aria-label="Stäng modal">
+		            <svg class="icon" viewBox="0 0 24 24"><use href="#icon-close"></use></svg>
+		        </button>
+		    </div>
 		</div>
         
         <div class="modal-body">
