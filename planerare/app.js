@@ -7278,238 +7278,129 @@
     // Kör en koll direkt
     updateOnlineStatus();
 
-	async function fetchAndSaveTechData(regnr) {
+	/**
+	 * MASTER-FUNKTION FÖR FORDONSDATA
+	 * Hanterar både Chat (snabba svar om olja) och Modal (fullständiga specifikationer).
+	 * @param {string} regnr - Registreringsnummer
+	 * @param {string} mode - 'chat' eller 'modal'
+	 */
+	async function analyzeVehicleData(regnr, mode = 'chat') {
+	    regnr = regnr.replace(/\s/g, '').toUpperCase();
+	    
+	    // --- 1. SETUP UI & LOADING STATES ---
+	    let loadingMsgRef = null;
 	    const fetchBtn = document.getElementById('btnFetchTechData');
 	    const specsContainer = document.getElementById('carTechSpecsContainer');
-	    
-	    // Visa att vi jobbar
-	    fetchBtn.disabled = true;
-	    fetchBtn.innerHTML = `<span>🔍 Söker fakta...</span>`;
 	
-	    try {
-	        // 1. Hämta rådata (Samma proxy som förut)
-	        const targetUrl = `https://biluppgifter.se/fordon/${regnr}`;
-			//const targetUrl = `https://www.car.info/sv-se/license-plate/S/${regnr}/specs`;
-	        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
-	        const response = await fetch(proxyUrl);
-	        if (!response.ok) throw new Error("Kunde inte nå fordonsdatabasen.");
-	        
-	        const rawHtml = await response.text();
-	        const tempDiv = document.createElement("div");
-	        tempDiv.innerHTML = rawHtml;
-	        // Städa texten
-	        const scripts = tempDiv.querySelectorAll('script, style, meta, svg, path, footer, nav');
-	        scripts.forEach(el => el.remove());
-	        const rawText = tempDiv.innerText.replace(/\s+/g, ' ').substring(0, 8000);
-	
-	        // 2. Använd din "Mega-Prompt" (Återanvänd samma text som i lookupOilByReg)
-	        // OBS: Se till att prompt-variabeln är definierad här, eller kopiera in den:
-	        const prompt = `
-				Du är en expertmekaniker med tillgång till alla fabriksdatablad.
-			    Här är rådata om bilen ${regnr} från Transportstyrelsen/Biluppgifter:
-			    """${rawText}"""
-			    
-			    Ditt uppdrag är att identifiera vilken motor bilen har och vilken motorolja och hur många liter den ska ha.
-			    
-			    STEG 1: IDENTIFIERA BILEN
-			    Leta i texten efter Modell, Årsmodell, Effekt (hk/kw), Slagvolym och Drivmedel.
-			    
-			    STEG 2: BESTÄM MOTORKOD (Deduktion)
-			    Om "Motorkod" står i texten: Använd den.
-			    Om den INTE står i texten: Använd din expertkunskap för att avgöra vilken motorkod det måste vara baserat på hk, år och modell (t.ex. Volvo V70 2015 181hk Diesel = D4204T5).
-			    
-			    STEG 3: REKOMMENDERA MOTOROLJA
-			    Baserat på den identifierade motorn, ange:
-			    - Motoroljemängd (Servicevolym inkl filter)
-			    - Viskositet & Klassning (t.ex. 0W-20 VCC RBS0-2AE eller 5W-30 LL).
-
-				4. 🔧 VERKSTADSDATA:
-		       - Moment Hjulbultar: (Nm).
-		       - Moment Oljeplugg: (Nm).
-
-			   5. 🛠️ SERVICE
-			   - Kamrem (Intervall).
-		       - Växellåda.
-
-			   6. ❄️ VÄTSKOR
-			   - AC (Gas/Mängd).
-			   - Kylvätska.
-			   - Bromsvätska.
-
-			   7. ⚡ EL
-			   - Batteri (Placering/Typ).
-			   - Säkring 12V.
-
-			   8. ⚖️ DRAG
-			   - Max dragvikt.
-	
-	            FORMAT (Svara ENDAST med denna HTML, ingen inledande text):
-	            <b>Teknisk Data ${regnr}</b>
-	            <hr style="margin: 5px 0; opacity: 0.2;">
-	            <ul>
-	              <li>🚗 <b>Bil:</b> [Märke] [Modell] ([Motor])</li>
-				  <li>⚙️ <b>Motorkod:</b> [Hittad kod]</li>
-	              <li>🛢️ <b>Motorolja:</b> [Volym] L &bull; [Viskositet]</li>
-	              <li>❄️ <b>AC:</b> [Gas] ([Mängd]g)</li>
-	              <li>⏲️ <b>Kamrem:</b> [Intervall]</li>
-	              <li>🔧 <b>Moment:</b> Hjul [Nm] &bull; Plugg [Nm]</li>
-	              <li>🔋 <b>Batteri:</b> [Placering]</li>
-	              <li>⚖️ <b>Dragvikt:</b> [Kg]</li>
-	            </ul>
-	        `;
-	
-	        // 1. RÄTTAD NYCKEL (Den var avklippt i din kod)
-			const apiKey = CONFIG.AI_API_KEY;
-
-            // HÄR ÄR MODELL-ÄNDRINGEN (Vi kör på säkra 1.5-flash):
-            const aiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-			
-			const aiResponse = await fetch(aiUrl, {
-			    method: 'POST',
-			    headers: { 'Content-Type': 'application/json' },
-			    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-			});
-			
-			if (!aiResponse.ok) {
-			    // Lägg till detta för att se exakt vad som går fel i konsolen om det händer igen
-			    const errData = await aiResponse.json();
-			    console.error("AI Error Details:", errData);
-			    throw new Error(`API Error: ${aiResponse.status}`);
-			}
-			
-			const aiData = await aiResponse.json();
-			
-			// Säkerställ att vi faktiskt fick ett svar innan vi försöker läsa [0]
-			if (!aiData.candidates || aiData.candidates.length === 0) {
-			    throw new Error("AI gav inget svar.");
-			}
-			
-			const htmlContent = aiData.candidates[0].content.parts[0].text;
-	
-	        // 3. SPARA till Firebase "vehicleSpecs"
-	        // Vi sparar både HTML och tidsstämpel (om du vill uppdatera den om ett år)
-	        await db.collection("vehicleSpecs").doc(regnr).set({
-	            htmlContent: htmlContent,
-	            updatedAt: new Date().toISOString()
-	        });
-	
-	        // 4. Uppdatera UI direkt
-	        specsContainer.innerHTML = htmlContent;
-	        specsContainer.style.display = 'block';
-	        fetchBtn.style.display = 'none'; // Göm knappen, nu har vi datan!
-	        
-	        showToast("Teknisk data sparad för framtiden!", "success");
-	
-	    } catch (err) {
-	        console.error(err);
-	        showToast("Kunde inte hämta data: " + err.message, "danger");
-	        fetchBtn.innerHTML = `<span>Försök igen</span>`;
-	    } finally {
-	        fetchBtn.disabled = false;
-	    }
-	}
-	
-    //const aiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-    //const aiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-            
-	async function lookupOilByReg(regnr) {
-        regnr = regnr.replace(/\s/g, '').toUpperCase();
-		
-        // 1. Skapa visuellt "Laddar"-meddelande i chatten direkt
-	    let loadingMsgRef = null;
-	    try {
-	        loadingMsgRef = await db.collection("notes").add({
-	            text: `🔍 Söker teknisk data för ${regnr}...`, // Texten som visas
-	            timestamp: new Date().toISOString(),
-	            platform: 'system',
-	            reaction: '⏳' // Detta triggar din snurr-animation i CSS
-	        });
-	
-	        // Tvinga scroll till botten så man ser att det händer något
-	        setTimeout(() => {
-	            const chatList = document.getElementById('chatMessages');
-	            if (chatList) chatList.scrollTop = chatList.scrollHeight;
-	        }, 150);
-	
-	    } catch (e) {
-	        console.error("Kunde inte skapa ladd-meddelande", e);
+	    if (mode === 'chat') {
+	        try {
+	            loadingMsgRef = await db.collection("notes").add({
+	                text: `🔍 Söker data för ${regnr} via Biluppgifter, Car.info & Skruvat...`,
+	                timestamp: new Date().toISOString(),
+	                platform: 'system',
+	                reaction: '⏳'
+	            });
+	            setTimeout(() => {
+	                const chatList = document.getElementById('chatMessages');
+	                if (chatList) chatList.scrollTop = chatList.scrollHeight;
+	            }, 150);
+	        } catch (e) { console.error("Chat loading error", e); }
+	        showToast(`Söker data för ${regnr}...`, 'info');
+	    } 
+	    else if (mode === 'modal') {
+	        if (fetchBtn) {
+	            fetchBtn.disabled = true;
+	            fetchBtn.innerHTML = `<span>🔍 Analyserar flera källor...</span>`;
+	        }
+	        if (specsContainer) specsContainer.style.display = 'none';
 	    }
 	
-	    // Behåll även toasten för extra tydlighet
-	    showToast(`Söker teknisk data för ${regnr}...`, 'info');
-	
 	    try {
-	        // 2. Proxy-anrop (Hämta rådata)
-	        //const targetUrl = `https://biluppgifter.se/fordon/${regnr}`;
-			//const targetUrl = `https://www.car.info/sv-se/license-plate/S/${regnr}/specs`;
-			const targetUrl = `https://www.skruvat.se/result.aspx?q=${regnr}`;
-	        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
-	        const response = await fetch(proxyUrl);
+	        // --- 2. SKRAPA DATA (Multi-source för maximal precision) ---
+	        const proxy = "https://corsproxy.io/?";
+	        const url1 = `https://biluppgifter.se/fordon/${regnr}`;
+	        const url2 = `https://www.car.info/sv-se/license-plate/S/${regnr}/specs`;
+	        const url3 = `https://www.skruvat.se/result.aspx?q=${regnr}`; // Bra för motorkoder
 	
-	        if (!response.ok) {
-	            throw new Error(`Kunde inte nå sidan (Status: ${response.status})`);
+	        const fetchPromises = [
+	            fetch(proxy + encodeURIComponent(url1)).then(res => res.ok ? res.text() : null),
+	            fetch(proxy + encodeURIComponent(url2)).then(res => res.ok ? res.text() : null),
+	            fetch(proxy + encodeURIComponent(url3)).then(res => res.ok ? res.text() : null)
+	        ];
+	
+	        const results = await Promise.allSettled(fetchPromises);
+	        let combinedRawText = "";
+	
+	        if (results[0].value) combinedRawText += `\n[KÄLLA: BILUPPGIFTER]\n${results[0].value.replace(/\s+/g, ' ').substring(0, 8000)}`;
+	        if (results[1].value) combinedRawText += `\n[KÄLLA: CAR.INFO]\n${results[1].value.replace(/\s+/g, ' ').substring(0, 15000)}`;
+	        if (results[2].value) combinedRawText += `\n[KÄLLA: SKRUVAT]\n${results[2].value.replace(/\s+/g, ' ').substring(0, 8000)}`;
+	
+	        if (combinedRawText.length < 500) throw new Error("Ingen data kunde hämtas från källorna.");
+	
+	        // --- 3. VÄLJ PROMPT BASERAT PÅ MODE ---
+	        let prompt = "";
+	
+	        if (mode === 'modal') {
+	            // --- MODAL PROMPT (Fullständig teknisk data) ---
+	            prompt = `
+	                Du är en expertmekaniker. Analysera datan för ${regnr} och ta fram fullständiga specifikationer.
+	                
+	                KÄLLDATA: """${combinedRawText}"""
+	
+	                INSTRUKTIONER:
+	                1. IDENTIFIERA: Hitta exakt Modell, År, och viktigast av allt: MOTORKOD (t.ex. D4204T5, CAYC).
+	                   - Kolla noga i Skruvat-datan efter motorkod.
+	                2. TA FRAM DATA:
+	                   - Motorolja: Volym (inkl filter) och Viskositet.
+	                   - Verkstad: Åtdragningsmoment.
+	                   - Service: Kamrem, Växellåda.
+	                   - Vätskor & El.
+	
+	                FORMAT (Svara ENDAST med denna HTML):
+	                <b>Teknisk Data ${regnr}</b>
+	                <hr style="margin: 5px 0; opacity: 0.2;">
+	                <ul>
+	                  <li>🚗 <b>Bil:</b> [Märke] [Modell] ([Motor])</li>
+	                  <li>⚙️ <b>Motorkod:</b> [Hittad kod]</li>
+	                  <li>🛢️ <b>Motorolja:</b> [Volym] L &bull; [Viskositet]</li>
+	                  <li>❄️ <b>AC:</b> [Gas] ([Mängd]g)</li>
+	                  <li>⏲️ <b>Kamrem:</b> [Intervall]</li>
+	                  <li>🔧 <b>Moment:</b> Hjul [Nm] &bull; Plugg [Nm]</li>
+	                  <li>🔋 <b>Batteri:</b> [Placering]</li>
+	                  <li>⚖️ <b>Dragvikt:</b> [Kg]</li>
+	                </ul>
+	            `;
+	        } else {
+	            // --- CHAT PROMPT (Fokus på olja/service) ---
+	            prompt = `
+	                Du är en expertmekaniker. Analysera datan för ${regnr}.
+	                
+	                KÄLLDATA: """${combinedRawText}"""
+	
+	                UPPDRAG:
+	                1. Identifiera Bilen.
+	                2. Hitta MOTORKODEN (kritiskt för oljemängd). Titta i Skruvat-datan om den finns.
+	                3. Ange Oljemängd & Specifikation.
+	                   - Om osäker på volym, skriv "❗" och ange ett intervall.
+	                   - Om säker baserat på motorkod, skriv "✅".
+	
+	                FORMAT (Svara ENDAST med denna HTML):
+	                <b>Fordonsspecifikation ${regnr}</b>
+	                <ul>
+	                <li>🚗 <b>Fordon:</b> [Identifierad Modell]</li>
+	                <li>⚙️ <b>Motorkod:</b> [Hittad kod]</li>
+	                <li>🛢️ <b>Motorolja:</b> [Antal] liter [✅/❗]</li>
+	                <li>💧 <b>Viskositet:</b> [T.ex. 0W-20]</li>
+	                <li>🔧 <b>Moment:</b> Hjul [Nm] & Oljeplugg [Nm]</li>
+	                </ul>
+	            `;
 	        }
 	
-	        const rawHtml = await response.text();
+	        // --- 4. ANROPA AI (Gemini 1.5 Flash) ---
+	        const apiKey = CONFIG.AI_API_KEY; 
+	        const aiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 	
-	        if (!rawHtml || rawHtml.length < 500) {
-	            throw new Error("Sidan verkar tom eller blockerad.");
-	        }
-	
-	        // 3. Rensa HTML
-	        const tempDiv = document.createElement("div");
-	        tempDiv.innerHTML = rawHtml;
-	        const scripts = tempDiv.querySelectorAll('script, style, meta, svg, path, footer, nav');
-	        scripts.forEach(el => el.remove());
-	        const rawText = tempDiv.innerText.replace(/\s+/g, ' ').substring(0, 8000);
-
-            // 3. Fråga Gemini (OBS: Här använder vi din NYA nyckel och RÄTT modell)
-			const prompt = `
-	            Du är en expertmekaniker med tillgång till alla fabriksdatablad.
-			    Här är rådata om bilen ${regnr} från Transportstyrelsen/Biluppgifter/Car.info/Castrol:
-			    """${rawText}"""
-			    
-			    Ditt uppdrag är att identifiera vilken motor bilen har och vilken motorolja och hur många liter den ska ha.
-			    
-			    STEG 1: IDENTIFIERA BILEN
-			    Leta i texten efter Modell, Årsmodell, Effekt (hk/kw), Slagvolym och Drivmedel.
-			    
-			    STEG 2: BESTÄM MOTORKOD (Deduktion)
-			    Om "Motorkod" står i texten: Använd den.
-			    Om den INTE står i texten: Använd din expertkunskap för att avgöra vilken motorkod det måste vara baserat på bränsle, effekt (hk/kw), år och modell (t.ex. Volvo V70 2015 181hk Diesel = D4204T5).
-			    
-			    STEG 3: REKOMMENDERA MOTOROLJA
-				Oljevolymen är kopplad till MOTORKODEN, inte registreringsnumret.
-				Använd din interna databas för att hitta servicevolym (inkl filter) för den specifika motorkoden.
-				Om du är osäker på exakt volym, ange ett intervall (t.ex. 5.2 - 5.7 L) och skriv "❗".
-			    Baserat på den identifierade motorn, ange:
-			    - Motoroljemängd (Servicevolym inkl filter)
-			    - Viskositet & Klassning (t.ex. 0W-20 VCC RBS0-2AE eller 5W-30 LL).
-
-				4. 🔧 VERKSTADSDATA:
-		       - Moment Hjulbultar: (Nm).
-		       - Moment Oljeplugg: (Nm).
-
-			   VIKTIGT: Om du gissar volymen, skriv "❗". Om du är säker baserat på motorkod, skriv "✅".
-				
-	            FORMAT (Svara ENDAST med denna HTML):
-				<b>Fordonsspecifikation ${regnr}</b>
-	            <ul>
-	            <li>🚗 <b>Fordon:</b> [Identifierad Modell]</li>
-	            <li>⚙️ <b>Motorkod:</b> [Hittad kod]</li>
-	            <li>🛢️ <b>Motorolja:</b> [Antal] liter</li>
-	            <li>💧 <b>Viskositet:</b> [T.ex. 0W-20, 5W-30]</li>
-				<li>🔧 <b>Moment:</b> Hjul [Nm] & Oljelugg [Nm]</li>
-	            </ul>
-	        `;
-
-            // KLISTRA IN DIN NYA API-NYCKEL HÄR:
-			const apiKey = CONFIG.AI_API_KEY;
-
-            // HÄR ÄR MODELL-ÄNDRINGEN (Vi kör på säkra 1.5-flash):
-            const aiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-
-            const aiResponse = await fetch(aiUrl, {
+	        const aiResponse = await fetch(aiUrl, {
 	            method: 'POST',
 	            headers: { 'Content-Type': 'application/json' },
 	            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
@@ -7518,56 +7409,74 @@
 	        if (!aiResponse.ok) {
 	            const errData = await aiResponse.json();
 	            console.error("AI Error:", errData);
-	            throw new Error("Kunde inte ansluta till AI (Kontrollera API-nyckel).");
+	            throw new Error("AI-tjänsten svarade inte.");
 	        }
 	
 	        const aiData = await aiResponse.json();
-	        let answer = aiData.candidates[0].content.parts[0].text;
+	        const htmlContent = aiData.candidates[0].content.parts[0].text;
 	
-	        // --- ÄNDRING: LÄGG TILL EN PLATSHÅLLARE ISTÄLLET FÖR HTML ---
-	        // Vi lägger till en "tagg" som vi senare byter ut mot knappen
-	        //answer += `\n\n[SHOP_BUTTON:${regnr}]`;
-	
-	        // 5. Vid LYCKAT resultat:
+	        // --- 5. HANTERA RESULTAT BASERAT PÅ MODE ---
 	        
-	        // A. Uppdatera ladd-meddelandet till en grön bock ✅
-	        if (loadingMsgRef) {
-	            await loadingMsgRef.update({ reaction: '✅' });
+	        if (mode === 'chat') {
+	            // Uppdatera ladd-meddelandet
+	            if (loadingMsgRef) await loadingMsgRef.update({ reaction: '✅' });
+	            
+	            // Lägg till svaret i chatten
+	            await db.collection("notes").add({
+	                text: htmlContent,
+	                timestamp: new Date().toISOString(),
+	                platform: 'system',
+	                reaction: '🤖'
+	            });
+	            setTimeout(() => {
+	                const chatList = document.getElementById('chatMessages');
+	                if (chatList) chatList.scrollTop = chatList.scrollHeight;
+	            }, 100);
+	        } 
+	        else if (mode === 'modal') {
+	            // Spara till vehicleSpecs (Cache)
+	            await db.collection("vehicleSpecs").doc(regnr).set({
+	                htmlContent: htmlContent,
+	                updatedAt: new Date().toISOString()
+	            });
+	
+	            // Visa i modalen
+	            if (specsContainer) {
+	                specsContainer.innerHTML = htmlContent;
+	                specsContainer.style.display = 'block';
+	            }
+	            if (fetchBtn) fetchBtn.style.display = 'none';
+	            showToast("Teknisk data sparad!", "success");
 	        }
-	
-	        // B. Lägg till det faktiska svaret som ett nytt meddelande
-	        await db.collection("notes").add({
-	            text: answer,
-	            timestamp: new Date().toISOString(),
-	            platform: 'system',
-	            reaction: '🤖'
-	        });
-	        
-	        // Scrolla ner igen för att visa svaret
-	        setTimeout(() => {
-	            const chatList = document.getElementById('chatMessages');
-	            if (chatList) chatList.scrollTop = chatList.scrollHeight;
-	        }, 100);
 	
 	    } catch (err) {
 	        console.error(err);
-	        showToast("Kunde inte hämta data.", "danger");
-	        
-	        // 6. Vid FEL: Uppdatera ladd-meddelandet till ett felmeddelande ❌
-	        if (loadingMsgRef) {
-	            await loadingMsgRef.update({
-	                text: `❌ Kunde inte läsa data för ${regnr}. Fel: ${err.message}`,
-	                reaction: '❌'
-	            });
-	        } else {
-	            // Fallback om loadingMsgRef inte skapades
-	            db.collection("notes").add({
-	                text: `❌ Kunde inte läsa data för ${regnr}. Fel: ${err.message}`,
-	                timestamp: new Date().toISOString(),
-	                platform: 'system'
-	            });
+	        const errMsg = `Kunde inte hämta data: ${err.message}`;
+	
+	        if (mode === 'chat') {
+	            showToast("Analys misslyckades.", "danger");
+	            if (loadingMsgRef) await loadingMsgRef.update({ text: `❌ ${errMsg}`, reaction: '❌' });
+	        } 
+	        else if (mode === 'modal') {
+	            showToast(errMsg, "danger");
+	            if (fetchBtn) {
+	                fetchBtn.disabled = false;
+	                fetchBtn.innerHTML = `<span>Försök igen</span>`;
+	            }
 	        }
 	    }
+	}
+	
+	// --- WRAPPER FUNKTIONER (För att inte paja dina event listeners) ---
+	
+	// Används av Reg-nr Modalen
+	function fetchAndSaveTechData(regnr) {
+	    analyzeVehicleData(regnr, 'modal');
+	}
+	
+	// Används av Chatten (/olja ABC123)
+	function lookupOilByReg(regnr) {
+	    analyzeVehicleData(regnr, 'chat');
 	}
 
 });
