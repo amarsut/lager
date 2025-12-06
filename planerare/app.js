@@ -7383,15 +7383,15 @@
 	                <b>Teknisk Data ${regnr}</b>
 	                <hr style="margin: 5px 0; opacity: 0.2;">
 	                <ul>
-	                <li>🚗 <b>Bil:</b> [Märke] [Modell] ([Årsmodell])</li>
-	                <li>⚙️ <b>Motorkod:</b> [Hittad kod] (Effekt HK)</li>
-	                <li>🛢️ <b>Motorolja:</b> [Volym] L &bull; [Viskositet]</li>
-	                <li>❄️ <b>AC:</b> [Gas] ([Mängd]g)</li>
-	                <li>⏲️ <b>Kamrem:</b> [Intervall]</li>
-	                <li>🔧 <b>Moment:</b> Hjul [Nm] &bull; Plugg [Nm]</li>
-	                <li>🔋 <b>Batteri:</b> [Placering] ([Kapacitet 50Ah], [CCA 420A], [Typ AGM/EFB/EFB+])</li>
-	                <li>⚖️ <b>Dragvikt:</b> [Kg]</li>
-	                </ul>
+					 <li><svg class="spec-icon-svg"><use href="#icon-car-tech"></use></svg> <b>Bil:</b> [Märke] [Modell] ([Årsmodell])</li>
+					 <li><svg class="spec-icon-svg"><use href="#icon-engine-tech"></use></svg> <b>Motorkod:</b> [Hittad kod] (Effekt HK)</li>
+					 <li><svg class="spec-icon-svg"><use href="#icon-oil-tech"></use></svg> <b>Motorolja:</b> [Volym] L &bull; [Viskositet]</li>
+					 <li><svg class="spec-icon-svg"><use href="#icon-ac-tech"></use></svg> <b>AC:</b> [Gas] ([Mängd]g)</li>
+					 <li><svg class="spec-icon-svg"><use href="#icon-belt-tech"></use></svg> <b>Kamrem:</b> [Intervall]</li>
+					 <li><svg class="spec-icon-svg"><use href="#icon-torque-tech"></use></svg> <b>Moment:</b> Hjul [Nm] &bull; Plugg [Nm]</li>
+					 <li><svg class="spec-icon-svg"><use href="#icon-battery-tech"></use></svg> <b>Batteri:</b> [Placering] ([Kapacitet], [Typ])</li>
+					 <li><svg class="spec-icon-svg"><use href="#icon-weight-tech"></use></svg> <b>Dragvikt:</b> [Kg]</li>
+					 </ul>
 	            `;
 	        } else {
 	            // --- CHAT PROMPT (Fokus på olja/service) ---
