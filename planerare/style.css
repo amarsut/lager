@@ -8141,15 +8141,17 @@ body.offline-mode .offline-dot {
 /* Listan */
 .tech-specs-card ul {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr; /* Två kolumner */
     column-gap: 2rem;
-    
-    /* Ökat radavstånd enligt önskemål */
-    row-gap: 0.8rem; 
-    
+    row-gap: 0.8rem;
     margin: 0;
     padding: 0;
     list-style: none;
+
+    /* --- HÄR ÄR FIXEN --- */
+    /* Detta tvingar listan att fylla vertikalt först (1-4 vänster, 5-8 höger) */
+    grid-auto-flow: column; 
+    grid-template-rows: repeat(4, auto); /* Vi låser den till 4 rader */
 }
 
 .tech-specs-card li {
@@ -8251,3 +8253,4 @@ body.offline-mode .offline-dot {
     margin-right: 6px !important; /* Skapar luft till höger om "Bil:", "Olja:" osv */
     display: inline-block; /* Säkerställer att marginalen respekteras */
 }
+
