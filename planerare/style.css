@@ -8178,16 +8178,16 @@ body.offline-mode .offline-dot {
     display: grid;
     /* Två kolumner på desktop, justera gap för luftighet */
     grid-template-columns: 1fr 1fr; 
-    column-gap: 2rem; 
-    row-gap: 0.75rem; 
+    column-gap: 2.5rem; 
+    row-gap: 1rem;
 }
 
 /* 4. List-objekten (Raden med Bil, Olja etc) */
 .tech-specs-card li {
     display: flex;
-    align-items: flex-start; /* VIKTIGT: Detta gör att ikonen stannar uppe vid radbrytning */
+    align-items: flex-start; /* VIKTIGT: Detta gör att ikonen stannar uppe */
     font-size: 0.85rem;
-    line-height: 1.4;
+    line-height: 1.5;
     color: var(--text-color);
 }
 
@@ -8239,3 +8239,79 @@ body.offline-mode .offline-dot {
     font-weight: 700;
 }
 
+/* Tvinga ikonen att ha fast bredd så texten inte knuffar den */
+.tech-specs-card .spec-icon {
+    flex-shrink: 0; 
+    width: 24px; /* Fast bredd */
+    min-width: 24px;
+    margin-right: 10px;
+    margin-top: 2px; /* Justera optiskt mot texten */
+    text-align: center;
+    font-size: 1.1rem;
+}
+
+.tech-specs-card .spec-content {
+    display: flex;
+    flex-direction: column; /* Stapla etikett och värde snyggt */
+    min-width: 0; /* Tillåter text-overflow att fungera */
+}
+
+.tech-specs-card strong {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: #6B7280; /* Grå */
+    letter-spacing: 0.05em;
+    margin-bottom: 2px;
+}
+
+/* Gör värdet (t.ex "5W-30...") större och tydligare */
+.tech-specs-card span {
+    color: #111827; /* Nästan svart */
+    font-weight: 500;
+    font-size: 0.95rem;
+    word-break: break-word; /* Bryt långa ord om nödvändigt */
+}
+
+/* 2. Snyggare Ägare-text */
+.owner-badge {
+    display: inline-block;
+    font-size: 0.85rem;
+    color: #4B5563;
+    background-color: #F3F4F6;
+    padding: 4px 8px;
+    border-radius: 6px;
+    margin-top: 6px;
+    font-weight: 500;
+}
+
+/* 3. Design för Header-knapparna (Piller) */
+.external-pill.small {
+    padding: 6px 12px !important;
+    font-size: 0.85rem !important;
+    height: auto !important;
+    border-radius: 20px !important; /* Helt runda hörn */
+    background-color: #fff;
+    border: 1px solid #E5E7EB;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    transition: all 0.2s ease;
+}
+
+.external-pill.small:hover {
+    border-color: var(--primary-color);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+.external-pill.small img {
+    margin-right: 6px;
+}
+
+/* Mobil-fix: Göm texten i knapparna om det är trångt, visa bara ikon */
+@media (max-width: 500px) {
+    .external-pill.small span {
+        display: none;
+    }
+    .external-pill.small img {
+        margin-right: 0;
+    }
+}
