@@ -8061,7 +8061,7 @@ body.offline-mode .offline-dot {
     padding: 16px 20px;        /* Kompakt luft inuti */
     
     /* --- AVSTÅNDS-FIXEN --- */
-    margin-top: 0.1rem;        /* Minskat avstånd uppåt (mot ägare/titel) */
+    margin-top: 0rem;        /* Minskat avstånd uppåt (mot ägare/titel) */
     margin-bottom: 1rem;       /* Minskat avstånd nedåt (mot sökfältet) */
     
     border: none;              /* Ingen ram behövs när vi har bakgrundsfärg */
@@ -8141,4 +8141,5 @@ body.offline-mode .offline-dot {
 [data-theme="dark"] #carTechSpecsContainer li b {
     color: #FFFFFF; /* Vit etikett */
 }
+
 
