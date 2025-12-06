@@ -8355,8 +8355,8 @@ body.offline-mode .offline-dot {
 
 /* --- BILMÄRKES-IKON I RUBRIKEN --- */
 .brand-icon-svg {
-    width: 20px;
-    height: 20px;
+    width: 24px;
+    height: 24px;
     margin-right: 8px;
     vertical-align: middle;
     color: #111827; /* Mörk färg */
@@ -8375,3 +8375,24 @@ body.offline-mode .offline-dot {
     gap: 4px;
 }
 
+/* 1. Ta bort standard-luft högst upp i modalen */
+#carModal .modal-body {
+    padding-top: 0 !important; 
+}
+
+/* 2. Dra ihop Teknisk Data-kortet */
+.tech-specs-card {
+    /* Minska avståndet uppåt mot linjen (var ca 1.5rem) */
+    margin-top: 0.8rem !important; 
+    
+    /* Minska avståndet nedåt mot sökfältet */
+    margin-bottom: 0.8rem !important;
+    
+    /* (Valfritt) Gör själva kortet lite kompaktare inuti också */
+    padding: 1rem 1.25rem !important; 
+}
+
+/* 3. Se till att historik-listan under inte puttar ifrån sig */
+.job-history-container {
+    margin-top: 0 !important;
+}
