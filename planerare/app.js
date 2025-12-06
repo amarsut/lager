@@ -7295,7 +7295,7 @@
 	    if (mode === 'chat') {
 	        try {
 	            loadingMsgRef = await db.collection("notes").add({
-	                text: `🔍 Söker data för ${regnr} via Biluppgifter, Car.info & Skruvat...`,
+	                text: `🔍 Söker data för ${regnr}...`,
 	                timestamp: new Date().toISOString(),
 	                platform: 'system',
 	                reaction: '⏳'
@@ -7319,18 +7319,18 @@
 	        // --- 2. SKRAPA DATA (Multi-source för maximal precision) ---
 	        const proxy = "https://corsproxy.io/?";
 	        const url1 = `https://biluppgifter.se/fordon/${regnr}`;
-	        const url2 = `https://www.car.info/sv-se/license-plate/S/${regnr}/specs`;
+	        //const url2 = `https://www.car.info/sv-se/license-plate/S/${regnr}/specs`;
 	
 	        const fetchPromises = [
 	            fetch(proxy + encodeURIComponent(url1)).then(res => res.ok ? res.text() : null),
-	            fetch(proxy + encodeURIComponent(url2)).then(res => res.ok ? res.text() : null),
+	            //fetch(proxy + encodeURIComponent(url2)).then(res => res.ok ? res.text() : null),
 	        ];
 	
 	        const results = await Promise.allSettled(fetchPromises);
 	        let combinedRawText = "";
 	
 	        if (results[0].value) combinedRawText += `\n[KÄLLA: BILUPPGIFTER]\n${results[0].value.replace(/\s+/g, ' ').substring(0, 8000)}`;
-	        if (results[1].value) combinedRawText += `\n[KÄLLA: CAR.INFO]\n${results[1].value.replace(/\s+/g, ' ').substring(0, 15000)}`;
+	        //if (results[1].value) combinedRawText += `\n[KÄLLA: CAR.INFO]\n${results[1].value.replace(/\s+/g, ' ').substring(0, 15000)}`;
 	
 	        if (combinedRawText.length < 500) throw new Error("Ingen data kunde hämtas från källorna.");
 	
