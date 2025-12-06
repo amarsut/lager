@@ -1,7 +1,7 @@
 /* --- Jobbplanerare v15: "Wow" --- */
         
 :root {
-   /* Förfina primärfärgen till en mer "tech"-blå */
+   /* Förfina primärfärgen till en mer "tech"-blå. */
     --primary-color: #0066FF; 
     --primary-light: rgba(0, 102, 255, 0.08);
     --primary-hover: #0052cc;
@@ -8352,6 +8352,7 @@ body.offline-mode .offline-dot {
 [data-theme="dark"] .spec-icon-svg {
     color: #9CA3AF; /* Ljusare grå i dark mode (Cool Gray 400) */
 }
+
 
 
 
