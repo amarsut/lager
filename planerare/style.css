@@ -8136,6 +8136,12 @@ body.offline-mode .offline-dot {
     /* TA BORT LINJEN UNDER RUBRIKEN */
     border-bottom: none !important; 
     padding-bottom: 0;
+	margin-bottom: 0.5rem;          /* Justera avståndet till texten under */
+}
+
+/* Säkerhetsåtgärd: Om det råkar finnas en <hr>-linje, dölj den */
+.tech-specs-card hr {
+    display: none !important;
 }
 
 /* Listan */
@@ -8295,3 +8301,4 @@ body.offline-mode .offline-dot {
         font-size: 1.5rem;
     }
 }
+
