@@ -8148,7 +8148,6 @@ body.offline-mode .offline-dot {
     padding: 0;
     list-style: none;
 
-    /* --- HÄR ÄR FIXEN --- */
     /* Detta tvingar listan att fylla vertikalt först (1-4 vänster, 5-8 höger) */
     grid-auto-flow: column; 
     grid-template-rows: repeat(4, auto); /* Vi låser den till 4 rader */
@@ -8254,3 +8253,45 @@ body.offline-mode .offline-dot {
     display: inline-block; /* Säkerställer att marginalen respekteras */
 }
 
+/* --- MOBILANPASSNING (Under 600px bredd) --- */
+@media (max-width: 600px) {
+    .tech-specs-card ul {
+        /* 1. Byt till en enda kolumn så allt hamnar under varandra */
+        grid-template-columns: 1fr; 
+        
+        /* 2. VIKTIGT: Återställ flödet till "rad för rad" */
+        /* Annars försöker den tvinga in allt i 4 rader även här */
+        grid-auto-flow: row; 
+        
+        /* 3. Låt antalet rader bli så många som behövs (auto) */
+        grid-template-rows: auto;
+        
+        /* 4. Lite mer luft mellan raderna på mobil */
+        row-gap: 1rem;
+    }
+    
+    /* Dölj de stora "Piller-knapparna" i headern på mobil */
+    .header-actions-desktop {
+        display: none !important;
+    }
+    
+    /* Dölj avdelar-linjen i headern */
+    .divider-vertical {
+        display: none;
+    }
+    
+    /* Minska luft i headern */
+    #carModalHeader {
+        padding: 1rem;
+    }
+    
+    /* Minska mellanrum vid reg-nr */
+    .reg-title-row {
+        gap: 6px;
+    }
+    
+    /* Gör reg-numret lite mindre så det inte radbryts */
+    #carModalRegnr {
+        font-size: 1.5rem;
+    }
+}
