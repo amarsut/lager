@@ -6,7 +6,7 @@
 		    'avbokad': 'Avbokad',
 		    'faktureras': 'Faktureras' // Ny.
 		};
-		// Lägg till dina företagskunder här (små bokstäver för sökning)
+		// Lägg till dina företagskunder här (små bokstäver för sökning).
 		const CORPORATE_CLIENTS = ['fogarolli', 'bmg'];
 		const SPECIAL_CLIENTS = ['fogarolli', 'bmg'];
         const formatCurrency = (num) => `${(num || 0).toLocaleString('sv-SE')} kr`;
