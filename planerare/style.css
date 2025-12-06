@@ -8402,21 +8402,23 @@ body.offline-mode .offline-dot {
     padding-top: 0.25rem !important; /* Nästan ingen luft högst upp i modalen */
 }
 
-.tech-specs-card {
-    margin-top: 0 !important; /* Tar bort kortets egen marginal uppåt */
-}
-
-/* 2. RÖDA STRECKET: Minska avståndet mellan Rubrik och Lista */
+/* 1. DRA IHOP RUBRIK OCH LISTA (ÖVRE) */
 .tech-specs-card h4 {
-    /* Minskar avståndet ner till listan */
-    margin-bottom: 0.5rem !important; 
-    
-    /* Säkerställer att inget annat spökar */
+    margin-bottom: 0 !important; /* Tar bort all luft under rubriken */
     padding-bottom: 0 !important;
-    border: none !important;
-    line-height: 1.2 !important; /* Tajtare radhöjd på rubriken */
+    min-height: 0 !important;
 }
 
 .tech-specs-card ul {
-    margin-top: 0 !important; /* Listan ska ligga dikt an mot marginalen ovan */
+    margin-top: 0.5rem !important; /* Endast lite luft upp mot rubriken */
+    padding-top: 0 !important;
+}
+
+/* 2. MINSKA LUFT I BOTTEN (NEDRE) */
+.tech-specs-card {
+    /* Minska den inre luften i botten av det grå kortet */
+    padding-bottom: 1rem !important; 
+    
+    /* Minska avståndet ner till sökfältet */
+    margin-bottom: 0.5rem !important;
 }
