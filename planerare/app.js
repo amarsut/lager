@@ -5178,9 +5178,9 @@
                 carModalExternalLink.href = biluppgifterUrl;
                 carModalExternalLinkMobile.href = biluppgifterUrl; 
                 carModalOwner.textContent = `Senaste ägare: ${latestOwner}`;
-                carModalTotalProfit.textContent = isPrivacyModeEnabled ? "---" : formatCurrency(totalVinst);
-                carModalTotalProfit.className = totalVinst > 0 ? 'stat-value money-related positive' : 'stat-value money-related';
-                carModalJobCount.textContent = carJobs.length;
+                //carModalTotalProfit.textContent = isPrivacyModeEnabled ? "---" : formatCurrency(totalVinst);
+                //carModalTotalProfit.className = totalVinst > 0 ? 'stat-value money-related positive' : 'stat-value money-related';
+                //carModalJobCount.textContent = carJobs.length;
 
                 carSearch.value = ''; 
                 renderDetailJobList(carModalJobList, carJobs, ''); 
