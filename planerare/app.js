@@ -7288,7 +7288,8 @@
 	
 	    try {
 	        // 1. Hämta rådata (Samma proxy som förut)
-	        const targetUrl = `https://biluppgifter.se/fordon/${regnr}`;
+	        //const targetUrl = `https://biluppgifter.se/fordon/${regnr}`;
+			const targetUrl = `https://www.car.info/sv-se/license-plate/S/${regnr}/specs`;
 	        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
 	        const response = await fetch(proxyUrl);
 	        if (!response.ok) throw new Error("Kunde inte nå fordonsdatabasen.");
