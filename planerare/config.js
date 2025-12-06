@@ -1,4 +1,4 @@
 const CONFIG = {
-    AI_API_KEY: "AIzaSyCzcRK1SawCzF_F2taQbcMgatGxabuIA4M"
+    AI_API_KEY: "AIzaSyAiJsl5jBp_TaQlXlXKsTxvW-RFNd5OnUg"
 };
 //gammal AIzaSyAiJsl5jBp_TaQlXlXKsTxvW-RFNd5OnUg
