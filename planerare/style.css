@@ -8016,151 +8016,126 @@ body.offline-mode .offline-dot {
     display: block; 
 }
 
-/* --- Teknisk Spec i Modal --- */
-.tech-specs-box {
-    background-color: var(--bg-color); /* Ljusgrå bakgrund */
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 1rem;
-    margin-bottom: 1.5rem;
-    font-size: 0.9rem;
-    line-height: 1.5;
-}
+/* =========================================
+   REG-MODAL & TEKNISK DATA (V3 - FINAL)
+   ========================================= */
 
-/* Anpassa HTML-innehållet från AI:n */
-.tech-specs-box ul {
-    margin: 0;
-    padding-left: 1.2rem;
-    display: grid;
-    grid-template-columns: 1fr 1fr; /* Två kolumner på större skärmar */
-    gap: 0.5rem;
-}
-
-.tech-specs-box li {
-    margin-bottom: 0.25rem;
-}
-
-/* Mobilanpassning */
-@media (max-width: 600px) {
-    .tech-specs-box ul {
-        grid-template-columns: 1fr; /* En kolumn på mobil */
-    }
-}
-
-.full-width-btn {
-    width: 100%;
-    justify-content: center;
-}
-
-/* --- Teknisk Data: "Premium Card" Design --- */
-
-/* 1. Huvudkortet (Själva rutan) */
-#carTechSpecsContainer {
-    background-color: #F2F2F7; /* Apple-style systemgrå (skapar block-effekten) */
-    border-radius: 12px;       /* Mjuka hörn */
-    padding: 16px 20px;        /* Kompakt luft inuti */
-    
-    /* --- AVSTÅNDS-FIXEN --- */
-    margin-top: 0rem;        /* Minskat avstånd uppåt (mot ägare/titel) */
-    margin-bottom: 1rem;       /* Minskat avstånd nedåt (mot sökfältet) */
-    
-    border: none;              /* Ingen ram behövs när vi har bakgrundsfärg */
-    box-shadow: none;          /* Platt design ser proffsigare ut här */
-    color: #1c1c1e;
-}
-
-/* 2. Rubriken ("Teknisk Data...") */
-#carTechSpecsContainer > b:first-child {
-    display: block;
-    font-size: 0.9rem;
-    font-weight: 600;          /* Lite tunnare fetstil för elegans */
-    margin-bottom: 10px;       /* Tajtare avstånd ner till listan */
-    padding-bottom: 0;
-    border: none;              /* Ingen linje under rubriken */
-    color: #000;               /* Helt svart rubrik */
-}
-
-/* Dölj <hr> helt */
-#carTechSpecsContainer hr { display: none; }
-
-/* 3. Listan (Rutnätet) */
-#carTechSpecsContainer ul {
-    display: grid;
-    /* Två kolumner: Vänster tar plats, höger tar lite mer plats */
-    grid-template-columns: 1fr 1.2fr; 
-    column-gap: 24px;  /* Luft mellan vänster/höger block */
-    row-gap: 8px;      /* Mycket tajt radavstånd (Kompakt!) */
-    padding: 0 !important;
-    margin: 0 !important;
-    list-style: none !important;
-}
-
-/* 4. Varje datapunkt (Raden) */
-#carTechSpecsContainer li {
-    font-size: 0.82rem;   /* Något mindre textstorlek för "dashboard"-känsla */
-    color: #3C3C43;       /* Mörkgrå (inte helt svart) text */
+/* --- 1. HEADER LAYOUT (Regnr, Kopiera, Ägare) --- */
+#carModalHeader {
     display: flex;
-    align-items: baseline; /* VIKTIGT: Linjerar emoji och text perfekt i nederkant */
-    line-height: 1.4;
-    padding: 0;
-    border: none;
-    background: none !important;
+    justify-content: space-between;
+    align-items: flex-start; /* Justera mot toppen */
+    padding: 1.5rem 1.5rem 1rem 1.5rem; /* Lite mer luft */
+    border-bottom: none; /* Ta bort linjen för en renare look */
 }
 
-/* 5. Fetstilt etikett (t.ex. "Bil:") */
-#carTechSpecsContainer li b {
-    color: #000;          /* Etiketten ska vara kolsvart */
+/* Behållare för Regnr + Kopiera (Sitter ihop) */
+.reg-title-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#carModalRegnr {
+    font-size: 1.75rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    margin: 0;
+    line-height: 1;
+}
+
+/* Diskret kopiera-knapp */
+.copy-icon-btn {
+    color: var(--text-color-light);
+    opacity: 0.5;
+    padding: 4px;
+    margin-top: 4px; /* Finjustera höjd optiskt */
+    transition: all 0.2s ease;
+}
+.copy-icon-btn:hover {
+    opacity: 1;
+    background-color: transparent;
+    color: var(--primary-color);
+    transform: scale(1.1);
+}
+
+/* --- 2. ÄGARE-BADGE (Fixad bredd) --- */
+.owner-badge {
+    display: inline-flex; /* VIKTIGT: Gör att den följer textens bredd */
+    align-items: center;
+    margin-top: 8px;
+    padding: 4px 10px;
+    background-color: #F3F4F6;
+    color: #4B5563;
+    font-size: 0.85rem;
     font-weight: 600;
-    margin-left: 6px;     /* Avstånd mellan Emoji och Etikett */
-    margin-right: 4px;    /* Litet avstånd mellan Etikett och Värde */
-    white-space: nowrap;  /* Förhindra att etiketten bryts */
+    border-radius: 6px;
+    width: fit-content; /* Säkerställer att den inte växer */
 }
 
-/* 6. Mobilanpassning */
-@media (max-width: 480px) {
-    #carTechSpecsContainer {
-        padding: 14px; /* Ännu tajtare på mobil */
-    }
-    #carTechSpecsContainer ul {
-        grid-template-columns: 1fr; /* En kolumn på smala skärmar */
-        row-gap: 8px;
-    }
+[data-theme="dark"] .owner-badge {
+    background-color: rgba(255,255,255,0.1);
+    color: #E5E7EB;
 }
 
-/* 7. Dark Mode (Matchar din referensbild mörka tema) */
-[data-theme="dark"] #carTechSpecsContainer {
-    background-color: #1C1C1E; /* Mörkgrå bakgrund */
-    color: #E5E5EA;
-}
-[data-theme="dark"] #carTechSpecsContainer > b:first-child {
-    color: #FFFFFF;
-}
-[data-theme="dark"] #carTechSpecsContainer li {
-    color: #AEAEB2; /* Ljusgrå text */
-}
-[data-theme="dark"] #carTechSpecsContainer li b {
-    color: #FFFFFF; /* Vit etikett */
+/* --- 3. HEADER-KNAPPAR (Piller-design) --- */
+.header-right-group {
+    display: flex;
+    align-items: center;
+    gap: 16px;
 }
 
-/* --- MODERN REG-MODAL DESIGN (Referensbild-stil) --- */
+.header-actions-desktop {
+    display: flex;
+    gap: 8px;
+}
 
-/* 1. Huvudkortet för Teknisk Data */
-.tech-specs-card {
-    background-color: #F9FAFB; /* Mycket ljus grå (Ljust läge) */
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    padding: 1.25rem;
-    margin-bottom: 1.5rem;
+.external-pill.small {
+    min-width: 130px; /* Tvingar båda knapparna att vara lika breda */
+    justify-content: center;
+    height: 36px;
+    padding: 0 12px;
+    border-radius: 99px; /* Pillerform */
+    font-size: 0.85rem;
+    background-color: #fff;
+    border: 1px solid #E5E7EB;
     box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    transition: all 0.2s ease;
+    text-decoration: none;
+    color: var(--text-color);
+    display: inline-flex;
+    align-items: center;
 }
 
-/* Anpassning för Dark Mode (Mörkgrå bakgrund som bilden) */
-[data-theme="dark"] .tech-specs-card {
-    background-color: #1C1C1E; /* Mörk bakgrund */
-    border-color: #2C2C2E;
+.external-pill.small img {
+    margin-right: 6px;
+    width: 16px;
+    height: 16px;
 }
 
-/* 2. Rubriken ("Teknisk Data...") */
+.external-pill.small:hover {
+    border-color: var(--primary-color);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+.divider-vertical {
+    width: 1px;
+    height: 24px;
+    background-color: var(--border-color);
+}
+
+/* --- 4. TEKNISK DATA KORTET ("Premium Card") --- */
+.tech-specs-card {
+    background-color: #F9FAFB; /* Mycket ljus grå */
+    border: 1px solid rgba(0,0,0,0.05);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: none;
+}
+
+/* Rubriken i kortet */
 .tech-specs-card h4 {
     margin: 0 0 1rem 0;
     font-size: 0.95rem;
@@ -8170,148 +8145,100 @@ body.offline-mode .offline-dot {
     border-bottom: 1px solid var(--border-color);
 }
 
-/* 3. Listan (Grid-layout) */
+/* Listan (Rutnät) */
 .tech-specs-card ul {
     list-style: none;
     padding: 0;
     margin: 0;
     display: grid;
-    /* Två kolumner på desktop, justera gap för luftighet */
-    grid-template-columns: 1fr 1fr; 
-    column-gap: 2.5rem; 
-    row-gap: 1rem;
+    grid-template-columns: 1fr 1fr; /* Två kolumner */
+    column-gap: 2.5rem; /* Luft mellan kolumnerna */
+    row-gap: 1rem;      /* Luft mellan raderna */
 }
 
-/* 4. List-objekten (Raden med Bil, Olja etc) */
+/* Varje rad (Ikon + Text) */
 .tech-specs-card li {
     display: flex;
-    align-items: flex-start; /* VIKTIGT: Detta gör att ikonen stannar uppe */
-    font-size: 0.85rem;
+    align-items: flex-start; /* VIKTIGT: Gör att ikonen stannar uppe */
     line-height: 1.5;
+    font-size: 0.85rem;
     color: var(--text-color);
 }
 
-/* Ikon/Emoji justering */
-.tech-specs-card li .spec-icon {
-    flex-shrink: 0; /* Förhindra att ikonen krymper */
-    width: 1.2rem;
-    margin-right: 0.5rem;
-    margin-top: 1px; /* Finjustera höjden mot texten */
+/* Ikonen (Fast bredd, centrerad) */
+.tech-specs-card .spec-icon {
+    flex-shrink: 0; 
+    width: 24px; 
+    min-width: 24px;
+    margin-right: 10px;
+    margin-top: 1px; /* Optisk justering mot texten */
     text-align: center;
-}
-
-/* Innehålls-wrapper (Etikett + Värde) */
-.tech-specs-card li .spec-content {
-    display: flex;
-    flex-direction: column; /* Stapla på mobil om det är extremt trångt, annars rad */
-}
-
-/* Etiketten (t.ex. "Bil:") */
-.tech-specs-card li strong {
-    font-weight: 600;
-    color: var(--text-color);
-    margin-right: 4px;
-    white-space: nowrap; /* Förhindra att etiketten bryts */
-}
-
-/* Värdet (t.ex. "Volvo V70...") */
-.tech-specs-card li span {
-    color: var(--text-color-light); /* Lite ljusare text för värdet */
-    word-break: break-word; /* Bryt långa ord om det behövs */
-}
-
-/* --- Mobilanpassning för Modal --- */
-@media (max-width: 600px) {
-    .tech-specs-card ul {
-        grid-template-columns: 1fr; /* En kolumn på mobil */
-        row-gap: 0.75rem;
-    }
-    
-    /* Dölj desktop-knapparna i headern på mobil */
-    .header-actions-desktop {
-        display: none !important;
-    }
-}
-
-/* --- Justera Header Titel --- */
-#carModalHeader h2 {
     font-size: 1.1rem;
+}
+
+/* Text-containern (Stapla etikett och värde) */
+.tech-specs-card .spec-content {
+    display: flex;
+    flex-direction: column;
+    min-width: 0; /* Tillåter radbrytning */
+}
+
+/* Etiketten (t.ex "MOTOROLJA") */
+.tech-specs-card strong {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #6B7280; /* Grå */
+    margin-bottom: 2px;
     font-weight: 700;
 }
 
-/* Tvinga ikonen att ha fast bredd så texten inte knuffar den */
-.tech-specs-card .spec-icon {
-    flex-shrink: 0; 
-    width: 24px; /* Fast bredd */
-    min-width: 24px;
-    margin-right: 10px;
-    margin-top: 2px; /* Justera optiskt mot texten */
-    text-align: center;
-    font-size: 1.1rem;
-}
-
-.tech-specs-card .spec-content {
-    display: flex;
-    flex-direction: column; /* Stapla etikett och värde snyggt */
-    min-width: 0; /* Tillåter text-overflow att fungera */
-}
-
-.tech-specs-card strong {
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    color: #6B7280; /* Grå */
-    letter-spacing: 0.05em;
-    margin-bottom: 2px;
-}
-
-/* Gör värdet (t.ex "5W-30...") större och tydligare */
+/* Värdet (t.ex "5W-30") */
 .tech-specs-card span {
-    color: #111827; /* Nästan svart */
-    font-weight: 500;
+    color: #111827; /* Mörkare */
+    font-weight: 600;
     font-size: 0.95rem;
-    word-break: break-word; /* Bryt långa ord om nödvändigt */
+    word-break: break-word;
 }
 
-/* 2. Snyggare Ägare-text */
-.owner-badge {
-    display: inline-block;
-    font-size: 0.85rem;
-    color: #4B5563;
-    background-color: #F3F4F6;
-    padding: 4px 8px;
-    border-radius: 6px;
-    margin-top: 6px;
-    font-weight: 500;
+/* --- 5. DARK MODE ANPASSNING --- */
+[data-theme="dark"] .tech-specs-card {
+    background-color: #1C1C1E; /* Mörkare bakgrund */
+    border-color: #2C2C2E;
+}
+[data-theme="dark"] .tech-specs-card strong {
+    color: #9CA3AF;
+}
+[data-theme="dark"] .tech-specs-card span {
+    color: #F3F4F6;
+}
+[data-theme="dark"] .external-pill.small {
+    background-color: #2c2c2e;
+    border-color: #3a3a3c;
+    color: #fff;
 }
 
-/* 3. Design för Header-knapparna (Piller) */
-.external-pill.small {
-    padding: 6px 12px !important;
-    font-size: 0.85rem !important;
-    height: auto !important;
-    border-radius: 20px !important; /* Helt runda hörn */
-    background-color: #fff;
-    border: 1px solid #E5E7EB;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-    transition: all 0.2s ease;
-}
-
-.external-pill.small:hover {
-    border-color: var(--primary-color);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-}
-
-.external-pill.small img {
-    margin-right: 6px;
-}
-
-/* Mobil-fix: Göm texten i knapparna om det är trångt, visa bara ikon */
-@media (max-width: 500px) {
-    .external-pill.small span {
+/* --- 6. MOBILANPASSNING --- */
+@media (max-width: 600px) {
+    .tech-specs-card ul {
+        grid-template-columns: 1fr; /* En kolumn på mobil */
+        row-gap: 1rem;
+    }
+    .header-actions-desktop {
+        display: none !important; /* Dölj stora knappar i headern på mobil */
+    }
+    .divider-vertical {
         display: none;
     }
-    .external-pill.small img {
-        margin-right: 0;
+    
+    /* Justera padding i modalen på mobil */
+    #carModalHeader {
+        padding: 1rem;
+    }
+    .reg-title-row {
+        gap: 6px;
+    }
+    #carModalRegnr {
+        font-size: 1.5rem;
     }
 }
