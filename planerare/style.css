@@ -8299,6 +8299,45 @@ body.offline-mode .offline-dot {
     }
 }
 
+/* --- KUND-MODAL UPPDATERING --- */
+
+/* 1. Header-design (Linje & Padding) */
+#customerModalHeader {
+    border-bottom: 1px solid var(--border-color); /* Linjen */
+    padding: 1.25rem 1.5rem 1rem 1.5rem;
+    align-items: flex-start;
+}
+
+/* 2. Justera Modal Body för att matcha ramen */
+#customerModal .modal-body {
+    padding-top: 1rem !important; /* Luft mellan linje och ram */
+}
+
+/* 3. Telefon-knapparna inuti det grå pillret */
+.customer-phone-wrapper .icon-btn {
+    opacity: 0.6;
+    color: var(--text-color);
+    transition: all 0.2s ease;
+    height: 24px;
+    width: 24px;
+}
+.customer-phone-wrapper .icon-btn:hover {
+    opacity: 1;
+    color: var(--primary-color);
+    background-color: rgba(255,255,255,0.5); /* Liten vit platta vid hover */
+    border-radius: 50%;
+}
+
+/* 4. Fixa textstorleken i pillret */
+#customerModalPhone {
+    font-weight: 600;
+    color: #4B5563;
+    font-size: 0.9rem;
+}
+/* Dark mode fix för texten */
+[data-theme="dark"] #customerModalPhone {
+    color: #E5E7EB;
+}
 
 
 
