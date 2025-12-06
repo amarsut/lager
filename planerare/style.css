@@ -8128,18 +8128,17 @@ body.offline-mode .offline-dot {
 
 /* Rubriken i kortet */
 .tech-specs-card h4 {
-    margin: 0 0 1.5rem 0; 
-    
+    padding-bottom: 2rem !important; 
+    margin-bottom: 0 !important;
     font-size: 0.9rem;
     font-weight: 700;
     color: #111827;
-    border-bottom: none !important; 
-    padding-bottom: 0;
+    border: none !important; 
 }
 
 /* Säkerhetsåtgärd: Om det råkar finnas en <hr>-linje, dölj den */
-.tech-specs-card hr {
-    display: none !important;
+.tech-specs-card ul {
+    margin-top: 0 !important;
 }
 
 /* Listan */
@@ -8299,6 +8298,7 @@ body.offline-mode .offline-dot {
         font-size: 1.5rem;
     }
 }
+
 
 
 
