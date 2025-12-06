@@ -8211,7 +8211,7 @@ body.offline-mode .offline-dot {
 
 /* 2. Ta bort marginalen ovanför teknisk data-kortet */
 .tech-specs-card {
-    margin-top: 0 !important;
+    margin-top: 0.5 !important;
     
     /* Valfritt: Om du vill att den ska smälta ihop ännu mer, 
        kan du ta bort de övre rundade hörnen: */
@@ -8224,3 +8224,4 @@ body.offline-mode .offline-dot {
     padding-bottom: 0.5rem !important; /* Litet säkerhetsavstånd, eller sätt 0 */
     border-bottom: none !important;    /* Ingen linje ivägen */
 }
+
