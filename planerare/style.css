@@ -8017,228 +8017,177 @@ body.offline-mode .offline-dot {
 }
 
 /* =========================================
-   REG-MODAL & TEKNISK DATA (V3 - FINAL)
+   REG-MODAL FINAL "PRO" DESIGN
    ========================================= */
 
-/* --- 1. HEADER LAYOUT (Regnr, Kopiera, Ägare) --- */
+/* --- 1. HEADER & TITEL --- */
 #carModalHeader {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start; /* Justera mot toppen */
-    padding: 1.5rem 1.5rem 1rem 1.5rem; /* Lite mer luft */
-    border-bottom: none; /* Ta bort linjen för en renare look */
+    padding: 1.25rem 1.5rem 1rem 1.5rem; /* Mindre luft i botten */
+    border-bottom: 1px solid var(--border-color); /* Punkt 3: Linje mellan header och content */
+    align-items: flex-start;
 }
 
-/* Behållare för Regnr + Kopiera (Sitter ihop) */
 .reg-title-row {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 8px; /* Punkt 1: Knappen direkt höger om texten */
 }
 
 #carModalRegnr {
-    font-size: 1.75rem;
+    font-size: 1.6rem;
     font-weight: 800;
-    letter-spacing: -0.5px;
     margin: 0;
     line-height: 1;
+    letter-spacing: -0.5px;
 }
 
-/* Diskret kopiera-knapp */
 .copy-icon-btn {
-    color: var(--text-color-light);
-    opacity: 0.5;
+    opacity: 0.4;
     padding: 4px;
-    margin-top: 4px; /* Finjustera höjd optiskt */
+    margin-top: 2px;
+    color: var(--text-color);
     transition: all 0.2s ease;
 }
 .copy-icon-btn:hover {
     opacity: 1;
-    background-color: transparent;
     color: var(--primary-color);
+    background: transparent;
     transform: scale(1.1);
 }
 
-/* --- 2. ÄGARE-BADGE (Fixad bredd) --- */
 .owner-badge {
-    display: inline-flex; /* VIKTIGT: Gör att den följer textens bredd */
-    align-items: center;
-    margin-top: 8px;
-    padding: 4px 10px;
+    margin-top: 6px;
+    font-size: 0.8rem;
+    padding: 2px 8px;
     background-color: #F3F4F6;
-    color: #4B5563;
-    font-size: 0.85rem;
+    color: #6B7280;
+    border-radius: 4px;
     font-weight: 600;
-    border-radius: 6px;
-    width: fit-content; /* Säkerställer att den inte växer */
+    display: inline-block;
 }
 
-[data-theme="dark"] .owner-badge {
-    background-color: rgba(255,255,255,0.1);
-    color: #E5E7EB;
-}
-
-/* --- 3. HEADER-KNAPPAR (Piller-design) --- */
-.header-right-group {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-}
-
-.header-actions-desktop {
-    display: flex;
-    gap: 8px;
-}
-
-.external-pill.small {
-    min-width: 130px; /* Tvingar båda knapparna att vara lika breda */
-    justify-content: center;
-    height: 36px;
-    padding: 0 12px;
-    border-radius: 99px; /* Pillerform */
-    font-size: 0.85rem;
-    background-color: #fff;
-    border: 1px solid #E5E7EB;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-    transition: all 0.2s ease;
-    text-decoration: none;
-    color: var(--text-color);
-    display: inline-flex;
-    align-items: center;
-}
-
-.external-pill.small img {
-    margin-right: 6px;
-    width: 16px;
-    height: 16px;
-}
-
-.external-pill.small:hover {
-    border-color: var(--primary-color);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-}
-
-.divider-vertical {
-    width: 1px;
-    height: 24px;
-    background-color: var(--border-color);
-}
-
-/* --- 4. TEKNISK DATA KORTET ("Premium Card") --- */
+/* --- TEKNISK DATA KORTET --- */
 .tech-specs-card {
-    background-color: #F9FAFB; /* Mycket ljus grå */
-    border: 1px solid rgba(0,0,0,0.05);
+    background-color: #F9FAFB;
     border-radius: 12px;
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
-    box-shadow: none;
+    padding: 1.25rem;
+    /* Punkt 4: Kompaktare avstånd mot header och lista */
+    margin-top: 0.5rem; 
+    margin-bottom: 1rem; 
+    border: none; /* Platt design, ingen ram runt själva kortet, likt bild 2 */
 }
 
-/* Rubriken i kortet */
+/* Punkt 2: Ingen linje under rubriken "Teknisk Data" */
 .tech-specs-card h4 {
-    margin: 0 0 1rem 0;
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: var(--text-color);
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid var(--border-color);
+    margin: 0 0 0.75rem 0; /* Lite mindre marginal neråt */
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #111827;
+    border-bottom: none; /* BORTTAGEN LINJE */
+    padding-bottom: 0;
 }
 
-/* Listan (Rutnät) */
+/* Punkt 6: Kompaktare höjd i listan */
 .tech-specs-card ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
     display: grid;
-    grid-template-columns: 1fr 1fr; /* Två kolumner */
-    column-gap: 2.5rem; /* Luft mellan kolumnerna */
-    row-gap: 1rem;      /* Luft mellan raderna */
+    grid-template-columns: 1fr 1fr;
+    column-gap: 2rem;
+    row-gap: 0.5rem; /* Minskat radavstånd */
+    margin: 0;
+    padding: 0;
+    list-style: none;
 }
 
-/* Varje rad (Ikon + Text) */
 .tech-specs-card li {
     display: flex;
-    align-items: flex-start; /* VIKTIGT: Gör att ikonen stannar uppe */
-    line-height: 1.5;
+    align-items: flex-start;
     font-size: 0.85rem;
-    color: var(--text-color);
+    line-height: 1.4;
 }
 
-/* Ikonen (Fast bredd, centrerad) */
+/* Punkt 5: Proffsigare layout (Ikon + Etikett + Värde) */
 .tech-specs-card .spec-icon {
-    flex-shrink: 0; 
-    width: 24px; 
-    min-width: 24px;
-    margin-right: 10px;
-    margin-top: 1px; /* Optisk justering mot texten */
+    flex-shrink: 0;
+    width: 20px;
+    margin-right: 8px;
     text-align: center;
-    font-size: 1.1rem;
+    opacity: 0.8;
 }
 
-/* Text-containern (Stapla etikett och värde) */
 .tech-specs-card .spec-content {
     display: flex;
-    flex-direction: column;
-    min-width: 0; /* Tillåter radbrytning */
+    flex-direction: row; /* Lägg etikett och värde på rad om plats finns */
+    gap: 4px;
+    flex-wrap: wrap;
 }
 
-/* Etiketten (t.ex "MOTOROLJA") */
 .tech-specs-card strong {
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: #6B7280; /* Grå */
-    margin-bottom: 2px;
-    font-weight: 700;
-}
-
-/* Värdet (t.ex "5W-30") */
-.tech-specs-card span {
-    color: #111827; /* Mörkare */
     font-weight: 600;
-    font-size: 0.95rem;
-    word-break: break-word;
+    color: #374151; /* Mörkgrå */
+    margin-right: 2px;
+}
+.tech-specs-card strong::after {
+    content: ":"; /* Lägg till kolon automatiskt */
 }
 
-/* --- 5. DARK MODE ANPASSNING --- */
+.tech-specs-card span {
+    color: #111827; /* Svart */
+    font-weight: 500;
+}
+
+/* --- HISTORIK & SÖK (Punkt 7 & 8) --- */
+
+/* Wrapper som skapar ramen runt både sök och lista (Bild 2 stil) */
+.job-history-container {
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    overflow: hidden; /* Klipp innehållet */
+    margin-top: 0.5rem;
+}
+
+/* Sökfältet inuti containern (Integrerad look) */
+.search-wrapper.embedded-search {
+    border: none;
+    border-bottom: 1px solid var(--border-color);
+    border-radius: 0;
+    background-color: #fff;
+    box-shadow: none;
+    height: 46px;
+}
+.search-wrapper.embedded-search input {
+    font-size: 0.9rem;
+}
+
+/* Listan inuti containern */
+.detail-job-list {
+    background-color: #1e1e1e; /* Mörk bakgrund likt referensbilden (om mörkt läge) */
+}
+/* Anpassa för ljust läge */
+html[data-theme="light"] .detail-job-list {
+    background-color: #fff;
+}
+
+.detail-job-list li {
+    border-bottom: 1px solid var(--border-color);
+    padding: 0.8rem 1rem;
+}
+.detail-job-list li:last-child {
+    border-bottom: none;
+}
+
+/* Dark mode anpassningar */
 [data-theme="dark"] .tech-specs-card {
-    background-color: #1C1C1E; /* Mörkare bakgrund */
-    border-color: #2C2C2E;
+    background-color: #1C1C1E;
 }
-[data-theme="dark"] .tech-specs-card strong {
-    color: #9CA3AF;
-}
+[data-theme="dark"] .tech-specs-card h4,
+[data-theme="dark"] .tech-specs-card strong,
 [data-theme="dark"] .tech-specs-card span {
-    color: #F3F4F6;
+    color: #E5E7EB;
 }
-[data-theme="dark"] .external-pill.small {
-    background-color: #2c2c2e;
-    border-color: #3a3a3c;
-    color: #fff;
+[data-theme="dark"] .search-wrapper.embedded-search {
+    background-color: #1C1C1E;
+    border-bottom-color: #333;
 }
-
-/* --- 6. MOBILANPASSNING --- */
-@media (max-width: 600px) {
-    .tech-specs-card ul {
-        grid-template-columns: 1fr; /* En kolumn på mobil */
-        row-gap: 1rem;
-    }
-    .header-actions-desktop {
-        display: none !important; /* Dölj stora knappar i headern på mobil */
-    }
-    .divider-vertical {
-        display: none;
-    }
-    
-    /* Justera padding i modalen på mobil */
-    #carModalHeader {
-        padding: 1rem;
-    }
-    .reg-title-row {
-        gap: 6px;
-    }
-    #carModalRegnr {
-        font-size: 1.5rem;
-    }
+[data-theme="dark"] .job-history-container {
+    border-color: #333;
 }
