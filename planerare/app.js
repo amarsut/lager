@@ -2268,7 +2268,7 @@
 			
 			            try {
 							const apiKey = CONFIG.AI_API_KEY;
-			                const url = CONFIG.AI_GEMINI_LINK;
+			                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 			
 			                const prompt = `Du är en expertmekaniker. Svara på svenska.
 								Analysera: "${query}".
@@ -7432,7 +7432,7 @@
 	
 	        // --- 4. ANROPA AI (Gemini 1.5 Flash) ---
 	        const apiKey = CONFIG.AI_API_KEY; 
-	        const url = CONFIG.AI_GEMINI_LINK;
+			const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 	
 	        const aiResponse = await fetch(aiUrl, {
 	            method: 'POST',
