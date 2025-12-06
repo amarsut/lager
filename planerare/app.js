@@ -5084,7 +5084,7 @@
                 const latestPhoneJob = customerJobs.find(j => j.telefon);
                 const latestPhone = latestPhoneJob ? latestPhoneJob.telefon : null; // Hämta numret eller null
 
-                const totalVinst = customerJobs.reduce((sum, j) => sum + (j.vinst || 0), 0);
+                //const totalVinst = customerJobs.reduce((sum, j) => sum + (j.vinst || 0), 0);
                 
                 customerModalName.textContent = kundnamn;
 
@@ -5108,9 +5108,9 @@
                 // Se till att redigera-knappen alltid syns
                 editCustomerPhoneBtn.style.display = 'inline-flex';
 
-                customerModalTotalProfit.textContent = isPrivacyModeEnabled ? "---" : formatCurrency(totalVinst);
-                customerModalTotalProfit.className = totalVinst > 0 ? 'stat-value money-related positive' : 'stat-value money-related';
-                customerModalJobCount.textContent = customerJobs.length;
+                //customerModalTotalProfit.textContent = isPrivacyModeEnabled ? "---" : formatCurrency(totalVinst);
+                //customerModalTotalProfit.className = totalVinst > 0 ? 'stat-value money-related positive' : 'stat-value money-related';
+                //customerModalJobCount.textContent = customerJobs.length;
                 
                 customerSearch.value = ''; 
                 renderDetailJobList(customerModalJobList, customerJobs, ''); 
