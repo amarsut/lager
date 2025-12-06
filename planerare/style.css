@@ -8052,27 +8052,32 @@ body.offline-mode .offline-dot {
     justify-content: center;
 }
 
-/* --- Teknisk Data: "Volvo-Style" (Kompakt & Proffsig) --- */
+/* --- Teknisk Data: "Premium Card" Design --- */
 
-/* 1. Huvudkortet */
+/* 1. Huvudkortet (Själva rutan) */
 #carTechSpecsContainer {
-    background-color: #F5F5F7; /* Samma ljusgrå ton som i din referensbild */
+    background-color: #F2F2F7; /* Apple-style systemgrå (skapar block-effekten) */
     border-radius: 12px;       /* Mjuka hörn */
     padding: 16px 20px;        /* Kompakt luft inuti */
-    margin-top: 1rem;
-    border: none;              /* Ingen ram, bara bakgrundsfärg */
-    color: #1c1c1e;            /* Mörk textfärg */
+    
+    /* --- AVSTÅNDS-FIXEN --- */
+    margin-top: 0.5rem;        /* Minskat avstånd uppåt (mot ägare/titel) */
+    margin-bottom: 1rem;       /* Minskat avstånd nedåt (mot sökfältet) */
+    
+    border: none;              /* Ingen ram behövs när vi har bakgrundsfärg */
+    box-shadow: none;          /* Platt design ser proffsigare ut här */
+    color: #1c1c1e;
 }
 
 /* 2. Rubriken ("Teknisk Data...") */
 #carTechSpecsContainer > b:first-child {
     display: block;
-    font-size: 0.95rem;
-    font-weight: 700;
-    margin-bottom: 12px;       /* Lite luft ner till datan */
+    font-size: 0.9rem;
+    font-weight: 600;          /* Lite tunnare fetstil för elegans */
+    margin-bottom: 10px;       /* Tajtare avstånd ner till listan */
     padding-bottom: 0;
     border: none;              /* Ingen linje under rubriken */
-    color: #000;
+    color: #000;               /* Helt svart rubrik */
 }
 
 /* Dölj <hr> helt */
@@ -8081,20 +8086,21 @@ body.offline-mode .offline-dot {
 /* 3. Listan (Rutnätet) */
 #carTechSpecsContainer ul {
     display: grid;
-    grid-template-columns: 1fr 1.1fr; /* Två kolumner (höger lite bredare för lång text) */
-    column-gap: 20px;  /* Luft mellan vänster och höger kolumn */
-    row-gap: 10px;     /* Tajt avstånd mellan raderna (Kompakt!) */
+    /* Två kolumner: Vänster tar plats, höger tar lite mer plats */
+    grid-template-columns: 1fr 1.2fr; 
+    column-gap: 24px;  /* Luft mellan vänster/höger block */
+    row-gap: 8px;      /* Mycket tajt radavstånd (Kompakt!) */
     padding: 0 !important;
     margin: 0 !important;
     list-style: none !important;
 }
 
-/* 4. Varje datapunkt */
+/* 4. Varje datapunkt (Raden) */
 #carTechSpecsContainer li {
-    font-size: 0.85rem;   /* Något mindre text för proffsighet */
-    color: #333;          /* Mörkgrå text */
+    font-size: 0.82rem;   /* Något mindre textstorlek för "dashboard"-känsla */
+    color: #3C3C43;       /* Mörkgrå (inte helt svart) text */
     display: flex;
-    align-items: baseline; /* Ser till att emoji och text linjerar perfekt */
+    align-items: baseline; /* VIKTIGT: Linjerar emoji och text perfekt i nederkant */
     line-height: 1.4;
     padding: 0;
     border: none;
@@ -8103,30 +8109,35 @@ body.offline-mode .offline-dot {
 
 /* 5. Fetstilt etikett (t.ex. "Bil:") */
 #carTechSpecsContainer li b {
-    color: #000;          /* Svart etikett */
+    color: #000;          /* Etiketten ska vara kolsvart */
     font-weight: 600;
-    margin-right: 5px;    /* Litet mellanrum till värdet */
-    margin-left: 6px;     /* Luft mellan emoji och text */
-    white-space: nowrap;  /* Etiketten får inte bryta rad */
+    margin-left: 6px;     /* Avstånd mellan Emoji och Etikett */
+    margin-right: 4px;    /* Litet avstånd mellan Etikett och Värde */
+    white-space: nowrap;  /* Förhindra att etiketten bryts */
 }
 
 /* 6. Mobilanpassning */
 @media (max-width: 480px) {
+    #carTechSpecsContainer {
+        padding: 14px; /* Ännu tajtare på mobil */
+    }
     #carTechSpecsContainer ul {
-        grid-template-columns: 1fr; /* En kolumn på väldigt smala skärmar */
+        grid-template-columns: 1fr; /* En kolumn på smala skärmar */
         row-gap: 8px;
     }
 }
 
-/* Dark Mode (Matchar Apple-style mörkgrå) */
+/* 7. Dark Mode (Matchar din referensbild mörka tema) */
 [data-theme="dark"] #carTechSpecsContainer {
-    background-color: #2c2c2e;
-    color: #f2f2f7;
+    background-color: #1C1C1E; /* Mörkgrå bakgrund */
+    color: #E5E5EA;
 }
-[data-theme="dark"] #carTechSpecsContainer > b:first-child,
-[data-theme="dark"] #carTechSpecsContainer li b {
-    color: #fff;
+[data-theme="dark"] #carTechSpecsContainer > b:first-child {
+    color: #FFFFFF;
 }
 [data-theme="dark"] #carTechSpecsContainer li {
-    color: #d1d5db;
+    color: #AEAEB2; /* Ljusgrå text */
+}
+[data-theme="dark"] #carTechSpecsContainer li b {
+    color: #FFFFFF; /* Vit etikett */
 }
