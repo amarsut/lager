@@ -7320,12 +7320,10 @@
 	        const proxy = "https://corsproxy.io/?";
 	        const url1 = `https://biluppgifter.se/fordon/${regnr}`;
 	        const url2 = `https://www.car.info/sv-se/license-plate/S/${regnr}/specs`;
-	        const url3 = `https://www.skruvat.se/result.aspx?q=${regnr}`; // Bra för motorkoder
 	
 	        const fetchPromises = [
 	            fetch(proxy + encodeURIComponent(url1)).then(res => res.ok ? res.text() : null),
 	            fetch(proxy + encodeURIComponent(url2)).then(res => res.ok ? res.text() : null),
-	            fetch(proxy + encodeURIComponent(url3)).then(res => res.ok ? res.text() : null)
 	        ];
 	
 	        const results = await Promise.allSettled(fetchPromises);
@@ -7333,7 +7331,6 @@
 	
 	        if (results[0].value) combinedRawText += `\n[KÄLLA: BILUPPGIFTER]\n${results[0].value.replace(/\s+/g, ' ').substring(0, 8000)}`;
 	        if (results[1].value) combinedRawText += `\n[KÄLLA: CAR.INFO]\n${results[1].value.replace(/\s+/g, ' ').substring(0, 15000)}`;
-	        if (results[2].value) combinedRawText += `\n[KÄLLA: SKRUVAT]\n${results[2].value.replace(/\s+/g, ' ').substring(0, 8000)}`;
 	
 	        if (combinedRawText.length < 500) throw new Error("Ingen data kunde hämtas från källorna.");
 	
@@ -7343,56 +7340,93 @@
 	        if (mode === 'modal') {
 	            // --- MODAL PROMPT (Fullständig teknisk data) ---
 	            prompt = `
-	                Du är en expertmekaniker. Analysera datan för ${regnr} och ta fram fullständiga specifikationer.
-	                
-	                KÄLLDATA: """${combinedRawText}"""
-	
-	                INSTRUKTIONER:
-	                1. IDENTIFIERA: Hitta exakt Modell, År, och viktigast av allt: MOTORKOD (t.ex. D4204T5, CAYC).
-	                   - Kolla noga i Skruvat-datan efter motorkod.
-	                2. TA FRAM DATA:
-	                   - Motorolja: Volym (inkl filter) och Viskositet.
-	                   - Verkstad: Åtdragningsmoment.
-	                   - Service: Kamrem, Växellåda.
-	                   - Vätskor & El.
-	
-	                FORMAT (Svara ENDAST med denna HTML):
-	                <b>Teknisk Data ${regnr}</b>
-	                <hr style="margin: 5px 0; opacity: 0.2;">
-	                <ul>
-	                  <li>🚗 <b>Bil:</b> [Märke] [Modell] ([Motor])</li>
-	                  <li>⚙️ <b>Motorkod:</b> [Hittad kod]</li>
-	                  <li>🛢️ <b>Motorolja:</b> [Volym] L &bull; [Viskositet]</li>
-	                  <li>❄️ <b>AC:</b> [Gas] ([Mängd]g)</li>
-	                  <li>⏲️ <b>Kamrem:</b> [Intervall]</li>
-	                  <li>🔧 <b>Moment:</b> Hjul [Nm] &bull; Plugg [Nm]</li>
-	                  <li>🔋 <b>Batteri:</b> [Placering]</li>
-	                  <li>⚖️ <b>Dragvikt:</b> [Kg]</li>
-	                </ul>
-	            `;
+					Du är en expertmekaniker med tillgång till alla fabriksdatablad.
+					Här är rådata om bilen ${regnr} från Transportstyrelsen/Biluppgifter:
+					"""${rawText}"""
+
+    				Ditt uppdrag är att identifiera vilken motor bilen har och vilken motorolja och hur många liter den ska ha.
+
+    				STEG 1: IDENTIFIERA BILEN
+    				Leta i texten efter Modell, Årsmodell, Effekt (hk/kw), Slagvolym och Drivmedel.
+
+					STEG 2: BESTÄM MOTORKOD (Deduktion)
+    				Om "Motorkod" står i texten: Använd den.
+    				Om den INTE står i texten: Använd din expertkunskap för att avgöra vilken motorkod det måste vara baserat på hk, år och modell (t.ex. Volvo V70 2015 181hk Diesel = D4204T5).
+
+    				STEG 3: REKOMMENDERA MOTOROLJA
+
+				    Baserat på den identifierade motorn, ange:
+				    - Motoroljemängd (Servicevolym inkl filter)
+				    - Viskositet & Klassning (t.ex. 0W-20 VCC RBS0-2AE eller 5W-30 LL).
+				
+					4. 🔧 VERKSTADSDATA:
+					- Moment Hjulbultar: (Nm).
+					- Moment Oljeplugg: (Nm).
+					
+					5. 🛠️ SERVICE
+					- Kamrem (Intervall).
+					- Växellåda.
+					
+					6. ❄️ VÄTSKOR
+					- AC (Gas/Mängd).
+					- Kylvätska.
+					- Bromsvätska.
+					
+					7. ⚡ EL
+					- Batteri (Placering/Typ).
+					- Säkring 12V.
+					
+					8. ⚖️ DRAG
+					- Max dragvikt.
+
+		            FORMAT (Svara ENDAST med denna HTML, ingen inledande text):
+		            <b>Teknisk Data ${regnr}</b>
+		            <hr style="margin: 5px 0; opacity: 0.2;">
+		            <ul>
+		        	<li>🚗 <b>Bil:</b> [Märke] [Modell] ([Motor])</li>
+		  			<li>⚙️ <b>Motorkod:</b> [Hittad kod]</li>
+		            <li>🛢️ <b>Motorolja:</b> [Volym] L &bull; [Viskositet]</li>
+		            <li>❄️ <b>AC:</b> [Gas] ([Mängd]g)</li>
+		            <li>⏲️ <b>Kamrem:</b> [Intervall]</li>
+		            <li>🔧 <b>Moment:</b> Hjul [Nm] &bull; Plugg [Nm]</li>
+		            <li>🔋 <b>Batteri:</b> [Placering]</li>
+		            <li>⚖️ <b>Dragvikt:</b> [Kg]</li>
+		            </ul>
+		        `;
 	        } else {
 	            // --- CHAT PROMPT (Fokus på olja/service) ---
 	            prompt = `
-	                Du är en expertmekaniker. Analysera datan för ${regnr}.
-	                
-	                KÄLLDATA: """${combinedRawText}"""
+	                Du är en expertmekaniker med tillgång till alla fabriksdatablad.
+				    Här är rådata om bilen ${regnr} från Transportstyrelsen/Biluppgifter:
+				    """${rawText}"""
+				    
+				    Ditt uppdrag är att identifiera vilken motor bilen har och vilken motorolja och hur många liter den ska ha.
+				    
+				    STEG 1: IDENTIFIERA BILEN
+				    Leta i texten efter Modell, Årsmodell, Effekt (hk/kw), Slagvolym och Drivmedel.
+				    
+				    STEG 2: BESTÄM MOTORKOD (Deduktion)
+				    Om "Motorkod" står i texten: Använd den.
+				    Om den INTE står i texten: Använd din expertkunskap för att avgöra vilken motorkod det måste vara baserat på hk, år och modell (t.ex. Volvo V70 2015 181hk Diesel = D4204T5).
+				    
+				    STEG 3: REKOMMENDERA MOTOROLJA
+				    Baserat på den identifierade motorn, ange:
+				    - Motoroljemängd (Servicevolym inkl filter)
+				    - Viskositet & Klassning (t.ex. 0W-20 VCC RBS0-2AE eller 5W-30 LL).
 	
-	                UPPDRAG:
-	                1. Identifiera Bilen.
-	                2. Hitta MOTORKODEN (kritiskt för oljemängd). Titta i Skruvat-datan om den finns.
-	                3. Ange Oljemängd & Specifikation.
-	                   - Om osäker på volym, skriv "❗" och ange ett intervall.
-	                   - Om säker baserat på motorkod, skriv "✅".
-	
-	                FORMAT (Svara ENDAST med denna HTML):
-	                <b>Fordonsspecifikation ${regnr}</b>
-	                <ul>
-	                <li>🚗 <b>Fordon:</b> [Identifierad Modell]</li>
-	                <li>⚙️ <b>Motorkod:</b> [Hittad kod]</li>
-	                <li>🛢️ <b>Motorolja:</b> [Antal] liter [✅/❗]</li>
-	                <li>💧 <b>Viskositet:</b> [T.ex. 0W-20]</li>
-	                <li>🔧 <b>Moment:</b> Hjul [Nm] & Oljeplugg [Nm]</li>
-	                </ul>
+					4. 🔧 VERKSTADSDATA:
+			       - Moment Hjulbultar: (Nm).
+			       - Moment Oljeplugg: (Nm).
+					
+		            FORMAT (Svara ENDAST med denna HTML):
+					<b>Fordonsspecifikation ${regnr}</b>
+		            <ul>
+		            <li>🚗 <b>Fordon:</b> [Identifierad Modell]</li>
+		            <li>⚙️ <b>Motorkod:</b> [Hittad kod]</li>
+		            <li>🛢️ <b>Motorolja:</b> [Antal] liter</li>
+		            <li>💧 <b>Viskositet:</b> [T.ex. 0W-20, 5W-30]</li>
+					<li>🔧 <b>Moment:</b> Hjul [Nm] & Oljelugg [Nm]</li>
+		            </ul>
 	            `;
 	        }
 	
