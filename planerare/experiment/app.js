@@ -1547,14 +1547,14 @@
 			    const textContent = count > 99 ? '99+' : count; // Sätt tak på 99+
 			
 			    if (desktopBadge) {
-			        desktopBadge?.style.display = displayStyle;
-			        desktopBadge.textContent = textContent;
-			    }
-			
-			    if (mobileBadge) {
-			        mobileBadge.style.display = displayStyle;
-			        mobileBadge.textContent = textContent;
-			    }
+				    desktopBadge.style.display = displayStyle;
+				    desktopBadge.textContent = textContent;
+				}
+				
+				if (mobileBadge) {
+				    mobileBadge.style.display = displayStyle;
+				    mobileBadge.textContent = textContent;
+				}
 			}
 
 			// --- HJÄLPFUNKTION FÖR SYSTEMNOTISER (FIXAD) ---
