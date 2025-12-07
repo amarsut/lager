@@ -3788,7 +3788,7 @@
 
             // --- UPPDATERAD: renderTimeline med Animationslogik ---
 			function renderTimeline() {
-			    // 1. Hämta elementen SÄKERT (utan att krascha om de saknas)
+			    // 1. Hämta elementen säkert
 			    const desktopSearchCount = document.getElementById('desktopSearchResultCount'); 
 			    const clearDayFilterBtn = document.getElementById('clearDayFilterBtn');
 			    const jobListContainer = document.getElementById('jobListContainer');
@@ -3796,7 +3796,7 @@
 			    const emptyStateTitleTimeline = document.getElementById('emptyStateTitleTimeline');
 			    const emptyStateTextTimeline = document.getElementById('emptyStateTextTimeline');
 			    
-			    // Om containern inte finns, avbryt direkt för att undvika fel
+			    // SÄKERHETSKOLL: Om vi inte hittar listan, avbryt direkt (stoppar krasch)
 			    if (!jobListContainer) return;
 			
 			    let jobsToDisplay = allJobs.filter(job => !job.deleted);
@@ -3806,7 +3806,7 @@
 			    
 			    // --- FILTER & SÖK LOGIK ---
 			    if (currentSearchTerm) {
-			        // SÄKERHETSFIX: Kolla att knappen finns med "if"
+			        // FIX: Kolla om knappen finns med "if"
 			        if (clearDayFilterBtn) clearDayFilterBtn.style.display = 'inline-flex';
 			
 			        jobsToDisplay = jobsToDisplay.filter(job => {
@@ -3829,11 +3829,10 @@
 			        const allaKort = document.getElementById('stat-card-alla');
 			        if(allaKort) allaKort.classList.add('active');
 			
-			        // SÄKERHETSFIX:
 			        if (desktopSearchCount) desktopSearchCount.textContent = `${jobsToDisplay.length} träff(ar)`;
 			
 			    } else {
-			        // SÄKERHETSFIX:
+			        // FIX: Kolla om knappen finns
 			        if (clearDayFilterBtn) clearDayFilterBtn.style.display = 'none';
 			        if (desktopSearchCount) desktopSearchCount.textContent = '';
 			
@@ -3881,38 +3880,34 @@
 			        return 0;
 			    });
 			
-			    // Renderings-logik
-			    function renderNewContent() {
-			        let timelineCount = 0;
-			        const isMobile = window.innerWidth <= 768;
-			        
-			        if (isMobile) {
-			            timelineCount = renderMobileCardList(jobsToDisplay);
-			        } else {
-			            timelineCount = renderTimelineTable(jobsToDisplay);
-			        }
-			        
-			        // Hantera tomt läge
-			        if (timelineCount === 0) {
-			            if (jobListContainer) jobListContainer.style.display = 'none';
-			            if (emptyStateTimeline) {
-			                emptyStateTimeline.style.display = 'block';
-			                // Säkerhetskollar för texterna
-			                if (currentSearchTerm) {
-			                    if(emptyStateTitleTimeline) emptyStateTitleTimeline.textContent = "Inga träffar";
-			                    if(emptyStateTextTimeline) emptyStateTextTimeline.textContent = "Din sökning gav inga resultat.";
-			                } else {
-			                    if(emptyStateTitleTimeline) emptyStateTitleTimeline.textContent = "Inga jobb";
-			                    if(emptyStateTextTimeline) emptyStateTextTimeline.textContent = "Det finns inga jobb för detta filter.";
-			                }
-			            }
-			        } else {
-			            if (jobListContainer) jobListContainer.style.display = 'block';
-			            if (emptyStateTimeline) emptyStateTimeline.style.display = 'none';
-			        }
+			    // RENDERINGS-LOGIK
+			    let timelineCount = 0;
+			    const isMobile = window.innerWidth <= 768;
+			    
+			    if (isMobile) {
+			        timelineCount = renderMobileCardList(jobsToDisplay);
+			    } else {
+			        timelineCount = renderTimelineTable(jobsToDisplay);
 			    }
-			
-			    renderNewContent();
+			    
+			    // Hantera visning/döljning
+			    if (timelineCount === 0) {
+			        jobListContainer.style.display = 'none';
+			        if (emptyStateTimeline) {
+			            emptyStateTimeline.style.display = 'block';
+			            // Sätt texter säkert
+			            if (currentSearchTerm) {
+			                if(emptyStateTitleTimeline) emptyStateTitleTimeline.textContent = "Inga träffar";
+			                if(emptyStateTextTimeline) emptyStateTextTimeline.textContent = "Din sökning gav inga resultat.";
+			            } else {
+			                if(emptyStateTitleTimeline) emptyStateTitleTimeline.textContent = "Inga jobb";
+			                if(emptyStateTextTimeline) emptyStateTextTimeline.textContent = "Det finns inga jobb för detta filter.";
+			            }
+			        }
+			    } else {
+			        jobListContainer.style.display = 'block';
+			        if (emptyStateTimeline) emptyStateTimeline.style.display = 'none';
+			    }
 			}
 
             function renderTimelineTable(jobs) {
