@@ -6552,12 +6552,6 @@
                 carModalOljemagasinetLinkMobile.addEventListener('click', handleOljemagasinetClick);
             }
             // --- SLUT PÅ NY KOD ---
-			
-            // --- App-inställningar (Tema, Kompakt, Lås) ---
-            themeToggle.addEventListener('click', () => {
-                const currentTheme = docElement.getAttribute('data-theme') || 'dark';
-                setTheme(currentTheme === 'dark' ? 'light' : 'dark');
-            });
 
 			
             function setTheme(theme) {
@@ -6653,16 +6647,20 @@
             setCompactMode(savedCompactLevel);
 
             function setupViewToggles() {
-                const allToggleButtons = document.querySelectorAll('.button-toggle-view, .mobile-nav-btn[data-view]');
-                allToggleButtons.forEach(button => {
-                    button.addEventListener('click', (e) => {
-                        const view = e.currentTarget.dataset.view;
-                        if (view) {
-                            toggleView(view);
-                        }
-                    });
-                });
+    // VIKTIGT: Vi lägger till '.nav-link[data-view]' i listan så den hittar sidomenyns knappar
+    const allToggleButtons = document.querySelectorAll('.button-toggle-view, .mobile-nav-btn[data-view], .nav-link[data-view]');
+    
+    allToggleButtons.forEach(button => {
+        button.addEventListener('click', (e) => {
+            // Hämta vyn från knappen (t.ex. 'calendar' eller 'timeline')
+            // Om man klickar på ikonen inuti knappen kan e.target vara ikonen, så vi använder currentTarget
+            const view = e.currentTarget.dataset.view;
+            if (view) {
+                toggleView(view);
             }
+        });
+    });
+}
             setupViewToggles();
             
             mobileAddJobBtn.addEventListener('click', () => openJobModal('add'));
@@ -6998,6 +6996,35 @@
                         // Starta badge-lyssnaren (om du lade till den förut)
                         if (typeof initChatBadgeListener === 'function') initChatBadgeListener();
                         if (typeof initChat === 'function') initChat();
+
+// Uppdatera Sidebar-profilen när man loggar in
+const sidebarNameEl = document.getElementById('sidebarUserName');
+const sidebarAvatarEl = document.getElementById('sidebarAvatar');
+
+if (sidebarNameEl) {
+    // Använd mailadressen men ta bort @gmail.com för snyggare namn
+    const name = user.email.split('@')[0];
+    // Gör första bokstaven stor (t.ex. "amar.sut" -> "Amar.sut")
+    const formattedName = name.charAt(0).toUpperCase() + name.slice(1);
+    
+    sidebarNameEl.textContent = formattedName;
+    
+    // Uppdatera avataren med initialer
+    if (sidebarAvatarEl) {
+        sidebarAvatarEl.src = `https://ui-avatars.com/api/?name=${formattedName}&background=eff6ff&color=3b82f6&bold=true`;
+    }
+}
+
+// Koppla Logga ut-knappen i sidebaren
+const sidebarLogoutBtn = document.getElementById('sidebarLogoutBtn');
+if (sidebarLogoutBtn) {
+    sidebarLogoutBtn.onclick = () => {
+        closeModal();
+        firebase.auth().signOut().then(() => {
+            showToast('Du har loggats ut.', 'info');
+        });
+    };
+}
                     }
                 } else {
                     // --- ANVÄNDAREN ÄR UTLOGGAD ---
