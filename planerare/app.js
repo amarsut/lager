@@ -3788,7 +3788,7 @@
 
             // --- UPPDATERAD: renderTimeline med Animationslogik ---
 			function renderTimeline() {
-			    // 1. Hämta elementen säkert
+			    // 1. Hämta elementen SÄKERT (utan att krascha om de saknas)
 			    const desktopSearchCount = document.getElementById('desktopSearchResultCount'); 
 			    const clearDayFilterBtn = document.getElementById('clearDayFilterBtn');
 			    const jobListContainer = document.getElementById('jobListContainer');
@@ -3796,25 +3796,18 @@
 			    const emptyStateTitleTimeline = document.getElementById('emptyStateTitleTimeline');
 			    const emptyStateTextTimeline = document.getElementById('emptyStateTextTimeline');
 			    
-			    // Säkerhetskoll: Om vi inte ens hittar containern, avbryt (förhindrar följdfel)
+			    // Om containern inte finns, avbryt direkt för att undvika fel
 			    if (!jobListContainer) return;
 			
 			    let jobsToDisplay = allJobs.filter(job => !job.deleted);
-			    
 			    const now = new Date();
 			    now.setHours(0, 0, 0, 0);
-			    
 			    let sortOrder = 'asc'; 
 			    
 			    // --- FILTER & SÖK LOGIK ---
-			    
 			    if (currentSearchTerm) {
-			        // 1. SÖKNING ÄR AKTIV
-			        
-			        // SÄKERHETSFIX: Kolla att knappen finns innan vi ändrar style
-			        if (clearDayFilterBtn) {
-			            clearDayFilterBtn.style.display = 'inline-flex';
-			        }
+			        // SÄKERHETSFIX: Kolla att knappen finns med "if"
+			        if (clearDayFilterBtn) clearDayFilterBtn.style.display = 'inline-flex';
 			
 			        jobsToDisplay = jobsToDisplay.filter(job => {
 			            const term = currentSearchTerm.toLowerCase();
@@ -3830,31 +3823,20 @@
 			                (STATUS_TEXT[job.status] || '').toLowerCase().includes(term)
 			            );
 			        });
-			        
 			        sortOrder = 'desc';
 			        
-			        // Visuella uppdateringar
 			        document.querySelectorAll('.stat-card.active').forEach(c => c.classList.remove('active'));
 			        const allaKort = document.getElementById('stat-card-alla');
 			        if(allaKort) allaKort.classList.add('active');
 			
-			        if (desktopSearchCount) {
-			            desktopSearchCount.textContent = `${jobsToDisplay.length} träff(ar)`;
-			        }
+			        // SÄKERHETSFIX:
+			        if (desktopSearchCount) desktopSearchCount.textContent = `${jobsToDisplay.length} träff(ar)`;
 			
 			    } else {
-			        // 2. INGEN SÖKNING
-			        
-			        // SÄKERHETSFIX
-			        if (clearDayFilterBtn) {
-			            clearDayFilterBtn.style.display = 'none';
-			        }
-			        
-			        if (desktopSearchCount) {
-			            desktopSearchCount.textContent = '';
-			        }
+			        // SÄKERHETSFIX:
+			        if (clearDayFilterBtn) clearDayFilterBtn.style.display = 'none';
+			        if (desktopSearchCount) desktopSearchCount.textContent = '';
 			
-			        // Filter-switch
 			        switch(currentStatusFilter) {
 			            case 'kommande':
 			                jobsToDisplay = jobsToDisplay.filter(j => j.status === 'bokad' && new Date(j.datum) >= now);
@@ -3874,8 +3856,7 @@
 			                sortOrder = 'desc'; 
 			                break;
 			        }
-			
-			        // Stat-kort uppdatering
+			        
 			        document.querySelectorAll('.stat-card.active').forEach(c => c.classList.remove('active'));
 			        const activeCard = document.getElementById(`stat-card-${currentStatusFilter}`);
 			        if (activeCard) activeCard.classList.add('active');
@@ -3885,7 +3866,6 @@
 			    jobsToDisplay.sort((a, b) => {
 			        let valA = a[currentSortField];
 			        let valB = b[currentSortField];
-			
 			        if (currentSortField === 'datum') {
 			            valA = new Date(a.datum || 0).getTime();
 			            valB = new Date(b.datum || 0).getTime();
@@ -3896,13 +3876,12 @@
 			            valA = valA || 0;
 			            valB = valB || 0;
 			        }
-			
 			        if (valA < valB) return sortOrder === 'asc' ? -1 : 1;
 			        if (valA > valB) return sortOrder === 'asc' ? 1 : -1;
 			        return 0;
 			    });
 			
-			    // RENDERINGS-LOGIK
+			    // Renderings-logik
 			    function renderNewContent() {
 			        let timelineCount = 0;
 			        const isMobile = window.innerWidth <= 768;
@@ -3918,10 +3897,10 @@
 			            if (jobListContainer) jobListContainer.style.display = 'none';
 			            if (emptyStateTimeline) {
 			                emptyStateTimeline.style.display = 'block';
-			                
+			                // Säkerhetskollar för texterna
 			                if (currentSearchTerm) {
 			                    if(emptyStateTitleTimeline) emptyStateTitleTimeline.textContent = "Inga träffar";
-			                    if(emptyStateTextTimeline) emptyStateTextTimeline.textContent = `Din sökning gav inga resultat.`;
+			                    if(emptyStateTextTimeline) emptyStateTextTimeline.textContent = "Din sökning gav inga resultat.";
 			                } else {
 			                    if(emptyStateTitleTimeline) emptyStateTitleTimeline.textContent = "Inga jobb";
 			                    if(emptyStateTextTimeline) emptyStateTextTimeline.textContent = "Det finns inga jobb för detta filter.";
@@ -5936,10 +5915,7 @@
 			function performSearch() {
 			    const desktopInput = document.getElementById('searchBar');
 			    const mobileInput = document.getElementById('mobileSearchBar');
-			    
-			    // Använd rätt selector för att hitta wrappern (både mobil och desktop)
 			    const wrapper = document.querySelector('.top-search-container') || document.querySelector('.search-wrapper');
-			    
 			    const isMobileView = window.innerWidth <= 768;
 			    
 			    if (isMobileView) {
@@ -5949,35 +5925,27 @@
 			        if (mobileInput) mobileInput.value = ''; 
 			    }
 			
-			    // --- SÄKERHETSFIX HÄR ---
+			    // --- SÄKERHETSFIX HÄR (Detta kraschade förut) ---
 			    const dClearBtn = document.getElementById('desktopSearchClear');
 			    const mClearBtn = document.getElementById('mobileSearchClear');
 			    
-			    // Kolla ALLTID om knappen finns innan du kör .style
 			    if (dClearBtn) {
 			        dClearBtn.style.cssText = (!isMobileView && currentSearchTerm) ? 'display: flex !important' : 'display: none !important';
 			    }
 			    if (mClearBtn) {
 			        mClearBtn.style.cssText = (isMobileView && currentSearchTerm) ? 'display: flex !important' : 'display: none !important';
 			    }
-			    // ------------------------
+			    // -----------------------------------------------
 			
 			    if (wrapper) wrapper.classList.remove('is-searching'); 
 			    
-			    // --- MOBIL RESULTAT ---
 			    const mobileResults = document.getElementById('mobileSearchResults');
-			    
 			    if (isMobileView && mobileResults) {
-			        
 			        if (!currentSearchTerm.trim()) {
-			            mobileResults.innerHTML = `
-			                <div class="empty-search-placeholder" style="text-align: center; padding-top: 3rem; color: #9ca3af;">
-			                    <svg class="icon-lg" viewBox="0 0 24 24"><use href="#icon-search"></use></svg>
-			                    <p>Sök efter kunder, reg.nr eller info...</p>
-			                </div>`;
+			            mobileResults.innerHTML = `<div class="empty-search-placeholder" style="text-align: center; padding-top: 3rem; color: #9ca3af;"><svg class="icon-lg" viewBox="0 0 24 24"><use href="#icon-search"></use></svg><p>Sök efter kunder, reg.nr eller info...</p></div>`;
 			            return;
 			        }
-			
+			        
 			        let jobs = allJobs.filter(job => !job.deleted);
 			        const term = currentSearchTerm.toLowerCase();
 			        const normalizedTerm = term.replace(/\s/g, '');
@@ -5985,13 +5953,7 @@
 			        jobs = jobs.filter(job => {
 			            const normalizedPhone = (job.telefon || '').replace(/\D/g, '');
 			            const regMatch = (job.regnr && job.regnr.toLowerCase().replace(/\s/g, '').includes(normalizedTerm));
-			            
-			            return (
-			                (job.kundnamn && (job.kundnamn || '').toLowerCase().includes(term)) || 
-			                regMatch || 
-			                (job.kommentarer && (job.kommentarer || '').toLowerCase().includes(term)) ||
-			                (normalizedPhone && normalizedPhone.includes(normalizedTerm))
-			            );
+			            return ((job.kundnamn && (job.kundnamn || '').toLowerCase().includes(term)) || regMatch || (job.kommentarer && (job.kommentarer || '').toLowerCase().includes(term)) || (normalizedPhone && normalizedPhone.includes(normalizedTerm)));
 			        });
 			
 			        if (jobs.length === 0) {
@@ -5999,26 +5961,26 @@
 			        } else {
 			            const groupedJobs = jobs.reduce((acc, job) => {
 			                const dateKey = job.datum ? job.datum.split('T')[0] : 'Okänt';
-			                if (!acc[dateKey]) { acc[dateKey] = []; }
+			                if (!acc[dateKey]) acc[dateKey] = [];
 			                acc[dateKey].push(job);
 			                return acc;
 			            }, {});
-			
 			            const sortedDateKeys = Object.keys(groupedJobs).sort((a, b) => new Date(b) - new Date(a));
 			            let listHTML = '';
-			
 			            for (const dateKey of sortedDateKeys) {
 			                const jobsForDay = groupedJobs[dateKey];
 			                const firstJobDate = jobsForDay[0].datum;
-			                listHTML += `<div class="mobile-day-group">`;
-			                listHTML += `<h2 class="mobile-date-header">${formatDate(firstJobDate, { onlyDate: true })}</h2>`;
-			                listHTML += jobsForDay.map(job => createJobCard(job)).join('');
-			                listHTML += `</div>`;
+			                listHTML += `<div class="mobile-day-group"><h2 class="mobile-date-header">${formatDate(firstJobDate, { onlyDate: true })}</h2>${jobsForDay.map(job => createJobCard(job)).join('')}</div>`;
 			            }
 			            mobileResults.innerHTML = listHTML;
 			        }
 			        return;
 			    }
+			
+			    if (currentView === 'timeline') renderTimeline();
+			    else if (currentView === 'kanban') renderKanbanBoard();
+			    else if (currentView === 'calendar' && calendar) { filterCalendarView(); calendar.render(); }
+			}
 			
 			    // --- DESKTOP ---
 			    if (currentView === 'timeline') {
