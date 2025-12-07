@@ -195,54 +195,106 @@
     <div class="app-layout">
     
     <aside class="sidebar">
-        <div class="sidebar-header">
-            <div class="app-logo">
-                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M8 7H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3"/>
-                    <path d="M16 2v6h-4V2h4zM12 11h.01"/>
-                    <path d="M12 15h.01"/>
-                    <path d="M12 19h.01"/>
+    <div class="sidebar-header">
+        <div class="app-logo-modern">
+            <div class="logo-icon-box">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 12c2-4 5-7 10-4s3 8 6 4" stroke="white" />
                 </svg>
-                <span>Arbetsorder</span>
             </div>
+            <span>Arbetsorder</span>
         </div>
+    </div>
 
-        <nav class="sidebar-nav">
-            <button class="nav-link active" id="btnToggleTimeline" data-view="timeline">
-                <svg class="icon" viewBox="0 0 24 24"><use href="#icon-list"></use></svg>
-                <span>Översikt</span>
-            </button>
+    <nav class="sidebar-nav">
+        <button class="nav-link active" id="btnToggleTimeline" data-view="timeline">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+            <span>Översikt</span>
+        </button>
 
-            <button class="nav-link" id="btnToggleKanban" data-view="kanban">
-                <svg class="icon" viewBox="0 0 24 24"><use href="#icon-kanban-view"></use></svg>
-                <span>Arbetsorder</span>
-            </button>
+        <div class="nav-spacer"></div>
 
-            <button class="nav-link" id="btnToggleCalendar" data-view="calendar">
-                <svg class="icon" viewBox="0 0 24 24"><use href="#icon-calendar-day"></use></svg>
-                <span>Kalender</span>
-            </button>
+        <button class="nav-link" id="btnToggleCalendar" data-view="calendar">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            <span>Kalender</span>
+        </button>
 
-            <button class="nav-link" onclick="document.getElementById('customerModal').classList.add('show')">
-                <svg class="icon" viewBox="0 0 24 24"><use href="#icon-user"></use></svg>
-                <span>Kunder</span>
-            </button>
+        <button class="nav-link" id="btnToggleKanban" data-view="kanban">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                <path d="M9 14h6"></path>
+                <path d="M9 10h6"></path>
+                <path d="M9 18h6"></path>
+            </svg>
+            <span>Kanban</span>
+        </button>
+
+        <button class="nav-link" onclick="document.getElementById('customerModal').classList.add('show')">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            <span>Kunder</span>
+        </button>
+
+        <button class="nav-link" onclick="document.getElementById('statsModal').classList.add('show')">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                <line x1="12" y1="22.08" x2="12" y2="12"></line>
+            </svg>
+            <span>Lager</span>
+        </button>
+
+        <button class="nav-link" id="settingsBtn">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+            <span>Inställningar</span>
+        </button>
+
+        <button class="nav-link" onclick="alert('Funktion kommer snart!')">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+                <line x1="1" y1="10" x2="23" y2="10"></line>
+            </svg>
+            <span>Mekaniker</span>
+        </button>
+    </nav>
+    
+    <div id="offlineIndicator" class="offline-dot sidebar-dot" title="Du är offline"></div>
+<div class="sidebar-footer">
+        <div class="user-profile-card">
+            <img src="https://ui-avatars.com/api/?name=Admin&background=eff6ff&color=3b82f6&bold=true" alt="Profil" class="sidebar-avatar" id="sidebarAvatar">
             
-             <button class="nav-link" onclick="document.getElementById('statsModal').classList.add('show')">
-                <svg class="icon" viewBox="0 0 24 24"><use href="#icon-brand-generic"></use></svg>
-                <span>Statistik</span>
-            </button>
+            <div class="user-info">
+                <span class="user-name" id="sidebarUserName">Laddar...</span>
+                <span class="user-role">Inloggad</span>
+            </div>
 
-            <div class="nav-divider"></div>
-
-            <button class="nav-link" id="settingsBtn">
-                <svg class="icon" viewBox="0 0 24 24"><use href="#icon-settings"></use></svg>
-                <span>Inställningar</span>
+            <button class="logout-icon-btn" id="sidebarLogoutBtn" title="Logga ut">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
             </button>
-        </nav>
-        
-        <div id="offlineIndicator" class="offline-dot sidebar-dot" title="Du är offline"></div>
-    </aside>
+        </div>
+    </div>
+
+    <div id="offlineIndicator" class="offline-dot sidebar-dot" title="Du är offline"></div>
+
+</aside>
 
     <div class="main-content-wrapper">
         
@@ -253,14 +305,20 @@
             </div>
 
             <div class="top-bar-actions">
-                <button class="icon-btn" id="themeToggle" title="Växla tema">
-                    <svg class="icon icon-sun" viewBox="0 0 24 24"><use href="#icon-sun"></use></svg>
-                    <svg class="icon icon-moon" viewBox="0 0 24 24"><use href="#icon-moon"></use></svg>
-                </button>
-                <div class="user-profile">
-                    <img src="https://ui-avatars.com/api/?name=Admin&background=0D8ABC&color=fff" alt="Profil" class="avatar">
-                </div>
-            </div>
+    		<button class="icon-btn header-icon-btn" id="fabChat" title="Notiser">
+    <div class="icon-badge-container">
+        <svg class="icon" viewBox="0 0 24 24"><use href="#icon-chat-bubble"></use></svg>
+        <span id="chatBadgeDesktop" class="header-badge" style="display: none;">0</span>
+    </div>
+</button>
+
+<button class="button primary header-cta-btn" id="fabAddJob">
+    <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+    <span>Nytt Jobb</span>
+</button>
+
+<div class="divider-vertical"></div>
+	    </div>
         </header>
 
         <main class="app-main">
@@ -393,10 +451,6 @@
 	    </div>
 	</div>
 
-
-    <button id="fabAddJob" title="Lägg till nytt jobb (N)">
-	    <svg class="icon" viewBox="0 0 24 24"><use href="#icon-plus"></use></svg>
-	</button>
 
     <div id="jobModal" class="modal-backdrop" data-modal-id="jobModal">
         <div class="modal-content">
@@ -540,11 +594,6 @@
             </div>
         </div>
     </div>
-
-	<button id="fabChat" title="Öppna notiser/chatt">
-	    <svg class="icon" viewBox="0 0 24 24"><use href="#icon-chat-bubble"></use></svg>
-	    <span id="chatBadgeDesktop" class="notification-badge" style="display: none;">0</span>
-	</button>
 	
 	<div id="chatWidget" class="chat-widget-container" style="display: none;">
     
