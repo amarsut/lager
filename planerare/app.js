@@ -1,3 +1,4 @@
+
 	// --- Globala Konstanter ---
         const STATUS_TEXT = {
 		    'bokad': 'Bokad', 
@@ -104,6 +105,21 @@
             const docElement = document.documentElement;
 			const privacyToggle = document.getElementById('privacyToggle');
 			const settingsPrivacyToggle = document.getElementById('settingsPrivacyToggle');
+			
+			const headerPrivacyToggle = document.getElementById('headerPrivacyToggle');
+
+			if (headerPrivacyToggle) {
+			    headerPrivacyToggle.addEventListener('click', () => {
+			        // Byt läge (true/false)
+			        const newState = !document.documentElement.classList.contains('privacy-mode-enabled');
+			        setPrivacyMode(newState);
+			        
+			        // Uppdatera UI i inställningsmodalen också om den är öppen
+			        if (settingsPrivacyToggle) {
+			            // Uppdatera text/ikon om nödvändigt (CSS sköter det mesta via klassen på body)
+			        }
+			    });
+			}
 
 			const sortBySelect = document.getElementById('sortBy');
 			if (sortBySelect) {
@@ -164,7 +180,7 @@
             const emptyStateTextTimeline = document.getElementById('emptyStateTextTimeline');
             const emptyStateAddBtn = document.getElementById('emptyStateAddBtn');
             const searchBar = document.getElementById('searchBar');
-			const desktopSearchWrapper = document.querySelector('#view-controls .search-wrapper');
+			const desktopSearchWrapper = document.querySelector('.top-search-container');
             const clearDayFilterBtn = document.getElementById('clearDayFilterBtn');
 
             const calendarView = document.getElementById('calendarView');
@@ -1126,37 +1142,47 @@
 
 			// --- STÄNG CHATT VID KLICK UTANFÖR ---
 			document.addEventListener('click', (e) => {
-			    
-			    // 1. Ignorera klick om Bild-zoom eller reaktionsmenyn är öppen
+    
+			    // --- 1. SPÄRR: Om Bild-modalen är öppen -> GÖR INGENTING ---
+			    // Detta hindrar chatten från att stängas när du klickar utanför bilden.
 			    const imageModal = document.getElementById('imageZoomModal');
-			    const reactionMenu = document.getElementById('reactionMenu');
-			    
-			    if (imageModal && getComputedStyle(imageModal).display !== 'none') return;
-			    if (reactionMenu && reactionMenu.classList.contains('show') && reactionMenu.contains(e.target)) return;
+			    if (imageModal && getComputedStyle(imageModal).display !== 'none') {
+			        return; 
+			    }
+			    // -----------------------------------------------------------
 			
-			    // 2. Ignorera klick på knappar som öppnar chatten
-			    if (e.target.closest('#fabChat') || e.target.closest('#mobileChatBtn')) return;
+			    // 2. Ignorera klick på länkar/knappar/menyer
+			    if (e.target.closest('a') || 
+			        e.target.closest('.chat-reg-link') || 
+			        e.target.closest('button') ||
+			        e.target.closest('#reactionMenu')) {
+			        return;
+			    }
+			
+			    // 3. Ignorera klick på andra modaler
+			    if (e.target.classList.contains('modal-backdrop') || 
+			        e.target.classList.contains('modal-content')) {
+			        return;
+			    }
 			
 			    const chatWidget = document.getElementById('chatWidget');
+			    const fabChat = document.getElementById('fabChat');
+			    const mobileChatBtn = document.getElementById('mobileChatBtn');
 			
-			    // 3. Om chatten är öppen...
+			    // 4. Stäng Chatten (Endast om vi kommit förbi spärrarna ovan)
 			    if (chatWidget && chatWidget.style.display === 'flex') {
 			        
-			        // Hämta själva innehålls-arean (där bubblorna och headern är)
-			        // Vi antar att chatWidget är behållaren. 
-			        // Om du klickar på 'chatWidget' och den täcker hela skärmen (overlay), då ska den stängas.
-			        // Men om du klickar INUTI den (på header, input, meddelanden) ska den INTE stängas.
-			        
-			        // På mobil (fullscreen): Vi stänger INTE på klick utanför (för det finns inget utanför).
-			        if (window.innerWidth <= 768) return; 
-			
-			        // På Desktop (Popup):
-			        // Om klicket INTE är inuti widgeten -> Stäng
-			        if (!chatWidget.contains(e.target)) {
+			        // Om vi klickar utanför chatten...
+			        if (!chatWidget.contains(e.target) && 
+			            (!fabChat || !fabChat.contains(e.target)) &&
+			            (!mobileChatBtn || !mobileChatBtn.contains(e.target))) {
+			            
 			            if (window.location.hash === '#chat') {
 			                history.back();
 			            } else {
-			                closeChatUI();
+			                chatWidget.style.display = 'none';
+			                if (typeof updateScrollLock === 'function') updateScrollLock();
+			                if (mobileChatBtn) mobileChatBtn.classList.remove('active');
 			            }
 			        }
 			    }
@@ -1434,43 +1460,43 @@
 			
 			    menu.dataset.targetId = messageId;
 			    
-			    // 1. Förbered menyn (gör den synlig för mätning men genomskinlig)
+			    // 1. Återställ menyn för mätning (men osynlig)
 			    menu.style.display = 'flex';
 			    menu.style.visibility = 'hidden'; 
 			    menu.style.opacity = '0';          
+			    menu.style.transform = 'scale(0.8)'; // Starta liten
+			    menu.style.pointerEvents = 'none';   // Ej klickbar under mätning
 			    menu.classList.remove('show');    
 			
-			    // 2. BERÄKNA POSITION (Denna kod saknades/var bortkommenterad)
-			    const menuWidth = menu.offsetWidth || 260; // Fallback bredd
-			    const menuHeight = menu.offsetHeight || 100; // Fallback höjd
-			    const screenWidth = window.innerWidth;
-			    const screenHeight = window.innerHeight;
-			
-			    // X-position (Horizontal)
-			    let left = x - (menuWidth / 2); // Centrera vid klicket
-			    // Förhindra att den går utanför vänster kant
-			    if (left < 10) left = 10;
-			    // Förhindra att den går utanför höger kant
-			    if (left + menuWidth > screenWidth - 10) left = screenWidth - menuWidth - 10;
-			
-			    // Y-position (Vertical) - Försök visa OVANFÖR klicket först
-			    let top = y - menuHeight - 20; 
+			    // ... (HÄR LIGGER DIN BEFINTLIGA LOGIK FÖR X/Y POSITIONERING) ...
+			    // ... Behåll koden som räknar ut 'left' och 'top' här ...
+			    // (Kopiera den logiken från din nuvarande fil eller se nedan för referens)
 			    
-			    // Om det är för nära toppen av skärmen, visa NEDANFÖR klicket istället
-			    if (top < 20) {
-			        top = y + 20;
-			    }
-			
-			    // Applicera position
+			    // EXEMPEL PÅ POSITIONERING (Klistra in din logik här):
+			    const menuWidth = menu.offsetWidth;
+			    const screenWidth = window.innerWidth;
+			    let left = x - (menuWidth / 2);
+			    if (left + menuWidth > screenWidth - 15) left = screenWidth - menuWidth - 15;
+			    if (left < 15) left = 15;
+			    let top = y - 70;
+			    if (top < 20) top = y + 20;
 			    menu.style.left = `${left}px`;
 			    menu.style.top = `${top}px`;
+			    // ... SLUT POSITIONERING ...
 			
-			    // 3. Visa menyn (Animation)
+			    // 2. Visa menyn (Animation)
+			    // Vi använder requestAnimationFrame för att garantera att webbläsaren hinner uppfatta "display: flex" innan vi lägger på klassen
 			    requestAnimationFrame(() => {
 			        menu.style.visibility = 'visible';
 			        menu.style.opacity = '1';
-			        menu.style.pointerEvents = 'auto'; // VIKTIGT: Gör den klickbar!
 			        menu.classList.add('show');
+			        
+			        // Aktivera klick efter en kort stund (Säkerhetsbuffert mot spök-klick)
+			        setTimeout(() => {
+			            if (menu.classList.contains('show')) {
+			                menu.style.pointerEvents = 'auto';
+			            }
+			        }, 150); // Kortare tid (150ms) för rappare känsla
 			    });
 			    
 			    if (navigator.vibrate) navigator.vibrate(10); 
@@ -1537,14 +1563,14 @@
 			    const textContent = count > 99 ? '99+' : count; // Sätt tak på 99+
 			
 			    if (desktopBadge) {
-			        desktopBadge.style.display = displayStyle;
-			        desktopBadge.textContent = textContent;
-			    }
-			
-			    if (mobileBadge) {
-			        mobileBadge.style.display = displayStyle;
-			        mobileBadge.textContent = textContent;
-			    }
+				    desktopBadge.style.display = displayStyle;
+				    desktopBadge.textContent = textContent;
+				}
+				
+				if (mobileBadge) {
+				    mobileBadge.style.display = displayStyle;
+				    mobileBadge.textContent = textContent;
+				}
 			}
 
 			// --- HJÄLPFUNKTION FÖR SYSTEMNOTISER (FIXAD) ---
@@ -2184,48 +2210,31 @@
 			    }
 			
 			    if (galleryToggleBtn) {
-				    galleryToggleBtn.onclick = (e) => {
-				        e.preventDefault();
-				        
-				        // 1. STÄNG AV AI-LÄGET OM DET ÄR PÅ (FIXEN)
-				        if (chatList.classList.contains('ai-mode')) {
-				            chatList.classList.remove('ai-mode');
-				            const aiBtn = document.getElementById('toggleAiFilter');
-				            if(aiBtn) aiBtn.style.color = 'var(--text-color-light)';
-				            showToast("AI-filter inaktiverat för gallerivy", "info");
-				        }
-				
-				        // 2. Växla Galleri-läge
-				        chatList.classList.toggle('gallery-mode');
-				        const isActive = chatList.classList.contains('gallery-mode');
-				        galleryToggleBtn.style.color = isActive ? 'var(--primary-color)' : 'var(--text-color-light)';
-				        
-				        if (!isActive) setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
-				    };
-				}
+			        galleryToggleBtn.onclick = (e) => {
+			            e.preventDefault();
+			            chatList.classList.toggle('gallery-mode');
+			            const isActive = chatList.classList.contains('gallery-mode');
+			            galleryToggleBtn.style.color = isActive ? 'var(--primary-color)' : 'var(--text-color-light)';
+			            if (!isActive) setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
+			        };
+			    }
 
 				// Läggs inuti initChat()
 			    const aiFilterBtn = document.getElementById('toggleAiFilter');
 			    
 			    if (aiFilterBtn) {
-				    aiFilterBtn.onclick = (e) => {
-				        e.preventDefault();
-				
-				        // 1. STÄNG AV GALLERI-LÄGET OM DET ÄR PÅ (FIXEN)
-				        if (chatList.classList.contains('gallery-mode')) {
-				            chatList.classList.remove('gallery-mode');
-				            const galBtn = document.getElementById('toggleChatGallery');
-				            if(galBtn) galBtn.style.color = 'var(--text-color-light)';
-				        }
-				
-				        // 2. Växla AI-läge
-				        chatList.classList.toggle('ai-mode'); 
-				        const isActive = chatList.classList.contains('ai-mode');
-				        aiFilterBtn.style.color = isActive ? 'var(--primary-color)' : 'var(--text-color-light)';
-				        
-				        setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
-				    };
-				}
+			        aiFilterBtn.onclick = (e) => {
+			            e.preventDefault();
+			            chatList.classList.toggle('ai-mode'); // Växlar läge
+			            
+			            // Byt färg på ikonen när den är aktiv
+			            const isActive = chatList.classList.contains('ai-mode');
+			            aiFilterBtn.style.color = isActive ? 'var(--primary-color)' : 'var(--text-color-light)';
+			            
+			            // Scrolla till botten om vi byter vy
+			            setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
+			        };
+			    }
 			
 			    // --- AI MEKANIKER (FIXAD) ---
 			    const oldAiBtn = document.getElementById('askAiBtn');
@@ -2585,11 +2594,7 @@
 			    
 			                    renderChatBubble(data.id, data, chatList);
 			                });
-			    
-			                const spacer = document.createElement('div');
-			                spacer.style.height = "50px"; 
-			                spacer.style.flexShrink = "0"; 
-			                chatList.appendChild(spacer);
+
 			    
 			                if (searchInput && searchInput.value.trim() !== "") {
 			                    searchInput.dispatchEvent(new Event('input'));
@@ -3025,26 +3030,22 @@
 			function toggleView(view) {
 			    // 1. HANTERA CHATT (Specialfall: Widget/Popup)
 			    if (view === 'chat') {
-				    const chatWidget = document.getElementById('chatWidget');
-				    // Om chatten redan är öppen -> Stäng den (Gå bakåt i historiken om möjligt)
-				    if (chatWidget && chatWidget.style.display === 'flex') {
-				        if (window.location.hash === '#chat') {
-				            history.back();
-				        } else {
-				            closeChatUI();
-				        }
-				    } else {
-				        // Annars öppna
-				        toggleChatWidget();
-				    }
-				    
-				    // Uppdatera mobil-ikonen visuellt
-				    const mobileChatBtn = document.getElementById('mobileChatBtn');
-				    document.querySelectorAll('.mobile-nav-btn').forEach(b => b.classList.remove('active'));
-				    if (mobileChatBtn && chatWidget.style.display !== 'flex') mobileChatBtn.classList.add('active'); // Notera logiken här
-				
-				    return; 
-				}
+			        // Öppna widgeten (hanteras av CSS som helskärm på mobil, popup på desktop)
+			        if (typeof toggleChatWidget === 'function') {
+			            toggleChatWidget();
+			        }
+			
+			        // Uppdatera endast mobil-knappen visuellt
+			        const mobileChatBtn = document.getElementById('mobileChatBtn');
+			        
+			        // Ta bort active från alla knappar först för tydlighet
+			        document.querySelectorAll('.mobile-nav-btn').forEach(b => b.classList.remove('active'));
+			        
+			        // Markera chatt-knappen
+			        if (mobileChatBtn) mobileChatBtn.classList.add('active');
+			
+			        return; // VIKTIGT: Avbryt här. Vi byter inte bort bakgrundsvyn.
+			    }
 			
 			    // 2. STANDARD VY-BYTE (Tidslinje, Kalender, Tavla)
 			    // Om vi redan är på denna vy OCH inte navigerar bakåt, gör inget.
@@ -3786,56 +3787,57 @@
 			}
 
             // --- UPPDATERAD: renderTimeline med Animationslogik ---
-            function renderTimeline() {
-                // BUGGFIX: Ditt ID i plan.html är "desktopSearchResultCount"
-                const desktopSearchCount = document.getElementById('desktopSearchResultCount'); 
-                let jobsToDisplay = allJobs.filter(job => !job.deleted);
-                
-                const now = new Date();
-                now.setHours(0, 0, 0, 0);
-                
-                let sortOrder = 'asc'; // Standard-sortering
-                
-                // --- BÖRJAN PÅ NY FILTERLOGIK ---
-                
-                if (currentSearchTerm) {
-                    // 1. SÖKNING ÄR AKTIV: Filtrera ALLA jobb
-                    clearDayFilterBtn.style.display = 'inline-flex';
-                    jobsToDisplay = jobsToDisplay.filter(job => {
-                        const term = currentSearchTerm.toLowerCase();
-                        
-                        // --- KORREKT SÖK-LOGIK ---
-                        const normalizedTerm = term.replace(/\s/g, '');
-                        const normalizedPhone = (job.telefon || '').replace(/\D/g, '');
-                        const regMatch = (job.regnr && job.regnr.toLowerCase().replace(/\s/g, '').includes(normalizedTerm));
-                        
-                        return (
-                            (job.kundnamn && (job.kundnamn || '').toLowerCase().includes(term)) || 
-                            regMatch || 
-                            (job.kommentarer && (job.kommentarer || '').toLowerCase().includes(term)) ||
-                            (normalizedPhone && normalizedPhone.includes(normalizedTerm)) || 
-                            (STATUS_TEXT[job.status] || '').toLowerCase().includes(term)
-                        );
-                    });
-                    
-                    // Sätt sortering för sökresultat (senaste först är oftast bäst)
-                    sortOrder = 'desc';
-                    
-                    // Uppdatera stat-knapparna visuellt (rensa aktiv, sätt "alla" som aktiv)
-                    document.querySelectorAll('.stat-card.active').forEach(c => c.classList.remove('active'));
-                    const allaKort = document.getElementById('stat-card-alla');
-                    if(allaKort) allaKort.classList.add('active');
+			function renderTimeline() {
+			    // 1. Hämta elementen säkert
+			    const desktopSearchCount = document.getElementById('desktopSearchResultCount'); 
+			    const clearDayFilterBtn = document.getElementById('clearDayFilterBtn'); // Detta element saknas nog i din HTML, därav kraschen
+			    
+			    let jobsToDisplay = allJobs.filter(job => !job.deleted);
+			    
+			    const now = new Date();
+			    now.setHours(0, 0, 0, 0);
+			    
+			    let sortOrder = 'asc'; 
+			    
+			    // --- BÖRJAN PÅ NY FILTERLOGIK ---
+			    
+			    if (currentSearchTerm) {
+			        // 1. SÖKNING ÄR AKTIV
+			        
+			        // FIX: Kolla om knappen finns innan vi ändrar style
+			        if (clearDayFilterBtn) {
+			            clearDayFilterBtn.style.display = 'inline-flex';
+			        }
 
-                    // Uppdatera sök-räknaren
-                    if (desktopSearchCount) {
+			        jobsToDisplay = jobsToDisplay.filter(job => {
+			            const term = currentSearchTerm.toLowerCase();
+			            const normalizedTerm = term.replace(/\s/g, '');
+			            const normalizedPhone = (job.telefon || '').replace(/\D/g, '');
+			            const regMatch = (job.regnr && job.regnr.toLowerCase().replace(/\s/g, '').includes(normalizedTerm));
+			            
+			            return (
+			                (job.kundnamn && (job.kundnamn || '').toLowerCase().includes(term)) || 
+			                regMatch || 
+			                (job.kommentarer && (job.kommentarer || '').toLowerCase().includes(term)) ||
+			                (normalizedPhone && normalizedPhone.includes(normalizedTerm)) || 
+			                (STATUS_TEXT[job.status] || '').toLowerCase().includes(term)
+			            );
+			        });
+			        
+			        sortOrder = 'desc';
+			        
+			        // Visuella uppdateringar
+			        document.querySelectorAll('.stat-card.active').forEach(c => c.classList.remove('active'));
+			        const allaKort = document.getElementById('stat-card-alla');
+			        if(allaKort) allaKort.classList.add('active');
+
+			        // FIX: Här är rätt kod för "Träff(ar)" - Kolla att elementet finns först
+			        if (desktopSearchCount) {
 			            desktopSearchCount.textContent = `${jobsToDisplay.length} träff(ar)`;
 			        }
 
-                } else {
-                    // 2. INGEN SÖKNING: Använd kategorifiltret som vanligt
-                    clearDayFilterBtn.style.display = 'none';
-                    
-                    switch(currentStatusFilter) {
+			    } else {
+					switch(currentStatusFilter) {
                         case 'kommande':
                             jobsToDisplay = jobsToDisplay.filter(j => 
                                 j.status === 'bokad' && new Date(j.datum) >= now
@@ -3856,11 +3858,16 @@
                             sortOrder = 'desc'; 
                             break;
                     }
-
-                    // Rensa sök-räknaren
-                    if (desktopSearchCount) {
-                        desktopSearchCount.textContent = '';
-                    }
+			        
+			        // FIX: Kolla om knappen finns innan vi döljer den
+			        if (clearDayFilterBtn) {
+			            clearDayFilterBtn.style.display = 'none';
+			        }
+			        
+			        // Rensa sökräknaren om elementet finns
+			        if (desktopSearchCount) {
+			            desktopSearchCount.textContent = '';
+			        }
 
                     // Sätt korrekt stat-knapp som aktiv (hanteras också av renderGlobalStats, men dubbelkolla här)
                     document.querySelectorAll('.stat-card.active').forEach(c => c.classList.remove('active'));
@@ -5933,34 +5940,39 @@
 			function performSearch() {
 			    const desktopInput = document.getElementById('searchBar');
 			    const mobileInput = document.getElementById('mobileSearchBar');
-			    const wrapper = document.querySelector('.search-wrapper');
 			    
-			    const desktopVal = desktopInput ? desktopInput.value : '';
-			    const mobileVal = mobileInput ? mobileInput.value : '';
-			    currentSearchTerm = desktopVal || mobileVal;
-			
-			    // Visa/Dölj rensa-knappar
-			    if (document.getElementById('desktopSearchClear')) {
-			        document.getElementById('desktopSearchClear').style.cssText = desktopVal ? 'display: flex !important' : 'display: none !important';
-			    }
-			    if (document.getElementById('mobileSearchClear')) {
-			        document.getElementById('mobileSearchClear').style.cssText = mobileVal ? 'display: flex !important' : 'display: none !important';
-			    }
-			
-			    if (wrapper) wrapper.classList.remove('is-loading'); 
+			    // ANVÄND KORRIGERAD SELECTOR FÖR SPINNERN (Rad 125 ska vara: .top-search-container)
+			    const wrapper = document.querySelector('.top-search-container') || document.querySelector('.search-wrapper');
 			    
-			    // --- MOBIL LOGIK ---
-			    const mobileModal = document.getElementById('mobileSearchModal');
+			    // 1. KONTROLLERA OM VI ÄR PÅ MOBIL ELLER DATOR
+			    const isMobileView = window.innerWidth <= 768;
+			    
+			    // 2. HÄMTA SÖKTEXT FRÅN RÄTT FÄLT
+			    if (isMobileView) {
+			        currentSearchTerm = mobileInput ? mobileInput.value : '';
+			    } else {
+			        currentSearchTerm = desktopInput ? desktopInput.value : '';
+			        if (mobileInput) mobileInput.value = ''; 
+			    }
+
+			    // 3. FIX: NULL-KONTROLL FÖR RENSA-KNAPPAR (HÄR KRASCHAR DET)
+			    const dClearBtn = document.getElementById('desktopSearchClear');
+			    const mClearBtn = document.getElementById('mobileSearchClear');
+			    
+			    // Ändra .style.cssText BARA om elementet existerar!
+			    if (dClearBtn) {
+			        dClearBtn.style.cssText = (!isMobileView && currentSearchTerm) ? 'display: flex !important' : 'display: none !important';
+			    }
+			    if (mClearBtn) {
+			        mClearBtn.style.cssText = (isMobileView && currentSearchTerm) ? 'display: flex !important' : 'display: none !important';
+			    }
+
+			    if (wrapper) wrapper.classList.remove('is-searching'); 
+			    
+			    // --- MOBIL-LOGIK (Körs BARA om vi är på mobil) ---
 			    const mobileResults = document.getElementById('mobileSearchResults');
 			    
-			    if (mobileModal && getComputedStyle(mobileModal).display !== 'flex' && window.innerWidth > 768) {
-			        // Om vi är på desktop, kör vanliga tidslinjen
-			        renderTimeline();
-			        return;
-			    }
-			
-			    // Om vi är på mobil och modalen är öppen (eller vi tvingar uppdatering)
-			    if (mobileResults) {
+			    if (isMobileView && mobileResults) {
 			        
 			        if (!currentSearchTerm.trim()) {
 			            mobileResults.innerHTML = `
@@ -5970,11 +5982,11 @@
 			                </div>`;
 			            return;
 			        }
-			
+
 			        let jobs = allJobs.filter(job => !job.deleted);
 			        const term = currentSearchTerm.toLowerCase();
-			        const normalizedTerm = term.replace(/\s/g, ''); // Ta bort mellanslag för smartare sök
-			
+			        const normalizedTerm = term.replace(/\s/g, '');
+
 			        jobs = jobs.filter(job => {
 			            const normalizedPhone = (job.telefon || '').replace(/\D/g, '');
 			            const regMatch = (job.regnr && job.regnr.toLowerCase().replace(/\s/g, '').includes(normalizedTerm));
@@ -5986,45 +5998,43 @@
 			                (normalizedPhone && normalizedPhone.includes(normalizedTerm))
 			            );
 			        });
-			
+
 			        if (jobs.length === 0) {
 			            mobileResults.innerHTML = '<p style="text-align:center; color:#999; margin-top:2rem;">Inga träffar.</p>';
 			        } else {
-			            // --- HÄR ÄR ÄNDRINGEN FÖR ATT FÅ RUBRIKER ---
-			            
-			            // 1. Gruppera jobben per datum
+			            // Gruppera och visa
 			            const groupedJobs = jobs.reduce((acc, job) => {
 			                const dateKey = job.datum ? job.datum.split('T')[0] : 'Okänt';
 			                if (!acc[dateKey]) { acc[dateKey] = []; }
 			                acc[dateKey].push(job);
 			                return acc;
 			            }, {});
-			
-			            // 2. Sortera datumen (Nyaste överst oftast bäst vid sök, eller äldst först)
-			            // Vi kör fallande (nyaste först) för sökresultat
+
 			            const sortedDateKeys = Object.keys(groupedJobs).sort((a, b) => new Date(b) - new Date(a));
-			
 			            let listHTML = '';
-			
-			            // 3. Bygg HTML med rubriker
+
 			            for (const dateKey of sortedDateKeys) {
 			                const jobsForDay = groupedJobs[dateKey];
 			                const firstJobDate = jobsForDay[0].datum;
-			                
-			                // Återanvänd din snygga rubrik-klass
 			                listHTML += `<div class="mobile-day-group">`;
 			                listHTML += `<h2 class="mobile-date-header">${formatDate(firstJobDate, { onlyDate: true })}</h2>`;
 			                listHTML += jobsForDay.map(job => createJobCard(job)).join('');
 			                listHTML += `</div>`;
 			            }
-			
 			            mobileResults.innerHTML = listHTML;
 			        }
-			        return; 
+			        return;
 			    }
-			
-			    // Fallback för desktop
-			    renderTimeline();
+
+			    // --- DESKTOP-LOGIK (Når hit nu utan att krascha) ---
+			    if (currentView === 'timeline') {
+			        renderTimeline();
+			    } else if (currentView === 'kanban') {
+			        renderKanbanBoard();
+			    } else if (currentView === 'calendar' && calendar) {
+			        filterCalendarView(); 
+			        calendar.render();
+			    }
 			}
 
             if (searchBar) {
@@ -6089,16 +6099,6 @@
 			        document.getElementById('statBar').style.display = 'grid';
 			    }
 			}
-            
-            clearDayFilterBtn.addEventListener('click', () => {
-                clearSearch();
-                searchBar.focus();
-            });
-            
-            desktopSearchClear.addEventListener('click', () => {
-                clearSearch();
-                searchBar.focus();
-            });
 
             mobileSearchClear.addEventListener('click', () => {
                 clearSearch();
@@ -6226,7 +6226,7 @@
             modalCancelBtn.addEventListener('click', () => closeModal());
             customerModalCloseBtn.addEventListener('click', () => closeModal());
             carModalCloseBtn.addEventListener('click', () => closeModal());
-            mobileSearchCloseBtn.addEventListener('click', () => closeModal({ popHistory: false })); // PUNKT 7: Ändrad
+            //mobileSearchCloseBtn.addEventListener('click', () => closeModal({ popHistory: false })); // PUNKT 7: Ändrad
             settingsModalCloseBtn.addEventListener('click', () => closeModal()); 
             settingsModalCancelBtn.addEventListener('click', () => closeModal()); 
 			statsModalCloseBtn.addEventListener('click', () => closeModal());
@@ -6577,15 +6577,7 @@
                 carModalOljemagasinetLinkMobile.addEventListener('click', handleOljemagasinetClick);
             }
             // --- SLUT PÅ NY KOD ---
-			
-            // --- App-inställningar (Tema, Kompakt, Lås) ---
-            themeToggle.addEventListener('click', () => {
-                const currentTheme = docElement.getAttribute('data-theme') || 'dark';
-                setTheme(currentTheme === 'dark' ? 'light' : 'dark');
-            });
 
-			privacyToggle.addEventListener('click', () => setPrivacyMode(!isPrivacyModeEnabled));
-			settingsPrivacyToggle.addEventListener('click', () => setPrivacyMode(!isPrivacyModeEnabled));
 			
             function setTheme(theme) {
                 docElement.setAttribute('data-theme', theme);
@@ -6611,7 +6603,6 @@
             function setCompactMode(level) {
                 // Rensa alltid gamla klasser först
                 docElement.classList.remove('compact-mode', 'extra-compact-mode');
-                toggleCompactView.classList.remove('active');
                 
                 // SÄKERHETSKONTROLL: Kör bara om mobil-knappen existerar
                 if (settingsToggleCompactView) { 
@@ -6634,9 +6625,6 @@
 
                 } else if (levelNum === 2) {
                     // Läge 2: Extra Kompakt
-                    docElement.classList.add('extra-compact-mode'); 
-                    toggleCompactView.classList.add('active');
-                    toggleCompactView.title = "Växla till Standardvy";
 
                     // SÄKERHETSKONTROLL
                     if (settingsToggleCompactView) {
@@ -6673,9 +6661,6 @@
                 // Anropa funktionen med den nya nivån
                 setCompactMode(currentLevel);
             }
-
-            // Koppla den nya cykel-funktionen till knapparna
-            toggleCompactView.addEventListener('click', handleCompactToggleClick);
             
             // SÄKERHETSKONTROLL: Koppla bara lyssnaren om knappen existerar
             if (settingsToggleCompactView) {
@@ -6687,16 +6672,20 @@
             setCompactMode(savedCompactLevel);
 
             function setupViewToggles() {
-                const allToggleButtons = document.querySelectorAll('.button-toggle-view, .mobile-nav-btn[data-view]');
-                allToggleButtons.forEach(button => {
-                    button.addEventListener('click', (e) => {
-                        const view = e.currentTarget.dataset.view;
-                        if (view) {
-                            toggleView(view);
-                        }
-                    });
-                });
+    // VIKTIGT: Vi lägger till '.nav-link[data-view]' i listan så den hittar sidomenyns knappar
+    const allToggleButtons = document.querySelectorAll('.button-toggle-view, .mobile-nav-btn[data-view], .nav-link[data-view]');
+    
+    allToggleButtons.forEach(button => {
+        button.addEventListener('click', (e) => {
+            // Hämta vyn från knappen (t.ex. 'calendar' eller 'timeline')
+            // Om man klickar på ikonen inuti knappen kan e.target vara ikonen, så vi använder currentTarget
+            const view = e.currentTarget.dataset.view;
+            if (view) {
+                toggleView(view);
             }
+        });
+    });
+}
             setupViewToggles();
             
             mobileAddJobBtn.addEventListener('click', () => openJobModal('add'));
@@ -6704,7 +6693,7 @@
 			// 1. Hämta elementen vi behöver
 			const mSearchModal = document.getElementById('mobileSearchModal');
 			const mNavOpenBtn = document.getElementById('mobileSearchBtn'); // Knappen i botten-menyn
-			const mHeaderBackBtn = document.getElementById('mobileSearchBackBtn');
+			const mHeaderBackBtn = document.getElementById('mobileSearchBackBtn'); // NY PIL-KNAPP
 			
 			if (mHeaderBackBtn) {
 			    mHeaderBackBtn.onclick = function(e) {
@@ -6719,18 +6708,18 @@
 			    mNavOpenBtn.addEventListener('click', (e) => {
 			        e.preventDefault();
 			        
-			        // --- PUNKT 2: LÄGG TILL I HISTORIKEN ---
-			        // Detta gör att "Bakåt" på telefonen har något att gå tillbaka till
+			        // Lägg till i historiken så "Back" på telefonen stänger den
 			        window.history.pushState({ modal: 'mobileSearch' }, 'Sök', '#search');
 			        
 			        mSearchModal.style.display = 'flex';
+			        mSearchModal.classList.add('show'); // För animation om du har det
 			        
 			        setTimeout(() => {
 			            if (mInput) mInput.focus();
 			        }, 150); 
 			    });
 			}
-			
+
 			// 3. Logik för att STÄNGA (Pilen tillbaka)
 			if (mHeaderBackBtn && mSearchModal) {
 			    mHeaderBackBtn.addEventListener('click', (e) => {
@@ -6738,6 +6727,7 @@
 			        
 			        // 1. Dölj modalen
 			        mSearchModal.style.display = 'none';
+			        mSearchModal.classList.remove('show');
 			        
 			        // 2. Töm sökfältet helt
 			        if (mInput) mInput.value = '';
@@ -6751,12 +6741,16 @@
 			        
 			        // 5. Uppdatera listan så alla jobb syns igen
 			        performSearch(); 
+			        
+			        // 6. Fixa historiken (Gå tillbaka ett steg om vi tryckte på pilen)
+			        if (history.state && history.state.modal === 'mobileSearch') {
+			            history.back();
+			        }
 			    });
 			}
             
             function setHeaderDate() {
                 let datePart = new Intl.DateTimeFormat(locale, { weekday: 'short', month: 'short', day: 'numeric' }).format(new Date());
-                appBrandTitle.textContent = datePart.charAt(0).toUpperCase() + datePart.slice(1);
             }
             setHeaderDate();
             
@@ -7033,6 +7027,35 @@
                         // Starta badge-lyssnaren (om du lade till den förut)
                         if (typeof initChatBadgeListener === 'function') initChatBadgeListener();
                         if (typeof initChat === 'function') initChat();
+
+// Uppdatera Sidebar-profilen när man loggar in
+const sidebarNameEl = document.getElementById('sidebarUserName');
+const sidebarAvatarEl = document.getElementById('sidebarAvatar');
+
+if (sidebarNameEl) {
+    // Använd mailadressen men ta bort @gmail.com för snyggare namn
+    const name = user.email.split('@')[0];
+    // Gör första bokstaven stor (t.ex. "amar.sut" -> "Amar.sut")
+    const formattedName = name.charAt(0).toUpperCase() + name.slice(1);
+    
+    sidebarNameEl.textContent = formattedName;
+    
+    // Uppdatera avataren med initialer
+    if (sidebarAvatarEl) {
+        sidebarAvatarEl.src = `https://ui-avatars.com/api/?name=${formattedName}&background=eff6ff&color=3b82f6&bold=true`;
+    }
+}
+
+// Koppla Logga ut-knappen i sidebaren
+const sidebarLogoutBtn = document.getElementById('sidebarLogoutBtn');
+if (sidebarLogoutBtn) {
+    sidebarLogoutBtn.onclick = () => {
+        closeModal();
+        firebase.auth().signOut().then(() => {
+            showToast('Du har loggats ut.', 'info');
+        });
+    };
+}
                     }
                 } else {
                     // --- ANVÄNDAREN ÄR UTLOGGAD ---
@@ -7045,8 +7068,6 @@
                     // Rensa session
                     sessionStorage.removeItem(SECURITY_CONFIG.sessionKey);
                     
-                    // Dölj appens innehåll
-                    appContainer.style.display = 'none';
                     
                     // Visa låsskärmen
                     pinLockModal.style.display = 'flex';
@@ -7098,12 +7119,12 @@
                             if (appContainer) appContainer.style.display = 'block';
                             
                             // Visa knappar igen (om vi är på desktop eller mobil)
-                            if (window.innerWidth > 768) {
+                            /*if (window.innerWidth > 768) {
                                 if (fabChat) fabChat.style.display = ''; 
                                 if (fabAddJob) fabAddJob.style.display = '';
                             } else {
                                 if (mobileNav) mobileNav.style.display = '';
-                            }
+                            }*/
 
                             // 4. Göm inloggningsrutan manuellt
                             const pinLockModal = document.getElementById('pinLockModal');
