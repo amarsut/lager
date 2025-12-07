@@ -7004,7 +7004,9 @@
                     setTimeout(() => { 
                         pinLockModal.style.display = 'none'; 
                         // Visa appens innehåll
-                        appContainer.style.display = 'block';
+                        if (appContainer) {
+					        appContainer.style.display = 'block'; // Eller 'flex' beroende på din layout
+					    }
                     }, 300);
 
                     // Starta inaktivitets-timern direkt!
@@ -7105,7 +7107,7 @@ if (sidebarLogoutBtn) {
                             document.body.classList.remove('app-locked'); 
 
                             // 3. Tvinga fram element som kan ha dolts av CSS
-                            const appContainer = document.querySelector('.app-container');
+                            const appContainer = document.querySelector('.app-layout');
                             const fabChat = document.getElementById('fabChat');
                             const fabAddJob = document.getElementById('fabAddJob');
                             const mobileNav = document.getElementById('mobileNav');
