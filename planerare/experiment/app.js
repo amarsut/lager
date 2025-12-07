@@ -7062,11 +7062,11 @@
                             
                             // Visa knappar igen (om vi är på desktop eller mobil)
                             if (window.innerWidth > 768) {
-    				fabChat?.style.display = '';      // <-- Lägg till ?
-    				fabAddJob?.style.display = '';    // <-- Lägg till ?
-			    } else {
-    				mobileNav?.style.display = '';    // <-- Lägg till ?
-			    }
+			    				if (fabChat) { fabChat.style = '';      // <-- Lägg till ?
+			    				if (fabAddJob) { fabAddJob.style = '';    // <-- Lägg till ?
+						    } else {
+			    				if (mobileNav) { mobileNav.style = '';    // <-- Lägg till ?
+						    }
 
                             // 4. Göm inloggningsrutan manuellt
                             const pinLockModal = document.getElementById('pinLockModal');
