@@ -3818,7 +3818,7 @@
 
                 } else {
                     // 2. INGEN SÖKNING: Använd kategorifiltret som vanligt
-                    clearDayFilterBtn.style.display = 'none';
+                    //clearDayFilterBtn.style.display = 'none';
                     
                     switch(currentStatusFilter) {
                         case 'kommande':
