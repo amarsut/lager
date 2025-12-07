@@ -7061,12 +7061,12 @@
                             if (appContainer) appContainer.style.display = 'block';
                             
                             // Visa knappar igen (om vi är på desktop eller mobil)
-                            if (window.innerWidth > 768) {
-			    				if (fabChat) { fabChat.style = '';      // <-- Lägg till ?
-			    				if (fabAddJob) { fabAddJob.style = '';    // <-- Lägg till ?
-						    } else {
-			    				if (mobileNav) { mobileNav.style = '';    // <-- Lägg till ?
-						    }
+                            /*if (window.innerWidth > 768) {
+                                if (fabChat) fabChat.style.display = ''; 
+                                if (fabAddJob) fabAddJob.style.display = '';
+                            } else {
+                                if (mobileNav) mobileNav.style.display = '';
+                            }*/
 
                             // 4. Göm inloggningsrutan manuellt
                             const pinLockModal = document.getElementById('pinLockModal');
