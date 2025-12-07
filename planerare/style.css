@@ -4491,5 +4491,49 @@ html {
     }
 }
 
+/* =========================================
+   DESKTOP ÅTERSTÄLLNING (LÄGG LÄNGST NER)
+   ========================================= */
+@media (min-width: 769px) {
+    /* Visa sidomenyn och vanlig layout */
+    .sidebar { display: flex !important; }
+    
+    /* Dölj mobil-specifika saker */
+    .mobile-nav, 
+    .modal-backdrop-mobile,
+    #mobileJobList,
+    .sticky-link-buttons {
+        display: none !important;
+    }
+
+    /* Visa desktop-tabellen och sökfältet */
+    .table-container { display: block !important; }
+    .table-wrapper, #jobbOversikt { display: table !important; }
+    .top-search-container { display: block !important; }
+    .divider-vertical, #fabAddJob { display: flex !important; }
+    
+    /* Återställ modal-storlek */
+    .modal-content {
+        width: 90% !important; 
+        height: auto !important; 
+        max-width: 580px !important;
+        max-height: 90vh !important;
+        border-radius: 16px !important;
+    }
+    
+    /* Sökfältet */
+    .search-wrapper { display: flex !important; }
+    
+    /* Stat-korten: 5 i rad på stora skärmar */
+    .stat-bar {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
+        gap: 1.5rem !important;
+    }
+    
+    /* Dölj mobil-loggan i headern om den finns */
+    .app-logo-modern.header-logo { display: none !important; }
+}
+
 /* --- SLUT PÅ STYLE.CSS --- */
+
 
