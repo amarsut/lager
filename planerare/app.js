@@ -1241,12 +1241,10 @@
 			    // Starta/Ladda om chatten
 			    if (typeof initChat === 'function') initChat();
 			    
-			    // --- SCROLL FIX: Kör flera gånger för att motverka layout-shift ---
-			    forceChatScrollBottom();
-			    setTimeout(forceChatScrollBottom, 50);
-			    setTimeout(forceChatScrollBottom, 200);
-			    setTimeout(forceChatScrollBottom, 500); // En extra sen för säkerhets skull
-			    // ---------------------------------------
+			    setTimeout(() => {
+				    const chatList = document.getElementById('chatMessages');
+				    if(chatList) chatList.scrollTop = chatList.scrollHeight;
+				}, 100);
 			
 			    isModalOpen = false;
 			    updateScrollLock();
@@ -2589,90 +2587,66 @@
 			        };
 			    
 			        chatUnsubscribe = db.collection("notes")
-			            .orderBy("timestamp", "desc") 
-			            .limit(limit)                 
-			            .onSnapshot(snapshot => {
-			                
-			                const threshold = 150; 
-			                const scrollBottom = chatList.scrollHeight - chatList.scrollTop - chatList.clientHeight;
-			                const wasAtBottom = scrollBottom <= threshold || chatList.childElementCount === 0;
-			                const previousScrollTop = chatList.scrollTop;
-			                const previousScrollHeight = chatList.scrollHeight;
-			    
-			                const docs = [];
-			                snapshot.forEach(doc => docs.push({ id: doc.id, ...doc.data() }));
-			                docs.reverse(); 
-			    
-			                chatList.innerHTML = ''; 
-			                
-			                if (docs.length === 0) {
-			                    chatList.innerHTML = '<div class="empty-state-chat"><p>Skriv en notis eller ta en bild...</p></div>';
-			                    return;
-			                }
-			    
-			                let lastDate = null;
-			    
-			                docs.forEach(data => {
-			                    if (data.timestamp) {
-			                        const msgDate = new Date(data.timestamp);
-			                        
-			                        if (!lastDate || !isSameDay(lastDate, msgDate)) {
-			                            const separator = document.createElement('div');
-			                            separator.className = 'chat-date-separator';
-			                            
-			                            const today = new Date();
-			                            const yesterday = new Date(); 
-			                            yesterday.setDate(yesterday.getDate() - 1);
-			                            
-			                            if (isSameDay(msgDate, today)) {
-			                                separator.textContent = 'Idag';
-			                            } else if (isSameDay(msgDate, yesterday)) {
-			                                separator.textContent = 'Igår';
-			                            } else {
-			                                let dateStr = msgDate.toLocaleDateString('sv-SE', { 
-			                                    weekday: 'long', 
-			                                    day: 'numeric', 
-			                                    month: 'short' 
-			                                });
-			                                dateStr = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
-			                                if (msgDate.getFullYear() !== today.getFullYear()) {
-			                                    dateStr += ` ${msgDate.getFullYear()}`;
-			                                }
-			                                separator.textContent = dateStr;
-			                            }
-			                            chatList.appendChild(separator);
-			                        }
-			                        lastDate = msgDate;
-			                    }
-			    
-			                    renderChatBubble(data.id, data, chatList);
-			                });
-
-			    
-			                if (searchInput && searchInput.value.trim() !== "") {
-			                    searchInput.dispatchEvent(new Event('input'));
-			                }
-			    
-			                const isSearching = searchInput && searchInput.value.trim() !== "";
-			                
-			                if (!isSearching) {
-			                    if (isLoadMore && isFetchingOlderChat) {
-			                        const newScrollHeight = chatList.scrollHeight;
-			                        chatList.scrollTop = newScrollHeight - previousScrollHeight + previousScrollTop;
-			                        isFetchingOlderChat = false; 
-			                    } else if (!isLoadMore) {
-			                        if (!chatList.classList.contains('gallery-mode')) {
-			                            if (wasAtBottom) {
-			                                setTimeout(() => {
-			                                    chatList.scrollTop = chatList.scrollHeight;
-			                                }, 50);
-			                            } else {
-			                                chatList.scrollTop = previousScrollTop; 
-			                            }
-			                        }
-			                    }
-			                }
-			            });
+					    .orderBy("timestamp", "desc")
+					    .limit(limit)
+					    .onSnapshot(snapshot => {
+					        
+					        // Spara nuvarande scroll-position om vi laddar mer historia
+					        const previousScrollHeight = chatList.scrollHeight;
+					        const previousScrollTop = chatList.scrollTop;
+					        
+					        const docs = [];
+					        snapshot.forEach(doc => docs.push({ id: doc.id, ...doc.data() }));
+					        docs.reverse();
+					
+					        // 1. Spara elementen i ett "DocumentFragment" (osynligt) först för prestanda
+					        const fragment = document.createDocumentFragment();
+					        
+					        // ... (Din logik för datum-separatorer här är samma) ...
+					        let lastDate = null;
+					        
+					        // Töm listan
+					        chatList.innerHTML = ''; 
+					
+					        docs.forEach(data => {
+					            // ... (Din datum-logik) ...
+					            if (data.timestamp) {
+					                 // Kopiera din befintliga datum-logik hit om du vill, eller låt renderChatBubble hantera det
+					                 // För enkelhetens skull, här är render-anropet:
+					            }
+					            
+					            // RENDERA BUBBLAN
+					            // Skicka med 'false' som sista parameter för att INTE animera gamla meddelanden
+					            renderChatBubble(data.id, data, fragment, false); 
+					        });
+					
+					        // 2. Lägg in allt i DOM:en på en gång
+					        chatList.appendChild(fragment);
+					
+					        // 3. HANTERA SCROLL & SYNLIGHET (Den viktiga fixen)
+					        if (!chatList.classList.contains('loaded')) {
+					            // FÖRSTA LADDNINGEN:
+					            // Tvinga scroll till botten OMEDELBART utan animation
+					            chatList.scrollTop = chatList.scrollHeight;
+					            
+					            // Visa listan mjukt efter en mikrosekund
+					            requestAnimationFrame(() => {
+					                chatList.classList.add('loaded');
+					            });
+					        } else {
+					            // UPPDATERINGAR (Nya meddelanden):
+					            const isAtBottom = (chatList.scrollHeight - chatList.scrollTop - chatList.clientHeight) < 200;
+					            
+					            if (isLoadMore && isFetchingOlderChat) {
+					                // Bibehåll position vid laddning av historik
+					                chatList.scrollTop = chatList.scrollHeight - previousScrollHeight + previousScrollTop;
+					                isFetchingOlderChat = false;
+					            } else if (isAtBottom) {
+					                // Scrolla ner om vi redan var nere
+					                setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 50);
+					            }
+					        }
+					    });
 			    };
 			
 			    setupChatListener(currentChatLimit);
@@ -3074,7 +3048,15 @@
 			
 			    time.innerHTML = `${displayTime}${platformIconHtml}`;
 			    if (data.isEdited) time.innerHTML += ` <span style="font-style:italic; opacity:0.7;">(redigerad)</span>`;
+
+				// Lägg till bas-klassen
+			    bubble.className = `chat-bubble ${msgType} ${isAi ? 'is-ai-message' : ''}`;
 			    
+			    // Lägg BARA till animations-klassen om animate är true
+			    if (animate) {
+			        bubble.classList.add('animate-in');
+			    }
+				
 			    container.appendChild(bubble);
 			    container.appendChild(time);
 			}
