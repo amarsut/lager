@@ -4113,34 +4113,33 @@
             
             // --- UPPDATERAD: createJobCard med Kontextuell Ikon ---
             function createJobCard(job) {
-			    // 1. Logik (Samma som förut)
+			    // 1. Logik & Data
 			    let prioClass = job.prio ? 'prio-row' : '';
 			    const status = job.status || 'bokad';
-			    
-			    // Använd gråskala för status, inga färger
 			    let statusText = (STATUS_TEXT[status] || 'Bokad').toUpperCase();
 			    
-			    // Hantera datum/tid
-			    let timeDisplay = '---';
+			    // Tid (bara klockslag)
+			    let timeDisplay = '';
 			    if (job.datum) {
 			        try {
-			            // Hämta bara klockslag hh:mm
 			            timeDisplay = new Date(job.datum).toLocaleTimeString('sv-SE', {hour: '2-digit', minute:'2-digit'});
 			        } catch(e) {}
 			    }
 			
-			    // Regnr
-			    const rawReg = job.regnr || 'OKÄNT';
-			    const regDisplay = (rawReg !== 'OKÄNT') ? rawReg : '---';
+			    // Regnr (Enkel text eller "---")
+			    const rawReg = job.regnr || '';
+			    const hasReg = rawReg.toUpperCase() !== 'OKÄNT' && rawReg.length > 2;
+			    const regDisplay = hasReg ? rawReg : '---';
+			    const regClass = hasReg ? '' : 'empty';
 			
 			    // Pris
 			    const pris = (job.kundpris && job.kundpris > 0) ? formatCurrency(job.kundpris) : '';
 			
 			    // Ikoner
 			    const hasComment = job.kommentarer && job.kommentarer.trim().length > 0;
-			    const commentIconClass = hasComment ? 'style="color:#111;"' : ''; // Gör ikonen svart om kommentar finns
+			    const commentClass = hasComment ? 'has-comment' : '';
 			
-			    // 2. Den nya, rena HTML-strukturen
+			    // 2. HTML Struktur (Matchar Bild 2 layout)
 			    return `
 			        <div class="mobile-job-card ${prioClass}" data-id="${job.id}" data-status="${status}">
 			            <div class="card-content">
@@ -4151,9 +4150,10 @@
 			                </div>
 			
 			                <div class="clean-meta">
-			                    <span class="clean-reg">${regDisplay}</span>
+			                    <span class="clean-reg ${regClass}">${regDisplay}</span>
+			                    
 			                    <span class="clean-time">
-			                        <svg class="icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+			                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
 			                        ${timeDisplay}
 			                    </span>
 			                </div>
@@ -4162,20 +4162,21 @@
 			                    <span class="clean-status status-${status}">${statusText}</span>
 			                    
 			                    <div class="clean-actions">
-			                        <button class="clean-icon-btn" ${hasComment ? '' : 'disabled'} ${commentIconClass}>
-			                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+			                        
+			                        <button class="clean-icon-btn ${commentClass}" data-action="showComment" data-comment="${encodeURIComponent(job.kommentarer || '')}" ${hasComment ? '' : 'disabled'}>
+			                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
 			                        </button>
 			                        
 			                        <button class="clean-icon-btn" data-action="togglePrio">
-			                            <svg viewBox="0 0 24 24" fill="${job.prio ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" style="${job.prio ? 'color:#000;' : ''}"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+			                            <svg viewBox="0 0 24 24" fill="${job.prio ? 'currentColor' : 'none'}" stroke="currentColor" style="${job.prio ? 'color:#ef4444;' : ''}"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
 			                        </button>
 			
 			                        <button class="clean-icon-btn" data-action="setStatusKlar">
-			                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+			                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"/></svg>
 			                        </button>
 			                        
 			                        <button class="clean-icon-btn delete-btn" data-id="${job.id}">
-			                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+			                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
 			                        </button>
 			                    </div>
 			                </div>
