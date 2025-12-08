@@ -1,5 +1,5 @@
 /* =================================================================
-   JOBBPLANERARE V15 - CLEAN & OPTIMIZED (2024)
+   JOBBPLANERARE V15.1 - KORRIGERAD & OPTIMERAD
    ================================================================= */
 
 /* =========================================
@@ -62,12 +62,12 @@
    ========================================= */
 *, *::before, *::after {
     box-sizing: border-box;
-    -webkit-tap-highlight-color: transparent; /* Tar bort grå markering vid klick på mobil */
+    -webkit-tap-highlight-color: transparent;
 }
 
 html, body {
     margin: 0; padding: 0; height: 100%;
-    overscroll-behavior-y: none; /* Förhindra "studs" på hela sidan */
+    overscroll-behavior-y: none;
 }
 
 body {
@@ -182,9 +182,7 @@ body.body-scroll-lock { overflow: hidden !important; height: 100vh; touch-action
 [data-theme="dark"] .user-profile-card:hover { background-color: #2c2c2e; }
 [data-theme="dark"] .user-name { color: #f3f4f6; }
 
-/* =========================================
-   5. HEADER (DESKTOP)
-   ========================================= */
+/* --- 5. HEADER (DESKTOP) --- */
 .top-bar { height: 76px; background-color: #ffffff; border-bottom: 1px solid #eef2f6; display: flex; justify-content: space-between; align-items: center; padding: 0 2rem; flex-shrink: 0; z-index: 40; }
 
 .top-search-container { position: relative; width: 380px; height: 44px; }
@@ -194,10 +192,10 @@ body.body-scroll-lock { overflow: hidden !important; height: 100vh; touch-action
 
 .top-bar-actions { display: flex; align-items: center; gap: 12px; height: 44px; }
 
-/* Desktop FAB Knappar (Flyttade till Header) */
+/* Desktop FAB Knappar */
 #fabChat { position: fixed !important; bottom: 30px !important; right: 30px !important; width: 56px !important; height: 56px !important; background-color: #fff !important; color: var(--primary-color) !important; box-shadow: 0 4px 20px rgba(0,0,0,0.15) !important; border-radius: 50% !important; z-index: 1000 !important; top: auto !important; margin: 0 !important; }
 #fabChat:hover { transform: scale(1.1); background-color: #fff !important; }
-.header-badge { position: absolute !important; top: 10px !important; right: 10px !important; width: 8px !important; height: 8px !important; background-color: #ef4444 !important; border: 2px solid #ffffff !important; border-radius: 50% !important; padding: 0 !important; }
+.header-badge { position: absolute !important; top: 10px !important; right: 10px !important; width: 8px !important; height: 8px !important; background-color: #ef4444 !important; border: 2px solid #ffffff !important; border-radius: 50% !important; padding: 0 !important; z-index: 10; }
 
 #fabAddJob { height: 44px !important; padding: 0 24px !important; background-color: #0066FF !important; color: white !important; border-radius: 12px !important; font-weight: 600 !important; font-size: 0.95rem !important; box-shadow: 0 4px 10px rgba(0, 102, 255, 0.25) !important; display: flex !important; align-items: center !important; gap: 8px !important; border: none !important; position: static !important; margin-left: 8px !important; }
 #fabAddJob:hover { background-color: #0052cc !important; transform: translateY(-1px) !important; box-shadow: 0 6px 15px rgba(0, 102, 255, 0.3) !important; }
@@ -205,6 +203,15 @@ body.body-scroll-lock { overflow: hidden !important; height: 100vh; touch-action
 .divider-vertical { width: 1px; height: 24px; background-color: #e2e8f0; margin: 0 8px; }
 .header-icon-btn { width: 40px; height: 40px; border-radius: 8px; background-color: transparent; color: #64748b; border: 1px solid transparent; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; position: relative; }
 .header-icon-btn:hover { background-color: #f1f5f9; color: #1f2937; }
+
+/* *** MOBIL-FIX 1: GÖM SIDEBAR PÅ MOBIL *** */
+@media (max-width: 768px) {
+    .sidebar { display: none !important; }
+    .main-content-wrapper { width: 100% !important; margin: 0 !important; padding: 0 !important; }
+    .main-content { padding: 1rem !important; padding-bottom: 90px !important; }
+    .top-bar { padding: 0 1rem !important; height: 60px !important; justify-content: flex-end !important; }
+    .top-search-container, .divider-vertical, #fabAddJob, #fabChat, #headerPrivacyToggle { display: none !important; }
+}
 
 /* =========================================
    6. STATISTIK-BAR (DASHBOARD)
@@ -233,7 +240,7 @@ body.body-scroll-lock { overflow: hidden !important; height: 100vh; touch-action
     overflow: hidden;
 }
 
-/* Titeln (Kommande, Fakturering...) */
+/* Titeln */
 .stat-card-title {
     font-size: 0.75rem;
     font-weight: 600;
@@ -253,7 +260,7 @@ body.body-scroll-lock { overflow: hidden !important; height: 100vh; touch-action
     color: var(--text-color);
 }
 
-/* Animation vid laddning */
+/* Animation */
 .stat-card { animation: slideInUp 0.4s ease forwards; opacity: 0; transform: translateY(20px); }
 .stat-card:nth-child(1) { animation-delay: 0.1s; }
 .stat-card:nth-child(2) { animation-delay: 0.15s; }
@@ -265,12 +272,11 @@ body.body-scroll-lock { overflow: hidden !important; height: 100vh; touch-action
     to { transform: translateY(0); opacity: 1; }
 }
 
-/* Hover & Active States */
+/* Hover & Active */
 .stat-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
-
 .stat-card.active {
     background-color: #eff6ff;
     border-color: #bfdbfe;
@@ -295,17 +301,15 @@ body.body-scroll-lock { overflow: hidden !important; height: 100vh; touch-action
     opacity: 0.3;
 }
 
-/* --- Accentfärger --- */
+/* Accentfärger */
 .stat-card .icon-sm { transition: transform 0.3s ease; }
 .stat-card:hover .icon-sm { transform: scale(1.1); }
-
 .stat-card[data-filter="kommande"] { color: var(--primary-color); }
 .stat-card[data-filter="faktureras"] { color: var(--invoice-color); }
 .stat-card[data-filter="klar"] { color: var(--success-color); }
 .stat-card[data-filter="offererad"] { color: var(--info-color); }
 .stat-card[data-filter="alla"] { color: var(--text-color-light); }
 
-/* Tvinga textfärger att följa accentfärgen (förutom "Alla") */
 .stat-card:not([data-filter="alla"]) .stat-card-value,
 .stat-card:not([data-filter="alla"]) .icon-sm { color: currentColor; }
 .stat-card[data-filter="alla"] .stat-card-value { color: var(--text-color); }
@@ -313,73 +317,43 @@ body.body-scroll-lock { overflow: hidden !important; height: 100vh; touch-action
 /* =========================================
    7. FORMULÄR & INPUTS
    ========================================= */
-
-/* --- Layout Grid för Modal-formulär --- */
 #jobModalForm { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
 .form-group-split { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
 .full-width { grid-column: 1 / -1; }
-
-/* --- Input Grupper --- */
 .form-group { display: flex; flex-direction: column; gap: 0.5rem; position: relative; }
 .form-group label { font-weight: 600; font-size: 0.875rem; color: var(--text-color); }
 
-/* --- Standard Input Design --- */
-.form-group input, 
-.form-group textarea, 
-.form-group select {
-    padding: 0.85rem 1rem;
-    border: 1px solid transparent; 
-    background-color: #f3f4f6; /* Ljusgrå i vila */
-    border-radius: 10px; 
-    font-size: 0.95rem;
-    color: var(--text-color);
-    transition: all 0.2s ease;
-    width: 100%;
-    box-sizing: border-box;
-    font-family: inherit;
-    outline: none;
+.form-group input, .form-group textarea, .form-group select {
+    padding: 0.85rem 1rem; border: 1px solid transparent; 
+    background-color: #f3f4f6; border-radius: 10px; 
+    font-size: 0.95rem; color: var(--text-color);
+    transition: all 0.2s ease; width: 100%;
+    box-sizing: border-box; font-family: inherit; outline: none;
 }
-
-/* Fokus-effekt */
-.form-group input:focus, 
-.form-group textarea:focus, 
-.form-group select:focus {
-    background-color: var(--content-bg);
-    border-color: var(--primary-color);
+.form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+    background-color: var(--content-bg); border-color: var(--primary-color);
     box-shadow: 0 0 0 4px var(--primary-light);
 }
 
-/* Dark Mode Inputs */
-[data-theme="dark"] .form-group input, 
-[data-theme="dark"] .form-group textarea, 
-[data-theme="dark"] .form-group select {
+[data-theme="dark"] .form-group input, [data-theme="dark"] .form-group textarea, [data-theme="dark"] .form-group select {
     background-color: #2c2c2e; color: #fff;
 }
-[data-theme="dark"] .form-group input:focus, 
-[data-theme="dark"] .form-group textarea:focus, 
-[data-theme="dark"] .form-group select:focus {
+[data-theme="dark"] .form-group input:focus, [data-theme="dark"] .form-group textarea:focus, [data-theme="dark"] .form-group select:focus {
     background-color: #1c1c1e;
 }
 
-/* Specifika Input-typer */
-.form-group input[type="date"], 
-.form-group input[type="time"] { position: relative; padding-right: 1rem; }
-input[type="date"]::-webkit-calendar-picker-indicator,
-input[type="time"]::-webkit-calendar-picker-indicator {
+.form-group input[type="date"], .form-group input[type="time"] { position: relative; padding-right: 1rem; }
+input[type="date"]::-webkit-calendar-picker-indicator, input[type="time"]::-webkit-calendar-picker-indicator {
     opacity: 0; cursor: pointer; position: absolute; right: 0; top: 0; width: 100%; height: 100%;
 }
 
-/* --- Custom Select (Dropdown med pil) --- */
 .select-wrapper-custom { position: relative; width: 100%; }
-.compact-select {
-    appearance: none; -webkit-appearance: none; padding-right: 2.5rem; cursor: pointer;
-}
+.compact-select { appearance: none; -webkit-appearance: none; padding-right: 2.5rem; cursor: pointer; }
 .dropdown-arrow {
     position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); pointer-events: none;
     color: var(--text-color-light); opacity: 0.7;
 }
 
-/* --- Specialfält: Kopieringsknappar --- */
 .form-group.form-group-copyable { position: relative; }
 .form-group-copyable input { padding-right: 3rem; }
 .form-group-copyable .copy-btn {
@@ -392,7 +366,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 }
 .form-group-copyable .copy-btn:hover { color: var(--primary-color); background-color: var(--bg-color); }
 
-/* --- Specialfält: Åtgärder (Ring/SMS) --- */
 .form-group.has-actions input { padding-right: 5.5rem; }
 .input-field-actions {
     position: absolute; right: 0.5rem; bottom: 0.5rem; display: flex; gap: 0.25rem;
@@ -400,7 +373,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 #jobModalCallBtn, #jobModalSmsBtn { display: none; padding: 0.4rem; }
 #jobModalCallBtn:hover { color: var(--success-color); background-color: rgba(48, 209, 88, 0.1); }
 
-/* --- Varning vid hög arbetskostnad (Flash) --- */
 @keyframes input-flash-warning {
     0%, 100% { background-color: var(--bg-color); border-color: transparent; }
     20% { background-color: #fef08a; border-color: #eab308; }
@@ -412,7 +384,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
    ========================================= */
 .view-controls { display: flex; gap: 1rem; margin-bottom: 2rem; }
 
-/* Behållaren */
 .search-wrapper {
     position: relative !important; display: flex; align-items: center;
     background: var(--content-bg); border: 1px solid var(--border-color);
@@ -423,14 +394,11 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     border-color: var(--primary-color); box-shadow: 0 0 0 3px var(--primary-light);
 }
 
-/* Förstoringsglaset */
 .search-wrapper .icon-search {
     position: absolute !important; left: 15px !important; top: 50% !important;
     transform: translateY(-50%) !important; width: 20px; height: 20px;
     color: var(--text-color-light); pointer-events: none; z-index: 10;
 }
-
-/* Textfältet */
 .search-wrapper input {
     background: transparent !important; border: none !important;
     padding-left: 50px !important; padding-right: 1rem !important;
@@ -438,7 +406,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     position: relative; z-index: 1;
 }
 
-/* Rensa-knapp (X) */
 .search-clear-btn {
     position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
     width: 24px; height: 24px; background: var(--border-color); color: var(--text-color-light);
@@ -448,7 +415,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 .search-clear-btn::before { content: '✕'; font-weight: bold; }
 .search-clear-btn:hover { background: var(--text-color); color: white; }
 
-/* Sorteringskontroller */
 .sort-controls { display: flex; gap: 0.5rem; flex-shrink: 0; }
 .custom-select-wrapper {
     position: relative; background: var(--content-bg);
@@ -479,29 +445,20 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 /* =========================================
    9. TABELLER & LISTOR (TIDSLINJE)
    ========================================= */
-
-/* Container */
 .table-container { 
     background-color: #ffffff; border: 1px solid var(--border-color);
     border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     overflow: hidden; margin-top: 1rem;
 }
 .table-wrapper { overflow-x: auto; }
+#jobbOversikt { width: 100%; border-collapse: collapse !important; margin: 0; font-size: 0.9rem; }
 
-/* Tabellstruktur */
-#jobbOversikt { 
-    width: 100%; border-collapse: collapse !important; margin: 0; font-size: 0.9rem;
-}
-
-/* Rubriker */
 #jobbOversikt thead { background-color: #f9fafb; border-bottom: 1px solid var(--border-color); }
 #jobbOversikt th {
     padding: 12px 16px; text-align: left; font-size: 0.75rem; 
     font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
     color: #6b7280; border: none;
 }
-
-/* Rader */
 #jobbOversikt tbody tr {
     background-color: #ffffff; border-bottom: 1px solid #e5e7eb;
     transition: background-color 0.15s ease; border-left: 3px solid transparent;
@@ -512,16 +469,13 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 }
 #jobbOversikt tbody tr:last-child { border-bottom: none; }
 
-/* Celler */
 #jobbOversikt td { padding: 12px 16px !important; vertical-align: middle; color: #1f2937; }
 #jobbOversikt td[data-label="Kund"] { font-weight: 600; color: #111827; }
 #jobbOversikt td[data-label="Datum"] { color: #4b5563; white-space: nowrap; }
 
-/* Högerställning */
 #jobbOversikt th:nth-child(5), #jobbOversikt td:nth-child(5), 
 #jobbOversikt th:nth-child(6), #jobbOversikt td:nth-child(6) { text-align: right; }
 
-/* Status Badges */
 .status-badge {
     display: inline-flex; align-items: center; justify-content: center;
     padding: 4px 10px; border-radius: 9999px;
@@ -534,18 +488,12 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 .status-faktureras { background-color: #f3e8ff; color: #7e22ce; }
 .status-avbokad { background-color: #fee2e2; color: #b91c1c; }
 
-/* Reg-skylt */
-.reg-plate {
-    box-shadow: none !important; border: 1px solid #d1d5db !important; height: 24px !important;
-}
+.reg-plate { box-shadow: none !important; border: 1px solid #d1d5db !important; height: 24px !important; }
 .reg-plate .reg-country { font-size: 0.65rem; padding: 0 4px !important; }
 .reg-plate .reg-number { font-size: 0.85rem !important; letter-spacing: 0.5px; }
 
-/* Åtgärdsknappar */
 .action-col { gap: 4px; }
-.action-col .icon-btn {
-    width: 30px; height: 30px; border-radius: 6px; color: #9ca3af; background: transparent;
-}
+.action-col .icon-btn { width: 30px; height: 30px; border-radius: 6px; color: #9ca3af; background: transparent; }
 #jobbOversikt tbody tr:hover .action-col .icon-btn { color: #6b7280; }
 .action-col .icon-btn:hover { background-color: #f3f4f6; color: var(--primary-color) !important; }
 .action-col .delete-btn:hover { background-color: #fee2e2; color: var(--danger-color) !important; }
@@ -595,31 +543,18 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 /* =========================================
    11. SPECIFIKA MODAL-STILAR
    ========================================= */
+#customerModal .modal-content, #carModal .modal-content, #statsModal .modal-content { max-width: 700px; }
 
-/* --- Breda Modaler (Kund, Bil, Stats) --- */
-#customerModal .modal-content,
-#carModal .modal-content,
-#statsModal .modal-content { 
-    max-width: 700px; 
-}
-
-/* Detail Header (Kund/Bil) */
 .detail-modal-header { align-items: flex-start; }
 .detail-modal-header-titles { display: flex; flex-direction: column; gap: 0.5rem; }
 .detail-modal-header h2 { font-size: 1.5rem; letter-spacing: -0.02em; }
-
-/* Badge för ägare/telefon */
 .owner-badge {
     display: inline-block; background-color: var(--bg-color);
     padding: 0.3rem 0.7rem; border-radius: 6px;
     font-size: 0.9rem; font-weight: 600; color: var(--text-color-light);
 }
 
-/* --- Teknisk Data (Kort inuti bilmodal) --- */
-.tech-specs-card {
-    background-color: var(--bg-color); border-radius: 12px;
-    padding: 1.25rem; margin-bottom: 1rem;
-}
+.tech-specs-card { background-color: var(--bg-color); border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; }
 .tech-specs-card h4 {
     margin: 0 0 1rem 0; font-size: 0.95rem; font-weight: 700;
     display: flex; align-items: center; gap: 0.5rem;
@@ -629,27 +564,13 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     list-style: none; padding: 0; margin: 0;
     grid-auto-flow: column; grid-template-rows: repeat(4, auto);
 }
-.tech-specs-card li {
-    display: flex; align-items: flex-start; font-size: 0.85rem; line-height: 1.4;
-}
-.tech-specs-card b, .tech-specs-card strong {
-    margin-right: 2px !important; display: inline-block;
-}
-.spec-icon-svg {
-    width: 20px; height: 20px; margin-right: 8px; flex-shrink: 0;
-    color: var(--text-color-light);
-}
-.brand-icon-svg {
-    width: 24px; height: 24px; margin-right: 1px; flex-shrink: 0; vertical-align: middle;
-}
+.tech-specs-card li { display: flex; align-items: flex-start; font-size: 0.85rem; line-height: 1.4; }
+.tech-specs-card b, .tech-specs-card strong { margin-right: 2px !important; display: inline-block; }
+.spec-icon-svg { width: 20px; height: 20px; margin-right: 8px; flex-shrink: 0; color: var(--text-color-light); }
+.brand-icon-svg { width: 24px; height: 24px; margin-right: 1px; flex-shrink: 0; vertical-align: middle; }
 
-/* --- Statistik Modal Layout --- */
-.chart-container {
-    position: relative; width: 100%; height: 300px; margin-bottom: 2rem;
-}
-.top-lists-container {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;
-}
+.chart-container { position: relative; width: 100%; height: 300px; margin-bottom: 2rem; }
+.top-lists-container { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
 .top-list {
     list-style: none; padding: 0; margin: 0;
     display: flex; flex-direction: column; gap: 0.5rem;
@@ -663,21 +584,14 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 .top-list .item-value { font-weight: 700; color: var(--success-color); }
 .top-list .item-value.no-profit { color: var(--text-color-light); }
 
-/* Responsivitet för modaler */
 @media (max-width: 600px) {
     .top-lists-container { grid-template-columns: 1fr; }
     .tech-specs-card ul { grid-template-columns: 1fr; grid-auto-flow: row; grid-template-rows: auto; }
-    .header-actions-desktop, .divider-vertical { display: none; }
-    #carModalHeader { padding: 1rem; }
-    .reg-title-row { gap: 6px; }
-    #carModalRegnr { font-size: 1.5rem; }
 }
 
 /* =========================================
    12. CHATT WIDGET (CORE UI)
    ========================================= */
-
-/* --- Huvudbehållare (Popup på Desktop) --- */
 .chat-widget-container {
     position: fixed; bottom: 100px; right: 30px;
     width: 400px; max-width: 90vw; height: 70vh; max-height: 800px; min-height: 400px;
@@ -691,7 +605,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     to { opacity: 1; transform: scale(1) translate(0, 0); }
 }
 
-/* --- Header --- */
 .chat-widget-header {
     background-color: var(--content-bg); padding: 0.5rem 1rem;
     display: flex; align-items: center; gap: 0.5rem;
@@ -701,8 +614,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     background: transparent; border: none; padding: 0.5rem; margin-left: -0.5rem;
     cursor: pointer; color: var(--text-color); display: flex; align-items: center; justify-content: center;
 }
-
-/* Header Sökfält & Knappar */
 .header-search-wrapper {
     flex-grow: 1; display: flex; align-items: center;
     background-color: var(--bg-color); border-radius: 20px;
@@ -730,7 +641,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 }
 .header-gallery-btn:hover { color: var(--primary-color); }
 
-/* --- Meddelandelista --- */
 .chat-messages {
     display: flex !important; flex-direction: column !important;
     justify-content: flex-start !important;
@@ -740,14 +650,12 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 .chat-messages > :first-child { margin-top: auto !important; }
 .empty-state-chat { text-align: center; color: var(--text-color-light); margin-top: 2rem; font-size: 0.9rem; font-style: italic; }
 
-/* --- Pratbubblor --- */
 .chat-bubble {
     padding: 0.8rem 1rem; max-width: 80%;
     font-size: 0.95rem; line-height: 1.4; position: relative;
     box-shadow: 0 1px 2px rgba(0,0,0,0.1); word-wrap: break-word;
     animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     margin-bottom: 2px;
-    /* Fix för långtryck */
     -webkit-user-select: none !important; user-select: none !important;
     -webkit-touch-callout: none !important; -webkit-tap-highlight-color: transparent !important;
 }
@@ -755,7 +663,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     from { opacity: 0; transform: scale(0.8) translateY(10px); }
     to { opacity: 1; transform: scale(1) translateY(0); }
 }
-
 .chat-bubble.me {
     align-self: flex-end; background-color: var(--primary-color); color: white;
     border-radius: 18px 18px 2px 18px;
@@ -771,7 +678,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     background-color: var(--warning-color); color: #000;
 }
 
-/* Tidsstämpel */
 .chat-time {
     font-size: 0.7rem; color: var(--text-color-light);
     margin-top: 6px !important; margin-bottom: 12px !important;
@@ -780,7 +686,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 .chat-time.me { align-self: flex-end; text-align: right; margin-right: 5px; }
 .chat-time.other, .chat-time.system { align-self: flex-start; text-align: left; margin-left: 5px; }
 
-/* Datum-separator */
 .chat-date-separator {
     display: flex !important; align-items: center !important; justify-content: center !important;
     width: 100% !important; margin: 1.5rem 0 1rem 0 !important;
@@ -792,7 +697,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     background-color: #e5e7eb !important; flex: 1 !important; margin: 0 1rem !important;
 }
 
-/* --- Input Area (Floating) --- */
 .chat-input-area.samsung-style {
     position: absolute; bottom: 0; left: 0; right: 0; z-index: 200;
     display: flex; align-items: flex-end; gap: 0.6rem;
@@ -806,7 +710,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     background-color: rgba(28, 28, 30, 0.85); border-top-color: rgba(255,255,255,0.1);
 }
 
-/* Textfältet (Pillret) */
 .chat-input-pill {
     flex-grow: 1; background-color: #f3f4f6 !important;
     border: 1px solid transparent !important; border-radius: 24px;
@@ -816,7 +719,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 .chat-input-pill:focus-within {
     background-color: #ffffff !important; box-shadow: 0 4px 15px rgba(0,0,0,0.08) !important;
 }
-
 #chatInput {
     flex-grow: 1; background: transparent !important; border: none !important;
     outline: none !important; font-size: 16px !important;
@@ -824,28 +726,20 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     min-width: 0 !important; height: 100% !important; color: var(--text-color);
 }
 #chatInput::placeholder { color: #9CA3AF; font-weight: 500; }
-/* Dölj X */
 #chatInput::-webkit-search-decoration, #chatInput::-webkit-search-cancel-button,
 #chatInput::-webkit-search-results-button, #chatInput::-webkit-search-results-decoration {
     -webkit-appearance: none; display: none !important;
 }
 
-/* Knappar i textfältet */
 .chat-inner-btn, #askAiBtn {
     width: 36px !important; height: 36px !important; padding: 0 !important;
     background: transparent !important; border: none !important; border-radius: 50% !important;
     display: flex !important; align-items: center !important; justify-content: center !important;
     transition: all 0.2s ease !important; flex-shrink: 0 !important;
 }
-.chat-inner-btn svg, #askAiBtn svg {
-    width: 22px !important; height: 22px !important; color: #65676b !important;
-}
+.chat-inner-btn svg, #askAiBtn svg { width: 22px !important; height: 22px !important; color: #65676b !important; }
 
-/* AI-Knappen (Vänster/Höger Logik) */
-#askAiBtn {
-    order: 100 !important; margin-left: auto !important; margin-right: 0 !important;
-}
-/* När man skriver: AI-knappen blir blå */
+#askAiBtn { order: 100 !important; margin-left: auto !important; margin-right: 0 !important; }
 #chatInput:not(:placeholder-shown) ~ #askAiBtn, #chatInput:focus ~ #askAiBtn {
     background: linear-gradient(135deg, #0066FF 0%, #0052cc 100%) !important;
     color: #ffffff !important; box-shadow: 0 2px 8px rgba(0, 102, 255, 0.3) !important;
@@ -855,18 +749,15 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     color: #ffffff !important; fill: #ffffff !important;
 }
 
-/* Behållare för Kamera/Plus */
 .inner-input-actions {
     display: flex !important; align-items: center !important; gap: 4px !important;
     margin-left: 8px !important; padding-left: 8px !important;
     border-left: 1px solid #e5e7eb !important;
 }
-/* Dölj Kamera/Plus vid skrivning */
 #chatInput:not(:placeholder-shown) ~ .inner-input-actions, #chatInput:focus ~ .inner-input-actions {
     display: none !important;
 }
 
-/* Skicka-knappen */
 .chat-action-btn.primary {
     width: 48px !important; height: 48px !important; border-radius: 50%;
     margin-left: 8px !important; flex-shrink: 0 !important;
@@ -882,16 +773,13 @@ input[type="time"]::-webkit-calendar-picker-indicator {
    13. REAKTIONSMENY (NY BREDARE DESIGN)
    ========================================= */
 .reaction-menu {
-    min-width: 320px !important; max-width: 95vw !important;
-    padding: 16px !important; border-radius: 20px !important;
-    background-color: #ffffff !important;
+    min-width: 320px !important; max-width: 95vw !important; padding: 16px !important;
+    border-radius: 20px !important; background-color: #ffffff !important;
     box-shadow: 0 10px 40px rgba(0,0,0,0.25) !important;
     border: 1px solid rgba(0,0,0,0.05) !important;
     display: flex !important; flex-direction: column !important; gap: 16px !important;
     z-index: 99999 !important;
 }
-
-/* Övre raden (Emojis) */
 .reaction-menu > div:first-child {
     display: flex !important; justify-content: space-between !important;
     width: 100% !important; padding: 0 8px !important;
@@ -901,14 +789,11 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     transition: transform 0.2s ease !important; line-height: 1 !important;
 }
 .reaction-option:active { transform: scale(1.4) !important; }
-
-/* Nedre raden (Grid) */
 .reaction-actions-row {
     display: grid !important; grid-template-columns: repeat(4, 1fr) !important;
     gap: 12px !important; width: 100% !important; padding-top: 16px !important;
     border-top: 1px solid #f0f0f0 !important; margin-top: 0 !important;
 }
-
 .action-item {
     display: flex !important; flex-direction: column !important;
     align-items: center !important; gap: 8px !important;
@@ -922,15 +807,11 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 .action-item .icon-sm { width: 22px !important; height: 22px !important; stroke-width: 2px !important; }
 .action-item.danger .icon-circle { background-color: #fef2f2 !important; color: #ef4444 !important; }
 .action-item.danger .icon-sm { color: #ef4444 !important; }
-
 .action-item span {
     font-size: 11px !important; font-weight: 600 !important; color: #6b7280 !important;
     text-align: center !important; white-space: nowrap !important;
-    overflow: hidden !important; text-overflow: ellipsis !important;
-    width: 100% !important; display: block !important;
+    overflow: hidden !important; text-overflow: ellipsis !important; display: block !important; width: 100% !important;
 }
-
-/* Badge på bubblan */
 .reaction-badge {
     position: absolute !important; bottom: -8px !important; right: -4px !important;
     background-color: #ffffff !important; border: 1px solid #e5e7eb !important;
@@ -949,7 +830,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     background-color: rgba(0, 0, 0, 0.5); z-index: 9; display: none; opacity: 0; transition: opacity 0.2s ease;
 }
 .chat-edit-overlay.show { display: block; opacity: 1; }
-
 .chat-edit-header {
     position: absolute; top: -45px; left: 0; right: 0; height: 45px;
     background-color: var(--content-bg); border-top: 1px solid var(--border-color);
@@ -966,9 +846,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 .chat-messages.gallery-mode .chat-bubble:not(.chat-bubble-image),
 .chat-messages.gallery-mode .chat-time,
 .chat-messages.gallery-mode .empty-state-chat,
-.chat-messages.gallery-mode .chat-date-separator {
-    display: none !important;
-}
+.chat-messages.gallery-mode .chat-date-separator { display: none !important; }
 .chat-messages.gallery-mode {
     display: grid !important; grid-template-columns: repeat(3, 1fr) !important;
     gap: 4px !important; padding: 4px !important; align-content: start !important;
