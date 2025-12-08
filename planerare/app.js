@@ -1241,10 +1241,12 @@
 			    // Starta/Ladda om chatten
 			    if (typeof initChat === 'function') initChat();
 			    
-			    setTimeout(() => {
-				    const chatList = document.getElementById('chatMessages');
-				    if(chatList) chatList.scrollTop = chatList.scrollHeight;
-				}, 100);
+			    // --- SCROLL FIX: Kör flera gånger för att motverka layout-shift ---
+			    forceChatScrollBottom();
+			    setTimeout(forceChatScrollBottom, 50);
+			    setTimeout(forceChatScrollBottom, 200);
+			    setTimeout(forceChatScrollBottom, 500); // En extra sen för säkerhets skull
+			    // ---------------------------------------
 			
 			    isModalOpen = false;
 			    updateScrollLock();
@@ -1559,25 +1561,6 @@
 			        }
 			    });
 			}
-
-			function updateMobileHeaderDate() {
-			    const dateEl = document.getElementById('mobileHeaderDate');
-			    if (!dateEl) return;
-			
-			    const now = new Date();
-			    // Veckodag (t.ex. "MÅN")
-			    let weekday = now.toLocaleDateString('sv-SE', { weekday: 'short' }).replace('.', '').toUpperCase();
-			    // Datum (t.ex. "5 DEC")
-			    let dayMonth = now.toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' }).replace('.', '').toUpperCase();
-			
-			    dateEl.innerHTML = `
-			        <span class="date-weekday">${weekday}</span>
-			        <span class="date-day">${dayMonth}</span>
-			    `;
-			}
-			
-			// Kör direkt vid start
-			updateMobileHeaderDate();
 
 			// --- NY FUNKTION: Notis-räknare ---
 			function initChatBadgeListener() {
@@ -2577,82 +2560,100 @@
 			
 			    // --- LYSSNARE (Firestore) ---
 			    const setupChatListener = (limit) => {
-				    if (chatUnsubscribe) chatUnsubscribe(); 
-				    const isLoadMore = limit > 50; 
-				    
-				    const isSameDay = (d1, d2) => {
-				        return d1.getFullYear() === d2.getFullYear() &&
-				               d1.getMonth() === d2.getMonth() &&
-				               d1.getDate() === d2.getDate();
-				    };
-				
-				    chatUnsubscribe = db.collection("notes")
-				        .orderBy("timestamp", "desc") 
-				        .limit(limit)                 
-				        .onSnapshot(snapshot => {
-				            
-				            const chatList = document.getElementById('chatMessages');
-				            if (!chatList) return;
-				
-				            // Spara scrollposition
-				            const previousScrollHeight = chatList.scrollHeight;
-				            const previousScrollTop = chatList.scrollTop;
-				
-				            const docs = [];
-				            snapshot.forEach(doc => docs.push({ id: doc.id, ...doc.data() }));
-				            docs.reverse(); 
-				
-				            // Töm och bygg om listan
-				            chatList.innerHTML = ''; 
-				            
-				            if (docs.length === 0) {
-				                chatList.innerHTML = '<div class="empty-state-chat"><p>Inga meddelanden än...</p></div>';
-				                return;
-				            }
-				
-				            let lastDate = null;
-				
-				            docs.forEach(data => {
-				                if (data.timestamp) {
-				                    const msgDate = new Date(data.timestamp);
-				                    if (!lastDate || !isSameDay(lastDate, msgDate)) {
-				                        const separator = document.createElement('div');
-				                        separator.className = 'chat-date-separator';
-				                        
-				                        const today = new Date();
-				                        const yesterday = new Date(); 
-				                        yesterday.setDate(yesterday.getDate() - 1);
-				                        
-				                        if (isSameDay(msgDate, today)) {
-				                            separator.textContent = 'Idag';
-				                        } else if (isSameDay(msgDate, yesterday)) {
-				                            separator.textContent = 'Igår';
-				                        } else {
-				                            let dateStr = msgDate.toLocaleDateString('sv-SE', { weekday: 'long', day: 'numeric', month: 'short' });
-				                            dateStr = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
-				                            separator.textContent = dateStr;
-				                        }
-				                        chatList.appendChild(separator);
-				                    }
-				                    lastDate = msgDate;
-				                }
-				
-				                // Rendera bubblan (utan komplex animation)
-				                renderChatBubble(data.id, data, chatList);
-				            });
-				
-				            // Hantera Scroll
-				            if (!isLoadMore) {
-				                // Vid första laddning eller nytt meddelande: scrolla till botten
-				                setTimeout(() => {
-				                    chatList.scrollTop = chatList.scrollHeight;
-				                }, 50);
-				            } else if (isFetchingOlderChat) {
-				                // Vid laddning av historik: behåll position
-				                chatList.scrollTop = chatList.scrollHeight - previousScrollHeight + previousScrollTop;
-				                isFetchingOlderChat = false; 
-				            }
-				        });
+			        if (chatUnsubscribe) chatUnsubscribe(); 
+			        const isLoadMore = limit > 50; 
+			        
+			        const isSameDay = (d1, d2) => {
+			            return d1.getFullYear() === d2.getFullYear() &&
+			                   d1.getMonth() === d2.getMonth() &&
+			                   d1.getDate() === d2.getDate();
+			        };
+			    
+			        chatUnsubscribe = db.collection("notes")
+			            .orderBy("timestamp", "desc") 
+			            .limit(limit)                 
+			            .onSnapshot(snapshot => {
+			                
+			                const threshold = 150; 
+			                const scrollBottom = chatList.scrollHeight - chatList.scrollTop - chatList.clientHeight;
+			                const wasAtBottom = scrollBottom <= threshold || chatList.childElementCount === 0;
+			                const previousScrollTop = chatList.scrollTop;
+			                const previousScrollHeight = chatList.scrollHeight;
+			    
+			                const docs = [];
+			                snapshot.forEach(doc => docs.push({ id: doc.id, ...doc.data() }));
+			                docs.reverse(); 
+			    
+			                chatList.innerHTML = ''; 
+			                
+			                if (docs.length === 0) {
+			                    chatList.innerHTML = '<div class="empty-state-chat"><p>Skriv en notis eller ta en bild...</p></div>';
+			                    return;
+			                }
+			    
+			                let lastDate = null;
+			    
+			                docs.forEach(data => {
+			                    if (data.timestamp) {
+			                        const msgDate = new Date(data.timestamp);
+			                        
+			                        if (!lastDate || !isSameDay(lastDate, msgDate)) {
+			                            const separator = document.createElement('div');
+			                            separator.className = 'chat-date-separator';
+			                            
+			                            const today = new Date();
+			                            const yesterday = new Date(); 
+			                            yesterday.setDate(yesterday.getDate() - 1);
+			                            
+			                            if (isSameDay(msgDate, today)) {
+			                                separator.textContent = 'Idag';
+			                            } else if (isSameDay(msgDate, yesterday)) {
+			                                separator.textContent = 'Igår';
+			                            } else {
+			                                let dateStr = msgDate.toLocaleDateString('sv-SE', { 
+			                                    weekday: 'long', 
+			                                    day: 'numeric', 
+			                                    month: 'short' 
+			                                });
+			                                dateStr = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
+			                                if (msgDate.getFullYear() !== today.getFullYear()) {
+			                                    dateStr += ` ${msgDate.getFullYear()}`;
+			                                }
+			                                separator.textContent = dateStr;
+			                            }
+			                            chatList.appendChild(separator);
+			                        }
+			                        lastDate = msgDate;
+			                    }
+			    
+			                    renderChatBubble(data.id, data, chatList);
+			                });
+
+			    
+			                if (searchInput && searchInput.value.trim() !== "") {
+			                    searchInput.dispatchEvent(new Event('input'));
+			                }
+			    
+			                const isSearching = searchInput && searchInput.value.trim() !== "";
+			                
+			                if (!isSearching) {
+			                    if (isLoadMore && isFetchingOlderChat) {
+			                        const newScrollHeight = chatList.scrollHeight;
+			                        chatList.scrollTop = newScrollHeight - previousScrollHeight + previousScrollTop;
+			                        isFetchingOlderChat = false; 
+			                    } else if (!isLoadMore) {
+			                        if (!chatList.classList.contains('gallery-mode')) {
+			                            if (wasAtBottom) {
+			                                setTimeout(() => {
+			                                    chatList.scrollTop = chatList.scrollHeight;
+			                                }, 50);
+			                            } else {
+			                                chatList.scrollTop = previousScrollTop; 
+			                            }
+			                        }
+			                    }
+			                }
+			            });
 			    };
 			
 			    setupChatListener(currentChatLimit);
@@ -3054,15 +3055,7 @@
 			
 			    time.innerHTML = `${displayTime}${platformIconHtml}`;
 			    if (data.isEdited) time.innerHTML += ` <span style="font-style:italic; opacity:0.7;">(redigerad)</span>`;
-
-				// Lägg till bas-klassen
-			    bubble.className = `chat-bubble ${msgType} ${isAi ? 'is-ai-message' : ''}`;
 			    
-			    // Lägg BARA till animations-klassen om animate är true
-			    if (animate) {
-			        bubble.classList.add('animate-in');
-			    }
-				
 			    container.appendChild(bubble);
 			    container.appendChild(time);
 			}
