@@ -5691,104 +5691,6 @@ CSS
         padding: 16px 12px !important; /* Lite mindre stoppning på sidorna */
     }
 
-    /* Ta bort den gamla ramen runt listan så den smälter in */
-    .job-history-container {
-        border: none !important;
-        background: transparent !important;
-        box-shadow: none !important;
-        padding: 0 !important;
-        margin-top: 0 !important;
-    }
-
-    /* 2. SÖKFÄLTET (Gör det vitt och tydligt) */
-    .search-wrapper.embedded-search {
-        background-color: #ffffff !important;
-        border: 1px solid #e5e7eb !important;
-        border-radius: 12px !important;
-        margin-bottom: 16px !important; /* Luft ner till korten */
-        box-shadow: 0 1px 2px rgba(0,0,0,0.03) !important;
-    }
-
-    /* 3. GÖR OM TABELL-RADER TILL "KORT" */
-    
-    /* Först, tvinga tabellen att bete sig som block (inte tabell) */
-    .detail-job-table, 
-    .detail-job-table tbody, 
-    .detail-job-table tr, 
-    .detail-job-table td {
-        display: block !important;
-        width: 100% !important;
-        box-sizing: border-box !important;
-    }
-    
-    /* Dölj tabell-huvudet (Datum, Info, Status...) */
-    .detail-job-table thead {
-        display: none !important;
-    }
-
-    /* Designa själva KORTET (Raden) */
-    .detail-job-table tbody tr {
-        background-color: #ffffff !important; /* Vitt kort */
-        border: 1px solid #e5e7eb !important; /* Tunn ram */
-        border-radius: 12px !important;       /* Runda hörn */
-        margin-bottom: 12px !important;       /* Mellanrum mellan korten */
-        padding: 16px !important;             /* Luft inuti kortet */
-        box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important; /* Liten skugga */
-        position: relative !important;
-    }
-
-    /* Ta bort fula linjer inuti kortet */
-    .detail-job-table td {
-        border: none !important;
-        padding: 4px 0 !important;
-        text-align: left !important;
-    }
-
-    /* --- STYLA INNEHÅLLET I KORTET --- */
-
-    /* Datum (Gör det litet och grått längst upp) */
-    .detail-job-table td[data-label="Datum"] {
-        font-size: 0.8rem !important;
-        color: #6b7280 !important;
-        font-weight: 600 !important;
-        text-transform: uppercase;
-        margin-bottom: 4px !important;
-        border-bottom: 1px solid #f3f4f6 !important; /* Avdelare */
-        padding-bottom: 8px !important;
-    }
-
-    /* Info (Namn/Regnr - Gör det stort och tydligt) */
-    .detail-job-table td[data-label="Info"] {
-        font-size: 1.1rem !important;
-        font-weight: 800 !important;
-        color: #111827 !important;
-        padding: 8px 0 !important;
-    }
-    
-    /* Beskrivningstexten (Ligger inuti Info-cellen) */
-    .detail-job-table .job-subline-comment {
-        display: block !important;
-        font-size: 0.9rem !important;
-        font-weight: 400 !important;
-        color: #4b5563 !important;
-        margin-top: 4px !important;
-        line-height: 1.4 !important;
-    }
-
-    /* Status & Vinst (Lägg dem bredvid varandra längst ner) */
-    .detail-job-table td[data-label="Status"],
-    .detail-job-table td[data-label="Vinst"] {
-        display: inline-block !important;
-        width: auto !important;
-        margin-right: 12px !important;
-        font-size: 0.9rem !important;
-        margin-top: 8px !important;
-    }
-    
-    /* Etiketter (Visa "Status:" och "Vinst:" för tydlighet) */
-    .detail-job-table td[data-label="Status"]::before { content: "Status: "; color: #9ca3af; font-size: 0.8rem; }
-    .detail-job-table td[data-label="Vinst"]::before { content: "Vinst: "; color: #9ca3af; font-size: 0.8rem; }
-
     /* 5. KNAPPARNA LÄNGST NER (Fixad position) */
     .sticky-link-buttons {
         position: sticky !important;
@@ -5833,6 +5735,7 @@ CSS
 
 
 /* --- SLUT PÅ STYLE.CSS --- */
+
 
 
 
