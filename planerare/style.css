@@ -5453,36 +5453,30 @@ html {
         display: none !important; 
     }
 
-   /* 3. Action Bar (Knapparna från Bild 1) */
-.action-col {
-    display: flex !important;
-    justify-content: space-around !important;
-    padding: 10px 0 !important;
-    background-color: #ffffff !important; /* Vit bakgrund */
-    border-top: 1px solid #f3f4f6 !important;
-    margin-top: 0 !important;
 }
 
-.clean-icon-btn {
-    background: transparent !important;
-    border: none !important;
-    padding: 8px !important;
-    color: #9ca3af !important; /* Grå ikoner */
-    transition: all 0.2s !important;
-    display: flex !important;
-    align-items: center;
-    justify-content: center;
-}
+/* --- FIX FÖR GIGANTISKA KNAPPAR I MOBILVY --- */
+@media (max-width: 768px) {
+    /* Tvinga ikonerna (SVG) inuti jobbkorten att ha en fast, liten storlek */
+    .mobile-job-card .action-col .icon-btn svg {
+        width: 24px !important;
+        height: 24px !important;
+        min-width: 24px !important; /* Förhindra att de kollapsar */
+        stroke-width: 1.5px !important; /* Gör linjerna lite snyggare */
+    }
 
-.clean-icon-btn:active { color: #111 !important; transform: scale(0.95) !important; }
-.clean-icon-btn svg { width: 22px !important; height: 22px !important; stroke-width: 2px !important; }
-
-/* Aktiv kommentar */
-.clean-icon-btn.has-comment { color: #111 !important; }
+    /* Justera själva knapp-behållaren */
+    .mobile-job-card .action-col .icon-btn {
+        padding: 10px !important; /* Lagom klickyta */
+        height: auto !important;
+        /* Behåll flex: 1 om du vill att knapparna ska fylla bredden jämnt,
+           men nu kommer ikonen inuti vara liten. */
+    }
 }
 
 
 /* --- SLUT PÅ STYLE.CSS --- */
+
 
 
 
