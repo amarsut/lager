@@ -24,7 +24,7 @@
     --text-color-light: #6B7280;
     --border-color: #E5E7EB;
 
-    /* Mått */
+    /* Layout */
     --header-height: 70px;
     --mobile-nav-height: 65px;
     --border-radius: 12px;
@@ -35,6 +35,7 @@
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
 }
 
+/* Dark Mode Stöd (Om din app.js aktiverar det) */
 [data-theme="dark"] {
     --bg-color: #111113;
     --content-bg: #1c1c1e;
@@ -47,7 +48,7 @@
 }
 
 /* =========================================
-   2. GLOBAL RESET & BASE
+   2. GLOBAL RESET & BAS
    ========================================= */
 *, *::before, *::after { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
@@ -57,13 +58,27 @@ body {
     background-color: var(--bg-color);
     color: var(--text-color);
     height: 100vh;
-    overflow: hidden; /* Förhindra dubbla scrollbars */
+    overflow: hidden; /* App-känsla, förhindrar dubbla scrollbars */
     background-image: radial-gradient(rgba(0, 0, 0, 0.04) 1.5px, transparent 1.5px);
     background-size: 24px 24px;
     background-attachment: fixed;
 }
 
-/* Scrollbar */
+/* Lås scroll på body (när modal är öppen) */
+body.body-scroll-lock { overflow: hidden !important; }
+
+/* --- VIKTIGT: IKON-FIXEN --- */
+/* Detta stoppar ikonerna från att bli gigantiska */
+svg { 
+    pointer-events: none; 
+    width: 20px; 
+    height: 20px; 
+    flex-shrink: 0; 
+}
+.icon-sm { width: 16px; height: 16px; }
+.icon-lg { width: 48px; height: 48px; opacity: 0.5; }
+
+/* Scrollbar snyggare */
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -73,13 +88,7 @@ body {
 .text-right { text-align: right; }
 .money-related { font-variant-numeric: tabular-nums; letter-spacing: -0.5px; }
 
-/* --- IKONER (BAS) --- */
-svg { pointer-events: none; }
-.icon, .nav-icon { width: 20px; height: 20px; flex-shrink: 0; }
-.icon-sm { width: 16px; height: 16px; flex-shrink: 0; }
-.icon-lg { width: 48px; height: 48px; flex-shrink: 0; opacity: 0.5; }
-
-/* Knapp-bas */
+/* Knappar */
 .button {
     padding: 0.6rem 1rem; border-radius: 8px; border: none; font-weight: 600; font-size: 0.9rem;
     cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
@@ -90,7 +99,7 @@ svg { pointer-events: none; }
 .button.secondary { background: var(--content-bg); border: 1px solid var(--border-color); color: var(--text-color); }
 .button.secondary:hover { background: var(--bg-color-hover); }
 
-/* Icon Button (Rund) */
+/* Runda ikon-knappar */
 .icon-btn {
     width: 36px; height: 36px; border-radius: 50%; border: none; background: transparent;
     color: var(--text-color-light); cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
@@ -109,12 +118,12 @@ svg { pointer-events: none; }
     display: flex; flex-direction: column; padding: 24px 16px; flex-shrink: 0; z-index: 50;
 }
 
-.sidebar-header { margin-bottom: 20px; padding-left: 12px; display: flex; align-items: center; gap: 12px; font-weight: 700; font-size: 1.1rem; }
+.sidebar-header { margin-bottom: 20px; padding-left: 12px; display: flex; align-items: center; gap: 12px; }
+.app-logo-modern { font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; gap: 10px; }
 .logo-icon-box {
     width: 36px; height: 36px; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
     border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white;
 }
-.logo-icon-box svg { width: 20px; height: 20px; }
 
 .sidebar-nav { display: flex; flex-direction: column; gap: 4px; flex: 1; }
 .nav-link {
@@ -128,7 +137,7 @@ svg { pointer-events: none; }
 .sidebar-footer { margin-top: auto; padding-top: 16px; border-top: 1px solid var(--border-color); }
 .user-profile-card { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 8px; }
 .user-profile-card:hover { background: var(--bg-color-hover); }
-.sidebar-avatar { width: 36px; height: 36px; border-radius: 50%; }
+.sidebar-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }
 .user-info { display: flex; flex-direction: column; font-size: 0.85rem; overflow: hidden; }
 .user-name { font-weight: 600; white-space: nowrap; }
 .logout-icon-btn { margin-left: auto; background: none; border: none; cursor: pointer; color: #999; }
@@ -159,12 +168,18 @@ svg { pointer-events: none; }
 }
 #fabAddJob:hover { background-color: var(--primary-hover); transform: translateY(-1px); }
 
+/* Badge för notiser i headern */
+.header-badge {
+    position: absolute; top: -2px; right: -2px; background: var(--danger-color); color: white;
+    width: 16px; height: 16px; border-radius: 50%; font-size: 10px; display: flex; align-items: center; justify-content: center;
+}
+
 /* App Main (Scrollbar yta) */
 .app-main { flex: 1; overflow-y: auto; padding: 30px; background-color: var(--bg-color); }
 .main-content { max-width: 1200px; margin: 0 auto; min-height: 101%; padding-bottom: 100px; }
 
 /* =========================================
-   4. STATISTIK KORT (DASHBOARD)
+   4. STATISTIK KORT
    ========================================= */
 .stat-bar { display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; margin-bottom: 30px; }
 
@@ -190,7 +205,7 @@ svg { pointer-events: none; }
 .stat-card::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 4px; background: currentColor; opacity: 0.3; border-radius: 0 0 12px 12px; }
 
 /* =========================================
-   5. TABELLER (DESKTOP)
+   5. TABELLER & LISTOR (Tidslinje)
    ========================================= */
 .table-container { background: var(--content-bg); border-radius: 12px; border: 1px solid var(--border-color); overflow: hidden; box-shadow: var(--shadow-sm); }
 table { width: 100%; border-collapse: collapse; }
@@ -200,13 +215,14 @@ td { padding: 15px 20px; border-bottom: 1px solid var(--border-color); font-size
 tr:last-child td { border-bottom: none; }
 tr:hover { background-color: var(--bg-color-hover); }
 
-/* Badges & Taggar */
+/* Status Badges */
 .status-badge { padding: 4px 12px; border-radius: 99px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; display: inline-flex; }
 .status-bokad { background: #e0f2fe; color: #0369a1; }
 .status-klar { background: #dcfce7; color: #16a34a; }
 .status-offererad { background: #f3f4f6; color: #4b5563; }
 .status-faktureras { background: #f3e8ff; color: #7e22ce; }
 
+/* Reg-skylt */
 .reg-plate {
     border: 1px solid #d1d5db; border-radius: 4px; height: 24px; font-family: monospace; font-weight: 700;
     background: white; display: inline-flex; align-items: center; overflow: hidden; cursor: pointer;
@@ -214,14 +230,18 @@ tr:hover { background-color: var(--bg-color-hover); }
 .reg-country { background: #0052cc; color: white; padding: 0 4px; font-size: 0.65rem; height: 100%; display: flex; align-items: center; }
 .reg-number { padding: 0 6px; font-size: 0.85rem; color: #111; letter-spacing: 0.5px; }
 
-.action-col { text-align: right; display: flex; justify-content: flex-end; gap: 4px; }
+/* Prio Flagga */
+.active-prio { color: var(--danger-color); }
+.prio-row { background-color: rgba(255, 69, 58, 0.05); }
 
-/* Link-buttons (Kundnamn) */
+/* Link Buttons (Kundnamn) */
 .link-btn { background: none; border: none; font-weight: 600; cursor: pointer; color: var(--text-color); display: inline-flex; align-items: center; gap: 6px; padding: 0; }
 .link-btn:hover { color: var(--primary-color); text-decoration: underline; }
 
+.action-col { text-align: right; display: flex; justify-content: flex-end; gap: 4px; }
+
 /* =========================================
-   6. MODALER (GENERISKT)
+   6. MODALER (Generellt)
    ========================================= */
 .modal-backdrop {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -240,10 +260,12 @@ tr:hover { background-color: var(--bg-color-hover); }
 
 .modal-header { padding: 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
 .modal-header h2 { margin: 0; font-size: 1.25rem; font-weight: 700; }
+.modal-close-btn { background: none; border: none; cursor: pointer; color: #999; font-size: 1.2rem; }
+
 .modal-body { padding: 20px; overflow-y: auto; flex: 1; }
 .modal-actions { padding: 20px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 10px; background: var(--bg-color-hover); border-radius: 0 0 16px 16px; }
 
-/* Formulär */
+/* Formulärstilar */
 .form-group { margin-bottom: 1rem; }
 .form-group label { display: block; font-weight: 600; margin-bottom: 0.5rem; font-size: 0.85rem; color: var(--text-color-light); }
 .form-group input, .form-group select, .form-group textarea {
@@ -253,8 +275,16 @@ tr:hover { background-color: var(--bg-color-hover); }
 .form-group input:focus { background-color: var(--content-bg); border-color: var(--primary-color); box-shadow: 0 0 0 3px var(--primary-light); }
 .form-group-split { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
 
+/* Accordion (Mer uppgifter) */
+.accordion-header {
+    width: 100%; background: var(--bg-color); padding: 10px; border: 1px solid var(--border-color);
+    border-radius: 8px; text-align: left; cursor: pointer; display: flex; justify-content: space-between; align-items: center;
+}
+.accordion-content { display: none; padding-top: 10px; }
+.accordion-content.show { display: block; }
+
 /* =========================================
-   7. CHATT WIDGET (KOMPLETT)
+   7. CHATT WIDGET (Återställd)
    ========================================= */
 .chat-widget-container {
     display: none; position: fixed; bottom: 100px; right: 30px;
@@ -262,9 +292,7 @@ tr:hover { background-color: var(--bg-color-hover); }
     background: var(--content-bg); border-radius: 20px;
     box-shadow: 0 10px 40px rgba(0,0,0,0.15), 0 0 0 1px var(--border-color);
     z-index: 1500; flex-direction: column; overflow: hidden;
-    transform-origin: bottom right; animation: popUp 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
-@keyframes popUp { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
 
 /* Chat Header */
 .chat-widget-header {
@@ -276,7 +304,9 @@ tr:hover { background-color: var(--bg-color-hover); }
     display: flex; align-items: center; padding: 0 12px; transition: all 0.2s;
 }
 .header-search-wrapper input { border: none; background: transparent; outline: none; flex: 1; font-size: 0.9rem; }
-.header-gallery-btn, #toggleAiFilter, #toggleChatGallery {
+
+/* Galleri & AI-knappar */
+.header-gallery-btn, #toggleAiFilter {
     width: 36px; height: 36px; border: none; background: transparent;
     display: flex; align-items: center; justify-content: center; cursor: pointer;
     color: var(--text-color-light); border-radius: 50%;
@@ -290,13 +320,17 @@ tr:hover { background-color: var(--bg-color-hover); }
 /* Bubblor */
 .chat-bubble {
     padding: 10px 14px; max-width: 80%; border-radius: 18px; font-size: 0.95rem; line-height: 1.4; position: relative;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05); margin-bottom: 2px;
 }
 .chat-bubble.me { align-self: flex-end; background: var(--primary-color); color: white; border-bottom-right-radius: 2px; }
 .chat-bubble.other, .chat-bubble.system { align-self: flex-start; background: #E5E5EA; color: black; border-bottom-left-radius: 2px; }
-.chat-bubble.chat-bubble-image { background: transparent !important; padding: 0 !important; box-shadow: none !important; }
-.chat-bubble-image img { border-radius: 12px; max-width: 100%; height: auto; box-shadow: var(--shadow-md); cursor: pointer; }
 
+/* AI Meddelande (Formatering) */
+.is-ai-message { background-color: #f0f9ff !important; color: #1e293b !important; border: 1px solid #e0f2fe; }
+.chat-text-content b { font-weight: 700; display: block; margin-top: 4px; }
+.chat-text-content ul { padding-left: 15px; margin: 4px 0; }
+
+/* Tidsstämpel */
 .chat-time { font-size: 0.7rem; color: #999; margin: 2px 0 10px 0; padding: 0 4px; }
 .chat-time.me { text-align: right; }
 
@@ -320,20 +354,28 @@ tr:hover { background-color: var(--bg-color-hover); }
 }
 
 /* =========================================
-   8. SPECIFIKA MODALER (INSTÄLLNINGAR M.M)
+   8. SPECIFIKA MODALER (Dina funktioner)
    ========================================= */
+
+/* Inställningar */
 .settings-section { padding-bottom: 20px; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); }
 .section-label { font-size: 0.8rem; text-transform: uppercase; font-weight: 700; color: #999; margin-bottom: 10px; display: block; }
-
 .settings-radio-group { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
 .settings-radio-group label {
     display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px;
     border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9rem;
 }
+.settings-radio-group input[type="radio"] { display: none; }
 .settings-radio-group input:checked + label { background: #eff6ff; border-color: var(--primary-color); color: var(--primary-color); }
 
-/* Detalj-listor (Historik i modal) */
+/* Teknisk Data (Kort i Bilmodal) */
+.tech-specs-card { background: var(--bg-color); padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+.tech-specs-card ul { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; list-style: none; padding: 0; }
+.tech-specs-card li { font-size: 0.85rem; display: flex; align-items: center; gap: 6px; }
+
+/* Jobb Historik i Modaler */
 .job-history-container { border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; margin-top: 10px; }
+.detail-job-list { list-style: none; padding: 0; margin: 0; }
 .detail-job-list li {
     padding: 12px 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; cursor: pointer;
 }
@@ -341,13 +383,8 @@ tr:hover { background-color: var(--bg-color-hover); }
 .detail-job-list .job-date { font-weight: 600; }
 .detail-job-list .job-profit { font-weight: 700; }
 
-/* Teknisk Data (Kort) */
-.tech-specs-card { background: var(--bg-color); padding: 15px; border-radius: 8px; margin-bottom: 15px; }
-.tech-specs-card ul { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; list-style: none; padding: 0; }
-.tech-specs-card li { font-size: 0.85rem; display: flex; align-items: center; gap: 6px; }
-
 /* =========================================
-   9. MOBILANPASSNING (VÄSENTLIGT)
+   9. MOBILANPASSNING
    ========================================= */
 .mobile-nav { display: none; }
 .mobile-header-content { display: none; }
@@ -376,13 +413,13 @@ tr:hover { background-color: var(--bg-color-hover); }
     .date-day { font-weight: 800; font-size: 1rem; color: var(--text-color); }
     .date-weekday { font-size: 0.7rem; font-weight: 600; color: #999; text-transform: uppercase; }
 
-    /* STATISTIK MOBIL */
+    /* STATISTIK MOBIL (2 kolumner) */
     .stat-bar { grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
     .stat-card { padding: 15px; min-height: 80px; }
     .stat-bar > :last-child { grid-column: 1 / -1; flex-direction: row; align-items: center; min-height: 60px; }
     .stat-card-value { font-size: 1.8rem; margin-top: 5px; }
 
-    /* JOBB-LISTA (KORT) */
+    /* JOBB-LISTA (KORT istället för tabell) */
     #mobileJobList { display: flex; flex-direction: column; gap: 16px; }
     .mobile-day-group { margin-bottom: 10px; }
     .mobile-date-header { font-size: 0.9rem; font-weight: 700; color: #666; margin: 0 0 8px 4px; text-transform: uppercase; }
@@ -406,7 +443,7 @@ tr:hover { background-color: var(--bg-color-hover); }
         background: var(--bg-color-hover); border-top: 1px solid var(--border-color);
         padding: 8px; display: flex; justify-content: space-around;
     }
-    .action-item { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #888; }
+    .action-item { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #888; background: none; border: none;}
     .action-item:active { background: #ddd; color: var(--primary-color); }
 
     /* BOTTENMENY */
@@ -435,13 +472,13 @@ tr:hover { background-color: var(--bg-color-hover); }
     .modal-backdrop { padding: 0; }
     
     /* MOBIL SÖK */
-    #mobileSearchModal { background: var(--bg-color); }
+    #mobileSearchModal { background: var(--bg-color); position: fixed; top:0; left:0; width:100%; height:100%; z-index: 2000; display: none; flex-direction: column;}
     .mobile-search-header { background: white; padding: 12px; display: flex; align-items: center; gap: 10px; }
     .mobile-wrapper { flex: 1; height: 40px; background: var(--bg-color); border-radius: 20px; display: flex; align-items: center; padding: 0 12px; }
 }
 
 /* =========================================
-   10. ÖVRIGA ELEMENT (Toast, Offline, Etc)
+   10. ÖVRIGA ELEMENT
    ========================================= */
 .toast {
     position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(20px);
@@ -450,14 +487,6 @@ tr:hover { background-color: var(--bg-color-hover); }
 }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-.offline-dot {
-    width: 10px; height: 10px; background: var(--danger-color); border-radius: 50%;
-    position: absolute; top: 25px; right: 20px; display: none; animation: pulse 2s infinite;
-}
-body.offline-mode .offline-dot { display: block; }
-@keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
-
-/* Context Menu (Högerklick) */
 #contextMenu {
     position: absolute; background: white; border: 1px solid var(--border-color);
     box-shadow: var(--shadow-lg); border-radius: 8px; z-index: 1200; display: none; min-width: 180px;
