@@ -73,11 +73,6 @@
    ========================================= */
 
 @media (max-width: 768px) {
-    
-    /* 1. Dölj den stora sidomenyn */
-    .sidebar {
-        display: none !important;
-    }
 
     /* 2. Justera huvudytan så den tar hela bredden */
     .main-content-wrapper {
@@ -126,6 +121,11 @@
     flex-shrink: 0;
     z-index: 50;
     padding: 24px 16px; /* Mer luft runt om */
+}
+
+[data-theme="dark"] .sidebar {
+    background-color: #1c1c1e;
+    border-color: #333;
 }
 
 /* --- Header / Logotyp --- */
@@ -227,10 +227,6 @@
 }
 
 /* Dark Mode Justeringar */
-[data-theme="dark"] .sidebar {
-    background-color: #1c1c1e;
-    border-color: #2c2c2e;
-}
 [data-theme="dark"] .app-logo-modern { color: #fff; }
 [data-theme="dark"] .nav-link { color: #9ca3af; }
 [data-theme="dark"] .nav-link.active {
@@ -559,10 +555,6 @@
 }
 
 /* Dark Mode justeringar för Sidebar */
-[data-theme="dark"] .sidebar {
-    background-color: #1c1c1e;
-    border-color: #333;
-}
 [data-theme="dark"] .nav-link.active {
     background-color: rgba(10, 132, 255, 0.15);
 }
@@ -4317,7 +4309,6 @@ html {
 @media (max-width: 768px) {
     
     /* 1. GRUNDLÄGGANDE LAYOUT & FIXAR */
-    .sidebar { display: none !important; }
     .main-content-wrapper { width: 100% !important; margin: 0 !important; }
     .main-content { padding: 1rem !important; padding-bottom: 90px !important; }
     
@@ -5649,6 +5640,9 @@ html {
         padding: 0 16px !important;
         height: 65px !important;
         background-color: #ffffff !important;
+    }
+   .sidebar {
+        display: none !important;
     }
 }
 
