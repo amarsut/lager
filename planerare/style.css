@@ -4530,11 +4530,143 @@ html {
 
 
 
+/* ==============================================
+   FIXAR FÖR CHATT-DESIGN (BASERAT PÅ BILD)
+   ============================================== */
 
+/* --- 1. HEADER KNAPPAR (Gör dem större på mobil) --- */
+@media (max-width: 768px) {
+    /* Gör ytan större för fingrarna */
+    .header-gallery-btn,
+    #toggleAiFilter {
+        width: 48px !important;
+        height: 48px !important;
+        padding: 0 !important;
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        background-color: transparent !important;
+        border: none !important;
+    }
+
+    /* Gör själva ikonerna större */
+    .header-gallery-btn svg,
+    #toggleAiFilter svg {
+        width: 24px !important;
+        height: 24px !important;
+        stroke-width: 1.8px !important;
+        color: var(--text-color-light);
+    }
+    
+    /* Ta bort eventuella linjer/borders mellan dem */
+    .header-gallery-btn {
+        border-left: none !important;
+        margin-left: 0 !important;
+    }
+}
+
+/* --- 2. & 4. TEXTFÄLTET (Snyggare input & ta bort X) --- */
+
+/* Ta bort den blå ramen runt själva input-texten */
+#chatInput {
+    outline: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    height: 100% !important;
+    min-height: 40px;
+}
+
+/* Ta bort det inbyggda "X:et" i sökfält på iPhone/Chrome */
+input[type="search"]::-webkit-search-decoration,
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-results-button,
+input[type="search"]::-webkit-search-results-decoration {
+    -webkit-appearance: none;
+    display: none !important;
+}
+
+/* Styla "Pillret" (Behållaren) istället för input-fältet */
+.chat-input-pill {
+    /* Gör den ljusgrå som på bilden, men utan inre linjer */
+    background-color: #F3F4F6 !important; 
+    border: 1px solid transparent !important;
+    box-shadow: none !important;
+    padding: 4px 16px !important; /* Luft inuti */
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Mellanrum mellan text och knapp */
+}
+
+/* När man klickar i fältet: Ge pillret en snygg ram istället för blå glöd */
+.chat-input-pill:focus-within {
+    background-color: #fff !important;
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 0 2px rgba(0, 102, 255, 0.1) !important;
+}
+
+/* --- AI KNAPPENS POSITION VID SKRIVNING --- */
+
+/* När JS lägger på .typing-mode (när du skriver): */
+.chat-input-pill.typing-mode {
+    padding-right: 8px !important;
+}
+
+/* 1. Göm de andra ikonerna (Gem, Kamera) */
+.chat-input-pill.typing-mode .inner-input-actions {
+    display: none !important;
+}
+
+/* 2. Flytta AI-knappen till höger */
+.chat-input-pill.typing-mode #askAiBtn {
+    /* "margin-left: auto" knuffar den så långt till höger det går */
+    margin-left: auto !important; 
+    margin-right: 0 !important;
+    order: 10 !important; /* Se till att den ligger sist visuellt */
+    
+    /* Gör den aktiv (blå) när man skriver */
+    background-color: var(--primary-color) !important;
+    color: white !important;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2) !important;
+}
+
+/* Normalt läge för AI-knappen (när man inte skriver) */
+#askAiBtn {
+    width: 32px !important;
+    height: 32px !important;
+    padding: 6px !important;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+/* --- 3. SKICKA-KNAPPEN (Fixa att den inte fungerar) --- */
+
+.chat-action-btn.primary {
+    /* Detta är oftast felet - att den ligger "under" något osynligt */
+    position: relative !important;
+    z-index: 100 !important; 
+    pointer-events: auto !important; /* Tvinga den att vara klickbar */
+    cursor: pointer !important;
+    
+    /* Storlek från bilden */
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important; /* Så den inte kläms ihop */
+    border-radius: 50% !important;
+    margin-left: 8px !important;
+}
+
+/* Se till att input-raden inte har "pointer-events: none" */
+.chat-input-area {
+    pointer-events: auto !important;
+}
 
 
 
 /* --- SLUT PÅ STYLE.CSS --- */
+
 
 
 
