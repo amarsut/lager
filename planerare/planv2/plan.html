@@ -1,1 +1,138 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arbetsorder Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
 
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="logo-area">
+                <button class="menu-btn"><i class="fa-solid fa-chevron-up"></i> Arbetsorder</button>
+            </div>
+            
+            <nav class="nav-links">
+                <a href="#" class="active"><i class="fa-solid fa-house"></i> Översikt</a>
+                <a href="#"><i class="fa-regular fa-calendar"></i> Kalender</a>
+                <a href="#"><i class="fa-solid fa-list-check"></i> Kanban</a>
+                <a href="#"><i class="fa-regular fa-user"></i> Kunder</a>
+                <a href="#"><i class="fa-solid fa-box-open"></i> Lager</a>
+                <a href="#"><i class="fa-solid fa-gear"></i> Inställningar</a>
+                <a href="#"><i class="fa-regular fa-credit-card"></i> Mekaniker</a>
+            </nav>
+
+            <div class="user-profile">
+                <div class="avatar">AM</div>
+                <div class="user-info">
+                    <span class="name">Amar.sut</span>
+                    <span class="status">Inloggad</span>
+                </div>
+                <i class="fa-solid fa-arrow-right-from-bracket logout-icon"></i>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            
+            <header class="top-bar">
+                <div class="search-container">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="searchInput" placeholder="Sök regnr, kund...">
+                </div>
+                <div class="actions">
+                    <button class="icon-btn"><i class="fa-regular fa-eye"></i></button>
+                    <button class="primary-btn" onclick="openJobModal()">+ Nytt Jobb</button>
+                </div>
+            </header>
+
+            <section class="stats-grid">
+                <div class="card stat-card border-blue">
+                    <div class="card-title"><i class="fa-solid fa-inbox"></i> KOMMANDE</div>
+                    <div class="card-value color-blue">7</div>
+                </div>
+                <div class="card stat-card border-purple">
+                    <div class="card-title"><i class="fa-regular fa-clipboard"></i> FAKTURERING</div>
+                    <div class="card-value color-purple">1</div>
+                </div>
+                <div class="card stat-card border-green">
+                    <div class="card-title"><i class="fa-regular fa-circle-check"></i> FÄRDIGA JOBB</div>
+                    <div class="card-value color-green">56</div>
+                </div>
+                <div class="card stat-card border-grey">
+                    <div class="card-title"><i class="fa-solid fa-bullseye"></i> OFFERERADE</div>
+                    <div class="card-value color-grey">2</div>
+                </div>
+                <div class="card stat-card border-dark">
+                    <div class="card-title"><i class="fa-solid fa-bars"></i> ALLA JOBB</div>
+                    <div class="card-value color-dark">69</div>
+                </div>
+            </section>
+
+            <section class="table-container card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>STATUS</th>
+                            <th>DATUM</th>
+                            <th>KUND</th>
+                            <th>REG.NR</th>
+                            <th style="text-align: right;">ÅTGÄRDER</th>
+                        </tr>
+                    </thead>
+                    <tbody id="jobTableBody">
+                        </tbody>
+                </table>
+            </section>
+        </main>
+    </div>
+
+    <div class="chat-widget">
+        <button class="chat-fab" onclick="toggleChat()">
+            <i class="fa-regular fa-comments"></i>
+            <span class="badge">12</span>
+        </button>
+        
+        <div class="chat-window" id="chatWindow">
+            <div class="chat-header">
+                <span>Mina Noteringar</span>
+                <i class="fa-solid fa-xmark" onclick="toggleChat()"></i>
+            </div>
+            <div class="chat-body" id="chatBody">
+                <div class="message self">Kom ihåg att beställa olja till BMWn.</div>
+            </div>
+            <div class="chat-footer">
+                <input type="text" id="chatInput" placeholder="Skriv en notis...">
+                <button onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <div id="jobModal" class="modal">
+        <div class="modal-content">
+            <h2 id="modalTitle">Nytt Jobb</h2>
+            <form id="jobForm">
+                <input type="hidden" id="jobId">
+                
+                <label>Kundnamn</label>
+                <input type="text" id="customerName" required placeholder="T.ex. HUSE">
+                
+                <label>Reg.nr (Bilprofil)</label>
+                <input type="text" id="regNr" required placeholder="T.ex. SYU705">
+                
+                <label>Datum & Tid</label>
+                <input type="datetime-local" id="jobDate" required>
+
+                <div class="modal-buttons">
+                    <button type="button" class="cancel-btn" onclick="closeJobModal()">Avbryt</button>
+                    <button type="submit" class="save-btn">Spara</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
