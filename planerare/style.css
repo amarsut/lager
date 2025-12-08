@@ -5663,7 +5663,7 @@ html {
 @media (max-width: 768px) {
 
 /* =========================================
-   NY DESIGN: REGISTRERING & KUNDKORT (MATCHAD BILD)
+   KUND och REG.NR MODAL
    ========================================= */
 
 @media (max-width: 768px) {
@@ -5780,8 +5780,165 @@ html {
     }
 }
 
+/* =========================================
+   MODERN LÅSSKÄRM (ENDAST CSS)
+   ========================================= */
+
+/* 1. BAKGRUNDEN (Frosted Glass) */
+#pinLockModal {
+    background-color: rgba(255, 255, 255, 0.6) !important; /* Mer genomskinlig */
+    backdrop-filter: blur(20px) !important; /* Kraftig oskärpa bakom */
+    -webkit-backdrop-filter: blur(20px) !important;
+}
+
+/* 2. HUVUDBOXEN (Kortet) */
+.pin-lock-container {
+    background: #ffffff !important;
+    border: 1px solid rgba(0, 0, 0, 0.05) !important; /* Mycket subtil ram */
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15) !important; /* Stor mjuk skugga */
+    border-radius: 24px !important;
+    padding: 40px 32px !important;
+    width: 100% !important;
+    max-width: 360px !important;
+    text-align: center !important;
+    
+    /* Centrera innehållet */
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+}
+
+/* 3. IKONEN (Loggan) */
+.pin-lock-container .nav-logo {
+    background-color: rgba(0, 102, 255, 0.1) !important; /* Ljusblå cirkel */
+    color: var(--primary-color) !important;
+    width: 64px !important;
+    height: 64px !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 0 20px 0 !important; /* Luft under */
+    padding: 0 !important;
+}
+
+.pin-lock-container .nav-logo svg {
+    width: 32px !important;
+    height: 32px !important;
+    stroke-width: 2px !important;
+}
+
+/* 4. TEXT (Rubrik & Underrubrik) */
+.pin-lock-container h2 {
+    font-size: 1.5rem !important;
+    font-weight: 800 !important;
+    color: #111827 !important;
+    margin: 0 0 8px 0 !important;
+    letter-spacing: -0.5px !important;
+}
+
+.pin-lock-container p {
+    font-size: 0.95rem !important;
+    color: #6b7280 !important;
+    margin: 0 0 32px 0 !important; /* Mycket luft ner till formuläret */
+    line-height: 1.5 !important;
+}
+
+/* 5. FORMULÄRET (Inputs) */
+#authForm {
+    gap: 16px !important; /* Luft mellan fälten */
+}
+
+/* Styling för input-fälten */
+#authEmail, #authPassword {
+    background-color: #f3f4f6 !important; /* Ljusgrå bakgrund */
+    border: 2px solid transparent !important; /* Ingen ram i vila */
+    border-radius: 12px !important;
+    padding: 14px 16px !important; /* Större klickyta */
+    font-size: 1rem !important;
+    color: #1f2937 !important;
+    font-weight: 500 !important;
+    outline: none !important;
+    transition: all 0.2s ease !important;
+    box-shadow: none !important;
+    width: 100% !important;
+}
+
+/* Fokus-effekt på input */
+#authEmail:focus, #authPassword:focus {
+    background-color: #ffffff !important;
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 0 4px rgba(0, 102, 255, 0.1) !important;
+}
+
+/* Placeholder-färg */
+#authEmail::placeholder, #authPassword::placeholder {
+    color: #9ca3af !important;
+}
+
+/* 6. KNAPPEN (Logga in) */
+#authBtn {
+    background: linear-gradient(135deg, #0066FF 0%, #0052cc 100%) !important;
+    color: #ffffff !important;
+    border: none !important;
+    border-radius: 12px !important;
+    padding: 14px !important;
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    margin-top: 8px !important;
+    cursor: pointer !important;
+    box-shadow: 0 4px 12px rgba(0, 102, 255, 0.3) !important;
+    transition: transform 0.1s ease, box-shadow 0.2s ease !important;
+    width: 100% !important;
+}
+
+#authBtn:active {
+    transform: scale(0.98) !important;
+    box-shadow: 0 2px 5px rgba(0, 102, 255, 0.2) !important;
+}
+
+#authBtn:disabled {
+    opacity: 0.7 !important;
+    cursor: not-allowed !important;
+}
+
+/* 7. FELMEDDELANDE */
+#authError {
+    font-size: 0.85rem !important;
+    margin: -8px 0 8px 0 !important; /* Justera position */
+    min-height: 20px !important;
+    font-weight: 500 !important;
+}
+
+/* --- DARK MODE STÖD --- */
+@media (prefers-color-scheme: dark) {
+    [data-theme="dark"] #pinLockModal {
+        background-color: rgba(0, 0, 0, 0.7) !important;
+    }
+    
+    [data-theme="dark"] .pin-lock-container {
+        background: #1c1c1e !important;
+        border-color: rgba(255, 255, 255, 0.1) !important;
+    }
+    
+    [data-theme="dark"] .pin-lock-container h2 { color: #ffffff !important; }
+    [data-theme="dark"] .pin-lock-container p { color: #9ca3af !important; }
+    
+    [data-theme="dark"] #authEmail, 
+    [data-theme="dark"] #authPassword {
+        background-color: #2c2c2e !important;
+        color: #ffffff !important;
+    }
+    
+    [data-theme="dark"] #authEmail:focus, 
+    [data-theme="dark"] #authPassword:focus {
+        background-color: #3a3a3c !important;
+    }
+}
+
 
 /* --- SLUT PÅ STYLE.CSS --- */
+
 
 
 
