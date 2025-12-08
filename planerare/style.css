@@ -2316,18 +2316,79 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     padding: 0.5rem; flex: 1; border-radius: 8px;
 }
 
-/* =========================================
-   21. MOBIL SÖK-MODAL (HELSKÄRM)
-   ========================================= */
+/* --- ROBUST MOBIL SÖK-DESIGN (FIXAD) --- */
+
+/* 1. Själva Modalen */
 #mobileSearchModal {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background-color: var(--content-bg); z-index: 9000;
-    display: none; flex-direction: column;
+    background-color: #f3f4f6 !important; /* Ljusgrå bakgrund för hela modalen */
+    z-index: 99999 !important;
 }
 
+/* 2. Headern (Den vita rutan högst upp) */
 .mobile-search-header {
-    display: flex; align-items: center; gap: 12px; padding: 12px 16px;
-    border-bottom: 1px solid var(--border-color); flex-shrink: 0;
+    background-color: #ffffff !important;
+    padding: 12px 16px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    border-bottom: 1px solid #e5e7eb !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05); /* Liten skugga så den "poppar" */
+    height: 70px !important; /* Fixerad höjd för stabilitet */
+    flex-shrink: 0;
+}
+
+/* 3. Sök-pillret (Den grå rutan) - TVINGA fram utseendet */
+.mobile-search-header .search-wrapper {
+    background-color: #f3f4f6 !important; /* Måste vara grå */
+    border: 1px solid transparent !important;
+    border-radius: 99px !important; /* Piller-form */
+    height: 46px !important;
+    padding: 0 16px !important;
+    margin: 0 !important;
+    flex-grow: 1 !important;
+    display: flex !important;
+    align-items: center !important;
+    width: auto !important; /* Låt flex styra bredden */
+    position: relative !important; /* För att hålla ikonen på plats */
+}
+
+/* 4. Sök-ikonen */
+.mobile-search-header .search-icon {
+    color: #6b7280 !important;
+    width: 20px !important;
+    height: 20px !important;
+    min-width: 20px !important;
+    margin-right: 8px !important;
+    position: static !important; /* Återställ ev. absolut positionering */
+    transform: none !important;
+    display: block !important;
+}
+
+/* 5. Input-fältet */
+.mobile-search-header input {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    font-size: 1rem !important;
+    color: #111 !important;
+    width: 100% !important;
+    height: 100% !important;
+    outline: none !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+}
+
+/* 6. Back-knappen (Pilen) */
+#mobileSearchBackBtn {
+    width: 40px !important;
+    height: 40px !important;
+    display: flex !important;
+    align-items: center; 
+    justify-content: center;
+    background: transparent !important;
+    border: none !important;
+    color: #111 !important;
+    padding: 0 !important;
 }
 
 /* Sökfältet (Piller) */
@@ -3627,80 +3688,93 @@ body.offline-mode .offline-dot { display: block; }
     white-space: pre-wrap; word-break: break-word;
 }
 
-/* Mobil-anpassning av tabellen (Gör om till kort) */
+/* --- MODERN KORT-DESIGN FÖR MODALER (MOBIL) --- */
 @media (max-width: 600px) {
-    /* Dölj den vanliga tabell-headern */
+    /* 1. Ge modalen en svag grå bakgrund för kontrast */
+    .job-history-container {
+        background-color: #f3f4f6 !important; /* Ljusgrå bakgrund */
+        border: none !important;
+        padding: 12px !important; /* Luft runt korten */
+    }
+
+    /* 2. Dölj tabell-rubriker */
     .detail-job-table thead { display: none; }
     
-    /* Gör om varje rad (tr) till ett "Kort" */
+    /* 3. Designa själva Kortet */
     .detail-job-table tbody tr {
         display: flex; 
         flex-direction: column;
-        background-color: #ffffff;
-        border: 1px solid #e5e7eb;
-        border-radius: 12px; 
+        background-color: #ffffff; /* Kritvit kort */
+        border: 1px solid transparent;
+        border-radius: 16px; /* Mjuka hörn */
         padding: 16px;
-        margin-bottom: 12px; /* Luft mellan korten */
-        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-    }
-    
-    /* --- STANDARD-CELLER (Datum, Status, Vinst) --- */
-    /* Dessa ska ha etikett till vänster, värde till höger */
-    .detail-job-table td {
-        display: flex; 
-        justify-content: space-between;
-        align-items: center;
-        padding: 8px 0; 
-        border-bottom: 1px solid #f3f4f6;
-        font-size: 0.95rem;
-        color: #1f2937;
-        width: 100%;
-        text-align: right;
-    }
-    
-    /* Ta bort linjen på sista raden */
-    .detail-job-table td:last-child { border-bottom: none; }
-    
-    /* Skapa etiketten (t.ex "Datum") */
-    .detail-job-table td::before {
-        content: attr(data-label); 
-        font-weight: 600;
-        color: #6b7280; /* Grå text för etiketten */
-        font-size: 0.85rem;
-        text-align: left;
-        margin-right: auto; /* Tryck etiketten till vänster */
+        margin-bottom: 16px; /* Tydligt avstånd mellan korten */
+        box-shadow: 0 4px 12px rgba(0,0,0,0.06); /* Snygg djupeffekt */
+        position: relative;
+        overflow: hidden; /* För status-linjen */
     }
 
-    /* --- SPECIALHANTERING AV "INFO"-CELLEN --- */
-    /* Det här gör att den ser ut som din bild! */
+    /* Status-linje till vänster (Blå som standard) */
+    .detail-job-table tbody tr::before {
+        content: '';
+        position: absolute; left: 0; top: 0; bottom: 0;
+        width: 5px;
+        background-color: #3b82f6; /* Standard blå */
+    }
+
+    /* Ändra färg på linjen om jobbet är KLAR */
+    .detail-job-table tbody tr:has(.status-klar)::before {
+        background-color: #22c55e; /* Grön */
+    }
+
+    /* --- INNEHÅLL I KORTET --- */
+
+    /* Datum (Liten och diskret högst upp) */
+    .detail-job-table td[data-label="Datum"] {
+        order: -1; /* Lägg datum först */
+        display: flex; justify-content: space-between;
+        padding: 0 0 8px 0; margin-bottom: 8px;
+        border-bottom: 1px dashed #e5e7eb;
+        font-size: 0.8rem; font-weight: 600;
+        color: #9ca3af; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    /* Dölj etiketten "Datum" för renare look */
+    .detail-job-table td[data-label="Datum"]::before { display: none; }
+
+    /* Huvudinfo (Regnr/Namn) - Stor och tydlig */
     .detail-job-table td[data-label="Info"] {
-        display: block !important; /* Låt innehållet ta hela bredden */
-        text-align: left !important; /* Vänsterställ allt */
-        padding: 12px 0; /* Lite extra luft */
-        height: auto;
+        display: block !important; 
+        text-align: left !important;
+        padding: 4px 0 12px 0;
     }
-
-    /* DÖLJ etiketten "Info" helt (Matchar din bild) */
-    .detail-job-table td[data-label="Info"]::before {
-        display: none;
-    }
-
-    /* Styla Regnr/Namn (Rubriken i kortet) */
+    .detail-job-table td[data-label="Info"]::before { display: none; } /* Dölj etikett "Info" */
+    
     .detail-job-table .job-subline-main {
         display: block;
-        font-size: 1.1rem;
+        font-size: 1.25rem; /* Större text */
         font-weight: 800;
-        color: #111827; /* Mörk, tydlig text */
-        margin-bottom: 4px;
+        color: #111827;
+        margin-bottom: 6px;
+        letter-spacing: -0.5px;
+    }
+    .detail-job-table .job-subline-comment {
+        font-size: 0.95rem; color: #4b5563; line-height: 1.5;
     }
 
-    /* Styla beskrivningstexten */
-    .detail-job-table .job-subline-comment {
-        display: block;
-        font-size: 0.9rem;
-        color: #4b5563; /* Mörkgrå text */
-        line-height: 1.5;
-        white-space: normal; /* Låt texten radbrytas naturligt */
+    /* Status & Vinst (Längst ner i en rad) */
+    .detail-job-table td[data-label="Status"],
+    .detail-job-table td[data-label="Vinst"] {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 8px 0 0 0;
+        border-top: 1px solid #f3f4f6;
+        font-size: 0.9rem; font-weight: 600; color: #374151;
+    }
+    
+    /* Justera etiketter */
+    .detail-job-table td[data-label="Status"]::before,
+    .detail-job-table td[data-label="Vinst"]::before {
+        content: attr(data-label);
+        font-size: 0.75rem; color: #9ca3af; font-weight: 500; text-transform: uppercase;
     }
 }
 
@@ -5456,6 +5530,7 @@ html {
 
 
 /* --- SLUT PÅ STYLE.CSS --- */
+
 
 
 
