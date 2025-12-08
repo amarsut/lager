@@ -5457,6 +5457,7 @@ html {
 /* =========================================
    HYBRID-DESIGN: RADER (BILD 2) + CLEAN KNAPPAR (BILD 1)
    ========================================= */
+@media (max-width: 768px) {
 
 /* 1. Kort-behållaren (Fyrkantig) */
 .mobile-job-card {
@@ -5613,9 +5614,11 @@ html {
 
 /* Aktiv kommentar */
 .clean-icon-btn.has-comment { color: #111 !important; }
+}
 
 
 /* --- SLUT PÅ STYLE.CSS --- */
+
 
 
 
