@@ -1238,13 +1238,16 @@
 			function openChatUI() {
 			    chatWidget.style.display = 'flex';
 			    
-                // Starta/Ladda om chatten
-                if (typeof initChat === 'function') initChat();
+			    // Starta/Ladda om chatten
+			    if (typeof initChat === 'function') initChat();
 			    
-                // --- NYTT: Tvinga scroll till botten ---
-                forceChatScrollBottom();
-                // ---------------------------------------
-
+			    // --- SCROLL FIX: Kör flera gånger för att motverka layout-shift ---
+			    forceChatScrollBottom();
+			    setTimeout(forceChatScrollBottom, 50);
+			    setTimeout(forceChatScrollBottom, 200);
+			    setTimeout(forceChatScrollBottom, 500); // En extra sen för säkerhets skull
+			    // ---------------------------------------
+			
 			    isModalOpen = false;
 			    updateScrollLock();
 			}
@@ -2047,49 +2050,54 @@
 			        };
 			    }
 			
-			    // --- MOBIL: Dölj knappar vid skrivning ---
+			    // --- MOBIL: Hantera layout vid skrivning ---
 			    const innerInputActions = document.querySelector('.inner-input-actions');
+			    const chatInputPill = document.querySelector('.chat-input-pill'); // Hämta pillret
 			    let inputFocusTimer = null;
 			
-			    if (chatInput && innerInputActions) {
+			    if (chatInput && innerInputActions && chatInputPill) {
+			        
 			        const toggleInputButtons = (show) => {
 			            if (window.innerWidth > 768) return; 
 			
 			            if (show) {
+			                // VISA KNAPPAR (Ej fokus)
 			                innerInputActions.style.display = 'flex';
 			                innerInputActions.style.opacity = '1';
+			                
+			                // Ta bort "typing-mode" så AI-knappen flyttar tillbaka till vänster
+			                chatInputPill.classList.remove('typing-mode');
+			                
 			                chatInput.style.paddingRight = '3rem'; 
 			            } else {
+			                // DÖLJ KNAPPAR (Fokus/Skriver)
 			                innerInputActions.style.display = 'none';
 			                innerInputActions.style.opacity = '0';
-			                chatInput.style.paddingRight = '1rem'; 
+			                
+			                // Lägg till "typing-mode" så CSS flyttar AI-knappen till höger
+			                chatInputPill.classList.add('typing-mode');
+			                
+			                chatInput.style.paddingRight = '0.5rem'; 
 			            }
 			        };
 			
 			        chatInput.addEventListener('focus', () => {
-			            if (chatInput.value.trim() === "") {
-			                toggleInputButtons(false);
-			                clearTimeout(inputFocusTimer);
-			                inputFocusTimer = setTimeout(() => {
-			                    if (chatInput.value.trim() === "") {
-			                        toggleInputButtons(true);
-			                    }
-			                }, 4000);
-			            } else {
-			                toggleInputButtons(false);
-			            }
+			            toggleInputButtons(false); // Dölj direkt vid fokus
 			        });
 			
 			        chatInput.addEventListener('input', () => {
 			            clearTimeout(inputFocusTimer); 
 			            if (chatInput.value.trim() !== "") {
-			                toggleInputButtons(false);
+			                toggleInputButtons(false); // Håll dolt medan man skriver
 			            } else {
-			                toggleInputButtons(true);
+			                // Om man suddar ut allt men har kvar fokus -> Visa knappar igen? 
+			                // Oftast vill man ha kvar fokus-läget tills man trycker "klar" eller blur.
+			                // Vi behåller fokus-läget här.
 			            }
 			        });
 			
 			        chatInput.addEventListener('blur', () => {
+			            // Återställ när man klickar bort (fäller ner tangentbordet)
 			            setTimeout(() => toggleInputButtons(true), 200); 
 			        });
 			    }
