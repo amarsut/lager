@@ -1581,32 +1581,6 @@
 			// Kör direkt vid start
 			updateMobileHeaderDate();
 
-			// --- FIX FÖR MOBIL-KNAPPAR (Ikoner) ---
-			// Detta lägger automatiskt till ikonerna i knapparna längst ner i modalen
-			function fixMobileModalButtons() {
-			    const btnBil = document.getElementById('carModalExternalLinkMobile');
-			    const btnOlja = document.getElementById('carModalOljemagasinetLinkMobile');
-			
-			    // Kolla om knappen finns och om den saknar bild
-			    if (btnBil && !btnBil.querySelector('img')) {
-			        const img = document.createElement('img');
-			        img.src = "https://biluppgifter.se/favicon/favicon.ico";
-			        img.alt = "Ikon";
-			        // Sätt in bilden FÖRE texten (prepend)
-			        btnBil.prepend(img);
-			    }
-			
-			    if (btnOlja && !btnOlja.querySelector('img')) {
-			        const img = document.createElement('img');
-			        img.src = "images/oljemagasinet-favico.png"; // Se till att sökvägen stämmer med din mapp
-			        img.alt = "Ikon";
-			        btnOlja.prepend(img);
-			    }
-			}
-			
-			// Kör fixen direkt
-			fixMobileModalButtons();
-
 			// --- NY FUNKTION: Notis-räknare ---
 			function initChatBadgeListener() {
 			    // VIKTIG ÄNDRING HÄR:
@@ -4238,19 +4212,19 @@
 			            <div class="action-col">
 			                ${hasComment ? `
 			                <button class="icon-btn" data-action="showComment" data-comment="${encodeURIComponent(job.kommentarer)}" aria-label="Visa kommentar">
-			                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+			                    <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-chat"></use></svg>
 			                </button>
 			                ` : `<span class="icon-btn-placeholder"></span>`}
 			
 			                <button class="icon-btn" data-action="togglePrio" aria-label="Växla Prio">
-			                    <svg viewBox="0 0 24 24" fill="${job.prio ? 'currentColor' : 'none'}" stroke="currentColor" style="${job.prio ? 'color:#ef4444;' : ''}"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+			                    <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-flag"></use></svg>
 			                </button>
 			                <button class="icon-btn" data-action="setStatusKlar" aria-label="Markera som Klar">
-			                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"/></svg>
+			                    <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-check"></use></svg>
 			                </button>
 			
 			                <button class="icon-btn delete-btn" data-id="${job.id}" aria-label="Ta bort jobb">
-			                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+			                    <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-trash"></use></svg>
 			                </button>
 			            </div>
 			        </div>
@@ -5115,73 +5089,72 @@
             
             // BONUS: Om-renderar jobblistan i kund/bil-modal
             function renderDetailJobList(listElement, jobs, filterTerm) {
-			    const filteredJobs = jobs.filter(job => {
-			        const term = filterTerm.toLowerCase();
-			        return !term ||
-			               formatDate(job.datum).toLowerCase().includes(term) ||
-			               (job.regnr && (job.regnr || '').toLowerCase().includes(term)) ||
-			               (job.kundnamn || '').toLowerCase().includes(term) ||
-			               (job.kommentarer && (job.kommentarer || '').toLowerCase().includes(term));
-			    });
-			
-			    // Om listan är tom
-			    if (filteredJobs.length === 0) {
-			        listElement.innerHTML = '<div style="text-align:center; padding:2rem; color:#9ca3af;">Ingen historik hittades.</div>';
-			        return;
-			    }
-			
-			    let listHTML = '';
-			
-			    filteredJobs.forEach(job => {
-			        // 1. Datumformat (t.ex "1 JAN 2026")
-			        const d = new Date(job.datum);
-			        const day = d.getDate();
-			        const month = d.toLocaleString('sv-SE', { month: 'short' }).replace('.', '').toUpperCase();
-			        const year = d.getFullYear();
-			        const dateStr = `${day} ${month} ${year}`;
-			
-			        // 2. Bestäm Rubrik (Visar Kundnamn i bil-modalen, Regnr i kund-modalen)
-			        const isCustomerModal = (listElement.id === 'customerModalJobList');
-			        const mainTitle = isCustomerModal ? (job.regnr || 'OKÄNT') : job.kundnamn;
-			
-			        // 3. Status, Vinst & Kommentar
-			        const statusText = STATUS_TEXT[job.status] || job.status;
-			        const vinstText = isPrivacyModeEnabled ? '---' : formatCurrency(job.vinst || 0);
-			        const comment = (job.kommentarer && job.kommentarer.trim().length > 0) ? job.kommentarer : 'Ingen beskrivning.';
-			
-			        // 4. Skapa HTML-strukturen (Matchar din målbild exakt)
-			        listHTML += `
-			            <div class="history-card" data-job-id="${job.id}">
-			                
-			                <div class="history-header">
-			                    <span class="history-label">Datum</span>
-			                    <span class="history-date">${dateStr}</span>
-			                </div>
-			                
-			                <div class="history-title">${mainTitle}</div>
-			                
-			                <div class="history-comment-box">
-			                    ${comment}
-			                </div>
-			                
-			                <div class="history-divider"></div>
-			                
-			                <div class="history-row">
-			                    <span class="history-label">Status</span>
-			                    <span class="status-badge status-${job.status}">${statusText}</span>
-			                </div>
-			                
-			                <div class="history-row">
-			                    <span class="history-label">Vinst</span>
-			                    <span class="history-value">${vinstText}</span>
-			                </div>
-			
-			            </div>
-			        `;
-			    });
-			
-			    listElement.innerHTML = listHTML;
-			}
+                const filteredJobs = jobs.filter(job => {
+                    const term = filterTerm.toLowerCase();
+                    return !term ||
+                           formatDate(job.datum).toLowerCase().includes(term) ||
+                           (job.regnr && (job.regnr || '').toLowerCase().includes(term)) ||
+                           (job.kundnamn || '').toLowerCase().includes(term) ||
+                           (job.kommentarer && (job.kommentarer || '').toLowerCase().includes(term));
+                });
+
+                let tableHTML = `
+				    <table class="detail-job-table">
+				        <thead>
+				            <tr>
+				                <th>Datum</th>
+				                <th>Info</th>
+				                <th>Status</th>
+				                <th class="money-related">Vinst</th>
+				            </tr>
+				        </thead>
+				        <tbody>
+				`;
+				
+				/* --- I funktionen renderDetailJobList --- */
+
+				tableHTML += filteredJobs.map(job => {
+				    const prioIcon = job.prio ? `...` : ''; 
+				    const subline = (listElement === customerModalJobList) ? job.regnr : job.kundnamn;
+				
+				    // Datum-logik
+				    const jobDate = new Date(job.datum);
+				    const currentYear = new Date().getFullYear();
+				    const jobYear = jobDate.getFullYear();
+				    
+				    const day = jobDate.getDate();
+				    const month = jobDate.toLocaleString('sv-SE', { month: 'short' }).replace('.', '');
+				    
+				    const yearHTML = (jobYear !== currentYear) 
+				        ? `<span style="display:block; font-size:0.75em; color:#9CA3AF; font-weight:400;">${jobYear}</span>` 
+				        : '';
+				
+				    return `
+				        <tr data-job-id="${job.id}">
+				            <td data-label="Datum">
+				                <div class="date-wrapper" style="text-align: right; display: inline-block;">
+				                    <span style="font-weight: 700; color: #111;">${day}</span>
+				                    <span style="font-size: 0.85em; color: #6B7280; margin-left: 2px;">${month}</span>
+				                    ${yearHTML}
+				                </div>
+				            </td>
+				            <td data-label="Info">
+				                <span class="job-subline-main">${prioIcon}${subline || '---'}</span>
+				                ${job.kommentarer ? `<span class="job-subline-comment">${job.kommentarer}</span>` : ''}
+				            </td>
+				            <td data-label="Status">
+				                <span class="status-badge status-${job.status}">${STATUS_TEXT[job.status]}</span>
+				            </td>
+				            <td data-label="Vinst" class="job-profit money-related ${job.vinst > 0 ? 'positive' : ''}">
+				                ${isPrivacyModeEnabled ? '---' : formatCurrency(job.vinst)}
+				            </td>
+				        </tr>
+				    `;
+				}).join('');
+				
+				tableHTML += `</tbody></table>`;
+				listElement.innerHTML = tableHTML;
+            }
 
             function openCustomerModal(kundnamn) {
                 const customerJobs = allJobs.filter(j => !j.deleted && j.kundnamn === kundnamn).sort((a, b) => new Date(b.datum) - new Date(a.datum));
