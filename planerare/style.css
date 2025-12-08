@@ -5661,21 +5661,6 @@ html {
 }
 
 @media (max-width: 768px) {
-   Det förstår jag helt! Ibland är det bättre att börja om från grunden än att lappa och laga.
-
-Här är en lösning som gör exakt det du ber om:
-
-Bakgrunden: Vi ändrar hela modalens bakgrund till samma ljusgrå färg som din startsida (#f3f4f6).
-
-Korten: Vi gör varje rad (jobb) till ett vitt kort som flyter ovanpå den grå bakgrunden. Detta skapar den kontrast du är ute efter.
-
-Knapparna: Vi "klistrar" dem mot botten och tar bort onödig luft under dem.
-
-Eftersom du gått tillbaka till din backup utgår jag från att din kod använder tabeller (<table>) för listan igen. Denna CSS omvandlar tabellen till snygga kort på mobil.
-
-Kopiera detta och lägg längst ner i din style.css:
-
-CSS
 
 /* =========================================
    PROFFSIGA REG/KUND-MODALER (MATCHAD BAKGRUND)
@@ -5735,6 +5720,7 @@ CSS
 
 
 /* --- SLUT PÅ STYLE.CSS --- */
+
 
 
 
