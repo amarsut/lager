@@ -5115,72 +5115,73 @@
             
             // BONUS: Om-renderar jobblistan i kund/bil-modal
             function renderDetailJobList(listElement, jobs, filterTerm) {
-                const filteredJobs = jobs.filter(job => {
-                    const term = filterTerm.toLowerCase();
-                    return !term ||
-                           formatDate(job.datum).toLowerCase().includes(term) ||
-                           (job.regnr && (job.regnr || '').toLowerCase().includes(term)) ||
-                           (job.kundnamn || '').toLowerCase().includes(term) ||
-                           (job.kommentarer && (job.kommentarer || '').toLowerCase().includes(term));
-                });
-
-                let tableHTML = `
-				    <table class="detail-job-table">
-				        <thead>
-				            <tr>
-				                <th>Datum</th>
-				                <th>Info</th>
-				                <th>Status</th>
-				                <th class="money-related">Vinst</th>
-				            </tr>
-				        </thead>
-				        <tbody>
-				`;
-				
-				/* --- I funktionen renderDetailJobList --- */
-
-				tableHTML += filteredJobs.map(job => {
-				    const prioIcon = job.prio ? `...` : ''; 
-				    const subline = (listElement === customerModalJobList) ? job.regnr : job.kundnamn;
-				
-				    // Datum-logik
-				    const jobDate = new Date(job.datum);
-				    const currentYear = new Date().getFullYear();
-				    const jobYear = jobDate.getFullYear();
-				    
-				    const day = jobDate.getDate();
-				    const month = jobDate.toLocaleString('sv-SE', { month: 'short' }).replace('.', '');
-				    
-				    const yearHTML = (jobYear !== currentYear) 
-				        ? `<span style="display:block; font-size:0.75em; color:#9CA3AF; font-weight:400;">${jobYear}</span>` 
-				        : '';
-				
-				    return `
-				        <tr data-job-id="${job.id}">
-				            <td data-label="Datum">
-				                <div class="date-wrapper" style="text-align: right; display: inline-block;">
-				                    <span style="font-weight: 700; color: #111;">${day}</span>
-				                    <span style="font-size: 0.85em; color: #6B7280; margin-left: 2px;">${month}</span>
-				                    ${yearHTML}
-				                </div>
-				            </td>
-				            <td data-label="Info">
-				                <span class="job-subline-main">${prioIcon}${subline || '---'}</span>
-				                ${job.kommentarer ? `<span class="job-subline-comment">${job.kommentarer}</span>` : ''}
-				            </td>
-				            <td data-label="Status">
-				                <span class="status-badge status-${job.status}">${STATUS_TEXT[job.status]}</span>
-				            </td>
-				            <td data-label="Vinst" class="job-profit money-related ${job.vinst > 0 ? 'positive' : ''}">
-				                ${isPrivacyModeEnabled ? '---' : formatCurrency(job.vinst)}
-				            </td>
-				        </tr>
-				    `;
-				}).join('');
-				
-				tableHTML += `</tbody></table>`;
-				listElement.innerHTML = tableHTML;
-            }
+			    const filteredJobs = jobs.filter(job => {
+			        const term = filterTerm.toLowerCase();
+			        return !term ||
+			               formatDate(job.datum).toLowerCase().includes(term) ||
+			               (job.regnr && (job.regnr || '').toLowerCase().includes(term)) ||
+			               (job.kundnamn || '').toLowerCase().includes(term) ||
+			               (job.kommentarer && (job.kommentarer || '').toLowerCase().includes(term));
+			    });
+			
+			    // Om listan är tom
+			    if (filteredJobs.length === 0) {
+			        listElement.innerHTML = '<div style="text-align:center; padding:2rem; color:#9ca3af;">Ingen historik hittades.</div>';
+			        return;
+			    }
+			
+			    let listHTML = '';
+			
+			    filteredJobs.forEach(job => {
+			        // 1. Datumformat (t.ex "1 JAN 2026")
+			        const d = new Date(job.datum);
+			        const day = d.getDate();
+			        const month = d.toLocaleString('sv-SE', { month: 'short' }).replace('.', '').toUpperCase();
+			        const year = d.getFullYear();
+			        const dateStr = `${day} ${month} ${year}`;
+			
+			        // 2. Bestäm Rubrik (Visar Kundnamn i bil-modalen, Regnr i kund-modalen)
+			        const isCustomerModal = (listElement.id === 'customerModalJobList');
+			        const mainTitle = isCustomerModal ? (job.regnr || 'OKÄNT') : job.kundnamn;
+			
+			        // 3. Status, Vinst & Kommentar
+			        const statusText = STATUS_TEXT[job.status] || job.status;
+			        const vinstText = isPrivacyModeEnabled ? '---' : formatCurrency(job.vinst || 0);
+			        const comment = (job.kommentarer && job.kommentarer.trim().length > 0) ? job.kommentarer : 'Ingen beskrivning.';
+			
+			        // 4. Skapa HTML-strukturen (Matchar din målbild exakt)
+			        listHTML += `
+			            <div class="history-card" data-job-id="${job.id}">
+			                
+			                <div class="history-header">
+			                    <span class="history-label">Datum</span>
+			                    <span class="history-date">${dateStr}</span>
+			                </div>
+			                
+			                <div class="history-title">${mainTitle}</div>
+			                
+			                <div class="history-comment-box">
+			                    ${comment}
+			                </div>
+			                
+			                <div class="history-divider"></div>
+			                
+			                <div class="history-row">
+			                    <span class="history-label">Status</span>
+			                    <span class="status-badge status-${job.status}">${statusText}</span>
+			                </div>
+			                
+			                <div class="history-row">
+			                    <span class="history-label">Vinst</span>
+			                    <span class="history-value">${vinstText}</span>
+			                </div>
+			
+			            </div>
+			        `;
+			    });
+			
+			    listElement.innerHTML = listHTML;
+			}
 
             function openCustomerModal(kundnamn) {
                 const customerJobs = allJobs.filter(j => !j.deleted && j.kundnamn === kundnamn).sort((a, b) => new Date(b.datum) - new Date(a.datum));
