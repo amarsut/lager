@@ -4113,119 +4113,73 @@
             
             // --- UPPDATERAD: createJobCard med Kontextuell Ikon ---
             function createJobCard(job) {
-			    // 1. Förbered variabler utanför HTML-strängen för att undvika krasch
+			    // 1. Logik (Samma som förut)
 			    let prioClass = job.prio ? 'prio-row' : '';
-			    
-			    // Hantera status-klasser
 			    const status = job.status || 'bokad';
-			    const doneClass = (status === 'klar' || status === 'betald') ? 'done-row' : '';
 			    
-			    const isKommandePrio = job.prio && status === 'bokad' && new Date(job.datum) >= new Date();
-			    if (isKommandePrio) {
-			        prioClass += ' kommande-prio-pulse';
-			    }
-			
-			    let jobStatusClass = '';
-			    const now = new Date();
-			    if (status === 'bokad' && job.datum && new Date(job.datum) < now) {
-			        jobStatusClass = 'job-missed';
-			    }
-			
-			    // 2. Säkra texter och HTML
-			    const hasComment = job.kommentarer && job.kommentarer.trim().length > 0;
-			    const kundnamnHTML = highlightSearchTerm(job.kundnamn || '', currentSearchTerm);
+			    // Använd gråskala för status, inga färger
+			    let statusText = (STATUS_TEXT[status] || 'Bokad').toUpperCase();
 			    
-			    // Regnr hantering
-			    const rawReg = job.regnr || 'OKÄNT';
-			    const regnrHTML = highlightSearchTerm(rawReg, currentSearchTerm);
-			    let regPlateContent = '';
-			    
-			    if (rawReg.toUpperCase() !== 'OKÄNT' && rawReg.length > 2) {
-			        regPlateContent = `
-			        <button class="car-link reg-plate" data-regnr="${rawReg}">
-			            <span class="reg-country">S</span>
-			            <span class="reg-number">${regnrHTML}</span>
-			        </button>`;
-			    } else {
-			        regPlateContent = `<span class="reg-unknown">${regnrHTML}</span>`;
-			    }
-			
-			    // Datum och Tid
-			    let timePart = 'Okänd tid';
-			    let dateDisplay = '';
-			    
+			    // Hantera datum/tid
+			    let timeDisplay = '---';
 			    if (job.datum) {
 			        try {
-			            // Säkrare datumhantering
-			            const d = new Date(job.datum);
-			            const dateStr = formatDate(job.datum); // Din existerande funktion
-			            if (dateStr.includes('kl.')) {
-			                timePart = dateStr.split('kl. ')[1];
-			            }
-			            
-			            const day = d.getDate();
-			            const month = d.toLocaleString('sv-SE', { month: 'short' }).replace('.', '');
-			            dateDisplay = `${day} ${month}`;
-			        } catch (e) {
-			            console.warn("Datumfel för jobb:", job.id);
-			        }
+			            // Hämta bara klockslag hh:mm
+			            timeDisplay = new Date(job.datum).toLocaleTimeString('sv-SE', {hour: '2-digit', minute:'2-digit'});
+			        } catch(e) {}
 			    }
 			
-			    const customerIconLink = getJobContextIcon(job);
-			    const statusText = STATUS_TEXT[status] || 'Bokad';
-			    const pris = formatCurrency(job.kundpris);
+			    // Regnr
+			    const rawReg = job.regnr || 'OKÄNT';
+			    const regDisplay = (rawReg !== 'OKÄNT') ? rawReg : '---';
 			
-			    // 3. Returnera ren HTML utan logik
+			    // Pris
+			    const pris = (job.kundpris && job.kundpris > 0) ? formatCurrency(job.kundpris) : '';
+			
+			    // Ikoner
+			    const hasComment = job.kommentarer && job.kommentarer.trim().length > 0;
+			    const commentIconClass = hasComment ? 'style="color:#111;"' : ''; // Gör ikonen svart om kommentar finns
+			
+			    // 2. Den nya, rena HTML-strukturen
 			    return `
-			        <div class="mobile-job-card job-entry ${prioClass} ${doneClass} ${jobStatusClass}" data-id="${job.id}" data-status="${status}">
+			        <div class="mobile-job-card ${prioClass}" data-id="${job.id}" data-status="${status}">
 			            <div class="card-content">
-			                <div class="card-row">
-			                    <span class="card-label">Kund</span>
-			                    <span class="card-value customer-name">
-			                        <div class="customer-name-wrapper">
-			                            <button class="link-btn customer-link" data-kund="${job.kundnamn}">
-			                                <svg class="icon-sm customer-icon" viewBox="0 0 24 24"><use href="${customerIconLink}"></use></svg>
-			                                <span class="customer-name-text">${kundnamnHTML}</span>
-			                            </button>
-			                        </div>
-			                    </span>
+			                
+			                <div class="clean-header">
+			                    <span class="clean-customer">${job.kundnamn}</span>
+			                    <span class="clean-price">${pris}</span>
 			                </div>
-			                <div class="card-row">
-			                    <span class="card-label">Reg.nr</span>
-			                    <span class="card-value">
-			                        ${regPlateContent}
-			                    </span>
-			                </div>
-			                <div class="card-row">
-			                    <span class="card-label">Tid / Status</span>
-			                    <span class="card-value time-status-wrapper">
-			                        <span class="search-date-badge" style="${currentSearchTerm ? 'display:inline-block;' : 'display:none;'} margin-right:8px; color:#374151; font-weight:600;">${dateDisplay}</span>
-			                        <span class="card-time-badge">${timePart}</span>
-			                        <span class="status-badge status-${status}">${statusText}</span>
-			                    </span>
-			                </div>
-			                <div class="card-row money-related">
-			                    <span class="card-label">Kundpris</span>
-			                    <span class="card-value customer-price">${pris}</span>
-			                </div>
-			            </div>
-			            <div class="action-col">
-			                ${hasComment ? `
-			                <button class="icon-btn" data-action="showComment" data-comment="${encodeURIComponent(job.kommentarer)}" aria-label="Visa kommentar">
-			                    <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-chat"></use></svg>
-			                </button>
-			                ` : `<span class="icon-btn-placeholder"></span>`}
 			
-			                <button class="icon-btn" data-action="togglePrio" aria-label="Växla Prio">
-			                    <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-flag"></use></svg>
-			                </button>
-			                <button class="icon-btn" data-action="setStatusKlar" aria-label="Markera som Klar">
-			                    <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-check"></use></svg>
-			                </button>
+			                <div class="clean-meta">
+			                    <span class="clean-reg">${regDisplay}</span>
+			                    <span class="clean-time">
+			                        <svg class="icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+			                        ${timeDisplay}
+			                    </span>
+			                </div>
 			
-			                <button class="icon-btn delete-btn" data-id="${job.id}" aria-label="Ta bort jobb">
-			                    <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-trash"></use></svg>
-			                </button>
+			                <div class="clean-footer">
+			                    <span class="clean-status status-${status}">${statusText}</span>
+			                    
+			                    <div class="clean-actions">
+			                        <button class="clean-icon-btn" ${hasComment ? '' : 'disabled'} ${commentIconClass}>
+			                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+			                        </button>
+			                        
+			                        <button class="clean-icon-btn" data-action="togglePrio">
+			                            <svg viewBox="0 0 24 24" fill="${job.prio ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" style="${job.prio ? 'color:#000;' : ''}"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+			                        </button>
+			
+			                        <button class="clean-icon-btn" data-action="setStatusKlar">
+			                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+			                        </button>
+			                        
+			                        <button class="clean-icon-btn delete-btn" data-id="${job.id}">
+			                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+			                        </button>
+			                    </div>
+			                </div>
+			
 			            </div>
 			        </div>
 			    `;
@@ -5114,47 +5068,27 @@
 				/* --- I funktionen renderDetailJobList --- */
 
 				tableHTML += filteredJobs.map(job => {
-				    const prioIcon = job.prio ? `...` : ''; 
-				    const subline = (listElement === customerModalJobList) ? job.regnr : job.kundnamn;
+				    // Datumlogik
+				    const d = new Date(job.datum);
+				    const dateStr = d.toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' });
+				    const yearStr = d.getFullYear() !== new Date().getFullYear() ? d.getFullYear() : '';
+				    const pris = formatCurrency(job.vinst || 0); // Eller kundpris om du föredrar
+				    const subText = (listElement === customerModalJobList) ? job.regnr : job.kundnamn;
 				
-				    // Datum-logik
-				    const jobDate = new Date(job.datum);
-				    const currentYear = new Date().getFullYear();
-				    const jobYear = jobDate.getFullYear();
-				    
-				    const day = jobDate.getDate();
-				    const month = jobDate.toLocaleString('sv-SE', { month: 'short' }).replace('.', '');
-				    
-				    const yearHTML = (jobYear !== currentYear) 
-				        ? `<span style="display:block; font-size:0.75em; color:#9CA3AF; font-weight:400;">${jobYear}</span>` 
-				        : '';
-				
+				    // NY CLEAN LIST-HTML
 				    return `
-				        <tr data-job-id="${job.id}">
-				            <td data-label="Datum">
-				                <div class="date-wrapper" style="text-align: right; display: inline-block;">
-				                    <span style="font-weight: 700; color: #111;">${day}</span>
-				                    <span style="font-size: 0.85em; color: #6B7280; margin-left: 2px;">${month}</span>
-				                    ${yearHTML}
-				                </div>
-				            </td>
-				            <td data-label="Info">
-				                <span class="job-subline-main">${prioIcon}${subline || '---'}</span>
-				                ${job.kommentarer ? `<span class="job-subline-comment">${job.kommentarer}</span>` : ''}
-				            </td>
-				            <td data-label="Status">
-				                <span class="status-badge status-${job.status}">${STATUS_TEXT[job.status]}</span>
-				            </td>
-				            <td data-label="Vinst" class="job-profit money-related ${job.vinst > 0 ? 'positive' : ''}">
-				                ${isPrivacyModeEnabled ? '---' : formatCurrency(job.vinst)}
-				            </td>
-				        </tr>
+				        <li data-job-id="${job.id}">
+				            <div class="modal-list-row">
+				                <span class="modal-list-title">${subText || '---'}</span>
+				                <span class="modal-list-price">${isPrivacyModeEnabled ? '---' : pris}</span>
+				            </div>
+				            <div class="modal-list-row">
+				                <span class="modal-list-date">${dateStr} ${yearStr}</span>
+				                <span class="modal-list-status">${STATUS_TEXT[job.status]}</span>
+				            </div>
+				        </li>
 				    `;
 				}).join('');
-				
-				tableHTML += `</tbody></table>`;
-				listElement.innerHTML = tableHTML;
-            }
 
             function openCustomerModal(kundnamn) {
                 const customerJobs = allJobs.filter(j => !j.deleted && j.kundnamn === kundnamn).sort((a, b) => new Date(b.datum) - new Date(a.datum));
