@@ -2265,55 +2265,52 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 }
 
 /* Mobilkortet */
+/* --- MOBIL JOBBKORT (STARTSIDAN) --- */
 .mobile-job-card {
-    background: var(--content-bg);
-    border: 1px solid var(--border-color);
+    background: #ffffff;
+    border: 1px solid #e5e7eb; /* Tunn grå ram istället för tjock färgad linje */
     border-radius: 12px;
-    box-shadow: var(--shadow-sm);
-    border-left: 4px solid transparent; /* Statusfärg */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    margin-bottom: 0;
     overflow: hidden;
-    transition: transform 0.2s ease;
-}
-.mobile-job-card:active { transform: scale(0.98); }
-
-.mobile-job-card .card-content {
-    padding: 1rem;
-    display: flex; flex-direction: column; gap: 0.75rem;
+    display: flex; 
+    flex-direction: column;
+    position: relative;
+    /* Ingen border-left här */
 }
 
-/* Rader inuti kortet */
-.mobile-job-card .card-row {
-    display: flex; justify-content: space-between; align-items: center;
+/* Om jobbet är PRIO -> Röd bakgrundston istället för linje */
+.mobile-job-card.prio-row {
+    background-color: #fef2f2; 
+    border-color: #fca5a5;
 }
 
-.mobile-job-card .card-label {
-    font-size: 0.85rem; font-weight: 600; color: var(--text-color-light);
-}
-.mobile-job-card .card-value {
-    font-size: 0.95rem; font-weight: 500; text-align: right;
-}
-
-/* Kundnamn & Pris */
-.mobile-job-card .customer-name { font-weight: 700; font-size: 1.05rem; }
-.mobile-job-card .customer-price { font-weight: 700; font-size: 1rem; }
-
-/* Tids-badge */
-.card-time-badge {
-    background-color: var(--bg-color);
-    border: 1px solid var(--border-color);
-    padding: 0.2em 0.6em; border-radius: 99px;
-    font-size: 0.8rem; font-weight: 600;
+/* Innehållet i kortet */
+.card-content {
+    padding: 16px;
+    display: flex; flex-direction: column; gap: 10px;
 }
 
-/* Mobil Action Bar (Knappar under kortet) */
+/* Gör Reg.nr och Kundnamn tydligare */
+.mobile-job-card .customer-name-text {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #1f2937;
+    text-transform: uppercase;
+    border: none; 
+}
+
+.mobile-job-card .reg-number {
+    font-weight: 800;
+    font-size: 1rem;
+    letter-spacing: 1px;
+}
+
+/* Action bar (knapparna längst ner) */
 .mobile-job-card .action-col {
-    display: flex; justify-content: space-around;
-    padding: 0.5rem; background-color: var(--bg-color);
-    border-top: 1px solid var(--border-color);
-    opacity: 1 !important; /* Alltid synliga på mobil */
-}
-.mobile-job-card .action-col .icon-btn {
-    padding: 0.5rem; flex: 1; border-radius: 8px;
+    background-color: #f9fafb; /* Ljusgrå botten för knapparna */
+    border-top: 1px solid #e5e7eb;
+    padding: 8px 0;
 }
 
 /* --- ROBUST MOBIL SÖK-DESIGN (FIXAD) --- */
@@ -3701,86 +3698,105 @@ body.offline-mode .offline-dot { display: block; }
     white-space: pre-wrap; word-break: break-word;
 }
 
-/* --- MODERN KORT-DESIGN FÖR MODALER (MOBIL) --- */
-/* --- SNYGGARE MODAL-KORT (HISTORIK) --- */
+/* --- MODAL-KORT (HISTORIK) - FIXAD LAYOUT --- */
 @media (max-width: 600px) {
     
-    /* Behållaren */
+    /* 1. Behållaren */
     .job-history-container {
-        background-color: transparent !important;
+        background-color: #f3f4f6 !important; /* Ljusgrå bakgrund */
         border: none !important;
-        padding: 0 !important;
-        margin-top: 10px !important;
+        padding: 12px !important;
     }
 
-    /* Själva kortet */
+    /* 2. Dölj tabell-rubriker */
+    .detail-job-table thead { display: none; }
+    
+    /* 3. Själva Kortet */
     .detail-job-table tbody tr {
         display: flex; 
         flex-direction: column;
         background-color: #ffffff;
-        border: none; /* Ingen ram */
-        border-radius: 12px; 
+        border: 1px solid #e5e7eb; /* Tunn ram */
+        border-radius: 12px;
         padding: 16px;
         margin-bottom: 12px;
-        /* Samma skugga som startsidan */
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         position: relative;
-        overflow: hidden;
-        
-        /* Färgkodning (Standard: Blå) */
-        border-left: 5px solid #3b82f6; 
     }
 
-    /* Grön linje om status är KLAR (Vi kollar inuti kortet efter en grön badge) */
-    .detail-job-table tbody tr:has(.status-klar) {
-        border-left-color: #22c55e;
+    /* FÄRGAD LINJE BARA I MODALEN (Enligt din referensbild) */
+    .detail-job-table tbody tr::before {
+        content: '';
+        position: absolute; left: 0; top: 12px; bottom: 12px;
+        width: 4px;
+        background-color: #3b82f6; /* Blå */
+        border-radius: 0 4px 4px 0;
+    }
+    /* Grön linje om jobbet är klart */
+    .detail-job-table tbody tr:has(.status-klar)::before {
+        background-color: #22c55e;
     }
 
-    /* Datumet (Litet och diskret högst upp) */
+    /* --- INNEHÅLL --- */
+
+    /* Datum (Överst) */
     .detail-job-table td[data-label="Datum"] {
         order: -1; 
-        display: flex; justify-content: space-between;
-        padding: 0 0 8px 0; margin-bottom: 4px;
-        border-bottom: 1px solid #f3f4f6;
+        display: flex; 
+        padding: 0 0 8px 12px; /* 12px padding-left för att inte krocka med linjen */
+        margin-bottom: 8px;
+        border-bottom: 1px dotted #e5e7eb;
         font-size: 0.75rem; font-weight: 700;
-        color: #9ca3af; text-transform: uppercase; letter-spacing: 0.5px;
+        color: #9ca3af; text-transform: uppercase; letter-spacing: 1px;
         width: 100%;
     }
-    .detail-job-table td[data-label="Datum"]::before { content: 'Datum'; margin-right: auto; }
+    /* Etiketten "DATUM" */
+    .detail-job-table td[data-label="Datum"]::before { 
+        content: 'DATUM'; 
+        margin-right: auto; 
+    }
 
-    /* Info (Namn/Regnr + Text) */
+    /* Info (Namn/Regnr + Text) - DETTA VAR FELET FÖRUT */
     .detail-job-table td[data-label="Info"] {
-        display: block !important;
-        padding: 8px 0;
-        border: none;
+        display: block !important; 
+        width: 100% !important;
+        padding: 0 0 12px 12px !important; /* Padding vänster */
+        text-align: left !important;
+        border: none !important;
     }
-    .detail-job-table td[data-label="Info"]::before { display: none; } /* Dölj "Info"-etikett */
+    /* Dölj "Info"-etiketten helt så texten får plats */
+    .detail-job-table td[data-label="Info"]::before { display: none !important; } 
 
-    .job-subline-main {
-        font-size: 1.2rem; font-weight: 800; color: #111; display: block; margin-bottom: 4px;
+    /* Rubriken (SYU705 / HUSE) */
+    .detail-job-table .job-subline-main {
+        font-size: 1.25rem; 
+        font-weight: 800; 
+        color: #111827;
+        margin-bottom: 6px;
+        display: block;
     }
-    .job-subline-comment {
-        font-size: 0.95rem; color: #4b5563; line-height: 1.4;
+    /* Beskrivningstexten */
+    .detail-job-table .job-subline-comment {
+        font-size: 0.95rem; 
+        color: #4b5563; 
+        line-height: 1.5;
+        white-space: normal; /* Tillåt radbrytning */
+        display: block;
     }
 
-    /* Status & Vinst (Längst ner) */
+    /* Status & Vinst (Botten) */
     .detail-job-table td[data-label="Status"],
     .detail-job-table td[data-label="Vinst"] {
         display: flex; justify-content: space-between; align-items: center;
-        padding: 8px 0 0 0;
-        border: none;
+        padding: 8px 0 0 12px; /* Padding vänster */
+        border-top: 1px solid #f3f4f6;
         width: 100%;
     }
     
-    /* Lägg en linje ovanför statusen för att separera från infon */
-    .detail-job-table td[data-label="Status"] {
-        border-top: 1px solid #f3f4f6;
-        padding-top: 12px;
-        margin-top: 4px;
-    }
-
-    .detail-job-table td[data-label="Vinst"] {
-        padding-top: 4px;
+    .detail-job-table td[data-label="Status"]::before,
+    .detail-job-table td[data-label="Vinst"]::before {
+        content: attr(data-label);
+        font-size: 0.75rem; color: #9ca3af; font-weight: 700; text-transform: uppercase;
     }
 }
 
@@ -4510,7 +4526,8 @@ html {
     .stat-bar > .stat-card:nth-child(5) .stat-card-value { color: #111 !important; font-size: 1.2rem !important; margin: 0 !important; }
 
     /* 5. JOBBKORT (DESIGN MED RADER & ETIKETTER) */
-    .mobile-job-card {
+    
+   .mobile-job-card {
     background: #ffffff;
     border: none; /* Ta bort den tråkiga grå ramen */
     border-radius: 12px;
@@ -5580,6 +5597,7 @@ html {
 
 
 /* --- SLUT PÅ STYLE.CSS --- */
+
 
 
 
