@@ -1581,6 +1581,32 @@
 			// Kör direkt vid start
 			updateMobileHeaderDate();
 
+			// --- FIX FÖR MOBIL-KNAPPAR (Ikoner) ---
+			// Detta lägger automatiskt till ikonerna i knapparna längst ner i modalen
+			function fixMobileModalButtons() {
+			    const btnBil = document.getElementById('carModalExternalLinkMobile');
+			    const btnOlja = document.getElementById('carModalOljemagasinetLinkMobile');
+			
+			    // Kolla om knappen finns och om den saknar bild
+			    if (btnBil && !btnBil.querySelector('img')) {
+			        const img = document.createElement('img');
+			        img.src = "https://biluppgifter.se/favicon/favicon.ico";
+			        img.alt = "Ikon";
+			        // Sätt in bilden FÖRE texten (prepend)
+			        btnBil.prepend(img);
+			    }
+			
+			    if (btnOlja && !btnOlja.querySelector('img')) {
+			        const img = document.createElement('img');
+			        img.src = "images/oljemagasinet-favico.png"; // Se till att sökvägen stämmer med din mapp
+			        img.alt = "Ikon";
+			        btnOlja.prepend(img);
+			    }
+			}
+			
+			// Kör fixen direkt
+			fixMobileModalButtons();
+
 			// --- NY FUNKTION: Notis-räknare ---
 			function initChatBadgeListener() {
 			    // VIKTIG ÄNDRING HÄR:
