@@ -3629,25 +3629,78 @@ body.offline-mode .offline-dot { display: block; }
 
 /* Mobil-anpassning av tabellen (Gör om till kort) */
 @media (max-width: 600px) {
+    /* Dölj den vanliga tabell-headern */
     .detail-job-table thead { display: none; }
     
+    /* Gör om varje rad (tr) till ett "Kort" */
     .detail-job-table tbody tr {
-        display: flex; flex-direction: column;
-        border: 1px solid var(--border-color);
-        border-radius: 8px; margin-bottom: 0.75rem;
-        padding: 0.5rem; background-color: var(--content-bg);
+        display: flex; 
+        flex-direction: column;
+        background-color: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px; 
+        padding: 16px;
+        margin-bottom: 12px; /* Luft mellan korten */
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
     }
     
+    /* --- STANDARD-CELLER (Datum, Status, Vinst) --- */
+    /* Dessa ska ha etikett till vänster, värde till höger */
     .detail-job-table td {
-        display: flex; justify-content: space-between;
-        padding: 0.4rem 0; border-bottom: 1px solid var(--border-color);
+        display: flex; 
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0; 
+        border-bottom: 1px solid #f3f4f6;
+        font-size: 0.95rem;
+        color: #1f2937;
+        width: 100%;
+        text-align: right;
     }
+    
+    /* Ta bort linjen på sista raden */
     .detail-job-table td:last-child { border-bottom: none; }
     
-    /* Lägg till etiketter via CSS */
+    /* Skapa etiketten (t.ex "Datum") */
     .detail-job-table td::before {
-        content: attr(data-label); font-weight: 600;
-        color: var(--text-color-light); font-size: 0.8rem;
+        content: attr(data-label); 
+        font-weight: 600;
+        color: #6b7280; /* Grå text för etiketten */
+        font-size: 0.85rem;
+        text-align: left;
+        margin-right: auto; /* Tryck etiketten till vänster */
+    }
+
+    /* --- SPECIALHANTERING AV "INFO"-CELLEN --- */
+    /* Det här gör att den ser ut som din bild! */
+    .detail-job-table td[data-label="Info"] {
+        display: block !important; /* Låt innehållet ta hela bredden */
+        text-align: left !important; /* Vänsterställ allt */
+        padding: 12px 0; /* Lite extra luft */
+        height: auto;
+    }
+
+    /* DÖLJ etiketten "Info" helt (Matchar din bild) */
+    .detail-job-table td[data-label="Info"]::before {
+        display: none;
+    }
+
+    /* Styla Regnr/Namn (Rubriken i kortet) */
+    .detail-job-table .job-subline-main {
+        display: block;
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: #111827; /* Mörk, tydlig text */
+        margin-bottom: 4px;
+    }
+
+    /* Styla beskrivningstexten */
+    .detail-job-table .job-subline-comment {
+        display: block;
+        font-size: 0.9rem;
+        color: #4b5563; /* Mörkgrå text */
+        line-height: 1.5;
+        white-space: normal; /* Låt texten radbrytas naturligt */
     }
 }
 
@@ -5403,6 +5456,7 @@ html {
 
 
 /* --- SLUT PÅ STYLE.CSS --- */
+
 
 
 
