@@ -4663,9 +4663,178 @@ input[type="search"]::-webkit-search-results-decoration {
     pointer-events: auto !important;
 }
 
+/* =================================================================
+   CHATT "PROFFS-POLERING" & FIXAR (V2.0)
+   ================================================================= */
 
+/* --- FIX 1 & 2: INPUT FÄLTET & GÖMMA KNAPPAR --- */
+
+/* Pillret i normalt läge */
+.chat-input-pill {
+    background-color: #f0f2f5 !important; /* Messenger-grå */
+    border: 1px solid transparent !important;
+    border-radius: 20px !important;
+    padding: 2px 12px !important;
+    transition: all 0.2s ease !important;
+    min-height: 40px !important;
+}
+
+/* När man skriver (.typing-mode läggs på av JS) */
+.chat-input-pill.typing-mode {
+    background-color: #fff !important;
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 0 2px rgba(0, 102, 255, 0.1) !important;
+    padding-right: 4px !important; /* Minska höger-padding */
+}
+
+/* DÖLJ gem/kamera när vi skriver (med brutal force) */
+.chat-input-pill.typing-mode .inner-input-actions {
+    display: none !important;
+    width: 0 !important;
+    overflow: hidden !important;
+}
+
+/* AI-KNAPPEN: Normalt läge (liten grå) */
+#askAiBtn {
+    background: transparent !important;
+    color: #65676b !important;
+    width: 32px !important;
+    height: 32px !important;
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+    order: -1 !important; /* Ligg först (vänster) normalt */
+}
+
+/* AI-KNAPPEN: Skriv-läge (Flytta till höger & bli blå) */
+.chat-input-pill.typing-mode #askAiBtn {
+    order: 10 !important; /* Flytta sist (höger) */
+    background-color: var(--primary-color) !important;
+    color: white !important;
+    width: 30px !important; /* Lite mindre bubbla */
+    height: 30px !important;
+    margin-left: 8px !important;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2) !important;
+}
+
+/* Själva textrutan */
+#chatInput {
+    padding: 8px 0 !important;
+    font-size: 16px !important; /* 16px stoppar iOS zoom */
+}
+
+/* --- FIX 3: SKICKA-KNAPPEN (Måste fungera!) --- */
+.chat-action-btn.primary {
+    position: relative !important;
+    z-index: 9999 !important; /* Ligg över ALLT */
+    pointer-events: auto !important;
+    cursor: pointer !important;
+    
+    /* Utseende */
+    width: 40px !important;
+    height: 40px !important;
+    margin-left: 8px !important;
+    background-color: var(--primary-color) !important;
+    color: white !important;
+    box-shadow: 0 2px 8px rgba(0, 102, 255, 0.4) !important;
+    transform: none !important; /* Ta bort gamla transformationer */
+}
+/* Klick-effekt */
+.chat-action-btn.primary:active {
+    transform: scale(0.9) !important;
+}
+
+/* --- FIX 4: HEADER KNAPPAR (STORA PÅ MOBIL) --- */
+@media (max-width: 768px) {
+    .header-gallery-btn,
+    #toggleAiFilter {
+        /* Gör klickytan rejäl */
+        width: 48px !important;
+        height: 48px !important;
+        padding: 0 !important;
+        
+        /* Centrera ikonen */
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        
+        /* Ta bort gamla ramar */
+        border: none !important;
+        background: transparent !important;
+        margin-left: 4px !important;
+    }
+
+    /* Ikonens storlek */
+    .header-gallery-btn svg,
+    #toggleAiFilter svg {
+        width: 26px !important;
+        height: 26px !important;
+        color: var(--text-color) !important; /* Tydligare färg */
+        stroke-width: 1.8px !important;
+    }
+    
+    /* Ta bort sök-krysset på mobil (det stör ofta) */
+    #clearChatSearch {
+        display: none !important; 
+    }
+}
+
+/* --- PROFFSIG POLERING (Bubblor & Bakgrund) --- */
+
+/* 1. Bakgrunden */
+.chat-messages {
+    background-color: #ffffff !important;
+    /* Ingen bakgrundsbild för renare look */
+    background-image: none !important; 
+}
+
+/* 2. Bubblor (Messenger/iMessage stil) */
+.chat-bubble {
+    border-radius: 18px !important;
+    padding: 8px 14px !important;
+    font-size: 15px !important;
+    line-height: 1.4 !important;
+    box-shadow: none !important; /* Platt design är modernare */
+    margin-bottom: 2px !important;
+    max-width: 75% !important;
+}
+
+/* Mina meddelanden (Solid Blå) */
+.chat-bubble.me {
+    background-color: #0084ff !important; /* Messenger Blue */
+    color: white !important;
+}
+
+/* Andras/System (Ljusgrå) */
+.chat-bubble.other, 
+.chat-bubble.system {
+    background-color: #f0f0f0 !important;
+    color: #050505 !important;
+    font-weight: 400 !important;
+}
+
+/* System-varning (Gul) */
+.chat-bubble:has(.chat-text-content:contains("⚠️")) {
+    background-color: #fff4e5 !important; /* Mycket ljus orange */
+    color: #663c00 !important;
+    border: 1px solid #ffcc80 !important;
+}
+
+/* AI-Svar (Ljusblå toning) */
+.chat-bubble.is-ai-message {
+    background: linear-gradient(135deg, #f0f7ff 0%, #e6f2ff 100%) !important;
+    color: #002b5c !important;
+    border: 1px solid #cce5ff !important;
+}
+
+/* Tider (Snyggare) */
+.chat-time {
+    font-size: 11px !important;
+    color: #b0b3b8 !important;
+    margin-bottom: 12px !important; /* Mer luft mellan grupper */
+    margin-top: 2px !important;
+}
 
 /* --- SLUT PÅ STYLE.CSS --- */
+
 
 
 
