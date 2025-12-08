@@ -5976,17 +5976,6 @@
 			    else if (currentView === 'kanban') renderKanbanBoard();
 			    else if (currentView === 'calendar' && calendar) { filterCalendarView(); calendar.render(); }
 			}
-			
-			    // --- DESKTOP ---
-			    if (currentView === 'timeline') {
-			        renderTimeline();
-			    } else if (currentView === 'kanban') {
-			        renderKanbanBoard();
-			    } else if (currentView === 'calendar' && calendar) {
-			        filterCalendarView(); 
-			        calendar.render();
-			    }
-			}
 
             if (searchBar) {
 		        searchBar.addEventListener('input', debounce(() => {
