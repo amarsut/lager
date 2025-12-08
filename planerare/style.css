@@ -4530,13 +4530,15 @@ html {
 
 
 /* =================================================================
-   CHATT UTSEENDE & FIXAR (V3.0 - Slutgiltig)
+   CHATT REPARATION & ÅTERSTÄLLNING (Klistra in längst ner i style.css)
    ================================================================= */
 
-/* --- 1. HEADER KNAPPAR (STÖRRE PÅ MOBIL) --- */
+/* --- 1. FIXA KNAPPARNA I HEADERN (AI & GALLERI) --- */
+/* Gör dem stora och lätta att trycka på igen */
 @media (max-width: 768px) {
     .header-gallery-btn,
-    #toggleAiFilter {
+    #toggleAiFilter,
+    #toggleChatGallery {
         width: 48px !important;
         height: 48px !important;
         padding: 0 !important;
@@ -4545,111 +4547,172 @@ html {
         justify-content: center;
         background: transparent !important;
         border: none !important;
-        margin-left: 2px !important;
+        margin: 0 !important;
     }
+    
+    /* Justera ikonernas storlek och färg */
     .header-gallery-btn svg,
-    #toggleAiFilter svg {
-        width: 26px !important;
-        height: 26px !important;
-        color: var(--text-color) !important; /* Tydligare färg */
+    #toggleAiFilter svg,
+    #toggleChatGallery svg {
+        width: 24px !important;
+        height: 24px !important;
+        color: #111827 !important; /* Tydlig mörk färg */
+        opacity: 0.8;
     }
-    /* Göm sök-krysset på mobil */
+
+    /* Göm sök-krysset på mobil för att ge plats */
     #clearChatSearch { display: none !important; }
+    
+    /* Se till att sökfältet i headern tillåter knapparna att ta plats */
+    .header-search-wrapper {
+        padding-right: 2px !important;
+        gap: 0 !important;
+    }
 }
 
-/* --- 2. INPUT-PILLRET (CLEAN LOOK) --- */
+/* --- 2. TEXTFÄLTET (MESSENGER-STIL) --- */
+
+/* Grundutseende: Grå bakgrund, ingen ram */
 .chat-input-pill {
     background-color: #f0f2f5 !important; /* Messenger-grå */
-    border: 1px solid transparent !important;
+    border: 1px solid transparent !important; /* Ingen synlig ram */
+    box-shadow: none !important;
     border-radius: 24px !important;
-    padding: 4px 12px !important;
+    padding: 4px 6px 4px 12px !important; /* Justerad padding */
     transition: all 0.2s ease !important;
-    min-height: 42px !important;
-    display: flex; align-items: center;
+    min-height: 44px !important;
+    display: flex !important;
+    align-items: center !important;
 }
 
-/* När man skriver: Vit bakgrund + Blå ram */
+/* När man skriver: Vit bakgrund, mjuk skugga (Ingen tjock ram) */
 .chat-input-pill.typing-mode {
-    background-color: #fff !important;
-    border-color: var(--primary-color) !important;
-    box-shadow: 0 0 0 2px rgba(0, 102, 255, 0.1) !important;
-    padding-right: 4px !important; /* Minska högermarginal */
+    background-color: #ffffff !important;
+    border-color: transparent !important; /* Ta bort den tjocka ramen */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important; /* Mjuk skugga istället */
+    padding-right: 6px !important;
 }
 
-/* Textfältet (Inga ramar) */
+/* Själva text-inputen: Ta bort standard-markering */
 #chatInput {
-    padding: 0 !important; margin: 0 !important;
-    border: none !important; outline: none !important;
+    padding: 0 !important; 
+    margin: 0 !important;
+    border: none !important; 
+    outline: none !important;
     background: transparent !important;
-    height: 100% !important; font-size: 16px !important;
+    height: 100% !important; 
+    font-size: 16px !important; /* Förhindrar zoom på iPhone */
+    color: #050505 !important;
+    min-width: 0 !important;
 }
 
-/* Ta bort "X" i inputfältet */
-input[type="search"]::-webkit-search-decoration,
-input[type="search"]::-webkit-search-cancel-button,
-input[type="search"]::-webkit-search-results-button,
-input[type="search"]::-webkit-search-results-decoration {
-    -webkit-appearance: none; display: none !important;
+/* --- 3. KNAPPAR I TEXTFÄLTET (ANIMATION & ORDNING) --- */
+
+/* Gemensam stil för inre knappar */
+.chat-inner-btn, #askAiBtn {
+    width: 36px !important;
+    height: 36px !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease !important;
+    flex-shrink: 0 !important;
 }
 
-/* --- 3. KNAPPAR I TEXTFÄLTET --- */
+/* Ikon-storlek */
+.chat-inner-btn svg, #askAiBtn svg {
+    width: 22px !important;
+    height: 22px !important;
+    color: #65676b !important; /* Messenger-grå ikoner */
+}
 
-/* Dölj gem/kamera HELT när typing-mode är aktivt */
+/* A) IDLE-LÄGE (När man inte skriver) */
+/* AI-knappen ska ligga till VÄNSTER */
+#askAiBtn {
+    order: -1 !important; /* Flytta först i raden */
+    margin-right: 4px !important;
+    margin-left: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+#askAiBtn svg { color: #65676b !important; }
+
+/* Behållaren för Kamera/Bifoga (Visa dem) */
+.inner-input-actions {
+    display: flex !important;
+    align-items: center !important;
+    gap: 2px !important;
+    margin-left: 4px !important;
+    opacity: 1 !important;
+    width: auto !important;
+}
+
+/* B) TYPING-LÄGE (När man skriver) */
+/* Dölj Kamera & Bifoga helt */
 .chat-input-pill.typing-mode .inner-input-actions {
     display: none !important;
     width: 0 !important;
+    margin: 0 !important;
+    opacity: 0 !important;
 }
 
-/* AI-KNAPPEN: Normalt (Liten, grå, till vänster) */
-#askAiBtn {
-    order: -1 !important; /* Ligg först */
-    background: transparent !important;
-    color: #65676b !important;
-    width: 34px !important; height: 34px !important;
-    margin-right: 4px !important;
-    transition: all 0.2s ease !important;
-}
-
-/* AI-KNAPPEN: När man skriver (Blå, till höger) */
+/* Flytta AI-knappen till HÖGER och gör den blå */
 .chat-input-pill.typing-mode #askAiBtn {
-    order: 10 !important; /* Flytta sist */
-    background-color: var(--primary-color) !important;
-    color: white !important;
-    width: 32px !important; height: 32px !important;
-    margin-left: auto !important; /* Knuffa till högerkanten */
+    order: 10 !important; /* Flytta sist i raden */
+    margin-left: auto !important; /* Knuffa den till högerkanten */
     margin-right: 0 !important;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2) !important;
+    background-color: var(--primary-color) !important; /* Blå bakgrund */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
+    width: 32px !important;
+    height: 32px !important;
 }
 
-/* --- 4. SKICKA-KNAPPEN (FIXAD) --- */
+/* Gör ikonen vit när den är blå */
+.chat-input-pill.typing-mode #askAiBtn svg {
+    color: #ffffff !important;
+    width: 18px !important;
+    height: 18px !important;
+}
+
+/* --- 4. SKICKA-KNAPPEN (POSITION) --- */
 .chat-action-btn.primary {
-    position: relative !important;
-    z-index: 100 !important; /* Måste ligga överst */
-    pointer-events: auto !important; /* Måste vara klickbar */
-    cursor: pointer !important;
-    
-    width: 44px !important; height: 44px !important;
+    width: 44px !important; 
+    height: 44px !important;
     border-radius: 50% !important;
     margin-left: 8px !important;
+    flex-shrink: 0 !important;
     background-color: var(--primary-color) !important;
     color: white !important;
-    box-shadow: 0 2px 8px rgba(0, 102, 255, 0.4) !important;
-    transform: none !important;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2) !important;
+    border: none !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
 }
-.chat-action-btn.primary:active { transform: scale(0.95) !important; }
 
-/* Bubblor (Snyggare) */
-.chat-bubble {
-    border-radius: 18px !important;
-    box-shadow: none !important;
-    margin-bottom: 2px !important;
+/* Dark Mode-justeringar för detta block */
+[data-theme="dark"] .chat-input-pill {
+    background-color: #3a3a3c !important;
 }
-.chat-bubble.me { background-color: #0084ff !important; color: #fff !important; }
-.chat-bubble.other, .chat-bubble.system { background-color: #f0f0f0 !important; color: #050505 !important; }
-.chat-messages { background-color: #fff !important; background-image: none !important; }
+[data-theme="dark"] .chat-input-pill.typing-mode {
+    background-color: #1c1c1e !important;
+}
+[data-theme="dark"] .header-gallery-btn svg,
+[data-theme="dark"] #toggleAiFilter svg {
+    color: #e4e6eb !important;
+}
+[data-theme="dark"] .chat-inner-btn svg, 
+[data-theme="dark"] #askAiBtn svg {
+    color: #b0b3b8 !important;
+}
 
 
 /* --- SLUT PÅ STYLE.CSS --- */
+
 
 
 
