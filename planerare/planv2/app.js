@@ -16,31 +16,44 @@ document.addEventListener('DOMContentLoaded', () => {
 // --- TABELL HANTERING ---
 function renderTable() {
     const tbody = document.getElementById('jobTableBody');
-    tbody.innerHTML = ''; // Rensa tabellen
+    tbody.innerHTML = ''; 
 
     jobs.forEach(job => {
         const dateObj = new Date(job.date);
-        // Formatera datum snyggt (t.ex. Mån 8 dec kl 16.30)
         const dateString = dateObj.toLocaleDateString('sv-SE', { weekday: 'short', day: 'numeric', month: 'short' }) + 
                            " kl. " + 
                            dateObj.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
 
+        // Här skapar vi den nya registreringsskylten
         const regHtml = job.regNr 
-            ? `<span class="reg-box"><i class="fa-solid fa-square text-blue-800"></i>S ${job.regNr}</span>` 
-            : '<span style="color:#ccc">---</span>';
+            ? `<div class="plate-wrapper">
+                 <div class="plate-blue">S</div>
+                 <div class="plate-text">${job.regNr}</div>
+               </div>` 
+            : '<span style="color:#ccc; font-size:0.8rem;">---</span>';
+
+        // Ikonlogik för kund (Person vs Företag)
+        const userIcon = (job.customer === 'BMG' || job.customer.includes('FOG')) 
+            ? 'fa-briefcase' 
+            : 'fa-user';
 
         const row = `
             <tr>
                 <td><span class="status-badge">${job.status}</span></td>
                 <td>${capitalizeFirst(dateString)}</td>
-                <td><div class="customer-cell"><i class="fa-solid fa-user ${job.customer === 'BMG' || job.customer.includes('FOG') ? 'fa-briefcase' : ''}"></i> ${job.customer}</div></td>
+                <td>
+                    <div class="customer-cell">
+                        <i class="fa-solid ${userIcon}"></i> 
+                        ${job.customer}
+                    </div>
+                </td>
                 <td>${regHtml}</td>
                 <td style="text-align: right;" class="action-icons">
-                    <i class="fa-regular fa-comment" onclick="openChatWithNote('${job.customer}')"></i>
-                    <i class="fa-regular fa-flag"></i>
-                    <i class="fa-regular fa-circle-check"></i>
-                    <i class="fa-regular fa-trash-can" onclick="deleteJob(${job.id})"></i>
-                    <i class="fa-solid fa-pen" onclick="editJob(${job.id})"></i>
+                    <i class="fa-regular fa-comment" onclick="openChatWithNote('${job.customer}')" title="Notering"></i>
+                    <i class="fa-regular fa-flag" title="Prioritera"></i>
+                    <i class="fa-regular fa-circle-check" title="Klarmarkera"></i>
+                    <i class="fa-regular fa-trash-can" onclick="deleteJob(${job.id})" title="Ta bort"></i>
+                    <i class="fa-solid fa-pen" onclick="editJob(${job.id})" title="Redigera"></i>
                 </td>
             </tr>
         `;
