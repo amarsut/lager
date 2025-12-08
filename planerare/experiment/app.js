@@ -405,7 +405,6 @@ function openVehicleModal(regnr) {
     
     // 1. Sätt rubriker och länkar
     document.getElementById('vehicleRegTitle').textContent = cleanReg;
-    document.getElementById('techRegSubtitle').textContent = cleanReg;
     document.getElementById('linkBiluppgifter').href = `https://biluppgifter.se/fordon/${cleanReg}`;
     
     document.getElementById('btnCopyRegModal').onclick = () => {
@@ -417,26 +416,14 @@ function openVehicleModal(regnr) {
     renderVehicleHistory(cleanReg);
 
     // 3. HANTERA TEKNISK DATA
-    const card = document.getElementById('techDataCard');
+    const dataContainer = document.getElementById('techDataContainer');
     const fetchContainer = document.getElementById('fetchDataContainer');
     const fetchBtn = document.getElementById('btnFetchTechData');
     
-    // Behållare för gammal HTML-data (om sådan finns)
-    // Vi skapar en temporär div för att visa gammal data om vi hittar den
-    let oldDataContainer = document.getElementById('oldTechDataContainer');
-    if (!oldDataContainer) {
-        oldDataContainer = document.createElement('div');
-        oldDataContainer.id = 'oldTechDataContainer';
-        oldDataContainer.className = 'tech-specs-card'; // Din gamla CSS-klass
-        // Lägg in den efter rubriken men före nya kortet
-        const wrapper = document.querySelector('.tech-section-wrapper');
-        wrapper.insertBefore(oldDataContainer, card);
-    }
-
     // Nollställ UI
-    card.style.display = 'none';
-    oldDataContainer.style.display = 'none';
+    dataContainer.style.display = 'none';
     fetchContainer.style.display = 'none';
+    dataContainer.innerHTML = ''; // Töm gammalt innehåll
     
     fetchBtn.disabled = false;
     fetchBtn.innerHTML = `<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> Hämta Data med AI`;
@@ -445,31 +432,16 @@ function openVehicleModal(regnr) {
     db.collection("vehicleSpecs").doc(cleanReg).get().then(doc => {
         if (doc.exists) {
             const data = doc.data();
-            
-            // CHECK: Är det gammal HTML-data eller ny JSON-data?
-            if (data.htmlContent && typeof data.htmlContent === 'string') {
-                // FALL A: Gammal data (HTML)
-                console.log("Hittade GAMMAL data (HTML). Visar i kompatibilitetsläge.");
-                oldDataContainer.innerHTML = data.htmlContent;
-                oldDataContainer.style.display = 'block';
-                
-                // Göm nya kortet och knappen
-                card.style.display = 'none';
-                fetchContainer.style.display = 'none';
-                
-            } else {
-                // FALL B: Ny data (JSON) - eller om du sparade JSON direkt i roten av dokumentet
-                console.log("Hittade NY data (JSON). Fyller i kortet.");
-                populateTechCard(data);
-                card.style.display = 'block';
-                oldDataContainer.style.display = 'none';
-                fetchContainer.style.display = 'none';
-            }
+            // VIKTIGT: Vi antar nu att ALL data är i nya JSON-formatet.
+            // Vi har tagit bort kollen för gammal htmlContent.
+            console.log("Data hittad (JSON). Renderar lista.");
+            populateTechCard(data, cleanReg); // Skickar med regnr för rubriken
+            dataContainer.style.display = 'block';
+            fetchContainer.style.display = 'none';
         } else {
             // DATA SAKNAS
             console.log("Ingen data sparad. Visar knapp.");
-            card.style.display = 'none';
-            oldDataContainer.style.display = 'none';
+            dataContainer.style.display = 'none';
             fetchContainer.style.display = 'block';
             
             fetchBtn.onclick = function() {
@@ -671,31 +643,78 @@ async function fetchTechnicalData(regnr) {
     const docRef = db.collection("vehicleSpecs").doc(cleanReg);
     const fetchBtn = document.getElementById('btnFetchTechData');
 
-    // UI: Visa att vi jobbar
     fetchBtn.disabled = true;
     fetchBtn.innerHTML = `<span>⏳ Analyserar med AI...</span>`;
 
     try {
-        // Kör scraping-funktionen (samma som vi lade in tidigare i scrapeAndAnalyze)
         await scrapeAndAnalyze(cleanReg, docRef);
         
-        // När det är klart:
-        // 1. Hämta den nya datan (scrapeAndAnalyze sparar den i db och uppdaterar UI via populateTechCard, 
-        // men vi måste visa kortet manuellt här också för säkerhets skull)
+        // Hämta igen för att visa
         const doc = await docRef.get();
         if(doc.exists) {
-            populateTechCard(doc.data());
-            document.getElementById('techDataCard').style.display = 'block';
+            populateTechCard(doc.data(), cleanReg);
+            document.getElementById('techDataContainer').style.display = 'block';
             document.getElementById('fetchDataContainer').style.display = 'none';
             showToast('Teknisk data hämtad och sparad!', 'success');
         }
 
     } catch (error) {
         console.error("Fel vid AI-hämtning:", error);
-        showToast('Kunde inte hämta data. Försök igen.', 'danger');
+         if (error.message.includes('403') || error.message.includes('Forbidden')) {
+            showToast('Fel: Ogiltig API-nyckel.', 'danger');
+        } else {
+            showToast('Kunde inte hämta data. Försök igen.', 'danger');
+        }
         fetchBtn.disabled = false;
         fetchBtn.innerHTML = `<span>Försök igen</span>`;
     }
+}
+
+function populateTechCard(data, regnr) {
+    const container = document.getElementById('techDataContainer');
+    let html = '';
+
+    // 1. Skapa Rubriken (Med en generell bil-ikon)
+    html += `
+       <div class="tech-header-main">
+           <svg class="brand-icon-svg"><use href="#icon-car-tech"></use></svg>
+           <h4>Teknisk Data ${regnr}</h4>
+        </div>
+    `;
+
+    html += '<ul class="tech-list">';
+
+    // 2. Definiera fälten, deras etiketter och vilken ikon de ska ha
+    // Vi mappar JSON-nycklarna till dina specifika ikoner.
+    const fields = [
+        { key: 'model', label: 'Bil', icon: '#icon-car-tech' },
+        { key: 'engine', label: 'Motor', icon: '#icon-engine-tech' },
+        { key: 'oil', label: 'Motorolja', icon: '#icon-oil-tech' },
+        { key: 'ac', label: 'AC', icon: '#icon-ac-tech' },
+        // OBS: AI:n returnerar 'timing_belt', men vi vill visa 'Kamrem'
+        { key: 'timing_belt', label: 'Kamrem', icon: '#icon-belt-tech' }, 
+        { key: 'torque', label: 'Moment', icon: '#icon-torque-tech' },
+        { key: 'battery', label: 'Batteri', icon: '#icon-battery-tech' },
+        { key: 'tow_weight', label: 'Dragvikt', icon: '#icon-weight-tech' }
+    ];
+
+    // 3. Loopa igenom och skapa listpunkter (<li>)
+    fields.forEach(field => {
+        // Hämta värdet, eller visa "Ej hittad" om det är tomt/null
+        const value = data[field.key] ? data[field.key] : 'Ej hittad';
+        
+        html += `
+            <li>
+                <svg class="spec-icon-svg"><use href="${field.icon}"></use></svg>
+                <span><b>${field.label}:</b> ${value}</span>
+            </li>
+        `;
+    });
+
+    html += '</ul>';
+    
+    // 4. Injicera HTML:en i behållaren
+    container.innerHTML = html;
 }
 
 // Skrapar Biluppgifter.se och skickar till Gemini AI
