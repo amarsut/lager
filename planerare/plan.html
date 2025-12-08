@@ -1,18 +1,6 @@
 <!DOCTYPE html>
 <html lang="sv" data-theme="light">
 <head>
-	<script>
-        window.onerror = function(message, source, lineno, colno, error) {
-            var errorBox = document.getElementById('mobile-debug-console');
-            if (!errorBox) {
-                errorBox = document.createElement('div');
-                errorBox.id = 'mobile-debug-console';
-                errorBox.style.cssText = 'position:fixed; top:0; left:0; width:100%; background:red; color:white; z-index:99999; padding:20px; font-size:14px; white-space:pre-wrap; font-family:monospace; max-height:50vh; overflow:auto;';
-                document.body.appendChild(errorBox);
-            }
-            errorBox.innerHTML += "FEL: " + message + "\nRad: " + lineno + "\n\n";
-        };
-    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Översikt Pro</title>
