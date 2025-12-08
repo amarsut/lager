@@ -5320,8 +5320,93 @@ html {
     /* -webkit-user-select: none !important; */
 }
 
+/* --- MOBIL HEADER DESIGN (NY) --- */
+
+/* Dölj som standard (på dator) */
+.mobile-header-content {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    /* Justera huvud-headern för att ge plats */
+    .top-bar {
+        justify-content: space-between !important; /* Separera logga och datum */
+        padding: 0 16px !important;
+        height: 65px !important; /* Lite mer höjd för luftighet */
+        background-color: #ffffff !important;
+    }
+
+    /* Visa det nya innehållet */
+    .mobile-header-content {
+        display: flex !important;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+    }
+
+    /* Logotypen (Anpassad storlek) */
+    .mobile-logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 1.1rem;
+        font-weight: 800; /* Fetare text ser bättre ut på små skärmar */
+        color: #111827;
+        letter-spacing: -0.5px;
+    }
+
+    /* Ikon-boxen (Samma snygga gradient som sidebar) */
+    .mobile-logo .logo-icon-box {
+        width: 34px;
+        height: 34px;
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25); /* Mjuk skugga */
+    }
+
+    .mobile-logo .logo-icon-box svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    /* Datum-Widgeten (Snygg layout) */
+    .mobile-date-widget {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end; /* Högerställ texten */
+        line-height: 1.1;
+    }
+
+    /* Veckodagen (Liten, grå, versaler) */
+    .date-weekday {
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        color: #6b7280; /* Muted gray */
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        margin-bottom: 2px;
+    }
+
+    /* Datumet (Större, mörkt) */
+    .date-day {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: #1f2937;
+    }
+    
+    /* Göm de gamla knapparna i headern om de stör (valfritt) */
+    .header-icon-btn, 
+    #headerPrivacyToggle {
+        display: none !important; 
+    }
+}
+
 
 /* --- SLUT PÅ STYLE.CSS --- */
+
 
 
 
