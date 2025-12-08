@@ -58,8 +58,8 @@
 		<symbol id="icon-drag-handle" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">
 		    <path d="M2 4.75a.75.75 0 0 1 .75-.75h.5a.75.75 0 0 1 0 1.5h-.5a.75.75 0 0 1-.75-.75zM2 8a.75.75 0 0 1 .75-.75h.5a.75.75 0 0 1 0 1.5h-.5A.75.75 0 0 1 2 8zm.75 3.25a.75.75 0 0 0 0 1.5h.5a.75.75 0 0 0 0-1.5h-.5zM6 4.75a.75.75 0 0 1 .75-.75h.5a.75.75 0 0 1 0 1.5h-.5a.75.75 0 0 1-.75-.75zM6 8a.75.75 0 0 1 .75-.75h.5a.75.75 0 0 1 0 1.5h-.5A.75.75 0 0 1 6 8zm.75 3.25a.75.75 0 0 0 0 1.5h.5a.75.75 0 0 0 0-1.5h-.5z"/>
 		</symbol>
-		<symbol id="icon-office-building" viewBox="0 0 32 32" fill="currentColor">
-		    <path d="M24 22c0-.366-.105-.704-.277-1h-3.446c-.172.296-.277.634-.277 1 0 1.104.896 2.224 2 2.224 1.104 0 2-1.12 2-2.224zm2 0c0 2.209-1.791 4-4 4-2.209 0-4-1.791-4-4 0-.348.054-.681.141-1h-12.141l-.001 11c0 2.209 1.791 4 4 4h12c2.209 0 4-1.791 4-4l.001-11h-1.141c.087.319.141.652.141 1zm0-12h-8v-1c0-2.552-1.552-4-2-4s-2 1.448-2 4v1h-8c-2.896 0-4 1.104-4 4 0 2.896 1.104 4 4 4h20c2.896 0 4-1.104 4-4 0-2.896-1.104-4-4-4zm-14-1c0-1.224.896-2 2-2s2 .776 2 2v1h-4v-1z" />
+		<symbol id="icon-office-building" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+    		<path stroke-linecap="round" stroke-linejoin="round" d="M3.75 21V19.5m0-1.5V6.75C3.75 6.224 4.174 5.75 4.704 5.75h14.592c.53 0 .954.474.954 1.05V18c0 .526-.424.95-.954.95h-14.592c-.53 0-.954-.424-.954-.95v-9.75M12 11.25v6M9 14.25h6m-7.5 0h1.5m-1.5 3h1.5m-3 0h1.5"/>
 		</symbol>
 		<symbol id="icon-image" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 		  <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
@@ -192,148 +192,65 @@
 		</svg>
     </svg>
 
-    <div class="app-layout">
-    
-    <aside class="sidebar">
-    <div class="sidebar-header">
-        <div class="app-logo-modern">
-            <div class="logo-icon-box">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M4 12c2-4 5-7 10-4s3 8 6 4" stroke="white" />
-                </svg>
-            </div>
-            <span>Arbetsorder</span>
-        </div>
-    </div>
-
-    <nav class="sidebar-nav">
-        <button class="nav-link active" id="btnToggleTimeline" data-view="timeline">
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                <polyline points="9 22 9 12 15 12 15 22"></polyline>
-            </svg>
-            <span>Översikt</span>
-        </button>
-
-        <div class="nav-spacer"></div>
-
-        <button class="nav-link" id="btnToggleCalendar" data-view="calendar">
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                <line x1="16" y1="2" x2="16" y2="6"></line>
-                <line x1="8" y1="2" x2="8" y2="6"></line>
-                <line x1="3" y1="10" x2="21" y2="10"></line>
-            </svg>
-            <span>Kalender</span>
-        </button>
-
-        <button class="nav-link" id="btnToggleKanban" data-view="kanban">
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
-                <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
-                <path d="M9 14h6"></path>
-                <path d="M9 10h6"></path>
-                <path d="M9 18h6"></path>
-            </svg>
-            <span>Kanban</span>
-        </button>
-
-        <button class="nav-link" onclick="document.getElementById('customerModal').classList.add('show')">
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                <circle cx="12" cy="7" r="4"></circle>
-            </svg>
-            <span>Kunder</span>
-        </button>
-
-        <button class="nav-link" onclick="document.getElementById('statsModal').classList.add('show')">
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-                <line x1="12" y1="22.08" x2="12" y2="12"></line>
-            </svg>
-            <span>Lager</span>
-        </button>
-
-        <button class="nav-link" id="settingsBtn">
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="3"></circle>
-                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-            </svg>
-            <span>Inställningar</span>
-        </button>
-
-        <button class="nav-link" onclick="alert('Funktion kommer snart!')">
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
-                <line x1="1" y1="10" x2="23" y2="10"></line>
-            </svg>
-            <span>Mekaniker</span>
-        </button>
-    </nav>
-    
-    <div id="offlineIndicator" class="offline-dot sidebar-dot" title="Du är offline"></div>
-<div class="sidebar-footer">
-        <div class="user-profile-card">
-            <img src="https://ui-avatars.com/api/?name=Admin&background=eff6ff&color=3b82f6&bold=true" alt="Profil" class="sidebar-avatar" id="sidebarAvatar">
-            
-            <div class="user-info">
-                <span class="user-name" id="sidebarUserName">Laddar...</span>
-                <span class="user-role">Inloggad</span>
-            </div>
-
-            <button class="logout-icon-btn" id="sidebarLogoutBtn" title="Logga ut">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                    <polyline points="16 17 21 12 16 7"></polyline>
-                    <line x1="21" y1="12" x2="9" y2="12"></line>
-                </svg>
-            </button>
-        </div>
-    </div>
-
-    <div id="offlineIndicator" class="offline-dot sidebar-dot" title="Du är offline"></div>
-
-</aside>
-
-    <div class="main-content-wrapper">
+    <div class="app-container">
         
-        <header class="top-bar">
-			<div class="mobile-header-content">
-			    <div class="logo-icon-box mobile-logo-icon">
-			        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-			            <path d="M4 12c2-4 5-7 10-4s3 8 6 4" stroke="white" />
-			        </svg>
-			    </div>
-			    
-			    <div class="mobile-date-widget" id="mobileHeaderDate">
-			        </div>
-			</div>
-            <div class="top-search-container">
-                <svg class="icon search-icon" viewBox="0 0 24 24"><use href="#icon-search"></use></svg>
-                <input type="search" id="searchBar" placeholder="Sök regnr, kund..." autocomplete="off">
+        <header class="main-header">
+            <div class="header-left">
+                <a href="#" class="nav-logo" title="Statistiköversikt">
+			    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+			        <path d="M8 7H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3"/>
+			        <path d="M16 2v6h-4V2h4zM12 11h.01"/>
+			        <path d="M12 15h.01"/>
+			        <path d="M12 19h.01"/>
+			    </svg>
+				</a>
+                <div class="header-titles">
+                    <span class="app-brand-title" id="appBrandTitle"></span>
+                    <div class="view-toggle-buttons" id="viewToggleButtons">
+                        <button class="button-toggle-view active" id="btnToggleTimeline" data-view="timeline">
+                            <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-timeline-view"></use></svg>
+                            <span>Tidslinje</span>
+                        </button>
+                        <button class="button-toggle-view" id="btnToggleCalendar" data-view="calendar">
+                            <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-calendar-view"></use></svg>
+                            <span>Kalender</span>
+                        </button>
+						<button class="button-toggle-view" id="btnToggleKanban" data-view="kanban">
+						    <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-kanban-view"></use></svg>
+						    <span>Tavla</span>
+						</button>
+                    </div>
+                </div>
             </div>
 
-            <div class="top-bar-actions">
-			    <button class="icon-btn header-icon-btn" id="fabChat" title="Notiser">
-			        <div class="icon-badge-container">
-			            <svg class="icon" viewBox="0 0 24 24"><use href="#icon-chat-bubble"></use></svg>
-			            <span id="chatBadgeDesktop" class="header-badge" style="display: none;">0</span>
-			        </div>
-			    </button>
-			
-			    <button class="icon-btn header-icon-btn" id="headerPrivacyToggle" title="Sekretessläge">
-			        <svg class="icon icon-eye" viewBox="0 0 24 24"><use href="#icon-eye"></use></svg>
-			        <svg class="icon icon-eye-slash" viewBox="0 0 24 24" style="display: none;"><use href="#icon-eye-slash"></use></svg>
-			    </button>
-			
-			    <div class="divider-vertical"></div>
-			
-			    <button class="button primary header-cta-btn" id="fabAddJob">
-			        <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
-			        <span>Nytt Jobb</span>
-			    </button>
-			</div>
+			<div id="offlineIndicator" class="offline-dot" title="Du är offline. Ändringar sparas lokalt."></div>
+            
+            <div class="header-right">
+                <button class="nav-button" id="privacyToggle" title="Växla privat läge">
+                    <svg class="icon icon-eye" viewBox="0 0 24 24"><use href="#icon-eye"></use></svg>
+                    <svg class="icon icon-eye-slash" viewBox="0 0 24 24"><use href="#icon-eye-slash"></use></svg>
+                </button>
+                <div class="divider"></div>
+
+                <button class="nav-button" id="settingsBtn" title="Inställningar">
+                    <svg class="icon" viewBox="0 0 24 24"><use href="#icon-settings"></use></svg>
+                </button>
+                
+                <button class="nav-button" id="toggleCompactView" title="Kompakt vy">
+                    <svg class="icon" viewBox="0 0 24 24"><use href="#icon-view-dense"></use></svg>
+                </button>
+                <button class="nav-button" id="lockAppBtn" title="Lås appen">
+                    <svg class="icon" viewBox="0 0 24 24"><use href="#icon-lock-closed"></use></svg>
+                </button>
+                <button class="nav-button" id="themeToggle" title="Växla tema">
+                    <svg class="icon icon-sun" viewBox="0 0 24 24"><use href="#icon-sun"></use></svg>
+                    <svg class="icon icon-moon" viewBox="0 0 24 24"><use href="#icon-moon"></use></svg>
+                </button>
+                
+                <button class="button clear-filter" id="clearDayFilterBtn" style="display: none;">
+                    &times; Rensa sökning
+                </button>
+            </div>
         </header>
 
         <main class="app-main">
@@ -361,39 +278,128 @@
                         <p class="stat-card-value" id="stat-all">0</p>
                     </div>
                 </div>
-
+                
                 <div id="timelineView">
-                    <div class="table-container" id="jobListContainer" style="margin-top: 20px;">
+                    <div class="view-controls" id="view-controls">
+					    <div class="search-wrapper">
+					        <svg class="icon" viewBox="0 0 24 24"><use href="#icon-search"></use></svg>
+					        					        
+					        <input type="search" id="searchBar" name="global_search_safe_v2" placeholder="Sök jobb... (F)" autocomplete="off" spellcheck="false">
+					        
+					        <button type="button" class="search-clear-btn" id="desktopSearchClear" title="Rensa"></button>
+					    </div>
+					
+					    <div class="sort-controls">
+					        <div class="custom-select-wrapper">
+					            <select id="sortBy">
+					                <option value="datum">Datum</option>
+					                <option value="kundpris">Pris</option>
+					                <option value="kundnamn">Kund</option>
+					                <option value="status">Status</option>
+					            </select>
+					            <div class="select-visual">
+					                <span class="select-label">Sortera:</span>
+					                <span class="select-value">Datum</span>
+					                <svg class="icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+					            </div>
+					        </div>
+					
+					        <button id="sortDirectionBtn" class="icon-btn sort-btn" title="Växla ordning">
+					            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"/></svg>
+					        </button>
+					    </div>
+					</div>
+					
+					<div id="mobileSearchModal" class="modal-backdrop-mobile" style="display: none;">
+					    <div class="mobile-search-layout">
+					        
+					        <div class="mobile-search-header">
+					            <button id="mobileSearchBackBtn" class="icon-btn back-btn">
+					                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 19l-7-7 7-7"/></svg>
+					            </button>
+					            
+					            <div class="search-wrapper mobile-wrapper">
+					                <input type="search" id="mobileSearchBar" placeholder="Sök jobb, kund..." enterkeyhint="search">
+					                <button type="button" class="search-clear-btn" id="mobileSearchClear"></button>
+					            </div>
+					        </div>
+					
+					        <div class="mobile-filter-bar">
+					            <div class="mobile-sort-chips" id="mobileSortOptions">
+					                <button type="button" class="sort-chip active" data-sort="datum">Datum</button>
+					                <button type="button" class="sort-chip" data-sort="kundpris">Pris</button>
+					                <button type="button" class="sort-chip" data-sort="kundnamn">Kund</button>
+					                <button type="button" class="sort-chip" data-sort="status">Status</button>
+					            </div>
+					        </div>
+					
+					        <div id="mobileSearchResults" class="mobile-results-container">
+					            <div class="empty-search-placeholder">
+					                <svg class="icon-lg" viewBox="0 0 24 24"><use href="#icon-search"></use></svg>
+					                <p>Sök efter kunder, reg.nr eller info...</p>
+					            </div>
+					        </div>
+					
+					    </div>
+					</div>
+
+                    <div class="table-container" id="jobListContainer">
                         </div>
-                     <div class="empty-state" id="emptyStateTimeline">
+                    <div class="empty-state" id="emptyStateTimeline">
                         <svg class="icon-lg" viewBox="0 0 24 24"><use href="#icon-empty"></use></svg>
-                        <h3 id="emptyStateTitleTimeline">Laddar jobb...</h3>
-                        <button class="button primary" id="emptyStateAddBtn">Lägg till jobb</button>
+                        <h3 id="emptyStateTitleTimeline">Laddar jobb från molnet...</h3>
+                        <p id="emptyStateTextTimeline">Om detta tar tid, se till att du klistrat in din Firebase Config.</p>
+                        <button class="button primary" id="emptyStateAddBtn">
+                            <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-plus"></use></svg>
+                            <span>Lägg till nytt jobb</span>
+                        </button>
                     </div>
                 </div>
 
-                <div id="kanbanView" style="display: none;">
-                    <div class="kanban-board">
-                         <div class="kanban-column" data-status="offererad">
-						    <h3 class="kanban-column-title"><span>Offererad</span><span class="kanban-column-count">0</span></h3>
-						    <div class="kanban-column-cards" id="kanban-col-offererad"></div>
-                            <button class="button secondary kanban-add-btn" data-status="offererad">Lägg till...</button>
+				<div id="kanbanView" style="display: none;">
+				    <div class="kanban-board">
+				
+				        <div class="kanban-column" data-status="offererad">
+						    <h3 class="kanban-column-title">
+						        <span>Offererad</span>
+						        <span class="kanban-column-count">0</span> </h3>
+						    <div class="kanban-column-cards" id="kanban-col-offererad">
+						        </div>
+                            <button class="button secondary kanban-add-btn" data-status="offererad">
+                                <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-plus"></use></svg>
+                                <span>Lägg till...</span>
+                            </button>
 						</div>
-                        <div class="kanban-column" data-status="bokad">
-						    <h3 class="kanban-column-title"><span>Bokad</span><span class="kanban-column-count">0</span></h3>
-						    <div class="kanban-column-cards" id="kanban-col-bokad"></div>
-                            <button class="button secondary kanban-add-btn" data-status="bokad">Lägg till...</button>
+						
+						<div class="kanban-column" data-status="bokad">
+						    <h3 class="kanban-column-title">
+						        <span>Bokad</span>
+						        <span class="kanban-column-count">0</span> </h3>
+						    <div class="kanban-column-cards" id="kanban-col-bokad">
+						        </div>
+                            <button class="button secondary kanban-add-btn" data-status="bokad">
+                                <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-plus"></use></svg>
+                                <span>Lägg till...</span>
+                            </button>
 						</div>
-                        <div class="kanban-column" data-status="faktureras">
-						    <h3 class="kanban-column-title"><span>Fakturering</span><span class="kanban-column-count">0</span></h3>
+
+						<div class="kanban-column" data-status="faktureras">
+						    <h3 class="kanban-column-title">
+						        <span>Fakturering</span>
+						        <span class="kanban-column-count">0</span> 
+						    </h3>
 						    <div class="kanban-column-cards" id="kanban-col-faktureras"></div>
 						</div>
-                        <div class="kanban-column" data-status="klar">
-						    <h3 class="kanban-column-title"><span>Klar</span><span class="kanban-column-count">0</span></h3>
-						    <div class="kanban-column-cards" id="kanban-col-klar"></div>
+						
+						<div class="kanban-column" data-status="klar">
+						    <h3 class="kanban-column-title">
+						        <span>Klar (Senaste 5)</span> <span class="kanban-column-count">0</span> </h3>
+						    <div class="kanban-column-cards" id="kanban-col-klar">
+						        </div>
 						</div>
-                     </div>
-                </div>
+				
+				    </div>
+				</div>
 
                 <div id="calendarView" style="display: none;">
                     <div id="calendarContainer"></div>
@@ -402,7 +408,6 @@
             </div>
         </main>
     </div>
-</div>
 
     <nav class="mobile-nav" id="mobileNav">
 		<button class="mobile-nav-btn active" id="mobileViewToggle" data-modal="viewSelectModal">
@@ -438,14 +443,21 @@
 	    <div class="search-modal-content mobile-search-layout">
 	        
 	        <div class="mobile-search-header">
-	            <button id="mobileSearchBackBtn" class="icon-btn">
-	                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-	            </button>
-	
 	            <div class="search-wrapper">
-	                <svg class="icon search-icon" viewBox="0 0 24 24"><use href="#icon-search"></use></svg>
-	                <input type="search" id="mobileSearchBar" placeholder="Sök jobb, kund, bil..." autocomplete="off">
-	                <button type="button" class="search-clear-btn" id="mobileSearchClear"></button>
+	                <svg class="icon" viewBox="0 0 24 24"><use href="#icon-search"></use></svg>
+	                <input type="search" id="mobileSearchBar" name="mobile_search_safe_v2" placeholder="Sök jobb, kund, bil..." autocomplete="off" spellcheck="false" enterkeyhint="search">
+	                <button type="button" class="search-clear-btn" id="mobileSearchClear" title="Rensa"></button>
+	            </div>
+	            <button id="mobileSearchCloseBtn" class="button secondary compact-btn">Avbryt</button>
+	        </div>
+	
+	        <div class="mobile-filter-bar">
+	            <label>Sortera:</label>
+	            <div class="mobile-sort-chips" id="mobileSortOptions">
+	                <button type="button" class="sort-chip active" data-sort="datum">Datum</button>
+	                <button type="button" class="sort-chip" data-sort="kundpris">Pris</button>
+	                <button type="button" class="sort-chip" data-sort="kundnamn">Kund</button>
+	                <button type="button" class="sort-chip" data-sort="status">Status</button>
 	            </div>
 	        </div>
 	
@@ -459,6 +471,10 @@
 	    </div>
 	</div>
 
+
+    <button id="fabAddJob" title="Lägg till nytt jobb (N)">
+	    <svg class="icon" viewBox="0 0 24 24"><use href="#icon-plus"></use></svg>
+	</button>
 
     <div id="jobModal" class="modal-backdrop" data-modal-id="jobModal">
         <div class="modal-content">
@@ -602,6 +618,11 @@
             </div>
         </div>
     </div>
+
+	<button id="fabChat" title="Öppna notiser/chatt">
+	    <svg class="icon" viewBox="0 0 24 24"><use href="#icon-chat-bubble"></use></svg>
+	    <span id="chatBadgeDesktop" class="notification-badge" style="display: none;">0</span>
+	</button>
 	
 	<div id="chatWidget" class="chat-widget-container" style="display: none;">
     
@@ -1228,7 +1249,7 @@
             firebase.initializeApp(firebaseConfig);
             db = firebase.firestore();
 			/* OFFLINE STÖD */
-			//db.enablePersistence({synchronizeTabs: true})
+			db.enablePersistence({synchronizeTabs: true})
             .then(() => {
                 console.log("Offline-stöd aktiverat!");
             })
@@ -1251,51 +1272,6 @@
 
 	<script src="config.js"></script>
 	<script src="app.js" defer></script>
-	
-	<div id="customerModal" class="modal-backdrop" data-modal-id="customerModal">
-	    <div class="modal-content">
-	        
-	        <div class="modal-header detail-modal-header" id="customerModalHeader">
-	            
-	            <div class="detail-modal-header-titles">
-	                <h2 id="customerModalName" style="margin:0; font-size: 1.6rem; letter-spacing: -0.5px;"></h2>
-	                
-	                <div class="customer-phone-wrapper owner-badge" style="margin-top: 8px; display: inline-flex; align-items: center; gap: 8px;">
-	                    <span id="customerModalPhone"></span>
-	                    
-	                    <div class="icon-button-group">
-	                        <a href="#" id="customerModalCallBtn" class="icon-btn" title="Ring" style="padding: 2px;">
-	                            <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-phone"></use></svg>
-	                        </a>
-	                        <a href="#" id="customerModalSmsBtn" class="icon-btn" title="SMS" style="padding: 2px;">
-	                            <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-chat"></use></svg>
-	                        </a>
-	                        <button class="icon-btn" id="editCustomerPhoneBtn" title="Redigera" style="padding: 2px;">
-	                            <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-pencil"></use></svg>
-	                        </button>
-	                    </div>
-	                </div>
-	            </div>
-	
-	            <button class="modal-close-btn" id="customerModalCloseBtn" aria-label="Stäng modal">
-	                <svg class="icon" viewBox="0 0 24 24"><use href="#icon-close"></use></svg>
-	            </button>
-	        </div>
-	        
-	        <div class="modal-body">
-	            
-	            <div class="job-history-container">
-	                <div class="search-wrapper embedded-search">
-	                    <svg class="icon icon-search" viewBox="0 0 24 24"><use href="#icon-search"></use></svg>
-	                    <input type="search" id="customerSearch" placeholder="Filtrera historik...">
-	                </div>
-	                <ul class="detail-job-list" id="customerModalJobList">
-	                </ul>
-	            </div>
-	
-	        </div>
-	    </div>
-	</div>
 
 </body>
 </html>
