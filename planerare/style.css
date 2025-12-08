@@ -5663,171 +5663,113 @@ html {
 @media (max-width: 768px) {
 
 /* =========================================
-   PROFFSIGA REG/KUND-MODALER (MATCHAD BAKGRUND)
+   NY DESIGN: REGISTRERING & KUNDKORT (MATCHAD BILD)
    ========================================= */
 
 @media (max-width: 768px) {
 
-    /* 5. KNAPPARNA LÄNGST NER (Fixad position) */
+    /* 1. TA BORT LISTPUNKTER OCH GÖR LISTAN REN */
+    .detail-job-list {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        padding-bottom: 20px;
+    }
+
+    /* 2. SJÄLVA KORTET (Vit box med skugga) */
+    .history-card {
+        background-color: #ffffff;
+        border: 1px solid #e5e7eb; /* Tunn grå ram */
+        border-radius: 16px;       /* Runda hörn */
+        padding: 20px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.03); /* Mjuk skugga */
+        display: flex;
+        flex-direction: column;
+        position: relative;
+    }
+
+    /* --- DATUM-RADEN (Överst) --- */
+    .history-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+    .history-label {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #9ca3af; /* Grå text för etiketter */
+    }
+    .history-date {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: #9ca3af;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* --- HUVUDRUBRIK (FOGAROLLI) --- */
+    .history-title {
+        font-size: 1.2rem;
+        font-weight: 800;
+        color: #111827; /* Svart */
+        margin-bottom: 12px;
+    }
+
+    /* --- BESKRIVNINGSRUTA (Grå bakgrund) --- */
+    .history-comment-box {
+        background-color: #f9fafb; /* Ljusgrå */
+        border-radius: 8px;
+        padding: 12px 14px;
+        font-size: 0.95rem;
+        color: #4b5563; /* Mörkgrå text */
+        line-height: 1.5;
+        margin-bottom: 16px;
+    }
+
+    /* --- AVDELARE (Linje) --- */
+    .history-divider {
+        height: 1px;
+        background-color: #f3f4f6; /* Ljus linje */
+        width: 100%;
+        margin-bottom: 12px;
+    }
+
+    /* --- RADER: STATUS & VINST --- */
+    .history-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px; /* Luft mellan raderna */
+    }
+    .history-row:last-child {
+        margin-bottom: 0;
+    }
+
+    .history-value {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #111827;
+    }
+
+    /* 3. FIXA KNAPPARNA LÄNGST NER (Mindre luft) */
     .sticky-link-buttons {
-        position: sticky !important;
-        bottom: 0 !important;
-        z-index: 100;
-        
-        /* Gör bakgrunden lite genomskinlig (Frosted glass) */
-        background: rgba(255, 255, 255, 0.95) !important;
-        backdrop-filter: blur(8px);
+        /* Sätt padding-bottom till 0 eller väldigt lite + safe-area */
+        padding-bottom: calc(8px + env(safe-area-inset-bottom)) !important;
+        padding-top: 12px !important;
+        background: #ffffff !important; /* Helt vit bakgrund */
         border-top: 1px solid #e5e7eb;
         
-        /* DRA UT DEN TILL KANTERNA */
+        /* Dra ut till kanterna om det behövs */
         margin: 0 -16px -16px -16px !important;
-        
-        /* JUSTERAD PADDING (Mindre luft under) */
-        padding: 12px 16px !important;
-        /* Tar hänsyn till iPhone-strecket i botten men lägger inte till extra onödig luft */
-        padding-bottom: calc(12px + env(safe-area-inset-bottom)) !important;
-        
-        display: flex !important;
-        gap: 12px !important;
-    }
-
-    .sticky-link-buttons .button {
-        flex: 1 !important; /* Gör dem jämbreda */
-        height: 48px !important; /* Bra klickyta */
-        font-size: 0.95rem !important;
-        border-radius: 12px !important;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.05) !important;
-        background-color: #fff !important;
-        border: 1px solid #e5e7eb !important;
-        color: #111 !important;
-        font-weight: 600 !important;
-    }
-    
-    /* Ikoner i knapparna */
-    .sticky-link-buttons .button img {
-        width: 20px; height: 20px;
-        margin-right: 6px;
-    }
-}
-
-/* =========================================
-   TYDLIGA KORT MED LINJER (KUND & REG.NR)
-   ========================================= */
-
-@media (max-width: 768px) {
-
-    /* 1. ÅTERSTÄLL TABELLEN TILL BLOCK (KORT) */
-    .detail-job-table, 
-    .detail-job-table tbody, 
-    .detail-job-table tr, 
-    .detail-job-table td {
-        display: block !important;
-        width: 100% !important;
-        box-sizing: border-box !important;
-    }
-    
-    .detail-job-table thead { display: none !important; }
-
-    /* 2. DESIGN PÅ SJÄLVA KORTET (RADEN) */
-    .detail-job-table tbody tr {
-        background-color: #ffffff !important;
-        border: 1px solid #e5e7eb !important; /* Tydlig ytterram */
-        border-radius: 12px !important;       /* Runda hörn */
-        margin-bottom: 16px !important;       /* Luft mellan korten */
-        box-shadow: 0 2px 5px rgba(0,0,0,0.03) !important; /* Liten skugga */
-        overflow: hidden !important;          /* Håller innehållet innanför hörnen */
-    }
-
-    /* --- SEKTION 1: DATUM (HEADER) --- */
-    .detail-job-table td[data-label="Datum"] {
-        background-color: #f9fafb !important; /* Ljusgrå bakgrund i toppen */
-        border-bottom: 1px solid #e5e7eb !important; /* LINJE UNDER */
-        padding: 10px 16px !important;
-        
-        display: flex !important;
-        justify-content: space-between !important;
-        align-items: center !important;
-    }
-    
-    /* Datumtexten */
-    .detail-job-table td[data-label="Datum"] .date-wrapper span {
-        font-size: 0.9rem !important;
-        font-weight: 600 !important;
-        color: #374151 !important;
-        text-transform: capitalize !important;
-    }
-    
-    /* Lägg till etiketten "Datum" till vänster */
-    .detail-job-table td[data-label="Datum"]::before {
-        content: "Datum";
-        font-size: 0.85rem;
-        color: #6b7280;
-        font-weight: 500;
-    }
-
-    /* --- SEKTION 2: INFO (KUND & BESKRIVNING) --- */
-    .detail-job-table td[data-label="Info"] {
-        padding: 16px !important;
-        background-color: #fff !important;
-        color: #1f2937 !important;
-    }
-
-    /* Rubriken (Namn/Regnr) */
-    .detail-job-table .job-subline-main {
-        display: block;
-        font-size: 1.1rem !important;
-        font-weight: 800 !important;
-        margin-bottom: 8px !important;
-        color: #111 !important;
-    }
-
-    /* Beskrivningstexten */
-    .detail-job-table .job-subline-comment {
-        display: block;
-        font-size: 0.95rem !important;
-        line-height: 1.5 !important;
-        color: #4b5563 !important;
-    }
-
-    /* --- SEKTION 3: STATUS (RAD) --- */
-    .detail-job-table td[data-label="Status"] {
-        border-top: 1px solid #e5e7eb !important; /* LINJE ÖVER */
-        padding: 12px 16px !important;
-        display: flex !important;
-        justify-content: space-between !important;
-        align-items: center !important;
-        background-color: #fff !important;
-    }
-    
-    .detail-job-table td[data-label="Status"]::before {
-        content: "Status";
-        font-weight: 600; color: #6b7280; font-size: 0.9rem;
-    }
-
-    /* --- SEKTION 4: VINST (FOOTER) --- */
-    .detail-job-table td[data-label="Vinst"] {
-        border-top: 1px solid #e5e7eb !important; /* LINJE ÖVER */
-        padding: 12px 16px !important;
-        display: flex !important;
-        justify-content: space-between !important;
-        align-items: center !important;
-        background-color: #fff !important; /* Eller #f9fafb för grå botten */
-    }
-
-    .detail-job-table td[data-label="Vinst"]::before {
-        content: "Vinst";
-        font-weight: 600; color: #6b7280; font-size: 0.9rem;
-    }
-    
-    .detail-job-table .job-profit {
-        font-weight: 700 !important;
-        font-size: 1rem !important;
-        color: #111 !important;
+        padding-left: 16px !important;
+        padding-right: 16px !important;
     }
 }
 
 
 /* --- SLUT PÅ STYLE.CSS --- */
+
 
 
 
