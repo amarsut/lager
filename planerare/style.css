@@ -4526,7 +4526,90 @@ html {
     }
 }
 
+/* =========================================
+   FIXAR: CHATT UI & MOBIL (2024)
+   ========================================= */
+
+/* PUNKT 2: Förhindra att chatten hoppar uppåt vid öppning */
+.chat-messages {
+    /* Låser scrollen till botten när nytt innehåll kommer */
+    overflow-anchor: auto !important; 
+    /* Säkerställer att scroll fungerar mjukt */
+    -webkit-overflow-scrolling: touch !important;
+}
+
+@media (max-width: 768px) {
+
+    /* PUNKT 1: Större Åtgärdsmeny på mobil */
+    .reaction-menu {
+        min-width: 90% !important; /* Bredare meny */
+        padding: 16px !important;
+        transform-origin: center !important;
+        /* Centrera menyn på skärmen istället för vid fingret på mobil */
+        left: 5% !important; 
+        right: 5% !important;
+    }
+    
+    /* Större Emojis */
+    .reaction-option {
+        font-size: 2.2rem !important; /* Mycket större */
+        padding: 8px 12px !important; /* Mer träffyta */
+    }
+    
+    /* Större text och ikoner i listan */
+    .action-item span { font-size: 0.9rem !important; }
+    .action-item .icon-circle { 
+        width: 50px !important; height: 50px !important; 
+    }
+    .action-item .icon-circle svg { width: 24px !important; height: 24px !important; }
+
+
+    /* PUNKT 3: Större Header-knappar (AI & Galleri) */
+    .header-search-wrapper {
+        padding-right: 0 !important;
+    }
+    
+    #toggleAiFilter, 
+    #toggleChatGallery,
+    .header-gallery-btn {
+        width: 54px !important; /* Bredare träffyta */
+        height: 100% !important;
+    }
+    
+    #toggleAiFilter svg, 
+    #toggleChatGallery svg,
+    .header-gallery-btn svg {
+        width: 24px !important; /* Större ikoner */
+        height: 24px !important;
+    }
+
+
+    /* PUNKT 4: Flytta AI-knappen till höger vid skrivning */
+    
+    /* När vi skriver (klassen .typing-mode läggs på via JS) */
+    .chat-input-pill.typing-mode {
+        padding-right: 0.5rem !important; /* Justera padding */
+    }
+
+    .chat-input-pill.typing-mode #askAiBtn {
+        order: 2 !important; /* Flytta sist i flex-flödet (till höger) */
+        margin-left: 8px !important; /* Luft mot textfältet */
+        margin-right: 0 !important;
+        
+        /* Byt färg för att visa att den är aktiv/redo */
+        background-color: var(--primary-color) !important;
+        color: white !important;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1) !important;
+    }
+    
+    /* Justera textfältet när vi skriver */
+    .chat-input-pill.typing-mode input {
+        padding-right: 0 !important; /* Ta bort onödig padding */
+    }
+}
+
 /* --- SLUT PÅ STYLE.CSS --- */
+
 
 
 
