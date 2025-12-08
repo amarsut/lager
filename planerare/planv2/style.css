@@ -1,355 +1,472 @@
-/* --- style.css --- */
+/* =========================================
+   1. VARIABLER & TEMA
+   ========================================= */
+:root {
+    /* Färger */
+    --primary-color: #0066FF;
+    --primary-light: rgba(0, 102, 255, 0.08);
+    --primary-hover: #0052cc;
+    
+    --success-color: #30d158;
+    --danger-color: #ff453a;
+    --danger-light: rgba(255, 69, 58, 0.1);
+    --warning-color: #ff9f0a;
+    --info-color: #0a84ff;
+    --invoice-color: #bf5af2;
 
-/* Grundinställningar */
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    font-family: 'Inter', sans-serif; /* Nytt typsnitt */
+    /* Bakgrund & Text */
+    --bg-color: #F3F4F6;
+    --bg-color-hover: #f9fafb;
+    --content-bg: #FFFFFF;
+    --content-bg-transparent: rgba(255, 255, 255, 0.95);
+    
+    --text-color: #111827;
+    --text-color-light: #6B7280;
+    --border-color: #E5E7EB;
+
+    /* Mått */
+    --header-height: 70px;
+    --mobile-nav-height: 65px;
+    --border-radius: 12px;
+    
+    /* Skuggor */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
 }
+
+[data-theme="dark"] {
+    --bg-color: #111113;
+    --content-bg: #1c1c1e;
+    --content-bg-transparent: rgba(28, 28, 30, 0.95);
+    --border-color: #3a3a3c;
+    --text-color: #f2f2f7;
+    --text-color-light: #8e8e93;
+    --primary-light: rgba(10, 132, 255, 0.2);
+    --bg-color-hover: #2c2c2e;
+}
+
+/* =========================================
+   2. GLOBAL RESET & BASE
+   ========================================= */
+*, *::before, *::after { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
 body {
-    background-color: #f4f7fe; /* Något kallare/blåare vit ton */
-    color: #2b3674; /* Mörkare marinblå textfärg för premiumkänsla */
+    margin: 0; padding: 0;
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    height: 100vh;
+    overflow: hidden; /* Förhindra dubbla scrollbars */
+    background-image: radial-gradient(rgba(0, 0, 0, 0.04) 1.5px, transparent 1.5px);
+    background-size: 24px 24px;
+    background-attachment: fixed;
 }
 
-/* Layout Container */
-.app-container {
-    display: flex;
-    min-height: 100vh;
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+
+/* Utilities */
+.hidden { display: none !important; }
+.text-right { text-align: right; }
+.money-related { font-variant-numeric: tabular-nums; letter-spacing: -0.5px; }
+
+/* --- IKONER (BAS) --- */
+svg { pointer-events: none; }
+.icon, .nav-icon { width: 20px; height: 20px; flex-shrink: 0; }
+.icon-sm { width: 16px; height: 16px; flex-shrink: 0; }
+.icon-lg { width: 48px; height: 48px; flex-shrink: 0; opacity: 0.5; }
+
+/* Knapp-bas */
+.button {
+    padding: 0.6rem 1rem; border-radius: 8px; border: none; font-weight: 600; font-size: 0.9rem;
+    cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+    transition: all 0.2s; text-decoration: none;
 }
+.button.primary { background: var(--primary-color); color: white; box-shadow: var(--shadow-sm); }
+.button.primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
+.button.secondary { background: var(--content-bg); border: 1px solid var(--border-color); color: var(--text-color); }
+.button.secondary:hover { background: var(--bg-color-hover); }
+
+/* Icon Button (Rund) */
+.icon-btn {
+    width: 36px; height: 36px; border-radius: 50%; border: none; background: transparent;
+    color: var(--text-color-light); cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+}
+.icon-btn:hover { background: var(--bg-color-hover); color: var(--primary-color); }
+
+/* =========================================
+   3. LAYOUT (SIDEBAR & MAIN)
+   ========================================= */
+.app-layout { display: flex; height: 100%; width: 100%; }
 
 /* --- SIDEBAR --- */
 .sidebar {
-    width: 260px;
-    background-color: #fff;
-    display: flex;
-    flex-direction: column;
-    padding: 25px;
+    width: 250px; background-color: var(--content-bg); border-right: 1px solid var(--border-color);
+    display: flex; flex-direction: column; padding: 24px 16px; flex-shrink: 0; z-index: 50;
 }
 
-.logo-area {
-    margin-bottom: 40px;
+.sidebar-header { margin-bottom: 20px; padding-left: 12px; display: flex; align-items: center; gap: 12px; font-weight: 700; font-size: 1.1rem; }
+.logo-icon-box {
+    width: 36px; height: 36px; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white;
 }
+.logo-icon-box svg { width: 20px; height: 20px; }
 
-.menu-btn {
-    background-color: #1a73e8; /* Primär blå */
-    color: white;
-    border: none;
-    padding: 12px 20px;
-    border-radius: 10px;
-    font-weight: 600;
-    font-size: 1rem;
-    width: 100%;
-    text-align: left;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    cursor: pointer;
-    box-shadow: 0 4px 10px rgba(26, 115, 232, 0.2);
+.sidebar-nav { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+.nav-link {
+    display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 8px;
+    border: none; background: transparent; color: var(--text-color-light); font-size: 0.95rem; font-weight: 500;
+    cursor: pointer; width: 100%; text-align: left; text-decoration: none;
 }
+.nav-link:hover { background-color: var(--bg-color-hover); color: var(--text-color); }
+.nav-link.active { background-color: #eef2f6; color: var(--primary-color); font-weight: 600; }
 
-.nav-links {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.nav-links a {
-    text-decoration: none;
-    color: #a3aed0; /* Ljusgrå text för inaktiva */
-    padding: 12px 15px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    font-size: 0.95rem;
-    font-weight: 500;
-    transition: all 0.2s ease;
-}
-
-.nav-links a:hover {
-    color: #1a73e8;
-}
-
-.nav-links a.active {
-    background-color: #f4f7fe; /* Mycket ljus blå/grå bakgrund */
-    color: #1a73e8; /* Skarp blå text */
-    font-weight: 700;
-    border-right: 3px solid #1a73e8; /* Liten markör till höger */
-}
-
-.user-profile {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding-top: 20px;
-    margin-top: auto;
-}
-
-.avatar {
-    width: 45px;
-    height: 45px;
-    background-color: #eef2ff;
-    color: #1a73e8;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 0.9rem;
-}
-
-.user-info .name { display: block; font-weight: 700; color: #1b2559; }
-.user-info .status { color: #a3aed0; font-size: 0.75rem; }
-.logout-icon { color: #a3aed0; cursor: pointer; margin-left: auto; }
+.sidebar-footer { margin-top: auto; padding-top: 16px; border-top: 1px solid var(--border-color); }
+.user-profile-card { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 8px; }
+.user-profile-card:hover { background: var(--bg-color-hover); }
+.sidebar-avatar { width: 36px; height: 36px; border-radius: 50%; }
+.user-info { display: flex; flex-direction: column; font-size: 0.85rem; overflow: hidden; }
+.user-name { font-weight: 600; white-space: nowrap; }
+.logout-icon-btn { margin-left: auto; background: none; border: none; cursor: pointer; color: #999; }
 
 /* --- MAIN CONTENT --- */
-.main-content {
-    flex: 1;
-    padding: 30px;
-    overflow-y: auto;
-}
+.main-content-wrapper { flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
 
 /* Top Bar */
 .top-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 35px;
+    height: var(--header-height); background-color: var(--content-bg); border-bottom: 1px solid var(--border-color);
+    display: flex; justify-content: space-between; align-items: center; padding: 0 32px; flex-shrink: 0;
 }
 
-.search-container {
-    background: #fff;
-    padding: 12px 20px;
-    border-radius: 30px; /* Mer rundad */
-    display: flex;
-    align-items: center;
-    width: 350px;
-    box-shadow: 0 2px 15px rgba(0,0,0,0.03);
+.top-search-container { position: relative; width: 380px; }
+.top-search-container .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #999; width: 18px; }
+.top-search-container input {
+    width: 100%; padding: 10px 10px 10px 40px; border: 1px solid var(--border-color); border-radius: 10px;
+    background-color: var(--bg-color); outline: none; transition: all 0.2s;
 }
+.top-search-container input:focus { background-color: var(--content-bg); border-color: var(--primary-color); box-shadow: 0 0 0 3px var(--primary-light); }
 
-.search-container input {
-    border: none;
-    outline: none;
-    margin-left: 10px;
-    width: 100%;
-    font-size: 0.9rem;
-    color: #2b3674;
-}
+.top-bar-actions { display: flex; align-items: center; gap: 12px; }
+.divider-vertical { width: 1px; height: 24px; background: var(--border-color); margin: 0 8px; }
 
-.actions {
-    display: flex;
-    gap: 20px;
-    align-items: center;
+#fabAddJob {
+    height: 40px; padding: 0 20px; background-color: var(--primary-color); color: white; border-radius: 8px;
+    font-weight: 600; display: flex; align-items: center; gap: 8px; border: none; cursor: pointer;
 }
+#fabAddJob:hover { background-color: var(--primary-hover); transform: translateY(-1px); }
 
-.icon-btn {
-    background: #fff;
-    border: none;
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    cursor: pointer;
-    color: #a3aed0;
-    box-shadow: 0 2px 15px rgba(0,0,0,0.03);
-    display: flex; 
-    align-items: center; 
-    justify-content: center;
-    font-size: 1.1rem;
-}
+/* App Main (Scrollbar yta) */
+.app-main { flex: 1; overflow-y: auto; padding: 30px; background-color: var(--bg-color); }
+.main-content { max-width: 1200px; margin: 0 auto; min-height: 101%; padding-bottom: 100px; }
 
-.primary-btn {
-    background-color: #0061ff;
-    color: white;
-    border: none;
-    padding: 12px 30px;
-    border-radius: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    box-shadow: 0 4px 12px rgba(0,97,255,0.25);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.95rem;
-}
-
-/* Stats Grid */
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 20px;
-    margin-bottom: 30px;
-}
-
-.card {
-    background: #fff;
-    border-radius: 15px; /* Mjukare hörn */
-    box-shadow: 0 5px 20px rgba(0,0,0,0.02);
-    border: none; /* Ta bort standard border */
-}
+/* =========================================
+   4. STATISTIK KORT (DASHBOARD)
+   ========================================= */
+.stat-bar { display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; margin-bottom: 30px; }
 
 .stat-card {
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    height: 130px;
-    position: relative;
-    overflow: hidden;
+    background: var(--content-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color);
+    display: flex; flex-direction: column; justify-content: space-between; min-height: 120px;
+    position: relative; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; box-shadow: var(--shadow-sm);
+}
+.stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+.stat-card.active { border-color: var(--primary-color); background-color: #eff6ff; }
+
+.stat-card-title {
+    font-size: 0.75rem; font-weight: 600; color: var(--text-color-light); text-transform: uppercase;
+    display: flex; align-items: center; gap: 8px; letter-spacing: 0.5px;
+}
+.stat-card-value { font-size: 2.2rem; font-weight: 700; margin-top: 10px; line-height: 1; }
+
+/* Kortfärger */
+.stat-card[data-filter="kommande"] { color: var(--primary-color); }
+.stat-card[data-filter="faktureras"] { color: var(--invoice-color); }
+.stat-card[data-filter="klar"] { color: var(--success-color); }
+.stat-card[data-filter="offererad"] { color: var(--info-color); }
+.stat-card::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 4px; background: currentColor; opacity: 0.3; border-radius: 0 0 12px 12px; }
+
+/* =========================================
+   5. TABELLER (DESKTOP)
+   ========================================= */
+.table-container { background: var(--content-bg); border-radius: 12px; border: 1px solid var(--border-color); overflow: hidden; box-shadow: var(--shadow-sm); }
+table { width: 100%; border-collapse: collapse; }
+thead { background-color: var(--bg-color-hover); border-bottom: 1px solid var(--border-color); }
+th { text-align: left; padding: 15px 20px; font-size: 0.75rem; color: var(--text-color-light); text-transform: uppercase; font-weight: 700; }
+td { padding: 15px 20px; border-bottom: 1px solid var(--border-color); font-size: 0.9rem; vertical-align: middle; color: var(--text-color); }
+tr:last-child td { border-bottom: none; }
+tr:hover { background-color: var(--bg-color-hover); }
+
+/* Badges & Taggar */
+.status-badge { padding: 4px 12px; border-radius: 99px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; display: inline-flex; }
+.status-bokad { background: #e0f2fe; color: #0369a1; }
+.status-klar { background: #dcfce7; color: #16a34a; }
+.status-offererad { background: #f3f4f6; color: #4b5563; }
+.status-faktureras { background: #f3e8ff; color: #7e22ce; }
+
+.reg-plate {
+    border: 1px solid #d1d5db; border-radius: 4px; height: 24px; font-family: monospace; font-weight: 700;
+    background: white; display: inline-flex; align-items: center; overflow: hidden; cursor: pointer;
+}
+.reg-country { background: #0052cc; color: white; padding: 0 4px; font-size: 0.65rem; height: 100%; display: flex; align-items: center; }
+.reg-number { padding: 0 6px; font-size: 0.85rem; color: #111; letter-spacing: 0.5px; }
+
+.action-col { text-align: right; display: flex; justify-content: flex-end; gap: 4px; }
+
+/* Link-buttons (Kundnamn) */
+.link-btn { background: none; border: none; font-weight: 600; cursor: pointer; color: var(--text-color); display: inline-flex; align-items: center; gap: 6px; padding: 0; }
+.link-btn:hover { color: var(--primary-color); text-decoration: underline; }
+
+/* =========================================
+   6. MODALER (GENERISKT)
+   ========================================= */
+.modal-backdrop {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 2000;
+    display: none; align-items: center; justify-content: center;
+}
+.modal-backdrop.show { display: flex; opacity: 1; }
+
+.modal-content {
+    background: var(--content-bg); width: 90%; max-width: 600px;
+    border-radius: 16px; box-shadow: var(--shadow-lg);
+    display: flex; flex-direction: column; max-height: 90vh;
+    transform: scale(0.95); transition: transform 0.2s;
+}
+.modal-backdrop.show .modal-content { transform: scale(1); }
+
+.modal-header { padding: 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+.modal-header h2 { margin: 0; font-size: 1.25rem; font-weight: 700; }
+.modal-body { padding: 20px; overflow-y: auto; flex: 1; }
+.modal-actions { padding: 20px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 10px; background: var(--bg-color-hover); border-radius: 0 0 16px 16px; }
+
+/* Formulär */
+.form-group { margin-bottom: 1rem; }
+.form-group label { display: block; font-weight: 600; margin-bottom: 0.5rem; font-size: 0.85rem; color: var(--text-color-light); }
+.form-group input, .form-group select, .form-group textarea {
+    width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color);
+    background-color: var(--bg-color); color: var(--text-color); outline: none; font-size: 0.95rem;
+}
+.form-group input:focus { background-color: var(--content-bg); border-color: var(--primary-color); box-shadow: 0 0 0 3px var(--primary-light); }
+.form-group-split { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+
+/* =========================================
+   7. CHATT WIDGET (KOMPLETT)
+   ========================================= */
+.chat-widget-container {
+    display: none; position: fixed; bottom: 100px; right: 30px;
+    width: 400px; max-width: 90vw; height: 600px; max-height: 70vh;
+    background: var(--content-bg); border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.15), 0 0 0 1px var(--border-color);
+    z-index: 1500; flex-direction: column; overflow: hidden;
+    transform-origin: bottom right; animation: popUp 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@keyframes popUp { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+
+/* Chat Header */
+.chat-widget-header {
+    height: 60px; padding: 0 15px; border-bottom: 1px solid var(--border-color);
+    display: flex; align-items: center; gap: 10px; background: var(--content-bg);
+}
+.header-search-wrapper {
+    flex: 1; height: 36px; background: var(--bg-color); border-radius: 18px;
+    display: flex; align-items: center; padding: 0 12px; transition: all 0.2s;
+}
+.header-search-wrapper input { border: none; background: transparent; outline: none; flex: 1; font-size: 0.9rem; }
+.header-gallery-btn, #toggleAiFilter, #toggleChatGallery {
+    width: 36px; height: 36px; border: none; background: transparent;
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+    color: var(--text-color-light); border-radius: 50%;
+}
+.header-gallery-btn:hover { background: var(--bg-color-hover); color: var(--primary-color); }
+
+/* Chat List */
+.chat-messages { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 4px; padding-bottom: 80px; }
+.chat-messages > :first-child { margin-top: auto; }
+
+/* Bubblor */
+.chat-bubble {
+    padding: 10px 14px; max-width: 80%; border-radius: 18px; font-size: 0.95rem; line-height: 1.4; position: relative;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+.chat-bubble.me { align-self: flex-end; background: var(--primary-color); color: white; border-bottom-right-radius: 2px; }
+.chat-bubble.other, .chat-bubble.system { align-self: flex-start; background: #E5E5EA; color: black; border-bottom-left-radius: 2px; }
+.chat-bubble.chat-bubble-image { background: transparent !important; padding: 0 !important; box-shadow: none !important; }
+.chat-bubble-image img { border-radius: 12px; max-width: 100%; height: auto; box-shadow: var(--shadow-md); cursor: pointer; }
+
+.chat-time { font-size: 0.7rem; color: #999; margin: 2px 0 10px 0; padding: 0 4px; }
+.chat-time.me { text-align: right; }
+
+/* Input Area */
+.chat-input-area {
+    position: absolute; bottom: 0; left: 0; right: 0; padding: 10px 15px;
+    background: rgba(255,255,255,0.9); backdrop-filter: blur(10px);
+    border-top: 1px solid var(--border-color); display: flex; align-items: center; gap: 8px;
+}
+.chat-input-pill {
+    flex: 1; background: var(--bg-color); border-radius: 24px; padding: 8px 15px;
+    display: flex; align-items: center; transition: 0.2s;
+}
+.chat-input-pill:focus-within { background: white; box-shadow: var(--shadow-sm); }
+#chatInput { background: transparent; border: none; outline: none; flex: 1; padding: 0; font-size: 1rem; }
+
+#askAiBtn { margin-left: auto; background: transparent; border: none; cursor: pointer; color: #999; padding: 5px; }
+.chat-action-btn {
+    width: 40px; height: 40px; border-radius: 50%; background: var(--primary-color); color: white;
+    border: none; display: flex; align-items: center; justify-content: center; cursor: pointer;
 }
 
-/* Top borders via pseudo-elements instead of border-top */
-.stat-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 4px;
+/* =========================================
+   8. SPECIFIKA MODALER (INSTÄLLNINGAR M.M)
+   ========================================= */
+.settings-section { padding-bottom: 20px; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); }
+.section-label { font-size: 0.8rem; text-transform: uppercase; font-weight: 700; color: #999; margin-bottom: 10px; display: block; }
+
+.settings-radio-group { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+.settings-radio-group label {
+    display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px;
+    border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9rem;
 }
-.border-blue::before { background: #1a73e8; }
-.border-purple::before { background: #e374ff; }
-.border-green::before { background: #34a853; }
-.border-grey::before { background: #9aa0a6; }
-.border-dark::before { background: #3c4043; }
+.settings-radio-group input:checked + label { background: #eff6ff; border-color: var(--primary-color); color: var(--primary-color); }
 
-.card-title {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: #a3aed0;
-    text-transform: uppercase;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    letter-spacing: 0.5px;
+/* Detalj-listor (Historik i modal) */
+.job-history-container { border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; margin-top: 10px; }
+.detail-job-list li {
+    padding: 12px 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; cursor: pointer;
 }
+.detail-job-list li:hover { background: var(--bg-color-hover); }
+.detail-job-list .job-date { font-weight: 600; }
+.detail-job-list .job-profit { font-weight: 700; }
 
-.card-value {
-    font-size: 2.2rem;
-    font-weight: 700;
-    margin-top: 10px;
-}
+/* Teknisk Data (Kort) */
+.tech-specs-card { background: var(--bg-color); padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+.tech-specs-card ul { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; list-style: none; padding: 0; }
+.tech-specs-card li { font-size: 0.85rem; display: flex; align-items: center; gap: 6px; }
 
-/* Table */
-.table-container {
-    padding: 25px;
-    border-radius: 20px;
-}
+/* =========================================
+   9. MOBILANPASSNING (VÄSENTLIGT)
+   ========================================= */
+.mobile-nav { display: none; }
+.mobile-header-content { display: none; }
+#mobileJobList { display: none; }
 
-table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0 15px; /* Mellanrum mellan rader */
-}
+@media (max-width: 768px) {
+    /* DÖLJ DESKTOP DELAR */
+    .sidebar { display: none !important; }
+    .top-search-container { display: none !important; }
+    .divider-vertical { display: none !important; }
+    .table-container { display: none !important; }
+    #fabAddJob { display: none !important; }
+    
+    /* LAYOUT FIX */
+    .app-layout { height: 100vh; flex-direction: column; }
+    .main-content { padding: 15px; padding-bottom: 90px; }
+    
+    /* HEADER MOBIL */
+    .top-bar { padding: 0 16px; justify-content: space-between; height: 60px; }
+    .mobile-header-content { display: flex; align-items: center; gap: 12px; }
+    .mobile-logo-icon {
+        width: 34px; height: 34px; background: var(--primary-color); border-radius: 8px;
+        display: flex; align-items: center; justify-content: center; color: white;
+    }
+    .mobile-date-widget { display: flex; flex-direction: column; line-height: 1.1; }
+    .date-day { font-weight: 800; font-size: 1rem; color: var(--text-color); }
+    .date-weekday { font-size: 0.7rem; font-weight: 600; color: #999; text-transform: uppercase; }
 
-thead th {
-    text-align: left;
-    font-size: 0.7rem;
-    color: #a3aed0;
-    text-transform: uppercase;
-    padding: 0 15px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-}
+    /* STATISTIK MOBIL */
+    .stat-bar { grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+    .stat-card { padding: 15px; min-height: 80px; }
+    .stat-bar > :last-child { grid-column: 1 / -1; flex-direction: row; align-items: center; min-height: 60px; }
+    .stat-card-value { font-size: 1.8rem; margin-top: 5px; }
 
-tbody tr {
-    background: #fff; /* Varje rad får vit bakgrund */
-    box-shadow: 0 2px 10px rgba(0,0,0,0.01); /* Subtle shadow per row */
-    transition: transform 0.2s;
-}
+    /* JOBB-LISTA (KORT) */
+    #mobileJobList { display: flex; flex-direction: column; gap: 16px; }
+    .mobile-day-group { margin-bottom: 10px; }
+    .mobile-date-header { font-size: 0.9rem; font-weight: 700; color: #666; margin: 0 0 8px 4px; text-transform: uppercase; }
 
-tbody tr:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-}
+    .mobile-job-card {
+        background: white; border-radius: 12px; border: 1px solid var(--border-color);
+        box-shadow: var(--shadow-sm); overflow: hidden; display: flex; flex-direction: column;
+        border-left: 4px solid transparent;
+    }
+    .mobile-job-card[data-status="bokad"] { border-left-color: var(--primary-color); }
+    .mobile-job-card[data-status="klar"] { border-left-color: var(--success-color); }
+    
+    .card-content { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+    .card-row { display: flex; justify-content: space-between; align-items: center; }
+    .card-label { font-size: 0.8rem; font-weight: 600; color: #999; }
+    .card-value { font-weight: 600; font-size: 0.95rem; }
+    
+    .customer-name-text { font-size: 1.1rem; font-weight: 700; text-transform: uppercase; border-bottom: 1px dotted #ccc; }
+    
+    .card-actions-bar {
+        background: var(--bg-color-hover); border-top: 1px solid var(--border-color);
+        padding: 8px; display: flex; justify-content: space-around;
+    }
+    .action-item { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #888; }
+    .action-item:active { background: #ddd; color: var(--primary-color); }
 
-td {
-    padding: 20px 15px;
-    font-size: 0.9rem;
-    color: #2b3674;
-    font-weight: 500;
-    background: #fff;
-}
+    /* BOTTENMENY */
+    .mobile-nav {
+        display: flex; position: fixed; bottom: 0; left: 0; right: 0; height: 65px;
+        background: rgba(255,255,255,0.95); backdrop-filter: blur(10px);
+        border-top: 1px solid var(--border-color); z-index: 1000;
+        justify-content: space-around; align-items: center; padding-bottom: env(safe-area-inset-bottom);
+    }
+    .mobile-nav-btn {
+        background: none; border: none; display: flex; flex-direction: column; align-items: center; gap: 4px;
+        color: #999; font-size: 0.7rem; width: 100%;
+    }
+    .mobile-nav-btn.active { color: var(--primary-color); }
+    .mobile-nav-btn svg { width: 24px; height: 24px; }
 
-/* Rundade hörn på första och sista cellen i varje rad */
-td:first-child { border-top-left-radius: 10px; border-bottom-left-radius: 10px; }
-td:last-child { border-top-right-radius: 10px; border-bottom-right-radius: 10px; }
-
-/* Status Badge */
-.status-badge {
-    background-color: #e6f2ff; /* Mycket ljusare blå */
-    color: #0061ff;
-    padding: 6px 18px;
-    border-radius: 20px;
-    font-weight: 700;
-    font-size: 0.8rem;
-    display: inline-block;
-}
-
-/* Kundprofil */
-.customer-cell {
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: #1b2559;
-}
-.customer-cell i { color: #5f6368; font-size: 0.9rem; }
-
-/* Registreringsskylt (Den viktiga uppdateringen!) */
-.plate-wrapper {
-    display: inline-flex;
-    border: 1px solid #d1d5db;
-    border-radius: 4px;
-    overflow: hidden;
-    font-family: 'Inter', sans-serif;
-    font-weight: 700;
-    background: #fff;
-    height: 28px;
-    align-items: center;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-}
-
-.plate-blue {
-    background-color: #0044aa; /* Svensk skylt-blå */
-    width: 20px;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 0.6rem;
-    flex-shrink: 0;
-}
-
-.plate-text {
-    padding: 0 8px;
-    color: #333;
-    font-size: 0.85rem;
-    letter-spacing: 1px;
+    /* CHATT FULLSKÄRM PÅ MOBIL */
+    .chat-widget-container {
+        top: 0; left: 0; right: 0; bottom: 0; width: 100%; height: 100%; max-width: none; max-height: none; border-radius: 0;
+    }
+    
+    /* MODALER FULLSKÄRM PÅ MOBIL */
+    .modal-content {
+        width: 100%; height: 100%; max-width: none; max-height: none; border-radius: 0;
+    }
+    .modal-backdrop { padding: 0; }
+    
+    /* MOBIL SÖK */
+    #mobileSearchModal { background: var(--bg-color); }
+    .mobile-search-header { background: white; padding: 12px; display: flex; align-items: center; gap: 10px; }
+    .mobile-wrapper { flex: 1; height: 40px; background: var(--bg-color); border-radius: 20px; display: flex; align-items: center; padding: 0 12px; }
 }
 
-/* Åtgärder ikoner */
-.action-icons i {
-    color: #a3aed0;
-    margin-left: 12px;
-    cursor: pointer;
-    font-size: 1rem;
-    transition: color 0.2s;
+/* =========================================
+   10. ÖVRIGA ELEMENT (Toast, Offline, Etc)
+   ========================================= */
+.toast {
+    position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: rgba(30,30,30,0.9); color: white; padding: 10px 20px; border-radius: 30px;
+    z-index: 9999; opacity: 0; transition: 0.3s; display: flex; align-items: center; gap: 10px;
 }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-.action-icons i:hover { color: #1a73e8; }
-
-/* Chat FAB & Window (Oförändrad struktur, bara färger) */
-.chat-fab {
-    background: #fff;
-    color: #2b3674;
-    border: none;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+.offline-dot {
+    width: 10px; height: 10px; background: var(--danger-color); border-radius: 50%;
+    position: absolute; top: 25px; right: 20px; display: none; animation: pulse 2s infinite;
 }
-.chat-fab .badge { background: #ff5630; }
-.chat-header { background: #2b3674; }
+body.offline-mode .offline-dot { display: block; }
+@keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
-/* Modal Styles update */
-.save-btn { background: #0061ff; border-radius: 8px; }
-.cancel-btn { border-radius: 8px; }
+/* Context Menu (Högerklick) */
+#contextMenu {
+    position: absolute; background: white; border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-lg); border-radius: 8px; z-index: 1200; display: none; min-width: 180px;
+}
+#contextMenu.show { display: block; }
+.context-menu-button {
+    width: 100%; text-align: left; padding: 10px 15px; background: none; border: none;
+    display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 0.9rem;
+}
+.context-menu-button:hover { background: var(--bg-color-hover); color: var(--primary-color); }
+.context-menu-button.danger { color: var(--danger-color); }
+.context-menu-divider { height: 1px; background: var(--border-color); margin: 4px 0; }
