@@ -5320,84 +5320,81 @@ html {
     /* -webkit-user-select: none !important; */
 }
 
-/* --- MOBIL HEADER DESIGN (NY) --- */
+/* --- MOBIL HEADER DESIGN (UPPDATERAD) --- */
 
-/* Dölj som standard (på dator) */
 .mobile-header-content {
     display: none;
 }
 
 @media (max-width: 768px) {
-    /* Justera huvud-headern för att ge plats */
+    /* 1. Header Container */
     .top-bar {
-        justify-content: space-between !important; /* Separera logga och datum */
+        /* Se till att innehållet ligger till vänster */
+        justify-content: flex-start !important; 
         padding: 0 16px !important;
-        height: 65px !important; /* Lite mer höjd för luftighet */
+        height: 65px !important;
         background-color: #ffffff !important;
     }
 
-    /* Visa det nya innehållet */
+    /* 2. Innehålls-wrapper */
     .mobile-header-content {
         display: flex !important;
-        justify-content: space-between;
-        align-items: center;
-        width: 100%;
+        align-items: center; /* Centrera vertikalt */
+        gap: 16px; /* Avstånd mellan logga och datum */
+        width: auto; /* Ta bara så mycket plats som behövs */
     }
 
-    /* Logotypen (Anpassad storlek) */
-    .mobile-logo {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-size: 1.1rem;
-        font-weight: 800; /* Fetare text ser bättre ut på små skärmar */
-        color: #111827;
-        letter-spacing: -0.5px;
-    }
-
-    /* Ikon-boxen (Samma snygga gradient som sidebar) */
-    .mobile-logo .logo-icon-box {
-        width: 34px;
-        height: 34px;
+    /* 3. Logotypen (Endast boxen) */
+    .mobile-logo-icon {
+        width: 38px;
+        height: 38px;
         background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-        border-radius: 8px;
+        border-radius: 10px; /* Lite mjukare hörn */
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25); /* Mjuk skugga */
+        box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2); /* Snygg glöd */
+        flex-shrink: 0;
     }
 
-    .mobile-logo .logo-icon-box svg {
-        width: 18px;
-        height: 18px;
+    .mobile-logo-icon svg {
+        width: 20px;
+        height: 20px;
     }
 
-    /* Datum-Widgeten (Snygg layout) */
+    /* 4. Datum-Widgeten (Vänsterställd intill loggan) */
     .mobile-date-widget {
         display: flex;
         flex-direction: column;
-        align-items: flex-end; /* Högerställ texten */
-        line-height: 1.1;
+        align-items: flex-start; /* Vänsterställ texten */
+        justify-content: center;
+        line-height: 1.2;
+        
+        /* En snygg avdelare mellan logga och datum */
+        border-left: 1px solid #e5e7eb;
+        padding-left: 16px;
+        height: 32px; /* Matcha höjden för avdelaren */
     }
 
-    /* Veckodagen (Liten, grå, versaler) */
+    /* Veckodagen */
     .date-weekday {
-        font-size: 0.65rem;
+        font-size: 0.7rem;
         text-transform: uppercase;
-        color: #6b7280; /* Muted gray */
+        color: #6b7280;
         font-weight: 600;
         letter-spacing: 0.5px;
-        margin-bottom: 2px;
+        margin-bottom: 0;
     }
 
-    /* Datumet (Större, mörkt) */
+    /* Datumet */
     .date-day {
-        font-size: 0.95rem;
-        font-weight: 700;
-        color: #1f2937;
+        font-size: 1rem; /* Lite större */
+        font-weight: 800;
+        color: #111827;
+        letter-spacing: -0.02em;
     }
     
-    /* Göm de gamla knapparna i headern om de stör (valfritt) */
+    /* Göm gamla knappar */
     .header-icon-btn, 
     #headerPrivacyToggle {
         display: none !important; 
@@ -5406,6 +5403,7 @@ html {
 
 
 /* --- SLUT PÅ STYLE.CSS --- */
+
 
 
 
