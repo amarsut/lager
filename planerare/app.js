@@ -2653,7 +2653,6 @@
 				                isFetchingOlderChat = false; 
 				            }
 				        });
-					};
 			    };
 			
 			    setupChatListener(currentChatLimit);
