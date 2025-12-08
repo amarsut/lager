@@ -1,17 +1,38 @@
-
-	// --- Globala Konstanter ---
-        const STATUS_TEXT = {
-		    'bokad': 'Bokad', 
-		    'klar': 'Slutfört', // Ändra texten för att tydliggöra
-		    'offererad': 'Offererad', 
-		    'avbokad': 'Avbokad',
-		    'faktureras': 'Faktureras' // Ny.
-		};
-		// Lägg till dina företagskunder här (små bokstäver för sökning).
-		const CORPORATE_CLIENTS = ['fogarolli', 'bmg'];
-		const SPECIAL_CLIENTS = ['fogarolli', 'bmg'];
-        const formatCurrency = (num) => `${(num || 0).toLocaleString('sv-SE')} kr`;
-        const locale = 'sv-SE';
+	const firebaseConfig = {
+	  apiKey: "AIzaSyDwCQkUl-je3L3kF7EuxRC6Dm6Gw2N0nJw",
+	  authDomain: "planerare-f6006.firebaseapp.com",
+	  projectId: "planerare-f6006",
+	  storageBucket: "planerare-f6006.firebasestorage.app",
+	  messagingSenderId: "360462069749",
+	  appId: "1:360462069749:web:c754879f3f75d5ef3cbabc",
+	  measurementId: "G-L6516XLZ1Y"
+	};
+	
+	let db; // Global variabel
+	
+	try {
+	    if (!firebase.apps.length) {
+	        firebase.initializeApp(firebaseConfig);
+	    }
+	    db = firebase.firestore();
+	    console.log("Firebase initierat i app.js!");
+	} catch (e) {
+	    console.error("Firebase Critical Error:", e);
+	    alert("Kunde inte starta databasen.");
+	}
+	
+	// --- 2. DINA KONSTANTER ---
+	const STATUS_TEXT = {
+	    'bokad': 'Bokad', 
+	    'klar': 'Slutfört',
+	    'offererad': 'Offererad', 
+	    'avbokad': 'Avbokad',
+	    'faktureras': 'Faktureras'
+	};
+	const CORPORATE_CLIENTS = ['fogarolli', 'bmg'];
+	const SPECIAL_CLIENTS = ['fogarolli', 'bmg'];
+	const formatCurrency = (num) => `${(num || 0).toLocaleString('sv-SE')} kr`;
+	const locale = 'sv-SE';
         
         const formatDate = (dateString, options = {}) => {
             const { onlyDate = false } = options;
@@ -5154,7 +5175,7 @@
                 if (customerJobs.length > 0) {
                     const latestJob = customerJobs[0]; // Ta det senaste jobbet
                     
-                    if ((history.state && history.state.modal)) {
+                    if (history.state && history.state.modal) {
                         isNavigatingBack = true;
                         history.back();
                         isNavigatingBack = false;
@@ -6350,7 +6371,7 @@
                 
                 if (job) {
                     // FIX: Stäng nuvarande modal, men tryck "bakåt" i historiken
-                    if ((history.state && history.state.modal)) {
+                    if (history.state && history.state.modal) {
                         isNavigatingBack = true;
                         history.back(); // Gå tillbaka från customer/car-modalen
                         isNavigatingBack = false;
