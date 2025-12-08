@@ -5728,8 +5728,169 @@ html {
     font-size: 0.7rem; text-transform: uppercase; font-weight: 700; color: #9ca3af;
 }
 
+/* =========================================
+   HYBRID-DESIGN: RADER (BILD 2) + CLEAN KNAPPAR (BILD 1)
+   ========================================= */
+
+/* 1. Kort-behållaren (Fyrkantig) */
+.mobile-job-card {
+    background: #ffffff !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 4px !important; /* <--- FYRKANTIGA HÖRN */
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+    margin-bottom: 12px !important;
+    overflow: hidden;
+    display: flex !important;
+    flex-direction: column !important;
+    border-left: none !important;
+}
+
+/* Röd kant vid Prio */
+.mobile-job-card.prio-row {
+    border-left: 4px solid #ef4444 !important; 
+}
+
+/* 2. Innehåll (Återställ rader) */
+.card-content {
+    padding: 16px 20px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+}
+
+/* Rader - Tvinga fram visning */
+.card-row {
+    display: flex !important; /* VIKTIGT: Tvinga visning */
+    justify-content: space-between !important;
+    align-items: center !important;
+    min-height: 24px !important;
+}
+
+/* Etiketter (Vänster sida: "Kund", "Reg.nr"...) */
+.card-label {
+    display: block !important; /* Tvinga visning */
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+    color: #9ca3af !important; /* Ljusgrå */
+    width: 100px !important;
+    flex-shrink: 0 !important;
+    text-align: left !important;
+}
+
+/* Värden (Höger sida) */
+.card-value {
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    color: #1f2937 !important;
+    text-align: right !important;
+    flex-grow: 1 !important;
+    display: flex !important;
+    justify-content: flex-end !important;
+    align-items: center !important;
+}
+
+/* Kundnamn (Stort) */
+.customer-name-text {
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+    font-size: 1.05rem !important;
+}
+
+/* Reg-skylt (Den blå boxen från Bild 2) */
+.reg-plate-modern {
+    display: inline-flex !important;
+    align-items: center !important;
+    background: #fff !important;
+    border: 1px solid #9ca3af !important;
+    border-radius: 3px !important; /* Kantig skylt */
+    padding: 0 !important;
+    height: 24px !important;
+    overflow: hidden !important;
+}
+
+.plate-s {
+    background-color: #0052cc !important; /* Blå */
+    color: white !important;
+    height: 100% !important;
+    padding: 0 5px !important;
+    font-size: 0.7rem !important;
+    font-weight: 700 !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+.plate-num {
+    padding: 0 6px !important;
+    font-family: monospace !important;
+    font-weight: 700 !important;
+    font-size: 0.9rem !important;
+    color: #111 !important;
+    letter-spacing: 1px !important;
+}
+
+/* Tid & Status Wrapper */
+.time-status-wrapper {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+
+/* Tid (Piller) */
+.card-time-badge {
+    background-color: #f3f4f6 !important;
+    padding: 2px 8px !important;
+    border-radius: 4px !important; /* Kantig */
+    font-size: 0.85rem !important;
+    color: #374151 !important;
+    border: 1px solid #e5e7eb !important;
+}
+
+/* Status (Färgad badge - måste visas) */
+.status-badge {
+    padding: 2px 8px !important;
+    border-radius: 4px !important; /* Kantig */
+    font-size: 0.75rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    display: inline-block !important;
+}
+
+/* Pris */
+.customer-price {
+    font-size: 1.1rem !important;
+    font-weight: 800 !important;
+}
+
+/* 3. Action Bar (Knapparna från Bild 1) */
+.action-col {
+    display: flex !important;
+    justify-content: space-around !important;
+    padding: 10px 0 !important;
+    background-color: #ffffff !important; /* Vit bakgrund */
+    border-top: 1px solid #f3f4f6 !important;
+    margin-top: 0 !important;
+}
+
+.clean-icon-btn {
+    background: transparent !important;
+    border: none !important;
+    padding: 8px !important;
+    color: #9ca3af !important; /* Grå ikoner */
+    transition: all 0.2s !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+}
+
+.clean-icon-btn:active { color: #111 !important; transform: scale(0.95) !important; }
+.clean-icon-btn svg { width: 22px !important; height: 22px !important; stroke-width: 2px !important; }
+
+/* Aktiv kommentar */
+.clean-icon-btn.has-comment { color: #111 !important; }
+
 
 /* --- SLUT PÅ STYLE.CSS --- */
+
 
 
 
