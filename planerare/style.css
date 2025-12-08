@@ -4864,8 +4864,8 @@ html {
 }
 
 /* =================================================================
-   HEADER SÖK & KNAPPAR - FINAL FIX (V5.1)
-   Inkluderar avdelare MELLAN knapparna
+   HEADER SÖK & KNAPPAR - FINAL PRO TOUCH (V6.0)
+   Bredare klickytor (50px) och låst storlek för att förhindra felklick
    ================================================================= */
 
 @media (max-width: 768px) {
@@ -4895,18 +4895,18 @@ html {
 
     /* 2. Sök-ikonen */
     .header-search-wrapper .search-icon {
-        margin-left: 12px !important;
-        margin-right: 4px !important;
+        margin-left: 14px !important; /* Lite mer luft i kanten */
+        margin-right: 6px !important;
         color: #9ca3af !important;
         width: 18px !important;
         height: 18px !important;
-        position: static !important;
-        transform: none !important;
+        flex-shrink: 0 !important; /* Krymp aldrig ikonen */
     }
 
-    /* 3. Textfältet */
+    /* 3. Textfältet (Flexibel bredd) */
     .header-search-wrapper input {
-        flex-grow: 1 !important;
+        flex: 1 !important;             /* Ta all återstående plats */
+        min-width: 0 !important;        /* Tillåt att krympa om det behövs */
         background: transparent !important;
         border: none !important;
         outline: none !important;
@@ -4914,18 +4914,19 @@ html {
         padding: 0 !important;
         height: 100% !important;
         color: #111827 !important;
-        min-width: 0 !important;
         margin: 0 !important;
     }
     
-    /* Dölj ev. gammal border */
     #chatSearchInput { box-shadow: none !important; border: none !important; }
 
-    /* 4. KNAPPARNA (Gemensam stil) */
+    /* 4. KNAPPARNA (Fasta, breda klickytor) */
     .header-gallery-btn,
     #toggleAiFilter,
     #toggleChatGallery {
-        width: 44px !important;
+        /* HÄR ÄR LÖSNINGEN: */
+        width: 50px !important;         /* Bredare klickyta */
+        flex: 0 0 50px !important;      /* LÅS bredden, krymp aldrig */
+        
         height: 100% !important;
         padding: 0 !important;
         margin: 0 !important;
@@ -4942,7 +4943,7 @@ html {
     .header-gallery-btn:active,
     #toggleAiFilter:active,
     #toggleChatGallery:active {
-        background-color: rgba(0,0,0,0.05) !important;
+        background-color: rgba(0,0,0,0.08) !important; /* Tydligare tryck-feedback */
     }
 
     /* Ikoner */
@@ -4951,7 +4952,7 @@ html {
     #toggleChatGallery svg {
         width: 22px !important;
         height: 22px !important;
-        color: #4b5563 !important; /* Mörkgrå */
+        color: #4b5563 !important;
         opacity: 1 !important;
     }
 
@@ -4963,7 +4964,7 @@ html {
         position: relative !important;
     }
 
-    /* Streck 2: Mellan AI-knapp och Galleri-knapp (NYTT) */
+    /* Streck 2: Mellan AI-knapp och Galleri-knapp */
     #toggleChatGallery {
         border-left: 1px solid #e5e7eb !important;
         position: relative !important;
@@ -4975,6 +4976,7 @@ html {
 
 
 /* --- SLUT PÅ STYLE.CSS --- */
+
 
 
 
