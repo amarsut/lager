@@ -4864,63 +4864,69 @@ html {
 }
 
 /* =================================================================
-   HEADER SÖK & KNAPPAR - PROFFSIG DESIGN (V5.0)
+   HEADER SÖK & KNAPPAR - FINAL FIX (V5.1)
+   Inkluderar avdelare MELLAN knapparna
    ================================================================= */
 
-/* --- 1. MOBILANPASSNING (Under 768px) --- */
 @media (max-width: 768px) {
 
-    /* Huvudbehållaren för sökfältet + knapparna */
+    /* 1. Huvudbehållaren (Pillret) */
     .header-search-wrapper {
         display: flex !important;
         align-items: center !important;
-        background-color: #f3f4f6 !important; /* Ljusgrå bakgrund för hela pillret */
+        background-color: #f3f4f6 !important; /* Ljusgrå */
         border-radius: 24px !important;       /* Runda hörn */
         height: 44px !important;              /* Fast höjd */
-        padding: 0 !important;                /* Ingen padding, vi styr det internt */
+        padding: 0 !important;                /* Nollställ padding */
         border: 1px solid transparent !important;
-        overflow: hidden !important;          /* Håller innehållet innanför hörnen */
+        overflow: hidden !important;          /* Håller innehållet innanför */
         width: 100% !important;
         position: relative !important;
+        box-shadow: none !important;
+        gap: 0 !important;
     }
 
-    /* Fokus-effekt på hela behållaren */
+    /* Fokus-effekt */
     .header-search-wrapper:focus-within {
         background-color: #ffffff !important;
         border-color: var(--primary-color) !important;
         box-shadow: 0 0 0 2px rgba(0, 102, 255, 0.1) !important;
     }
 
-    /* Sök-ikonen (Förstoringsglaset) */
+    /* 2. Sök-ikonen */
     .header-search-wrapper .search-icon {
         margin-left: 12px !important;
         margin-right: 4px !important;
         color: #9ca3af !important;
         width: 18px !important;
         height: 18px !important;
+        position: static !important;
+        transform: none !important;
     }
 
-    /* Själva textfältet */
+    /* 3. Textfältet */
     .header-search-wrapper input {
-        flex-grow: 1 !important;        /* Ta upp all ledig plats */
+        flex-grow: 1 !important;
         background: transparent !important;
         border: none !important;
         outline: none !important;
-        font-size: 16px !important;     /* 16px förhindrar zoom på iPhone */
+        font-size: 16px !important;
         padding: 0 !important;
         height: 100% !important;
         color: #111827 !important;
-        min-width: 0 !important;        /* Tillåter krympning */
+        min-width: 0 !important;
+        margin: 0 !important;
     }
-
-    /* --- KNAPPARNA (AI & Galleri) --- */
     
-    /* Gemensam stil för knapparna */
+    /* Dölj ev. gammal border */
+    #chatSearchInput { box-shadow: none !important; border: none !important; }
+
+    /* 4. KNAPPARNA (Gemensam stil) */
     .header-gallery-btn,
     #toggleAiFilter,
     #toggleChatGallery {
-        width: 44px !important;         /* Kvadratiska klickytor */
-        height: 100% !important;        /* Fyll hela höjden */
+        width: 44px !important;
+        height: 100% !important;
         padding: 0 !important;
         margin: 0 !important;
         display: flex !important;
@@ -4928,47 +4934,48 @@ html {
         justify-content: center;
         background: transparent !important;
         border: none !important;
+        border-radius: 0 !important;
         cursor: pointer !important;
         transition: background-color 0.2s ease !important;
     }
 
-    /* Hover/Active effekt */
     .header-gallery-btn:active,
     #toggleAiFilter:active,
     #toggleChatGallery:active {
         background-color: rgba(0,0,0,0.05) !important;
     }
 
-    /* Ikonernas utseende */
+    /* Ikoner */
     .header-gallery-btn svg,
     #toggleAiFilter svg,
     #toggleChatGallery svg {
         width: 22px !important;
         height: 22px !important;
-        color: #4b5563 !important; /* Mörkgrå färg */
+        color: #4b5563 !important; /* Mörkgrå */
         opacity: 1 !important;
     }
 
-    /* --- AVDELARE (Vänster om första knappen) --- */
-    /* Detta skapar den snygga linjen */
+    /* 5. AVDELARE (Strecken) */
+    
+    /* Streck 1: Mellan Sökfält och AI-knapp */
     #toggleAiFilter {
-        border-left: 1px solid #e5e7eb !important; /* Tunn grå linje */
+        border-left: 1px solid #e5e7eb !important;
         position: relative !important;
     }
 
-    /* Om Galleri-knappen ligger sist, se till att den ser bra ut */
+    /* Streck 2: Mellan AI-knapp och Galleri-knapp (NYTT) */
     #toggleChatGallery {
-        /* Ingen extra border behövs om de ligger bredvid varandra */
+        border-left: 1px solid #e5e7eb !important;
+        position: relative !important;
     }
 
-    /* Dölj "Rensa sökning" krysset på mobil för att spara plats */
-    #clearChatSearch {
-        display: none !important;
-    }
+    /* 6. Dölj "Rensa"-kryss */
+    #clearChatSearch { display: none !important; }
 }
 
 
 /* --- SLUT PÅ STYLE.CSS --- */
+
 
 
 
