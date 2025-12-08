@@ -4116,71 +4116,90 @@
 			    // 1. Logik & Data
 			    let prioClass = job.prio ? 'prio-row' : '';
 			    const status = job.status || 'bokad';
-			    let statusText = (STATUS_TEXT[status] || 'Bokad').toUpperCase();
+			    const statusText = (STATUS_TEXT[status] || 'Bokad'); // Visa "Bokad" inte "BOKAD" (CSS fixar versaler)
 			    
-			    // Tid (bara klockslag)
-			    let timeDisplay = '';
+			    // Hantera datum/tid
+			    let timeDisplay = '---';
 			    if (job.datum) {
 			        try {
 			            timeDisplay = new Date(job.datum).toLocaleTimeString('sv-SE', {hour: '2-digit', minute:'2-digit'});
 			        } catch(e) {}
 			    }
 			
-			    // Regnr (Enkel text eller "---")
+			    // Regnr-logik (Skapa Blå S-ruta eller text)
 			    const rawReg = job.regnr || '';
-			    const hasReg = rawReg.toUpperCase() !== 'OKÄNT' && rawReg.length > 2;
-			    const regDisplay = hasReg ? rawReg : '---';
-			    const regClass = hasReg ? '' : 'empty';
+			    let regHTML = '';
+			    if (rawReg.toUpperCase() !== 'OKÄNT' && rawReg.length > 2) {
+			        regHTML = `
+			            <div class="reg-plate-modern">
+			                <span class="plate-s">S</span>
+			                <span class="plate-num">${rawReg}</span>
+			            </div>`;
+			    } else {
+			        regHTML = '<span style="color:#9ca3af; font-style:italic;">---</span>';
+			    }
 			
 			    // Pris
-			    const pris = (job.kundpris && job.kundpris > 0) ? formatCurrency(job.kundpris) : '';
+			    const pris = formatCurrency(job.kundpris);
 			
-			    // Ikoner
+			    // Ikon-status
 			    const hasComment = job.kommentarer && job.kommentarer.trim().length > 0;
 			    const commentClass = hasComment ? 'has-comment' : '';
 			
-			    // 2. HTML Struktur (Matchar Bild 2 layout)
+			    // Kontext-ikon (Företag/Person)
+			    const customerIcon = getJobContextIcon(job); 
+			
+			    // 2. HTML Struktur (Rad-baserad Layout som Bild 2)
 			    return `
 			        <div class="mobile-job-card ${prioClass}" data-id="${job.id}" data-status="${status}">
 			            <div class="card-content">
 			                
-			                <div class="clean-header">
-			                    <span class="clean-customer">${job.kundnamn}</span>
-			                    <span class="clean-price">${pris}</span>
-			                </div>
-			
-			                <div class="clean-meta">
-			                    <span class="clean-reg ${regClass}">${regDisplay}</span>
-			                    
-			                    <span class="clean-time">
-			                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-			                        ${timeDisplay}
+			                <div class="card-row">
+			                    <span class="card-label">Kund</span>
+			                    <span class="card-value">
+			                        <svg class="icon-sm" viewBox="0 0 24 24" style="width:16px; height:16px; margin-right:6px; color:#0066FF;"><use href="${customerIcon}"></use></svg>
+			                        <span class="customer-name-text">${job.kundnamn}</span>
 			                    </span>
 			                </div>
 			
-			                <div class="clean-footer">
-			                    <span class="clean-status status-${status}">${statusText}</span>
-			                    
-			                    <div class="clean-actions">
-			                        
-			                        <button class="clean-icon-btn ${commentClass}" data-action="showComment" data-comment="${encodeURIComponent(job.kommentarer || '')}" ${hasComment ? '' : 'disabled'}>
-			                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-			                        </button>
-			                        
-			                        <button class="clean-icon-btn" data-action="togglePrio">
-			                            <svg viewBox="0 0 24 24" fill="${job.prio ? 'currentColor' : 'none'}" stroke="currentColor" style="${job.prio ? 'color:#ef4444;' : ''}"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
-			                        </button>
-			
-			                        <button class="clean-icon-btn" data-action="setStatusKlar">
-			                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"/></svg>
-			                        </button>
-			                        
-			                        <button class="clean-icon-btn delete-btn" data-id="${job.id}">
-			                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-			                        </button>
-			                    </div>
+			                <div class="card-row">
+			                    <span class="card-label">Reg.nr</span>
+			                    <span class="card-value">
+			                        ${regHTML}
+			                    </span>
 			                </div>
 			
+			                <div class="card-row">
+			                    <span class="card-label">Tid / Status</span>
+			                    <span class="card-value time-status-wrapper">
+			                        <span class="card-time-badge">${timeDisplay}</span>
+			                        <span class="status-badge status-${status}">${statusText}</span>
+			                    </span>
+			                </div>
+			
+			                <div class="card-row">
+			                    <span class="card-label">Kundpris</span>
+			                    <span class="card-value customer-price">${pris}</span>
+			                </div>
+			
+			            </div>
+			
+			            <div class="action-col">
+			                <button class="clean-icon-btn ${commentClass}" data-action="showComment" data-comment="${encodeURIComponent(job.kommentarer || '')}" ${hasComment ? '' : 'disabled'}>
+			                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+			                </button>
+			                
+			                <button class="clean-icon-btn" data-action="togglePrio">
+			                    <svg viewBox="0 0 24 24" fill="${job.prio ? 'currentColor' : 'none'}" stroke="currentColor" style="${job.prio ? 'color:#ef4444;' : ''}"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+			                </button>
+			
+			                <button class="clean-icon-btn" data-action="setStatusKlar">
+			                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"/></svg>
+			                </button>
+			                
+			                <button class="clean-icon-btn delete-btn" data-id="${job.id}">
+			                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+			                </button>
 			            </div>
 			        </div>
 			    `;
