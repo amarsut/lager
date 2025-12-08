@@ -5661,96 +5661,129 @@ html {
 }
 
 /* =========================================
-   PROFFSIG HISTORIK-VY & KNAPPAR (V2)
+   JUSTERAD DESIGN (KONTRAST & KNAPPAR)
    ========================================= */
 
 @media (max-width: 768px) {
 
-    /* 1. BAKGRUND & LAYOUT (Fixar kontrasten) */
+    /* 1. BAKGRUND & RAM (Löser "Vitt på Vitt") */
     .job-history-container {
-        background-color: #f3f4f6 !important; /* Ljusgrå bakgrund bakom korten */
-        padding: 16px !important; /* Luft runt korten */
-        border-radius: 12px;
+        /* Ljusgrå bakgrund gör att de vita korten "poppar" fram */
+        background-color: #f3f4f6 !important; 
+        
+        /* Ta bort den fula yttre ramen */
+        border: none !important; 
+        
+        /* Justera luften runt korten */
+        padding: 16px 12px !important; 
         margin-top: 0 !important;
-        border: none !important;
+        border-radius: 0 0 12px 12px; /* Runda bara nertill */
     }
 
-    /* 2. KNAPPARNA LÄNGST NER (Mindre luft) */
-    .sticky-link-buttons {
-        padding: 12px 16px calc(10px + env(safe-area-inset-bottom)) 16px !important; /* Tajtare botten */
-        background: rgba(255, 255, 255, 0.95) !important; /* Mer täckande bakgrund */
-        border-top: 1px solid #e5e7eb;
-        margin: 0 -16px -16px -16px !important; /* Dra ut till kanterna */
-    }
-    
-    .sticky-link-buttons .button {
-        height: 44px !important; /* Lite lägre knappar */
-        font-size: 0.9rem !important;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.05) !important;
+    /* 2. SÖKFÄLTET */
+    .search-wrapper.embedded-search {
+        /* Gör sökfältet till en egen "ö" ovanför den grå bakgrunden */
+        margin-bottom: 0 !important; 
+        border: 1px solid #e5e7eb !important;
+        border-bottom: none !important; /* Sitter ihop med listan visuellt */
+        border-radius: 12px 12px 0 0 !important; /* Runda bara upptill */
+        box-shadow: none !important;
+        z-index: 5;
     }
 
-    /* 3. NY DESIGN PÅ HISTORIK-KORTEN (List-versionen) */
-    /* Vi stylar om listan (ul/li) att se ut som kort */
-    
+    /* 3. KORTENS UTSEENDE */
     .detail-job-list li {
         background-color: #ffffff !important;
-        border: 1px solid #e5e7eb !important;
+        border: 1px solid #e5e7eb !important; /* Tunn, skarp ram */
         border-radius: 12px !important;
+        
+        /* Luft mellan korten */
+        margin-bottom: 12px !important; 
         padding: 16px !important;
-        margin-bottom: 12px !important;
+        
+        /* Skugga för djup */
         box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important;
-        display: flex !important;
-        flex-direction: column !important;
-        gap: 10px !important;
     }
     
-    /* Ta bort gamla linjer/pilar */
-    .detail-job-list li::after { display: none !important; }
+    /* Ta bort linjer inuti listan då vi nu har kort */
     .detail-job-list li:last-child { border-bottom: 1px solid #e5e7eb !important; }
 
-    /* Header i kortet (Datum + Status) */
-    .card-header-row {
-        display: flex; justify-content: space-between; align-items: center;
-        border-bottom: 1px dashed #e5e7eb;
-        padding-bottom: 8px; margin-bottom: 4px;
-    }
+    /* 4. TEXT & INNEHÅLL (Tydligare hierarki) */
     
+    /* Datumet (litet och grått) */
     .card-date-badge {
-        font-size: 0.85rem; font-weight: 700; color: #111827;
-        background-color: #f3f4f6; padding: 4px 8px; border-radius: 6px;
+        font-size: 0.75rem !important;
+        color: #6b7280 !important;
+        background: transparent !important; /* Ingen bakgrund, bara text */
+        padding: 0 !important;
+        font-weight: 600 !important;
+        letter-spacing: 0.5px;
     }
-    
-    /* Huvudinfo (Namn/Reg) */
+
+    /* Rubriken (FOGAROLLI / HUSE) */
     .card-main-title {
-        font-size: 1.1rem; font-weight: 800; color: #1f2937;
-        display: flex; align-items: center; gap: 6px;
+        font-size: 1.1rem !important;
+        font-weight: 800 !important;
+        color: #111827 !important;
+        margin-bottom: 8px !important;
+        margin-top: 4px !important;
     }
 
-    /* Beskrivningsrutan (Det grå fältet) */
+    /* Beskrivningsrutan (Grå box) */
     .card-desc-box {
-        background-color: #f9fafb;
-        border: 1px solid #f3f4f6;
-        border-radius: 8px;
-        padding: 10px;
-        font-size: 0.9rem;
-        color: #4b5563;
-        line-height: 1.5;
+        background-color: #f9fafb !important;
+        border: 1px solid #f3f4f6 !important;
+        color: #374151 !important;
+        padding: 12px !important;
+        border-radius: 8px !important;
+        font-size: 0.9rem !important;
+        line-height: 1.5 !important;
     }
 
-    /* Footer (Vinst) */
-    .card-footer-row {
-        display: flex; justify-content: flex-end; align-items: center;
-        padding-top: 4px;
-        font-size: 0.9rem; font-weight: 600;
+    /* 5. KNAPPARNA LÄNGST NER (Fixad position) */
+    .sticky-link-buttons {
+        position: sticky !important;
+        bottom: 0 !important;
+        z-index: 100;
+        
+        /* Gör bakgrunden lite genomskinlig (Frosted glass) */
+        background: rgba(255, 255, 255, 0.95) !important;
+        backdrop-filter: blur(8px);
+        border-top: 1px solid #e5e7eb;
+        
+        /* DRA UT DEN TILL KANTERNA */
+        margin: 0 -16px -16px -16px !important;
+        
+        /* JUSTERAD PADDING (Mindre luft under) */
+        padding: 12px 16px !important;
+        /* Tar hänsyn till iPhone-strecket i botten men lägger inte till extra onödig luft */
+        padding-bottom: calc(12px + env(safe-area-inset-bottom)) !important;
+        
+        display: flex !important;
+        gap: 12px !important;
+    }
+
+    .sticky-link-buttons .button {
+        flex: 1 !important; /* Gör dem jämbreda */
+        height: 48px !important; /* Bra klickyta */
+        font-size: 0.95rem !important;
+        border-radius: 12px !important;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05) !important;
+        background-color: #fff !important;
+        border: 1px solid #e5e7eb !important;
+        color: #111 !important;
+        font-weight: 600 !important;
     }
     
-    .card-profit { color: #10b981; } /* Grön */
-    .card-profit.neutral { color: #9ca3af; } /* Grå om 0kr */
+    /* Ikoner i knapparna */
+    .sticky-link-buttons .button img {
+        width: 20px; height: 20px;
+        margin-right: 6px;
+    }
 }
 
 
 /* --- SLUT PÅ STYLE.CSS --- */
-
 
 
 
