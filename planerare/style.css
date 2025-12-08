@@ -4529,128 +4529,128 @@ html {
 /********* TEST *********/
 
 
-/* Primär knapp (Skicka - Blå) */
-.chat-action-btn.primary {
-    background-color: var(--primary-color);
-    color: white;
-    box-shadow: 0 2px 5px rgba(var(--primary-color-rgb), 0.3);
-}
-.chat-action-btn.primary:hover {
-    background-color: var(--primary-dark);
-    transform: scale(1.05);
-}
-.chat-action-btn.primary:active { transform: scale(0.95); }
+/* =================================================================
+   CHATT UTSEENDE & FIXAR (V3.0 - Slutgiltig)
+   ================================================================= */
 
-
-/* Sekundär knapp (Kamera - Grå/Tema-anpassad) */
-.chat-action-btn.secondary {
-    background-color: var(--bg-color); /* Smälter in i bakgrunden */
-    border: 1px solid var(--border-color);
-    color: var(--text-color-light);
-}
-.chat-action-btn.secondary:hover {
-    background-color: var(--border-color); /* Lite mörkare vid hover */
-    color: var(--text-color);
-}
-.chat-action-btn.secondary:active { background-color: var(--content-bg); }
-.chat-action-btn.secondary .icon-sm { stroke-width: 1.5px; } /* Lite tunnare ikon */
-
-/* Dark mode justering för kameraknappen */
-[data-theme="dark"] .chat-action-btn.secondary {
-    background-color: #3a3a3c;
-    border-color: #48484a;
-}
-
-.chat-send-btn {
-    width: 45px;
-    height: 45px;
-    border-radius: 50%;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-/* --- MOBILANPASSNING --- */
+/* --- 1. HEADER KNAPPAR (STÖRRE PÅ MOBIL) --- */
 @media (max-width: 768px) {
-    .chat-container {
-        height: calc(100vh - var(--mobile-nav-height) - 100px); /* Fyll skärmen */
-        border: none;
-        box-shadow: none;
-        background: transparent;
-        max-width: 100%;
-    }
-    
-    /* Flytta input-rutan så den ligger ovanför tangentbordet/menyn */
-    .chat-input-area {
-        position: fixed;
-        bottom: var(--mobile-nav-height); /* Ovanför menyn */
-        left: 0;
-        right: 0;
-        z-index: 50;
-        padding: 0.75rem;
-    }
-
-	/* 1. Dölj den flytande desktop-knappen */
-    #fabChat { 
-        display: none !important; 
-    }
-    
-    /* 2. Gör widgeten till helskärm igen (som en vanlig sida) */
-    .chat-widget-container {
-        /* Nollställ positionering från desktop */
-        top: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
-        bottom: 0 !important;
-        
-        /* Tvinga full bredd och höjd */
-        width: 100% !important;
-        height: 100% !important;
-        
-        /* VIKTIGT: Återställ begränsningar vi satte för desktop */
-        max-width: 100% !important; /* Fixar den grå kanten */
-        max-height: none !important;
-        min-height: 0 !important;
-        
-        /* Ta bort runda hörn och ramar */
-        border-radius: 0 !important;
+    .header-gallery-btn,
+    #toggleAiFilter {
+        width: 48px !important;
+        height: 48px !important;
+        padding: 0 !important;
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        background: transparent !important;
         border: none !important;
-        margin: 0 !important;
-        
-        /* Se till att den täcker allt */
-        z-index: 5000 !important;
-        background-color: var(--bg-color) !important;
+        margin-left: 2px !important;
     }
-    
-    /* Flytta upp input-fältet så det inte täcks av tangentbordet */
-    .chat-input-area {
-        position: sticky; /* Sticky istället för fixed kan fungera bättre med tangentbord */
-        bottom: 0;
-        background-color: var(--content-bg);
+    .header-gallery-btn svg,
+    #toggleAiFilter svg {
+        width: 26px !important;
+        height: 26px !important;
+        color: var(--text-color) !important; /* Tydligare färg */
     }
-
-    /* 3. Justera innehållet för helskärm */
-    .chat-widget-container .chat-messages {
-        padding-bottom: 80px; /* Se till att sista meddelandet inte döljs av input-fältet */
-    }
-
-    /* 4. Dölj "X"-knappen på mobil (man byter vy via menyn istället) */
-    /*#closeChatWidget {
-        display: none !important;
-    }*/
-    
-    /* 5. Justera rubriken lite för mobil */
-    .chat-widget-header {
-        padding: 1rem;
-        /* Om du vill ha den sticky i toppen: */
-        /* position: sticky; top: 0; z-index: 10; */
-    }
+    /* Göm sök-krysset på mobil */
+    #clearChatSearch { display: none !important; }
 }
+
+/* --- 2. INPUT-PILLRET (CLEAN LOOK) --- */
+.chat-input-pill {
+    background-color: #f0f2f5 !important; /* Messenger-grå */
+    border: 1px solid transparent !important;
+    border-radius: 24px !important;
+    padding: 4px 12px !important;
+    transition: all 0.2s ease !important;
+    min-height: 42px !important;
+    display: flex; align-items: center;
+}
+
+/* När man skriver: Vit bakgrund + Blå ram */
+.chat-input-pill.typing-mode {
+    background-color: #fff !important;
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 0 2px rgba(0, 102, 255, 0.1) !important;
+    padding-right: 4px !important; /* Minska högermarginal */
+}
+
+/* Textfältet (Inga ramar) */
+#chatInput {
+    padding: 0 !important; margin: 0 !important;
+    border: none !important; outline: none !important;
+    background: transparent !important;
+    height: 100% !important; font-size: 16px !important;
+}
+
+/* Ta bort "X" i inputfältet */
+input[type="search"]::-webkit-search-decoration,
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-results-button,
+input[type="search"]::-webkit-search-results-decoration {
+    -webkit-appearance: none; display: none !important;
+}
+
+/* --- 3. KNAPPAR I TEXTFÄLTET --- */
+
+/* Dölj gem/kamera HELT när typing-mode är aktivt */
+.chat-input-pill.typing-mode .inner-input-actions {
+    display: none !important;
+    width: 0 !important;
+}
+
+/* AI-KNAPPEN: Normalt (Liten, grå, till vänster) */
+#askAiBtn {
+    order: -1 !important; /* Ligg först */
+    background: transparent !important;
+    color: #65676b !important;
+    width: 34px !important; height: 34px !important;
+    margin-right: 4px !important;
+    transition: all 0.2s ease !important;
+}
+
+/* AI-KNAPPEN: När man skriver (Blå, till höger) */
+.chat-input-pill.typing-mode #askAiBtn {
+    order: 10 !important; /* Flytta sist */
+    background-color: var(--primary-color) !important;
+    color: white !important;
+    width: 32px !important; height: 32px !important;
+    margin-left: auto !important; /* Knuffa till högerkanten */
+    margin-right: 0 !important;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2) !important;
+}
+
+/* --- 4. SKICKA-KNAPPEN (FIXAD) --- */
+.chat-action-btn.primary {
+    position: relative !important;
+    z-index: 100 !important; /* Måste ligga överst */
+    pointer-events: auto !important; /* Måste vara klickbar */
+    cursor: pointer !important;
+    
+    width: 44px !important; height: 44px !important;
+    border-radius: 50% !important;
+    margin-left: 8px !important;
+    background-color: var(--primary-color) !important;
+    color: white !important;
+    box-shadow: 0 2px 8px rgba(0, 102, 255, 0.4) !important;
+    transform: none !important;
+}
+.chat-action-btn.primary:active { transform: scale(0.95) !important; }
+
+/* Bubblor (Snyggare) */
+.chat-bubble {
+    border-radius: 18px !important;
+    box-shadow: none !important;
+    margin-bottom: 2px !important;
+}
+.chat-bubble.me { background-color: #0084ff !important; color: #fff !important; }
+.chat-bubble.other, .chat-bubble.system { background-color: #f0f0f0 !important; color: #050505 !important; }
+.chat-messages { background-color: #fff !important; background-image: none !important; }
 
 
 /* --- SLUT PÅ STYLE.CSS --- */
+
 
 
 
