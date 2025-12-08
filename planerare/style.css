@@ -1550,22 +1550,13 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 .chat-messages {
     display: flex !important;
     flex-direction: column !important;
-    
-    /* ÄNDRING 1: Använd flex-start här för att undvika scroll-buggar */
-    justify-content: flex-start !important;
-    
-    /* Behåll denna padding (luft för textrutan) */
-    padding: 1rem 1rem 80px 1rem !important; 
-    
+    padding: 1rem 1rem 80px 1rem !important;
     overflow-y: auto !important;
-    min-height: 0 !important;
-   opacity: 0; 
-    transition: opacity 0.2s ease;
-}
-
-/* En klass vi lägger på med JS när allt är klart */
-.chat-messages.loaded {
-    opacity: 1;
+    
+    /* SE TILL ATT DESSA RADER FINNS FÖR ATT TVINGA FRAM DEN: */
+    opacity: 1 !important; 
+    visibility: visible !important;
+    transition: none !important; 
 }
 
 /* ÄNDRING 2: DETTA ÄR MAGIN SOM TRYCKER NER ALLT TILL BOTTEN */
@@ -5428,6 +5419,7 @@ html {
 
 
 /* --- SLUT PÅ STYLE.CSS --- */
+
 
 
 
