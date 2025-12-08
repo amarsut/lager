@@ -5131,8 +5131,67 @@ html {
     box-shadow: 0 4px 15px rgba(0,0,0,0.08) !important; /* Lite lyxigare skugga */
 }
 
+/* =================================================================
+   CHATT FINAL POLISH (V8.0) - Färgmatchning & Städning
+   ================================================================= */
+
+/* --- 1. TA BORT "X" OCH STANDARD-STILAR I TEXTFÄLTET --- */
+#chatInput::-webkit-search-decoration,
+#chatInput::-webkit-search-cancel-button,
+#chatInput::-webkit-search-results-button,
+#chatInput::-webkit-search-results-decoration {
+    -webkit-appearance: none;
+    display: none !important;
+}
+
+/* Ta bort den blå ramen/skuggan runt hela fältet vid fokus */
+.chat-input-pill:focus-within {
+    box-shadow: none !important; /* Ingen glöd */
+    border-color: transparent !important;
+    background-color: #ffffff !important; /* Håll den vit */
+}
+
+/* --- 2. AI-KNAPPEN (Samma stil som Skicka-knappen) --- */
+
+/* När den är aktiv (fokus eller text) */
+#chatInput:focus ~ #askAiBtn,
+#chatInput:not(:placeholder-shown) ~ #askAiBtn {
+    /* Använd samma gradient som skicka-knappen för perfekt matchning */
+    background: linear-gradient(135deg, #0066FF 0%, #0052cc 100%) !important;
+    
+    /* Vit ikon */
+    color: #ffffff !important;
+    
+    /* Samma mjuka skugga */
+    box-shadow: 0 2px 8px rgba(0, 102, 255, 0.3) !important;
+    
+    /* Lite "pop"-effekt */
+    transform: scale(1.05) !important;
+    opacity: 1 !important;
+}
+
+/* Tvinga ikonen inuti att vara vit */
+#chatInput:focus ~ #askAiBtn svg,
+#chatInput:not(:placeholder-shown) ~ #askAiBtn svg {
+    color: #ffffff !important;
+    fill: #ffffff !important;
+}
+
+/* --- 3. JUSTERA TEXTFÄLTETS PADDING --- */
+/* Se till att texten inte krockar med AI-knappen */
+.chat-input-pill.typing-mode #chatInput {
+    padding-right: 4px !important; /* Minska avståndet till AI-knappen */
+}
+
+/* --- 4. DOLDA IKONER (Säkerställ att de försvinner) --- */
+#chatInput:focus ~ .inner-input-actions,
+#chatInput:not(:placeholder-shown) ~ .inner-input-actions {
+    display: none !important;
+}
+
 
 /* --- SLUT PÅ STYLE.CSS --- */
+
 
 
 
