@@ -1562,6 +1562,25 @@
 			    });
 			}
 
+			function updateMobileHeaderDate() {
+			    const dateEl = document.getElementById('mobileHeaderDate');
+			    if (!dateEl) return;
+			
+			    const now = new Date();
+			    // Veckodag (t.ex. "MÅN")
+			    let weekday = now.toLocaleDateString('sv-SE', { weekday: 'short' }).replace('.', '').toUpperCase();
+			    // Datum (t.ex. "5 DEC")
+			    let dayMonth = now.toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' }).replace('.', '').toUpperCase();
+			
+			    dateEl.innerHTML = `
+			        <span class="date-weekday">${weekday}</span>
+			        <span class="date-day">${dayMonth}</span>
+			    `;
+			}
+			
+			// Kör direkt vid start
+			updateMobileHeaderDate();
+
 			// --- NY FUNKTION: Notis-räknare ---
 			function initChatBadgeListener() {
 			    // VIKTIG ÄNDRING HÄR:
