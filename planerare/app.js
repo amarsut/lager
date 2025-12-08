@@ -4492,7 +4492,7 @@
                 // PUNKT 7: Undvik att pusha historik för mobil sök-modal
                 const { replaceHistory = false } = options; // <--- NY
 
-                if (history.state?.modal !== modalId && modalId !== 'mobileSearchModal') {
+                if ((history.state && history.state.modal) !== modalId && modalId !== 'mobileSearchModal') {
                     try {
                         if (replaceHistory) {
                             // Ersätt nuvarande historik-post
@@ -5154,7 +5154,7 @@
                 if (customerJobs.length > 0) {
                     const latestJob = customerJobs[0]; // Ta det senaste jobbet
                     
-                    if (history.state?.modal) {
+                    if ((history.state && history.state.modal)) {
                         isNavigatingBack = true;
                         history.back();
                         isNavigatingBack = false;
@@ -5398,7 +5398,8 @@
                 }
                 tableHtml += `</tbody></table>`;
                 
-                statsModalBody.querySelector('#statsModalTable')?.remove(); 
+                const oldTable = statsModalBody.querySelector('#statsModalTable');
+				if (oldTable) oldTable.remove();
                 statsModalBody.insertAdjacentHTML('beforeend', tableHtml);
 
                 // --- MÅNADSGRAF (BEFINTLIG) ---
@@ -5878,7 +5879,8 @@
             });
             
             contextMenu.addEventListener('click', (e) => {
-                const action = e.target.closest('.context-menu-button')?.dataset.action;
+                const btn = e.target.closest('.context-menu-button');
+				const action = btn ? btn.dataset.action : null;
                 if (!action || !contextMenuJobId) {
                     hideContextMenu();
                     return;
@@ -6348,7 +6350,7 @@
                 
                 if (job) {
                     // FIX: Stäng nuvarande modal, men tryck "bakåt" i historiken
-                    if (history.state?.modal) {
+                    if ((history.state && history.state.modal)) {
                         isNavigatingBack = true;
                         history.back(); // Gå tillbaka från customer/car-modalen
                         isNavigatingBack = false;
@@ -6592,10 +6594,14 @@
                 const levelNum = parseInt(level) || 0; 
 
                 if (levelNum === 1) {
-                    // Läge 1: Kompakt
-                    docElement.classList.add('compact-mode');
-                    toggleCompactView.classList.add('active');
-                    toggleCompactView.title = "Växla till Extra Kompakt vy";
+				    // Läge 1: Kompakt
+				    docElement.classList.add('compact-mode');
+				    
+				    // SÄKERHETSKOLL: Finns knappen?
+				    if (toggleCompactView) {
+				        toggleCompactView.classList.add('active');
+				        toggleCompactView.title = "Växla till Extra Kompakt vy";
+				    }
                     
                     // SÄKERHETSKONTROLL
                     if (settingsToggleCompactView) {
@@ -6612,9 +6618,12 @@
                         settingsToggleCompactView.title = "Växla till Standardvy";
                     }
 
-                } else {
-                    // Läge 0: Normal
-                    toggleCompactView.title = "Växla till Kompakt vy";
+               } else {
+				    // Läge 0: Normal
+				    if (toggleCompactView) { // <--- LÄGG TILL DENNA CHECK
+				        toggleCompactView.classList.remove('active'); // Ta bort active om den finns
+				        toggleCompactView.title = "Växla till Kompakt vy";
+				    }
                     
                     // SÄKERHETSKONTROLL
                     if (settingsToggleCompactView) {
