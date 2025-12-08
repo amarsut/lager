@@ -5920,7 +5920,7 @@
 			        if (mobileInput) mobileInput.value = ''; 
 			    }
 			
-			    // --- SÄKERHETSFIX HÄR (Detta kraschade förut) ---
+			    // --- SÄKERHETSFIX: Knapparna ---
 			    const dClearBtn = document.getElementById('desktopSearchClear');
 			    const mClearBtn = document.getElementById('mobileSearchClear');
 			    
@@ -5930,10 +5930,10 @@
 			    if (mClearBtn) {
 			        mClearBtn.style.cssText = (isMobileView && currentSearchTerm) ? 'display: flex !important' : 'display: none !important';
 			    }
-			    // -----------------------------------------------
 			
 			    if (wrapper) wrapper.classList.remove('is-searching'); 
 			    
+			    // --- MOBIL SÖKNING ---
 			    const mobileResults = document.getElementById('mobileSearchResults');
 			    if (isMobileView && mobileResults) {
 			        if (!currentSearchTerm.trim()) {
@@ -5972,6 +5972,7 @@
 			        return;
 			    }
 			
+			    // --- VANLIG VY (Desktop/Tidslinje) ---
 			    if (currentView === 'timeline') renderTimeline();
 			    else if (currentView === 'kanban') renderKanbanBoard();
 			    else if (currentView === 'calendar' && calendar) { filterCalendarView(); calendar.render(); }
