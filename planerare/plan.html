@@ -1218,7 +1218,7 @@
             firebase.initializeApp(firebaseConfig);
             db = firebase.firestore();
 			/* OFFLINE STÖD */
-			db.enablePersistence({synchronizeTabs: true})
+			//db.enablePersistence({synchronizeTabs: true})
             .then(() => {
                 console.log("Offline-stöd aktiverat!");
             })
