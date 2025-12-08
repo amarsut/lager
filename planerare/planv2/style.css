@@ -1,14 +1,16 @@
+/* --- style.css --- */
+
 /* Grundinställningar */
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Inter', sans-serif; /* Nytt typsnitt */
 }
 
 body {
-    background-color: #f3f6fc; /* Ljus bakgrund */
-    color: #333;
+    background-color: #f4f7fe; /* Något kallare/blåare vit ton */
+    color: #2b3674; /* Mörkare marinblå textfärg för premiumkänsla */
 }
 
 /* Layout Container */
@@ -19,91 +21,94 @@ body {
 
 /* --- SIDEBAR --- */
 .sidebar {
-    width: 250px;
+    width: 260px;
     background-color: #fff;
     display: flex;
     flex-direction: column;
-    border-right: 1px solid #e0e0e0;
-    padding: 20px;
+    padding: 25px;
 }
 
 .logo-area {
-    margin-bottom: 30px;
+    margin-bottom: 40px;
 }
 
 .menu-btn {
-    background-color: #1a73e8; /* Blå */
+    background-color: #1a73e8; /* Primär blå */
     color: white;
     border: none;
-    padding: 10px 15px;
-    border-radius: 8px;
-    font-weight: bold;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 1rem;
     width: 100%;
     text-align: left;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     cursor: pointer;
+    box-shadow: 0 4px 10px rgba(26, 115, 232, 0.2);
 }
 
 .nav-links {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 8px;
 }
 
 .nav-links a {
     text-decoration: none;
-    color: #5f6368;
+    color: #a3aed0; /* Ljusgrå text för inaktiva */
     padding: 12px 15px;
     border-radius: 8px;
     display: flex;
     align-items: center;
     gap: 15px;
     font-size: 0.95rem;
-    transition: background 0.2s;
+    font-weight: 500;
+    transition: all 0.2s ease;
 }
 
-.nav-links a:hover, .nav-links a.active {
-    background-color: #f1f3f4;
+.nav-links a:hover {
     color: #1a73e8;
-    font-weight: 500;
+}
+
+.nav-links a.active {
+    background-color: #f4f7fe; /* Mycket ljus blå/grå bakgrund */
+    color: #1a73e8; /* Skarp blå text */
+    font-weight: 700;
+    border-right: 3px solid #1a73e8; /* Liten markör till höger */
 }
 
 .user-profile {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     padding-top: 20px;
-    border-top: 1px solid #eee;
+    margin-top: auto;
 }
 
 .avatar {
-    width: 40px;
-    height: 40px;
-    background-color: #e8f0fe;
+    width: 45px;
+    height: 45px;
+    background-color: #eef2ff;
     color: #1a73e8;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: bold;
+    font-weight: 700;
+    font-size: 0.9rem;
 }
 
-.user-info {
-    flex: 1;
-    font-size: 0.85rem;
-}
-
-.user-info .name { display: block; font-weight: bold; }
-.user-info .status { color: #aaa; font-size: 0.75rem; }
-.logout-icon { color: #aaa; cursor: pointer; }
+.user-info .name { display: block; font-weight: 700; color: #1b2559; }
+.user-info .status { color: #a3aed0; font-size: 0.75rem; }
+.logout-icon { color: #a3aed0; cursor: pointer; margin-left: auto; }
 
 /* --- MAIN CONTENT --- */
 .main-content {
     flex: 1;
-    padding: 20px 30px;
+    padding: 30px;
     overflow-y: auto;
 }
 
@@ -111,17 +116,18 @@ body {
 .top-bar {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 30px;
+    align-items: center;
+    margin-bottom: 35px;
 }
 
 .search-container {
     background: #fff;
-    padding: 10px 15px;
-    border-radius: 8px;
+    padding: 12px 20px;
+    border-radius: 30px; /* Mer rundad */
     display: flex;
     align-items: center;
-    width: 400px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+    width: 350px;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.03);
 }
 
 .search-container input {
@@ -129,34 +135,44 @@ body {
     outline: none;
     margin-left: 10px;
     width: 100%;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
+    color: #2b3674;
 }
 
 .actions {
     display: flex;
-    gap: 15px;
+    gap: 20px;
+    align-items: center;
 }
 
 .icon-btn {
     background: #fff;
     border: none;
-    width: 45px;
-    height: 45px;
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
     cursor: pointer;
-    color: #5f6368;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+    color: #a3aed0;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.03);
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    font-size: 1.1rem;
 }
 
 .primary-btn {
-    background-color: #0061ff; /* Klar blå */
+    background-color: #0061ff;
     color: white;
     border: none;
-    padding: 0 25px;
-    border-radius: 8px;
-    font-weight: bold;
+    padding: 12px 30px;
+    border-radius: 12px;
+    font-weight: 600;
     cursor: pointer;
-    box-shadow: 0 4px 10px rgba(0,97,255,0.2);
+    box-shadow: 0 4px 12px rgba(0,97,255,0.25);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.95rem;
 }
 
 /* Stats Grid */
@@ -169,251 +185,171 @@ body {
 
 .card {
     background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+    border-radius: 15px; /* Mjukare hörn */
+    box-shadow: 0 5px 20px rgba(0,0,0,0.02);
+    border: none; /* Ta bort standard border */
 }
 
 .stat-card {
     padding: 20px;
-    border-top: 3px solid transparent; /* Placeholder for colors */
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    height: 140px;
+    height: 130px;
+    position: relative;
+    overflow: hidden;
 }
 
-/* Stat card colors */
-.border-blue { border-color: #1a73e8; }
-.border-purple { border-color: #d93025; /* Använde röd/lila ton */ }
-.border-purple { border-color: #e374ff; }
-.border-green { border-color: #34a853; }
-.border-grey { border-color: #9aa0a6; }
-.border-dark { border-color: #3c4043; }
+/* Top borders via pseudo-elements instead of border-top */
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+}
+.border-blue::before { background: #1a73e8; }
+.border-purple::before { background: #e374ff; }
+.border-green::before { background: #34a853; }
+.border-grey::before { background: #9aa0a6; }
+.border-dark::before { background: #3c4043; }
 
 .card-title {
     font-size: 0.75rem;
     font-weight: 600;
-    color: #5f6368;
+    color: #a3aed0;
     text-transform: uppercase;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
+    letter-spacing: 0.5px;
 }
 
 .card-value {
-    font-size: 2.5rem;
-    font-weight: bold;
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-top: 10px;
 }
-
-.color-blue { color: #1a73e8; }
-.color-purple { color: #e374ff; }
-.color-green { color: #34a853; }
-.color-grey { color: #1a73e8; /* Offererade blå på bilden */ }
-.color-dark { color: #202124; }
 
 /* Table */
 .table-container {
-    padding: 20px;
+    padding: 25px;
+    border-radius: 20px;
 }
 
 table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0 15px; /* Mellanrum mellan rader */
 }
 
-th {
+thead th {
     text-align: left;
-    font-size: 0.75rem;
-    color: #888;
+    font-size: 0.7rem;
+    color: #a3aed0;
     text-transform: uppercase;
-    padding: 15px 10px;
-    border-bottom: 1px solid #eee;
+    padding: 0 15px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+tbody tr {
+    background: #fff; /* Varje rad får vit bakgrund */
+    box-shadow: 0 2px 10px rgba(0,0,0,0.01); /* Subtle shadow per row */
+    transition: transform 0.2s;
+}
+
+tbody tr:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
 }
 
 td {
-    padding: 15px 10px;
-    border-bottom: 1px solid #f9f9f9;
+    padding: 20px 15px;
     font-size: 0.9rem;
-    color: #444;
+    color: #2b3674;
+    font-weight: 500;
+    background: #fff;
 }
 
-/* Table styles */
+/* Rundade hörn på första och sista cellen i varje rad */
+td:first-child { border-top-left-radius: 10px; border-bottom-left-radius: 10px; }
+td:last-child { border-top-right-radius: 10px; border-bottom-right-radius: 10px; }
+
+/* Status Badge */
 .status-badge {
-    background-color: #e1f0ff;
+    background-color: #e6f2ff; /* Mycket ljusare blå */
     color: #0061ff;
-    padding: 5px 15px;
+    padding: 6px 18px;
     border-radius: 20px;
-    font-weight: 600;
+    font-weight: 700;
     font-size: 0.8rem;
     display: inline-block;
 }
 
+/* Kundprofil */
 .customer-cell {
-    font-weight: 600;
+    font-weight: 700;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
+    color: #1b2559;
 }
+.customer-cell i { color: #5f6368; font-size: 0.9rem; }
 
-.reg-box {
-    border: 1px solid #ccc;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-family: monospace;
-    font-weight: bold;
-    background: #fff;
+/* Registreringsskylt (Den viktiga uppdateringen!) */
+.plate-wrapper {
     display: inline-flex;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    overflow: hidden;
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    background: #fff;
+    height: 28px;
     align-items: center;
-    gap: 5px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
 
-.reg-box i { color: #0044aa; } /* Blå "S" märke */
+.plate-blue {
+    background-color: #0044aa; /* Svensk skylt-blå */
+    width: 20px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.6rem;
+    flex-shrink: 0;
+}
 
+.plate-text {
+    padding: 0 8px;
+    color: #333;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+}
+
+/* Åtgärder ikoner */
 .action-icons i {
-    color: #999;
-    margin-left: 10px;
+    color: #a3aed0;
+    margin-left: 12px;
     cursor: pointer;
+    font-size: 1rem;
     transition: color 0.2s;
 }
 
-.action-icons i:hover { color: #333; }
+.action-icons i:hover { color: #1a73e8; }
 
-/* --- CHAT WIDGET --- */
-.chat-widget {
-    position: fixed;
-    bottom: 30px;
-    right: 30px;
-}
-
+/* Chat FAB & Window (Oförändrad struktur, bara färger) */
 .chat-fab {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
     background: #fff;
+    color: #2b3674;
     border: none;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    cursor: pointer;
-    position: relative;
-    font-size: 1.5rem;
-    color: #555;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
 }
+.chat-fab .badge { background: #ff5630; }
+.chat-header { background: #2b3674; }
 
-.chat-fab .badge {
-    position: absolute;
-    top: 0;
-    right: 0;
-    background: #ff3b30;
-    color: white;
-    font-size: 0.7rem;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.chat-window {
-    display: none; /* Dold som standard */
-    position: absolute;
-    bottom: 80px;
-    right: 0;
-    width: 300px;
-    height: 400px;
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.15);
-    flex-direction: column;
-    overflow: hidden;
-}
-
-.chat-header {
-    background: #1a73e8;
-    color: white;
-    padding: 15px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-weight: bold;
-}
-
-.chat-body {
-    flex: 1;
-    padding: 15px;
-    background: #f9f9f9;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.message {
-    padding: 8px 12px;
-    border-radius: 10px;
-    font-size: 0.9rem;
-    max-width: 80%;
-}
-
-.message.self {
-    background: #e1f0ff;
-    align-self: flex-end;
-}
-
-.chat-footer {
-    padding: 10px;
-    border-top: 1px solid #eee;
-    display: flex;
-    gap: 5px;
-}
-
-.chat-footer input {
-    flex: 1;
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 20px;
-    outline: none;
-}
-
-/* --- MODAL --- */
-.modal {
-    display: none;
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: rgba(0,0,0,0.5);
-    justify-content: center;
-    align-items: center;
-}
-
-.modal-content {
-    background: #fff;
-    padding: 30px;
-    border-radius: 10px;
-    width: 400px;
-}
-
-.modal-content h2 { margin-bottom: 20px; }
-
-.modal-content label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: 600;
-    font-size: 0.9rem;
-}
-
-.modal-content input {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 15px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-}
-
-.modal-buttons {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-}
-
-.save-btn { background: #1a73e8; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }
-.cancel-btn { background: #eee; color: #333; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }
+/* Modal Styles update */
+.save-btn { background: #0061ff; border-radius: 8px; }
+.cancel-btn { border-radius: 8px; }
