@@ -2265,56 +2265,158 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 }
 
 /* Mobilkortet */
+/* =========================================
+   RETRO-MODERN DESIGN (LAYOUT BILD 2 + NYA KNAPPAR)
+   ========================================= */
+
+/* 1. Kort-behållaren (Fyrkantig) */
 .mobile-job-card {
-    background: var(--content-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    box-shadow: var(--shadow-sm);
-    border-left: 4px solid transparent; /* Statusfärg */
+    background: #ffffff !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 4px !important; /* <--- FYRKANTIGA HÖRN */
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+    margin-bottom: 12px !important;
     overflow: hidden;
-    transition: transform 0.2s ease;
-}
-.mobile-job-card:active { transform: scale(0.98); }
-
-.mobile-job-card .card-content {
-    padding: 1rem;
-    display: flex; flex-direction: column; gap: 0.75rem;
+    display: flex !important;
+    flex-direction: column !important;
+    border-left: none !important;
 }
 
-/* Rader inuti kortet */
-.mobile-job-card .card-row {
-    display: flex; justify-content: space-between; align-items: center;
+.mobile-job-card.prio-row {
+    border-left: 4px solid #ef4444 !important; /* Röd kant vid Prio */
 }
 
-.mobile-job-card .card-label {
-    font-size: 0.85rem; font-weight: 600; color: var(--text-color-light);
-}
-.mobile-job-card .card-value {
-    font-size: 0.95rem; font-weight: 500; text-align: right;
+/* 2. Innehåll (Rader) */
+.card-content {
+    padding: 16px 20px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important; /* Luft mellan raderna */
 }
 
-/* Kundnamn & Pris */
-.mobile-job-card .customer-name { font-weight: 700; font-size: 1.05rem; }
-.mobile-job-card .customer-price { font-weight: 700; font-size: 1rem; }
+/* Rader */
+.card-row {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    min-height: 24px !important;
+}
 
-/* Tids-badge */
+/* Etiketter (Grå text till vänster: "Kund", "Reg.nr" osv) */
+.card-label {
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+    color: #9ca3af !important; /* Ljusgrå */
+    width: 100px !important;
+    flex-shrink: 0 !important;
+    text-align: left !important;
+}
+
+/* Värden (Text till höger) */
+.card-value {
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    color: #1f2937 !important;
+    text-align: right !important;
+    flex-grow: 1 !important;
+    display: flex !important;
+    justify-content: flex-end !important;
+    align-items: center !important;
+}
+
+/* Kundnamn (Stort) */
+.customer-name-text {
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+    font-size: 1.05rem !important;
+}
+
+/* Reg-skylt (Den blå boxen från Bild 2) */
+.reg-plate-modern {
+    display: inline-flex !important;
+    align-items: center !important;
+    background: #fff !important;
+    border: 1px solid #9ca3af !important;
+    border-radius: 3px !important; /* Kantig skylt */
+    padding: 0 !important;
+    height: 24px !important;
+    overflow: hidden !important;
+}
+
+.plate-s {
+    background-color: #0052cc !important; /* Blå */
+    color: white !important;
+    height: 100% !important;
+    padding: 0 5px !important;
+    font-size: 0.7rem !important;
+    font-weight: 700 !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+.plate-num {
+    padding: 0 6px !important;
+    font-family: monospace !important;
+    font-weight: 700 !important;
+    font-size: 0.9rem !important;
+    color: #111 !important;
+    letter-spacing: 1px !important;
+}
+
+/* Tid & Status Wrapper */
+.time-status-wrapper {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+
+/* Tid (Piller) */
 .card-time-badge {
-    background-color: var(--bg-color);
-    border: 1px solid var(--border-color);
-    padding: 0.2em 0.6em; border-radius: 99px;
-    font-size: 0.8rem; font-weight: 600;
+    background-color: #f3f4f6 !important;
+    padding: 2px 8px !important;
+    border-radius: 4px !important; /* Kantig */
+    font-size: 0.85rem !important;
+    color: #374151 !important;
 }
 
-/* Mobil Action Bar (Knappar under kortet) */
-.mobile-job-card .action-col {
-    display: flex; justify-content: space-around;
-    padding: 0.5rem; background-color: var(--bg-color);
-    border-top: 1px solid var(--border-color);
-    opacity: 1 !important; /* Alltid synliga på mobil */
+/* Status (Färgad badge) */
+.status-badge {
+    padding: 2px 8px !important;
+    border-radius: 4px !important; /* Kantig */
+    font-size: 0.75rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    display: inline-block !important;
 }
-.mobile-job-card .action-col .icon-btn {
-    padding: 0.5rem; flex: 1; border-radius: 8px;
+
+/* Pris */
+.customer-price {
+    font-size: 1.1rem !important;
+    font-weight: 800 !important;
 }
+
+/* 3. Action Bar (Knapparna från Bild 1) */
+.action-col {
+    display: flex !important;
+    justify-content: space-around !important;
+    padding: 10px 0 !important;
+    background-color: #ffffff !important; /* Vit bakgrund */
+    border-top: 1px solid #f3f4f6 !important;
+}
+
+.clean-icon-btn {
+    background: transparent !important;
+    border: none !important;
+    padding: 8px !important;
+    color: #6b7280 !important; /* Grå ikoner */
+    transition: all 0.2s !important;
+}
+
+.clean-icon-btn:active { color: #111 !important; transform: scale(0.95) !important; }
+.clean-icon-btn svg { width: 22px !important; height: 22px !important; stroke-width: 2px !important; }
+
+/* Aktiv kommentar */
+.clean-icon-btn.has-comment { color: #111 !important; }
 
 /* =========================================
    21. MOBIL SÖK-MODAL (HELSKÄRM)
@@ -5628,6 +5730,7 @@ html {
 
 
 /* --- SLUT PÅ STYLE.CSS --- */
+
 
 
 
