@@ -4710,8 +4710,162 @@ html {
     color: #b0b3b8 !important;
 }
 
+/* =================================================================
+   CHATT FINAL FIX (V4.0 - "Clean Messenger")
+   Ersätt det tidigare blocket längst ner i style.css med detta.
+   ================================================================= */
+
+/* --- 1. SÖKFÄLTET (INPUT) --- */
+
+/* Ta bort inbyggt "X" (Rensa-knapp) i webbläsaren */
+#chatInput::-webkit-search-decoration,
+#chatInput::-webkit-search-cancel-button,
+#chatInput::-webkit-search-results-button,
+#chatInput::-webkit-search-results-decoration {
+    -webkit-appearance: none;
+    display: none !important;
+}
+
+/* Ta bort blå markering/ram vid fokus */
+#chatInput:focus, 
+.chat-input-pill:focus-within {
+    outline: none !important;
+    border-color: transparent !important;
+    box-shadow: none !important; /* Tar bort blå glöd */
+}
+
+/* --- 2. LOGIK FÖR ATT GÖMMA IKONER (CSS-TRICK) --- */
+/* När input INTE visar platshållare (dvs man har skrivit text),
+   dölj "inner-input-actions" (Kamera/Plus).
+*/
+#chatInput:not(:placeholder-shown) ~ .inner-input-actions {
+    display: none !important;
+    width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+}
+
+/* --- 3. AI-KNAPPEN (ALLTID TILL HÖGER) --- */
+
+#askAiBtn {
+    /* Tvinga den sist i raden */
+    order: 100 !important;
+    
+    /* Knuffa den till högerkanten */
+    margin-left: auto !important; 
+    margin-right: 0 !important;
+    
+    /* Utseende */
+    width: 34px !important;
+    height: 34px !important;
+    border-radius: 50% !important;
+    transition: all 0.2s ease !important;
+    
+    /* Standardfärg (När man inte skriver) */
+    background-color: transparent !important;
+    color: #6b7280 !important; /* Grå */
+}
+
+/* När man skriver text (placeholder visas ej): Gör AI-knappen blå */
+#chatInput:not(:placeholder-shown) ~ #askAiBtn {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2) !important;
+}
+
+/* Ikon-storlek i AI-knappen */
+#askAiBtn svg {
+    width: 18px !important;
+    height: 18px !important;
+}
+
+/* --- 4. TEXTFÄLTETS PILLER-FORM --- */
+.chat-input-pill {
+    background-color: #f3f4f6 !important; /* Ljusgrå */
+    border: 1px solid transparent !important;
+    border-radius: 24px !important;
+    padding: 6px 6px 6px 16px !important; /* Mer luft vänster, mindre höger */
+    min-height: 48px !important;
+    display: flex !important;
+    align-items: center !important;
+    transition: background-color 0.2s ease !important;
+}
+
+/* Byt färg till vit när man skriver för bättre fokus */
+.chat-input-pill:focus-within {
+    background-color: #ffffff !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05) !important; /* Mycket subtil skugga */
+}
+
+/* --- 5. KAMERA & PLUS-KNAPPAR (Vänster sida) --- */
+/* Dessa ligger nu fysiskt till höger i HTML men vi flyttar dem visuellt eller behåller dem */
+.inner-input-actions {
+    display: flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    margin-left: 8px !important;
+    padding-left: 8px !important;
+    border-left: 1px solid #e5e7eb !important; /* Avdelare mot texten */
+}
+
+/* --- 6. HEADER-JUSTERINGAR (AVDELARE & KNAPPAR) --- */
+@media (max-width: 768px) {
+    /* Avdelare till vänster om knapparna i headern */
+    .header-search-wrapper {
+        position: relative !important;
+        padding-right: 0 !important;
+        gap: 0 !important;
+    }
+
+    /* Styla första knappen (AI-filtret) för att ha ett streck */
+    #toggleAiFilter {
+        border-left: 1px solid #d1d5db !important; /* Tydligare streck */
+        padding-left: 12px !important;
+        margin-left: 8px !important;
+        height: 24px !important; /* Korta ner strecket lite */
+        margin-top: auto !important;
+        margin-bottom: auto !important;
+        border-radius: 0 !important;
+    }
+
+    /* Knapparnas storlek och färg */
+    #toggleAiFilter, #toggleChatGallery {
+        width: 44px !important;
+        height: 44px !important;
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        background: transparent !important;
+        color: #374151 !important; /* Mörkgrå */
+    }
+    
+    #toggleAiFilter svg, #toggleChatGallery svg {
+        width: 22px !important;
+        height: 22px !important;
+    }
+
+    /* Göm desktop-krysset */
+    #clearChatSearch { display: none !important; }
+}
+
+/* --- 7. SKICKA-KNAPPEN (FINLIR) --- */
+.chat-action-btn.primary {
+    width: 48px !important;
+    height: 48px !important;
+    margin-left: 8px !important;
+    background-color: #0066FF !important; /* Stark Messenger-blå */
+    box-shadow: 0 2px 8px rgba(0, 102, 255, 0.3) !important;
+}
+.chat-action-btn.primary svg {
+    width: 20px !important;
+    height: 20px !important;
+    margin-left: 2px !important; /* Optisk centrering av pilen */
+}
+
 
 /* --- SLUT PÅ STYLE.CSS --- */
+
 
 
 
