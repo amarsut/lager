@@ -5189,8 +5189,140 @@ html {
     display: none !important;
 }
 
+/* =================================================================
+   FIX AV REAKTIONSMENY (Bredare, Grid-layout & Snyggare)
+   ================================================================= */
+
+.reaction-menu {
+    /* Gör rutan bredare så allt får plats */
+    min-width: 320px !important; /* Ökad bredd */
+    max-width: 95vw !important;  /* Nästan hela skärmbredden på mobil */
+    padding: 16px !important;
+    border-radius: 20px !important;
+    
+    background-color: #ffffff !important;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.25) !important;
+    border: 1px solid rgba(0,0,0,0.05) !important;
+    
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+    
+    z-index: 99999 !important;
+}
+
+/* ÖVRE RADEN (EMOJIS) */
+.reaction-menu > div:first-child {
+    display: flex !important;
+    justify-content: space-between !important; /* Sprid ut dem hela vägen */
+    width: 100% !important;
+    padding: 0 8px !important; /* Lite luft på kanten */
+}
+
+.reaction-option {
+    font-size: 26px !important; /* Större och tydligare emojis */
+    padding: 4px !important;
+    transition: transform 0.2s ease !important;
+    line-height: 1 !important;
+}
+.reaction-option:active {
+    transform: scale(1.4) !important;
+}
+
+/* NEDRE RADEN (ÅTGÄRDER - GRID) */
+.reaction-actions-row {
+    /* Detta är nyckeln: Tvinga 4 exakta kolumner */
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important; 
+    gap: 12px !important;
+    
+    width: 100% !important;
+    padding-top: 16px !important;
+    border-top: 1px solid #f0f0f0 !important;
+    margin-top: 0 !important;
+}
+
+/* Enskild knapp */
+.action-item {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 8px !important;
+    cursor: pointer !important;
+    width: 100% !important;
+}
+
+/* Cirkeln runt ikonen */
+.action-item .icon-circle {
+    width: 48px !important;
+    height: 48px !important;
+    border-radius: 50% !important;
+    background-color: #f3f4f6 !important; /* Ljusgrå */
+    color: #1f2937 !important;
+    
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.action-item .icon-sm {
+    width: 22px !important;
+    height: 22px !important;
+    stroke-width: 2px !important;
+}
+
+/* Röd soptunna */
+.action-item.danger .icon-circle {
+    background-color: #fef2f2 !important;
+    color: #ef4444 !important;
+}
+.action-item.danger .icon-sm {
+    color: #ef4444 !important;
+}
+
+/* Texten under ikonen */
+.action-item span {
+    font-size: 11px !important; /* Lagom storlek */
+    font-weight: 600 !important;
+    color: #6b7280 !important;
+    text-align: center !important;
+    
+    /* Hantera lång text */
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    width: 100% !important;
+    display: block !important;
+}
+
+/* =================================================================
+   FIX FÖR LÅNGTRYCK (Stäng av textmarkering och system-meny)
+   ================================================================= */
+
+.chat-bubble, 
+.chat-text-content,
+.chat-time {
+    /* Stäng av textmarkering */
+    -webkit-user-select: none !important;
+    user-select: none !important;
+    
+    /* Stäng av systemets meny (Kopiera/Dela på iOS/Android) */
+    -webkit-touch-callout: none !important;
+    
+    /* Ta bort highlight-färg vid tryck */
+    -webkit-tap-highlight-color: transparent !important;
+}
+
+/* MEN: Vi vill fortfarande kunna klicka på länkar inuti bubblan */
+.chat-link, .chat-reg-link, .chat-customer-link {
+    pointer-events: auto !important;
+    /* Låt länkar vara markerbara om man verkligen vill, eller stäng av det också: */
+    /* -webkit-user-select: none !important; */
+}
+
 
 /* --- SLUT PÅ STYLE.CSS --- */
+
 
 
 
