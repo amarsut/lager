@@ -1559,6 +1559,13 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     
     overflow-y: auto !important;
     min-height: 0 !important;
+   opacity: 0; 
+    transition: opacity 0.2s ease;
+}
+
+/* En klass vi lägger på med JS när allt är klart */
+.chat-messages.loaded {
+    opacity: 1;
 }
 
 /* ÄNDRING 2: DETTA ÄR MAGIN SOM TRYCKER NER ALLT TILL BOTTEN */
@@ -1581,12 +1588,17 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     position: relative;
     box-shadow: 0 1px 2px rgba(0,0,0,0.1);
     word-wrap: break-word;
-    animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    //animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     
     /* Touch-optimering */
     touch-action: pan-y !important;
     -webkit-touch-callout: none !important;
     user-select: none !important;
+}
+
+/* NYTT: Animera ENDAST nya meddelanden (vi lägger till denna klass med JS) */
+.chat-bubble.animate-in {
+    animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 /* Bubbla: Jag (Höger) */
@@ -3639,15 +3651,28 @@ body.offline-mode .offline-dot { display: block; }
     }
     
     .detail-job-table td {
-        display: flex; justify-content: space-between;
-        padding: 0.4rem 0; border-bottom: 1px solid var(--border-color);
+        display: flex; 
+        justify-content: space-between; /* Trycker isär dem */
+        align-items: flex-start;        /* Justera mot toppen om texten är lång */
+        padding: 0.5rem 0;              /* Lite mer luft vertikalt */
+        border-bottom: 1px solid var(--border-color);
+        gap: 1.5rem;                    /* VIKTIGT: Minst 1.5rem mellanrum mellan "Info" och Texten */
     }
     .detail-job-table td:last-child { border-bottom: none; }
     
     /* Lägg till etiketter via CSS */
     .detail-job-table td::before {
-        content: attr(data-label); font-weight: 600;
-        color: var(--text-color-light); font-size: 0.8rem;
+        content: attr(data-label); 
+        font-weight: 600;
+        color: var(--text-color-light); 
+        font-size: 0.8rem;
+        flex-shrink: 0; /* Se till att etiketten inte trycks ihop */
+    }
+
+   .detail-job-table td > span,
+    .detail-job-table td > div {
+        text-align: right; /* Högerställ texten snyggt */
+        word-break: break-word; /* Bryt långa ord om det behövs */
     }
 }
 
@@ -5403,6 +5428,7 @@ html {
 
 
 /* --- SLUT PÅ STYLE.CSS --- */
+
 
 
 
