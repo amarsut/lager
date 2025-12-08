@@ -4005,139 +4005,178 @@
 			}
             
             function renderMobileCardList(jobs) {
-                jobListContainer.innerHTML = '';
-                if (jobs.length === 0) { return 0; }
-                
-                const groupedJobs = jobs.reduce((acc, job) => {
-                    const dateKey = job.datum ? job.datum.split('T')[0] : 'Okänt';
-                    if (!acc[dateKey]) {
-                        acc[dateKey] = [];
-                    }
-                    acc[dateKey].push(job);
-                    return acc;
-                }, {});
-                
-                let listHTML = '<div id="mobileJobList">';
-                
-                const sortOrder = (currentStatusFilter === 'klar' || currentStatusFilter === 'alla') ? 'desc' : 'asc';
-                const sortedDateKeys = Object.keys(groupedJobs).sort((a, b) => {
-                     if (sortOrder === 'desc') {
-                        return new Date(b) - new Date(a);
-                    } else {
-                        return new Date(a) - new Date(b);
-                    }
-                });
-                
-                for (const dateKey of sortedDateKeys) {
-                    const jobsForDay = groupedJobs[dateKey];
-                    const firstJobDate = jobsForDay[0].datum;
-                    
-                    listHTML += `<div class="mobile-day-group">`;
-                    listHTML += `<h2 class="mobile-date-header">${formatDate(firstJobDate, { onlyDate: true })}</h2>`;
-                    listHTML += jobsForDay.map(job => createJobCard(job)).join('');
-                    listHTML += `</div>`;
-                }
-                
-                listHTML += '</div>';
-                jobListContainer.innerHTML = listHTML;
-                return jobs.length;
-            }
+			    const container = document.getElementById('jobListContainer');
+			    if (!container) return 0;
+			    
+			    container.innerHTML = '';
+			    if (!jobs || jobs.length === 0) { return 0; }
+			    
+			    // Gruppera jobb
+			    const groupedJobs = jobs.reduce((acc, job) => {
+			        const dateKey = job.datum ? job.datum.split('T')[0] : 'Okänt';
+			        if (!acc[dateKey]) {
+			            acc[dateKey] = [];
+			        }
+			        acc[dateKey].push(job);
+			        return acc;
+			    }, {});
+			    
+			    let listHTML = '<div id="mobileJobList">';
+			    
+			    const sortOrder = (currentStatusFilter === 'klar' || currentStatusFilter === 'alla') ? 'desc' : 'asc';
+			    const sortedDateKeys = Object.keys(groupedJobs).sort((a, b) => {
+			            if (sortOrder === 'desc') {
+			            return new Date(b) - new Date(a);
+			        } else {
+			            return new Date(a) - new Date(b);
+			        }
+			    });
+			    
+			    for (const dateKey of sortedDateKeys) {
+			        const jobsForDay = groupedJobs[dateKey];
+			        if (!jobsForDay || jobsForDay.length === 0) continue;
+			
+			        const firstJobDate = jobsForDay[0].datum;
+			        
+			        listHTML += `<div class="mobile-day-group">`;
+			        listHTML += `<h2 class="mobile-date-header">${formatDate(firstJobDate, { onlyDate: true })}</h2>`;
+			        
+			        // Loopa säkert så att ett trasigt kort inte dödar hela listan
+			        jobsForDay.forEach(job => {
+			            try {
+			                listHTML += createJobCard(job);
+			            } catch (err) {
+			                console.error("Kunde inte rendera mobilkort för jobb:", job.id, err);
+			            }
+			        });
+			        
+			        listHTML += `</div>`;
+			    }
+			    
+			    listHTML += '</div>';
+			    container.innerHTML = listHTML;
+			    return jobs.length;
+			}
             
             // --- UPPDATERAD: createJobCard med Kontextuell Ikon ---
             function createJobCard(job) {
-                let prioClass = job.prio ? 'prio-row' : '';
-                const doneClass = (job.status === 'klar') ? 'done-row' : '';
-
-				const customerIconLink = getJobContextIcon(job);
-				const contextIcon = '';
-                const isKommandePrio = job.prio && job.status === 'bokad' && new Date(job.datum) >= new Date();
-                if(isKommandePrio) {
-                    prioClass += ' kommande-prio-pulse';
-                }
-
-                // --- NY LOGIK FÖR "MISSAT JOBB" ---
-                let jobStatusClass = '';
-                if (job.status === 'bokad' && new Date(job.datum) < now) {
-                    jobStatusClass = 'job-missed';
-                }
-                // --- SLUT NY LOGIK ---
-
-                const hasComment = job.kommentarer && job.kommentarer.trim().length > 0;
-
-                const kundnamnHTML = highlightSearchTerm(job.kundnamn, currentSearchTerm);
-                const regnrHTML = highlightSearchTerm(job.regnr || 'OKÄNT', currentSearchTerm);
-
-                const timePart = job.datum ? (formatDate(job.datum).split('kl. ')[1] || 'Okänd tid') : 'Okänd tid';
-				let dateDisplay = '';
-				if (job.datum) {
-				    const d = new Date(job.datum);
-				    const day = d.getDate();
-				    const month = d.toLocaleString('sv-SE', { month: 'short' }).replace('.', '');
-				    dateDisplay = `${day} ${month}`;
-				}
-                return `
-                    <div class="mobile-job-card job-entry ${prioClass} ${doneClass} ${jobStatusClass}" data-id="${job.id}" data-status="${job.status}">
-                        <div class="card-content">
-						    <div class="card-row">
-						        <span class="card-label">Kund</span>
-				                <span class="card-value customer-name">
-				                    <div class="customer-name-wrapper">
-				                        ${contextIcon}
-				                        <button class="link-btn customer-link" data-kund="${job.kundnamn}">
-				                            <svg class="icon-sm customer-icon" viewBox="0 0 24 24"><use href="${customerIconLink}"></use></svg>
-				                            <span class="customer-name-text">${kundnamnHTML}</span>
-				                        </button>
-				                    </div>
-				                </span>
-                            </div>
-                            <div class="card-row">
-                                <span class="card-label">Reg.nr</span>
-                                <span class="card-value">
-                                    ${(job.regnr && job.regnr.toUpperCase() !== 'OKÄNT') ? `
-                                    <button class="car-link reg-plate" data-regnr="${job.regnr}">
-                                        <span class="reg-country">S</span>
-                                        <span class="reg-number">${regnrHTML}</span>
-                                    </button>
-                                    ` : `
-                                    <span class="reg-unknown">${regnrHTML}</span>
-                                    `}
-                                </span>
-                            </div>
-                            <div class="card-row">
-							    <span class="card-label">Tid / Status</span>
-							    <span class="card-value time-status-wrapper">
-							        <span class="search-date-badge" style="display:none; margin-right:8px; color:#374151; font-weight:600;">${dateDisplay}</span>
-							        
-							        <span class="card-time-badge">${timePart}</span>
-							        <span class="status-badge status-${job.status || 'bokad'}">${STATUS_TEXT[job.status] || 'Bokad'}</span>
-							    </span>
-							</div>
-                            <div class="card-row money-related">
-                                <span class="card-label">Kundpris</span>
-                                <span class="card-value customer-price">${formatCurrency(job.kundpris)}</span>
-                            </div>
-                        </div>
-                        <div class="action-col">
-                            ${hasComment ? `
-                            <button class="icon-btn" data-action="showComment" data-comment="${encodeURIComponent(job.kommentarer)}" aria-label="Visa kommentar">
-                                <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-chat"></use></svg>
-                            </button>
-                            ` : `<span class="icon-btn-placeholder"></span>`}
-
-                            <button class="icon-btn" data-action="togglePrio" aria-label="Växla Prio">
-                                <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-flag"></use></svg>
-                            </button>
-                            <button class="icon-btn" data-action="setStatusKlar" aria-label="Markera som Klar">
-                                <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-check"></use></svg>
-                            </button>
-
-                            <button class="icon-btn delete-btn" data-id="${job.id}" aria-label="Ta bort jobb">
-                                <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-trash"></use></svg>
-                            </button>
-                        </div>
-                    </div>
-                `;
-            }
+			    // 1. Förbered variabler utanför HTML-strängen för att undvika krasch
+			    let prioClass = job.prio ? 'prio-row' : '';
+			    
+			    // Hantera status-klasser
+			    const status = job.status || 'bokad';
+			    const doneClass = (status === 'klar' || status === 'betald') ? 'done-row' : '';
+			    
+			    const isKommandePrio = job.prio && status === 'bokad' && new Date(job.datum) >= new Date();
+			    if (isKommandePrio) {
+			        prioClass += ' kommande-prio-pulse';
+			    }
+			
+			    let jobStatusClass = '';
+			    const now = new Date();
+			    if (status === 'bokad' && job.datum && new Date(job.datum) < now) {
+			        jobStatusClass = 'job-missed';
+			    }
+			
+			    // 2. Säkra texter och HTML
+			    const hasComment = job.kommentarer && job.kommentarer.trim().length > 0;
+			    const kundnamnHTML = highlightSearchTerm(job.kundnamn || '', currentSearchTerm);
+			    
+			    // Regnr hantering
+			    const rawReg = job.regnr || 'OKÄNT';
+			    const regnrHTML = highlightSearchTerm(rawReg, currentSearchTerm);
+			    let regPlateContent = '';
+			    
+			    if (rawReg.toUpperCase() !== 'OKÄNT' && rawReg.length > 2) {
+			        regPlateContent = `
+			        <button class="car-link reg-plate" data-regnr="${rawReg}">
+			            <span class="reg-country">S</span>
+			            <span class="reg-number">${regnrHTML}</span>
+			        </button>`;
+			    } else {
+			        regPlateContent = `<span class="reg-unknown">${regnrHTML}</span>`;
+			    }
+			
+			    // Datum och Tid
+			    let timePart = 'Okänd tid';
+			    let dateDisplay = '';
+			    
+			    if (job.datum) {
+			        try {
+			            // Säkrare datumhantering
+			            const d = new Date(job.datum);
+			            const dateStr = formatDate(job.datum); // Din existerande funktion
+			            if (dateStr.includes('kl.')) {
+			                timePart = dateStr.split('kl. ')[1];
+			            }
+			            
+			            const day = d.getDate();
+			            const month = d.toLocaleString('sv-SE', { month: 'short' }).replace('.', '');
+			            dateDisplay = `${day} ${month}`;
+			        } catch (e) {
+			            console.warn("Datumfel för jobb:", job.id);
+			        }
+			    }
+			
+			    const customerIconLink = getJobContextIcon(job);
+			    const statusText = STATUS_TEXT[status] || 'Bokad';
+			    const pris = formatCurrency(job.kundpris);
+			
+			    // 3. Returnera ren HTML utan logik
+			    return `
+			        <div class="mobile-job-card job-entry ${prioClass} ${doneClass} ${jobStatusClass}" data-id="${job.id}" data-status="${status}">
+			            <div class="card-content">
+			                <div class="card-row">
+			                    <span class="card-label">Kund</span>
+			                    <span class="card-value customer-name">
+			                        <div class="customer-name-wrapper">
+			                            <button class="link-btn customer-link" data-kund="${job.kundnamn}">
+			                                <svg class="icon-sm customer-icon" viewBox="0 0 24 24"><use href="${customerIconLink}"></use></svg>
+			                                <span class="customer-name-text">${kundnamnHTML}</span>
+			                            </button>
+			                        </div>
+			                    </span>
+			                </div>
+			                <div class="card-row">
+			                    <span class="card-label">Reg.nr</span>
+			                    <span class="card-value">
+			                        ${regPlateContent}
+			                    </span>
+			                </div>
+			                <div class="card-row">
+			                    <span class="card-label">Tid / Status</span>
+			                    <span class="card-value time-status-wrapper">
+			                        <span class="search-date-badge" style="${currentSearchTerm ? 'display:inline-block;' : 'display:none;'} margin-right:8px; color:#374151; font-weight:600;">${dateDisplay}</span>
+			                        <span class="card-time-badge">${timePart}</span>
+			                        <span class="status-badge status-${status}">${statusText}</span>
+			                    </span>
+			                </div>
+			                <div class="card-row money-related">
+			                    <span class="card-label">Kundpris</span>
+			                    <span class="card-value customer-price">${pris}</span>
+			                </div>
+			            </div>
+			            <div class="action-col">
+			                ${hasComment ? `
+			                <button class="icon-btn" data-action="showComment" data-comment="${encodeURIComponent(job.kommentarer)}" aria-label="Visa kommentar">
+			                    <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-chat"></use></svg>
+			                </button>
+			                ` : `<span class="icon-btn-placeholder"></span>`}
+			
+			                <button class="icon-btn" data-action="togglePrio" aria-label="Växla Prio">
+			                    <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-flag"></use></svg>
+			                </button>
+			                <button class="icon-btn" data-action="setStatusKlar" aria-label="Markera som Klar">
+			                    <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-check"></use></svg>
+			                </button>
+			
+			                <button class="icon-btn delete-btn" data-id="${job.id}" aria-label="Ta bort jobb">
+			                    <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-trash"></use></svg>
+			                </button>
+			            </div>
+			        </div>
+			    `;
+			}
 
 			// --- BÄTTRE KANBAN-KORT (med dra-handtag för mobil-fix) ---
 			function createKanbanCard(job) {
