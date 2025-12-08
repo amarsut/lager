@@ -4974,8 +4974,166 @@ html {
     #clearChatSearch { display: none !important; }
 }
 
+/* =================================================================
+   FIX AV REAKTIONSMENY (Gör den bredare och snyggare)
+   ================================================================= */
+
+.reaction-menu {
+    /* Gör rutan bredare så allt får plats */
+    min-width: 300px !important;
+    max-width: 90vw !important;
+    padding: 16px !important;
+    border-radius: 16px !important;
+    
+    /* Snygg skugga och vit bakgrund */
+    background-color: #ffffff !important;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2) !important;
+    border: 1px solid rgba(0,0,0,0.05) !important;
+    
+    /* Flex-inställningar för huvudboxen */
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+    
+    /* Säkerställ att den hamnar ovanpå allt */
+    z-index: 99999 !important;
+}
+
+/* ÖVRE RADEN (EMOJIS) */
+.reaction-menu > div:first-child {
+    display: flex !important;
+    justify-content: space-around !important; /* Sprid ut emojis jämnt */
+    width: 100% !important;
+    margin-bottom: 0 !important; /* Vi använder gap i föräldern istället */
+}
+
+.reaction-option {
+    font-size: 24px !important; /* Tydliga emojis */
+    padding: 4px !important;
+    transition: transform 0.2s ease !important;
+}
+.reaction-option:active {
+    transform: scale(1.3) !important;
+}
+
+/* NEDRE RADEN (ÅTGÄRDER) */
+.reaction-actions-row {
+    /* Byt till GRID för att tvinga fram 4 lika stora kolumner */
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important; 
+    gap: 8px !important;
+    
+    width: 100% !important;
+    padding-top: 12px !important;
+    border-top: 1px solid #f0f0f0 !important;
+    margin-top: 0 !important;
+}
+
+/* Enskild knapp (Ikon + Text) */
+.action-item {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 6px !important;
+    cursor: pointer !important;
+    min-width: 0 !important; /* Tillåt krympning om det behövs */
+}
+
+/* Cirkeln runt ikonen */
+.action-item .icon-circle {
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 50% !important;
+    background-color: #f5f5f5 !important;
+    color: #333 !important;
+    
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin-bottom: 0 !important;
+}
+
+.action-item .icon-sm {
+    width: 20px !important;
+    height: 20px !important;
+    stroke-width: 2px !important;
+}
+
+/* Röd soptunna */
+.action-item.danger .icon-circle {
+    background-color: #fff0f0 !important;
+    color: #ff453a !important;
+}
+.action-item.danger .icon-sm {
+    color: #ff453a !important;
+}
+
+/* Texten under ikonen */
+.action-item span {
+    font-size: 10px !important; /* Lite mindre text så den ryms */
+    font-weight: 600 !important;
+    color: #666 !important;
+    text-align: center !important;
+    white-space: nowrap !important; /* Förhindra radbrytning */
+    
+    /* Om texten är för lång, klipp den snyggt */
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    max-width: 100% !important;
+    display: block !important;
+}
+
+/* =================================================================
+   FINJUSTERINGAR: LUFT & FOKUS-BETEENDE (V7.0)
+   1. Mer luft mellan bubbla och tid.
+   2. Dölj ikoner direkt vid klick (fokus).
+   ================================================================= */
+
+/* --- 1. DATUM & TID (Bättre spacing) --- */
+.chat-time {
+    margin-top: 6px !important;    /* Mer luft upp till bubblan */
+    margin-bottom: 12px !important; /* Mer luft ner till nästa meddelande */
+    
+    display: block !important;     /* Säkerställ att margin fungerar */
+    line-height: 1.2 !important;
+    opacity: 0.7 !important;       /* Lite tydligare text */
+}
+
+/* --- 2. INPUT-FÄLTET: Dölj knappar vid FOKUS (Klick) --- */
+
+/* Dölj "Kamera" & "Bifoga" så fort man klickar i fältet (:focus) 
+   ELLER när man har skrivit text (:not(:placeholder-shown)) */
+#chatInput:focus ~ .inner-input-actions,
+#chatInput:not(:placeholder-shown) ~ .inner-input-actions {
+    display: none !important;
+    width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    opacity: 0 !important;
+}
+
+/* --- 3. AI-KNAPPEN (Samma logik för fokus) --- */
+
+/* När fältet har FOKUS eller TEXT -> Gör AI-knappen blå och flytta till höger */
+#chatInput:focus ~ #askAiBtn,
+#chatInput:not(:placeholder-shown) ~ #askAiBtn {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2) !important;
+}
+
+/* --- 4. PILLRET (Vit bakgrund vid fokus) --- */
+/* Se till att hela pillret blir vitt direkt vid klick */
+.chat-input-pill:focus-within {
+    background-color: #ffffff !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08) !important; /* Lite lyxigare skugga */
+}
+
 
 /* --- SLUT PÅ STYLE.CSS --- */
+
 
 
 
