@@ -4116,7 +4116,7 @@
 			    // 1. Logik & Data
 			    let prioClass = job.prio ? 'prio-row' : '';
 			    const status = job.status || 'bokad';
-			    const statusText = (STATUS_TEXT[status] || 'Bokad'); // Visa "Bokad" inte "BOKAD" (CSS fixar versaler)
+			    const statusText = (STATUS_TEXT[status] || 'Bokad');
 			    
 			    // Hantera datum/tid
 			    let timeDisplay = '---';
