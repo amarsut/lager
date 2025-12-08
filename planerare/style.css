@@ -5660,8 +5660,97 @@ html {
     }
 }
 
+/* =========================================
+   PROFFSIG HISTORIK-VY & KNAPPAR (V2)
+   ========================================= */
+
+@media (max-width: 768px) {
+
+    /* 1. BAKGRUND & LAYOUT (Fixar kontrasten) */
+    .job-history-container {
+        background-color: #f3f4f6 !important; /* Ljusgrå bakgrund bakom korten */
+        padding: 16px !important; /* Luft runt korten */
+        border-radius: 12px;
+        margin-top: 0 !important;
+        border: none !important;
+    }
+
+    /* 2. KNAPPARNA LÄNGST NER (Mindre luft) */
+    .sticky-link-buttons {
+        padding: 12px 16px calc(10px + env(safe-area-inset-bottom)) 16px !important; /* Tajtare botten */
+        background: rgba(255, 255, 255, 0.95) !important; /* Mer täckande bakgrund */
+        border-top: 1px solid #e5e7eb;
+        margin: 0 -16px -16px -16px !important; /* Dra ut till kanterna */
+    }
+    
+    .sticky-link-buttons .button {
+        height: 44px !important; /* Lite lägre knappar */
+        font-size: 0.9rem !important;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05) !important;
+    }
+
+    /* 3. NY DESIGN PÅ HISTORIK-KORTEN (List-versionen) */
+    /* Vi stylar om listan (ul/li) att se ut som kort */
+    
+    .detail-job-list li {
+        background-color: #ffffff !important;
+        border: 1px solid #e5e7eb !important;
+        border-radius: 12px !important;
+        padding: 16px !important;
+        margin-bottom: 12px !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 10px !important;
+    }
+    
+    /* Ta bort gamla linjer/pilar */
+    .detail-job-list li::after { display: none !important; }
+    .detail-job-list li:last-child { border-bottom: 1px solid #e5e7eb !important; }
+
+    /* Header i kortet (Datum + Status) */
+    .card-header-row {
+        display: flex; justify-content: space-between; align-items: center;
+        border-bottom: 1px dashed #e5e7eb;
+        padding-bottom: 8px; margin-bottom: 4px;
+    }
+    
+    .card-date-badge {
+        font-size: 0.85rem; font-weight: 700; color: #111827;
+        background-color: #f3f4f6; padding: 4px 8px; border-radius: 6px;
+    }
+    
+    /* Huvudinfo (Namn/Reg) */
+    .card-main-title {
+        font-size: 1.1rem; font-weight: 800; color: #1f2937;
+        display: flex; align-items: center; gap: 6px;
+    }
+
+    /* Beskrivningsrutan (Det grå fältet) */
+    .card-desc-box {
+        background-color: #f9fafb;
+        border: 1px solid #f3f4f6;
+        border-radius: 8px;
+        padding: 10px;
+        font-size: 0.9rem;
+        color: #4b5563;
+        line-height: 1.5;
+    }
+
+    /* Footer (Vinst) */
+    .card-footer-row {
+        display: flex; justify-content: flex-end; align-items: center;
+        padding-top: 4px;
+        font-size: 0.9rem; font-weight: 600;
+    }
+    
+    .card-profit { color: #10b981; } /* Grön */
+    .card-profit.neutral { color: #9ca3af; } /* Grå om 0kr */
+}
+
 
 /* --- SLUT PÅ STYLE.CSS --- */
+
 
 
 
