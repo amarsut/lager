@@ -2081,25 +2081,30 @@
 			            }
 			        };
 			
-			        chatInput.addEventListener('focus', () => {
-			            toggleInputButtons(false); // Dölj direkt vid fokus
-			        });
-			
 			        chatInput.addEventListener('input', () => {
-			            clearTimeout(inputFocusTimer); 
-			            if (chatInput.value.trim() !== "") {
-			                toggleInputButtons(false); // Håll dolt medan man skriver
-			            } else {
-			                // Om man suddar ut allt men har kvar fokus -> Visa knappar igen? 
-			                // Oftast vill man ha kvar fokus-läget tills man trycker "klar" eller blur.
-			                // Vi behåller fokus-läget här.
-			            }
-			        });
-			
-			        chatInput.addEventListener('blur', () => {
-			            // Återställ när man klickar bort (fäller ner tangentbordet)
-			            setTimeout(() => toggleInputButtons(true), 200); 
-			        });
+					    if (chatInput.value.trim() !== "") {
+					        // När man skriver:
+					        chatInputPill.classList.add('typing-mode');
+					    } else {
+					        // När det är tomt:
+					        chatInputPill.classList.remove('typing-mode');
+					    }
+					});
+					
+					// Lägg även till på 'focus' om du vill att det ska hända direkt när man klickar
+					chatInput.addEventListener('focus', () => {
+					    // chatInputPill.classList.add('typing-mode'); // Avkommentera om du vill ha det direkt vid fokus
+					});
+					
+					chatInput.addEventListener('blur', () => {
+					    // Ta bort klassen när man klickar bort (fäller ner tangentbordet)
+					    // Liten fördröjning så man hinner trycka på knappen
+					    setTimeout(() => {
+					        if (chatInput.value.trim() === "") {
+					            chatInputPill.classList.remove('typing-mode');
+					        }
+					    }, 200);
+					});
 			    }
 			
 			    // --- FUNKTION: Skicka Meddelande ---
