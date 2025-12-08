@@ -5668,14 +5668,6 @@ html {
 
 @media (max-width: 768px) {
 
-    /* 1. ÄNDRA BAKGRUNDEN PÅ HELA MODALEN */
-    /* Detta gör att bakgrunden blir ljusgrå, samma som startsidan */
-    #customerModal .modal-body,
-    #carModal .modal-body {
-        background-color: #f3f4f6 !important; 
-        padding: 16px 12px !important; /* Lite mindre stoppning på sidorna */
-    }
-
     /* 5. KNAPPARNA LÄNGST NER (Fixad position) */
     .sticky-link-buttons {
         position: sticky !important;
@@ -5718,8 +5710,125 @@ html {
     }
 }
 
+/* =========================================
+   TYDLIGA KORT MED LINJER (KUND & REG.NR)
+   ========================================= */
+
+@media (max-width: 768px) {
+
+    /* 1. ÅTERSTÄLL TABELLEN TILL BLOCK (KORT) */
+    .detail-job-table, 
+    .detail-job-table tbody, 
+    .detail-job-table tr, 
+    .detail-job-table td {
+        display: block !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    
+    .detail-job-table thead { display: none !important; }
+
+    /* 2. DESIGN PÅ SJÄLVA KORTET (RADEN) */
+    .detail-job-table tbody tr {
+        background-color: #ffffff !important;
+        border: 1px solid #e5e7eb !important; /* Tydlig ytterram */
+        border-radius: 12px !important;       /* Runda hörn */
+        margin-bottom: 16px !important;       /* Luft mellan korten */
+        box-shadow: 0 2px 5px rgba(0,0,0,0.03) !important; /* Liten skugga */
+        overflow: hidden !important;          /* Håller innehållet innanför hörnen */
+    }
+
+    /* --- SEKTION 1: DATUM (HEADER) --- */
+    .detail-job-table td[data-label="Datum"] {
+        background-color: #f9fafb !important; /* Ljusgrå bakgrund i toppen */
+        border-bottom: 1px solid #e5e7eb !important; /* LINJE UNDER */
+        padding: 10px 16px !important;
+        
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+    }
+    
+    /* Datumtexten */
+    .detail-job-table td[data-label="Datum"] .date-wrapper span {
+        font-size: 0.9rem !important;
+        font-weight: 600 !important;
+        color: #374151 !important;
+        text-transform: capitalize !important;
+    }
+    
+    /* Lägg till etiketten "Datum" till vänster */
+    .detail-job-table td[data-label="Datum"]::before {
+        content: "Datum";
+        font-size: 0.85rem;
+        color: #6b7280;
+        font-weight: 500;
+    }
+
+    /* --- SEKTION 2: INFO (KUND & BESKRIVNING) --- */
+    .detail-job-table td[data-label="Info"] {
+        padding: 16px !important;
+        background-color: #fff !important;
+        color: #1f2937 !important;
+    }
+
+    /* Rubriken (Namn/Regnr) */
+    .detail-job-table .job-subline-main {
+        display: block;
+        font-size: 1.1rem !important;
+        font-weight: 800 !important;
+        margin-bottom: 8px !important;
+        color: #111 !important;
+    }
+
+    /* Beskrivningstexten */
+    .detail-job-table .job-subline-comment {
+        display: block;
+        font-size: 0.95rem !important;
+        line-height: 1.5 !important;
+        color: #4b5563 !important;
+    }
+
+    /* --- SEKTION 3: STATUS (RAD) --- */
+    .detail-job-table td[data-label="Status"] {
+        border-top: 1px solid #e5e7eb !important; /* LINJE ÖVER */
+        padding: 12px 16px !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        background-color: #fff !important;
+    }
+    
+    .detail-job-table td[data-label="Status"]::before {
+        content: "Status";
+        font-weight: 600; color: #6b7280; font-size: 0.9rem;
+    }
+
+    /* --- SEKTION 4: VINST (FOOTER) --- */
+    .detail-job-table td[data-label="Vinst"] {
+        border-top: 1px solid #e5e7eb !important; /* LINJE ÖVER */
+        padding: 12px 16px !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        background-color: #fff !important; /* Eller #f9fafb för grå botten */
+    }
+
+    .detail-job-table td[data-label="Vinst"]::before {
+        content: "Vinst";
+        font-weight: 600; color: #6b7280; font-size: 0.9rem;
+    }
+    
+    .detail-job-table .job-profit {
+        font-weight: 700 !important;
+        font-size: 1rem !important;
+        color: #111 !important;
+    }
+}
+
 
 /* --- SLUT PÅ STYLE.CSS --- */
+
 
 
 
