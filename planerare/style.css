@@ -5520,8 +5520,149 @@ html {
     }
 }
 
+/* =========================================
+   PROFFSIGA DETALJ-MODALER (MOBIL)
+   ========================================= */
+
+@media (max-width: 600px) {
+
+    /* 1. TA BORT DEN YTTRE RAMEN (Box-i-box) */
+    .job-history-container {
+        border: none !important;
+        background-color: transparent !important;
+        border-radius: 0 !important;
+        margin-top: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* 2. GÖR SÖKFÄLTET TILL EN EGEN "BOX" */
+    .search-wrapper.embedded-search {
+        background-color: #ffffff;
+        border: 1px solid #f3f4f6; /* Mycket ljus ram */
+        border-radius: 12px;
+        margin-bottom: 20px; /* Luft ner till listan */
+        box-shadow: 0 4px 10px rgba(0,0,0,0.03); /* Mjuk svävande skugga */
+        height: 48px; /* Lite högre för bättre touch */
+    }
+    
+    .search-wrapper.embedded-search input {
+        font-size: 1rem;
+    }
+
+    /* 3. DESIGN PÅ HISTORIK-KORTEN */
+    /* Vi nollställer tabell-känslan och gör riktiga kort */
+    .detail-job-table tbody tr {
+        background-color: #ffffff !important;
+        border: 1px solid #f1f5f9 !important; /* Subtil ram */
+        border-radius: 16px !important;       /* Moderna runda hörn */
+        box-shadow: 0 4px 12px rgba(0,0,0,0.04) !important; /* Djup */
+        margin-bottom: 16px !important;       /* Luft mellan korten */
+        padding: 16px !important;
+        
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+        transform: translateZ(0); /* Hårdvaruaccel för skärpa */
+    }
+
+    /* Ta bort den gamla blå linjen vid hover på mobil */
+    .detail-job-table tbody tr:hover {
+        background-color: #fff !important;
+        border-left-color: #f1f5f9 !important;
+    }
+
+    /* --- INNEHÅLL I KORTEN --- */
+    
+    /* Datum (Gör den mindre och grå, flytta till toppen) */
+    .detail-job-table td[data-label="Datum"] {
+        order: -1; /* Flytta längst upp */
+        border-bottom: none !important;
+        padding: 0 !important;
+        margin-bottom: 4px;
+    }
+    .detail-job-table td[data-label="Datum"] .date-wrapper span {
+        color: #9ca3af !important;
+        font-weight: 600 !important;
+        font-size: 0.8rem !important;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Rubriken (Regnr/Namn) */
+    .detail-job-table .job-subline-main {
+        font-size: 1.2rem !important;
+        font-weight: 800 !important;
+        color: #111827 !important;
+        margin-bottom: 6px;
+    }
+
+    /* Brödtexten (Beskrivning) */
+    .detail-job-table .job-subline-comment {
+        font-size: 0.95rem !important;
+        color: #4b5563 !important;
+        line-height: 1.5 !important;
+        background-color: #f9fafb; /* Ljus bakgrund för texten */
+        padding: 10px;
+        border-radius: 8px;
+        margin-top: 4px;
+    }
+
+    /* Status & Vinst (Bottenraden) */
+    .detail-job-table td[data-label="Status"],
+    .detail-job-table td[data-label="Vinst"] {
+        padding: 8px 0 0 0 !important;
+        border-bottom: none !important;
+        border-top: 1px solid #f3f4f6; /* Avdelare mot beskrivningen */
+        margin-top: 4px;
+    }
+
+    /* 4. FIXA BOTTEN-KNAPPARNA (Centrering & Ikoner) */
+    .sticky-link-buttons {
+        position: sticky !important;
+        bottom: 0 !important;
+        background: linear-gradient(to top, #ffffff 85%, rgba(255,255,255,0.5)) !important;
+        backdrop-filter: blur(5px);
+        padding: 16px 20px 30px 20px !important; /* Extra padding botten för iPhone */
+        
+        display: flex !important;
+        justify-content: center !important; /* Centrera */
+        gap: 12px !important;
+        margin: 0 -16px -16px -16px !important; /* Dra ut till kanterna */
+        z-index: 100;
+        border-top: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .sticky-link-buttons .button {
+        flex: 1; /* Gör knapparna lika stora */
+        max-width: 48%; /* Men inte för breda */
+        height: 48px; /* Högre klickyta */
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        border: 1px solid #e5e7eb;
+        background-color: #fff;
+        
+        display: flex; 
+        align-items: center; 
+        justify-content: center;
+        gap: 8px; /* Mellanrum bild/text */
+    }
+    
+    /* Ikon-storlek i knapparna */
+    .sticky-link-buttons .button img {
+        width: 20px; height: 20px;
+        border-radius: 4px;
+        object-fit: contain;
+    }
+    
+    .sticky-link-buttons .button:active {
+        transform: scale(0.98);
+        background-color: #f3f4f6;
+    }
+}
+
 
 /* --- SLUT PÅ STYLE.CSS --- */
+
 
 
 
