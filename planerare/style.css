@@ -1550,13 +1550,15 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 .chat-messages {
     display: flex !important;
     flex-direction: column !important;
-    padding: 1rem 1rem 80px 1rem !important;
-    overflow-y: auto !important;
     
-    /* SE TILL ATT DESSA RADER FINNS FÖR ATT TVINGA FRAM DEN: */
-    opacity: 1 !important; 
-    visibility: visible !important;
-    transition: none !important; 
+    /* ÄNDRING 1: Använd flex-start här för att undvika scroll-buggar */
+    justify-content: flex-start !important;
+    
+    /* Behåll denna padding (luft för textrutan) */
+    padding: 1rem 1rem 80px 1rem !important; 
+    
+    overflow-y: auto !important;
+    min-height: 0 !important;
 }
 
 /* ÄNDRING 2: DETTA ÄR MAGIN SOM TRYCKER NER ALLT TILL BOTTEN */
@@ -1579,17 +1581,12 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     position: relative;
     box-shadow: 0 1px 2px rgba(0,0,0,0.1);
     word-wrap: break-word;
-    //animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     
     /* Touch-optimering */
     touch-action: pan-y !important;
     -webkit-touch-callout: none !important;
     user-select: none !important;
-}
-
-/* NYTT: Animera ENDAST nya meddelanden (vi lägger till denna klass med JS) */
-.chat-bubble.animate-in {
-    animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 /* Bubbla: Jag (Höger) */
@@ -3632,43 +3629,25 @@ body.offline-mode .offline-dot { display: block; }
 
 /* Mobil-anpassning av tabellen (Gör om till kort) */
 @media (max-width: 600px) {
+    .detail-job-table thead { display: none; }
+    
+    .detail-job-table tbody tr {
+        display: flex; flex-direction: column;
+        border: 1px solid var(--border-color);
+        border-radius: 8px; margin-bottom: 0.75rem;
+        padding: 0.5rem; background-color: var(--content-bg);
+    }
+    
     .detail-job-table td {
-        display: flex !important;
-        flex-direction: column !important; /* Detta lägger texten UNDER rubriken */
-        align-items: flex-start !important;
-        justify-content: center !important;
-        padding: 0.75rem 0.5rem !important; /* Lite mer luft */
-        border-bottom: 1px solid var(--border-color);
-        gap: 4px !important; /* Mellanrum mellan rubrik och text */
-        min-height: auto !important;
+        display: flex; justify-content: space-between;
+        padding: 0.4rem 0; border-bottom: 1px solid var(--border-color);
     }
+    .detail-job-table td:last-child { border-bottom: none; }
     
-    /* Etiketten (t.ex "Info" eller "Status") */
+    /* Lägg till etiketter via CSS */
     .detail-job-table td::before {
-        content: attr(data-label); 
-        font-weight: 700;
-        text-transform: uppercase;
-        font-size: 0.7rem;
-        color: #9ca3af; /* Ljusare grå för etiketten */
-        margin-bottom: 2px;
-        letter-spacing: 0.5px;
-    }
-
-    /* Själva texten/innehållet */
-    .detail-job-table td > span,
-    .detail-job-table td > div,
-    .detail-job-table td > a {
-        text-align: left !important;
-        width: 100%;
-        font-size: 1rem !important; /* Tydligare text */
-        color: #1f2937;
-        word-break: break-word;
-    }
-    
-    /* Gör reg-skylten normalstor igen om den krympt */
-    .detail-job-table .reg-plate {
-        width: auto !important;
-        display: inline-flex !important;
+        content: attr(data-label); font-weight: 600;
+        color: var(--text-color-light); font-size: 0.8rem;
     }
 }
 
@@ -5424,11 +5403,6 @@ html {
 
 
 /* --- SLUT PÅ STYLE.CSS --- */
-
-
-
-
-
 
 
 
