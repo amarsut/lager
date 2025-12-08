@@ -5455,119 +5455,137 @@ html {
 }
 
 /* =========================================
-   NY CLEAN DESIGN - MOBILKORT & LISTOR
+   BILD 2 LAYOUT MED BILD 1 KNAPPAR (SQAURE)
    ========================================= */
 
-/* 1. Kort-behållaren */
+/* 1. Kort-behållaren (Fyrkantigare) */
 .mobile-job-card {
     background: #ffffff !important;
-    border: 1px solid #e5e7eb !important; /* Tunn grå ram */
-    border-radius: 8px !important;       /* Lite skarpare hörn för proffsig look */
-    box-shadow: 0 1px 2px rgba(0,0,0,0.03) !important; /* Mycket subtil skugga */
-    margin-bottom: 12px !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 4px !important; /* <--- Fyrkantigare hörn (var 12px) */
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03) !important;
+    margin-bottom: 10px !important;
     padding: 0 !important;
     overflow: hidden;
     position: relative;
+    border-left: none !important; /* Ingen färgad kant som standard */
 }
 
-/* Ta bort färgade vänsterkanter, behåll bara för Prio om nödvändigt */
-.mobile-job-card { border-left: none !important; }
-.mobile-job-card.prio-row { border-left: 4px solid #000000 !important; } /* Svart för prio */
+/* Behåll prio-färgen om det är akut, men subtilt */
+.mobile-job-card.prio-row { 
+    border-left: 4px solid #ef4444 !important; 
+}
 
-/* 2. Innehållslayout (Grid) */
+/* 2. Innehåll (Padding) */
 .card-content {
-    padding: 16px 16px 12px 16px !important;
+    padding: 14px 16px 10px 16px !important;
     display: flex !important;
     flex-direction: column !important;
-    gap: 6px !important;
+    gap: 4px !important; /* Tajtare avstånd mellan rader */
 }
 
-/* Dölj gamla rader/labels */
+/* Dölj gamla element */
 .card-row, .card-label { display: none !important; }
 
-/* 3. Typografi & Hierarki */
-
-/* Topprad: Kundnamn (Vänster) & Pris (Höger) */
+/* 3. RAD 1: Kund (Vänster) & Pris (Höger) */
 .clean-header {
-    display: flex; justify-content: space-between; align-items: flex-start;
-    margin-bottom: 2px;
+    display: flex; justify-content: space-between; align-items: flex-end;
+    margin-bottom: 4px;
 }
 
 .clean-customer {
-    font-size: 1.1rem; 
-    font-weight: 700; 
-    color: #111827; /* Nästan svart */
-    letter-spacing: -0.01em;
-    line-height: 1.2;
+    font-size: 1.15rem; 
+    font-weight: 800; 
+    color: #111827; /* Svart */
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    text-transform: uppercase; /* Som i Bild 2 */
 }
 
 .clean-price {
     font-size: 1rem;
-    font-weight: 600;
+    font-weight: 700;
     color: #111827;
     white-space: nowrap;
 }
 
-/* Mellanrad: Reg.nr & Tid */
+/* 4. RAD 2: Reg.nr & Tid */
 .clean-meta {
     display: flex; align-items: center; gap: 10px;
     font-size: 0.9rem;
-    color: #4b5563; /* Mörkgrå */
+    color: #374151;
+    min-height: 24px;
 }
 
-/* Reg-skylt (Monokrom box) */
+/* Reg-skylt (Enkel grå box som i Bild 2) */
 .clean-reg {
-    font-family: 'Roboto Mono', monospace; /* Eller system-mono */
-    font-weight: 700;
-    color: #000;
-    background-color: #f3f4f6; /* Ljusgrå */
-    padding: 2px 6px;
-    border-radius: 4px;
-    letter-spacing: 0.5px;
+    font-family: 'Roboto Mono', monospace;
+    font-weight: 600;
+    color: #1f2937;
+    background-color: #f3f4f6; /* Ljusgrå bakgrund */
+    padding: 3px 8px;
+    border-radius: 4px; /* Lite rundning på själva skylten */
     border: 1px solid #e5e7eb;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+}
+
+/* Tomt reg-nr (streck) */
+.clean-reg.empty {
+    color: #9ca3af;
+    background-color: transparent;
+    border: 1px dashed #e5e7eb;
 }
 
 /* Tid */
 .clean-time {
-    display: flex; align-items: center; gap: 4px;
+    display: flex; align-items: center; gap: 6px;
     font-weight: 500;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
+    color: #4b5563;
 }
+.clean-time svg { color: #9ca3af; } /* Ljusgrå klockikon */
 
-/* 4. Footer: Status & Actions */
+/* 5. RAD 3 (Footer): Status (Vänster) & Knappar (Höger) */
 .clean-footer {
     display: flex; justify-content: space-between; align-items: center;
     margin-top: 12px;
-    padding-top: 12px;
-    border-top: 1px solid #f9fafb; /* Mycket svag linje */
+    padding-top: 8px;
+    /* Ingen border-top för en renare look, eller väldigt svag: */
+    /* border-top: 1px solid #f9fafb; */
 }
 
-/* Status (Text istället för färgad badge) */
+/* Status (Text, ingen badge, som Bild 2) */
 .clean-status {
     font-size: 0.75rem;
-    font-weight: 600;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: #9ca3af; /* Ljusgrå text */
+    color: #9ca3af; /* Diskret grå */
+    background: transparent;
+    padding: 0;
 }
 
-/* Gör klar/betald lite mörkare för kontrast */
-.status-klar .clean-status,
-.status-faktureras .clean-status { color: #111; }
+/* Gör statusen blåaktig om det är "Bokad" för att matcha Bild 2 lite */
+.status-bokad { color: #93c5fd; } /* Ljusblå text */
+.status-klar { color: #86efac; } /* Ljusgrön text */
 
-/* 5. Action Knappar (Minimalistiska) */
+/* 6. Knappar (Från Bild 1 - Rena ikoner) */
 .clean-actions {
-    display: flex; gap: 16px;
+    display: flex; gap: 20px; /* Luftigt mellan ikonerna */
 }
 
 .clean-icon-btn {
-    background: transparent; border: none; padding: 4px;
+    background: transparent; border: none; padding: 0;
     color: #9ca3af; /* Grå ikoner */
-    transition: color 0.2s;
+    transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center;
 }
-.clean-icon-btn:active { color: #000; } /* Svart vid tryck */
-.clean-icon-btn svg { width: 20px; height: 20px; }
+.clean-icon-btn:active { color: #111; transform: scale(0.95); } 
+.clean-icon-btn svg { width: 22px; height: 22px; stroke-width: 2px; }
+
+/* Aktiv kommentar-ikon (svart) */
+.clean-icon-btn.has-comment { color: #111; }
 
 
 /* =========================================
@@ -5610,6 +5628,7 @@ html {
 
 
 /* --- SLUT PÅ STYLE.CSS --- */
+
 
 
 
