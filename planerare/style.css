@@ -5674,6 +5674,9 @@ html {
         flex-direction: column;
         gap: 16px;
         padding-bottom: 20px;
+        /* Nollställ tabell-stilar om de spökar */
+        border: none !important;
+        background: transparent !important;
     }
 
     /* 2. SJÄLVA KORTET (Vit box med skugga) */
@@ -5698,7 +5701,7 @@ html {
     .history-label {
         font-size: 0.85rem;
         font-weight: 600;
-        color: #9ca3af; /* Grå text för etiketter */
+        color: #9ca3af; /* Grå text för etiketten "Datum", "Status" etc */
     }
     .history-date {
         font-size: 0.85rem;
@@ -5708,7 +5711,7 @@ html {
         letter-spacing: 0.5px;
     }
 
-    /* --- HUVUDRUBRIK (FOGAROLLI) --- */
+    /* --- HUVUDRUBRIK (FOGAROLLI / REGNR) --- */
     .history-title {
         font-size: 1.2rem;
         font-weight: 800;
@@ -5718,13 +5721,14 @@ html {
 
     /* --- BESKRIVNINGSRUTA (Grå bakgrund) --- */
     .history-comment-box {
-        background-color: #f9fafb; /* Ljusgrå */
+        background-color: #f9fafb; /* Ljusgrå bakgrund */
         border-radius: 8px;
         padding: 12px 14px;
         font-size: 0.95rem;
         color: #4b5563; /* Mörkgrå text */
         line-height: 1.5;
         margin-bottom: 16px;
+        border: 1px solid #f3f4f6;
     }
 
     /* --- AVDELARE (Linje) --- */
@@ -5764,11 +5768,21 @@ html {
         margin: 0 -16px -16px -16px !important;
         padding-left: 16px !important;
         padding-right: 16px !important;
+        
+        display: flex;
+        gap: 12px;
+    }
+    
+    .sticky-link-buttons .button {
+        flex: 1;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        border: 1px solid #e5e7eb;
     }
 }
 
 
 /* --- SLUT PÅ STYLE.CSS --- */
+
 
 
 
