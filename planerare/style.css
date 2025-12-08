@@ -5660,85 +5660,7 @@ html {
     }
 }
 
-/* =========================================
-   JUSTERAD DESIGN (KONTRAST & KNAPPAR)
-   ========================================= */
-
 @media (max-width: 768px) {
-
-    /* 1. BAKGRUND & RAM (Löser "Vitt på Vitt") */
-    .job-history-container {
-        /* Ljusgrå bakgrund gör att de vita korten "poppar" fram */
-        background-color: #f3f4f6 !important; 
-        
-        /* Ta bort den fula yttre ramen */
-        border: none !important; 
-        
-        /* Justera luften runt korten */
-        padding: 16px 12px !important; 
-        margin-top: 0 !important;
-        border-radius: 0 0 12px 12px; /* Runda bara nertill */
-    }
-
-    /* 2. SÖKFÄLTET */
-    .search-wrapper.embedded-search {
-        /* Gör sökfältet till en egen "ö" ovanför den grå bakgrunden */
-        margin-bottom: 0 !important; 
-        border: 1px solid #e5e7eb !important;
-        border-bottom: none !important; /* Sitter ihop med listan visuellt */
-        border-radius: 12px 12px 0 0 !important; /* Runda bara upptill */
-        box-shadow: none !important;
-        z-index: 5;
-    }
-
-    /* 3. KORTENS UTSEENDE */
-    .detail-job-list li {
-        background-color: #ffffff !important;
-        border: 1px solid #e5e7eb !important; /* Tunn, skarp ram */
-        border-radius: 12px !important;
-        
-        /* Luft mellan korten */
-        margin-bottom: 12px !important; 
-        padding: 16px !important;
-        
-        /* Skugga för djup */
-        box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important;
-    }
-    
-    /* Ta bort linjer inuti listan då vi nu har kort */
-    .detail-job-list li:last-child { border-bottom: 1px solid #e5e7eb !important; }
-
-    /* 4. TEXT & INNEHÅLL (Tydligare hierarki) */
-    
-    /* Datumet (litet och grått) */
-    .card-date-badge {
-        font-size: 0.75rem !important;
-        color: #6b7280 !important;
-        background: transparent !important; /* Ingen bakgrund, bara text */
-        padding: 0 !important;
-        font-weight: 600 !important;
-        letter-spacing: 0.5px;
-    }
-
-    /* Rubriken (FOGAROLLI / HUSE) */
-    .card-main-title {
-        font-size: 1.1rem !important;
-        font-weight: 800 !important;
-        color: #111827 !important;
-        margin-bottom: 8px !important;
-        margin-top: 4px !important;
-    }
-
-    /* Beskrivningsrutan (Grå box) */
-    .card-desc-box {
-        background-color: #f9fafb !important;
-        border: 1px solid #f3f4f6 !important;
-        color: #374151 !important;
-        padding: 12px !important;
-        border-radius: 8px !important;
-        font-size: 0.9rem !important;
-        line-height: 1.5 !important;
-    }
 
     /* 5. KNAPPARNA LÄNGST NER (Fixad position) */
     .sticky-link-buttons {
@@ -5784,6 +5706,7 @@ html {
 
 
 /* --- SLUT PÅ STYLE.CSS --- */
+
 
 
 
