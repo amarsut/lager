@@ -5484,30 +5484,45 @@ html {
 /* Aktiv kommentar */
 .clean-icon-btn.has-comment { color: #111 !important; }
    
-    /* Tvinga ikonerna (SVG) inuti jobbkorten att ha en fast, liten storlek */
-    .mobile-job-card .action-col .icon-btn svg {
-        width: 24px !important;
-        height: 24px !important;
-        min-width: 24px !important; /* Förhindra att de kollapsar */
-        stroke-width: 1.5px !important; /* Gör linjerna lite snyggare */
+    /* 1. Justera behållaren (den vita delen) */
+    .mobile-job-card .action-col {
+        background-color: #ffffff !important; /* Vit bakgrund */
+        border-top: 1px solid #f3f4f6 !important;
+        
+        /* Minska höjden genom padding */
+        padding: 6px 0 !important; 
+        min-height: auto !important;
+        
+        /* Sprid ut knapparna snyggt men låt dem inte växa */
+        display: flex !important;
+        justify-content: space-around !important; /* Eller 'space-evenly' */
+        align-items: center !important;
     }
 
-    /* Justera själva knapp-behållaren */
+    /* 2. Sätt fast storlek på knapparna */
     .mobile-job-card .action-col .icon-btn {
-        padding: 10px !important; /* Lagom klickyta */
-        height: auto !important;
-        /* Behåll flex: 1 om du vill att knapparna ska fylla bredden jämnt,
-           men nu kommer ikonen inuti vara liten. */
+        flex: 0 0 auto !important; /* VIKTIGT: Hindra dem från att växa */
+        width: 36px !important;    /* Fast bredd */
+        height: 36px !important;   /* Fast höjd */
+        padding: 0 !important;     /* Ingen extra padding behövs */
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        border-radius: 8px !important; /* Lite rundare hörn */
     }
 
-   .mobile-job-card .action-col {
-        background-color: #ffffff !important; /* Tvingar bakgrunden att bli vit */
-        border-top: 1px solid #f3f4f6 !important; /* En mycket ljus linje för att skilja sektionen åt (valfritt) */
+    /* 3. Krymp ikonerna inuti */
+    .mobile-job-card .action-col .icon-btn svg {
+        width: 18px !important;    /* Mindre ikoner */
+        height: 18px !important;
+        min-width: 18px !important;
+        stroke-width: 1.8px !important; /* Lite tydligare linjer */
     }
 }
 
 
 /* --- SLUT PÅ STYLE.CSS --- */
+
 
 
 
