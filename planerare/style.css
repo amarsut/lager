@@ -5499,10 +5499,16 @@ html {
         /* Behåll flex: 1 om du vill att knapparna ska fylla bredden jämnt,
            men nu kommer ikonen inuti vara liten. */
     }
+
+   .mobile-job-card .action-col {
+        background-color: #ffffff !important; /* Tvingar bakgrunden att bli vit */
+        border-top: 1px solid #f3f4f6 !important; /* En mycket ljus linje för att skilja sektionen åt (valfritt) */
+    }
 }
 
 
 /* --- SLUT PÅ STYLE.CSS --- */
+
 
 
 
