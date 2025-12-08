@@ -5052,43 +5052,40 @@
                            (job.kommentarer && (job.kommentarer || '').toLowerCase().includes(term));
                 });
 
-                let tableHTML = `
-				    <table class="detail-job-table">
-				        <thead>
-				            <tr>
-				                <th>Datum</th>
-				                <th>Info</th>
-				                <th>Status</th>
-				                <th class="money-related">Vinst</th>
-				            </tr>
-				        </thead>
-				        <tbody>
-				`;
-				
-				/* --- I funktionen renderDetailJobList --- */
+                // Vi bygger listan direkt med <li> element för att matcha den nya "Clean Look" CSS:en
+                // (Vi tar bort <table>-taggarna här eftersom CSS:en nu förväntar sig en lista)
+                let listHTML = filteredJobs.map(job => {
+                    // Datumlogik
+                    const d = new Date(job.datum);
+                    const dateStr = d.toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' });
+                    const yearStr = d.getFullYear() !== new Date().getFullYear() ? d.getFullYear() : '';
+                    const pris = formatCurrency(job.vinst || 0); 
+                    
+                    // Om vi är i kundmodalen visar vi Regnr, annars Kundnamn
+                    const subText = (listElement.id === 'customerModalJobList') ? job.regnr : job.kundnamn;
+                
+                    // NY CLEAN LIST-HTML
+                    return `
+                        <li data-job-id="${job.id}">
+                            <div class="modal-list-row">
+                                <span class="modal-list-title">${subText || '---'}</span>
+                                <span class="modal-list-price">${isPrivacyModeEnabled ? '---' : pris}</span>
+                            </div>
+                            <div class="modal-list-row">
+                                <span class="modal-list-date">${dateStr} ${yearStr}</span>
+                                <span class="modal-list-status">${STATUS_TEXT[job.status]}</span>
+                            </div>
+                        </li>
+                    `;
+                }).join('');
 
-				tableHTML += filteredJobs.map(job => {
-				    // Datumlogik
-				    const d = new Date(job.datum);
-				    const dateStr = d.toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' });
-				    const yearStr = d.getFullYear() !== new Date().getFullYear() ? d.getFullYear() : '';
-				    const pris = formatCurrency(job.vinst || 0); // Eller kundpris om du föredrar
-				    const subText = (listElement === customerModalJobList) ? job.regnr : job.kundnamn;
-				
-				    // NY CLEAN LIST-HTML
-				    return `
-				        <li data-job-id="${job.id}">
-				            <div class="modal-list-row">
-				                <span class="modal-list-title">${subText || '---'}</span>
-				                <span class="modal-list-price">${isPrivacyModeEnabled ? '---' : pris}</span>
-				            </div>
-				            <div class="modal-list-row">
-				                <span class="modal-list-date">${dateStr} ${yearStr}</span>
-				                <span class="modal-list-status">${STATUS_TEXT[job.status]}</span>
-				            </div>
-				        </li>
-				    `;
-				}).join('');
+                // Om inga jobb hittas
+                if (!listHTML) {
+                    listHTML = '<li style="padding:1rem; text-align:center; color:#999;">Inga jobb hittades.</li>';
+                }
+
+                listElement.innerHTML = listHTML;
+            }
 
             function openCustomerModal(kundnamn) {
                 const customerJobs = allJobs.filter(j => !j.deleted && j.kundnamn === kundnamn).sort((a, b) => new Date(b.datum) - new Date(a.datum));
