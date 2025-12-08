@@ -3632,38 +3632,43 @@ body.offline-mode .offline-dot { display: block; }
 
 /* Mobil-anpassning av tabellen (Gör om till kort) */
 @media (max-width: 600px) {
-    .detail-job-table thead { display: none; }
-    
-    .detail-job-table tbody tr {
-        display: flex; flex-direction: column;
-        border: 1px solid var(--border-color);
-        border-radius: 8px; margin-bottom: 0.75rem;
-        padding: 0.5rem; background-color: var(--content-bg);
-    }
-    
     .detail-job-table td {
-        display: flex; 
-        justify-content: space-between; /* Trycker isär dem */
-        align-items: flex-start;        /* Justera mot toppen om texten är lång */
-        padding: 0.5rem 0;              /* Lite mer luft vertikalt */
+        display: flex !important;
+        flex-direction: column !important; /* Detta lägger texten UNDER rubriken */
+        align-items: flex-start !important;
+        justify-content: center !important;
+        padding: 0.75rem 0.5rem !important; /* Lite mer luft */
         border-bottom: 1px solid var(--border-color);
-        gap: 1.5rem;                    /* VIKTIGT: Minst 1.5rem mellanrum mellan "Info" och Texten */
+        gap: 4px !important; /* Mellanrum mellan rubrik och text */
+        min-height: auto !important;
     }
-    .detail-job-table td:last-child { border-bottom: none; }
     
-    /* Lägg till etiketter via CSS */
+    /* Etiketten (t.ex "Info" eller "Status") */
     .detail-job-table td::before {
         content: attr(data-label); 
-        font-weight: 600;
-        color: var(--text-color-light); 
-        font-size: 0.8rem;
-        flex-shrink: 0; /* Se till att etiketten inte trycks ihop */
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.7rem;
+        color: #9ca3af; /* Ljusare grå för etiketten */
+        margin-bottom: 2px;
+        letter-spacing: 0.5px;
     }
 
-   .detail-job-table td > span,
-    .detail-job-table td > div {
-        text-align: right; /* Högerställ texten snyggt */
-        word-break: break-word; /* Bryt långa ord om det behövs */
+    /* Själva texten/innehållet */
+    .detail-job-table td > span,
+    .detail-job-table td > div,
+    .detail-job-table td > a {
+        text-align: left !important;
+        width: 100%;
+        font-size: 1rem !important; /* Tydligare text */
+        color: #1f2937;
+        word-break: break-word;
+    }
+    
+    /* Gör reg-skylten normalstor igen om den krympt */
+    .detail-job-table .reg-plate {
+        width: auto !important;
+        display: inline-flex !important;
     }
 }
 
@@ -5419,6 +5424,7 @@ html {
 
 
 /* --- SLUT PÅ STYLE.CSS --- */
+
 
 
 
