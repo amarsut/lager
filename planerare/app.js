@@ -5115,72 +5115,69 @@
             
             // BONUS: Om-renderar jobblistan i kund/bil-modal
             function renderDetailJobList(listElement, jobs, filterTerm) {
-                const filteredJobs = jobs.filter(job => {
-                    const term = filterTerm.toLowerCase();
-                    return !term ||
-                           formatDate(job.datum).toLowerCase().includes(term) ||
-                           (job.regnr && (job.regnr || '').toLowerCase().includes(term)) ||
-                           (job.kundnamn || '').toLowerCase().includes(term) ||
-                           (job.kommentarer && (job.kommentarer || '').toLowerCase().includes(term));
-                });
-
-                let tableHTML = `
-				    <table class="detail-job-table">
-				        <thead>
-				            <tr>
-				                <th>Datum</th>
-				                <th>Info</th>
-				                <th>Status</th>
-				                <th class="money-related">Vinst</th>
-				            </tr>
-				        </thead>
-				        <tbody>
-				`;
-				
-				/* --- I funktionen renderDetailJobList --- */
-
-				tableHTML += filteredJobs.map(job => {
-				    const prioIcon = job.prio ? `...` : ''; 
-				    const subline = (listElement === customerModalJobList) ? job.regnr : job.kundnamn;
-				
-				    // Datum-logik
-				    const jobDate = new Date(job.datum);
-				    const currentYear = new Date().getFullYear();
-				    const jobYear = jobDate.getFullYear();
-				    
-				    const day = jobDate.getDate();
-				    const month = jobDate.toLocaleString('sv-SE', { month: 'short' }).replace('.', '');
-				    
-				    const yearHTML = (jobYear !== currentYear) 
-				        ? `<span style="display:block; font-size:0.75em; color:#9CA3AF; font-weight:400;">${jobYear}</span>` 
-				        : '';
-				
-				    return `
-				        <tr data-job-id="${job.id}">
-				            <td data-label="Datum">
-				                <div class="date-wrapper" style="text-align: right; display: inline-block;">
-				                    <span style="font-weight: 700; color: #111;">${day}</span>
-				                    <span style="font-size: 0.85em; color: #6B7280; margin-left: 2px;">${month}</span>
-				                    ${yearHTML}
-				                </div>
-				            </td>
-				            <td data-label="Info">
-				                <span class="job-subline-main">${prioIcon}${subline || '---'}</span>
-				                ${job.kommentarer ? `<span class="job-subline-comment">${job.kommentarer}</span>` : ''}
-				            </td>
-				            <td data-label="Status">
-				                <span class="status-badge status-${job.status}">${STATUS_TEXT[job.status]}</span>
-				            </td>
-				            <td data-label="Vinst" class="job-profit money-related ${job.vinst > 0 ? 'positive' : ''}">
-				                ${isPrivacyModeEnabled ? '---' : formatCurrency(job.vinst)}
-				            </td>
-				        </tr>
-				    `;
-				}).join('');
-				
-				tableHTML += `</tbody></table>`;
-				listElement.innerHTML = tableHTML;
-            }
+			    const filteredJobs = jobs.filter(job => {
+			        const term = filterTerm.toLowerCase();
+			        return !term ||
+			               formatDate(job.datum).toLowerCase().includes(term) ||
+			               (job.regnr && (job.regnr || '').toLowerCase().includes(term)) ||
+			               (job.kundnamn || '').toLowerCase().includes(term) ||
+			               (job.kommentarer && (job.kommentarer || '').toLowerCase().includes(term));
+			    });
+			
+			    if (filteredJobs.length === 0) {
+			        listElement.innerHTML = '<div style="text-align:center; padding:2rem; color:#9ca3af;">Ingen historik hittades.</div>';
+			        return;
+			    }
+			
+			    // Vi bygger en snygg lista med DIVar istället för tabell för bättre mobil-design
+			    let listHTML = '';
+			
+			    filteredJobs.forEach(job => {
+			        // Förbered data
+			        const dateObj = new Date(job.datum);
+			        const day = dateObj.getDate();
+			        // Månad (kort form, t.ex "DEC")
+			        const month = dateObj.toLocaleString('sv-SE', { month: 'short' }).replace('.', '').toUpperCase();
+			        const year = dateObj.getFullYear();
+			        
+			        // Huvudrubrik (Namn eller Regnr beroende på vilken modal vi är i)
+			        // Om listElement är customerModalJobList visar vi Regnr, annars Kundnamn
+			        const mainTitle = (listElement.id === 'customerModalJobList') ? (job.regnr || 'OKÄNT') : job.kundnamn;
+			        
+			        const statusText = STATUS_TEXT[job.status] || job.status;
+			        const vinst = job.vinst || 0;
+			        const vinstClass = vinst > 0 ? 'card-profit' : 'card-profit neutral';
+			        const vinstText = isPrivacyModeEnabled ? '---' : formatCurrency(vinst);
+			        
+			        const kommentar = job.kommentarer ? job.kommentarer : 'Ingen beskrivning.';
+			
+			        // SKAPA HTML-KORTET
+			        listHTML += `
+			            <li data-job-id="${job.id}">
+			                
+			                <div class="card-header-row">
+			                    <div class="card-date-badge">${day} ${month} ${year}</div>
+			                    <span class="status-badge status-${job.status}">${statusText}</span>
+			                </div>
+			
+			                <div class="card-main-title">
+			                    ${mainTitle}
+			                </div>
+			
+			                <div class="card-desc-box">
+			                    ${kommentar}
+			                </div>
+			
+			                <div class="card-footer-row">
+			                    <span>Vinst: <span class="${vinstClass}">${vinstText}</span></span>
+			                </div>
+			
+			            </li>
+			        `;
+			    });
+			
+			    listElement.innerHTML = listHTML;
+			}
 
             function openCustomerModal(kundnamn) {
                 const customerJobs = allJobs.filter(j => !j.deleted && j.kundnamn === kundnamn).sort((a, b) => new Date(b.datum) - new Date(a.datum));
