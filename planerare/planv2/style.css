@@ -103,12 +103,6 @@
     .top-search-container {
         display: none !important; /* Dölj stora sökfältet på mobil om du vill */
     }
-    
-    /* Justera header-höjden om sökfältet döljs */
-    .top-bar {
-        padding: 0 1rem;
-        justify-content: flex-end; /* Knappar till höger */
-    }
 
 /* Dölj knapparna "Nytt Jobb" och "Chatt" i headern på mobil */
     #fabAddJob, 
@@ -4335,11 +4329,6 @@ html {
     .table-wrapper, #jobbOversikt { display: none !important; } /* Göm tabellen */
     #mobileJobList { display: flex !important; flex-direction: column; gap: 1rem; } /* Visa korten */
 
-    /* 2. HEADER */
-    .top-bar {
-        padding: 0 1rem !important; height: 60px !important;
-        justify-content: center !important; 
-    }
     .top-search-container, .divider-vertical, #fabAddJob, #headerPrivacyToggle {
         display: none !important;
     }
@@ -5381,13 +5370,6 @@ html {
 
 @media (max-width: 768px) {
     /* 1. Header Container */
-    .top-bar {
-        /* Se till att innehållet ligger till vänster */
-        justify-content: flex-start !important; 
-        padding: 0 16px !important;
-        height: 65px !important;
-        background-color: #ffffff !important;
-    }
 
     /* 2. Innehålls-wrapper */
     .mobile-header-content {
@@ -5657,6 +5639,16 @@ html {
     .sticky-link-buttons .button:active {
         transform: scale(0.98);
         background-color: #f3f4f6;
+    }
+}
+
+@media (max-width: 600px) {
+   .top-bar {
+        /* Se till att innehållet ligger till vänster */
+        justify-content: flex-start !important; 
+        padding: 0 16px !important;
+        height: 65px !important;
+        background-color: #ffffff !important;
     }
 }
 
