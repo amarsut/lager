@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="sv" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arbetsorder Pro</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css">
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+</head>
+<body>
+
+    <svg style="display: none;">
+        <symbol id="icon-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></symbol>
+        <symbol id="icon-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></symbol>
+        <symbol id="icon-user" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></symbol>
+		<symbol id="icon-office-building" viewBox="0 0 32 32" fill="currentColor"><path d="M24 22c0-.366-.105-.704-.277-1h-3.446c-.172.296-.277.634-.277 1 0 1.104.896 2.224 2 2.224 1.104 0 2-1.12 2-2.224zm2 0c0 2.209-1.791 4-4 4-2.209 0-4-1.791-4-4 0-.348.054-.681.141-1h-12.141l-.001 11c0 2.209 1.791 4 4 4h12c2.209 0 4-1.791 4-4l.001-11h-1.141c.087.319.141.652.141 1zm0-12h-8v-1c0-2.552-1.552-4-2-4s-2 1.448-2 4v1h-8c-2.896 0-4 1.104-4 4 0 2.896 1.104 4 4 4h20c2.896 0 4-1.104 4-4 0-2.896-1.104-4-4-4zm-14-1c0-1.224.896-2 2-2s2 .776 2 2v1h-4v-1z" /></symbol>        <symbol id="icon-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12.578 0a48.108 48.108 0 01-3.478-.397m15.42 0A48.1 48.1 0 0012 5.11M4.772 5.79L4.772 4.102a2.25 2.25 0 012.25-2.25h1.5a2.25 2.25 0 012.25 2.25v1.688M4.772 5.79l-.175 2.457a1.125 1.125 0 001.12 1.228H18.28a1.125 1.125 0 001.12-1.228l-.175-2.457m0 0l-1.096-1.547a.562.562 0 00-.923 0l-1.096 1.547M19.228 5.79l-1.096-1.547a.562.562 0 01-.923 0l-1.096 1.547" /></symbol>
+        <symbol id="icon-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></symbol>
+        <symbol id="icon-flag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3v1.5M3 21v-6m0 0l2.77-.693a9 9 0 016.208.682l.108.054a9 9 0 006.086.71l3.114-.732a48.524 48.524 0 01-.005-10.499l-3.11.732a9 9 0 01-6.085-.711l-.108-.054a9 9 0 00-6.208-.682L3 4.5M3 15V4.5" /></symbol>
+        <symbol id="icon-chat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.76c0 1.6 1.123 2.994 2.707 3.227 1.068.157 2.148.279 3.238.364.466.037.893.281 1.153.671L12 21l3.66-3.938c.26-.29.687-.534 1.153-.67 1.09-.086 2.17-.208 3.238-.365 1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.344 48.344 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.74v6.02z" /></symbol>
+        <symbol id="icon-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></symbol>
+        <symbol id="icon-briefcase" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.05a2.25 2.25 0 01-2.25 2.25H5.002a2.25 2.25 0 01-2.25-2.25v-4.05m17.25-8.25v8.25m0 0H4.75m15.5 0v-8.25a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v8.25" /></symbol>
+        <symbol id="icon-clipboard" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></symbol>
+        <symbol id="icon-file-text" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75v-2.625a3.375 3.375 0 013.375-3.375h1.5A1.125 1.125 0 0013.5 7.125v-1.5a3.375 3.375 0 013.375-3.375H15.75m-7.5 12.75h-1.5a3.375 3.375 0 01-3.375-3.375V8.625a3.375 3.375 0 0113.5 8.625v2.625a3.375 3.375 0 01-3.375 3.375M15 12h-1.5" /></symbol>
+        <symbol id="icon-list" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></symbol>
+        <symbol id="icon-chat-bubble" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></symbol>
+        <symbol id="icon-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></symbol>
+    
+    
+    	<symbol id="icon-car" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7h8a2 2 0 012 2v10a2 2 0 01-2 2H8a2 2 0 01-2-2V9a2 2 0 012-2zm-5 6h20M5 13v6a2 2 0 002 2h10a2 2 0 002-2v-6" /></symbol>
+		<symbol id="icon-engine" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h3a.75.75 0 00.75-.75V3.75A.75.75 0 0013.5 3h-3a.75.75 0 00-.75.75v1.5c0 .414.336.75.75.75zM5 10a2 2 0 012-2h10a2 2 0 012 2v7a2 2 0 01-2 2H7a2 2 0 01-2-2v-7z" /><path d="M19 13h2v2h-2zM3 13h2v2H3z" /></symbol>
+		<symbol id="icon-oil" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 2l-4 5h8l-4-5zM5 10v9a2 2 0 002 2h10a2 2 0 002-2v-9H5z" /></symbol>
+		<symbol id="icon-battery" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="12" rx="2" /><path d="M6 12h2M16 12h2M9 3v3M15 3v3" /></symbol>
+		<symbol id="icon-tool" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.7-3.7a6 6 0 01-8.5 8.5l-2.8-2.8a4 4 0 010-5.7L14.7 6.3z" /><path d="M3 21l6-6" /></symbol>
+		<symbol id="icon-snowflake" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6L5.6 18.4" /></symbol>
+    </svg>
+
+    <div class="app-layout">
+        
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="app-logo-modern">
+                    <div class="logo-icon-box">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 12c2-4 5-7 10-4s3 8 6 4" stroke="white" />
+                        </svg>
+                    </div>
+                    <span>Arbetsorder</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <button class="nav-link active" id="btnOverview">
+                    <svg class="nav-icon" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22" fill="none" stroke="currentColor" stroke-width="2"></polyline></svg>
+                    <span>Översikt</span>
+                </button>
+                <button class="nav-link">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    <span>Kalender</span>
+                </button>
+                <button class="nav-link">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect><path d="M9 14h6"></path><path d="M9 10h6"></path><path d="M9 18h6"></path></svg>
+                    <span>Kanban</span>
+                </button>
+                <div class="nav-spacer"></div>
+                <button class="nav-link">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    <span>Kunder</span>
+                </button>
+                <button class="nav-link">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                    <span>Lager</span>
+                </button>
+                <button class="nav-link">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                    <span>Inställningar</span>
+                </button>
+                <button class="nav-link">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                    <span>Mekaniker</span>
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-profile-card">
+                    <img src="https://ui-avatars.com/api/?name=Amar+Sut&background=eff6ff&color=3b82f6&bold=true" alt="Profil" class="sidebar-avatar">
+                    <div class="user-info">
+                        <span class="user-name">Amar.sut</span>
+                        <span class="user-role">Inloggad</span>
+                    </div>
+                    <button class="logout-icon-btn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <div class="main-content-wrapper">
+            
+            <header class="top-bar">
+                <div class="top-search-container">
+                    <svg class="icon search-icon"><use href="#icon-search"></use></svg>
+                    <input type="search" id="searchBar" placeholder="Sök regnr, kund..." autocomplete="off">
+                </div>
+
+                <div class="top-bar-actions">
+                    <button class="icon-btn header-icon-btn" id="fabChat" title="Notiser">
+			        <div class="icon-badge-container">
+			            <svg class="icon" viewBox="0 0 24 24"><use href="#icon-chat-bubble"></use></svg>
+			            <span id="chatBadgeDesktop" class="header-badge" style="display: none;">0</span>
+			        </div>
+			    </button>
+
+                    <button class="icon-btn header-icon-btn" title="Visa">
+                        <svg class="icon icon-eye"><use href="#icon-eye"></use></svg>
+                    </button>
+                    
+                    <div class="divider-vertical"></div>
+
+                    <button class="button primary header-cta-btn" id="fabAddJob">
+                        <svg class="icon-sm"><use href="#icon-plus"></use></svg>
+                        <span>Nytt Jobb</span>
+                    </button>
+                </div>
+            </header>
+
+            <main class="app-main">
+                <div class="main-content">
+                    
+                    <div class="stat-bar" id="statBar">
+                        <div class="stat-card active" data-filter="kommande">
+                            <h3 class="stat-card-title"><svg class="icon-sm"><use href="#icon-briefcase"></use></svg><span>Kommande</span></h3>
+                            <p class="stat-card-value" id="stat-upcoming">0</p>
+                        </div>
+                        <div class="stat-card" data-filter="faktureras">
+                            <h3 class="stat-card-title"><svg class="icon-sm"><use href="#icon-clipboard"></use></svg><span>Fakturering</span></h3>
+                            <p class="stat-card-value" id="stat-invoice">0</p>
+                        </div>
+                        <div class="stat-card" data-filter="klar">
+                            <h3 class="stat-card-title"><svg class="icon-sm"><use href="#icon-check"></use></svg><span>Färdiga jobb</span></h3>
+                            <p class="stat-card-value" id="stat-finished">0</p>
+                        </div>
+                        <div class="stat-card" data-filter="offererad">
+                            <h3 class="stat-card-title"><svg class="icon-sm"><use href="#icon-file-text"></use></svg><span>Offererade</span></h3>
+                            <p class="stat-card-value" id="stat-offered">0</p>
+                        </div>
+                        <div class="stat-card" data-filter="alla">
+                            <h3 class="stat-card-title"><svg class="icon-sm"><use href="#icon-list"></use></svg><span>Alla jobb</span></h3>
+                            <p class="stat-card-value" id="stat-all">0</p>
+                        </div>
+                    </div>
+
+                    <div id="timelineView">
+                        <div class="table-container" id="jobListContainer">
+                            <p style="text-align:center; padding: 2rem; color: #888;">Laddar data...</p>
+                        </div>
+                    </div>
+
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <div id="jobModal" class="modal-backdrop">
+	    <div class="modal-content">
+	        <div class="modal-header">
+	            <h2 id="modalTitle">Redigera Jobb</h2>
+	            <button class="modal-close-btn" id="modalCloseBtn">
+	                <svg class="icon"><use href="#icon-close"></use></svg>
+	            </button>
+	        </div>
+	        
+	        <form id="jobModalForm" class="modal-body">
+	            <input type="hidden" id="jobId">
+	
+	            <div class="form-grid">
+	                <div class="form-group">
+	                    <label>Status</label>
+	                    <div class="input-wrapper">
+	                        <select id="statusSelect" class="input-gray">
+	                            <option value="offererad">Offererad</option>
+	                            <option value="bokad">Bokad</option>
+	                            <option value="faktureras">Faktureras</option>
+	                            <option value="klar">Klar</option>
+	                        </select>
+	                    </div>
+	                </div>
+	                <div class="form-group">
+	                    <label>Paket / Snabbval</label>
+	                    <div class="input-wrapper">
+	                        <select id="paketSelect" class="input-gray">
+	                            <option value="">Välj paket...</option>
+	                            <option value="liten-service">Liten Service</option>
+	                            <option value="stor-service">Stor Service</option>
+	                            <option value="felsokning">Felsökning</option>
+	                        </select>
+	                    </div>
+	                </div>
+	            </div>
+	
+	            <div class="form-grid">
+	                <div class="form-group">
+	                    <label>Kundens Namn</label>
+	                    <input type="text" id="kundnamn" class="input-gray" required autocomplete="off">
+	                </div>
+	                <div class="form-group">
+	                    <label>Registreringsnummer</label>
+	                    <input type="text" id="regnr" class="input-gray" placeholder="ABC 123">
+	                </div>
+	            </div>
+	
+	            <div class="form-grid">
+	                <div class="form-group">
+	                    <label>Datum</label>
+	                    <input type="date" id="datum" class="input-gray" required>
+	                </div>
+	                <div class="form-group">
+	                    <label>Tid</label>
+	                    <input type="time" id="tid" class="input-gray" required>
+	                </div>
+	            </div>
+	
+	            <div class="form-group full-width">
+	                <label>Kundpris (kr)</label>
+	                <input type="number" id="kundpris" class="input-gray" placeholder="0">
+	            </div>
+	
+	            <div class="expense-section">
+	                <div class="expense-header">
+	                    <label>Specificerade Utgifter</label>
+	                    <span class="profit-display">
+	                        Vinst: <strong id="vinstDisplay" style="color: #10B981;">0 kr</strong> 
+	                        <span style="color: #6B7280; font-weight: normal;">(Utgifter: <span id="utgifterDisplay">0</span> kr)</span>
+	                    </span>
+	                </div>
+	
+	                <div id="expenseList" class="expense-list"></div>
+	
+	                <div class="expense-input-row">
+	                    <input type="text" id="nyUtgiftNamn" class="input-gray" placeholder="Utgiftens namn (t.ex. Filter)">
+	                    <input type="number" id="nyUtgiftPris" class="input-gray" placeholder="Kostnad">
+	                    <button type="button" id="btnAddExpense" class="button-outline-sm">
+	                        <svg class="icon-sm"><use href="#icon-plus"></use></svg> Lägg till
+	                    </button>
+	                </div>
+	            </div>
+	
+	            <div class="form-group full-width">
+	                <label>Övriga kommentarer</label>
+	                <textarea id="kommentar" class="input-gray" rows="2" placeholder="Skriv en anteckning..."></textarea>
+	            </div>
+	
+	        </form>
+	
+	        <div class="modal-actions">
+	            <button type="button" class="button secondary-outline" id="modalCancelBtn">Avbryt</button>
+	            <button type="submit" class="button primary-solid" id="modalSaveBtn" form="jobModalForm">Spara</button>
+	        </div>
+	    </div>
+	</div>
+	
+	<div id="vehicleModal" class="modal-backdrop">
+	    <div class="modal-content modal-wide">
+	        
+	        <div class="vehicle-header-row">
+	            <div class="reg-group">
+	                <h1 id="vehicleRegTitle">---</h1>
+	                <button class="icon-btn-sm" id="btnCopyRegModal" title="Kopiera">
+	                    <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+	                </button>
+	            </div>
+	            
+	            <div class="header-actions">
+	                <a href="#" target="_blank" id="linkBiluppgifter" class="biluppgifter-btn">
+	                    <img src="https://biluppgifter.se/favicon.ico" alt="" style="width:16px; height:16px;">
+	                    Biluppgifter
+	                </a>
+	                <button class="modal-close-btn" id="vehicleModalClose">
+	                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+	                </button>
+	            </div>
+	        </div>
+	
+	        <div class="senaste-agare-box">
+	            Senaste ägare: <span id="vehicleOwner">---</span>
+	        </div>
+	
+	        <div class="tech-section-wrapper">
+	            
+	            <h3 class="tech-section-title">
+	                <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+	                Teknisk Data <span id="techRegSubtitle"></span>
+	            </h3>
+	
+	            <div id="fetchDataContainer" style="display:none; text-align:center; padding: 20px;">
+	                <p style="color:#666; font-size:0.9rem; margin-bottom:15px;">Ingen data sparad för detta fordon.</p>
+	                <button id="btnFetchTechData" class="button secondary" style="width:100%; justify-content:center;">
+	                    <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+	                    Hämta Data med AI
+	                </button>
+	            </div>
+	
+	            <div id="techDataCard" class="tech-card" style="display:none;">
+	                <div class="tech-grid">
+	                    <div class="tech-item">
+	                        <div class="tech-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5.4c-.9.6-2 2-2.5 2.6C2.2 10.3 2 11.2 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 17h2"/><path d="M15 17h2"/></svg></div>
+	                        <div class="tech-info"><label>Bil</label><span id="td-model">---</span></div>
+	                    </div>
+	                    <div class="tech-item">
+	                        <div class="tech-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="M4.93 4.93l1.41 1.41"/><path d="M17.66 17.66l1.41 1.41"/><path d="M4.93 19.07l1.41-1.41"/><path d="M17.66 6.34l1.41-1.41"/></svg></div>
+	                        <div class="tech-info"><label>Kamrem</label><span id="td-cam">---</span></div>
+	                    </div>
+	                    
+	                    <div class="tech-item">
+	                        <div class="tech-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 2h4"/><path d="M5 9v11a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V9"/><path d="M3 9h18"/><path d="M9 2v7"/><path d="M15 2v7"/><circle cx="8" cy="15" r="1"/><circle cx="16" cy="15" r="1"/></svg></div>
+	                        <div class="tech-info"><label>Motor</label><span id="td-engine">---</span></div>
+	                    </div>
+	                    <div class="tech-item">
+	                        <div class="tech-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.7-3.7a6 6 0 0 1-8.5 8.5l-2.8-2.8a4 4 0 0 1 0-5.7L14.7 6.3z"/><path d="M3 21l6-6"/></svg></div>
+	                        <div class="tech-info"><label>Moment</label><span id="td-torque">---</span></div>
+	                    </div>
+	
+	                    <div class="tech-item">
+	                        <div class="tech-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2l-6 6h3v10a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2V8h3z"/></svg></div>
+	                        <div class="tech-info"><label>Olja</label><span id="td-oil">---</span></div>
+	                    </div>
+	                    <div class="tech-item">
+	                        <div class="tech-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="7" width="20" height="12" rx="2"/><line x1="6" y1="13" x2="10" y2="13"/><line x1="14" y1="13" x2="18" y2="13"/><line x1="16" y1="11" x2="16" y2="15"/><line x1="5" y1="7" x2="5" y2="5"/><line x1="19" y1="7" x2="19" y2="5"/></svg></div>
+	                        <div class="tech-info"><label>Batteri</label><span id="td-battery">---</span></div>
+	                    </div>
+	
+	                    <div class="tech-item">
+	                        <div class="tech-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3v18"/><path d="M3 12h18"/><path d="M5.6 5.6l12.8 12.8"/><path d="M18.4 5.6L5.6 18.4"/></svg></div>
+	                        <div class="tech-info"><label>AC</label><span id="td-ac">---</span></div>
+	                    </div>
+	                    <div class="tech-item">
+	                        <div class="tech-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 16a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"/><path d="M12 14v-4"/><path d="M12 10a2 2 0 0 1 2 -2h4"/><path d="M4 10h4a2 2 0 0 1 2 2"/></svg></div>
+	                        <div class="tech-info"><label>Dragvikt</label><span id="td-tow">---</span></div>
+	                    </div>
+	                </div>
+	            </div>
+	        </div>
+	
+	        <div class="history-search-wrapper">
+	            <svg class="icon search-icon" viewBox="0 0 24 24"><use href="#icon-search"></use></svg>
+	            <input type="text" id="vehicleHistorySearch" placeholder="Filtrera historik...">
+	        </div>
+	
+	        <div class="table-container" style="margin-top:0; border:none; box-shadow:none;">
+	            <table class="history-table">
+	                <thead>
+	                    <tr>
+	                        <th style="width:100px;">DATUM</th>
+	                        <th>INFO</th>
+	                        <th>STATUS</th>
+	                        <th style="text-align:right;">VINST</th>
+	                    </tr>
+	                </thead>
+	                <tbody id="vehicleHistoryList">
+	                    </tbody>
+	            </table>
+	        </div>
+	
+	    </div>
+	</div>
+
+	<script src="config.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
