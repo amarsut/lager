@@ -4491,7 +4491,43 @@ html {
     }
 }
 
+/* --- FIX FÖR SCROLL PÅ STARTSIDAN --- */
+
+/* 1. Tvinga flex-behållarna att respektera höjden */
+.main-content-wrapper, 
+.app-main {
+    min-height: 0 !important; /* Magisk kod som fixar låst scroll i flexbox */
+}
+
+/* 2. Sätt höjden på scroll-ytan */
+.app-main {
+    height: 100%; 
+    overflow-y: auto !important; /* Tvinga fram scroll */
+    -webkit-overflow-scrolling: touch; /* Mjuk scroll på iPhone */
+}
+
+/* 3. Mobil-specifik justering för höjden */
+@media (max-width: 768px) {
+    .app-layout {
+        /* Använd dvh (Dynamic Viewport Height) för att hantera adressfältet på mobiler */
+        height: 100dvh !important; 
+        overflow: hidden !important; /* Lås body så bara listan scrollar */
+    }
+
+    .main-content-wrapper {
+        height: 100% !important;
+        overflow: hidden !important;
+    }
+
+    /* Se till att innehållet inte göms bakom menyn */
+    .main-content {
+        padding-bottom: 120px !important; 
+        min-height: 101%; /* Litet trick för att alltid tillåta scroll */
+    }
+}
+
 /* --- SLUT PÅ STYLE.CSS --- */
+
 
 
 
