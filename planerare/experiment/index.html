@@ -214,7 +214,15 @@
 
             <main class="app-main">
                 <div class="main-content">
-                    
+                    <div class="mobile-header mobile-only">
+					    <button class="header-blue-btn">
+					        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg>
+					    </button>
+					    <div class="header-date-group">
+					        <span class="header-day" id="headerCurrentDay">TIS</span>
+					        <span class="header-date" id="headerCurrentDate">9 DEC</span>
+					    </div>
+					</div>
                     <div class="stat-bar" id="statBar">
                         <div class="stat-card active" data-filter="kommande">
                             <h3 class="stat-card-title"><svg class="icon-sm"><use href="#icon-briefcase"></use></svg><span>Kommande</span></h3>
@@ -495,39 +503,31 @@
 	</div>
 
 	<nav class="mobile-nav mobile-only" id="mobileNav">
-    
-	    <button class="mobile-nav-btn active" id="mobileHomeBtn" onclick="window.scrollTo({top:0, behavior:'smooth'});">
-	        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
-	            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-	        </svg>
-	        <span>Hem</span>
+	    <button class="mobile-nav-item active" id="mobileHomeBtn">
+	        <svg class="nav-icon" viewBox="0 0 24 24"><path fill="currentColor" d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+	        <span>Vy</span>
 	    </button>
 	    
-	    <button class="mobile-nav-btn" id="mobileSearchBtn" onclick="document.getElementById('mobileSearchModal').classList.add('show')">
-	        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
-	            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-	        </svg>
+	    <button class="mobile-nav-item" onclick="openNewJobModal()">
+	        <svg class="nav-icon" viewBox="0 0 24 24"><path fill="currentColor" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+	        <span>Nytt Jobb</span>
+	    </button>
+	
+	    <button class="mobile-nav-item" onclick="toggleChatWidget()">
+	        <div class="icon-wrapper">
+	            <svg class="nav-icon" viewBox="0 0 24 24"><path fill="currentColor" d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+	            <span class="nav-badge">1</span>
+	        </div>
+	        <span>Notiser</span>
+	    </button>
+	    
+	    <button class="mobile-nav-item" onclick="document.getElementById('mobileSearchModal').classList.add('show')">
+	        <svg class="nav-icon" viewBox="0 0 24 24"><path fill="currentColor" d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
 	        <span>Sök</span>
 	    </button>
 	
-	    <button id="mobileAddJobBtn" onclick="openNewJobModal()">
-	        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
-	            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-	        </svg>
-	    </button>
-	
-	    <button class="mobile-nav-btn" id="mobileChatBtn" onclick="toggleChatWidget()">
-	        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
-	            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-	        </svg>
-	        <span>Chatt</span>
-	    </button>
-	    
-	    <button class="mobile-nav-btn" id="mobileSettingsBtn" onclick="document.getElementById('settingsModal').classList.add('show')">
-	        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
-	            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-	            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-	        </svg>
+	    <button class="mobile-nav-item" onclick="document.getElementById('settingsModal').classList.add('show')">
+	        <svg class="nav-icon" viewBox="0 0 24 24"><path fill="currentColor" d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L3.16 8.87c-.12.2-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.04.24.24.41.48.41h3.84c.24 0.43-.17.47-.41l.36-2.54c.59-.24 1.13-.57 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.2.08-.47-.12-.61l-2.03-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
 	        <span>Mer</span>
 	    </button>
 	</nav>
