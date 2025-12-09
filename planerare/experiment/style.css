@@ -1279,23 +1279,23 @@ ul.tech-list li span {
 /* _____ MOBILVY NEDAN ______ */
 
 /* =========================================
-   MOBIL-OPTIMERING - TARGET DESIGN (Bild 2)
+   MOBIL-OPTIMERING - PIXEL PERFECT (Bild-matchning)
    ========================================= */
 
 @media (max-width: 768px) {
     
-    /* --- 1. GRUNDLÄGGANDE LAYOUT --- */
+    /* GRUND */
     .app-layout { display: block !important; height: auto !important; overflow: visible !important; }
-    html, body { overflow-x: hidden; overflow-y: auto !important; background-color: #F1F5F9; /* Lite gråare bakgrund för kontrast mot vita kort */ }
+    html, body { overflow-x: hidden; overflow-y: auto !important; background-color: #F8FAFC; }
 
-    /* Dölj desktop-element */
+    /* DÖLJ DESKTOP */
     .sidebar, .top-bar, #jobsTable thead, .header-cta-btn, .top-search-container, .divider-vertical { display: none !important; }
     .top-bar-actions .icon-btn:not(#headerPrivacyToggle) { display: none; }
 
     .mobile-only { display: block; }
     .main-content { padding: 16px; padding-bottom: 100px; width: 100%; margin: 0; }
 
-    /* --- 2. HEADER (Datum & Meny) --- */
+    /* HEADER */
     .mobile-header { display: flex; align-items: center; gap: 14px; margin-bottom: 24px; padding-top: 8px; }
     .header-blue-btn {
         width: 42px; height: 42px;
@@ -1308,184 +1308,131 @@ ul.tech-list li span {
     .header-day { font-size: 0.75rem; font-weight: 700; color: #64748B; letter-spacing: 0.5px; text-transform: uppercase; }
     .header-date { font-size: 1.25rem; font-weight: 800; color: #0F172A; }
 
-
-    /* --- 3. STATISTIK - 2x2 GRID --- */
-    .stat-bar {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
-        margin-bottom: 30px;
-        padding: 0;
-    }
-
-    .stat-card {
-        background: #ffffff;
-        border-radius: 16px; /* Mjukare hörn */
-        padding: 16px;
-        min-height: 90px;
-        border: 1px solid #E2E8F0; /* Mycket subtil ram */
-        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-        display: flex; flex-direction: column; justify-content: space-between;
-    }
-
-    .stat-card:last-child { grid-column: span 2; flex-direction: row; align-items: center; min-height: 60px; }
-    .stat-card:last-child .stat-card-value { margin-top: 0; margin-left: auto; }
-
-    #stat-card-kommande { border-bottom: 3px solid #3B82F6; }
-
-    .stat-card-title { 
-        font-size: 0.7rem; color: #64748B; font-weight: 700; 
-        text-transform: uppercase; letter-spacing: 0.5px; display: flex; gap: 6px;
-    }
-    .stat-card-title svg { display: none; }
-    .stat-card-value { font-size: 1.75rem; font-weight: 800; color: #0F172A; margin-top: 4px; line-height: 1; }
-    
-    #stat-card-kommande .stat-card-value { color: #2563EB; }
-    #stat-card-faktureras .stat-card-value { color: #D946EF; }
-    #stat-card-klar .stat-card-value { color: #22C55E; }
-
-
-    /* --- 4. RUBRIKER MELLAN JOBB (Datum) --- */
-    /* Design enligt Bild 2: "Fre 12 dec." med linje under */
+    /* DATUM RUBRIK (Fre 12 Dec.) */
     .date-separator {
-        font-size: 1rem; 
+        font-size: 1.1rem; 
         font-weight: 800; 
-        color: #0F172A; /* Mörk text */
-        margin: 32px 0 12px 0;
+        color: #0F172A; 
+        margin: 24px 0 16px 0;
         padding-bottom: 8px;
-        border-bottom: 1px solid #E2E8F0; /* Tunn grå linje */
-        text-transform: capitalize; /* Stor bokstav först */
+        border-bottom: 1px solid #E2E8F0; /* Tunn linje under */
     }
 
-
-    /* --- 5. JOBB KORT (Design enligt Bild 2) --- */
+    /* JOBB KORTET */
     .job-card {
         background: #ffffff;
-        border-radius: 20px; /* Rejält rundade hörn */
-        padding: 16px 20px;  /* Luftigt inuti */
+        border-radius: 20px; /* Mer rundade hörn som på bilden */
+        padding: 18px 22px;  /* Mer luft inuti */
         margin-bottom: 16px;
-        border: 1px solid #F1F5F9; /* Knappt synlig ram */
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03); /* Mjuk skugga */
+        border: 1px solid #F1F5F9; 
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04); /* Mjuk skugga */
         display: flex; 
         flex-direction: column; 
-        gap: 8px; /* Avstånd mellan raderna i kortet */
-        position: relative;
-        transition: transform 0.1s;
+        gap: 6px; /* Avstånd mellan raderna */
     }
-    
-    .job-card:active { transform: scale(0.98); }
 
-    /* --- RAD 1: Tid (vänster) & Status (höger) --- */
+    /* RAD 1: TID & STATUS */
     .card-top-row {
         display: flex; justify-content: space-between; align-items: flex-start;
-        margin-bottom: 4px;
+        margin-bottom: 2px;
     }
-    
     .card-time { 
-        font-size: 0.85rem; 
-        font-weight: 500; 
-        color: #64748B; /* Grå text */
-        letter-spacing: 0.5px;
+        font-size: 0.9rem; 
+        font-weight: 400; 
+        color: #64748B; /* Grå färg på tiden */
     }
-    
-    /* Pill-badge för status (Bokad/Klar) */
     .status-badge-pill {
         font-size: 0.75rem; 
         font-weight: 700; 
         padding: 4px 12px; 
         border-radius: 8px;
-        letter-spacing: 0.3px;
-        background: #EFF6FF; color: #3B82F6; /* Default (Bokad) Blå */
+        background: #EFF6FF; color: #3B82F6; /* Ljusblå bakgrund, blå text */
     }
     .status-badge-pill.klar { background: #DCFCE7; color: #16A34A; }
-    .status-badge-pill.faktureras { background: #F3E8FF; color: #9333EA; }
 
-    /* --- RAD 2: Kundnamn (vänster) & Pris (höger) --- */
+    /* RAD 2: NAMN & PRIS */
     .card-mid-row {
-        display: flex; justify-content: space-between; align-items: center;
-        margin-bottom: 8px; /* Lite extra luft ner till Regnr */
+        display: flex; justify-content: space-between; align-items: baseline;
+        margin-bottom: 8px;
     }
-
     .customer-name { 
-        font-size: 1.25rem; /* Stor text */
-        font-weight: 800; 
+        font-size: 1.35rem; /* Större text */
+        font-weight: 800;   /* Mycket fetare text */
         color: #0F172A; 
         text-transform: uppercase;
         letter-spacing: -0.5px;
     }
-
     .price-tag { 
-        font-size: 1.25rem; 
+        font-size: 1.2rem; 
         font-weight: 800; 
         color: #0F172A; 
     }
 
-    /* --- RAD 3: Regnr (vänster) & Check-knapp (höger) --- */
+    /* RAD 3: REGNR & CHECK-KNAPP */
     .card-bot-row {
         display: flex; justify-content: space-between; align-items: center;
     }
 
-    /* Reg-skylten (Grå box) */
-    .reg-tag-box {
+    /* Den enkla grå Reg-boxen */
+    .reg-tag-simple {
         display: inline-block; 
-        background: #F1F5F9; /* Ljusgrå bakgrund */
+        background: #F1F5F9; /* Ljusgrå */
         color: #475569;      /* Mörkgrå text */
-        padding: 6px 10px; 
-        border-radius: 6px;  /* Lite rundad */
-        font-family: monospace; /* Eller sans-serif om du föredrar */
+        padding: 6px 12px; 
+        border-radius: 6px; 
         font-weight: 700; 
-        font-size: 0.85rem;
+        font-size: 0.8rem;
+        letter-spacing: 0.5px;
     }
 
-    /* Check-knappen (Rund med grön cirkel) */
-    .check-btn-round {
-        width: 36px; height: 36px; 
+    /* Check-knappen (Cirkel outline) */
+    .check-btn-outline {
+        width: 38px; height: 38px; 
         border-radius: 50%;
         background: transparent;
-        border: 1.5px solid #22C55E; /* Grön ram */
-        color: #22C55E; /* Grön ikon */
+        border: 2px solid #22C55E; /* Grön ram */
+        color: #22C55E;            /* Grön ikon */
         display: flex; align-items: center; justify-content: center;
         transition: all 0.2s;
         cursor: pointer;
     }
-
-    /* Om jobbet är klart -> Fylld grön */
-    .check-btn-round.checked { 
-        background: #22C55E; 
-        color: white; 
+    .check-btn-outline:active { transform: scale(0.95); }
+    
+    /* Om man vill ha den fylld när den är "klar", lägg till .checked */
+    .check-btn-outline.checked { 
+        background: #DCFCE7; /* Ljusgrön fyllning vid klar? Eller behåll vit */
+        /* Om du vill ha exakt som bilden verkar den vara vit inuti med grön ram även när den är checkad */
     }
+    
+    .check-btn-outline svg { width: 22px; height: 22px; stroke-width: 3px; }
 
-    .check-btn-round svg { width: 20px; height: 20px; stroke-width: 3px; }
-
-
-    /* --- 6. BOTTENMENY --- */
+    /* MENY (Oförändrad layout, bara stiljustering) */
     .mobile-nav {
         position: fixed; bottom: 0; left: 0; right: 0;
-        background: #ffffff; height: 74px; /* Lite högre */
+        background: #ffffff; height: 74px;
         display: flex; justify-content: space-between; align-items: center;
         padding: 0 24px;
         border-top: 1px solid #F1F5F9; z-index: 9999;
-        box-shadow: 0 -4px 20px rgba(0,0,0,0.02);
     }
-
     .mobile-nav-item {
         background: none; border: none; flex: 1;
         display: flex; flex-direction: column; align-items: center; justify-content: center;
         gap: 6px; color: #94A3B8; cursor: pointer;
     }
     .mobile-nav-item.active { color: #2563EB; }
-    
     .mobile-nav-item svg { width: 24px; height: 24px; stroke-width: 2px; }
     .mobile-nav-item span { font-size: 0.7rem; font-weight: 600; }
-
-    /* PLUS-KNAPPEN (Centrerad) */
+    
     #mobileAddJobBtn {
         width: 56px; height: 56px;
         border-radius: 50%;
         background: #2563EB; color: white; border: none;
         display: flex; justify-content: center; align-items: center;
-        transform: translateY(-20px); /* Lyfter upp den */
+        transform: translateY(-20px);
         box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4);
     }
     #mobileAddJobBtn svg { width: 28px; height: 28px; stroke-width: 2.5px; }
+
+    /* Dölj stat-bar om du vill ha exakt den rena listan från bilden, 
+       annars låt den ligga kvar ovanför */
 }
