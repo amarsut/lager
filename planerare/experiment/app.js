@@ -59,45 +59,112 @@ function initRealtimeListener() {
 // 4. RENDERA DASHBOARD
 function renderDashboard() {
     let jobsToDisplay = filterJobs(allJobs);
-    updateStatsCounts(allJobs); // Uppdatera siffrorna i korten
+    updateStatsCounts(allJobs);
 
     const container = document.getElementById('jobListContainer');
+    const isMobile = window.innerWidth <= 768; // Kolla om vi är på mobil
     
     if (jobsToDisplay.length === 0) {
         container.innerHTML = '<p style="text-align:center; padding:2rem; color:#888;">Inga jobb hittades för detta filter.</p>';
         return;
     }
 
-    let tableHTML = `
-        <table id="jobsTable">
-            <thead>
-                <tr>
-                    <th>Status</th>
-                    <th>Datum</th>
-                    <th>Kund</th>
-                    <th>Reg.nr</th>
-                    <th style="text-align:right">Kundpris</th>
-                    <th class="action-col">Åtgärder</th>
-                </tr>
-            </thead>
-            <tbody>
-    `;
-
-    jobsToDisplay.forEach(job => {
-        tableHTML += createJobRow(job);
-    });
-
-    tableHTML += `</tbody></table>`;
-    container.innerHTML = tableHTML;
+    // --- MOBIL VY (KORT) ---
+    if (isMobile) {
+        let cardsHTML = `<div class="job-cards-container">`;
+        jobsToDisplay.forEach(job => {
+            cardsHTML += createJobCard(job);
+        });
+        cardsHTML += `</div>`;
+        container.innerHTML = cardsHTML;
+    } 
+    // --- DESKTOP VY (TABELL) ---
+    else {
+        let tableHTML = `
+            <table id="jobsTable">
+                <thead>
+                    <tr>
+                        <th>Status</th>
+                        <th>Datum</th>
+                        <th>Kund</th>
+                        <th>Reg.nr</th>
+                        <th style="text-align:right">Kundpris</th>
+                        <th class="action-col">Åtgärder</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+        jobsToDisplay.forEach(job => {
+            tableHTML += createJobRow(job);
+        });
+        tableHTML += `</tbody></table>`;
+        container.innerHTML = tableHTML;
+    }
 }
 
-// Hjälpfunktion: Skapa HTML för en rad
-function createJobRow(job) {
+function createJobCard(job) {
     const statusText = {
-        'bokad': 'Bokad', 'klar': 'Slutfört', 'faktureras': 'Fakturering', 'offererad': 'Offererad'
+        'bokad': 'Bokad', 'klar': 'Slutfört', 'faktureras': 'Fakturering', 'offererad': 'Offererad', 'avbokad': 'Avbokad'
     };
     
-    // Datumformatering
+    // Enkel datumformat för mobil (t.ex. "Idag 14:00" eller "Ons 12 dec")
+    let dateDisplay = "---";
+    if (job.datum) {
+        const d = new Date(job.datum);
+        const now = new Date();
+        const isToday = d.toDateString() === now.toDateString();
+        
+        const timeStr = d.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
+        
+        if (isToday) {
+            dateDisplay = `Idag ${timeStr}`;
+        } else {
+            const dateStr = d.toLocaleDateString('sv-SE', { weekday: 'short', day: 'numeric', month: 'short' });
+            dateDisplay = `${dateStr} • ${timeStr}`;
+        }
+    }
+
+    const price = job.kundpris ? `${job.kundpris} kr` : '0 kr';
+    const regNr = (job.regnr && job.regnr !== 'OKÄNT') ? job.regnr : '---';
+
+    return `
+        <div class="job-card" onclick="openEditModal('${job.id}')">
+            <div class="job-card-header">
+                <div class="job-card-date">
+                    <svg class="icon-sm" style="width:14px; height:14px;"><use href="#icon-calendar-day"></use></svg>
+                    ${dateDisplay}
+                </div>
+                <span class="status-badge status-${job.status}" style="font-size:0.7rem; padding:4px 10px;">${statusText[job.status] || job.status}</span>
+            </div>
+            
+            <div class="job-card-main">
+                <div class="job-card-info">
+                    <span class="job-card-customer">${job.kundnamn}</span>
+                    <span class="job-card-reg">${regNr}</span>
+                </div>
+                <div class="job-card-price money-related">${price}</div>
+            </div>
+
+            <div class="job-card-footer">
+                <div style="font-size:0.8rem; color:#6b7280;">
+                    ${job.kommentar ? '<svg class="icon-sm" style="width:14px; margin-right:4px; vertical-align:middle"><use href="#icon-chat"></use></svg> ' + (job.kommentar.length > 20 ? job.kommentar.substring(0,20)+'...' : job.kommentar) : ''}
+                </div>
+                <div class="job-card-actions">
+                    <button class="check-btn" onclick="event.stopPropagation(); setStatus('${job.id}', 'klar')">
+                        <svg class="icon-sm"><use href="#icon-check"></use></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Hjälpfunktion: Skapa DESKTOP RAD (Samma som innan men inkluderad för helhet)
+function createJobRow(job) {
+    const statusText = {
+        'bokad': 'Bokad', 'klar': 'Slutfört', 'faktureras': 'Fakturering', 'offererad': 'Offererad', 'avbokad': 'Avbokad'
+    };
+    
     let fullDate = "---";
     if (job.datum) {
         try {
@@ -109,14 +176,11 @@ function createJobRow(job) {
         } catch(e) {}
     }
 
-    // Företagskunds-logik
     const nameLower = (job.kundnamn || '').toLowerCase();
     const isCorporate = ['bmg', 'fogarolli'].some(c => nameLower.includes(c));
-    
     const iconType = isCorporate ? '#icon-office-building' : '#icon-user';
     const iconColor = isCorporate ? '#10B981' : '#0066FF'; 
 
-    // Reg-skylt
 	const regPlate = (job.regnr && job.regnr.toUpperCase() !== 'OKÄNT') 
 	    ? `<div class="reg-plate" style="cursor:pointer;" onclick="event.stopPropagation(); openVehicleModal('${job.regnr}')">
 	         <span class="reg-country">S</span>
@@ -124,7 +188,6 @@ function createJobRow(job) {
 	       </div>` 
 	    : '---';
 
-    // OBS: onclick="event.stopPropagation()" på knapparna förhindrar att redigeringsmodalen öppnas när man klickar på dem.
     return `
         <tr data-id="${job.id}" class="job-row">
             <td><span class="status-badge status-${job.status}">${statusText[job.status] || job.status}</span></td>
@@ -138,14 +201,15 @@ function createJobRow(job) {
             <td>${regPlate}</td>
             <td style="text-align:right" class="money-related">${job.kundpris || 0} kr</td>
             <td class="action-col">
-                <button class="icon-btn" title="Chatt" onclick="event.stopPropagation(); alert('Funktion kommer snart')"><svg class="icon-sm"><use href="#icon-chat"></use></svg></button>
-                <button class="icon-btn" title="Prio" onclick="event.stopPropagation()"><svg class="icon-sm"><use href="#icon-flag"></use></svg></button>
                 <button class="icon-btn" title="Klar" onclick="event.stopPropagation(); setStatus('${job.id}', 'klar')"><svg class="icon-sm"><use href="#icon-check"></use></svg></button>
                 <button class="icon-btn" title="Radera" onclick="event.stopPropagation(); deleteJob('${job.id}')"><svg class="icon-sm"><use href="#icon-trash"></use></svg></button>
             </td>
         </tr>
     `;
 }
+
+// Lägg till en listener för att rita om när man ändrar storlek på fönstret
+window.addEventListener('resize', renderDashboard);
 
 // 5. FILTER-LOGIK
 function filterJobs(jobs) {
