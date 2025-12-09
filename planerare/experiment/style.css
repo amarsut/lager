@@ -1274,3 +1274,143 @@ ul.tech-list li span {
     background-color: #006be0;
     transform: scale(1.05);
 }
+
+
+/* =========================================
+   MOBIL-OPTIMERING & APP-LAYOUT
+   ========================================= */
+
+/* Dölj element som inte ska synas på mobil */
+.mobile-only { display: none; }
+
+/* Kort-design för jobblistan på mobil */
+.job-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    border: 1px solid #f3f4f6;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    position: relative;
+    transition: transform 0.2s;
+}
+
+.job-card:active { transform: scale(0.98); }
+
+.job-card-header {
+    display: flex; justify-content: space-between; align-items: center;
+}
+
+.job-card-date {
+    font-size: 0.75rem; font-weight: 600; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.5px;
+    display: flex; align-items: center; gap: 4px;
+}
+
+.job-card-main {
+    display: flex; justify-content: space-between; align-items: center;
+}
+
+.job-card-info { display: flex; flex-direction: column; gap: 4px; }
+.job-card-customer { font-size: 1rem; font-weight: 700; color: #1f2937; }
+.job-card-reg { 
+    background: #f3f4f6; color: #374151; 
+    padding: 2px 8px; border-radius: 4px; 
+    font-size: 0.8rem; font-weight: 600; font-family: monospace; 
+    align-self: flex-start;
+    border: 1px solid #e5e7eb;
+}
+
+.job-card-price {
+    font-size: 1.1rem; font-weight: 700; color: #1f2937;
+    text-align: right;
+}
+
+.job-card-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    border-top: 1px solid #f3f4f6;
+    padding-top: 10px;
+    margin-top: 4px;
+}
+
+.job-card-actions { display: flex; gap: 12px; }
+.job-card-actions button {
+    background: none; border: none; padding: 4px; color: #9ca3af;
+}
+.job-card-actions button.check-btn { color: var(--success-color); background: #f0fdf4; border-radius: 50%; }
+
+/* --- MEDIA QUERY: MOBIL (Upp till 768px) --- */
+@media (max-width: 768px) {
+    /* Layout justeringar */
+    .app-layout { flex-direction: column; height: 100vh; overflow: hidden; }
+    
+    /* Dölj Sidebar & Desktop Header delar */
+    .sidebar { display: none; }
+    .top-bar { padding: 0 16px; height: 60px; }
+    .top-search-container { display: none; } /* Vi använder sök-knappen i menyn istället */
+    .header-cta-btn { display: none; } /* Vi använder + knappen i menyn */
+    .top-bar-actions .icon-btn:not(#headerPrivacyToggle) { display: none; } /* Dölj desktopikoner utom ögat */
+    .divider-vertical { display: none; }
+
+    /* Visa mobil-specifika element */
+    .mobile-only { display: block; }
+    .main-content { padding: 16px; padding-bottom: 90px; /* Plats för bottenmenyn */ }
+
+    /* Justera Statistik-bar för horisontell scroll */
+    .stat-bar {
+        display: flex;
+        overflow-x: auto;
+        padding-bottom: 8px;
+        gap: 12px;
+        scrollbar-width: none; /* Dölj scrollbar Firefox */
+        margin-bottom: 16px;
+    }
+    .stat-bar::-webkit-scrollbar { display: none; /* Dölj scrollbar Chrome/Safari */ }
+    
+    .stat-card {
+        min-width: 130px; /* Smalare kort */
+        padding: 12px;
+        flex-shrink: 0; /* Förhindra att de krymper */
+    }
+    .stat-card-value { font-size: 1.5rem; }
+
+    /* Botten-Navigering */
+    .mobile-nav {
+        position: fixed; bottom: 0; left: 0; width: 100%;
+        background: #fff; border-top: 1px solid #e5e7eb;
+        display: flex; justify-content: space-around; align-items: center;
+        padding: 8px 0 20px 0; /* Extra padding för iPhone Home bar */
+        z-index: 1000;
+        box-shadow: 0 -4px 20px rgba(0,0,0,0.03);
+    }
+
+    .mobile-nav-btn {
+        background: none; border: none;
+        display: flex; flex-direction: column; align-items: center; gap: 4px;
+        color: #9ca3af; font-size: 0.7rem; font-weight: 500;
+        width: 60px;
+    }
+    
+    .mobile-nav-btn svg { width: 24px; height: 24px; }
+    
+    .mobile-nav-btn.active { color: var(--primary-color); }
+    
+    /* Specialdesign för mitten-knappen (+) */
+    #mobileAddJobBtn {
+        background: var(--primary-color);
+        color: white;
+        width: 48px; height: 48px;
+        border-radius: 50%;
+        display: flex; justify-content: center; align-items: center;
+        transform: translateY(-20px); /* Lyfter upp knappen */
+        box-shadow: 0 4px 10px rgba(0, 102, 255, 0.3);
+        margin: 0 8px;
+    }
+    #mobileAddJobBtn span { display: none; } /* Dölj texten för plus-knappen */
+    #mobileAddJobBtn svg { width: 28px; height: 28px; }
+
+    /* Dölj tabellhuvudet på mobil */
+    #jobsTable thead { display: none; }
+}
