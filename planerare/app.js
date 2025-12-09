@@ -66,6 +66,7 @@ function renderDashboard() {
     const container = document.getElementById('jobListContainer');
     const isMobile = window.innerWidth <= 768; 
     
+    // filterJobs sorterar redan datan korrekt (Kommande = Stigande, Alla = Fallande)
     let jobsToDisplay = filterJobs(allJobs);
 
     if (jobsToDisplay.length === 0) {
@@ -78,23 +79,17 @@ function renderDashboard() {
         let html = '';
         let lastDateStr = '';
 
-        // Sortera på datum
-        jobsToDisplay.sort((a,b) => new Date(a.datum) - new Date(b.datum));
-
+        // OBS: Vi sorterar INTE om här längre, vi litar på filterJobs ordning (Fix 2)
+        
         jobsToDisplay.forEach(job => {
-            // Datumformat: "Fre 12 Dec."
             const d = new Date(job.datum);
             const dateHeader = d.toLocaleDateString('sv-SE', { weekday: 'short', day: 'numeric', month: 'short' });
-            // Snygga till strängen (Fre 12 dec)
-            const formattedHeader = dateHeader.charAt(0).toUpperCase() + dateHeader.slice(1); // + "." om du vill ha punkt
+            const formattedHeader = dateHeader.charAt(0).toUpperCase() + dateHeader.slice(1); 
 
-            // Om nytt datum -> Skriv ut RUBRIK
             if (formattedHeader !== lastDateStr) {
                 html += `<div class="date-separator">${formattedHeader}</div>`;
                 lastDateStr = formattedHeader;
             }
-
-            // Skriv ut KORTET (utan datumrubrik i sig)
             html += createJobCard(job);
         });
 
@@ -155,6 +150,20 @@ function createJobCard(job) {
     const statusRaw = job.status || 'bokad';
     const statusText = statusRaw.toUpperCase(); 
 
+    // FIX 3: Företagsikon Logik
+    const nameLower = (job.kundnamn || '').toLowerCase();
+    const isCorporate = ['bmg', 'fogarolli', 'ab'].some(c => nameLower.includes(c));
+    
+    // Ikoner
+    const iUser = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
+    const iBriefcaseGreen = `<svg viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4 8 4v14"/><path d="M17 21v-8.5a1.5 1.5 0 0 0-1.5-1.5h-3a1.5 1.5 0 0 0-1.5 1.5V21"/><path d="M9 10a1 1 0 0 1 1-1"/><path d="M14 10a1 1 0 0 1 1-1"/><path d="M9 14a1 1 0 0 1 1-1"/><path d="M14 14a1 1 0 0 1 1-1"/></svg>`;
+    
+    // Om företag: Visa grön portfölj framför namnet. Texten "Namn" förblir neutral.
+    // Vi lägger loggan i value-fältet.
+    const nameValueHtml = isCorporate 
+        ? `${iBriefcaseGreen} <span>${customer}</span>` 
+        : customer;
+
     let commentHtml = '';
     if (job.kommentar && job.kommentar.length > 0) {
         commentHtml = `<span class="comment-text">${job.kommentar}</span>`;
@@ -162,8 +171,7 @@ function createJobCard(job) {
         commentHtml = `<span class="comment-text comment-placeholder">Inga kommentarer finns tillgängliga.</span>`;
     }
     
-    // Ikoner
-    const iUser = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
+    // Övriga ikoner
     const iCal = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`;
     const iClock = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`;
     const iCar = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 17h8"/></svg>`;
@@ -171,8 +179,6 @@ function createJobCard(job) {
     const iTag = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>`;
     const iBox = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>`;
     const iGauge = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 14c1.66 0 3-1.34 3-3V5h-6v6c0 1.66 1.34 3 3 3z"/><path d="M12 14v7"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="M19.07 4.93L17.66 6.34"/><path d="M4.93 4.93L6.34 6.34"/></svg>`;
-    
-    // INFO IKON (Liten 'i' i cirkel)
     const iInfoSmall = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`;
 
     let headerClass = 'bg-bokad';
@@ -185,20 +191,21 @@ function createJobCard(job) {
     <div class="job-card-new" onclick="openEditModal('${job.id}')">
         
         <div class="card-header-strip ${headerClass}">
-            
             <div class="header-reg-clickable" onclick="event.stopPropagation(); openVehicleModal('${regNr}')">
                 ${iCar} 
                 <span>${regNr}</span>
                 <span class="reg-info-sup">${iInfoSmall}</span>
             </div>
-            
             <div class="header-status-badge">
                 ${statusText}
             </div>
         </div>
 
         <div class="card-body">
-            <div class="info-row"><span class="row-label">${iUser} Namn</span><span class="row-value">${customer}</span></div>
+            <div class="info-row">
+                <span class="row-label">${iUser} Namn</span>
+                <span class="row-value">${nameValueHtml}</span>
+            </div>
             <div class="info-row"><span class="row-label">${iBox} Paket</span><span class="row-value">${paket}</span></div>
             <div class="info-row"><span class="row-label" title="Mätarställning">${iGauge} Mätarst.</span><span class="row-value">${mileage}</span></div>
             <div class="info-row"><span class="row-label">${iCal} Datum</span><span class="row-value">${dateStr}</span></div>
@@ -243,6 +250,9 @@ function createJobRow(job) {
 	       </div>` 
 	    : '---';
 
+    // FIX 11: Inline SVG för papperskorgen
+    const trashIcon = `<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`;
+
     return `
         <tr data-id="${job.id}" class="job-row">
             <td><span class="status-badge status-${job.status}">${statusText[job.status] || job.status}</span></td>
@@ -257,7 +267,7 @@ function createJobRow(job) {
             <td style="text-align:right" class="money-related">${job.kundpris || 0} kr</td>
             <td class="action-col">
                 <button class="icon-btn" title="Klar" onclick="event.stopPropagation(); setStatus('${job.id}', 'klar')"><svg class="icon-sm"><use href="#icon-check"></use></svg></button>
-                <button class="icon-btn" title="Radera" onclick="event.stopPropagation(); deleteJob('${job.id}')"><svg class="icon-sm"><use href="#icon-trash"></use></svg></button>
+                <button class="icon-btn" title="Radera" onclick="event.stopPropagation(); deleteJob('${job.id}')">${trashIcon}</button>
             </td>
         </tr>
     `;
@@ -770,7 +780,6 @@ async function scrapeAndAnalyze(regnr, docRef) {
 
 // --- HJÄLPFUNKTION: Bygg HTML från lösa fält (DENNA BEHÖVS FÖR NYA DESIGNEN) ---
 function generateTechSpecHTML(data, regnr) {
-    // 1. Märkes-logik (Oförändrad)
     let brandIcon = '#icon-brand-generic';
     const modelStr = (data.model || '').toLowerCase();
     
@@ -783,10 +792,8 @@ function generateTechSpecHTML(data, regnr) {
     else if (modelStr.includes('skoda')) brandIcon = '#icon-brand-skoda';
     else if (modelStr.includes('fiat')) brandIcon = '#icon-brand-fiat';
 
-    // Hjälpfunktion för att skapa smart input (Sparar plats och kod)
     const createInput = (key, val) => {
         const value = val || '';
-        // Sätter bredden till antal tecken + 2 (för lite luft). Minst 60px via CSS.
         return `<input class="spec-input" 
                        value="${value}" 
                        style="width: ${value.length + 3}ch;" 
@@ -794,6 +801,7 @@ function generateTechSpecHTML(data, regnr) {
                        onchange="saveTechSpec('${regnr}', '${key}', this.value)">`;
     };
 
+    // FIX 6: Tog bort kolon inuti <b> taggarna
     return `
         <div class="tech-header-main">
            <svg class="brand-icon-svg"><use href="${brandIcon}"></use></svg>
@@ -802,38 +810,38 @@ function generateTechSpecHTML(data, regnr) {
         <ul class="tech-list">
             <li>
                 <svg class="spec-icon-svg"><use href="#icon-car-v2"></use></svg> 
-                <span><b>Bil:</b> ${createInput('model', data.model)}</span>
+                <span><b>Bil</b> ${createInput('model', data.model)}</span>
             </li>
             <li>
                 <svg class="spec-icon-svg"><use href="#icon-belt-v2"></use></svg> 
-                <span><b>Kamrem:</b> ${createInput('timing_belt', data.timing_belt)}</span>
+                <span><b>Kamrem</b> ${createInput('timing_belt', data.timing_belt)}</span>
             </li>
             
             <li>
                 <svg class="spec-icon-svg"><use href="#icon-engine-v2"></use></svg> 
-                <span><b>Motor:</b> ${createInput('engine', data.engine)}</span>
+                <span><b>Motor</b> ${createInput('engine', data.engine)}</span>
             </li>
             <li>
                 <svg class="spec-icon-svg"><use href="#icon-torque-v2"></use></svg> 
-                <span><b>Moment:</b> ${createInput('torque', data.torque)}</span>
+                <span><b>Moment</b> ${createInput('torque', data.torque)}</span>
             </li>
 
             <li>
                 <svg class="spec-icon-svg"><use href="#icon-oil-v2"></use></svg> 
-                <span><b>Olja:</b> ${createInput('oil', data.oil)}</span>
+                <span><b>Olja</b> ${createInput('oil', data.oil)}</span>
             </li>
             <li>
                 <svg class="spec-icon-svg"><use href="#icon-battery-v2"></use></svg> 
-                <span><b>Batteri:</b> ${createInput('battery', data.battery)}</span>
+                <span><b>Batteri</b> ${createInput('battery', data.battery)}</span>
             </li>
 
             <li>
                 <svg class="spec-icon-svg"><use href="#icon-ac-v2"></use></svg> 
-                <span><b>AC:</b> ${createInput('ac', data.ac)}</span>
+                <span><b>AC</b> ${createInput('ac', data.ac)}</span>
             </li>
             <li>
                 <svg class="spec-icon-svg"><use href="#icon-weight-v2"></use></svg> 
-                <span><b>Drag:</b> ${createInput('tow_weight', data.tow_weight)}</span>
+                <span><b>Drag</b> ${createInput('tow_weight', data.tow_weight)}</span>
             </li>
         </ul>
     `;
