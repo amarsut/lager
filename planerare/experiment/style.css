@@ -1282,7 +1282,7 @@ ul.tech-list li span {
 /* _____ MOBILVY NEDAN ______ */
 
 /* =========================================
-   MOBIL-OPTIMERING - FINAL V7 (CLEAN & BOXY)
+   MOBIL-OPTIMERING - FINAL V8 (EXAKT ENLIGT BILD & ÖNSKEMÅL)
    ========================================= */
 
 @media (max-width: 768px) {
@@ -1291,7 +1291,7 @@ ul.tech-list li span {
     html, body { 
         overflow-x: hidden; 
         overflow-y: auto !important; 
-        background-color: #F8FAFC !important; /* Mycket ljus gråblå ton */
+        background-color: #F8FAFC !important; 
     }
     
     /* Dölj desktop-element */
@@ -1315,25 +1315,26 @@ ul.tech-list li span {
     /* --- KORTET --- */
     .job-card-new {
         background: #FFFFFF;
-        border: 1px solid #CBD5E1; /* Lite tydligare kant */
-        border-radius: 4px; /* PUNKT 3: Nästan fyrkantiga */
+        border: 1px solid #CBD5E1;
+        border-radius: 4px; /* Nästan fyrkantiga */
         margin-bottom: 12px;
         box-shadow: 0 1px 2px rgba(0,0,0,0.02);
         overflow: hidden;
         display: flex; flex-direction: column;
     }
 
-    /* 1. Header (Slimmad & Ej Fetstilt) */
+    /* 1. Header (Specifik blå färg) */
     .card-header-strip {
-        padding: 6px 12px; /* PUNKT 4: Smalare header */
+        padding: 6px 12px;
         display: flex; 
         justify-content: space-between; 
         align-items: center;
         border-bottom: 1px solid rgba(0,0,0,0.05);
+        color: white; /* Vit text i headern ser oftast bäst ut mot färgad bakgrund */
     }
 
-    /* Statusfärger (Bakgrund) */
-    .bg-bokad      { background-color: #E0F2FE; } /* Bild 2 Blå */
+    /* Statusfärger (Bakgrund) - Uppdaterad blå */
+    .bg-bokad      { background-color: #8ABCE6; } /* Matchar din bild (himmelsblå/matt) */
     .bg-klar       { background-color: #DCFCE7; }
     .bg-faktureras { background-color: #F3E8FF; }
     .bg-offererad  { background-color: #F1F5F9; }
@@ -1342,36 +1343,44 @@ ul.tech-list li span {
     /* Regnr text (Vänster i header) */
     .header-reg-group {
         display: flex; align-items: center; gap: 8px;
-        font-weight: 400; /* PUNKT 2 & 3: Ej fetstilt */
+        font-weight: 400; 
         font-size: 0.95rem; 
         letter-spacing: 0.5px;
         text-transform: uppercase;
+        color: #fff; /* Vit text för Bokad (blå bakgrund) */
     }
-    /* Färger på Regnr-texten */
-    .bg-bokad .header-reg-group      { color: #0284C7; }
-    .bg-klar .header-reg-group       { color: #16A34A; }
-    .bg-faktureras .header-reg-group { color: #7E22CE; }
-    .bg-offererad .header-reg-group  { color: #334155; }
-    .bg-avbokad .header-reg-group    { color: #DC2626; }
+    
+    /* Justera textfärg för ljusa bakgrunder */
+    .bg-klar .header-reg-group, 
+    .bg-faktureras .header-reg-group,
+    .bg-offererad .header-reg-group,
+    .bg-avbokad .header-reg-group { 
+        color: #334155; 
+    }
 
     /* Status Badge (Höger i header) */
     .header-status-badge {
         font-size: 0.7rem; 
-        font-weight: 600; /* Lite fetare än regnr för läsbarhet, men inte bold */
+        font-weight: 600;
         text-transform: uppercase;
-        background: rgba(255,255,255,0.8);
+        background: rgba(255,255,255,0.25); /* Genomskinlig vit */
         padding: 2px 6px; 
         border-radius: 3px;
+        color: #fff;
     }
-    /* Textfärg i badgen */
-    .bg-bokad .header-status-badge      { color: #0284C7; }
-    .bg-klar .header-status-badge       { color: #16A34A; }
-    .bg-faktureras .header-status-badge { color: #7E22CE; }
-    .bg-offererad .header-status-badge  { color: #334155; }
+    /* Mörkare text för ljusa bakgrunder */
+    .bg-klar .header-status-badge,
+    .bg-faktureras .header-status-badge,
+    .bg-offererad .header-status-badge,
+    .bg-avbokad .header-status-badge {
+        color: #334155;
+        background: rgba(0,0,0,0.05);
+    }
+
 
     /* 2. Body (Innehåll) */
     .card-body {
-        padding: 12px 12px 0 12px; /* Ingen padding botten pga pris-raden */
+        padding: 12px;
         display: flex; flex-direction: column; 
         gap: 8px; 
     }
@@ -1393,40 +1402,46 @@ ul.tech-list li span {
     .row-label svg, .header-reg-group svg {
         width: 16px !important; height: 16px !important;
         min-width: 16px; min-height: 16px;
-        color: inherit; opacity: 0.8;
+        color: inherit; opacity: 0.9;
     }
-    .header-reg-group svg { opacity: 1; } 
 
-    /* PUNKT 2: Vanlig snygg text till höger */
+    /* Vanlig snygg text till höger (inklusive pris) */
     .row-value {
         font-weight: 400; /* Regular */
-        color: #0F172A;   /* Mörk färg för kontrast */
+        color: #0F172A;   /* Mörk färg */
         text-align: right;
         font-size: 0.95rem;
     }
 
-    /* 3. Pris-raden (Med linjer) */
-    .price-row-wrapper {
-        margin-top: 8px;
-        padding: 10px 12px; /* Padding inuti linjerna */
-        border-top: 1px solid #E2E8F0;    /* Linje OVANFÖR */
-        border-bottom: 1px solid #E2E8F0; /* PUNKT 1: Linje UNDER (Avskärmar kommentar) */
-        background-color: #FAFAFA; /* Svagt, svagt grå för att markera sektionen */
-        
-        display: flex; justify-content: space-between; align-items: center;
+    /* 3. Kommentarer (Ersätter platsen där priset var förut) */
+    .card-comments-section {
+        margin-top: 4px;
+        padding: 10px 12px;
+        background-color: #F8FAFC; /* Ljusgrå bakgrund likt tidigare pris-fält */
+        border-top: 1px solid #E2E8F0;
+        display: flex; 
+        align-items: center;
+        gap: 8px;
+        overflow: hidden; /* För att hantera lång text */
     }
     
-    .price-label { color: #334155; font-weight: 500; font-size: 0.9rem; }
-    .price-value { font-size: 1.1rem; font-weight: 600; color: #0F172A; }
-
-    /* 4. Kommentar (Ligger nu under den undre linjen) */
-    .card-footer-comment {
-        padding: 10px 12px;
-        background: #FFFFFF;
-        display: flex; gap: 8px; align-items: flex-start;
-    }
     .comment-text {
-        font-size: 0.85rem; color: #475569; font-style: italic; line-height: 1.4;
+        font-size: 0.85rem; 
+        color: #475569; 
+        font-style: italic; 
+        
+        /* Magi för att klippa texten snyggt på en rad */
+        white-space: nowrap; 
+        overflow: hidden;
+        text-overflow: ellipsis;
+        width: 100%;
+        display: block;
+    }
+    
+    .card-comments-section svg {
+        flex-shrink: 0;
+        width: 16px; height: 16px;
+        color: #94A3B8;
     }
 
     /* --- MENY --- */
