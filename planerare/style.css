@@ -1280,6 +1280,31 @@ ul.tech-list li span {
     transform: scale(1.05);
 }
 
+/* FIX DATORVY 3: Stäng-knappen i modalen (Fordonsdata) */
+#vehicleModalClose {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid transparent;
+    background-color: transparent; /* Ta bort grå bakgrund */
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+#vehicleModalClose:hover {
+    background-color: #f3f4f6;
+    color: #111;
+}
+/* Se till att SVG syns */
+#vehicleModalClose svg {
+    width: 24px;
+    height: 24px;
+    display: block;
+}
+
 /* _____ MOBILVY NEDAN ______ */
 /* _____ MOBILVY NEDAN ______ */
 /* _____ MOBILVY NEDAN ______ */
@@ -1828,5 +1853,95 @@ ul.tech-list li span {
     #mobileAddJobBtn svg { width: 24px !important; height: 24px !important; color: inherit !important; }
     #mobileAddJobBtn:active { color: #111 !important; }
     
+    #mobileSearchModal {
+	    position: fixed !important;
+	    top: 0; left: 0; right: 0; bottom: 0;
+	    z-index: 99999 !important; /* Extremt högt z-index */
+	    background: #fff;
+	    display: none; /* Dold som standard */
+	}
+
+	#mobileSearchModal.show {
+	    display: block !important;
+	}
+}
+
+/* =========================================
+   FIX FÖR DATORVY: TEKNISK DATA (MAXIMAL KOMPAKTNESS)
+   Gäller endast skärmar bredare än 768px
+   ========================================= */
+@media (min-width: 769px) {
+
+    /* Behållaren: Grid med 2 kolumner */
+    ul.tech-list {
+        display: grid;
+        grid-template-columns: 1fr 1fr; /* Två kolumner */
+        gap: 6px; /* EXTREMT TÄT: Minskat avstånd mellan rutorna */
+        border: none;
+        background: transparent;
+        padding: 0;
+        margin: 0;
+        list-style: none;
+    }
+
+    /* Varje "kort" (Rad) */
+    ul.tech-list li {
+        display: flex; 
+        align-items: stretch;
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 4px; /* Mindre rundning för super-kompakt känsla */
+        overflow: hidden;
+        min-height: 34px; /* MINSKAD HÖJD: Tvinga ner höjden */
+    }
+
+    /* Vänster del (Ikon + Label) */
+    .spec-label-col {
+        width: 80px; /* ÄNNU SMALARE: Ger maximalt utrymme till värdet */
+        flex-shrink: 0;
+        background-color: #f8fafc;
+        border-right: 1px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        gap: 4px; /* Mindre gap mellan ikon och text */
+        padding: 4px 8px; /* MINSKAD LUFT: Liten padding inuti */
+        font-weight: 600;
+        color: #64748b;
+        font-size: 0.75rem; /* Mindre text för etiketten */
+    }
+
+    /* Höger del (Värdet/Input) */
+    .spec-value-col {
+        flex-grow: 1;
+        display: flex;
+        align-items: center;
+        padding: 0 10px;
+        background-color: #fff;
+        min-width: 0; 
+        overflow: hidden; /* Hantera överflöd */
+    }
     
+    /* Input-fältet på dator */
+    .spec-input {
+        width: 100%;
+        border: none;
+        background: transparent;
+        font-size: 0.85rem; /* Lätt mindre storlek */
+        color: #0f172a;
+        font-weight: 500;
+        outline: none;
+        padding: 4px 0; /* MAXIMAL KOMPAKTNESS: Nästan ingen vertikal padding */
+        
+        /* FIX för att visa lång text och hantera overflow (t.ex. BMW 335i...) */
+        white-space: nowrap; /* Håll texten på en rad */
+        overflow: hidden; 
+        text-overflow: ellipsis; /* Visa ... om texten är för lång */
+    }
+    
+    /* Ikoner */
+    .spec-icon-svg {
+        width: 13px; 
+        height: 13px;
+        color: #94a3b8;
+    }
 }
