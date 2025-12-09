@@ -1275,164 +1275,254 @@ ul.tech-list li span {
     transform: scale(1.05);
 }
 
-
+/* _____ MOBILVY NEDAN ______ */
+/* _____ MOBILVY NEDAN ______ */
+/* _____ MOBILVY NEDAN ______ */
+/* _____ MOBILVY NEDAN ______ */
 /* _____ MOBILVY NEDAN ______ */
 
 /* =========================================
-   MOBIL-OPTIMERING - PIXEL PERFECT (Bild-matchning)
+   MOBIL-OPTIMERING - PREMIUM UI
    ========================================= */
 
 @media (max-width: 768px) {
     
-    /* GRUND */
+    /* --- GRUND & SETUP --- */
     .app-layout { display: block !important; height: auto !important; overflow: visible !important; }
-    html, body { overflow-x: hidden; overflow-y: auto !important; background-color: #F8FAFC; }
+    html, body { 
+        overflow-x: hidden; 
+        overflow-y: auto !important; 
+        background-color: #F8FAFC; /* Slate-50: En mycket ljus, krispig gråblå ton */
+    }
 
-    /* DÖLJ DESKTOP */
+    /* DÖLJ DESKTOP-ELEMENT */
     .sidebar, .top-bar, #jobsTable thead, .header-cta-btn, .top-search-container, .divider-vertical { display: none !important; }
     .top-bar-actions .icon-btn:not(#headerPrivacyToggle) { display: none; }
 
     .mobile-only { display: block; }
-    .main-content { padding: 16px; padding-bottom: 100px; width: 100%; margin: 0; }
+    .main-content { padding: 20px; padding-bottom: 120px; width: 100%; margin: 0; }
 
-    /* HEADER */
-    .mobile-header { display: flex; align-items: center; gap: 14px; margin-bottom: 24px; padding-top: 8px; }
+    /* --- HEADER (Datum & Meny) --- */
+    .mobile-header { display: flex; align-items: center; gap: 16px; margin-bottom: 30px; padding-top: 10px; }
     .header-blue-btn {
-        width: 42px; height: 42px;
+        width: 44px; height: 44px;
         background: #2563EB; color: white;
-        border-radius: 12px; border: none;
+        border-radius: 14px; border: none;
         display: flex; align-items: center; justify-content: center;
-        box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
+        box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25); /* Djupare skugga */
+        transition: transform 0.2s;
     }
-    .header-date-group { display: flex; flex-direction: column; line-height: 1.1; }
-    .header-day { font-size: 0.75rem; font-weight: 700; color: #64748B; letter-spacing: 0.5px; text-transform: uppercase; }
-    .header-date { font-size: 1.25rem; font-weight: 800; color: #0F172A; }
+    .header-blue-btn:active { transform: scale(0.95); }
+    
+    .header-date-group { display: flex; flex-direction: column; justify-content: center; }
+    .header-day { font-size: 0.75rem; font-weight: 700; color: #94A3B8; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px; }
+    .header-date { font-size: 1.5rem; font-weight: 800; color: #0F172A; letter-spacing: -0.5px; line-height: 1; }
 
-    /* DATUM RUBRIK (Fre 12 Dec.) */
+
+    /* --- STATISTIK - CLEAN GRID --- */
+    .stat-bar {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-bottom: 40px;
+    }
+
+    .stat-card {
+        background: #ffffff;
+        border-radius: 16px;
+        padding: 16px;
+        min-height: 80px;
+        border: 1px solid rgba(226, 232, 240, 0.6); /* Mycket subtil ram */
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.01), 0 2px 4px -1px rgba(0, 0, 0, 0.01);
+        display: flex; flex-direction: column; justify-content: space-between;
+    }
+
+    .stat-card:last-child { grid-column: span 2; flex-direction: row; align-items: center; }
+    .stat-card:last-child .stat-card-value { margin-top: 0; margin-left: auto; }
+    
+    #stat-card-kommande { background: linear-gradient(145deg, #ffffff, #f8fafc); border-bottom: 2px solid #3B82F6; }
+
+    .stat-card-title { font-size: 0.7rem; color: #64748B; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+    .stat-card-title svg { display: none; }
+    .stat-card-value { font-size: 1.6rem; font-weight: 800; color: #1E293B; margin-top: 4px; line-height: 1; letter-spacing: -1px; }
+    
+    #stat-card-kommande .stat-card-value { color: #2563EB; }
+    #stat-card-faktureras .stat-card-value { color: #D946EF; }
+    #stat-card-klar .stat-card-value { color: #10B981; }
+
+
+    /* --- NYA DATUM-RUBRIKER --- */
+    /* Minimalistisk och snygg */
     .date-separator {
-        font-size: 1.1rem; 
-        font-weight: 800; 
-        color: #0F172A; 
-        margin: 24px 0 16px 0;
-        padding-bottom: 8px;
-        border-bottom: 1px solid #E2E8F0; /* Tunn linje under */
+        display: flex; align-items: center; gap: 12px;
+        margin: 30px 0 16px 0;
+    }
+    .date-separator span {
+        font-size: 0.85rem; 
+        font-weight: 700; 
+        color: #64748B; 
+        text-transform: uppercase; 
+        letter-spacing: 1px;
+        background: #F8FAFC; 
+        padding-right: 12px;
+        white-space: nowrap;
+    }
+    /* Linjen efter datumet */
+    .date-separator::after {
+        content: "";
+        flex-grow: 1;
+        height: 1px;
+        background: #E2E8F0;
     }
 
-    /* JOBB KORTET */
+
+    /* --- PREMIUM JOB CARD --- */
     .job-card {
         background: #ffffff;
-        border-radius: 20px; /* Mer rundade hörn som på bilden */
-        padding: 18px 22px;  /* Mer luft inuti */
+        border-radius: 18px;
         margin-bottom: 16px;
-        border: 1px solid #F1F5F9; 
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04); /* Mjuk skugga */
-        display: flex; 
-        flex-direction: column; 
-        gap: 6px; /* Avstånd mellan raderna */
+        padding: 0; /* Vi paddingar internt */
+        position: relative;
+        overflow: hidden; /* För den färgade kanten */
+        
+        /* Premium Shadow: Soft & Diffused */
+        box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.04), 0 4px 10px -2px rgba(0, 0, 0, 0.01);
+        border: 1px solid rgba(255,255,255,1);
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    
+    .job-card:active { transform: scale(0.98); }
+
+    /* Vänster kantlinje som indikerar status */
+    .job-card::before {
+        content: '';
+        position: absolute; left: 0; top: 0; bottom: 0;
+        width: 5px;
+        background: #CBD5E1; /* Default grå */
+    }
+    .job-card.status-bokad::before { background: #3B82F6; }
+    .job-card.status-klar::before { background: #10B981; }
+    .job-card.status-faktureras::before { background: #A855F7; }
+
+    /* Inre container för padding (så vi inte krockar med kanten) */
+    .card-content {
+        padding: 18px 20px 18px 24px; /* Lite extra padding vänster pga kanten */
+        display: flex; flex-direction: column; gap: 12px;
     }
 
-    /* RAD 1: TID & STATUS */
-    .card-top-row {
-        display: flex; justify-content: space-between; align-items: flex-start;
-        margin-bottom: 2px;
+    /* --- RAD 1: Tid & Status --- */
+    .card-meta-row {
+        display: flex; justify-content: space-between; align-items: center;
     }
-    .card-time { 
-        font-size: 0.9rem; 
-        font-weight: 400; 
-        color: #64748B; /* Grå färg på tiden */
+    
+    .time-badge {
+        display: flex; align-items: center; gap: 6px;
+        font-size: 0.85rem; font-weight: 600; color: #64748B;
+        background: #F1F5F9; padding: 4px 10px; border-radius: 8px;
     }
-    .status-badge-pill {
-        font-size: 0.75rem; 
-        font-weight: 700; 
-        padding: 4px 12px; 
-        border-radius: 8px;
-        background: #EFF6FF; color: #3B82F6; /* Ljusblå bakgrund, blå text */
-    }
-    .status-badge-pill.klar { background: #DCFCE7; color: #16A34A; }
+    .time-badge svg { width: 14px; height: 14px; color: #94A3B8; }
 
-    /* RAD 2: NAMN & PRIS */
-    .card-mid-row {
-        display: flex; justify-content: space-between; align-items: baseline;
-        margin-bottom: 8px;
+    .status-pill {
+        font-size: 0.7rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;
+        padding: 4px 10px; border-radius: 20px;
     }
+    .status-bokad .status-pill { background: #EFF6FF; color: #3B82F6; }
+    .status-klar .status-pill { background: #ECFDF5; color: #059669; }
+    .status-faktureras .status-pill { background: #FAF5FF; color: #7E22CE; }
+
+
+    /* --- RAD 2: Namn & Pris --- */
+    .card-main-info {
+        display: flex; justify-content: space-between; align-items: flex-end;
+    }
+    
+    .customer-info { display: flex; flex-direction: column; gap: 2px; }
+    
     .customer-name { 
-        font-size: 1.35rem; /* Större text */
-        font-weight: 800;   /* Mycket fetare text */
-        color: #0F172A; 
-        text-transform: uppercase;
-        letter-spacing: -0.5px;
-    }
-    .price-tag { 
-        font-size: 1.2rem; 
+        font-size: 1.25rem; 
         font-weight: 800; 
-        color: #0F172A; 
+        color: #1E293B; 
+        letter-spacing: -0.3px;
+        line-height: 1.2;
     }
+    
+    .price-display {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #0F172A;
+        text-align: right;
+    }
+    /* Liten etikett under priset för "proffsighet" */
+    .price-label { display: block; font-size: 0.65rem; color: #94A3B8; font-weight: 600; text-transform: uppercase; text-align: right; margin-bottom: 2px; }
 
-    /* RAD 3: REGNR & CHECK-KNAPP */
-    .card-bot-row {
+    /* --- RAD 3: Regnr & Actions --- */
+    .card-footer {
         display: flex; justify-content: space-between; align-items: center;
+        margin-top: 4px; padding-top: 14px;
+        border-top: 1px dashed #E2E8F0; /* Separator */
     }
 
-    /* Den enkla grå Reg-boxen */
-    .reg-tag-simple {
-        display: inline-block; 
-        background: #F1F5F9; /* Ljusgrå */
-        color: #475569;      /* Mörkgrå text */
-        padding: 6px 12px; 
-        border-radius: 6px; 
-        font-weight: 700; 
-        font-size: 0.8rem;
-        letter-spacing: 0.5px;
+    /* Modern Reg-skylt (Tag style) */
+    .reg-badge-modern {
+        display: flex; align-items: center; gap: 8px;
+        font-family: 'Roboto Mono', monospace;
+        font-weight: 700; font-size: 0.9rem;
+        color: #334155;
     }
-
-    /* Check-knappen (Cirkel outline) */
-    .check-btn-outline {
-        width: 38px; height: 38px; 
-        border-radius: 50%;
-        background: transparent;
-        border: 2px solid #22C55E; /* Grön ram */
-        color: #22C55E;            /* Grön ikon */
+    .car-icon-circle {
+        width: 28px; height: 28px; border-radius: 50%;
+        background: #F1F5F9; color: #64748B;
         display: flex; align-items: center; justify-content: center;
-        transition: all 0.2s;
+    }
+    .car-icon-circle svg { width: 14px; height: 14px; }
+
+    /* Check Button: Stor, tydlig, "satisfying" */
+    .action-btn-check {
+        width: 44px; height: 44px;
+        border-radius: 14px;
+        border: none;
+        display: flex; align-items: center; justify-content: center;
         cursor: pointer;
-    }
-    .check-btn-outline:active { transform: scale(0.95); }
-    
-    /* Om man vill ha den fylld när den är "klar", lägg till .checked */
-    .check-btn-outline.checked { 
-        background: #DCFCE7; /* Ljusgrön fyllning vid klar? Eller behåll vit */
-        /* Om du vill ha exakt som bilden verkar den vara vit inuti med grön ram även när den är checkad */
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
     
-    .check-btn-outline svg { width: 22px; height: 22px; stroke-width: 3px; }
+    /* Ej klar: Grå outline, diskret */
+    .action-btn-check.pending {
+        background: #F8FAFC;
+        border: 2px solid #E2E8F0;
+        color: #CBD5E1;
+    }
+    /* Klar: Grön, fylld, lysande */
+    .action-btn-check.done {
+        background: #10B981;
+        border: 2px solid #10B981;
+        color: white;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+    
+    .action-btn-check svg { width: 22px; height: 22px; stroke-width: 3px; }
 
-    /* MENY (Oförändrad layout, bara stiljustering) */
+
+    /* --- NAVIGATION --- */
     .mobile-nav {
-        position: fixed; bottom: 0; left: 0; right: 0;
-        background: #ffffff; height: 74px;
-        display: flex; justify-content: space-between; align-items: center;
-        padding: 0 24px;
-        border-top: 1px solid #F1F5F9; z-index: 9999;
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px); /* Glas-effekt */
+        height: 80px; padding-bottom: 10px;
+        border-top: 1px solid rgba(0,0,0,0.05);
+        box-shadow: 0 -4px 20px rgba(0,0,0,0.02);
     }
-    .mobile-nav-item {
-        background: none; border: none; flex: 1;
-        display: flex; flex-direction: column; align-items: center; justify-content: center;
-        gap: 6px; color: #94A3B8; cursor: pointer;
+    .mobile-nav-item.active { color: #2563EB; position: relative; }
+    /* Liten prick under aktiv ikon */
+    .mobile-nav-item.active::after {
+        content: ''; position: absolute; bottom: -8px; 
+        width: 4px; height: 4px; border-radius: 50%; background: #2563EB;
     }
-    .mobile-nav-item.active { color: #2563EB; }
-    .mobile-nav-item svg { width: 24px; height: 24px; stroke-width: 2px; }
-    .mobile-nav-item span { font-size: 0.7rem; font-weight: 600; }
-    
-    #mobileAddJobBtn {
-        width: 56px; height: 56px;
-        border-radius: 50%;
-        background: #2563EB; color: white; border: none;
-        display: flex; justify-content: center; align-items: center;
-        transform: translateY(-20px);
-        box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4);
-    }
-    #mobileAddJobBtn svg { width: 28px; height: 28px; stroke-width: 2.5px; }
 
-    /* Dölj stat-bar om du vill ha exakt den rena listan från bilden, 
-       annars låt den ligga kvar ovanför */
+    #mobileAddJobBtn {
+        width: 60px; height: 60px;
+        background: linear-gradient(135deg, #3B82F6, #2563EB);
+        box-shadow: 0 10px 25px rgba(37, 99, 235, 0.4);
+        transform: translateY(-25px);
+        border: 4px solid #fff; /* Vit ram runt knappen för separation */
+    }
 }
