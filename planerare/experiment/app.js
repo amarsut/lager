@@ -125,9 +125,20 @@ function updateHeaderDate() {
     }
 }
 
-// --- HJÄLPFUNKTION: Skapa Mobilkortet (NY DESIGN) ---
+// Definiera ikoner som variabler för enklare hantering (kan läggas utanför funktionen)
+const ICONS = {
+    CAR: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 20a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h10z"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/><path d="M5 10H19"/></svg>',
+    USER: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+    CALENDAR: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
+    CLOCK: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+    PRICE: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',
+    COMMENT: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>'
+};
+
+
+// --- HJÄLPFUNKTION: Skapa Mobilkortet (FINAL LIST V5) ---
 function createJobCard(job) {
-    // Formatera datum och tid exakt som önskat
+    // Formatera datum och tid
     const d = new Date(job.datum);
     const dateStr = d.toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' });
     const timeStr = d.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
@@ -136,44 +147,74 @@ function createJobCard(job) {
     const regNr = (job.regnr && job.regnr.toUpperCase() !== 'OKÄNT') ? job.regnr.toUpperCase() : '---';
     const customer = job.kundnamn || 'Okänd';
     const statusRaw = job.status || 'bokad';
-    const statusText = statusRaw.charAt(0).toUpperCase() + statusRaw.slice(1);
+    const statusText = statusRaw.charAt(0).toUpperCase() + statusRaw.slice(1).toUpperCase(); // ALLA BOKSTÄVER STORA FÖR ATT MATCHA BILDEN
 
+    // Hämta kommentar (Antar att fältet heter 'kommentar' eller är tomt om det saknas)
+    const comment = job.kommentar || 'Ingen kommentar tillagd.';
+    const hasComment = job.kommentar && job.kommentar.length > 0;
+    
+    // Använd en ny klass för slutgiltig styling
     return `
-    <div class="job-card-list-v4" onclick="openEditModal('${job.id}')">
+    <div class="job-card-list-v5" onclick="openEditModal('${job.id}')">
         
-        <div class="list-data-grid-v4">
+        <div class="list-data-grid-v5">
         
-            <div class="info-row-v4">
-                <span class="info-label">Reg.nr</span>
+            <div class="info-row-v5">
+                <span class="info-label-v5">
+                    <span class="icon-v5">${ICONS.CAR}</span>
+                    Reg.nr
+                </span>
                 <span class="info-value reg-value">${regNr}</span>
             </div>
 
-            <div class="info-row-v4">
-                <span class="info-label">Namn</span>
-                <span class="info-value name-value">${customer}</span>
+            <div class="info-row-v5">
+                <span class="info-label-v5">
+                    <span class="icon-v5">${ICONS.USER}</span>
+                    Namn
+                </span>
+                <span class="info-value name-value">${customer.toUpperCase()}</span>
             </div>
 
-            <div class="info-row-v4">
-                <span class="info-label">Datum</span>
-                <span class="info-value date-value">${dateStr}</span>
+            <div class="info-row-v5">
+                <span class="info-label-v5">
+                    <span class="icon-v5">${ICONS.CALENDAR}</span>
+                    Datum
+                </span>
+                <span class="info-value date-value">${dateStr.toUpperCase()}</span>
             </div>
 
-            <div class="info-row-v4">
-                <span class="info-label">Tid</span>
+            <div class="info-row-v5">
+                <span class="info-label-v5">
+                    <span class="icon-v5">${ICONS.CLOCK}</span>
+                    Tid
+                </span>
                 <span class="info-value time-value">${timeStr}</span>
             </div>
 
-            <div class="info-row-v4">
-                <span class="info-label">Status</span>
-                <span class="info-value status-text status-${statusRaw}">${statusText}</span>
+            <div class="info-row-v5 status-row-v5 status-color-${statusRaw}">
+                <span class="info-label-v5">Status</span>
+                <span class="info-value status-value">${statusText}</span>
             </div>
 
-            <div class="info-row-v4 price-row">
-                <span class="info-label">Att betala</span>
+            <div class="info-row-v5 price-row-v5">
+                <span class="info-label-v5">
+                    <span class="icon-v5">${ICONS.PRICE}</span>
+                    Att betala
+                </span>
                 <span class="info-value price-value">${price}</span>
             </div>
             
         </div>
+
+        ${hasComment ? `
+            <div class="job-card-comment-v5">
+                <span class="comment-label-v5">
+                    <span class="icon-v5">${ICONS.COMMENT}</span>
+                    KOMMENTAR
+                </span>
+                <p>${comment}</p>
+            </div>
+        ` : ''}
 
     </div>`;
 }
