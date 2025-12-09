@@ -103,56 +103,71 @@ function renderDashboard() {
 }
 
 function createJobCard(job) {
-    const statusText = {
-        'bokad': 'Bokad', 'klar': 'Slutfört', 'faktureras': 'Fakturering', 'offererad': 'Offererad', 'avbokad': 'Avbokad'
-    };
-    
-    // Enkel datumformat för mobil (t.ex. "Idag 14:00" eller "Ons 12 dec")
-    let dateDisplay = "---";
+    // Enkel datumformat
+    let dateDisplay = '<span style="color:#ccc;">Ingen datum</span>';
     if (job.datum) {
         const d = new Date(job.datum);
         const now = new Date();
-        const isToday = d.toDateString() === now.toDateString();
-        
         const timeStr = d.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
         
-        if (isToday) {
-            dateDisplay = `Idag ${timeStr}`;
+        if (d.toDateString() === now.toDateString()) {
+            dateDisplay = `<span style="color:#3b82f6; font-weight:700;">Idag ${timeStr}</span>`;
         } else {
-            const dateStr = d.toLocaleDateString('sv-SE', { weekday: 'short', day: 'numeric', month: 'short' });
+            // T.ex. "Mån 12 okt"
+            let dateStr = d.toLocaleDateString('sv-SE', { weekday: 'short', day: 'numeric', month: 'short' });
+            // Ta bort punkter från förkortningar (t.ex. "mån." -> "mån")
+            dateStr = dateStr.replace(/\./g, '');
+            // Gör första bokstaven stor
+            dateStr = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
             dateDisplay = `${dateStr} • ${timeStr}`;
         }
     }
 
-    const price = job.kundpris ? `${job.kundpris} kr` : '0 kr';
-    const regNr = (job.regnr && job.regnr !== 'OKÄNT') ? job.regnr : '---';
+    const price = job.kundpris ? Number(job.kundpris).toLocaleString('sv-SE') + ' kr' : '0 kr';
+    const regNr = (job.regnr && job.regnr.toUpperCase() !== 'OKÄNT') ? job.regnr.toUpperCase() : null;
+    const customerName = job.kundnamn || 'Okänd kund';
+    
+    // Avgör ikon för kundtyp (Företag/Privat) - valfritt
+    const nameLower = customerName.toLowerCase();
+    const isCorporate = ['ab', 'bmg', 'fogarolli'].some(c => nameLower.includes(c));
+    const customerIconId = isCorporate ? '#icon-office-building' : '#icon-user';
 
+    let commentHtml = '';
+    if (job.kommentar) {
+        const truncComment = job.kommentar.length > 30 ? job.kommentar.substring(0,30)+'...' : job.kommentar;
+        commentHtml = `
+            <div class="job-card-comment">
+                <svg class="icon-sm" style="width:16px; height:16px; color:#9ca3af;"><use href="#icon-chat-bubble"></use></svg>
+                <span>${truncComment}</span>
+            </div>`;
+    }
+
+    // Lägg till status-klass på kortet för färgkanten
     return `
-        <div class="job-card" onclick="openEditModal('${job.id}')">
+        <div class="job-card status-${job.status}" onclick="openEditModal('${job.id}')">
             <div class="job-card-header">
                 <div class="job-card-date">
-                    <svg class="icon-sm" style="width:14px; height:14px;"><use href="#icon-calendar-day"></use></svg>
+                    <svg class="icon-sm" style="width:16px; height:16px; color:inherit;"><use href="#icon-calendar-day"></use></svg>
                     ${dateDisplay}
                 </div>
-                <span class="status-badge status-${job.status}" style="font-size:0.7rem; padding:4px 10px;">${statusText[job.status] || job.status}</span>
+                <span class="status-badge status-${job.status}" style="font-size:0.7rem; padding:3px 8px; border-radius:12px;">${job.status.charAt(0).toUpperCase() + job.status.slice(1)}</span>
             </div>
             
-            <div class="job-card-main">
+            <div style="display:flex; align-items:flex-start;">
                 <div class="job-card-info">
-                    <span class="job-card-customer">${job.kundnamn}</span>
-                    <span class="job-card-reg">${regNr}</span>
+                    <span class="job-card-customer">${customerName}</span>
+                    ${regNr ? `<span class="job-card-reg">${regNr}</span>` : ''}
                 </div>
-                <div class="job-card-price money-related">${price}</div>
+                <div class="job-card-price">${price}</div>
             </div>
 
             <div class="job-card-footer">
-                <div style="font-size:0.8rem; color:#6b7280;">
-                    ${job.kommentar ? '<svg class="icon-sm" style="width:14px; margin-right:4px; vertical-align:middle"><use href="#icon-chat"></use></svg> ' + (job.kommentar.length > 20 ? job.kommentar.substring(0,20)+'...' : job.kommentar) : ''}
-                </div>
-                <div class="job-card-actions">
+                ${commentHtml || '<div></div>'} <div class="job-card-actions">
+                    ${job.status !== 'klar' ? `
                     <button class="check-btn" onclick="event.stopPropagation(); setStatus('${job.id}', 'klar')">
-                        <svg class="icon-sm"><use href="#icon-check"></use></svg>
+                        <svg class="icon" style="width:20px; height:20px;"><use href="#icon-check"></use></svg>
                     </button>
+                    ` : ''}
                 </div>
             </div>
         </div>
@@ -1306,3 +1321,53 @@ window.openImageZoom = function(src) {
         };
     }
 };
+
+// --- MOBIL SÖK LOGIK ---
+
+// Koppla knappen i menyn till att öppna modalen
+document.getElementById('mobileSearchBtn')?.addEventListener('click', () => {
+    const searchModal = document.getElementById('mobileSearchModal');
+    const searchInput = document.getElementById('mobileSearchInput');
+    const resultsContainer = document.getElementById('mobileSearchResults');
+    
+    searchModal.classList.add('show');
+    searchInput.value = ''; // Rensa gammal sökning
+    resultsContainer.innerHTML = ''; // Rensa resultat
+    setTimeout(() => searchInput.focus(), 100); // Fokusera i fältet
+    
+    // Flytta "active" klassen i menyn
+    document.querySelectorAll('.mobile-nav-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById('mobileSearchBtn').classList.add('active');
+});
+
+// Stäng sök-modalen
+document.getElementById('closeMobileSearchBtn')?.addEventListener('click', () => {
+    document.getElementById('mobileSearchModal').classList.remove('show');
+    // Sätt tillbaka Hem som aktiv
+    document.querySelectorAll('.mobile-nav-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById('mobileHomeBtn').classList.add('active');
+});
+
+// Live-sökning när man skriver
+document.getElementById('mobileSearchInput')?.addEventListener('input', (e) => {
+    const term = e.target.value.toLowerCase();
+    const resultsContainer = document.getElementById('mobileSearchResults');
+    
+    if (term.length < 2) {
+        resultsContainer.innerHTML = '<p style="text-align:center; color:#9ca3af; margin-top:20px;">Skriv minst 2 tecken för att söka.</p>';
+        return;
+    }
+    
+    // Filtrera i allJobs arrayen
+    const filteredJobs = allJobs.filter(job => {
+        return (job.kundnamn && job.kundnamn.toLowerCase().includes(term)) ||
+               (job.regnr && job.regnr.toLowerCase().includes(term));
+    });
+    
+    if (filteredJobs.length === 0) {
+        resultsContainer.innerHTML = '<p style="text-align:center; color:#9ca3af; margin-top:20px;">Inga träffar.</p>';
+    } else {
+        // Använd samma snygga kort för resultaten
+        resultsContainer.innerHTML = filteredJobs.map(job => createJobCard(job)).join('');
+    }
+});
