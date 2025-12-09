@@ -1384,7 +1384,7 @@ ul.tech-list li span {
     }
 
     .card-header-strip {
-        padding: 6px 12px; display: flex; justify-content: space-between; align-items: center;
+        padding: 3px 12px; display: flex; justify-content: space-between; align-items: center;
         border-bottom: 1px solid rgba(0,0,0,0.1); color: white; 
     }
     
