@@ -1282,61 +1282,79 @@ ul.tech-list li span {
 /* _____ MOBILVY NEDAN ______ */
 
 /* =========================================
-   MOBIL-OPTIMERING - CLEAN LIST UI
+   MOBIL-OPTIMERING - FINAL SEPARERAD DESIGN
    ========================================= */
 
 @media (max-width: 768px) {
     
-    /* 1. GRUNDLÄGGANDE - REN BAKGRUND */
+    /* 1. NOLLSTÄLLNING & BAKGRUND */
     .app-layout { display: block !important; height: auto !important; overflow: visible !important; }
     
-    /* Ändrar bakgrunden till helt vit eller väldigt ljusgrå för att "ta bort" känslan av en bakgrundsbox */
+    /* Ljusgrå bakgrund för hela sidan så de vita korten "poppar" fram */
     html, body { 
         overflow-x: hidden; 
         overflow-y: auto !important; 
-        background-color: #FAFAFA; /* Extremt ljus grå, nästan vit */
+        background-color: #F3F4F6 !important; 
     }
 
     /* Dölj desktop-element */
     .sidebar, .top-bar, #jobsTable thead, .header-cta-btn, .top-search-container, .divider-vertical { display: none !important; }
     .top-bar-actions .icon-btn:not(#headerPrivacyToggle) { display: none; }
+    
+    /* --- VIKTIGT: TA BORT DEN STORA VITA RUTAN --- */
+    /* Detta tar bort bakgrunden från behållaren som omsluter alla jobb */
+    .table-container {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        padding: 0 !important;
+    }
 
     .mobile-only { display: block; }
-    /* Ta bort padding runt main-content för att få korten att kännas bredare om man vill, annars behåll padding */
-    .main-content { padding: 16px; padding-bottom: 100px; width: 100%; margin: 0; }
+    
+    /* Marginal på sidorna så korten inte nuddar skärmkanten */
+    .main-content { 
+        padding: 16px; 
+        padding-bottom: 100px; 
+        width: 100%; 
+        margin: 0; 
+        background: transparent !important; /* Säkerställ att main inte är vit */
+    }
 
 
     /* 2. HEADER */
     .mobile-header { display: flex; align-items: center; gap: 14px; margin-bottom: 24px; padding-top: 10px; }
     .header-blue-btn {
         width: 40px; height: 40px;
-        background: #111827; /* Svart/Mörkgrå istället för blå för premiumkänsla */
+        background: #111827; 
         color: white;
-        border-radius: 8px; /* Fyrkantigare */
+        border-radius: 8px;
         border: none;
         display: flex; align-items: center; justify-content: center;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
     .header-date-group { display: flex; flex-direction: column; line-height: 1.2; }
-    .header-day { font-size: 0.7rem; font-weight: 600; color: #6B7280; letter-spacing: 1px; text-transform: uppercase; }
-    .header-date { font-size: 1.1rem; font-weight: 700; color: #111; }
+    .header-day { font-size: 0.7rem; font-weight: 700; color: #6B7280; letter-spacing: 0.5px; text-transform: uppercase; }
+    .header-date { font-size: 1.2rem; font-weight: 800; color: #111; }
 
 
-    /* 3. STATISTIK (Förenklad) */
+    /* 3. STATISTIK */
     .stat-bar {
-        display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 30px;
+        display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 30px;
     }
     .stat-card {
         background: #fff;
-        border: 1px solid #E5E7EB;
-        border-radius: 6px; /* Fyrkantiga hörn */
-        padding: 12px;
-        box-shadow: none; /* Ingen skugga */
+        border: 1px solid #E5E7EB; /* Tunn ram istället för skugga */
+        border-radius: 12px;
+        padding: 14px;
+        /* Ingen skugga för en renare "flat" look, eller en väldigt mjuk: */
+        box-shadow: 0 1px 2px rgba(0,0,0,0.02);
     }
-    .stat-card-title { font-size: 0.65rem; color: #6B7280; font-weight: 600; text-transform: uppercase; }
+    .stat-card-title { font-size: 0.65rem; color: #6B7280; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;}
     .stat-card-title svg { display: none; }
-    .stat-card-value { font-size: 1.4rem; font-weight: 700; color: #111; margin-top: 4px; }
+    .stat-card-value { font-size: 1.5rem; font-weight: 800; color: #111; margin-top: 6px; }
     
-    /* Diskretare färger på siffrorna */
     #stat-card-kommande .stat-card-value { color: #2563EB; }
     #stat-card-faktureras .stat-card-value { color: #7C3AED; }
     #stat-card-klar .stat-card-value { color: #059669; }
@@ -1344,50 +1362,57 @@ ul.tech-list li span {
 
     /* 4. DATUM RUBRIKER */
     .date-separator {
-        font-size: 0.85rem; font-weight: 700; color: #374151;
-        margin: 25px 0 10px 2px;
+        font-size: 0.9rem; font-weight: 800; color: #374151;
+        margin: 30px 0 12px 4px; /* Lite extra luft ovanför */
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
 
 
-    /* 5. JOBB KORT - FYRKANTIG & STRIKT */
+    /* 5. JOBB KORT - SEPARERADE & RENARE */
     .job-card-clean {
         background: #FFFFFF;
-        border: 1px solid #E5E7EB; /* Tunn grå ram */
-        border-radius: 6px;        /* Liten radie för "snygg fyrkantighet" */
-        padding: 16px;
-        margin-bottom: 12px;
+        border: 1px solid #E5E7EB; 
+        border-radius: 12px; /* Lite mjukare hörn */
+        padding: 20px;
+        
+        /* HÄR ÄR ÄNDRINGEN FÖR ATT SEPARERA KORTEN: */
+        margin-bottom: 16px; 
+        
         display: flex;
         flex-direction: column;
-        gap: 8px; /* Avstånd mellan raderna */
-        /* Ingen skugga för en plattare, modern look */
+        gap: 10px;
         position: relative;
+        
+        /* En subtil skugga för att lyfta kortet från den grå bakgrunden */
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02); 
     }
 
     /* Klick-effekt */
-    .job-card-clean:active { background-color: #F9FAFB; border-color: #D1D5DB; }
+    .job-card-clean:active { 
+        background-color: #F9FAFB; 
+        transform: scale(0.98); 
+        transition: transform 0.1s;
+    }
 
-    /* Layout för raderna: Label (Vänster) - Value (Höger) */
     .info-row {
         display: flex;
         justify-content: space-between;
-        align-items: baseline; /* Justerar texten snyggt i höjdled */
+        align-items: baseline;
         font-size: 0.95rem;
+        padding: 2px 0; /* Lite luft per rad */
     }
 
-    /* Vänsterkolumnen: Etiketter */
     .info-label {
-        color: #6B7280; /* Mörkgrå text */
-        font-weight: 500;
-        font-size: 0.9rem;
+        color: #6B7280; 
+        font-weight: 600;
+        font-size: 0.85rem;
         flex-shrink: 0;
-        width: 100px; /* Fast bredd så allt linjerar snyggt */
+        width: 90px;
     }
 
-    /* Högerkolumnen: Värden */
     .info-value {
-        color: #111827; /* Svart text */
+        color: #111827; 
         font-weight: 600;
         text-align: right;
         flex-grow: 1;
@@ -1396,13 +1421,25 @@ ul.tech-list li span {
         text-overflow: ellipsis;
     }
 
-    /* Specifik styling för värdena */
-    .date-value { font-family: inherit; }
-    .name-value { font-weight: 700; font-size: 1rem; } /* Namnet lite större */
-    .reg-value { font-family: monospace; letter-spacing: 1px; background: #F3F4F6; padding: 2px 6px; border-radius: 4px; font-size: 0.85rem; align-self: center;}
-    .price-value { font-weight: 700; }
+    .date-value { font-weight: 600; }
+    .name-value { font-weight: 800; font-size: 1.05rem; } 
     
-    /* Status färger (texten) */
+    /* Regnr badge stil */
+    .reg-value { 
+        font-family: monospace; 
+        letter-spacing: 1px; 
+        background: #F3F4F6; 
+        color: #374151;
+        padding: 4px 8px; 
+        border-radius: 6px; 
+        font-size: 0.9rem; 
+        font-weight: 700;
+        align-self: center;
+        border: 1px solid #E5E7EB;
+    }
+    
+    .price-value { font-weight: 800; font-size: 1rem; }
+    
     .status-text { font-weight: 700; text-transform: capitalize; }
     .status-bokad { color: #2563EB; }
     .status-klar { color: #059669; }
@@ -1413,32 +1450,35 @@ ul.tech-list li span {
     /* 6. BOTTENMENY */
     .mobile-nav {
         position: fixed; bottom: 0; left: 0; right: 0;
-        background: #ffffff; height: 70px;
+        background: #ffffff; height: 75px;
         display: flex; justify-content: space-between; align-items: center;
         padding: 0 24px;
-        border-top: 1px solid #E5E7EB; /* Tunn linje istället för skugga */
+        border-top: 1px solid #E5E7EB;
         z-index: 9999;
+        /* Ta bort ev. skuggor som ser gamla ut */
+        box-shadow: none; 
     }
 
     .mobile-nav-item {
         background: none; border: none; flex: 1;
         display: flex; flex-direction: column; align-items: center; justify-content: center;
-        gap: 5px; color: #9CA3AF; cursor: pointer;
+        gap: 6px; color: #9CA3AF; cursor: pointer;
     }
-    .mobile-nav-item.active { color: #111; } /* Svart aktiv färg för premiumkänsla */
+    .mobile-nav-item.active { color: #111; } 
     
-    .mobile-nav-item svg { width: 22px; height: 22px; stroke-width: 2px; }
+    .mobile-nav-item svg { width: 24px; height: 24px; stroke-width: 2px; }
     .mobile-nav-item span { font-size: 0.7rem; font-weight: 600; }
 
     /* PLUS-KNAPPEN */
     #mobileAddJobBtn {
-        width: 52px; height: 52px;
-        border-radius: 12px; /* Fyrkantigare */
-        background: #111827; /* Svart */
+        width: 56px; height: 56px;
+        border-radius: 16px;
+        background: #111827; 
         color: white; border: none;
         display: flex; justify-content: center; align-items: center;
-        transform: translateY(-20px);
-        box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        transform: translateY(-25px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+        border: 4px solid #F3F4F6; /* Samma färg som bakgrunden för att "skära ut" den ur menyn */
     }
-    #mobileAddJobBtn svg { width: 26px; height: 26px; stroke-width: 2.5px; }
+    #mobileAddJobBtn svg { width: 28px; height: 28px; stroke-width: 2.5px; }
 }
