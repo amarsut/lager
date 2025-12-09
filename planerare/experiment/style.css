@@ -1283,10 +1283,11 @@ ul.tech-list li span {
 
 /* =========================================
    MOBIL-OPTIMERING - IKONER, LINJE & KOMMENTAR V5
+   (Uppdaterad till V6 - Ny Design enligt önskemål)
    ========================================= */
 
 @media (max-width: 768px) {
-    
+
     /* 1. NOLLSTÄLLNING & BAKGRUND */
     .app-layout { display: block !important; height: auto !important; overflow: visible !important; }
     
@@ -1319,161 +1320,164 @@ ul.tech-list li span {
     }
 
     /* 2. HEADER */
-    /* Ändra datumrubriken till att likna bilden */
+    /* Ändra datumrubriken */
     .date-separator {
         font-size: 0.95rem; 
         font-weight: 700; 
         color: #374151;
-        margin: 30px 0 10px 0; 
+        margin: 24px 0 10px 0; 
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
     .date-separator:first-child { margin-top: 0; }
 
 
-    /* 3. JOBB KORT - IKONER & BLÅ ACCENT V5 */
-    .job-card-list-v5 {
+    /* 3. JOBB KORT - NY DESIGN (KOMPAKT & HEADER) */
+    
+    .job-card-new {
         background: #FFFFFF;
         border: 1px solid #E5E7EB;
-        border-radius: 10px; 
-        padding: 16px 20px;
-        padding-left: 20px; /* Mer utrymme på vänster sida */
-        margin-bottom: 16px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+        border-radius: 12px;
+        margin-bottom: 12px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        overflow: hidden; /* Viktigt för att headern ska följa rundningen */
         cursor: pointer;
-        transition: all 0.1s ease;
-        position: relative; /* Viktigt för den blå linjen */
-        overflow: hidden;
-    }
-    
-    /* DEN BLÅ VÄNSTERLINJEN */
-    .job-card-list-v5::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 6px; /* Bredd på linjen */
-        height: 100%;
-        background-color: #007AFF; /* Tydlig Blå färg */
-        z-index: 10;
+        transition: transform 0.1s ease, box-shadow 0.1s ease;
     }
 
-    .job-card-list-v5:active { 
-        background-color: #FAFAFA; 
-        transform: scale(0.995); 
+    .job-card-new:active {
+        transform: scale(0.98);
+        box-shadow: none;
+    }
+
+    /* --- KORT HEADER (Färgad övre sektion) --- */
+    .card-header {
+        padding: 10px 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid rgba(0,0,0,0.04);
+    }
+
+    /* Status-färger för Headern */
+    /* Matchar klasserna som sätts i JS: header-bg-bokad, etc. */
+    .header-bg-bokad      { background-color: #E0F2FE; color: #0284C7; } /* Ljusblå */
+    .header-bg-klar       { background-color: #DCFCE7; color: #16A34A; } /* Grön */
+    .header-bg-faktureras { background-color: #F3E8FF; color: #9333EA; } /* Lila */
+    .header-bg-offererad  { background-color: #F3F4F6; color: #4B5563; } /* Grå */
+    .header-bg-avbokad    { background-color: #FEE2E2; color: #DC2626; } /* Röd */
+
+    .header-reg {
+        font-weight: 800;
+        font-size: 0.95rem;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        display: flex; align-items: center; gap: 8px;
     }
     
-    /* Grid för alla rader */
-    .list-data-grid-v5 {
+    .header-reg svg {
+         width: 16px; height: 16px; opacity: 0.8;
+    }
+
+    .header-status {
+        font-size: 0.7rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        background: rgba(255,255,255,0.6); /* Halvtransparent vit platta bakom texten */
+        padding: 3px 8px;
+        border-radius: 6px;
+    }
+
+    /* --- KORT KROPP (Info) --- */
+    .card-body {
+        padding: 14px 16px 12px 16px;
         display: grid;
         gap: 8px; /* Avstånd mellan rader */
-        padding-left: 10px; /* Luft från den blå linjen */
-        padding-bottom: 10px;
     }
 
-    .info-row-v5 {
-        display: grid;
-        grid-template-columns: 140px 1fr; /* Bredd för Label + Ikon, resten för Value */
-        align-items: baseline;
-        padding: 3px 0;
-    }
-
-    /* Ikon och Etikett Container */
-    .info-label-v5 {
-        color: #6B7280; 
-        font-weight: 600; /* Tjockare Label för att likna bilden */
-        font-size: 0.9rem;
+    .card-row {
         display: flex;
+        justify-content: space-between;
         align-items: center;
-        gap: 6px;
-        text-transform: none; /* Behåll vanlig text */
-    }
-
-    /* Ikon Styling */
-    .icon-v5 svg {
-        width: 16px;
-        height: 16px;
-        stroke-width: 2.2;
-        color: #9CA3AF; /* Grå färg på ikonerna */
-    }
-
-    /* Värden: Bålda och tydliga */
-    .info-value {
-        color: #111; 
-        font-weight: 700; /* Mycket båld */
-        text-align: right;
         font-size: 0.95rem;
-    }
-
-    /* --- SPECIFIKA MARKERINGAR --- */
-    
-    /* Namn, Datum, Tid, Reg.nr */
-    .reg-value, .name-value, .date-value, .time-value { text-transform: uppercase; } /* Stora bokstäver som i bilden */
-    .name-value { font-size: 1rem; } 
-    
-    /* Prisraden */
-    .price-row-v5 {
-        padding-top: 10px;
-        border-top: 1px solid #F3F4F6; /* Linje före pris som i bilden */
-        margin-top: 5px;
-    }
-    .price-value { font-weight: 800; font-size: 1.05rem; }
-    
-    /* Status (Med Ljusblå Bakgrund) */
-    .status-row-v5 {
-        margin-bottom: 5px;
-    }
-    .status-value {
-        font-weight: 800;
-        text-align: center;
-        padding: 4px 8px;
-        border-radius: 4px;
-        color: #007AFF; /* Textfärg */
-        background-color: #E5F3FF; /* Ljusblå bakgrund för "Bokad" */
-    }
-
-    /* Färgkarta för status */
-    .status-color-bokad .status-value { background-color: #E5F3FF; color: #007AFF; }
-    .status-color-klar .status-value { background-color: #D1FAE5; color: #059669; }
-    .status-color-faktureras .status-value { background-color: #F3E8FF; color: #7C3AED; }
-    .status-color-offererad .status-value { background-color: #FEE2E2; color: #DC2626; }
-    
-
-    /* 4. KOMMENTAR SEKTIONEN */
-    .job-card-comment-v5 {
-        margin-top: 10px;
-        padding-top: 10px;
-        border-top: 1px dashed #E5E7EB; /* Tunn, avskärmande linje */
-        padding-left: 10px; /* Matchar paddingen för data-grid */
-    }
-    .comment-label-v5 {
-        font-size: 0.85rem;
-        font-weight: 700;
-        color: #374151;
-        text-transform: uppercase;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        margin-bottom: 6px;
-    }
-    .job-card-comment-v5 p {
-        font-size: 0.9rem;
-        color: #4B5563;
-        margin: 0;
         line-height: 1.4;
     }
+
+    .row-label {
+        color: #6B7280;
+        display: flex; align-items: center; gap: 8px;
+        font-weight: 500;
+        font-size: 0.9rem;
+    }
     
-    /* Ikonsättning för kommentarsetiketten */
-    .job-card-comment-v5 .icon-v5 svg {
-        width: 16px;
-        height: 16px;
-        stroke-width: 2;
-        color: #374151;
+    .row-label svg {
+        width: 16px; height: 16px; color: #9CA3AF;
     }
 
-    /* 5. BOTTENMENY (Oförändrad ren design) */
+    .row-value {
+        font-weight: 600;
+        color: #111827;
+        text-align: right;
+    }
+
+    /* --- PRIS SEKTION --- */
+    .card-price-row {
+        margin-top: 6px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 1rem;
+    }
+    
+    .price-label { 
+        font-weight: 600; 
+        color: #374151; 
+        display: flex; align-items: center; gap: 8px;
+        font-size: 0.9rem;
+    }
+    
+    .price-value { 
+        font-weight: 800; 
+        color: #111; 
+        font-size: 1.1rem;
+    }
+
+    /* --- AVDELARE & KOMMENTARER --- */
+    .card-divider {
+        height: 1px;
+        background-color: #F3F4F6;
+        margin: 8px 16px 0 16px; /* Marginaler för att skapa linjen */
+        border-top: 1px dashed #E5E7EB; /* Streckad linje för snyggare look */
+        background: none;
+    }
+
+    .card-footer {
+        padding: 12px 16px 16px 16px;
+    }
+
+    .comment-text {
+        font-size: 0.85rem;
+        color: #4B5563;
+        font-style: italic;
+        line-height: 1.5;
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        background: #F9FAFB;
+        padding: 8px 12px;
+        border-radius: 8px;
+    }
+    
+    .comment-text svg { 
+        flex-shrink: 0; 
+        margin-top: 3px; 
+        width: 14px; height: 14px; 
+        color: #9CA3AF;
+    }
+
+    /* 4. BOTTENMENY (Oförändrad ren design) */
     .mobile-nav {
-        /* ... behåll befintlig mobil nav-styling ... */
         position: fixed; bottom: 0; left: 0; right: 0;
         background: #ffffff; height: 75px; 
         display: flex; justify-content: space-between; align-items: center;
