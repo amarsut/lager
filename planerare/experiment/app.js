@@ -172,8 +172,8 @@ function createJobCard(job) {
     const iBox = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>`;
     const iGauge = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 14c1.66 0 3-1.34 3-3V5h-6v6c0 1.66 1.34 3 3 3z"/><path d="M12 14v7"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="M19.07 4.93L17.66 6.34"/><path d="M4.93 4.93L6.34 6.34"/></svg>`;
     
-    // NY IKON: En fylld cirkel med "i" (liten)
-    const iInfoSmall = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>`;
+    // INFO IKON (Liten 'i' i cirkel)
+    const iInfoSmall = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`;
 
     let headerClass = 'bg-bokad';
     if(statusRaw === 'klar') headerClass = 'bg-klar';
@@ -199,7 +199,6 @@ function createJobCard(job) {
 
         <div class="card-body">
             <div class="info-row"><span class="row-label">${iUser} Namn</span><span class="row-value">${customer}</span></div>
-            <div class="info-row"><span class="row-label">${iCar} Reg.nr</span><span class="row-value" style="text-transform:uppercase;">${regNr}</span></div>
             <div class="info-row"><span class="row-label">${iBox} Paket</span><span class="row-value">${paket}</span></div>
             <div class="info-row"><span class="row-label" title="Mätarställning">${iGauge} Mätarst.</span><span class="row-value">${mileage}</span></div>
             <div class="info-row"><span class="row-label">${iCal} Datum</span><span class="row-value">${dateStr}</span></div>
@@ -540,94 +539,67 @@ function openVehicleModal(regnr) {
     if(!regnr || regnr === '---') return;
     
     const cleanReg = regnr.replace(/\s/g, '').toUpperCase();
-    
-    // HÄR ÄR ÄNDRINGEN: Vi hämtar vehicleModal istället för carModal
     const modal = document.getElementById('vehicleModal');
     
-    if (!modal) {
-        console.error("Hittar inte 'vehicleModal' i HTML-koden.");
-        return;
-    }
+    if (!modal) return;
     
-    // 1. Sätt rubriker och länkar (Matchar din HTML)
-    const titleEl = document.getElementById('vehicleRegTitle');
+    // --- BYGG HEADER DYNAMISKT (Clean design med stora knappar) ---
+    const headerRow = modal.querySelector('.vehicle-header-row');
+    if(headerRow) {
+        headerRow.innerHTML = `
+            <div class="reg-group">
+                <h1 id="vehicleRegTitle">${cleanReg}</h1>
+                <button class="icon-btn-sm" id="btnCopyRegModal" title="Kopiera" onclick="navigator.clipboard.writeText('${cleanReg}'); alert('Reg.nr kopierat!');">
+                    <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+                </button>
+            </div>
+            <button id="vehicleModalClose" onclick="document.getElementById('vehicleModal').classList.remove('show')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+        `;
+    }
+
+    // Uppdatera länkar
     const linkBiluppgifter = document.getElementById('linkBiluppgifter');
-    
-    if(titleEl) titleEl.textContent = cleanReg;
+    const linkOljemagasinet = document.getElementById('linkOljemagasinet');
     if(linkBiluppgifter) linkBiluppgifter.href = `https://biluppgifter.se/fordon/${cleanReg}`;
-	
-	const linkOljemagasinet = document.getElementById('linkOljemagasinet');
+    if(linkOljemagasinet) linkOljemagasinet.href = `https://www.oljemagasinet.se/`;
 
-	if(titleEl) titleEl.textContent = cleanReg;
-	    
-	// Uppdatera länkarna
-	if(linkBiluppgifter) linkBiluppgifter.href = `https://biluppgifter.se/fordon/${cleanReg}`;
-	    
-	// Ny länk till Oljemagasinet (Sökning)
-	if(linkOljemagasinet) linkOljemagasinet.href = `https://www.oljemagasinet.se/`;
-    
-    // Kopiera-knapp
-    const copyBtn = document.getElementById('btnCopyRegModal');
-    if(copyBtn) {
-        copyBtn.onclick = () => {
-            navigator.clipboard.writeText(cleanReg);
-            showToast('Reg.nr kopierat!');
-        };
-    }
-
-    // 2. Rendera historik (Matchar din HTML)
+    // Rendera historik
     renderVehicleHistory(cleanReg);
 
-    // 3. HANTERA TEKNISK DATA
-    // I din HTML heter behållaren 'techDataContainer'
+    // Hantera teknisk data
     const specsContainer = document.getElementById('techDataContainer'); 
-    const fetchContainer = document.getElementById('fetchDataContainer'); // Behållaren för knappen
+    const fetchContainer = document.getElementById('fetchDataContainer');
     const fetchBtn = document.getElementById('btnFetchTechData');
     
-    // Nollställ UI
     if(specsContainer) {
         specsContainer.style.display = 'none';
         specsContainer.innerHTML = ''; 
     }
     
-    // Visa knappen för att hämta data
     if(fetchContainer) fetchContainer.style.display = 'block';
     if(fetchBtn) {
         fetchBtn.disabled = false;
-        fetchBtn.innerHTML = `<svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-search"></use></svg> Hämta Data med AI`;
-        
-        // Koppla knapptryck
-        fetchBtn.onclick = function() {
-            fetchTechnicalData(cleanReg);
-        };
+        fetchBtn.innerHTML = `<svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-search"></use></svg> Hämta Data`;
+        fetchBtn.onclick = function() { fetchTechnicalData(cleanReg); };
     }
 
-    // 4. KOLLA OM DATA REDAN FINNS I FIREBASE
+    // Kolla databasen
     db.collection("vehicleSpecs").doc(cleanReg).get().then(doc => {
         if (doc.exists) {
             const data = doc.data();
-
-            // Om vi har data (antingen gammal HTML eller nya fält)
             if (data.htmlContent || data.oil || data.engine) {
                 if(specsContainer) {
-                    // Om det är nya formatet (fält), generera HTML. Annars använd sparad HTML.
                     specsContainer.innerHTML = (data.oil || data.engine) ? generateTechSpecHTML(data, cleanReg) : data.htmlContent;
                     specsContainer.style.display = 'block';
                 }
-                // Dölj hämt-knappen eftersom vi redan har data
                 if(fetchContainer) fetchContainer.style.display = 'none';
             }
         }
     }).catch(err => console.log("Kunde inte hämta specs:", err));
 
-    // Visa modalen
     modal.classList.add('show');
-    
-    // Stäng-knapp logik (Din HTML använder vehicleModalClose)
-    const closeBtn = document.getElementById('vehicleModalClose');
-    if(closeBtn) {
-        closeBtn.onclick = () => modal.classList.remove('show');
-    }
 }
 
 function renderVehicleHistory(regnr) {
