@@ -1282,11 +1282,11 @@ ul.tech-list li span {
 /* _____ MOBILVY NEDAN ______ */
 
 /* =========================================
-   MOBIL-OPTIMERING - FINAL V8 (EXAKT ENLIGT BILD & ÖNSKEMÅL)
+   MOBIL-OPTIMERING - FINAL V9 (FIXAD LAYOUT & KOMMENTARER)
    ========================================= */
 
 @media (max-width: 768px) {
-    /* --- NOLLSTÄLLNING & GRUND --- */
+    /* --- NOLLSTÄLLNING --- */
     .app-layout { display: block !important; height: auto !important; }
     html, body { 
         overflow-x: hidden; 
@@ -1316,67 +1316,63 @@ ul.tech-list li span {
     .job-card-new {
         background: #FFFFFF;
         border: 1px solid #CBD5E1;
-        border-radius: 4px; /* Nästan fyrkantiga */
+        border-radius: 6px; 
         margin-bottom: 12px;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.03);
         overflow: hidden;
         display: flex; flex-direction: column;
     }
 
-    /* 1. Header (Specifik blå färg) */
+    /* --- VIKTIG FIX: Förhindra gigantiska ikoner --- */
+    .job-card-new svg {
+        width: 16px !important;
+        height: 16px !important;
+        min-width: 16px;
+        max-width: 16px;
+        flex-shrink: 0; /* Förhindrar att ikonen trycks ihop */
+    }
+
+    /* 1. Header (Blå med ram) */
     .card-header-strip {
-        padding: 6px 12px;
+        padding: 8px 12px;
         display: flex; 
         justify-content: space-between; 
         align-items: center;
-        border-bottom: 1px solid rgba(0,0,0,0.05);
-        color: white; /* Vit text i headern ser oftast bäst ut mot färgad bakgrund */
+        
+        /* Färgen från bilden */
+        background-color: #8ABCE6; 
+        
+        /* Snygg linje runt headern (en aning mörkare blå) */
+        border-bottom: 1px solid #6B9AC4; 
+        
+        color: white; 
     }
 
-    /* Statusfärger (Bakgrund) - Uppdaterad blå */
-    .bg-bokad      { background-color: #8ABCE6; } /* Matchar din bild (himmelsblå/matt) */
-    .bg-klar       { background-color: #DCFCE7; }
-    .bg-faktureras { background-color: #F3E8FF; }
-    .bg-offererad  { background-color: #F1F5F9; }
-    .bg-avbokad    { background-color: #FEE2E2; }
-
-    /* Regnr text (Vänster i header) */
+    /* Statusfärger (Ändrar bara bakgrund om det INTE är bokad, om du vill ha olika) */
+    /* Här behåller vi blå som bas, men du kan aktivera dessa om du vill ha färgkodning på headern igen */
+    .bg-klar       { background-color: #DCFCE7; border-color: #bbf7d0; color: #166534; }
+    .bg-faktureras { background-color: #F3E8FF; border-color: #e9d5ff; color: #6b21a8; }
+    /* För 'Bokad' kör vi den snygga blåa standarden */
+    
     .header-reg-group {
         display: flex; align-items: center; gap: 8px;
         font-weight: 400; 
         font-size: 0.95rem; 
         letter-spacing: 0.5px;
         text-transform: uppercase;
-        color: #fff; /* Vit text för Bokad (blå bakgrund) */
     }
-    
-    /* Justera textfärg för ljusa bakgrunder */
-    .bg-klar .header-reg-group, 
-    .bg-faktureras .header-reg-group,
-    .bg-offererad .header-reg-group,
-    .bg-avbokad .header-reg-group { 
-        color: #334155; 
-    }
+    .header-reg-group svg { opacity: 0.9; color: inherit; }
 
-    /* Status Badge (Höger i header) */
     .header-status-badge {
         font-size: 0.7rem; 
         font-weight: 600;
         text-transform: uppercase;
-        background: rgba(255,255,255,0.25); /* Genomskinlig vit */
-        padding: 2px 6px; 
-        border-radius: 3px;
-        color: #fff;
+        background: rgba(255,255,255,0.25);
+        padding: 2px 8px; 
+        border-radius: 4px;
+        color: inherit; /* Ärver textfärg från headern */
+        border: 1px solid rgba(255,255,255,0.4); /* Subtil ram runt badgen */
     }
-    /* Mörkare text för ljusa bakgrunder */
-    .bg-klar .header-status-badge,
-    .bg-faktureras .header-status-badge,
-    .bg-offererad .header-status-badge,
-    .bg-avbokad .header-status-badge {
-        color: #334155;
-        background: rgba(0,0,0,0.05);
-    }
-
 
     /* 2. Body (Innehåll) */
     .card-body {
@@ -1388,8 +1384,9 @@ ul.tech-list li span {
     .info-row {
         display: flex; 
         justify-content: space-between; 
-        align-items: center;
+        align-items: center; /* Ser till att texten hamnar på samma rad höjd-mässigt */
         line-height: 1.3;
+        width: 100%;
     }
 
     .row-label {
@@ -1397,51 +1394,52 @@ ul.tech-list li span {
         font-weight: 400; 
         font-size: 0.9rem;
         display: flex; align-items: center; gap: 8px;
+        white-space: nowrap; /* Förhindrar att etiketten bryts */
     }
     
-    .row-label svg, .header-reg-group svg {
-        width: 16px !important; height: 16px !important;
-        min-width: 16px; min-height: 16px;
-        color: inherit; opacity: 0.9;
-    }
+    .row-label svg { color: #94A3B8; }
 
-    /* Vanlig snygg text till höger (inklusive pris) */
     .row-value {
-        font-weight: 400; /* Regular */
-        color: #0F172A;   /* Mörk färg */
+        font-weight: 400; 
+        color: #0F172A;   
         text-align: right;
         font-size: 0.95rem;
+        
+        /* Säkerställer att texten håller sig på raden snyggt */
+        white-space: nowrap; 
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 60%; /* Förhindrar att lång text knuffar ut labeln */
     }
 
-    /* 3. Kommentarer (Ersätter platsen där priset var förut) */
+    /* 3. Kommentarer (Alltid synlig) */
     .card-comments-section {
         margin-top: 4px;
         padding: 10px 12px;
-        background-color: #F8FAFC; /* Ljusgrå bakgrund likt tidigare pris-fält */
+        background-color: #F8FAFC; 
         border-top: 1px solid #E2E8F0;
         display: flex; 
-        align-items: center;
+        align-items: flex-start; /* Ikonen i toppen om texten är lång */
         gap: 8px;
-        overflow: hidden; /* För att hantera lång text */
     }
     
     .comment-text {
         font-size: 0.85rem; 
-        color: #475569; 
+        color: #334155; 
         font-style: italic; 
-        
-        /* Magi för att klippa texten snyggt på en rad */
-        white-space: nowrap; 
-        overflow: hidden;
-        text-overflow: ellipsis;
+        line-height: 1.4;
         width: 100%;
-        display: block;
+    }
+    
+    /* Placeholder stil (om ingen kommentar finns) */
+    .comment-placeholder {
+        color: #94A3B8; /* Ljusare grå */
+        font-style: normal;
     }
     
     .card-comments-section svg {
-        flex-shrink: 0;
-        width: 16px; height: 16px;
         color: #94A3B8;
+        margin-top: 2px; /* Justera ikon mot textraden */
     }
 
     /* --- MENY --- */
@@ -1453,12 +1451,12 @@ ul.tech-list li span {
     }
     .mobile-nav-item { background: none; border: none; flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; color: #9CA3AF; }
     .mobile-nav-item.active { color: #111; } 
-    .mobile-nav-item svg { width: 22px; height: 22px; }
+    .mobile-nav-item svg { width: 22px !important; height: 22px !important; }
     
     #mobileAddJobBtn {
         width: 54px; height: 54px; border-radius: 14px; background: #111827; 
         color: white; border: none; display: flex; justify-content: center; align-items: center;
         transform: translateY(-24px); border: 4px solid #F8FAFC; 
     }
-    #mobileAddJobBtn svg { width: 28px; height: 28px; }
+    #mobileAddJobBtn svg { width: 28px !important; height: 28px !important; }
 }
