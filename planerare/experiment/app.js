@@ -103,58 +103,47 @@ function renderDashboard() {
 }
 
 function createJobCard(job) {
-    // Enkel datumformat
-    let dateDisplay = '<span style="color:#ccc;">Ingen datum</span>';
+    // 1. Datumformat: "MÅN 15 DEC • 08:00"
+    let dateDisplay = "";
     if (job.datum) {
         const d = new Date(job.datum);
-        const now = new Date();
-        const timeStr = d.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
+        const dayName = d.toLocaleDateString('sv-SE', { weekday: 'short' }).replace('.','').toUpperCase();
+        const dayNum = d.getDate();
+        const month = d.toLocaleDateString('sv-SE', { month: 'short' }).replace('.','').toUpperCase();
+        const time = d.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
         
-        if (d.toDateString() === now.toDateString()) {
-            dateDisplay = `<span style="color:#3b82f6; font-weight:700;">Idag ${timeStr}</span>`;
-        } else {
-            // T.ex. "Mån 12 okt"
-            let dateStr = d.toLocaleDateString('sv-SE', { weekday: 'short', day: 'numeric', month: 'short' });
-            // Ta bort punkter från förkortningar (t.ex. "mån." -> "mån")
-            dateStr = dateStr.replace(/\./g, '');
-            // Gör första bokstaven stor
-            dateStr = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
-            dateDisplay = `${dateStr} • ${timeStr}`;
-        }
+        dateDisplay = `${dayName} ${dayNum} ${month} • ${time}`;
+    } else {
+        dateDisplay = "DATUM SAKNAS";
     }
 
-    const price = job.kundpris ? Number(job.kundpris).toLocaleString('sv-SE') + ' kr' : '0 kr';
-    const regNr = (job.regnr && job.regnr.toUpperCase() !== 'OKÄNT') ? job.regnr.toUpperCase() : null;
-    const customerName = job.kundnamn || 'Okänd kund';
+    // 2. Prisformat
+    const price = job.kundpris ? `${job.kundpris} kr` : '0 kr';
     
-    // Avgör ikon för kundtyp (Företag/Privat) - valfritt
-    const nameLower = customerName.toLowerCase();
-    const isCorporate = ['ab', 'bmg', 'fogarolli'].some(c => nameLower.includes(c));
-    const customerIconId = isCorporate ? '#icon-office-building' : '#icon-user';
+    // 3. Regnr (utan "OKÄNT")
+    const regNr = (job.regnr && job.regnr.toUpperCase() !== 'OKÄNT') ? job.regnr.toUpperCase() : '';
+    
+    // 4. Kundnamn
+    const customerName = job.kundnamn || 'Kund saknas';
 
-    let commentHtml = '';
-    if (job.kommentar) {
-        const truncComment = job.kommentar.length > 30 ? job.kommentar.substring(0,30)+'...' : job.kommentar;
-        commentHtml = `
-            <div class="job-card-comment">
-                <svg class="icon-sm" style="width:16px; height:16px; color:#9ca3af;"><use href="#icon-chat-bubble"></use></svg>
-                <span>${truncComment}</span>
-            </div>`;
-    }
+    // 5. Status styling
+    let statusClass = job.status || 'bokad';
+    
+    // Check-knapp logik (fylld om klar)
+    const isDone = statusClass === 'klar';
+    const checkBtnClass = isDone ? 'check-circle-btn checked' : 'check-circle-btn';
 
-    // Lägg till status-klass på kortet för färgkanten
+    // Vi tar bort labels som "Kund:" och "Regnr:" för en renare look
     return `
-        <div class="job-card status-${job.status}" onclick="openEditModal('${job.id}')">
+        <div class="job-card status-${statusClass}" onclick="openEditModal('${job.id}')">
+            
             <div class="job-card-header">
-                <div class="job-card-date">
-                    <svg class="icon-sm" style="width:16px; height:16px; color:inherit;"><use href="#icon-calendar-day"></use></svg>
-                    ${dateDisplay}
-                </div>
-                <span class="status-badge status-${job.status}" style="font-size:0.7rem; padding:3px 8px; border-radius:12px;">${job.status.charAt(0).toUpperCase() + job.status.slice(1)}</span>
+                <span class="job-card-date">${dateDisplay}</span>
+                <span class="status-pill ${statusClass}">${statusClass}</span>
             </div>
             
-            <div style="display:flex; align-items:flex-start;">
-                <div class="job-card-info">
+            <div class="job-card-main">
+                <div>
                     <span class="job-card-customer">${customerName}</span>
                     ${regNr ? `<span class="job-card-reg">${regNr}</span>` : ''}
                 </div>
@@ -162,13 +151,11 @@ function createJobCard(job) {
             </div>
 
             <div class="job-card-footer">
-                ${commentHtml || '<div></div>'} <div class="job-card-actions">
-                    ${job.status !== 'klar' ? `
-                    <button class="check-btn" onclick="event.stopPropagation(); setStatus('${job.id}', 'klar')">
-                        <svg class="icon" style="width:20px; height:20px;"><use href="#icon-check"></use></svg>
-                    </button>
-                    ` : ''}
-                </div>
+                <div style="flex-grow:1;"></div> 
+
+                <button class="${checkBtnClass}" onclick="event.stopPropagation(); setStatus('${job.id}', '${isDone ? 'bokad' : 'klar'}')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </button>
             </div>
         </div>
     `;
