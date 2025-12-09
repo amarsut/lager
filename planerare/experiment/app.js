@@ -942,44 +942,62 @@ function setupChatListener(limit) {
 }
 
 function renderChatBubble(data, container) {
-    const bubble = document.createElement('div');
-    // Om det är system (AI) eller användare
-    const typeClass = (data.platform === 'system') ? 'system' : 'me';
-    bubble.className = `chat-bubble ${typeClass}`; // CSS-klasser: .chat-bubble, .me, .system
+    // 1. Skapa en Wrapper (Raden) som håller både bubbla och tid
+    const row = document.createElement('div');
+    
+    // Bestäm vem som skickade (me, system, other)
+    let senderType = 'other';
+    if (data.platform === 'system') senderType = 'system';
+    // Här kan du lägga till logik om det är "jag" (t.ex. baserat på user ID), just nu antar vi 'me' är default förutom system
+    else senderType = 'me'; // Eller logik: if (data.senderId === myId) ...
 
-    // 1. Text
+    // Obs: I din gamla kod satte du klassen 'me' eller 'system'. 
+    // Vi behåller din logik men applicerar den på wrapper-raden:
+    const typeClass = (data.platform === 'system') ? 'system' : 'me'; 
+    row.className = `chat-row ${typeClass}`;
+
+    // 2. Skapa Bubblan
+    const bubble = document.createElement('div');
+    bubble.className = 'chat-bubble';
+
+    // Om det är en bild, lägg till specialklass så vi kan ta bort padding/färg i CSS
+    if (data.type === 'image' || data.image) {
+        bubble.classList.add('is-image');
+    }
+
+    // Innehåll: Text
     if (data.text) {
         const textDiv = document.createElement('div');
-        // Enkel länk-fix (gör länkar klickbara)
-        textDiv.innerHTML = data.text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" style="color:white; text-decoration:underline;">$1</a>');
+        textDiv.innerHTML = data.text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');
         bubble.appendChild(textDiv);
     }
 
-    // 2. Bild
+    // Innehåll: Bild
     if (data.image) {
         const imgContainer = document.createElement('div');
         imgContainer.className = 'chat-bubble-image';
         const img = document.createElement('img');
         img.src = data.image;
         img.loading = "lazy";
-        
-        // Klick för att zooma bild
         img.onclick = () => window.openImageZoom(data.image);
-        
         imgContainer.appendChild(img);
         bubble.appendChild(imgContainer);
     }
 
-    // 3. Tid
-    const timeDiv = document.createElement('div');
-    timeDiv.className = 'chat-time';
+    // Lägg bubblan i raden
+    row.appendChild(bubble);
+
+    // 3. Skapa Tidsstämpeln (Utanför bubblan!)
     if (data.timestamp) {
+        const timeDiv = document.createElement('div');
+        timeDiv.className = 'chat-time';
         const t = new Date(data.timestamp);
         timeDiv.textContent = t.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        row.appendChild(timeDiv);
     }
-    bubble.appendChild(timeDiv);
 
-    container.appendChild(bubble);
+    // Lägg hela raden i containern
+    container.appendChild(row);
 }
 
 // --- BILD-HANTERING ---
