@@ -727,3 +727,22 @@ function generateTechSpecHTML(data, regnr) {
         </ul>
     `;
 }
+
+// --- Spara teknisk data när man ändrar manuellt ---
+async function saveTechSpec(regnr, field, newValue) {
+    const cleanReg = regnr.replace(/\s/g, '').toUpperCase();
+    
+    try {
+        // Uppdatera ENDAST det fältet som ändrades i Firebase
+        await db.collection("vehicleSpecs").doc(cleanReg).update({
+            [field]: newValue
+        });
+        
+        // Visa en liten bekräftelse (Toast)
+        showToast(`Uppdaterade ${field} till: ${newValue}`, 'success');
+        
+    } catch (error) {
+        console.error("Kunde inte spara ändring:", error);
+        showToast("Kunde inte spara ändringen.", 'danger');
+    }
+}
