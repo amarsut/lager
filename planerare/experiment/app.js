@@ -128,24 +128,22 @@ function updateHeaderDate() {
 // --- HJÄLPFUNKTION: Skapa Mobilkortet (NY DESIGN) ---
 function createJobCard(job) {
     const d = new Date(job.datum);
-    // Tid (t.ex. "10:00")
+    // Tid utan sekunder (t.ex. "10:00")
     const timeStr = d.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
     
     const price = job.kundpris ? `${job.kundpris} kr` : '0 kr';
+    // Regnr: Om tomt -> visa ---, annars Stora bokstäver
     const regNr = (job.regnr && job.regnr.toUpperCase() !== 'OKÄNT') ? job.regnr.toUpperCase() : '---';
     const customer = job.kundnamn || 'Okänd';
     
     const status = job.status || 'bokad';
     const isDone = status === 'klar';
     
-    // Check-knappens klasser (om klar eller inte)
-    const checkClass = isDone ? 'check-btn-round checked' : 'check-btn-round';
-    
-    // Status text (Stor bokstav)
+    // Status text med stor bokstav (Bokad)
     const statusText = status.charAt(0).toUpperCase() + status.slice(1);
 
     return `
-    <div class="job-card status-${status}" onclick="openEditModal('${job.id}')">
+    <div class="job-card" onclick="openEditModal('${job.id}')">
         
         <div class="card-top-row">
             <span class="card-time">${timeStr}</span>
@@ -158,9 +156,9 @@ function createJobCard(job) {
         </div>
 
         <div class="card-bot-row">
-            <span class="reg-tag-box">${regNr}</span>
+            <span class="reg-tag-simple">${regNr}</span>
             
-            <button class="${checkClass}" onclick="event.stopPropagation(); setStatus('${job.id}', '${isDone ? 'bokad' : 'klar'}')">
+            <button class="check-btn-outline ${isDone ? 'checked' : ''}" onclick="event.stopPropagation(); setStatus('${job.id}', '${isDone ? 'bokad' : 'klar'}')">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
