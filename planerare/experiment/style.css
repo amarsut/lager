@@ -1108,125 +1108,161 @@ ul.tech-list li span {
 
 /* ------ SLUT PÅ CHATT UTSEENDE ------ */
 
-/* --- Chatt: Alternativ-meny (Redigera/Ta bort) --- */
+/* ==========================================================================
+   CHATT: ALTERNATIV-MENY (Redigera/Ta bort)
+   ========================================================================== */
+
+/* Behållaren för ikonerna */
 .chat-row .message-options {
     position: absolute;
     top: 50%;
-    transform: translateY(-50%);
+    transform: translateY(-50%); /* Centrera vertikalt */
     display: flex;
     gap: 8px;
     opacity: 0; /* Dold som standard */
     transition: opacity 0.2s ease-in-out;
-    z-index: 10;
+    z-index: 20;
+    pointer-events: none; /* Klick går igenom när osynlig */
+    background: transparent;
+    padding: 0 8px;
 }
 
-/* Visa menyn vid hover */
+/* Visa menyn vid hover på hela raden */
 .chat-row:hover .message-options {
     opacity: 1;
+    pointer-events: auto; /* Aktivera klick */
 }
 
-/* Positionering: Mina meddelanden (Ikoner till VÄNSTER om bubblan) */
+/* --- Positionering: Mina meddelanden (ME) --- */
+/* Bubblan är till höger -> Ikonerna ska ligga till VÄNSTER om bubblan */
 .chat-row.me .message-options {
-    right: 100%; 
-    margin-right: 12px;
-    flex-direction: row; 
+    right: 100%; /* 100% från högerkanten av bubblan */
+    margin-right: 4px;
+    justify-content: flex-end;
 }
 
-/* Positionering: Andras/System meddelanden (Ikoner till HÖGER om bubblan) */
+/* --- Positionering: Andras meddelanden (OTHER/SYSTEM) --- */
+/* Bubblan är till vänster -> Ikonerna ska ligga till HÖGER om bubblan */
 .chat-row.other .message-options,
 .chat-row.system .message-options {
-    left: 100%;
-    margin-left: 12px;
-    flex-direction: row;
-    /* Ta bort display: none om du vill att man ska kunna ta bort andras meddelanden */
+    left: 100%; /* 100% från vänsterkanten av bubblan */
+    margin-left: 4px;
+    justify-content: flex-start;
 }
 
+/* Knappar */
 .option-btn {
-    background: #F2F2F7;
-    border: none;
+    background: #FFFFFF;
+    border: 1px solid #E5E5EA;
     width: 28px; height: 28px;
     border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
     cursor: pointer;
     color: #8E8E93;
     transition: all 0.2s;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 }
-.option-btn:hover { background: #fff; color: #007AFF; transform: scale(1.1); }
-.option-btn.delete:hover { color: #FF3B30; }
+
+.option-btn:hover {
+    background: #007AFF; 
+    color: #fff; 
+    border-color: #007AFF;
+    transform: scale(1.1);
+}
+
+.option-btn.delete:hover {
+    background: #FF3B30;
+    border-color: #FF3B30;
+    color: white;
+}
 
 .option-btn svg { width: 14px; height: 14px; }
 
 
 /* ==========================================================================
-   REDIGERINGSLÄGE (Overlay Style)
+   REDIGERINGSLÄGE (Snyggare Overlay)
    ========================================================================== */
 
-/* 1. Dämpar bakgrunden när vi redigerar */
+/* 1. Dämpar bakgrunden (chatten) */
 .chat-widget.edit-mode .chat-messages {
-    opacity: 0.3;
-    pointer-events: none; /* Förhindra klick på meddelanden */
-    filter: grayscale(100%);
+    opacity: 0.4;
+    pointer-events: none; /* Inga klick i listan */
+    filter: grayscale(80%);
     transition: all 0.3s ease;
 }
 
-/* 2. Lyfter upp input-arean */
+/* 2. Fixar Input-området så header och input staplas korrekt */
 .chat-widget.edit-mode .chat-input-area {
-    box-shadow: 0 -10px 40px rgba(0,0,0,0.15);
-    z-index: 2000;
+    display: flex;
+    flex-direction: column; /* VIKTIGT: Stapla header och input vertikalt */
+    align-items: stretch;   /* Fyll bredden */
+    padding: 0;             /* Nollställ padding för att bygga upp det snyggt */
     border-top: 1px solid #e5e7eb;
-    padding-top: 0; /* Header tar plats */
+    background: #fff;
+    box-shadow: 0 -10px 40px rgba(0,0,0,0.1); /* "Lyft" upp rutan */
+    z-index: 2000;
+    position: relative;
+    padding-bottom: 20px; /* Lite luft i botten */
 }
 
-/* 3. Header för redigering (Visas ovanför textfältet) */
+/* 3. Header: "Redigera meddelande" */
 .chat-edit-header {
-    width: 100%;
-    padding: 12px 0 8px 0;
-    margin-bottom: 4px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding: 12px 20px;
     border-bottom: 1px solid #f3f4f6;
-    animation: slideDown 0.2s ease-out;
+    background: #fff;
+    margin-bottom: 10px;
 }
 
 .chat-edit-header span {
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     font-weight: 700;
     color: #111;
 }
 
+/* Stäng-knapp (X) */
 .close-edit-btn {
     background: #f3f4f6;
     border: none;
-    width: 24px; height: 24px;
+    width: 26px; height: 26px;
     border-radius: 50%;
     color: #6b7280;
-    font-size: 1.2rem;
-    line-height: 1;
+    font-size: 1.1rem;
     cursor: pointer;
     display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s;
 }
-.close-edit-btn:hover {
-    background: #e5e7eb;
-    color: #111;
+.close-edit-btn:hover { background: #e5e7eb; color: #111; }
+
+/* 4. Input-wrapper i redigeringsläge */
+/* Eftersom vi bytte till column måste vi skapa en wrapper för textfält + knapp */
+.chat-widget.edit-mode #chatInput {
+    margin: 0 20px;
+    width: calc(100% - 40px); /* Full bredd minus marginal */
+    min-height: 48px;
+    padding-right: 60px; /* Plats för knappen inuti fältet */
 }
 
-@keyframes slideDown {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* Gömmer onödiga knappar vid redigering för renare look */
+/* Dölj vänster-ikoner (gem/kamera) i redigeringsläge för renare look */
 .chat-widget.edit-mode .chat-actions-left {
     display: none;
 }
-.chat-widget.edit-mode #chatInput {
-    padding-left: 18px; /* Ta bort paddingen som var för gem-ikonen */
+
+/* 5. Justera Sänd-knappen i redigeringsläge */
+.chat-widget.edit-mode #chatSendBtn {
+    position: absolute;
+    bottom: 25px; /* Justera så den hamnar i linje med input */
+    right: 25px;
+    width: 40px; height: 40px;
+    background-color: #007AFF; /* Behåll blå färg */
+    box-shadow: 0 4px 10px rgba(0, 122, 255, 0.3);
+    border-radius: 50%;
+    z-index: 10;
 }
 
-/* Ändra skicka-knappen till en spara-ikon/färg vid redigering */
-.chat-widget.edit-mode #chatSendBtn {
-    background-color: #10B981; /* Grön för spara */
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+.chat-widget.edit-mode #chatSendBtn:hover {
+    background-color: #006be0;
+    transform: scale(1.05);
 }
