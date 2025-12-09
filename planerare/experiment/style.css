@@ -1282,225 +1282,163 @@ ul.tech-list li span {
 /* _____ MOBILVY NEDAN ______ */
 
 /* =========================================
-   MOBIL-OPTIMERING - PREMIUM UI
+   MOBIL-OPTIMERING - CLEAN LIST UI
    ========================================= */
 
 @media (max-width: 768px) {
     
-    /* 1. GRUNDLÄGGANDE LAYOUT */
+    /* 1. GRUNDLÄGGANDE - REN BAKGRUND */
     .app-layout { display: block !important; height: auto !important; overflow: visible !important; }
-    html, body { overflow-x: hidden; overflow-y: auto !important; background-color: #F3F5F9; /* Ljusgrå/blå bakgrund som bilden */ }
+    
+    /* Ändrar bakgrunden till helt vit eller väldigt ljusgrå för att "ta bort" känslan av en bakgrundsbox */
+    html, body { 
+        overflow-x: hidden; 
+        overflow-y: auto !important; 
+        background-color: #FAFAFA; /* Extremt ljus grå, nästan vit */
+    }
 
     /* Dölj desktop-element */
     .sidebar, .top-bar, #jobsTable thead, .header-cta-btn, .top-search-container, .divider-vertical { display: none !important; }
     .top-bar-actions .icon-btn:not(#headerPrivacyToggle) { display: none; }
 
     .mobile-only { display: block; }
-    .main-content { padding: 20px; padding-bottom: 100px; width: 100%; margin: 0; }
+    /* Ta bort padding runt main-content för att få korten att kännas bredare om man vill, annars behåll padding */
+    .main-content { padding: 16px; padding-bottom: 100px; width: 100%; margin: 0; }
 
-    /* 2. HEADER (Datum & Navigation) */
-    .mobile-header { display: flex; align-items: center; gap: 14px; margin-bottom: 24px; }
+
+    /* 2. HEADER */
+    .mobile-header { display: flex; align-items: center; gap: 14px; margin-bottom: 24px; padding-top: 10px; }
     .header-blue-btn {
-        width: 42px; height: 42px;
-        background: #2563EB; color: white;
-        border-radius: 12px; border: none;
+        width: 40px; height: 40px;
+        background: #111827; /* Svart/Mörkgrå istället för blå för premiumkänsla */
+        color: white;
+        border-radius: 8px; /* Fyrkantigare */
+        border: none;
         display: flex; align-items: center; justify-content: center;
-        box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
     }
-    .header-date-group { display: flex; flex-direction: column; line-height: 1.1; }
-    .header-day { font-size: 0.75rem; font-weight: 700; color: #64748B; letter-spacing: 0.5px; text-transform: uppercase; }
-    .header-date { font-size: 1.25rem; font-weight: 800; color: #1E293B; }
+    .header-date-group { display: flex; flex-direction: column; line-height: 1.2; }
+    .header-day { font-size: 0.7rem; font-weight: 600; color: #6B7280; letter-spacing: 1px; text-transform: uppercase; }
+    .header-date { font-size: 1.1rem; font-weight: 700; color: #111; }
 
-    /* 3. STATISTIK (Grid) */
+
+    /* 3. STATISTIK (Förenklad) */
     .stat-bar {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
-        margin-bottom: 30px;
+        display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 30px;
     }
     .stat-card {
-        background: #ffffff;
-        border-radius: 16px;
-        padding: 16px;
-        border: none;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.03);
-        display: flex; flex-direction: column; gap: 8px;
+        background: #fff;
+        border: 1px solid #E5E7EB;
+        border-radius: 6px; /* Fyrkantiga hörn */
+        padding: 12px;
+        box-shadow: none; /* Ingen skugga */
     }
-    .stat-card-title { font-size: 0.7rem; color: #94A3B8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+    .stat-card-title { font-size: 0.65rem; color: #6B7280; font-weight: 600; text-transform: uppercase; }
     .stat-card-title svg { display: none; }
-    .stat-card-value { font-size: 1.6rem; font-weight: 800; color: #1E293B; margin: 0; line-height: 1; }
+    .stat-card-value { font-size: 1.4rem; font-weight: 700; color: #111; margin-top: 4px; }
     
-    /* Färger för stats */
+    /* Diskretare färger på siffrorna */
     #stat-card-kommande .stat-card-value { color: #2563EB; }
-    #stat-card-faktureras .stat-card-value { color: #9333EA; }
-    #stat-card-klar .stat-card-value { color: #16A34A; }
+    #stat-card-faktureras .stat-card-value { color: #7C3AED; }
+    #stat-card-klar .stat-card-value { color: #059669; }
 
-    /* 4. DATUM SEPARATOR (Som på bilden) */
+
+    /* 4. DATUM RUBRIKER */
     .date-separator {
-        font-size: 1rem; 
-        font-weight: 600; 
-        color: #334155;
-        margin: 30px 0 15px 0;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-    /* Linjen efter datumet */
-    .date-separator::after {
-        content: '';
-        flex-grow: 1;
-        height: 1px;
-        background-color: #E2E8F0;
+        font-size: 0.85rem; font-weight: 700; color: #374151;
+        margin: 25px 0 10px 2px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
 
-    /* 5. JOBB KORT - PREMIUM DESIGN */
-    .job-card-premium {
+
+    /* 5. JOBB KORT - FYRKANTIG & STRIKT */
+    .job-card-clean {
         background: #FFFFFF;
-        border-radius: 20px; /* Mjuka hörn */
-        padding: 20px;
-        margin-bottom: 20px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04); /* Mjuk skugga */
+        border: 1px solid #E5E7EB; /* Tunn grå ram */
+        border-radius: 6px;        /* Liten radie för "snygg fyrkantighet" */
+        padding: 16px;
+        margin-bottom: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px; /* Avstånd mellan raderna */
+        /* Ingen skugga för en plattare, modern look */
         position: relative;
-        border: 1px solid rgba(0,0,0,0.01);
-        overflow: hidden; /* För vänster-border */
     }
 
-    /* Den blå linjen till vänster */
-    .job-card-premium::before {
-        content: '';
-        position: absolute;
-        left: 0; top: 0; bottom: 0;
-        width: 6px;
-        background-color: #3B82F6; /* Blå accent */
-    }
-    /* Anpassa kantfärg baserat på status om så önskas */
-    .job-card-premium:has(.status-klar)::before { background-color: #22C55E; }
+    /* Klick-effekt */
+    .job-card-clean:active { background-color: #F9FAFB; border-color: #D1D5DB; }
 
-    /* --- INNEHÅLL I KORTET --- */
+    /* Layout för raderna: Label (Vänster) - Value (Höger) */
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline; /* Justerar texten snyggt i höjdled */
+        font-size: 0.95rem;
+    }
+
+    /* Vänsterkolumnen: Etiketter */
+    .info-label {
+        color: #6B7280; /* Mörkgrå text */
+        font-weight: 500;
+        font-size: 0.9rem;
+        flex-shrink: 0;
+        width: 100px; /* Fast bredd så allt linjerar snyggt */
+    }
+
+    /* Högerkolumnen: Värden */
+    .info-value {
+        color: #111827; /* Svart text */
+        font-weight: 600;
+        text-align: right;
+        flex-grow: 1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* Specifik styling för värdena */
+    .date-value { font-family: inherit; }
+    .name-value { font-weight: 700; font-size: 1rem; } /* Namnet lite större */
+    .reg-value { font-family: monospace; letter-spacing: 1px; background: #F3F4F6; padding: 2px 6px; border-radius: 4px; font-size: 0.85rem; align-self: center;}
+    .price-value { font-weight: 700; }
     
-    .premium-row {
-        display: flex; justify-content: space-between; align-items: center;
-    }
-
-    /* RAD 1: TID & STATUS */
-    .top-row { margin-bottom: 12px; }
-    
-    .time-badge {
-        display: inline-flex; align-items: center; gap: 6px;
-        background-color: #F1F5F9; 
-        color: #64748B;
-        padding: 6px 10px;
-        border-radius: 8px;
-        font-size: 0.85rem; font-weight: 600;
-    }
-    .icon-tiny { width: 14px; height: 14px; }
-
-    .status-badge-text {
-        font-size: 0.75rem; font-weight: 800; letter-spacing: 0.5px;
-        padding: 6px 12px; border-radius: 20px;
-        background: #EFF6FF; color: #3B82F6; /* Standard Blå */
-    }
-    .status-badge-text.status-klar { background: #DCFCE7; color: #15803d; }
-    .status-badge-text.status-faktureras { background: #F3E8FF; color: #7E22CE; }
-
-    /* RAD 2: KUND & PRIS */
-    .main-content-row { align-items: flex-start; margin-bottom: 16px; }
-    
-    .premium-customer {
-        font-size: 1.3rem; font-weight: 800; color: #0F172A;
-        line-height: 1.2; max-width: 65%;
-        text-transform: uppercase; /* Som på bilden */
-    }
-
-    .premium-price-group {
-        display: flex; flex-direction: column; align-items: flex-end;
-    }
-    .price-label {
-        font-size: 0.65rem; color: #94A3B8; font-weight: 700;
-        text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;
-    }
-    .price-value {
-        font-size: 1.1rem; font-weight: 800; color: #0F172A;
-    }
-
-    /* SEPARATOR (Streckad linje) */
-    .premium-divider {
-        height: 1px;
-        background-image: linear-gradient(to right, #E2E8F0 50%, rgba(255,255,255,0) 0%);
-        background-position: bottom;
-        background-size: 8px 1px;
-        background-repeat: repeat-x;
-        margin: 0 0 16px 0;
-    }
-
-    /* RAD 3: BIL & CHECK */
-    .bottom-row { margin-top: 4px; }
-    
-    .car-info-group { display: flex; align-items: center; gap: 10px; }
-    
-    .car-icon-circle {
-        width: 32px; height: 32px;
-        background-color: #F1F5F9;
-        border-radius: 50%;
-        display: flex; align-items: center; justify-content: center;
-        color: #64748B;
-    }
-    .premium-reg {
-        font-family: 'Inter', sans-serif;
-        font-weight: 700; font-size: 0.9rem; color: #334155;
-    }
-
-    /* Check-knapp */
-    .premium-check-btn {
-        width: 44px; height: 44px;
-        border-radius: 12px;
-        border: 2px solid #F1F5F9;
-        background: transparent;
-        display: flex; align-items: center; justify-content: center;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        color: #CBD5E1; /* Ljusgrå icke-vald ikon */
-    }
-    
-    /* När den är ikryssad */
-    .premium-check-btn.checked {
-        background-color: #3B82F6; /* Eller grön #22C55E */
-        border-color: #3B82F6;
-        color: white;
-        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-    }
-    .premium-check-btn svg { width: 24px; height: 24px; }
+    /* Status färger (texten) */
+    .status-text { font-weight: 700; text-transform: capitalize; }
+    .status-bokad { color: #2563EB; }
+    .status-klar { color: #059669; }
+    .status-faktureras { color: #7C3AED; }
+    .status-offererad { color: #4B5563; }
 
 
     /* 6. BOTTENMENY */
     .mobile-nav {
         position: fixed; bottom: 0; left: 0; right: 0;
-        background: #ffffff; height: 75px;
+        background: #ffffff; height: 70px;
         display: flex; justify-content: space-between; align-items: center;
         padding: 0 24px;
-        box-shadow: 0 -4px 20px rgba(0,0,0,0.03);
-        border-top: none;
+        border-top: 1px solid #E5E7EB; /* Tunn linje istället för skugga */
         z-index: 9999;
     }
 
     .mobile-nav-item {
         background: none; border: none; flex: 1;
         display: flex; flex-direction: column; align-items: center; justify-content: center;
-        gap: 6px; color: #94A3B8; cursor: pointer;
+        gap: 5px; color: #9CA3AF; cursor: pointer;
     }
-    .mobile-nav-item.active { color: #3B82F6; }
-    .mobile-nav-item svg { width: 24px; height: 24px; stroke-width: 2px; }
+    .mobile-nav-item.active { color: #111; } /* Svart aktiv färg för premiumkänsla */
+    
+    .mobile-nav-item svg { width: 22px; height: 22px; stroke-width: 2px; }
     .mobile-nav-item span { font-size: 0.7rem; font-weight: 600; }
 
-    /* PLUS-KNAPPEN (Flytande mitten) */
+    /* PLUS-KNAPPEN */
     #mobileAddJobBtn {
-        width: 56px; height: 56px;
-        border-radius: 20px; /* Soft square som på modern iOS */
-        background: #0F172A; /* Mörk, premium färg */
+        width: 52px; height: 52px;
+        border-radius: 12px; /* Fyrkantigare */
+        background: #111827; /* Svart */
         color: white; border: none;
         display: flex; justify-content: center; align-items: center;
-        transform: translateY(-25px);
-        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.4);
+        transform: translateY(-20px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.2);
     }
-    #mobileAddJobBtn svg { width: 28px; height: 28px; stroke-width: 2.5px; }
+    #mobileAddJobBtn svg { width: 26px; height: 26px; stroke-width: 2.5px; }
 }
