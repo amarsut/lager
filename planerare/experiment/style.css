@@ -814,9 +814,9 @@ ul.tech-list li span {
     position: fixed;
     bottom: 105px; 
     right: 30px;
-    width: clamp(380px, 30vw, 480px);
-    height: 720px;
-    max-height: 85vh;
+    width: clamp(400px, 40vw, 600px); 
+    height: 600px;
+    max-height: 70vh;
     background-color: #FFFFFF;
     border-radius: 24px;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0,0,0,0.05);
