@@ -113,48 +113,55 @@ function createJobCard(job) {
         const time = d.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
         
         dateDisplay = `${dayName} ${dayNum} ${month} • ${time}`;
-    } else {
-        dateDisplay = "DATUM SAKNAS";
     }
 
     // 2. Prisformat
     const price = job.kundpris ? `${job.kundpris} kr` : '0 kr';
     
-    // 3. Regnr (utan "OKÄNT")
-    const regNr = (job.regnr && job.regnr.toUpperCase() !== 'OKÄNT') ? job.regnr.toUpperCase() : '';
+    // 3. Regnr (Snygg skylt)
+    let regBadge = '';
+    if (job.regnr && job.regnr.toUpperCase() !== 'OKÄNT') {
+        regBadge = `
+        <div class="reg-badge">
+            <div class="reg-badge-blue">S</div>
+            <div class="reg-badge-text">${job.regnr.toUpperCase()}</div>
+        </div>`;
+    }
     
     // 4. Kundnamn
     const customerName = job.kundnamn || 'Kund saknas';
 
-    // 5. Status styling
+    // 5. Status
     let statusClass = job.status || 'bokad';
-    
-    // Check-knapp logik (fylld om klar)
+    // Fixa snyggare text för status
+    const statusLabels = { 'bokad': 'Bokad', 'klar': 'Klar', 'faktureras': 'Fakturering', 'offererad': 'Offert' };
+    const statusLabel = statusLabels[statusClass] || statusClass;
+
     const isDone = statusClass === 'klar';
     const checkBtnClass = isDone ? 'check-circle-btn checked' : 'check-circle-btn';
 
-    // Vi tar bort labels som "Kund:" och "Regnr:" för en renare look
     return `
         <div class="job-card status-${statusClass}" onclick="openEditModal('${job.id}')">
             
             <div class="job-card-header">
                 <span class="job-card-date">${dateDisplay}</span>
-                <span class="status-pill ${statusClass}">${statusClass}</span>
+                <span class="status-pill ${statusClass}">${statusLabel}</span>
             </div>
             
             <div class="job-card-main">
-                <div>
+                <div style="flex-grow:1;">
                     <span class="job-card-customer">${customerName}</span>
-                    ${regNr ? `<span class="job-card-reg">${regNr}</span>` : ''}
+                    ${regBadge}
                 </div>
-                <div class="job-card-price">${price}</div>
             </div>
 
             <div class="job-card-footer">
-                <div style="flex-grow:1;"></div> 
+                <div class="job-card-price">${price}</div>
 
                 <button class="${checkBtnClass}" onclick="event.stopPropagation(); setStatus('${job.id}', '${isDone ? 'bokad' : 'klar'}')">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
                 </button>
             </div>
         </div>
