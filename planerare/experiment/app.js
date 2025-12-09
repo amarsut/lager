@@ -976,33 +976,52 @@ function setupChatListener(limit) {
         });
 }
 
-function renderChatBubble(data, container) {
-    // 1. Skapa en Wrapper (Raden) som håller både bubbla och tid
+function renderChatBubble(doc, container) {
+    const data = doc.data();
+    const messageId = doc.id; // VIKTIGT: Vi behöver IDt för att kunna redigera/ta bort
+
     const row = document.createElement('div');
     
-    // Bestäm vem som skickade (me, system, other)
     let senderType = 'other';
     if (data.platform === 'system') senderType = 'system';
-    // Här kan du lägga till logik om det är "jag" (t.ex. baserat på user ID), just nu antar vi 'me' är default förutom system
-    else senderType = 'me'; // Eller logik: if (data.senderId === myId) ...
+    else senderType = 'me'; 
 
-    // Obs: I din gamla kod satte du klassen 'me' eller 'system'. 
-    // Vi behåller din logik men applicerar den på wrapper-raden:
-    const typeClass = (data.platform === 'system') ? 'system' : 'me'; 
-    row.className = `chat-row ${typeClass}`;
+    row.className = `chat-row ${senderType}`;
+    row.dataset.messageId = messageId;
+    row.style.position = 'relative'; // För att kunna positionera menyn
+
+    if (senderType === 'me') {
+        const optionsMenu = document.createElement('div');
+        optionsMenu.className = 'message-options';
+        optionsMenu.innerHTML = `
+            <button class="option-btn edit" title="Redigera">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" /></svg>
+            </button>
+            <button class="option-btn delete danger" title="Ta bort">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
+            </button>
+        `;
+
+        // Händelselyssnare för menyn
+        optionsMenu.querySelector('.edit').onclick = () => enterEditMode(row, data.text);
+        optionsMenu.querySelector('.delete').onclick = () => deleteChatMessage(messageId);
+        
+        row.appendChild(optionsMenu);
+    }
 
     // 2. Skapa Bubblan
     const bubble = document.createElement('div');
     bubble.className = 'chat-bubble';
 
-    // Om det är en bild, lägg till specialklass så vi kan ta bort padding/färg i CSS
     if (data.type === 'image' || data.image) {
         bubble.classList.add('is-image');
     }
 
-    // Innehåll: Text
+    // Innehåll: Text (Vi lägger det i en egen div för att lätt kunna byta ut den)
     if (data.text) {
         const textDiv = document.createElement('div');
+        textDiv.className = 'bubble-text-content';
+        // Omvandla länkar
         textDiv.innerHTML = data.text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');
         bubble.appendChild(textDiv);
     }
@@ -1019,20 +1038,134 @@ function renderChatBubble(data, container) {
         bubble.appendChild(imgContainer);
     }
 
-    // Lägg bubblan i raden
     row.appendChild(bubble);
 
-    // 3. Skapa Tidsstämpeln (Utanför bubblan!)
+    // 3. Skapa Tidsstämpeln
     if (data.timestamp) {
         const timeDiv = document.createElement('div');
         timeDiv.className = 'chat-time';
-        const t = new Date(data.timestamp);
+        // Hantera om timestamp är en Firestore Timestamp eller vanlig sträng/datum
+        let t = data.timestamp && data.timestamp.toDate ? data.timestamp.toDate() : new Date(data.timestamp);
+        
         timeDiv.textContent = t.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
         row.appendChild(timeDiv);
     }
 
-    // Lägg hela raden i containern
     container.appendChild(row);
+}
+
+function enterEditMode(rowElement, currentText) {
+    const bubble = rowElement.querySelector('.chat-bubble');
+    const textContentDiv = bubble.querySelector('.bubble-text-content');
+    const messageId = rowElement.dataset.messageId;
+
+    if (!textContentDiv || !messageId) return;
+
+    // Spara originalinnehållet ifall man ångrar sig
+    const originalHTML = textContentDiv.innerHTML;
+
+    // Lägg till klass för styling
+    bubble.classList.add('is-editing');
+
+    // Ersätt textinnehållet med redigeringsformuläret (Textarea + Knappar)
+    textContentDiv.innerHTML = `
+        <textarea class="edit-message-input" spellcheck="false">${currentText}</textarea>
+        <div class="edit-message-actions">
+            <button class="edit-btn edit-btn-cancel">Avbryt</button>
+            <button class="edit-btn edit-btn-save">Spara</button>
+        </div>
+    `;
+
+    const textarea = textContentDiv.querySelector('textarea');
+    const cancelBtn = textContentDiv.querySelector('.edit-btn-cancel');
+    const saveBtn = textContentDiv.querySelector('.edit-btn-save');
+
+    // Fokusera och sätt markören i slutet av texten
+    textarea.focus();
+    textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+
+    // Auto-resize på höjden för textarea
+    textarea.style.height = 'auto';
+    textarea.style.height = textarea.scrollHeight + 'px';
+    textarea.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = this.scrollHeight + 'px';
+    });
+
+    // --- Händelselyssnare ---
+    
+    // AVBRYT
+    cancelBtn.onclick = () => {
+        // Återställ UI
+        bubble.classList.remove('is-editing');
+        textContentDiv.innerHTML = originalHTML;
+    };
+
+    // SPARA
+    saveBtn.onclick = async () => {
+        const newText = textarea.value.trim();
+        if (!newText) {
+             alert("Meddelandet kan inte vara tomt.");
+             return;
+        }
+        if (newText === currentText) {
+            cancelBtn.click(); // Ingen ändring gjord
+            return;
+        }
+
+        // Lås knapparna under sparning
+        saveBtn.textContent = 'Sparar...';
+        saveBtn.disabled = true;
+        cancelBtn.disabled = true;
+
+        try {
+            // Uppdatera i Firebase
+            // OBS: Se till att 'db' och 'currentJobId' är tillgängliga här
+            if (!currentJobId) throw new Error("Inget jobb-ID hittades");
+
+            await db.collection('jobs').doc(currentJobId)
+                    .collection('messages').doc(messageId).update({
+                        text: newText,
+                        isEdited: true // Bra att veta om det är redigerat
+                    });
+            
+            // UI-uppdateringen sköts automatiskt av din onSnapshot-lyssnare!
+            // Men vi kan återställa redigeringsläget direkt för snabbare känsla.
+            bubble.classList.remove('is-editing');
+            // Vi behöver inte sätta innerHTML här, snapshnoten gör det strax.
+
+        } catch (error) {
+            console.error("Fel vid uppdatering av meddelande:", error);
+            alert("Kunde inte spara meddelandet.");
+            // Återställ knappar
+            saveBtn.textContent = 'Spara';
+            saveBtn.disabled = false;
+            cancelBtn.disabled = false;
+        }
+    };
+}
+
+// --- 2. Ta bort meddelande (Firebase) ---
+async function deleteChatMessage(messageId) {
+    // En enkel konfirmation (kan bytas mot en snyggare modal senare)
+    if (!confirm("Är du säker på att du vill ta bort detta meddelande?")) {
+        return;
+    }
+
+    try {
+        // OBS: Se till att 'db' och 'currentJobId' är tillgängliga här
+        if (!currentJobId) throw new Error("Inget jobb-ID hittades");
+
+        await db.collection('jobs').doc(currentJobId)
+                .collection('messages').doc(messageId).delete();
+
+        console.log("Meddelande borttaget:", messageId);
+        // UI-uppdateringen sköts automatiskt av din onSnapshot-lyssnare.
+        
+    } catch (error) {
+        console.error("Fel vid borttagning av meddelande:", error);
+        alert("Kunde inte ta bort meddelandet.");
+    }
 }
 
 // --- BILD-HANTERING ---
