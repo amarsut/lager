@@ -433,34 +433,6 @@ tbody tr button {
 .button.primary { background-color: var(--primary-color); color: white; }
 .button.secondary { background-color: white; border: 1px solid var(--border-color); color: #374151; }
 
-/* Flytande Chatt-knapp */
-#fabChat {
-    position: fixed !important;
-    bottom: 30px !important;
-    right: 30px !important;
-    
-    width: 56px !important;
-    height: 56px !important;
-    background-color: #fff !important;
-    color: var(--primary-color) !important;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.15) !important;
-    border-radius: 50% !important;
-    z-index: 1000 !important;
-    
-    /* Ta bort ev. margin/top inställningar */
-    top: auto !important;
-    margin: 0 !important;
-}
-
-#fabChat:hover {
-    transform: scale(1.1);
-    background-color: #fff !important;
-}
-.header-icon-btn svg,
-#fabChat svg {
-    width: 22px; height: 22px; /* Lite större ikoner */
-}
-
 /* Notis-prick (Badge) */
 .header-badge {
     position: absolute !important;
