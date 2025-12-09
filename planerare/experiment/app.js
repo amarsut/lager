@@ -1004,41 +1004,46 @@ function setupChatListener(limit) {
 }
 
 function renderChatBubble(data, container) {
-    // data är nu det färdiga objektet, inte ett dokument-snapshot
     const messageId = data.id; 
 
     // 1. Skapa Wrapper (Raden)
     const row = document.createElement('div');
     
     let senderType = 'other';
+    // Ändra logiken här om du har ett riktigt inloggningssystem
+    // Just nu: system = system, allt annat = me (för demo) eller other
     if (data.platform === 'system') senderType = 'system';
-    else senderType = 'me'; // Antar 'me' för alla icke-system just nu
+    else if (data.isMe) senderType = 'me'; // Exempel om du har sådan data
+    else senderType = data.platform === 'mobil' || data.platform === 'dator' ? 'me' : 'other';
+    
+    // Tvinga 'me' för att testa (eller behåll din logik för vem som är vem)
+    // I din kod antog du att allt icke-system var 'me'. 
+    // Om du vill simulera motpart, se till att senderType blir 'other'.
 
     row.className = `chat-row ${senderType}`;
     row.dataset.messageId = messageId;
     row.style.position = 'relative';
 
-    // --- Alternativ-meny (Penna/Soptunna) ---
-    // Visas bara för mina meddelanden (inte system)
-    if (senderType === 'me') {
-        const optionsMenu = document.createElement('div');
-        optionsMenu.className = 'message-options';
-        optionsMenu.innerHTML = `
-            <button class="option-btn edit" title="Redigera">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" /></svg>
-            </button>
-            <button class="option-btn delete danger" title="Ta bort">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
-            </button>
-        `;
+    // --- HÄR ÄR ÄNDRINGEN: SKAPA MENYN FÖR ALLA ---
+    // Vi tog bort "if (senderType === 'me')" så nu skapas den alltid.
+    
+    const optionsMenu = document.createElement('div');
+    optionsMenu.className = 'message-options';
+    optionsMenu.innerHTML = `
+        <button class="option-btn edit" title="Redigera">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" /></svg>
+        </button>
+        <button class="option-btn delete danger" title="Ta bort">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
+        </button>
+    `;
 
-        // Koppla knapparna
-        // Vi skickar med 'row' och nuvarande text
-        optionsMenu.querySelector('.edit').onclick = () => enterEditMode(row, data.text);
-        optionsMenu.querySelector('.delete').onclick = () => deleteChatMessage(messageId);
-        
-        row.appendChild(optionsMenu);
-    }
+    // Koppla knapparna
+    optionsMenu.querySelector('.edit').onclick = () => enterEditMode(row, data.text || "");
+    optionsMenu.querySelector('.delete').onclick = () => deleteChatMessage(messageId);
+    
+    row.appendChild(optionsMenu);
+    // --- SLUT PÅ ÄNDRING ---
 
     // 2. Skapa Bubblan
     const bubble = document.createElement('div');
@@ -1052,7 +1057,6 @@ function renderChatBubble(data, container) {
     if (data.text) {
         const textDiv = document.createElement('div');
         textDiv.className = 'bubble-text-content';
-        // Gör länkar klickbara
         textDiv.innerHTML = data.text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');
         bubble.appendChild(textDiv);
     }
@@ -1075,14 +1079,12 @@ function renderChatBubble(data, container) {
     if (data.timestamp) {
         const timeDiv = document.createElement('div');
         timeDiv.className = 'chat-time';
-        // Hantera olika datumformat (Firestore Timestamp vs String)
         let t;
         if (data.timestamp && typeof data.timestamp.toDate === 'function') {
             t = data.timestamp.toDate();
         } else {
             t = new Date(data.timestamp);
         }
-        
         timeDiv.textContent = t.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
         row.appendChild(timeDiv);
     }
