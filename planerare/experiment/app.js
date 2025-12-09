@@ -858,6 +858,13 @@ function setupChatListener(limit) {
 
     const chatList = document.getElementById('chatMessages');
     
+    // Hjälpfunktion: Kolla om två datum är samma dag
+    const isSameDay = (d1, d2) => {
+        return d1.getFullYear() === d2.getFullYear() &&
+               d1.getMonth() === d2.getMonth() &&
+               d1.getDate() === d2.getDate();
+    };
+
     chatUnsubscribe = db.collection("notes")
         .orderBy("timestamp", "desc")
         .limit(limit)
@@ -871,28 +878,56 @@ function setupChatListener(limit) {
             chatList.innerHTML = ''; // Rensa listan
 
             if (docs.length === 0) {
-                chatList.innerHTML = '<div style="text-align:center; padding:20px; color:#999;">Inga noteringar än.</div>';
+                // Snyggare tom-state
+                chatList.innerHTML = '<div style="text-align:center; padding:30px; color:#9ca3af; font-size:0.9rem;">Inga meddelanden än.</div>';
                 return;
             }
 
-            let lastDate = null;
+            let lastDateKey = null; // Håller koll på datum-gruppering
 
             docs.forEach(data => {
-                // Datum-separator
+                // Datum-separator logic
                 if (data.timestamp) {
-                    const msgDate = new Date(data.timestamp).toLocaleDateString();
-                    if (msgDate !== lastDate) {
+                    const msgDateObj = new Date(data.timestamp);
+                    // Skapa en nyckel för jämförelse (t.ex. "Mon Dec 02 2024")
+                    const currentDateKey = msgDateObj.toDateString();
+
+                    if (currentDateKey !== lastDateKey) {
                         const sep = document.createElement('div');
-                        sep.className = 'chat-date-separator'; // Se till att du har CSS för denna
-                        sep.style.textAlign = 'center';
-                        sep.style.fontSize = '0.75rem';
-                        sep.style.color = '#9ca3af';
-                        sep.style.margin = '10px 0';
-                        sep.textContent = msgDate;
+                        sep.className = 'chat-date-separator'; 
+                        
+                        // --- LOGIK FÖR IDAG / IGÅR ---
+                        const today = new Date();
+                        const yesterday = new Date();
+                        yesterday.setDate(yesterday.getDate() - 1);
+
+                        let displayText = '';
+
+                        if (isSameDay(msgDateObj, today)) {
+                            displayText = 'Idag';
+                        } else if (isSameDay(msgDateObj, yesterday)) {
+                            displayText = 'Igår';
+                        } else {
+                            // Fallback: "9 dec" (Svenskt format)
+                            let options = { day: 'numeric', month: 'short' };
+                            // Om det är ett annat år, visa det också
+                            if (msgDateObj.getFullYear() !== today.getFullYear()) {
+                                options.year = 'numeric';
+                            }
+                            displayText = msgDateObj.toLocaleDateString('sv-SE', options).replace('.', ''); // Tar bort ev. punkt
+                        }
+
+                        // VIKTIGT: Wrappa i <span> för att CSS-linjen ska ligga bakom texten snyggt
+                        sep.innerHTML = `<span>${displayText}</span>`;
+                        
                         chatList.appendChild(sep);
-                        lastDate = msgDate;
+                        lastDateKey = currentDateKey;
                     }
                 }
+                
+                // Rendera bubblan (använder din befintliga funktion)
+                // OBS: Se till att skicka med ID också om du vill ha högerklick-menyn
+                // Eftersom docs redan har 'id' inbakat (se rad 14) så skickar vi hela 'data'-objektet
                 renderChatBubble(data, chatList);
             });
 
