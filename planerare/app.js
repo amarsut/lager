@@ -794,14 +794,12 @@ function generateTechSpecHTML(data, regnr) {
 
     const createInput = (key, val) => {
         const value = val || '';
+        // Tog bort width-logiken här för att låta CSS styra bredden i den högra kolumnen
         return `<input class="spec-input" 
                        value="${value}" 
-                       style="width: ${value.length + 3}ch;" 
-                       oninput="this.style.width = (this.value.length + 3) + 'ch'"
                        onchange="saveTechSpec('${regnr}', '${key}', this.value)">`;
     };
 
-    // FIX 6: Tog bort kolon inuti <b> taggarna
     return `
         <div class="tech-header-main">
            <svg class="brand-icon-svg"><use href="${brandIcon}"></use></svg>
@@ -809,39 +807,79 @@ function generateTechSpecHTML(data, regnr) {
         </div>
         <ul class="tech-list">
             <li>
-                <svg class="spec-icon-svg"><use href="#icon-car-v2"></use></svg> 
-                <span><b>Bil</b> ${createInput('model', data.model)}</span>
+                <div class="spec-label-col">
+                    <svg class="spec-icon-svg"><use href="#icon-car-v2"></use></svg> 
+                    <b>Bil</b>
+                </div>
+                <div class="spec-value-col">
+                    ${createInput('model', data.model)}
+                </div>
             </li>
             <li>
-                <svg class="spec-icon-svg"><use href="#icon-belt-v2"></use></svg> 
-                <span><b>Kamrem</b> ${createInput('timing_belt', data.timing_belt)}</span>
+                <div class="spec-label-col">
+                    <svg class="spec-icon-svg"><use href="#icon-belt-v2"></use></svg> 
+                    <b>Kamrem</b>
+                </div>
+                <div class="spec-value-col">
+                    ${createInput('timing_belt', data.timing_belt)}
+                </div>
             </li>
             
             <li>
-                <svg class="spec-icon-svg"><use href="#icon-engine-v2"></use></svg> 
-                <span><b>Motor</b> ${createInput('engine', data.engine)}</span>
+                <div class="spec-label-col">
+                    <svg class="spec-icon-svg"><use href="#icon-engine-v2"></use></svg> 
+                    <b>Motor</b>
+                </div>
+                <div class="spec-value-col">
+                    ${createInput('engine', data.engine)}
+                </div>
             </li>
             <li>
-                <svg class="spec-icon-svg"><use href="#icon-torque-v2"></use></svg> 
-                <span><b>Moment</b> ${createInput('torque', data.torque)}</span>
+                <div class="spec-label-col">
+                    <svg class="spec-icon-svg"><use href="#icon-torque-v2"></use></svg> 
+                    <b>Moment</b>
+                </div>
+                <div class="spec-value-col">
+                    ${createInput('torque', data.torque)}
+                </div>
             </li>
 
             <li>
-                <svg class="spec-icon-svg"><use href="#icon-oil-v2"></use></svg> 
-                <span><b>Olja</b> ${createInput('oil', data.oil)}</span>
+                <div class="spec-label-col">
+                    <svg class="spec-icon-svg"><use href="#icon-oil-v2"></use></svg> 
+                    <b>Olja</b>
+                </div>
+                <div class="spec-value-col">
+                    ${createInput('oil', data.oil)}
+                </div>
             </li>
             <li>
-                <svg class="spec-icon-svg"><use href="#icon-battery-v2"></use></svg> 
-                <span><b>Batteri</b> ${createInput('battery', data.battery)}</span>
+                <div class="spec-label-col">
+                    <svg class="spec-icon-svg"><use href="#icon-battery-v2"></use></svg> 
+                    <b>Batteri</b>
+                </div>
+                <div class="spec-value-col">
+                    ${createInput('battery', data.battery)}
+                </div>
             </li>
 
             <li>
-                <svg class="spec-icon-svg"><use href="#icon-ac-v2"></use></svg> 
-                <span><b>AC</b> ${createInput('ac', data.ac)}</span>
+                <div class="spec-label-col">
+                    <svg class="spec-icon-svg"><use href="#icon-ac-v2"></use></svg> 
+                    <b>AC</b>
+                </div>
+                <div class="spec-value-col">
+                    ${createInput('ac', data.ac)}
+                </div>
             </li>
             <li>
-                <svg class="spec-icon-svg"><use href="#icon-weight-v2"></use></svg> 
-                <span><b>Drag</b> ${createInput('tow_weight', data.tow_weight)}</span>
+                <div class="spec-label-col">
+                    <svg class="spec-icon-svg"><use href="#icon-weight-v2"></use></svg> 
+                    <b>Drag</b>
+                </div>
+                <div class="spec-value-col">
+                    ${createInput('tow_weight', data.tow_weight)}
+                </div>
             </li>
         </ul>
     `;
