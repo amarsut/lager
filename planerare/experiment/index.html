@@ -469,6 +469,20 @@
 	    </div>
 	</div>
 
+	<div id="mobileSearchModal" class="modal-overlay mobile-only" style="z-index: 2000;">
+	    <div class="mobile-search-container" style="background:#fff; width:100%; height:100%; padding:16px; display:flex; flex-direction:column;">
+	        <div class="mobile-search-header" style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+	            <div style="position:relative; flex-grow:1;">
+	                 <svg class="icon" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#9ca3af;"><use href="#icon-search"></use></svg>
+	                <input type="text" id="mobileSearchInput" placeholder="Sök kund, reg.nr..." style="width:100%; padding:12px 12px 12px 40px; border:1px solid #e5e7eb; border-radius:12px; font-size:16px; outline:none; background:#f9fafb;">
+	            </div>
+	             <button id="closeMobileSearchBtn" style="background:none; border:none; font-size:16px; font-weight:600; color:#3b82f6; padding:8px;">Avbryt</button>
+	        </div>
+	        <div id="mobileSearchResults" style="flex-grow:1; overflow-y:auto;">
+	            </div>
+	    </div>
+	</div>
+
 	<nav class="mobile-nav mobile-only" id="mobileNav">
         <button class="mobile-nav-btn active" id="mobileHomeBtn" onclick="window.scrollTo({top:0, behavior:'smooth'});">
             <svg class="icon" viewBox="0 0 24 24"><use href="#icon-timeline-view"></use></svg> 
