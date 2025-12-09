@@ -127,54 +127,47 @@ function updateHeaderDate() {
 
 // --- HJÄLPFUNKTION: Skapa Mobilkortet (NY DESIGN) ---
 function createJobCard(job) {
+    // Datum & Tid format: "24 Dec 13:00"
     const d = new Date(job.datum);
+    const dateStr = d.toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' });
     const timeStr = d.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
+    // Gör första bokstaven i månaden stor (dec -> Dec)
+    const finalDate = `${dateStr.charAt(0).toUpperCase() + dateStr.slice(1)} ${timeStr}`;
     
     const price = job.kundpris ? `${job.kundpris} kr` : '0 kr';
     const regNr = (job.regnr && job.regnr.toUpperCase() !== 'OKÄNT') ? job.regnr.toUpperCase() : '---';
     const customer = job.kundnamn || 'Okänd';
     
-    // Status logik
-    const status = job.status || 'bokad';
-    const isDone = status === 'klar';
-    const statusText = status.toUpperCase();
-
-    // Check-knappens ikon (om klar eller inte)
-    const checkIcon = isDone 
-        ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`
-        : `<svg viewBox="0 0 24 24" fill="none" stroke="#E2E8F0" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5" ry="5"></rect></svg>`;
+    // Status text (Stor bokstav)
+    const statusRaw = job.status || 'bokad';
+    const statusText = statusRaw.charAt(0).toUpperCase() + statusRaw.slice(1);
 
     return `
-    <div class="job-card-premium" onclick="openEditModal('${job.id}')">
-        <div class="premium-row top-row">
-            <div class="time-badge">
-                <svg class="icon-tiny" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                <span>${timeStr}</span>
-            </div>
-            <span class="status-badge-text status-${status}">${statusText}</span>
+    <div class="job-card-clean" onclick="openEditModal('${job.id}')">
+        
+        <div class="info-row">
+            <span class="info-label">Datum</span>
+            <span class="info-value date-value">${finalDate}</span>
         </div>
 
-        <div class="premium-row main-content-row">
-            <span class="premium-customer">${customer}</span>
-            <div class="premium-price-group">
-                <span class="price-label">ATT BETALA</span>
-                <span class="price-value">${price}</span>
-            </div>
+        <div class="info-row">
+            <span class="info-label">Namn</span>
+            <span class="info-value name-value">${customer}</span>
         </div>
 
-        <div class="premium-divider"></div>
+        <div class="info-row">
+            <span class="info-label">Reg.nr</span>
+            <span class="info-value reg-value">${regNr}</span>
+        </div>
 
-        <div class="premium-row bottom-row">
-            <div class="car-info-group">
-                <div class="car-icon-circle">
-                    <svg class="icon-tiny"><use href="#icon-car-v2"></use></svg>
-                </div>
-                <span class="premium-reg">${regNr}</span>
-            </div>
+        <div class="info-row">
+            <span class="info-label">Att betala</span>
+            <span class="info-value price-value">${price}</span>
+        </div>
 
-            <button class="premium-check-btn ${isDone ? 'checked' : ''}" onclick="event.stopPropagation(); setStatus('${job.id}', '${isDone ? 'bokad' : 'klar'}')">
-                ${checkIcon}
-            </button>
+        <div class="info-row">
+            <span class="info-label">Status</span>
+            <span class="info-value status-text status-${statusRaw}">${statusText}</span>
         </div>
 
     </div>`;
