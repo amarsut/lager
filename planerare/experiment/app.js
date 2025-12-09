@@ -976,20 +976,23 @@ function setupChatListener(limit) {
         });
 }
 
-function renderChatBubble(doc, container) {
-    const data = doc.data();
-    const messageId = doc.id; // VIKTIGT: Vi behöver IDt för att kunna redigera/ta bort
+function renderChatBubble(data, container) {
+    // data är nu det färdiga objektet, inte ett dokument-snapshot
+    const messageId = data.id; 
 
+    // 1. Skapa Wrapper (Raden)
     const row = document.createElement('div');
     
     let senderType = 'other';
     if (data.platform === 'system') senderType = 'system';
-    else senderType = 'me'; 
+    else senderType = 'me'; // Antar 'me' för alla icke-system just nu
 
     row.className = `chat-row ${senderType}`;
     row.dataset.messageId = messageId;
-    row.style.position = 'relative'; // För att kunna positionera menyn
+    row.style.position = 'relative';
 
+    // --- Alternativ-meny (Penna/Soptunna) ---
+    // Visas bara för mina meddelanden (inte system)
     if (senderType === 'me') {
         const optionsMenu = document.createElement('div');
         optionsMenu.className = 'message-options';
@@ -1002,7 +1005,8 @@ function renderChatBubble(doc, container) {
             </button>
         `;
 
-        // Händelselyssnare för menyn
+        // Koppla knapparna
+        // Vi skickar med 'row' och nuvarande text
         optionsMenu.querySelector('.edit').onclick = () => enterEditMode(row, data.text);
         optionsMenu.querySelector('.delete').onclick = () => deleteChatMessage(messageId);
         
@@ -1017,16 +1021,16 @@ function renderChatBubble(doc, container) {
         bubble.classList.add('is-image');
     }
 
-    // Innehåll: Text (Vi lägger det i en egen div för att lätt kunna byta ut den)
+    // Text-innehåll
     if (data.text) {
         const textDiv = document.createElement('div');
         textDiv.className = 'bubble-text-content';
-        // Omvandla länkar
+        // Gör länkar klickbara
         textDiv.innerHTML = data.text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');
         bubble.appendChild(textDiv);
     }
 
-    // Innehåll: Bild
+    // Bild-innehåll
     if (data.image) {
         const imgContainer = document.createElement('div');
         imgContainer.className = 'chat-bubble-image';
@@ -1040,12 +1044,17 @@ function renderChatBubble(doc, container) {
 
     row.appendChild(bubble);
 
-    // 3. Skapa Tidsstämpeln
+    // 3. Tidsstämpel
     if (data.timestamp) {
         const timeDiv = document.createElement('div');
         timeDiv.className = 'chat-time';
-        // Hantera om timestamp är en Firestore Timestamp eller vanlig sträng/datum
-        let t = data.timestamp && data.timestamp.toDate ? data.timestamp.toDate() : new Date(data.timestamp);
+        // Hantera olika datumformat (Firestore Timestamp vs String)
+        let t;
+        if (data.timestamp && typeof data.timestamp.toDate === 'function') {
+            t = data.timestamp.toDate();
+        } else {
+            t = new Date(data.timestamp);
+        }
         
         timeDiv.textContent = t.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
         row.appendChild(timeDiv);
@@ -1054,6 +1063,10 @@ function renderChatBubble(doc, container) {
     container.appendChild(row);
 }
 
+// ==========================================================================
+// FUNKTIONER FÖR REDIGERING & BORTTAGNING (Korrigerad Databas-sökväg)
+// ==========================================================================
+
 function enterEditMode(rowElement, currentText) {
     const bubble = rowElement.querySelector('.chat-bubble');
     const textContentDiv = bubble.querySelector('.bubble-text-content');
@@ -1061,13 +1074,9 @@ function enterEditMode(rowElement, currentText) {
 
     if (!textContentDiv || !messageId) return;
 
-    // Spara originalinnehållet ifall man ångrar sig
     const originalHTML = textContentDiv.innerHTML;
-
-    // Lägg till klass för styling
     bubble.classList.add('is-editing');
 
-    // Ersätt textinnehållet med redigeringsformuläret (Textarea + Knappar)
     textContentDiv.innerHTML = `
         <textarea class="edit-message-input" spellcheck="false">${currentText}</textarea>
         <div class="edit-message-actions">
@@ -1080,11 +1089,11 @@ function enterEditMode(rowElement, currentText) {
     const cancelBtn = textContentDiv.querySelector('.edit-btn-cancel');
     const saveBtn = textContentDiv.querySelector('.edit-btn-save');
 
-    // Fokusera och sätt markören i slutet av texten
     textarea.focus();
+    // Flytta markör till slutet
     textarea.setSelectionRange(textarea.value.length, textarea.value.length);
 
-    // Auto-resize på höjden för textarea
+    // Auto-resize textarea
     textarea.style.height = 'auto';
     textarea.style.height = textarea.scrollHeight + 'px';
     textarea.addEventListener('input', function() {
@@ -1092,11 +1101,8 @@ function enterEditMode(rowElement, currentText) {
         this.style.height = this.scrollHeight + 'px';
     });
 
-    // --- Händelselyssnare ---
-    
     // AVBRYT
     cancelBtn.onclick = () => {
-        // Återställ UI
         bubble.classList.remove('is-editing');
         textContentDiv.innerHTML = originalHTML;
     };
@@ -1104,66 +1110,39 @@ function enterEditMode(rowElement, currentText) {
     // SPARA
     saveBtn.onclick = async () => {
         const newText = textarea.value.trim();
-        if (!newText) {
-             alert("Meddelandet kan inte vara tomt.");
-             return;
-        }
-        if (newText === currentText) {
-            cancelBtn.click(); // Ingen ändring gjord
-            return;
-        }
+        if (!newText) return alert("Meddelandet kan inte vara tomt.");
+        if (newText === currentText) return cancelBtn.click();
 
-        // Lås knapparna under sparning
         saveBtn.textContent = 'Sparar...';
         saveBtn.disabled = true;
-        cancelBtn.disabled = true;
 
         try {
-            // Uppdatera i Firebase
-            // OBS: Se till att 'db' och 'currentJobId' är tillgängliga här
-            if (!currentJobId) throw new Error("Inget jobb-ID hittades");
-
-            await db.collection('jobs').doc(currentJobId)
-                    .collection('messages').doc(messageId).update({
-                        text: newText,
-                        isEdited: true // Bra att veta om det är redigerat
-                    });
-            
-            // UI-uppdateringen sköts automatiskt av din onSnapshot-lyssnare!
-            // Men vi kan återställa redigeringsläget direkt för snabbare känsla.
+            // FIX: Vi sparar till "notes" collection, inte "jobs"
+            await db.collection('notes').doc(messageId).update({
+                text: newText,
+                isEdited: true
+            });
+            // UI uppdateras automatiskt av lyssnaren
             bubble.classList.remove('is-editing');
-            // Vi behöver inte sätta innerHTML här, snapshnoten gör det strax.
 
         } catch (error) {
-            console.error("Fel vid uppdatering av meddelande:", error);
-            alert("Kunde inte spara meddelandet.");
-            // Återställ knappar
+            console.error("Fel vid uppdatering:", error);
+            alert("Kunde inte spara.");
             saveBtn.textContent = 'Spara';
             saveBtn.disabled = false;
-            cancelBtn.disabled = false;
         }
     };
 }
 
-// --- 2. Ta bort meddelande (Firebase) ---
 async function deleteChatMessage(messageId) {
-    // En enkel konfirmation (kan bytas mot en snyggare modal senare)
-    if (!confirm("Är du säker på att du vill ta bort detta meddelande?")) {
-        return;
-    }
+    if (!confirm("Ta bort meddelandet?")) return;
 
     try {
-        // OBS: Se till att 'db' och 'currentJobId' är tillgängliga här
-        if (!currentJobId) throw new Error("Inget jobb-ID hittades");
-
-        await db.collection('jobs').doc(currentJobId)
-                .collection('messages').doc(messageId).delete();
-
-        console.log("Meddelande borttaget:", messageId);
-        // UI-uppdateringen sköts automatiskt av din onSnapshot-lyssnare.
-        
+        // FIX: Vi tar bort från "notes" collection
+        await db.collection('notes').doc(messageId).delete();
+        console.log("Borttaget:", messageId);
     } catch (error) {
-        console.error("Fel vid borttagning av meddelande:", error);
+        console.error("Fel vid borttagning:", error);
         alert("Kunde inte ta bort meddelandet.");
     }
 }
