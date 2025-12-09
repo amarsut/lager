@@ -145,59 +145,43 @@ function updateHeaderDate() {
 // --- HJÄLPFUNKTION: Skapa Mobilkortet (NY DESIGN) ---
 function createJobCard(job) {
     const d = new Date(job.datum);
-    // Tid: 10.00
     const timeStr = d.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' }).replace(':', '.');
-    
-    const price = job.kundpris ? `${job.kundpris} kr` : '0 kr';
+    const price = job.kundpris ? `${Number(job.kundpris).toLocaleString('sv-SE')} kr` : '0 kr';
     const regNr = (job.regnr && job.regnr.toUpperCase() !== 'OKÄNT') ? job.regnr.toUpperCase() : '---';
-    const status = job.status || 'BOKAD';
+    const status = job.status || 'bokad';
     const customer = job.kundnamn || 'Okänd';
 
-    // Ikon bredvid namnet (Blå gubbe)
-    const userIcon = `<svg class="user-icon-blue" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>`;
-
-    // Kolla om jobbet är klart för att tända check-knappen
     const isDone = status === 'klar';
-    const checkBtnClass = isDone ? 'check-btn-circle checked' : 'check-btn-circle';
-    const targetStatus = isDone ? 'bokad' : 'klar'; // Växla status vid klick
+    const checkClass = isDone ? 'btn-check done' : 'btn-check not-done';
+    // Ändra status om man klickar på knappen
+    const nextStatus = isDone ? 'bokad' : 'klar'; 
 
     return `
     <div class="job-card status-${status}" onclick="openEditModal('${job.id}')">
-        
-        <div class="label">Kund</div>
-        <div class="value">
-            ${userIcon}
-            <span class="customer-name">${customer}</span>
+        <div class="card-top">
+            <span class="card-time">${timeStr}</span>
+            <span class="card-status">${status}</span>
         </div>
 
-        <div class="label">Reg.nr</div>
-        <div class="value">
-            <div class="reg-badge">
-                <div class="reg-blue">S</div>
-                <div class="reg-text">${regNr}</div>
+        <div class="card-main">
+            <span class="card-customer">${customer}</span>
+            <span class="card-price">${price}</span>
+        </div>
+
+        <div class="card-footer">
+            <div class="plate-badge">
+                <div class="plate-eu">S</div>
+                <div class="plate-text">${regNr}</div>
             </div>
+            
+            <button class="${checkClass}" onclick="event.stopPropagation(); setStatus('${job.id}', '${nextStatus}')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+            </button>
         </div>
-
-        <div class="label">Tid / Status</div>
-        <div class="value">
-            <span class="pill pill-time">${timeStr}</span>
-            <span class="pill pill-status ${status.toLowerCase()}">${status.toUpperCase()}</span>
-        </div>
-
-        <div class="label">Kundpris</div>
-        <div class="value">
-            <span class="price-value">${price}</span>
-        </div>
-        
-        <button class="${checkBtnClass}" 
-                style="position: absolute; bottom: 15px; right: 20px; z-index:5;"
-                onclick="event.stopPropagation(); setStatus('${job.id}', '${targetStatus}')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3">
-                <polyline points="20 6 9 17 4 12"></polyline>
-            </svg>
-        </button>
-
-    </div>`;
+    </div>
+    `;
 }
 
 // Hjälpfunktion: Skapa DESKTOP RAD (Samma som innan men inkluderad för helhet)
