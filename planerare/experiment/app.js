@@ -103,7 +103,7 @@ function renderDashboard() {
 }
 
 function createJobCard(job) {
-    // 1. Datumformat: "MÅN 15 DEC • 08:00"
+    // 1. Datumformat: "FRE 12 DEC • 10:00"
     let dateDisplay = "";
     if (job.datum) {
         const d = new Date(job.datum);
@@ -113,53 +113,46 @@ function createJobCard(job) {
         const time = d.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
         
         dateDisplay = `${dayName} ${dayNum} ${month} • ${time}`;
+    } else {
+        dateDisplay = "DATUM SAKNAS";
     }
 
     // 2. Prisformat
-    const price = job.kundpris ? `${job.kundpris} kr` : '0 kr';
+    const price = job.kundpris ? `${Number(job.kundpris).toLocaleString('sv-SE')} kr` : '0 kr';
     
-    // 3. Regnr (Snygg skylt)
-    let regBadge = '';
-    if (job.regnr && job.regnr.toUpperCase() !== 'OKÄNT') {
-        regBadge = `
-        <div class="reg-badge">
-            <div class="reg-badge-blue">S</div>
-            <div class="reg-badge-text">${job.regnr.toUpperCase()}</div>
-        </div>`;
-    }
+    // 3. Regnr
+    const regNr = (job.regnr && job.regnr.toUpperCase() !== 'OKÄNT') ? job.regnr.toUpperCase() : null;
     
     // 4. Kundnamn
     const customerName = job.kundnamn || 'Kund saknas';
 
     // 5. Status
     let statusClass = job.status || 'bokad';
-    // Fixa snyggare text för status
+    // Snyggare etikett
     const statusLabels = { 'bokad': 'Bokad', 'klar': 'Klar', 'faktureras': 'Fakturering', 'offererad': 'Offert' };
     const statusLabel = statusLabels[statusClass] || statusClass;
 
     const isDone = statusClass === 'klar';
-    const checkBtnClass = isDone ? 'check-circle-btn checked' : 'check-circle-btn';
+    const checkBtnClass = isDone ? 'check-btn-circle checked' : 'check-btn-circle';
 
     return `
         <div class="job-card status-${statusClass}" onclick="openEditModal('${job.id}')">
             
             <div class="job-card-header">
                 <span class="job-card-date">${dateDisplay}</span>
-                <span class="status-pill ${statusClass}">${statusLabel}</span>
+                <span class="status-pill">${statusLabel}</span>
             </div>
             
-            <div class="job-card-main">
-                <div style="flex-grow:1;">
-                    <span class="job-card-customer">${customerName}</span>
-                    ${regBadge}
-                </div>
+            <div class="job-card-row-main">
+                <span class="job-card-customer">${customerName}</span>
+                <span class="job-card-price">${price}</span>
             </div>
 
             <div class="job-card-footer">
-                <div class="job-card-price">${price}</div>
-
+                ${regNr ? `<span class="reg-pill">${regNr}</span>` : '<span></span>'}
+                
                 <button class="${checkBtnClass}" onclick="event.stopPropagation(); setStatus('${job.id}', '${isDone ? 'bokad' : 'klar'}')">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="20 6 9 17 4 12"></polyline>
                     </svg>
                 </button>
