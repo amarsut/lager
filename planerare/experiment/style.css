@@ -1276,8 +1276,10 @@ ul.tech-list li span {
 }
 
 
+/* _____ MOBILVY NEDAN ______ */
+
 /* =========================================
-   MOBIL-OPTIMERING (V4 - COMPACT PRO)
+   MOBIL-OPTIMERING - "CLEAN & COMPACT" (BILD 2)
    ========================================= */
 
 @media (max-width: 768px) {
@@ -1287,198 +1289,183 @@ ul.tech-list li span {
         overflow-x: hidden;
         overflow-y: auto !important; /* Tvinga scroll */
         -webkit-overflow-scrolling: touch;
-        background-color: #F2F4F7; /* Premium ljusgrå bakgrund */
+        background-color: #F8F9FB; /* Väldigt ljus bakgrund */
     }
 
     .app-layout { 
-        display: block !important; /* Tar bort flex-låsningen */
+        display: block !important; 
         height: auto !important; 
         overflow: visible !important;
     }
 
     /* Dölj desktop-grejer */
-    .sidebar, .top-bar, #jobsTable thead, .header-cta-btn { display: none !important; }
+    .sidebar, .top-bar, #jobsTable thead, .header-cta-btn, .top-search-container, .divider-vertical { display: none !important; }
+    .top-bar-actions .icon-btn:not(#headerPrivacyToggle) { display: none; }
+    
+    /* Dölj den gamla mobil-headern om du har den kvar i HTML */
+    .mobile-header { display: none; }
+
     .mobile-only { display: block; }
 
     .main-content {
         padding: 16px;
-        padding-bottom: 120px; /* Extra plats så menyn inte täcker sista kortet */
+        padding-bottom: 100px; /* Plats för menyn */
         width: 100%;
         max-width: 100%;
         margin: 0;
     }
 
-    /* 2. KOMPAKTA STATISTIK-KORT (2x2 Grid) */
+    /* 2. KOMPAKTA STATS (Scrollbar rad i toppen) */
     .stat-bar {
-        display: grid;
-        grid-template-columns: 1fr 1fr; /* Två lika stora kolumner */
-        gap: 10px;
-        margin-bottom: 24px;
-        padding: 0;
+        display: flex; /* Flex för horisontell rad */
+        overflow-x: auto;
+        padding: 4px 4px 16px 4px; 
+        gap: 12px;
+        margin: 0 -16px 10px -16px; /* Dra ut till kanten */
+        padding-left: 20px; padding-right: 20px; /* Inre luft */
+        scrollbar-width: none;
     }
+    .stat-bar::-webkit-scrollbar { display: none; }
 
     .stat-card {
         background: #ffffff;
         border-radius: 16px;
-        padding: 12px 16px;
-        min-height: 85px; /* Mycket mer kompakt */
-        border: 1px solid rgba(0,0,0,0.03);
-        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        padding: 12px 14px;
+        min-width: 110px; /* Smala kort */
+        height: 85px;     /* Låga kort */
+        box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+        border: none;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-        position: relative;
+        flex-shrink: 0; /* Förhindra att de krymper */
     }
 
-    /* Den lilla färgade linjen i toppen */
-    .stat-card::after {
-        content: ''; position: absolute; top: 12px; right: 12px;
-        width: 6px; height: 6px; border-radius: 50%;
-        background: currentColor; opacity: 0.5;
-    }
-
-    /* Style för "Alla jobb" (Ligger sist och tar full bredd) */
-    .stat-card:last-child {
-        grid-column: span 2;
-        flex-direction: row; align-items: center;
-        min-height: 50px; padding: 0 20px;
-    }
-    .stat-card:last-child .stat-card-value { font-size: 1.2rem; margin-top: 0; }
+    /* Dölj onödiga ikoner i stats för kompakt look */
+    .stat-card .icon-sm { display: none; }
 
     .stat-card-title { 
-        font-size: 0.65rem; color: #98A2B3; font-weight: 700; 
+        font-size: 0.65rem; color: #9CA3AF; font-weight: 700; 
         text-transform: uppercase; letter-spacing: 0.5px; 
     }
     
     .stat-card-value { 
-        font-size: 1.8rem; font-weight: 800; line-height: 1; letter-spacing: -1px; margin-top: 4px; 
+        font-size: 1.6rem; font-weight: 800; margin-top: 0; line-height: 1;
     }
 
-    /* Färger (Appliceras via ID) */
-    #stat-card-kommande .stat-card-value, #stat-card-kommande::after { color: #2563EB; }
-    #stat-card-faktureras .stat-card-value, #stat-card-faktureras::after { color: #D946EF; }
-    #stat-card-klar .stat-card-value, #stat-card-klar::after { color: #22C55E; }
-    #stat-card-offererad .stat-card-value, #stat-card-offererad::after { color: #64748B; }
-
-
-    /* 3. JOBB KORT (Proffsigt & Rent) */
+    /* Färger (Enligt Bild 2) */
+    #stat-card-kommande .stat-card-value { color: #3B82F6; }
+    #stat-card-faktureras .stat-card-value { color: #D946EF; }
+    #stat-card-klar .stat-card-value { color: #22C55E; }
     
-    /* Datum-rubriker */
+    /* "Alla jobb" kortet */
+    #stat-card-alla { 
+        min-width: auto; flex-grow: 1; 
+        flex-direction: row; align-items: center; 
+    }
+    #stat-card-alla .stat-card-value { font-size: 1.2rem; margin-left: auto; color: #111; }
+
+
+    /* 3. DATUM RUBRIKER */
     .date-separator {
-        font-size: 0.85rem; font-weight: 700; color: #667085;
-        margin: 20px 0 10px 4px; text-transform: uppercase; letter-spacing: 0.5px;
+        font-size: 0.85rem; font-weight: 700; color: #6B7280;
+        margin: 16px 0 8px 4px;
+        text-transform: capitalize; /* "Fre 12 dec" */
     }
 
+
+    /* 4. JOBB KORT (Design enligt Bild 2) */
     .job-card {
         background: #ffffff;
-        border-radius: 20px;
+        border-radius: 16px; /* Mjuka hörn */
         padding: 16px;
         margin-bottom: 12px;
-        box-shadow: 0 4px 6px -2px rgba(16, 24, 40, 0.03), 0 12px 16px -4px rgba(16, 24, 40, 0.08);
-        display: flex; flex-direction: column; gap: 12px;
-        position: relative; overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04); /* Mycket lätt skugga */
+        border: 1px solid #f3f4f6;
+        display: flex; flex-direction: column; gap: 8px;
+        position: relative;
     }
 
-    /* Vänsterkanten (Statusfärg) */
-    .job-card::before {
-        content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 6px;
-    }
-    .job-card.status-bokad::before { background: #3b82f6; }
-    .job-card.status-klar::before { background: #22c55e; }
-    .job-card.status-faktureras::before { background: #a855f7; }
+    /* VIKTIGT: Tar bort färgkanten på sidan */
+    .job-card::before { display: none; }
 
-    /* Topprad: Tid och Status-badge */
-    .card-top { display: flex; justify-content: space-between; align-items: center; }
+    /* Rad 1: Tid och Status */
+    .card-row-top { display: flex; justify-content: space-between; align-items: center; }
     
-    .card-time { 
-        font-size: 0.9rem; font-weight: 700; color: #344054; 
-        background: #F2F4F7; padding: 4px 10px; border-radius: 8px;
+    .card-date-text { 
+        font-size: 0.75rem; font-weight: 600; color: #9CA3AF; text-transform: uppercase; letter-spacing: 0.5px;
     }
     
-    .card-status { 
-        font-size: 0.7rem; font-weight: 800; text-transform: uppercase;
-        padding: 4px 10px; border-radius: 20px; letter-spacing: 0.5px;
+    .card-status-badge {
+        font-size: 0.7rem; font-weight: 700; 
+        padding: 3px 10px; border-radius: 10px;
+        background: #EFF6FF; color: #3B82F6; /* Default Bokad */
     }
-    .status-bokad .card-status { background: #EFF6FF; color: #2563EB; }
-    .status-klar .card-status { background: #DCFCE7; color: #16A34A; }
+    .status-klar .card-status-badge { background: #DCFCE7; color: #16A34A; }
 
-    /* Mitten: Kund och Pris */
-    .card-main { display: flex; justify-content: space-between; align-items: center; }
+    /* Rad 2: Namn och Pris */
+    .card-row-main { display: flex; justify-content: space-between; align-items: center; margin-top: 2px; }
     
     .card-customer { 
-        font-size: 1.25rem; font-weight: 800; color: #101828; 
-        white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 60%;
+        font-size: 1.15rem; font-weight: 800; color: #111827; 
     }
     
-    .card-price { font-size: 1.1rem; font-weight: 700; color: #101828; }
-
-    /* Botten: Regskylt och Check-knapp */
-    .card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; }
-
-    /* Riktig Reg-skylt Design */
-    .plate-badge {
-        display: inline-flex; height: 24px; 
-        border: 1px solid #D0D5DD; border-radius: 4px; overflow: hidden;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-    }
-    .plate-eu { 
-        background: #2563EB; width: 12px; 
-        display: flex; justify-content: center; align-items: center; 
-        color: white; font-size: 7px; font-weight: bold; 
-    }
-    .plate-text { 
-        background: #fff; padding: 0 6px; 
-        font-family: 'Menlo', 'Monaco', 'Courier New', monospace; 
-        font-weight: 700; font-size: 0.85rem; color: #101828; line-height: 22px; 
-        letter-spacing: 1px;
+    .card-price { 
+        font-size: 1.15rem; font-weight: 800; color: #059669; /* Grön text för pris */
     }
 
-    /* Check knapp */
-    .btn-check {
-        width: 36px; height: 36px; border-radius: 50%;
-        border: none; cursor: pointer;
+    /* Rad 3: Regnr och Check-knapp */
+    .card-row-bottom { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 4px; }
+
+    .card-reg-pill {
+        background: #F3F4F6; color: #6B7280;
+        font-size: 0.8rem; font-weight: 700;
+        padding: 4px 8px; border-radius: 6px;
+        letter-spacing: 0.5px;
+    }
+
+    .card-check-btn {
+        width: 32px; height: 32px; border-radius: 50%;
+        border: none; background: #fff;
         display: flex; align-items: center; justify-content: center;
-        transition: transform 0.1s;
+        border: 2px solid #E5E7EB; color: #E5E7EB; /* Inaktiv grå */
+        cursor: pointer;
     }
-    .btn-check.not-done { background: #F2F4F7; color: #98A2B3; }
-    .btn-check.done { background: #22C55E; color: white; box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3); }
-    .btn-check:active { transform: scale(0.9); }
+    .card-check-btn.checked {
+        border-color: #10B981; background: #10B981; color: white;
+    }
+    .card-check-btn svg { width: 18px; height: 18px; stroke-width: 3px; }
 
 
-    /* 4. MENY (Botten) - Renoverad */
+    /* 5. MENY (Botten) */
     .mobile-nav {
         position: fixed; bottom: 0; left: 0; right: 0;
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
-        height: 80px;
+        background: #ffffff; height: 75px;
         display: flex; justify-content: space-around; align-items: flex-end;
-        padding-bottom: 15px; /* För att lyfta ikonerna lite från kanten */
-        border-top: 1px solid rgba(0,0,0,0.05);
-        box-shadow: 0 -10px 40px rgba(0,0,0,0.05);
+        padding-bottom: 12px;
+        border-top-left-radius: 20px; border-top-right-radius: 20px;
+        box-shadow: 0 -5px 20px rgba(0,0,0,0.05);
         z-index: 9999;
     }
 
     .mobile-nav-item {
-        background: none; border: none; flex: 1;
+        background: none; border: none;
         display: flex; flex-direction: column; align-items: center; justify-content: center;
-        gap: 5px; color: #98A2B3;
+        gap: 4px; color: #C4C4C4; flex: 1;
         font-size: 0.65rem; font-weight: 600;
-        transition: color 0.2s;
     }
-    .mobile-nav-item.active { color: #2563EB; }
-    .mobile-nav-item svg { width: 24px; height: 24px; stroke-width: 2px; }
+    .mobile-nav-item.active { color: #3B82F6; }
+    .nav-icon { width: 24px; height: 24px; }
 
-    /* PLUS-KNAPPEN (Svävande Glow) */
+    /* Plus-knappen */
     #mobileAddJobBtn {
         width: 56px; height: 56px;
         border-radius: 50%;
-        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        background: #2563EB;
         color: white; border: none;
         display: flex; justify-content: center; align-items: center;
-        /* Positionering för att sväva */
-        transform: translateY(-25px); 
-        box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4), 0 2px 4px rgba(37, 99, 235, 0.1);
+        transform: translateY(-25px); /* Svävar */
+        box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4);
     }
     #mobileAddJobBtn svg { width: 30px; height: 30px; }
-    #mobileAddJobBtn:active { transform: translateY(-22px) scale(0.95); }
 }
