@@ -1204,20 +1204,6 @@ ul.tech-list li span {
     transition: all 0.3s ease;
 }
 
-/* 2. Fixar Input-området så header och input staplas korrekt */
-.chat-widget.edit-mode .chat-input-area {
-    display: flex;
-    flex-direction: column; /* VIKTIGT: Stapla header och input vertikalt */
-    align-items: stretch;   /* Fyll bredden */
-    padding: 0;             /* Nollställ padding för att bygga upp det snyggt */
-    border-top: 1px solid #e5e7eb;
-    background: #fff;
-    box-shadow: 0 -10px 40px rgba(0,0,0,0.1); /* "Lyft" upp rutan */
-    z-index: 2000;
-    position: relative;
-    padding-bottom: 20px; /* Lite luft i botten */
-}
-
 /* 3. Header: "Redigera meddelande" */
 .chat-edit-header {
     display: flex;
@@ -1250,13 +1236,6 @@ ul.tech-list li span {
 .close-edit-btn:hover { background: #e5e7eb; color: #111; }
 
 /* 4. Input-wrapper i redigeringsläge */
-/* Eftersom vi bytte till column måste vi skapa en wrapper för textfält + knapp */
-.chat-widget.edit-mode #chatInput {
-    margin: 0 20px;
-    width: calc(100% - 40px); /* Full bredd minus marginal */
-    min-height: 48px;
-    padding-right: 60px; /* Plats för knappen inuti fältet */
-}
 
 /* Dölj vänster-ikoner (gem/kamera) i redigeringsläge för renare look */
 .chat-widget.edit-mode .chat-actions-left {
@@ -1264,16 +1243,6 @@ ul.tech-list li span {
 }
 
 /* 5. Justera Sänd-knappen i redigeringsläge */
-.chat-widget.edit-mode #chatSendBtn {
-    position: absolute;
-    bottom: 25px; /* Justera så den hamnar i linje med input */
-    right: 25px;
-    width: 40px; height: 40px;
-    background-color: #007AFF; /* Behåll blå färg */
-    box-shadow: 0 4px 10px rgba(0, 122, 255, 0.3);
-    border-radius: 50%;
-    z-index: 10;
-}
 
 .chat-widget.edit-mode #chatSendBtn:hover {
     background-color: #006be0;
@@ -1457,15 +1426,22 @@ ul.tech-list li span {
     }
     
     .card-body { padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; }
-    .info-row { display: grid; grid-template-columns: 200px 1fr; align-items: center; line-height: 1.3; width: 100%; }
+    .info-row {
+        display: grid !important; 
+        grid-template-columns: 85px 1fr !important; /* 85px för Label, resten för Värde */
+        align-items: center;
+        gap: 0 !important;
+    }
     .row-label { color: #64748B; font-weight: 400; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
     .row-label svg { color: #94A3B8; }
     
     /* Justering för företagslogga i value-fältet */
-    .row-value { 
-        font-weight: 400; color: #0F172A; font-size: 0.9rem; text-align: left; 
-        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        display: flex; align-items: center; gap: 6px; /* För att ikonen ska sitta fint vid namnet */
+    .row-value {
+        justify-content: flex-start !important; /* ÄNDRAT: Vänsterjusterat */
+        text-align: left !important;
+        width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
     .info-row.price-row { margin-top: 6px; padding-top: 6px; border-top: 1px solid #E2E8F0; }
 
@@ -1522,7 +1498,7 @@ ul.tech-list li span {
     }
 
     .modal-body {
-        flex: 1; overflow-y: auto; padding-bottom: 80px; -webkit-overflow-scrolling: touch;
+        flex: 1; overflow-y: auto; padding-bottom: 20px; -webkit-overflow-scrolling: touch;
         scrollbar-width: none; 
         -ms-overflow-style: none; 
     }
@@ -1699,11 +1675,15 @@ ul.tech-list li span {
     
     /* FIX 5: Lägre footer */
     .modal-actions {
-        padding: 8px 12px !important;
-        gap: 8px !important;
-        margin-top: 0 !important;
-        border-top: 1px solid #f1f5f9 !important;
-    }
+	    margin-top: auto !important; 
+	    border-top: 1px solid #f1f5f9 !important;
+	    padding: 16px !important; /* Lite mer luft */
+	    background: #fff; /* Täck bakomliggande text om man scrollar */
+	    position: sticky;
+	    bottom: 0;
+	    z-index: 10;
+	    justify-content: flex-end !important;
+	}
     .modal-actions .button { 
         padding: 0 16px !important; 
         font-size: 0.9rem !important; 
@@ -1944,4 +1924,455 @@ ul.tech-list li span {
         height: 13px;
         color: #94a3b8;
     }
+}
+
+/* =================================================================
+   FIX: 1. MOBIL MODAL FOOTER (Knapparna i botten)
+   ================================================================= */
+@media (max-width: 768px) {
+    /* Gör så att modalen tar hela skärmen och använder flexbox */
+    #jobModal .modal-content, 
+    #jobModalForm {
+        height: 100vh !important;
+        display: flex !important;
+        flex-direction: column !important;
+        overflow: hidden !important; /* Förhindrar dubbla scrollbars */
+    }
+
+    /* Gör så att innehållet (inputs) kan scrolla men lämnar plats för footern */
+    #jobModalForm .modal-body,
+    #jobModal .modal-body {
+        flex: 1 !important; /* Tar all tillgänglig plats */
+        overflow-y: auto !important;
+        padding-bottom: 100px !important; /* Extra plats så man kan scrolla fram sista fältet */
+    }
+
+    /* Lås fast knapparna i botten */
+    .modal-actions {
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        background: #ffffff !important;
+        border-top: 1px solid #e5e7eb !important;
+        padding: 16px 20px !important; /* Mer luft runt knapparna */
+        z-index: 9999 !important;
+        box-shadow: 0 -4px 10px rgba(0,0,0,0.05) !important;
+        margin: 0 !important;
+        display: flex !important;
+        
+        justify-content: flex-end !important; /* ÄNDRAT: Tryck mot höger */
+        gap: 10px !important;
+    }
+
+    /* Gör knapparna större och tydligare på mobil */
+    .modal-actions .button {
+        height: 48px !important;
+        font-size: 16px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        
+        flex: initial !important; /* ÄNDRAT: Ta bort stretch */
+        width: auto !important;   /* ÄNDRAT: Anpassa bredd efter text */
+        min-width: 100px;         /* Minsta bredd för att vara tryckvänliga */
+        padding: 0 20px !important;
+    }
+}
+
+/* =================================================================
+   FIX: 3. GRÖNA IKONEN (Positionering)
+   Denna CSS fungerar ihop med JS-ändringen nedan.
+   ================================================================= */
+.company-icon-wrapper {
+	position: static !important; /* ÄNDRAT: Inte absolut position */
+    transform: none !important;
+    margin-right: 6px; /* Litet avstånd till texten */
+    display: inline-flex;
+}
+
+/* Se till att raden tillåter absolut positionering */
+.row-value {
+    position: relative !important;
+    display: flex !important;
+    justify-content: flex-end !important; /* Texten högerjusteras */
+    overflow: visible !important; /* Så ikonen får synas utanför boxen */
+}
+
+/* =================================================================
+   NY MESSENGER-STIL FÖR REDIGERING (MED HEADER & STÄNG-KNAPP)
+   Ersätt den förra koden med denna.
+   ================================================================= */
+
+/* 1. Behållaren: Använd Grid för att bygga layouten */
+.chat-widget.edit-mode .chat-input-area {
+    display: grid !important;
+    grid-template-areas: 
+        "header header"
+        "input button";
+    grid-template-columns: 1fr auto; /* Input tar plats, knapp tar sin plats */
+    grid-template-rows: auto auto;
+    
+    background-color: #ffffff !important;
+    border-top: 1px solid #e5e7eb !important;
+    border-radius: 0 !important; /* Ingen rundning på själva container-botten */
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.05) !important;
+    padding: 0 10px 10px 10px !important;
+    margin: 0 !important;
+    min-height: auto !important;
+    
+    /* Återställ positionering */
+    position: relative !important;
+    width: 100% !important;
+}
+
+/* 2. Headern ("Redigera meddelande" + X) */
+.chat-widget.edit-mode .chat-edit-header {
+    grid-area: header;
+    display: flex !important;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 6px 8px 6px !important;
+    margin-bottom: 0 !important;
+    background: transparent !important;
+    border-bottom: none !important;
+}
+
+.chat-widget.edit-mode .chat-edit-header span {
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: #050505 !important;
+}
+
+/* Stäng-knappen (X) */
+.chat-widget.edit-mode #closeEditBtn {
+    font-size: 20px !important;
+    color: #65676b !important; /* Messenger-grå */
+    background: transparent !important;
+    padding: 4px !important;
+    width: auto !important;
+    height: auto !important;
+    display: flex !important;
+}
+
+/* 3. Textfältet (Den grå "korven") */
+.chat-widget.edit-mode #chatInput {
+    grid-area: input;
+    background-color: #f0f2f5 !important; 
+    border-radius: 20px !important;
+    border: none !important;
+    padding: 10px 16px !important;
+    margin: 0 !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    color: #050505 !important;
+    font-size: 15px !important;
+    
+    /* Håll texten på en rad och tillåt scroll */
+    white-space: nowrap !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+
+    /* NYTT: Dölj scrollbaren för Firefox och IE/Edge */
+    scrollbar-width: none !important; 
+    -ms-overflow-style: none !important; 
+}
+
+/* NYTT: Dölj scrollbaren för Chrome, Safari och Opera */
+.chat-widget.edit-mode #chatInput::-webkit-scrollbar {
+    display: none !important;
+}
+
+/* 4. Spara-knappen (Blå cirkel) */
+.chat-widget.edit-mode #chatSendBtn {
+    grid-area: button;
+    position: relative !important;
+    background-color: #0084ff !important;
+    border-radius: 50% !important;
+    width: 36px !important;
+    height: 36px !important;
+    margin: 0 0 0 8px !important; /* Avstånd till vänster (mot input) */
+    right: auto !important; bottom: auto !important;
+    box-shadow: none !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    align-self: center; /* Centrera vertikalt mot input */
+}
+
+.chat-widget.edit-mode #chatSendBtn svg {
+    stroke: white !important;
+    width: 20px !important;
+    height: 20px !important;
+}
+
+/* 5. MOBIL-ANPASSNING */
+@media (max-width: 768px) {
+    .chat-widget.edit-mode .chat-input-area {
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        z-index: 10000 !important;
+        border-radius: 12px 12px 0 0 !important; /* Lite rundning i toppen på mobil */
+        padding-bottom: max(10px, env(safe-area-inset-bottom)) !important; /* Ta höjd för iPhone-strecket */
+    }
+}
+
+/* =================================================================
+   MESSENGER-STIL PÅ SÖKMODAL (MOBIL)
+   ================================================================= */
+@media (max-width: 768px) {
+    
+    /* Behållaren som täcker hela skärmen */
+    .messenger-search-container {
+        background-color: #ffffff;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Header: Pil + Input */
+    .messenger-search-header {
+        display: flex;
+        align-items: center;
+        padding: 8px 12px;
+        gap: 12px; /* Avstånd mellan pil och fält */
+        background: #fff;
+        /* Valfritt: Messenger har ibland ingen border, ibland en tunn */
+        /* border-bottom: 1px solid #f0f0f0; */ 
+    }
+
+    /* Tillbaka-pilen */
+    .messenger-back-btn {
+        background: transparent;
+        border: none;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        width: 36px;
+        height: 36px;
+        color: #0F172A; /* Svart pil */
+        border-radius: 50%;
+        transition: background 0.2s;
+    }
+    .messenger-back-btn:active {
+        background-color: #f2f2f2;
+    }
+    .messenger-back-btn svg {
+        width: 24px;
+        height: 24px;
+    }
+
+    /* Wrappern runt inputfältet (Den grå korven) */
+    .messenger-input-wrapper {
+        flex: 1;
+        position: relative;
+        background-color: #f0f2f5; /* Messenger grå */
+        border-radius: 20px;       /* Rundade hörn */
+        height: 40px;
+        display: flex;
+        align-items: center;
+        overflow: hidden;
+    }
+
+    /* Sökikonen inuti fältet (valfritt, men snyggt) */
+    .search-icon-inside {
+        position: absolute;
+        left: 12px;
+        width: 16px;
+        height: 16px;
+        color: #65676b; /* Mörkgrå ikon */
+        pointer-events: none;
+    }
+
+    /* Själva textfältet */
+    #mobileSearchInput {
+        width: 100%;
+        height: 100%;
+        background: transparent;
+        border: none;
+        outline: none;
+        padding-left: 36px; /* Plats för förstoringsglaset */
+        padding-right: 16px;
+        font-size: 16px; /* Bra storlek för mobil */
+        color: #050505;
+    }
+    
+    /* Placeholder-färg */
+    #mobileSearchInput::placeholder {
+        color: #65676b;
+        font-weight: 400;
+    }
+
+    /* Resultatlistan */
+    .messenger-results-area {
+        flex: 1;
+        overflow-y: auto;
+        padding: 0;
+        background-color: #fff;
+    }
+    
+    /* Justering av resultatkorten inuti sökmodalen för att matcha stilen */
+    #mobileSearchResults .job-card-new {
+        width: 95% !important;          /* Inte 100% bredd längre */
+        margin: 10px auto !important;   /* Centrera och lägg till mellanrum (10px) */
+        border: 1px solid #CBD5E1 !important; /* Ta tillbaka ramen */
+        border-radius: 4px !important;  /* Ta tillbaka rundade hörn */
+        box-shadow: 0 1px 2px rgba(0,0,0,0.02) !important; /* Ta tillbaka skuggan */
+        background: #fff !important;
+    }
+}
+
+/* =================================================================
+   CHATT HEADER & RENSA-KNAPP (Messenger Style)
+   ================================================================= */
+
+/* 1. Styla det lilla rensa-krysset inuti inputfälten */
+.clear-input-btn {
+    background: none; border: none; padding: 0;
+    width: 24px; height: 24px;
+    display: flex; align-items: center; justify-content: center;
+    color: #8E8E93; /* Ljusgrå färg */
+    cursor: pointer;
+    margin-right: 8px; /* Lite luft till högerkanten */
+    flex-shrink: 0;
+}
+.clear-input-btn svg { width: 18px; height: 18px; }
+.clear-input-btn:hover { color: #3b82f6; }
+
+/* 2. Uppdatera Chat Header att matcha Sökmodalen */
+.chat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Sprider ut Pil - Sök - Verktyg */
+    gap: 8px;
+    padding: 8px 12px;
+    background: #fff;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+/* Anpassa sökfältet i chatten så det ser ut som det andra */
+.chat-header .messenger-input-wrapper {
+    flex: 1; /* Tar upp all plats i mitten */
+    background-color: #f0f2f5;
+    border-radius: 20px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+/* Sök-inputen i chatten */
+#chatSearchInput {
+    width: 100%; height: 100%;
+    background: transparent; border: none; outline: none;
+    padding-left: 36px; /* Plats för ikonen */
+    padding-right: 8px; /* Plats för krysset */
+    font-size: 16px; color: #050505;
+}
+
+/* Justera verktygen till höger */
+.chat-header-tools {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+/* Sökikonen inuti */
+.chat-header .search-icon-inside {
+    position: absolute; left: 10px;
+    width: 16px; height: 16px; color: #65676b;
+    pointer-events: none;
+}
+
+/* =================================================================
+   NY CHATT HEADER DESIGN (INTEGRERADE KNAPPAR)
+   ================================================================= */
+
+/* 1. Rensa upp pilen (Ta bort grå bakgrund) */
+.messenger-back-btn.clean-arrow {
+    background: transparent !important; /* Ingen färg */
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    margin-right: 4px;
+    color: #000000 !important;
+}
+.messenger-back-btn.clean-arrow:hover {
+    background-color: #f1f5f9 !important; /* Liten hover-effekt vid behov */
+}
+
+/* 2. Sökfältet tar all plats */
+.full-width-search {
+    flex: 1; /* Väx och ta all plats */
+    background-color: #F1F5F9; /* Samma grå som på din bild */
+    height: 44px; /* Lite högre för att rymma knapparna snyggt */
+    border-radius: 22px; /* Mjukare rundning */
+    display: flex;
+    align-items: center;
+    position: relative;
+    padding-right: 8px; /* Lite luft till höger */
+}
+
+/* Justera inputfältet så det inte krockar med knapparna */
+#chatSearchInput {
+    flex: 1; /* Ta upp platsen till vänster om knapparna */
+    min-width: 0; /* Förhindra overflow */
+    padding-right: 8px; /* Luft innan knapparna börjar */
+}
+
+/* 3. Behållare för knapparna inuti fältet */
+.inside-search-tools {
+    display: flex;
+    align-items: center;
+    height: 100%;
+}
+
+/* 4. Avdelare (Strecken mellan knapparna) */
+.tool-divider {
+    width: 1px;
+    height: 24px; /* Höjden på strecket */
+    background-color: #CBD5E1; /* Grå färg på strecket */
+    margin: 0 2px;
+}
+
+/* 5. Ikon-knapparna inuti */
+.tool-icon-btn {
+    background: transparent;
+    border: none;
+    width: 36px;
+    height: 100%; /* Fyll höjden för klickyta */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #475569; /* Mörkgrå färg på ikoner */
+    transition: color 0.2s;
+}
+
+.tool-icon-btn:hover {
+    color: #000;
+}
+
+.tool-icon-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* Specifik styling för AI-stjärnorna om man vill */
+.sparkle-icon {
+    width: 20px;
+    height: 20px;
+}
+
+/* Justera rensa-krysset så det inte krockar */
+#clearChatSearch {
+    margin-right: 4px;
 }
