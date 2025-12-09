@@ -1115,38 +1115,46 @@ ul.tech-list li span {
 /* Behållaren för ikonerna */
 .chat-row .message-options {
     position: absolute;
-    top: 50%;
-    transform: translateY(-50%); /* Centrera vertikalt */
+    top: 0;
+    bottom: 0; /* Fyller hela höjden för lättare träff */
     display: flex;
+    align-items: center; /* Centrera ikonerna vertikalt */
     gap: 8px;
+    
     opacity: 0; /* Dold som standard */
-    transition: opacity 0.2s ease-in-out;
-    z-index: 20;
     pointer-events: none; /* Klick går igenom när osynlig */
+    
+    /* UX-MAGI: Vänta 0.3s innan den döljs när man slutar hovra */
+    transition: opacity 0.2s ease-in-out 0.3s; 
+    
     background: transparent;
-    padding: 0 8px;
+    z-index: 20;
 }
 
 /* Visa menyn vid hover på hela raden */
 .chat-row:hover .message-options {
     opacity: 1;
     pointer-events: auto; /* Aktivera klick */
+    
+    /* Visa direkt utan fördröjning när man går PÅ raden */
+    transition-delay: 0s; 
 }
 
 /* --- Positionering: Mina meddelanden (ME) --- */
-/* Bubblan är till höger -> Ikonerna ska ligga till VÄNSTER om bubblan */
+/* Vi använder padding-right istället för margin. 
+   Det skapar en "osynlig bro" mellan bubblan och ikonerna. */
 .chat-row.me .message-options {
-    right: 100%; /* 100% från högerkanten av bubblan */
-    margin-right: 4px;
+    right: 100%; 
+    padding-right: 10px; /* Osynlig bro */
     justify-content: flex-end;
 }
 
 /* --- Positionering: Andras meddelanden (OTHER/SYSTEM) --- */
-/* Bubblan är till vänster -> Ikonerna ska ligga till HÖGER om bubblan */
+/* Samma här: padding-left skapar bron */
 .chat-row.other .message-options,
 .chat-row.system .message-options {
-    left: 100%; /* 100% från vänsterkanten av bubblan */
-    margin-left: 4px;
+    left: 100%; 
+    padding-left: 10px; /* Osynlig bro */
     justify-content: flex-start;
 }
 
@@ -1161,6 +1169,7 @@ ul.tech-list li span {
     color: #8E8E93;
     transition: all 0.2s;
     box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    flex-shrink: 0; /* Förhindrar att de kläms ihop */
 }
 
 .option-btn:hover {
@@ -1177,7 +1186,6 @@ ul.tech-list li span {
 }
 
 .option-btn svg { width: 14px; height: 14px; }
-
 
 /* ==========================================================================
    REDIGERINGSLÄGE (Snyggare Overlay)
