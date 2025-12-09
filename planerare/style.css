@@ -378,12 +378,16 @@ tbody tr button {
     border-radius: 12px;
     box-shadow: 0 10px 25px rgba(0,0,0,0.2);
     position: relative;
+    display: flex;
+    flex-direction: column;
     
-    max-height: 90vh; /* Maximal höjd får vara 90% av skärmen */
-    overflow-y: auto; /* Tillåter rullning om innehållet är högre än max-height */
-    
-    width: 100% !important; height: 100dvh !important;
-    padding-bottom: 0 !important;
+    /* FIX: Dator-storlek */
+    width: 100%;
+    max-width: 550px; /* Begränsar bredden på dator */
+    height: auto;     /* Låter höjden anpassa sig */
+    max-height: 85vh; /* Men max 85% av skärmen */
+    margin: auto;     /* Centrerar modalen */
+    overflow-y: auto; 
 }
 .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
 .modal-header h2 { margin: 0; font-size: 1.25rem; }
@@ -1561,52 +1565,86 @@ ul.tech-list li span {
         font-size: 0.85rem; color: #64748B;
     }
 
-    /* --- TEKNISK DATA (FIX 6: KOMPAKT HÖJD) --- */
-    .tech-section-wrapper { margin: 0 !important; padding: 0 16px !important; border: none !important; background: transparent !important; }
-    .tech-header-main { display: flex !important; align-items: center; gap: 8px; margin-bottom: 10px; }
+    /* --- TEKNISK DATA (KOMPAKT GRID MED LINJE) --- */
+    .tech-section-wrapper { 
+        margin: 0 !important; 
+        padding: 0 16px !important; 
+        border: none !important; 
+        background: transparent !important; 
+    }
+    .tech-header-main { 
+        display: flex !important; 
+        align-items: center; 
+        gap: 8px; 
+        margin-bottom: 8px; /* Lite mindre marginal under rubriken */
+    }
     .tech-header-main h4 { margin: 0; font-size: 1rem; }
 
     ul.tech-list {
-        display: flex !important; flex-direction: column !important; gap: 0 !important;
-        border: 1px solid #E2E8F0; border-radius: 8px; overflow: hidden; background: #fff;
+        display: flex !important; 
+        flex-direction: column !important; 
+        gap: 0 !important;
+        border: 1px solid #E2E8F0; 
+        border-radius: 8px; 
+        overflow: hidden; 
+        background: #fff;
     }
 
     ul.tech-list li {
-        display: flex !important; 
-        justify-content: flex-start !important; 
-        align-items: center !important; 
-        padding: 4px 12px !important; /* Mycket mindre padding */
+        display: grid !important;
+        grid-template-columns: 90px 1fr !important; /* Minskad vänsterkolumn från 100px till 90px */
         border-bottom: 1px solid #f1f5f9 !important;
-        margin: 0 !important; background: transparent !important; border-radius: 0 !important;
-        gap: 8px !important; 
-        min-height: 0 !important; /* Tvinga ner min-höjden */
-        line-height: 1.2 !important;
+        margin: 0 !important; 
+        padding: 0 !important;
+        background: transparent !important; 
+        min-height: 32px !important; /* Minskad höjd från 38px */
     }
     ul.tech-list li:last-child { border-bottom: none !important; }
     
-    ul.tech-list li svg { 
-        width: 14px; height: 14px; color: #94A3B8; 
-        margin-right: 0 !important; flex-shrink: 0;
+    /* Vänster kolumn */
+    .spec-label-col {
+        display: flex;
+        align-items: center;
+        gap: 6px; /* Tajtare avstånd mellan ikon och text */
+        padding: 4px 8px; /* Mindre padding (var 6px 12px) */
+        background-color: #F8FAFC; 
+        border-right: 1px solid #E2E8F0; 
     }
     
-    ul.tech-list li span {
-        display: flex; width: 100%; 
-        justify-content: flex-start;
-        align-items: center;
-        gap: 6px;
+    .spec-label-col svg {
+        width: 14px; height: 14px; color: #94A3B8; flex-shrink: 0;
     }
-
-    ul.tech-list li b {
+    
+    .spec-label-col b {
         font-size: 0.8rem; color: #64748B; font-weight: 600; 
-        min-width: auto !important;
         white-space: nowrap;
     }
-    
+
+    /* Höger kolumn */
+    .spec-value-col {
+        display: flex;
+        align-items: center;
+        /* Padding: Top/Bottom=4px, Right=8px, Left=6px (närmare linjen) */
+        padding: 4px 8px 4px 6px; 
+        background-color: #fff;
+        overflow: hidden; /* Nödvändigt för text-hantering */
+    }
+
     .spec-input {
-        font-size: 0.85rem; font-weight: 600; color: #0F172A; 
-        text-align: left !important;
-        border: none !important; background: transparent !important; 
-        padding: 0 !important; width: auto !important; flex-grow: 1;
+        font-size: 0.80rem; /* Mindre text */
+    	letter-spacing: -0.3px; /* Tryck ihop bokstäverna lite */
+        font-weight: 600; 
+        color: #0F172A; 
+        border: none !important; 
+        background: transparent !important; 
+        padding: 0 !important; 
+        width: 100% !important; 
+        outline: none;
+        
+        /* Hantera text som är för lång (se tips nedan) */
+        text-overflow: ellipsis; 
+        white-space: nowrap;
+        overflow: hidden;
     }
 
     /* --- HISTORIK --- */
@@ -1789,4 +1827,6 @@ ul.tech-list li span {
     }
     #mobileAddJobBtn svg { width: 24px !important; height: 24px !important; color: inherit !important; }
     #mobileAddJobBtn:active { color: #111 !important; }
+    
+    
 }
