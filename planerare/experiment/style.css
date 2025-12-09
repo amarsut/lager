@@ -774,3 +774,23 @@ ul.tech-list li b {
     padding: 12px 24px; font-size: 0.9rem; color: #1f2937;
     border-bottom: 1px solid #f9fafb;
 }
+
+.spec-input {
+    background: transparent;
+    border: none;
+    border-bottom: 1px dashed #d1d5db;
+    font-family: inherit;
+    font-size: 0.9rem;
+    color: #374151;
+    
+    /* ÄNDRINGARNA HÄR: */
+    width: auto;          /* Låt den anpassa sig */
+    min-width: 60px;      /* Alltid minst så här bred (för att kunna klicka) */
+    display: inline-block;
+    padding: 0;
+    transition: all 0.2s;
+}
+
+/* Behåll dina hover/focus effekter som innan */
+.spec-input:hover { border-bottom-color: var(--primary-color); background-color: #f9fafb; }
+.spec-input:focus { outline: none; border-bottom: 2px solid var(--primary-color); background-color: #fff; font-weight: 500; }
