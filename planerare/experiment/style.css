@@ -776,7 +776,7 @@ ul.tech-list li span {
 }
 
 /* ==========================================================================
-   MODERN CHATT - FINAL POLISHED VERSION (Uppdaterad)
+   MODERN CHATT - FINAL POLISHED VERSION (Clean Gray/Blue)
    ========================================================================== */
 
 /* --- 1. Flytande Knapp (FAB) --- */
@@ -884,7 +884,7 @@ ul.tech-list li span {
     padding: 20px;
     background-color: #FFFFFF;
     display: flex; flex-direction: column;
-    gap: 12px; /* Lite mer avstånd mellan blocken av meddelanden */
+    gap: 12px; 
     scrollbar-width: thin; scrollbar-color: #D1D1D6 transparent;
 }
 .chat-messages::-webkit-scrollbar { width: 6px; }
@@ -906,12 +906,11 @@ ul.tech-list li span {
     content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: #f2f2f7; z-index: 0;
 }
 
-/* --- 5. Meddelande Rader (Wrapper) --- */
-/* Detta är nyckeln till att få tiden utanför bubblan */
+/* --- 5. Meddelande Rader (Wrapper för bubbla + tid) --- */
 .chat-row {
     display: flex;
     flex-direction: column;
-    max-width: 80%;
+    max-width: 80%; /* Bubblans maxbredd */
     animation: bubblePop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
 
@@ -922,8 +921,8 @@ ul.tech-list li span {
 
 /* Positionering (Höger/Vänster) */
 .chat-row.me { align-self: flex-end; align-items: flex-end; }
-.chat-row.other { align-self: flex-start; align-items: flex-start; }
-.chat-row.system { align-self: center; align-items: center; max-width: 90%; }
+/* Både 'other' och 'system' hamnar till vänster nu */
+.chat-row.other, .chat-row.system { align-self: flex-start; align-items: flex-start; }
 
 /* --- Själva Bubblan --- */
 .chat-bubble {
@@ -936,40 +935,24 @@ ul.tech-list li span {
     box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
 
-/* Färger */
+/* FÄRGER: Blå för mig, Grå för system/andra */
 .chat-row.me .chat-bubble {
     background-color: #007AFF; /* iOS Blue */
     color: white;
-    border-bottom-right-radius: 4px; /* Liten "svans" känsla */
+    border-bottom-right-radius: 4px; 
 }
 .chat-row.me .chat-bubble a { color: white; text-decoration: underline; }
 
-.chat-row.other .chat-bubble {
-    background-color: #F2F2F7; /* Ljusgrå */
+/* Grå bubbla för system och motpart */
+.chat-row.other .chat-bubble,
+.chat-row.system .chat-bubble {
+    background-color: #F2F2F7; /* Standard ljusgrå */
     color: #111;
     border-bottom-left-radius: 4px;
+    border: none; /* Tar bort ev. gula kanter */
 }
 
-/* Systemmeddelande (Varningar mm) */
-.chat-row.system .chat-bubble {
-    background-color: #FEFCE8; /* Ljusgul bakgrund */
-    border: 1px solid #FEF9C3;
-    color: #854D0E; /* Mörkare gul/brun text */
-    font-size: 0.85rem;
-    text-align: center;
-    border-radius: 12px;
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-    padding: 8px 12px;
-    box-shadow: none;
-}
-.chat-row.system .chat-bubble::before {
-    /* Lägger till en varningsikon automatiskt via CSS om man vill, eller via JS */
-    content: '⚠️'; 
-    font-size: 1rem;
-}
-
-/* --- Bildhantering (Snyggare) --- */
-/* Om bubblan BARA innehåller en bild (vi sätter klass via JS) */
+/* --- Bildhantering --- */
 .chat-bubble.is-image {
     background: transparent !important;
     padding: 0 !important;
@@ -982,10 +965,10 @@ ul.tech-list li span {
     border-radius: 18px; 
     max-width: 100%; 
     width: auto;
-    max-height: 300px; /* Förhindra gigantiska bilder */
+    max-height: 300px;
     display: block; 
     cursor: zoom-in;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1); /* Snygg skugga på bilden */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     transition: transform 0.2s;
 }
 .chat-bubble-image img:hover { transform: scale(1.02); }
@@ -998,10 +981,9 @@ ul.tech-list li span {
     margin-bottom: 2px;
     font-weight: 500;
 }
-/* Justera texten för tidsstämpeln */
+/* Justera positionen av tiden */
 .chat-row.me .chat-time { text-align: right; margin-right: 4px; }
-.chat-row.other .chat-time { text-align: left; margin-left: 4px; }
-.chat-row.system .chat-time { display: none; /* Dölj tid för systemmeddelanden om man vill */ }
+.chat-row.other .chat-time, .chat-row.system .chat-time { text-align: left; margin-left: 4px; }
 
 
 /* --- 6. Input Area (Footer) --- */
@@ -1017,7 +999,7 @@ ul.tech-list li span {
     flex: 1;
     border: 1px solid #E5E5EA;
     border-radius: 24px;
-    padding: 12px 96px 12px 18px; /* Plats för knappar inuti */
+    padding: 12px 96px 12px 18px; 
     font-size: 0.95rem;
     font-family: inherit; resize: none; 
     height: 48px; 
@@ -1065,4 +1047,61 @@ ul.tech-list li span {
     .chat-input-area { padding-bottom: calc(env(safe-area-inset-bottom) + 20px); }
     .chat-actions-left { right: 80px; bottom: 36px; }
     .chat-input-area textarea { padding-right: 90px; }
+}
+
+/* --- 8. IMAGE ZOOM MODAL (Återställd för snygga knappar) --- */
+.image-zoom-content {
+    position: relative;
+    max-width: 90vw;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: transparent;
+    pointer-events: none; /* Låt klick gå igenom till bilden/knapparna */
+}
+
+.image-zoom-content img {
+    max-width: 100%;
+    max-height: 80vh;
+    border-radius: 12px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    pointer-events: auto;
+}
+
+.image-zoom-actions {
+    margin-top: 20px;
+    display: flex;
+    gap: 16px;
+    pointer-events: auto;
+}
+
+/* Snygga knappar för bildläget */
+.icon-btn-light {
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 10px 24px;
+    border-radius: 30px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.95rem;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+.icon-btn-light:hover {
+    background: rgba(255, 255, 255, 0.35);
+    transform: translateY(-2px);
+}
+
+.icon-btn-light.danger {
+    background: rgba(239, 68, 68, 0.25); /* Röd ton */
+    border-color: rgba(239, 68, 68, 0.4);
+    color: #fecaca;
+}
+.icon-btn-light.danger:hover {
+    background: rgba(239, 68, 68, 0.4);
+    color: white;
 }
