@@ -632,6 +632,29 @@ tbody tr button {
 }
 .biluppgifter-btn:hover { background-color: #ffedd5; transform: translateY(-1px); }
 
+.oljemagasinet-btn {
+    display: inline-flex; 
+    align-items: center; 
+    gap: 8px;
+    background-color: #F3F4F6; /* Ljusgrå bakgrund */
+    color: #374151;            /* Mörkgrå text */
+    border: 1px solid #E5E7EB; /* Tunn grå ram */
+    padding: 6px 12px; 
+    border-radius: 6px;
+    font-size: 0.85rem; 
+    font-weight: 600; 
+    text-decoration: none;
+    transition: all 0.2s ease;
+    margin-right: 8px; /* Lite avstånd till stäng-krysset */
+}
+
+.oljemagasinet-btn:hover {
+    background-color: #E5E7EB;
+    color: #111;
+    transform: translateY(-1px);
+    border-color: #d1d5db;
+}
+
 .header-actions { display: flex; align-items: center; gap: 12px; }
 
 /* Senaste ägare badge */
