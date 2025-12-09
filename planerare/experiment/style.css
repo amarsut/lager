@@ -802,3 +802,148 @@ ul.tech-list li span {
     align-items: center;
     width: 100%; /* Låt texten ta upp hela bredden */
 }
+
+/* --- CHATT WIDGET STYLES --- */
+.chat-widget {
+    position: fixed;
+    bottom: 90px; /* Strax ovanför FAB-knappen */
+    right: 30px;
+    width: 380px;
+    height: 600px;
+    max-height: 80vh;
+    background-color: #fff;
+    border-radius: 16px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+    display: flex;
+    flex-direction: column;
+    z-index: 1000;
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
+}
+
+/* Header */
+.chat-header {
+    padding: 12px 16px;
+    background: #fff;
+    border-bottom: 1px solid #f3f4f6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.chat-header h3 { margin: 0; font-size: 1rem; font-weight: 700; }
+.chat-header-left { display: flex; align-items: center; gap: 12px; }
+.chat-filters { display: flex; gap: 4px; }
+.chat-header-actions { display: flex; align-items: center; gap: 8px; }
+
+/* Meddelandelista */
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    background-color: #f9fafb;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Bubblor */
+.chat-bubble {
+    max-width: 85%;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    position: relative;
+    word-wrap: break-word;
+}
+
+/* Mina meddelanden (Höger) */
+.chat-bubble.me {
+    align-self: flex-end;
+    background-color: var(--primary-color); /* Din blåa färg */
+    color: white;
+    border-bottom-right-radius: 2px;
+}
+
+/* Andra/System (Vänster) */
+.chat-bubble.other, .chat-bubble.system {
+    align-self: flex-start;
+    background-color: #fff;
+    border: 1px solid #e5e7eb;
+    color: #111;
+    border-bottom-left-radius: 2px;
+}
+
+/* System-specifik stil (t.ex. AI svar) */
+.chat-bubble.system {
+    background-color: #f0fdf4; /* Ljusgrön ton för system/AI */
+    border-color: #bbf7d0;
+    width: 100%; /* Låt systemmeddelanden ta mer plats */
+    max-width: 95%;
+}
+
+/* Input-område */
+.chat-input-area {
+    padding: 12px;
+    background: #fff;
+    border-top: 1px solid #f3f4f6;
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+}
+
+.chat-input-area textarea {
+    flex: 1;
+    border: 1px solid #e5e7eb;
+    border-radius: 20px;
+    padding: 10px 14px;
+    font-family: inherit;
+    resize: none;
+    max-height: 100px;
+    outline: none;
+}
+.chat-input-area textarea:focus { border-color: var(--primary-color); }
+
+.send-btn {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+/* Bilder i chatten */
+.chat-bubble-image img {
+    max-width: 100%;
+    border-radius: 8px;
+    cursor: zoom-in;
+    display: block;
+    margin-bottom: 4px;
+}
+
+/* Tidsstämpel */
+.chat-time {
+    font-size: 0.7rem;
+    color: #9ca3af;
+    margin-top: 2px;
+    align-self: flex-end;
+    margin-right: 4px;
+}
+.chat-time.system { align-self: flex-start; margin-left: 4px; }
+
+/* Mobilanpassning */
+@media (max-width: 768px) {
+    .chat-widget {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        width: 100%; height: 100%;
+        max-height: none;
+        border-radius: 0;
+        z-index: 9999;
+    }
+}
