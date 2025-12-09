@@ -58,28 +58,52 @@ function initRealtimeListener() {
 
 // 4. RENDERA DASHBOARD
 function renderDashboard() {
-    let jobsToDisplay = filterJobs(allJobs);
+    // 1. Uppdatera toppen med dagens datum (T.ex. TIS 9 DEC)
+    updateHeaderDate();
+
+    // 2. Uppdatera statistik-siffror
     updateStatsCounts(allJobs);
 
     const container = document.getElementById('jobListContainer');
-    const isMobile = window.innerWidth <= 768; // Kolla om vi är på mobil
+    const isMobile = window.innerWidth <= 768; 
     
+    let jobsToDisplay = filterJobs(allJobs);
+
+    // Om listan är tom
     if (jobsToDisplay.length === 0) {
-        container.innerHTML = '<p style="text-align:center; padding:2rem; color:#888;">Inga jobb hittades för detta filter.</p>';
+        container.innerHTML = '<p style="text-align:center; padding:2rem; color:#888;">Inga jobb hittades.</p>';
         return;
     }
 
-    // --- MOBIL VY (KORT) ---
     if (isMobile) {
-        let cardsHTML = `<div class="job-cards-container">`;
+        // --- MOBIL VY: KORT GRUPPERADE PÅ DATUM ---
+        let html = '';
+        let lastDateStr = '';
+
+        // Sortera på datum så grupperingen fungerar
+        jobsToDisplay.sort((a,b) => new Date(a.datum) - new Date(b.datum));
+
         jobsToDisplay.forEach(job => {
-            cardsHTML += createJobCard(job);
+            // Skapa datumrubrik (t.ex. "Fre 12 Dec.")
+            const d = new Date(job.datum);
+            const dateHeader = d.toLocaleDateString('sv-SE', { weekday: 'short', day: 'numeric', month: 'short' });
+            // Gör första bokstaven stor
+            const capDateHeader = dateHeader.charAt(0).toUpperCase() + dateHeader.slice(1) + ".";
+
+            // Om datumet har ändrats sen förra varvet, lägg in en rubrik
+            if (capDateHeader !== lastDateStr) {
+                html += `<div class="date-separator">${capDateHeader}</div>`;
+                lastDateStr = capDateHeader;
+            }
+
+            // Lägg till kortet
+            html += createJobCard(job);
         });
-        cardsHTML += `</div>`;
-        container.innerHTML = cardsHTML;
-    } 
-    // --- DESKTOP VY (TABELL) ---
-    else {
+
+        container.innerHTML = html;
+
+    } else {
+        // --- DESKTOP VY: TABELL (Oförändrad) ---
         let tableHTML = `
             <table id="jobsTable">
                 <thead>
@@ -88,77 +112,92 @@ function renderDashboard() {
                         <th>Datum</th>
                         <th>Kund</th>
                         <th>Reg.nr</th>
-                        <th style="text-align:right">Kundpris</th>
+                        <th style="text-align:right">Pris</th>
                         <th class="action-col">Åtgärder</th>
                     </tr>
                 </thead>
                 <tbody>
         `;
         jobsToDisplay.forEach(job => {
-            tableHTML += createJobRow(job);
+            tableHTML += createJobRow(job); // createJobRow ligger kvar längre ner i din fil
         });
         tableHTML += `</tbody></table>`;
         container.innerHTML = tableHTML;
     }
 }
 
-function createJobCard(job) {
-    // 1. Datumformat: "FRE 12 DEC • 10:00"
-    let dateDisplay = "";
-    if (job.datum) {
-        const d = new Date(job.datum);
-        const dayName = d.toLocaleDateString('sv-SE', { weekday: 'short' }).replace('.','').toUpperCase();
-        const dayNum = d.getDate();
-        const month = d.toLocaleDateString('sv-SE', { month: 'short' }).replace('.','').toUpperCase();
-        const time = d.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
-        
-        dateDisplay = `${dayName} ${dayNum} ${month} • ${time}`;
-    } else {
-        dateDisplay = "DATUM SAKNAS";
+// --- HJÄLPFUNKTION: Uppdatera datumet i headern ---
+function updateHeaderDate() {
+    const now = new Date();
+    const days = ['SÖN','MÅN','TIS','ONS','TORS','FRE','LÖR'];
+    const months = ['JAN','FEB','MAR','APR','MAJ','JUN','JUL','AUG','SEP','OKT','NOV','DEC'];
+    
+    const dayEl = document.getElementById('headerCurrentDay');
+    const dateEl = document.getElementById('headerCurrentDate');
+    
+    // Uppdatera bara om elementen finns (finns bara i mobil-vyn)
+    if(dayEl && dateEl) {
+        dayEl.textContent = days[now.getDay()];
+        dateEl.textContent = `${now.getDate()} ${months[now.getMonth()]}`;
     }
+}
 
-    // 2. Prisformat
-    const price = job.kundpris ? `${Number(job.kundpris).toLocaleString('sv-SE')} kr` : '0 kr';
+// --- HJÄLPFUNKTION: Skapa Mobilkortet (NY DESIGN) ---
+function createJobCard(job) {
+    const d = new Date(job.datum);
+    // Tid: 10.00
+    const timeStr = d.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' }).replace(':', '.');
     
-    // 3. Regnr
-    const regNr = (job.regnr && job.regnr.toUpperCase() !== 'OKÄNT') ? job.regnr.toUpperCase() : null;
-    
-    // 4. Kundnamn
-    const customerName = job.kundnamn || 'Kund saknas';
+    const price = job.kundpris ? `${job.kundpris} kr` : '0 kr';
+    const regNr = (job.regnr && job.regnr.toUpperCase() !== 'OKÄNT') ? job.regnr.toUpperCase() : '---';
+    const status = job.status || 'BOKAD';
+    const customer = job.kundnamn || 'Okänd';
 
-    // 5. Status
-    let statusClass = job.status || 'bokad';
-    // Snyggare etikett
-    const statusLabels = { 'bokad': 'Bokad', 'klar': 'Klar', 'faktureras': 'Fakturering', 'offererad': 'Offert' };
-    const statusLabel = statusLabels[statusClass] || statusClass;
+    // Ikon bredvid namnet (Blå gubbe)
+    const userIcon = `<svg class="user-icon-blue" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>`;
 
-    const isDone = statusClass === 'klar';
+    // Kolla om jobbet är klart för att tända check-knappen
+    const isDone = status === 'klar';
     const checkBtnClass = isDone ? 'check-btn-circle checked' : 'check-btn-circle';
+    const targetStatus = isDone ? 'bokad' : 'klar'; // Växla status vid klick
 
     return `
-        <div class="job-card status-${statusClass}" onclick="openEditModal('${job.id}')">
-            
-            <div class="job-card-header">
-                <span class="job-card-date">${dateDisplay}</span>
-                <span class="status-pill">${statusLabel}</span>
-            </div>
-            
-            <div class="job-card-row-main">
-                <span class="job-card-customer">${customerName}</span>
-                <span class="job-card-price">${price}</span>
-            </div>
+    <div class="job-card status-${status}" onclick="openEditModal('${job.id}')">
+        
+        <div class="label">Kund</div>
+        <div class="value">
+            ${userIcon}
+            <span class="customer-name">${customer}</span>
+        </div>
 
-            <div class="job-card-footer">
-                ${regNr ? `<span class="reg-pill">${regNr}</span>` : '<span></span>'}
-                
-                <button class="${checkBtnClass}" onclick="event.stopPropagation(); setStatus('${job.id}', '${isDone ? 'bokad' : 'klar'}')">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
-                </button>
+        <div class="label">Reg.nr</div>
+        <div class="value">
+            <div class="reg-badge">
+                <div class="reg-blue">S</div>
+                <div class="reg-text">${regNr}</div>
             </div>
         </div>
-    `;
+
+        <div class="label">Tid / Status</div>
+        <div class="value">
+            <span class="pill pill-time">${timeStr}</span>
+            <span class="pill pill-status ${status.toLowerCase()}">${status.toUpperCase()}</span>
+        </div>
+
+        <div class="label">Kundpris</div>
+        <div class="value">
+            <span class="price-value">${price}</span>
+        </div>
+        
+        <button class="${checkBtnClass}" 
+                style="position: absolute; bottom: 15px; right: 20px; z-index:5;"
+                onclick="event.stopPropagation(); setStatus('${job.id}', '${targetStatus}')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3">
+                <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+        </button>
+
+    </div>`;
 }
 
 // Hjälpfunktion: Skapa DESKTOP RAD (Samma som innan men inkluderad för helhet)
