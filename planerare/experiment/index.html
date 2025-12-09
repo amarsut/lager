@@ -469,6 +469,36 @@
 	    </div>
 	</div>
 
+	<nav class="mobile-nav mobile-only" id="mobileNav">
+        <button class="mobile-nav-btn active" id="mobileHomeBtn" onclick="window.scrollTo({top:0, behavior:'smooth'});">
+            <svg class="icon" viewBox="0 0 24 24"><use href="#icon-timeline-view"></use></svg> 
+            <span>Hem</span>
+        </button>
+        
+        <button class="mobile-nav-btn" id="mobileSearchBtn" data-modal="mobileSearchModal">
+            <svg class="icon" viewBox="0 0 24 24"><use href="#icon-search"></use></svg>
+            <span>Sök</span>
+        </button>
+
+        <button class="mobile-nav-btn" id="mobileAddJobBtn" onclick="openNewJobModal()">
+            <svg class="icon" viewBox="0 0 24 24"><use href="#icon-plus"></use></svg>
+            <span>Nytt</span>
+        </button>
+
+        <button class="mobile-nav-btn" id="mobileChatBtn" onclick="toggleChatWidget()">
+            <div class="icon-wrapper" style="position: relative;">
+                <svg class="icon" viewBox="0 0 24 24"><use href="#icon-chat-bubble"></use></svg>
+                <span id="chatBadgeMobileNav" class="header-badge" style="display: none; top: -2px; right: -2px;">0</span>
+            </div>
+            <span>Chatt</span>
+        </button>
+        
+        <button class="mobile-nav-btn" id="mobileSettingsBtn" onclick="document.getElementById('settingsModal').classList.add('show')">
+            <svg class="icon" viewBox="0 0 24 24"><use href="#icon-settings"></use></svg>
+            <span>Mer</span>
+        </button>
+    </nav>
+
 	<script src="config.js"></script>
     <script src="app.js"></script>
 </body>
