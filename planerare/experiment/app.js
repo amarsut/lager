@@ -139,36 +139,22 @@ const ICONS = {
 // --- HJÄLPFUNKTION: Skapa Mobilkortet (FINAL LIST V5) ---
 function createJobCard(job) {
     const d = new Date(job.datum);
-    
-    const day = d.getDate();
-    const year = d.getFullYear();
-    
-    // PUNKT 2: Fixa datumformatet (Ta bort dubbelpunkter)
-    // 1. Hämta kort månadsnamn (t.ex. "dec" eller "dec.")
     let rawMonth = d.toLocaleDateString('sv-SE', { month: 'short' });
-    // 2. Ta bort ALLA punkter först
     let cleanMonth = rawMonth.replace(/\./g, '');
-    // 3. Gör första bokstaven stor
     let month = cleanMonth.charAt(0).toUpperCase() + cleanMonth.slice(1);
     
-    // Resultat: "12 Dec. 2025" (Alltid exakt en punkt)
-    const dateStr = `${day} ${month}. ${year}`;
+    const dateStr = `${d.getDate()} ${month}. ${d.getFullYear()}`;
     const timeStr = d.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
 
     const price = job.kundpris ? `${job.kundpris}:-` : '0:-';
     const regNr = (job.regnr && job.regnr.toUpperCase() !== 'OKÄNT') ? job.regnr.toUpperCase() : '---';
     const customer = job.kundnamn ? job.kundnamn : 'Okänd'; 
-    
-    // PUNKT 3: Paket
     const paket = job.paket ? job.paket : '-';
-    
-    // PUNKT 4: Mätarställning (Placeholder)
     const mileage = '-';
 
     const statusRaw = job.status || 'bokad';
     const statusText = statusRaw.toUpperCase(); 
 
-    // Hantera kommentar & Placeholder
     let commentHtml = '';
     if (job.kommentar && job.kommentar.length > 0) {
         commentHtml = `<span class="comment-text">${job.kommentar}</span>`;
@@ -185,6 +171,9 @@ function createJobCard(job) {
     const iTag = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>`;
     const iBox = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>`;
     const iGauge = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 14c1.66 0 3-1.34 3-3V5h-6v6c0 1.66 1.34 3 3 3z"/><path d="M12 14v7"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="M19.07 4.93L17.66 6.34"/><path d="M4.93 4.93L6.34 6.34"/></svg>`;
+    
+    // NY IKON: En fylld cirkel med "i" (liten)
+    const iInfoSmall = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>`;
 
     let headerClass = 'bg-bokad';
     if(statusRaw === 'klar') headerClass = 'bg-klar';
@@ -196,52 +185,26 @@ function createJobCard(job) {
     <div class="job-card-new" onclick="openEditModal('${job.id}')">
         
         <div class="card-header-strip ${headerClass}">
-            <div class="header-reg-group">
+            
+            <div class="header-reg-clickable" onclick="event.stopPropagation(); openVehicleModal('${regNr}')">
                 ${iCar} 
                 <span>${regNr}</span>
+                <span class="reg-info-sup">${iInfoSmall}</span>
             </div>
+            
             <div class="header-status-badge">
                 ${statusText}
             </div>
         </div>
 
         <div class="card-body">
-            
-            <div class="info-row">
-                <span class="row-label">${iUser} Namn</span>
-                <span class="row-value">${customer}</span>
-            </div>
-
-            <div class="info-row">
-                <span class="row-label">${iCar} Reg.nr</span>
-                <span class="row-value" style="text-transform:uppercase;">${regNr}</span>
-            </div>
-            
-            <div class="info-row">
-                <span class="row-label">${iBox} Paket</span>
-                <span class="row-value">${paket}</span>
-            </div>
-            
-            <div class="info-row">
-                <span class="row-label" title="Mätarställning">${iGauge} Mätarst.</span>
-                <span class="row-value">${mileage}</span>
-            </div>
-
-            <div class="info-row">
-                <span class="row-label">${iCal} Datum</span>
-                <span class="row-value">${dateStr}</span>
-            </div>
-            
-            <div class="info-row">
-                <span class="row-label">${iClock} Tid</span>
-                <span class="row-value">${timeStr}</span>
-            </div>
-
-            <div class="info-row">
-                <span class="row-label">${iTag} Att betala</span>
-                <span class="row-value">${price}</span>
-            </div>
-
+            <div class="info-row"><span class="row-label">${iUser} Namn</span><span class="row-value">${customer}</span></div>
+            <div class="info-row"><span class="row-label">${iCar} Reg.nr</span><span class="row-value" style="text-transform:uppercase;">${regNr}</span></div>
+            <div class="info-row"><span class="row-label">${iBox} Paket</span><span class="row-value">${paket}</span></div>
+            <div class="info-row"><span class="row-label" title="Mätarställning">${iGauge} Mätarst.</span><span class="row-value">${mileage}</span></div>
+            <div class="info-row"><span class="row-label">${iCal} Datum</span><span class="row-value">${dateStr}</span></div>
+            <div class="info-row"><span class="row-label">${iClock} Tid</span><span class="row-value">${timeStr}</span></div>
+            <div class="info-row price-row"><span class="row-label">${iTag} Att betala</span><span class="row-value">${price}</span></div>
         </div>
 
         <div class="card-comments-section">
