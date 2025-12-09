@@ -111,7 +111,7 @@ function createJobRow(job) {
 
     // Företagskunds-logik
     const nameLower = (job.kundnamn || '').toLowerCase();
-    const isCorporate = ['bmg', 'fogarolli', 'huse'].some(c => nameLower.includes(c));
+    const isCorporate = ['bmg', 'fogarolli'].some(c => nameLower.includes(c));
     
     const iconType = isCorporate ? '#icon-office-building' : '#icon-user';
     const iconColor = isCorporate ? '#10B981' : '#0066FF'; 
