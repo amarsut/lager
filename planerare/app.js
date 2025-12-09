@@ -156,8 +156,8 @@ function createJobCard(job) {
     
     // Ikoner
     const iUser = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
-    const iBriefcaseGreen = `<svg viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4 8 4v14"/><path d="M17 21v-8.5a1.5 1.5 0 0 0-1.5-1.5h-3a1.5 1.5 0 0 0-1.5 1.5V21"/><path d="M9 10a1 1 0 0 1 1-1"/><path d="M14 10a1 1 0 0 1 1-1"/><path d="M9 14a1 1 0 0 1 1-1"/><path d="M14 14a1 1 0 0 1 1-1"/></svg>`;
-    
+	const iBriefcaseGreen = `<svg class="icon-sm" style="color: #10B981;" viewBox="0 0 64 64"><use href="#icon-office-building"></use></svg>`;
+	
     // Om företag: Visa grön portfölj framför namnet. Texten "Namn" förblir neutral.
     // Vi lägger loggan i value-fältet.
 	const nameValueHtml = isCorporate 
