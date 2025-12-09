@@ -556,7 +556,7 @@ async function fetchTechnicalData(regnr) {
     const docRef = db.collection("vehicleSpecs").doc(cleanReg);
     
     const fetchBtn = document.getElementById('btnFetchTechData');
-    const specsContainer = document.getElementById('techDataContainer'); // vehicleModal ID
+    const specsContainer = document.getElementById('techDataContainer'); 
     const fetchContainer = document.getElementById('fetchDataContainer');
 
     if(fetchBtn) {
@@ -565,28 +565,21 @@ async function fetchTechnicalData(regnr) {
     }
 
     try {
-        await scrapeAndAnalyze(cleanReg, docRef);
+        // ÄNDRING: Ta emot datan direkt från funktionen istället för att läsa från DB
+        const data = await scrapeAndAnalyze(cleanReg, docRef);
         
-        // Hämta igen för att visa
-        const doc = await docRef.get();
-        if(doc.exists) {
-            const data = doc.data();
-            if(specsContainer) {
-                specsContainer.innerHTML = generateTechSpecHTML(data, cleanReg);
-                specsContainer.style.display = 'block';
-            }
-            if(fetchContainer) fetchContainer.style.display = 'none';
-            showToast('Teknisk data hämtad och sparad!', 'success');
+        // Nu har vi "data" direkt. Vi behöver inte göra docRef.get()
+        if(specsContainer) {
+            specsContainer.innerHTML = generateTechSpecHTML(data, cleanReg);
+            specsContainer.style.display = 'block';
         }
+        if(fetchContainer) fetchContainer.style.display = 'none';
+        
+        showToast('Teknisk data hämtad och sparad!', 'success');
 
     } catch (error) {
         console.error("Fel vid AI-hämtning:", error);
-         if (error.message.includes('403') || error.message.includes('Forbidden')) {
-            showToast('Fel: Ogiltig API-nyckel.', 'danger');
-        } else {
-            showToast('Kunde inte hämta data. Försök igen.', 'danger');
-        }
-        
+        // ... din felhantering ...
         if(fetchBtn) {
             fetchBtn.disabled = false;
             fetchBtn.innerHTML = `<span>Försök igen</span>`;
@@ -650,11 +643,13 @@ async function scrapeAndAnalyze(regnr, docRef) {
 
     // 5. Spara till Firebase
     await docRef.set(vehicleData);
+	
+	return vehicleData;
 }
 
 // --- HJÄLPFUNKTION: Bygg HTML från lösa fält (DENNA BEHÖVS FÖR NYA DESIGNEN) ---
 function generateTechSpecHTML(data, regnr) {
-    // Lista ut vilket märke det är för att välja ikon
+    // Märkes-logik (Oförändrad)
     let brandIcon = '#icon-brand-generic';
     const modelStr = (data.model || '').toLowerCase();
     
@@ -667,21 +662,24 @@ function generateTechSpecHTML(data, regnr) {
     else if (modelStr.includes('skoda')) brandIcon = '#icon-brand-skoda';
     else if (modelStr.includes('fiat')) brandIcon = '#icon-brand-fiat';
 
-    // Returnera HTML anpassad för din techDataContainer
+    // OBS: Här nedan anropar vi nu "_v2" på alla ikoner för att tvinga fram rätt utseende!
     return `
         <div class="tech-header-main">
            <svg class="brand-icon-svg"><use href="${brandIcon}"></use></svg>
            <h4>Teknisk Data ${regnr}</h4>
         </div>
         <ul class="tech-list">
-            <li><svg class="spec-icon-svg"><use href="#icon-car-tech"></use></svg> <span><b>Bil:</b> ${data.model || '---'}</span></li>
-            <li><svg class="spec-icon-svg"><use href="#icon-engine-tech"></use></svg> <span><b>Motor:</b> ${data.engine || '---'}</span></li>
-            <li><svg class="spec-icon-svg"><use href="#icon-oil-tech"></use></svg> <span><b>Olja:</b> ${data.oil || '---'}</span></li>
-            <li><svg class="spec-icon-svg"><use href="#icon-ac-tech"></use></svg> <span><b>AC:</b> ${data.ac || '---'}</span></li>
-            <li><svg class="spec-icon-svg"><use href="#icon-belt-tech"></use></svg> <span><b>Kamrem:</b> ${data.timing_belt || '---'}</span></li>
-            <li><svg class="spec-icon-svg"><use href="#icon-torque-tech"></use></svg> <span><b>Moment:</b> ${data.torque || '---'}</span></li>
-            <li><svg class="spec-icon-svg"><use href="#icon-battery-tech"></use></svg> <span><b>Batteri:</b> ${data.battery || '---'}</span></li>
-            <li><svg class="spec-icon-svg"><use href="#icon-weight-tech"></use></svg> <span><b>Drag:</b> ${data.tow_weight || '---'}</span></li>
+            <li><svg class="spec-icon-svg"><use href="#icon-car-v2"></use></svg> <span><b>Bil:</b> ${data.model || '---'}</span></li>
+            <li><svg class="spec-icon-svg"><use href="#icon-belt-v2"></use></svg> <span><b>Kamrem:</b> ${data.timing_belt || '---'}</span></li>
+            
+            <li><svg class="spec-icon-svg"><use href="#icon-engine-v2"></use></svg> <span><b>Motor:</b> ${data.engine || '---'}</span></li>
+            <li><svg class="spec-icon-svg"><use href="#icon-torque-v2"></use></svg> <span><b>Moment:</b> ${data.torque || '---'}</span></li>
+
+            <li><svg class="spec-icon-svg"><use href="#icon-oil-v2"></use></svg> <span><b>Olja:</b> ${data.oil || '---'}</span></li>
+            <li><svg class="spec-icon-svg"><use href="#icon-battery-v2"></use></svg> <span><b>Batteri:</b> ${data.battery || '---'}</span></li>
+
+            <li><svg class="spec-icon-svg"><use href="#icon-ac-v2"></use></svg> <span><b>AC:</b> ${data.ac || '---'}</span></li>
+            <li><svg class="spec-icon-svg"><use href="#icon-weight-v2"></use></svg> <span><b>Drag:</b> ${data.tow_weight || '---'}</span></li>
         </ul>
     `;
 }
