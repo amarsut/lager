@@ -1105,3 +1105,110 @@ ul.tech-list li span {
     background: rgba(239, 68, 68, 0.4);
     color: white;
 }
+
+/* ------ SLUT PÅ CHATT UTSEENDE ------ */
+
+/* --- Chatt: Alternativ-meny (Redigera/Ta bort) --- */
+.chat-row .message-options {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    gap: 8px;
+    opacity: 0; /* Dold som standard */
+    transition: opacity 0.2s ease-in-out;
+    z-index: 10;
+}
+
+/* Visa menyn när man hovrar över raden */
+.chat-row:hover .message-options {
+    opacity: 1;
+}
+
+/* Positionering baserat på vem som skickade */
+.chat-row.me .message-options {
+    left: -70px; /* Visa till vänster om min bubbla */
+}
+.chat-row.other .message-options,
+.chat-row.system .message-options {
+    /* Vi döljer alternativen för andras meddelanden för nu, 
+       man ska oftast bara kunna redigera sina egna */
+    display: none; 
+    /* right: -70px; Om du vill kunna ta bort andras */
+}
+
+.option-btn {
+    background: #F2F2F7;
+    border: none;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    color: #8E8E93;
+    transition: all 0.2s;
+}
+.option-btn:hover { background: #E5E5EA; color: #007AFF; }
+.option-btn.delete:hover { color: #FF3B30; } /* Röd för delete */
+.option-btn svg { width: 16px; height: 16px; }
+
+
+/* --- Chatt: Redigeringsläge (Inline) --- */
+/* När bubblan är i redigeringsläge */
+.chat-bubble.is-editing {
+    padding: 8px; /* Mindre padding för att ge plats åt formuläret */
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 200px; /* Se till att den inte blir för smal */
+}
+
+/* Textrutan inuti bubblan */
+.edit-message-input {
+    width: 100%;
+    border: none;
+    border-radius: 12px;
+    padding: 8px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    resize: none; /* Stäng av manuell resize */
+    outline: none;
+    background: rgba(255, 255, 255, 0.9);
+    color: #1C1C1E;
+    min-height: 60px; /* Lagom starthöjd */
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* Behållare för knapparna */
+.edit-message-actions {
+    display: flex;
+    justify-content: flex-end; /* Knappar till höger */
+    gap: 8px;
+}
+
+/* Knapparna (Avbryt / Spara) */
+.edit-btn {
+    padding: 6px 16px;
+    border-radius: 16px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: background 0.2s;
+}
+
+.edit-btn-cancel {
+    background: #E5E5EA; /* Ljusgrå */
+    color: #1C1C1E;
+}
+.edit-btn-cancel:hover { background: #D1D1D6; }
+
+.edit-btn-save {
+    background: #007AFF; /* Blå */
+    color: white;
+}
+.edit-btn-save:hover { background: #006be0; }
+
+/* Justering för mörka bubblor (mina egna) i redigeringsläge */
+.chat-row.me .chat-bubble.is-editing {
+    /* Vi behåller den blå bakgrunden men gör inputen ljus inuti */
+}
