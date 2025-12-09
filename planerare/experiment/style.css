@@ -775,6 +775,7 @@ ul.tech-list li b {
     border-bottom: 1px solid #f9fafb;
 }
 
+/* --- Redigerbara fält i Teknisk Data --- */
 .spec-input {
     background: transparent;
     border: none;
@@ -794,3 +795,10 @@ ul.tech-list li b {
 /* Behåll dina hover/focus effekter som innan */
 .spec-input:hover { border-bottom-color: var(--primary-color); background-color: #f9fafb; }
 .spec-input:focus { outline: none; border-bottom: 2px solid var(--primary-color); background-color: #fff; font-weight: 500; }
+
+/* Justera listan så input-fältet får plats */
+ul.tech-list li span {
+    display: flex;
+    align-items: center;
+    width: 100%; /* Låt texten ta upp hela bredden */
+}
