@@ -58,10 +58,9 @@ function initRealtimeListener() {
 
 // 4. RENDERA DASHBOARD
 function renderDashboard() {
-    // 1. Uppdatera toppen med dagens datum (T.ex. TIS 9 DEC)
+    // 1. Uppdatera Header Datum
     updateHeaderDate();
-
-    // 2. Uppdatera statistik-siffror
+    // 2. Uppdatera Stats
     updateStatsCounts(allJobs);
 
     const container = document.getElementById('jobListContainer');
@@ -69,58 +68,42 @@ function renderDashboard() {
     
     let jobsToDisplay = filterJobs(allJobs);
 
-    // Om listan är tom
     if (jobsToDisplay.length === 0) {
         container.innerHTML = '<p style="text-align:center; padding:2rem; color:#888;">Inga jobb hittades.</p>';
         return;
     }
 
     if (isMobile) {
-        // --- MOBIL VY: KORT GRUPPERADE PÅ DATUM ---
+        // --- MOBIL: DATUM UTANFÖR KORTET ---
         let html = '';
         let lastDateStr = '';
 
-        // Sortera på datum så grupperingen fungerar
+        // Sortera på datum
         jobsToDisplay.sort((a,b) => new Date(a.datum) - new Date(b.datum));
 
         jobsToDisplay.forEach(job => {
-            // Skapa datumrubrik (t.ex. "Fre 12 Dec.")
+            // Datumformat: "Fre 12 Dec."
             const d = new Date(job.datum);
             const dateHeader = d.toLocaleDateString('sv-SE', { weekday: 'short', day: 'numeric', month: 'short' });
-            // Gör första bokstaven stor
-            const capDateHeader = dateHeader.charAt(0).toUpperCase() + dateHeader.slice(1) + ".";
+            // Snygga till strängen (Fre 12 dec)
+            const formattedHeader = dateHeader.charAt(0).toUpperCase() + dateHeader.slice(1); // + "." om du vill ha punkt
 
-            // Om datumet har ändrats sen förra varvet, lägg in en rubrik
-            if (capDateHeader !== lastDateStr) {
-                html += `<div class="date-separator">${capDateHeader}</div>`;
-                lastDateStr = capDateHeader;
+            // Om nytt datum -> Skriv ut RUBRIK
+            if (formattedHeader !== lastDateStr) {
+                html += `<div class="date-separator">${formattedHeader}</div>`;
+                lastDateStr = formattedHeader;
             }
 
-            // Lägg till kortet
+            // Skriv ut KORTET (utan datumrubrik i sig)
             html += createJobCard(job);
         });
 
         container.innerHTML = html;
 
     } else {
-        // --- DESKTOP VY: TABELL (Oförändrad) ---
-        let tableHTML = `
-            <table id="jobsTable">
-                <thead>
-                    <tr>
-                        <th>Status</th>
-                        <th>Datum</th>
-                        <th>Kund</th>
-                        <th>Reg.nr</th>
-                        <th style="text-align:right">Pris</th>
-                        <th class="action-col">Åtgärder</th>
-                    </tr>
-                </thead>
-                <tbody>
-        `;
-        jobsToDisplay.forEach(job => {
-            tableHTML += createJobRow(job); // createJobRow ligger kvar längre ner i din fil
-        });
+        // DESKTOP (Tabell)
+        let tableHTML = `<table id="jobsTable"><thead><tr><th>Status</th><th>Datum</th><th>Kund</th><th>Reg.nr</th><th style="text-align:right">Pris</th><th class="action-col">Åtgärder</th></tr></thead><tbody>`;
+        jobsToDisplay.forEach(job => tableHTML += createJobRow(job));
         tableHTML += `</tbody></table>`;
         container.innerHTML = tableHTML;
     }
@@ -144,54 +127,42 @@ function updateHeaderDate() {
 
 // --- HJÄLPFUNKTION: Skapa Mobilkortet (NY DESIGN) ---
 function createJobCard(job) {
-    // 1. Datumformat: "FRE 12 DEC • 10:00"
-    let dateDisplay = "";
-    if (job.datum) {
-        const d = new Date(job.datum);
-        const dayName = d.toLocaleDateString('sv-SE', { weekday: 'short' }).toUpperCase().replace('.','');
-        const dayNum = d.getDate();
-        const month = d.toLocaleDateString('sv-SE', { month: 'short' }).toUpperCase().replace('.','');
-        const time = d.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
-        
-        dateDisplay = `${dayName} ${dayNum} ${month} • ${time}`;
-    }
-
-    const price = job.kundpris ? `${Number(job.kundpris).toLocaleString('sv-SE')} kr` : '0 kr';
-    // Enkel reg-nr (ingen S-logga, bara text som i bild 2)
+    const d = new Date(job.datum);
+    // Tid (t.ex. "10:00")
+    const timeStr = d.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
+    
+    const price = job.kundpris ? `${job.kundpris} kr` : '0 kr';
     const regNr = (job.regnr && job.regnr.toUpperCase() !== 'OKÄNT') ? job.regnr.toUpperCase() : '---';
     const customer = job.kundnamn || 'Okänd';
     
-    // Status
-    let statusClass = job.status || 'bokad';
-    // Gör om 'bokad' till 'Bokad' (Stor bokstav)
-    const statusLabel = statusClass.charAt(0).toUpperCase() + statusClass.slice(1);
-
-    const isDone = statusClass === 'klar';
-    const checkClass = isDone ? 'card-check-btn checked' : 'card-check-btn';
-    const nextStatus = isDone ? 'bokad' : 'klar'; 
+    const status = job.status || 'bokad';
+    const isDone = status === 'klar';
+    const checkClass = isDone ? 'check-btn-floating checked' : 'check-btn-floating';
+    
+    // Status text (Stor bokstav)
+    const statusText = status.charAt(0).toUpperCase() + status.slice(1);
 
     return `
-    <div class="job-card status-${statusClass}" onclick="openEditModal('${job.id}')">
+    <div class="job-card status-${status}" onclick="openEditModal('${job.id}')">
         
-        <div class="card-row-top">
-            <span class="card-date-text">${dateDisplay}</span>
-            <span class="card-status-badge">${statusLabel}</span>
+        <div class="card-header-row">
+            <span class="card-time">${timeStr}</span> <span class="status-badge-pill ${status}">${statusText}</span>
         </div>
 
-        <div class="card-row-main">
-            <span class="card-customer">${customer}</span>
-            <span class="card-price">${price}</span>
+        <div class="card-main-row">
+            <span class="customer-name">${customer}</span>
+            <span class="price-tag">${price}</span>
         </div>
 
-        <div class="card-row-bottom">
-            <span class="card-reg-pill">${regNr}</span>
-            
-            <button class="${checkClass}" onclick="event.stopPropagation(); setStatus('${job.id}', '${nextStatus}')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="20 6 9 17 4 12"></polyline>
-                </svg>
-            </button>
+        <div style="display:flex;">
+            <span class="reg-tag">${regNr}</span>
         </div>
+
+        <button class="${checkClass}" onclick="event.stopPropagation(); setStatus('${job.id}', '${isDone ? 'bokad' : 'klar'}')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+        </button>
 
     </div>`;
 }
