@@ -137,7 +137,9 @@ function createJobCard(job) {
     
     const status = job.status || 'bokad';
     const isDone = status === 'klar';
-    const checkClass = isDone ? 'check-btn-floating checked' : 'check-btn-floating';
+    
+    // Check-knappens klasser (om klar eller inte)
+    const checkClass = isDone ? 'check-btn-round checked' : 'check-btn-round';
     
     // Status text (Stor bokstav)
     const statusText = status.charAt(0).toUpperCase() + status.slice(1);
@@ -145,24 +147,25 @@ function createJobCard(job) {
     return `
     <div class="job-card status-${status}" onclick="openEditModal('${job.id}')">
         
-        <div class="card-header-row">
-            <span class="card-time">${timeStr}</span> <span class="status-badge-pill ${status}">${statusText}</span>
+        <div class="card-top-row">
+            <span class="card-time">${timeStr}</span>
+            <span class="status-badge-pill ${status}">${statusText}</span>
         </div>
 
-        <div class="card-main-row">
+        <div class="card-mid-row">
             <span class="customer-name">${customer}</span>
             <span class="price-tag">${price}</span>
         </div>
 
-        <div style="display:flex;">
-            <span class="reg-tag">${regNr}</span>
+        <div class="card-bot-row">
+            <span class="reg-tag-box">${regNr}</span>
+            
+            <button class="${checkClass}" onclick="event.stopPropagation(); setStatus('${job.id}', '${isDone ? 'bokad' : 'klar'}')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+            </button>
         </div>
-
-        <button class="${checkClass}" onclick="event.stopPropagation(); setStatus('${job.id}', '${isDone ? 'bokad' : 'klar'}')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="20 6 9 17 4 12"></polyline>
-            </svg>
-        </button>
 
     </div>`;
 }
