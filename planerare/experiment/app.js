@@ -416,6 +416,16 @@ function openVehicleModal(regnr) {
     
     if(titleEl) titleEl.textContent = cleanReg;
     if(linkBiluppgifter) linkBiluppgifter.href = `https://biluppgifter.se/fordon/${cleanReg}`;
+	
+	const linkOljemagasinet = document.getElementById('linkOljemagasinet');
+
+	if(titleEl) titleEl.textContent = cleanReg;
+	    
+	// Uppdatera länkarna
+	if(linkBiluppgifter) linkBiluppgifter.href = `https://biluppgifter.se/fordon/${cleanReg}`;
+	    
+	// Ny länk till Oljemagasinet (Sökning)
+	if(linkOljemagasinet) linkOljemagasinet.href = `https://www.oljemagasinet.se/`;
     
     // Kopiera-knapp
     const copyBtn = document.getElementById('btnCopyRegModal');
