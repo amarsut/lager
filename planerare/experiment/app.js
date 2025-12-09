@@ -15,6 +15,11 @@ let currentStatusFilter = 'kommande';
 let currentSearchTerm = '';
 let currentExpenses = [];
 
+let chatUnsubscribe = null;
+let currentChatLimit = 50;
+let isFetchingOlderChat = false;
+let expandedMessageIds = new Set();
+
 // 2. INITIERA APPEN
 document.addEventListener('DOMContentLoaded', function() {
     try {
@@ -200,6 +205,17 @@ function setupEventListeners() {
             openEditModal(row.dataset.id);
         }
     });
+
+	// --- NYTT: KOPPLA CHATT-KNAPPEN ---
+    const fabChat = document.getElementById('fabChat');
+    if (fabChat) {
+        fabChat.addEventListener('click', () => {
+            toggleChatWidget();
+        });
+    }
+    
+    // Starta lyssnaren för chatten direkt (så man ser om man fått nya meddelanden)
+    initChat();
 
     // Sökfältet
     document.getElementById('searchBar').addEventListener('input', (e) => {
@@ -746,3 +762,272 @@ async function saveTechSpec(regnr, field, newValue) {
         showToast("Kunde inte spara ändringen.", 'danger');
     }
 }
+
+// ==========================================
+// CHATT & NOTERINGAR (INTEGRERAD)
+// ==========================================
+
+function toggleChatWidget() {
+    const chatWidget = document.getElementById('chatWidget');
+    if (!chatWidget) return;
+
+    if (chatWidget.style.display === 'flex') {
+        chatWidget.style.display = 'none';
+        document.body.style.overflow = ''; // Lås upp scroll
+    } else {
+        chatWidget.style.display = 'flex';
+        document.body.style.overflow = 'hidden'; // Lås bakgrundsscroll på mobil
+        
+        // Scrolla till botten direkt
+        setTimeout(() => {
+            const chatList = document.getElementById('chatMessages');
+            if (chatList) chatList.scrollTop = chatList.scrollHeight;
+        }, 100);
+    }
+}
+
+function initChat() {
+    const chatList = document.getElementById('chatMessages');
+    if (!chatList) return;
+
+    // 1. Koppla UI-element
+    const chatInput = document.getElementById('chatInput');
+    const sendBtn = document.getElementById('chatSendBtn');
+    const closeBtn = document.getElementById('closeChatWidget');
+    
+    // Knappar för bilder
+    const plusBtn = document.getElementById('chatPlusBtn');      
+    const cameraBtn = document.getElementById('chatCameraBtn'); 
+    const fileInputGallery = document.getElementById('chatFileInputGallery');
+    const fileInputCamera = document.getElementById('chatFileInputCamera');
+
+    // 2. Stäng-knapp
+    if (closeBtn) {
+        closeBtn.addEventListener('click', toggleChatWidget);
+    }
+
+    // 3. Skicka meddelande (Klick + Enter)
+    const sendMessage = async () => {
+        const text = chatInput.value.trim();
+        if (!text) return;
+
+        try {
+            await db.collection("notes").add({
+                text: text,
+                timestamp: new Date().toISOString(),
+                platform: window.innerWidth <= 768 ? 'mobil' : 'dator',
+                type: 'text'
+            });
+            chatInput.value = '';
+            // Scrolla ner
+            setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
+        } catch (err) {
+            console.error("Fel vid sändning:", err);
+            alert("Kunde inte skicka meddelandet.");
+        }
+    };
+
+    if (sendBtn) sendBtn.addEventListener('click', sendMessage);
+    
+    if (chatInput) {
+        chatInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+    }
+
+    // 4. Bild-uppladdning (Galleri & Kamera)
+    if (plusBtn && fileInputGallery) {
+        plusBtn.addEventListener('click', () => fileInputGallery.click());
+        fileInputGallery.addEventListener('change', (e) => handleImageUpload(e.target.files[0]));
+    }
+
+    if (cameraBtn && fileInputCamera) {
+        cameraBtn.addEventListener('click', () => fileInputCamera.click());
+        fileInputCamera.addEventListener('change', (e) => handleImageUpload(e.target.files[0]));
+    }
+
+    // 5. Starta lyssnare mot Firebase (Hämta gamla meddelanden)
+    setupChatListener(50); // Hämta de 50 senaste
+}
+
+function setupChatListener(limit) {
+    if (chatUnsubscribe) chatUnsubscribe(); // Stäng ev. gammal lyssnare
+
+    const chatList = document.getElementById('chatMessages');
+    
+    chatUnsubscribe = db.collection("notes")
+        .orderBy("timestamp", "desc")
+        .limit(limit)
+        .onSnapshot(snapshot => {
+            const docs = [];
+            snapshot.forEach(doc => docs.push({ id: doc.id, ...doc.data() }));
+            
+            // Vänd ordningen så nyaste hamnar längst ner
+            docs.reverse();
+
+            chatList.innerHTML = ''; // Rensa listan
+
+            if (docs.length === 0) {
+                chatList.innerHTML = '<div style="text-align:center; padding:20px; color:#999;">Inga noteringar än.</div>';
+                return;
+            }
+
+            let lastDate = null;
+
+            docs.forEach(data => {
+                // Datum-separator
+                if (data.timestamp) {
+                    const msgDate = new Date(data.timestamp).toLocaleDateString();
+                    if (msgDate !== lastDate) {
+                        const sep = document.createElement('div');
+                        sep.className = 'chat-date-separator'; // Se till att du har CSS för denna
+                        sep.style.textAlign = 'center';
+                        sep.style.fontSize = '0.75rem';
+                        sep.style.color = '#9ca3af';
+                        sep.style.margin = '10px 0';
+                        sep.textContent = msgDate;
+                        chatList.appendChild(sep);
+                        lastDate = msgDate;
+                    }
+                }
+                renderChatBubble(data, chatList);
+            });
+
+            // Scrolla till botten vid första laddningen
+            if (limit === 50) {
+                setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
+            }
+
+        }, error => {
+            console.error("Fel vid chatt-hämtning:", error);
+        });
+}
+
+function renderChatBubble(data, container) {
+    const bubble = document.createElement('div');
+    // Om det är system (AI) eller användare
+    const typeClass = (data.platform === 'system') ? 'system' : 'me';
+    bubble.className = `chat-bubble ${typeClass}`; // CSS-klasser: .chat-bubble, .me, .system
+
+    // 1. Text
+    if (data.text) {
+        const textDiv = document.createElement('div');
+        // Enkel länk-fix (gör länkar klickbara)
+        textDiv.innerHTML = data.text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" style="color:white; text-decoration:underline;">$1</a>');
+        bubble.appendChild(textDiv);
+    }
+
+    // 2. Bild
+    if (data.image) {
+        const imgContainer = document.createElement('div');
+        imgContainer.className = 'chat-bubble-image';
+        const img = document.createElement('img');
+        img.src = data.image;
+        img.loading = "lazy";
+        
+        // Klick för att zooma bild
+        img.onclick = () => window.openImageZoom(data.image);
+        
+        imgContainer.appendChild(img);
+        bubble.appendChild(imgContainer);
+    }
+
+    // 3. Tid
+    const timeDiv = document.createElement('div');
+    timeDiv.className = 'chat-time';
+    if (data.timestamp) {
+        const t = new Date(data.timestamp);
+        timeDiv.textContent = t.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    }
+    bubble.appendChild(timeDiv);
+
+    container.appendChild(bubble);
+}
+
+// --- BILD-HANTERING ---
+
+async function handleImageUpload(file) {
+    if (!file) return;
+    
+    // Visa tillfällig "Laddar..." toast om du har den funktionen, annars console.log
+    console.log("Bearbetar bild...");
+
+    try {
+        const base64Image = await compressImage(file);
+        
+        await db.collection("notes").add({
+            image: base64Image,
+            text: "", // Ingen text, bara bild
+            type: 'image',
+            timestamp: new Date().toISOString(),
+            platform: window.innerWidth <= 768 ? 'mobil' : 'dator'
+        });
+        
+        // Återställ fil-inputsen så man kan välja samma bild igen
+        document.getElementById('chatFileInputGallery').value = '';
+        document.getElementById('chatFileInputCamera').value = '';
+
+    } catch (err) {
+        console.error("Bildfel:", err);
+        alert("Kunde inte ladda upp bilden.");
+    }
+}
+
+// Komprimera bild innan uppladdning (Viktigt för Firestore!)
+function compressImage(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        
+        reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target.result;
+            
+            img.onload = () => {
+                const maxWidth = 800; // Max bredd
+                const scaleSize = maxWidth / img.width;
+                const newWidth = (img.width > maxWidth) ? maxWidth : img.width;
+                const newHeight = (img.width > maxWidth) ? (img.height * scaleSize) : img.height;
+
+                const canvas = document.createElement('canvas');
+                canvas.width = newWidth;
+                canvas.height = newHeight;
+
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, newWidth, newHeight);
+
+                // Spara som JPEG med 70% kvalitet
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                resolve(dataUrl);
+            };
+            img.onerror = (err) => reject(err);
+        };
+        reader.onerror = (err) => reject(err);
+    });
+}
+
+// Enkel bild-zoom funktion
+window.openImageZoom = function(src) {
+    const modal = document.getElementById('imageZoomModal');
+    const imgMain = document.getElementById('mmImgMain');
+    const closeBtn = document.getElementById('mmCloseBtn');
+    
+    if (modal && imgMain) {
+        imgMain.src = src;
+        modal.style.display = 'flex';
+        
+        if(closeBtn) {
+            closeBtn.onclick = () => {
+                modal.style.display = 'none';
+            };
+        }
+        
+        // Stäng vid klick utanför bilden
+        modal.onclick = (e) => {
+            if (e.target === modal) modal.style.display = 'none';
+        };
+    }
+};
