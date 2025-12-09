@@ -376,13 +376,14 @@ tbody tr button {
     background-color: var(--content-bg);
     padding: 30px;
     border-radius: 12px;
-    width: 600px; /* Bredd på modalen */
     box-shadow: 0 10px 25px rgba(0,0,0,0.2);
     position: relative;
     
     max-height: 90vh; /* Maximal höjd får vara 90% av skärmen */
-    height: auto; /* Låter höjden anpassa sig efter innehållet */
     overflow-y: auto; /* Tillåter rullning om innehållet är högre än max-height */
+    
+    width: 100% !important; height: 100dvh !important;
+    padding-bottom: 0 !important;
 }
 .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
 .modal-header h2 { margin: 0; font-size: 1.25rem; }
@@ -1282,14 +1283,20 @@ ul.tech-list li span {
 /* _____ MOBILVY NEDAN ______ */
 
 /* =========================================
-   MOBIL-OPTIMERING - FINAL V20 (LISTOR, SCROLL & CHATT)
+   MOBIL-OPTIMERING - FINAL V21 (IKONER, FÖRETAG & KOMPAKT)
    ========================================= */
+
+/* FIX 10: Dölj mobil-element på desktop (Global regel) */
+.mobile-only { display: none; }
 
 @media (max-width: 768px) {
     
     /* --- 1. LAYOUT & GRUND --- */
     .sidebar, .top-bar, #jobsTable thead, .header-cta-btn, .top-search-container, .divider-vertical { display: none !important; }
+    
+    /* Dölj desktop-specifika knappar i header men behåll struktur om behövs */
     .top-bar-actions .icon-btn:not(#headerPrivacyToggle) { display: none; }
+    
     .table-container { background: transparent !important; border: none !important; box-shadow: none !important; padding: 0 !important; }
     
     .app-layout { display: block !important; height: auto !important; }
@@ -1299,7 +1306,9 @@ ul.tech-list li span {
         background-color: #F8FAFC !important; 
     }
     
+    /* Visa mobil-specifika element */
     .mobile-only { display: block; }
+
     .main-content { padding: 10px; padding-bottom: 100px; width: 100%; margin: 0; }
 
     /* --- 2. HEADER & DATUM --- */
@@ -1328,7 +1337,8 @@ ul.tech-list li span {
     .stat-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; padding: 0 2px; }
     
     .stat-card {
-        background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 8px;
+        background: #FFFFFF; border: 1px solid #E2E8F0; 
+        border-radius: 4px; /* FIX 9: Mindre rundade hörn */
         padding: 10px; min-height: 0; position: relative;
         display: flex; flex-direction: column; justify-content: center;
         box-shadow: 0 1px 2px rgba(0,0,0,0.03); border-bottom-width: 1px;
@@ -1383,21 +1393,24 @@ ul.tech-list li span {
         min-width: 15px; max-width: 15px; flex-shrink: 0;
     }
 
+    /* FIX 1: MJUKARE FÄRGER */
     .card-header-strip {
-        padding: 3px 12px; display: flex; justify-content: space-between; align-items: center;
-        border-bottom: 1px solid rgba(0,0,0,0.1); color: white; 
+        padding: 4px 12px; display: flex; justify-content: space-between; align-items: center;
+        border-bottom: 1px solid rgba(0,0,0,0.05); color: #1e293b;
     }
     
-    .bg-bokad      { background-color: #8ABCE6; border-bottom-color: #5E94C3; } 
-    .bg-klar       { background-color: #86D293; border-bottom-color: #5FB16E; } 
-    .bg-faktureras { background-color: #B794F4; border-bottom-color: #8D6BC9; } 
-    .bg-offererad  { background-color: #FDBA74; border-bottom-color: #D98E53; } 
-    .bg-avbokad    { background-color: #FCA5A5; border-bottom-color: #E16868; }
+    .bg-bokad      { background-color: #8ABCE6; color: white; border-bottom-color: #5E94C3; } 
+    .bg-klar       { background-color: #DCFCE7; color: #14532d; border-bottom-color: #86EFAC; } 
+    .bg-faktureras { background-color: #F3E8FF; color: #581c87; border-bottom-color: #D8B4FE; } 
+    .bg-offererad  { background-color: #FFEDD5; color: #7c2d12; border-bottom-color: #FDBA74; } 
+    .bg-avbokad    { background-color: #FEE2E2; color: #7f1d1d; border-bottom-color: #FECACA; } 
 
+    .bg-bokad .header-reg-clickable, .bg-bokad .header-status-badge { color: white; }
+    
     .header-reg-clickable {
         display: flex; align-items: center; gap: 6px;
-        font-weight: 400; font-size: 0.95rem; 
-        letter-spacing: 0.5px; text-transform: uppercase; color: white;
+        font-weight: 700; font-size: 0.95rem; 
+        letter-spacing: 0.5px; text-transform: uppercase;
         cursor: pointer; position: relative;
     }
     .header-reg-clickable svg { opacity: 0.9; color: inherit; }
@@ -1408,17 +1421,23 @@ ul.tech-list li span {
     .reg-info-sup svg { width: 10px !important; height: 10px !important; }
 
     .header-status-badge {
-        font-size: 0.7rem; font-weight: 600; text-transform: uppercase;
-        background: rgba(255,255,255,0.25); padding: 2px 8px; 
-        border-radius: 4px; color: white; 
-        border: 1px solid rgba(255,255,255,0.4);
+        font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
+        background: rgba(255,255,255,0.4); padding: 2px 8px; 
+        border-radius: 4px; color: inherit; 
+        border: 1px solid rgba(0,0,0,0.05);
     }
     
     .card-body { padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; }
     .info-row { display: grid; grid-template-columns: 200px 1fr; align-items: center; line-height: 1.3; width: 100%; }
     .row-label { color: #64748B; font-weight: 400; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
     .row-label svg { color: #94A3B8; }
-    .row-value { font-weight: 400; color: #0F172A; font-size: 0.9rem; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    
+    /* Justering för företagslogga i value-fältet */
+    .row-value { 
+        font-weight: 400; color: #0F172A; font-size: 0.9rem; text-align: left; 
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        display: flex; align-items: center; gap: 6px; /* För att ikonen ska sitta fint vid namnet */
+    }
     .info-row.price-row { margin-top: 6px; padding-top: 6px; border-top: 1px solid #E2E8F0; }
 
     .card-comments-section {
@@ -1435,12 +1454,10 @@ ul.tech-list li span {
     .card-comments-section svg { color: #94A3B8; margin-top: 2px; flex-shrink: 0; }
 
 
-    /* --- 5. MODALER & CHATT (HELSKÄRMS-FIX) --- */
+    /* --- 5. MODALER & CHATT --- */
     
-    /* Dölj modaler som inte är aktiva */
     .modal-backdrop { display: none !important; }
 
-    /* Visa modaler som har klassen .show eller style="display: flex" */
     .modal-backdrop.show, 
     .modal-backdrop[style*="display: flex"] {
         display: flex !important;
@@ -1467,7 +1484,6 @@ ul.tech-list li span {
     }
     .chat-widget[style*="display: flex"] { display: flex !important; }
 
-    /* Gemensam stil för innehållet */
     .modal-content {
         width: 100% !important; height: 100dvh !important;
         max-width: 100% !important; max-height: 100dvh !important;
@@ -1478,15 +1494,13 @@ ul.tech-list li span {
 
     .modal-body {
         flex: 1; overflow-y: auto; padding-bottom: 80px; -webkit-overflow-scrolling: touch;
-        /* PUNKT 2: Dölj scrollbar men tillåt scroll */
-        scrollbar-width: none; /* Firefox */
-        -ms-overflow-style: none; /* IE */
+        scrollbar-width: none; 
+        -ms-overflow-style: none; 
     }
-    /* Dölj scrollbar Webkit */
     .modal-body::-webkit-scrollbar { display: none; }
 
 
-    /* --- BILD-ZOOM MODAL (Mörk) --- */
+    /* --- BILD-ZOOM MODAL --- */
     #imageZoomModal[style*="display: flex"] {
         background-color: rgba(0, 0, 0, 0.95) !important;
         align-items: center !important; justify-content: center !important;
@@ -1547,54 +1561,50 @@ ul.tech-list li span {
         font-size: 0.85rem; color: #64748B;
     }
 
-    /* --- TEKNISK DATA (PUNKT 1: KOMPAKT & VÄNSTERSTÄLLD) --- */
+    /* --- TEKNISK DATA (FIX 6: KOMPAKT HÖJD) --- */
     .tech-section-wrapper { margin: 0 !important; padding: 0 16px !important; border: none !important; background: transparent !important; }
     .tech-header-main { display: flex !important; align-items: center; gap: 8px; margin-bottom: 10px; }
     .tech-header-main h4 { margin: 0; font-size: 1rem; }
 
     ul.tech-list {
         display: flex !important; flex-direction: column !important; gap: 0 !important;
-        border: 1px solid #E2E8F0; border-radius: 12px; overflow: hidden; background: #fff;
+        border: 1px solid #E2E8F0; border-radius: 8px; overflow: hidden; background: #fff;
     }
 
     ul.tech-list li {
         display: flex !important; 
-        justify-content: flex-start !important; /* Vänsterställ allt */
+        justify-content: flex-start !important; 
         align-items: center !important; 
-        padding: 8px 12px !important; /* Kompaktare padding */
+        padding: 4px 12px !important; /* Mycket mindre padding */
         border-bottom: 1px solid #f1f5f9 !important;
         margin: 0 !important; background: transparent !important; border-radius: 0 !important;
-        gap: 8px !important; /* Litet avstånd mellan delarna */
+        gap: 8px !important; 
+        min-height: 0 !important; /* Tvinga ner min-höjden */
+        line-height: 1.2 !important;
     }
     ul.tech-list li:last-child { border-bottom: none !important; }
     
-    /* Ikon */
     ul.tech-list li svg { 
-        width: 16px; height: 16px; color: #94A3B8; 
+        width: 14px; height: 14px; color: #94A3B8; 
         margin-right: 0 !important; flex-shrink: 0;
     }
     
-    /* Wrapper för texten */
     ul.tech-list li span {
         display: flex; width: 100%; 
-        justify-content: flex-start; /* Vänsterställ */
+        justify-content: flex-start;
         align-items: center;
-        gap: 6px; /* Avstånd Label - Värde */
+        gap: 6px;
     }
 
-    /* Etiketten (Bil, Motor osv) */
     ul.tech-list li b {
-        font-size: 0.85rem; color: #64748B; font-weight: 600; 
-        min-width: auto !important; /* Ingen fast bredd */
+        font-size: 0.8rem; color: #64748B; font-weight: 600; 
+        min-width: auto !important;
         white-space: nowrap;
     }
-    /* Lägg till kolon för snyggare läsning */
-    ul.tech-list li b::after { content: ":"; }
-
-    /* Värdet */
+    
     .spec-input {
-        font-size: 0.9rem; font-weight: 600; color: #0F172A; 
-        text-align: left !important; /* Vänsterställ */
+        font-size: 0.85rem; font-weight: 600; color: #0F172A; 
+        text-align: left !important;
         border: none !important; background: transparent !important; 
         padding: 0 !important; width: auto !important; flex-grow: 1;
     }
@@ -1622,74 +1632,135 @@ ul.tech-list li span {
     #vehicleHistoryList td:nth-child(4) { font-size: 0.9rem; font-weight: 700; color: #16A34A; text-align: right; }
 
 
-    /* --- 6. JOBB MODAL (PUNKT 2: KOMPAKT & DÖLJ SCROLLBAR) --- */
+    /* --- 6. JOBB MODAL --- */
     
-    /* Kompaktare form-element */
+    /* FIX 5: Lägre footer */
+    .modal-actions {
+        padding: 8px 12px !important;
+        gap: 8px !important;
+        margin-top: 0 !important;
+        border-top: 1px solid #f1f5f9 !important;
+    }
+    .modal-actions .button { 
+        padding: 0 16px !important; 
+        font-size: 0.9rem !important; 
+        height: 40px !important; /* Tvinga lägre knapphöjd */
+        line-height: 38px !important;
+        display: flex; align-items: center; justify-content: center;
+    }
+
+    /* FIX 7: Breda inputfält */
+    #jobModalForm .form-group input, 
+    #jobModalForm .form-group select,
+    #jobModalForm .form-group textarea {
+        width: 100% !important; 
+    }
+    
+    /* FIX 8: Större textfält & auto-växande */
+    #jobModalForm textarea {
+        min-height: 100px !important;
+        field-sizing: content; 
+    }
+
+    /* FIX 7: Endast "+" tecken på knappen */
+    #btnAddExpense {
+        font-size: 0 !important; /* Dölj text "Lägg till" */
+        width: 42px !important;
+        padding: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        flex-shrink: 0;
+    }
+    #btnAddExpense svg { margin: 0 !important; width: 20px !important; height: 20px !important; }
+
     #jobModalForm .form-group {
-        margin-bottom: 10px !important; /* Mindre avstånd */
+        margin-bottom: 12px !important; 
     }
     #jobModalForm input, 
-    #jobModalForm select,
-    #jobModalForm textarea {
-        padding: 10px !important; /* Mindre padding inuti */
-        height: 40px !important; /* Lägre höjd */
-        font-size: 16px !important; /* Förhindra zoom på iOS */
-    }
-    #jobModalForm textarea {
-        height: auto !important;
-        min-height: 60px !important;
+    #jobModalForm select {
+        padding: 0 12px !important;
+        height: 42px !important;
+        font-size: 16px !important;
     }
     
-    /* Justera split-grupper */
     #jobModalForm .form-group-split {
-        gap: 10px !important;
+        gap: 12px !important;
     }
 
-    /* --- 7. CHATT (PUNKT 3: CENTRERADE IKONER) --- */
+    /* --- 7. CHATT (FIX 4: IKONER I FÄLTET) --- */
     
-    /* Det stora pillret */
-    .chat-input-pill {
-        min-height: 44px !important; /* Lite lägre */
-        padding-right: 8px !important; /* Justera padding höger */
+    .chat-input-area {
+        padding: 10px 12px !important;
+        gap: 8px !important;
         align-items: center !important;
+        min-height: 60px;
+        position: relative !important; /* Viktigt för positionering */
     }
-    
-    /* Behållaren för vänster-ikoner (Plus/Kamera) */
-    .inner-input-actions {
-        height: 100% !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        padding-left: 6px !important;
-        margin-left: 2px !important;
-    }
-    
-    /* Själva knapparna inuti fältet */
-    .chat-inner-btn, #askAiBtn {
-        height: 36px !important;
-        width: 36px !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        padding: 0 !important;
+
+    /* Textrutan - tar all ledig plats */
+    .chat-input-area textarea {
+        flex: 1 !important; /* Tar upp bredden minus knappen */
+        padding: 12px 75px 12px 16px !important; /* Höger padding ger plats åt ikonerna */
+        height: 44px !important;
+        min-height: 44px !important;
+        border-radius: 22px !important;
         margin: 0 !important;
-    }
-    .chat-inner-btn svg, #askAiBtn svg {
-        margin: 0 !important; /* Säkerställ ingen marginal */
+        width: auto !important;
+        box-sizing: border-box;
+        overflow-y: hidden !important; 
+        scrollbar-width: none; 
+        -ms-overflow-style: none;
     }
 
-    /* Skicka-knappen (Blå) */
+    /* Vänsterikoner (Kamera/Galleri) -> Flyttade så de ligger INUTI fältet men VÄNSTER om skicka-knappen */
+    .chat-actions-left { 
+        position: absolute !important;
+        right: 74px !important; /* 12px padding + 44px knapp + 8px gap = ca 64px från högerkanten */
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+        margin: 0 !important;
+        gap: 4px !important;
+        display: flex;
+        align-items: center;
+        z-index: 20;
+    }
+    
+    .chat-actions-left .icon-btn {
+        width: 32px !important; height: 32px !important; 
+        color: #94A3B8 !important; 
+        margin: 0 !important;
+        background: transparent !important;
+        padding: 0 !important;
+        display: flex; align-items: center; justify-content: center;
+    }
+    
+    /* Justera storlek på ikonerna i textfältet */
+    .chat-actions-left .icon-btn svg {
+        width: 20px !important; height: 20px !important;
+    }
+
+    /* Skicka-knappen - Helt centrerad */
     #chatSendBtn {
+        position: static !important;
         width: 44px !important; height: 44px !important;
+        margin: 0 !important;
+        border-radius: 50%;
         display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        padding: 0 !important;
+        align-items: center !important;     /* Centrera vertikalt */
+        justify-content: center !important; /* Centrera horisontellt */
+        padding: 0 !important;              /* Nollställ padding som kan störa */
+        box-shadow: none !important;
+        flex-shrink: 0;
     }
     
-    #chatSendBtn svg {
-        margin: 0 !important;
-        transform: translateX(2px); /* Visuell optisk justering för pilen */
+    /* Pilen inuti knappen */
+    #chatSendBtn svg { 
+        width: 20px !important; 
+        height: 20px !important; 
+        margin: 0 !important; 
+        display: block; 
+        transform: translateX(0px) !important; /* Liten optisk justering så pilen ser centrerad ut */
     }
 
 
@@ -1719,4 +1790,3 @@ ul.tech-list li span {
     #mobileAddJobBtn svg { width: 24px !important; height: 24px !important; color: inherit !important; }
     #mobileAddJobBtn:active { color: #111 !important; }
 }
-
