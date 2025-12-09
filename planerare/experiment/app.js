@@ -659,7 +659,7 @@ async function scrapeAndAnalyze(regnr, docRef) {
 
 // --- HJÄLPFUNKTION: Bygg HTML från lösa fält (DENNA BEHÖVS FÖR NYA DESIGNEN) ---
 function generateTechSpecHTML(data, regnr) {
-    // Märkes-logik (Oförändrad)
+    // 1. Märkes-logik (Oförändrad)
     let brandIcon = '#icon-brand-generic';
     const modelStr = (data.model || '').toLowerCase();
     
@@ -672,24 +672,58 @@ function generateTechSpecHTML(data, regnr) {
     else if (modelStr.includes('skoda')) brandIcon = '#icon-brand-skoda';
     else if (modelStr.includes('fiat')) brandIcon = '#icon-brand-fiat';
 
-    // OBS: Här nedan anropar vi nu "_v2" på alla ikoner för att tvinga fram rätt utseende!
+    // Hjälpfunktion för att skapa smart input (Sparar plats och kod)
+    const createInput = (key, val) => {
+        const value = val || '';
+        // Sätter bredden till antal tecken + 2 (för lite luft). Minst 60px via CSS.
+        return `<input class="spec-input" 
+                       value="${value}" 
+                       style="width: ${value.length + 3}ch;" 
+                       oninput="this.style.width = (this.value.length + 3) + 'ch'"
+                       onchange="saveTechSpec('${regnr}', '${key}', this.value)">`;
+    };
+
     return `
         <div class="tech-header-main">
            <svg class="brand-icon-svg"><use href="${brandIcon}"></use></svg>
            <h4>Teknisk Data ${regnr}</h4>
         </div>
         <ul class="tech-list">
-            <li><svg class="spec-icon-svg"><use href="#icon-car-v2"></use></svg> <span><b>Bil:</b> ${data.model || '---'}</span></li>
-            <li><svg class="spec-icon-svg"><use href="#icon-belt-v2"></use></svg> <span><b>Kamrem:</b> ${data.timing_belt || '---'}</span></li>
+            <li>
+                <svg class="spec-icon-svg"><use href="#icon-car-v2"></use></svg> 
+                <span><b>Bil:</b> ${createInput('model', data.model)}</span>
+            </li>
+            <li>
+                <svg class="spec-icon-svg"><use href="#icon-belt-v2"></use></svg> 
+                <span><b>Kamrem:</b> ${createInput('timing_belt', data.timing_belt)}</span>
+            </li>
             
-            <li><svg class="spec-icon-svg"><use href="#icon-engine-v2"></use></svg> <span><b>Motor:</b> ${data.engine || '---'}</span></li>
-            <li><svg class="spec-icon-svg"><use href="#icon-torque-v2"></use></svg> <span><b>Moment:</b> ${data.torque || '---'}</span></li>
+            <li>
+                <svg class="spec-icon-svg"><use href="#icon-engine-v2"></use></svg> 
+                <span><b>Motor:</b> ${createInput('engine', data.engine)}</span>
+            </li>
+            <li>
+                <svg class="spec-icon-svg"><use href="#icon-torque-v2"></use></svg> 
+                <span><b>Moment:</b> ${createInput('torque', data.torque)}</span>
+            </li>
 
-            <li><svg class="spec-icon-svg"><use href="#icon-oil-v2"></use></svg> <span><b>Olja:</b> ${data.oil || '---'}</span></li>
-            <li><svg class="spec-icon-svg"><use href="#icon-battery-v2"></use></svg> <span><b>Batteri:</b> ${data.battery || '---'}</span></li>
+            <li>
+                <svg class="spec-icon-svg"><use href="#icon-oil-v2"></use></svg> 
+                <span><b>Olja:</b> ${createInput('oil', data.oil)}</span>
+            </li>
+            <li>
+                <svg class="spec-icon-svg"><use href="#icon-battery-v2"></use></svg> 
+                <span><b>Batteri:</b> ${createInput('battery', data.battery)}</span>
+            </li>
 
-            <li><svg class="spec-icon-svg"><use href="#icon-ac-v2"></use></svg> <span><b>AC:</b> ${data.ac || '---'}</span></li>
-            <li><svg class="spec-icon-svg"><use href="#icon-weight-v2"></use></svg> <span><b>Drag:</b> ${data.tow_weight || '---'}</span></li>
+            <li>
+                <svg class="spec-icon-svg"><use href="#icon-ac-v2"></use></svg> 
+                <span><b>AC:</b> ${createInput('ac', data.ac)}</span>
+            </li>
+            <li>
+                <svg class="spec-icon-svg"><use href="#icon-weight-v2"></use></svg> 
+                <span><b>Drag:</b> ${createInput('tow_weight', data.tow_weight)}</span>
+            </li>
         </ul>
     `;
 }
