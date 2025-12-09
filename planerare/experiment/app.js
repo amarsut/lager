@@ -139,23 +139,40 @@ const ICONS = {
 // --- HJÄLPFUNKTION: Skapa Mobilkortet (FINAL LIST V5) ---
 function createJobCard(job) {
     const d = new Date(job.datum);
-    const dateStr = d.toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' }) + "."; 
+    
+    const day = d.getDate();
+    const year = d.getFullYear();
+    
+    // PUNKT 2: Fixa datumformatet (Ta bort dubbelpunkter)
+    // 1. Hämta kort månadsnamn (t.ex. "dec" eller "dec.")
+    let rawMonth = d.toLocaleDateString('sv-SE', { month: 'short' });
+    // 2. Ta bort ALLA punkter först
+    let cleanMonth = rawMonth.replace(/\./g, '');
+    // 3. Gör första bokstaven stor
+    let month = cleanMonth.charAt(0).toUpperCase() + cleanMonth.slice(1);
+    
+    // Resultat: "12 Dec. 2025" (Alltid exakt en punkt)
+    const dateStr = `${day} ${month}. ${year}`;
     const timeStr = d.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
 
     const price = job.kundpris ? `${job.kundpris}:-` : '0:-';
     const regNr = (job.regnr && job.regnr.toUpperCase() !== 'OKÄNT') ? job.regnr.toUpperCase() : '---';
     const customer = job.kundnamn ? job.kundnamn : 'Okänd'; 
     
+    // PUNKT 3: Paket
+    const paket = job.paket ? job.paket : '-';
+    
+    // PUNKT 4: Mätarställning (Placeholder)
+    const mileage = '-';
+
     const statusRaw = job.status || 'bokad';
     const statusText = statusRaw.toUpperCase(); 
 
     // Hantera kommentar & Placeholder
     let commentHtml = '';
     if (job.kommentar && job.kommentar.length > 0) {
-        // Det finns en kommentar -> Vanlig textfärg
         commentHtml = `<span class="comment-text">${job.kommentar}</span>`;
     } else {
-        // Ingen kommentar -> Placeholder textfärg
         commentHtml = `<span class="comment-text comment-placeholder">Inga kommentarer finns tillgängliga.</span>`;
     }
     
@@ -166,16 +183,14 @@ function createJobCard(job) {
     const iCar = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 17h8"/></svg>`;
     const iComment = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`;
     const iTag = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>`;
+    const iBox = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>`;
+    const iGauge = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 14c1.66 0 3-1.34 3-3V5h-6v6c0 1.66 1.34 3 3 3z"/><path d="M12 14v7"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="M19.07 4.93L17.66 6.34"/><path d="M4.93 4.93L6.34 6.34"/></svg>`;
 
-    // Använd bg-bokad som standard för att få den blå färgen om inget annat matchar
     let headerClass = 'bg-bokad';
     if(statusRaw === 'klar') headerClass = 'bg-klar';
     if(statusRaw === 'faktureras') headerClass = 'bg-faktureras';
     if(statusRaw === 'avbokad') headerClass = 'bg-avbokad';
     if(statusRaw === 'offererad') headerClass = 'bg-offererad';
-
-    // Specialfall: Om du vill ha blått på 'Bokad' men den grå texten, ändra här. 
-    // Just nu kör vi Blå bakgrund + Vit text för Bokad.
 
     return `
     <div class="job-card-new" onclick="openEditModal('${job.id}')">
@@ -200,6 +215,16 @@ function createJobCard(job) {
             <div class="info-row">
                 <span class="row-label">${iCar} Reg.nr</span>
                 <span class="row-value" style="text-transform:uppercase;">${regNr}</span>
+            </div>
+            
+            <div class="info-row">
+                <span class="row-label">${iBox} Paket</span>
+                <span class="row-value">${paket}</span>
+            </div>
+            
+            <div class="info-row">
+                <span class="row-label" title="Mätarställning">${iGauge} Mätarst.</span>
+                <span class="row-value">${mileage}</span>
             </div>
 
             <div class="info-row">
