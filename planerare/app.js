@@ -160,9 +160,9 @@ function createJobCard(job) {
     
     // Om företag: Visa grön portfölj framför namnet. Texten "Namn" förblir neutral.
     // Vi lägger loggan i value-fältet.
-    const nameValueHtml = isCorporate 
-        ? `${iBriefcaseGreen} <span>${customer}</span>` 
-        : customer;
+	const nameValueHtml = isCorporate 
+	    ? `<span class="company-icon-wrapper">${iBriefcaseGreen}</span><span>${customer}</span>` 
+	    : `<span>${customer}</span>`;
 
     let commentHtml = '';
     if (job.kommentar && job.kommentar.length > 0) {
@@ -316,6 +316,30 @@ function updateStatsCounts(jobs) {
 // 7. EVENT LISTENERS
 function setupEventListeners() {
     
+	// Hantera klick på Sök-knappen i menyn
+	document.getElementById('mobileSearchBtn')?.addEventListener('click', () => {
+	    const searchModal = document.getElementById('mobileSearchModal');
+	    const searchInput = document.getElementById('mobileSearchInput');
+	    const resultsContainer = document.getElementById('mobileSearchResults');
+
+	    // 1. Öppna modalen
+	    searchModal.classList.add('show');
+	    
+	    // 2. Nollställ gamla sökningar för en fräsch start
+	    searchInput.value = '';
+	    resultsContainer.innerHTML = '';
+	    
+	    // 3. Markera knappen som aktiv i menyn
+	    document.querySelectorAll('.mobile-nav-item').forEach(btn => btn.classList.remove('active'));
+	    document.getElementById('mobileSearchBtn').classList.add('active');
+
+	    // 4. VIKTIGT: Sätt fokus i rutan (Tangentbordet kommer upp)
+	    // Vi väntar 100ms för att säkerställa att modalen hunnit bli synlig först
+	    setTimeout(() => {
+	        searchInput.focus();
+	    }, 100);
+	});
+	
     // Hantera klick på statistik-korten (Filter)
     document.querySelectorAll('.stat-card').forEach(card => {
         card.addEventListener('click', () => {
