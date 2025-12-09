@@ -1282,11 +1282,16 @@ ul.tech-list li span {
 /* _____ MOBILVY NEDAN ______ */
 
 /* =========================================
-   MOBIL-OPTIMERING - FINAL V18 (REG-FIX & CLEAN MODAL)
+   MOBIL-OPTIMERING - FINAL V20 (LISTOR, SCROLL & CHATT)
    ========================================= */
 
 @media (max-width: 768px) {
-    /* --- NOLLSTÄLLNING --- */
+    
+    /* --- 1. LAYOUT & GRUND --- */
+    .sidebar, .top-bar, #jobsTable thead, .header-cta-btn, .top-search-container, .divider-vertical { display: none !important; }
+    .top-bar-actions .icon-btn:not(#headerPrivacyToggle) { display: none; }
+    .table-container { background: transparent !important; border: none !important; box-shadow: none !important; padding: 0 !important; }
+    
     .app-layout { display: block !important; height: auto !important; }
     html, body { 
         overflow-x: hidden; 
@@ -1294,14 +1299,10 @@ ul.tech-list li span {
         background-color: #F8FAFC !important; 
     }
     
-    /* Dölj desktop-element */
-    .sidebar, .top-bar, #jobsTable thead, .header-cta-btn, .top-search-container, .divider-vertical { display: none !important; }
-    .top-bar-actions .icon-btn:not(#headerPrivacyToggle) { display: none; }
-    .table-container { background: transparent !important; border: none !important; box-shadow: none !important; padding: 0 !important; }
     .mobile-only { display: block; }
     .main-content { padding: 10px; padding-bottom: 100px; width: 100%; margin: 0; }
 
-    /* --- 1. TOPP-HEADER --- */
+    /* --- 2. HEADER & DATUM --- */
     .mobile-header {
         display: flex; align-items: center; justify-content: space-between;
         padding: 0 4px; margin-bottom: 12px;
@@ -1316,15 +1317,21 @@ ul.tech-list li span {
     .header-day { display: block; font-size: 0.65rem; font-weight: 700; color: #94A3B8; letter-spacing: 1px; }
     .header-date { font-size: 1rem; font-weight: 800; color: #1E293B; }
 
+    .date-separator {
+        font-size: 0.75rem; font-weight: 700; color: #64748B;
+        margin: 16px auto 6px auto; width: 95%; 
+        text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .date-separator:first-child { margin-top: 0; }
 
-    /* --- 2. STATISTIK-KORT --- */
-    .stat-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+    /* --- 3. STATISTIK-KORT --- */
+    .stat-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; padding: 0 2px; }
+    
     .stat-card {
         background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 8px;
-        padding: 6px 10px; min-height: 0;
+        padding: 10px; min-height: 0; position: relative;
         display: flex; flex-direction: column; justify-content: center;
-        box-shadow: 0 1px 1px rgba(0,0,0,0.02); cursor: pointer; transition: all 0.2s;
-        border-bottom-width: 1px; position: relative;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.03); border-bottom-width: 1px;
     }
     .stat-card::after { display: none !important; }
 
@@ -1334,12 +1341,12 @@ ul.tech-list li span {
     .stat-card[data-filter="offererad"] { background: linear-gradient(135deg, #FFFFFF 0%, #FFF7ED 100%); }
 
     .stat-card-title {
-        font-size: 0.65rem; margin-bottom: 2px;
+        font-size: 0.65rem; margin-bottom: 4px;
         display: flex; align-items: center; gap: 4px;
         color: #64748B; text-transform: uppercase; font-weight: 600;
     }
     .stat-card-title svg { width: 12px; height: 12px; }
-    .stat-card-value { font-size: 1.25rem; font-weight: 800; line-height: 1; color: #0F172A; }
+    .stat-card-value { font-size: 1.4rem; font-weight: 800; line-height: 1; color: #0F172A; }
     
     .stat-card[data-filter="kommande"] .stat-card-value { color: #3B82F6; }
     .stat-card[data-filter="faktureras"] .stat-card-value { color: #A855F7; }
@@ -1348,15 +1355,15 @@ ul.tech-list li span {
 
     .stat-card[data-filter="alla"] {
         grid-column: span 2; flex-direction: row; align-items: center; justify-content: space-between;
-        padding: 6px 16px; height: 54px; 
+        padding: 8px 16px; height: 48px; 
     }
     .stat-card[data-filter="alla"] .stat-card-title { margin-bottom: 0; }
-    .stat-card[data-filter="alla"] .stat-card-value { font-size: 1.1rem; color: #111; }
+    .stat-card[data-filter="alla"] .stat-card-value { font-size: 1.1rem; color: #111; margin: 0; }
 
     .stat-card.active {
         background-color: #ffffff; border-color: #E2E8F0; 
         border-bottom-width: 4px; border-bottom-style: solid;
-        padding-bottom: 3px; transform: translateY(-1px);
+        padding-bottom: 7px; transform: translateY(-1px);
     }
     .stat-card[data-filter="kommande"].active { border-bottom-color: #3B82F6; }
     .stat-card[data-filter="faktureras"].active { border-bottom-color: #A855F7; }
@@ -1364,17 +1371,7 @@ ul.tech-list li span {
     .stat-card[data-filter="offererad"].active { border-bottom-color: #F97316; }
     .stat-card[data-filter="alla"].active { border-bottom-color: #64748B; }
 
-
-    /* --- 3. DATUM RUBRIK --- */
-    .date-separator {
-        font-size: 0.75rem; font-weight: 700; color: #64748B;
-        margin: 12px auto 6px auto; width: 95%; 
-        text-transform: uppercase; letter-spacing: 0.5px;
-    }
-    .date-separator:first-child { margin-top: 0; }
-
-
-    /* --- 4. JOBB-KORTET --- */
+    /* --- 4. JOBB-KORT --- */
     .job-card-new {
         background: #FFFFFF; border: 1px solid #CBD5E1; border-radius: 4px; 
         width: 95%; margin: 0 auto 10px auto;
@@ -1386,40 +1383,30 @@ ul.tech-list li span {
         min-width: 15px; max-width: 15px; flex-shrink: 0;
     }
 
-    /* Kort Header */
     .card-header-strip {
-        padding: 3px 12px; display: flex; justify-content: space-between; align-items: center;
+        padding: 6px 12px; display: flex; justify-content: space-between; align-items: center;
         border-bottom: 1px solid rgba(0,0,0,0.1); color: white; 
     }
-
+    
     .bg-bokad      { background-color: #8ABCE6; border-bottom-color: #5E94C3; } 
     .bg-klar       { background-color: #86D293; border-bottom-color: #5FB16E; } 
     .bg-faktureras { background-color: #B794F4; border-bottom-color: #8D6BC9; } 
     .bg-offererad  { background-color: #FDBA74; border-bottom-color: #D98E53; } 
     .bg-avbokad    { background-color: #FCA5A5; border-bottom-color: #E16868; }
 
-    /* --- NY REG-HEADER STIL (Återställd + Info-ikon) --- */
     .header-reg-clickable {
-        display: flex; align-items: center; gap: 8px;
+        display: flex; align-items: center; gap: 6px;
         font-weight: 400; font-size: 0.95rem; 
-        letter-spacing: 0.5px; text-transform: uppercase;
-        color: white;
-        cursor: pointer;
-        position: relative; /* För positionering */
+        letter-spacing: 0.5px; text-transform: uppercase; color: white;
+        cursor: pointer; position: relative;
     }
     .header-reg-clickable svg { opacity: 0.9; color: inherit; }
     
-    /* Den lilla info-ikonen */
     .reg-info-sup {
-        align-self: flex-start; /* Dra upp den */
-        margin-left: -2px; /* Dra in den lite */
-        opacity: 0.8;
+        display: flex; align-items: center; margin-bottom: 8px; margin-left: -2px; opacity: 0.8;
     }
-    .reg-info-sup svg {
-        width: 10px !important; height: 10px !important; /* Mycket liten */
-    }
+    .reg-info-sup svg { width: 10px !important; height: 10px !important; }
 
-    /* Status Badge */
     .header-status-badge {
         font-size: 0.7rem; font-weight: 600; text-transform: uppercase;
         background: rgba(255,255,255,0.25); padding: 2px 8px; 
@@ -1427,31 +1414,13 @@ ul.tech-list li span {
         border: 1px solid rgba(255,255,255,0.4);
     }
     
-    /* Kort Body */
-    .card-body {
-        padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; 
-    }
-    .info-row {
-        display: grid; grid-template-columns: 200px 1fr; 
-        align-items: center; line-height: 1.3; width: 100%;
-    }
-    .row-label {
-        color: #64748B; font-weight: 400; font-size: 0.85rem;
-        display: flex; align-items: center; gap: 6px;
-        overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
-    }
+    .card-body { padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; }
+    .info-row { display: grid; grid-template-columns: 200px 1fr; align-items: center; line-height: 1.3; width: 100%; }
+    .row-label { color: #64748B; font-weight: 400; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
     .row-label svg { color: #94A3B8; }
-    .row-value {
-        font-weight: 400; color: #0F172A; font-size: 0.9rem;
-        text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
+    .row-value { font-weight: 400; color: #0F172A; font-size: 0.9rem; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .info-row.price-row { margin-top: 6px; padding-top: 6px; border-top: 1px solid #E2E8F0; }
 
-    .info-row.price-row {
-        margin-top: 6px; padding-top: 6px;
-        border-top: 1px solid #E2E8F0; 
-    }
-
-    /* Kommentarer */
     .card-comments-section {
         margin-top: 2px; padding: 8px 12px;
         background-color: #F8FAFC; border-top: 1px solid #E2E8F0;
@@ -1459,108 +1428,272 @@ ul.tech-list li span {
     }
     .comment-text {
         font-size: 0.8rem; color: #334155; font-style: italic; line-height: 1.4; 
-        width: 100%; display: -webkit-box; -webkit-line-clamp: 2;
+        width: 100%; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2;
         -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis;
     }
     .comment-placeholder { color: #94A3B8; font-style: normal; }
     .card-comments-section svg { color: #94A3B8; margin-top: 2px; flex-shrink: 0; }
 
 
-    /* --- 5. FORDONS MODAL (CLEANUP) --- */
+    /* --- 5. MODALER & CHATT (HELSKÄRMS-FIX) --- */
     
-    #vehicleModal .modal-content {
-        width: 95% !important; max-width: 95% !important;
-        padding: 16px 12px !important; /* Mindre padding */
-        border-radius: 12px !important;
-        max-height: 90vh !important; overflow-y: auto !important;
+    /* Dölj modaler som inte är aktiva */
+    .modal-backdrop { display: none !important; }
+
+    /* Visa modaler som har klassen .show eller style="display: flex" */
+    .modal-backdrop.show, 
+    .modal-backdrop[style*="display: flex"] {
+        display: flex !important;
+        align-items: flex-end !important;
+        padding: 0 !important;
+        background-color: #fff !important;
+        z-index: 10000 !important;
+        position: fixed !important;
+        top: 0; left: 0; right: 0; bottom: 0;
     }
 
-    /* Header: Regnr + Stäng */
+    /* Chatt Widget */
+    .chat-widget {
+        position: fixed !important;
+        top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
+        width: 100% !important; height: 100dvh !important;
+        max-width: 100% !important; max-height: 100dvh !important;
+        background-color: #fff !important;
+        z-index: 10000 !important;
+        border-radius: 0 !important; margin: 0 !important;
+        flex-direction: column !important;
+        box-shadow: none !important;
+        display: none; 
+    }
+    .chat-widget[style*="display: flex"] { display: flex !important; }
+
+    /* Gemensam stil för innehållet */
+    .modal-content {
+        width: 100% !important; height: 100dvh !important;
+        max-width: 100% !important; max-height: 100dvh !important;
+        border-radius: 0 !important; margin: 0 !important;
+        display: flex !important; flex-direction: column !important;
+        box-shadow: none !important;
+    }
+
+    .modal-body {
+        flex: 1; overflow-y: auto; padding-bottom: 80px; -webkit-overflow-scrolling: touch;
+        /* PUNKT 2: Dölj scrollbar men tillåt scroll */
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE */
+    }
+    /* Dölj scrollbar Webkit */
+    .modal-body::-webkit-scrollbar { display: none; }
+
+
+    /* --- BILD-ZOOM MODAL (Mörk) --- */
+    #imageZoomModal[style*="display: flex"] {
+        background-color: rgba(0, 0, 0, 0.95) !important;
+        align-items: center !important; justify-content: center !important;
+        display: flex !important; 
+    }
+    #imageZoomModal .image-zoom-content {
+        height: auto !important; width: 100% !important;
+        background: transparent !important;
+        display: flex; flex-direction: column;
+        justify-content: center; align-items: center;
+    }
+    #imageZoomModal img {
+        max-height: 80vh !important; max-width: 95vw !important;
+        width: auto !important; object-fit: contain !important;
+        border-radius: 4px !important;
+    }
+
+    /* --- FORDON MODAL --- */
+    #vehicleModal .modal-content { padding: 0 !important; }
+
     .vehicle-header-row {
-        padding: 0 !important; margin-bottom: 12px;
-        display: flex; flex-direction: column; align-items: center; gap: 10px;
-    }
-    
-    .reg-group {
-        display: flex; align-items: center; gap: 8px;
-        width: 100%; justify-content: center; position: relative;
-    }
-    
-    #vehicleRegTitle { font-size: 2.2rem !important; font-weight: 800; letter-spacing: 1px; margin: 0; }
-    
-    /* Kopiera knapp */
-    #btnCopyRegModal {
-        position: absolute; right: 0; top: 50%; transform: translateY(-50%);
-        background: #F3F4F6; border: none; width: 36px; height: 36px; border-radius: 50%;
+        background: #fff; padding: 12px 16px !important;
+        display: grid !important; grid-template-columns: 1fr auto; 
+        align-items: center; border-bottom: 1px solid #f1f5f9;
+        margin: 0 !important; position: sticky; top: 0; z-index: 50;
     }
 
-    /* Stora Knappar (Biluppg / Oljemag) */
+    .reg-group { display: flex; align-items: center; gap: 10px; justify-content: flex-start !important; }
+    #vehicleRegTitle { font-size: 1.8rem !important; font-weight: 800; letter-spacing: 1px; color: #111; margin: 0; }
+    
+    #btnCopyRegModal {
+        position: static !important; background: #F1F5F9; color: #64748B; 
+        width: 32px; height: 32px; border-radius: 8px; border: none;
+        display: flex; align-items: center; justify-content: center;
+    }
+
+    #vehicleModalClose {
+        display: flex !important; background: transparent; color: #111;
+        width: 36px; height: 36px; border-radius: 50%; border: none;
+        align-items: center; justify-content: center; cursor: pointer;
+    }
+    #vehicleModalClose svg { width: 24px; height: 24px; }
+
     .header-actions {
-        display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%;
+        display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+        padding: 16px 16px 0 16px; margin: 0;
     }
     .biluppgifter-btn, .oljemagasinet-btn {
-        width: 100%; justify-content: center;
-        padding: 10px !important; font-size: 0.9rem !important; margin: 0 !important;
-        border-radius: 8px !important;
-    }
-    /* Göm desktop-stäng-knappen här, vi lägger den kanske nere eller uppe i hörnet om man vill */
-    #vehicleModalClose { display: none; } 
-
-    .senaste-agare-box {
-        margin: 0 0 16px 0 !important; width: 100%; text-align: center;
-        background: #F8FAFC; padding: 8px; border-radius: 6px; font-size: 0.85rem;
-    }
-
-    /* Teknisk Data - RENSA UPP */
-    .tech-section-wrapper {
-        margin: 0 0 16px 0 !important; padding: 0 !important;
-        background: transparent !important; border: none !important;
+        width: 100%; justify-content: center; height: 40px; margin: 0 !important;
+        font-size: 0.9rem !important; border-radius: 8px !important;
+        background-color: #F8FAFC !important; border: 1px solid #E2E8F0 !important; color: #334155 !important;
     }
     
-    /* Göm den stora loggan och rubriken i tech-datan, det tar bara plats */
-    .tech-header-main { display: none !important; }
+    .senaste-agare-box {
+        margin: 16px !important; width: auto !important;
+        background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 6px;
+        text-align: center; font-weight: 500; padding: 10px !important;
+        font-size: 0.85rem; color: #64748B;
+    }
 
-    /* Listan */
+    /* --- TEKNISK DATA (PUNKT 1: KOMPAKT & VÄNSTERSTÄLLD) --- */
+    .tech-section-wrapper { margin: 0 !important; padding: 0 16px !important; border: none !important; background: transparent !important; }
+    .tech-header-main { display: flex !important; align-items: center; gap: 8px; margin-bottom: 10px; }
+    .tech-header-main h4 { margin: 0; font-size: 1rem; }
+
     ul.tech-list {
-        display: grid !important;
-        grid-template-columns: 1fr 1fr; /* 2 kolumner för att spara höjd */
-        gap: 8px !important;
+        display: flex !important; flex-direction: column !important; gap: 0 !important;
+        border: 1px solid #E2E8F0; border-radius: 12px; overflow: hidden; background: #fff;
     }
 
     ul.tech-list li {
-        background: #F8FAFC; border: 1px solid #F1F5F9;
-        border-radius: 6px; padding: 8px;
-        display: flex !important; flex-direction: column; align-items: flex-start !important;
-        gap: 2px !important; margin: 0 !important;
+        display: flex !important; 
+        justify-content: flex-start !important; /* Vänsterställ allt */
+        align-items: center !important; 
+        padding: 8px 12px !important; /* Kompaktare padding */
+        border-bottom: 1px solid #f1f5f9 !important;
+        margin: 0 !important; background: transparent !important; border-radius: 0 !important;
+        gap: 8px !important; /* Litet avstånd mellan delarna */
+    }
+    ul.tech-list li:last-child { border-bottom: none !important; }
+    
+    /* Ikon */
+    ul.tech-list li svg { 
+        width: 16px; height: 16px; color: #94A3B8; 
+        margin-right: 0 !important; flex-shrink: 0;
     }
     
-    ul.tech-list li svg { width: 16px; height: 16px; color: #94A3B8; margin-bottom: 4px; }
-    
-    /* Etikett (t.ex. "Motor") */
-    ul.tech-list li span b {
-        display: block; font-size: 0.7rem; color: #64748B; font-weight: 600; text-transform: uppercase;
+    /* Wrapper för texten */
+    ul.tech-list li span {
+        display: flex; width: 100%; 
+        justify-content: flex-start; /* Vänsterställ */
+        align-items: center;
+        gap: 6px; /* Avstånd Label - Värde */
     }
-    
-    /* Värde (t.ex. "2.0 TDI") */
+
+    /* Etiketten (Bil, Motor osv) */
+    ul.tech-list li b {
+        font-size: 0.85rem; color: #64748B; font-weight: 600; 
+        min-width: auto !important; /* Ingen fast bredd */
+        white-space: nowrap;
+    }
+    /* Lägg till kolon för snyggare läsning */
+    ul.tech-list li b::after { content: ":"; }
+
+    /* Värdet */
     .spec-input {
-        font-size: 0.9rem; font-weight: 700; color: #0F172A;
-        width: 100% !important; border: none !important; background: transparent !important;
-        padding: 0 !important; text-align: left !important;
+        font-size: 0.9rem; font-weight: 600; color: #0F172A; 
+        text-align: left !important; /* Vänsterställ */
+        border: none !important; background: transparent !important; 
+        padding: 0 !important; width: auto !important; flex-grow: 1;
     }
 
-    /* Historik */
-    .history-search-wrapper { margin-bottom: 8px !important; }
-    .history-table th { display: none; } /* Göm rubriker för renare look */
-    .history-table td { padding: 10px 0 !important; border-bottom: 1px solid #F1F5F9 !important; }
+    /* --- HISTORIK --- */
+    .history-search-wrapper { margin: 24px 16px 12px 16px !important; }
+    .history-search-wrapper input { 
+        width: 100%; border-radius: 8px; background: #F1F5F9; border: none; height: 40px; padding-left: 40px;
+    }
+    .history-table { width: 100%; margin-top: 0; }
+    .history-table thead { display: none; } 
     
-    /* Gör historik-rader till kort */
     #vehicleHistoryList tr {
-        display: grid; grid-template-columns: auto 1fr auto; 
+        display: grid; grid-template-columns: 80px 1fr auto; 
         gap: 10px; align-items: center;
+        padding: 12px 16px; border-bottom: 1px solid #f1f5f9; background: #fff;
+    }
+    #vehicleHistoryList td { padding: 0 !important; border: none !important; }
+    #vehicleHistoryList td:nth-child(1) { font-size: 0.8rem; color: #64748B; font-weight: 500; }
+    #vehicleHistoryList td:nth-child(2) { 
+        font-size: 0.9rem; font-weight: 600; color: #0F172A; 
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
+    }
+    #vehicleHistoryList td:nth-child(3) { display: none; }
+    #vehicleHistoryList td:nth-child(4) { font-size: 0.9rem; font-weight: 700; color: #16A34A; text-align: right; }
+
+
+    /* --- 6. JOBB MODAL (PUNKT 2: KOMPAKT & DÖLJ SCROLLBAR) --- */
+    
+    /* Kompaktare form-element */
+    #jobModalForm .form-group {
+        margin-bottom: 10px !important; /* Mindre avstånd */
+    }
+    #jobModalForm input, 
+    #jobModalForm select,
+    #jobModalForm textarea {
+        padding: 10px !important; /* Mindre padding inuti */
+        height: 40px !important; /* Lägre höjd */
+        font-size: 16px !important; /* Förhindra zoom på iOS */
+    }
+    #jobModalForm textarea {
+        height: auto !important;
+        min-height: 60px !important;
+    }
+    
+    /* Justera split-grupper */
+    #jobModalForm .form-group-split {
+        gap: 10px !important;
+    }
+
+    /* --- 7. CHATT (PUNKT 3: CENTRERADE IKONER) --- */
+    
+    /* Det stora pillret */
+    .chat-input-pill {
+        min-height: 44px !important; /* Lite lägre */
+        padding-right: 8px !important; /* Justera padding höger */
+        align-items: center !important;
+    }
+    
+    /* Behållaren för vänster-ikoner (Plus/Kamera) */
+    .inner-input-actions {
+        height: 100% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding-left: 6px !important;
+        margin-left: 2px !important;
+    }
+    
+    /* Själva knapparna inuti fältet */
+    .chat-inner-btn, #askAiBtn {
+        height: 36px !important;
+        width: 36px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    .chat-inner-btn svg, #askAiBtn svg {
+        margin: 0 !important; /* Säkerställ ingen marginal */
+    }
+
+    /* Skicka-knappen (Blå) */
+    #chatSendBtn {
+        width: 44px !important; height: 44px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 0 !important;
+    }
+    
+    #chatSendBtn svg {
+        margin: 0 !important;
+        transform: translateX(2px); /* Visuell optisk justering för pilen */
     }
 
 
-    /* --- 6. MOBIL-MENY --- */
+    /* --- 8. BOTTENMENY --- */
     .mobile-nav {
         position: fixed; bottom: 0; left: 0; right: 0;
         background: #ffffff; height: 70px; 
