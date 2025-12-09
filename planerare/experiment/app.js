@@ -20,6 +20,9 @@ let currentChatLimit = 50;
 let isFetchingOlderChat = false;
 let expandedMessageIds = new Set();
 
+let isEditingMsg = false;
+let currentEditMsgId = null;
+
 // 2. INITIERA APPEN
 document.addEventListener('DOMContentLoaded', function() {
     try {
@@ -795,45 +798,75 @@ function initChat() {
     const sendBtn = document.getElementById('chatSendBtn');
     const closeBtn = document.getElementById('closeChatWidget');
     
+    // NYTT: Element för redigerings-header
+    const closeEditBtn = document.getElementById('closeEditBtn');
+
     // Knappar för bilder
     const plusBtn = document.getElementById('chatPlusBtn');      
     const cameraBtn = document.getElementById('chatCameraBtn'); 
     const fileInputGallery = document.getElementById('chatFileInputGallery');
     const fileInputCamera = document.getElementById('chatFileInputCamera');
 
-    // 2. Stäng-knapp
+    // 2. Stäng-knapp för widgeten
     if (closeBtn) {
         closeBtn.addEventListener('click', toggleChatWidget);
     }
 
-    // 3. Skicka meddelande (Klick + Enter)
-    const sendMessage = async () => {
+    // NYTT: Stäng-knapp för redigeringsläget
+    if (closeEditBtn) {
+        closeEditBtn.addEventListener('click', exitEditMode);
+    }
+
+    // 3. Hantera "Skicka" OCH "Spara ändring"
+    const handleChatAction = async () => {
         const text = chatInput.value.trim();
         if (!text) return;
 
-        try {
-            await db.collection("notes").add({
-                text: text,
-                timestamp: new Date().toISOString(),
-                platform: window.innerWidth <= 768 ? 'mobil' : 'dator',
-                type: 'text'
-            });
-            chatInput.value = '';
-            // Scrolla ner
-            setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
-        } catch (err) {
-            console.error("Fel vid sändning:", err);
-            alert("Kunde inte skicka meddelandet.");
+        // Om vi är i redigeringsläge: UPPDATERA befintligt meddelande
+        if (isEditingMsg && currentEditMsgId) {
+            try {
+                // Uppdaterar texten i databasen
+                await db.collection('notes').doc(currentEditMsgId).update({
+                    text: text,
+                    isEdited: true // Flagga om du vill visa "redigerad" i UI senare
+                });
+                
+                // Avsluta redigeringsläget
+                exitEditMode(); 
+
+            } catch (err) {
+                console.error("Fel vid uppdatering:", err);
+                alert("Kunde inte spara ändringen.");
+            }
+        } 
+        // Annars: SKAPA nytt meddelande (Din gamla logik)
+        else {
+            try {
+                await db.collection("notes").add({
+                    text: text,
+                    timestamp: new Date().toISOString(),
+                    platform: window.innerWidth <= 768 ? 'mobil' : 'dator',
+                    type: 'text'
+                });
+                chatInput.value = '';
+                // Scrolla ner
+                setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
+            } catch (err) {
+                console.error("Fel vid sändning:", err);
+                alert("Kunde inte skicka meddelandet.");
+            }
         }
     };
 
-    if (sendBtn) sendBtn.addEventListener('click', sendMessage);
+    // Koppla klick på skicka-knappen till den nya funktionen
+    if (sendBtn) sendBtn.onclick = handleChatAction;
     
+    // Koppla Enter-tangenten
     if (chatInput) {
         chatInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
-                sendMessage();
+                handleChatAction();
             }
         });
     }
@@ -849,43 +882,37 @@ function initChat() {
         fileInputCamera.addEventListener('change', (e) => handleImageUpload(e.target.files[0]));
     }
 
-	// 5. SÖKFUNKTION FÖR CHATTEN
+    // 5. SÖKFUNKTION FÖR CHATTEN
     const searchInput = document.getElementById('chatSearchInput');
     
     if (searchInput) {
         searchInput.addEventListener('input', (e) => {
             const searchTerm = e.target.value.toLowerCase();
-            // Vi hämtar alla rader (som vi skapade i renderChatBubble)
             const rows = document.querySelectorAll('.chat-row'); 
             
             rows.forEach(row => {
-                // Vi kollar all text i raden (bubblan + tiden)
                 const text = row.innerText.toLowerCase();
-                
                 if (text.includes(searchTerm)) {
-                    row.style.display = 'flex'; // Visa (använd flex för att behålla layouten)
+                    row.style.display = 'flex'; 
                 } else {
-                    row.style.display = 'none'; // Dölj
+                    row.style.display = 'none'; 
                 }
             });
 
-            // Valfritt: Dölj datum-separatorer om inga meddelanden syns under dem
-            // (Detta är en enkel lösning, vill du ha det perfekt kan vi utöka logiken)
+            // Hantera datumavskiljare vid sökning
             const separators = document.querySelectorAll('.chat-date-separator');
             separators.forEach(sep => {
-                // Om sökfältet är tomt, visa alla datum igen
                 if(searchTerm === '') {
                     sep.style.display = 'flex';
                 } else {
-                    // Vid sökning kan det vara snyggast att dölja datumen för att spara plats
                     sep.style.display = 'none'; 
                 }
             });
         });
     }
 
-    // 6. Starta lyssnare mot Firebase (Hämta gamla meddelanden)
-    setupChatListener(50); // Hämta de 50 senaste
+    // 6. Starta lyssnare mot Firebase
+    setupChatListener(50);
 }
 
 function setupChatListener(limit) {
@@ -1068,79 +1095,61 @@ function renderChatBubble(data, container) {
 // ==========================================================================
 
 function enterEditMode(rowElement, currentText) {
-    const bubble = rowElement.querySelector('.chat-bubble');
-    const textContentDiv = bubble.querySelector('.bubble-text-content');
     const messageId = rowElement.dataset.messageId;
+    if (!messageId) return;
 
-    if (!textContentDiv || !messageId) return;
+    // Sätt globala variabler
+    isEditingMsg = true;
+    currentEditMsgId = messageId;
 
-    const originalHTML = textContentDiv.innerHTML;
-    bubble.classList.add('is-editing');
+    // UI Referenser
+    const chatWidget = document.getElementById('chatWidget');
+    const inputField = document.getElementById('chatInput');
+    const editHeader = document.getElementById('chatEditHeader');
+    const sendBtn = document.getElementById('chatSendBtn');
 
-    textContentDiv.innerHTML = `
-        <textarea class="edit-message-input" spellcheck="false">${currentText}</textarea>
-        <div class="edit-message-actions">
-            <button class="edit-btn edit-btn-cancel">Avbryt</button>
-            <button class="edit-btn edit-btn-save">Spara</button>
-        </div>
-    `;
+    // 1. Fyll input med texten
+    inputField.value = currentText;
+    inputField.focus();
+    // Flytta markör till slutet av texten
+    inputField.setSelectionRange(inputField.value.length, inputField.value.length);
 
-    const textarea = textContentDiv.querySelector('textarea');
-    const cancelBtn = textContentDiv.querySelector('.edit-btn-cancel');
-    const saveBtn = textContentDiv.querySelector('.edit-btn-save');
+    // 2. Ändra UI till "Edit Mode" (Dimma bakgrund, visa header)
+    chatWidget.classList.add('edit-mode');
+    if(editHeader) editHeader.style.display = 'flex';
+    
+    // Byt ikon på knappen till en "Check/Spara"
+    if(sendBtn) {
+        sendBtn.innerHTML = '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+    }
+}
 
-    textarea.focus();
-    // Flytta markör till slutet
-    textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+function exitEditMode() {
+    // Nollställ variabler
+    isEditingMsg = false;
+    currentEditMsgId = null;
 
-    // Auto-resize textarea
-    textarea.style.height = 'auto';
-    textarea.style.height = textarea.scrollHeight + 'px';
-    textarea.addEventListener('input', function() {
-        this.style.height = 'auto';
-        this.style.height = this.scrollHeight + 'px';
-    });
+    const chatWidget = document.getElementById('chatWidget');
+    const inputField = document.getElementById('chatInput');
+    const editHeader = document.getElementById('chatEditHeader');
+    const sendBtn = document.getElementById('chatSendBtn');
 
-    // AVBRYT
-    cancelBtn.onclick = () => {
-        bubble.classList.remove('is-editing');
-        textContentDiv.innerHTML = originalHTML;
-    };
+    // Återställ UI
+    inputField.value = '';
+    chatWidget.classList.remove('edit-mode');
+    if(editHeader) editHeader.style.display = 'none';
 
-    // SPARA
-    saveBtn.onclick = async () => {
-        const newText = textarea.value.trim();
-        if (!newText) return alert("Meddelandet kan inte vara tomt.");
-        if (newText === currentText) return cancelBtn.click();
-
-        saveBtn.textContent = 'Sparar...';
-        saveBtn.disabled = true;
-
-        try {
-            // FIX: Vi sparar till "notes" collection, inte "jobs"
-            await db.collection('notes').doc(messageId).update({
-                text: newText,
-                isEdited: true
-            });
-            // UI uppdateras automatiskt av lyssnaren
-            bubble.classList.remove('is-editing');
-
-        } catch (error) {
-            console.error("Fel vid uppdatering:", error);
-            alert("Kunde inte spara.");
-            saveBtn.textContent = 'Spara';
-            saveBtn.disabled = false;
-        }
-    };
+    // Återställ sänd-ikonen (Pilen)
+    if(sendBtn) {
+        sendBtn.innerHTML = '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>';
+    }
 }
 
 async function deleteChatMessage(messageId) {
     if (!confirm("Ta bort meddelandet?")) return;
 
     try {
-        // FIX: Vi tar bort från "notes" collection
         await db.collection('notes').doc(messageId).delete();
-        console.log("Borttaget:", messageId);
     } catch (error) {
         console.error("Fel vid borttagning:", error);
         alert("Kunde inte ta bort meddelandet.");
