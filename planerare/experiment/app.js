@@ -849,7 +849,42 @@ function initChat() {
         fileInputCamera.addEventListener('change', (e) => handleImageUpload(e.target.files[0]));
     }
 
-    // 5. Starta lyssnare mot Firebase (Hämta gamla meddelanden)
+	// 5. SÖKFUNKTION FÖR CHATTEN
+    const searchInput = document.getElementById('chatSearchInput');
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            // Vi hämtar alla rader (som vi skapade i renderChatBubble)
+            const rows = document.querySelectorAll('.chat-row'); 
+            
+            rows.forEach(row => {
+                // Vi kollar all text i raden (bubblan + tiden)
+                const text = row.innerText.toLowerCase();
+                
+                if (text.includes(searchTerm)) {
+                    row.style.display = 'flex'; // Visa (använd flex för att behålla layouten)
+                } else {
+                    row.style.display = 'none'; // Dölj
+                }
+            });
+
+            // Valfritt: Dölj datum-separatorer om inga meddelanden syns under dem
+            // (Detta är en enkel lösning, vill du ha det perfekt kan vi utöka logiken)
+            const separators = document.querySelectorAll('.chat-date-separator');
+            separators.forEach(sep => {
+                // Om sökfältet är tomt, visa alla datum igen
+                if(searchTerm === '') {
+                    sep.style.display = 'flex';
+                } else {
+                    // Vid sökning kan det vara snyggast att dölja datumen för att spara plats
+                    sep.style.display = 'none'; 
+                }
+            });
+        });
+    }
+
+    // 6. Starta lyssnare mot Firebase (Hämta gamla meddelanden)
     setupChatListener(50); // Hämta de 50 senaste
 }
 
