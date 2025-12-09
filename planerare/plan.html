@@ -424,22 +424,37 @@
 
 	<div id="chatWidget" class="chat-widget" style="display: none;">
 	    <div class="chat-header">
-		    <div class="chat-header-tools">
-		        <button class="header-icon-btn" id="toggleGalleryBtn" title="Visa Galleri">
-		            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-		        </button>
-		        <button class="header-icon-btn" id="toggleAiBtn" title="AI Assistent">
-		           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" /></svg>
-		        </button>
-		    </div>
-		
-		    <div class="chat-search-wrapper">
-		        <input type="text" id="chatSearchInput" placeholder="Sök...">
-		    </div>
-		
-		    <button id="closeChatWidget">
-		        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+		    <button id="closeChatWidget" class="messenger-back-btn clean-arrow">
+		        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+		            <line x1="19" y1="12" x2="5" y2="12"></line>
+		            <polyline points="12 19 5 12 12 5"></polyline>
+		        </svg>
 		    </button>
+		
+		    <div class="chat-search-wrapper messenger-input-wrapper full-width-search">
+		        <svg class="search-icon-inside" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+			        <circle cx="11" cy="11" r="8"></circle>
+			        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+			    </svg>
+		        
+		        <input type="text" id="chatSearchInput" placeholder="Sök..." autocomplete="off">
+		        
+		        <button class="clear-input-btn" id="clearChatSearch" style="display: none;">
+		            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z"/></svg>
+		        </button>
+		
+		        <div class="inside-search-tools">
+		            <div class="tool-divider"></div>
+		            <button class="tool-icon-btn" id="toggleAiBtn" title="AI Assistent">
+		               <svg class="sparkle-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" /></svg>
+		            </button>
+		            
+		            <div class="tool-divider"></div>
+		            <button class="tool-icon-btn" id="toggleGalleryBtn" title="Visa Galleri">
+		                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+		            </button>
+		        </div>
+		    </div>
 		</div>
 	
 	    <div id="chatMessages" class="chat-messages">
@@ -489,15 +504,28 @@
 	</div>
 
 	<div id="mobileSearchModal" class="modal-overlay mobile-only" style="z-index: 2000;">
-	    <div class="mobile-search-container" style="background:#fff; width:100%; height:100%; padding:16px; display:flex; flex-direction:column;">
-	        <div class="mobile-search-header" style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
-	            <div style="position:relative; flex-grow:1;">
-	                 <svg class="icon" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#9ca3af;"><use href="#icon-search"></use></svg>
-	                <input type="text" id="mobileSearchInput" placeholder="Sök kund, reg.nr..." style="width:100%; padding:12px 12px 12px 40px; border:1px solid #e5e7eb; border-radius:12px; font-size:16px; outline:none; background:#f9fafb;">
-	            </div>
-	             <button id="closeMobileSearchBtn" style="background:none; border:none; font-size:16px; font-weight:600; color:#3b82f6; padding:8px;">Avbryt</button>
+	    <div class="messenger-search-container">
+	        <div class="messenger-search-header">
+	            <button id="closeMobileSearchBtn" class="messenger-back-btn">
+	                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+	                    <line x1="19" y1="12" x2="5" y2="12"></line>
+	                    <polyline points="12 19 5 12 12 5"></polyline>
+	                </svg>
+	            </button>
+	            <div class="messenger-input-wrapper">
+				    <svg class="search-icon-inside" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+				        <circle cx="11" cy="11" r="8"></circle>
+				        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+				    </svg>
+				    <input type="text" id="mobileSearchInput" placeholder="Sök i konversationen" autocomplete="off">
+				    
+				    <button class="clear-input-btn" id="clearMobileSearch" style="display: none;">
+				        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z"/></svg>
+				    </button>
+				</div>
 	        </div>
-	        <div id="mobileSearchResults" style="flex-grow:1; overflow-y:auto;">
+	
+	        <div id="mobileSearchResults" class="messenger-results-area">
 	            </div>
 	    </div>
 	</div>
@@ -508,7 +536,7 @@
 	        <span>Vy</span>
 	    </button>
 	    
-	    <button class="mobile-nav-item" onclick="document.getElementById('mobileSearchModal').classList.add('show')">
+	    <button id="mobileSearchBtn" class="mobile-nav-item">
 	        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
 	        <span>Sök</span>
 	    </button>
