@@ -149,8 +149,15 @@ function createJobCard(job) {
     const statusRaw = job.status || 'bokad';
     const statusText = statusRaw.toUpperCase(); 
 
-    const comment = job.kommentar || '';
-    const hasComment = comment.length > 0;
+    // Hantera kommentar & Placeholder
+    let commentHtml = '';
+    if (job.kommentar && job.kommentar.length > 0) {
+        // Det finns en kommentar -> Vanlig textfärg
+        commentHtml = `<span class="comment-text">${job.kommentar}</span>`;
+    } else {
+        // Ingen kommentar -> Placeholder textfärg
+        commentHtml = `<span class="comment-text comment-placeholder">Inga kommentarer finns tillgängliga.</span>`;
+    }
     
     // Ikoner
     const iUser = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
@@ -160,10 +167,20 @@ function createJobCard(job) {
     const iComment = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`;
     const iTag = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>`;
 
+    // Använd bg-bokad som standard för att få den blå färgen om inget annat matchar
+    let headerClass = 'bg-bokad';
+    if(statusRaw === 'klar') headerClass = 'bg-klar';
+    if(statusRaw === 'faktureras') headerClass = 'bg-faktureras';
+    if(statusRaw === 'avbokad') headerClass = 'bg-avbokad';
+    if(statusRaw === 'offererad') headerClass = 'bg-offererad';
+
+    // Specialfall: Om du vill ha blått på 'Bokad' men den grå texten, ändra här. 
+    // Just nu kör vi Blå bakgrund + Vit text för Bokad.
+
     return `
     <div class="job-card-new" onclick="openEditModal('${job.id}')">
         
-        <div class="card-header-strip bg-${statusRaw}">
+        <div class="card-header-strip ${headerClass}">
             <div class="header-reg-group">
                 ${iCar} 
                 <span>${regNr}</span>
@@ -202,12 +219,10 @@ function createJobCard(job) {
 
         </div>
 
-        ${hasComment ? `
-            <div class="card-comments-section">
-                ${iComment}
-                <span class="comment-text">${comment}</span>
-            </div>
-        ` : ''}
+        <div class="card-comments-section">
+            ${iComment}
+            ${commentHtml}
+        </div>
 
     </div>`;
 }
