@@ -127,45 +127,52 @@ function updateHeaderDate() {
 
 // --- HJÄLPFUNKTION: Skapa Mobilkortet (NY DESIGN) ---
 function createJobCard(job) {
-    // Datum & Tid format: "Tis 10 Dec, 13:00"
+    // Formatera datum och tid exakt som önskat
     const d = new Date(job.datum);
-    const dateOptions = { weekday: 'short', day: 'numeric', month: 'short' };
-    const timeOptions = { hour: '2-digit', minute: '2-digit' };
-    const dateStr = d.toLocaleDateString('sv-SE', dateOptions);
-    const timeStr = d.toLocaleTimeString('sv-SE', timeOptions);
-    const finalDate = `${dateStr.charAt(0).toUpperCase() + dateStr.slice(1)}, ${timeStr}`;
+    const dateStr = d.toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' });
+    const timeStr = d.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
     
-    const price = job.kundpris ? `${job.kundpris} kr` : '0 kr';
+    const price = job.kundpris ? `${job.kundpris}:-` : '0:-';
     const regNr = (job.regnr && job.regnr.toUpperCase() !== 'OKÄNT') ? job.regnr.toUpperCase() : '---';
     const customer = job.kundnamn || 'Okänd';
-    
-    // Status text (Stor bokstav)
     const statusRaw = job.status || 'bokad';
     const statusText = statusRaw.charAt(0).toUpperCase() + statusRaw.slice(1);
 
     return `
-    <div class="job-card-premium-v3" onclick="openEditModal('${job.id}')">
+    <div class="job-card-list-v4" onclick="openEditModal('${job.id}')">
         
-        <div class="card-status-pill status-${statusRaw}">
-            ${statusText}
-        </div>
+        <div class="list-data-grid-v4">
         
-        <h2 class="premium-v3-customer">${customer}</h2>
-
-        <span class="premium-v3-date">${finalDate}</span>
-
-        <div class="data-grid-v3">
-            
-            <div class="info-pair">
+            <div class="info-row-v4">
                 <span class="info-label">Reg.nr</span>
                 <span class="info-value reg-value">${regNr}</span>
             </div>
-            
-            <div class="info-pair">
+
+            <div class="info-row-v4">
+                <span class="info-label">Namn</span>
+                <span class="info-value name-value">${customer}</span>
+            </div>
+
+            <div class="info-row-v4">
+                <span class="info-label">Datum</span>
+                <span class="info-value date-value">${dateStr}</span>
+            </div>
+
+            <div class="info-row-v4">
+                <span class="info-label">Tid</span>
+                <span class="info-value time-value">${timeStr}</span>
+            </div>
+
+            <div class="info-row-v4">
+                <span class="info-label">Status</span>
+                <span class="info-value status-text status-${statusRaw}">${statusText}</span>
+            </div>
+
+            <div class="info-row-v4 price-row">
                 <span class="info-label">Att betala</span>
                 <span class="info-value price-value">${price}</span>
             </div>
-
+            
         </div>
 
     </div>`;
