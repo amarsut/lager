@@ -128,43 +128,58 @@ function updateHeaderDate() {
 // --- HJÄLPFUNKTION: Skapa Mobilkortet (NY DESIGN) ---
 function createJobCard(job) {
     const d = new Date(job.datum);
-    // Tid utan sekunder (t.ex. "10:00")
     const timeStr = d.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
     
-    const price = job.kundpris ? `${job.kundpris} kr` : '0 kr';
-    // Regnr: Om tomt -> visa ---, annars Stora bokstäver
+    // Formatera pris snyggt (t.ex. 1 500 kr)
+    const priceVal = job.kundpris ? parseInt(job.kundpris).toLocaleString('sv-SE') : '0';
+    
     const regNr = (job.regnr && job.regnr.toUpperCase() !== 'OKÄNT') ? job.regnr.toUpperCase() : '---';
     const customer = job.kundnamn || 'Okänd';
     
     const status = job.status || 'bokad';
     const isDone = status === 'klar';
     
-    // Status text med stor bokstav (Bokad)
+    // Snyggare status-text
     const statusText = status.charAt(0).toUpperCase() + status.slice(1);
 
     return `
-    <div class="job-card" onclick="openEditModal('${job.id}')">
-        
-        <div class="card-top-row">
-            <span class="card-time">${timeStr}</span>
-            <span class="status-badge-pill ${status}">${statusText}</span>
-        </div>
-
-        <div class="card-mid-row">
-            <span class="customer-name">${customer}</span>
-            <span class="price-tag">${price}</span>
-        </div>
-
-        <div class="card-bot-row">
-            <span class="reg-tag-simple">${regNr}</span>
+    <div class="job-card status-${status}" onclick="openEditModal('${job.id}')">
+        <div class="card-content">
             
-            <button class="check-btn-outline ${isDone ? 'checked' : ''}" onclick="event.stopPropagation(); setStatus('${job.id}', '${isDone ? 'bokad' : 'klar'}')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="20 6 9 17 4 12"></polyline>
-                </svg>
-            </button>
-        </div>
+            <div class="card-meta-row">
+                <div class="time-badge">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    <span>${timeStr}</span>
+                </div>
+                <div class="status-pill">${statusText}</div>
+            </div>
 
+            <div class="card-main-info">
+                <div class="customer-info">
+                    <span class="customer-name">${customer}</span>
+                </div>
+                <div>
+                    <span class="price-label">Att betala</span>
+                    <div class="price-display">${priceVal} kr</div>
+                </div>
+            </div>
+
+            <div class="card-footer">
+                <div class="reg-badge-modern">
+                    <div class="car-icon-circle">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 17h2"/><path d="M15 17h2"/></svg>
+                    </div>
+                    <span>${regNr}</span>
+                </div>
+                
+                <button class="action-btn-check ${isDone ? 'done' : 'pending'}" onclick="event.stopPropagation(); setStatus('${job.id}', '${isDone ? 'bokad' : 'klar'}')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </button>
+            </div>
+
+        </div>
     </div>`;
 }
 
