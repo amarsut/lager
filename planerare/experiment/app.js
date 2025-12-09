@@ -127,12 +127,13 @@ function updateHeaderDate() {
 
 // --- HJÄLPFUNKTION: Skapa Mobilkortet (NY DESIGN) ---
 function createJobCard(job) {
-    // Datum & Tid format: "24 Dec 13:00"
+    // Datum & Tid format: "Tis 10 Dec, 13:00"
     const d = new Date(job.datum);
-    const dateStr = d.toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' });
-    const timeStr = d.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
-    // Gör första bokstaven i månaden stor (dec -> Dec)
-    const finalDate = `${dateStr.charAt(0).toUpperCase() + dateStr.slice(1)} ${timeStr}`;
+    const dateOptions = { weekday: 'short', day: 'numeric', month: 'short' };
+    const timeOptions = { hour: '2-digit', minute: '2-digit' };
+    const dateStr = d.toLocaleDateString('sv-SE', dateOptions);
+    const timeStr = d.toLocaleTimeString('sv-SE', timeOptions);
+    const finalDate = `${dateStr.charAt(0).toUpperCase() + dateStr.slice(1)}, ${timeStr}`;
     
     const price = job.kundpris ? `${job.kundpris} kr` : '0 kr';
     const regNr = (job.regnr && job.regnr.toUpperCase() !== 'OKÄNT') ? job.regnr.toUpperCase() : '---';
@@ -143,31 +144,28 @@ function createJobCard(job) {
     const statusText = statusRaw.charAt(0).toUpperCase() + statusRaw.slice(1);
 
     return `
-    <div class="job-card-clean" onclick="openEditModal('${job.id}')">
+    <div class="job-card-premium-v3" onclick="openEditModal('${job.id}')">
         
-        <div class="info-row">
-            <span class="info-label">Datum</span>
-            <span class="info-value date-value">${finalDate}</span>
+        <div class="card-status-pill status-${statusRaw}">
+            ${statusText}
         </div>
+        
+        <h2 class="premium-v3-customer">${customer}</h2>
 
-        <div class="info-row">
-            <span class="info-label">Namn</span>
-            <span class="info-value name-value">${customer}</span>
-        </div>
+        <span class="premium-v3-date">${finalDate}</span>
 
-        <div class="info-row">
-            <span class="info-label">Reg.nr</span>
-            <span class="info-value reg-value">${regNr}</span>
-        </div>
+        <div class="data-grid-v3">
+            
+            <div class="info-pair">
+                <span class="info-label">Reg.nr</span>
+                <span class="info-value reg-value">${regNr}</span>
+            </div>
+            
+            <div class="info-pair">
+                <span class="info-label">Att betala</span>
+                <span class="info-value price-value">${price}</span>
+            </div>
 
-        <div class="info-row">
-            <span class="info-label">Att betala</span>
-            <span class="info-value price-value">${price}</span>
-        </div>
-
-        <div class="info-row">
-            <span class="info-label">Status</span>
-            <span class="info-value status-text status-${statusRaw}">${statusText}</span>
         </div>
 
     </div>`;
