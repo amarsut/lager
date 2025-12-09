@@ -138,66 +138,63 @@ const ICONS = {
 
 // --- HJÄLPFUNKTION: Skapa Mobilkortet (FINAL LIST V5) ---
 function createJobCard(job) {
-    // Formatera datum och tid
     const d = new Date(job.datum);
-    const dateStr = d.toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' }); // T.ex. "12 dec"
+    const dateStr = d.toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' }).toUpperCase(); 
     const timeStr = d.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
     
     const price = job.kundpris ? `${job.kundpris}:-` : '0:-';
     const regNr = (job.regnr && job.regnr.toUpperCase() !== 'OKÄNT') ? job.regnr.toUpperCase() : '---';
-    const customer = job.kundnamn || 'Okänd';
+    const customer = job.kundnamn ? job.kundnamn.toUpperCase() : 'OKÄND';
     const statusRaw = job.status || 'bokad';
-    
-    // Status text (t.ex. "BOKAD")
     const statusText = statusRaw.toUpperCase(); 
 
-    // Kommentar
     const comment = job.kommentar || '';
     const hasComment = comment.length > 0;
     
-    // Ikoner (SVG)
-    const iconUser = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
-    const iconCalendar = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`;
-    const iconCar = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 17h8"/></svg>`;
-    const iconComment = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>`;
+    // Ikoner
+    const iUser = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
+    const iCal = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`;
+    const iClock = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`;
+    const iCar = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 17h8"/></svg>`;
+    const iComment = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`;
+    const iTag = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>`;
 
     return `
     <div class="job-card-new" onclick="openEditModal('${job.id}')">
         
-        <div class="card-header header-bg-${statusRaw}">
-            <div class="header-reg">
-                ${iconCar}
-                ${regNr}
-            </div>
-            <div class="header-status">
-                ${statusText}
-            </div>
+        <div class="card-header-strip bg-${statusRaw}">
+            <div class="header-reg">${iCar} ${regNr}</div>
+            <div class="header-status-badge">${statusText}</div>
         </div>
 
-        <div class="card-body">
-            <div class="card-row">
-                <span class="row-label">${iconUser} Namn</span>
-                <span class="row-value">${customer}</span>
-            </div>
+        <div class="card-list-body">
             
-            <div class="card-row">
-                <span class="row-label">${iconCalendar} Datum & Tid</span>
-                <span class="row-value" style="text-transform:capitalize;">${dateStr} • ${timeStr}</span>
+            <div class="list-row">
+                <span class="list-label">${iUser} Namn</span>
+                <span class="list-value">${customer}</span>
             </div>
 
-            <div class="card-price-row">
-                <span class="row-label" style="color:#111;">Att betala</span>
+            <div class="list-row">
+                <span class="list-label">${iCal} Datum</span>
+                <span class="list-value">${dateStr}</span>
+            </div>
+
+            <div class="list-row">
+                <span class="list-label">${iClock} Tid</span>
+                <span class="list-value">${timeStr}</span>
+            </div>
+
+            <div class="price-section">
+                <span class="list-label" style="color:#111;">${iTag} Att betala</span>
                 <span class="price-value">${price}</span>
             </div>
+
         </div>
 
         ${hasComment ? `
-            <div class="card-divider"></div>
-            <div class="card-footer">
-                <div class="comment-text">
-                    ${iconComment}
-                    <span>${comment}</span>
-                </div>
+            <div class="card-comment-footer">
+                ${iComment}
+                <span class="comment-content">${comment}</span>
             </div>
         ` : ''}
 
