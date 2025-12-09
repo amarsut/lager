@@ -1282,7 +1282,7 @@ ul.tech-list li span {
 /* _____ MOBILVY NEDAN ______ */
 
 /* =========================================
-   MOBIL-OPTIMERING - FINAL V15 (FIX AV DUBBLA LINJER)
+   MOBIL-OPTIMERING - FINAL V18 (REG-FIX & CLEAN MODAL)
    ========================================= */
 
 @media (max-width: 768px) {
@@ -1301,7 +1301,7 @@ ul.tech-list li span {
     .mobile-only { display: block; }
     .main-content { padding: 10px; padding-bottom: 100px; width: 100%; margin: 0; }
 
-    /* --- 1. TOPP-HEADER & PIL --- */
+    /* --- 1. TOPP-HEADER --- */
     .mobile-header {
         display: flex; align-items: center; justify-content: space-between;
         padding: 0 4px; margin-bottom: 12px;
@@ -1318,88 +1318,50 @@ ul.tech-list li span {
 
 
     /* --- 2. STATISTIK-KORT --- */
-    .stat-bar {
-        display: grid;
-        grid-template-columns: 1fr 1fr; 
-        gap: 8px; 
-        margin-bottom: 16px;
-    }
-
+    .stat-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
     .stat-card {
-        background: #FFFFFF;
-        border: 1px solid #E2E8F0;
-        border-radius: 8px;
-        padding: 6px 10px; 
-        min-height: 0;
+        background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 8px;
+        padding: 6px 10px; min-height: 0;
         display: flex; flex-direction: column; justify-content: center;
-        box-shadow: 0 1px 1px rgba(0,0,0,0.02);
-        cursor: pointer;
-        transition: all 0.2s;
-        
-        /* Viktigt: Vi använder border-bottom för linjen på mobilen */
-        border-bottom-width: 1px; 
-        position: relative;
+        box-shadow: 0 1px 1px rgba(0,0,0,0.02); cursor: pointer; transition: all 0.2s;
+        border-bottom-width: 1px; position: relative;
     }
+    .stat-card::after { display: none !important; }
 
-    /* --- VIKTIG FIX: DÖLJ DESKTOP-LINJEN (::after) PÅ MOBIL --- */
-    .stat-card::after {
-        display: none !important;
-        content: none !important;
-        height: 0 !important;
-    }
-
-    /* Gradienter */
     .stat-card[data-filter="kommande"] { background: linear-gradient(135deg, #FFFFFF 0%, #F0F9FF 100%); }
     .stat-card[data-filter="faktureras"] { background: linear-gradient(135deg, #FFFFFF 0%, #FAF5FF 100%); }
     .stat-card[data-filter="klar"] { background: linear-gradient(135deg, #FFFFFF 0%, #F0FDF4 100%); }
     .stat-card[data-filter="offererad"] { background: linear-gradient(135deg, #FFFFFF 0%, #FFF7ED 100%); }
 
-    /* Text & Siffror */
     .stat-card-title {
         font-size: 0.65rem; margin-bottom: 2px;
         display: flex; align-items: center; gap: 4px;
         color: #64748B; text-transform: uppercase; font-weight: 600;
     }
     .stat-card-title svg { width: 12px; height: 12px; }
-
-    .stat-card-value {
-        font-size: 1.25rem; font-weight: 800; line-height: 1; color: #0F172A;
-    }
+    .stat-card-value { font-size: 1.25rem; font-weight: 800; line-height: 1; color: #0F172A; }
     
-    /* Siffer-färger */
     .stat-card[data-filter="kommande"] .stat-card-value { color: #3B82F6; }
     .stat-card[data-filter="faktureras"] .stat-card-value { color: #A855F7; }
     .stat-card[data-filter="klar"] .stat-card-value { color: #22C55E; }
     .stat-card[data-filter="offererad"] .stat-card-value { color: #F97316; }
 
-    /* "ALLA JOBB" */
     .stat-card[data-filter="alla"] {
-        grid-column: span 2;
-        flex-direction: row; align-items: center; justify-content: space-between;
-        padding: 6px 16px; 
-        height: 54px; 
+        grid-column: span 2; flex-direction: row; align-items: center; justify-content: space-between;
+        padding: 6px 16px; height: 54px; 
     }
     .stat-card[data-filter="alla"] .stat-card-title { margin-bottom: 0; }
     .stat-card[data-filter="alla"] .stat-card-value { font-size: 1.1rem; color: #111; }
 
-    /* --- AKTIV STATE (Endast Border-Bottom) --- */
     .stat-card.active {
-        background-color: #ffffff; 
-        border-color: #E2E8F0; /* Behåll grå ram runt om */
-        
-        /* Här skapar vi linjen, exakt som på desktop men med mobilens färger */
-        border-bottom-width: 4px; 
-        border-bottom-style: solid;
-        
-        padding-bottom: 3px; /* Justera padding så texten inte hoppar */
-        transform: translateY(-1px);
+        background-color: #ffffff; border-color: #E2E8F0; 
+        border-bottom-width: 4px; border-bottom-style: solid;
+        padding-bottom: 3px; transform: translateY(-1px);
     }
-    
-    /* Färger på bottenlinjen */
     .stat-card[data-filter="kommande"].active { border-bottom-color: #3B82F6; }
     .stat-card[data-filter="faktureras"].active { border-bottom-color: #A855F7; }
     .stat-card[data-filter="klar"].active { border-bottom-color: #22C55E; }
-    .stat-card[data-filter="offererad"].active { border-bottom-color: #F97316; } /* Orange */
+    .stat-card[data-filter="offererad"].active { border-bottom-color: #F97316; }
     .stat-card[data-filter="alla"].active { border-bottom-color: #64748B; }
 
 
@@ -1414,9 +1376,7 @@ ul.tech-list li span {
 
     /* --- 4. JOBB-KORTET --- */
     .job-card-new {
-        background: #FFFFFF;
-        border: 1px solid #CBD5E1;
-        border-radius: 4px; 
+        background: #FFFFFF; border: 1px solid #CBD5E1; border-radius: 4px; 
         width: 95%; margin: 0 auto 10px auto;
         box-shadow: 0 1px 2px rgba(0,0,0,0.02);
         overflow: hidden; display: flex; flex-direction: column;
@@ -1426,29 +1386,38 @@ ul.tech-list li span {
         min-width: 15px; max-width: 15px; flex-shrink: 0;
     }
 
-    /* Kort Header Strip */
+    /* Kort Header */
     .card-header-strip {
-        padding: 6px 12px;
-        display: flex; justify-content: space-between; align-items: center;
-        border-bottom: 1px solid rgba(0,0,0,0.1);
-        color: white; 
+        padding: 6px 12px; display: flex; justify-content: space-between; align-items: center;
+        border-bottom: 1px solid rgba(0,0,0,0.1); color: white; 
     }
 
-    /* Header Färger (Mjuka Pasteller) */
     .bg-bokad      { background-color: #8ABCE6; border-bottom-color: #5E94C3; } 
     .bg-klar       { background-color: #86D293; border-bottom-color: #5FB16E; } 
     .bg-faktureras { background-color: #B794F4; border-bottom-color: #8D6BC9; } 
     .bg-offererad  { background-color: #FDBA74; border-bottom-color: #D98E53; } 
     .bg-avbokad    { background-color: #FCA5A5; border-bottom-color: #E16868; }
 
-    /* Regnr text */
-    .header-reg-group {
+    /* --- NY REG-HEADER STIL (Återställd + Info-ikon) --- */
+    .header-reg-clickable {
         display: flex; align-items: center; gap: 8px;
         font-weight: 400; font-size: 0.95rem; 
         letter-spacing: 0.5px; text-transform: uppercase;
         color: white;
+        cursor: pointer;
+        position: relative; /* För positionering */
     }
-    .header-reg-group svg { opacity: 0.9; color: inherit; }
+    .header-reg-clickable svg { opacity: 0.9; color: inherit; }
+    
+    /* Den lilla info-ikonen */
+    .reg-info-sup {
+        align-self: flex-start; /* Dra upp den */
+        margin-left: -2px; /* Dra in den lite */
+        opacity: 0.8;
+    }
+    .reg-info-sup svg {
+        width: 10px !important; height: 10px !important; /* Mycket liten */
+    }
 
     /* Status Badge */
     .header-status-badge {
@@ -1477,6 +1446,11 @@ ul.tech-list li span {
         text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
 
+    .info-row.price-row {
+        margin-top: 6px; padding-top: 6px;
+        border-top: 1px solid #E2E8F0; 
+    }
+
     /* Kommentarer */
     .card-comments-section {
         margin-top: 2px; padding: 8px 12px;
@@ -1484,13 +1458,109 @@ ul.tech-list li span {
         display: flex; align-items: flex-start; gap: 8px;
     }
     .comment-text {
-        font-size: 0.8rem; color: #334155; font-style: italic; line-height: 1.4; width: 100%;
+        font-size: 0.8rem; color: #334155; font-style: italic; line-height: 1.4; 
+        width: 100%; display: -webkit-box; -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis;
     }
     .comment-placeholder { color: #94A3B8; font-style: normal; }
-    .card-comments-section svg { color: #94A3B8; margin-top: 2px; }
+    .card-comments-section svg { color: #94A3B8; margin-top: 2px; flex-shrink: 0; }
 
 
-    /* --- 5. MOBIL-MENY --- */
+    /* --- 5. FORDONS MODAL (CLEANUP) --- */
+    
+    #vehicleModal .modal-content {
+        width: 95% !important; max-width: 95% !important;
+        padding: 16px 12px !important; /* Mindre padding */
+        border-radius: 12px !important;
+        max-height: 90vh !important; overflow-y: auto !important;
+    }
+
+    /* Header: Regnr + Stäng */
+    .vehicle-header-row {
+        padding: 0 !important; margin-bottom: 12px;
+        display: flex; flex-direction: column; align-items: center; gap: 10px;
+    }
+    
+    .reg-group {
+        display: flex; align-items: center; gap: 8px;
+        width: 100%; justify-content: center; position: relative;
+    }
+    
+    #vehicleRegTitle { font-size: 2.2rem !important; font-weight: 800; letter-spacing: 1px; margin: 0; }
+    
+    /* Kopiera knapp */
+    #btnCopyRegModal {
+        position: absolute; right: 0; top: 50%; transform: translateY(-50%);
+        background: #F3F4F6; border: none; width: 36px; height: 36px; border-radius: 50%;
+    }
+
+    /* Stora Knappar (Biluppg / Oljemag) */
+    .header-actions {
+        display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%;
+    }
+    .biluppgifter-btn, .oljemagasinet-btn {
+        width: 100%; justify-content: center;
+        padding: 10px !important; font-size: 0.9rem !important; margin: 0 !important;
+        border-radius: 8px !important;
+    }
+    /* Göm desktop-stäng-knappen här, vi lägger den kanske nere eller uppe i hörnet om man vill */
+    #vehicleModalClose { display: none; } 
+
+    .senaste-agare-box {
+        margin: 0 0 16px 0 !important; width: 100%; text-align: center;
+        background: #F8FAFC; padding: 8px; border-radius: 6px; font-size: 0.85rem;
+    }
+
+    /* Teknisk Data - RENSA UPP */
+    .tech-section-wrapper {
+        margin: 0 0 16px 0 !important; padding: 0 !important;
+        background: transparent !important; border: none !important;
+    }
+    
+    /* Göm den stora loggan och rubriken i tech-datan, det tar bara plats */
+    .tech-header-main { display: none !important; }
+
+    /* Listan */
+    ul.tech-list {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr; /* 2 kolumner för att spara höjd */
+        gap: 8px !important;
+    }
+
+    ul.tech-list li {
+        background: #F8FAFC; border: 1px solid #F1F5F9;
+        border-radius: 6px; padding: 8px;
+        display: flex !important; flex-direction: column; align-items: flex-start !important;
+        gap: 2px !important; margin: 0 !important;
+    }
+    
+    ul.tech-list li svg { width: 16px; height: 16px; color: #94A3B8; margin-bottom: 4px; }
+    
+    /* Etikett (t.ex. "Motor") */
+    ul.tech-list li span b {
+        display: block; font-size: 0.7rem; color: #64748B; font-weight: 600; text-transform: uppercase;
+    }
+    
+    /* Värde (t.ex. "2.0 TDI") */
+    .spec-input {
+        font-size: 0.9rem; font-weight: 700; color: #0F172A;
+        width: 100% !important; border: none !important; background: transparent !important;
+        padding: 0 !important; text-align: left !important;
+    }
+
+    /* Historik */
+    .history-search-wrapper { margin-bottom: 8px !important; }
+    .history-table th { display: none; } /* Göm rubriker för renare look */
+    .history-table td { padding: 10px 0 !important; border-bottom: 1px solid #F1F5F9 !important; }
+    
+    /* Gör historik-rader till kort */
+    #vehicleHistoryList tr {
+        display: grid; grid-template-columns: auto 1fr auto; 
+        gap: 10px; align-items: center;
+    }
+
+
+    /* --- 6. MOBIL-MENY --- */
     .mobile-nav {
         position: fixed; bottom: 0; left: 0; right: 0;
         background: #ffffff; height: 70px; 
