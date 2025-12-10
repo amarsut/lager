@@ -91,20 +91,43 @@ auth.onAuthStateChanged((user) => {
     }
 });
 
+// Global cache för sparade märken (Regnr -> Märke)
+let vehicleBrandCache = {}; 
+
+// Lista över tillgängliga märken (Namn: Ikon-slug)
+const AVAILABLE_BRANDS = {
+    'Volvo': 'volvo', 'BMW': 'bmw', 'Audi': 'audi', 'VW': 'volkswagen',
+    /*'Mercedes': 'mercedes',*/ 'Tesla': 'tesla', 'Toyota': 'toyota', 'Ford': 'ford', 
+    'Kia': 'kia', /*'Saab': 'saab',*/ 'Porsche': 'porsche', 'Seat': 'seat', 
+    'Skoda': 'skoda', 'Nissan': 'nissan', 'Peugeot': 'peugeot', 'Renault': 'renault', 
+    'Fiat': 'fiat', 'Iveco': 'iveco', 'Honda': 'honda', 'Mazda': 'mazda',
+    'Hyundai': 'hyundai', 'Polestar': 'polestar', 'Mini': 'mini', 'Jeep': 'jeep',
+    /*'Land Rover': 'landrover',*/ 'Subaru': 'subaru', 'Suzuki': 'suzuki', /*'Lexus': 'lexus',*/
+    'Chevrolet': 'chevrolet', 'Citroen': 'citroen', 'Opel': 'opel', 'Dacia': 'dacia'
+};
+
 // --- HJÄLPFUNKTION (Högst upp i app.js) ---
-function getBrandIconUrl(text) {
-    const searchStr = (text || '').toLowerCase();
-    const brands = {
-        'volvo': 'volvo', 'bmw': 'bmw', 'audi': 'audi', 'vw': 'volkswagen',
-        'volkswagen': 'volkswagen', 'merc': 'mercedes', 'benz': 'mercedes',
-        'tesla': 'tesla', 'toyota': 'toyota', 'ford': 'ford', 'kia': 'kia',
-        'saab': 'saab', 'porsche': 'porsche', 'seat': 'seat', 'skoda': 'skoda',
-        'nissan': 'nissan', 'peugeot': 'peugeot', 'renault': 'renault', 'fiat': 'fiat',
-		'iveco': 'iveco'
-    };
-    for (const [key, iconName] of Object.entries(brands)) {
-        if (searchStr.includes(key)) return `https://cdn.simpleicons.org/${iconName}`; // Utan färg = svart standard
+function getBrandIconUrl(text, regnr) {
+    // 1. PRIORITET: Kolla om vi har sparat ett märke manuellt för detta regnr
+    if (regnr && vehicleBrandCache[regnr]) {
+        const brandSlug = vehicleBrandCache[regnr];
+        return `https://cdn.simpleicons.org/${brandSlug}`;
     }
+
+    // 2. FALLBACK: Gissa baserat på text (din gamla logik)
+    const searchStr = (text || '').toLowerCase();
+    
+    // Vi använder vår globala lista AVAILABLE_BRANDS för att söka
+    for (const [name, iconName] of Object.entries(AVAILABLE_BRANDS)) {
+        // Sök på både märkesnamnet (t.ex "volvo") och slugen (t.ex "volkswagen")
+        if (searchStr.includes(name.toLowerCase()) || searchStr.includes(iconName)) {
+            return `https://cdn.simpleicons.org/${iconName}`;
+        }
+    }
+    
+    // Specialfall för "Merc" / "Benz" som inte täcks av listan exakt
+    if (searchStr.includes('merc') || searchStr.includes('benz')) return `https://cdn.simpleicons.org/mercedes`;
+
     return null;
 }
 
@@ -207,6 +230,20 @@ function initRealtimeListener() {
             container.innerHTML = `<div style="text-align:center; padding: 2rem;"><h3>Behörighet saknas!</h3></div>`;
         }
     });
+	
+	// NY LYSSNARE: Hämta sparade märken
+    db.collection("vehicleSpecs").onSnapshot(snapshot => {
+        vehicleBrandCache = {}; // Rensa cache
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            // Om det finns ett sparat märke ('brand_manual'), spara i cachen
+            if (data.brand_manual) {
+                vehicleBrandCache[doc.id] = data.brand_manual;
+            }
+        });
+        // Rita om dashboarden när vi fått in märkena
+        renderDashboard();
+    });
 }
 
 // 4. RENDERA DASHBOARD
@@ -296,7 +333,7 @@ function createJobCard(job) {
 	
 	// 1. Sök efter bilmärke i all text vi har
     const combinedText = (job.kommentar + " " + job.paket + " " + job.kundnamn + " " + (job.bilmodell || "")).toLowerCase();
-    const brandUrl = getBrandIconUrl(combinedText);
+    const brandUrl = getBrandIconUrl(combinedText, job.regnr);
 
     // 2. Bestäm vilken ikon som ska visas
     // Om vi hittade ett märke: Visa loggan (bild)
@@ -879,17 +916,27 @@ function openVehicleModal(regnr) {
     // --- BYGG HEADER DYNAMISKT (Clean design med stora knappar) ---
     const headerRow = modal.querySelector('.vehicle-header-row');
     if(headerRow) {
-        headerRow.innerHTML = `
-            <div class="reg-group">
-                <h1 id="vehicleRegTitle">${cleanReg}</h1>
-                <button class="icon-btn-sm" id="btnCopyRegModal" title="Kopiera" onclick="navigator.clipboard.writeText('${cleanReg}')">
-                    <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
-                </button>
-            </div>
-            <button id="vehicleModalClose" onclick="closeVehicleModal()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-            </button>
-        `;
+		const currentLogoUrl = getBrandIconUrl('volvo', cleanReg) || getBrandIconUrl('', cleanReg); 
+		const logoImgHtml = currentLogoUrl 
+		        ? `<img src="${currentLogoUrl}" class="brand-btn-icon">` 
+		        : `<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path><path d="M2 2l7.586 7.586"></path><circle cx="11" cy="11" r="2"></circle></svg>`;
+
+		headerRow.innerHTML = `
+		    <div class="reg-group">
+		        <h1 id="vehicleRegTitle">${cleanReg}</h1>
+		        
+		        <button class="icon-btn-sm" id="btnCopyRegModal" title="Kopiera" onclick="navigator.clipboard.writeText('${cleanReg}')">
+		            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+		        </button>
+
+		        <button class="icon-btn-sm" id="btnEditBrandModal" title="Ändra märke" onclick="openBrandSelector('${cleanReg}')" style="margin-left:4px;">
+		            ${logoImgHtml}
+		        </button>
+		    </div>
+		    <button id="vehicleModalClose" onclick="closeVehicleModal()">
+		        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+		    </button>
+		`;
     }
 
     // Uppdatera länkar
@@ -1861,5 +1908,74 @@ function toggleCardActions(jobId, event) {
             panel.classList.add('show');
             menuBtn.style.opacity = "1"; // Markera knappen som aktiv
         }
+    }
+}
+
+// --- FUNKTIONER FÖR ATT VÄLJA BILMÄRKE ---
+
+function openBrandSelector(regnr) {
+    const modal = document.getElementById('brandSelectModal');
+    const grid = document.getElementById('brandGrid');
+    const searchInput = document.getElementById('brandSearchInput');
+    
+    // Rensa grid och sök
+    grid.innerHTML = '';
+    searchInput.value = '';
+    
+    // Funktion för att rendera listan
+    const renderBrands = (filter = '') => {
+        grid.innerHTML = '';
+        Object.entries(AVAILABLE_BRANDS).forEach(([name, slug]) => {
+            if (name.toLowerCase().includes(filter.toLowerCase())) {
+                const div = document.createElement('div');
+                div.className = 'brand-select-item';
+                
+                // Markera om detta är det valda märket
+                if (vehicleBrandCache[regnr] === slug) {
+                    div.classList.add('selected');
+                }
+
+                div.innerHTML = `
+                    <img src="https://cdn.simpleicons.org/${slug}" loading="lazy">
+                    <span>${name}</span>
+                `;
+                div.onclick = () => saveBrandSelection(regnr, slug);
+                grid.appendChild(div);
+            }
+        });
+    };
+
+    // Rendera alla märken först
+    renderBrands();
+
+    // Koppla sökfunktionen
+    searchInput.oninput = (e) => renderBrands(e.target.value);
+
+    modal.classList.add('show');
+}
+
+async function saveBrandSelection(regnr, brandSlug) {
+    try {
+        // 1. Spara till Firestore (vehicleSpecs)
+        // Vi använder set med merge:true ifall dokumentet inte finns än
+        await db.collection("vehicleSpecs").doc(regnr).set({
+            brand_manual: brandSlug
+        }, { merge: true });
+
+        // 2. Stäng modalen
+        document.getElementById('brandSelectModal').classList.remove('show');
+        
+        // 3. Uppdatera ikonen i Fordonsmodalen direkt (visuell feedback)
+		const editBtn = document.getElementById('btnEditBrandModal');
+		if (editBtn) {
+		    editBtn.innerHTML = `<img src="https://cdn.simpleicons.org/${brandSlug}" class="brand-btn-icon">`;
+		}
+
+        // Notis (valfritt)
+        // alert("Märke uppdaterat!"); 
+
+    } catch (error) {
+        console.error("Fel vid sparande av märke:", error);
+        alert("Kunde inte spara valet.");
     }
 }
