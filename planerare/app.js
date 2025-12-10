@@ -427,6 +427,34 @@ function updateStatsCounts(jobs) {
 // 7. EVENT LISTENERS
 function setupEventListeners() {
 
+	// Hantera val av paket (Smart ifyllnad)
+    const paketSelect = document.getElementById('paketSelect');
+    if (paketSelect) {
+        paketSelect.addEventListener('change', (e) => {
+            const val = e.target.value;
+            const paketData = servicePaket[val];
+
+            if (paketData) {
+                // 1. Fyll i pris
+                document.getElementById('kundpris').value = paketData.pris;
+                
+                // 2. Fyll i kommentar (om fältet är tomt eller du vill skriva över)
+                const kommentarFalt = document.getElementById('kommentar');
+                if (kommentarFalt && !kommentarFalt.value) {
+                    kommentarFalt.value = paketData.kommentar;
+                }
+
+                // 3. Fyll i utgifter
+                // Vi lägger till dem i din befintliga lista
+                if (paketData.utgifter && paketData.utgifter.length > 0) {
+                    // Rensa gamla utgifter först om du vill, eller lägg till:
+                    currentExpenses = [...paketData.utgifter]; // Kopiera listan
+                    renderExpenses(); // Rita ut listan på skärmen direkt
+                }
+            }
+        });
+    }
+
 	// --- HISTORIK-HANTERING (BACK-KNAPP) ---
 
 	// 1. Lyssna på när användaren trycker bakåt (eller swipar)
