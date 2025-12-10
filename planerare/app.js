@@ -34,7 +34,7 @@ let expandedMessageIds = new Set();
 let isEditingMsg = false;
 let currentEditMsgId = null;
 
-const TIMEOUT_MINUTES = 30; // Ändra här om du vill ha annan tid (t.ex. 60)
+const TIMEOUT_MINUTES = 15; // Ändra här om du vill ha annan tid (t.ex. 60)
 const INACTIVITY_LIMIT_MS = TIMEOUT_MINUTES * 60 * 1000;
 
 // --- 3. INLOGGNINGSHANTERARE & DATALADDNING ---
