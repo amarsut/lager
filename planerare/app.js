@@ -409,8 +409,10 @@ function filterJobs(jobs) {
     } else if (currentStatusFilter === 'alla') {
         return filtered.sort((a,b) => new Date(b.datum) - new Date(a.datum));
     } else {
-        return filtered.filter(j => j.status === currentStatusFilter);
-    }
+    	return filtered
+        	.filter(j => j.status === currentStatusFilter)
+        	.sort((a, b) => new Date(b.datum) - new Date(a.datum));
+	}	
 }
 
 // 6. UPPDATERA BADGES (SIFFROR)
