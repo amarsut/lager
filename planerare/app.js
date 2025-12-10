@@ -473,13 +473,6 @@ function setupEventListeners() {
 	    
 	    // Om inget var öppet, låt webbläsaren göra sin vanliga "back" (vilket kan vara att stänga appen om historiken är slut)
 	});
-	
-	// Hjälpfunktion för att lägga till ett "steg" i historiken
-	function addHistoryState() {
-	    // Vi lägger till ett "falskt" steg i historiken
-	    // Detta gör att "Bakåt" tar bort detta steg istället för att stänga appen
-	    history.pushState({ modalOpen: true }, null, window.location.href);
-	}
     
 	// Hantera klick på Sök-knappen i menyn
 	document.getElementById('mobileSearchBtn')?.addEventListener('click', () => {
@@ -1677,4 +1670,11 @@ function closeVehicleModal() {
     if (history.state && history.state.modalOpen) {
         history.back();
     }
+}
+
+// Hjälpfunktion för att lägga till ett "steg" i historiken
+function addHistoryState() {
+	// Vi lägger till ett "falskt" steg i historiken
+	// Detta gör att "Bakåt" tar bort detta steg istället för att stänga appen
+	history.pushState({ modalOpen: true }, null, window.location.href);
 }
