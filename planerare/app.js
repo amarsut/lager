@@ -427,7 +427,7 @@ function updateStatsCounts(jobs) {
 // 7. EVENT LISTENERS
 function setupEventListeners() {
 
-	// Hantera val av paket (Smart ifyllnad)
+	// Hantera val av paket (Smart ifyllnad med Olje-kalkylator)
     const paketSelect = document.getElementById('paketSelect');
     if (paketSelect) {
         paketSelect.addEventListener('change', (e) => {
@@ -438,18 +438,50 @@ function setupEventListeners() {
                 // 1. Fyll i pris
                 document.getElementById('kundpris').value = paketData.pris;
                 
-                // 2. Fyll i kommentar (om fältet är tomt eller du vill skriva över)
+                // 2. Fyll i kommentar
                 const kommentarFalt = document.getElementById('kommentar');
-                if (kommentarFalt && !kommentarFalt.value) {
+                if (kommentarFalt) {
                     kommentarFalt.value = paketData.kommentar;
                 }
 
-                // 3. Fyll i utgifter
-                // Vi lägger till dem i din befintliga lista
-                if (paketData.utgifter && paketData.utgifter.length > 0) {
-                    // Rensa gamla utgifter först om du vill, eller lägg till:
-                    currentExpenses = [...paketData.utgifter]; // Kopiera listan
-                    renderExpenses(); // Rita ut listan på skärmen direkt
+                // 3. Fyll i utgifter (NU MED LOGIK FÖR OLJA)
+                if (paketData.utgifter) {
+                    currentExpenses = []; // Rensa gamla
+
+                    paketData.utgifter.forEach(item => {
+                        
+                        // KOLL: Är detta en olja som kräver volym?
+                        if (item.typ === 'olja') {
+                            // Fråga användaren
+                            let input = prompt(`Hur många liter olja? (Pris: ${item.prisPerLiter} kr/L)`, "4.5");
+                            
+                            // Om användaren tryckte OK och skrev något
+                            if (input !== null) {
+                                // Byt ut kommatecken mot punkt (4,5 -> 4.5) så matten funkar
+                                let liter = parseFloat(input.replace(',', '.'));
+                                
+                                if (!isNaN(liter) && liter > 0) {
+                                    // Räkna ut kostnad
+                                    let totalKostnad = Math.round(liter * item.prisPerLiter);
+                                    
+                                    // Lägg till i listan
+                                    currentExpenses.push({
+                                        namn: `${item.namn} (${liter}L)`,
+                                        kostnad: totalKostnad
+                                    });
+                                }
+                            }
+                        } 
+                        // Annars är det en vanlig utgift
+                        else {
+                            currentExpenses.push({
+                                namn: item.namn,
+                                kostnad: item.kostnad
+                            });
+                        }
+                    });
+
+                    renderExpenses(); // Rita ut allt
                 }
             }
         });
