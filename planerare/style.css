@@ -2693,3 +2693,40 @@ ul.tech-list li span {
         z-index: 50;
     }
 }
+
+/* --- FIX: MODALER OVANPÅ HEADER --- */
+
+@media (max-width: 768px) {
+    
+    /* 1. Sänk headerns z-index något (eller behåll högt, men modalen måste vara högre) */
+    .mobile-header {
+        z-index: 100 !important; /* Sänkt från 200000 för att ge plats åt modaler */
+    }
+
+    /* 2. Höj modalernas z-index så de täcker headern vid behov */
+    .modal-backdrop, 
+    #vehicleModal,
+    #mobileSearchModal {
+        z-index: 99999 !important; /* Mycket högre än headern */
+        
+        /* Om du vill att modalen ska täcka HELA skärmen (inklusive headern): 
+           Använd top: 0 och full höjd. 
+           
+           Om du vill att headern ska synas BAKOM modalen (som en "app"):
+           Behåll top: 60px men se till att innehållet scrollar rätt.
+           
+           Låt oss testa att täcka hela skärmen först, då det löser problemet med avklippt topp:
+        */
+        top: 0 !important;
+        height: 100dvh !important;
+        padding-top: env(safe-area-inset-top) !important; /* För iPhone notch */
+    }
+
+    /* 3. Se till att modal-innehållet har rätt marginal i toppen */
+    .modal-content {
+        height: 100% !important;
+        display: flex !important;
+        flex-direction: column !important;
+        background: #fff; /* Se till att den inte är genomskinlig */
+    }
+}
