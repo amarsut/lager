@@ -621,6 +621,23 @@
 	        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
 	    </svg>
 	</button>
+	
+	<div id="brandSelectModal" class="modal-backdrop" style="z-index: 20002;">
+	    <div class="modal-content" style="max-width: 400px; max-height: 80vh;">
+	        <div class="modal-header">
+	            <h3>Välj bilmärke</h3>
+	            <button class="modal-close-btn" onclick="document.getElementById('brandSelectModal').classList.remove('show')">
+	                <svg class="icon"><use href="#icon-close"></use></svg>
+	            </button>
+	        </div>
+	        <div class="modal-body">
+	            <input type="text" id="brandSearchInput" placeholder="Sök märke..." class="input-gray" style="margin-bottom: 15px;">
+	            
+	            <div id="brandGrid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
+	                </div>
+	        </div>
+	    </div>
+	</div>
 
 	<script src="packages.js"></script>
 	<script src="config.js"></script>
