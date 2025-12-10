@@ -1430,8 +1430,13 @@ ul.tech-list li span {
     .header-reg-clickable svg { opacity: 0.9; color: inherit; }
     
     .reg-info-sup {
-        display: flex; align-items: center; margin-bottom: 8px; margin-left: -2px; opacity: 0.8;
-    }
+    	transform: translateY(-6px) !important;
+	    margin-left: 4px !important; 
+	    font-size: 0.8em;
+	    opacity: 0.7;
+	    display: inline-flex; /* Bättre än inline för positionering */
+	    align-items: center;
+	}
     .reg-info-sup svg { width: 10px !important; height: 10px !important; }
 
     .header-status-badge {
@@ -2847,17 +2852,19 @@ input[type="number"] {
 
 /* Grundstil för loggan (Mörkgrå för ljusa kort) */
 .brand-logo-img {
-    width: 18px;
-    height: 18px;
-    object-fit: contain; /* Håll proportioner */
-    margin-right: 6px;   /* Luft mot regnr */
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
     
-    /* Gör loggan mörkgrå/svart som standard */
-    filter: grayscale(100%) opacity(0.7); 
+    /* NYTT: Dra loggan åt vänster för att matcha ikonerna under */
+    margin-left: -3px !important; 
+    margin-right: 6px !important; 
+    transform: translateY(0px); /* Finjustering höjd */
     
-    /* Se till att den linjerar perfekt med texten */
-    display: block; 
+    filter: grayscale(100%) opacity(0.85); 
+    display: block;
 }
+
 
 /* MAGIN: Om kortet har blå bakgrund (.bg-bokad) -> Gör loggan VIT */
 .bg-bokad .brand-logo-img {
@@ -2865,9 +2872,19 @@ input[type="number"] {
     filter: brightness(0) invert(1) opacity(0.9); 
 }
 
-/* Justera behållaren så allt sitter på en rak linje */
+.header-reg-clickable svg {
+    /* NYTT: Dra även standard-bilen åt vänster */
+    margin-left: -3px !important;
+    
+    margin-right: 8px !important; 
+    width: 18px;
+    height: 18px;
+}
+
+/* 3. Behållaren */
 .header-reg-clickable {
     display: flex !important;
-    align-items: center !important; /* Centrera vertikalt */
-    height: 24px; /* Lås höjden så den inte hoppar */
+    align-items: center !important;
+    height: 24px;
+    gap: 0 !important; /* Vi styr avstånden manuellt på varje element */
 }
