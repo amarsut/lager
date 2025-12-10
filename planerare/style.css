@@ -2502,4 +2502,38 @@ ul.tech-list li span {
 }
 
 
+/* --- FIX FÖR MOBIL STATISTIK & FÄRGER --- */
+
+/* 1. Ändra färgen på siffran i "Offererade" till orange */
+.stat-card[data-filter="offererad"] .stat-card-value {
+    color: #F97316 !important; /* Orange färg */
+}
+
+/* ENDAST MOBILVY (Max 768px) */
+@media (max-width: 768px) {
+
+    /* 2. Gör de vanliga korten lägre (mindre höjd) */
+    .stat-card {
+        min-height: 80px !important; /* Minskat från tidigare standard */
+        padding: 8px 12px !important; /* Lite mindre luft inuti */
+    }
+
+    /* 3. Gör "Alla jobb" högre än de andra */
+    .stat-card[data-filter="alla"] {
+        min-height: 100px !important; /* Högre än de vanliga korten */
+        height: auto !important;      /* Låt den växa om det behövs */
+    }
+    
+    /* 4. Gör siffrorna större och fetare */
+    .stat-card-value {
+        font-size: 2rem !important; /* Ökat från 1.4rem */
+        font-weight: 900 !important;
+        margin-top: 4px !important;  /* Lite avstånd till rubriken */
+    }
+    
+    /* Justering för "Alla jobb" så texten och siffran ser bra ut */
+    .stat-card[data-filter="alla"] .stat-card-value {
+        font-size: 2.2rem !important; /* Ännu större för totalen */
+    }
+}
 
