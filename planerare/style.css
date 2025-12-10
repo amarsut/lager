@@ -787,32 +787,28 @@ ul.tech-list li span {
 @media (min-width: 769px) {
     /* Själva knappen */
     #fabChat {
-        /* Storlek & Form - Mindre och nättare */
-        width: 52px !important;
-        height: 52px !important;
-        border-radius: 50% !important;
-        
-        /* Färg & Utseende - Modern gradient istället för platt färg */
-        background: linear-gradient(135deg, #3b82f6, #1d4ed8) !important; /* Från din blå till en lite mörkare blå */
-        border: none !important;
-        
-        /* Skugga - Mjukare, blåtonad skugga för "svävande" effekt */
-        box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.5) !important;
-        
-        /* Placering (Justera om du vill ha den närmare/längre från kanten) */
-        right: 30px !important;
-        bottom: 30px !important;
-        
-        /* Flexbox för att centrera ikonen perfekt */
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        
-        /* Animation */
-        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
-        cursor: pointer !important;
-        z-index: 9999 !important;
-    }
+	    position: fixed !important;
+	    bottom: 30px !important;
+	    right: 30px !important;
+	    width: 60px !important;
+	    height: 60px !important;
+	    background-color: #0066FF !important;
+	    color: white !important;
+	    border-radius: 50% !important;
+	    border: none !important;
+	    box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
+	    z-index: 2147483647 !important; /* Ligger ALLTID överst */
+	    display: flex !important;
+	    align-items: center;
+	    justify-content: center;
+	    cursor: pointer !important;
+	}
+	
+	#fabChat svg {
+	    width: 28px !important;
+	    height: 28px !important;
+	    stroke: white !important;
+	}
 
     /* Hover-effekt (När man håller musen över) */
     #fabChat:hover {
@@ -820,16 +816,6 @@ ul.tech-list li span {
         transform: translateY(-3px) scale(1.05) !important;
         /* Gör skuggan mer intensiv */
         box-shadow: 0 15px 35px -8px rgba(59, 130, 246, 0.7) !important;
-    }
-
-    /* Ikonen inuti knappen */
-    #fabChat svg {
-        /* Anpassad storlek för den nya mindre knappen */
-        width: 26px !important;
-        height: 26px !important;
-        color: white !important;
-        stroke-width: 2px !important; /* Lite tjockare linjer för tydlighet */
-        transition: transform 0.3s ease !important;
     }
     
     /* Liten extra effekt på ikonen vid hover */
@@ -2508,4 +2494,5 @@ ul.tech-list li span {
     .login-card { padding: 32px 24px; max-width: 100%; height: auto; border-radius: 20px; }
     .login-screen { padding: 16px; align-items: center; }
 }
+
 
