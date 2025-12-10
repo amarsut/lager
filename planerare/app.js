@@ -426,6 +426,60 @@ function updateStatsCounts(jobs) {
 
 // 7. EVENT LISTENERS
 function setupEventListeners() {
+
+	// --- HISTORIK-HANTERING (BACK-KNAPP) ---
+
+	// 1. Lyssna på när användaren trycker bakåt (eller swipar)
+	window.addEventListener('popstate', function(event) {
+	    // Kolla om någon modal är öppen
+	    const openModal = document.querySelector('.modal-backdrop.show');
+	    const chatWidget = document.getElementById('chatWidget');
+	    const mobileSearch = document.getElementById('mobileSearchModal');
+	    const imageZoom = document.getElementById('imageZoomModal');
+	    const vehicleModal = document.getElementById('vehicleModal');
+	
+	    // Prioritetsordning för att stänga saker:
+	    
+	    // 1. Bild-zoom
+	    if (imageZoom && imageZoom.style.display === 'flex') {
+	        imageZoom.style.display = 'none';
+	        return; // Stanna här, stäng inte mer
+	    }
+	
+	    // 2. Fordons-modal (Specialfall då den ibland ligger över andra)
+	    if (vehicleModal && vehicleModal.classList.contains('show')) {
+	        vehicleModal.classList.remove('show');
+	        return;
+	    }
+	
+	    // 3. Chatt-widget
+	    if (chatWidget && chatWidget.style.display === 'flex') {
+	        chatWidget.style.display = 'none';
+	        document.body.style.overflow = ''; // Lås upp scroll
+	        return;
+	    }
+	
+	    // 4. Mobil-sök
+	    if (mobileSearch && mobileSearch.classList.contains('show')) {
+	        mobileSearch.classList.remove('show');
+	        return;
+	    }
+	
+	    // 5. Vanliga modaler (Jobb-modal etc)
+	    if (openModal) {
+	        closeModals(); // Din befintliga funktion
+	        return;
+	    }
+	    
+	    // Om inget var öppet, låt webbläsaren göra sin vanliga "back" (vilket kan vara att stänga appen om historiken är slut)
+	});
+	
+	// Hjälpfunktion för att lägga till ett "steg" i historiken
+	function addHistoryState() {
+	    // Vi lägger till ett "falskt" steg i historiken
+	    // Detta gör att "Bakåt" tar bort detta steg istället för att stänga appen
+	    history.pushState({ modalOpen: true }, null, window.location.href);
+	}
     
 	// Hantera klick på Sök-knappen i menyn
 	document.getElementById('mobileSearchBtn')?.addEventListener('click', () => {
@@ -503,6 +557,7 @@ function setupEventListeners() {
 // --- MODAL FUNKTIONER ---
 
 function openNewJobModal() {
+	addHistoryState();
     const form = document.getElementById('jobModalForm');
     form.reset();
     document.getElementById('jobId').value = "";
@@ -519,6 +574,7 @@ function openNewJobModal() {
 }
 
 function openEditModal(id) {
+	addHistoryState();
     const job = allJobs.find(j => j.id === id);
     if (!job) return;
 
@@ -550,6 +606,9 @@ function openEditModal(id) {
 
 function closeModals() {
     document.querySelectorAll('.modal-backdrop').forEach(m => m.classList.remove('show'));
+	if (history.state && history.state.modalOpen) {
+        history.back();
+    }
 }
 
 // 8. DATABAS-FUNKTIONER
@@ -678,6 +737,7 @@ window.removeExpense = function(index) {
 // ==========================================
 
 function openVehicleModal(regnr) {
+	addHistoryState();
     if(!regnr || regnr === '---') return;
     
     const cleanReg = regnr.replace(/\s/g, '').toUpperCase();
@@ -695,7 +755,7 @@ function openVehicleModal(regnr) {
                     <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
                 </button>
             </div>
-            <button id="vehicleModalClose" onclick="document.getElementById('vehicleModal').classList.remove('show')">
+            <button id="vehicleModalClose" onclick="closeVehicleModal()">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             </button>
         `;
@@ -1041,6 +1101,7 @@ async function saveTechSpec(regnr, field, newValue) {
 // ==========================================
 
 function toggleChatWidget() {
+	addHistoryState();
     const chatWidget = document.getElementById('chatWidget');
     if (!chatWidget) return;
 
@@ -1517,6 +1578,7 @@ window.openImageZoom = function(src) {
 
 // Koppla knappen i menyn till att öppna modalen
 document.getElementById('mobileSearchBtn')?.addEventListener('click', () => {
+	addHistoryState();
     const searchModal = document.getElementById('mobileSearchModal');
     const searchInput = document.getElementById('mobileSearchInput');
     const resultsContainer = document.getElementById('mobileSearchResults');
@@ -1534,6 +1596,9 @@ document.getElementById('mobileSearchBtn')?.addEventListener('click', () => {
 // Stäng sök-modalen
 document.getElementById('closeMobileSearchBtn')?.addEventListener('click', () => {
     document.getElementById('mobileSearchModal').classList.remove('show');
+	if (history.state && history.state.modalOpen) {
+        history.back();
+    }
     // Sätt tillbaka Hem som aktiv
     document.querySelectorAll('.mobile-nav-btn').forEach(btn => btn.classList.remove('active'));
     document.getElementById('mobileHomeBtn').classList.add('active');
@@ -1603,5 +1668,13 @@ function checkTime() {
             alert("Du har loggats ut på grund av inaktivitet.");
             window.location.reload(); 
         });
+    }
+}
+
+
+function closeVehicleModal() {
+    document.getElementById('vehicleModal').classList.remove('show');
+    if (history.state && history.state.modalOpen) {
+        history.back();
     }
 }
