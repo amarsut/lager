@@ -2888,3 +2888,97 @@ input[type="number"] {
     height: 24px;
     gap: 0 !important; /* Vi styr avstånden manuellt på varje element */
 }
+
+/* --- BRAND SELECTOR STYLES --- */
+.brand-select-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    aspect-ratio: 1/1; /* Gör dem kvadratiska */
+}
+
+.brand-select-item:hover {
+    background-color: #f3f4f6;
+    border-color: #0066FF;
+    transform: translateY(-2px);
+}
+
+.brand-select-item.selected {
+    background-color: #eff6ff;
+    border: 2px solid #0066FF;
+}
+
+.brand-select-item img {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+    margin-bottom: 4px;
+}
+
+.brand-select-item span {
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: capitalize;
+    color: #374151;
+    text-align: center;
+}
+
+/* Se till att märkesväljaren syns ovanför allt annat på mobil */
+@media (max-width: 768px) {
+    #brandSelectModal.show {
+        z-index: 210000 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+}
+
+/* --- STYLING FÖR MÄRKES-KNAPPEN (Samma som Copy-knappen) --- */
+#btnEditBrandModal {
+    background: transparent;
+    border: 1px solid #e5e7eb; /* Tunn grå ram (Desktop) */
+    border-radius: 6px;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6b7280;
+    transition: all 0.2s ease;
+    width: 32px;  /* Samma bredd som kopiera */
+    height: 32px; /* Samma höjd som kopiera */
+    margin-left: 8px;
+}
+
+#btnEditBrandModal:hover {
+    background-color: #f3f4f6;
+    color: #111;
+    border-color: #d1d5db;
+}
+
+/* Styla bilden inuti knappen */
+.brand-btn-icon {
+    width: 20px;       /* Ökad storlek (var 16px) */
+    height: 20px;      /* Ökad storlek */
+    object-fit: contain;
+    filter: grayscale(100%); /* Svartvit för att matcha stilen */
+    opacity: 0.8;      /* Lite mjukare ton */
+    display: block;
+}
+
+/* --- MOBILANPASSNING (Matcha kopiera-knappen på mobil) --- */
+@media (max-width: 768px) {
+    #btnEditBrandModal {
+        position: static !important; 
+        background: #F1F5F9 !important; /* Ljusgrå bakgrund på mobil */
+        color: #64748B !important; 
+        border: none !important;        /* Ingen ram på mobil */
+        border-radius: 8px !important;
+    }
+}
