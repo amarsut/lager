@@ -2533,8 +2533,9 @@ ul.tech-list li span {
     
     /* Justering för "Alla jobb" så texten och siffran ser bra ut */
     .stat-card[data-filter="alla"] .stat-card-value {
-        font-size: 2.2rem !important; /* Ännu större för totalen */
+        font-size: 1.8rem !important; /* Ännu större för totalen */
     }
 }
+
 
 
