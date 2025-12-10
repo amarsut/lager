@@ -1357,7 +1357,11 @@ ul.tech-list li span {
         display: flex; flex-direction: column; justify-content: center;
         box-shadow: 0 1px 2px rgba(0,0,0,0.03); border-bottom-width: 1px;
     }
-    .stat-card::after { display: none !important; }
+	.stat-card {
+		display: none !important; 
+        min-height: 80px !important; /* Minskat från tidigare standard */
+        padding: 8px 12px !important; /* Lite mindre luft inuti */
+    }
 
     .stat-card[data-filter="kommande"] { background: linear-gradient(135deg, #FFFFFF 0%, #F0F9FF 100%); }
     .stat-card[data-filter="faktureras"] { background: linear-gradient(135deg, #FFFFFF 0%, #FAF5FF 100%); }
@@ -1370,7 +1374,13 @@ ul.tech-list li span {
         color: #64748B; text-transform: uppercase; font-weight: 600;
     }
     .stat-card-title svg { width: 12px; height: 12px; }
-    .stat-card-value { font-size: 1.4rem; font-weight: 800; line-height: 1; color: #0F172A; }
+    .stat-card-value { 
+		font-size: 2rem !important;
+		font-weight: 900 !important;
+		line-height: 1; 
+		color: #0F172A; 
+		margin-top: 4px !important;  /* Lite avstånd till rubriken */
+	}
     
     .stat-card[data-filter="kommande"] .stat-card-value { color: #3B82F6; }
     .stat-card[data-filter="faktureras"] .stat-card-value { color: #A855F7; }
@@ -1378,12 +1388,21 @@ ul.tech-list li span {
     .stat-card[data-filter="offererad"] .stat-card-value { color: #F97316; }
 
     .stat-card[data-filter="alla"] {
-        grid-column: span 2; flex-direction: row; align-items: center; justify-content: space-between;
+        grid-column: span 2; 
+		flex-direction: row; 
+		align-items: center; 
+		justify-content: 
+		space-between;
         padding: 8px 16px; height: 48px; 
+		min-height: 58px !important; /* Högre än de vanliga korten */
+        height: auto !important;      /* Låt den växa om det behövs */
     }
     .stat-card[data-filter="alla"] .stat-card-title { margin-bottom: 0; }
-    .stat-card[data-filter="alla"] .stat-card-value { font-size: 1.1rem; color: #111; margin: 0; }
-
+    .stat-card[data-filter="alla"] .stat-card-value { 
+		font-size: 1.4rem !important; /* Ännu större för totalen */
+		color: #111; margin: 0; 
+	}
+	
     .stat-card.active {
         background-color: #ffffff; border-color: #E2E8F0; 
         border-bottom-width: 4px; border-bottom-style: solid;
@@ -2507,34 +2526,6 @@ ul.tech-list li span {
 /* 1. Ändra färgen på siffran i "Offererade" till orange */
 .stat-card[data-filter="offererad"] .stat-card-value {
     color: #F97316 !important; /* Orange färg */
-}
-
-/* ENDAST MOBILVY (Max 768px) */
-@media (max-width: 768px) {
-
-    /* 2. Gör de vanliga korten lägre (mindre höjd) */
-    .stat-card {
-        min-height: 80px !important; /* Minskat från tidigare standard */
-        padding: 8px 12px !important; /* Lite mindre luft inuti */
-    }
-
-    /* 3. Gör "Alla jobb" högre än de andra */
-    .stat-card[data-filter="alla"] {
-        min-height: 58px !important; /* Högre än de vanliga korten */
-        height: auto !important;      /* Låt den växa om det behövs */
-    }
-    
-    /* 4. Gör siffrorna större och fetare */
-    .stat-card-value {
-        font-size: 2rem !important; /* Ökat från 1.4rem */
-        font-weight: 900 !important;
-        margin-top: 4px !important;  /* Lite avstånd till rubriken */
-    }
-    
-    /* Justering för "Alla jobb" så texten och siffran ser bra ut */
-    .stat-card[data-filter="alla"] .stat-card-value {
-        font-size: 1.4rem !important; /* Ännu större för totalen */
-    }
 }
 
 
