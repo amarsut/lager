@@ -1374,13 +1374,7 @@ ul.tech-list li span {
         color: #64748B; text-transform: uppercase; font-weight: 600;
     }
     .stat-card-title svg { width: 12px; height: 12px; }
-    .stat-card-value { 
-		font-size: 2rem !important;
-		font-weight: 900 !important;
-		line-height: 1; 
-		color: #0F172A; 
-		margin-top: 4px !important;  /* Lite avstånd till rubriken */
-	}
+    .stat-card-value { font-size: 1.4rem; font-weight: 800; line-height: 1; color: #0F172A; }
     
     .stat-card[data-filter="kommande"] .stat-card-value { color: #3B82F6; }
     .stat-card[data-filter="faktureras"] .stat-card-value { color: #A855F7; }
@@ -1388,20 +1382,11 @@ ul.tech-list li span {
     .stat-card[data-filter="offererad"] .stat-card-value { color: #F97316; }
 
     .stat-card[data-filter="alla"] {
-        grid-column: span 2; 
-		flex-direction: row; 
-		align-items: center; 
-		justify-content: 
-		space-between;
+        grid-column: span 2; flex-direction: row; align-items: center; justify-content: space-between;
         padding: 8px 16px; height: 48px; 
-		min-height: 58px !important; /* Högre än de vanliga korten */
-        height: auto !important;      /* Låt den växa om det behövs */
     }
     .stat-card[data-filter="alla"] .stat-card-title { margin-bottom: 0; }
-    .stat-card[data-filter="alla"] .stat-card-value { 
-		font-size: 1.4rem !important; /* Ännu större för totalen */
-		color: #111; margin: 0; 
-	}
+    .stat-card[data-filter="alla"] .stat-card-value { font-size: 1.1rem; color: #111; margin: 0; }
 	
     .stat-card.active {
         background-color: #ffffff; border-color: #E2E8F0; 
@@ -2562,6 +2547,7 @@ ul.tech-list li span {
         font-size: 1.4rem !important; /* Ännu större för totalen */
     }
 }
+
 
 
 
