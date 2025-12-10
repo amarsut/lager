@@ -91,6 +91,22 @@ auth.onAuthStateChanged((user) => {
     }
 });
 
+// --- HJÄLPFUNKTION (Högst upp i app.js) ---
+function getBrandIconUrl(text) {
+    const searchStr = (text || '').toLowerCase();
+    const brands = {
+        'volvo': 'volvo', 'bmw': 'bmw', 'audi': 'audi', 'vw': 'volkswagen',
+        'volkswagen': 'volkswagen', 'merc': 'mercedes', 'benz': 'mercedes',
+        'tesla': 'tesla', 'toyota': 'toyota', 'ford': 'ford', 'kia': 'kia',
+        'saab': 'saab', 'porsche': 'porsche', 'seat': 'seat', 'skoda': 'skoda',
+        'nissan': 'nissan', 'peugeot': 'peugeot', 'renault': 'renault'
+    };
+    for (const [key, iconName] of Object.entries(brands)) {
+        if (searchStr.includes(key)) return `https://cdn.simpleicons.org/${iconName}`; // Utan färg = svart standard
+    }
+    return null;
+}
+
 // --- HJÄLPFUNKTION: AVANCERAD SÖKNING ---
 function jobMatchesSearch(job, searchTerm) {
     if (!searchTerm) return true;
@@ -276,6 +292,23 @@ function createJobCard(job) {
     
     const dateStr = `${d.getDate()} ${month}. ${d.getFullYear()}`;
     const timeStr = d.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
+	
+	// 1. Sök efter bilmärke i all text vi har
+    const combinedText = (job.kommentar + " " + job.paket + " " + job.kundnamn + " " + (job.bilmodell || "")).toLowerCase();
+    const brandUrl = getBrandIconUrl(combinedText);
+
+    // 2. Bestäm vilken ikon som ska visas
+    // Om vi hittade ett märke: Visa loggan (bild)
+    // Om vi INTE hittade märke: Visa standard-ikonen (iCar)
+    let iconHtml = '';
+    
+	if (brandUrl) {
+        // Vi lägger till klassen 'brand-logo-img' för att kunna styra färgen i CSS
+        iconHtml = `<img src="${brandUrl}" class="brand-logo-img" alt="Logo">`;
+    } else {
+        // Standard bil-ikon (SVG ärver färg automatiskt)
+        iconHtml = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px; height:18px;"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 17h8"/></svg>`;
+    }
 
     const price = job.kundpris ? `${job.kundpris}:-` : '0:-';
     const regNr = (job.regnr && job.regnr.toUpperCase() !== 'OKÄNT') ? job.regnr.toUpperCase() : '---';
@@ -327,11 +360,11 @@ function createJobCard(job) {
 	    <div class="job-card-new" id="card-${job.id}" onclick="openEditModal('${job.id}')">
 	        
 	        <div class="card-header-strip ${headerClass}">
-	            <div class="header-reg-clickable" onclick="event.stopPropagation(); openVehicleModal('${regNr}')">
-	                ${iCar} 
-	                <span>${regNr}</span>
-	                <span class="reg-info-sup">${iInfoSmall}</span>
-	            </div>
+				<div class="header-reg-clickable" onclick="event.stopPropagation(); openVehicleModal('${regNr}')">
+				    
+				    ${iconHtml} <span>${regNr}</span>
+				    <span class="reg-info-sup">${iInfoSmall}</span>
+				</div>
 	            
 	            <div class="header-right-side" style="display:flex; align-items:center; gap:10px;">
 	                <div class="header-status-badge">
