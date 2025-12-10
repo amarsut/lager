@@ -345,10 +345,10 @@
 	                    <label>Paket / Snabbval</label>
 	                    <div class="input-wrapper">
 	                        <select id="paketSelect" class="input-gray">
-	                            <option value="">Välj paket...</option>
-	                            <option value="liten-service">Liten Service</option>
-	                            <option value="stor-service">Stor Service</option>
-	                            <option value="felsokning">Felsökning</option>
+	                            <option value="">📦Välj paket...</option>
+	                            <option value="liten-service">🛢️Liten Service</option>
+	                            <option value="stor-service">🔧Stor Service</option>
+	                            <option value="felsokning">🔍Felsökning</option>
 	                        </select>
 	                    </div>
 	                </div>
@@ -357,11 +357,11 @@
 	            <div class="form-grid">
 	                <div class="form-group">
 	                    <label>Namn</label>
-	                    <input type="text" id="kundnamn" class="input-gray" required autocomplete="off">
+	                    <input type="text" id="kundnamn" class="input-gray uppercase-input" required autocomplete="off" oninput="this.value = this.value.toUpperCase()">
 	                </div>
 	                <div class="form-group">
 	                    <label>Reg.nr</label>
-	                    <input type="text" id="regnr" class="input-gray" placeholder="ABC 123">
+	                    <input type="text" id="regnr" class="input-gray uppercase-input" placeholder="ABC 123" oninput="this.value = this.value.toUpperCase()">
 	                </div>
 	            </div>
 	
@@ -372,7 +372,7 @@
 	                </div>
 	                <div class="form-group">
 	                    <label>Tid</label>
-	                    <input type="time" id="tid" class="input-gray" required>
+	                    <input type="time" id="tid" class="input-gray" required step="900">
 	                </div>
 	            </div>
 	
