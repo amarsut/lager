@@ -99,7 +99,8 @@ function getBrandIconUrl(text) {
         'volkswagen': 'volkswagen', 'merc': 'mercedes', 'benz': 'mercedes',
         'tesla': 'tesla', 'toyota': 'toyota', 'ford': 'ford', 'kia': 'kia',
         'saab': 'saab', 'porsche': 'porsche', 'seat': 'seat', 'skoda': 'skoda',
-        'nissan': 'nissan', 'peugeot': 'peugeot', 'renault': 'renault'
+        'nissan': 'nissan', 'peugeot': 'peugeot', 'renault': 'renault', 'fiat': 'fiat',
+		'iveco': 'iveco'
     };
     for (const [key, iconName] of Object.entries(brands)) {
         if (searchStr.includes(key)) return `https://cdn.simpleicons.org/${iconName}`; // Utan färg = svart standard
