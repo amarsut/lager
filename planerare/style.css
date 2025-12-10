@@ -2608,33 +2608,39 @@ ul.tech-list li span {
     }
 }
 
-/* --- FIX: FLYTTA LINJER I MODALEN --- */
-
-/* 1. Hantera Utgifter (Ta bort linje över, lägg till linje under) */
-.expense-section {
-    border-top: none !important;       /* Tar bort den gamla linjen ovanför */
-    border-bottom: 1px solid #E5E7EB;  /* Lägger till ny linje UNDER utgifter */
-    padding-bottom: 24px;              /* Lite luft innan linjen */
-    margin-bottom: 24px;               /* Lite luft efter linjen */
-}
-
-/* 2. Hantera Kundpris (Lägg till linje ovanför) */
+/* 1. Kundpris-sektionen */
 .price-section {
-    border-top: 1px solid #E5E7EB;     /* Ny linje ovanför Kundpris */
-    padding-top: 24px;                 /* Luft mellan linje och text */
-    margin-top: 16px;                  /* Luft ovanför linjen */
+    /* Linje ovanför */
+    border-top: 1px solid #E5E7EB !important;
+    padding-top: 24px !important;
+    margin-top: 16px !important;
+    
+    /* NYTT: Minska avståndet ner till nästa sektion */
+    margin-bottom: 8px !important; 
 }
 
-/* Mobil-specifik justering för att det ska se perfekt ut */
+/* 2. Utgifts-sektionen */
+.expense-section {
+    /* Ta bort linje ovanför, lägg till linje under */
+    border-top: none !important;
+    border-bottom: 1px solid #E5E7EB !important;
+    
+    /* NYTT: Ta bort all extra luft i toppen så den hamnar närmare priset */
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+    
+    /* Behåll luft i botten */
+    padding-bottom: 24px !important;
+    margin-bottom: 24px !important;
+}
+
+/* Mobil-specifik justering */
 @media (max-width: 768px) {
     .price-section {
-        margin-top: 10px;
-        padding-top: 20px;
+        padding-top: 20px !important;
+    }
+    /* Se till att etiketten "UTGIFTER" inte hamnar för nära input-fältet */
+    .expense-header {
+        margin-top: 4px !important; 
     }
 }
-
-
-
-
-
-
