@@ -1971,7 +1971,7 @@ ul.tech-list li span {
         right: 0 !important;
         background: #ffffff !important;
         border-top: 1px solid #e5e7eb !important;
-        padding: 16px 20px !important; /* Mer luft runt knapparna */
+        padding: 12px 16px !important;
         z-index: 9999 !important;
         box-shadow: 0 -4px 10px rgba(0,0,0,0.05) !important;
         margin: 0 !important;
@@ -1983,13 +1983,13 @@ ul.tech-list li span {
 
     /* Gör knapparna större och tydligare på mobil */
     .modal-actions .button {
-        height: 48px !important;
-        font-size: 16px !important;
+        height: 40px !important;
+        font-size: 0.95rem !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        
-        flex: initial !important; /* ÄNDRAT: Ta bort stretch */
+		
+        flex: 0 0 auto !important; /* Förhindra att de sträcks ut */
         width: auto !important;   /* ÄNDRAT: Anpassa bredd efter text */
         min-width: 100px;         /* Minsta bredd för att vara tryckvänliga */
         padding: 0 20px !important;
@@ -2543,6 +2543,51 @@ ul.tech-list li span {
         font-size: 1.4rem !important; /* Ännu större för totalen */
     }
 }
+
+@media (max-width: 768px) {
+	/*2. Snyggare Formulärfält (Tips #17 & #18)
+	Gör inputs stora, mjuka och moderna.*/
+    /* Inputs och Selects */
+    .input-gray, select, textarea {
+        background-color: #F3F4F6 !important; /* Ljusgrå */
+        border: 1px solid transparent !important;
+        border-radius: 12px !important;
+        padding: 14px 16px !important; /* Mer luft */
+        font-size: 16px !important; /* Förhindrar zoom på iPhone */
+        transition: all 0.2s ease;
+        color: #1F2937 !important;
+        font-weight: 500;
+    }
+
+    /* Fokus-effekt */
+    .input-gray:focus, select:focus, textarea:focus {
+        background-color: #fff !important;
+        border-color: #0066FF !important;
+        box-shadow: 0 0 0 4px rgba(0, 102, 255, 0.1) !important;
+        outline: none;
+    }
+    
+    /* Etiketter */
+    label {
+        font-size: 0.85rem !important;
+        font-weight: 700 !important;
+        color: #4B5563 !important;
+        margin-bottom: 6px !important;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+	//3. Tryck-känsla på korten (Tips #15)
+	.job-card-new {
+        transition: transform 0.1s ease, box-shadow 0.1s ease;
+    }
+    
+    .job-card-new:active {
+        transform: scale(0.98);
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05) !important; /* Minska skuggan vid tryck */
+    }
+}
+
 
 
 
