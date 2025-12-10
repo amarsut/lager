@@ -784,36 +784,6 @@ ul.tech-list li span {
    MODERN CHATT - FINAL POLISHED VERSION (Clean Gray/Blue)
    ========================================================================== */
 
-/* --- 1. Flytande Knapp (FAB) --- */
-#fabChat {
-    position: fixed !important;
-    bottom: 30px !important;
-    right: 30px !important;
-    width: 60px !important;
-    height: 60px !important;
-    background-color: #007AFF !important; /* iOS Blue */
-    color: white !important;
-    border-radius: 50% !important;
-    box-shadow: 0 4px 20px rgba(0, 122, 255, 0.4) !important;
-    z-index: 990 !important;
-    display: flex; align-items: center; justify-content: center;
-    border: none; cursor: pointer;
-    transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-#fabChat:hover { transform: scale(1.08); }
-#fabChat svg { width: 28px; height: 28px; }
-
-.header-badge {
-    position: absolute; top: 0; right: 0;
-    background: #FF3B30; color: white;
-    font-size: 0.75rem; font-weight: 700;
-    width: 22px; height: 22px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    border: 3px solid #fff;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
 @media (min-width: 769px) {
     /* Själva knappen */
     #fabChat {
@@ -2538,3 +2508,4 @@ ul.tech-list li span {
     .login-card { padding: 32px 24px; max-width: 100%; height: auto; border-radius: 20px; }
     .login-screen { padding: 16px; align-items: center; }
 }
+
