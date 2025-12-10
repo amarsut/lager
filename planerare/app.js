@@ -744,7 +744,7 @@ function openVehicleModal(regnr) {
         headerRow.innerHTML = `
             <div class="reg-group">
                 <h1 id="vehicleRegTitle">${cleanReg}</h1>
-                <button class="icon-btn-sm" id="btnCopyRegModal" title="Kopiera" onclick="navigator.clipboard.writeText('${cleanReg}'); alert('Reg.nr kopierat!');">
+                <button class="icon-btn-sm" id="btnCopyRegModal" title="Kopiera" onclick="navigator.clipboard.writeText('${cleanReg}')">
                     <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
                 </button>
             </div>
@@ -1651,17 +1651,15 @@ function checkTime() {
 
     // Om skillnaden är större än gränsen (30 min)
     if (timeDiff > INACTIVITY_LIMIT_MS) {
-        console.log("Tiden ute. Loggar ut...");
-        
-        // Rensa stämpeln så vi inte fastnar
-        localStorage.removeItem('lastActivity');
-        
-        // Logga ut från Firebase
-        firebase.auth().signOut().then(() => {
-            alert("Du har loggats ut på grund av inaktivitet.");
-            window.location.reload(); 
-        });
-    }
+	    console.log("Tiden ute. Loggar ut...");
+	    
+	    localStorage.removeItem('lastActivity');
+	    
+	    firebase.auth().signOut().then(() => {
+	        // Ingen alert här längre
+	        window.location.reload(); 
+	    });
+	}
 }
 
 
