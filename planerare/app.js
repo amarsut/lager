@@ -9,35 +9,147 @@ const firebaseConfig = {
   measurementId: "G-L6516XLZ1Y"
 };
 
-let db;
+// 2. INITIERA FIREBASE DIREKT (Högst upp)
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
+
+// Skapa globala referenser direkt
+const db = firebase.firestore();
+const auth = firebase.auth(); // Nu är 'auth' definierad korrekt
+
+console.log("Firebase initierad.");
+
+// Globala variabler
 let allJobs = []; 
 let currentStatusFilter = 'kommande'; 
 let currentSearchTerm = '';
 let currentExpenses = [];
 
+// Chatt-variabler
 let chatUnsubscribe = null;
 let currentChatLimit = 50;
 let isFetchingOlderChat = false;
 let expandedMessageIds = new Set();
-
 let isEditingMsg = false;
 let currentEditMsgId = null;
 
-// 2. INITIERA APPEN
-document.addEventListener('DOMContentLoaded', function() {
-    try {
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
+const INACTIVITY_LIMIT = 10 * 60 * 1000; // 30 minuter
+let inactivityTimer; // Lägg gärna till denna också om den saknas
+
+// --- 3. INLOGGNINGSHANTERARE & DATALADDNING ---
+auth.onAuthStateChanged((user) => {
+    const loginScreen = document.getElementById('loginScreen');
+    const mainApp = document.getElementById('mainApp');
+    const loadingOverlay = document.getElementById('loadingOverlay'); // Hämta laddningsskärmen
+
+    // Dölj laddningsskärmen (Nu vet vi status!)
+    if (loadingOverlay) loadingOverlay.style.display = 'none';
+
+    if (user) {
+        // --- ANVÄNDARE ÄR INLOGGAD ---
+        if(loginScreen) loginScreen.style.display = 'none';
+        if(mainApp) mainApp.style.display = 'flex'; // VIKTIGT: flex för att behålla layouten
+        
+		// Uppdatera sidomenyn
+		const userEmailEl = document.querySelector('.user-name');
+		const userAvatarEl = document.querySelector('.sidebar-avatar'); // Hämta avatar-bilden också
+
+		if(userEmailEl) {
+		    // 1. Försök ta namnet före @-tecknet
+		    const emailName = user.email.split('@')[0]; 
+		    
+		    // 2. Om namnet har punkt (t.ex. amar.sut), ersätt med mellanslag och gör stor bokstav
+		    // Resultat: "amar.sut" -> "Amar Sut"
+		    let displayName = emailName
+		        .split('.')
+		        .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+		        .join(' ');
+
+		    userEmailEl.textContent = displayName;
+
+		    // 3. (Valfritt) Uppdatera även avataren så den visar rätt initialer
+		    if (userAvatarEl) {
+		        // Skapa URL för UI Avatars med det nya namnet
+		        // Exempel: https://ui-avatars.com/api/?name=Amar+Sut&...
+		        const newAvatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=eff6ff&color=3b82f6&bold=true`;
+		        userAvatarEl.src = newAvatarUrl;
+		    }
+		}
+
+        if (typeof resetInactivityTimer === 'function') {
+            resetInactivityTimer();
+            setupInactivityListeners();
         }
-        db = firebase.firestore();
-        console.log("Firebase ansluten.");
-        initRealtimeListener();
-        setupEventListeners();
-    } catch (e) {
-        console.error("Kunde inte starta Firebase:", e);
-        alert("Ett fel uppstod vid start av databasen.");
+
+        initRealtimeListener(); 
+        initChat();             
+        
+    } else {
+        // --- UTLOGGAD ---
+        if(loginScreen) loginScreen.style.display = 'flex';
+        if(mainApp) mainApp.style.display = 'none';
+        
+        if (chatUnsubscribe) chatUnsubscribe();
     }
 });
+
+// 3. STARTA APPENS UI (När sidan laddat klart)
+document.addEventListener('DOMContentLoaded', function() {
+    try {
+        console.log("Sidan laddad, kopplar event listeners...");
+        setupEventListeners();
+        
+        // Koppla inloggningsformuläret
+        const loginForm = document.getElementById('loginForm');
+        if (loginForm) {
+            loginForm.addEventListener('submit', handleLogin);
+        }
+        
+        // Koppla logga ut-knapp
+        const logoutBtn = document.querySelector('.logout-icon-btn');
+        if(logoutBtn) {
+            logoutBtn.addEventListener('click', handleLogout);
+        }
+
+    } catch (e) {
+        console.error("Fel vid start:", e);
+    }
+});
+
+function handleLogin(e) {
+    e.preventDefault();
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+    const errorEl = document.getElementById('loginError');
+    const btn = e.target.querySelector('button');
+    
+    // UI Feedback
+    const originalText = btn.innerHTML;
+    btn.innerHTML = 'Loggar in...';
+    btn.disabled = true;
+    if(errorEl) errorEl.style.display = 'none';
+
+    firebase.auth().signInWithEmailAndPassword(email, password)
+        .catch((error) => {
+            let msg = "Fel e-post eller lösenord.";
+            if(error.code === 'auth/user-not-found') msg = "Kontot finns inte.";
+            if(error.code === 'auth/wrong-password') msg = "Fel lösenord.";
+            
+            if(errorEl) {
+                errorEl.textContent = msg;
+                errorEl.style.display = 'block';
+            }
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        });
+}
+
+function handleLogout() {
+    if(confirm("Vill du logga ut?")) {
+        firebase.auth().signOut();
+    }
+}
 
 // 3. HÄMTA DATA
 function initRealtimeListener() {
@@ -156,8 +268,8 @@ function createJobCard(job) {
     
     // Ikoner
     const iUser = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
-	const iBriefcaseGreen = `<svg class="icon-sm" style="color: #10B981;" viewBox="0 0 64 64"><use href="#icon-office-building"></use></svg>`;
-	
+    const iBriefcaseGreen = `<svg class="icon-sm" style="color: #10B981;" viewBox="0 0 64 64"><use href="#icon-office-building"></use></svg>`;
+    
     // Om företag: Visa grön portfölj framför namnet. Texten "Namn" förblir neutral.
     // Vi lägger loggan i value-fältet.
 	const nameValueHtml = isCorporate 
@@ -369,9 +481,6 @@ function setupEventListeners() {
             toggleChatWidget();
         });
     }
-    
-    // Starta lyssnaren för chatten direkt (så man ser om man fått nya meddelanden)
-    initChat();
 
     // Sökfältet
     document.getElementById('searchBar').addEventListener('input', (e) => {
