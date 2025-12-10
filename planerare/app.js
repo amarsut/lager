@@ -34,8 +34,8 @@ let expandedMessageIds = new Set();
 let isEditingMsg = false;
 let currentEditMsgId = null;
 
-const INACTIVITY_LIMIT = 10 * 60 * 1000; // 30 minuter
-let inactivityTimer; // Lägg gärna till denna också om den saknas
+const TIMEOUT_MINUTES = 30; // Ändra här om du vill ha annan tid (t.ex. 60)
+const INACTIVITY_LIMIT_MS = TIMEOUT_MINUTES * 60 * 1000;
 
 // --- 3. INLOGGNINGSHANTERARE & DATALADDNING ---
 auth.onAuthStateChanged((user) => {
@@ -77,10 +77,7 @@ auth.onAuthStateChanged((user) => {
 		    }
 		}
 
-        if (typeof resetInactivityTimer === 'function') {
-            resetInactivityTimer();
-            setupInactivityListeners();
-        }
+        startInactivityCheck();
 
         initRealtimeListener(); 
         initChat();             
@@ -1565,3 +1562,46 @@ document.getElementById('mobileSearchInput')?.addEventListener('input', (e) => {
         resultsContainer.innerHTML = filteredJobs.map(job => createJobCard(job)).join('');
     }
 });
+
+function startInactivityCheck() {
+    // Sätt starttid om det saknas
+    if (!localStorage.getItem('lastActivity')) {
+        localStorage.setItem('lastActivity', Date.now());
+    }
+
+    // 1. Lyssna på aktivitet (Touch, mus, tangenter)
+    const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
+    events.forEach(event => {
+        document.addEventListener(event, () => {
+            // Varje gång man rör skärmen, spara ny tid
+            localStorage.setItem('lastActivity', Date.now());
+        }, true);
+    });
+
+    // 2. Starta en intervall som kollar klockan varje minut
+    setInterval(checkTime, 60000); 
+    
+    // Gör en kontroll direkt vid start också
+    checkTime();
+}
+
+function checkTime() {
+    // Hämta när användaren senast rörde skärmen
+    const lastActive = parseInt(localStorage.getItem('lastActivity') || Date.now());
+    const now = Date.now();
+    const timeDiff = now - lastActive;
+
+    // Om skillnaden är större än gränsen (30 min)
+    if (timeDiff > INACTIVITY_LIMIT_MS) {
+        console.log("Tiden ute. Loggar ut...");
+        
+        // Rensa stämpeln så vi inte fastnar
+        localStorage.removeItem('lastActivity');
+        
+        // Logga ut från Firebase
+        firebase.auth().signOut().then(() => {
+            alert("Du har loggats ut på grund av inaktivitet.");
+            window.location.reload(); 
+        });
+    }
+}
