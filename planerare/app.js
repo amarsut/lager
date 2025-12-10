@@ -91,6 +91,33 @@ auth.onAuthStateChanged((user) => {
     }
 });
 
+// --- HJÄLPFUNKTION: AVANCERAD SÖKNING ---
+function jobMatchesSearch(job, searchTerm) {
+    if (!searchTerm) return true;
+    const term = searchTerm.toLowerCase();
+    
+    // Hämta data säkert (om fältet saknas blir det tom text)
+    const kund = (job.kundnamn || '').toLowerCase();
+    const reg = (job.regnr || '').toLowerCase();
+    const kommentar = (job.kommentar || '').toLowerCase(); // Anteckningar
+    const paket = (job.paket || '').toLowerCase();
+    const status = (job.status || '').toLowerCase();
+    
+    // Sök igenom utgiftslistan (delar)
+    let parts = "";
+    if (job.utgifter && Array.isArray(job.utgifter)) {
+        parts = job.utgifter.map(u => (u.namn || '').toLowerCase()).join(' ');
+    }
+
+    // Returnera SANT om sökordet finns i NÅGOT av fälten
+    return kund.includes(term) || 
+           reg.includes(term) || 
+           kommentar.includes(term) || 
+           paket.includes(term) || 
+           status.includes(term) ||
+           parts.includes(term);
+}
+
 // 3. STARTA APPENS UI (När sidan laddat klart)
 document.addEventListener('DOMContentLoaded', function() {
     try {
@@ -296,38 +323,56 @@ function createJobCard(job) {
     if(statusRaw === 'avbokad') headerClass = 'bg-avbokad';
     if(statusRaw === 'offererad') headerClass = 'bg-offererad';
 
-    return `
-    <div class="job-card-new" onclick="openEditModal('${job.id}')">
-        
-        <div class="card-header-strip ${headerClass}">
-            <div class="header-reg-clickable" onclick="event.stopPropagation(); openVehicleModal('${regNr}')">
-                ${iCar} 
-                <span>${regNr}</span>
-                <span class="reg-info-sup">${iInfoSmall}</span>
-            </div>
-            <div class="header-status-badge">
-                ${statusText}
-            </div>
-        </div>
+	return `
+	    <div class="job-card-new" id="card-${job.id}" onclick="openEditModal('${job.id}')">
+	        
+	        <div class="card-header-strip ${headerClass}">
+	            <div class="header-reg-clickable" onclick="event.stopPropagation(); openVehicleModal('${regNr}')">
+	                ${iCar} 
+	                <span>${regNr}</span>
+	                <span class="reg-info-sup">${iInfoSmall}</span>
+	            </div>
+	            
+	            <div class="header-right-side" style="display:flex; align-items:center; gap:10px;">
+	                <div class="header-status-badge">
+	                    ${statusText}
+	                </div>
+	                <button class="card-menu-btn" onclick="event.stopPropagation(); toggleCardActions('${job.id}', event)">
+	                    <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+	                </button>
+	            </div>
+	        </div>
 
-        <div class="card-body">
-            <div class="info-row">
-                <span class="row-label">${iUser} Namn</span>
-                <span class="row-value">${nameValueHtml}</span>
-            </div>
-            <div class="info-row"><span class="row-label">${iBox} Paket</span><span class="row-value">${paket}</span></div>
-            <div class="info-row"><span class="row-label" title="Mätarställning">${iGauge} Mätarst.</span><span class="row-value">${mileage}</span></div>
-            <div class="info-row"><span class="row-label">${iCal} Datum</span><span class="row-value">${dateStr}</span></div>
-            <div class="info-row"><span class="row-label">${iClock} Tid</span><span class="row-value">${timeStr}</span></div>
-            <div class="info-row price-row"><span class="row-label">${iTag} Att betala</span><span class="row-value">${price}</span></div>
-        </div>
+	        <div class="card-body">
+	            <div class="info-row">
+	                <span class="row-label">${iUser} Namn</span>
+	                <span class="row-value">${nameValueHtml}</span>
+	            </div>
+	            <div class="info-row"><span class="row-label">${iBox} Paket</span><span class="row-value">${paket}</span></div>
+	            <div class="info-row"><span class="row-label" title="Mätarställning">${iGauge} Mätarst.</span><span class="row-value">${mileage}</span></div>
+	            <div class="info-row"><span class="row-label">${iCal} Datum</span><span class="row-value">${dateStr}</span></div>
+	            <div class="info-row"><span class="row-label">${iClock} Tid</span><span class="row-value">${timeStr}</span></div>
+	            <div class="info-row price-row"><span class="row-label">${iTag} Att betala</span><span class="row-value">${price}</span></div>
+	        </div>
 
-        <div class="card-comments-section">
-            ${iComment}
-            ${commentHtml}
-        </div>
+	        <div class="card-comments-section">
+	            ${iComment}
+	            ${commentHtml}
+	        </div>
 
-    </div>`;
+			<div class="card-actions-expand" id="actions-${job.id}" onclick="event.stopPropagation()">
+	            <button class="inline-action-btn success" title="Markera som Klar" onclick="setStatus('${job.id}', 'klar')">
+	                <svg class="icon-sm"><use href="#icon-check"></use></svg>
+	            </button>
+	            <button class="inline-action-btn warning" title="Till Fakturering" onclick="setStatus('${job.id}', 'faktureras')">
+	                <svg class="icon-sm"><use href="#icon-clipboard"></use></svg>
+	            </button>
+	            <button class="inline-action-btn danger" title="Radera Jobb" onclick="deleteJob('${job.id}')">
+	                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-sm"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path></svg>
+	            </button>
+	        </div>
+
+	    </div>`;
 }
 
 // Hjälpfunktion: Skapa DESKTOP RAD (Samma som innan men inkluderad för helhet)
@@ -389,27 +434,26 @@ window.addEventListener('resize', renderDashboard);
 function filterJobs(jobs) {
     let filtered = jobs.filter(j => !j.deleted);
 
+    // 1. SÖKNING
     if (currentSearchTerm) {
-        const term = currentSearchTerm.toLowerCase();
-        filtered = filtered.filter(j => 
-            (j.kundnamn && j.kundnamn.toLowerCase().includes(term)) || 
-            (j.regnr && j.regnr.toLowerCase().includes(term))
-        );
+        filtered = filtered.filter(j => jobMatchesSearch(j, currentSearchTerm));
+        // Vid sökning, sortera alltid på datum (nyast först)
         return filtered.sort((a,b) => new Date(b.datum) - new Date(a.datum));
     }
 
+    // 2. VANLIG FILTRERING (Om vi inte söker)
     const today = new Date();
     today.setHours(0,0,0,0);
 
     if (currentStatusFilter === 'kommande') {
-        return filtered.filter(j => j.status === 'bokad' && new Date(j.datum) >= today).sort((a,b) => new Date(a.datum) - new Date(b.datum));
+        return filtered.filter(j => j.status === 'bokad' && new Date(j.datum) >= today)
+                       .sort((a,b) => new Date(a.datum) - new Date(b.datum));
     } else if (currentStatusFilter === 'alla') {
         return filtered.sort((a,b) => new Date(b.datum) - new Date(a.datum));
     } else {
-    	return filtered
-        	.filter(j => j.status === currentStatusFilter)
-        	.sort((a, b) => new Date(b.datum) - new Date(a.datum));
-	}	
+        return filtered.filter(j => j.status === currentStatusFilter)
+                       .sort((a, b) => new Date(b.datum) - new Date(a.datum));
+    }   
 }
 
 // 6. UPPDATERA BADGES (SIFFROR)
@@ -858,7 +902,6 @@ function openVehicleModal(regnr) {
 }
 
 function renderVehicleHistory(regnr) {
-    // I din HTML heter listan 'vehicleHistoryList'
     const historyBody = document.getElementById('vehicleHistoryList'); 
     const searchInput = document.getElementById('vehicleHistorySearch');
     const ownerEl = document.getElementById('vehicleOwner'); 
@@ -866,23 +909,27 @@ function renderVehicleHistory(regnr) {
     if(!historyBody) return;
 
     // Hitta alla jobb för denna bil
-    const history = allJobs.filter(j => j.regnr === regnr && !j.deleted)
-                           .sort((a,b) => new Date(b.datum) - new Date(a.datum));
+    let fullHistory = allJobs.filter(j => j.regnr === regnr && !j.deleted)
+                             .sort((a,b) => new Date(b.datum) - new Date(a.datum));
 
     if(ownerEl) {
-        if(history.length > 0) ownerEl.textContent = history[0].kundnamn;
+        if(fullHistory.length > 0) ownerEl.textContent = fullHistory[0].kundnamn;
         else ownerEl.textContent = "---";
     }
 
-    const renderRows = (jobs) => {
+    // Intern funktion för att rita tabellen
+    const renderRows = (jobs, limit = 3) => {
         historyBody.innerHTML = '';
+        
         if (jobs.length === 0) {
-            // Anpassad för tabellstruktur (tr/td) som du verkar ha i vehicleModal
             historyBody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#999; padding:20px;">Ingen historik hittades.</td></tr>';
             return;
         }
         
-        jobs.forEach(job => {
+        // Visa bara de 'limit' första jobben
+        const visibleJobs = jobs.slice(0, limit);
+
+        visibleJobs.forEach(job => {
             let totalUtgifter = 0;
             if(job.utgifter && Array.isArray(job.utgifter)) {
                 job.utgifter.forEach(u => totalUtgifter += (parseInt(u.kostnad) || 0));
@@ -907,18 +954,35 @@ function renderVehicleHistory(regnr) {
 
             historyBody.appendChild(tr);
         });
+
+        // Om det finns fler jobb än vad vi visar, lägg till "Visa alla"-knapp
+        if (jobs.length > limit) {
+            const btnRow = document.createElement('tr');
+            btnRow.innerHTML = `
+                <td colspan="4" style="padding:0;">
+                    <button class="show-more-btn">
+                        Visa alla (${jobs.length} st) ▼
+                    </button>
+                </td>
+            `;
+            // När man klickar, rita om tabellen men med en limit på 1000 (alla)
+            btnRow.querySelector('button').onclick = () => renderRows(jobs, 1000);
+            historyBody.appendChild(btnRow);
+        }
     };
 
-    renderRows(history);
+    // Kör igång! Visa max 3 st i början.
+    renderRows(fullHistory, 3);
 
     if(searchInput) {
         searchInput.oninput = (e) => {
             const term = e.target.value.toLowerCase();
-            const filtered = history.filter(j => 
+            const filtered = fullHistory.filter(j => 
                 j.kundnamn.toLowerCase().includes(term) || 
                 (j.kommentar && j.kommentar.toLowerCase().includes(term))
             );
-            renderRows(filtered);
+            // Vid sökning visar vi alltid alla träffar (ingen limit)
+            renderRows(filtered, 100);
         };
     }
 }
@@ -1037,13 +1101,19 @@ function generateTechSpecHTML(data, regnr) {
     else if (modelStr.includes('skoda')) brandIcon = '#icon-brand-skoda';
     else if (modelStr.includes('fiat')) brandIcon = '#icon-brand-fiat';
 
-    const createInput = (key, val) => {
-        const value = val || '';
-        // Tog bort width-logiken här för att låta CSS styra bredden i den högra kolumnen
-        return `<input class="spec-input" 
-                       value="${value}" 
-                       onchange="saveTechSpec('${regnr}', '${key}', this.value)">`;
-    };
+	const createInput = (key, val) => {
+	        const value = val || '';
+	        
+	        let extraStyle = '';
+	        if (key === 'oil') {
+	            extraStyle = 'font-weight: 600; font-size: 1em;';
+	        }
+
+	        return `<input class="spec-input" 
+	                       style="${extraStyle}"
+	                       value="${value}" 
+	                       onchange="saveTechSpec('${regnr}', '${key}', this.value)">`;
+	    };
 
     return `
         <div class="tech-header-main">
@@ -1659,7 +1729,7 @@ document.getElementById('closeMobileSearchBtn')?.addEventListener('click', () =>
 
 // Live-sökning när man skriver
 document.getElementById('mobileSearchInput')?.addEventListener('input', (e) => {
-    const term = e.target.value.toLowerCase();
+    const term = e.target.value; // Behöver inte toLowerCase här, funktionen sköter det
     const resultsContainer = document.getElementById('mobileSearchResults');
     
     if (term.length < 2) {
@@ -1667,16 +1737,12 @@ document.getElementById('mobileSearchInput')?.addEventListener('input', (e) => {
         return;
     }
     
-    // Filtrera i allJobs arrayen
-    const filteredJobs = allJobs.filter(job => {
-        return (job.kundnamn && job.kundnamn.toLowerCase().includes(term)) ||
-               (job.regnr && job.regnr.toLowerCase().includes(term));
-    });
+    // ANVÄND HJÄLPFUNKTIONEN HÄR:
+    const filteredJobs = allJobs.filter(job => jobMatchesSearch(job, term));
     
     if (filteredJobs.length === 0) {
         resultsContainer.innerHTML = '<p style="text-align:center; color:#9ca3af; margin-top:20px;">Inga träffar.</p>';
     } else {
-        // Använd samma snygga kort för resultaten
         resultsContainer.innerHTML = filteredJobs.map(job => createJobCard(job)).join('');
     }
 });
@@ -1735,4 +1801,31 @@ function addHistoryState() {
 	// Vi lägger till ett "falskt" steg i historiken
 	// Detta gör att "Bakåt" tar bort detta steg istället för att stänga appen
 	history.pushState({ modalOpen: true }, null, window.location.href);
+}
+
+// Funktion för att visa/dölja åtgärdsmenyn inuti kortet
+function toggleCardActions(jobId, event) {
+    // Stoppa klicket från att öppna modalen
+    if(event) event.stopPropagation();
+
+    // Hitta panelen för just detta jobb
+    const panel = document.getElementById(`actions-${jobId}`);
+    const menuBtn = event.currentTarget; // Knappen vi tryckte på
+    
+    if (panel) {
+        // Om den redan är öppen, stäng den
+        if (panel.classList.contains('show')) {
+            panel.classList.remove('show');
+            menuBtn.style.opacity = "0.8"; // Återställ knappens utseende
+        } else {
+            // Stäng alla andra öppna paneler först (så bara en är öppen åt gången)
+            document.querySelectorAll('.card-actions-expand.show').forEach(el => {
+                el.classList.remove('show');
+            });
+            
+            // Visa denna panel
+            panel.classList.add('show');
+            menuBtn.style.opacity = "1"; // Markera knappen som aktiv
+        }
+    }
 }
