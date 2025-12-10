@@ -2597,7 +2597,7 @@ ul.tech-list li span {
         letter-spacing: 0.5px;
     }
 
-	//3. Tryck-känsla på korten (Tips #15)
+	/* 3. Tryck-känsla på korten (Tips #15) */
 	.job-card-new {
         transition: transform 0.1s ease, box-shadow 0.1s ease;
     }
@@ -2719,4 +2719,126 @@ ul.tech-list li span {
         border-top: 1px solid #e5e7eb !important;
         border-radius: 0 !important;
     }
+    
+    /* KNAPPAR UNDER JOBBKORT */
+    
+    /* --- INLINE ACTIONS (EXPANDERANDE KORT) --- */
+
+	.card-actions-expand {
+	    display: none; /* Dold som standard */
+	    grid-template-columns: 1fr 1fr 1fr; /* Tre lika stora knappar */
+	    gap: 8px;
+	    padding: 12px;
+	    background-color: #f9fafb;
+	    border-top: 1px solid #e5e7eb;
+	    animation: slideDown 0.2s ease-out;
+	}
+	
+	.card-actions-expand.show {
+	    display: grid; /* Visa som grid när klassen 'show' läggs på */
+	}
+	
+	.inline-action-btn {
+	    border: none;
+	    border-radius: 8px;
+	    padding: 10px 4px;
+	    font-size: 0.75rem; /* Lite mindre text för att få plats */
+	    font-weight: 700;
+	    display: flex;
+	    flex-direction: column; /* Ikon ovanför text */
+	    align-items: center;
+	    justify-content: center;
+	    gap: 4px;
+	    cursor: pointer;
+	    background: white;
+	    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+	    border: 1px solid rgba(0,0,0,0.05);
+	    transition: transform 0.1s;
+	}
+	
+	.inline-action-btn:active { transform: scale(0.96); }
+	
+	/* Färgteman */
+	.inline-action-btn.success { color: #16A34A; background-color: #f0fdf4; border-color: #bbf7d0; }
+	.inline-action-btn.warning { color: #9333EA; background-color: #faf5ff; border-color: #e9d5ff; }
+	.inline-action-btn.danger { color: #EF4444; background-color: #fef2f2; border-color: #fecaca; }
+	
+	/* Ikoner i knapparna */
+	.inline-action-btn svg { width: 20px; height: 20px; margin-bottom: 2px; }
+	
+	/* Animation */
+	@keyframes slideDown {
+	    from { opacity: 0; transform: translateY(-10px); }
+	    to { opacity: 1; transform: translateY(0); }
+	}
+	
+	/* --- FIXAD MENY-KNAPP (Kameleon & Kompakt) --- */
+.card-menu-btn {
+    background: transparent;
+    border: none;
+    
+    /* VIKTIGT: "inherit" gör att den blir vit på blå bakgrund, mörk på ljus bakgrund */
+    color: inherit; 
+    opacity: 0.7; /* Lite genomskinlig så den inte stjäl fokus från texten */
+    
+    /* Nollställ storlek så den inte pressar upp höjden */
+    padding: 0 0 0 4px; /* Bara lite luft till vänster */
+    width: auto;
+    height: auto;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    line-height: 0; /* Förhindrar extra höjd */
+}
+
+/* Gör själva prickarna lite mindre */
+.card-menu-btn svg {
+    width: 20px; 
+    height: 20px;
+    fill: currentColor;
+    display: block; /* Tar bort osynlig text-marginal */
+}
+
+.card-menu-btn:active {
+    opacity: 1; /* Tänds upp vid tryck */
+}
+}
+
+/* --- FIX: TYPSNITT & INMATNING --- */
+
+/* PUNKT 41: Tabular Nums (Siffror tar lika stor plats, snyggare i listor) */
+.stat-card-value, 
+.money-related, 
+.row-value, 
+.spec-input,
+input[type="time"],
+input[type="date"],
+input[type="number"] {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+}
+
+/* PUNKT 3: Kapitalisering (Visuellt) */
+.uppercase-input {
+    text-transform: uppercase;
+}
+
+.capitalize-input {
+    text-transform: capitalize;
+}
+
+/* PUNKT 31: Knapp för "Visa alla" i historik */
+.show-more-btn {
+    background: none;
+    border: none;
+    color: #3B82F6;
+    font-weight: 600;
+    padding: 10px;
+    width: 100%;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+.show-more-btn:hover {
+    text-decoration: underline;
+    background-color: #f9fafb;
 }
