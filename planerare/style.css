@@ -824,6 +824,12 @@ ul.tech-list li span {
     }
 }
 
+@media (max-width: 768px) {
+    #fabChat {
+        display: none !important;
+    }
+}
+
 /* --- 2. Huvudfönster (Widget) --- */
 .chat-widget {
     position: fixed;
@@ -2494,5 +2500,6 @@ ul.tech-list li span {
     .login-card { padding: 32px 24px; max-width: 100%; height: auto; border-radius: 20px; }
     .login-screen { padding: 16px; align-items: center; }
 }
+
 
 
