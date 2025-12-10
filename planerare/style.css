@@ -2608,6 +2608,30 @@ ul.tech-list li span {
     }
 }
 
+/* --- FIX: FLYTTA LINJER I MODALEN --- */
+
+/* 1. Hantera Utgifter (Ta bort linje över, lägg till linje under) */
+.expense-section {
+    border-top: none !important;       /* Tar bort den gamla linjen ovanför */
+    border-bottom: 1px solid #E5E7EB;  /* Lägger till ny linje UNDER utgifter */
+    padding-bottom: 24px;              /* Lite luft innan linjen */
+    margin-bottom: 24px;               /* Lite luft efter linjen */
+}
+
+/* 2. Hantera Kundpris (Lägg till linje ovanför) */
+.price-section {
+    border-top: 1px solid #E5E7EB;     /* Ny linje ovanför Kundpris */
+    padding-top: 24px;                 /* Luft mellan linje och text */
+    margin-top: 16px;                  /* Luft ovanför linjen */
+}
+
+/* Mobil-specifik justering för att det ska se perfekt ut */
+@media (max-width: 768px) {
+    .price-section {
+        margin-top: 10px;
+        padding-top: 20px;
+    }
+}
 
 
 
