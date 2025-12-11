@@ -3262,25 +3262,52 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 }
 
 /* --- Den nya enhetliga Headern --- */
-.modal-header { 
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center; 
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Sprider ut Pil - Titel - Tomt utrymme */
     
-    /* NY DESIGN HÄR: */
-    background-color: #f8f9fa;      /* Samma grå som inställningar */
-    border-bottom: 1px solid #e5e7eb; /* Linjen */
-    padding: 16px 24px;             /* Luft inuti headern */
-    height: 60px;                   /* Fast höjd för snygghet */
-    flex-shrink: 0;                 /* Headern får inte krympa */
-    margin-bottom: 0;               /* Ta bort gammal marginal */
+    /* DETTA ÄR NYCKELN TILL UTSEENDET: */
+    background-color: #f8f9fa !important;       /* Den ljusgrå bakgrunden */
+    border-bottom: 1px solid #e5e7eb !important; /* Den tunna linjen */
+    
+    padding: 0 16px !important;    /* Matcha inställningarnas padding */
+    height: 60px !important;       /* Fast höjd */
+    flex-shrink: 0;
+    margin-bottom: 0 !important;
 }
 
-.modal-header h2 { 
-    margin: 0; 
-    font-size: 1.1rem; 
-    font-weight: 700; 
-    color: #111; 
+/* Titeln i modalen */
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.1rem !important; /* Samma storlek som "Inställningar" */
+    font-weight: 700 !important;
+    color: #111;
+    position: absolute;       /* Centrera titeln absolut */
+    left: 50%;
+    transform: translateX(-50%);
+    width: max-content;
+}
+
+/* Tillbaka-knappen (Samma klass som i inställningar) */
+.simple-back-btn {
+    background: transparent;
+    border: none;
+    padding: 0;
+    width: 36px; /* Lite större träffyta */
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start; /* Vänsterställd ikon */
+    color: #111;
+    cursor: pointer;
+    z-index: 10; /* Se till att den ligger över titeln om det blir trångt */
+}
+
+.simple-back-btn svg {
+    width: 24px;
+    height: 24px;
+    stroke-width: 2.5px;
 }
 
 /* --- Kroppen (Där formulären bor) --- */
@@ -3322,10 +3349,18 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 .messenger-search-header {
     display: flex;
     align-items: center;
-    padding: 8px 12px;
+    padding: 0 12px; /* Justera padding */
     gap: 12px;
+    height: 60px; /* Samma höjd som de andra */
     
-    /* ÄNDRA FRÅN WHITE TILL GRÅ: */
+    /* ÄNDRA TILL SAMMA GRÅ: */
     background-color: #f8f9fa !important; 
-    border-bottom: 1px solid #e5e7eb !important; 
+    border-bottom: 1px solid #e5e7eb !important;
+}
+
+/* Justera pilen i sökmodalen så den ser likadan ut */
+.messenger-back-btn {
+    color: #111 !important; /* Svart pil istället för mörkgrå */
+    width: 36px;
+    height: 36px;
 }
