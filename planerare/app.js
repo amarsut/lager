@@ -984,14 +984,19 @@ async function deleteJob(id) {
             if (doc.exists) {
                 const data = doc.data();
                 
+                // SÄKERHETSSPÄRR: Om jobbet redan är raderat, gör ingenting!
+                if (data.deleted) {
+                    console.warn("Jobbet är redan raderat. Avbryter.");
+                    return; 
+                }
+                
                 // 2. Räkna ut oljemängden som ska återföras
                 const oilToRefund = calculateOilFromExpenses(data.utgifter);
                 
                 // 3. Markera som raderat
                 await db.collection("jobs").doc(id).update({ deleted: true });
                 
-                // 4. Lägg tillbaka oljan i lagret (om det fanns någon)
-                // Vi skickar in ett negativt värde för att adjustInventoryBalance ska plussa på det.
+                // 4. Lägg tillbaka oljan i lagret
                 if (oilToRefund > 0) {
                     await adjustInventoryBalance(-oilToRefund);
                     console.log(`Återförde ${oilToRefund} liter till lagret.`);
@@ -1979,7 +1984,7 @@ document.getElementById('closeMobileSearchBtn')?.addEventListener('click', () =>
 
 // Live-sökning när man skriver
 document.getElementById('mobileSearchInput')?.addEventListener('input', (e) => {
-    const term = e.target.value; // Behöver inte toLowerCase här, funktionen sköter det
+    const term = e.target.value; 
     const resultsContainer = document.getElementById('mobileSearchResults');
     
     if (term.length < 2) {
@@ -1987,8 +1992,8 @@ document.getElementById('mobileSearchInput')?.addEventListener('input', (e) => {
         return;
     }
     
-    // ANVÄND HJÄLPFUNKTIONEN HÄR:
-    const filteredJobs = allJobs.filter(job => jobMatchesSearch(job, term));
+    // HÄR ÄR FIXEN: Vi lägger till "!job.deleted" i filtret
+    const filteredJobs = allJobs.filter(job => !job.deleted && jobMatchesSearch(job, term));
     
     if (filteredJobs.length === 0) {
         resultsContainer.innerHTML = '<p style="text-align:center; color:#9ca3af; margin-top:20px;">Inga träffar.</p>';
