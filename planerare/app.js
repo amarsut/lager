@@ -595,6 +595,29 @@ function updateStatsCounts(jobs) {
 // 7. EVENT LISTENERS
 function setupEventListeners() {
 
+	// --- NAVIGERING: ÖVERSIKT (TILLBAKA) ---
+    const btnOverview = document.getElementById('btnOverview');
+    
+    if (btnOverview) {
+        btnOverview.addEventListener('click', () => {
+            // 1. Uppdatera UI (Markera knappen som aktiv)
+            document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
+            btnOverview.classList.add('active');
+            
+            // 2. Visa översikts-vyerna
+            // statBar har display: grid i CSS, så vi återställer till det (eller tom sträng för att låta CSS styra)
+            const statBar = document.getElementById('statBar');
+            if(statBar) statBar.style.display = ''; 
+            
+            const timelineView = document.getElementById('timelineView');
+            if(timelineView) timelineView.style.display = 'block';
+            
+            // 3. Dölj kundvyn
+            const customersView = document.getElementById('customersView');
+            if(customersView) customersView.style.display = 'none';
+        });
+    }
+
 	// Hitta knappen för "Kunder" i sidebaren (du kanske måste ge den ett ID i HTML, t.ex. id="navCustomers")
 	const navCustomers = document.getElementById('navCustomers');
 
