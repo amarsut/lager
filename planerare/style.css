@@ -3239,12 +3239,14 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 
 //********* MODALER ENHETLIGT UPPDATERA SEN TA BORT DUBLETTER **********//
 
-/* --- Uppdaterad Modal-struktur för "Edge-to-Edge" Header --- */
+/* =================================================================
+   ENHETLIG DESIGN FÖR ALLA MODALER (Samsung One UI / iOS Style)
+   ================================================================= */
 
+/* --- 1. Uppdaterad Modal-struktur (Kant-till-kant) --- */
 .modal-content {
     background-color: var(--content-bg);
-    /* VIKTIGT: Ändra padding från 30px till 0. 
-       Detta låter headern fylla hela bredden. */
+    /* VIKTIGT: Padding 0 låter headern gå hela vägen ut till kanten */
     padding: 0 !important; 
     border-radius: 12px;
     box-shadow: 0 10px 25px rgba(0,0,0,0.2);
@@ -3252,115 +3254,131 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     display: flex;
     flex-direction: column;
     
-    /* Behåll storleksinställningarna du hade */
+    /* Behåll storleksinställningarna */
     width: 100%;
     max-width: 550px;
     height: auto;
     max-height: 85vh;
     margin: auto;
-    overflow: hidden; /* Ser till att headern inte sticker ut utanför rundade hörn */
+    overflow: hidden; /* Ser till att headern inte sticker ut */
 }
 
-/* --- Den nya enhetliga Headern --- */
+/* --- 2. Den nya enhetliga Headern (Container) --- */
 .modal-header {
+    position: relative; /* VIKTIGT för att kunna centrera titeln absolut */
     display: flex;
     align-items: center;
-    justify-content: space-between; /* Sprider ut Pil - Titel - Tomt utrymme */
+    justify-content: space-between; 
     
-    /* DETTA ÄR NYCKELN TILL UTSEENDET: */
-    background-color: #f8f9fa !important;       /* Den ljusgrå bakgrunden */
-    border-bottom: 1px solid #e5e7eb !important; /* Den tunna linjen */
+    /* Design: Ljusgrå bakgrund + linje */
+    background-color: #f8f9fa !important;       
+    border-bottom: 1px solid #e5e7eb !important; 
     
-    padding: 0 16px !important;    /* Matcha inställningarnas padding */
-    height: 60px !important;       /* Fast höjd */
+    padding: 0 16px !important;    
+    height: 60px !important;       /* Fast höjd överallt */
     flex-shrink: 0;
     margin-bottom: 0 !important;
 }
 
-/* Titeln i modalen */
-.modal-header h2 {
-    margin: 0;
-    font-size: 1.1rem !important; /* Samma storlek som "Inställningar" */
+/* --- 3. Titeln i modalen (Centrerad & Mindre text) --- */
+.modal-header h2,
+#vehicleRegTitle { /* Inkluderar även Fordons-titeln här */
+    margin: 0 !important;
+    padding: 0 !important;
+    
+    /* Textstorlek & Stil */
+    font-size: 1.1rem !important; /* Mindre storlek (var 1.5-2rem förut) */
     font-weight: 700 !important;
     color: #111;
-    position: absolute;       /* Centrera titeln absolut */
+    
+    /* Absolut centrering */
+    position: absolute;
     left: 50%;
     transform: translateX(-50%);
     width: max-content;
+    z-index: 1; /* Ligger under knappar om det blir trångt */
+    text-align: center;
 }
 
-/* Tillbaka-knappen (Samma klass som i inställningar) */
-.simple-back-btn {
+/* --- 4. Tillbaka-knappen (Pilen) --- */
+.simple-back-btn,
+.messenger-back-btn {
     background: transparent;
     border: none;
     padding: 0;
-    width: 36px; /* Lite större träffyta */
+    width: 40px; /* Bra tryckyta */
     height: 100%;
     display: flex;
     align-items: center;
     justify-content: flex-start; /* Vänsterställd ikon */
-    color: #111;
+    color: #111 !important;
     cursor: pointer;
-    z-index: 10; /* Se till att den ligger över titeln om det blir trångt */
+    z-index: 10; /* Måste ligga över titeln */
+    position: relative;
 }
 
-.simple-back-btn svg {
+.simple-back-btn svg,
+.messenger-back-btn svg {
     width: 24px;
     height: 24px;
     stroke-width: 2.5px;
 }
 
-/* --- Kroppen (Där formulären bor) --- */
-/* Eftersom vi tog bort padding från .modal-content måste vi lägga tillbaka den här */
+/* --- 5. Kroppen (Där formulären bor) --- */
+/* Vi la till padding här istället för i .modal-content */
 .modal-body {
     padding: 24px; 
-    overflow-y: auto; /* Gör att man kan scrolla om formuläret är långt */
+    overflow-y: auto; 
     flex-grow: 1;
 }
 
-/* --- Footern (Knapparna) --- */
+/* --- 6. Footern (Knapparna) --- */
 .modal-actions { 
     display: flex; 
     justify-content: flex-end; 
     gap: 10px; 
-    padding: 16px 24px; /* Matcha headerns padding i sidled */
-    background-color: #fff; /* Vit bakgrund */
-    border-top: 1px solid #f3f4f6; /* Linje ovanför knapparna också */
+    padding: 16px 24px; 
+    background-color: #fff; 
+    border-top: 1px solid #f3f4f6; 
     margin-top: 0; 
+    position: relative;
+    z-index: 10;
 }
 
+/* --- 7. Specialanpassning för Fordons-modalen --- */
 .vehicle-header-row {
+    position: relative; /* För centrering */
     display: flex; 
     justify-content: space-between; 
     align-items: center;
     
-    /* NY DESIGN: */
-    background-color: #f8f9fa !important;  /* Grå */
-    border-bottom: 1px solid #e5e7eb !important; /* Linje */
-    padding: 12px 16px !important; /* Lite tajtare padding för mobilvänlighet */
+    /* Samma grå design */
+    background-color: #f8f9fa !important;  
+    border-bottom: 1px solid #e5e7eb !important; 
+    padding: 0 16px !important; 
+    height: 60px !important; /* Tvinga samma höjd */
     
-    /* Ta bort ev. gamla marginaler */
     margin: 0 !important; 
     position: sticky; 
     top: 0; 
     z-index: 50;
 }
 
+/* Dölj/Justera element i fordons-headern som krockar med nya designen */
+.vehicle-header-row .reg-group {
+    /* Vi döljer inte gruppen, men vi ser till att den inte styr layouten */
+    position: static; 
+}
+
+/* --- 8. Specialanpassning för Sök-modalen (Messenger) --- */
 .messenger-search-header {
     display: flex;
     align-items: center;
-    padding: 0 12px; /* Justera padding */
+    padding: 0 12px; 
     gap: 12px;
-    height: 60px; /* Samma höjd som de andra */
+    height: 60px !important; /* Samma höjd */
     
-    /* ÄNDRA TILL SAMMA GRÅ: */
+    /* Samma grå design */
     background-color: #f8f9fa !important; 
     border-bottom: 1px solid #e5e7eb !important;
-}
-
-/* Justera pilen i sökmodalen så den ser likadan ut */
-.messenger-back-btn {
-    color: #111 !important; /* Svart pil istället för mörkgrå */
-    width: 36px;
-    height: 36px;
 }
