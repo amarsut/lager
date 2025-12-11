@@ -3236,3 +3236,96 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 [data-theme="dark"] .drop-inner { fill: #fb923c; }
 [data-theme="dark"] .drop-stats { color: #aaa; }
 [data-theme="dark"] .oil-badge.compact { background: #333; border-color: #444; color: #aaa; }
+
+//********* MODALER ENHETLIGT UPPDATERA SEN TA BORT DUBLETTER **********//
+
+/* --- Uppdaterad Modal-struktur för "Edge-to-Edge" Header --- */
+
+.modal-content {
+    background-color: var(--content-bg);
+    /* VIKTIGT: Ändra padding från 30px till 0. 
+       Detta låter headern fylla hela bredden. */
+    padding: 0 !important; 
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    
+    /* Behåll storleksinställningarna du hade */
+    width: 100%;
+    max-width: 550px;
+    height: auto;
+    max-height: 85vh;
+    margin: auto;
+    overflow: hidden; /* Ser till att headern inte sticker ut utanför rundade hörn */
+}
+
+/* --- Den nya enhetliga Headern --- */
+.modal-header { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    
+    /* NY DESIGN HÄR: */
+    background-color: #f8f9fa;      /* Samma grå som inställningar */
+    border-bottom: 1px solid #e5e7eb; /* Linjen */
+    padding: 16px 24px;             /* Luft inuti headern */
+    height: 60px;                   /* Fast höjd för snygghet */
+    flex-shrink: 0;                 /* Headern får inte krympa */
+    margin-bottom: 0;               /* Ta bort gammal marginal */
+}
+
+.modal-header h2 { 
+    margin: 0; 
+    font-size: 1.1rem; 
+    font-weight: 700; 
+    color: #111; 
+}
+
+/* --- Kroppen (Där formulären bor) --- */
+/* Eftersom vi tog bort padding från .modal-content måste vi lägga tillbaka den här */
+.modal-body {
+    padding: 24px; 
+    overflow-y: auto; /* Gör att man kan scrolla om formuläret är långt */
+    flex-grow: 1;
+}
+
+/* --- Footern (Knapparna) --- */
+.modal-actions { 
+    display: flex; 
+    justify-content: flex-end; 
+    gap: 10px; 
+    padding: 16px 24px; /* Matcha headerns padding i sidled */
+    background-color: #fff; /* Vit bakgrund */
+    border-top: 1px solid #f3f4f6; /* Linje ovanför knapparna också */
+    margin-top: 0; 
+}
+
+.vehicle-header-row {
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+    
+    /* NY DESIGN: */
+    background-color: #f8f9fa !important;  /* Grå */
+    border-bottom: 1px solid #e5e7eb !important; /* Linje */
+    padding: 12px 16px !important; /* Lite tajtare padding för mobilvänlighet */
+    
+    /* Ta bort ev. gamla marginaler */
+    margin: 0 !important; 
+    position: sticky; 
+    top: 0; 
+    z-index: 50;
+}
+
+.messenger-search-header {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    gap: 12px;
+    
+    /* ÄNDRA FRÅN WHITE TILL GRÅ: */
+    background-color: #f8f9fa !important; 
+    border-bottom: 1px solid #e5e7eb !important; 
+}
