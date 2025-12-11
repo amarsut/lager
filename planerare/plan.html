@@ -661,11 +661,45 @@
 	            <button class="simple-back-btn" onclick="closeSettings()">
 	                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
 	            </button>
-	            <h1 class="header-simple-title">Inställningar</h1>
+	            <h1 class="header-simple-title">Meny</h1>
 	        </div>
 	
 	        <div class="one-ui-content compact-mode">
 	            
+	            <div class="settings-section-label">GENVÄGAR</div>
+	            
+	            <div class="menu-grid">
+	                <div class="menu-card" id="menuBtnCustomers">
+	                    <div class="menu-icon-box blue">
+	                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+	                    </div>
+	                    <span>Kunder</span>
+	                </div>
+	
+	                <div class="menu-card">
+	                    <div class="menu-icon-box orange">
+	                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+	                    </div>
+	                    <span>Lager</span>
+	                </div>
+	                
+	                <div class="menu-card">
+	                    <div class="menu-icon-box purple">
+	                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+	                    </div>
+	                    <span>Kalender</span>
+	                </div>
+	
+	                <div class="menu-card">
+	                    <div class="menu-icon-box green">
+	                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+	                    </div>
+	                    <span>Statistik</span>
+	                </div>
+	            </div>
+	
+	            <div class="settings-separator" style="margin: 24px 0;"></div>
+	
 	            <div class="settings-section-label">VISNING</div>
 	            
 	            <div class="settings-card-group">
@@ -695,61 +729,61 @@
 	            </div>
 	
 	            <div class="settings-section-label">LAGERHANTERING</div>
-				<div class="settings-card-group">
-				    <div class="settings-item inventory-card">
-				        
-				        <div class="drop-card-layout">
-				            <div class="drop-icon-container">
-				                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-				                    <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" class="drop-outline"></path>
-				                    <path d="M12 18a2 2 0 1 0 0-4 2 2 0 0 0 0 4z" fill="currentColor" class="drop-inner"></path>
-				                </svg>
-				            </div>
-				
-				            <div class="drop-info">
-				                <div class="drop-header">
-				                    <span class="settings-title">Motorolja 5W-30</span>
-				                    <span class="oil-badge compact" id="oilDateBadge" style="display:none;">---</span>
-				                </div>
-				                <div class="drop-stats">
-				                    <span id="oilLevelText">Laddar...</span>
-				                </div>
-				            </div>
-				
-				            <div class="drop-percent">
-				                <span id="oilPercent">0%</span>
-				            </div>
-				        </div>
-				
-				        <div class="oil-progress-bg compact-bar">
-				            <div id="oilProgressBar" class="oil-progress-fill" style="width: 0%;"></div>
-				        </div>
-				
-				        <button class="refill-text-btn" onclick="toggleOilForm()">
-				            + Registrera nytt fat
-				        </button>
-				
-				        <div id="oilRefillForm" class="oil-refill-container" style="display:none;">
-				            <div class="refill-box">
-				                <p class="refill-title">Registrera inköp</p>
-				                <div class="refill-inputs">
-				                    <div class="input-group-small">
-				                        <label>Volym (Liter)</label>
-				                        <input type="number" id="newBarrelVol" value="208" placeholder="208">
-				                    </div>
-				                    <div class="input-group-small">
-				                        <label>Inköpsdatum</label>
-				                        <input type="date" id="newBarrelDate">
-				                    </div>
-				                </div>
-				                <button class="save-barrel-btn" onclick="saveNewBarrel()">
-				                    Spara & Nollställ
-				                </button>
-				            </div>
-				        </div>
-				
-				    </div>
-				</div>
+	            <div class="settings-card-group">
+	                <div class="settings-item inventory-card">
+	                    
+	                    <div class="drop-card-layout">
+	                        <div class="drop-icon-container">
+	                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+	                                <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" class="drop-outline"></path>
+	                                <path d="M12 18a2 2 0 1 0 0-4 2 2 0 0 0 0 4z" fill="currentColor" class="drop-inner"></path>
+	                            </svg>
+	                        </div>
+	
+	                        <div class="drop-info">
+	                            <div class="drop-header">
+	                                <span class="settings-title">Motorolja 5W-30</span>
+	                                <span class="oil-badge compact" id="oilDateBadge" style="display:none;">---</span>
+	                            </div>
+	                            <div class="drop-stats">
+	                                <span id="oilLevelText">Laddar...</span>
+	                            </div>
+	                        </div>
+	
+	                        <div class="drop-percent">
+	                            <span id="oilPercent">0%</span>
+	                        </div>
+	                    </div>
+	
+	                    <div class="oil-progress-bg compact-bar">
+	                        <div id="oilProgressBar" class="oil-progress-fill" style="width: 0%;"></div>
+	                    </div>
+	
+	                    <button class="refill-text-btn" onclick="toggleOilForm()">
+	                        + Registrera nytt fat
+	                    </button>
+	
+	                    <div id="oilRefillForm" class="oil-refill-container" style="display:none;">
+	                        <div class="refill-box">
+	                            <p class="refill-title">Registrera inköp</p>
+	                            <div class="refill-inputs">
+	                                <div class="input-group-small">
+	                                    <label>Volym (Liter)</label>
+	                                    <input type="number" id="newBarrelVol" value="208" placeholder="208">
+	                                </div>
+	                                <div class="input-group-small">
+	                                    <label>Inköpsdatum</label>
+	                                    <input type="date" id="newBarrelDate">
+	                                </div>
+	                            </div>
+	                            <button class="save-barrel-btn" onclick="saveNewBarrel()">
+	                                Spara & Nollställ
+	                            </button>
+	                        </div>
+	                    </div>
+	
+	                </div>
+	            </div>
 	
 	            <div class="settings-section-label">KONTO</div>
 	            <div class="settings-card-group">
@@ -765,7 +799,7 @@
 	                </div>
 	            </div>
 	
-	            <div class="one-ui-footer">Version 1.6.1</div>
+	            <div class="one-ui-footer">Version 1.6.2</div>
 	        </div>
 	    </div>
 	</div>
