@@ -3795,3 +3795,58 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     font-weight: 700; color: #10b981; font-size: 0.9rem; 
     white-space: nowrap; align-self: flex-start; /* Håll priset i toppen om texten skulle radbrytas */
 }
+
+/* --- FIX: HISTORIK-TEXT (Prioritera Regnr) --- */
+/* Vi gör om beskrivnings-raden till en flex-box */
+.h-desc-row {
+    display: flex; 
+    align-items: center; 
+    width: 100%;
+    min-width: 0; /* Viktigt för att flex-barn ska kunna krympa */
+}
+
+.h-desc-text {
+    white-space: nowrap; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+    flex-shrink: 1; /* Denna får krympa */
+    color: #64748b;
+    font-size: 0.75rem;
+}
+
+.h-desc-reg {
+    white-space: nowrap; 
+    flex-shrink: 0; /* Denna får INTE krympa */
+    margin-left: 4px;
+    font-weight: 600;
+    color: #475569;
+    font-size: 0.75rem;
+}
+
+/* --- FIX: FORDON-HEADER (Matcha Kundprofil) --- */
+/* Justering för knapparna bredvid titeln i fordonsvyn */
+.vehicle-title-group {
+    display: flex; 
+    align-items: center; 
+    gap: 8px;
+}
+
+/* Anpassa de små knapparna (Kopiera/Märke) så de passar i den nya headern */
+.header-icon-action {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    color: #64748b;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.header-icon-action:hover { background: #e2e8f0; color: #333; }
+.header-icon-action svg { width: 16px; height: 16px; }
+.header-icon-action img { width: 18px; height: 18px; object-fit: contain; }
+
+/* Dölj externa länkar på väldigt små skärmar om det blir trångt, eller visa bara ikon */
+@media (max-width: 360px) {
+    .link-text { display: none; }
+}
