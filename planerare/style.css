@@ -3421,67 +3421,92 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     border-bottom: 1px solid #e5e7eb !important;
 }
 
-/* --- KOMPAKT CARD HEADER (FIX) --- */
+/* ==========================================================
+   SUPER-KOMPAKT HEADER FIX (Tvingande regler)
+   ========================================================== */
 
-/* 1. Tvinga själva listen att vara låg */
-.card-header-strip {
-    height: 34px !important;       /* Fast, låg höjd */
-    min-height: 34px !important;   /* Förhindra att den växer */
-    padding: 0 12px !important;    /* Ingen padding i höjdled, flex löser centrering */
+/* 1. Själva listen (Behållaren) */
+.card-header-strip, 
+.bg-overdue, 
+.bg-bokad, 
+.bg-klar, 
+.bg-faktureras, 
+.bg-avbokad, 
+.bg-offererad {
+    height: 34px !important;       /* Fast höjd */
+    min-height: 34px !important;   /* Får inte krympa */
+    max-height: 34px !important;   /* Får inte växa */
+    padding: 0 12px !important;    /* INGEN padding uppe/nere */
+    display: flex !important;
+    align-items: center !important; /* Centrera allt vertikalt */
+    line-height: 1 !important;
+    box-sizing: border-box !important;
+}
+
+/* 2. Vänster sida (Regnr + Ikon) */
+.header-reg-clickable {
+    height: 100% !important;
     display: flex !important;
     align-items: center !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    gap: 6px !important; /* Litet avstånd mellan ikon och text */
 }
 
-/* 2. Justera texten och reg-containern */
-.header-reg-clickable {
-    height: 100% !important;       /* Fyll höjden */
-    display: flex !important;
-    align-items: center !important; /* Centrera allt vertikalt exakt */
-    font-size: 0.85rem !important;  /* Lagom textstorlek */
-}
-
-/* 3. Tvinga ikonerna att vara små och linjerade */
-.header-reg-clickable svg, 
-.brand-logo-img {
+/* Tvinga ner storleken på loggor/ikoner */
+.brand-logo-img, 
+.header-reg-clickable svg {
     width: 16px !important;
     height: 16px !important;
-    margin-right: 6px !important;
-    margin-left: 0 !important;      /* Nollställ ev. gamla marginaler */
-    transform: none !important;     /* Ta bort ev. konstiga lyft */
     display: block !important;
+    margin: 0 !important;
+    transform: none !important; /* Ta bort gamla justeringar */
 }
 
-/* 4. Justera den lilla "info"-ikonen (i cirkeln) */
+/* Justera den lilla runda "info"-ikonen */
 .reg-info-sup {
-    transform: none !important;     /* Ta bort upplyftet som kanske spökade */
-    margin-left: 6px !important;
     display: flex !important;
     align-items: center !important;
     height: 100% !important;
-    opacity: 0.7;
+    margin-left: 6px !important;
+    transform: none !important;
 }
 .reg-info-sup svg {
     width: 12px !important;
     height: 12px !important;
-    margin: 0 !important;
 }
 
-/* 5. Justera status-badgen (Högst upp till höger) */
+/* 3. Höger sida (Status + Meny) */
+.header-right-side {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important; /* Lite mindre gap */
+    height: 100% !important;
+}
+
+/* Status-badgen */
 .header-status-badge {
-    padding: 1px 6px !important;    /* Mycket mindre luft */
-    font-size: 0.6rem !important;   /* Liten text */
-    line-height: 1.2 !important;
-    height: auto !important;
-    min-height: 0 !important;
-}
-
-/* 6. Meny-knappen (Tre prickar) */
-.card-menu-btn {
-    height: 34px !important;        /* Matcha headerns höjd */
-    width: 30px !important;
+    padding: 2px 8px !important;
+    font-size: 0.65rem !important;
+    height: 20px !important;       /* Fast, låg höjd */
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    padding: 0 !important;
+    line-height: 1 !important;
+    border-radius: 4px !important;
+    margin: 0 !important;
 }
+
+/* Meny-knappen (Tre prickar) */
+.card-menu-btn {
+    height: 34px !important; /* Matcha headern */
+    width: 30px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: transparent !important;
+}
+
 
