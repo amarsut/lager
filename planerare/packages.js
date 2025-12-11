@@ -1,5 +1,5 @@
 const servicePaket = {
-    'liten-service': {
+    'oljebyte': {
         pris: 1995,
         kommentar: 'Byte av olja och filter ingår.',
         utgifter: [
@@ -12,7 +12,7 @@ const servicePaket = {
             { namn: 'Oljefilter', kostnad: 150 } // Vanlig fast utgift
         ]
     },
-    'stor-service': {
+    'hjulskifte': {
         pris: 4495,
         kommentar: 'Full genomgång, tändstift, alla filter och oljebyte.',
         utgifter: [
