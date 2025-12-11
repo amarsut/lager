@@ -442,7 +442,7 @@ function createJobCard(job) {
     return `
         <div class="job-card-new" id="card-${job.id}" onclick="openEditModal('${job.id}')">
             
-            <div class="card-header-strip ${headerClass}" style="height: 34px !important; min-height: 34px !important; padding: 0 10px !important; display: flex !important; align-items: center !important;">
+            <div class="card-header-strip ${headerClass}" style="height: 24px !important; min-height: 24px !important; padding: 0 10px !important; display: flex !important; align-items: center !important;">
                 
                 <div class="header-reg-clickable" onclick="event.stopPropagation(); openVehicleModal('${regNr}')" style="display: flex; align-items: center; height: 100%;">
                     ${iconHtml} 
