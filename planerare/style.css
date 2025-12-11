@@ -4023,3 +4023,23 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
         padding: 0 20px !important;
     }
 }
+
+/* =================================================================
+   FIX: LYFT KUNDMODAL ÖVER HUVUD-HEADERN (MOBIL)
+   ================================================================= */
+
+@media (max-width: 768px) {
+    /* Ge denna modal MAXIMALT z-index så den hamnar över "Översikt Pro"-headern */
+    #customerModal {
+        z-index: 2147483647 !important; /* Högsta möjliga värde i CSS */
+    }
+
+    /* Justera modal-headern så den ser bra ut */
+    #customerModal .modal-header {
+        background: #fff !important;
+        /* Om du har en iPhone med "Notch", se till att texten inte hamnar där */
+        padding-top: env(safe-area-inset-top) !important; 
+        min-height: 60px !important;
+        height: auto !important; /* Låt den växa om det behövs */
+    }
+}
