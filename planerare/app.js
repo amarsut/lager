@@ -2536,7 +2536,28 @@ function getCustomerDatabase() {
     return Object.values(customers).sort((a, b) => b.totalSpent - a.totalSpent);
 }
 
-// Rendera listan
+/* --- HJÄLPFUNKTIONER FÖR FÄRGER --- */
+function stringToColor(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const hue = Math.abs(hash % 360);
+    // 70% saturation, 90% lightness ger fina pastellfärger
+    return `hsl(${hue}, 70%, 90%)`; 
+}
+
+function stringToTextColor(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const hue = Math.abs(hash % 360);
+    // Mörkare variant av samma färg för texten
+    return `hsl(${hue}, 80%, 30%)`; 
+}
+
+/* --- RENDER CUSTOMER VIEW (HELA FUNKTIONEN) --- */
 function renderCustomerView(searchTerm = '') {
     const container = document.getElementById('customerGrid');
     if(!container) return;
@@ -2545,30 +2566,36 @@ function renderCustomerView(searchTerm = '') {
     const customers = getCustomerDatabase();
     const term = searchTerm.toLowerCase();
 
-    // Filtrera
+    // Filtrera listan baserat på sökning
     const filtered = customers.filter(c => {
         // Sök på namn
         if (c.name.toLowerCase().includes(term)) return true;
-        // Sök på deras bilar (Set -> Array -> String check)
+        // Sök på deras bilar (om regnr finns i deras lista)
         const hasCar = Array.from(c.vehicles).some(reg => reg.toLowerCase().includes(term));
         return hasCar;
     });
 
+    // Om tomt
     if (filtered.length === 0) {
-        container.innerHTML = '<p style="text-align:center; color:#9ca3af; padding:20px; grid-column:1/-1;">Inga kunder hittades.</p>';
+        container.innerHTML = `
+            <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #94a3b8;">
+                <svg style="width:48px; height:48px; margin-bottom:10px; opacity:0.5;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                <p>Inga kunder hittades.</p>
+            </div>`;
         return;
     }
 
+    // Loopa igenom och skapa kort
     filtered.forEach(c => {
         // Skapa initialer (Max 2 bokstäver)
         const initials = c.name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
         
-        // Kolla VIP-status (> 20.000 kr)
-        const isVip = c.totalSpent > 20000;
-        const vipClass = isVip ? 'vip' : '';
+        // Färg-magi
+        const avatarBg = stringToColor(c.name);
+        const avatarColor = stringToTextColor(c.name);
         
-        // Formatera datum
-        const lastSeen = c.lastVisit ? c.lastVisit.toLocaleDateString('sv-SE') : '-';
+        // Kolla VIP-status (> 20.000 kr) - Du kan ändra gränsen här
+        const isVip = c.totalSpent > 20000;
         
         // Räkna bilar
         const carCount = c.vehicles.size;
@@ -2579,16 +2606,18 @@ function renderCustomerView(searchTerm = '') {
         card.onclick = () => openCustomerModal(c);
         
         card.innerHTML = `
-            <div class="c-avatar ${vipClass}">${initials}</div>
+            <div class="c-avatar" style="background-color: ${avatarBg}; color: ${avatarColor};">
+                ${initials}
+            </div>
             <div class="c-info">
-                <div style="display:flex; justify-content:space-between; width:100%;">
+                <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
                     <h3>${c.name}</h3>
-                    ${isVip ? '<span style="font-size:1rem;">⭐</span>' : ''}
+                    ${isVip ? '<span style="font-size:1rem;" title="VIP Kund">⭐</span>' : ''}
                 </div>
                 <div class="c-meta">
                     <span>${carText}</span> • <span>${c.visitCount} besök</span>
                 </div>
-                <div class="c-meta" style="color:${isVip ? '#d97706' : '#64748b'}; font-weight:${isVip ? '600' : '400'}">
+                <div class="c-meta" style="color:${isVip ? '#d97706' : '#64748b'}; font-weight:${isVip ? '700' : '500'}; margin-top:4px;">
                     Totalt: ${c.totalSpent.toLocaleString()} kr
                 </div>
             </div>
@@ -2671,13 +2700,32 @@ function openCustomerModal(customer) {
         historyContainer.appendChild(row);
     });
 
-    // 5. Koppla Action-knappar
-    // Nytt jobb: Öppna modalen och fyll i namnet direkt
+    // 5. Koppla Action-knappar (HÄR ÄR DEN NYA KODEN)
+    
+    // --- Ring / Hitta.se Logik ---
+    const callBtn = document.getElementById('btnCallCustomer');
+    
+    // Jag har lagt in riktiga ikoner i HTML-strängen här nedanför:
+    if (customer.phone) {
+        // Om telefonnummer finns: Visa "Ring"
+        callBtn.innerHTML = `
+            <svg class="icon-sm" style="margin-right:6px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg> 
+            Ring`;
+        callBtn.onclick = () => window.location.href = `tel:${customer.phone}`;
+    } else {
+        // Om nummer saknas: Visa "Hitta.se"
+        callBtn.innerHTML = `
+            <svg class="icon-sm" style="margin-right:6px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            Hitta.se`;
+        callBtn.onclick = () => window.open(`https://www.hitta.se/sök?vad=${encodeURIComponent(customer.name)}`, '_blank');
+    }
+
+    // --- Nytt Jobb Logik ---
     const newJobBtn = document.getElementById('btnNewJobForCustomer');
     newJobBtn.onclick = () => {
         modal.classList.remove('show'); // Stäng kundprofil
-        openNewJobModal(); // Öppna ny
-        // Vänta lite så modalen hinner öppnas, fyll sen i
+        openNewJobModal(); // Öppna nytt jobb
+        // Vänta lite så modalen hinner öppnas, fyll sen i namnet
         setTimeout(() => {
             document.getElementById('kundnamn').value = customer.name;
         }, 100);
