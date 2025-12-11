@@ -885,16 +885,22 @@ async function handleSaveJob(e) {
 async function deductOilFromInventory(expenses) {
     let totalOilToDeduct = 0;
 
-    // Loopa igenom utgifterna för att hitta olja
+    // Loopa igenom utgifterna
     expenses.forEach(item => {
-        const nameLower = item.namn.toLowerCase();
+        const name = item.namn || "";
+        const nameLower = name.toLowerCase();
         
-        // Logik: Om namnet innehåller "olja" OCH har en parentes med "L" (t.ex "Motorolja (5.5L)")
-        // Regex för att hitta talet före 'L':  /(\d+(\.\d+)?)L/i
+        // Logik: Leta efter siffra följt av "l" eller "liter"
+        // Exempel som fungerar: "Motorolja (4.7L)", "Olja 5,5 liter", "4L Olja"
         if (nameLower.includes('olja')) {
-            const match = item.namn.match(/(\d+(\.\d+)?)L/i); // Letar efter t.ex. "5.5L" eller "5L"
+            // Regex för att hitta tal (med punkt eller komma)
+            const match = name.match(/(\d+[.,]?\d*)\s*(l|liter)/i); 
+            
             if (match) {
-                const liters = parseFloat(match[1]);
+                // Byt ut eventuellt komma mot punkt för att JS ska förstå det
+                const numberString = match[1].replace(',', '.');
+                const liters = parseFloat(numberString);
+                
                 if (!isNaN(liters)) {
                     totalOilToDeduct += liters;
                 }
@@ -905,14 +911,15 @@ async function deductOilFromInventory(expenses) {
     if (totalOilToDeduct > 0) {
         console.log(`Drar av ${totalOilToDeduct} liter från lagret...`);
         
-        // Använd Firebase 'increment' med negativt tal för atomsäker uppdatering
         const inventoryRef = db.collection('settings').doc('inventory');
+        
+        // Använd increment med negativt värde
         await inventoryRef.update({
             motorOil: firebase.firestore.FieldValue.increment(-totalOilToDeduct)
         });
         
-        // Valfritt: Visa en liten notis
-        // showToast(`${totalOilToDeduct}L olja registrerat`);
+        // (Valfritt) Visa en liten popup att det lyckades
+        // alert(`Drog av ${totalOilToDeduct}L från lagret.`);
     }
 }
 
