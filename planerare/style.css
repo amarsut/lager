@@ -3690,3 +3690,107 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     border-radius: 50%;
     border: 2px solid #fff;
 }
+
+/* --- FIX KNAPPAR I MODAL-FOOTER --- */
+.modal-actions {
+    display: grid !important; /* Använd Grid för exakt layout */
+    grid-template-columns: 1fr 1fr; /* Två lika stora kolumner */
+    gap: 12px !important;
+    padding: 16px 20px !important; /* Lite mer luft på sidorna */
+    background: #fff;
+    border-top: 1px solid #f1f5f9;
+}
+
+/* Gemensam stil för knapparna */
+.modal-actions button {
+    width: 100% !important; /* Fyll hela sin kolumn */
+    height: 48px !important; /* Tydlig, tryckvänlig höjd */
+    border-radius: 12px !important; /* Mjuka hörn */
+    font-size: 0.95rem !important;
+    font-weight: 600 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 !important;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05); /* Liten skugga */
+    transition: transform 0.1s, box-shadow 0.1s;
+}
+
+/* Tryck-effekt */
+.modal-actions button:active {
+    transform: scale(0.98);
+    box-shadow: none;
+}
+
+/* Sekundärknapp (Vit/Grå) - T.ex. "Hitta.se" */
+.modal-actions .secondary-outline {
+    background: #fff !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #334155 !important;
+}
+
+/* Primärknapp (Blå) - T.ex. "Nytt Jobb" */
+.modal-actions .primary-solid {
+    background: #0066FF !important; /* Din signaturblå */
+    border: none !important;
+    color: #fff !important;
+}
+
+/* Mobil-fix: Lås fast i botten */
+@media (max-width: 768px) {
+    .modal-actions {
+        position: fixed !important;
+        bottom: 0; left: 0; right: 0;
+        z-index: 100; /* Ligger över innehållet */
+        box-shadow: 0 -4px 20px rgba(0,0,0,0.08); /* Snygg skugga uppåt */
+    }
+    
+    /* Lägg till extra padding i modal-body så sista elementet inte hamnar bakom knapparna */
+    .modal-body {
+        padding-bottom: 100px !important; 
+    }
+}
+
+/* --- FIX Z-INDEX (Lager) --- */
+/* Lägst: Kundmodalen */
+#customerModal {
+    z-index: 20000 !important; 
+}
+
+/* Högre: Fordonsmodalen (så den syns när du klickar på regnr) */
+#vehicleModal {
+    z-index: 20001 !important; 
+}
+
+/* Högst: Jobbmodalen (Nytt jobb) */
+#jobModal {
+    z-index: 20002 !important; 
+}
+
+/* --- FIX HEADER PÅ MOBIL --- */
+@media (max-width: 768px) {
+    /* Modalens inre wrapper */
+    .modal-content {
+        display: flex !important;
+        flex-direction: column !important;
+        height: 100vh !important; /* Ta hela skärmen */
+        overflow: hidden !important; /* Ingen scroll på själva ramverket */
+    }
+
+    /* Headern låst i toppen */
+    .modal-header {
+        flex-shrink: 0 !important; /* Får inte krympa */
+        position: relative !important; /* Ligger still */
+        z-index: 50 !important;
+        background: #fff !important;
+        border-bottom: 1px solid #f1f5f9;
+        /* Om du har global sticky-header (60px), justera top här om det behövs */
+    }
+
+    /* Kroppen (där scrollen ska ske) */
+    .modal-body {
+        flex-grow: 1 !important;
+        overflow-y: auto !important; /* Bara här scrollar vi */
+        -webkit-overflow-scrolling: touch; /* Mjuk scroll på iPhone */
+    }
+}
