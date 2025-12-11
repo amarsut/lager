@@ -2983,29 +2983,7 @@ input[type="number"] {
     }
 }
 
-/* --- Ny klass för försenade/missade tider --- */
-.bg-overdue { 
-    background-color: #ef4444; /* Stark röd (Danger) */
-    color: white; 
-    border-bottom-color: #b91c1c; 
-}
 
-/* Se till att text och ikoner inuti blir vita (samma som för bokad) */
-.bg-overdue .header-reg-clickable, 
-.bg-overdue .header-status-badge { 
-    color: white; 
-}
-
-/* Anpassa badgen inuti så den ser snygg ut mot röd bakgrund */
-.bg-overdue .header-status-badge {
-    background-color: rgba(255, 255, 255, 0.25);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-/* Gör även bilmärkes-loggan vit på röd bakgrund (samma effekt som blå) */
-.bg-overdue .brand-logo-img {
-    filter: brightness(0) invert(1) opacity(0.95);
-}
 
 /* INSTÄLLNINGAR MENY*/
 
@@ -3508,5 +3486,6 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     justify-content: center !important;
     background: transparent !important;
 }
+
 
 
