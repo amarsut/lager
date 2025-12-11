@@ -370,6 +370,8 @@ const ICONS = {
 // --- HJÄLPFUNKTION: Skapa Mobilkortet (FINAL LIST V5) ---
 function createJobCard(job) {
     const d = new Date(job.datum);
+    const now = new Date(); // NYTT: Hämta tiden just nu för att jämföra
+
     let rawMonth = d.toLocaleDateString('sv-SE', { month: 'short' });
     let cleanMonth = rawMonth.replace(/\./g, '');
     let month = cleanMonth.charAt(0).toUpperCase() + cleanMonth.slice(1);
@@ -382,15 +384,12 @@ function createJobCard(job) {
     const brandUrl = getBrandIconUrl(combinedText, job.regnr);
 
     // 2. Bestäm vilken ikon som ska visas
-    // Om vi hittade ett märke: Visa loggan (bild)
-    // Om vi INTE hittade märke: Visa standard-ikonen (iCar)
     let iconHtml = '';
     
 	if (brandUrl) {
-        // Vi lägger till klassen 'brand-logo-img' för att kunna styra färgen i CSS
         iconHtml = `<img src="${brandUrl}" class="brand-logo-img" alt="Logo">`;
     } else {
-        // Standard bil-ikon (SVG ärver färg automatiskt)
+        // Standard bil-ikon
         iconHtml = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px; height:18px;"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 17h8"/></svg>`;
     }
 
@@ -403,16 +402,27 @@ function createJobCard(job) {
     const statusRaw = job.status || 'bokad';
     const statusText = statusRaw.toUpperCase(); 
 
-    // FIX 3: Företagsikon Logik
+    // --- FÄRG-LOGIK (UPPDATERAD) ---
+    let headerClass = 'bg-bokad'; // Default (Blå)
+
+    if(statusRaw === 'klar') headerClass = 'bg-klar';
+    if(statusRaw === 'faktureras') headerClass = 'bg-faktureras';
+    if(statusRaw === 'avbokad') headerClass = 'bg-avbokad';
+    if(statusRaw === 'offererad') headerClass = 'bg-offererad';
+
+    // NYTT: Om status är 'bokad' MEN tiden har passerat -> Byt till Röd (bg-overdue)
+    if (statusRaw === 'bokad' && d < now) {
+        headerClass = 'bg-overdue';
+    }
+
+    // Företagsikon Logik
     const nameLower = (job.kundnamn || '').toLowerCase();
     const isCorporate = ['bmg', 'fogarolli', 'ab'].some(c => nameLower.includes(c));
     
-    // Ikoner
+    // Ikoner (Definierade lokalt för säkerhets skull)
     const iUser = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
     const iBriefcaseGreen = `<svg class="icon-sm" style="color: #10B981;" viewBox="0 0 64 64"><use href="#icon-office-building"></use></svg>`;
     
-    // Om företag: Visa grön portfölj framför namnet. Texten "Namn" förblir neutral.
-    // Vi lägger loggan i value-fältet.
 	const nameValueHtml = isCorporate 
 	    ? `<span class="company-icon-wrapper">${iBriefcaseGreen}</span><span>${customer}</span>` 
 	    : `<span>${customer}</span>`;
@@ -427,18 +437,11 @@ function createJobCard(job) {
     // Övriga ikoner
     const iCal = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`;
     const iClock = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`;
-    const iCar = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 17h8"/></svg>`;
     const iComment = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`;
     const iTag = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>`;
     const iBox = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>`;
     const iGauge = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 14c1.66 0 3-1.34 3-3V5h-6v6c0 1.66 1.34 3 3 3z"/><path d="M12 14v7"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="M19.07 4.93L17.66 6.34"/><path d="M4.93 4.93L6.34 6.34"/></svg>`;
     const iInfoSmall = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`;
-
-    let headerClass = 'bg-bokad';
-    if(statusRaw === 'klar') headerClass = 'bg-klar';
-    if(statusRaw === 'faktureras') headerClass = 'bg-faktureras';
-    if(statusRaw === 'avbokad') headerClass = 'bg-avbokad';
-    if(statusRaw === 'offererad') headerClass = 'bg-offererad';
 
 	return `
 	    <div class="job-card-new" id="card-${job.id}" onclick="openEditModal('${job.id}')">
