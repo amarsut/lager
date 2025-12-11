@@ -2244,8 +2244,13 @@ function initInventoryListener() {
             const barEl = document.getElementById('oilProgressBar');
             const dateEl = document.getElementById('oilDateBadge');
 
-            // Uppdatera text
-            if (textEl) textEl.textContent = `${Math.round(current)} / ${max} liter`;
+            // --- HÄR ÄR ÄNDRINGEN ---
+            // Vi använder toFixed(1) för att alltid visa en decimal (t.ex. "150.5")
+            // Om du vill ta bort .0 på heltal kan du använda parseFloat(current.toFixed(1))
+            let displayCurrent = parseFloat(current.toFixed(1)); 
+            
+            if (textEl) textEl.textContent = `${displayCurrent} / ${max} liter`;
+            // ------------------------
             
             // Uppdatera procent & bar
             let percent = (current / max) * 100;
@@ -2263,7 +2268,6 @@ function initInventoryListener() {
             // Uppdatera Datum-badge
             if (dateEl) {
                 if (date) {
-                    // Snyggare datumformat? T.ex. "2024-02-01" -> "1 feb 2024"
                     dateEl.textContent = `Inköpt: ${date}`; 
                     dateEl.style.display = 'inline-block';
                 } else {
