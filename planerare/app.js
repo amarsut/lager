@@ -595,6 +595,20 @@ function updateStatsCounts(jobs) {
 // 7. EVENT LISTENERS
 function setupEventListeners() {
 
+	/*MER MENY I INSTÄLLNINGAR _ MOBIL*/
+	document.getElementById('menuBtnCustomers').addEventListener('click', () => {
+	    // 1. Stäng "Mer"-menyn
+	    closeSettings(); // Din befintliga funktion för att stänga inställningar
+	    
+	    // 2. Visa Kundvyn (Samma logik som tidigare)
+	    document.getElementById('statBar').style.display = 'none';
+	    document.getElementById('timelineView').style.display = 'none';
+	    document.getElementById('customersView').style.display = 'block';
+	    
+	    // 3. Ladda listan
+	    renderCustomerView();
+	});
+
 	// --- KOPPLA MOBIL-KNAPPEN "KUNDER" ---
 	const mobileCustBtn = document.getElementById('mobileCustomersBtn');
 	if (mobileCustBtn) {
