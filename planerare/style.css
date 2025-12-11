@@ -2986,11 +2986,12 @@ input[type="number"] {
 /* INSTÄLLNINGAR MENY*/
 
 /* =========================================
-   SETTINGS MODAL (MATCHING APP DESIGN)
+   SETTINGS STYLING (FIXED UI & TOGGLES)
    ========================================= */
 
+/* Grundlayout */
 .one-ui-backdrop.show {
-    background-color: #f8f9fa !important; /* Matcha appens bakgrund */
+    background-color: #f8f9fa !important;
     display: block !important;
     padding: 0 !important;
     z-index: 20002 !important;
@@ -2999,103 +3000,93 @@ input[type="number"] {
 .one-ui-container {
     width: 100%; height: 100%;
     display: flex; flex-direction: column;
-    background-color: #f8f9fa; /* Matcha appens bakgrund */
+    background-color: #f8f9fa;
     overflow-y: auto;
 }
 
-@media (min-width: 769px) {
-    .one-ui-backdrop.show {
-        background-color: rgba(0,0,0,0.5) !important;
-        display: flex !important;
-        align-items: center; justify-content: center;
-    }
-    .one-ui-container {
-        max-width: 450px; height: auto; max-height: 85vh;
-        border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-        background-color: #ffffff;
-    }
-    .one-ui-header-compact { background-color: #fff; border-bottom: 1px solid #f1f5f9; }
-    .one-ui-content.compact-mode { background-color: #fff; }
+/* --- 1. HEADER (Enkel Pil + Titel) --- */
+.one-ui-header-simple {
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    height: 60px;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e5e7eb;
+    flex-shrink: 0;
+    gap: 16px;
 }
 
-/* --- HEADER --- */
-.one-ui-header-compact {
-    display: flex; align-items: center; gap: 12px;
-    padding: 12px 20px;
-    background-color: #f8f9fa; /* Matcha bakgrund */
-    flex-shrink: 0; height: 64px;
-}
-
-.header-title-inline {
-    font-size: 1.15rem; font-weight: 700; color: #111; margin: 0;
-}
-
-.one-ui-back-btn {
-    background: #fff; border: 1px solid #e5e7eb;
-    width: 36px; height: 36px; border-radius: 10px; /* Lite fyrkantigare, modernare */
+.simple-back-btn {
+    background: transparent; border: none; padding: 0;
+    width: 24px; height: 24px;
     display: flex; align-items: center; justify-content: center;
-    color: #374151; cursor: pointer; transition: all 0.2s;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    color: #111; cursor: pointer;
 }
-.one-ui-back-btn:active { background-color: #f3f4f6; transform: scale(0.96); }
+.simple-back-btn svg { width: 24px; height: 24px; stroke-width: 2.5px; }
 
-/* --- CONTENT --- */
-.one-ui-content.compact-mode { padding: 20px; }
-
-.settings-section-label {
-    font-size: 0.75rem; font-weight: 700; color: #94a3b8;
-    margin: 24px 0 8px 4px; text-transform: uppercase; letter-spacing: 0.5px;
+.header-simple-title {
+    font-size: 1.1rem; font-weight: 700; color: #111; margin: 0;
 }
-.settings-section-label:first-child { margin-top: 0; }
 
-/* Grupperade kort (samma stil som jobbkort) */
+/* --- 2. LAYOUT & CARDS --- */
+.one-ui-content.compact-mode { padding: 20px 16px; }
+
 .settings-card-group {
     background: #fff;
     border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    border-radius: 8px; /* Samma radie som jobbkort */
     overflow: hidden;
+    margin-bottom: 20px;
 }
 
-/* Enskild rad */
+/* Klickbar rad (Label) */
 .settings-item {
     display: flex; align-items: center; justify-content: space-between;
     padding: 16px;
     background: #fff;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+.settings-item:active { background-color: #f9fafb; }
+
+.settings-separator {
+    height: 1px; background-color: #f1f5f9; margin: 0 16px;
 }
 
-.settings-icon {
-    width: 38px; height: 38px; border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    margin-right: 14px; flex-shrink: 0;
-}
-.settings-icon.blue-light { background-color: #eff6ff; color: #3b82f6; }
-.settings-icon.gray-light { background-color: #f3f4f6; color: #6b7280; }
-.settings-icon svg { width: 20px; height: 20px; }
-
-.settings-text-col { display: flex; flex-direction: column; flex: 1; margin-right: 12px; }
+.settings-text-col { display: flex; flex-direction: column; }
 .settings-title { font-size: 0.95rem; font-weight: 600; color: #1f2937; }
 .settings-desc { font-size: 0.8rem; color: #9ca3af; margin-top: 2px; }
 
-.settings-separator {
-    height: 1px; background-color: #f3f4f6; margin: 0 16px;
+.settings-section-label {
+    font-size: 0.75rem; font-weight: 700; color: #64748b;
+    margin: 8px 4px 8px 4px; text-transform: uppercase; letter-spacing: 0.5px;
 }
 
-/* --- PROFIL KORT (Sidebar style fix) --- */
-.settings-profile-fix {
-    padding: 16px !important; /* Lite mer luft än i sidebaren */
-    background: #fff; /* Vit bakgrund */
+/* --- 3. PROFIL KORT (Sidebar Clone) --- */
+.sidebar-profile-clone {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px; background: #fff;
 }
-.settings-profile-fix .logout-icon-btn {
+.sidebar-profile-clone .user-info { display: flex; flex-direction: column; flex-grow: 1; }
+.sidebar-profile-clone .user-name { font-size: 0.9rem; font-weight: 600; color: #1f2937; }
+.sidebar-profile-clone .user-role { font-size: 0.75rem; color: #9ca3af; }
+
+.sidebar-profile-clone .logout-icon-btn {
     width: 36px; height: 36px;
-    background-color: #fef2f2; color: #ef4444; /* Röd ton för utloggning */
-    border-radius: 8px;
     display: flex; align-items: center; justify-content: center;
-    transition: all 0.2s;
+    border: none; background: transparent;
+    color: #9ca3af; cursor: pointer; transition: color 0.2s;
 }
-.settings-profile-fix .logout-icon-btn:active { background-color: #fee2e2; }
+.sidebar-profile-clone .logout-icon-btn:hover,
+.sidebar-profile-clone .logout-icon-btn:active {
+    color: #ef4444; background-color: #fef2f2; border-radius: 8px;
+}
 
-/* --- TOGGLE (Samma som innan) --- */
+.one-ui-footer {
+    text-align: center; color: #bbb; font-size: 0.75rem; margin-top: 20px;
+}
+
+/* --- 4. TOGGLE (Android Style) --- */
 .android-switch { position: relative; display: inline-block; width: 46px; height: 26px; }
 .android-switch input { opacity: 0; width: 0; height: 0; }
 .android-switch .slider {
@@ -3112,18 +3103,38 @@ input[type="number"] {
 .android-switch input:checked + .slider { background-color: #3b82f6; }
 .android-switch input:checked + .slider:before { transform: translateX(20px); }
 
-/* --- DARK MODE FIXES --- */
-[data-theme="dark"] .one-ui-backdrop.show,
-[data-theme="dark"] .one-ui-container,
-[data-theme="dark"] .one-ui-header-compact { background-color: #000 !important; }
-[data-theme="dark"] .one-ui-content.compact-mode { background-color: #000; }
-[data-theme="dark"] .settings-card-group,
-[data-theme="dark"] .settings-item,
-[data-theme="dark"] .settings-profile-fix { background-color: #1c1c1e; border-color: #333; }
-[data-theme="dark"] .header-title-inline,
-[data-theme="dark"] .settings-title,
-[data-theme="dark"] .user-name { color: #fff; }
-[data-theme="dark"] .one-ui-back-btn { background-color: #1c1c1e; border-color: #333; color: #fff; }
+/* --- 5. PRIVACY MODE (Blur Effect) --- */
+body.privacy-active .stat-card-value,
+body.privacy-active .money-related,
+body.privacy-active .price-row .row-value,
+body.privacy-active #kundpris,
+body.privacy-active #vinstDisplay,
+body.privacy-active #utgifterDisplay,
+body.privacy-active .expense-item strong,
+body.privacy-active .stat-card[data-filter="offererad"] .stat-card-value {
+    color: transparent !important;
+    text-shadow: 0 0 10px rgba(0,0,0,0.4) !important;
+    user-select: none;
+}
+
+/* --- 6. DESKTOP & DARK MODE --- */
+@media (min-width: 769px) {
+    .one-ui-backdrop.show {
+        background-color: rgba(0,0,0,0.4) !important;
+        display: flex !important; align-items: center; justify-content: center;
+    }
+    .one-ui-container {
+        max-width: 420px; height: auto; max-height: 80vh;
+        border-radius: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+    .one-ui-header-simple { background: #fff; }
+}
+
+[data-theme="dark"] .one-ui-container, [data-theme="dark"] .one-ui-header-simple { background-color: #000; border-color: #333; }
+[data-theme="dark"] .simple-back-btn, [data-theme="dark"] .header-simple-title { color: #fff; }
+[data-theme="dark"] .settings-card-group, [data-theme="dark"] .settings-item, [data-theme="dark"] .sidebar-profile-clone { background-color: #1c1c1e; border-color: #333; }
+[data-theme="dark"] .settings-title, [data-theme="dark"] .user-name { color: #fff; }
 [data-theme="dark"] .android-switch .slider { background-color: #444; }
 [data-theme="dark"] .settings-separator { background-color: #333; }
 
@@ -3133,6 +3144,7 @@ body.privacy-active .price-row .row-value::after {
     content: '🔒'; color: #9ca3af; font-size: 10px; position: absolute; right: 0; top:2px; text-shadow: none;
 }
 */
+
 
 
 
