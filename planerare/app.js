@@ -595,6 +595,36 @@ function updateStatsCounts(jobs) {
 // 7. EVENT LISTENERS
 function setupEventListeners() {
 
+	// Hitta knappen för "Kunder" i sidebaren (du kanske måste ge den ett ID i HTML, t.ex. id="navCustomers")
+	const navCustomers = document.querySelector('button span:contains("Kunder")')?.parentElement || 
+	                     Array.from(document.querySelectorAll('.nav-link')).find(el => el.textContent.includes('Kunder'));
+	
+	if (navCustomers) {
+	    navCustomers.addEventListener('click', () => {
+	        // Uppdatera UI
+	        document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
+	        navCustomers.classList.add('active');
+	        
+	        // Dölj andra vyer, visa kunder
+	        document.getElementById('statBar').style.display = 'none';
+	        document.getElementById('timelineView').style.display = 'none';
+	        document.getElementById('customersView').style.display = 'block';
+	        
+	        // Generera och rendera listan
+	        renderCustomerView();
+	    });
+	}
+	
+	// Sökfunktion för kunder
+	document.getElementById('customerSearchInput')?.addEventListener('input', (e) => {
+	    renderCustomerView(e.target.value);
+	});
+	
+	// Stäng modal
+	document.getElementById('closeCustomerModalBtn')?.addEventListener('click', () => {
+	    document.getElementById('customerModal').classList.remove('show');
+	});
+
 	// Hantera val av paket (Smart ifyllnad med Olje-kalkylator)
     const paketSelect = document.getElementById('paketSelect');
     if (paketSelect) {
@@ -2389,4 +2419,208 @@ async function adjustInventoryBalance(litersToDeduct) {
     } catch (err) {
         console.error("Kunde inte justera lagret:", err);
     }
+}
+
+/* ==========================================
+   KUNDHANTERING (VIRTUELL CRM)
+   ========================================== */
+
+// Generera kunddatabas från jobb
+function getCustomerDatabase() {
+    const customers = {};
+    
+    // Filtrera bort raderade jobb
+    const validJobs = allJobs.filter(j => !j.deleted);
+
+    validJobs.forEach(job => {
+        // Normalisera namn
+        let rawName = job.kundnamn || "Okänd";
+        // Ta bort extra mellanslag och gör första bokstav stor
+        let name = rawName.trim();
+        
+        // Skippa "Drop-in" eller tomma namn om du vill
+        if(name.length < 2 || name.toLowerCase() === 'okänd') return;
+
+        if (!customers[name]) {
+            customers[name] = {
+                name: name,
+                totalSpent: 0,
+                visitCount: 0,
+                lastVisit: null,
+                vehicles: new Set(), // Unika regnr
+                history: []
+            };
+        }
+
+        const c = customers[name];
+        
+        // Addera data
+        c.totalSpent += (parseInt(job.kundpris) || 0);
+        c.visitCount++;
+        c.history.push(job);
+        
+        if (job.regnr && job.regnr.toUpperCase() !== 'OKÄNT' && job.regnr !== '---') {
+            c.vehicles.add(job.regnr.toUpperCase());
+        }
+
+        // Kolla datum för "senast sedd"
+        const jobDate = new Date(job.datum);
+        if (!c.lastVisit || jobDate > c.lastVisit) {
+            c.lastVisit = jobDate;
+        }
+    });
+
+    // Konvertera till array och sortera: VIP (mest pengar) först
+    return Object.values(customers).sort((a, b) => b.totalSpent - a.totalSpent);
+}
+
+// Rendera listan
+function renderCustomerView(searchTerm = '') {
+    const container = document.getElementById('customerGrid');
+    if(!container) return;
+    
+    container.innerHTML = '';
+    const customers = getCustomerDatabase();
+    const term = searchTerm.toLowerCase();
+
+    // Filtrera
+    const filtered = customers.filter(c => {
+        // Sök på namn
+        if (c.name.toLowerCase().includes(term)) return true;
+        // Sök på deras bilar (Set -> Array -> String check)
+        const hasCar = Array.from(c.vehicles).some(reg => reg.toLowerCase().includes(term));
+        return hasCar;
+    });
+
+    if (filtered.length === 0) {
+        container.innerHTML = '<p style="text-align:center; color:#9ca3af; padding:20px; grid-column:1/-1;">Inga kunder hittades.</p>';
+        return;
+    }
+
+    filtered.forEach(c => {
+        // Skapa initialer (Max 2 bokstäver)
+        const initials = c.name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
+        
+        // Kolla VIP-status (> 20.000 kr)
+        const isVip = c.totalSpent > 20000;
+        const vipClass = isVip ? 'vip' : '';
+        
+        // Formatera datum
+        const lastSeen = c.lastVisit ? c.lastVisit.toLocaleDateString('sv-SE') : '-';
+        
+        // Räkna bilar
+        const carCount = c.vehicles.size;
+        const carText = carCount === 1 ? '1 fordon' : `${carCount} fordon`;
+
+        const card = document.createElement('div');
+        card.className = 'customer-card';
+        card.onclick = () => openCustomerModal(c);
+        
+        card.innerHTML = `
+            <div class="c-avatar ${vipClass}">${initials}</div>
+            <div class="c-info">
+                <div style="display:flex; justify-content:space-between; width:100%;">
+                    <h3>${c.name}</h3>
+                    ${isVip ? '<span style="font-size:1rem;">⭐</span>' : ''}
+                </div>
+                <div class="c-meta">
+                    <span>${carText}</span> • <span>${c.visitCount} besök</span>
+                </div>
+                <div class="c-meta" style="color:${isVip ? '#d97706' : '#64748b'}; font-weight:${isVip ? '600' : '400'}">
+                    Totalt: ${c.totalSpent.toLocaleString()} kr
+                </div>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+}
+
+// Öppna profilen
+function openCustomerModal(customer) {
+    const modal = document.getElementById('customerModal');
+    
+    // 1. Fyll Header
+    document.getElementById('modalCustomerName').textContent = customer.name;
+    
+    const badgeContainer = document.getElementById('modalCustomerBadge');
+    if (customer.totalSpent > 20000) {
+        badgeContainer.innerHTML = `<div class="vip-badge-pill"><span>⭐</span> VIP KUND</div>`;
+    } else {
+        badgeContainer.innerHTML = '';
+    }
+
+    // 2. Fyll Stats
+    document.getElementById('custTotalSpent').textContent = customer.totalSpent.toLocaleString() + ' kr';
+    document.getElementById('custVisitCount').textContent = customer.visitCount;
+    
+    // Räkna dagar sedan besök
+    if (customer.lastVisit) {
+        const diffTime = Math.abs(new Date() - customer.lastVisit);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+        document.getElementById('custLastSeen').textContent = `${diffDays} dgr sen`;
+    } else {
+        document.getElementById('custLastSeen').textContent = "-";
+    }
+
+    // 3. Fyll Fordon
+    const vehicleContainer = document.getElementById('custVehicleList');
+    vehicleContainer.innerHTML = '';
+    
+    if(customer.vehicles.size === 0) {
+        vehicleContainer.innerHTML = '<span style="color:#9ca3af; font-size:0.85rem;">Inga regnr sparade.</span>';
+    } else {
+        customer.vehicles.forEach(reg => {
+            // Hämta märke för ikonen
+            const brandUrl = getBrandIconUrl('', reg);
+            const iconHtml = brandUrl ? `<img src="${brandUrl}" style="width:14px; height:14px; opacity:0.7;">` : '🚗';
+            
+            const btn = document.createElement('div');
+            btn.className = 'v-chip';
+            btn.innerHTML = `${iconHtml} ${reg}`;
+            btn.onclick = () => openVehicleModal(reg); // Återanvänd din befintliga funktion!
+            vehicleContainer.appendChild(btn);
+        });
+    }
+
+    // 4. Fyll Historik (Sortera nyast först)
+    const historyContainer = document.getElementById('custHistoryList');
+    historyContainer.innerHTML = '';
+    
+    const sortedHistory = customer.history.sort((a,b) => new Date(b.datum) - new Date(a.datum));
+    
+    sortedHistory.forEach(job => {
+        const row = document.createElement('div');
+        row.className = 'history-item-clean';
+        // Gör historiken klickbar för att redigera jobbet
+        row.style.cursor = 'pointer';
+        row.onclick = () => {
+            // Stäng kundmodalen först om du vill, eller låt den ligga under
+            openEditModal(job.id);
+        };
+        
+        const dateStr = job.datum.split('T')[0];
+        row.innerHTML = `
+            <div>
+                <div class="h-date">${dateStr}</div>
+                <div class="h-desc">${job.paket || 'Service'} ${job.regnr ? '• ' + job.regnr : ''}</div>
+            </div>
+            <div class="h-price">${job.kundpris} kr</div>
+        `;
+        historyContainer.appendChild(row);
+    });
+
+    // 5. Koppla Action-knappar
+    // Nytt jobb: Öppna modalen och fyll i namnet direkt
+    const newJobBtn = document.getElementById('btnNewJobForCustomer');
+    newJobBtn.onclick = () => {
+        modal.classList.remove('show'); // Stäng kundprofil
+        openNewJobModal(); // Öppna ny
+        // Vänta lite så modalen hinner öppnas, fyll sen i
+        setTimeout(() => {
+            document.getElementById('kundnamn').value = customer.name;
+        }, 100);
+    };
+
+    // Visa modal
+    modal.classList.add('show');
 }
