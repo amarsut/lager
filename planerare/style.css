@@ -3756,3 +3756,42 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 .menu-icon-box.orange { background: #fff7ed; color: #f97316; }
 .menu-icon-box.purple { background: #f3e8ff; color: #a855f7; }
 .menu-icon-box.green  { background: #f0fdf4; color: #22c55e; }
+
+/* Historiklista (Tidslinje) - Uppdaterad */
+.history-list-clean { position: relative; padding-left: 16px; border-left: 2px solid #f1f5f9; margin-left: 8px; margin-top: 10px; }
+
+.history-item-clean {
+    position: relative; padding-left: 16px; margin-bottom: 0;
+    display: grid; 
+    grid-template-columns: 1fr auto; /* Text tar plats, Pris tar sin plats */
+    gap: 12px;
+    padding-top: 12px; padding-bottom: 12px; border-bottom: 1px solid #f1f5f9;
+    cursor: pointer;
+    transition: background-color 0.1s;
+}
+.history-item-clean:active { background-color: #f9fafb; }
+.history-item-clean:last-child { border-bottom: none; }
+
+.history-item-clean::before {
+    content: ''; position: absolute; left: -21px; top: 20px;
+    width: 8px; height: 8px; background: #cbd5e1; border-radius: 50%; border: 2px solid #fff;
+}
+
+.h-info-col { overflow: hidden; } /* Håller texten på plats */
+
+.h-date { font-size: 0.8rem; font-weight: 700; color: #334155; margin-bottom: 2px; }
+
+/* Här är magin för beskrivningen */
+.h-desc { 
+    font-size: 0.8rem; color: #64748b; 
+    white-space: nowrap;        /* Tvinga allt till en rad */
+    overflow: hidden;           /* Dölj det som sticker ut */
+    text-overflow: ellipsis;    /* Lägg till "..." på slutet */
+    display: block;
+    max-width: 100%;
+}
+
+.h-price { 
+    font-weight: 700; color: #10b981; font-size: 0.9rem; 
+    white-space: nowrap; align-self: flex-start; /* Håll priset i toppen om texten skulle radbrytas */
+}
