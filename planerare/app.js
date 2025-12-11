@@ -1260,89 +1260,55 @@ function openVehicleModal(regnr) {
 }
 
 function renderVehicleHistory(regnr) {
-    const historyBody = document.getElementById('vehicleHistoryList'); 
-    const searchInput = document.getElementById('vehicleHistorySearch');
+    const container = document.getElementById('vehicleHistoryList'); 
     const ownerEl = document.getElementById('vehicleOwner'); 
     
-    if(!historyBody) return;
+    if(!container) return;
 
     // Hitta alla jobb för denna bil
     let fullHistory = allJobs.filter(j => j.regnr === regnr && !j.deleted)
                              .sort((a,b) => new Date(b.datum) - new Date(a.datum));
 
+    // Uppdatera ägare
     if(ownerEl) {
         if(fullHistory.length > 0) ownerEl.textContent = fullHistory[0].kundnamn;
         else ownerEl.textContent = "---";
     }
 
-    // Intern funktion för att rita tabellen
-    const renderRows = (jobs, limit = 3) => {
-        historyBody.innerHTML = '';
-        
-        if (jobs.length === 0) {
-            historyBody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#999; padding:20px;">Ingen historik hittades.</td></tr>';
-            return;
-        }
-        
-        // Visa bara de 'limit' första jobben
-        const visibleJobs = jobs.slice(0, limit);
-
-        visibleJobs.forEach(job => {
-            let totalUtgifter = 0;
-            if(job.utgifter && Array.isArray(job.utgifter)) {
-                job.utgifter.forEach(u => totalUtgifter += (parseInt(u.kostnad) || 0));
-            }
-
-            const vinst = (parseInt(job.kundpris) || 0) - totalUtgifter;
-            const dateStr = job.datum ? job.datum.split('T')[0] : '-';
-            
-            const tr = document.createElement('tr');
-            tr.style.cursor = 'pointer';
-            tr.innerHTML = `
-                <td style="font-weight:600; color:#374151;">${dateStr}</td>
-                <td>${job.kundnamn}</td>
-                <td><span class="status-badge status-${job.status}" style="transform:scale(0.9); origin:left;">${job.status}</span></td>
-                <td style="text-align:right; font-weight:700; color:${vinst > 0 ? '#10B981' : '#111'};">${vinst} kr</td>
-            `;
-            
-            tr.onclick = () => {
-                document.getElementById('vehicleModal').classList.remove('show');
-                openEditModal(job.id);
-            };
-
-            historyBody.appendChild(tr);
-        });
-
-        // Om det finns fler jobb än vad vi visar, lägg till "Visa alla"-knapp
-        if (jobs.length > limit) {
-            const btnRow = document.createElement('tr');
-            btnRow.innerHTML = `
-                <td colspan="4" style="padding:0;">
-                    <button class="show-more-btn">
-                        Visa alla (${jobs.length} st) ▼
-                    </button>
-                </td>
-            `;
-            // När man klickar, rita om tabellen men med en limit på 1000 (alla)
-            btnRow.querySelector('button').onclick = () => renderRows(jobs, 1000);
-            historyBody.appendChild(btnRow);
-        }
-    };
-
-    // Kör igång! Visa max 3 st i början.
-    renderRows(fullHistory, 3);
-
-    if(searchInput) {
-        searchInput.oninput = (e) => {
-            const term = e.target.value.toLowerCase();
-            const filtered = fullHistory.filter(j => 
-                j.kundnamn.toLowerCase().includes(term) || 
-                (j.kommentar && j.kommentar.toLowerCase().includes(term))
-            );
-            // Vid sökning visar vi alltid alla träffar (ingen limit)
-            renderRows(filtered, 100);
-        };
+    container.innerHTML = '';
+    
+    if (fullHistory.length === 0) {
+        container.innerHTML = '<div style="text-align:center; padding:20px; color:#9ca3af; font-size:0.85rem;">Ingen historik hittades.</div>';
+        return;
     }
+
+    // Rendera listan (Samma design som Kundprofil)
+    fullHistory.forEach(job => {
+        const row = document.createElement('div');
+        row.className = 'history-item-clean';
+        row.onclick = () => {
+            // Stäng fordonsmodalen tillfälligt om man vill, eller öppna jobb ovanpå
+            openEditModal(job.id);
+        };
+
+        const dateStr = job.datum.split('T')[0];
+        
+        // LOGIK FÖR BESKRIVNING:
+        // 1. Kommentar? 2. Paket? 3. Fallback "Service"
+        let description = job.kommentar && job.kommentar.length > 0 ? job.kommentar : (job.paket || 'Service');
+        
+        // I fordonsvyn vet vi redan regnr, så vi behöver inte visa det i texten
+        // Men vi klipper texten om den är för lång (CSS sköter ellipsen '...')
+
+        row.innerHTML = `
+            <div class="h-info-col">
+                <div class="h-date">${dateStr}</div>
+                <div class="h-desc">${description}</div>
+            </div>
+            <div class="h-price">${job.kundpris} kr</div>
+        `;
+        container.appendChild(row);
+    });
 }
 
 // ==========================================
@@ -2687,27 +2653,43 @@ function openCustomerModal(customer) {
         });
     }
 
-    // 4. Fyll Historik (Sortera nyast först)
+    // 4. Fyll Historik (Uppdaterad med kommentarer)
     const historyContainer = document.getElementById('custHistoryList');
     historyContainer.innerHTML = '';
     
     const sortedHistory = customer.history.sort((a,b) => new Date(b.datum) - new Date(a.datum));
     
+    if (sortedHistory.length === 0) {
+        historyContainer.innerHTML = `
+            <div style="text-align:center; padding: 30px 0; color:#9ca3af;">
+                <p style="font-size:0.9rem;">Ingen historik än.</p>
+            </div>`;
+    }
+
     sortedHistory.forEach(job => {
         const row = document.createElement('div');
         row.className = 'history-item-clean';
-        // Gör historiken klickbar för att redigera jobbet
-        row.style.cursor = 'pointer';
-        row.onclick = () => {
-            // Stäng kundmodalen först om du vill, eller låt den ligga under
-            openEditModal(job.id);
-        };
+        row.onclick = () => openEditModal(job.id);
         
         const dateStr = job.datum.split('T')[0];
+        
+        // LOGIK FÖR BESKRIVNING:
+        // Prioritera Kommentar -> Paket -> Service
+        let description = job.kommentar && job.kommentar.trim().length > 0 
+            ? job.kommentar 
+            : (job.paket || 'Service');
+            
+        // I Kundvyn vill vi gärna se Regnr också för att veta vilken bil det gällde
+        if (job.regnr && job.regnr !== '---') {
+            // Lägg regnr först eller sist? Vi lägger det diskret i beskrivningen om det inte är med.
+            // Ex: "Byte bromsar • ABC 123"
+            description = `${description} • <span style="font-weight:600; color:#475569;">${job.regnr}</span>`;
+        }
+
         row.innerHTML = `
-            <div>
+            <div class="h-info-col">
                 <div class="h-date">${dateStr}</div>
-                <div class="h-desc">${job.paket || 'Service'} ${job.regnr ? '• ' + job.regnr : ''}</div>
+                <div class="h-desc">${description}</div>
             </div>
             <div class="h-price">${job.kundpris} kr</div>
         `;
