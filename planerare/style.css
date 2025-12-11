@@ -3509,6 +3509,94 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     background: transparent !important;
 }
 
+/************* SIDEBAR _ KUNDER *****************/
 
+/* --- KUNDVY GRID --- */
+.customer-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 12px;
+    padding-bottom: 80px;
+}
 
+/* --- KUNDKORT (I listan) --- */
+.customer-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    cursor: pointer;
+    transition: transform 0.1s, box-shadow 0.1s;
+}
+.customer-card:active { transform: scale(0.98); }
+.customer-card:hover { border-color: var(--primary-color); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+
+/* Avatar Cirkel */
+.c-avatar {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    color: var(--primary-color);
+    font-weight: 700; font-size: 1.1rem;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+.c-avatar.vip {
+    background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+    color: #d97706; border: 1px solid #fcd34d;
+}
+
+/* Text i kortet */
+.c-info h3 { margin: 0; font-size: 1rem; color: #1e293b; font-weight: 700; }
+.c-meta { font-size: 0.8rem; color: #64748b; margin-top: 2px; display: flex; gap: 8px; }
+
+/* --- MODAL DETALJER --- */
+.customer-stats-row {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    background: #fff; padding: 20px;
+    border-bottom: 1px solid #e2e8f0;
+}
+.c-stat-box { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.c-stat-label { font-size: 0.75rem; color: #94a3b8; font-weight: 600; text-transform: uppercase; }
+.c-stat-value { font-size: 1.2rem; font-weight: 800; color: #0f172a; }
+
+.customer-section {
+    padding: 20px; border-bottom: 1px solid #e2e8f0; background: #fff; margin-bottom: 10px;
+}
+.section-title { font-size: 0.85rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin: 0 0 12px 0; }
+
+/* Fordons-chips */
+.vehicle-chips-container { display: flex; flex-wrap: wrap; gap: 8px; }
+.v-chip {
+    background: #f1f5f9; padding: 8px 12px; border-radius: 8px;
+    font-size: 0.9rem; font-weight: 600; color: #334155;
+    border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 6px;
+    cursor: pointer;
+}
+.v-chip:hover { background: #e2e8f0; }
+
+/* Historiklista (Clean) */
+.history-item-clean {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 0; border-bottom: 1px solid #f1f5f9;
+}
+.history-item-clean:last-child { border-bottom: none; }
+.h-date { font-size: 0.85rem; font-weight: 600; color: #334155; }
+.h-desc { font-size: 0.8rem; color: #64748b; }
+.h-price { font-weight: 700; color: #10b981; font-size: 0.9rem; }
+
+/* VIP Badge */
+.vip-badge-pill {
+    background: #fffbeb; color: #b45309; padding: 4px 8px;
+    border-radius: 12px; font-size: 0.7rem; font-weight: 700;
+    border: 1px solid #fcd34d; display: flex; align-items: center; gap: 4px;
+}
+
+@media (max-width: 768px) {
+    .customer-grid { display: flex; flex-direction: column; gap: 8px; }
+    .customer-card { padding: 12px; }
+}
 
