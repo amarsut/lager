@@ -680,63 +680,48 @@
 	            </div>
 	
 	            <div class="settings-section-label">LAGERHANTERING</div>
-	
-	            <div class="settings-card-group">
-	                <div class="settings-item inventory-card">
-	                    
-	                    <div class="inventory-header">
-	                        <div class="inventory-icon-col">
-	                            <div class="settings-icon orange-light">
-	                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg>
-	                            </div>
-	                        </div>
-	                        <div class="inventory-info-col">
-	                            <span class="settings-title">Motorolja 5W-30</span>
-	                            <span class="oil-badge" id="oilDateBadge" style="display:none;">---</span>
-	                        </div>
-	                    </div>
-	                    
-	                    <div class="inventory-stats-row">
-	                        <div class="inventory-stat-item">
-	                            <span class="stat-label">Kvar i lager</span>
-	                            <span class="stat-value" id="oilLevelText">Laddar...</span>
-	                        </div>
-	                        <div class="inventory-stat-item right-align">
-	                            <span class="stat-label">Nivå</span>
-	                            <span class="stat-value percent" id="oilPercent">0%</span>
-	                        </div>
-	                    </div>
-	
-	                    <div class="oil-progress-bg">
-	                        <div id="oilProgressBar" class="oil-progress-fill" style="width: 0%;"></div>
-	                    </div>
-	
-	                    <button class="refill-action-btn" onclick="toggleOilForm()">
-	                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
-	                        Registrera nytt fat
-	                    </button>
-	
-	                    <div id="oilRefillForm" class="oil-refill-container" style="display:none;">
-	                        <div class="refill-box">
-	                            <p class="refill-title">Registrera inköp</p>
-	                            <div class="refill-inputs">
-	                                <div class="input-group-small">
-	                                    <label>Volym (Liter)</label>
-	                                    <input type="number" id="newBarrelVol" value="208" placeholder="208">
-	                                </div>
-	                                <div class="input-group-small">
-	                                    <label>Inköpsdatum</label>
-	                                    <input type="date" id="newBarrelDate">
-	                                </div>
-	                            </div>
-	                            <button class="save-barrel-btn" onclick="saveNewBarrel()">
-	                                Spara & Nollställ Mätare
-	                            </button>
-	                        </div>
-	                    </div>
-	
-	                </div>
-	            </div>
+					<div class="settings-card-group">
+					    <div class="settings-item inventory-card">
+					        
+					        <div class="inventory-header-row">
+					            <span class="settings-title" style="margin:0;">Motorolja 5W-30</span>
+					            <span class="oil-badge" id="oilDateBadge" style="display:none;">---</span>
+					        </div>
+					        
+					        <div class="inventory-stats-compact">
+					            <span class="stat-main-text" id="oilLevelText">Laddar...</span>
+					            <span class="stat-percent-text" id="oilPercent">0%</span>
+					        </div>
+					
+					        <div class="oil-progress-bg">
+					            <div id="oilProgressBar" class="oil-progress-fill" style="width: 0%;"></div>
+					        </div>
+					
+					        <button class="refill-text-btn" onclick="toggleOilForm()">
+					            + Registrera nytt fat
+					        </button>
+					
+					        <div id="oilRefillForm" class="oil-refill-container" style="display:none;">
+					            <div class="refill-box">
+					                <p class="refill-title">Registrera inköp</p>
+					                <div class="refill-inputs">
+					                    <div class="input-group-small">
+					                        <label>Volym (Liter)</label>
+					                        <input type="number" id="newBarrelVol" value="208" placeholder="208">
+					                    </div>
+					                    <div class="input-group-small">
+					                        <label>Inköpsdatum</label>
+					                        <input type="date" id="newBarrelDate">
+					                    </div>
+					                </div>
+					                <button class="save-barrel-btn" onclick="saveNewBarrel()">
+					                    Spara & Nollställ
+					                </button>
+					            </div>
+					        </div>
+					
+					    </div>
+					</div>
 	
 	            <div class="settings-section-label">KONTO</div>
 	            <div class="settings-card-group">
