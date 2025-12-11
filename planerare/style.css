@@ -3600,3 +3600,93 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     .customer-card { padding: 12px; }
 }
 
+/* --- FIX DATOR 1: Z-Index (Jobbmodal över Kundmodal) --- */
+/* Se till att Jobbmodalen alltid ligger överst om den öppnas från kundmodalen */
+#jobModal {
+    z-index: 20002 !important; /* Högre än customerModal */
+}
+#customerModal {
+    z-index: 20001 !important;
+}
+
+/* --- FIX DATOR 2 & MOBIL 5: Knapp-centrering & Storlek --- */
+.modal-actions .button {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    line-height: 1 !important; /* Fixar höjd-centrering av text */
+    min-height: 44px !important; /* Gör knapparna tryckvänliga */
+}
+/* Justera SVG inuti knappar så de inte trycker ner texten */
+.modal-actions .button svg {
+    margin: 0 !important;
+    transform: translateY(-1px); /* Finjustering optiskt */
+}
+
+/* --- FIX MOBIL 2: Sökfältet text-överlapp --- */
+#customerSearchInput {
+    padding-left: 42px !important; /* Mer plats för ikonen */
+}
+
+/* --- FIX MOBIL 4: Scroll i listan --- */
+/* Vi måste ge mer luft i botten så man ser sista jobbet ovanför knapparna */
+#customerModal .modal-body {
+    padding-bottom: 120px !important; /* Rejäl padding i botten */
+}
+
+/* --- FIX MOBIL 5: Knapparna i botten (Layout) --- */
+/* Detta gör att knapparna delar lika på bredden och ser snygga ut */
+#customerModal .modal-actions {
+    display: flex !important;
+    gap: 12px !important;
+    background: #fff !important;
+    padding: 16px !important;
+    box-shadow: 0 -4px 12px rgba(0,0,0,0.05); /* Snygg skugga uppåt */
+    
+    /* Lås fast i botten på mobil */
+    position: fixed; 
+    bottom: 0; left: 0; right: 0;
+    z-index: 50;
+}
+
+.v-chip {
+    background: #fff; /* Vit bakgrund */
+    border: 1px solid #e2e8f0;
+    padding: 6px 10px;
+    border-radius: 20px; /* Helt rundade hörn (Pill shape) */
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #1e293b;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    transition: all 0.2s;
+}
+.v-chip img {
+    width: 14px; height: 14px; margin-right: 6px; transform: translateY(1px);
+}
+.v-chip:hover {
+    border-color: #3b82f6; color: #3b82f6; transform: translateY(-1px);
+}
+
+.history-list-clean {
+    position: relative;
+    padding-left: 16px; /* Plats för linjen */
+    border-left: 2px solid #f1f5f9; /* Strecket */
+    margin-left: 8px;
+}
+.history-item-clean {
+    position: relative;
+    padding-left: 16px; /* Avstånd från strecket */
+    margin-bottom: 0;
+}
+/* En liten prick på strecket för varje jobb */
+.history-item-clean::before {
+    content: '';
+    position: absolute;
+    left: -21px; /* Justera så den hamnar på linjen */
+    top: 20px;
+    width: 8px; height: 8px;
+    background: #cbd5e1;
+    border-radius: 50%;
+    border: 2px solid #fff;
+}
