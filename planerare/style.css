@@ -3509,9 +3509,11 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     background: transparent !important;
 }
 
-/************* SIDEBAR _ KUNDER *****************/
+/* =================================================================
+   KUNDSYSTEM & CRM (RENSKRIVEN & OPTIMERAD)
+   ================================================================= */
 
-/* --- KUNDVY GRID --- */
+/* --- 1. KUNDVY (LISTAN) --- */
 .customer-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -3519,7 +3521,12 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     padding-bottom: 80px;
 }
 
-/* --- KUNDKORT (I listan) --- */
+/* Sökfältet för kunder (Fixar text-överlapp) */
+#customerSearchInput {
+    padding-left: 42px !important;
+}
+
+/* Kundkortet */
 .customer-card {
     background: #fff;
     border: 1px solid #e2e8f0;
@@ -3532,14 +3539,17 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     transition: transform 0.1s, box-shadow 0.1s;
 }
 .customer-card:active { transform: scale(0.98); }
-.customer-card:hover { border-color: var(--primary-color); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+.customer-card:hover { 
+    border-color: #0066FF; 
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
+}
 
-/* Avatar Cirkel */
+/* Avatarer */
 .c-avatar {
     width: 48px; height: 48px;
     border-radius: 50%;
     background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-    color: var(--primary-color);
+    color: #0066FF;
     font-weight: 700; font-size: 1.1rem;
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
@@ -3553,9 +3563,17 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 .c-info h3 { margin: 0; font-size: 1rem; color: #1e293b; font-weight: 700; }
 .c-meta { font-size: 0.8rem; color: #64748b; margin-top: 2px; display: flex; gap: 8px; }
 
-/* --- MODAL DETALJER --- */
+@media (max-width: 768px) {
+    .customer-grid { display: flex; flex-direction: column; gap: 8px; }
+    .customer-card { padding: 12px; }
+}
+
+/* --- 2. MODAL INNEHÅLL (GEMENSAMT) --- */
+
+/* Statistik-raden (Omsättning, Besök, Senast) */
 .customer-stats-row {
-    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
     background: #fff; padding: 20px;
     border-bottom: 1px solid #e2e8f0;
 }
@@ -3563,27 +3581,38 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 .c-stat-label { font-size: 0.75rem; color: #94a3b8; font-weight: 600; text-transform: uppercase; }
 .c-stat-value { font-size: 1.2rem; font-weight: 800; color: #0f172a; }
 
+/* Sektioner (Garage, Historik) */
 .customer-section {
     padding: 20px; border-bottom: 1px solid #e2e8f0; background: #fff; margin-bottom: 10px;
 }
 .section-title { font-size: 0.85rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin: 0 0 12px 0; }
 
-/* Fordons-chips */
+/* Garage Chips (Bilarna) */
 .vehicle-chips-container { display: flex; flex-wrap: wrap; gap: 8px; }
 .v-chip {
-    background: #f1f5f9; padding: 8px 12px; border-radius: 8px;
-    font-size: 0.9rem; font-weight: 600; color: #334155;
-    border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 6px;
-    cursor: pointer;
+    background: #fff; border: 1px solid #e2e8f0;
+    padding: 6px 10px; border-radius: 20px;
+    font-size: 0.85rem; font-weight: 700; color: #1e293b;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    transition: all 0.2s; cursor: pointer; display: flex; align-items: center;
 }
-.v-chip:hover { background: #e2e8f0; }
+.v-chip img { width: 14px; height: 14px; margin-right: 6px; transform: translateY(1px); }
+.v-chip:hover { border-color: #3b82f6; color: #3b82f6; transform: translateY(-1px); }
 
-/* Historiklista (Clean) */
+/* Historiklista (Tidslinje) */
+.history-list-clean {
+    position: relative; padding-left: 16px; border-left: 2px solid #f1f5f9; margin-left: 8px;
+}
 .history-item-clean {
+    position: relative; padding-left: 16px; margin-bottom: 0;
     display: flex; justify-content: space-between; align-items: center;
-    padding: 12px 0; border-bottom: 1px solid #f1f5f9;
+    padding-top: 12px; padding-bottom: 12px; border-bottom: 1px solid #f1f5f9;
 }
 .history-item-clean:last-child { border-bottom: none; }
+.history-item-clean::before {
+    content: ''; position: absolute; left: -21px; top: 20px;
+    width: 8px; height: 8px; background: #cbd5e1; border-radius: 50%; border: 2px solid #fff;
+}
 .h-date { font-size: 0.85rem; font-weight: 600; color: #334155; }
 .h-desc { font-size: 0.8rem; color: #64748b; }
 .h-price { font-weight: 700; color: #10b981; font-size: 0.9rem; }
@@ -3595,328 +3624,37 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     border: 1px solid #fcd34d; display: flex; align-items: center; gap: 4px;
 }
 
-@media (max-width: 768px) {
-    .customer-grid { display: flex; flex-direction: column; gap: 8px; }
-    .customer-card { padding: 12px; }
-}
+/* --- 3. MODAL DESIGN & LAYOUT (GRID ACTIONS) --- */
 
-/* --- FIX DATOR 1: Z-Index (Jobbmodal över Kundmodal) --- */
-/* Se till att Jobbmodalen alltid ligger överst om den öppnas från kundmodalen */
-#jobModal {
-    z-index: 20002 !important; /* Högre än customerModal */
-}
-#customerModal {
-    z-index: 20001 !important;
-}
-
-/* --- FIX DATOR 2 & MOBIL 5: Knapp-centrering & Storlek --- */
-.modal-actions .button {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 8px !important;
-    line-height: 1 !important; /* Fixar höjd-centrering av text */
-    min-height: 44px !important; /* Gör knapparna tryckvänliga */
-}
-/* Justera SVG inuti knappar så de inte trycker ner texten */
-.modal-actions .button svg {
-    margin: 0 !important;
-    transform: translateY(-1px); /* Finjustering optiskt */
-}
-
-/* --- FIX MOBIL 2: Sökfältet text-överlapp --- */
-#customerSearchInput {
-    padding-left: 42px !important; /* Mer plats för ikonen */
-}
-
-/* --- FIX MOBIL 4: Scroll i listan --- */
-/* Vi måste ge mer luft i botten så man ser sista jobbet ovanför knapparna */
-#customerModal .modal-body {
-    padding-bottom: 120px !important; /* Rejäl padding i botten */
-}
-
-/* --- FIX MOBIL 5: Knapparna i botten (Layout) --- */
-/* Detta gör att knapparna delar lika på bredden och ser snygga ut */
-#customerModal .modal-actions {
-    display: flex !important;
-    gap: 12px !important;
-    background: #fff !important;
-    padding: 16px !important;
-    box-shadow: 0 -4px 12px rgba(0,0,0,0.05); /* Snygg skugga uppåt */
-    
-    /* Lås fast i botten på mobil */
-    position: fixed; 
-    bottom: 0; left: 0; right: 0;
-    z-index: 50;
-}
-
-.v-chip {
-    background: #fff; /* Vit bakgrund */
-    border: 1px solid #e2e8f0;
-    padding: 6px 10px;
-    border-radius: 20px; /* Helt rundade hörn (Pill shape) */
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: #1e293b;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
-    transition: all 0.2s;
-}
-.v-chip img {
-    width: 14px; height: 14px; margin-right: 6px; transform: translateY(1px);
-}
-.v-chip:hover {
-    border-color: #3b82f6; color: #3b82f6; transform: translateY(-1px);
-}
-
-.history-list-clean {
-    position: relative;
-    padding-left: 16px; /* Plats för linjen */
-    border-left: 2px solid #f1f5f9; /* Strecket */
-    margin-left: 8px;
-}
-.history-item-clean {
-    position: relative;
-    padding-left: 16px; /* Avstånd från strecket */
-    margin-bottom: 0;
-}
-/* En liten prick på strecket för varje jobb */
-.history-item-clean::before {
-    content: '';
-    position: absolute;
-    left: -21px; /* Justera så den hamnar på linjen */
-    top: 20px;
-    width: 8px; height: 8px;
-    background: #cbd5e1;
-    border-radius: 50%;
-    border: 2px solid #fff;
-}
-
-/* --- FIX KNAPPAR I MODAL-FOOTER --- */
-.modal-actions {
-    display: grid !important; /* Använd Grid för exakt layout */
-    grid-template-columns: 1fr 1fr; /* Två lika stora kolumner */
-    gap: 12px !important;
-    padding: 16px 20px !important; /* Lite mer luft på sidorna */
-    background: #fff;
-    border-top: 1px solid #f1f5f9;
-}
-
-/* Gemensam stil för knapparna */
+/* Gemensam stil för Footer-knappar */
 .modal-actions button {
-    width: 100% !important; /* Fyll hela sin kolumn */
-    height: 48px !important; /* Tydlig, tryckvänlig höjd */
-    border-radius: 12px !important; /* Mjuka hörn */
-    font-size: 0.95rem !important;
-    font-weight: 600 !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    margin: 0 !important;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05); /* Liten skugga */
-    transition: transform 0.1s, box-shadow 0.1s;
+    display: flex !important; align-items: center !important; justify-content: center !important;
+    gap: 8px !important; line-height: 1 !important;
+    border-radius: 12px !important; font-weight: 600 !important;
+    transition: transform 0.1s;
 }
+.modal-actions button:active { transform: scale(0.98); }
+.modal-actions .button svg { margin: 0 !important; transform: translateY(-1px); }
 
-/* Tryck-effekt */
-.modal-actions button:active {
-    transform: scale(0.98);
-    box-shadow: none;
-}
+/* Färger för knapparna */
+.modal-actions .secondary-outline { background: #fff !important; border: 1px solid #e2e8f0 !important; color: #334155 !important; }
+.modal-actions .primary-solid { background: #0066FF !important; border: none !important; color: #fff !important; }
 
-/* Sekundärknapp (Vit/Grå) - T.ex. "Hitta.se" */
-.modal-actions .secondary-outline {
-    background: #fff !important;
-    border: 1px solid #e2e8f0 !important;
-    color: #334155 !important;
-}
+/* --- 4. HIERARKI (Z-INDEX) --- */
+/* Styr vilken modal som ligger överst */
+#customerModal { z-index: 20000 !important; } /* Lägst */
+#vehicleModal  { z-index: 20001 !important; } /* Mitten */
+#jobModal      { z-index: 20002 !important; } /* Högst */
 
-/* Primärknapp (Blå) - T.ex. "Nytt Jobb" */
-.modal-actions .primary-solid {
-    background: #0066FF !important; /* Din signaturblå */
-    border: none !important;
-    color: #fff !important;
-}
-
-/* Mobil-fix: Lås fast i botten */
-@media (max-width: 768px) {
-    .modal-actions {
-        position: fixed !important;
-        bottom: 0; left: 0; right: 0;
-        z-index: 100; /* Ligger över innehållet */
-        box-shadow: 0 -4px 20px rgba(0,0,0,0.08); /* Snygg skugga uppåt */
-    }
-    
-    /* Lägg till extra padding i modal-body så sista elementet inte hamnar bakom knapparna */
-    .modal-body {
-        padding-bottom: 100px !important; 
-    }
-}
-
-/* --- FIX Z-INDEX (Lager) --- */
-/* Lägst: Kundmodalen */
-#customerModal {
-    z-index: 20000 !important; 
-}
-
-/* Högre: Fordonsmodalen (så den syns när du klickar på regnr) */
-#vehicleModal {
-    z-index: 20001 !important; 
-}
-
-/* Högst: Jobbmodalen (Nytt jobb) */
-#jobModal {
-    z-index: 20002 !important; 
-}
-
-/* --- FIX HEADER PÅ MOBIL --- */
-@media (max-width: 768px) {
-    /* Modalens inre wrapper */
-    .modal-content {
-        display: flex !important;
-        flex-direction: column !important;
-        height: 100vh !important; /* Ta hela skärmen */
-        overflow: hidden !important; /* Ingen scroll på själva ramverket */
-    }
-
-    /* Headern låst i toppen */
-    .modal-header {
-        flex-shrink: 0 !important; /* Får inte krympa */
-        position: relative !important; /* Ligger still */
-        z-index: 50 !important;
-        background: #fff !important;
-        border-bottom: 1px solid #f1f5f9;
-        /* Om du har global sticky-header (60px), justera top här om det behövs */
-    }
-
-    /* Kroppen (där scrollen ska ske) */
-    .modal-body {
-        flex-grow: 1 !important;
-        overflow-y: auto !important; /* Bara här scrollar vi */
-        -webkit-overflow-scrolling: touch; /* Mjuk scroll på iPhone */
-    }
-}
 
 /* =================================================================
-   FIX: KUNDMODAL & KNAPPAR (FINAL)
+   5. MOBIL LAYOUT (FULLSKÄRM & FIXED HEADER/FOOTER)
    ================================================================= */
-
-/* --- MOBILVY (Max 768px) --- */
 @media (max-width: 768px) {
 
-    /* 1. TVINGA MODALEN TILL FULLSKÄRM (Lösning för Header & Tillbaka-knapp) */
+    /* HÖJ Z-INDEX HÄR: För att täcka "Översikt Pro"-headern (200000) */
     #customerModal {
-        display: none; /* Dold som standard */
-        z-index: 20000 !important;
-    }
-    
-    #customerModal.show {
-        display: flex !important; /* Måste vara flex för att styra innehållet */
-        position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
-        bottom: 0 !important;
-        width: 100% !important;
-        height: 100dvh !important; /* Full skärmhöjd */
-        background: #f8fafc !important; /* Bakgrundsfärg */
-        padding: 0 !important;
-        margin: 0 !important;
-    }
-
-    #customerModal .modal-content {
-        display: flex !important;
-        flex-direction: column !important; /* Stapla: Header -> Body -> Footer */
-        width: 100% !important;
-        height: 100% !important;
-        max-width: none !important;
-        max-height: none !important;
-        border-radius: 0 !important; /* Inga runda hörn på fullskärm */
-        background: transparent !important;
-        box-shadow: none !important;
-        padding: 0 !important;
-    }
-
-    /* 2. LÅS HEADERN I TOPPEN */
-    #customerModal .modal-header {
-        flex-shrink: 0 !important; /* Får INTE krympa */
-        height: 60px !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: space-between !important;
-        background: #fff !important;
-        border-bottom: 1px solid #e2e8f0 !important;
-        padding: 0 16px !important;
-        z-index: 10 !important;
-    }
-
-    /* 3. SCROLLBAR KROPP (Mitten) */
-    #customerModal .modal-body {
-        flex-grow: 1 !important; /* Ta all ledig plats */
-        overflow-y: auto !important; /* Bara detta område scrollar */
-        padding-bottom: 100px !important; /* Plats för knapparna så inget döljs */
-        -webkit-overflow-scrolling: touch;
-    }
-
-    /* 4. FIXA KNAPPARNA I BOTTEN (Mobil) */
-    #customerModal .modal-actions {
-        flex-shrink: 0 !important; /* Får inte krympa */
-        display: grid !important;  /* Grid för exakt 50/50 */
-        grid-template-columns: 1fr 1fr !important;
-        gap: 12px !important;
-        padding: 16px !important;
-        background: #fff !important;
-        border-top: 1px solid #e2e8f0 !important;
-        box-shadow: 0 -4px 10px rgba(0,0,0,0.05) !important;
-        
-        /* Lås fast i botten */
-        position: fixed !important;
-        bottom: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
-        z-index: 20 !important;
-    }
-
-    #customerModal .modal-actions button {
-        width: 100% !important;
-        height: 48px !important;
-        margin: 0 !important;
-        font-size: 1rem !important;
-    }
-}
-
-/* --- DATORVY (Min 769px) --- */
-@media (min-width: 769px) {
-    
-    /* 5. FIXA GIGANTISKA KNAPPAR PÅ DATOR */
-    #customerModal .modal-actions {
-        display: flex !important; /* Flexbox istället för Grid */
-        justify-content: flex-end !important; /* Knappar till höger */
-        gap: 12px !important;
-        padding: 16px 24px !important;
-        background: #fff !important;
-        border-top: 1px solid #f1f5f9 !important;
-    }
-
-    /* Gör knapparna lagom stora */
-    #customerModal .modal-actions button {
-        width: auto !important; /* Anpassa bredd efter text */
-        min-width: 120px !important; /* Men minst så här breda */
-        max-width: 200px !important;
-        height: 40px !important; /* Lite lägre på dator */
-        font-size: 0.9rem !important;
-        margin: 0 !important;
-    }
-}
-
-/* =================================================================
-   MASTER FIX: KUNDMODAL (MOBIL & DATOR)
-   ================================================================= */
-
-/* --- 1. MOBILVY (Max 768px) --- */
-@media (max-width: 768px) {
-
-    /* Tvinga modalen att ta hela skärmen och ligga över allt */
-    #customerModal {
-        z-index: 20000 !important;
+        z-index: 200001 !important; 
         padding: 0 !important;
     }
     
@@ -3925,230 +3663,100 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
         flex-direction: column !important;
         position: fixed !important;
         top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
-        width: 100vw !important;
-        height: 100dvh !important;
+        width: 100vw !important; height: 100dvh !important;
         background: #f8fafc !important;
     }
 
-    /* VIKTIGT: Detta fixar att headern försvann. 
-       Vi gör innehållet till en flex-kolumn. */
+    /* Gör innehållet till en flex-kolumn: Header (fast) -> Body (scroll) -> Footer (fast) */
     #customerModal .modal-content {
         display: flex !important;
         flex-direction: column !important;
-        height: 100% !important;
-        width: 100% !important;
-        border-radius: 0 !important;
-        padding: 0 !important;
-        overflow: hidden !important; /* Inget scroll på hela sidan, bara i body */
+        height: 100% !important; width: 100% !important;
+        border-radius: 0 !important; padding: 0 !important;
+        overflow: hidden !important;
     }
 
-    /* Headern får inte krympa (flex-shrink: 0) och ligger alltid överst */
+    /* HEADER: Låst i toppen */
     #customerModal .modal-header {
-        flex: 0 0 60px !important; /* Fast höjd 60px */
-        display: flex !important;
-        align-items: center !important;
-        justify-content: space-between !important;
-        background: #fff !important;
-        border-bottom: 1px solid #e2e8f0 !important;
-        padding: 0 16px !important;
-        z-index: 50 !important;
-        position: relative !important;
-    }
-
-    /* Kroppen tar all ledig plats och scrollar */
-    #customerModal .modal-body {
-        flex: 1 !important; /* Väx och fyll utrymmet */
-        overflow-y: auto !important; /* Scrolla här */
-        padding-bottom: 100px !important; /* Plats för knapparna */
-        -webkit-overflow-scrolling: touch;
-    }
-
-    /* Knapparna låsta i botten (Detta var perfekt redan, men vi säkrar upp) */
-    #customerModal .modal-actions {
-        position: fixed !important;
-        bottom: 0 !important; left: 0 !important; right: 0 !important;
-        background: #fff !important;
-        border-top: 1px solid #e2e8f0 !important;
-        padding: 16px !important;
-        z-index: 100 !important;
+        flex: 0 0 auto !important; /* Krymp inte, väx efter behov */
+        min-height: 60px !important;
+        display: flex !important; align-items: center !important; justify-content: space-between !important;
+        background: #fff !important; border-bottom: 1px solid #e2e8f0 !important;
+        padding: 0 16px !important; z-index: 50 !important;
         
-        display: grid !important;
-        grid-template-columns: 1fr 1fr !important;
-        gap: 12px !important;
-    }
-}
-
-/* --- 2. DATORVY (Min 769px) --- */
-@media (min-width: 769px) {
-    
-    /* Återställ positionering för dator (så den inte är fullskärm) */
-    #customerModal {
-        align-items: center !important;
-        justify-content: center !important;
-        padding-top: 0 !important;
-    }
-
-    #customerModal .modal-content {
-        height: auto !important;
-        max-height: 85vh !important;
-        width: 600px !important;
-        max-width: 90vw !important;
-        border-radius: 12px !important;
-        overflow: hidden !important; /* Håll hörnen runda */
-        display: flex !important;
-        flex-direction: column !important;
-    }
-
-    #customerModal .modal-body {
-        overflow-y: auto !important;
-        max-height: 60vh !important;
-        padding-bottom: 20px !important; /* Ingen jätte-padding behövs på dator */
-    }
-
-    /* HÄR ÄR FIXEN FÖR DE STORA KNAPPARNA PÅ DATOR */
-    #customerModal .modal-actions {
-        position: static !important; /* Släpp botten-låsningen */
-        display: flex !important;    /* Flex istället för Grid */
-        justify-content: flex-end !important; /* Knappar till höger */
-        width: 100% !important;
-        grid-template-columns: none !important; /* Döda gridden */
-        padding: 16px 24px !important;
-    }
-
-    /* Gör knapparna normalstora */
-    #customerModal .modal-actions button {
-        width: auto !important; /* Anpassa bredd efter text */
-        flex: 0 0 auto !important; /* Låt dem inte växa */
-        min-width: 120px !important;
-        padding: 0 20px !important;
-    }
-}
-
-/* =================================================================
-   FINAL MASTER FIX: KUNDMODAL (KORRIGERAD)
-   ================================================================= */
-
-/* --- 1. MOBILVY (Max 768px) --- */
-@media (max-width: 768px) {
-
-    /* Huvudcontainer: Måste ha högre z-index än headern (som är 200000) */
-    #customerModal {
-        z-index: 200001 !important; /* ETT STEG HÖGRE ÄN GLOBAL HEADER */
-        padding: 0 !important;
-    }
-    
-    #customerModal.show {
-        display: flex !important;
-        flex-direction: column !important;
-        position: fixed !important;
-        top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
-        width: 100vw !important;
-        height: 100dvh !important;
-        background: #f8fafc !important;
-    }
-
-    /* Gör innehållet till en flex-kolumn så headern stannar i toppen */
-    #customerModal .modal-content {
-        display: flex !important;
-        flex-direction: column !important;
-        height: 100% !important;
-        width: 100% !important;
-        border-radius: 0 !important;
-        padding: 0 !important;
-        overflow: hidden !important; 
-    }
-
-    /* Header: Fast höjd, ligger alltid överst */
-    #customerModal .modal-header {
-        flex: 0 0 60px !important; 
-        display: flex !important;
-        align-items: center !important;
-        justify-content: space-between !important;
-        background: #fff !important;
-        border-bottom: 1px solid #e2e8f0 !important;
-        padding: 0 16px !important;
-        z-index: 50 !important;
-        position: relative !important;
-        /* Om du har en iPhone med "Notch", se till att vi har padding */
+        /* iPhone Notch Support */
         padding-top: env(safe-area-inset-top) !important;
-        /* Justera höjden om padding läggs till */
-        height: calc(60px + env(safe-area-inset-top)) !important;
     }
 
-    /* Kroppen: Tar resten av platsen och scrollar */
+    /* BODY: Scrollbar yta */
     #customerModal .modal-body {
-        flex: 1 !important; 
-        overflow-y: auto !important; 
-        padding-bottom: 100px !important; 
+        flex: 1 !important; /* Ta all plats i mitten */
+        overflow-y: auto !important;
+        padding-bottom: 100px !important; /* Plats för footer */
         -webkit-overflow-scrolling: touch;
     }
 
-    /* Footer: Låst i botten */
+    /* FOOTER: Låst i botten (GRID 50/50) */
     #customerModal .modal-actions {
+        flex: 0 0 auto !important;
         position: fixed !important;
         bottom: 0 !important; left: 0 !important; right: 0 !important;
-        background: #fff !important;
-        border-top: 1px solid #e2e8f0 !important;
+        background: #fff !important; border-top: 1px solid #e2e8f0 !important;
         padding: 16px !important;
-        padding-bottom: max(16px, env(safe-area-inset-bottom)) !important; /* iPhone-streck fix */
+        padding-bottom: max(16px, env(safe-area-inset-bottom)) !important;
         z-index: 100 !important;
+        
         display: grid !important;
-        grid-template-columns: 1fr 1fr !important;
+        grid-template-columns: 1fr 1fr !important; /* 50% var */
         gap: 12px !important;
     }
     
     /* Mobilknappar: Full höjd */
     #customerModal .modal-actions button {
-        height: 48px !important;
         width: 100% !important;
+        height: 48px !important;
     }
 }
 
-/* --- 2. DATORVY (Min 769px) --- */
+/* =================================================================
+   6. DATOR LAYOUT (NORMAL MODAL & KNAPPAR)
+   ================================================================= */
 @media (min-width: 769px) {
     
     #customerModal {
-        align-items: center !important;
-        justify-content: center !important;
+        align-items: center !important; justify-content: center !important;
         padding-top: 0 !important;
-        z-index: 20000 !important; /* Lägre än jobb-modal på dator */
     }
 
     #customerModal .modal-content {
-        height: auto !important;
-        max-height: 85vh !important;
-        width: 600px !important;
-        max-width: 90vw !important;
+        height: auto !important; max-height: 85vh !important;
+        width: 600px !important; max-width: 90vw !important;
         border-radius: 12px !important;
         overflow: hidden !important;
-        display: flex !important;
-        flex-direction: column !important;
+        display: flex !important; flex-direction: column !important;
     }
 
     #customerModal .modal-body {
-        overflow-y: auto !important;
-        max-height: 60vh !important;
-        padding-bottom: 20px !important; 
+        overflow-y: auto !important; max-height: 60vh !important;
+        padding-bottom: 20px !important;
     }
 
-    /* DATOR-FIX FÖR KNAPPARNA */
+    /* DATOR-KNAPPAR: Flexbox (Till höger) */
     #customerModal .modal-actions {
-        position: static !important; 
-        display: flex !important;    
-        justify-content: flex-end !important; 
-        align-items: center !important; /* Förhindrar att knappar sträcks på höjden */
+        position: static !important;
+        display: flex !important;
+        justify-content: flex-end !important;
         width: 100% !important;
-        grid-template-columns: none !important; 
         padding: 16px 24px !important;
+        background: #fff !important;
     }
 
+    /* Normalstora knappar */
     #customerModal .modal-actions button {
-        width: auto !important; 
-        flex: 0 0 auto !important; 
-        min-width: 100px !important;
-        max-width: 200px !important; /* Tak på bredden */
-        height: 40px !important;
+        width: auto !important;
+        min-width: 120px !important;
         padding: 0 20px !important;
+        height: 40px !important;
         font-size: 0.9rem !important;
     }
 }
