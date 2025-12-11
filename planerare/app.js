@@ -1222,49 +1222,6 @@ function openVehicleModal(regnr) {
     modal.classList.add('show');
 }
 
-    // Uppdatera länkar
-    const linkBiluppgifter = document.getElementById('linkBiluppgifter');
-    const linkOljemagasinet = document.getElementById('linkOljemagasinet');
-    if(linkBiluppgifter) linkBiluppgifter.href = `https://biluppgifter.se/fordon/${cleanReg}`;
-    if(linkOljemagasinet) linkOljemagasinet.href = `https://www.oljemagasinet.se/`;
-
-    // Rendera historik
-    renderVehicleHistory(cleanReg);
-
-    // Hantera teknisk data
-    const specsContainer = document.getElementById('techDataContainer'); 
-    const fetchContainer = document.getElementById('fetchDataContainer');
-    const fetchBtn = document.getElementById('btnFetchTechData');
-    
-    if(specsContainer) {
-        specsContainer.style.display = 'none';
-        specsContainer.innerHTML = ''; 
-    }
-    
-    if(fetchContainer) fetchContainer.style.display = 'block';
-    if(fetchBtn) {
-        fetchBtn.disabled = false;
-        fetchBtn.innerHTML = `<svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-search"></use></svg> Hämta Data`;
-        fetchBtn.onclick = function() { fetchTechnicalData(cleanReg); };
-    }
-
-    // Kolla databasen
-    db.collection("vehicleSpecs").doc(cleanReg).get().then(doc => {
-        if (doc.exists) {
-            const data = doc.data();
-            if (data.htmlContent || data.oil || data.engine) {
-                if(specsContainer) {
-                    specsContainer.innerHTML = (data.oil || data.engine) ? generateTechSpecHTML(data, cleanReg) : data.htmlContent;
-                    specsContainer.style.display = 'block';
-                }
-                if(fetchContainer) fetchContainer.style.display = 'none';
-            }
-        }
-    }).catch(err => console.log("Kunde inte hämta specs:", err));
-
-    modal.classList.add('show');
-}
-
 function renderVehicleHistory(regnr) {
     const container = document.getElementById('vehicleHistoryList'); 
     const ownerEl = document.getElementById('vehicleOwner'); 
