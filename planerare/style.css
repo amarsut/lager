@@ -3510,377 +3510,205 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 }
 
 /* =================================================================
-   KUNDSYSTEM & CRM (RENSKRIVEN & OPTIMERAD V3)
+   KUND- OCH FORDONS-SYSTEM (RENSKRIVEN & OPTIMERAD FINAL)
    ================================================================= */
 
-/* --- 1. KUNDVY (LISTAN) --- */
-.customer-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 12px;
-    padding-bottom: 80px;
+/* --- 1. SÖKFÄLT (Global fix) --- */
+/* Fixar så texten inte ligger ovanpå förstoringsglaset i mobilvyn */
+.input-field-wrapper input,
+#customerSearchInput,
+#vehicleHistorySearch {
+    padding-left: 48px !important;
+}
+.input-field-wrapper .input-icon {
+    left: 16px !important;
+    color: #94a3b8;
 }
 
-/* Sökfältet (Fixar text-överlapp) */
-#customerSearchInput {
-    padding-left: 42px !important;
-}
+/* --- 2. MODAL-STRUKTUR (Gemensam för Kund & Fordon) --- */
 
-/* Kundkortet */
-.customer-card {
-    background: #fff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 16px;
-    display: flex; align-items: center; gap: 16px;
-    cursor: pointer; transition: transform 0.1s;
-}
-.customer-card:active { transform: scale(0.98); }
-
-/* Avatarer */
-.c-avatar {
-    width: 48px; height: 48px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-    color: #0066FF; font-weight: 700; font-size: 1.1rem;
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-}
-.c-avatar.vip {
-    background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
-    color: #d97706; border: 1px solid #fcd34d;
-}
-
-.c-info h3 { margin: 0; font-size: 1rem; color: #1e293b; font-weight: 700; }
-.c-meta { font-size: 0.8rem; color: #64748b; margin-top: 2px; }
-
-@media (max-width: 768px) {
-    .customer-grid { display: flex; flex-direction: column; gap: 8px; }
-    .customer-card { padding: 12px; }
-}
-
-/* --- 2. MODAL INNEHÅLL (KOMPAKT DESIGN) --- */
-
-/* Statistik-raden (Tätare layout) */
-.customer-stats-row {
-    display: grid; grid-template-columns: 1fr 1fr 1fr;
-    background: #fff; 
-    padding: 12px 16px; /* MINDRE PADDING HÄR (Var 20px) */
-    border-bottom: 1px solid #e2e8f0;
-    margin-bottom: 0;
-}
-.c-stat-box { display: flex; flex-direction: column; align-items: center; gap: 2px; }
-.c-stat-label { font-size: 0.65rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; }
-.c-stat-value { font-size: 1.1rem; font-weight: 800; color: #0f172a; }
-
-/* Sektioner */
+/* Rubriker & Sektioner */
 .customer-section {
-    padding: 16px; /* Lite tightare */
-    border-bottom: 1px solid #e2e8f0; background: #fff; margin-bottom: 10px;
+    padding: 16px;
+    background: #fff;
+    border-bottom: 1px solid #e2e8f0;
+    margin-bottom: 10px;
 }
-.section-title { font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin: 0 0 10px 0; }
+/* Tar bort kantlinjer om det är sista elementet */
+.customer-section:last-child { border-bottom: none; margin-bottom: 0; }
 
-/* Garage Chips (3 på rad fix) */
-.vehicle-chips-container { 
-    display: flex; flex-wrap: wrap; 
-    gap: 6px; /* Mindre gap mellan bilarna */
+.section-title {
+    font-size: 0.75rem; font-weight: 800; 
+    color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px;
+    margin: 0 0 12px 0;
 }
-.v-chip {
-    background: #fff; border: 1px solid #e2e8f0;
-    padding: 4px 8px; /* Mycket mindre padding inuti chippen */
-    border-radius: 6px; /* Lite mindre runda hörn sparar plats */
-    font-size: 0.8rem; font-weight: 600; color: #1e293b;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
-    display: flex; align-items: center;
-    max-width: 100%;
-}
-.v-chip img { width: 12px; height: 12px; margin-right: 4px; }
 
-/* Historiklista */
-.history-list-clean { position: relative; padding-left: 16px; border-left: 2px solid #f1f5f9; margin-left: 8px; }
+/* --- 3. HISTORIK-LISTA (Tidslinje) --- */
+/* Denna klass skapar strecket till vänster */
+.history-list-clean {
+    position: relative;
+    padding-left: 20px; /* Luft mellan streck och text */
+    border-left: 2px solid #e2e8f0;
+    margin-left: 8px;
+    margin-top: 8px;
+}
+
+/* Varje rad i historiken */
 .history-item-clean {
-    position: relative; padding-left: 16px; 
-    display: flex; justify-content: space-between; align-items: center;
-    padding-top: 10px; padding-bottom: 10px; border-bottom: 1px solid #f1f5f9;
+    position: relative;
+    display: grid; 
+    grid-template-columns: 1fr auto; /* Texten tar plats, Priset tar sin plats */
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid #f1f5f9;
+    cursor: pointer;
 }
 .history-item-clean:last-child { border-bottom: none; }
+.history-item-clean:active { background-color: #f8fafc; }
+
+/* Den lilla pricken på tidslinjen */
 .history-item-clean::before {
-    content: ''; position: absolute; left: -21px; top: 18px;
-    width: 8px; height: 8px; background: #cbd5e1; border-radius: 50%; border: 2px solid #fff;
-}
-.h-date { font-size: 0.8rem; font-weight: 600; color: #334155; }
-.h-desc { font-size: 0.75rem; color: #64748b; }
-.h-price { font-weight: 700; color: #10b981; font-size: 0.85rem; }
-
-/* VIP Badge */
-.vip-badge-pill {
-    background: #fffbeb; color: #b45309; padding: 2px 8px;
-    border-radius: 12px; font-size: 0.65rem; font-weight: 800;
-    border: 1px solid #fcd34d; display: flex; align-items: center; gap: 4px; text-transform: uppercase;
+    content: '';
+    position: absolute;
+    left: -26px; /* Centrerad över strecket */
+    top: 18px;   /* Matchar textens höjd */
+    width: 10px; height: 10px;
+    background: #e2e8f0;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px #cbd5e1; /* En ring för skärpa */
 }
 
-/* --- 3. KNAPPAR (MODAL FOOTER) --- */
-.modal-actions button {
-    display: flex !important; align-items: center !important; justify-content: center !important;
-    gap: 8px !important; line-height: 1 !important;
-    border-radius: 12px !important; font-weight: 600 !important;
+/* Text-innehåll i historiken */
+.h-info-col { overflow: hidden; } /* Viktigt för att text ska kunna klippas */
+
+.h-date {
+    font-size: 0.85rem; font-weight: 700; color: #1e293b;
+    margin-bottom: 2px;
 }
-.modal-actions .secondary-outline { background: #fff !important; border: 1px solid #e2e8f0 !important; color: #334155 !important; }
-.modal-actions .primary-solid { background: #0066FF !important; border: none !important; color: #fff !important; }
 
-/* --- 4. HIERARKI --- */
-#customerModal { z-index: 19000 !important; } /* Lägre än main header (200000) */
-#vehicleModal  { z-index: 19001 !important; } 
-#jobModal      { z-index: 19002 !important; } 
+/* Flexbox för raden med beskrivning + regnr */
+.h-desc-row {
+    display: flex; align-items: center; width: 100%;
+}
 
+.h-desc-text {
+    font-size: 0.8rem; color: #64748b; font-weight: 400;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    flex-shrink: 1; /* Får krympa om det är trångt */
+}
 
-/* =================================================================
-   5. MOBIL LAYOUT (UNDER HEADER, 3-PÅ-RAD, KOMPAKT)
-   ================================================================= */
-@media (max-width: 768px) {
+.h-desc-reg {
+    font-size: 0.8rem; font-weight: 600; color: #475569;
+    white-space: nowrap; flex-shrink: 0; /* Får INTE krympa */
+    margin-left: 4px;
+}
 
-    /* Huvudcontainer: Börja 60px ner (under main header) */
-    #customerModal.show {
-        display: flex !important;
-        flex-direction: column !important;
-        position: fixed !important;
-        
-        top: 60px !important; /* NYTT: Startar under huvud-headern */
-        height: calc(100dvh - 60px) !important; /* Tar resten av höjden */
-        
-        left: 0 !important; right: 0 !important; bottom: 0 !important;
-        width: 100vw !important;
-        background: #f8fafc !important;
-        padding: 0 !important;
-    }
+.h-price {
+    font-size: 0.9rem; font-weight: 700; color: #10b981;
+    white-space: nowrap; align-self: flex-start;
+}
 
-    #customerModal .modal-content {
-        display: flex !important; flex-direction: column !important;
-        height: 100% !important; width: 100% !important;
-        border-radius: 0 !important; padding: 0 !important; overflow: hidden !important;
-        border-top: 1px solid #e2e8f0; /* En liten linje mot huvud-headern */
-    }
+/* --- 4. KNAPPAR & BADGES --- */
+.header-icon-action {
+    width: 36px; height: 36px; /* Lite större träffyta */
+    border-radius: 8px; border: 1px solid #e2e8f0;
+    background: #fff; color: #64748b;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.2s;
+}
+.header-icon-action:hover { background: #f1f5f9; color: #111; }
+.header-icon-action svg { width: 18px; height: 18px; }
+.header-icon-action img { width: 20px; height: 20px; object-fit: contain; }
 
-    /* Modal Header */
-    #customerModal .modal-header {
-        flex: 0 0 50px !important; /* Lite lägre header (var 60px) */
-        min-height: 50px !important;
-        display: flex !important; align-items: center !important; justify-content: space-between !important;
-        background: #fff !important; border-bottom: 1px solid #e2e8f0 !important;
-        padding: 0 16px !important; z-index: 50 !important;
+/* --- 5. RESPONSIV MODAL (MOBIL & DATOR) --- */
+
+/* A. DATORVY (Min 769px) */
+@media (min-width: 769px) {
+    /* Centrera båda modalerna */
+    #customerModal, #vehicleModal {
+        align-items: center !important;
+        justify-content: center !important;
+        padding-top: 0 !important;
     }
     
-    /* Justera rubriken så den ligger snyggt */
-    #customerModal h2 { font-size: 1rem !important; }
-
-    /* Modal Body (Scroll) */
-    #customerModal .modal-body {
-        flex: 1 !important; overflow-y: auto !important;
-        padding-bottom: 100px !important; /* Plats för footer */
-        -webkit-overflow-scrolling: touch;
-        padding-top: 0 !important; /* Ingen luft i toppen, statistiken ligger direkt */
+    /* Samma bredd och utseende på boxarna */
+    #customerModal .modal-content, 
+    #vehicleModal .modal-content {
+        width: 600px !important;
+        max-width: 90vw !important;
+        height: auto !important;
+        max-height: 85vh !important;
+        border-radius: 12px !important;
+        overflow: hidden !important;
+        display: flex !important; flex-direction: column !important;
     }
 
-    /* Modal Footer (Knappar) */
-    #customerModal .modal-actions {
+    .modal-body {
+        overflow-y: auto !important;
+        max-height: 60vh !important;
+    }
+
+    /* Footer knappar till höger */
+    .modal-actions {
+        display: flex !important; justify-content: flex-end !important;
+        padding: 16px 24px !important; width: 100% !important;
+    }
+    .modal-actions button {
+        width: auto !important; min-width: 120px !important;
+    }
+}
+
+/* B. MOBILVY (Max 768px) */
+@media (max-width: 768px) {
+    
+    /* Fullskärms-läge för båda */
+    #customerModal.show, #vehicleModal.show {
+        display: flex !important; flex-direction: column !important;
+        position: fixed !important;
+        top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
+        width: 100vw !important; height: 100dvh !important;
+        background: #f8fafc !important;
+        
+        /* VIKTIGT: Z-Index högre än huvud-headern (200000) */
+        z-index: 200001 !important; 
+    }
+
+    /* Innehåll: Header - Body - Footer */
+    #customerModal .modal-content,
+    #vehicleModal .modal-content {
+        display: flex !important; flex-direction: column !important;
+        height: 100% !important; width: 100% !important;
+        border-radius: 0 !important; padding: 0 !important;
+    }
+
+    /* Header fast i toppen */
+    .modal-header {
+        flex: 0 0 auto !important;
+        min-height: 60px !important;
+        padding-top: env(safe-area-inset-top) !important; /* iPhone Notch */
+        background: #fff !important; border-bottom: 1px solid #e2e8f0 !important;
+        z-index: 50 !important;
+    }
+
+    /* Body scrollar */
+    .modal-body {
+        flex: 1 !important;
+        overflow-y: auto !important;
+        padding-bottom: 100px !important; /* Plats för knappar */
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Footer fast i botten */
+    .modal-actions {
         position: fixed !important;
         bottom: 0 !important; left: 0 !important; right: 0 !important;
         background: #fff !important; border-top: 1px solid #e2e8f0 !important;
-        padding: 12px 16px !important;
-        padding-bottom: max(12px, env(safe-area-inset-bottom)) !important;
+        padding: 16px !important;
+        padding-bottom: max(16px, env(safe-area-inset-bottom)) !important;
         z-index: 100 !important;
         display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 12px !important;
     }
     
-    #customerModal .modal-actions button {
-        height: 44px !important; width: 100% !important; font-size: 0.95rem !important;
-    }
-}
-
-/* --- 6. DATOR LAYOUT --- */
-@media (min-width: 769px) {
-    #customerModal {
-        align-items: center !important; justify-content: center !important; padding-top: 0 !important;
-    }
-    #customerModal .modal-content {
-        height: auto !important; max-height: 85vh !important;
-        width: 600px !important; max-width: 90vw !important;
-        border-radius: 12px !important; overflow: hidden !important;
-        display: flex !important; flex-direction: column !important;
-    }
-    #customerModal .modal-body {
-        overflow-y: auto !important; max-height: 60vh !important;
-        padding-bottom: 20px !important;
-    }
-    #customerModal .modal-actions {
-        position: static !important; display: flex !important; justify-content: flex-end !important;
-        width: 100% !important; padding: 16px 24px !important;
-    }
-    #customerModal .modal-actions button {
-        width: auto !important; min-width: 120px !important;
-        height: 40px !important; padding: 0 20px !important;
-    }
-}
-
-/* --- MENY I MER-FLIKEN --- */
-.menu-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr; /* Två kolumner */
-    gap: 12px;
-    padding: 0 4px;
-}
-
-.menu-card {
-    background: #fff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    cursor: pointer;
-    transition: transform 0.1s, border-color 0.1s;
-}
-.menu-card:active { transform: scale(0.96); background: #f8fafc; }
-
-.menu-icon-box {
-    width: 48px; height: 48px;
-    border-radius: 12px;
-    display: flex; align-items: center; justify-content: center;
-}
-.menu-icon-box svg { width: 24px; height: 24px; }
-.menu-card span { font-size: 0.9rem; font-weight: 600; color: #1e293b; }
-
-/* Färgteman för ikonerna */
-.menu-icon-box.blue   { background: #eff6ff; color: #3b82f6; }
-.menu-icon-box.orange { background: #fff7ed; color: #f97316; }
-.menu-icon-box.purple { background: #f3e8ff; color: #a855f7; }
-.menu-icon-box.green  { background: #f0fdf4; color: #22c55e; }
-
-/* Historiklista (Tidslinje) - Uppdaterad */
-.history-list-clean { position: relative; padding-left: 16px; border-left: 2px solid #f1f5f9; margin-left: 8px; margin-top: 10px; }
-
-.history-item-clean {
-    position: relative; padding-left: 16px; margin-bottom: 0;
-    display: grid; 
-    grid-template-columns: 1fr auto; /* Text tar plats, Pris tar sin plats */
-    gap: 12px;
-    padding-top: 12px; padding-bottom: 12px; border-bottom: 1px solid #f1f5f9;
-    cursor: pointer;
-    transition: background-color 0.1s;
-}
-.history-item-clean:active { background-color: #f9fafb; }
-.history-item-clean:last-child { border-bottom: none; }
-
-.history-item-clean::before {
-    content: ''; position: absolute; left: -21px; top: 20px;
-    width: 8px; height: 8px; background: #cbd5e1; border-radius: 50%; border: 2px solid #fff;
-}
-
-.h-info-col { overflow: hidden; } /* Håller texten på plats */
-
-.h-date { font-size: 0.8rem; font-weight: 700; color: #334155; margin-bottom: 2px; }
-
-/* Här är magin för beskrivningen */
-.h-desc { 
-    font-size: 0.8rem; color: #64748b; 
-    white-space: nowrap;        /* Tvinga allt till en rad */
-    overflow: hidden;           /* Dölj det som sticker ut */
-    text-overflow: ellipsis;    /* Lägg till "..." på slutet */
-    display: block;
-    max-width: 100%;
-}
-
-.h-price { 
-    font-weight: 700; color: #10b981; font-size: 0.9rem; 
-    white-space: nowrap; align-self: flex-start; /* Håll priset i toppen om texten skulle radbrytas */
-}
-
-/* --- FIX: HISTORIK-TEXT (Prioritera Regnr) --- */
-/* Vi gör om beskrivnings-raden till en flex-box */
-.h-desc-row {
-    display: flex; 
-    align-items: center; 
-    width: 100%;
-    min-width: 0; /* Viktigt för att flex-barn ska kunna krympa */
-}
-
-.h-desc-text {
-    white-space: nowrap; 
-    overflow: hidden; 
-    text-overflow: ellipsis; 
-    flex-shrink: 1; /* Denna får krympa */
-    color: #64748b;
-    font-size: 0.75rem;
-}
-
-.h-desc-reg {
-    white-space: nowrap; 
-    flex-shrink: 0; /* Denna får INTE krympa */
-    margin-left: 4px;
-    font-weight: 600;
-    color: #475569;
-    font-size: 0.75rem;
-}
-
-/* --- FIX: FORDON-HEADER (Matcha Kundprofil) --- */
-/* Justering för knapparna bredvid titeln i fordonsvyn */
-.vehicle-title-group {
-    display: flex; 
-    align-items: center; 
-    gap: 8px;
-}
-
-/* Anpassa de små knapparna (Kopiera/Märke) så de passar i den nya headern */
-.header-icon-action {
-    width: 32px; height: 32px;
-    border-radius: 8px;
-    border: 1px solid #e2e8f0;
-    background: #f8fafc;
-    color: #64748b;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-.header-icon-action:hover { background: #e2e8f0; color: #333; }
-.header-icon-action svg { width: 16px; height: 16px; }
-.header-icon-action img { width: 18px; height: 18px; object-fit: contain; }
-
-/* Dölj externa länkar på väldigt små skärmar om det blir trångt, eller visa bara ikon */
-@media (max-width: 360px) {
-    .link-text { display: none; }
-}
-
-/* --- FIX 1: Enhetlig Historik-text (Gäller både Kund & Fordon) --- */
-.h-desc-text {
-    font-size: 0.8rem !important; /* Tvinga samma storlek som kund */
-    color: #64748b;
-    font-weight: 400;
-}
-.h-date {
-    font-size: 0.85rem !important; /* Lite tydligare datum */
-    color: #1e293b !important;
-}
-
-/* --- FIX 2: Sökfält på mobil (Texten krockar med ikonen) --- */
-.input-field-wrapper input {
-    padding-left: 48px !important; /* Flytta texten till höger om förstoringsglaset */
-}
-.input-field-wrapper .input-icon {
-    left: 16px !important; /* Ikonen lite in från kanten */
-    color: #94a3b8;
-}
-
-/* --- FIX 3: Tidslinje-strecket --- */
-/* Se till att denna klass används i HTML:en */
-.history-list-clean {
-    border-left: 2px solid #e2e8f0 !important; /* Tydligare streck */
-    margin-left: 8px !important;
-    padding-left: 20px !important; /* Mer luft till innehållet */
-}
-.history-item-clean::before {
-    left: -25px !important; /* Centrera pricken på strecket (20px padding + 2px border + 3px justering) */
-    background: #e2e8f0 !important;
-    border: 2px solid #fff !important;
-    box-shadow: 0 0 0 1px #cbd5e1; /* En liten ring runt pricken för skärpa */
+    .modal-actions button { width: 100% !important; height: 48px !important; }
 }
