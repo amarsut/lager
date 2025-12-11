@@ -1182,21 +1182,26 @@ window.removeExpense = function(index) {
 // ==========================================
 
 function openVehicleModal(regnr) {
-    addHistoryState();
+    addHistoryState(); // Lägg till i historiken för mobil-back-knapp
+    
     if(!regnr || regnr === '---') return;
     
     const cleanReg = regnr.replace(/\s/g, '').toUpperCase();
     const modal = document.getElementById('vehicleModal');
+    
     if (!modal) return;
 
-    // Sätt titel
+    // 1. Sätt Titel (Regnr)
     const titleEl = document.getElementById('vehicleRegTitle');
     if(titleEl) titleEl.textContent = cleanReg;
 
-    // --- FIX: Injicera knapparna i nya containern ---
+    // 2. Injicera Header-knappar (Kopiera & Märke)
     const btnContainer = document.getElementById('vehicleHeaderBtns');
     if (btnContainer) {
+        // Hämta märke för ikonen
         const currentLogoUrl = getBrandIconUrl('volvo', cleanReg) || getBrandIconUrl('', cleanReg); 
+        
+        // Skapa bild-tagg eller fallback-svg
         const logoImgHtml = currentLogoUrl 
             ? `<img src="${currentLogoUrl}" style="width:18px; height:18px; object-fit:contain; filter:grayscale(100%); opacity:0.7;">` 
             : `<svg style="width:16px; height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path></svg>`;
@@ -1210,69 +1215,138 @@ function openVehicleModal(regnr) {
             </button>
         `;
     }
-    
-    // ... (Resten av funktionen är samma: länkar, historik, teknisk data) ...
-    // Uppdatera länkar
-    document.getElementById('linkBiluppgifter').href = `https://biluppgifter.se/fordon/${cleanReg}`;
-    document.getElementById('linkOljemagasinet').href = `https://www.oljemagasinet.se/`;
 
-    renderVehicleHistory(cleanReg);
-    // ... hämta teknisk data kod ...
+    // 3. Uppdatera Externa Länkar
+    const linkBiluppg = document.getElementById('linkBiluppgifter');
+    const linkOljemag = document.getElementById('linkOljemagasinet');
     
+    if(linkBiluppg) linkBiluppg.href = `https://biluppgifter.se/fordon/${cleanReg}`;
+    if(linkOljemag) linkOljemag.href = `https://www.oljemagasinet.se/`;
+
+    // 4. Hantera AI-Knappen & Teknisk Data
+    const specsContainer = document.getElementById('techDataContainer'); 
+    const fetchContainer = document.getElementById('fetchDataContainer');
+    const fetchBtn = document.getElementById('btnFetchTechData');
+
+    // Nollställ vyerna först (visa inget innan vi vet status)
+    if(specsContainer) specsContainer.style.display = 'none';
+    if(fetchContainer) fetchContainer.style.display = 'none';
+
+    // Konfigurera knappen
+    if (fetchBtn) {
+        // VIKTIGT: Sätt onclick här så vi får med rätt 'cleanReg'
+        fetchBtn.onclick = function() { 
+            fetchTechnicalData(cleanReg); 
+        };
+        
+        // Återställ utseende (om den var "Laddar..." förut)
+        fetchBtn.disabled = false;
+        fetchBtn.innerHTML = `<svg class="icon-sm" style="margin-right:8px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> Hämta med AI`;
+    }
+
+    // Kolla databasen om vi redan har data
+    db.collection("vehicleSpecs").doc(cleanReg).get().then(doc => {
+        if (doc.exists) {
+            const data = doc.data();
+            // Kolla om datan verkar giltig (har modell eller olja)
+            if (data.model || data.oil || data.engine) {
+                if(specsContainer) {
+                    specsContainer.innerHTML = generateTechSpecHTML(data, cleanReg);
+                    specsContainer.style.display = 'block';
+                }
+                if(fetchContainer) fetchContainer.style.display = 'none';
+            } else {
+                // Dokumentet finns men är tomt/felaktigt
+                if(fetchContainer) fetchContainer.style.display = 'block';
+            }
+        } else {
+            // Inget dokument = Visa hämta-knappen
+            if(fetchContainer) fetchContainer.style.display = 'block';
+        }
+    }).catch(err => {
+        console.error("Fel vid hämtning av specs:", err);
+        // Vid fel, visa knappen så man kan försöka igen
+        if(fetchContainer) fetchContainer.style.display = 'block';
+    });
+
+    // 5. Nollställ sökfältet i historiken
+    const searchInput = document.getElementById('vehicleHistorySearch');
+    if(searchInput) searchInput.value = '';
+
+    // 6. Ladda Historik
+    renderVehicleHistory(cleanReg);
+
+    // 7. Visa Modalen
     modal.classList.add('show');
 }
+
+let currentVehicleHistory = [];
 
 function renderVehicleHistory(regnr) {
     const container = document.getElementById('vehicleHistoryList'); 
     const ownerEl = document.getElementById('vehicleOwner'); 
     
-    if(!container) return;
+    // 1. Hämta och spara data globalt för sökning
+    currentVehicleHistory = allJobs.filter(j => j.regnr === regnr && !j.deleted)
+                                   .sort((a,b) => new Date(b.datum) - new Date(a.datum));
 
-    // Hitta jobb och sortera
-    let fullHistory = allJobs.filter(j => j.regnr === regnr && !j.deleted)
-                             .sort((a,b) => new Date(b.datum) - new Date(a.datum));
-
-    // Uppdatera ägare
+    // 2. Uppdatera ägare
     if(ownerEl) {
-        if(fullHistory.length > 0) ownerEl.textContent = fullHistory[0].kundnamn;
+        if(currentVehicleHistory.length > 0) ownerEl.textContent = currentVehicleHistory[0].kundnamn;
         else ownerEl.textContent = "---";
     }
 
-    container.innerHTML = '';
+    // 3. Nollställ sökfältet
+    const searchInput = document.getElementById('vehicleHistorySearch');
+    if(searchInput) searchInput.value = '';
+
+    // 4. Rita ut listan (utan filter i början)
+    drawVehicleHistoryList(currentVehicleHistory);
+}
+
+// Ny hjälpfunktion som ritar HTML (används av både render och sök)
+function drawVehicleHistoryList(jobs) {
+    const container = document.getElementById('vehicleHistoryList');
+    if(!container) return;
     
-    if (fullHistory.length === 0) {
-        container.innerHTML = '<div style="text-align:center; padding:30px; color:#9ca3af; font-size:0.85rem;">Ingen historik hittades.</div>';
+    container.innerHTML = '';
+
+    if (jobs.length === 0) {
+        container.innerHTML = '<div style="text-align:center; padding:30px; color:#9ca3af; font-size:0.85rem;">Ingen historik.</div>';
         return;
     }
 
-    // Rendera listan
-    fullHistory.forEach(job => {
+    jobs.forEach(job => {
         const row = document.createElement('div');
-        row.className = 'history-item-clean';
-        // Lägg till padding vänster manuellt eftersom vi tog bort border-containern i HTML
-        row.style.paddingLeft = "16px"; 
+        row.className = 'history-item-clean'; // Samma klass som Kundprofil!
         row.onclick = () => openEditModal(job.id);
 
         const dateStr = job.datum.split('T')[0];
         
-        // --- HÄR ÄR FIXEN FÖR TEXT-KLIPPNING ---
+        // Textlogik
         let commentText = job.kommentar && job.kommentar.length > 0 ? job.kommentar : (job.paket || 'Service');
-        
-        // Eftersom vi är i fordonsvyn behöver vi inte visa Regnr igen, 
-        // MEN om du vill visa t.ex. bilmärke eller paket här kan du göra det.
-        // För enhetlighetens skull (samma kodstruktur som kundvyn):
-        
+
         row.innerHTML = `
             <div class="h-info-col" style="width:100%; overflow:hidden;">
                 <div class="h-date">${dateStr}</div>
                 <div class="h-desc-row">
                     <span class="h-desc-text" title="${commentText}">${commentText}</span>
-                    </div>
+                </div>
             </div>
             <div class="h-price">${job.kundpris} kr</div>
         `;
         container.appendChild(row);
     });
+}
+
+// Sökfunktionen (Kopplad via oninput i HTML)
+function filterVehicleHistory(term) {
+    const lowerTerm = term.toLowerCase();
+    const filtered = currentVehicleHistory.filter(job => {
+        const txt = (job.kommentar || '') + ' ' + (job.paket || '') + ' ' + (job.kundnamn || '');
+        return txt.toLowerCase().includes(lowerTerm);
+    });
+    drawVehicleHistoryList(filtered);
 }
 
 // ==========================================
