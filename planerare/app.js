@@ -1283,28 +1283,25 @@ function openVehicleModal(regnr) {
 let currentVehicleHistory = [];
 
 function renderVehicleHistory(regnr) {
-    const container = document.getElementById('vehicleHistoryList'); 
-    const ownerEl = document.getElementById('vehicleOwner'); 
-    
-    // 1. Hämta och spara data globalt för sökning
+    // 1. Hämta all data
     currentVehicleHistory = allJobs.filter(j => j.regnr === regnr && !j.deleted)
                                    .sort((a,b) => new Date(b.datum) - new Date(a.datum));
 
     // 2. Uppdatera ägare
+    const ownerEl = document.getElementById('vehicleOwner'); 
     if(ownerEl) {
-        if(currentVehicleHistory.length > 0) ownerEl.textContent = currentVehicleHistory[0].kundnamn;
-        else ownerEl.textContent = "---";
+        ownerEl.textContent = currentVehicleHistory.length > 0 ? currentVehicleHistory[0].kundnamn : "---";
     }
 
-    // 3. Nollställ sökfältet
+    // 3. Nollställ sökfält
     const searchInput = document.getElementById('vehicleHistorySearch');
     if(searchInput) searchInput.value = '';
 
-    // 4. Rita ut listan (utan filter i början)
+    // 4. Rita listan
     drawVehicleHistoryList(currentVehicleHistory);
 }
 
-// Ny hjälpfunktion som ritar HTML (används av både render och sök)
+// Hjälpfunktion som ritar HTML (används av både render och sök)
 function drawVehicleHistoryList(jobs) {
     const container = document.getElementById('vehicleHistoryList');
     if(!container) return;
@@ -1312,22 +1309,22 @@ function drawVehicleHistoryList(jobs) {
     container.innerHTML = '';
 
     if (jobs.length === 0) {
-        container.innerHTML = '<div style="text-align:center; padding:30px; color:#9ca3af; font-size:0.85rem;">Ingen historik.</div>';
+        container.innerHTML = '<div style="text-align:center; padding:30px; color:#9ca3af; font-size:0.85rem;">Ingen historik hittades.</div>';
         return;
     }
 
     jobs.forEach(job => {
         const row = document.createElement('div');
-        row.className = 'history-item-clean'; // Samma klass som Kundprofil!
+        row.className = 'history-item-clean';
         row.onclick = () => openEditModal(job.id);
 
         const dateStr = job.datum.split('T')[0];
         
-        // Textlogik
-        let commentText = job.kommentar && job.kommentar.length > 0 ? job.kommentar : (job.paket || 'Service');
+        // Textlogik: Prioritera Kommentar, sen Paket, sen "Service"
+        let commentText = job.kommentar && job.kommentar.trim().length > 0 ? job.kommentar : (job.paket || 'Service');
 
         row.innerHTML = `
-            <div class="h-info-col" style="width:100%; overflow:hidden;">
+            <div class="h-info-col">
                 <div class="h-date">${dateStr}</div>
                 <div class="h-desc-row">
                     <span class="h-desc-text" title="${commentText}">${commentText}</span>
@@ -1339,12 +1336,12 @@ function drawVehicleHistoryList(jobs) {
     });
 }
 
-// Sökfunktionen (Kopplad via oninput i HTML)
+// Sökfunktion (anropas direkt från HTML oninput)
 function filterVehicleHistory(term) {
-    const lowerTerm = term.toLowerCase();
-    const filtered = currentVehicleHistory.filter(job => {
-        const txt = (job.kommentar || '') + ' ' + (job.paket || '') + ' ' + (job.kundnamn || '');
-        return txt.toLowerCase().includes(lowerTerm);
+    const lower = term.toLowerCase();
+    const filtered = currentVehicleHistory.filter(j => {
+        const txt = (j.kommentar || '') + ' ' + (j.paket || '') + ' ' + (j.kundnamn || '');
+        return txt.toLowerCase().includes(lower);
     });
     drawVehicleHistoryList(filtered);
 }
