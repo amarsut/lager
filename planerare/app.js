@@ -370,7 +370,7 @@ const ICONS = {
 // --- HJÄLPFUNKTION: Skapa Mobilkortet (FINAL LIST V5) ---
 function createJobCard(job) {
     const d = new Date(job.datum);
-    const now = new Date(); // NYTT: Hämta tiden just nu för att jämföra
+    const now = new Date(); 
 
     let rawMonth = d.toLocaleDateString('sv-SE', { month: 'short' });
     let cleanMonth = rawMonth.replace(/\./g, '');
@@ -378,19 +378,18 @@ function createJobCard(job) {
     
     const dateStr = `${d.getDate()} ${month}. ${d.getFullYear()}`;
     const timeStr = d.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
-	
-	// 1. Sök efter bilmärke i all text vi har
+    
     const combinedText = (job.kommentar + " " + job.paket + " " + job.kundnamn + " " + (job.bilmodell || "")).toLowerCase();
     const brandUrl = getBrandIconUrl(combinedText, job.regnr);
 
-    // 2. Bestäm vilken ikon som ska visas
+    // 1. Ikoner med tvingad storlek (16px)
     let iconHtml = '';
+    const iconStyle = 'width:16px; height:16px; margin-right:6px; display:block;';
     
-	if (brandUrl) {
-        iconHtml = `<img src="${brandUrl}" class="brand-logo-img" alt="Logo">`;
+    if (brandUrl) {
+        iconHtml = `<img src="${brandUrl}" class="brand-logo-img" alt="Logo" style="${iconStyle} object-fit:contain;">`;
     } else {
-        // Standard bil-ikon
-        iconHtml = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px; height:18px;"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 17h8"/></svg>`;
+        iconHtml = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="${iconStyle}"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 17h8"/></svg>`;
     }
 
     const price = job.kundpris ? `${job.kundpris}:-` : '0:-';
@@ -402,30 +401,26 @@ function createJobCard(job) {
     const statusRaw = job.status || 'bokad';
     const statusText = statusRaw.toUpperCase(); 
 
-    // --- FÄRG-LOGIK (UPPDATERAD) ---
-    let headerClass = 'bg-bokad'; // Default (Blå)
+    let headerClass = 'bg-bokad'; 
 
     if(statusRaw === 'klar') headerClass = 'bg-klar';
     if(statusRaw === 'faktureras') headerClass = 'bg-faktureras';
     if(statusRaw === 'avbokad') headerClass = 'bg-avbokad';
     if(statusRaw === 'offererad') headerClass = 'bg-offererad';
 
-    // NYTT: Om status är 'bokad' MEN tiden har passerat -> Byt till Röd (bg-overdue)
     if (statusRaw === 'bokad' && d < now) {
         headerClass = 'bg-overdue';
     }
 
-    // Företagsikon Logik
     const nameLower = (job.kundnamn || '').toLowerCase();
     const isCorporate = ['bmg', 'fogarolli', 'ab'].some(c => nameLower.includes(c));
     
-    // Ikoner (Definierade lokalt för säkerhets skull)
     const iUser = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
     const iBriefcaseGreen = `<svg class="icon-sm" style="color: #10B981;" viewBox="0 0 64 64"><use href="#icon-office-building"></use></svg>`;
     
-	const nameValueHtml = isCorporate 
-	    ? `<span class="company-icon-wrapper">${iBriefcaseGreen}</span><span>${customer}</span>` 
-	    : `<span>${customer}</span>`;
+    const nameValueHtml = isCorporate 
+        ? `<span class="company-icon-wrapper">${iBriefcaseGreen}</span><span>${customer}</span>` 
+        : `<span>${customer}</span>`;
 
     let commentHtml = '';
     if (job.kommentar && job.kommentar.length > 0) {
@@ -434,65 +429,67 @@ function createJobCard(job) {
         commentHtml = `<span class="comment-text comment-placeholder">Inga kommentarer finns tillgängliga.</span>`;
     }
     
-    // Övriga ikoner
     const iCal = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`;
     const iClock = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`;
     const iComment = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`;
     const iTag = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>`;
     const iBox = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>`;
     const iGauge = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 14c1.66 0 3-1.34 3-3V5h-6v6c0 1.66 1.34 3 3 3z"/><path d="M12 14v7"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="M19.07 4.93L17.66 6.34"/><path d="M4.93 4.93L6.34 6.34"/></svg>`;
-    const iInfoSmall = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`;
+    const iInfoSmall = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:12px; height:12px; margin-left:4px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`;
 
-	return `
-	    <div class="job-card-new" id="card-${job.id}" onclick="openEditModal('${job.id}')">
-	        
-	        <div class="card-header-strip ${headerClass}">
-				<div class="header-reg-clickable" onclick="event.stopPropagation(); openVehicleModal('${regNr}')">
-				    
-				    ${iconHtml} <span>${regNr}</span>
-				    <span class="reg-info-sup">${iInfoSmall}</span>
-				</div>
-	            
-	            <div class="header-right-side" style="display:flex; align-items:center; gap:10px;">
-	                <div class="header-status-badge">
-	                    ${statusText}
-	                </div>
-	                <button class="card-menu-btn" onclick="event.stopPropagation(); toggleCardActions('${job.id}', event)">
-	                    <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
-	                </button>
-	            </div>
-	        </div>
+    // --- HÄR ÄR FÖRÄNDRINGEN: Tvingande Inline Styles för Headern ---
+    // Height: 34px !important
+    return `
+        <div class="job-card-new" id="card-${job.id}" onclick="openEditModal('${job.id}')">
+            
+            <div class="card-header-strip ${headerClass}" style="height: 34px !important; min-height: 34px !important; padding: 0 10px !important; display: flex !important; align-items: center !important;">
+                
+                <div class="header-reg-clickable" onclick="event.stopPropagation(); openVehicleModal('${regNr}')" style="display: flex; align-items: center; height: 100%;">
+                    ${iconHtml} 
+                    <span style="font-size: 0.9rem; font-weight: 700; line-height: 1;">${regNr}</span>
+                    <span class="reg-info-sup" style="display: flex; align-items: center; opacity: 0.7;">${iInfoSmall}</span>
+                </div>
+                
+                <div class="header-right-side" style="display:flex; align-items:center; gap:8px; height: 100%;">
+                    <div class="header-status-badge" style="padding: 1px 6px; font-size: 0.65rem; border-radius: 4px; line-height: 1.2;">
+                        ${statusText}
+                    </div>
+                    <button class="card-menu-btn" onclick="event.stopPropagation(); toggleCardActions('${job.id}', event)" style="height: 30px; width: 30px; display: flex; align-items: center; justify-content: center; padding: 0; background: transparent; border: none; color: inherit;">
+                        <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+                    </button>
+                </div>
+            </div>
 
-	        <div class="card-body">
-	            <div class="info-row">
-	                <span class="row-label">${iUser} Namn</span>
-	                <span class="row-value">${nameValueHtml}</span>
-	            </div>
-	            <div class="info-row"><span class="row-label">${iBox} Paket</span><span class="row-value">${paket}</span></div>
-	            <div class="info-row"><span class="row-label" title="Mätarställning">${iGauge} Mätarst.</span><span class="row-value">${mileage}</span></div>
-	            <div class="info-row"><span class="row-label">${iCal} Datum</span><span class="row-value">${dateStr}</span></div>
-	            <div class="info-row"><span class="row-label">${iClock} Tid</span><span class="row-value">${timeStr}</span></div>
-	            <div class="info-row price-row"><span class="row-label">${iTag} Att betala</span><span class="row-value">${price}</span></div>
-	        </div>
+            <div class="card-body">
+                <div class="info-row">
+                    <span class="row-label">${iUser} Namn</span>
+                    <span class="row-value">${nameValueHtml}</span>
+                </div>
+                <div class="info-row"><span class="row-label">${iBox} Paket</span><span class="row-value">${paket}</span></div>
+                <div class="info-row"><span class="row-label" title="Mätarställning">${iGauge} Mätarst.</span><span class="row-value">${mileage}</span></div>
+                <div class="info-row"><span class="row-label">${iCal} Datum</span><span class="row-value">${dateStr}</span></div>
+                <div class="info-row"><span class="row-label">${iClock} Tid</span><span class="row-value">${timeStr}</span></div>
+                <div class="info-row price-row"><span class="row-label">${iTag} Att betala</span><span class="row-value">${price}</span></div>
+            </div>
 
-	        <div class="card-comments-section">
-	            ${iComment}
-	            ${commentHtml}
-	        </div>
+            <div class="card-comments-section">
+                ${iComment}
+                ${commentHtml}
+            </div>
 
-			<div class="card-actions-expand" id="actions-${job.id}" onclick="event.stopPropagation()">
-	            <button class="inline-action-btn success" title="Markera som Klar" onclick="setStatus('${job.id}', 'klar')">
-	                <svg class="icon-sm"><use href="#icon-check"></use></svg>
-	            </button>
-	            <button class="inline-action-btn warning" title="Till Fakturering" onclick="setStatus('${job.id}', 'faktureras')">
-	                <svg class="icon-sm"><use href="#icon-clipboard"></use></svg>
-	            </button>
-	            <button class="inline-action-btn danger" title="Radera Jobb" onclick="deleteJob('${job.id}')">
-	                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-sm"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path></svg>
-	            </button>
-	        </div>
+            <div class="card-actions-expand" id="actions-${job.id}" onclick="event.stopPropagation()">
+                <button class="inline-action-btn success" title="Markera som Klar" onclick="setStatus('${job.id}', 'klar')">
+                    <svg class="icon-sm"><use href="#icon-check"></use></svg>
+                </button>
+                <button class="inline-action-btn warning" title="Till Fakturering" onclick="setStatus('${job.id}', 'faktureras')">
+                    <svg class="icon-sm"><use href="#icon-clipboard"></use></svg>
+                </button>
+                <button class="inline-action-btn danger" title="Radera Jobb" onclick="deleteJob('${job.id}')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-sm"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path></svg>
+                </button>
+            </div>
 
-	    </div>`;
+        </div>`;
 }
 
 // Hjälpfunktion: Skapa DESKTOP RAD (Samma som innan men inkluderad för helhet)
