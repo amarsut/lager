@@ -819,26 +819,13 @@ function closeModals() {
 async function handleSaveJob(e) {
     e.preventDefault();
     
-    const jobId = document.getElementById('jobId').value;
-    const kund = document.getElementById('kundnamn').value; // Namn kan vara case-sensitive om man vill, annars .toUpperCase()
-    const reg = document.getElementById('regnr').value.toUpperCase();
-    const datum = document.getElementById('datum').value;
-    const tid = document.getElementById('tid').value;
-    const pris = parseInt(document.getElementById('kundpris').value) || 0;
-    const status = document.getElementById('statusSelect').value;
-    const paket = document.getElementById('paketSelect').value; // NYTT
-    const kommentar = document.getElementById('kommentar').value; // NYTT
-
+    // ... (din befintliga kod för att hämta värden: kund, regnr, etc.) ...
+    
+    // 1. Förbered datan som vanligt
     const jobData = {
-        kundnamn: kund,
-        regnr: reg,
-        datum: `${datum}T${tid}`,
-        kundpris: pris,
-        status: status,
-        paket: paket,           // Spara paket
-        kommentar: kommentar,   // Spara kommentar
-        utgifter: currentExpenses, // Spara listan med utgifter
-        deleted: false
+        // ... (din data) ...
+        utgifter: currentExpenses, 
+        // ...
     };
 
     try {
@@ -847,12 +834,50 @@ async function handleSaveJob(e) {
         } else {
             jobData.created = new Date().toISOString();
             await db.collection("jobs").add(jobData);
+            
+            // --- NYTT: DRA AV OLJA FRÅN LAGER (Bara vid nya jobb) ---
+            await deductOilFromInventory(currentExpenses);
         }
         closeModals();
         document.getElementById('jobModalForm').reset();
     } catch (err) {
         console.error("Fel vid spara:", err);
         alert("Kunde inte spara.");
+    }
+}
+
+// --- HJÄLPFUNKTION: Räkna ut och dra av olja ---
+async function deductOilFromInventory(expenses) {
+    let totalOilToDeduct = 0;
+
+    // Loopa igenom utgifterna för att hitta olja
+    expenses.forEach(item => {
+        const nameLower = item.namn.toLowerCase();
+        
+        // Logik: Om namnet innehåller "olja" OCH har en parentes med "L" (t.ex "Motorolja (5.5L)")
+        // Regex för att hitta talet före 'L':  /(\d+(\.\d+)?)L/i
+        if (nameLower.includes('olja')) {
+            const match = item.namn.match(/(\d+(\.\d+)?)L/i); // Letar efter t.ex. "5.5L" eller "5L"
+            if (match) {
+                const liters = parseFloat(match[1]);
+                if (!isNaN(liters)) {
+                    totalOilToDeduct += liters;
+                }
+            }
+        }
+    });
+
+    if (totalOilToDeduct > 0) {
+        console.log(`Drar av ${totalOilToDeduct} liter från lagret...`);
+        
+        // Använd Firebase 'increment' med negativt tal för atomsäker uppdatering
+        const inventoryRef = db.collection('settings').doc('inventory');
+        await inventoryRef.update({
+            motorOil: firebase.firestore.FieldValue.increment(-totalOilToDeduct)
+        });
+        
+        // Valfritt: Visa en liten notis
+        // showToast(`${totalOilToDeduct}L olja registrerat`);
     }
 }
 
@@ -2119,3 +2144,35 @@ function setupSwipeGestures() {
     }, {passive: true});
 }
 
+// Lägg denna funktion någonstans i app.js
+function initInventoryListener() {
+    // Lyssna på settings/inventory
+    db.collection('settings').doc('inventory').onSnapshot(doc => {
+        if (doc.exists) {
+            const data = doc.data();
+            const current = data.motorOil || 0;      // T.ex. 150
+            const start = data.oilStartAmount || 208; // Standardfat är ca 208L
+            
+            // Uppdatera Text
+            const textEl = document.getElementById('oilLevelText');
+            const percentEl = document.getElementById('oilPercent');
+            const barEl = document.getElementById('oilProgressBar');
+
+            if (textEl) textEl.textContent = `${current.toFixed(1)} av ${start} liter kvar`;
+            
+            // Räkna ut procent
+            let percent = (current / start) * 100;
+            if (percent > 100) percent = 100;
+            if (percent < 0) percent = 0;
+
+            if (percentEl) percentEl.textContent = Math.round(percent) + '%';
+            
+            if (barEl) {
+                barEl.style.width = `${percent}%`;
+                // Byt färg till röd om under 10%
+                if (percent < 10) barEl.classList.add('critical');
+                else barEl.classList.remove('critical');
+            }
+        }
+    });
+}
