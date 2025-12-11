@@ -3850,3 +3850,37 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 @media (max-width: 360px) {
     .link-text { display: none; }
 }
+
+/* --- FIX 1: Enhetlig Historik-text (Gäller både Kund & Fordon) --- */
+.h-desc-text {
+    font-size: 0.8rem !important; /* Tvinga samma storlek som kund */
+    color: #64748b;
+    font-weight: 400;
+}
+.h-date {
+    font-size: 0.85rem !important; /* Lite tydligare datum */
+    color: #1e293b !important;
+}
+
+/* --- FIX 2: Sökfält på mobil (Texten krockar med ikonen) --- */
+.input-field-wrapper input {
+    padding-left: 48px !important; /* Flytta texten till höger om förstoringsglaset */
+}
+.input-field-wrapper .input-icon {
+    left: 16px !important; /* Ikonen lite in från kanten */
+    color: #94a3b8;
+}
+
+/* --- FIX 3: Tidslinje-strecket --- */
+/* Se till att denna klass används i HTML:en */
+.history-list-clean {
+    border-left: 2px solid #e2e8f0 !important; /* Tydligare streck */
+    margin-left: 8px !important;
+    padding-left: 20px !important; /* Mer luft till innehållet */
+}
+.history-item-clean::before {
+    left: -25px !important; /* Centrera pricken på strecket (20px padding + 2px border + 3px justering) */
+    background: #e2e8f0 !important;
+    border: 2px solid #fff !important;
+    box-shadow: 0 0 0 1px #cbd5e1; /* En liten ring runt pricken för skärpa */
+}
