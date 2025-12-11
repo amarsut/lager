@@ -681,27 +681,60 @@
 	                    </div>
 	                </label>
 	            </div>
-
-				<div class="settings-section-label">LAGERSTATUS</div>
-					<div class="settings-card-group">
-					    <div class="settings-item" style="display:block;"> <div style="display:flex; align-items:center; margin-bottom:10px;">
-					            <div class="settings-icon orange-light">
-					                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 2h4"/><path d="M12 2v4"/><path d="M6 8h12l-1.5 11a2 2 0 0 1-2 1.75H9.5A2 2 0 0 1 7.5 19L6 8Z"/><path d="M18 8l1.5-3.5a1 1 0 0 0-1-1.5H16"/></svg>
-					            </div>
-					            <div class="settings-text-col">
-					                <span class="settings-title">Motorolja (Fat)</span>
-					                <span class="settings-desc" id="oilLevelText">Laddar nivå...</span>
-					            </div>
-					            <div style="text-align:right;">
-					                <span id="oilPercent" style="font-weight:700; color:#111;">0%</span>
-					            </div>
-					        </div>
-					        
-					        <div class="oil-progress-bg">
-					            <div id="oilProgressBar" class="oil-progress-fill" style="width: 0%;"></div>
-					        </div>
-					    </div>
-					</div>
+	
+	            <div class="settings-section-label">LAGERHANTERING</div>
+	
+	            <div class="settings-card-group">
+	                <div class="settings-item" style="display:block; padding-bottom: 12px;">
+	                    
+	                    <div style="display:flex; align-items:center; margin-bottom:12px;">
+	                        <div class="settings-icon orange-light">
+	                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg>
+	                        </div>
+	                        <div class="settings-text-col">
+	                            <span class="settings-title">Motorolja 5W-30</span>
+	                            <div style="display:flex; align-items:center; gap:6px;">
+	                                <span class="settings-desc" id="oilLevelText">Laddar...</span>
+	                                <span class="oil-badge" id="oilDateBadge">---</span>
+	                            </div>
+	                        </div>
+	                        <div style="text-align:right;">
+	                            <span id="oilPercent" style="font-size:1.2rem; font-weight:700; color:#111;">0%</span>
+	                        </div>
+	                    </div>
+	                    
+	                    <div class="oil-progress-bg">
+	                        <div id="oilProgressBar" class="oil-progress-fill" style="width: 0%;"></div>
+	                    </div>
+	
+	                    <div style="margin-top: 16px; display:flex; justify-content:flex-end;">
+	                        <button class="refill-toggle-btn" onclick="toggleOilForm()">
+	                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+	                            Registrera nytt fat
+	                        </button>
+	                    </div>
+	
+	                    <div id="oilRefillForm" class="oil-refill-container" style="display:none;">
+	                        <div class="refill-box">
+	                            <p class="refill-title">Registrera inköp</p>
+	                            <div class="refill-inputs">
+	                                <div class="input-group-small">
+	                                    <label>Volym (Liter)</label>
+	                                    <input type="number" id="newBarrelVol" value="208" placeholder="208">
+	                                </div>
+	                                <div class="input-group-small">
+	                                    <label>Inköpsdatum</label>
+	                                    <input type="date" id="newBarrelDate">
+	                                </div>
+	                            </div>
+	                            <button class="save-barrel-btn" onclick="saveNewBarrel()">
+	                                Spara & Nollställ Mätare
+	                            </button>
+	                        </div>
+	                    </div>
+	
+	                </div>
+	            </div>
 	
 	            <div class="settings-section-label">KONTO</div>
 	            
