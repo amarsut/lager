@@ -3788,3 +3788,47 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     
     .modal-actions button { width: 100% !important; height: 48px !important; font-size: 0.95rem !important; }
 }
+
+/* =================================================================
+   FINAL POLISH (V5)
+   ================================================================= */
+
+/* --- FIX 1: Biluppgifter-ikonen --- */
+/* Tvinga bilderna i header-knapparna att hålla sig inom ramen */
+.header-icon-action img {
+    width: 20px !important;  /* Tvinga bredd */
+    height: 20px !important; /* Tvinga höjd */
+    object-fit: contain !important; /* Skala snyggt */
+    display: block !important;
+}
+
+/* --- FIX 2: Lika höga modaler på dator --- */
+@media (min-width: 769px) {
+    #customerModal .modal-content, 
+    #vehicleModal .modal-content {
+        height: 600px !important; /* Fast höjd för symmetri */
+        max-height: 80vh !important; /* Men max 80% av skärmen */
+        width: 600px !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+    
+    /* Se till att kroppen fyller utrymmet så footer hamnar i botten */
+    .modal-body {
+        flex: 1 !important; 
+        overflow-y: auto !important;
+    }
+}
+
+/* --- FIX 3: Söktexten på mobil (Regnr-modalen) --- */
+/* Detta fixar specifikt sökrutan i regnr-modalen som krockade */
+#vehicleHistorySearch {
+    padding-left: 48px !important; /* Mer plats för ikonen */
+}
+
+/* Extra säkerhet: Justera ikonen om den ligger fel */
+.input-field-wrapper .input-icon {
+    left: 16px !important; 
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+}
