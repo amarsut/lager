@@ -25,6 +25,8 @@ let allJobs = [];
 let currentStatusFilter = 'kommande'; 
 let currentSearchTerm = '';
 let currentExpenses = [];
+let jobsUnsubscribe = null;   // Håller koll på jobb-lyssnaren
+let specsUnsubscribe = null;  // Håller koll på fordons-lyssnaren
 
 // Chatt-variabler
 let chatUnsubscribe = null;
@@ -215,14 +217,31 @@ function handleLogin(e) {
 
 function handleLogout() {
     if(confirm("Vill du logga ut?")) {
-        firebase.auth().signOut();
+        // 1. Stoppa lyssnarna för att slippa felmeddelanden
+        if (jobsUnsubscribe) jobsUnsubscribe();
+        if (specsUnsubscribe) specsUnsubscribe();
+        if (chatUnsubscribe) chatUnsubscribe(); // Om du har chatt igång
+
+        // 2. Logga ut från Firebase
+        firebase.auth().signOut().then(() => {
+            // 3. Tvinga stängning av inställningsmenyn och andra modaler
+            document.querySelectorAll('.modal-backdrop').forEach(el => {
+                el.classList.remove('show');
+                el.style.display = 'none'; // Säkerställ att de döljs
+            });
+
+            // 4. Ladda om sidan för en fräsch start (tar bort all gammal data ur minnet)
+            window.location.reload();
+        });
     }
 }
 
 // 3. HÄMTA DATA
 function initRealtimeListener() {
     const container = document.getElementById('jobListContainer');
-    db.collection("jobs").onSnapshot(snapshot => {
+    
+    // VIKTIGT: Spara lyssnaren i variabeln 'jobsUnsubscribe'
+    jobsUnsubscribe = db.collection("jobs").onSnapshot(snapshot => {
         allJobs = [];
         snapshot.forEach(doc => {
             allJobs.push({ id: doc.id, ...doc.data() });
@@ -230,22 +249,21 @@ function initRealtimeListener() {
         renderDashboard();
     }, error => {
         console.error("Fel vid hämtning av jobb:", error);
+        // Ignorera fel om det beror på att vi precis loggat ut
         if (error.code === 'permission-denied') {
-            container.innerHTML = `<div style="text-align:center; padding: 2rem;"><h3>Behörighet saknas!</h3></div>`;
+            // Gör inget, vi har troligen loggat ut
         }
     });
 	
-	// NY LYSSNARE: Hämta sparade märken
-    db.collection("vehicleSpecs").onSnapshot(snapshot => {
-        vehicleBrandCache = {}; // Rensa cache
+	// VIKTIGT: Spara lyssnaren i variabeln 'specsUnsubscribe'
+    specsUnsubscribe = db.collection("vehicleSpecs").onSnapshot(snapshot => {
+        vehicleBrandCache = {}; 
         snapshot.forEach(doc => {
             const data = doc.data();
-            // Om det finns ett sparat märke ('brand_manual'), spara i cachen
             if (data.brand_manual) {
                 vehicleBrandCache[doc.id] = data.brand_manual;
             }
         });
-        // Rita om dashboarden när vi fått in märkena
         renderDashboard();
     });
 }
