@@ -95,7 +95,15 @@ auth.onAuthStateChanged((user) => {
         // --- 4. STARTA APPENS FUNKTIONER ---
         startInactivityCheck();
         initRealtimeListener(); 
-        initChat();             
+        initChat();
+        
+        // NYTT: Starta lyssnaren för lagerstatus (Olja)
+        initInventoryListener();
+        
+        // Initiera inställningar (Privacy/Mörkt läge)
+        if (typeof initSettings === 'function') {
+            initSettings();
+        }
         
     } else {
         // --- UTLOGGAD ---
@@ -106,6 +114,9 @@ auth.onAuthStateChanged((user) => {
         if (chatUnsubscribe) chatUnsubscribe();
         if (typeof jobsUnsubscribe === 'function') jobsUnsubscribe();
         if (typeof specsUnsubscribe === 'function') specsUnsubscribe();
+        
+        // Stäng av lager-lyssnaren om den finns (du kan behöva skapa en variabel för den också om du vill vara strikt)
+        // Men eftersom vi laddar om sidan vid utloggning är det oftast lugnt.
     }
 });
 
