@@ -595,6 +595,39 @@ function updateStatsCounts(jobs) {
 // 7. EVENT LISTENERS
 function setupEventListeners() {
 
+	// --- KOPPLA MOBIL-KNAPPEN "KUNDER" ---
+	const mobileCustBtn = document.getElementById('mobileCustomersBtn');
+	if (mobileCustBtn) {
+	    mobileCustBtn.addEventListener('click', () => {
+	        // 1. Byt aktiv knapp i menyn
+	        document.querySelectorAll('.mobile-nav-item').forEach(btn => btn.classList.remove('active'));
+	        mobileCustBtn.classList.add('active');
+	
+	        // 2. Hantera historik (för back-knappen)
+	        addHistoryState();
+	
+	        // 3. Visa Kundvyn, dölj andra
+	        document.getElementById('statBar').style.display = 'none';
+	        document.getElementById('timelineView').style.display = 'none';
+	        document.getElementById('customersView').style.display = 'block';
+	        
+	        // 4. Ladda listan
+	        renderCustomerView();
+	    });
+	}
+	
+	// --- FIX FÖR ATT LÄMNA VYN (MOBIL) ---
+	// Koppla "Hem"-knappen (Vy) så den återställer allt
+	document.getElementById('mobileHomeBtn').addEventListener('click', () => {
+	    document.getElementById('statBar').style.display = 'grid'; // Eller flex/block beroende på din CSS
+	    document.getElementById('timelineView').style.display = 'block';
+	    document.getElementById('customersView').style.display = 'none';
+	    
+	    // Nollställ sökning
+	    const custSearch = document.getElementById('customerSearchInput');
+	    if(custSearch) custSearch.value = '';
+	});
+
 	// --- NAVIGERING: ÖVERSIKT (TILLBAKA) ---
     const btnOverview = document.getElementById('btnOverview');
     
