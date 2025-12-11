@@ -3238,66 +3238,74 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 [data-theme="dark"] .oil-badge.compact { background: #333; border-color: #444; color: #aaa; }
 
 //********* MODALER ENHETLIGT UPPDATERA SEN TA BORT DUBLETTER **********//
+//********* MODALER ENHETLIGT UPPDATERA SEN TA BORT DUBLETTER **********//
+//********* MODALER ENHETLIGT UPPDATERA SEN TA BORT DUBLETTER **********//
+//********* MODALER ENHETLIGT UPPDATERA SEN TA BORT DUBLETTER **********//
+//********* MODALER ENHETLIGT UPPDATERA SEN TA BORT DUBLETTER **********//
+
 
 /* =================================================================
-   ENHETLIG DESIGN FÖR ALLA MODALER (Samsung One UI / iOS Style)
+   ENHETLIG HEADER DESIGN (Vänsterställd titel - One UI Style)
    ================================================================= */
 
-/* --- 1. Uppdaterad Modal-struktur (Kant-till-kant) --- */
+/* --- 1. Uppdaterad Modal-struktur --- */
 .modal-content {
     background-color: var(--content-bg);
-    /* VIKTIGT: Padding 0 låter headern gå hela vägen ut till kanten */
-    padding: 0 !important; 
+    padding: 0 !important; /* Låter headern gå kant-till-kant */
     border-radius: 12px;
     box-shadow: 0 10px 25px rgba(0,0,0,0.2);
     position: relative;
     display: flex;
     flex-direction: column;
     
-    /* Behåll storleksinställningarna */
     width: 100%;
     max-width: 550px;
     height: auto;
     max-height: 85vh;
     margin: auto;
-    overflow: hidden; /* Ser till att headern inte sticker ut */
+    overflow: hidden;
 }
 
-/* --- 2. Den nya enhetliga Headern (Container) --- */
+/* --- 2. Headern (Container) --- */
 .modal-header {
-    position: relative; /* VIKTIGT för att kunna centrera titeln absolut */
     display: flex;
     align-items: center;
-    justify-content: space-between; 
     
-    /* Design: Ljusgrå bakgrund + linje */
+    /* ÄNDRING: Vänsterställ allt istället för space-between */
+    justify-content: flex-start !important; 
+    
+    /* ÄNDRING: Avståndet mellan Pilen och Texten */
+    gap: 4px !important; 
+    
     background-color: #f8f9fa !important;       
     border-bottom: 1px solid #e5e7eb !important; 
-    
     padding: 0 16px !important;    
-    height: 60px !important;       /* Fast höjd överallt */
+    height: 60px !important;
     flex-shrink: 0;
     margin-bottom: 0 !important;
+    position: relative;
 }
 
-/* --- 3. Titeln i modalen (Centrerad & Mindre text) --- */
+/* --- 3. Titeln (Mindre & Nära pilen) --- */
 .modal-header h2,
-#vehicleRegTitle { /* Inkluderar även Fordons-titeln här */
+#vehicleRegTitle { 
     margin: 0 !important;
     padding: 0 !important;
     
-    /* Textstorlek & Stil */
-    font-size: 1.1rem !important; /* Mindre storlek (var 1.5-2rem förut) */
+    /* ÄNDRING: Ta bort absolut positionering så den hamnar bredvid pilen */
+    position: static !important;
+    transform: none !important;
+    left: auto !important;
+    text-align: left !important;
+    
+    /* Textstorlek */
+    font-size: 1.1rem !important; /* Mindre text */
     font-weight: 700 !important;
     color: #111;
     
-    /* Absolut centrering */
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    width: max-content;
-    z-index: 1; /* Ligger under knappar om det blir trångt */
-    text-align: center;
+    /* Finjustering av textens vertikala position */
+    line-height: 1;
+    padding-top: 2px !important; 
 }
 
 /* --- 4. Tillbaka-knappen (Pilen) --- */
@@ -3306,15 +3314,21 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     background: transparent;
     border: none;
     padding: 0;
-    width: 40px; /* Bra tryckyta */
+    
+    /* Storlek på klick-ytan */
+    width: 40px; 
     height: 100%;
+    
     display: flex;
     align-items: center;
-    justify-content: flex-start; /* Vänsterställd ikon */
+    justify-content: flex-start; /* Ikonen längst till vänster */
+    
     color: #111 !important;
     cursor: pointer;
-    z-index: 10; /* Måste ligga över titeln */
-    position: relative;
+    flex-shrink: 0; /* Pilen får inte krympa */
+    
+    /* Justera marginalen negativt om du vill ha den ÄNNU närmare kanten */
+    margin-left: -4px; 
 }
 
 .simple-back-btn svg,
@@ -3324,15 +3338,14 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     stroke-width: 2.5px;
 }
 
-/* --- 5. Kroppen (Där formulären bor) --- */
-/* Vi la till padding här istället för i .modal-content */
+/* --- 5. Kroppen --- */
 .modal-body {
     padding: 24px; 
     overflow-y: auto; 
     flex-grow: 1;
 }
 
-/* --- 6. Footern (Knapparna) --- */
+/* --- 6. Footern --- */
 .modal-actions { 
     display: flex; 
     justify-content: flex-end; 
@@ -3345,18 +3358,19 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     z-index: 10;
 }
 
-/* --- 7. Specialanpassning för Fordons-modalen --- */
+/* --- 7. Fordons-modalen (Samma stil) --- */
 .vehicle-header-row {
-    position: relative; /* För centrering */
     display: flex; 
-    justify-content: space-between; 
     align-items: center;
     
-    /* Samma grå design */
+    /* Samma logik som modal-header */
+    justify-content: flex-start !important;
+    gap: 8px !important;
+    
     background-color: #f8f9fa !important;  
     border-bottom: 1px solid #e5e7eb !important; 
     padding: 0 16px !important; 
-    height: 60px !important; /* Tvinga samma höjd */
+    height: 60px !important;
     
     margin: 0 !important; 
     position: sticky; 
@@ -3364,21 +3378,15 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     z-index: 50;
 }
 
-/* Dölj/Justera element i fordons-headern som krockar med nya designen */
-.vehicle-header-row .reg-group {
-    /* Vi döljer inte gruppen, men vi ser till att den inte styr layouten */
-    position: static; 
-}
-
-/* --- 8. Specialanpassning för Sök-modalen (Messenger) --- */
+/* --- 8. Sök-modalen (Messenger) --- */
 .messenger-search-header {
     display: flex;
     align-items: center;
-    padding: 0 12px; 
-    gap: 12px;
-    height: 60px !important; /* Samma höjd */
+    justify-content: flex-start !important;
+    gap: 8px !important;
     
-    /* Samma grå design */
+    padding: 0 12px; 
+    height: 60px !important;
     background-color: #f8f9fa !important; 
     border-bottom: 1px solid #e5e7eb !important;
 }
