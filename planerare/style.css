@@ -3794,3 +3794,115 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
         -webkit-overflow-scrolling: touch; /* Mjuk scroll på iPhone */
     }
 }
+
+/* =================================================================
+   FIX: KUNDMODAL & KNAPPAR (FINAL)
+   ================================================================= */
+
+/* --- MOBILVY (Max 768px) --- */
+@media (max-width: 768px) {
+
+    /* 1. TVINGA MODALEN TILL FULLSKÄRM (Lösning för Header & Tillbaka-knapp) */
+    #customerModal {
+        display: none; /* Dold som standard */
+        z-index: 20000 !important;
+    }
+    
+    #customerModal.show {
+        display: flex !important; /* Måste vara flex för att styra innehållet */
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 100% !important;
+        height: 100dvh !important; /* Full skärmhöjd */
+        background: #f8fafc !important; /* Bakgrundsfärg */
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    #customerModal .modal-content {
+        display: flex !important;
+        flex-direction: column !important; /* Stapla: Header -> Body -> Footer */
+        width: 100% !important;
+        height: 100% !important;
+        max-width: none !important;
+        max-height: none !important;
+        border-radius: 0 !important; /* Inga runda hörn på fullskärm */
+        background: transparent !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+    }
+
+    /* 2. LÅS HEADERN I TOPPEN */
+    #customerModal .modal-header {
+        flex-shrink: 0 !important; /* Får INTE krympa */
+        height: 60px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        background: #fff !important;
+        border-bottom: 1px solid #e2e8f0 !important;
+        padding: 0 16px !important;
+        z-index: 10 !important;
+    }
+
+    /* 3. SCROLLBAR KROPP (Mitten) */
+    #customerModal .modal-body {
+        flex-grow: 1 !important; /* Ta all ledig plats */
+        overflow-y: auto !important; /* Bara detta område scrollar */
+        padding-bottom: 100px !important; /* Plats för knapparna så inget döljs */
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* 4. FIXA KNAPPARNA I BOTTEN (Mobil) */
+    #customerModal .modal-actions {
+        flex-shrink: 0 !important; /* Får inte krympa */
+        display: grid !important;  /* Grid för exakt 50/50 */
+        grid-template-columns: 1fr 1fr !important;
+        gap: 12px !important;
+        padding: 16px !important;
+        background: #fff !important;
+        border-top: 1px solid #e2e8f0 !important;
+        box-shadow: 0 -4px 10px rgba(0,0,0,0.05) !important;
+        
+        /* Lås fast i botten */
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        z-index: 20 !important;
+    }
+
+    #customerModal .modal-actions button {
+        width: 100% !important;
+        height: 48px !important;
+        margin: 0 !important;
+        font-size: 1rem !important;
+    }
+}
+
+/* --- DATORVY (Min 769px) --- */
+@media (min-width: 769px) {
+    
+    /* 5. FIXA GIGANTISKA KNAPPAR PÅ DATOR */
+    #customerModal .modal-actions {
+        display: flex !important; /* Flexbox istället för Grid */
+        justify-content: flex-end !important; /* Knappar till höger */
+        gap: 12px !important;
+        padding: 16px 24px !important;
+        background: #fff !important;
+        border-top: 1px solid #f1f5f9 !important;
+    }
+
+    /* Gör knapparna lagom stora */
+    #customerModal .modal-actions button {
+        width: auto !important; /* Anpassa bredd efter text */
+        min-width: 120px !important; /* Men minst så här breda */
+        max-width: 200px !important;
+        height: 40px !important; /* Lite lägre på dator */
+        font-size: 0.9rem !important;
+        margin: 0 !important;
+    }
+}
