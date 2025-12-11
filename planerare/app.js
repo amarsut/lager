@@ -2053,8 +2053,14 @@ function closeSettings() {
 
 // --- 4. TEMA & PRIVACY FUNKTIONER ---
 function setPrivacyMode(isActive) {
-    if (isActive) document.body.classList.add('privacy-active');
-    else document.body.classList.remove('privacy-active');
+    // Logga för att se att det funkar i konsolen (F12)
+    console.log("Privacy Mode set to:", isActive); 
+    
+    if (isActive) {
+        document.body.classList.add('privacy-active');
+    } else {
+        document.body.classList.remove('privacy-active');
+    }
     localStorage.setItem('privacyMode', isActive);
 }
 
