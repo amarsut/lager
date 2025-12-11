@@ -830,30 +830,54 @@ function closeModals() {
 async function handleSaveJob(e) {
     e.preventDefault();
     
-    // ... (din befintliga kod för att hämta värden: kund, regnr, etc.) ...
+    // Hämta värden säkert
+    const jobIdElement = document.getElementById('jobId');
+    const jobId = jobIdElement ? jobIdElement.value : "";
     
-    // 1. Förbered datan som vanligt
+    const kund = document.getElementById('kundnamn').value || "Okänd kund";
+    const reg = document.getElementById('regnr').value.toUpperCase() || "OKÄNT";
+    const datum = document.getElementById('datum').value;
+    const tid = document.getElementById('tid').value;
+    const pris = parseInt(document.getElementById('kundpris').value) || 0;
+    const status = document.getElementById('statusSelect').value;
+    const paket = document.getElementById('paketSelect').value;
+    const kommentar = document.getElementById('kommentar').value;
+
+    // Skapa data-objektet
     const jobData = {
-        // ... (din data) ...
-        utgifter: currentExpenses, 
-        // ...
+        kundnamn: kund,
+        regnr: reg,
+        datum: `${datum}T${tid}`,
+        kundpris: pris,
+        status: status,
+        paket: paket,
+        kommentar: kommentar,
+        utgifter: currentExpenses || [], // Se till att detta är en array
+        deleted: false
     };
 
     try {
-        if (jobId) {
+        if (jobId && jobId.trim() !== "") {
+            // UPPDATERA existerande jobb (om ID finns)
             await db.collection("jobs").doc(jobId).update(jobData);
         } else {
+            // SKAPA nytt jobb (om ID är tomt)
             jobData.created = new Date().toISOString();
             await db.collection("jobs").add(jobData);
             
-            // --- NYTT: DRA AV OLJA FRÅN LAGER (Bara vid nya jobb) ---
-            await deductOilFromInventory(currentExpenses);
+            // Dra av olja BARA om det är ett nytt jobb
+            if (currentExpenses && currentExpenses.length > 0) {
+                await deductOilFromInventory(currentExpenses);
+            }
         }
+        
         closeModals();
         document.getElementById('jobModalForm').reset();
+        
     } catch (err) {
         console.error("Fel vid spara:", err);
-        alert("Kunde inte spara.");
+        // Visa felet för användaren (bra för debug)
+        alert("Kunde inte spara. Felkod: " + err.message);
     }
 }
 
