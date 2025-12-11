@@ -639,6 +639,60 @@
 	    </div>
 	</div>
 
+	<div id="settingsModal" class="modal-backdrop" style="z-index: 20002;">
+	    <div class="modal-content" style="max-width: 400px; max-height: 80vh;">
+	        <div class="modal-header">
+	            <h3>Inställningar</h3>
+	            <button class="modal-close-btn" onclick="document.getElementById('settingsModal').classList.remove('show')">
+	                <svg class="icon"><use href="#icon-close"></use></svg>
+	            </button>
+	        </div>
+	        
+	        <div class="modal-body" style="padding: 0 20px;">
+	            
+	            <div class="settings-row">
+	                <div class="settings-info">
+	                    <div class="settings-icon-box blue">
+	                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+	                    </div>
+	                    <div class="settings-text">
+	                        <span class="settings-label">Privacy Mode</span>
+	                        <span class="settings-sub">Dölj priser & belopp</span>
+	                    </div>
+	                </div>
+	                <label class="switch">
+	                    <input type="checkbox" id="privacyToggle">
+	                    <span class="slider round"></span>
+	                </label>
+	            </div>
+	
+	            <div class="settings-section-title">KONTO</div>
+	            
+	            <div class="settings-row">
+	                <div class="settings-info">
+	                    <div class="settings-icon-box gray">
+	                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+	                    </div>
+	                    <div class="settings-text">
+	                        <span class="settings-label user-name">Användare</span>
+	                        <span class="settings-sub user-email">Inloggad</span>
+	                    </div>
+	                </div>
+	            </div>
+	
+	            <button onclick="handleLogout()" class="settings-logout-btn">
+	                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+	                Logga ut
+	            </button>
+	            
+	            <div style="text-align:center; margin-top:30px; color:#9ca3af; font-size:0.75rem;">
+	                Version 1.2.0
+	            </div>
+	
+	        </div>
+	    </div>
+	</div>
+
 	<script src="packages.js"></script>
 	<script src="config.js"></script>
     <script src="app.js"></script>
