@@ -4023,3 +4023,132 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
         padding: 0 20px !important;
     }
 }
+
+/* =================================================================
+   FINAL MASTER FIX: KUNDMODAL (KORRIGERAD)
+   ================================================================= */
+
+/* --- 1. MOBILVY (Max 768px) --- */
+@media (max-width: 768px) {
+
+    /* Huvudcontainer: Måste ha högre z-index än headern (som är 200000) */
+    #customerModal {
+        z-index: 200001 !important; /* ETT STEG HÖGRE ÄN GLOBAL HEADER */
+        padding: 0 !important;
+    }
+    
+    #customerModal.show {
+        display: flex !important;
+        flex-direction: column !important;
+        position: fixed !important;
+        top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
+        width: 100vw !important;
+        height: 100dvh !important;
+        background: #f8fafc !important;
+    }
+
+    /* Gör innehållet till en flex-kolumn så headern stannar i toppen */
+    #customerModal .modal-content {
+        display: flex !important;
+        flex-direction: column !important;
+        height: 100% !important;
+        width: 100% !important;
+        border-radius: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important; 
+    }
+
+    /* Header: Fast höjd, ligger alltid överst */
+    #customerModal .modal-header {
+        flex: 0 0 60px !important; 
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        background: #fff !important;
+        border-bottom: 1px solid #e2e8f0 !important;
+        padding: 0 16px !important;
+        z-index: 50 !important;
+        position: relative !important;
+        /* Om du har en iPhone med "Notch", se till att vi har padding */
+        padding-top: env(safe-area-inset-top) !important;
+        /* Justera höjden om padding läggs till */
+        height: calc(60px + env(safe-area-inset-top)) !important;
+    }
+
+    /* Kroppen: Tar resten av platsen och scrollar */
+    #customerModal .modal-body {
+        flex: 1 !important; 
+        overflow-y: auto !important; 
+        padding-bottom: 100px !important; 
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Footer: Låst i botten */
+    #customerModal .modal-actions {
+        position: fixed !important;
+        bottom: 0 !important; left: 0 !important; right: 0 !important;
+        background: #fff !important;
+        border-top: 1px solid #e2e8f0 !important;
+        padding: 16px !important;
+        padding-bottom: max(16px, env(safe-area-inset-bottom)) !important; /* iPhone-streck fix */
+        z-index: 100 !important;
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 12px !important;
+    }
+    
+    /* Mobilknappar: Full höjd */
+    #customerModal .modal-actions button {
+        height: 48px !important;
+        width: 100% !important;
+    }
+}
+
+/* --- 2. DATORVY (Min 769px) --- */
+@media (min-width: 769px) {
+    
+    #customerModal {
+        align-items: center !important;
+        justify-content: center !important;
+        padding-top: 0 !important;
+        z-index: 20000 !important; /* Lägre än jobb-modal på dator */
+    }
+
+    #customerModal .modal-content {
+        height: auto !important;
+        max-height: 85vh !important;
+        width: 600px !important;
+        max-width: 90vw !important;
+        border-radius: 12px !important;
+        overflow: hidden !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+
+    #customerModal .modal-body {
+        overflow-y: auto !important;
+        max-height: 60vh !important;
+        padding-bottom: 20px !important; 
+    }
+
+    /* DATOR-FIX FÖR KNAPPARNA */
+    #customerModal .modal-actions {
+        position: static !important; 
+        display: flex !important;    
+        justify-content: flex-end !important; 
+        align-items: center !important; /* Förhindrar att knappar sträcks på höjden */
+        width: 100% !important;
+        grid-template-columns: none !important; 
+        padding: 16px 24px !important;
+    }
+
+    #customerModal .modal-actions button {
+        width: auto !important; 
+        flex: 0 0 auto !important; 
+        min-width: 100px !important;
+        max-width: 200px !important; /* Tak på bredden */
+        height: 40px !important;
+        padding: 0 20px !important;
+        font-size: 0.9rem !important;
+    }
+}
