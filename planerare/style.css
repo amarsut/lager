@@ -3340,10 +3340,16 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 
 /* --- 5. Kroppen --- */
 .modal-body {
-    padding: 24px; 
-    overflow-y: auto; 
-    flex-grow: 1;
-}
+        /* ÄNDRING: Ändrade första siffran (Top) från 0 till 20px */
+        padding: 20px 16px 20px 16px !important; 
+        
+        flex: 1 !important; 
+        overflow-y: auto !important;
+        padding-bottom: 100px !important; /* Behåll denna för att kunna scrolla förbi knapparna */
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none; 
+        -ms-overflow-style: none; 
+    }
 
 /* --- 6. Footern --- */
 .modal-actions { 
@@ -3390,3 +3396,4 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     background-color: #f8f9fa !important; 
     border-bottom: 1px solid #e5e7eb !important;
 }
+
