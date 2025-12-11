@@ -437,53 +437,49 @@
 	                <button class="simple-back-btn" onclick="closeVehicleModal()">
 	                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
 	                </button>
-	                <h2 id="vehicleRegTitle" style="font-size: 1.2rem; font-weight: 700;">---</h2>
-	                
-	                <div id="vehicleHeaderBtns" style="display:flex; gap:8px; margin-left:4px;"></div>
+	                <h2 id="vehicleRegTitle" style="font-size: 1.2rem; font-weight:700;">---</h2>
+	                <div id="vehicleHeaderBtns" style="display:flex; gap:8px;"></div>
 	            </div>
 	
 	            <div style="display:flex; gap:8px;">
-	                <a href="#" target="_blank" id="linkBiluppgifter" class="header-icon-action" title="Biluppgifter" style="border:none; background:transparent;">
-	                    <img src="https://biluppgifter.se/favicon.ico" alt="B" style="width:20px; height:20px;">
+	                <a href="#" target="_blank" id="linkBiluppgifter" class="header-icon-action">
+	                    <img src="https://biluppgifter.se/favicon.ico" alt="B">
 	                </a>
-	                <a href="#" target="_blank" id="linkOljemagasinet" class="header-icon-action" title="Oljemagasinet" style="border:none; background:transparent;">
-	                    <img src="https://www.google.com/s2/favicons?domain=oljemagasinet.se" alt="O" style="width:20px; height:20px;">
+	                <a href="#" target="_blank" id="linkOljemagasinet" class="header-icon-action">
+	                    <img src="https://www.google.com/s2/favicons?domain=oljemagasinet.se" alt="O">
 	                </a>
 	            </div>
 	        </div>
 	
 	        <div class="modal-body" style="background: #f8fafc; padding: 0 !important;">
 	            
-	            <div style="background:#fff; padding: 20px; border-bottom:1px solid #e2e8f0;">
-	                <div style="display:flex; justify-content:space-between; align-items:center;">
-	                    <span style="font-size:0.8rem; color:#64748b; font-weight:600; text-transform:uppercase;">Senaste ägare</span>
-	                    <span id="vehicleOwner" style="font-size:1.1rem; font-weight:700; color:#0f172a;">---</span>
-	                </div>
+	            <div style="background:#fff; padding:16px 20px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center;">
+	                <span style="font-size:0.8rem; color:#64748b; font-weight:700; text-transform:uppercase;">Senaste ägare</span>
+	                <span id="vehicleOwner" style="font-size:1rem; font-weight:700; color:#0f172a;">---</span>
 	            </div>
 	
 	            <div class="customer-section">
 	                <h3 class="section-title">Teknisk Data</h3>
 	                
-	                <div id="techDataContainer" style="display:none; margin-top:10px;"></div>
+	                <div id="techDataContainer" style="display:none;"></div>
 	
 	                <div id="fetchDataContainer" style="text-align:center; padding: 10px 0;">
-	                    <p style="font-size:0.85rem; color:#94a3b8; margin-bottom:12px;">Ingen data tillgänglig.</p>
-	                    <button id="btnFetchTechData" class="button secondary-outline" style="width:100%; justify-content:center; height:44px;">
-	                        <svg class="icon-sm" style="margin-right:8px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+	                    <p style="font-size:0.85rem; color:#94a3b8; margin-bottom:12px;">Ingen data hämtad.</p>
+	                    <button id="btnFetchTechData" class="button secondary-outline" style="width:100%; justify-content:center;">
+	                        <svg class="icon-sm" style="margin-right:8px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
 	                        Hämta med AI
 	                    </button>
 	                </div>
 	            </div>
 	
-	            <div style="padding: 0 20px; margin-bottom: 10px;">
-	                <div class="input-field-wrapper" style="background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.03);">
-	                    <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-	                    <input type="text" id="vehicleHistorySearch" placeholder="Sök i historik..." class="input-gray" style="background: transparent; border: none;" oninput="filterVehicleHistory(this.value)">
-	                </div>
-	            </div>
-	
-	            <div class="customer-section" style="border-top:1px solid #e2e8f0; border-bottom:none; margin-bottom:0;">
+	            <div class="customer-section" style="border-bottom:none;">
 	                <h3 class="section-title">Historik</h3>
+	                
+	                <div class="input-field-wrapper" style="margin-bottom:16px; background:#fff; border:1px solid #e2e8f0; border-radius:12px;">
+	                    <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+	                    <input type="text" id="vehicleHistorySearch" placeholder="Sök i historik..." class="input-gray" style="background:transparent; border:none;" oninput="filterVehicleHistory(this.value)">
+	                </div>
+	
 	                <div id="vehicleHistoryList" class="history-list-clean">
 	                    </div>
 	            </div>
