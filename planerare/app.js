@@ -2017,19 +2017,32 @@ async function saveBrandSelection(regnr, brandSlug) {
 
 // --- INSTÄLLNINGAR & PRIVACY MODE ---
 
-// 1. Initiera vid start
-// --- 1. INSTÄLLNINGAR INITIERING ---
 function initSettings() {
-    // Privacy Mode
+    // 1. Privacy Mode
+    // Hämta värdet (default false)
     const savedPrivacy = localStorage.getItem('privacyMode') === 'true';
+    
+    // Hämta checkboxen
     const pToggle = document.getElementById('privacyToggle');
+    
+    // Debug: Se om vi hittar elementet
+    console.log("Init Settings. Found toggle:", pToggle);
+
     if(pToggle) {
+        // Sätt visuellt läge
         pToggle.checked = savedPrivacy;
-        pToggle.addEventListener('change', (e) => setPrivacyMode(e.target.checked));
+        
+        // Lyssna på ÄNDRINGAR i checkboxen
+        pToggle.addEventListener('change', (e) => {
+            console.log("Privacy changed to:", e.target.checked);
+            setPrivacyMode(e.target.checked);
+        });
     }
+
+    // Applicera läget direkt vid start
     setPrivacyMode(savedPrivacy);
 
-    // Dark Mode
+    // 2. Dark Mode (Samma logik)
     const savedTheme = localStorage.getItem('theme') || 'light';
     const tToggle = document.getElementById('themeToggle');
     if(tToggle) {
@@ -2041,34 +2054,11 @@ function initSettings() {
     }
     setTheme(savedTheme);
 
-    // Starta swipe-lyssnare
     setupSwipeGestures();
 }
 
-// --- 2. ÖPPNA INSTÄLLNINGAR (Med Historik) ---
-// Anropa denna när du klickar på knappen i menyn
-function openSettingsModal() {
-    addHistoryState(); // Din befintliga funktion som lägger till historik
-    const modal = document.getElementById('settingsModal');
-    if(modal) modal.classList.add('show');
-}
-
-// --- 3. STÄNG INSTÄLLNINGAR (Via Knapp) ---
-function closeSettings() {
-    // Om vi stänger via kryss/pil, backa historiken (detta triggar popstate som stänger modalen)
-    if (history.state && history.state.modalOpen) {
-        history.back();
-    } else {
-        // Fallback om ingen historik finns
-        document.getElementById('settingsModal').classList.remove('show');
-    }
-}
-
-// --- 4. TEMA & PRIVACY FUNKTIONER ---
+// Applicerar klassen på <body>
 function setPrivacyMode(isActive) {
-    // Logga för att se att det funkar i konsolen (F12)
-    console.log("Privacy Mode set to:", isActive); 
-    
     if (isActive) {
         document.body.classList.add('privacy-active');
     } else {
@@ -2076,6 +2066,24 @@ function setPrivacyMode(isActive) {
     }
     localStorage.setItem('privacyMode', isActive);
 }
+
+// Öppnar modalen och lägger till historik
+function openSettingsModal() {
+    addHistoryState();
+    document.getElementById('settingsModal').classList.add('show');
+}
+
+// Stänger modalen och backar historiken (vilket triggar stängning)
+function closeSettings() {
+    if (history.state && history.state.modalOpen) {
+        history.back();
+    } else {
+        document.getElementById('settingsModal').classList.remove('show');
+    }
+}
+
+// Initiera direkt
+initSettings();
 
 function setTheme(theme) {
     document.documentElement.setAttribute('data-theme', theme);
