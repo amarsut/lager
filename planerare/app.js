@@ -596,54 +596,62 @@ function setupEventListeners() {
             const paketData = servicePaket[val];
 
             if (paketData) {
-                // 1. Fyll i pris
-                document.getElementById('kundpris').value = paketData.pris;
-                
-                // 2. Fyll i kommentar
+                // 1. Fyll i kommentar
                 const kommentarFalt = document.getElementById('kommentar');
                 if (kommentarFalt) {
                     kommentarFalt.value = paketData.kommentar;
                 }
 
-                // 3. Fyll i utgifter (NU MED LOGIK FÖR OLJA)
-                if (paketData.utgifter) {
-                    currentExpenses = []; // Rensa gamla
+                // Nollställ listor
+                currentExpenses = []; 
+                let totalKundPris = paketData.arbetskostnad || 0; // Börja med arbetskostnaden
 
-                    paketData.utgifter.forEach(item => {
+                // 2. Hantera material (om det finns)
+                if (paketData.material && paketData.material.length > 0) {
+                    
+                    paketData.material.forEach(item => {
                         
-                        // KOLL: Är detta en olja som kräver volym?
-                        if (item.typ === 'olja') {
-                            // Fråga användaren
-                            let input = prompt(`Hur många liter olja? (Pris: ${item.prisPerLiter} kr/L)`, "4.5");
+                        // --- A. FLYTANDE (OLJA) ---
+                        if (item.typ === 'flytande') {
+                            // Fråga om antal liter
+                            let input = prompt(`Hur många liter ${item.namn}?`, "4");
                             
-                            // Om användaren tryckte OK och skrev något
-                            if (input !== null) {
-                                // Byt ut kommatecken mot punkt (4,5 -> 4.5) så matten funkar
-                                let liter = parseFloat(input.replace(',', '.'));
+                            // Hantera inmatning (byt komma mot punkt)
+                            let liter = input ? parseFloat(input.replace(',', '.')) : 0;
+                            
+                            if (!isNaN(liter) && liter > 0) {
+                                // A1. Räkna ut vad KUNDEN ska betala
+                                const kostnadForKund = liter * item.prisKundPerLiter;
+                                totalKundPris += kostnadForKund;
+
+                                // A2. Räkna ut DIN utgift (Inköpspris)
+                                const dinKostnad = Math.round(liter * item.prisInkopPerLiter);
                                 
-                                if (!isNaN(liter) && liter > 0) {
-                                    // Räkna ut kostnad
-                                    let totalKostnad = Math.round(liter * item.prisPerLiter);
-                                    
-                                    // Lägg till i listan
-                                    currentExpenses.push({
-                                        namn: `${item.namn} (${liter}L)`,
-                                        kostnad: totalKostnad
-                                    });
-                                }
+                                // Lägg till i utgiftslistan (Osynligt för kunden, syns för din vinst)
+                                currentExpenses.push({
+                                    namn: `${item.namn} (${liter}L à ${item.prisInkopPerLiter}kr)`,
+                                    kostnad: dinKostnad
+                                });
                             }
                         } 
-                        // Annars är det en vanlig utgift
+                        
+                        // --- B. FASTA DELAR (OLJEFILTER) ---
                         else {
+                            // B1. Lägg på priset till kundens total
+                            totalKundPris += item.prisKund;
+
+                            // B2. Lägg till din inköpskostnad i utgiftslistan
                             currentExpenses.push({
                                 namn: item.namn,
-                                kostnad: item.kostnad
+                                kostnad: item.prisInkop || 0 // Om du satt 0 blir utgiften 0
                             });
                         }
                     });
-
-                    renderExpenses(); // Rita ut allt
                 }
+
+                // 3. Uppdatera UI
+                document.getElementById('kundpris').value = totalKundPris;
+                renderExpenses(); // Rita ut utgiftslistan och räkna vinst
             }
         });
     }
