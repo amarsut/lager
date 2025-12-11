@@ -761,7 +761,13 @@ function setupEventListeners() {
     });
 
     // Stäng-knappar
-    document.getElementById('modalCloseBtn').addEventListener('click', closeModals);
+    const backBtn = document.getElementById('modalBackBtn');
+	if (backBtn) {
+	    backBtn.addEventListener('click', (e) => {
+	        e.preventDefault(); // Förhindra standardbeteende
+	        closeModals();
+	    });
+	}
     document.getElementById('modalCancelBtn').addEventListener('click', closeModals);
     
     // Spara jobb (Både nytt och redigerat)
