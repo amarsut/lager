@@ -43,7 +43,7 @@ const INACTIVITY_LIMIT_MS = TIMEOUT_MINUTES * 60 * 1000;
 auth.onAuthStateChanged((user) => {
     const loginScreen = document.getElementById('loginScreen');
     const mainApp = document.getElementById('mainApp');
-    const loadingOverlay = document.getElementById('loadingOverlay'); // Hämta laddningsskärmen
+    const loadingOverlay = document.getElementById('loadingOverlay');
 
     // Dölj laddningsskärmen (Nu vet vi status!)
     if (loadingOverlay) loadingOverlay.style.display = 'none';
@@ -51,39 +51,49 @@ auth.onAuthStateChanged((user) => {
     if (user) {
         // --- ANVÄNDARE ÄR INLOGGAD ---
         if(loginScreen) loginScreen.style.display = 'none';
-        if(mainApp) mainApp.style.display = 'flex'; // VIKTIGT: flex för att behålla layouten
+        if(mainApp) mainApp.style.display = 'flex'; 
+        
+        // --- 1. HÄMTA ELEMENT (SIDEBAR & INSTÄLLNINGAR) ---
+        // Sidebar
+        const sidebarNameEl = document.querySelector('.user-name');
+        const sidebarAvatarEl = document.querySelector('.sidebar-avatar');
 
-		const settingsEmailEl = document.querySelector('.settings-sub.user-email');
-    	if(settingsEmailEl) settingsEmailEl.textContent = user.email;
-		
-		// Uppdatera sidomenyn
-		const userEmailEl = document.querySelector('.user-name');
-		const userAvatarEl = document.querySelector('.sidebar-avatar'); // Hämta avatar-bilden också
+        // Inställningsmeny (Nya elementen)
+        const settingsNameEl = document.querySelector('.settings-user-name');
+        const settingsEmailEl = document.querySelector('.settings-user-email');
+        const settingsAvatarEl = document.querySelector('.settings-user-avatar');
 
-		if(userEmailEl) {
-		    // 1. Försök ta namnet före @-tecknet
-		    const emailName = user.email.split('@')[0]; 
-		    
-		    // 2. Om namnet har punkt (t.ex. amar.sut), ersätt med mellanslag och gör stor bokstav
-		    // Resultat: "amar.sut" -> "Amar Sut"
-		    let displayName = emailName
-		        .split('.')
-		        .map(part => part.charAt(0).toUpperCase() + part.slice(1))
-		        .join(' ');
+        // --- 2. LOGIK FÖR NAMN & AVATAR ---
+        let displayName = "Användare";
+        
+        if(user.email) {
+            // Ta namnet före @-tecknet
+            const emailName = user.email.split('@')[0]; 
+            
+            // Om namnet har punkt (t.ex. amar.sut), ersätt med mellanslag och gör stor bokstav
+            // Resultat: "amar.sut" -> "Amar Sut"
+            displayName = emailName
+                .split('.')
+                .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+                .join(' ');
+        }
 
-		    userEmailEl.textContent = displayName;
+        // Skapa URL för UI Avatars
+        const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=eff6ff&color=3b82f6&bold=true`;
 
-		    // 3. (Valfritt) Uppdatera även avataren så den visar rätt initialer
-		    if (userAvatarEl) {
-		        // Skapa URL för UI Avatars med det nya namnet
-		        // Exempel: https://ui-avatars.com/api/?name=Amar+Sut&...
-		        const newAvatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=eff6ff&color=3b82f6&bold=true`;
-		        userAvatarEl.src = newAvatarUrl;
-		    }
-		}
+        // --- 3. UPPDATERA UI ---
+        
+        // Uppdatera Sidebar
+        if (sidebarNameEl) sidebarNameEl.textContent = displayName;
+        if (sidebarAvatarEl) sidebarAvatarEl.src = avatarUrl;
 
+        // Uppdatera Inställningsmeny
+        if (settingsNameEl) settingsNameEl.textContent = displayName;
+        if (settingsEmailEl) settingsEmailEl.textContent = user.email; // Visar exakt e-post
+        if (settingsAvatarEl) settingsAvatarEl.src = avatarUrl;
+
+        // --- 4. STARTA APPENS FUNKTIONER ---
         startInactivityCheck();
-
         initRealtimeListener(); 
         initChat();             
         
@@ -92,7 +102,10 @@ auth.onAuthStateChanged((user) => {
         if(loginScreen) loginScreen.style.display = 'flex';
         if(mainApp) mainApp.style.display = 'none';
         
+        // Stäng av lyssnare om de är igång
         if (chatUnsubscribe) chatUnsubscribe();
+        if (typeof jobsUnsubscribe === 'function') jobsUnsubscribe();
+        if (typeof specsUnsubscribe === 'function') specsUnsubscribe();
     }
 });
 
