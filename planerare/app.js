@@ -2157,33 +2157,93 @@ function setupSwipeGestures() {
 
 // Lägg denna funktion någonstans i app.js
 function initInventoryListener() {
-    // Lyssna på settings/inventory
     db.collection('settings').doc('inventory').onSnapshot(doc => {
         if (doc.exists) {
             const data = doc.data();
-            const current = data.motorOil || 0;      // T.ex. 150
-            const start = data.oilStartAmount || 208; // Standardfat är ca 208L
-            
-            // Uppdatera Text
+            const current = data.motorOil || 0;
+            const max = data.oilStartAmount || 208; 
+            const date = data.oilStartDate || "";
+
+            // UI Element
             const textEl = document.getElementById('oilLevelText');
             const percentEl = document.getElementById('oilPercent');
             const barEl = document.getElementById('oilProgressBar');
+            const dateEl = document.getElementById('oilDateBadge');
 
-            if (textEl) textEl.textContent = `${current.toFixed(1)} av ${start} liter kvar`;
+            // Uppdatera text
+            if (textEl) textEl.textContent = `${Math.round(current)} / ${max} liter`;
             
-            // Räkna ut procent
-            let percent = (current / start) * 100;
+            // Uppdatera procent & bar
+            let percent = (current / max) * 100;
             if (percent > 100) percent = 100;
             if (percent < 0) percent = 0;
 
             if (percentEl) percentEl.textContent = Math.round(percent) + '%';
-            
             if (barEl) {
                 barEl.style.width = `${percent}%`;
-                // Byt färg till röd om under 10%
-                if (percent < 10) barEl.classList.add('critical');
+                // Röd färg om mindre än 10% kvar
+                if(percent < 10) barEl.classList.add('critical');
                 else barEl.classList.remove('critical');
+            }
+
+            // Uppdatera Datum-badge
+            if (dateEl) {
+                if (date) {
+                    // Snyggare datumformat? T.ex. "2024-02-01" -> "1 feb 2024"
+                    dateEl.textContent = `Inköpt: ${date}`; 
+                    dateEl.style.display = 'inline-block';
+                } else {
+                    dateEl.style.display = 'none';
+                }
             }
         }
     });
+}
+
+// 2. Visa/Dölj formuläret
+function toggleOilForm() {
+    const form = document.getElementById('oilRefillForm');
+    const dateInput = document.getElementById('newBarrelDate');
+    
+    if (form.style.display === 'none') {
+        form.style.display = 'block';
+        // Sätt dagens datum som förval
+        if (!dateInput.value) {
+            dateInput.valueAsDate = new Date();
+        }
+    } else {
+        form.style.display = 'none';
+    }
+}
+
+// 3. Spara nytt fat till Firebase
+async function saveNewBarrel() {
+    const volInput = document.getElementById('newBarrelVol');
+    const dateInput = document.getElementById('newBarrelDate');
+    
+    const newVolume = parseFloat(volInput.value);
+    const newDate = dateInput.value;
+
+    if (!newVolume || !newDate) {
+        alert("Fyll i både volym och datum.");
+        return;
+    }
+
+    if (confirm(`Bekräfta nytt fat: \nVolym: ${newVolume} liter\nDatum: ${newDate}\n\nDetta återställer lagersaldot.`)) {
+        try {
+            await db.collection('settings').doc('inventory').set({
+                motorOil: newVolume,        // Nuvarande mängd (fullt)
+                oilStartAmount: newVolume,  // Maxkapacitet
+                oilStartDate: newDate       // Datum
+            }, { merge: true }); // Merge behåller ev. andra fält
+
+            // Dölj formuläret och ge feedback
+            toggleOilForm();
+            alert("Nytt fat registrerat!"); 
+
+        } catch (error) {
+            console.error("Fel vid uppdatering:", error);
+            alert("Kunde inte spara.");
+        }
+    }
 }
