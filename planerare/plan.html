@@ -639,54 +639,69 @@
 	    </div>
 	</div>
 
-	<div id="settingsModal" class="modal-backdrop" style="z-index: 20002;">
-	    <div class="modal-content" style="max-width: 400px; max-height: 80vh;">
-	        <div class="modal-header">
-			    <h3>Inställningar</h3>
-			    <button class="modal-close-btn" onclick="document.getElementById('settingsModal').classList.remove('show')">
-			        <svg class="icon"><use href="#icon-close"></use></svg>
-			    </button>
-			</div>
+	<div id="settingsModal" class="modal-backdrop one-ui-backdrop" style="z-index: 20002;">
+	    <div class="one-ui-container">
 	        
-	        <div class="modal-body" style="padding: 0 20px;">
+	        <div class="one-ui-header">
+	            <div class="header-top-row">
+	                <button class="one-ui-back-btn" onclick="closeSettings()">
+	                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+	                </button>
+	                <span class="header-small-title">Inställningar</span>
+	            </div>
+	            <h1 class="header-large-title">Inställningar</h1>
+	        </div>
+	
+	        <div class="one-ui-content">
 	            
-	            <div class="settings-row">
-	                <div class="settings-info">
-	                    <div class="settings-icon-box blue">
-	                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+	            <div class="one-ui-section-title">VISNING</div>
+	            <div class="one-ui-group">
+	                
+	                <div class="one-ui-item">
+	                    <div class="one-ui-label-box">
+	                        <span class="one-ui-label">Privacy Mode</span>
+	                        <span class="one-ui-sub">Dölj känsliga belopp</span>
 	                    </div>
-	                    <div class="settings-text">
-	                        <span class="settings-label">Privacy Mode</span>
-	                        <span class="settings-sub">Dölj priser & belopp</span>
-	                    </div>
+	                    <label class="android-switch">
+	                        <input type="checkbox" id="privacyToggle">
+	                        <span class="slider"></span>
+	                    </label>
 	                </div>
-	                <label class="switch">
-	                    <input type="checkbox" id="privacyToggle">
-	                    <span class="slider round"></span>
-	                </label>
+	
+	                <div class="one-ui-item separator">
+	                    <div class="one-ui-label-box">
+	                        <span class="one-ui-label">Mörkt läge</span>
+	                        <span class="one-ui-sub">Byt utseende på appen</span>
+	                    </div>
+	                    <label class="android-switch">
+	                        <input type="checkbox" id="themeToggle">
+	                        <span class="slider"></span>
+	                    </label>
+	                </div>
+	
 	            </div>
 	
-	            <div class="settings-section-title">KONTO</div>
-	            
-	            <div class="settings-row">
-	                <div class="settings-info">
-	                    <div class="settings-icon-box gray">
+	            <div class="one-ui-section-title">KONTO</div>
+	            <div class="one-ui-group">
+	                <div class="one-ui-item">
+	                    <div class="one-ui-icon-circle blue">
 	                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
 	                    </div>
-	                    <div class="settings-text">
-	                        <span class="settings-label user-name">Användare</span>
-	                        <span class="settings-sub user-email">Inloggad</span>
+	                    <div class="one-ui-label-box">
+	                        <span class="one-ui-label user-name">Användare</span>
+	                        <span class="one-ui-sub user-email">Inloggad</span>
 	                    </div>
 	                </div>
 	            </div>
 	
-	            <button onclick="handleLogout()" class="settings-logout-btn">
-	                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-	                Logga ut
-	            </button>
-	            
-	            <div style="text-align:center; margin-top:30px; color:#9ca3af; font-size:0.75rem;">
-	                Version 1.2.0
+	            <div class="one-ui-group mt-3">
+	                <button onclick="handleLogout()" class="one-ui-item clickable logout-text">
+	                    Logga ut
+	                </button>
+	            </div>
+	
+	            <div class="one-ui-footer">
+	                Version 1.3.0 (Samsung Style)
 	            </div>
 	
 	        </div>
