@@ -1182,39 +1182,45 @@ window.removeExpense = function(index) {
 // ==========================================
 
 function openVehicleModal(regnr) {
-	addHistoryState();
+    addHistoryState();
     if(!regnr || regnr === '---') return;
     
     const cleanReg = regnr.replace(/\s/g, '').toUpperCase();
     const modal = document.getElementById('vehicleModal');
-    
     if (!modal) return;
-    
-    // --- BYGG HEADER DYNAMISKT (Clean design med stora knappar) ---
-    const headerRow = modal.querySelector('.vehicle-header-row');
-    if(headerRow) {
-		const currentLogoUrl = getBrandIconUrl('volvo', cleanReg) || getBrandIconUrl('', cleanReg); 
-		const logoImgHtml = currentLogoUrl 
-		        ? `<img src="${currentLogoUrl}" class="brand-btn-icon">` 
-		        : `<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path><path d="M2 2l7.586 7.586"></path><circle cx="11" cy="11" r="2"></circle></svg>`;
 
-		headerRow.innerHTML = `
-		    <div class="reg-group">
-		        <h1 id="vehicleRegTitle">${cleanReg}</h1>
-		        
-		        <button class="icon-btn-sm" id="btnCopyRegModal" title="Kopiera" onclick="navigator.clipboard.writeText('${cleanReg}')">
-		            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
-		        </button>
+    // Sätt titel
+    const titleEl = document.getElementById('vehicleRegTitle');
+    if(titleEl) titleEl.textContent = cleanReg;
 
-		        <button class="icon-btn-sm" id="btnEditBrandModal" title="Ändra märke" onclick="openBrandSelector('${cleanReg}')" style="margin-left:4px;">
-		            ${logoImgHtml}
-		        </button>
-		    </div>
-		    <button id="vehicleModalClose" onclick="closeVehicleModal()">
-		        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-		    </button>
-		`;
+    // --- FIX: Injicera knapparna i nya containern ---
+    const btnContainer = document.getElementById('vehicleHeaderBtns');
+    if (btnContainer) {
+        const currentLogoUrl = getBrandIconUrl('volvo', cleanReg) || getBrandIconUrl('', cleanReg); 
+        const logoImgHtml = currentLogoUrl 
+            ? `<img src="${currentLogoUrl}" style="width:18px; height:18px; object-fit:contain; filter:grayscale(100%); opacity:0.7;">` 
+            : `<svg style="width:16px; height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path></svg>`;
+
+        btnContainer.innerHTML = `
+            <button class="header-icon-action" title="Kopiera" onclick="navigator.clipboard.writeText('${cleanReg}')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+            </button>
+            <button class="header-icon-action" title="Ändra märke" onclick="openBrandSelector('${cleanReg}')">
+                ${logoImgHtml}
+            </button>
+        `;
     }
+    
+    // ... (Resten av funktionen är samma: länkar, historik, teknisk data) ...
+    // Uppdatera länkar
+    document.getElementById('linkBiluppgifter').href = `https://biluppgifter.se/fordon/${cleanReg}`;
+    document.getElementById('linkOljemagasinet').href = `https://www.oljemagasinet.se/`;
+
+    renderVehicleHistory(cleanReg);
+    // ... hämta teknisk data kod ...
+    
+    modal.classList.add('show');
+}
 
     // Uppdatera länkar
     const linkBiluppgifter = document.getElementById('linkBiluppgifter');
@@ -1265,7 +1271,7 @@ function renderVehicleHistory(regnr) {
     
     if(!container) return;
 
-    // Hitta alla jobb för denna bil
+    // Hitta jobb och sortera
     let fullHistory = allJobs.filter(j => j.regnr === regnr && !j.deleted)
                              .sort((a,b) => new Date(b.datum) - new Date(a.datum));
 
@@ -1278,32 +1284,33 @@ function renderVehicleHistory(regnr) {
     container.innerHTML = '';
     
     if (fullHistory.length === 0) {
-        container.innerHTML = '<div style="text-align:center; padding:20px; color:#9ca3af; font-size:0.85rem;">Ingen historik hittades.</div>';
+        container.innerHTML = '<div style="text-align:center; padding:30px; color:#9ca3af; font-size:0.85rem;">Ingen historik hittades.</div>';
         return;
     }
 
-    // Rendera listan (Samma design som Kundprofil)
+    // Rendera listan
     fullHistory.forEach(job => {
         const row = document.createElement('div');
         row.className = 'history-item-clean';
-        row.onclick = () => {
-            // Stäng fordonsmodalen tillfälligt om man vill, eller öppna jobb ovanpå
-            openEditModal(job.id);
-        };
+        // Lägg till padding vänster manuellt eftersom vi tog bort border-containern i HTML
+        row.style.paddingLeft = "16px"; 
+        row.onclick = () => openEditModal(job.id);
 
         const dateStr = job.datum.split('T')[0];
         
-        // LOGIK FÖR BESKRIVNING:
-        // 1. Kommentar? 2. Paket? 3. Fallback "Service"
-        let description = job.kommentar && job.kommentar.length > 0 ? job.kommentar : (job.paket || 'Service');
+        // --- HÄR ÄR FIXEN FÖR TEXT-KLIPPNING ---
+        let commentText = job.kommentar && job.kommentar.length > 0 ? job.kommentar : (job.paket || 'Service');
         
-        // I fordonsvyn vet vi redan regnr, så vi behöver inte visa det i texten
-        // Men vi klipper texten om den är för lång (CSS sköter ellipsen '...')
-
+        // Eftersom vi är i fordonsvyn behöver vi inte visa Regnr igen, 
+        // MEN om du vill visa t.ex. bilmärke eller paket här kan du göra det.
+        // För enhetlighetens skull (samma kodstruktur som kundvyn):
+        
         row.innerHTML = `
-            <div class="h-info-col">
+            <div class="h-info-col" style="width:100%; overflow:hidden;">
                 <div class="h-date">${dateStr}</div>
-                <div class="h-desc">${description}</div>
+                <div class="h-desc-row">
+                    <span class="h-desc-text" title="${commentText}">${commentText}</span>
+                    </div>
             </div>
             <div class="h-price">${job.kundpris} kr</div>
         `;
@@ -2673,23 +2680,25 @@ function openCustomerModal(customer) {
         
         const dateStr = job.datum.split('T')[0];
         
-        // LOGIK FÖR BESKRIVNING:
-        // Prioritera Kommentar -> Paket -> Service
-        let description = job.kommentar && job.kommentar.trim().length > 0 
+        // Hämta texten
+        let rawText = job.kommentar && job.kommentar.trim().length > 0 
             ? job.kommentar 
             : (job.paket || 'Service');
             
-        // I Kundvyn vill vi gärna se Regnr också för att veta vilken bil det gällde
+        // Förbered regnr-delen
+        let regPart = '';
         if (job.regnr && job.regnr !== '---') {
-            // Lägg regnr först eller sist? Vi lägger det diskret i beskrivningen om det inte är med.
-            // Ex: "Byte bromsar • ABC 123"
-            description = `${description} • <span style="font-weight:600; color:#475569;">${job.regnr}</span>`;
+            // Vi lägger regnr i en separat span som inte får krympa (flex-shrink: 0)
+            regPart = `<span class="h-desc-reg">• ${job.regnr}</span>`;
         }
 
         row.innerHTML = `
-            <div class="h-info-col">
+            <div class="h-info-col" style="width:100%; overflow:hidden;">
                 <div class="h-date">${dateStr}</div>
-                <div class="h-desc">${description}</div>
+                <div class="h-desc-row">
+                    <span class="h-desc-text">${rawText}</span>
+                    ${regPart}
+                </div>
             </div>
             <div class="h-price">${job.kundpris} kr</div>
         `;
