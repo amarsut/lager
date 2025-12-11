@@ -2986,25 +2986,27 @@ input[type="number"] {
 /* INSTÄLLNINGAR MENY*/
 
 /* =========================================
-   SETTINGS STYLING (FIXED UI & TOGGLES)
+   SAMSUNG ONE UI DESIGN SYSTEM (FINAL V3)
    ========================================= */
 
-/* Grundlayout */
+/* --- GRUNDLAYOUT (FIXED HEADER SCROLL) --- */
 .one-ui-backdrop.show {
-    background-color: #f8f9fa !important;
+    background-color: #f2f2f2 !important;
     display: block !important;
     padding: 0 !important;
     z-index: 20002 !important;
 }
 
 .one-ui-container {
-    width: 100%; height: 100%;
-    display: flex; flex-direction: column;
-    background-color: #f8f9fa;
-    overflow-y: auto;
+    width: 100%; 
+    height: 100%;
+    display: flex; 
+    flex-direction: column; /* Stapla Header + Content */
+    background-color: #f2f2f2;
+    overflow: hidden; /* VIKTIGT: Förhindrar att hela containern scrollar */
 }
 
-/* --- 1. HEADER (Enkel Pil + Titel) --- */
+/* --- HEADER (NU LÅST I TOPPEN) --- */
 .one-ui-header-simple {
     display: flex;
     align-items: center;
@@ -3012,8 +3014,10 @@ input[type="number"] {
     height: 60px;
     background-color: #f8f9fa;
     border-bottom: 1px solid #e5e7eb;
-    flex-shrink: 0;
+    flex-shrink: 0; /* VIKTIGT: Headern krymper inte */
     gap: 16px;
+    position: relative; 
+    z-index: 10;
 }
 
 .simple-back-btn {
@@ -3028,96 +3032,15 @@ input[type="number"] {
     font-size: 1.1rem; font-weight: 700; color: #111; margin: 0;
 }
 
-/* --- 2. LAYOUT & CARDS --- */
-.one-ui-content.compact-mode { padding: 20px 16px; }
-
-.settings-card-group {
-    background: #fff;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px; /* Samma radie som jobbkort */
-    overflow: hidden;
-    margin-bottom: 20px;
+/* --- CONTENT (SCROLLBAR AREA) --- */
+.one-ui-content.compact-mode {
+    padding: 20px 16px 40px 16px;
+    flex-grow: 1;      /* Tar upp resten av höjden */
+    overflow-y: auto;  /* Bara denna del scrollar */
+    -webkit-overflow-scrolling: touch; /* Mjuk scroll på iPhone */
 }
 
-/* Klickbar rad (Label) */
-.settings-item {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 16px;
-    background: #fff;
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-}
-.settings-item:active { background-color: #f9fafb; }
-
-.settings-separator {
-    height: 1px; background-color: #f1f5f9; margin: 0 16px;
-}
-
-.settings-text-col { display: flex; flex-direction: column; }
-.settings-title { font-size: 0.95rem; font-weight: 600; color: #1f2937; }
-.settings-desc { font-size: 0.8rem; color: #9ca3af; margin-top: 2px; }
-
-.settings-section-label {
-    font-size: 0.75rem; font-weight: 700; color: #64748b;
-    margin: 8px 4px 8px 4px; text-transform: uppercase; letter-spacing: 0.5px;
-}
-
-/* --- 3. PROFIL KORT (Sidebar Clone) --- */
-.sidebar-profile-clone {
-    display: flex; align-items: center; gap: 12px;
-    padding: 12px; background: #fff;
-}
-.sidebar-profile-clone .user-info { display: flex; flex-direction: column; flex-grow: 1; }
-.sidebar-profile-clone .user-name { font-size: 0.9rem; font-weight: 600; color: #1f2937; }
-.sidebar-profile-clone .user-role { font-size: 0.75rem; color: #9ca3af; }
-
-.sidebar-profile-clone .logout-icon-btn {
-    width: 36px; height: 36px;
-    display: flex; align-items: center; justify-content: center;
-    border: none; background: transparent;
-    color: #9ca3af; cursor: pointer; transition: color 0.2s;
-}
-.sidebar-profile-clone .logout-icon-btn:hover,
-.sidebar-profile-clone .logout-icon-btn:active {
-    color: #ef4444; background-color: #fef2f2; border-radius: 8px;
-}
-
-.one-ui-footer {
-    text-align: center; color: #bbb; font-size: 0.75rem; margin-top: 20px;
-}
-
-/* --- 4. TOGGLE (Android Style) --- */
-.android-switch { position: relative; display: inline-block; width: 46px; height: 26px; }
-.android-switch input { opacity: 0; width: 0; height: 0; }
-.android-switch .slider {
-    position: absolute; cursor: pointer;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background-color: #e5e7eb; transition: .3s; border-radius: 34px;
-}
-.android-switch .slider:before {
-    position: absolute; content: "";
-    height: 20px; width: 20px; left: 3px; bottom: 3px;
-    background-color: white; transition: .3s; border-radius: 50%;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-.android-switch input:checked + .slider { background-color: #3b82f6; }
-.android-switch input:checked + .slider:before { transform: translateX(20px); }
-
-/* --- 5. PRIVACY MODE (Blur Effect) --- */
-body.privacy-active .stat-card-value,
-body.privacy-active .money-related,
-body.privacy-active .price-row .row-value,
-body.privacy-active #kundpris,
-body.privacy-active #vinstDisplay,
-body.privacy-active #utgifterDisplay,
-body.privacy-active .expense-item strong,
-body.privacy-active .stat-card[data-filter="offererad"] .stat-card-value {
-    color: transparent !important;
-    text-shadow: 0 0 10px rgba(0,0,0,0.4) !important;
-    user-select: none;
-}
-
-/* --- 6. DESKTOP & DARK MODE --- */
+/* --- DESKTOP FIX --- */
 @media (min-width: 769px) {
     .one-ui-backdrop.show {
         background-color: rgba(0,0,0,0.4) !important;
@@ -3126,166 +3049,133 @@ body.privacy-active .stat-card[data-filter="offererad"] .stat-card-value {
     .one-ui-container {
         max-width: 420px; height: auto; max-height: 80vh;
         border-radius: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-        overflow: hidden;
+        /* Behövs för att modalen ska funka snyggt på dator */
+        display: flex; flex-direction: column; 
     }
-    .one-ui-header-simple { background: #fff; }
 }
 
-[data-theme="dark"] .one-ui-container, [data-theme="dark"] .one-ui-header-simple { background-color: #000; border-color: #333; }
-[data-theme="dark"] .simple-back-btn, [data-theme="dark"] .header-simple-title { color: #fff; }
-[data-theme="dark"] .settings-card-group, [data-theme="dark"] .settings-item, [data-theme="dark"] .sidebar-profile-clone { background-color: #1c1c1e; border-color: #333; }
-[data-theme="dark"] .settings-title, [data-theme="dark"] .user-name { color: #fff; }
-[data-theme="dark"] .android-switch .slider { background-color: #444; }
-[data-theme="dark"] .settings-separator { background-color: #333; }
-
-/* Lägg till en liten "lås"-ikon bredvid suddiga priser om man vill (valfritt) */
-/*
-body.privacy-active .price-row .row-value::after {
-    content: '🔒'; color: #9ca3af; font-size: 10px; position: absolute; right: 0; top:2px; text-shadow: none;
+/* --- CARDS & ITEMS --- */
+.settings-section-label {
+    font-size: 0.75rem; font-weight: 700; color: #64748b;
+    margin: 8px 4px 8px 4px; text-transform: uppercase; letter-spacing: 0.5px;
 }
-*/
+.settings-section-label:first-child { margin-top: 0; }
 
-/* --- LAGERSTATUS STYLING --- */
-
-.settings-icon.orange-light { 
-    background-color: #fff7ed; 
-    color: #f97316; /* Orange färg */
-}
-
-.oil-progress-bg {
-    width: 100%;
-    height: 8px;
-    background-color: #f3f4f6;
-    border-radius: 4px;
+.settings-card-group {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px; /* Lite mindre radie för kompaktare känsla */
     overflow: hidden;
-    margin-top: 4px;
+    margin-bottom: 20px;
 }
 
-.oil-progress-fill {
-    height: 100%;
-    background-color: #f97316; /* Orange olja */
-    border-radius: 4px;
-    transition: width 0.5s ease;
+.settings-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px; /* Lite mindre padding */
+    background: #fff;
+    cursor: pointer;
 }
+.settings-item:active { background-color: #f9fafb; }
 
-/* Ändra färg om det är kritiskt lågt (< 10%) */
-.oil-progress-fill.critical {
-    background-color: #ef4444; /* Röd */
-}
+.settings-separator { height: 1px; background-color: #f1f5f9; margin: 0 16px; }
+.settings-text-col { display: flex; flex-direction: column; }
+.settings-title { font-size: 0.95rem; font-weight: 600; color: #1f2937; }
+.settings-desc { font-size: 0.8rem; color: #9ca3af; margin-top: 2px; }
 
-/* --- LAGERSTATUS DESIGN (REDESIGNED) --- */
-
+/* --- LAGERSTATUS (KOMPAKT & SNYGG) --- */
 .inventory-card {
-    display: block !important; /* Tvinga block-layout */
-    padding: 20px !important;
+    display: block !important; padding: 16px !important;
 }
 
-/* Header Section */
-.inventory-header {
-    display: flex;
-    align-items: flex-start;
-    gap: 14px;
-    margin-bottom: 16px;
+/* Titel-raden */
+.inventory-header-row {
+    display: flex; 
+    align-items: center; 
+    gap: 8px; 
+    flex-wrap: wrap; /* Säkrar om texten blir lång */
+    margin-bottom: 8px;
 }
 
-.inventory-icon-col .settings-icon {
-    width: 42px; height: 42px; /* Något större ikon */
-}
-.settings-icon.orange-light { background-color: #fff7ed; color: #f97316; }
-
-.inventory-info-col {
-    display: flex; flex-direction: column; gap: 4px;
-}
-
+/* Badgen på samma rad */
 .oil-badge {
-    display: inline-block;
     background-color: #f1f5f9;
     color: #64748b;
-    font-size: 0.75rem;
-    padding: 3px 8px;
-    border-radius: 6px;
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    border-radius: 4px;
     font-weight: 600;
-    align-self: flex-start;
+    white-space: nowrap;
+    border: 1px solid #e2e8f0;
 }
 
-/* Stats Section */
-.inventory-stats-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    margin-bottom: 12px;
+/* Siffror och Procent */
+.inventory-stats-compact {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    margin-bottom: 6px;
 }
+.stat-main-text { font-size: 0.9rem; color: #64748b; font-weight: 500; }
+.stat-percent-text { font-size: 1.1rem; font-weight: 800; color: #111; }
 
-.inventory-stat-item {
-    display: flex; flex-direction: column;
-}
-.inventory-stat-item.right-align { align-items: flex-end; }
-
-.stat-label {
-    font-size: 0.75rem; font-weight: 600; color: #94a3b8;
-    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;
-}
-
-.stat-value {
-    font-size: 1.1rem; font-weight: 700; color: #1e293b;
-}
-.stat-value.percent {
-    font-size: 1.5rem; color: #f97316; /* Orange för procent */
-}
-
-/* Progress Bar */
 .oil-progress-bg {
-    width: 100%; height: 12px; /* Lite tjockare */
-    background-color: #f1f5f9;
-    border-radius: 8px; overflow: hidden;
-    margin-bottom: 20px;
+    width: 100%; height: 8px; background-color: #f1f5f9;
+    border-radius: 4px; overflow: hidden; margin-bottom: 12px;
 }
 .oil-progress-fill {
     height: 100%;
     background: linear-gradient(90deg, #f97316 0%, #fb923c 100%);
-    border-radius: 8px;
-    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 4px; transition: width 0.6s;
 }
 .oil-progress-fill.critical { background: #ef4444; }
 
-/* Action Button (NY DESIGN) */
-.refill-action-btn {
-    width: 100%;
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-    padding: 12px;
-    background-color: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 10px;
-    color: #334155; font-size: 0.95rem; font-weight: 600;
-    cursor: pointer; transition: all 0.2s;
+/* Liten snygg text-knapp */
+.refill-text-btn {
+    width: 100%; text-align: center;
+    color: #3b82f6; font-size: 0.85rem; font-weight: 600;
+    background: none; border: none; padding: 8px 0 0 0;
+    cursor: pointer; border-top: 1px solid #f8fafc;
 }
-.refill-action-btn:hover { background-color: #f1f5f9; border-color: #cbd5e1; }
-.refill-action-btn:active { background-color: #e2e8f0; transform: scale(0.99); }
-.refill-action-btn svg { width: 18px; height: 18px; color: #64748b; }
+.refill-text-btn:active { opacity: 0.7; }
 
-/* Utfällbar box (Oförändrad) */
-.oil-refill-container { margin-top: 16px; animation: slideDown 0.3s ease-out; }
-.refill-box { background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; }
-.refill-title { font-size: 0.85rem; font-weight: 700; color: #334155; margin: 0 0 10px 0; }
-.refill-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
-.input-group-small label { display: block; font-size: 0.7rem; color: #64748b; margin-bottom: 4px; font-weight: 600; }
-.input-group-small input { width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem; }
-.save-barrel-btn { width: 100%; background-color: #0f172a; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; cursor: pointer; }
-.save-barrel-btn:active { transform: scale(0.98); }
-@keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+/* Utfällbar box */
+.oil-refill-container { margin-top: 12px; animation: slideDown 0.2s ease-out; }
+.refill-box { background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; }
+.refill-title { font-size: 0.8rem; font-weight: 700; margin: 0 0 8px 0; color: #334155; }
+.refill-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+.input-group-small label { font-size: 0.7rem; display: block; margin-bottom: 2px; color: #64748b; font-weight: 600; }
+.input-group-small input { width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem; }
+.save-barrel-btn { width: 100%; background: #0f172a; color: white; border: none; padding: 8px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; }
 
-/* DARK MODE FIXES */
-[data-theme="dark"] .settings-icon.orange-light { background-color: #331f0f; color: #fb923c; }
-[data-theme="dark"] .oil-badge { background-color: #333; color: #aaa; }
-[data-theme="dark"] .stat-label { color: #888; }
-[data-theme="dark"] .stat-value { color: #fff; }
-[data-theme="dark"] .stat-value.percent { color: #fb923c; }
-[data-theme="dark"] .oil-progress-bg { background-color: #333; }
-[data-theme="dark"] .refill-action-btn { background-color: #1c1c1e; border-color: #333; color: #fff; }
-[data-theme="dark"] .refill-action-btn:hover { background-color: #2c2c2e; }
-[data-theme="dark"] .refill-action-btn svg { color: #aaa; }
+@keyframes slideDown { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
+/* --- PROFIL & TOGGLES --- */
+.sidebar-profile-clone { display: flex; align-items: center; gap: 12px; padding: 12px; background: #fff; }
+.sidebar-profile-clone .user-info { display: flex; flex-direction: column; flex-grow: 1; }
+.sidebar-profile-clone .user-name { font-size: 0.9rem; font-weight: 600; color: #1f2937; }
+.sidebar-profile-clone .user-role { font-size: 0.75rem; color: #9ca3af; }
+.sidebar-profile-clone .logout-icon-btn { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border: none; background: transparent; color: #9ca3af; cursor: pointer; }
+.sidebar-profile-clone .logout-icon-btn:hover { color: #ef4444; background-color: #fef2f2; border-radius: 8px; }
+
+.android-switch { position: relative; display: inline-block; width: 42px; height: 24px; }
+.android-switch input { opacity: 0; width: 0; height: 0; }
+.android-switch .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #e5e7eb; transition: .3s; border-radius: 34px; }
+.android-switch .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+.android-switch input:checked + .slider { background-color: #3b82f6; }
+.android-switch input:checked + .slider:before { transform: translateX(18px); }
+
+/* --- PRIVACY MODE --- */
+body.privacy-active .stat-card-value, body.privacy-active .money-related, body.privacy-active .price-row .row-value, body.privacy-active #kundpris, body.privacy-active #vinstDisplay, body.privacy-active #utgifterDisplay, body.privacy-active .expense-item strong, body.privacy-active .stat-card[data-filter="offererad"] .stat-card-value {
+    color: transparent !important; text-shadow: 0 0 10px rgba(0,0,0,0.4) !important; user-select: none;
+}
+
+/* --- DARK MODE --- */
+[data-theme="dark"] .one-ui-container, [data-theme="dark"] .one-ui-header-simple { background-color: #000; border-color: #333; }
+[data-theme="dark"] .simple-back-btn, [data-theme="dark"] .header-simple-title { color: #fff; }
+[data-theme="dark"] .settings-card-group, [data-theme="dark"] .settings-item, [data-theme="dark"] .sidebar-profile-clone { background-color: #1c1c1e; border-color: #333; }
+[data-theme="dark"] .settings-title, [data-theme="dark"] .user-name, [data-theme="dark"] .stat-percent-text { color: #fff; }
+[data-theme="dark"] .oil-badge { background-color: #333; color: #ccc; border-color: #444; }
 [data-theme="dark"] .refill-box { background-color: #1c1c1e; border-color: #333; }
 [data-theme="dark"] .refill-title { color: #fff; }
 [data-theme="dark"] .input-group-small label { color: #888; }
 [data-theme="dark"] .input-group-small input { background-color: #333; border-color: #444; color: #fff; }
-[data-theme="dark"] .save-barrel-btn { background-color: #3b82f6; }
+[data-theme="dark"] .android-switch .slider { background-color: #444; }
+[data-theme="dark"] .settings-separator { background-color: #333; }
