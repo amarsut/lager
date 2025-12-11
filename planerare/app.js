@@ -596,21 +596,27 @@ function updateStatsCounts(jobs) {
 function setupEventListeners() {
 
 	// Hitta knappen för "Kunder" i sidebaren (du kanske måste ge den ett ID i HTML, t.ex. id="navCustomers")
-	const navCustomers = document.querySelector('button span:contains("Kunder")')?.parentElement || 
-	                     Array.from(document.querySelectorAll('.nav-link')).find(el => el.textContent.includes('Kunder'));
-	
+	const navCustomers = document.getElementById('navCustomers');
+
 	if (navCustomers) {
 	    navCustomers.addEventListener('click', () => {
-	        // Uppdatera UI
+	        // 1. Uppdatera UI (Markera knappen som aktiv)
 	        document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
 	        navCustomers.classList.add('active');
 	        
-	        // Dölj andra vyer, visa kunder
-	        document.getElementById('statBar').style.display = 'none';
-	        document.getElementById('timelineView').style.display = 'none';
-	        document.getElementById('customersView').style.display = 'block';
+	        // 2. Hantera mobil-menyn (om man är på mobil)
+	        // Detta är viktigt så man ser att man är på "Kunder" även i bottenmenyn om du lägger till det där
 	        
-	        // Generera och rendera listan
+	        // 3. Dölj andra vyer, visa kundvyn
+	        const statBar = document.getElementById('statBar');
+	        const timelineView = document.getElementById('timelineView');
+	        const customersView = document.getElementById('customersView');
+	
+	        if(statBar) statBar.style.display = 'none';
+	        if(timelineView) timelineView.style.display = 'none';
+	        if(customersView) customersView.style.display = 'block';
+	        
+	        // 4. Ladda datan
 	        renderCustomerView();
 	    });
 	}
