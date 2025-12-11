@@ -50,7 +50,10 @@ auth.onAuthStateChanged((user) => {
         // --- ANVÄNDARE ÄR INLOGGAD ---
         if(loginScreen) loginScreen.style.display = 'none';
         if(mainApp) mainApp.style.display = 'flex'; // VIKTIGT: flex för att behålla layouten
-        
+
+		const settingsEmailEl = document.querySelector('.settings-sub.user-email');
+    	if(settingsEmailEl) settingsEmailEl.textContent = user.email;
+		
 		// Uppdatera sidomenyn
 		const userEmailEl = document.querySelector('.user-name');
 		const userAvatarEl = document.querySelector('.sidebar-avatar'); // Hämta avatar-bilden också
@@ -179,6 +182,7 @@ document.addEventListener('DOMContentLoaded', function() {
     } catch (e) {
         console.error("Fel vid start:", e);
     }
+	initSettings();
 });
 
 function handleLogin(e) {
@@ -1979,3 +1983,36 @@ async function saveBrandSelection(regnr, brandSlug) {
         alert("Kunde inte spara valet.");
     }
 }
+
+// --- INSTÄLLNINGAR & PRIVACY MODE ---
+
+// 1. Initiera vid start
+function initSettings() {
+    // Hämta sparat värde (strängen "true" blir boolean true)
+    const savedPrivacy = localStorage.getItem('privacyMode') === 'true';
+    
+    const toggle = document.getElementById('privacyToggle');
+    if(toggle) {
+        toggle.checked = savedPrivacy;
+        
+        // Lyssna på ändring
+        toggle.addEventListener('change', (e) => {
+            setPrivacyMode(e.target.checked);
+        });
+    }
+
+    // Applicera läget direkt
+    setPrivacyMode(savedPrivacy);
+}
+
+// 2. Funktionen som styr läget
+function setPrivacyMode(isActive) {
+    if (isActive) {
+        document.body.classList.add('privacy-active');
+    } else {
+        document.body.classList.remove('privacy-active');
+    }
+    // Spara inställning
+    localStorage.setItem('privacyMode', isActive);
+}
+
