@@ -432,58 +432,63 @@
 	<div id="vehicleModal" class="modal-backdrop">
 	    <div class="modal-content modal-wide">
 	        
-	        <div class="vehicle-header-row">
-	            <div class="reg-group">
-	                <h1 id="vehicleRegTitle">---</h1>
-	                <button class="icon-btn-sm" id="btnCopyRegModal" title="Kopiera">
-	                    <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+	        <div class="modal-header">
+	            <div class="vehicle-title-group">
+	                <button class="simple-back-btn" onclick="closeVehicleModal()">
+	                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
 	                </button>
+	                
+	                <h2 id="vehicleRegTitle" style="font-size: 1.2rem; font-weight:700;">---</h2>
+	
+	                <div id="vehicleHeaderBtns" style="display:flex; gap:6px;">
+	                    </div>
 	            </div>
+	
+	            <div style="display:flex; gap:8px;">
+	                <a href="#" target="_blank" id="linkBiluppgifter" class="header-icon-action" title="Biluppgifter">
+	                    <img src="https://biluppgifter.se/favicon.ico" alt="B">
+	                </a>
+	                <a href="#" target="_blank" id="linkOljemagasinet" class="header-icon-action" title="Oljemagasinet">
+	                    <img src="https://www.google.com/s2/favicons?domain=oljemagasinet.se" alt="O">
+	                </a>
+	            </div>
+	        </div>
+	
+	        <div class="modal-body" style="background: #f8fafc; padding-top:0 !important;">
 	            
-	            <div class="header-actions">
-	                <a href="#" target="_blank" id="linkBiluppgifter" class="biluppgifter-btn">
-	                    <img src="https://biluppgifter.se/favicon.ico" alt="" style="width:16px; height:16px;">
-	                    Biluppg.
-	                </a>
-	                <a href="#" target="_blank" id="linkOljemagasinet" class="oljemagasinet-btn">
-	                    <img src="https://www.google.com/s2/favicons?domain=oljemagasinet.se" alt="" style="width:16px; height:16px;">
-	                    Oljemag.
-	                </a>
-	                <button class="modal-close-btn" id="vehicleModalClose">
-	                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-	                </button>
-	            </div>
-	        </div>
-	
-	        <div class="senaste-agare-box">
-	            Senaste ägare: <span id="vehicleOwner">---</span>
-	        </div>
-	
-	        <div class="tech-section-wrapper">
-            
-	            <div id="fetchDataContainer" style="display:none; text-align:center; padding: 10px 0 20px 0;">
-	                <p style="color:#666; font-size:0.9rem; margin-bottom:15px;">Ingen teknisk data sparad.</p>
-	                <button id="btnFetchTechData" class="button secondary" style="width:100%; justify-content:center;">
-	                    <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-	                    Hämta Data med AI
-	                </button>
+	            <div style="background:#fff; padding:12px 16px; border-bottom:1px solid #e2e8f0; font-size:0.85rem; color:#64748b; display:flex; justify-content:space-between;">
+	                <span>Senaste ägare:</span>
+	                <span id="vehicleOwner" style="font-weight:600; color:#1e293b;">---</span>
 	            </div>
 	
-	            <div id="techDataContainer" style="display:none;">
+	            <div class="tech-section-wrapper" style="margin: 16px; background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:0;">
+	                
+	                <div id="fetchDataContainer" style="text-align:center; padding: 20px;">
+	                    <p style="color:#94a3b8; font-size:0.85rem; margin-bottom:12px;">Ingen data hämtad än.</p>
+	                    <button id="btnFetchTechData" class="button secondary-outline" style="font-size:0.85rem;">
+	                        <svg class="icon-sm" style="margin-right:6px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+	                        Hämta med AI
+	                    </button>
 	                </div>
+	
+	                <div id="techDataContainer" style="display:none;">
+	                    </div>
+	            </div>
+	
+	            <div style="padding: 0 16px 10px 16px;">
+	                <div class="input-field-wrapper" style="background: white; border-radius: 8px; border:1px solid #e2e8f0;">
+	                    <svg class="input-icon" style="width:16px; height:16px; left:12px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+	                    <input type="text" id="vehicleHistorySearch" placeholder="Sök i historik..." class="input-gray" style="background: transparent; border: none; padding: 10px 10px 10px 36px; font-size:0.85rem;">
+	                </div>
+	            </div>
+	
+	            <div class="customer-section" style="margin: 0; border:none; border-top:1px solid #e2e8f0; padding:0;">
+	                <div style="background:#f1f5f9; padding:8px 16px; font-size:0.75rem; font-weight:700; color:#94a3b8; text-transform:uppercase;">Historik</div>
+	                <div id="vehicleHistoryList" class="history-list-clean" style="margin-top:0; border-left:none; background:#fff;">
+	                    </div>
+	            </div>
+	
 	        </div>
-	
-	        <div class="history-search-wrapper">
-	            <svg class="icon search-icon" viewBox="0 0 24 24"><use href="#icon-search"></use></svg>
-	            <input type="text" id="vehicleHistorySearch" placeholder="Filtrera historik...">
-	        </div>
-	
-	        <div class="customer-section" style="margin: 0 16px 20px 16px; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px;">
-			    <h3 class="section-title">Historik</h3>
-			    <div id="vehicleHistoryList" class="history-list-clean">
-			        </div>
-			</div>
-	
 	    </div>
 	</div>
 
