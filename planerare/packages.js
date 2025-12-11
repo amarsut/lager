@@ -1,36 +1,37 @@
 const servicePaket = {
     'oljebyte': {
-        pris: 1995,
-        kommentar: 'Byte av olja och filter ingår.',
-        utgifter: [
-            // HÄR ÄR ÄNDRINGEN: Vi anger ett literpris istället för fast kostnad
+        // Grundpris för arbete (som alltid är 500 kr för oljebyte enligt din beskrivning)
+        arbetskostnad: 500, 
+        
+        // Beskrivning som syns
+        kommentar: 'Oljebyte ',
+        
+        // Lista på material som ingår
+        material: [
             { 
-                typ: 'olja',       // Signal till appen att fråga
-                namn: 'Motorolja', // Grundnamnet
-                prisPerLiter: 200  // Priset per liter
+                id: 'motorolja',
+                typ: 'flytande',       // Signalerar att vi ska fråga om liter
+                namn: 'Motorolja', 
+                prisKundPerLiter: 200, // Vad kunden betalar (200 kr/l)
+                prisInkopPerLiter: 65  // Vad du betalar (65 kr/l)
             },
-            { namn: 'Oljefilter', kostnad: 150 } // Vanlig fast utgift
+            { 
+                id: 'oljefilter',
+                typ: 'fast',           // Fast pris
+                namn: 'Oljefilter', 
+                prisKund: 200,         // Vad kunden betalar
+                prisInkop: 80          // Gissat inköpspris (du kan ändra detta)
+            }
         ]
     },
     'hjulskifte': {
-        pris: 4495,
-        kommentar: 'Full genomgång, tändstift, alla filter och oljebyte.',
-        utgifter: [
-            // Samma ändring här
-            { 
-                typ: 'olja', 
-                namn: 'Motorolja', 
-                prisPerLiter: 200 
-            },
-            { namn: 'Luftfilter', kostnad: 200 },
-            { namn: 'Kupéfilter', kostnad: 250 },
-            { namn: 'Oljefilter', kostnad: 150 },
-            { namn: 'Tändstift x4', kostnad: 800 }
-        ]
+        arbetskostnad: 200, // Fast pris för arbetet
+        kommentar: 'Hjulskifte.',
+        material: [] // Inga delar behövs
     },
     'felsokning': {
-        pris: 1500,
-        kommentar: 'Grundläggande felsökning och diagnos.',
-        utgifter: []
+        arbetskostnad: 500,
+        kommentar: 'Felsökning.',
+        material: []
     }
 };
