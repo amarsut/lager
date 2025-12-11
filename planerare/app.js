@@ -830,10 +830,10 @@ function closeModals() {
 async function handleSaveJob(e) {
     e.preventDefault();
     
-    // Hämta värden säkert
     const jobIdElement = document.getElementById('jobId');
     const jobId = jobIdElement ? jobIdElement.value : "";
     
+    // Hämta värden från formuläret
     const kund = document.getElementById('kundnamn').value || "Okänd kund";
     const reg = document.getElementById('regnr').value.toUpperCase() || "OKÄNT";
     const datum = document.getElementById('datum').value;
@@ -843,7 +843,9 @@ async function handleSaveJob(e) {
     const paket = document.getElementById('paketSelect').value;
     const kommentar = document.getElementById('kommentar').value;
 
-    // Skapa data-objektet
+    // Räkna ut hur mycket olja som finns i formuläret just nu
+    const newOilAmount = calculateOilFromExpenses(currentExpenses);
+
     const jobData = {
         kundnamn: kund,
         regnr: reg,
@@ -852,22 +854,43 @@ async function handleSaveJob(e) {
         status: status,
         paket: paket,
         kommentar: kommentar,
-        utgifter: currentExpenses || [], // Se till att detta är en array
+        utgifter: currentExpenses || [],
         deleted: false
     };
 
     try {
         if (jobId && jobId.trim() !== "") {
-            // UPPDATERA existerande jobb (om ID finns)
+            // --- REDIGERA BEFINTLIGT JOBB ---
+            
+            // 1. Hämta det GAMLA jobbet först för att se vad vi hade förut
+            const oldDoc = await db.collection("jobs").doc(jobId).get();
+            const oldData = oldDoc.data();
+            
+            // 2. Räkna ut hur mycket olja det gamla jobbet hade
+            const oldOilAmount = calculateOilFromExpenses(oldData.utgifter);
+            
+            // 3. Räkna ut skillnaden (Nytt - Gammalt)
+            // Exempel: Ändra från 4L till 5L. Diff = 1L. Vi ska dra 1L till.
+            // Exempel: Ändra från 5L till 4L. Diff = -1L. Vi ska lägga tillbaka 1L.
+            const diff = newOilAmount - oldOilAmount;
+            
+            // 4. Uppdatera jobbet
             await db.collection("jobs").doc(jobId).update(jobData);
+            
+            // 5. Justera lagret om det blev någon skillnad
+            if (diff !== 0) {
+                await adjustInventoryBalance(diff);
+            }
+
         } else {
-            // SKAPA nytt jobb (om ID är tomt)
+            // --- SKAPA NYTT JOBB ---
+            
             jobData.created = new Date().toISOString();
             await db.collection("jobs").add(jobData);
             
-            // Dra av olja BARA om det är ett nytt jobb
-            if (currentExpenses && currentExpenses.length > 0) {
-                await deductOilFromInventory(currentExpenses);
+            // Dra av hela mängden olja eftersom det är nytt
+            if (newOilAmount > 0) {
+                await adjustInventoryBalance(newOilAmount);
             }
         }
         
@@ -876,7 +899,6 @@ async function handleSaveJob(e) {
         
     } catch (err) {
         console.error("Fel vid spara:", err);
-        // Visa felet för användaren (bra för debug)
         alert("Kunde inte spara. Felkod: " + err.message);
     }
 }
@@ -932,8 +954,29 @@ async function setStatus(id, status) {
 async function deleteJob(id) {
     if(confirm("Vill du ta bort detta jobb?")) {
         try {
-            await db.collection("jobs").doc(id).update({ deleted: true });
-        } catch (err) { console.error(err); }
+            // 1. Hämta jobbet först
+            const doc = await db.collection("jobs").doc(id).get();
+            
+            if (doc.exists) {
+                const data = doc.data();
+                
+                // 2. Räkna ut oljemängden som ska återföras
+                const oilToRefund = calculateOilFromExpenses(data.utgifter);
+                
+                // 3. Markera som raderat
+                await db.collection("jobs").doc(id).update({ deleted: true });
+                
+                // 4. Lägg tillbaka oljan i lagret (om det fanns någon)
+                // Vi skickar in ett negativt värde för att adjustInventoryBalance ska plussa på det.
+                if (oilToRefund > 0) {
+                    await adjustInventoryBalance(-oilToRefund);
+                    console.log(`Återförde ${oilToRefund} liter till lagret.`);
+                }
+            }
+        } catch (err) { 
+            console.error(err); 
+            alert("Kunde inte radera jobbet.");
+        }
     }
 }
 
@@ -2276,5 +2319,44 @@ async function saveNewBarrel() {
             console.error("Fel vid uppdatering:", error);
             alert("Kunde inte spara.");
         }
+    }
+}
+
+// 1. En ren funktion som bara räknar ut liter från en lista med utgifter
+function calculateOilFromExpenses(expenses) {
+    if (!expenses || !Array.isArray(expenses)) return 0;
+    
+    let totalLiters = 0;
+    expenses.forEach(item => {
+        const name = (item.namn || "").toLowerCase();
+        // Letar efter "olja" och en siffra följt av "l" eller "liter"
+        if (name.includes('olja')) {
+            const match = name.match(/(\d+[.,]?\d*)\s*(l|liter)/i);
+            if (match) {
+                // Ersätt komma med punkt (t.ex. 4,5 -> 4.5)
+                const val = parseFloat(match[1].replace(',', '.'));
+                if (!isNaN(val)) totalLiters += val;
+            }
+        }
+    });
+    return totalLiters;
+}
+
+// 2. Funktion som justerar saldot (Kan både dra av och lägga till)
+async function adjustInventoryBalance(litersToDeduct) {
+    // Om litersToDeduct är positivt (t.ex. 4) -> Dras 4 liter av.
+    // Om litersToDeduct är negativt (t.ex. -4) -> Läggs 4 liter till (minus minus blir plus).
+    
+    if (litersToDeduct === 0) return;
+
+    const inventoryRef = db.collection('settings').doc('inventory');
+    
+    try {
+        await inventoryRef.update({
+            motorOil: firebase.firestore.FieldValue.increment(-litersToDeduct)
+        });
+        console.log(`Lager justerat med: ${-litersToDeduct} liter.`);
+    } catch (err) {
+        console.error("Kunde inte justera lagret:", err);
     }
 }
