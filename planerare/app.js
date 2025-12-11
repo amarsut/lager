@@ -562,12 +562,19 @@ function filterJobs(jobs) {
     }
 
     // 2. VANLIG FILTRERING (Om vi inte söker)
-    const today = new Date();
-    today.setHours(0,0,0,0);
+    
+    // Vi behöver inte "today" variabeln längre för filtreringen av kommande,
+    // men den kan vara bra att ha kvar om du vill göra annan logik senare.
+    // const today = new Date();
+    // today.setHours(0,0,0,0);
 
     if (currentStatusFilter === 'kommande') {
-        return filtered.filter(j => j.status === 'bokad' && new Date(j.datum) >= today)
-                       .sort((a,b) => new Date(a.datum) - new Date(b.datum));
+        // HÄR ÄR ÄNDRINGEN:
+        // Vi tog bort "&& new Date(j.datum) >= today"
+        // Nu visas ALLT som är bokat, även om datumet passerat.
+        return filtered.filter(j => j.status === 'bokad')
+                       .sort((a,b) => new Date(a.datum) - new Date(b.datum)); // Äldst först (så missade hamnar i toppen)
+                       
     } else if (currentStatusFilter === 'alla') {
         return filtered.sort((a,b) => new Date(b.datum) - new Date(a.datum));
     } else {
