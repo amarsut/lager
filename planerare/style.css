@@ -3173,86 +3173,119 @@ body.privacy-active .price-row .row-value::after {
     background-color: #ef4444; /* Röd */
 }
 
-/* --- LAGERSTATUS DESIGN (UPDATED) --- */
+/* --- LAGERSTATUS DESIGN (REDESIGNED) --- */
 
-.settings-icon.orange-light { 
-    background-color: #fff7ed; color: #f97316; 
+.inventory-card {
+    display: block !important; /* Tvinga block-layout */
+    padding: 20px !important;
 }
 
-/* Datum-badge (t.ex "Inköpt 2 feb") */
+/* Header Section */
+.inventory-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 16px;
+}
+
+.inventory-icon-col .settings-icon {
+    width: 42px; height: 42px; /* Något större ikon */
+}
+.settings-icon.orange-light { background-color: #fff7ed; color: #f97316; }
+
+.inventory-info-col {
+    display: flex; flex-direction: column; gap: 4px;
+}
+
 .oil-badge {
+    display: inline-block;
     background-color: #f1f5f9;
     color: #64748b;
-    font-size: 0.7rem;
-    padding: 2px 6px;
-    border-radius: 4px;
+    font-size: 0.75rem;
+    padding: 3px 8px;
+    border-radius: 6px;
     font-weight: 600;
+    align-self: flex-start;
 }
 
-/* Progress bar */
+/* Stats Section */
+.inventory-stats-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 12px;
+}
+
+.inventory-stat-item {
+    display: flex; flex-direction: column;
+}
+.inventory-stat-item.right-align { align-items: flex-end; }
+
+.stat-label {
+    font-size: 0.75rem; font-weight: 600; color: #94a3b8;
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;
+}
+
+.stat-value {
+    font-size: 1.1rem; font-weight: 700; color: #1e293b;
+}
+.stat-value.percent {
+    font-size: 1.5rem; color: #f97316; /* Orange för procent */
+}
+
+/* Progress Bar */
 .oil-progress-bg {
-    width: 100%; height: 10px;
+    width: 100%; height: 12px; /* Lite tjockare */
     background-color: #f1f5f9;
-    border-radius: 6px; overflow: hidden;
+    border-radius: 8px; overflow: hidden;
+    margin-bottom: 20px;
 }
 .oil-progress-fill {
     height: 100%;
     background: linear-gradient(90deg, #f97316 0%, #fb923c 100%);
-    border-radius: 6px;
+    border-radius: 8px;
     transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .oil-progress-fill.critical { background: #ef4444; }
 
-/* Knapp för att öppna menyn */
-.refill-toggle-btn {
-    background: transparent; border: none;
-    color: #3b82f6; font-size: 0.85rem; font-weight: 600;
-    display: flex; align-items: center; gap: 4px;
-    cursor: pointer; padding: 4px 8px;
-    border-radius: 6px; transition: background 0.2s;
-}
-.refill-toggle-btn:hover { background-color: #eff6ff; }
-.refill-toggle-btn svg { width: 14px; height: 14px; }
-
-/* Utfällbar box */
-.oil-refill-container {
-    margin-top: 12px;
-    animation: slideDown 0.3s ease-out;
-}
-.refill-box {
+/* Action Button (NY DESIGN) */
+.refill-action-btn {
+    width: 100%;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 12px;
     background-color: #f8fafc;
     border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 16px;
+    border-radius: 10px;
+    color: #334155; font-size: 0.95rem; font-weight: 600;
+    cursor: pointer; transition: all 0.2s;
 }
-.refill-title {
-    font-size: 0.85rem; font-weight: 700; color: #334155;
-    margin: 0 0 10px 0;
-}
+.refill-action-btn:hover { background-color: #f1f5f9; border-color: #cbd5e1; }
+.refill-action-btn:active { background-color: #e2e8f0; transform: scale(0.99); }
+.refill-action-btn svg { width: 18px; height: 18px; color: #64748b; }
 
-.refill-inputs {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;
-}
-.input-group-small label {
-    display: block; font-size: 0.7rem; color: #64748b; margin-bottom: 4px; font-weight: 600;
-}
-.input-group-small input {
-    width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;
-    font-size: 0.9rem;
-}
-
-.save-barrel-btn {
-    width: 100%;
-    background-color: #0f172a; color: white;
-    border: none; padding: 10px; border-radius: 8px;
-    font-weight: 600; font-size: 0.9rem; cursor: pointer;
-}
+/* Utfällbar box (Oförändrad) */
+.oil-refill-container { margin-top: 16px; animation: slideDown 0.3s ease-out; }
+.refill-box { background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; }
+.refill-title { font-size: 0.85rem; font-weight: 700; color: #334155; margin: 0 0 10px 0; }
+.refill-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+.input-group-small label { display: block; font-size: 0.7rem; color: #64748b; margin-bottom: 4px; font-weight: 600; }
+.input-group-small input { width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem; }
+.save-barrel-btn { width: 100%; background-color: #0f172a; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; cursor: pointer; }
 .save-barrel-btn:active { transform: scale(0.98); }
+@keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 
-@keyframes slideDown {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-
-
+/* DARK MODE FIXES */
+[data-theme="dark"] .settings-icon.orange-light { background-color: #331f0f; color: #fb923c; }
+[data-theme="dark"] .oil-badge { background-color: #333; color: #aaa; }
+[data-theme="dark"] .stat-label { color: #888; }
+[data-theme="dark"] .stat-value { color: #fff; }
+[data-theme="dark"] .stat-value.percent { color: #fb923c; }
+[data-theme="dark"] .oil-progress-bg { background-color: #333; }
+[data-theme="dark"] .refill-action-btn { background-color: #1c1c1e; border-color: #333; color: #fff; }
+[data-theme="dark"] .refill-action-btn:hover { background-color: #2c2c2e; }
+[data-theme="dark"] .refill-action-btn svg { color: #aaa; }
+[data-theme="dark"] .refill-box { background-color: #1c1c1e; border-color: #333; }
+[data-theme="dark"] .refill-title { color: #fff; }
+[data-theme="dark"] .input-group-small label { color: #888; }
+[data-theme="dark"] .input-group-small input { background-color: #333; border-color: #444; color: #fff; }
+[data-theme="dark"] .save-barrel-btn { background-color: #3b82f6; }
