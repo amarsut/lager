@@ -312,6 +312,17 @@
                         </div>
                     </div>
 
+					<div id="customersView" style="display: none;">
+					    <div class="search-bar-wrapper" style="margin-bottom: 20px;">
+					        <div class="input-field-wrapper" style="background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+					            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+					            <input type="text" id="customerSearchInput" placeholder="Sök namn, bil eller regnr..." class="input-gray" style="background: transparent; border: none;">
+					        </div>
+					    </div>
+					
+					    <div id="customerGrid" class="customer-grid"></div>
+					</div>
+
                 </div>
             </main>
         </div>
@@ -755,6 +766,62 @@
 	            </div>
 	
 	            <div class="one-ui-footer">Version 1.6.1</div>
+	        </div>
+	    </div>
+	</div>
+
+	<div id="customerModal" class="modal-backdrop">
+	    <div class="modal-content modal-wide">
+	        
+	        <div class="modal-header" style="justify-content: space-between !important; background: #fff !important;">
+	            <div style="display: flex; align-items: center; gap: 12px;">
+	                <button class="simple-back-btn" id="closeCustomerModalBtn">
+	                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+	                </button>
+	                <h2 id="modalCustomerName" style="font-size: 1.2rem;">Kundprofil</h2>
+	            </div>
+	            <div id="modalCustomerBadge"></div>
+	        </div>
+	
+	        <div class="modal-body" style="padding: 0 !important; background: #f8fafc;">
+	            
+	            <div class="customer-stats-row">
+	                <div class="c-stat-box">
+	                    <span class="c-stat-label">Omsättning</span>
+	                    <span class="c-stat-value money-related" id="custTotalSpent">0 kr</span>
+	                </div>
+	                <div class="c-stat-box">
+	                    <span class="c-stat-label">Besök</span>
+	                    <span class="c-stat-value" id="custVisitCount">0</span>
+	                </div>
+	                <div class="c-stat-box">
+	                    <span class="c-stat-label">Senast</span>
+	                    <span class="c-stat-value" id="custLastSeen">-</span>
+	                </div>
+	            </div>
+	
+	            <div class="customer-section">
+	                <h3 class="section-title">Garage</h3>
+	                <div id="custVehicleList" class="vehicle-chips-container">
+	                    </div>
+	            </div>
+	
+	            <div class="customer-section">
+	                <h3 class="section-title">Historik</h3>
+	                <div id="custHistoryList" class="history-list-clean">
+	                    </div>
+	            </div>
+	        </div>
+	
+	        <div class="modal-actions" style="justify-content: space-between !important;">
+	            <button class="button secondary-outline" id="btnCallCustomer" style="flex:1;">
+	                <svg class="icon-sm" style="margin-right:6px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg> 
+	                Ring
+	            </button>
+	            <button class="button primary-solid" id="btnNewJobForCustomer" style="flex:1;">
+	                <svg class="icon-sm" style="margin-right:6px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+	                Nytt Jobb
+	            </button>
 	        </div>
 	    </div>
 	</div>
