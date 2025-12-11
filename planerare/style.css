@@ -3173,6 +3173,86 @@ body.privacy-active .price-row .row-value::after {
     background-color: #ef4444; /* Röd */
 }
 
+/* --- LAGERSTATUS DESIGN (UPDATED) --- */
+
+.settings-icon.orange-light { 
+    background-color: #fff7ed; color: #f97316; 
+}
+
+/* Datum-badge (t.ex "Inköpt 2 feb") */
+.oil-badge {
+    background-color: #f1f5f9;
+    color: #64748b;
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+/* Progress bar */
+.oil-progress-bg {
+    width: 100%; height: 10px;
+    background-color: #f1f5f9;
+    border-radius: 6px; overflow: hidden;
+}
+.oil-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #f97316 0%, #fb923c 100%);
+    border-radius: 6px;
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.oil-progress-fill.critical { background: #ef4444; }
+
+/* Knapp för att öppna menyn */
+.refill-toggle-btn {
+    background: transparent; border: none;
+    color: #3b82f6; font-size: 0.85rem; font-weight: 600;
+    display: flex; align-items: center; gap: 4px;
+    cursor: pointer; padding: 4px 8px;
+    border-radius: 6px; transition: background 0.2s;
+}
+.refill-toggle-btn:hover { background-color: #eff6ff; }
+.refill-toggle-btn svg { width: 14px; height: 14px; }
+
+/* Utfällbar box */
+.oil-refill-container {
+    margin-top: 12px;
+    animation: slideDown 0.3s ease-out;
+}
+.refill-box {
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px;
+}
+.refill-title {
+    font-size: 0.85rem; font-weight: 700; color: #334155;
+    margin: 0 0 10px 0;
+}
+
+.refill-inputs {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;
+}
+.input-group-small label {
+    display: block; font-size: 0.7rem; color: #64748b; margin-bottom: 4px; font-weight: 600;
+}
+.input-group-small input {
+    width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;
+    font-size: 0.9rem;
+}
+
+.save-barrel-btn {
+    width: 100%;
+    background-color: #0f172a; color: white;
+    border: none; padding: 10px; border-radius: 8px;
+    font-weight: 600; font-size: 0.9rem; cursor: pointer;
+}
+.save-barrel-btn:active { transform: scale(0.98); }
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
 
 
 
