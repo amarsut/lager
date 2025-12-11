@@ -3179,3 +3179,60 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 [data-theme="dark"] .input-group-small input { background-color: #333; border-color: #444; color: #fff; }
 [data-theme="dark"] .android-switch .slider { background-color: #444; }
 [data-theme="dark"] .settings-separator { background-color: #333; }
+
+/* --- LAGERSTATUS (DROPPE DESIGN - KOMPAKT) --- */
+
+.drop-card-layout {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+/* 1. Ikonen (Droppen) */
+.drop-icon-container {
+    width: 40px; height: 40px;
+    background-color: #fff7ed; /* Ljus orange bakgrund */
+    border-radius: 50%; /* Cirkel */
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+.drop-icon-container svg {
+    width: 24px; height: 24px; 
+    color: #ea580c; /* Mörkare orange */
+}
+/* Gör den lilla cirkeln inuti fylld */
+.drop-inner { fill: #ea580c; } 
+
+/* 2. Text Mitten */
+.drop-info {
+    flex-grow: 1;
+    display: flex; flex-direction: column; gap: 2px;
+}
+.drop-header {
+    display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+}
+.oil-badge.compact {
+    font-size: 0.65rem; padding: 1px 5px; 
+    border: 1px solid #e5e7eb; background: #f9fafb; color: #64748b;
+}
+.drop-stats {
+    font-size: 0.85rem; color: #64748b; font-weight: 500;
+}
+
+/* 3. Procent Höger */
+.drop-percent {
+    font-size: 1.25rem; font-weight: 800; color: #ea580c;
+}
+
+/* 4. Progress Bar (Tunnare) */
+.oil-progress-bg.compact-bar {
+    height: 6px; margin-bottom: 8px; /* Tunnare än förut */
+}
+
+/* Dark Mode för Droppen */
+[data-theme="dark"] .drop-icon-container { background-color: #331f0f; }
+[data-theme="dark"] .drop-icon-container svg { color: #fb923c; }
+[data-theme="dark"] .drop-inner { fill: #fb923c; }
+[data-theme="dark"] .drop-stats { color: #aaa; }
+[data-theme="dark"] .oil-badge.compact { background: #333; border-color: #444; color: #aaa; }
