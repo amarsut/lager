@@ -2005,32 +2005,90 @@ async function saveBrandSelection(regnr, brandSlug) {
 // --- INSTÄLLNINGAR & PRIVACY MODE ---
 
 // 1. Initiera vid start
+// --- 1. INSTÄLLNINGAR INITIERING ---
 function initSettings() {
-    // Hämta sparat värde (strängen "true" blir boolean true)
+    // Privacy Mode
     const savedPrivacy = localStorage.getItem('privacyMode') === 'true';
-    
-    const toggle = document.getElementById('privacyToggle');
-    if(toggle) {
-        toggle.checked = savedPrivacy;
-        
-        // Lyssna på ändring
-        toggle.addEventListener('change', (e) => {
-            setPrivacyMode(e.target.checked);
+    const pToggle = document.getElementById('privacyToggle');
+    if(pToggle) {
+        pToggle.checked = savedPrivacy;
+        pToggle.addEventListener('change', (e) => setPrivacyMode(e.target.checked));
+    }
+    setPrivacyMode(savedPrivacy);
+
+    // Dark Mode
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    const tToggle = document.getElementById('themeToggle');
+    if(tToggle) {
+        tToggle.checked = savedTheme === 'dark';
+        tToggle.addEventListener('change', (e) => {
+            const newTheme = e.target.checked ? 'dark' : 'light';
+            setTheme(newTheme);
         });
     }
+    setTheme(savedTheme);
 
-    // Applicera läget direkt
-    setPrivacyMode(savedPrivacy);
+    // Starta swipe-lyssnare
+    setupSwipeGestures();
 }
 
-// 2. Funktionen som styr läget
-function setPrivacyMode(isActive) {
-    if (isActive) {
-        document.body.classList.add('privacy-active');
+// --- 2. ÖPPNA INSTÄLLNINGAR (Med Historik) ---
+// Anropa denna när du klickar på knappen i menyn
+function openSettingsModal() {
+    addHistoryState(); // Din befintliga funktion som lägger till historik
+    const modal = document.getElementById('settingsModal');
+    if(modal) modal.classList.add('show');
+}
+
+// --- 3. STÄNG INSTÄLLNINGAR (Via Knapp) ---
+function closeSettings() {
+    // Om vi stänger via kryss/pil, backa historiken (detta triggar popstate som stänger modalen)
+    if (history.state && history.state.modalOpen) {
+        history.back();
     } else {
-        document.body.classList.remove('privacy-active');
+        // Fallback om ingen historik finns
+        document.getElementById('settingsModal').classList.remove('show');
     }
-    // Spara inställning
+}
+
+// --- 4. TEMA & PRIVACY FUNKTIONER ---
+function setPrivacyMode(isActive) {
+    if (isActive) document.body.classList.add('privacy-active');
+    else document.body.classList.remove('privacy-active');
     localStorage.setItem('privacyMode', isActive);
+}
+
+function setTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+}
+
+// --- 5. SWIPE GESTURE (SAMSUNG STYLE) ---
+function setupSwipeGestures() {
+    const modal = document.getElementById('settingsModal');
+    if(!modal) return;
+
+    let touchStartX = 0;
+
+    // Lyssna när fingret landar
+    modal.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+    }, {passive: true});
+
+    // Lyssna när fingret lyfter
+    modal.addEventListener('touchend', (e) => {
+        const touchEndX = e.changedTouches[0].screenX;
+        
+        // Om man dragit mer än 70px åt höger -> Gå tillbaka
+        if (touchEndX > touchStartX + 70) {
+            // VIKTIGT: Vi anropar history.back() här. 
+            // Då används din befintliga "swipa tillbaka"-logik för att stänga modalen.
+            if (history.state && history.state.modalOpen) {
+                history.back(); 
+            } else {
+                modal.classList.remove('show');
+            }
+        }
+    }, {passive: true});
 }
 
