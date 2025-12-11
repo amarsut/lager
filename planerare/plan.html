@@ -644,10 +644,7 @@
 	        
 	        <div class="one-ui-header-simple">
 	            <button class="simple-back-btn" onclick="closeSettings()">
-	                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-	                    <line x1="19" y1="12" x2="5" y2="12"></line>
-	                    <polyline points="12 19 5 12 12 5"></polyline>
-	                </svg>
+	                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
 	            </button>
 	            <h1 class="header-simple-title">Inställningar</h1>
 	        </div>
@@ -685,34 +682,39 @@
 	            <div class="settings-section-label">LAGERHANTERING</div>
 	
 	            <div class="settings-card-group">
-	                <div class="settings-item" style="display:block; padding-bottom: 12px;">
+	                <div class="settings-item inventory-card">
 	                    
-	                    <div style="display:flex; align-items:center; margin-bottom:12px;">
-	                        <div class="settings-icon orange-light">
-	                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg>
-	                        </div>
-	                        <div class="settings-text-col">
-	                            <span class="settings-title">Motorolja 5W-30</span>
-	                            <div style="display:flex; align-items:center; gap:6px;">
-	                                <span class="settings-desc" id="oilLevelText">Laddar...</span>
-	                                <span class="oil-badge" id="oilDateBadge">---</span>
+	                    <div class="inventory-header">
+	                        <div class="inventory-icon-col">
+	                            <div class="settings-icon orange-light">
+	                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg>
 	                            </div>
 	                        </div>
-	                        <div style="text-align:right;">
-	                            <span id="oilPercent" style="font-size:1.2rem; font-weight:700; color:#111;">0%</span>
+	                        <div class="inventory-info-col">
+	                            <span class="settings-title">Motorolja 5W-30</span>
+	                            <span class="oil-badge" id="oilDateBadge" style="display:none;">---</span>
 	                        </div>
 	                    </div>
 	                    
+	                    <div class="inventory-stats-row">
+	                        <div class="inventory-stat-item">
+	                            <span class="stat-label">Kvar i lager</span>
+	                            <span class="stat-value" id="oilLevelText">Laddar...</span>
+	                        </div>
+	                        <div class="inventory-stat-item right-align">
+	                            <span class="stat-label">Nivå</span>
+	                            <span class="stat-value percent" id="oilPercent">0%</span>
+	                        </div>
+	                    </div>
+	
 	                    <div class="oil-progress-bg">
 	                        <div id="oilProgressBar" class="oil-progress-fill" style="width: 0%;"></div>
 	                    </div>
 	
-	                    <div style="margin-top: 16px; display:flex; justify-content:flex-end;">
-	                        <button class="refill-toggle-btn" onclick="toggleOilForm()">
-	                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
-	                            Registrera nytt fat
-	                        </button>
-	                    </div>
+	                    <button class="refill-action-btn" onclick="toggleOilForm()">
+	                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+	                        Registrera nytt fat
+	                    </button>
 	
 	                    <div id="oilRefillForm" class="oil-refill-container" style="display:none;">
 	                        <div class="refill-box">
@@ -737,30 +739,20 @@
 	            </div>
 	
 	            <div class="settings-section-label">KONTO</div>
-	            
 	            <div class="settings-card-group">
 	                <div class="sidebar-profile-clone">
 	                    <img src="" alt="Profil" class="sidebar-avatar settings-user-avatar">
-	                    
 	                    <div class="user-info">
 	                        <span class="user-name settings-user-name">Laddar...</span>
 	                        <span class="user-role settings-user-email">Inloggad</span>
 	                    </div>
-	            
 	                    <button class="logout-icon-btn" title="Logga ut" onclick="handleLogout()">
-	                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-	                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-	                            <polyline points="16 17 21 12 16 7"></polyline>
-	                            <line x1="21" y1="12" x2="9" y2="12"></line>
-	                        </svg>
+	                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
 	                    </button>
 	                </div>
 	            </div>
 	
-	            <div class="one-ui-footer">
-	                Version 1.6.0
-	            </div>
-	
+	            <div class="one-ui-footer">Version 1.6.1</div>
 	        </div>
 	    </div>
 	</div>
