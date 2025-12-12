@@ -1,30 +1,34 @@
-import { createCalendar, viewDay, viewWeek, viewMonthGrid, viewMonthAgenda } from 'https://cdn.jsdelivr.net/npm/@schedule-x/calendar@1.53.0/+esm';
+import { createCalendar, viewMonthGrid, viewWeek, viewDay } from 'https://cdn.jsdelivr.net/npm/@schedule-x/calendar@1.53.0/+esm';
 import { createDragAndDropPlugin } from 'https://cdn.jsdelivr.net/npm/@schedule-x/drag-and-drop@1.53.0/+esm';
 import { createEventModalPlugin } from 'https://cdn.jsdelivr.net/npm/@schedule-x/event-modal@1.53.0/+esm';
 
 let calendarApp = null;
 
 function mapJobsToEvents(jobs) {
-    const realEvents = jobs
+    return jobs
         .filter(job => !job.deleted && job.status !== 'avbokad')
         .map(job => {
+            // Skapa start- och slutdatum
             let startDateTime = job.datum;
-            let timePrefix = ""; 
+            let timeString = "";
 
-            // Hantera datum/tid
             if (!startDateTime.includes('T')) {
-                const t = job.tid || '08:00';
-                timePrefix = t;
-                startDateTime = `${job.datum} ${t}`;
+                // Om datumet bara är YYYY-MM-DD
+                timeString = job.tid || '08:00';
+                startDateTime = `${job.datum} ${timeString}`;
             } else {
+                // Om datumet är ISO-sträng
                 startDateTime = startDateTime.replace('T', ' ');
-                try { timePrefix = startDateTime.split(' ')[1].substring(0, 5); } catch(e) {}
+                try {
+                    timeString = startDateTime.split(' ')[1].substring(0, 5);
+                } catch(e) {}
             }
 
             let endDateTime = startDateTime;
             try {
                 const d = new Date(startDateTime.replace(' ', 'T'));
-                d.setHours(d.getHours() + 1);
+                d.setHours(d.getHours() + 1); // Standardlängd 1 timme
+                
                 const Y = d.getFullYear();
                 const M = String(d.getMonth()+1).padStart(2,'0');
                 const D = String(d.getDate()).padStart(2,'0');
@@ -33,20 +37,17 @@ function mapJobsToEvents(jobs) {
                 endDateTime = `${Y}-${M}-${D} ${H}:${m}`;
             } catch(e) {}
 
-            // Titel med tid
-            const finalTitle = timePrefix ? `${timePrefix} ${job.kundnamn}` : job.kundnamn;
+            // Titel: "10:00 KUNDNAMN"
+            const title = timeString ? `${timeString} ${job.kundnamn}` : job.kundnamn;
 
             return {
                 id: job.id,
-                title: finalTitle, 
+                title: title, 
                 start: startDateTime,
                 end: endDateTime,
-                description: job.paket || '',
                 calendarId: job.status 
             };
         });
-
-    return realEvents;
 }
 
 export function initCalendar(elementId, jobsData, onEventClickCallback) {
@@ -62,18 +63,20 @@ export function initCalendar(elementId, jobsData, onEventClickCallback) {
     const eventModal = createEventModalPlugin();
 
     calendarApp = createCalendar({
-        views: [viewMonthGrid, viewWeek, viewDay, viewMonthAgenda], 
+        views: [viewMonthGrid, viewWeek, viewDay], 
         
-        // PUNKT 1 & 2: ALLTID MÅNAD SOM STANDARD
-        defaultView: viewMonthGrid.name, 
+        // --- VIKTIGT: TVINGA MÅNADSVY ---
+        defaultView: viewMonthGrid.name,
+        
+        // --- VIKTIGT: STÄNG AV MOBIL-ANPASSNING ---
+        // Detta gör att den inte byter till Dagsvy automatiskt på mobilen
+        isResponsive: false,
         
         events: events,
         locale: 'sv-SE',
         firstDayOfWeek: 1, 
         isDark: isDarkMode,
         
-        dayBoundaries: { start: '06:00', end: '20:00' },
-
         plugins: [dragAndDrop, eventModal],
 
         calendars: {
