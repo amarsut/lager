@@ -3861,44 +3861,6 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
    FIX: JOBB-MODAL & INSTÄLLNINGAR (SPECIFIKA JUSTERINGAR)
    ================================================================= */
 
-/* --- DATORVY: FIXA BREDD OCH FOOTER PÅ JOBB-MODAL --- */
-@media (min-width: 769px) {
-    
-    /* 1. Gör Jobb-modalen lite smalare igen (ca 550px är standard) */
-    #jobModal .modal-content {
-        width: 550px !important;
-        /* Ta bort den tvingande höjden vi satte för Kund/Fordon */
-        height: auto !important; 
-        max-height: 85vh !important;
-    }
-
-    /* 2. Se till att inputfälten fyller hela bredden */
-    #jobModal .form-group, 
-    #jobModal .input-gray, 
-    #jobModal select, 
-    #jobModal textarea {
-        width: 100% !important;
-        box-sizing: border-box !important;
-    }
-
-    /* 3. Krymp footern på Jobb-modalen (den var jättehög) */
-    #jobModal .modal-actions {
-        padding: 16px 24px !important;
-        height: auto !important; /* Låt den anpassa sig efter knapparna */
-        justify-content: flex-end !important; /* Knappar till höger */
-        display: flex !important;
-        background: #fff !important;
-        position: static !important;
-    }
-    
-    /* Återställ knappstorlek i Jobb-modalen */
-    #jobModal .modal-actions button {
-        width: auto !important;
-        height: 40px !important;
-        margin-left: 10px !important;
-    }
-}
-
 /* --- MOBILVY: FIXA RUBRIKENS POSITION --- */
 @media (max-width: 768px) {
     
@@ -3923,5 +3885,66 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
         width: 24px !important; /* Fast bredd */
         display: flex !important; 
         justify-content: center !important;
+    }
+}
+
+/* =================================================================
+   AKUT-FIX: JOBB-MODAL PÅ DATOR (ÖVERSKRIVER ALLT ANNAT)
+   ================================================================= */
+
+@media (min-width: 769px) {
+    
+    /* 1. Återställ "Lådan" (Så den inte är gigantisk och fast i höjd) */
+    #jobModal .modal-content {
+        width: 500px !important;      /* Smalare, snyggare för formulär */
+        height: auto !important;      /* VIKTIGT: Anpassa höjd efter innehåll! */
+        min-height: 0 !important;     /* Ta bort ev. min-height */
+        display: block !important;    /* Sluta använda Flex-column här */
+    }
+
+    /* 2. Fixa Input-fälten (Så de fyller hela bredden) */
+    #jobModal .form-group,
+    #jobModal input,
+    #jobModal select,
+    #jobModal textarea,
+    #jobModal .input-wrapper {
+        width: 100% !important;
+        box-sizing: border-box !important; /* Så padding inte spräcker bredden */
+        max-width: none !important;
+    }
+
+    /* 3. Fixa Grid-rader i formuläret (Datum/Tid etc) */
+    #jobModal .form-grid {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 16px !important;
+        width: 100% !important;
+    }
+
+    /* 4. Fixa Footern (Var jättehög) */
+    #jobModal .modal-actions {
+        position: static !important;  /* Ligg precis under innehållet */
+        background: #fff !important;
+        border-top: 1px solid #e2e8f0 !important;
+        padding: 16px 24px !important; /* Normal padding */
+        height: auto !important;      /* Krymp till innehållet */
+        display: flex !important;
+        justify-content: flex-end !important;
+        margin-top: 0 !important;
+    }
+
+    /* 5. Fixa knapparna i footern */
+    #jobModal .modal-actions button {
+        width: auto !important;
+        height: 40px !important;
+        margin-left: 10px !important;
+        flex: none !important; /* Förhindra att de dras ut */
+    }
+
+    /* 6. Justera kroppen så den inte trycker ner footern */
+    #jobModal .modal-body {
+        height: auto !important;
+        overflow-y: visible !important; /* Ingen onödig scroll */
+        padding-bottom: 20px !important;
     }
 }
