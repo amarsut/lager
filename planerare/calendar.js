@@ -138,9 +138,10 @@ export function initCalendar(elementId, jobsData, onEventClickCallback) {
         
             const props = info.event.extendedProps;
             
-            // Hämta tid (HH:MM) från startdatumet
+            // Hämta tid
             const dateObj = info.event.start;
-            const timeStr = dateObj ? dateObj.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' }) : 'Heldag';
+            // Format: 10.00
+            const timeStr = dateObj ? dateObj.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' }).replace(':', '.') : '';
         
             // Skapa tooltip om den inte finns
             let tooltip = document.getElementById('fc-custom-tooltip');
@@ -151,30 +152,45 @@ export function initCalendar(elementId, jobsData, onEventClickCallback) {
                 document.body.appendChild(tooltip);
             }
         
-            // Bygg HTML-innehållet
-            // Vi kollar om kommentar finns, annars visar vi "Ingen kommentar" eller liknande
-            const commentText = props.description || '<span style="opacity:0.5">Ingen kommentar</span>';
-            
+            // Data
+            const regNr = props.regnr || '---';
+            const customerName = info.event.title;
+            // Om ingen kommentar finns, visa bindestreck eller tom sträng (välj själv)
+            const commentText = props.description || '-'; 
+        
+            // Ikoner (SVG)
+            const iconComment = `<svg class="tt-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>`;
+            const iconClock = `<svg class="tt-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`;
+        
+            // Bygg HTML enligt din önskan:
+            // 1. ABC123 • NAMN
+            // 2. (ikon) Kommentar
+            // 3. (ikon) 10.00
             tooltip.innerHTML = `
-                <div class="tooltip-header">
-                    <span class="tooltip-time">${timeStr}</span>
-                    <span class="tooltip-reg">${props.regnr || '---'}</span>
+                <div class="tt-row-primary">
+                    <span class="tt-reg">${regNr}</span>
+                    <span class="tt-sep">•</span>
+                    <span class="tt-name">${customerName}</span>
                 </div>
-                <div class="tooltip-body">
-                    <span class="tooltip-customer">${info.event.title}</span>
-                    <span class="tooltip-desc">${commentText}</span>
+                <div class="tt-row-detail">
+                    ${iconComment}
+                    <span>${commentText}</span>
+                </div>
+                <div class="tt-row-time">
+                    ${iconClock}
+                    <span>${timeStr}</span>
                 </div>
             `;
         
             tooltip.classList.add('show');
         
-            // Positionering (Lite smartare för att inte hamna utanför skärmen)
+            // Positionering (Samma som förut men med lite justering)
             const x = info.jsEvent.clientX;
             const y = info.jsEvent.clientY;
             
-            // Placera 15px till höger och 15px ner från musen
+            // Placera tooltip en bit ifrån musen så den inte blinkar
             tooltip.style.left = (x + 15) + 'px';
-            tooltip.style.top = (y + 15) + 'px';
+            tooltip.style.top = (y + 10) + 'px';
         },
         
         eventMouseLeave: function(info) {
