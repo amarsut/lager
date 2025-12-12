@@ -3886,23 +3886,30 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 }
 
 /* =================================================================
-   FIX: FORDONSSMODAL PÅ DATOR (TVINGANDE)
+   FIX: FORDONSSMODAL - TOMRUM & HÖJD (DATOR)
    ================================================================= */
 
 @media (min-width: 769px) {
-    /* 1. Tvinga kroppen att INTE ha jätte-padding i botten */
-    #vehicleModal .modal-body {
-        padding-bottom: 20px !important; /* Normal luft */
-        min-height: 0 !important;        /* Låt den inte vara onödigt hög */
-        overflow-y: auto !important;     /* Säkerställ scroll */
-        flex: 1 !important;              /* Fyll utrymmet */
-    }
-
-    /* 2. Säkerställ att innehållet fyller modalen snyggt */
+    
+    /* 1. Sätt exakt samma höjd på BÅDA modalerna för enhetlighet */
+    #customerModal .modal-content, 
     #vehicleModal .modal-content {
+        height: 600px !important;       /* Fast höjd */
+        max-height: 80vh !important;    /* Max 80% av skärmen */
+        width: 600px !important;        /* Fast bredd */
         display: flex !important;
         flex-direction: column !important;
-        height: 600px !important;       /* Fast höjd för symmetri */
-        max-height: 85vh !important;
+    }
+
+    /* 2. Ta bort det stora tomrummet i botten på Fordonsmodalen */
+    #vehicleModal .modal-body {
+        padding-bottom: 0 !important;   /* Ingen extra luft behövs */
+        flex: 1 !important;             /* Fyll ut utrymmet */
+        overflow-y: auto !important;    /* Scrolla om det behövs */
+    }
+
+    /* (Valfritt) Justera Kundmodalen så den behåller sin luft för knapparna */
+    #customerModal .modal-body {
+        padding-bottom: 20px !important;
     }
 }
