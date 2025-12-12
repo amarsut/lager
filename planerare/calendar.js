@@ -168,7 +168,24 @@ export function initCalendar(elementId, jobsData, onEventClickCallback) {
         },
 
         eventClick: function(info) {
-            if (onEventClickCallback) onEventClickCallback(info.event.id);
+            if (isMobile) {
+                // NY LOGIK: Förhindra att redigeringsmodalen öppnas på mobil.
+                // Vi vill istället öppna daglistan även om man klickar på ett event.
+                // Hämta datumet från eventet
+                const eventDate = info.event.startStr.split('T')[0];
+                const dayEl = document.querySelector(`.fc-day[data-date="${eventDate}"]`);
+
+                document.querySelectorAll('.fc-day-selected').forEach(el => el.classList.remove('fc-day-selected'));
+                if (dayEl) dayEl.classList.add('fc-day-selected');
+                
+                renderDayList(eventDate, events);
+
+                // Stoppa eventbubbling för att säkerställa att inget annat händer
+                info.jsEvent.stopPropagation();
+            } else {
+                // BEFINTLIG LOGIK FÖR DESKTOP: Öppna redigeringsmodal
+                if (onEventClickCallback) onEventClickCallback(info.event.id);
+            }
         }
     });
 
