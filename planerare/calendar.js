@@ -134,14 +134,15 @@ export function initCalendar(elementId, jobsData, onEventClickCallback) {
 
         // --- NY LOGIK FÖR HOVER (DESKTOP) ---
         eventMouseEnter: function(info) {
-            // Kör ej på mobil
-            if (window.innerWidth <= 768) return;
+            if (window.innerWidth <= 768) return; // Endast desktop
         
             const props = info.event.extendedProps;
-            // Visa bara om det finns en beskrivning/kommentar
-            if (!props.description) return;
+            
+            // Hämta tid (HH:MM) från startdatumet
+            const dateObj = info.event.start;
+            const timeStr = dateObj ? dateObj.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' }) : 'Heldag';
         
-            // Skapa tooltip-elementet om det inte finns
+            // Skapa tooltip om den inte finns
             let tooltip = document.getElementById('fc-custom-tooltip');
             if (!tooltip) {
                 tooltip = document.createElement('div');
@@ -150,22 +151,30 @@ export function initCalendar(elementId, jobsData, onEventClickCallback) {
                 document.body.appendChild(tooltip);
             }
         
-            // Sätt text (Regnr + Kommentar)
-            let tooltipText = '';
-            if (props.regnr) tooltipText += `<strong style="color:#93c5fd">${props.regnr}</strong><br>`;
-            tooltipText += props.description;
+            // Bygg HTML-innehållet
+            // Vi kollar om kommentar finns, annars visar vi "Ingen kommentar" eller liknande
+            const commentText = props.description || '<span style="opacity:0.5">Ingen kommentar</span>';
+            
+            tooltip.innerHTML = `
+                <div class="tooltip-header">
+                    <span class="tooltip-time">${timeStr}</span>
+                    <span class="tooltip-reg">${props.regnr || '---'}</span>
+                </div>
+                <div class="tooltip-body">
+                    <span class="tooltip-customer">${info.event.title}</span>
+                    <span class="tooltip-desc">${commentText}</span>
+                </div>
+            `;
         
-            tooltip.innerHTML = tooltipText;
             tooltip.classList.add('show');
         
-            // Positionera tooltip vid musen
-            // Vi använder info.jsEvent för att få musens position
+            // Positionering (Lite smartare för att inte hamna utanför skärmen)
             const x = info.jsEvent.clientX;
             const y = info.jsEvent.clientY;
-        
-            // Placera strax ovanför musen
-            tooltip.style.left = (x + 10) + 'px';
-            tooltip.style.top = (y + 10) + 'px';
+            
+            // Placera 15px till höger och 15px ner från musen
+            tooltip.style.left = (x + 15) + 'px';
+            tooltip.style.top = (y + 15) + 'px';
         },
         
         eventMouseLeave: function(info) {
@@ -174,8 +183,7 @@ export function initCalendar(elementId, jobsData, onEventClickCallback) {
             const tooltip = document.getElementById('fc-custom-tooltip');
             if (tooltip) {
                 tooltip.classList.remove('show');
-                // Flytta bort den så den inte stör
-                tooltip.style.left = '-9999px';
+                tooltip.style.left = '-9999px'; // Flytta bort helt
             }
         },
         
