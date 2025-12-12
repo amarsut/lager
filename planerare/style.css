@@ -4043,201 +4043,226 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 /*KALENDERVY*/
 
 /* =======================================================
-   KALENDER "REKLAM DESIGN" & MOBILFIX
+   KALENDER "REKLAM DESIGN" (Fixar Bild 1, 2, 3)
    ======================================================= */
 
 /* --- Container --- */
 #calendarView {
-    background: white; 
-    border-radius: 12px; 
+    background: white;
+    border-radius: 12px;
     border: 1px solid #e2e8f0;
+    /* DATOR: Fast höjd för stabilitet */
     height: 850px; 
     padding: 0;
     overflow: hidden;
-    font-family: 'Inter', sans-serif; /* Säkerställ snyggt typsnitt */
+    font-family: 'Inter', sans-serif;
 }
 
-/* --- 1. Tunnare text i hela kalendern --- */
-.sx__calendar-wrapper {
-    font-weight: 400 !important; /* Normal vikt, ej fet */
-}
-
-/* --- Header Layout (För att få plats med etiketterna) --- */
+/* --- 1. HEADER LAYOUT (Punkt 3, 4) --- */
 .sx__calendar-header {
-    border-bottom: 1px solid #f1f5f9;
-    padding: 20px 30px !important;
+    display: flex !important;
+    align-items: flex-end !important; /* Linjerar knappar mot botten så Labels får plats ovanför */
+    padding: 20px 24px !important;
     background-color: #fff;
-    align-items: flex-end !important; /* Linjera knapparna i botten */
-    gap: 15px;
+    border-bottom: 1px solid #f1f5f9;
+    gap: 12px;
+    margin-bottom: 0 !important;
 }
 
-/* --- 4. Etiketter ovanför knapparna ("Labels") --- */
-/* Vi använder pseudo-element för att fejka etiketterna "View" och "Date" */
-
-/* View-väljaren (Månad/Vecka) */
-.sx__view-selection {
-    position: relative;
-    margin-top: 15px; /* Plats för texten ovanför */
-}
-.sx__view-selection::before {
-    content: "Vy";
-    position: absolute;
-    top: -18px;
-    left: 2px;
-    font-size: 0.75rem;
-    color: #64748b;
-    font-weight: 600;
-}
-
-/* Datum-väljaren */
-.sx__date-picker-wrapper {
-    position: relative;
-    margin-top: 15px;
-}
-.sx__date-picker-wrapper::before {
-    content: "Datum";
-    position: absolute;
-    top: -18px;
-    left: 2px;
-    font-size: 0.75rem;
-    color: #64748b;
-    font-weight: 600;
-}
-
-/* --- 2. Knapparnas Design (Vit, Grå ram, Rundade) --- */
+/* --- 2. NAVIGATION (Idag, <, >) --- */
 .sx__chevron-wrapper, 
-.sx__today-button,
-.sx__view-selection,
-.sx__date-picker-wrapper {
+.sx__today-button {
+    height: 36px !important; /* Punkt 2: Mindre knappar */
     background-color: #fff !important;
     border: 1px solid #e2e8f0 !important;
-    border-radius: 6px !important; /* Lite mindre rundning för "clean" look */
+    border-radius: 6px !important;
     box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-    color: #1e293b !important;
+    color: #334155 !important;
     transition: all 0.2s;
-    height: 38px !important; /* Fixad höjd */
-    display: flex;
-    align-items: center;
+    font-weight: 500 !important; /* Punkt 1: Tunnare text */
+    font-size: 0.85rem !important;
 }
-
 .sx__chevron-wrapper:hover, 
-.sx__today-button:hover,
-.sx__view-selection:hover,
-.sx__date-picker-wrapper:hover {
-    border-color: #cbd5e1 !important;
+.sx__today-button:hover {
     background-color: #f8fafc !important;
+    border-color: #cbd5e1 !important;
 }
 
-/* --- 3 & 7. Snygga till Datumväljaren --- */
+/* Fixa dublett-utseendet: Dölj standard datum-navigering om den krockar */
+.sx__calendar-header-content {
+    font-size: 1.25rem !important;
+    font-weight: 600 !important;
+    color: #0f172a;
+    margin-right: auto; /* Trycker datumväljaren till höger */
+    margin-left: 12px;
+    text-transform: capitalize !important; /* Punkt 5: Stor bokstav (December) */
+}
+
+/* --- 3. VY & DATUM VÄLJARE (Punkt 3, 4, 7) --- */
+
+/* Wrapper för knapparna till höger */
+.sx__view-selection,
 .sx__date-picker-wrapper {
-    padding: 0 12px !important;
-    min-width: 140px;
-    justify-content: space-between; /* Tryck pilen till höger */
+    position: relative; /* För att placera label */
+    margin-top: 18px;   /* Plats för label ovanför */
+    height: 36px !important;
+    background-color: #fff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 6px !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    min-width: 130px;
+    display: flex; 
+    align-items: center;
+    padding: 0 10px !important;
 }
 
-/* 5. Versal på månaden (december -> December) */
-.sx__date-picker__selected-date {
-    font-size: 0.95rem !important;
-    font-weight: 500 !important;
-    color: #0f172a !important;
-    text-transform: capitalize !important; /* FIXAR PUNKT 5 */
+/* Label: "View" (Vy) */
+.sx__view-selection::before {
+    content: "Vy";
+    position: absolute; top: -20px; left: 0;
+    font-size: 0.75rem; color: #64748b; font-weight: 600;
 }
 
-/* Fixa pilen inuti datumväljaren */
+/* Label: "Date" (Datum) */
+.sx__date-picker-wrapper::before {
+    content: "Datum";
+    position: absolute; top: -20px; left: 0;
+    font-size: 0.75rem; color: #64748b; font-weight: 600;
+}
+
+/* Pil inuti knapparna */
 .sx__date-picker-wrapper .sx__chevron-icon {
-    color: #64748b;
-    width: 16px;
-    height: 16px;
+    width: 14px; height: 14px; color: #64748b; margin-left: auto;
 }
 
-/* --- Vy-väljaren Text --- */
-.sx__view-selection__item {
+/* Texten inuti knapparna */
+.sx__date-picker__selected-date,
+.sx__view-selection__selected-item {
     font-size: 0.9rem !important;
-    font-weight: 500 !important;
+    font-weight: 500 !important; /* Punkt 1: Tunnare */
+    color: #1e293b !important;
     text-transform: capitalize !important;
-    color: #64748b !important;
 }
-.sx__view-selection__item.is-selected {
-    color: #0f172a !important;
+
+/* --- 4. POPUP / DATUMVÄLJAREN (Fixar Bild 3 -> Bild 4) --- */
+.sx__date-picker-popup {
+    border-radius: 12px !important;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+    border: 1px solid #e2e8f0 !important;
+}
+
+/* Rubriken i popupen */
+.sx__date-picker__popup-header {
+    text-transform: capitalize; 
+    font-weight: 600;
+}
+
+/* Rensa cirklarna (Punkt 4 i listan) */
+.sx__date-picker__day {
+    border-radius: 4px !important; /* Små hörn, inte runda */
+    font-weight: 400 !important;
+    color: #334155;
+}
+
+/* Ta bort grå bakgrund vid hover om den inte är vald */
+.sx__date-picker__day:hover:not(.is-selected) {
     background-color: #f1f5f9 !important;
 }
 
-/* --- Event Design (Reklam-looken) --- */
+/* Vald dag (Lila cirkel i din ref, vi kör din temafärg eller lila) */
+.sx__date-picker__day.is-selected {
+    background-color: #8b5cf6 !important; /* Lila från bild 4 */
+    color: white !important;
+    border-radius: 50% !important; /* Endast vald dag är rund */
+}
+
+/* --- 5. GRID & EVENT (Fixar Bild 1 - fula rutor) --- */
+.sx__month-grid-day {
+    border-color: #f1f5f9 !important; /* Mycket ljusare linjer */
+}
+
+/* Dagens datum (markerad siffra) */
+.sx__month-grid-day__header-date.is-today {
+    background-color: #3b82f6 !important; /* Blå markering */
+    color: white !important;
+}
+
+/* Eventen */
 .sx__event {
-    border-radius: 4px !important;
     border: none !important;
-    border-left: 3px solid !important; /* Färgkoden till vänster */
+    border-left: 3px solid !important; /* Färgkoden */
+    border-radius: 4px !important;
     box-shadow: 0 1px 2px rgba(0,0,0,0.05);
     padding: 2px 6px !important;
-    font-size: 0.8rem !important;
-    font-weight: 500 !important; /* PUNKT 1: Tunnare text */
+    font-size: 0.75rem !important; /* Lite mindre text */
+    font-weight: 500 !important;    /* Inte fetstil */
     line-height: 1.4 !important;
 }
 
-/* --- 8. FIXA MOBILVYN (Den "hemska" delen) --- */
+/* --- 6. MOBILVYN (Kritisk fix för Bild 1 & 3) --- */
 @media (max-width: 768px) {
+    
     #calendarView {
-        /* VIKTIGT: Tvinga kalendern att ta plats */
-        height: calc(100vh - 80px) !important; 
+        /* VIKTIGT: Tvinga kalendern att fylla skärmen */
+        height: calc(100vh - 130px) !important; 
         margin: 0 !important;
         border: none !important;
         border-radius: 0 !important;
-        display: flex;
+        display: flex; 
         flex-direction: column;
     }
     
-    /* Se till att själva kalender-komponenten fyller höjden */
     .sx__calendar-wrapper {
         height: 100% !important;
-        display: flex;
-        flex-direction: column;
+        display: flex; flex-direction: column;
     }
-    
-    /* Headern på mobil */
+
+    /* Gör headern kompaktare på mobil */
     .sx__calendar-header {
         padding: 10px 12px !important;
+        flex-wrap: wrap;
         gap: 8px;
-        flex-wrap: wrap; 
-        justify-content: space-between;
-        align-items: center !important;
-        border-bottom: 1px solid #e2e8f0;
     }
 
-    /* Dölj datum-väljar-WRAPPERN på mobil om den tar för mycket plats, 
-       men behåll pilarna */
+    /* Dölj de stora "Vy" och "Datum" knapparna på mobil för att spara plats.
+       Man kan navigera med pilarna och ändra vy i menyn om det behövs */
+    .sx__view-selection,
     .sx__date-picker-wrapper {
-        display: none !important; /* Vi litar på pilarna på mobil för att spara plats */
+        display: none !important; 
     }
-    
-    /* Centrera månadsrubriken om datumväljaren är dold */
+
+    /* Centrera rubriken (Månad År) */
     .sx__calendar-header-content {
-        order: -1; /* Lägg datumet överst om möjligt i ditt bibliotek */
+        margin: 0 !important;
         width: 100%;
         text-align: center;
-        margin-bottom: 10px;
-        font-size: 1.2rem;
-        font-weight: 700;
-        text-transform: capitalize;
+        order: -1; /* Lägg överst */
+        font-size: 1.2rem !important;
+        margin-bottom: 8px !important;
     }
 
-    /* Gör "Idag" och pilarna tillräckligt stora för fingrar */
-    .sx__chevron-wrapper, 
-    .sx__today-button {
-        height: 40px !important;
-        width: 40px !important;
+    /* Gör pilarna stora och tryckvänliga */
+    .sx__chevron-wrapper {
+        width: 44px !important; 
+        height: 44px !important;
         justify-content: center;
+        flex-grow: 1; /* Sprid ut dem */
     }
     
-    /* Tvinga innehållet (månadsrutnätet) att växa och scrolla */
+    /* Grid-innehållet */
     .sx__view-container {
         flex: 1;
-        height: 100%;
         overflow-y: auto;
-        background: #fff;
+        background-color: #fff;
+    }
+
+    /* FIX FÖR BILD 1: Rutorna var för små/fula */
+    .sx__month-grid-day {
+        min-height: 80px !important; /* Tvinga höjd på rutorna */
     }
     
-    /* Fixa så att datumen i månadsrutnätet inte ser konstiga ut */
-    .sx__month-grid-day {
-        min-height: 80px !important; /* Se till att varje dag har höjd */
+    /* Ta bort onödig padding i rutorna */
+    .sx__month-grid-day__header {
+        padding: 4px !important;
     }
 }
