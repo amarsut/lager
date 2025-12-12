@@ -1,4 +1,4 @@
-import { createCalendar, viewMonthGrid, viewWeek, viewDay } from 'https://cdn.jsdelivr.net/npm/@schedule-x/calendar@1.53.0/+esm';
+import { createCalendar, viewDay, viewWeek, viewMonthGrid, viewMonthAgenda } from 'https://cdn.jsdelivr.net/npm/@schedule-x/calendar@1.53.0/+esm';
 import { createDragAndDropPlugin } from 'https://cdn.jsdelivr.net/npm/@schedule-x/drag-and-drop@1.53.0/+esm';
 import { createEventModalPlugin } from 'https://cdn.jsdelivr.net/npm/@schedule-x/event-modal@1.53.0/+esm';
 
@@ -8,27 +8,17 @@ function mapJobsToEvents(jobs) {
     return jobs
         .filter(job => !job.deleted && job.status !== 'avbokad')
         .map(job => {
-            // Skapa start- och slutdatum
             let startDateTime = job.datum;
-            let timeString = "";
-
             if (!startDateTime.includes('T')) {
-                // Om datumet bara är YYYY-MM-DD
-                timeString = job.tid || '08:00';
-                startDateTime = `${job.datum} ${timeString}`;
+                startDateTime = `${job.datum} ${job.tid || '08:00'}`;
             } else {
-                // Om datumet är ISO-sträng
                 startDateTime = startDateTime.replace('T', ' ');
-                try {
-                    timeString = startDateTime.split(' ')[1].substring(0, 5);
-                } catch(e) {}
             }
 
             let endDateTime = startDateTime;
             try {
                 const d = new Date(startDateTime.replace(' ', 'T'));
-                d.setHours(d.getHours() + 1); // Standardlängd 1 timme
-                
+                d.setHours(d.getHours() + 1);
                 const Y = d.getFullYear();
                 const M = String(d.getMonth()+1).padStart(2,'0');
                 const D = String(d.getDate()).padStart(2,'0');
@@ -37,12 +27,9 @@ function mapJobsToEvents(jobs) {
                 endDateTime = `${Y}-${M}-${D} ${H}:${m}`;
             } catch(e) {}
 
-            // Titel: "10:00 KUNDNAMN"
-            const title = timeString ? `${timeString} ${job.kundnamn}` : job.kundnamn;
-
             return {
                 id: job.id,
-                title: title, 
+                title: job.kundnamn, 
                 start: startDateTime,
                 end: endDateTime,
                 calendarId: job.status 
@@ -64,13 +51,8 @@ export function initCalendar(elementId, jobsData, onEventClickCallback) {
 
     calendarApp = createCalendar({
         views: [viewMonthGrid, viewWeek, viewDay], 
-        
-        // --- VIKTIGT: TVINGA MÅNADSVY ---
-        defaultView: viewMonthGrid.name,
-        
-        // --- VIKTIGT: STÄNG AV MOBIL-ANPASSNING ---
-        // Detta gör att den inte byter till Dagsvy automatiskt på mobilen
-        isResponsive: false,
+        defaultView: viewMonthGrid.name, 
+        isResponsive: false, // VIKTIGT: Stänger av inbyggd mobil-logik så vi kan styra den själva
         
         events: events,
         locale: 'sv-SE',
