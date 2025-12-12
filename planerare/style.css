@@ -4380,29 +4380,38 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     .fc-daygrid-day-events { display: flex; flex-wrap: wrap; justify-content: center; gap: 2px; margin-top: 2px !important; }
 
 	#selectedDayView {
-        position: fixed; /* Lägger den ovanpå allt */
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%; /* Hela skärmen */
-        background-color: var(--content-bg); /* Sätt bakgrundsfärg */
-        z-index: 1000; /* Se till att den ligger över kalendern */
-        transform: translateX(100%); /* Dölj den till höger utanför skärmen */
-        transition: transform 0.3s ease-out; /* Mjuk övergång */
-        padding-top: 50px; /* Ge plats för rubriken inuti listan */
-        overflow-y: auto; /* Gör innehållet scrollbart */
-    }
-
-    #selectedDayView.show {
-        transform: translateX(0); /* Visa den */
-    }
-
-    /* Ta bort runda hörn och skugga när den är i helskärmsläge */
-    #selectedDayView.show {
-        border-radius: 0;
-        box-shadow: none;
-    }
+	    position: fixed;
+	    top: auto;       /* VIKTIGT: Nollställ top så den inte täcker hela skärmen */
+	    bottom: 0;       /* Fäst i botten */
+	    left: 0; 
+	    right: 0;
+	    
+	    width: 100%;
+	    height: auto;           /* Låt höjden anpassas efter innehållet... */
+	    max-height: 80vh;       /* ...men bli aldrig högre än 80% av skärmen */
+	    
+	    background-color: #ffffff; /* Eller var(--content-bg) */
+	    z-index: 2000;          /* Högt så den ligger över kalendern */
+	    
+	    /* Design: Runda hörn upptill och skugga */
+	    border-radius: 24px 24px 0 0; 
+	    box-shadow: 0 -10px 40px rgba(0,0,0,0.2); 
+	    
+	    /* Animation: Göm under skärmen start */
+	    transform: translateY(100%); 
+	    transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+	    
+	    /* Scrollning: Detta gör att du kan scrolla INUTI rutan */
+	    overflow-y: auto; 
+	    padding: 20px;
+	    padding-bottom: 40px; /* Extra luft i botten för scroll */
+	}
+	
+	#selectedDayView.show {
+	    transform: translateY(0); /* Glid upp till bottenläget */
+	}
 }
+
 
 
 
