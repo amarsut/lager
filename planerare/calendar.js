@@ -131,6 +131,53 @@ export function initCalendar(elementId, jobsData, onEventClickCallback) {
         },
         
         buttonText: { today: 'Idag' },
+
+        // --- NY LOGIK FÖR HOVER (DESKTOP) ---
+        eventMouseEnter: function(info) {
+            // Kör ej på mobil
+            if (window.innerWidth <= 768) return;
+        
+            const props = info.event.extendedProps;
+            // Visa bara om det finns en beskrivning/kommentar
+            if (!props.description) return;
+        
+            // Skapa tooltip-elementet om det inte finns
+            let tooltip = document.getElementById('fc-custom-tooltip');
+            if (!tooltip) {
+                tooltip = document.createElement('div');
+                tooltip.id = 'fc-custom-tooltip';
+                tooltip.className = 'calendar-tooltip';
+                document.body.appendChild(tooltip);
+            }
+        
+            // Sätt text (Regnr + Kommentar)
+            let tooltipText = '';
+            if (props.regnr) tooltipText += `<strong style="color:#93c5fd">${props.regnr}</strong><br>`;
+            tooltipText += props.description;
+        
+            tooltip.innerHTML = tooltipText;
+            tooltip.classList.add('show');
+        
+            // Positionera tooltip vid musen
+            // Vi använder info.jsEvent för att få musens position
+            const x = info.jsEvent.clientX;
+            const y = info.jsEvent.clientY;
+        
+            // Placera strax ovanför musen
+            tooltip.style.left = (x + 10) + 'px';
+            tooltip.style.top = (y + 10) + 'px';
+        },
+        
+        eventMouseLeave: function(info) {
+            if (window.innerWidth <= 768) return;
+            
+            const tooltip = document.getElementById('fc-custom-tooltip');
+            if (tooltip) {
+                tooltip.classList.remove('show');
+                // Flytta bort den så den inte stör
+                tooltip.style.left = '-9999px';
+            }
+        },
         
         events: events,
         
