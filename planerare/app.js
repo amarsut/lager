@@ -464,7 +464,7 @@ function createJobCard(job) {
     // --- HÄR ÄR FÖRÄNDRINGEN: Tvingande Inline Styles för Headern ---
     // Height: 34px !important
     return `
-        <div class="job-card-new" id="card-${job.id}" onclick="openEditModal('${job.id}')">
+        <div class="job-card-new" id="card-${job.id}" onclick="saveSearchTerm(); openEditModal('${job.id}')">
             
             <div class="card-header-strip ${headerClass}" style="height: 24px !important; min-height: 24px !important; padding: 0 10px !important; display: flex !important; align-items: center !important;">
                 
@@ -654,44 +654,43 @@ function setupEventListeners() {
 
 	// --- KOPPLA KALENDER FRÅN MENY/INSTÄLLNINGAR ---
     const menuBtnCalendar = document.getElementById('menuBtnCalendar');
-    if (menuBtnCalendar) {
-        menuBtnCalendar.addEventListener('click', () => {
-            // 1. Stäng menyn (viktigt!)
-            closeSettings(); 
-
-            // 2. Dölj andra vyer
-            const statBar = document.getElementById('statBar');
-            const timelineView = document.getElementById('timelineView');
-            const customersView = document.getElementById('customersView');
-            
-            if(statBar) statBar.style.display = 'none';
-            if(timelineView) timelineView.style.display = 'none';
-            if(customersView) customersView.style.display = 'none';
-            
-            // 3. Visa kalendern
-            const calView = document.getElementById('calendarView');
-            if(calView) calView.style.display = 'block';
-
-            // 4. Ladda kalendern
-            // Vi väntar 200ms så menyn hinner stängas snyggt innan vi ritar kalendern
-            setTimeout(() => {
-                initCalendar('calendar-wrapper', allJobs, openEditModal);
-            }, 200);
-        });
-    }
+	if (menuBtnCalendar) {
+	    menuBtnCalendar.addEventListener('click', () => {
+	        closeSettings();
+	        
+	        setTimeout(() => {
+	            addHistoryState(); // <--- LÄGG TILL DETTA
+	            
+	            document.getElementById('statBar').style.display = 'none';
+	            document.getElementById('timelineView').style.display = 'none';
+	            document.getElementById('customersView').style.display = 'none';
+	            document.getElementById('calendarView').style.display = 'block';
+	
+	            // Initiera kalendern
+	            setTimeout(() => {
+	                // Notera: Importera initCalendar korrekt eller använd window.initCalendar om den är global
+	                import('./calendar.js').then(module => {
+	                     module.initCalendar('calendar-wrapper', allJobs, openEditModal);
+	                });
+	            }, 50);
+	        }, 50);
+	    });
+	}
 
 	/*MER MENY I INSTÄLLNINGAR _ MOBIL*/
 	document.getElementById('menuBtnCustomers').addEventListener('click', () => {
-	    // 1. Stäng "Mer"-menyn
-	    closeSettings(); // Din befintliga funktion för att stänga inställningar
+	    closeSettings(); // Detta gör en history.back() internt om modalen är öppen
 	    
-	    // 2. Visa Kundvyn (Samma logik som tidigare)
-	    document.getElementById('statBar').style.display = 'none';
-	    document.getElementById('timelineView').style.display = 'none';
-	    document.getElementById('customersView').style.display = 'block';
-	    
-	    // 3. Ladda listan
-	    renderCustomerView();
+	    // Vi måste vänta en millisekund så back-eventet hinner klart, sen pushar vi nytt
+	    setTimeout(() => {
+	        addHistoryState(); // <--- LÄGG TILL DETTA (Skapar nytt "steg" för Kundvyn)
+	        
+	        document.getElementById('statBar').style.display = 'none';
+	        document.getElementById('timelineView').style.display = 'none';
+	        document.getElementById('calendarView').style.display = 'none';
+	        document.getElementById('customersView').style.display = 'block';
+	        renderCustomerView();
+	    }, 50);
 	});
 
 	// --- KOPPLA MOBIL-KNAPPEN "KUNDER" ---
@@ -715,16 +714,23 @@ function setupEventListeners() {
 	    });
 	}
 	
-	// --- FIX FÖR ATT LÄMNA VYN (MOBIL) ---
-	// Koppla "Hem"-knappen (Vy) så den återställer allt
 	document.getElementById('mobileHomeBtn').addEventListener('click', () => {
-	    document.getElementById('statBar').style.display = 'grid'; // Eller flex/block beroende på din CSS
-	    document.getElementById('timelineView').style.display = 'block';
-	    document.getElementById('customersView').style.display = 'none';
-	    
-	    // Nollställ sökning
-	    const custSearch = document.getElementById('customerSearchInput');
-	    if(custSearch) custSearch.value = '';
+    document.querySelectorAll('.mobile-nav-item').forEach(btn => btn.classList.remove('active'));
+    document.getElementById('mobileHomeBtn').classList.add('active');
+    document.getElementById('statBar').style.display = 'grid'; 
+    document.getElementById('timelineView').style.display = 'block';    
+    document.getElementById('customersView').style.display = 'none';
+    
+    const calView = document.getElementById('calendarView');
+    if(calView) calView.style.display = 'none';
+
+    const dayList = document.getElementById('selectedDayView');
+	    if(dayList) {
+	        dayList.style.display = 'none';
+	        dayList.classList.remove('show');
+	    }
+	
+	    window.scrollTo({top:0, behavior:'smooth'});
 	});
 
 	// --- NAVIGERING: ÖVERSIKT (TILLBAKA) ---
@@ -755,23 +761,19 @@ function setupEventListeners() {
 
 	if (navCustomers) {
 	    navCustomers.addEventListener('click', () => {
-	        // 1. Uppdatera UI (Markera knappen som aktiv)
+	        // 1. UI Uppdatering
 	        document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
 	        navCustomers.classList.add('active');
 	        
-	        // 2. Hantera mobil-menyn (om man är på mobil)
-	        // Detta är viktigt så man ser att man är på "Kunder" även i bottenmenyn om du lägger till det där
+	        // 2. Dölj ALLA andra vyer (inklusive kalendern!)
+	        document.getElementById('statBar').style.display = 'none';
+	        document.getElementById('timelineView').style.display = 'none';
+	        document.getElementById('calendarView').style.display = 'none'; 
 	        
-	        // 3. Dölj andra vyer, visa kundvyn
-	        const statBar = document.getElementById('statBar');
-	        const timelineView = document.getElementById('timelineView');
-	        const customersView = document.getElementById('customersView');
-	
-	        if(statBar) statBar.style.display = 'none';
-	        if(timelineView) timelineView.style.display = 'none';
-	        if(customersView) customersView.style.display = 'block';
+	        // 3. Visa Kundvyn
+	        document.getElementById('customersView').style.display = 'block';
 	        
-	        // 4. Ladda datan
+	        // 4. Ladda data
 	        renderCustomerView();
 	    });
 	}
@@ -917,6 +919,23 @@ function setupEventListeners() {
 	    // 3. Markera knappen som aktiv i menyn
 	    document.querySelectorAll('.mobile-nav-item').forEach(btn => btn.classList.remove('active'));
 	    document.getElementById('mobileSearchBtn').classList.add('active');
+
+		const history = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+    
+	    if (history.length > 0) {
+	        let html = `<div style="padding:16px;">
+	            <p style="font-size:0.75rem; color:#94a3b8; font-weight:700; margin-bottom:10px; text-transform:uppercase;">Senaste</p>
+	            <div style="display:flex; flex-wrap:wrap; gap:8px;">`;
+	            
+	        history.forEach(term => {
+	            html += `<span class="search-chip" onclick="executeSearch('${term}')">${term}</span>`;
+	        });
+	        
+	        html += `</div></div>`;
+	        resultsContainer.innerHTML = html;
+	    } else {
+	        resultsContainer.innerHTML = ''; 
+	    }
 
 	    // 4. VIKTIGT: Sätt fokus i rutan (Tangentbordet kommer upp)
 	    // Vi väntar 100ms för att säkerställa att modalen hunnit bli synlig först
@@ -1260,6 +1279,13 @@ function renderExpenses() {
 window.removeExpense = function(index) {
     currentExpenses.splice(index, 1);
     renderExpenses();
+};
+
+window.executeSearch = function(term) {
+    const input = document.getElementById('mobileSearchInput');
+    input.value = term;
+    // Trigga input-eventet manuellt för att köra sökningen
+    input.dispatchEvent(new Event('input'));
 };
 
 // ==========================================
@@ -2953,3 +2979,26 @@ async function forceUpdateApp() {
 
 // Gör funktionen tillgänglig globalt (så knappen hittar den om du använder onclick i HTML)
 window.forceUpdateApp = forceUpdateApp;
+
+window.saveSearchTerm = function() {
+    const input = document.getElementById('mobileSearchInput');
+    const term = input ? input.value.trim() : "";
+    
+    // Spara bara om det är mer än 2 tecken
+    if(term.length < 2) return;
+    
+    // Hämta gammal historik
+    let history = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+    
+    // Ta bort ordet om det redan finns (för att lägga det överst igen)
+    history = history.filter(t => t.toLowerCase() !== term.toLowerCase());
+    
+    // Lägg till det nya ordet först i listan
+    history.unshift(term);
+    
+    // Spara max 5 senaste sökningar
+    if (history.length > 5) history.pop();
+    
+    // Spara tillbaka till minnet
+    localStorage.setItem('searchHistory', JSON.stringify(history));
+};
