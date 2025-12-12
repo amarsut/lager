@@ -656,40 +656,44 @@ function setupEventListeners() {
     const menuBtnCalendar = document.getElementById('menuBtnCalendar');
 	if (menuBtnCalendar) {
 	    menuBtnCalendar.addEventListener('click', () => {
-	        closeSettings();
-	        setTimeout(() => {
-	            addHistoryState('calendar'); // <--- ÄNDRAT HÄR: Skicka med 'calendar'
-	            
-	            document.getElementById('statBar').style.display = 'none';
-	            document.getElementById('timelineView').style.display = 'none';
-	            document.getElementById('customersView').style.display = 'none';
-	            document.getElementById('calendarView').style.display = 'block';
+	        // 1. Dölj menyn manuellt
+	        document.getElementById('settingsModal').classList.remove('show');
 	
-	            // Starta kalendern
-	            setTimeout(() => {
-	                import('./calendar.js').then(module => {
-	                     module.initCalendar('calendar-wrapper', allJobs, openEditModal);
-	                });
-	            }, 50);
+	        // 2. Ersätt "Meny"-steg med "Kalender"-steg
+	        history.replaceState({ uiState: 'calendar' }, null, window.location.href);
+	
+	        // 3. Uppdatera UI
+	        document.getElementById('statBar').style.display = 'none';
+	        document.getElementById('timelineView').style.display = 'none';
+	        document.getElementById('customersView').style.display = 'none';
+	        document.getElementById('calendarView').style.display = 'block';
+	
+	        // 4. Starta kalendern (Dagvyn öppnas automatiskt av kalendern, vilket lägger till NÄSTA steg)
+	        setTimeout(() => {
+	            import('./calendar.js').then(module => {
+	                 module.initCalendar('calendar-wrapper', allJobs, openEditModal);
+	            });
 	        }, 50);
 	    });
 	}
 
 	/*MER MENY I INSTÄLLNINGAR _ MOBIL*/
 	document.getElementById('menuBtnCustomers').addEventListener('click', () => {
-	    closeSettings();
-	    setTimeout(() => {
-	        addHistoryState('customers'); // <--- ÄNDRAT HÄR: Skicka med 'customers'
-	        
-	        document.getElementById('statBar').style.display = 'none';
-	        document.getElementById('timelineView').style.display = 'none';
-	        document.getElementById('calendarView').style.display = 'none';
-	        document.getElementById('customersView').style.display = 'block';
-	        renderCustomerView();
-	        
-	        // Uppdatera mobilmenyn så "Kunder" lyser om du har en sån knapp, annars släck hem
-	        document.querySelectorAll('.mobile-nav-item').forEach(btn => btn.classList.remove('active'));
-	    }, 50);
+	    // 1. Dölj menyn manuellt utan att backa historiken än
+	    document.getElementById('settingsModal').classList.remove('show');
+	    
+	    // 2. Ersätt nuvarande "Meny"-steg med "Kunder"-steg
+	    history.replaceState({ uiState: 'customers' }, null, window.location.href);
+	
+	    // 3. Uppdatera UI
+	    document.getElementById('statBar').style.display = 'none';
+	    document.getElementById('timelineView').style.display = 'none';
+	    document.getElementById('calendarView').style.display = 'none';
+	    document.getElementById('customersView').style.display = 'block';
+	    
+	    renderCustomerView();
+	    
+	    document.querySelectorAll('.mobile-nav-item').forEach(btn => btn.classList.remove('active'));
 	});
 
 	// --- KOPPLA MOBIL-KNAPPEN "KUNDER" ---
@@ -859,58 +863,54 @@ function setupEventListeners() {
 
 	// 1. Lyssna på när användaren trycker bakåt (eller swipar)
 	window.addEventListener('popstate', function(event) {
-	    // 1. Kolla om vi har modaler öppna (högst prioritet)
-	    const openModal = document.querySelector('.modal-backdrop.show');
-	    const chatWidget = document.getElementById('chatWidget');
-	    const mobileSearch = document.getElementById('mobileSearchModal');
-	    const imageZoom = document.getElementById('imageZoomModal');
-	    const vehicleModal = document.getElementById('vehicleModal');
+	    // 1. Stäng modaler (Högst prioritet) - Ingen ändring här
+	    const modals = [
+	        document.getElementById('imageZoomModal'),
+	        document.getElementById('vehicleModal'),
+	        document.getElementById('chatWidget'),
+	        document.getElementById('mobileSearchModal'),
+	        document.querySelector('.modal-backdrop.show')
+	    ];
+	    
+	    for (let m of modals) {
+	        if (m && (m.style.display === 'flex' || m.classList.contains('show'))) {
+	            if(m.classList.contains('show')) m.classList.remove('show');
+	            else m.style.display = 'none';
+	            document.body.style.overflow = '';
+	            return; // Stanna här, vi har hanterat back-trycket
+	        }
+	    }
 	
-	    // Stäng modaler i turordning (samma som förut)
-	    if (imageZoom && imageZoom.style.display === 'flex') { imageZoom.style.display = 'none'; return; }
-	    if (vehicleModal && vehicleModal.classList.contains('show')) { vehicleModal.classList.remove('show'); return; }
-	    if (chatWidget && chatWidget.style.display === 'flex') { 
-	        chatWidget.style.display = 'none'; 
-	        document.body.style.overflow = ''; 
+	    // 2. Hantera Vyer baserat på historik-state
+	    const state = event.state;
+	
+	    // Om vi har ett aktivt dag-läge i kalendern (Swipe 1 i Kalender)
+	    if (state && state.dayListOpen) {
+	        // Gör inget här, calendar.js hanterar stängningen av listan visuellt
 	        return; 
 	    }
-	    if (mobileSearch && mobileSearch.classList.contains('show')) { mobileSearch.classList.remove('show'); return; }
-	    if (openModal) { closeModals(); return; }
 	
-	    // 2. NY LOGIK: Hantera navigering tillbaka till Översikt
-	    // Om historik-statet är tomt (null) betyder det att vi är på "bas-nivån"
-	    if (!event.state || !event.state.uiState) {
+	    // Om vi är tillbaka på Kalender-vyn (efter att ha stängt daglistan)
+	    if (state && state.uiState === 'calendar') {
+	        // Se till att kalendern syns och daglistan är borta
+	        document.getElementById('selectedDayView').classList.remove('show');
+	        return;
+	    }
+	
+	    // 3. Om vi är tillbaka på "Basen" (Inget state eller tomt state)
+	    // Detta händer vid sista swipen
+	    if (!state || !state.uiState) {
+	        // Återställ till Översikt
+	        document.getElementById('customersView').style.display = 'none';
+	        document.getElementById('calendarView').style.display = 'none';
+	        document.getElementById('selectedDayView').classList.remove('show'); // Säkerställ att den är borta
 	        
-	        // Kolla om vi råkar stå i Kundvyn
-	        const custView = document.getElementById('customersView');
-	        if (custView && custView.style.display === 'block') {
-	            // Återställ till Översikt
-	            custView.style.display = 'none';
-	            document.getElementById('statBar').style.display = ''; // Eller 'grid'
-	            document.getElementById('timelineView').style.display = 'block';
-	            
-	            // Markera "Vy"-knappen i menyn
-	            document.querySelectorAll('.mobile-nav-item').forEach(n => n.classList.remove('active'));
-	            document.getElementById('mobileHomeBtn').classList.add('active');
-	            return;
-	        }
-	
-	        // Kolla om vi råkar stå i Kalendervyn
-	        const calView = document.getElementById('calendarView');
-	        if (calView && calView.style.display === 'block') {
-	            // Återställ till Översikt
-	            calView.style.display = 'none';
-	            document.getElementById('statBar').style.display = '';
-	            document.getElementById('timelineView').style.display = 'block';
-	            
-	            // Dölj även dagvyn om den är öppen
-	            const dayView = document.getElementById('selectedDayView');
-	            if(dayView) dayView.classList.remove('show');
-	
-	            document.querySelectorAll('.mobile-nav-item').forEach(n => n.classList.remove('active'));
-	            document.getElementById('mobileHomeBtn').classList.add('active');
-	            return;
-	        }
+	        document.getElementById('statBar').style.display = ''; // Visa grid/flex
+	        document.getElementById('timelineView').style.display = 'block';
+	        
+	        // Återställ menyn
+	        document.querySelectorAll('.mobile-nav-item').forEach(n => n.classList.remove('active'));
+	        document.getElementById('mobileHomeBtn').classList.add('active');
 	    }
 	});
     
