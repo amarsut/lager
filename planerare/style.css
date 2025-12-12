@@ -4043,20 +4043,17 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 /*KALENDERVY*/
 
 /* =======================================================
-   KALENDER: FINAL REPARATION (FIXAR ALLT)
+   KALENDER: TOTAL FIX (Döljer text, fixar ramar)
    ======================================================= */
 
 /* --- 1. GRUNDINSTÄLLNINGAR --- */
 #calendarView {
     --sx-color-primary: #3b82f6;
-    --sx-color-on-primary: #ffffff;
     --sx-color-surface: #ffffff;
-    --sx-color-surface-dim: #f8fafc;
-    --sx-color-on-surface: #0f172a;
     --sx-color-outline: #e2e8f0;
-    --sx-color-shadow: rgba(0, 0, 0, 0.05);
+    --sx-color-text: #0f172a;
     
-    background: var(--sx-color-surface);
+    background: #fff;
     border: 1px solid var(--sx-color-outline);
     border-radius: 12px;
     height: 850px;
@@ -4065,19 +4062,19 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     font-family: 'Inter', sans-serif;
 }
 
-/* --- 2. HEADER & LAYOUT (Dator) --- */
+/* --- 2. HEADER --- */
 .sx__calendar-header {
     display: flex !important;
     align-items: center !important;
     padding: 16px 24px !important;
-    background-color: var(--sx-color-surface);
+    background-color: #fff;
     border-bottom: 1px solid var(--sx-color-outline);
     gap: 12px;
     margin-bottom: 0 !important;
-    flex-wrap: nowrap !important; /* Förhindra att datorvyn bryter rader konstigt */
 }
 
-/* --- 3. FIXA PILARNA (Tar bort text och roterande skräp) --- */
+/* --- 3. FIXA PILARNA (Den kritiska delen) --- */
+/* Vi tvingar knappen att vara en liten fyrkant och döljer ALLT som sticker ut */
 .sx__chevron-wrapper {
     min-width: 36px !important;
     width: 36px !important;
@@ -4085,46 +4082,68 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     border-radius: 8px !important;
     border: 1px solid var(--sx-color-outline) !important;
     background-color: #fff !important;
-    box-shadow: 0 1px 2px var(--sx-color-shadow);
-    color: #334155 !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
     
-    /* MAGIN HÄR: */
-    overflow: hidden !important; /* Klipper bort allt som sticker ut */
-    font-size: 0 !important;     /* Döljer text */
+    /* Detta döljer den roterande texten "Föregående..." */
+    overflow: hidden !important; 
+    position: relative !important;
+    
     display: flex !important;
     align-items: center;
     justify-content: center;
-    padding: 0 !important;
     cursor: pointer;
+    padding: 0 !important;
 }
 
-/* Dölj alla barn i pilen som INTE är SVG (dvs texten) */
-.sx__chevron-wrapper > *:not(svg) {
-    display: none !important;
-}
+/* Dölj all text inuti pil-knappen */
+.sx__chevron-wrapper span { display: none !important; }
 
+/* Tvinga SVG-ikonen att synas och vara centrerad */
 .sx__chevron-wrapper svg {
     width: 20px !important;
     height: 20px !important;
     display: block !important;
-    margin: 0 !important;
+    position: absolute !important;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    color: #334155;
 }
 
-/* --- 4. FIXA DATUMVÄLJAREN (Dubbla ramar borta) --- */
+/* Idag-knappen */
+.sx__today-button {
+    height: 36px !important;
+    border-radius: 8px !important;
+    border: 1px solid var(--sx-color-outline) !important;
+    background-color: #fff !important;
+    font-weight: 600 !important;
+    font-size: 0.85rem !important;
+    padding: 0 16px !important;
+    color: #334155 !important;
+    white-space: nowrap;
+}
+
+/* Hover-effekter */
+.sx__chevron-wrapper:hover, 
+.sx__today-button:hover {
+    background-color: #f8fafc !important;
+    border-color: #cbd5e1 !important;
+}
+
+/* --- 4. FIXA DUBBLA RAMAR (Vy & Datum) --- */
 
 /* Yttre skalet (Behåll ramen här) */
-.sx__date-picker-wrapper,
-.sx__view-selection {
+.sx__view-selection,
+.sx__date-picker-wrapper {
     position: relative;
     margin-top: 14px; /* Plats för label */
     height: 36px !important;
     border-radius: 8px !important;
     border: 1px solid var(--sx-color-outline) !important;
     background-color: #fff !important;
-    box-shadow: 0 1px 2px var(--sx-color-shadow);
-    min-width: 130px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    min-width: 120px;
     display: flex; align-items: center;
-    padding: 0 10px !important;
+    padding: 0 8px !important;
 }
 
 /* Labels "Vy" och "Datum" */
@@ -4137,66 +4156,51 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     font-size: 0.7rem; color: #64748b; font-weight: 600;
 }
 
-/* HÄR ÄR LÖSNINGEN PÅ DUBBLA RAMAR: */
-/* Vi nollställer input-fältet inuti wrappern helt */
+/* NOLLSTÄLL INRE ELEMENT (Tar bort den inre ramen som skapar dubbel-effekten) */
 .sx__date-picker-input, 
-.sx__date-picker-wrapper input {
+.sx__view-selection-selected-item,
+.sx__date-picker-wrapper button {
     border: none !important;
     box-shadow: none !important;
     background: transparent !important;
     height: 100% !important;
+    width: 100% !important;
     padding: 0 !important;
     outline: none !important;
     font-size: 0.9rem !important;
     font-weight: 500 !important;
     color: #0f172a !important;
+    text-transform: capitalize !important;
 }
 
-/* Vy-väljarens inre text */
-.sx__view-selection-selected-item {
-    font-size: 0.9rem !important;
-    font-weight: 500 !important;
-    color: #0f172a !important;
-}
-
-/* --- 5. RUBRIK & IDAG-KNAPP --- */
+/* Rubriken "December 2025" */
 .sx__calendar-header-content {
     font-size: 1.25rem !important;
     font-weight: 700 !important;
     color: #0f172a;
     text-transform: capitalize !important;
-    margin-right: auto !important; /* Trycker allt till höger */
-    margin-left: 8px !important;
+    margin-right: auto !important; 
+    margin-left: 12px !important;
     white-space: nowrap;
 }
 
-.sx__today-button {
-    height: 36px !important;
-    border-radius: 8px !important;
-    border: 1px solid var(--sx-color-outline) !important;
-    background-color: #fff !important;
-    font-weight: 600 !important;
-    font-size: 0.85rem !important;
-    padding: 0 16px !important;
-    color: #334155 !important;
-}
-
-/* Hover-effekter */
-.sx__chevron-wrapper:hover, 
-.sx__today-button:hover,
-.sx__view-selection:hover,
-.sx__date-picker-wrapper:hover {
-    background-color: #f8fafc !important;
-    border-color: #cbd5e1 !important;
-}
-
-/* --- 6. POPUP & EVENT --- */
+/* --- 5. DATUMVÄLJARE POPUP (Kompakt) --- */
 .sx__date-picker-popup {
     border-radius: 8px !important;
     box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.15) !important;
     border: 1px solid var(--sx-color-outline) !important;
+    width: 280px !important;
     padding: 10px !important;
+    background: #fff !important;
 }
+
+/* Popupens pilar (måste nollställas specifikt) */
+.sx__date-picker-popup .sx__chevron-wrapper {
+    border: none !important;
+    box-shadow: none !important;
+    width: 24px !important; height: 24px !important;
+}
+
 .sx__date-picker__day {
     border-radius: 6px !important; 
     width: 32px !important; height: 32px !important;
@@ -4204,6 +4208,8 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 .sx__date-picker__day.is-selected {
     background-color: #3b82f6 !important; color: white !important;
 }
+
+/* --- 6. EVENT & RUTNÄT --- */
 .sx__month-grid-day { border-color: #f1f5f9 !important; }
 .sx__event {
     border: none !important; border-left: 3px solid !important;
@@ -4213,7 +4219,7 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 .sx__ripple::before, .sx__ripple::after { all: unset !important; }
 
 
-/* --- 7. MOBILVY (GRID FIX) --- */
+/* --- 7. MOBILVYN (FIXAD GRID LAYOUT) --- */
 @media (max-width: 768px) {
     
     #calendarView {
@@ -4225,65 +4231,60 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     
     .sx__calendar-wrapper { height: 100% !important; }
 
-    /* HÄR BYGGER VI OM HEADERN PÅ MOBIL TOTALT MED GRID */
+    /* HÄR STYR VI PLACERINGEN PÅ MOBIL EXAKT */
     .sx__calendar-header {
         padding: 12px 16px !important;
         display: grid !important;
-        
-        /* Layout: 
-           Rad 1: Idag | < | > | (tomt) | Månad
-           Rad 2: Rubrik (Månad År) | Datumväljare
-        */
-        grid-template-columns: auto auto auto 1fr auto;
-        grid-template-rows: auto auto;
+        /* Rad 1: Idag, <, >, Månad */
+        /* Rad 2: Rubrik, Datumväljare */
         grid-template-areas: 
-            "nav prev next space view"
-            "title title title title picker";
-            
-        gap: 10px 8px; /* Vertikal: 10px, Horisontell: 8px */
+            "nav prev next view"
+            "title title picker";
+        grid-template-columns: auto auto auto 1fr;
+        gap: 10px 8px;
         align-items: center !important;
         height: auto !important;
     }
 
-    /* 1. Idag */
+    /* 1. Idag-knappen */
     .sx__today-button { 
         grid-area: nav; 
         padding: 0 12px !important;
         width: auto !important;
     }
 
-    /* 2. Pilarna - Vi måste separera dem om de ligger i en wrapper */
-    /* Om Schedule-X lägger dem i en div .sx__header-navigation: */
-    .sx__forward-backward-navigation {
-        grid-area: prev; /* Vi sätter wrappern i 'prev' rutan men låter den spilla över */
-        display: flex !important;
+    /* 2. Pilarna - Eftersom biblioteket kanske lägger dem i en div, måste vi hantera det */
+    .sx__header-navigation {
+        grid-area: prev; 
+        display: flex !important; 
         gap: 8px !important;
-        grid-column: 2 / 4; /* Låt den ta upp både prev och next platsen */
+        grid-column: 2 / span 2; /* Låt den ta upp både prev och next platsen */
     }
     
     /* Större pilar för fingrar */
     .sx__chevron-wrapper { 
+        min-width: 40px !important; 
         width: 40px !important; 
         height: 40px !important; 
-    }
+    } 
 
     /* 3. Månadsknappen (Vy) */
     .sx__view-selection { 
         grid-area: view;
         margin: 0 !important; 
         width: auto !important;
-        min-width: 80px !important;
-        justify-self: end; /* Högerställ */
+        min-width: 70px !important;
+        justify-self: end;
     }
 
     /* 4. Rubriken "December 2025" */
     .sx__calendar-header-content {
         grid-area: title;
         margin: 0 !important;
-        font-size: 1.2rem !important;
+        font-size: 1.1rem !important;
         text-align: left;
         align-self: center;
-        padding-top: 4px; /* Finjustering */
+        padding-top: 4px; 
     }
 
     /* 5. Datumväljaren */
@@ -4292,10 +4293,10 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
         margin: 0 !important;
         justify-self: end;
         width: 100% !important;
-        min-width: 140px !important;
+        min-width: 130px !important;
     }
 
-    /* Dölj labels på mobil för att spara plats */
+    /* Dölj labels på mobil */
     .sx__view-selection::before, 
     .sx__date-picker-wrapper::before { 
         display: none !important; 
@@ -4307,11 +4308,11 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
         margin-top: 0 !important;
     }
 
-    /* Rutnätet */
+    /* Grid-innehåll */
     .sx__view-container { flex: 1; overflow-y: auto; background-color: #fff; }
     .sx__month-grid-day { min-height: 60px !important; padding: 2px !important; }
     
-    /* Prickar istället för event */
+    /* EVENT: Prickar */
     .sx__event {
         width: 8px !important; height: 8px !important;
         min-height: 0 !important; padding: 0 !important;
@@ -4320,6 +4321,7 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
         display: inline-block !important;
         color: transparent !important;
         background-color: #3b82f6;
+        border: none !important;
     }
     .sx__event-title, .sx__event-time { display: none !important; }
     
