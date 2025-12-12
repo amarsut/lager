@@ -6,12 +6,15 @@ function mapJobsToEvents(jobs) {
     return jobs
         .filter(job => !job.deleted && job.status !== 'avbokad')
         .map(job => {
+            // Datum & Tid
             let start = job.datum.includes('T') ? job.datum : `${job.datum}T${job.tid || '08:00'}`;
             
+            // Färgpalett
             let mainColor = '#3b82f6'; let lightColor = '#eff6ff'; // Blå
-            if (job.status === 'klar') { mainColor = '#10b981'; lightColor = '#ecfdf5'; } 
-            else if (job.status === 'faktureras') { mainColor = '#8b5cf6'; lightColor = '#f5f3ff'; } 
-            else if (job.status === 'offererad') { mainColor = '#f59e0b'; lightColor = '#fffbeb'; } 
+            
+            if (job.status === 'klar') { mainColor = '#10b981'; lightColor = '#ecfdf5'; } // Grön
+            else if (job.status === 'faktureras') { mainColor = '#8b5cf6'; lightColor = '#f5f3ff'; } // Lila
+            else if (job.status === 'offererad') { mainColor = '#f59e0b'; lightColor = '#fffbeb'; } // Orange
 
             let regnr = job.regnr && job.regnr !== 'OKÄNT' ? job.regnr : '';
             
@@ -32,21 +35,26 @@ function mapJobsToEvents(jobs) {
         });
 }
 
-// NY FUNKTION: Rita ut listan under kalendern
+// FIXAD FUNKTION: Renderar listan
 function renderDayList(dateStr, events) {
     const container = document.getElementById('selectedDayView');
     if (!container) return;
 
-    // Hitta jobb för detta datum
-    const dayEvents = events.filter(e => e.start.startsWith(dateStr));
+    // FIX: Jämför bara de första 10 tecknen (YYYY-MM-DD) för att ignorera tid
+    const dayEvents = events.filter(e => e.start.substring(0, 10) === dateStr);
     
     // Sortera på tid
     dayEvents.sort((a,b) => a.start.localeCompare(b.start));
 
     container.style.display = 'block';
     
+    // Scrolla ner till listan så den syns
+    setTimeout(() => {
+        container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 100);
+
     if (dayEvents.length === 0) {
-        container.innerHTML = `<div class="day-list-empty">Inga jobb ${dateStr}</div>`;
+        container.innerHTML = `<div class="day-list-empty">Inga jobb detta datum (${dateStr})</div>`;
         return;
     }
 
@@ -54,7 +62,7 @@ function renderDayList(dateStr, events) {
     
     dayEvents.forEach(evt => {
         const props = evt.extendedProps;
-        // Samma snygga design som "Premium Event" fast i lista
+        // Skapa kortet
         html += `
         <div class="day-list-item" onclick="if(window.openEditModal) window.openEditModal('${evt.id}')" style="border-left: 4px solid ${props.mainColor};">
             <div class="day-list-time">${props.time}</div>
@@ -69,31 +77,37 @@ function renderDayList(dateStr, events) {
 }
 
 export function initCalendar(elementId, jobsData, onEventClickCallback) {
-    // OBS: Vi monterar kalendern i 'calendar-wrapper' nu, inte direkt i 'calendarView'
-    // Se till att HTML är uppdaterad enligt Steg 1.
-    const calendarEl = document.getElementById('calendar-wrapper'); 
-    if (!calendarEl) return;
+    const wrapperEl = document.getElementById('calendar-wrapper'); // OBS: Wrapper
+    if (!wrapperEl) return;
 
     if (calendar) calendar.destroy();
 
     const isMobile = window.innerWidth <= 768;
     const events = mapJobsToEvents(jobsData);
 
-    calendar = new FullCalendar.Calendar(calendarEl, {
+    calendar = new FullCalendar.Calendar(wrapperEl, {
         initialView: 'dayGridMonth',
         locale: 'sv',
         firstDay: 1, 
+        
         fixedWeekCount: false, 
         showNonCurrentDates: false, 
+        
         height: 'auto',
         contentHeight: 'auto',
+
+        titleFormat: isMobile 
+            ? { year: 'numeric', month: 'short' } 
+            : { year: 'numeric', month: 'long' },
 
         headerToolbar: {
             left: 'today prev,next title', 
             center: '',         
             right: '' 
         },
+        
         buttonText: { today: 'Idag' },
+        
         events: events,
         
         eventContent: function(arg) {
@@ -102,7 +116,8 @@ export function initCalendar(elementId, jobsData, onEventClickCallback) {
             
             if (isMob) {
                 return { html: `<div class="fc-mobile-dot" style="background-color: ${props.mainColor};"></div>` };
-            } else {
+            } 
+            else {
                 let textString = `${props.time} `;
                 if (props.regnr) textString += `${props.regnr} `;
                 textString += arg.event.title;
@@ -119,23 +134,21 @@ export function initCalendar(elementId, jobsData, onEventClickCallback) {
             }
         },
 
-        // --- HÄR ÄR NYHETEN: KLICK PÅ DATUM ---
+        // --- KLICK LOGIK (MOBIL) ---
         dateClick: function(info) {
             if (isMobile) {
-                // 1. Ta bort gammal markering
-                const old = document.querySelector('.fc-day-selected');
-                if (old) old.classList.remove('fc-day-selected');
+                // Ta bort gammal markering
+                document.querySelectorAll('.fc-day-selected').forEach(el => el.classList.remove('fc-day-selected'));
                 
-                // 2. Lägg till ny markering (Cirkel runt datumet)
-                info.dayEl.classList.add('fc-day-selected');
+                // Markera nya (cirkeln)
+                if (info.dayEl) info.dayEl.classList.add('fc-day-selected');
                 
-                // 3. Visa listan
+                // Visa listan
                 renderDayList(info.dateStr, events);
             }
         },
 
         eventClick: function(info) {
-            // Om man klickar direkt på en prick/event
             if (onEventClickCallback) onEventClickCallback(info.event.id);
         }
     });
