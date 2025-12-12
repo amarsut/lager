@@ -372,7 +372,7 @@
 	            <div class="form-grid">
 	                <div class="form-group">
 	                    <label>Namn</label>
-	                    <input type="text" id="kundnamn" class="input-gray uppercase-input" required autocomplete="off" oninput="this.value = this.value.toUpperCase()">
+	                    <input type="text" id="kundnamn" class="input-gray uppercase-input" required autocomplete="off" list="customerListOptions" oninput="this.value = this.value.toUpperCase()">
 	                </div>
 	                <div class="form-group">
 	                    <label>Reg.nr</label>
@@ -852,6 +852,7 @@
 	    </div>
 	</div>
 
+	<datalist id="customerListOptions"></datalist>
 	<script src="packages.js"></script>
 	<script src="config.js"></script>
     <script src="app.js"></script>
