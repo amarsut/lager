@@ -3856,3 +3856,72 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
         height: 12px !important;
     }
 }
+
+/* =================================================================
+   FIX: JOBB-MODAL & INSTÄLLNINGAR (SPECIFIKA JUSTERINGAR)
+   ================================================================= */
+
+/* --- DATORVY: FIXA BREDD OCH FOOTER PÅ JOBB-MODAL --- */
+@media (min-width: 769px) {
+    
+    /* 1. Gör Jobb-modalen lite smalare igen (ca 550px är standard) */
+    #jobModal .modal-content {
+        width: 550px !important;
+        /* Ta bort den tvingande höjden vi satte för Kund/Fordon */
+        height: auto !important; 
+        max-height: 85vh !important;
+    }
+
+    /* 2. Se till att inputfälten fyller hela bredden */
+    #jobModal .form-group, 
+    #jobModal .input-gray, 
+    #jobModal select, 
+    #jobModal textarea {
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    /* 3. Krymp footern på Jobb-modalen (den var jättehög) */
+    #jobModal .modal-actions {
+        padding: 16px 24px !important;
+        height: auto !important; /* Låt den anpassa sig efter knapparna */
+        justify-content: flex-end !important; /* Knappar till höger */
+        display: flex !important;
+        background: #fff !important;
+        position: static !important;
+    }
+    
+    /* Återställ knappstorlek i Jobb-modalen */
+    #jobModal .modal-actions button {
+        width: auto !important;
+        height: 40px !important;
+        margin-left: 10px !important;
+    }
+}
+
+/* --- MOBILVY: FIXA RUBRIKENS POSITION --- */
+@media (max-width: 768px) {
+    
+    /* 4. Fixa titeln i Jobb-modalen (låg till höger) */
+    #jobModal .modal-header,
+    .one-ui-header-simple {
+        justify-content: flex-start !important; /* Vänsterställ allt */
+        gap: 16px !important; /* Lagom avstånd mellan pil och text */
+    }
+    
+    /* 5. Justera "Meny"-titeln i Inställningar */
+    .header-simple-title {
+        margin: 0 !important; /* Ta bort onödig marginal */
+        text-align: left !important;
+        flex: 1 !important; /* Låt den ta plats */
+    }
+    
+    /* Säkerställ att pilen inte har konstig marginal */
+    .simple-back-btn {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 24px !important; /* Fast bredd */
+        display: flex !important; 
+        justify-content: center !important;
+    }
+}
