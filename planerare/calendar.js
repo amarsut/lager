@@ -9,14 +9,22 @@ function mapJobsToEvents(jobs) {
             // 1. Datum & Tid
             let start = job.datum.includes('T') ? job.datum : `${job.datum}T${job.tid || '08:00'}`;
             
-            // 2. Färger
-            let mainColor = '#3b82f6'; let lightColor = '#eff6ff'; // Blå
+            // 2. Färgpalett (Samma starka färg för kant och text)
+            // Standard: Blå (Bokad)
+            let mainColor = '#2563eb'; // En aning starkare blå för bättre läsbarhet på text
+            let lightColor = '#eff6ff'; 
             
-            if (job.status === 'klar') { mainColor = '#10b981'; lightColor = '#ecfdf5'; } // Grön
-            else if (job.status === 'faktureras') { mainColor = '#8b5cf6'; lightColor = '#f5f3ff'; } // Lila
-            else if (job.status === 'offererad') { mainColor = '#f59e0b'; lightColor = '#fffbeb'; } // Orange
+            if (job.status === 'klar') { 
+                mainColor = '#059669'; lightColor = '#ecfdf5'; // Grön
+            }
+            else if (job.status === 'faktureras') { 
+                mainColor = '#7c3aed'; lightColor = '#f5f3ff'; // Lila
+            }
+            else if (job.status === 'offererad') { 
+                mainColor = '#d97706'; lightColor = '#fffbeb'; // Orange
+            }
 
-            // 3. Regnr hantering
+            // 3. Titel-data
             let regnr = job.regnr && job.regnr !== 'OKÄNT' ? job.regnr : '';
             
             return {
@@ -30,7 +38,8 @@ function mapJobsToEvents(jobs) {
                     mainColor: mainColor,
                     lightColor: lightColor
                 },
-                backgroundColor: mainColor, 
+                // Vi sätter bakgrund och kant här för FullCalendar
+                backgroundColor: lightColor, 
                 borderColor: mainColor
             };
         });
@@ -71,24 +80,22 @@ export function initCalendar(elementId, jobsData, onEventClickCallback) {
             const isMob = window.innerWidth <= 768;
             const props = arg.event.extendedProps;
             
-            // Mobil: Prick
             if (isMob) {
                 return { html: `<div class="fc-mobile-dot" style="background-color: ${props.mainColor};"></div>` };
             } 
-            
-            // Dator: Text med Stark Färg
             else {
+                // Bygg texten: Tid + Regnr + Namn
                 let textString = `${props.time} `;
                 if (props.regnr) textString += `${props.regnr} `;
                 textString += arg.event.title;
 
-                // VIKTIGT: Vi sätter 'color' direkt här till mainColor
+                // VIKTIGT: Vi sätter color direkt här till mainColor (samma som kanten)
                 return { 
                     html: `
                     <div class="fc-premium-event" style="
                         border-left: 3px solid ${props.mainColor}; 
                         background-color: ${props.lightColor}; 
-                        color: ${props.mainColor};"> 
+                        color: ${props.mainColor};">
                         <span class="fc-event-text">${textString}</span>
                     </div>` 
                 };
