@@ -4567,6 +4567,74 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 }
 .search-chip:active { background: #e2e8f0; }
 
+/* =========================================
+   NY KUND-TOOLBAR & STATUS TAGGAR
+   ========================================= */
+
+/* --- Toolbar Layout --- */
+.customer-toolbar {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.cust-search { flex: 2; } /* Sökfältet tar mer plats */
+.sort-wrapper { flex: 1; min-width: 160px; }
+
+/* Justering av select-pilen så den ser snygg ut */
+#customerSortSelect {
+    appearance: none; /* Tar bort standard-pilen */
+    -webkit-appearance: none;
+    padding-right: 32px !important;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+}
+
+/* --- Status Taggar (Piller) --- */
+.status-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-left: 8px;
+    white-space: nowrap;
+}
+
+/* Färgkoder */
+.pill-new { background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0; } /* Grön */
+.pill-passive { background-color: #fee2e2; color: #991b1b; border: 1px solid #fecaca; } /* Röd */
+.pill-loyal { background-color: #e0f2fe; color: #075985; border: 1px solid #bae6fd; } /* Blå */
+
+/* --- Mobilanpassning --- */
+@media (max-width: 768px) {
+    .customer-toolbar {
+        flex-direction: column; /* Stapla på varandra i mobil */
+        gap: 10px;
+    }
+    
+    .sort-wrapper {
+        width: 100%;
+    }
+    
+    /* Flytta taggen till en ny rad i mobilkortet för att spara bredd */
+    .c-info h3 {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+    
+    .status-pill {
+        margin-left: 0;
+        margin-top: 4px;
+        margin-right: 6px;
+    }
+}
 
 
 
