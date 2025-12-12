@@ -4243,14 +4243,15 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     /* Själva linjen: BREDARE */
     .fc-mobile-dot {
         /* FIX: Bredare (var 6px, nu 24px) */
-        width: 46px !important;  
+        width: 42px !important;  
         
-        height: 5px !important; 
+        height: 4px !important; 
         border-radius: 2px !important;
         margin: 0 !important;
         flex-shrink: 0;
     }
 }
+
 
 
 
