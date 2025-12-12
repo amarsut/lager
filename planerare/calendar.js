@@ -6,12 +6,15 @@ function mapJobsToEvents(jobs) {
     return jobs
         .filter(job => !job.deleted && job.status !== 'avbokad')
         .map(job => {
+            // Datum & Tid
             let start = job.datum.includes('T') ? job.datum : `${job.datum}T${job.tid || '08:00'}`;
             
+            // Färgpalett
             let mainColor = '#3b82f6'; let lightColor = '#eff6ff'; // Blå
-            if (job.status === 'klar') { mainColor = '#10b981'; lightColor = '#ecfdf5'; } 
-            else if (job.status === 'faktureras') { mainColor = '#8b5cf6'; lightColor = '#f5f3ff'; } 
-            else if (job.status === 'offererad') { mainColor = '#f59e0b'; lightColor = '#fffbeb'; } 
+            
+            if (job.status === 'klar') { mainColor = '#10b981'; lightColor = '#ecfdf5'; } // Grön
+            else if (job.status === 'faktureras') { mainColor = '#8b5cf6'; lightColor = '#f5f3ff'; } // Lila
+            else if (job.status === 'offererad') { mainColor = '#f59e0b'; lightColor = '#fffbeb'; } // Orange
 
             let regnr = job.regnr && job.regnr !== 'OKÄNT' ? job.regnr : '';
             
@@ -24,58 +27,48 @@ function mapJobsToEvents(jobs) {
                     regnr: regnr,
                     status: job.status,
                     mainColor: mainColor,
-                    lightColor: lightColor,
-                    description: job.kommentar || '' // LÄGG TILL KOMMENTAR HÄR
+                    lightColor: lightColor
                 },
-                backgroundColor: lightColor, 
+                backgroundColor: mainColor, 
                 borderColor: mainColor
             };
         });
 }
 
+// FIXAD FUNKTION: Renderar listan
 function renderDayList(dateStr, events) {
     const container = document.getElementById('selectedDayView');
     if (!container) return;
 
-    const dayEvents = events.filter(e => e.start.startsWith(dateStr));
+    // FIX: Jämför bara de första 10 tecknen (YYYY-MM-DD) för att ignorera tid
+    const dayEvents = events.filter(e => e.start.substring(0, 10) === dateStr);
+    
+    // Sortera på tid
     dayEvents.sort((a,b) => a.start.localeCompare(b.start));
 
-    // PUNKT 2: Visa som sheet/overlay
-    container.classList.add('show'); 
+    container.style.display = 'block';
     
-    // PUNKT 4: Lägg till historik så "bakåt" stänger listan
-    if (!history.state || !history.state.dayListOpen) {
-        history.pushState({ dayListOpen: true }, null, window.location.href);
-    }
+    // Scrolla ner till listan så den syns
+    setTimeout(() => {
+        container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 100);
 
     if (dayEvents.length === 0) {
-        container.innerHTML = `
-            <div class="day-list-header">
-                <span>Jobb ${dateStr}</span>
-                <button onclick="closeDayList()" class="close-day-btn">&times;</button>
-            </div>
-            <div class="day-list-empty">Inga jobb</div>`;
+        container.innerHTML = `<div class="day-list-empty">Inga jobb detta datum (${dateStr})</div>`;
         return;
     }
 
-    let html = `
-        <div class="day-list-header">
-            <span>Jobb ${dateStr}</span>
-            <button onclick="closeDayList()" class="close-day-btn">&times;</button>
-        </div>`;
+    let html = `<div class="day-list-header">Jobb ${dateStr}</div>`;
     
     dayEvents.forEach(evt => {
         const props = evt.extendedProps;
-        // PUNKT 3: Ny layout för list-item
+        // Skapa kortet
         html += `
         <div class="day-list-item" onclick="if(window.openEditModal) window.openEditModal('${evt.id}')" style="border-left: 4px solid ${props.mainColor};">
             <div class="day-list-time">${props.time}</div>
             <div class="day-list-info">
                 <span class="day-list-title">${evt.title}</span>
-                <div class="day-list-meta">
-                    ${props.regnr ? `<span class="day-list-reg">${props.regnr}</span>` : ''}
-                    ${props.description ? `<span class="day-list-desc">${props.description}</span>` : ''}
-                </div>
+                ${props.regnr ? `<span class="day-list-reg">${props.regnr}</span>` : ''}
             </div>
         </div>`;
     });
@@ -83,22 +76,8 @@ function renderDayList(dateStr, events) {
     container.innerHTML = html;
 }
 
-// Global funktion för att stänga listan
-window.closeDayList = function() {
-    const container = document.getElementById('selectedDayView');
-    if (container) {
-        container.classList.remove('show');
-        // Ta bort markeringen i kalendern
-        document.querySelectorAll('.fc-day-selected').forEach(el => el.classList.remove('fc-day-selected'));
-    }
-    // Om vi stänger manuellt, backa historiken om den är öppen
-    if (history.state && history.state.dayListOpen) {
-        history.back();
-    }
-};
-
 export function initCalendar(elementId, jobsData, onEventClickCallback) {
-    const wrapperEl = document.getElementById('calendar-wrapper'); 
+    const wrapperEl = document.getElementById('calendar-wrapper'); // OBS: Wrapper
     if (!wrapperEl) return;
 
     if (calendar) calendar.destroy();
@@ -110,17 +89,25 @@ export function initCalendar(elementId, jobsData, onEventClickCallback) {
         initialView: 'dayGridMonth',
         locale: 'sv',
         firstDay: 1, 
+        
         fixedWeekCount: false, 
         showNonCurrentDates: false, 
+        
         height: 'auto',
         contentHeight: 'auto',
+
+        titleFormat: isMobile 
+            ? { year: 'numeric', month: 'short' } 
+            : { year: 'numeric', month: 'long' },
 
         headerToolbar: {
             left: 'today prev,next title', 
             center: '',         
             right: '' 
         },
+        
         buttonText: { today: 'Idag' },
+        
         events: events,
         
         eventContent: function(arg) {
@@ -129,7 +116,8 @@ export function initCalendar(elementId, jobsData, onEventClickCallback) {
             
             if (isMob) {
                 return { html: `<div class="fc-mobile-dot" style="background-color: ${props.mainColor};"></div>` };
-            } else {
+            } 
+            else {
                 let textString = `${props.time} `;
                 if (props.regnr) textString += `${props.regnr} `;
                 textString += arg.event.title;
@@ -146,11 +134,16 @@ export function initCalendar(elementId, jobsData, onEventClickCallback) {
             }
         },
 
-        // --- PUNKT 1: KLICK PÅ HELA DAGEN ---
+        // --- KLICK LOGIK (MOBIL) ---
         dateClick: function(info) {
             if (isMobile) {
+                // Ta bort gammal markering
                 document.querySelectorAll('.fc-day-selected').forEach(el => el.classList.remove('fc-day-selected'));
+                
+                // Markera nya (cirkeln)
                 if (info.dayEl) info.dayEl.classList.add('fc-day-selected');
+                
+                // Visa listan
                 renderDayList(info.dateStr, events);
             }
         },
@@ -161,16 +154,6 @@ export function initCalendar(elementId, jobsData, onEventClickCallback) {
     });
 
     calendar.render();
-    
-    // PUNKT 4: Lägg till lyssnare för bakåtknappen
-    window.addEventListener('popstate', function(event) {
-        const container = document.getElementById('selectedDayView');
-        // Om vi backar och listan är öppen -> stäng den
-        if (container && container.classList.contains('show')) {
-            container.classList.remove('show');
-            document.querySelectorAll('.fc-day-selected').forEach(el => el.classList.remove('fc-day-selected'));
-        }
-    });
 }
 
 export function setCalendarTheme(theme) {
