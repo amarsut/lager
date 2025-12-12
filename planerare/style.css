@@ -4378,7 +4378,32 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     
     .fc-mobile-dot { width: 6px; height: 6px; border-radius: 50%; margin: 1px; }
     .fc-daygrid-day-events { display: flex; flex-wrap: wrap; justify-content: center; gap: 2px; margin-top: 2px !important; }
+
+	#selectedDayView {
+        position: fixed; /* Lägger den ovanpå allt */
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%; /* Hela skärmen */
+        background-color: var(--content-bg); /* Sätt bakgrundsfärg */
+        z-index: 1000; /* Se till att den ligger över kalendern */
+        transform: translateX(100%); /* Dölj den till höger utanför skärmen */
+        transition: transform 0.3s ease-out; /* Mjuk övergång */
+        padding-top: 50px; /* Ge plats för rubriken inuti listan */
+        overflow-y: auto; /* Gör innehållet scrollbart */
+    }
+
+    #selectedDayView.show {
+        transform: translateX(0); /* Visa den */
+    }
+
+    /* Ta bort runda hörn och skugga när den är i helskärmsläge */
+    #selectedDayView.show {
+        border-radius: 0;
+        box-shadow: none;
+    }
 }
+
 
 
 
