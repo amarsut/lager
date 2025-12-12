@@ -3889,47 +3889,72 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 }
 
 /* =================================================================
-   AKUT-FIX: JOBBMODAL DATOR (NOLLSTÄLL HÖJD & BREDD)
+   FIX: JOBBMODAL DATOR - DEFINITIV LÖSNING
+   Detta städar upp layouten, tar bort tomrum och fixar knapparna.
    ================================================================= */
 
 @media (min-width: 769px) {
     
-    /* 1. Nollställ "boxen" så den anpassar sig efter innehållet */
+    /* 1. Behållaren (Själva vita rutan) */
     #jobModal .modal-content {
-        display: block !important;      /* Sluta vara flex-container */
-        height: auto !important;        /* Anpassa höjden efter textfälten */
-        min-height: 0 !important;       /* Ta bort minsta höjd */
-        width: 500px !important;        /* Smalare och snyggare */
-        overflow: visible !important;   /* Ingen scroll behövs om den växer */
+        display: flex !important;        /* Flexbox för att stapla delarna korrekt */
+        flex-direction: column !important;
+        
+        width: 500px !important;         /* Lagom bredd */
+        max-width: 90vw !important;
+        
+        height: auto !important;         /* VIKTIGT: Låt höjden anpassas efter innehållet */
+        max-height: 85vh !important;     /* Men bli inte högre än skärmen */
+        
+        background: #fff !important;
+        border-radius: 12px !important;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2) !important;
+        overflow: hidden !important;     /* Se till att inget sticker ut (runda hörn) */
+        padding: 0 !important;           /* Nollställ padding här, vi har det i body */
     }
 
-    /* 2. Fixa footern så den hoppar upp direkt under sista fältet */
+    /* 2. Header (Titel + Kryss) */
+    #jobModal .modal-header {
+        flex-shrink: 0 !important;       /* Får inte krympa */
+        background: #fff !important;
+        border-bottom: 1px solid #f1f5f9 !important;
+    }
+
+    /* 3. Body (Formuläret) */
+    #jobModal .modal-body {
+        flex: 1 1 auto !important;       /* Ta upp ledigt utrymme men krymp om det behövs */
+        overflow-y: auto !important;     /* Scrolla BARA här om det blir för högt */
+        padding: 24px !important;        /* Luft runt formuläret */
+        display: block !important;
+        height: auto !important;
+    }
+
+    /* 4. Footer (Knapparna) */
     #jobModal .modal-actions {
-        position: static !important;    /* Ligg naturligt i flödet */
-        height: auto !important;        /* Krymp till knapparnas höjd */
-        padding: 16px 24px !important;
-        margin-top: 0 !important;
+        position: relative !important;   /* VIKTIGT: Lägg tillbaka den i flödet, inte fixed! */
+        flex-shrink: 0 !important;       /* Får inte krympa eller försvinna */
+        
         background: #fff !important;
         border-top: 1px solid #e2e8f0 !important;
+        padding: 16px 24px !important;
+        margin: 0 !important;
+        
         display: flex !important;
         justify-content: flex-end !important;
+        gap: 10px !important;
+        z-index: 10;
+        
+        width: 100% !important;
+        box-sizing: border-box !important;
+        bottom: auto !important;         /* Nollställ mobil-regler */
+        left: auto !important;
     }
 
-    /* 3. Tvinga input-fälten att fylla hela bredden */
+    /* 5. Snygga till inputs på dator */
     #jobModal input,
     #jobModal select,
-    #jobModal textarea,
-    #jobModal .input-gray,
-    #jobModal .input-wrapper {
-        width: 100% !important;
-        box-sizing: border-box !important; /* Räkna in padding i bredden */
-        max-width: 100% !important;
-    }
-
-    /* 4. Fixa så att "body" inte har onödig luft */
-    #jobModal .modal-body {
-        padding-bottom: 20px !important;
-        height: auto !important;
-        flex: none !important; /* Väx inte i onödan */
+    #jobModal textarea {
+        font-size: 0.9rem !important;    /* Lite mindre text än på mobil */
+        padding: 10px 12px !important;   /* Kompaktare padding */
     }
 }
