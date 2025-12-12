@@ -11,10 +11,17 @@ function mapJobsToEvents(jobs) {
         .map(job => {
             // Hantera datum och tid
             let startDateTime = job.datum; 
+            let timeString = "08:00"; // Fallback
+
             if (!startDateTime.includes('T')) {
-                startDateTime = `${job.datum} ${job.tid || '08:00'}`;
+                timeString = job.tid || '08:00';
+                startDateTime = `${job.datum} ${timeString}`;
             } else {
                 startDateTime = startDateTime.replace('T', ' ');
+                // Extrahera tid från ISO-sträng om den finns där
+                try {
+                    timeString = startDateTime.split(' ')[1].substring(0, 5);
+                } catch(e) {}
             }
 
             let endDateTime = startDateTime;
@@ -30,9 +37,12 @@ function mapJobsToEvents(jobs) {
                 endDateTime = `${year}-${month}-${day} ${hour}:${min}`;
             } catch(e) {}
 
+            // PUNKT 6: Lägg till tiden i titeln
+            const displayTitle = `${timeString} ${job.kundnamn}`;
+
             return {
                 id: job.id,
-                title: `${job.kundnamn}`, // Visar Kundnamn i kalendern
+                title: displayTitle, 
                 start: startDateTime,
                 end: endDateTime,
                 description: job.paket || '',
@@ -56,18 +66,14 @@ export function initCalendar(elementId, jobsData, onEventClickCallback) {
     const eventModal = createEventModalPlugin();
 
     calendarApp = createCalendar({
-        // Vi behåller vyerna men sätter MonthGrid som default
         views: [viewMonthGrid, viewWeek, viewDay, viewMonthAgenda], 
-        
-        // --- VIKTIGT: Månadsvy som standard överallt ---
-        defaultView: viewMonthGrid.name, 
+        defaultView: viewMonthGrid.name, // Månadsvy som standard (Punkt 8 delvis)
         
         events: events,
         locale: 'sv-SE',
-        firstDayOfWeek: 1, // Måndag
+        firstDayOfWeek: 1, 
         isDark: isDarkMode,
         
-        // Tidsgränser (påverkar bara vecka/dag-vyerna om man byter till dem)
         dayBoundaries: {
             start: '06:00',
             end: '20:00',
@@ -75,24 +81,11 @@ export function initCalendar(elementId, jobsData, onEventClickCallback) {
 
         plugins: [dragAndDrop, eventModal],
 
-        // Färgteman (Matchar reklambilden - Rena och snygga)
         calendars: {
-            bokad: { 
-                colorName: 'bokad', 
-                lightColors: { main: '#3b82f6', container: '#eff6ff', onContainer: '#1e3a8a' } 
-            },
-            klar: { 
-                colorName: 'klar', 
-                lightColors: { main: '#10b981', container: '#ecfdf5', onContainer: '#064e3b' } 
-            },
-            faktureras: { 
-                colorName: 'faktureras', 
-                lightColors: { main: '#8b5cf6', container: '#f5f3ff', onContainer: '#4c1d95' } 
-            },
-            offererad: { 
-                colorName: 'offererad', 
-                lightColors: { main: '#f59e0b', container: '#fffbeb', onContainer: '#78350f' } 
-            },
+            bokad: { colorName: 'bokad', lightColors: { main: '#3b82f6', container: '#eff6ff', onContainer: '#1e3a8a' } },
+            klar: { colorName: 'klar', lightColors: { main: '#10b981', container: '#ecfdf5', onContainer: '#064e3b' } },
+            faktureras: { colorName: 'faktureras', lightColors: { main: '#8b5cf6', container: '#f5f3ff', onContainer: '#4c1d95' } },
+            offererad: { colorName: 'offererad', lightColors: { main: '#f59e0b', container: '#fffbeb', onContainer: '#78350f' } },
         },
 
         callbacks: {
