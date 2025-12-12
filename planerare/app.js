@@ -1,3 +1,26 @@
+// Importera kalenderfunktionen
+import { initCalendar, setCalendarTheme } from './calendar.js';
+
+window.openNewJobModal = openNewJobModal;
+window.toggleChatWidget = toggleChatWidget;
+window.openSettingsModal = openSettingsModal;
+window.handleLogout = handleLogout;
+window.closeSettings = closeSettings;
+window.toggleOilForm = toggleOilForm;
+window.saveNewBarrel = saveNewBarrel;
+window.closeVehicleModal = closeVehicleModal;
+window.openVehicleModal = openVehicleModal;
+window.openCustomerByName = openCustomerByName;
+window.toggleCardActions = toggleCardActions;
+window.setStatus = setStatus;
+window.deleteJob = deleteJob;
+window.removeExpense = removeExpense;
+window.openBrandSelector = openBrandSelector;
+window.saveTechSpec = saveTechSpec;
+window.filterVehicleHistory = filterVehicleHistory;
+window.openEditModal = openEditModal; 
+// Slut på kalender
+
 // 1. FIREBASE KONFIGURATION
 const firebaseConfig = {
   apiKey: "AIzaSyDwCQkUl-je3L3kF7EuxRC6Dm6Gw2N0nJw",
@@ -599,6 +622,30 @@ function updateStatsCounts(jobs) {
 
 // 7. EVENT LISTENERS
 function setupEventListeners() {
+
+	// --- KALENDER KNAPP ---
+	const navCalendar = document.getElementById('navCalendar');
+	if (navCalendar) {
+	    navCalendar.addEventListener('click', () => {
+	        // 1. Markera knappen som aktiv
+	        document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
+	        navCalendar.classList.add('active');
+	
+	        // 2. Dölj andra vyer
+	        document.getElementById('statBar').style.display = 'none';
+	        document.getElementById('timelineView').style.display = 'none';
+	        document.getElementById('customersView').style.display = 'none';
+	        
+	        // 3. Visa kalendern
+	        document.getElementById('calendarView').style.display = 'block';
+	
+	        // 4. Starta kalendern (med dina jobb och redigera-funktionen)
+	        // Vi använder setTimeout för att säkerställa att diven är synlig innan kalendern ritas
+	        setTimeout(() => {
+	            initCalendar('calendar-wrapper', allJobs, openEditModal);
+	        }, 50);
+	    });
+	}
 
 	/*MER MENY I INSTÄLLNINGAR _ MOBIL*/
 	document.getElementById('menuBtnCustomers').addEventListener('click', () => {
@@ -2338,6 +2385,9 @@ initSettings();
 function setTheme(theme) {
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('theme', theme);
+    
+    // Uppdatera kalenderns tema också
+    setCalendarTheme(theme);
 }
 
 // --- 5. SWIPE GESTURE (SAMSUNG STYLE) ---
