@@ -4126,3 +4126,139 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
         padding: 4px !important;
     }
 }
+
+/* =======================================================
+   KALENDER DESIGN FIX (Matchar Bild 3 & Mobilfix)
+   ======================================================= */
+
+/* --- Container (Grundlayout) --- */
+#calendarView {
+    background: white; 
+    border-radius: 12px; 
+    border: 1px solid #e2e8f0;
+    /* Fast höjd på dator för att se bra ut */
+    height: 850px; 
+    padding: 0;
+    overflow: hidden;
+}
+
+/* --- Header & Navigation --- */
+.sx__calendar-header {
+    border-bottom: 1px solid #f1f5f9;
+    padding: 20px 24px !important;
+    background-color: #fff;
+    margin-bottom: 0 !important;
+}
+
+/* 1. Snygga till knapparna (Idag, Pilar) - Vitt med grå kant */
+.sx__chevron-wrapper, 
+.sx__today-button {
+    background-color: #fff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 8px !important; /* Lite rundade hörn */
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    color: #334155 !important;
+    transition: all 0.2s;
+}
+.sx__chevron-wrapper:hover, 
+.sx__today-button:hover {
+    background-color: #f8fafc !important;
+    border-color: #cbd5e1 !important;
+}
+
+/* 2. Datumväljaren (December 2025) - Renare stil */
+.sx__date-picker-wrapper {
+    background-color: transparent !important; /* Ingen bakgrund */
+    border: none !important;
+    padding: 0 !important;
+}
+.sx__date-picker__selected-date {
+    font-size: 1.2rem !important;
+    font-weight: 600 !important; /* Inte för fet */
+    color: #0f172a !important;
+    text-transform: capitalize; /* "december" -> "December" */
+}
+
+/* 3. Vy-väljaren (Månad/Vecka) */
+.sx__view-selection {
+    background-color: #fff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 8px !important;
+}
+.sx__view-selection__item {
+    color: #64748b !important;
+    font-weight: 500 !important;
+    text-transform: capitalize !important; /* Fixar "Månad" versal */
+}
+.sx__view-selection__item.is-selected {
+    background-color: #f1f5f9 !important; /* Ljusgrå markering istället för stark blå */
+    color: #0f172a !important;
+    font-weight: 600 !important;
+}
+
+/* --- Kalenderns Innehåll --- */
+
+/* Ta bort fetstil från eventen */
+.sx__event {
+    font-weight: 500 !important; /* Normal/Medium vikt */
+    border-radius: 4px !important;
+    border: none !important;
+    border-left: 3px solid !important; /* Behåll färgkoden till vänster */
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    font-size: 0.85rem !important;
+}
+
+/* Rutnätet (Grid) */
+.sx__month-grid-day {
+    border-color: #f1f5f9 !important; /* Ljusare linjer */
+}
+.sx__month-grid-day__header {
+    font-weight: 500 !important;
+    color: #64748b;
+}
+
+/* --- KRITISK MOBIL-FIX (Gör den "snygg" och fixar Bild 1) --- */
+@media (max-width: 768px) {
+    #calendarView {
+        /* VIKTIGT: Tvinga kalendern att fylla skärmen minus header/meny */
+        height: calc(100vh - 130px) !important; 
+        margin: 0 !important;
+        border: none !important;
+        border-radius: 0 !important;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    /* Se till att själva kalender-komponenten fyller höjden */
+    .sx__calendar-wrapper {
+        height: 100% !important;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    /* Tvinga innehållet (månadsrutnätet) att växa */
+    .sx__view-container {
+        flex: 1;
+        height: 100%;
+        overflow-y: auto;
+    }
+
+    /* Justera headern för mobil så den inte tar för mycket plats */
+    .sx__calendar-header {
+        padding: 12px 16px !important;
+        gap: 10px;
+        flex-wrap: wrap; /* Låt saker hamna på ny rad om det behövs */
+    }
+
+    /* Dölj onödiga element om det blir för trångt, eller gör dem mindre */
+    .sx__chevron-wrapper {
+        width: 32px !important; 
+        height: 32px !important;
+    }
+    
+    /* Gör eventen i månadsvyn till små "prickar" eller tunna linjer på mobil för att spara plats? 
+       Nej, Schedule-X hanterar detta ganska bra, men vi justerar texten */
+    .sx__event-title {
+        font-size: 0.75rem !important;
+    }
+}
