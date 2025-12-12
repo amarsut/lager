@@ -27,7 +27,8 @@ function mapJobsToEvents(jobs) {
                     regnr: regnr,
                     status: job.status,
                     mainColor: mainColor,
-                    lightColor: lightColor
+                    lightColor: lightColor,
+                    description: job.kommentar || ''
                 },
                 backgroundColor: mainColor, 
                 borderColor: mainColor
@@ -53,6 +54,12 @@ function renderDayList(dateStr, events) {
         container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }, 100);
 
+    container.classList.add('show');
+
+    if (!history.state || !history.state.dayListOpen) {
+        history.pushState({ dayListOpen: true }, null, window.location.href);
+    }
+
     if (dayEvents.length === 0) {
         container.innerHTML = `<div class="day-list-empty">Inga jobb detta datum (${dateStr})</div>`;
         return;
@@ -68,13 +75,30 @@ function renderDayList(dateStr, events) {
             <div class="day-list-time">${props.time}</div>
             <div class="day-list-info">
                 <span class="day-list-title">${evt.title}</span>
-                ${props.regnr ? `<span class="day-list-reg">${props.regnr}</span>` : ''}
+                <div class="day-list-meta">
+                    ${props.regnr ? `<span class="day-list-reg">${props.regnr}</span>` : ''}
+                    ${props.description ? `<span class="day-list-desc">${props.description}</span>` : ''}
+                </div>
             </div>
         </div>`;
     });
 
     container.innerHTML = html;
 }
+
+// Global funktion för att stänga listan
+window.closeDayList = function() {
+    const container = document.getElementById('selectedDayView');
+    if (container) {
+        container.classList.remove('show');
+        // Ta bort markeringen i kalendern
+        document.querySelectorAll('.fc-day-selected').forEach(el => el.classList.remove('fc-day-selected'));
+    }
+    // Om vi stänger manuellt, backa historiken om den är öppen
+    if (history.state && history.state.dayListOpen) {
+        history.back();
+    }
+};
 
 export function initCalendar(elementId, jobsData, onEventClickCallback) {
     const wrapperEl = document.getElementById('calendar-wrapper'); // OBS: Wrapper
@@ -137,13 +161,8 @@ export function initCalendar(elementId, jobsData, onEventClickCallback) {
         // --- KLICK LOGIK (MOBIL) ---
         dateClick: function(info) {
             if (isMobile) {
-                // Ta bort gammal markering
                 document.querySelectorAll('.fc-day-selected').forEach(el => el.classList.remove('fc-day-selected'));
-                
-                // Markera nya (cirkeln)
                 if (info.dayEl) info.dayEl.classList.add('fc-day-selected');
-                
-                // Visa listan
                 renderDayList(info.dateStr, events);
             }
         },
@@ -154,6 +173,16 @@ export function initCalendar(elementId, jobsData, onEventClickCallback) {
     });
 
     calendar.render();
+
+    // PUNKT 4: Lägg till lyssnare för bakåtknappen
+    window.addEventListener('popstate', function(event) {
+        const container = document.getElementById('selectedDayView');
+        // Om vi backar och listan är öppen -> stäng den
+        if (container && container.classList.contains('show')) {
+            container.classList.remove('show');
+            document.querySelectorAll('.fc-day-selected').forEach(el => el.classList.remove('fc-day-selected'));
+        }
+    });
 }
 
 export function setCalendarTheme(theme) {
