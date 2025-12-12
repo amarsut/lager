@@ -2,21 +2,64 @@
 
 let calendar = null;
 
+// Hjälpfunktion: Hitta nästa 2 jobb och visa dem
+function renderMobileTimeline(events) {
+    const container = document.getElementById('mobileUpcomingContainer');
+    if (!container) return;
+
+    // 1. Filtrera fram kommande jobb (från idag och framåt)
+    const now = new Date();
+    now.setHours(0,0,0,0);
+    
+    let upcoming = events.filter(e => {
+        // Enkel koll om datumet är idag eller framåt
+        const d = new Date(e.start);
+        return d >= now;
+    });
+
+    // 2. Sortera på datum
+    upcoming.sort((a,b) => new Date(a.start) - new Date(b.start));
+
+    // 3. Ta de 2 första
+    const nextTwo = upcoming.slice(0, 2);
+
+    // 4. Skapa HTML
+    if (nextTwo.length === 0) {
+        container.innerHTML = '<div class="timeline-empty">Inga kommande jobb</div>';
+        return;
+    }
+
+    let html = '<div class="timeline-header">Nästa jobb</div><div class="timeline-row">';
+    
+    nextTwo.forEach(job => {
+        // Formatera datum snyggt (t.ex. "Idag 10:00" eller "12 dec 14:00")
+        const jobDate = new Date(job.start);
+        const dateStr = jobDate.toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' });
+        const timeStr = job.extendedProps.time;
+        
+        html += `
+        <div class="timeline-card" style="border-left: 4px solid ${job.borderColor};">
+            <div class="t-time">${dateStr} • ${timeStr}</div>
+            <div class="t-title">${job.title}</div>
+            <div class="t-reg">${job.extendedProps.regnr || ''}</div>
+        </div>`;
+    });
+    
+    html += '</div>';
+    container.innerHTML = html;
+}
+
 function mapJobsToEvents(jobs) {
     return jobs
         .filter(job => !job.deleted && job.status !== 'avbokad')
         .map(job => {
-            // 1. Datum & Tid
             let start = job.datum.includes('T') ? job.datum : `${job.datum}T${job.tid || '08:00'}`;
             
-            // 2. Färger
-            let mainColor = '#3b82f6'; let lightColor = '#eff6ff'; // Bokad (Blå)
-            
-            if (job.status === 'klar') { mainColor = '#10b981'; lightColor = '#ecfdf5'; } // Grön
-            else if (job.status === 'faktureras') { mainColor = '#8b5cf6'; lightColor = '#f5f3ff'; } // Lila
-            else if (job.status === 'offererad') { mainColor = '#f59e0b'; lightColor = '#fffbeb'; } // Orange
+            let mainColor = '#3b82f6'; let lightColor = '#eff6ff'; // Blå
+            if (job.status === 'klar') { mainColor = '#10b981'; lightColor = '#ecfdf5'; } 
+            else if (job.status === 'faktureras') { mainColor = '#8b5cf6'; lightColor = '#f5f3ff'; } 
+            else if (job.status === 'offererad') { mainColor = '#f59e0b'; lightColor = '#fffbeb'; } 
 
-            // 3. Titel-data
             let regnr = job.regnr && job.regnr !== 'OKÄNT' ? job.regnr : '';
             
             return {
@@ -24,7 +67,7 @@ function mapJobsToEvents(jobs) {
                 title: job.kundnamn,
                 start: start,
                 extendedProps: {
-                    time: start.split('T')[1].substring(0, 5).replace(':', '.'), // "10.00"
+                    time: start.split('T')[1].substring(0, 5).replace(':', '.'),
                     regnr: regnr,
                     status: job.status,
                     mainColor: mainColor,
@@ -45,6 +88,11 @@ export function initCalendar(elementId, jobsData, onEventClickCallback) {
     const isMobile = window.innerWidth <= 768;
     const events = mapJobsToEvents(jobsData);
 
+    // KÖR TIDSLINJEN PÅ MOBIL
+    if (isMobile) {
+        renderMobileTimeline(events);
+    }
+
     calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
         locale: 'sv',
@@ -53,14 +101,9 @@ export function initCalendar(elementId, jobsData, onEventClickCallback) {
         fixedWeekCount: false, 
         showNonCurrentDates: false, 
         
-        height: 'auto',
+        // Ta bort höjd-tvingande så vi kan styra med CSS
+        height: '100%', 
         contentHeight: 'auto',
-
-        // --- HÄR ÄR ÄNDRINGEN FÖR TITELN ---
-        // På mobil: "kort månad" (dec 2025). På dator: "lång månad" (december 2025)
-        titleFormat: isMobile 
-            ? { year: 'numeric', month: 'short' } 
-            : { year: 'numeric', month: 'long' },
 
         headerToolbar: {
             left: 'today prev,next title', 
@@ -72,17 +115,19 @@ export function initCalendar(elementId, jobsData, onEventClickCallback) {
         
         events: events,
         
-        // --- EVENT DESIGN ---
         eventContent: function(arg) {
             const isMob = window.innerWidth <= 768;
             const props = arg.event.extendedProps;
             
-            // Mobil: Prick
+            // --- MOBIL: SAMSUNG STYLE (LINJER) ---
             if (isMob) {
-                return { html: `<div class="fc-mobile-dot" style="background-color: ${props.mainColor};"></div>` };
+                // Vi returnerar en "Bar" istället för en "Dot"
+                return { 
+                    html: `<div class="fc-mobile-line" style="background-color: ${props.mainColor};"></div>` 
+                };
             } 
             
-            // Dator: "10.00 ABC123 NAMN..."
+            // DATOR: PREMIUM BLOCK
             else {
                 let textString = `${props.time} `;
                 if (props.regnr) textString += `${props.regnr} `;
