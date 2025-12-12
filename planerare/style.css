@@ -3968,7 +3968,7 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     /* 1. MER LUFT I TOPPEN AV FORMULÄRET 
        Detta trycker ner "Status" och "Paket" från rubriken */
     .modal-body {
-        padding-top: 32px !important; /* Ökat från 20px för mer rymd */
+        padding-top: 22px !important; /* Ökat från 20px för mer rymd */
     }
 
     /* 2. HEADER SYNLIGHET (Z-INDEX JUSTERING)
@@ -3989,3 +3989,4 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     
     /* (Jobb-modalen ligger oftast runt 199999 i din kod, vilket är perfekt) */
 }
+
