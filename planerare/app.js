@@ -2712,6 +2712,40 @@ function renderCustomerView(searchTerm = '') {
     container.innerHTML = '';
     let customers = getCustomerDatabase();
 
+	// --- NYTT: UPPDATERA MINI-DASHBOARD ---
+    
+    // 1. Totalt antal kunder
+    const totalCount = customers.length;
+    
+    // 2. Nya denna månad
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+    
+    // Räkna kunder vars 'firstVisit' är denna månad
+    const newCount = customers.filter(c => {
+        if (!c.firstVisit) return false; // Säkerhetskoll
+        return c.firstVisit.getMonth() === currentMonth && 
+               c.firstVisit.getFullYear() === currentYear;
+    }).length;
+
+    // 3. Återkommande % (Kunder med mer än 1 besök)
+    const returningCount = customers.filter(c => c.visitCount > 1).length;
+    const returnRate = totalCount > 0 ? Math.round((returningCount / totalCount) * 100) : 0;
+
+    const csTotalEl = document.getElementById('csTotal');
+    const csNewEl = document.getElementById('csNew');
+    const csRetEl = document.getElementById('csReturning');
+    const csMonthEl = document.getElementById('csMonthName');
+
+    if(csTotalEl) csTotalEl.textContent = totalCount;
+    if(csNewEl) csNewEl.textContent = `+${newCount}`;
+    if(csRetEl) csRetEl.textContent = `${returnRate}%`;
+    
+    // Uppdatera månadsnamn (t.ex. "NYA I JAN")
+    const monthNames = ["JAN", "FEB", "MAR", "APR", "MAJ", "JUN", "JUL", "AUG", "SEP", "OKT", "NOV", "DEC"];
+    if(csMonthEl) csMonthEl.textContent = monthNames[currentMonth];
+
     // 1. Filtrera
     let filtered = customers.filter(c => {
         if (c.name.toLowerCase().includes(term)) return true;
