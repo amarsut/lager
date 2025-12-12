@@ -3885,15 +3885,21 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     }
 }
 
-/* --- FIX: TA BORT TOMRUM I FORDONSSMODALEN --- */
-/* Eftersom denna modal inte har knappar i botten ska den inte ha extra luft */
-#vehicleModal .modal-body {
-    padding-bottom: 20px !important; 
-}
+/* =================================================================
+   FIX: TA BORT TOMRUM I FORDONSSMODALEN (DATOR)
+   ================================================================= */
 
-/* På mobil kan vi behöva ta hänsyn till "swipa-hem-strecket" längst ner */
-@media (max-width: 768px) {
+@media (min-width: 769px) {
+    /* 1. Dölj footern helt i reg.nr-modalen eftersom den är tom */
+    #vehicleModal .modal-actions {
+        display: none !important;
+        padding: 0 !important;
+        height: 0 !important;
+        border: none !important;
+    }
+
+    /* 2. Återställ paddingen i botten så texten går ända ner */
     #vehicleModal .modal-body {
-        padding-bottom: calc(20px + env(safe-area-inset-bottom)) !important;
+        padding-bottom: 20px !important; 
     }
 }
