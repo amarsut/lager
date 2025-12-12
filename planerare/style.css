@@ -4043,254 +4043,157 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 /*KALENDERVY*/
 
 /* =======================================================
-   KALENDER: SLUTGILTIG FIX (PILAR & RAMAR)
+   FULLCALENDAR PREMIUM STYLING
    ======================================================= */
 
 #calendarView {
-    --sx-color-primary: #3b82f6;
-    --sx-color-surface: #ffffff;
-    --sx-color-outline: #e2e8f0;
-    
-    background: #fff;
-    border: 1px solid var(--sx-color-outline);
+    background: white;
     border-radius: 12px;
-    height: 850px;
-    padding: 0;
-    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    padding: 20px; /* Lite luft runt kalendern */
     font-family: 'Inter', sans-serif;
+    /* DATOR HÖJD */
+    min-height: 800px;
 }
 
-/* --- 1. HEADER (DATOR) --- */
-.sx__calendar-header {
-    display: flex !important;
-    align-items: center !important;
-    padding: 16px 24px !important;
-    background-color: #fff;
-    border-bottom: 1px solid #e2e8f0;
-    gap: 12px;
-}
-
-/* --- 2. FIXA PILARNA (< >) --- */
-/* Problemet var att texten "Föregående" låg kvar och roterade */
-
-.sx__chevron-wrapper {
-    /* Tvinga storlek */
-    width: 36px !important;
-    height: 36px !important;
-    min-width: 36px !important;
-    
-    /* Design */
-    border-radius: 8px !important;
+/* --- 1. Snygga Knappar (Idag, <, >, Månad) --- */
+.fc-button {
+    background-color: #ffffff !important;
     border: 1px solid #e2e8f0 !important;
-    background-color: #fff !important;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-    
-    /* Dölj text! */
-    font-size: 0 !important; 
-    overflow: hidden !important;
-    
-    /* Centrera ikonen */
-    display: flex !important;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    padding: 0 !important;
-}
-
-/* Ikonen inuti */
-.sx__chevron-wrapper svg {
-    width: 20px !important;
-    height: 20px !important;
-    min-width: 20px !important;
-    display: block !important;
-    color: #334155;
-}
-
-/* Idag-knappen */
-.sx__today-button {
-    height: 36px !important;
-    border-radius: 8px !important;
-    border: 1px solid #e2e8f0 !important;
-    background-color: #fff !important;
+    color: #1e293b !important;
     font-weight: 600 !important;
-    font-size: 0.85rem !important;
-    padding: 0 16px !important;
-    color: #334155 !important;
+    text-transform: capitalize !important;
+    border-radius: 8px !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+    padding: 8px 16px !important;
+    transition: all 0.2s !important;
+    outline: none !important;
 }
 
-/* Hover */
-.sx__chevron-wrapper:hover, 
-.sx__today-button:hover {
+.fc-button:hover {
     background-color: #f8fafc !important;
     border-color: #cbd5e1 !important;
-}
-
-/* --- 3. FIXA DUBBLA RAMAR (Vy & Datum) --- */
-
-/* Steg A: Skapa den YTTRE ramen på behållaren */
-.sx__view-selection,
-.sx__date-picker-wrapper {
-    position: relative;
-    margin-top: 14px;
-    height: 36px !important;
-    border-radius: 8px !important;
-    /* Här är ramen vi vill ha: */
-    border: 1px solid #e2e8f0 !important; 
-    background-color: #fff !important;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-    min-width: 120px;
-    display: flex; align-items: center;
-    padding: 0 8px !important;
-}
-
-/* Labels */
-.sx__view-selection::before {
-    content: "Vy"; position: absolute; top: -18px; left: 2px;
-    font-size: 0.7rem; color: #64748b; font-weight: 600;
-}
-.sx__date-picker-wrapper::before {
-    content: "Datum"; position: absolute; top: -18px; left: 2px;
-    font-size: 0.7rem; color: #64748b; font-weight: 600;
-}
-
-/* Steg B: DÖDA den INRE ramen på alla barn-element */
-/* Detta tar bort dubbel-ramen på "Månad" och "Datum" */
-.sx__view-selection *,
-.sx__date-picker-wrapper * {
-    border: none !important;
-    box-shadow: none !important;
-    background: transparent !important;
-}
-
-/* Textstilar inuti */
-.sx__view-selection-selected-item,
-.sx__date-picker-input {
-    font-size: 0.9rem !important;
-    font-weight: 500 !important;
     color: #0f172a !important;
-    text-transform: capitalize !important;
-    width: 100% !important;
-    height: 100% !important;
-    outline: none !important;
-    padding: 0 !important;
 }
 
-/* Rubrik "December 2025" */
-.sx__calendar-header-content {
-    font-size: 1.25rem !important;
+.fc-button-active {
+    background-color: #f1f5f9 !important;
+    color: #000 !important;
+    border-color: #94a3b8 !important;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.05) !important;
+}
+
+/* Ta bort den fula blå fokus-ringen */
+.fc-button:focus {
+    box-shadow: 0 0 0 2px rgba(226, 232, 240, 0.5) !important;
+}
+
+/* Ikonerna i pilarna (< >) */
+.fc-icon {
+    font-size: 1.2rem !important;
+    font-weight: bold;
+}
+
+/* --- 2. Rubriken (December 2025) --- */
+.fc-toolbar-title {
+    font-size: 1.5rem !important;
     font-weight: 700 !important;
     color: #0f172a;
-    text-transform: capitalize !important;
-    margin-right: auto !important; 
-    margin-left: 12px !important;
+    text-transform: capitalize;
 }
 
-/* --- 4. DATUMVÄLJAREN (Popup) --- */
-.sx__date-picker-popup {
-    border: 1px solid #e2e8f0 !important; /* Popupen ska ha ram */
-    border-radius: 8px !important;
-    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.15) !important;
-    padding: 10px !important;
-    background: #fff !important;
+/* --- 3. Dagens Datum (Gul markering standard -> Blå) --- */
+.fc-day-today {
+    background-color: #f8fafc !important; /* Mycket lätt grå bakgrund */
 }
-/* Rutorna i kalendern */
-.sx__date-picker__day {
-    border-radius: 6px !important; 
-    width: 32px !important; height: 32px !important;
+.fc-col-header-cell-cushion {
+    color: #64748b; /* Grå text på dagarna (Mån, Tis) */
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    padding: 10px 0 !important;
+    text-decoration: none !important;
 }
-.sx__date-picker__day.is-selected {
-    background-color: #3b82f6 !important; color: white !important;
+.fc-daygrid-day-number {
+    color: #334155;
+    font-weight: 500;
+    text-decoration: none !important;
+    padding: 8px !important;
 }
 
-/* --- 5. EVENT & RUTNÄT --- */
-.sx__month-grid-day { border-color: #f1f5f9 !important; }
-.sx__event {
-    border: none !important; border-left: 3px solid !important;
-    border-radius: 4px !important; box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-    background-color: var(--sx-event-color-container);
+/* --- 4. Event Styling (Dator) --- */
+.fc-desktop-event {
+    padding: 2px 4px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    border-radius: 4px;
 }
-.sx__ripple::before, .sx__ripple::after { all: unset !important; }
+.fc-daygrid-event {
+    border: none !important;
+    margin-top: 2px !important;
+    border-radius: 4px !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
 
+/* --- 5. MOBILVYN (Den viktiga fixen) --- */
+.fc-mobile-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin: 0 auto; /* Centrera pricken */
+}
 
-/* --- 6. MOBILVYN (FLEXBOX + ORDER) --- */
-/* Vi använder flexbox med "order" för att flytta runt elementen */
 @media (max-width: 768px) {
-    
     #calendarView {
-        height: calc(100vh - 130px) !important;
-        border: none !important; border-radius: 0 !important;
-        display: flex; flex-direction: column;
-    }
-    .sx__calendar-wrapper { height: 100% !important; }
-
-    /* FLEX CONTAINER */
-    .sx__calendar-header {
-        padding: 12px 16px !important;
-        flex-wrap: wrap !important;
-        justify-content: space-between !important;
-        gap: 10px !important;
+        padding: 0;
+        border: none;
+        border-radius: 0;
+        height: calc(100vh - 130px) !important; /* Full höjd */
+        min-height: 0;
     }
 
-    /* 1. Idag (Vänster) */
-    .sx__today-button { order: 1; width: auto !important; padding: 0 12px !important; }
-
-    /* 2. Pilarna (Mitten) - VIKTIG FIX */
-    /* Vi måste targeta containern som håller pilarna om den finns */
-    .sx__header-navigation, 
-    .sx__forward-backward-navigation { 
-        order: 2; 
-        display: flex !important; 
-        gap: 8px !important; 
+    /* Gör headern kompaktare */
+    .fc-header-toolbar {
+        padding: 10px !important;
+        margin-bottom: 0 !important;
+        flex-wrap: wrap;
+        gap: 8px;
     }
     
-    /* Om pilarna ligger lösa direkt i headern, funkar detta ändå tack vare storleken */
-    .sx__chevron-wrapper { 
-        width: 40px !important; height: 40px !important; 
+    .fc-toolbar-title {
+        font-size: 1.2rem !important;
+        width: 100%;
+        text-align: center;
+        order: -1; /* Lägg rubriken överst */
+    }
+    
+    .fc-toolbar-chunk {
+        display: flex;
+        justify-content: center;
+        width: 100%; /* Sprid ut knapparna */
     }
 
-    /* 3. Månadsknapp (Höger) */
-    .sx__view-selection { 
-        order: 3; 
-        margin: 0 !important;
-        width: auto !important; min-width: 80px !important;
+    /* Gör dag-rutorna tillräckligt höga */
+    .fc-daygrid-day-frame {
+        min-height: 70px !important;
+        display: flex;
+        flex-direction: column;
+        align-items: center; /* Centrera datum och prickar */
     }
-
-    /* 4. Rubrik (Ny rad) */
-    .sx__calendar-header-content {
-        order: 4;
-        width: 100% !important;
-        margin: 4px 0 0 0 !important;
-        font-size: 1.1rem !important;
-        text-align: left !important;
-    }
-
-    /* 5. Datumväljare (Ny rad) */
-    .sx__date-picker-wrapper {
-        order: 5;
-        width: 100% !important;
+    
+    /* Justera event-containern för prickarna */
+    .fc-daygrid-day-events {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 3px;
         margin-top: 4px !important;
     }
-
-    /* Dölj labels på mobil */
-    .sx__view-selection::before, .sx__date-picker-wrapper::before { display: none !important; }
-    .sx__view-selection, .sx__date-picker-wrapper { margin-top: 0 !important; }
-
-    /* Event som prickar */
-    .sx__view-container { flex: 1; overflow-y: auto; background-color: #fff; }
-    .sx__month-grid-day { min-height: 60px !important; padding: 2px !important; display: flex; flex-direction: column; align-items: center; }
     
-    .sx__event {
-        width: 8px !important; height: 8px !important;
-        min-height: 0 !important; padding: 0 !important;
-        border-radius: 50% !important;
-        margin: 2px auto !important;
-        display: inline-block !important;
-        color: transparent !important;
-        background-color: #3b82f6;
-    }
-    .sx__event-title, .sx__event-time { display: none !important; }
-    
-    .sx__month-grid-day__events {
-        display: flex !important; flex-wrap: wrap !important; justify-content: center; width: 100%; gap: 3px;
+    /* Ta bort marginaler på event-länken så prickarna ligger tätt */
+    .fc-daygrid-event-harness {
+        margin: 0 !important;
     }
 }
