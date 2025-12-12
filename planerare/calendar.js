@@ -9,22 +9,15 @@ function mapJobsToEvents(jobs) {
             // 1. Datum & Tid
             let start = job.datum.includes('T') ? job.datum : `${job.datum}T${job.tid || '08:00'}`;
             
-            // 2. Färgpalett (Samma starka färg för kant och text)
-            // Standard: Blå (Bokad)
-            let mainColor = '#2563eb'; // En aning starkare blå för bättre läsbarhet på text
+            // 2. Färger
+            let mainColor = '#2563eb'; // Stark Blå
             let lightColor = '#eff6ff'; 
             
-            if (job.status === 'klar') { 
-                mainColor = '#059669'; lightColor = '#ecfdf5'; // Grön
-            }
-            else if (job.status === 'faktureras') { 
-                mainColor = '#7c3aed'; lightColor = '#f5f3ff'; // Lila
-            }
-            else if (job.status === 'offererad') { 
-                mainColor = '#d97706'; lightColor = '#fffbeb'; // Orange
-            }
+            if (job.status === 'klar') { mainColor = '#059669'; lightColor = '#ecfdf5'; } // Grön
+            else if (job.status === 'faktureras') { mainColor = '#7c3aed'; lightColor = '#f5f3ff'; } // Lila
+            else if (job.status === 'offererad') { mainColor = '#d97706'; lightColor = '#fffbeb'; } // Orange
 
-            // 3. Titel-data
+            // 3. Regnr
             let regnr = job.regnr && job.regnr !== 'OKÄNT' ? job.regnr : '';
             
             return {
@@ -38,7 +31,6 @@ function mapJobsToEvents(jobs) {
                     mainColor: mainColor,
                     lightColor: lightColor
                 },
-                // Vi sätter bakgrund och kant här för FullCalendar
                 backgroundColor: lightColor, 
                 borderColor: mainColor
             };
@@ -62,8 +54,8 @@ export function initCalendar(elementId, jobsData, onEventClickCallback) {
         fixedWeekCount: false, 
         showNonCurrentDates: false, 
         
-        height: 'auto',
-        contentHeight: 'auto',
+        height: 'auto',        // Låt den växa/krympa
+        contentHeight: 'auto', // Viktigt för att ta bort tomrum
 
         headerToolbar: {
             left: 'today prev,next title', 
@@ -75,7 +67,6 @@ export function initCalendar(elementId, jobsData, onEventClickCallback) {
         
         events: events,
         
-        // --- EVENT DESIGN ---
         eventContent: function(arg) {
             const isMob = window.innerWidth <= 768;
             const props = arg.event.extendedProps;
@@ -84,12 +75,11 @@ export function initCalendar(elementId, jobsData, onEventClickCallback) {
                 return { html: `<div class="fc-mobile-dot" style="background-color: ${props.mainColor};"></div>` };
             } 
             else {
-                // Bygg texten: Tid + Regnr + Namn
                 let textString = `${props.time} `;
                 if (props.regnr) textString += `${props.regnr} `;
                 textString += arg.event.title;
 
-                // VIKTIGT: Vi sätter color direkt här till mainColor (samma som kanten)
+                // VIKTIGT: Vi sätter color direkt i style-attributet
                 return { 
                     html: `
                     <div class="fc-premium-event" style="
