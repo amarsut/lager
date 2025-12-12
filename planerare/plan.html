@@ -329,10 +329,24 @@
 					</div>
 
 					<div id="customersView" style="display: none;">
-					    <div class="search-bar-wrapper" style="margin-bottom: 20px;">
-					        <div class="input-field-wrapper" style="background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-					            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-					            <input type="text" id="customerSearchInput" placeholder="Sök namn, bil eller regnr..." class="input-gray" style="background: transparent; border: none;">
+					    <div class="customer-toolbar">
+					        <div class="search-bar-wrapper cust-search">
+					            <div class="input-field-wrapper" style="background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+					                <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+					                <input type="text" id="customerSearchInput" placeholder="Sök kund..." class="input-gray" style="background: transparent; border: none;">
+					            </div>
+					        </div>
+					
+					        <div class="sort-wrapper">
+					            <div class="input-field-wrapper" style="background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+					                <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M6 12h12m-9 6h6"></path></svg>
+					                <select id="customerSortSelect" class="input-gray" style="background: transparent; border: none; cursor:pointer;" onchange="renderCustomerView()">
+					                    <option value="spent">Mest omsättning</option>
+					                    <option value="recent">Senast besök</option>
+					                    <option value="visits">Flest besök</option>
+					                    <option value="alpha">A-Ö</option>
+					                </select>
+					            </div>
 					        </div>
 					    </div>
 					
