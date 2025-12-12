@@ -4039,3 +4039,26 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
         z-index: 200000 !important;
     }
 }
+
+/*KALENDERVY*/
+
+/* --- Schedule-X Custom Styling --- */
+
+/* Runda hörn på eventen (som i demon) */
+.sx__event {
+    border-radius: 6px !important;
+    border-left: 3px solid transparent !important; /* Tar bort standardlinjen om man vill ha "block"-känsla */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* Snyggare rubrik i kalendern */
+.sx__date-picker__selected-date {
+    font-family: 'Inter', sans-serif !important;
+    font-weight: 700 !important;
+    text-transform: capitalize;
+}
+
+/* Gör dagens datum-cirkel snyggare (blå) */
+.sx__view-selection__item.is-selected {
+    background-color: #0066FF !important;
+}
