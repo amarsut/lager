@@ -14,7 +14,6 @@ window.openCustomerByName = openCustomerByName;
 window.toggleCardActions = toggleCardActions;
 window.setStatus = setStatus;
 window.deleteJob = deleteJob;
-window.removeExpense = removeExpense;
 window.openBrandSelector = openBrandSelector;
 window.saveTechSpec = saveTechSpec;
 window.filterVehicleHistory = filterVehicleHistory;
