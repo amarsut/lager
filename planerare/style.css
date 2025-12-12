@@ -3825,3 +3825,34 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
         z-index: 300000 !important; 
     }
 }
+
+/* =================================================================
+   FIX: GARAGE - TVINGA 3 PÅ RAD (MOBIL)
+   ================================================================= */
+
+@media (max-width: 768px) {
+    
+    /* Behållaren: Byt från Flex till Grid med exakt 3 kolumner */
+    .vehicle-chips-container {
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr) !important; /* 1fr = 1 "andel" av bredden */
+        gap: 6px !important;
+    }
+
+    /* Chipsen: Anpassa så de passar i de smalare rutorna */
+    .v-chip {
+        justify-content: center !important; /* Centrera innehållet */
+        width: 100% !important;             /* Fyll hela rutan */
+        padding: 6px 2px !important;        /* Minimal padding på sidorna */
+        font-size: 0.75rem !important;      /* Något mindre text för att garantera plats */
+        white-space: nowrap !important;     /* Förbjud radbrytning inuti */
+        text-overflow: clip !important;     /* Klipp om det mot förmodan är för långt */
+    }
+
+    /* Ikonen inuti */
+    .v-chip img {
+        margin-right: 4px !important;       /* Minska avståndet till texten */
+        width: 12px !important;
+        height: 12px !important;
+    }
+}
