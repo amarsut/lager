@@ -4041,8 +4041,9 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 }
 
 /*KALENDERVY*/
+
 /* =======================================================
-   FULLCALENDAR: NO WHITESPACE & COLOR TEXT (FIXED)
+   FULLCALENDAR: FINAL MOBILE UX (SHEET & CLICK)
    ======================================================= */
 
 #calendarView {
@@ -4052,300 +4053,134 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     padding: 0 !important;
     font-family: 'Inter', sans-serif;
     overflow: hidden;
-    
-    /* FIX: Ta bort tomrummet under kalendern */
     height: auto !important; 
     min-height: 0 !important;
     display: block;
+    position: relative; /* Viktigt för overlay */
 }
 
-/* --- HEADER --- */
+/* --- HEADER & KNAPPAR (DATOR) --- */
 .fc-header-toolbar {
-    padding: 16px 24px !important;
-    margin-bottom: 0 !important;
-    background-color: #fff;
-    border-bottom: 1px solid #f1f5f9;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start !important;
-    gap: 16px;
+    padding: 16px 24px !important; margin-bottom: 0 !important;
+    background-color: #fff; border-bottom: 1px solid #f1f5f9;
+    display: flex; align-items: center; justify-content: flex-start !important; gap: 16px;
 }
-
-.fc-toolbar-chunk:first-child {
-    display: flex;
-    align-items: center;
-    width: 100%;
-}
-
+.fc-toolbar-chunk:first-child { display: flex; align-items: center; width: 100%; }
 .fc-toolbar-title {
-    font-size: 1.25rem !important;
-    font-weight: 400 !important;
-    color: #0f172a;
-    text-transform: capitalize;
-    margin-left: 12px !important;
+    font-size: 1.25rem !important; font-weight: 600 !important;
+    color: #0f172a; text-transform: capitalize; margin-left: 12px !important;
 }
-
-/* --- KNAPPAR --- */
 .fc-today-button {
-    height: 34px !important;
-    padding: 0 16px !important;
-    font-size: 0.9rem !important;
-    background-color: #fff !important;
-    border: 1px solid #e2e8f0 !important;
-    color: #334155 !important;
-    font-weight: 500 !important;
-    border-radius: 8px !important;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
-    text-transform: capitalize !important;
-    outline: none !important;
+    height: 34px !important; padding: 0 16px !important; font-size: 0.9rem !important;
+    background-color: #fff !important; border: 1px solid #e2e8f0 !important;
+    color: #334155 !important; font-weight: 500 !important; border-radius: 8px !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important; outline: none !important; text-transform: capitalize !important;
 }
-.fc-today-button:hover { background-color: #f8fafc !important; border-color: #cbd5e1 !important; }
-
-/* Pilar */
 .fc-prev-button, .fc-next-button {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    color: #64748b !important;
-    padding: 0 !important;
-    width: 32px !important;
-    height: 32px !important;
-    display: flex !important;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50% !important;
-}
-.fc-prev-button:hover, .fc-next-button:hover {
-    background-color: #f1f5f9 !important;
-    color: #0f172a !important;
+    background: transparent !important; border: none !important; box-shadow: none !important;
+    color: #64748b !important; padding: 0 !important; width: 32px !important; height: 32px !important;
+    display: flex; align-items: center; justify-content: center; border-radius: 50% !important;
 }
 .fc-prev-button { margin-right: 8px !important; margin-left: 12px !important; }
 .fc-next-button { margin-right: 8px !important; }
 .fc-icon { font-size: 1.2rem !important; font-weight: bold; }
 
-/* --- RUTNÄT --- */
-.fc-theme-standard td, .fc-theme-standard th {
-    border-color: #f1f5f9 !important;
-}
-
-/* Rubriker */
+/* --- RUTNÄT & EVENT (DATOR) --- */
+.fc-theme-standard td, .fc-theme-standard th { border-color: #f1f5f9 !important; }
 .fc-col-header-cell-cushion {
-    font-size: 0.75rem;
-    color: #94a3b8;
-    font-weight: 500 !important;
-    text-transform: uppercase;
-    padding: 12px 0 4px 0 !important;
-    text-decoration: none !important;
+    font-size: 0.75rem; color: #94a3b8; font-weight: 500 !important;
+    text-transform: uppercase; padding: 12px 0 4px 0 !important; text-decoration: none !important;
 }
 .fc-col-header-cell { border-bottom: none !important; }
-
-/* Datum */
-.fc-daygrid-day-top {
-    justify-content: center !important;
-    padding-top: 4px !important;
-}
-.fc-daygrid-day-number {
-    font-size: 0.9rem;
-    color: #334155;
-    font-weight: 500 !important;
-    text-decoration: none !important;
-}
-
+.fc-daygrid-day-top { justify-content: center !important; padding-top: 4px !important; }
+.fc-daygrid-day-number { font-size: 0.9rem; color: #334155; font-weight: 500 !important; text-decoration: none !important; }
 .fc-day-today { background-color: transparent !important; }
 .fc-day-today .fc-daygrid-day-number {
-    background-color: #3b82f6;
-    color: white;
-    width: 26px; height: 26px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 0.8rem;
-    font-weight: 600 !important;
+    background-color: #3b82f6; color: white; width: 26px; height: 26px;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 600 !important;
 }
-
-/* Rutorna */
-.fc-daygrid-day-frame {
-    min-height: 100px !important; 
-    border-top: 1px solid #f1f5f9; 
-    /* Ta bort onödig padding i botten */
-    padding-bottom: 0 !important;
-}
-
-/* --- EVENT DESIGN (FÄRG & TEXT) --- */
-.fc-daygrid-event {
-    margin: 2px 4px !important;
-    background: transparent !important;
-    border: none !important;
-    cursor: pointer;
-}
-
-/* Den inre rutan */
+.fc-daygrid-day-frame { min-height: 100px !important; border-top: 1px solid #f1f5f9; padding-bottom: 0 !important; }
+.fc-daygrid-event { margin: 2px 4px !important; background: transparent !important; border: none !important; cursor: pointer; text-decoration: none !important; }
 .fc-premium-event {
-    padding: 2px 6px; 
-    border-radius: 4px;
-    font-size: 0.75rem;
-    line-height: 1.3;
-    
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis; 
-    display: block;
-    
-    /* FIX: Lite tjockare text så färgen syns */
-    font-weight: 500 !important; 
+    padding: 2px 6px; border-radius: 4px; font-size: 0.75rem;
+    line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;
+    font-weight: 600 !important; color: inherit !important;
 }
+.fc-event-text { color: inherit !important; font-weight: inherit !important; }
 
-.fc-event-text {
-    /* Säkerställ att span inuti inte ändrar färg */
-    color: inherit !important;
-}
+/* --- MOBILVYN (LISTA SOM OVERLAY) --- */
 
-/* --- MOBILVYN --- */
-.fc-mobile-dot {
-    width: 6px; height: 6px; border-radius: 50%; margin: 1px;
-}
-
-@media (max-width: 768px) {
-    #calendarView {
-        border-radius: 0 !important;
-        border: none;
-        height: auto !important;
-    }
-
-    .fc-header-toolbar {
-        padding: 10px 12px !important;
-        justify-content: space-between !important;
-    }
-    
-    .fc-toolbar-title { font-size: 1.1rem !important; margin-left: 0 !important; }
-    
-    /* Rutorna */
-    .fc-daygrid-day-frame {
-        min-height: 50px !important; 
-        padding-bottom: 4px; /* Lite luft i botten */
-    }
-    
-    /* --- HÄR ÄR LINJE-FIXEN --- */
-    
-    /* Behållaren: Stapla linjerna PÅ HÖJDEN och TÄTT */
-    .fc-daygrid-day-events {
-        display: flex !important; 
-        flex-direction: column !important; /* Stapla vertikalt */
-        align-items: center !important;    /* Centrera */
-        justify-content: flex-start;
-        
-        /* FIX: Mindre mellanrum mellan linjerna (var 2px) */
-        gap: 0px !important; 
-        
-        margin-top: 2px !important;
-        min-height: 12px;
-    }
-
-    /* Själva linjen: BREDARE */
-    .fc-mobile-dot {
-        /* FIX: Bredare (var 6px, nu 24px) */
-        width: 42px !important;  
-        
-        height: 4px !important; 
-        border-radius: 2px !important;
-        margin: 0 !important;
-        flex-shrink: 0;
-    }
-}
-
-/* =======================================================
-   FULLCALENDAR: SAMSUNG STYLE (SELECTED DAY & LIST)
-   ======================================================= */
-
-/* --- 1. MARKERING AV VALD DAG --- */
-/* När man klickar på en dag får 'td'-elementet denna klass via JS */
-.fc-day-selected .fc-daygrid-day-top {
-    position: relative;
-}
-.fc-day-selected .fc-daygrid-day-number {
-    background-color: #1e293b; /* Mörkgrå cirkel */
-    color: white !important;
-    width: 26px; height: 26px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 700 !important;
-    z-index: 2;
-}
-
-/* --- 2. LISTAN UNDER KALENDERN --- */
+/* Själva listan (Sheet) */
 #selectedDayView {
-    background-color: #f8fafc;
+    position: absolute; /* Ligger "ovanpå" kalendern */
+    bottom: 0; left: 0; right: 0;
+    background-color: #fff;
     border-top: 1px solid #e2e8f0;
+    border-radius: 20px 20px 0 0;
     padding: 16px;
-    animation: slideUp 0.2s ease-out;
-    max-height: 250px; /* Maxhöjd så den inte tar över hela skärmen */
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+    z-index: 100;
+    
+    transform: translateY(100%); /* Dold (nere) som standard */
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); /* Mjuk animation */
+    
+    max-height: 50vh; /* Tar max halva skärmen */
     overflow-y: auto;
 }
 
-@keyframes slideUp {
-    from { transform: translateY(10px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
+#selectedDayView.show {
+    transform: translateY(0); /* Åker upp */
 }
 
+/* Header i listan */
 .day-list-header {
-    font-size: 0.8rem; 
-    font-weight: 700; 
-    color: #94a3b8; 
-    text-transform: uppercase; 
-    margin-bottom: 12px;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 0.9rem; font-weight: 700; color: #0f172a; 
+    margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #f1f5f9;
+}
+.close-day-btn {
+    background: none; border: none; font-size: 1.5rem; color: #94a3b8; cursor: pointer; padding: 0 8px;
 }
 
-.day-list-empty {
-    text-align: center; color: #94a3b8; font-style: italic; font-size: 0.9rem;
-}
-
+/* List-objekt */
 .day-list-item {
-    background: white;
-    border-radius: 8px;
-    padding: 10px 12px;
-    margin-bottom: 8px;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    cursor: pointer;
+    background: #f8fafc; border-radius: 8px; padding: 12px; margin-bottom: 8px;
+    display: flex; align-items: center; gap: 12px; cursor: pointer;
 }
-.day-list-item:active { background-color: #f1f5f9; }
+.day-list-time { font-size: 0.9rem; font-weight: 700; color: #64748b; min-width: 45px; }
+.day-list-info { display: flex; flex-direction: column; gap: 2px; }
+.day-list-title { font-size: 0.95rem; font-weight: 600; color: #0f172a; }
 
-.day-list-time {
-    font-size: 0.85rem; font-weight: 600; color: #64748b;
-    min-width: 40px;
+/* PUNKT 3: Regnr och Kommentar på samma rad */
+.day-list-meta {
+    display: flex; align-items: center; gap: 8px; margin-top: 2px;
 }
-
-.day-list-info {
-    display: flex; flex-direction: column;
-}
-
-.day-list-title {
-    font-size: 0.95rem; font-weight: 600; color: #0f172a;
-}
-
 .day-list-reg {
-    font-size: 0.75rem; color: #475569; 
-    background: #f1f5f9; padding: 1px 4px; border-radius: 4px;
-    align-self: flex-start; margin-top: 2px;
+    font-size: 0.75rem; color: #0f172a; font-weight: 600; font-family: monospace;
+    background: #e2e8f0; padding: 1px 4px; border-radius: 4px;
+}
+.day-list-desc {
+    font-size: 0.75rem; color: #64748b; font-style: italic;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;
 }
 
-/* --- JUSTERING AV CONTAINER (VIKTIGT FÖR ATT RUTAN INTE SKA GÖMMAS) --- */
+/* Mobil-specifikt */
 @media (max-width: 768px) {
     #calendarView {
-        display: flex; 
-        flex-direction: column;
-        /* Låt den växa lite om listan visas, men max 70% av skärmen */
-        height: auto !important;
-        max-height: 70vh !important; 
-        overflow: hidden; /* Innehållet scrollar, inte containern */
+        border-radius: 0 !important; border: none; height: auto !important;
+        /* VIKTIGT: Gör så att overlayen syns över kalendern */
+        overflow: hidden !important; 
+    }
+
+    .fc-header-toolbar { padding: 10px 12px !important; justify-content: space-between !important; }
+    .fc-toolbar-title { font-size: 1.1rem !important; margin-left: 0 !important; }
+    
+    /* PUNKT 1: Gör hela rutan klickbar */
+    .fc-daygrid-day-frame {
+        min-height: 50px !important; 
+        cursor: pointer; /* Visar att det är klickbart */
     }
     
-    #calendar-wrapper {
-        flex-shrink: 0; /* Kalendern ska inte krympa för mycket */
-    }
+    .fc-mobile-dot { width: 6px; height: 6px; border-radius: 50%; margin: 1px; }
+    .fc-daygrid-day-events { display: flex; flex-wrap: wrap; justify-content: center; gap: 2px; margin-top: 2px !important; }
 }
-
-
-
-
