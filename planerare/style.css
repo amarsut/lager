@@ -3990,3 +3990,52 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     /* (Jobb-modalen ligger oftast runt 199999 i din kod, vilket är perfekt) */
 }
 
+/* =================================================================
+   FIX: MODAL-HEADER SYNLIGHET (Tvingande regler)
+   Läggs sist i style.css för att skriva över gamla regler
+   ================================================================= */
+
+@media (max-width: 768px) {
+
+    /* 1. Tvinga ner modalerna så de startar UNDER headern (60px) */
+    #customerModal.show,
+    #vehicleModal.show {
+        top: 60px !important;              /* Starta exakt under din header */
+        height: calc(100dvh - 60px) !important; /* Ta resten av höjden */
+        padding-top: 0 !important;         /* Ta bort padding som kan störa */
+        align-items: flex-start !important; /* Se till att innehållet börjar i toppen */
+    }
+
+    /* 2. Se till att innehålls-containern fyller hela ytan */
+    #customerModal .modal-content,
+    #vehicleModal .modal-content {
+        height: 100% !important;
+        border-radius: 0 !important;
+        max-height: none !important;
+    }
+
+    /* 3. Justera Fordons-headern */
+    .vehicle-header-row {
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 100 !important;
+        background: #f8f9fa !important; /* Viktigt så inte innehåll syns igenom vid scroll */
+        margin-top: 0 !important;
+    }
+
+    /* 4. Justera Kund-headern */
+    #customerModal .modal-header {
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 100 !important;
+        background: #f8f9fa !important;
+        padding-top: 0 !important; /* Ta bort "safe-area" padding eftersom vi inte är i toppen */
+        min-height: 60px !important; /* Garantera höjd */
+    }
+
+    /* 5. Justera Z-Index så Headern (200000) alltid ligger överst,
+       men modalerna (199xxx) ligger över allt annat innehåll */
+    .mobile-header {
+        z-index: 200000 !important;
+    }
+}
