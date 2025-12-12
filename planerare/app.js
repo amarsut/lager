@@ -622,6 +622,15 @@ function updateStatsCounts(jobs) {
 // 7. EVENT LISTENERS
 function setupEventListeners() {
 
+	// --- FIX: Sortering i Kundvyn ---
+	const sortSelect = document.getElementById('customerSortSelect');
+	if (sortSelect) {
+	    sortSelect.addEventListener('change', () => {
+	        // Anropa render-funktionen direkt när man ändrar i listan
+	        renderCustomerView();
+	    });
+	}
+
 	// Koppla uppdateringsknappen
 	const updateBtn = document.getElementById('btnHardReset');
 	if (updateBtn) {
