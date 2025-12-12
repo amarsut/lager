@@ -1,4 +1,3 @@
-// calendar.js
 import { createCalendar, viewDay, viewWeek, viewMonthGrid, viewMonthAgenda } from 'https://cdn.jsdelivr.net/npm/@schedule-x/calendar@1.53.0/+esm';
 import { createDragAndDropPlugin } from 'https://cdn.jsdelivr.net/npm/@schedule-x/drag-and-drop@1.53.0/+esm';
 import { createEventModalPlugin } from 'https://cdn.jsdelivr.net/npm/@schedule-x/event-modal@1.53.0/+esm';
@@ -12,28 +11,20 @@ function mapJobsToEvents(jobs) {
             let startDateTime = job.datum;
             let timePrefix = ""; 
 
-            // 1. Hantera Datum & Tid
+            // Hantera datum/tid
             if (!startDateTime.includes('T')) {
-                // Om vi bara har datum, använd vald tid eller standard 08:00
                 const t = job.tid || '08:00';
                 timePrefix = t;
                 startDateTime = `${job.datum} ${t}`;
             } else {
-                // Om vi har ISO-sträng
                 startDateTime = startDateTime.replace('T', ' ');
-                try {
-                    // Extrahera klockslag (HH:mm) från strängen
-                    timePrefix = startDateTime.split(' ')[1].substring(0, 5);
-                } catch(e) {}
+                try { timePrefix = startDateTime.split(' ')[1].substring(0, 5); } catch(e) {}
             }
 
-            // 2. Skapa slutdatum (1 timme senare som standard)
             let endDateTime = startDateTime;
             try {
                 const d = new Date(startDateTime.replace(' ', 'T'));
                 d.setHours(d.getHours() + 1);
-                
-                // Formatera manuellt för att slippa tidszonskrångel
                 const Y = d.getFullYear();
                 const M = String(d.getMonth()+1).padStart(2,'0');
                 const D = String(d.getDate()).padStart(2,'0');
@@ -42,7 +33,7 @@ function mapJobsToEvents(jobs) {
                 endDateTime = `${Y}-${M}-${D} ${H}:${m}`;
             } catch(e) {}
 
-            // 3. Skapa Titel: "10:00 KUNDNAMN" (Punkt 6)
+            // Titel med tid
             const finalTitle = timePrefix ? `${timePrefix} ${job.kundnamn}` : job.kundnamn;
 
             return {
@@ -73,7 +64,7 @@ export function initCalendar(elementId, jobsData, onEventClickCallback) {
     calendarApp = createCalendar({
         views: [viewMonthGrid, viewWeek, viewDay, viewMonthAgenda], 
         
-        // PUNKT 2: Månadsvy som standard (Mobil & Dator)
+        // PUNKT 1 & 2: ALLTID MÅNAD SOM STANDARD
         defaultView: viewMonthGrid.name, 
         
         events: events,
@@ -85,7 +76,6 @@ export function initCalendar(elementId, jobsData, onEventClickCallback) {
 
         plugins: [dragAndDrop, eventModal],
 
-        // Färger (Behålls för att matcha stil)
         calendars: {
             bokad: { colorName: 'bokad', lightColors: { main: '#3b82f6', container: '#eff6ff', onContainer: '#1e3a8a' } },
             klar: { colorName: 'klar', lightColors: { main: '#10b981', container: '#ecfdf5', onContainer: '#064e3b' } },
