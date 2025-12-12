@@ -2648,6 +2648,7 @@ function renderCustomerView(searchTerm = '') {
 
 // Öppna profilen
 function openCustomerModal(customer) {
+	addHistoryState();
     const modal = document.getElementById('customerModal');
     
     // 1. Fyll Header
