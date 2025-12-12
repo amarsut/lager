@@ -4062,3 +4062,80 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 .sx__view-selection__item.is-selected {
     background-color: #0066FF !important;
 }
+
+/* =======================================================
+   KALENDER DESIGN FIX (Likna Demon + Mobilanpassning)
+   ======================================================= */
+
+/* --- 1. Snyggare Header (Likna Bild 1) --- */
+.sx__calendar-header {
+    margin-bottom: 20px !important;
+    padding: 0 10px !important;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 15px;
+}
+
+/* Gör datumväljaren renare */
+.sx__date-picker-wrapper {
+    background: #f8fafc !important;
+    border-radius: 8px !important;
+    border: 1px solid #e2e8f0 !important;
+    padding: 4px 8px !important;
+}
+
+/* Navigationsknapparna (Idag, <, >) */
+.sx__chevron-wrapper {
+    background: white !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 50% !important; /* Runda knappar som i demon */
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+.sx__chevron-wrapper:hover { background: #f1f5f9 !important; }
+
+/* Väljaren för Månad/Vecka/Dag */
+.sx__view-selection {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 8px !important;
+}
+
+/* --- 2. Mobilanpassning av Behållaren --- */
+#calendarView {
+    /* Standard för dator */
+    height: 800px; 
+    padding: 20px; 
+    background: white; 
+    border-radius: 12px; 
+    border: 1px solid #e2e8f0;
+}
+
+@media (max-width: 768px) {
+    #calendarView {
+        /* Anpassa för mobil */
+        height: calc(100vh - 140px) !important; /* Ta hela höjden minus header/meny */
+        padding: 10px !important; /* Mindre padding */
+        margin: 0 !important;
+        border: none !important;
+        border-radius: 0 !important;
+        overflow: hidden; /* Förhindra dubbelscroll */
+    }
+    
+    #calendar-wrapper {
+        height: 100%;
+    }
+
+    /* Gör header-elementen mindre på mobil */
+    .sx__calendar-header {
+        flex-wrap: wrap; /* Låt saker hamna på ny rad om det behövs */
+        gap: 10px;
+    }
+}
+
+/* --- 3. Generell uppsnyggning av eventen --- */
+.sx__event {
+    font-weight: 600 !important;
+    font-size: 0.85rem !important;
+    border: none !important; /* Ta bort kantlinje för renare look */
+}
