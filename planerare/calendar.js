@@ -246,6 +246,22 @@ export function initCalendar(elementId, jobsData, onEventClickCallback) {
 
     calendar.render();
 
+    // --- NY KOD: Auto-välj idag på mobil ---
+    const isMobileStart = window.innerWidth <= 768;
+    if (isMobileStart) {
+        const today = new Date();
+        // Format: YYYY-MM-DD (viktigt för att hitta rätt element)
+        const dateStr = today.getFullYear() + '-' + 
+                        String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+                        String(today.getDate()).padStart(2, '0');
+    
+        // 1. Hitta dagens element och markera det
+        const dayEl = document.querySelector(`.fc-day[data-date="${dateStr}"]`);
+        if (dayEl) dayEl.classList.add('fc-day-selected');
+    
+        renderDayList(dateStr, events); 
+    }
+
     // PUNKT 4: Lägg till lyssnare för bakåtknappen
     window.addEventListener('popstate', function(event) {
         const container = document.getElementById('selectedDayView');
