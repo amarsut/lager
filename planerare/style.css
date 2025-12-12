@@ -4041,97 +4041,34 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 }
 
 /*KALENDERVY*/
-
-/* =======================================================
-   FULLCALENDAR: FOOTER MODE & TIMELINE (FINAL)
-   ======================================================= */
-
-#calendarView {
-    background: white;
-    border-radius: 20px;
-    border: 1px solid #e2e8f0;
-    padding: 0;
-    font-family: 'Inter', sans-serif;
-    overflow: hidden;
-    height: 850px; /* Dator-höjd */
-}
-
-/* --- DATOR HEADER --- */
-.fc-header-toolbar {
-    padding: 16px 24px !important;
-    background-color: #fff;
-    border-bottom: 1px solid #f1f5f9;
-    display: flex; align-items: center; justify-content: flex-start !important; gap: 16px;
-    margin-bottom: 0 !important;
-}
-.fc-toolbar-chunk:first-child { display: flex; align-items: center; width: 100%; }
-.fc-toolbar-title {
-    font-size: 1.25rem !important; font-weight: 600 !important;
-    color: #0f172a; text-transform: capitalize; margin-left: 12px !important;
-}
-
-/* --- KNAPPAR (Dator) --- */
-.fc-button {
-    height: 34px !important; padding: 0 16px !important; font-size: 0.9rem !important;
-    background-color: #fff !important; border: 1px solid #e2e8f0 !important;
-    color: #334155 !important; font-weight: 500 !important; border-radius: 8px !important;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important; outline: none !important;
-}
-.fc-prev-button, .fc-next-button {
-    background: transparent !important; border: none !important; box-shadow: none !important;
-    color: #64748b !important; width: 32px !important; padding: 0 !important;
-    border-radius: 50% !important;
-}
-.fc-prev-button { margin-right: 8px !important; margin-left: 12px !important; }
-.fc-icon { font-size: 1.2rem !important; font-weight: bold; }
-
-/* --- RUTNÄT --- */
-.fc-theme-standard td, .fc-theme-standard th { border-color: #f1f5f9 !important; }
-.fc-col-header-cell-cushion {
-    font-size: 0.75rem; color: #94a3b8; font-weight: 500 !important;
-    text-transform: uppercase; padding: 12px 0 4px 0 !important; text-decoration: none !important;
-}
-.fc-daygrid-day-top { justify-content: center !important; padding-top: 4px !important; }
-.fc-daygrid-day-number { font-size: 0.9rem; color: #334155; font-weight: 500 !important; text-decoration: none !important; }
-.fc-day-today .fc-daygrid-day-number {
-    background-color: #3b82f6; color: white; width: 26px; height: 26px;
-    border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600 !important;
-}
-.fc-daygrid-day-frame { min-height: 100px !important; border-top: 1px solid #f1f5f9; }
-
-/* --- EVENT (DATOR) --- */
-.fc-daygrid-event { margin: 2px 4px !important; background: transparent !important; border: none !important; }
-.fc-premium-event {
-    padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: 600 !important;
-    line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; color: inherit !important;
-}
-.fc-event-text { color: inherit !important; font-weight: inherit !important; }
-
-
 /* =========================================
-   MOBILVY - FOOTER KALENDER & TIDSLINJE
+   MOBILVY - FOOTER KALENDER & TIDSLINJE (FIXED)
    ========================================= */
 
-/* Dölj tidslinjen på dator */
-#mobileUpcomingContainer { display: none; }
+#mobileUpcomingContainer { display: none; } /* Dölj på dator */
 
 @media (max-width: 768px) {
-    /* 1. LAYOUT: Dela upp skärmen */
+    
+    /* 1. Huvudlayout för mobil */
     .main-content {
         display: flex !important;
         flex-direction: column !important;
-        height: calc(100vh - 130px) !important; /* Total höjd minus header/meny */
+        /* Total höjd minus header (60px) och bottenmeny (70px) */
+        height: calc(100vh - 130px) !important; 
         overflow: hidden !important;
         padding: 0 !important;
+        margin: 0 !important;
+        margin-top: 0 !important; /* Säkerställ ingen extra marginal */
     }
 
     /* 2. TIDSLINJE (Överst, fyller utrymmet) */
     #mobileUpcomingContainer {
-        display: block;
-        flex: 1; /* Ta allt ledigt utrymme */
+        display: block !important;
+        flex: 1; /* Ta allt ledigt utrymme ovanför kalendern */
         background-color: #f8fafc;
         padding: 16px;
         overflow-y: auto; /* Scrolla om det är många jobb */
+        border-bottom: 1px solid #e2e8f0;
     }
 
     .timeline-header {
@@ -4142,22 +4079,33 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     .timeline-card {
         background: white; border-radius: 12px; padding: 12px 16px;
         box-shadow: 0 2px 5px rgba(0,0,0,0.03);
-        /* Den färgade linjen sätts via JS inline-style */
     }
     .t-time { font-size: 0.75rem; color: #64748b; font-weight: 600; margin-bottom: 2px; }
     .t-title { font-size: 1rem; font-weight: 700; color: #0f172a; margin-bottom: 2px; }
     .t-reg { font-size: 0.85rem; color: #475569; font-family: monospace; background: #f1f5f9; display: inline-block; padding: 2px 6px; border-radius: 4px; }
+    
+    .timeline-empty { 
+        text-align: center; color: #94a3b8; padding: 20px; font-style: italic; 
+    }
 
     /* 3. KALENDER I FOOTERN (Längst ner) */
     #calendarView {
-        height: auto !important; /* Anpassa efter innehåll */
-        flex-shrink: 0; /* Får inte krympa */
+        /* VIKTIGT: Ta bort fast höjd */
+        height: auto !important; 
+        min-height: 0 !important;
+        flex-shrink: 0; /* Får inte krympa ihop */
+        
         background: #fff;
-        border-top: 1px solid #e2e8f0;
+        border: none !important;
+        border-top: 1px solid #e2e8f0 !important;
         border-radius: 24px 24px 0 0 !important; /* Runda hörn upptill */
         box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
         padding-bottom: 10px;
         z-index: 50;
+        
+        /* Begränsa höjden så den inte tar över hela skärmen */
+        max-height: 55vh; 
+        overflow: hidden; 
     }
 
     /* Header på mobil */
@@ -4171,9 +4119,9 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     /* 4. SAMSUNG STYLE: LINJER ISTÄLLET FÖR PRICKAR */
     .fc-mobile-line {
         height: 3px;
-        width: 16px; /* Bredd på strecket */
+        width: 16px; 
         border-radius: 2px;
-        margin: 1px auto; /* Centrera */
+        margin: 1px auto; 
     }
     
     /* Behållare för strecken */
@@ -4181,16 +4129,22 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
         display: flex !important; 
         flex-direction: column !important; /* Stapla strecken på varandra */
         align-items: center !important;
-        gap: 1px !important;
-        min-height: 12px !important; /* Plats för streck */
+        gap: 2px !important;
+        min-height: 12px !important; 
+        margin-bottom: 4px !important;
     }
 
     /* Rutorna (Låga för att få plats) */
     .fc-daygrid-day-frame {
-        min-height: 45px !important; 
+        /* Låt höjden anpassas, men håll det kompakt */
+        height: auto !important;
+        min-height: 40px !important; 
         display: flex; flex-direction: column; justify-content: flex-start;
         padding-top: 4px;
     }
     
     .fc-daygrid-day-number { font-size: 0.85rem; padding: 0 !important; }
+    
+    /* Dölj scrollbar i kalendern på mobil */
+    .fc-scroller { overflow: hidden !important; }
 }
