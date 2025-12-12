@@ -4413,27 +4413,27 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 }
 
 /* =========================================
-   NY CLEAN CALENDAR TOOLTIP
+   NY CLEAN CALENDAR TOOLTIP (PRO VERSION)
    ========================================= */
 .calendar-tooltip {
     position: fixed;
     background: #ffffff;
-    color: #1f2937; /* Mjuk mörkgrå */
+    color: #1f2937;
     padding: 10px 14px;
     border-radius: 8px;
     z-index: 99999;
-    pointer-events: none;
+    pointer-events: none; /* Musen går igenom, stör ej klick */
     box-shadow: 0 4px 20px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.05);
     width: auto;
     max-width: 280px;
-    min-width: 200px;
+    min-width: 220px;
     opacity: 0;
     transition: opacity 0.15s ease-in-out;
     display: flex;
     flex-direction: column;
-    gap: 4px; /* Avstånd mellan raderna */
+    gap: 6px; /* Lite luft mellan raderna */
     
-    /* VIKTIGT: Ingen fetstil globalt i rutan */
+    /* Globalt för tooltipen: Ingen fetstil */
     font-weight: 400; 
     font-family: 'Inter', sans-serif;
 }
@@ -4442,18 +4442,20 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     opacity: 1;
 }
 
-/* Rad 1: Regnr • Namn */
+/* --- Rader --- */
+
+/* Rad 1: StatusIkon + Regnr + Namn */
 .tt-row-primary {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px; /* Lite mer avstånd till status-ikonen */
     font-size: 0.9rem;
-    color: #111827; /* Lite svartare för läsbarhet */
+    color: #111827; 
     white-space: nowrap;
 }
 
-.tt-reg { text-transform: uppercase; }
-.tt-sep { color: #9ca3af; font-size: 0.8rem; } /* Ljusgrå prick */
+.tt-reg { text-transform: uppercase; letter-spacing: 0.5px; }
+.tt-sep { color: #d1d5db; font-size: 0.7rem; margin: 0 2px; }
 .tt-name { 
     overflow: hidden; 
     text-overflow: ellipsis; 
@@ -4462,31 +4464,49 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 /* Rad 2: Kommentar */
 .tt-row-detail {
     display: flex;
-    align-items: flex-start; /* Om texten är lång, håll ikonen i toppen */
-    gap: 6px;
+    align-items: flex-start; 
+    gap: 8px;
     font-size: 0.85rem;
     color: #374151;
     line-height: 1.4;
+    padding-top: 2px;
 }
 
-/* Rad 3: Tid (Mindre) */
+/* Rad 3: Tid */
 .tt-row-time {
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: 0.75rem; /* Mindre storlek enligt önskemål */
+    gap: 8px;
+    font-size: 0.75rem; /* Mindre text */
     color: #6b7280;     /* Ljusare grå */
     margin-top: 2px;
 }
 
-/* Gemensam stil för ikonerna */
+/* --- Ikoner --- */
+
+/* Gemensam storlek för alla ikoner i vänsterkanten */
 .tt-icon {
     width: 14px;
     height: 14px;
-    color: #9ca3af; /* Diskret ikonfärg */
     flex-shrink: 0;
-    transform: translateY(1px); /* Finjustera höjdled */
+    display: block;
 }
+
+/* Specifik färg för de grå ikonerna (klocka/kommentar) */
+.tt-icon-gray {
+    color: #9ca3af; 
+    transform: translateY(1px); /* Finjustera höjdled mot texten */
+}
+
+/* Status-ikonen (Fylld cirkel) */
+.tt-status-icon {
+    width: 14px; 
+    height: 14px;
+    flex-shrink: 0;
+    fill: currentColor; /* Tar färgen från inline-style */
+}
+
+/*SLUT PÅ CALENDAR TOOLTIP*/
 
 /* Kalender Legend Styles */
 .calendar-legend {
@@ -4546,6 +4566,7 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     border: 1px solid #e2e8f0;
 }
 .search-chip:active { background: #e2e8f0; }
+
 
 
 
