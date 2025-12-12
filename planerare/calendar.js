@@ -10,13 +10,13 @@ function mapJobsToEvents(jobs) {
             let start = job.datum.includes('T') ? job.datum : `${job.datum}T${job.tid || '08:00'}`;
             
             // 2. Färger
-            let mainColor = '#3b82f6'; let lightColor = '#eff6ff'; // Bokad (Blå)
+            let mainColor = '#3b82f6'; let lightColor = '#eff6ff'; // Blå
             
             if (job.status === 'klar') { mainColor = '#10b981'; lightColor = '#ecfdf5'; } // Grön
             else if (job.status === 'faktureras') { mainColor = '#8b5cf6'; lightColor = '#f5f3ff'; } // Lila
             else if (job.status === 'offererad') { mainColor = '#f59e0b'; lightColor = '#fffbeb'; } // Orange
 
-            // 3. Förbered data för titeln
+            // 3. Regnr hantering
             let regnr = job.regnr && job.regnr !== 'OKÄNT' ? job.regnr : '';
             
             return {
@@ -24,7 +24,7 @@ function mapJobsToEvents(jobs) {
                 title: job.kundnamn,
                 start: start,
                 extendedProps: {
-                    time: start.split('T')[1].substring(0, 5).replace(':', '.'), // "10.00"
+                    time: start.split('T')[1].substring(0, 5).replace(':', '.'),
                     regnr: regnr,
                     status: job.status,
                     mainColor: mainColor,
@@ -50,8 +50,8 @@ export function initCalendar(elementId, jobsData, onEventClickCallback) {
         locale: 'sv',
         firstDay: 1, 
         
-        fixedWeekCount: false, // Visa bara nödvändiga rader (4-5 st)
-        showNonCurrentDates: false, // Dölj dagar från nästa månad för renare look
+        fixedWeekCount: false, 
+        showNonCurrentDates: false, 
         
         height: 'auto',
         contentHeight: 'auto',
@@ -66,7 +66,7 @@ export function initCalendar(elementId, jobsData, onEventClickCallback) {
         
         events: events,
         
-        // --- EVENT DESIGN (PUNKT 6) ---
+        // --- EVENT DESIGN ---
         eventContent: function(arg) {
             const isMob = window.innerWidth <= 768;
             const props = arg.event.extendedProps;
@@ -76,20 +76,19 @@ export function initCalendar(elementId, jobsData, onEventClickCallback) {
                 return { html: `<div class="fc-mobile-dot" style="background-color: ${props.mainColor};"></div>` };
             } 
             
-            // Dator: "10.00 ABC123 NAMN..."
+            // Dator: Text med Stark Färg
             else {
-                // Bygg texten: Tid + Regnr + Namn
-                // Vi lägger allt i en sträng för att ellipsis (..) ska funka på hela raden
                 let textString = `${props.time} `;
                 if (props.regnr) textString += `${props.regnr} `;
                 textString += arg.event.title;
 
+                // VIKTIGT: Vi sätter 'color' direkt här till mainColor
                 return { 
                     html: `
                     <div class="fc-premium-event" style="
                         border-left: 3px solid ${props.mainColor}; 
                         background-color: ${props.lightColor}; 
-                        color: ${props.mainColor};">
+                        color: ${props.mainColor};"> 
                         <span class="fc-event-text">${textString}</span>
                     </div>` 
                 };
