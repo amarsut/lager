@@ -4412,6 +4412,53 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 	}
 }
 
+.calendar-tooltip {
+    position: fixed; /* Fixed gör att den inte klipps av kalenderns gränser */
+    background: #1e293b; /* Mörkgrå bakgrund */
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    z-index: 99999; /* Alltid överst */
+    pointer-events: none; /* Musen ska inte fastna på den */
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    max-width: 250px;
+    line-height: 1.4;
+    opacity: 0;
+    transition: opacity 0.2s;
+    white-space: normal; /* Tillåt radbrytning */
+}
+
+.calendar-tooltip.show {
+    opacity: 1;
+}
+
+@media (max-width: 768px) {
+    /* Tvinga behållaren att vara relativ så ikonen hamnar rätt */
+    .history-search-wrapper {
+        position: relative !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+
+    /* Tvinga input-fältet att ha plats för ikonen */
+    .history-search-wrapper input {
+        padding-left: 42px !important; /* Ger plats åt ikonen */
+        width: 100% !important;
+        box-sizing: border-box !important; /* Säkerställer att padding inte spräcker bredden */
+    }
+
+    /* Säkra ikonens position */
+    .history-search-wrapper .search-icon {
+        position: absolute !important;
+        left: 12px !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+        z-index: 10 !important;
+        pointer-events: none; /* Gör att klick går igenom till input */
+    }
+}
 
 
 
