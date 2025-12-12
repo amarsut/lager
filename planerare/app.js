@@ -622,6 +622,12 @@ function updateStatsCounts(jobs) {
 // 7. EVENT LISTENERS
 function setupEventListeners() {
 
+	// Koppla uppdateringsknappen
+	const updateBtn = document.getElementById('btnHardReset');
+	if (updateBtn) {
+	    updateBtn.addEventListener('click', forceUpdateApp);
+	}
+
 	// --- KALENDER KNAPP ---
 	const navCalendar = document.getElementById('navCalendar');
 	if (navCalendar) {
@@ -2908,3 +2914,42 @@ function updateCustomerDatalist() {
         }
     });
 }
+
+// Funktion för att tvinga uppdatering (Hard Reload)
+async function forceUpdateApp() {
+    if (!confirm("Detta kommer att starta om appen och hämta den senaste versionen. Vill du fortsätta?")) {
+        return;
+    }
+
+    const btn = document.getElementById('btnHardReset');
+    if(btn) btn.innerHTML = '<span style="padding:12px;">Uppdaterar...</span>';
+
+    try {
+        // 1. Avregistrera Service Workers (om de finns)
+        if ('serviceWorker' in navigator) {
+            const registrations = await navigator.serviceWorker.getRegistrations();
+            for (const registration of registrations) {
+                await registration.unregister();
+            }
+        }
+
+        // 2. Rensa Cache Storage (Där PWA sparar filer)
+        if ('caches' in window) {
+            const keys = await caches.keys();
+            for (const key of keys) {
+                await caches.delete(key);
+            }
+        }
+
+        // 3. Tvinga omladdning från servern (ignorerar webbläsarens lokala cache)
+        window.location.reload(true);
+
+    } catch (error) {
+        console.error("Kunde inte rensa cache:", error);
+        // Fallback: Ladda om ändå
+        window.location.reload();
+    }
+}
+
+// Gör funktionen tillgänglig globalt (så knappen hittar den om du använder onclick i HTML)
+window.forceUpdateApp = forceUpdateApp;
