@@ -4043,165 +4043,181 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 /*KALENDERVY*/
 
 /* =======================================================
-   FULLCALENDAR: COMPACT & COLORFUL (FINAL)
+   FULLCALENDAR: PREMIUM DESIGN (BILD-KOPIA)
    ======================================================= */
 
 #calendarView {
     background: white;
     border-radius: 12px;
     border: 1px solid #e2e8f0;
-    padding: 0; /* Ta bort padding runt kalendern */
+    padding: 0;
     font-family: 'Inter', sans-serif;
     overflow: hidden;
-    /* Ingen fast höjd, låt den krympa */
-    min-height: 0;
+    /* Ingen min-height så den blir kompakt */
 }
 
-/* --- HEADER (Titel närmare knapparna) --- */
+/* --- 1. HEADER (Kompakt och Vänsterställd) --- */
 .fc-header-toolbar {
-    padding: 12px 16px !important; /* Mindre padding */
+    padding: 12px 16px !important; /* Mindre luft */
     margin-bottom: 0 !important;
     background-color: #fff;
     border-bottom: 1px solid #f1f5f9;
+    
+    /* Flexbox magi för att samla allt till vänster */
     display: flex;
     align-items: center;
-    justify-content: flex-start !important; /* Vänsterställ allt */
-    gap: 12px; /* Litet avstånd mellan grupperna */
+    justify-content: flex-start !important; 
+    gap: 16px; /* Avstånd mellan knappar och titel */
 }
 
 /* Knappgruppen (Idag + Pilar) */
 .fc-toolbar-chunk:first-child {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 8px; /* Avstånd mellan knapparna */
 }
 
-/* Titeln (December 2025) */
+/* Titeln "December 2025" */
 .fc-toolbar-title {
-    font-size: 1.1rem !important; /* Lite mindre text */
+    font-size: 1.2rem !important;
     font-weight: 700 !important;
     color: #0f172a;
     text-transform: capitalize;
-    margin-left: 0 !important; /* Ingen extra marginal */
+    margin: 0 !important; /* Ta bort marginaler */
 }
 
-/* --- KNAPPAR (Kompakta) --- */
+/* --- 2. KNAPPAR (Vita & Snygga) --- */
 .fc-button {
-    height: 32px !important; /* Lägre knappar */
-    padding: 0 12px !important;
-    font-size: 0.85rem !important;
-    background-color: #fff !important;
+    background-color: #ffffff !important;
     border: 1px solid #e2e8f0 !important;
     color: #334155 !important;
     font-weight: 600 !important;
+    text-transform: capitalize !important;
     border-radius: 6px !important;
     box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+    padding: 6px 12px !important; /* Kompaktare knappar */
+    height: 34px !important;
     outline: none !important;
+    transition: all 0.2s;
 }
-.fc-button:hover { background-color: #f8fafc !important; border-color: #cbd5e1 !important; }
+
+.fc-button:hover {
+    background-color: #f8fafc !important;
+    border-color: #cbd5e1 !important;
+    color: #0f172a !important;
+}
+
+.fc-button-active {
+    background-color: #f1f5f9 !important;
+    color: #000 !important;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.05) !important;
+}
+
 .fc-button:focus { box-shadow: none !important; }
-.fc-icon { font-size: 0.9rem !important; } /* Mindre ikoner i pilarna */
 
-/* --- RUTNÄT (Kompaktare celler) --- */
-.fc-theme-standard td, .fc-theme-standard th {
-    border-color: #f1f5f9 !important;
+/* Mindre ikoner i pilarna */
+.fc-icon { font-size: 1rem !important; }
+
+/* --- 3. RUTNÄT (Kompakt & Rent) --- */
+.fc-theme-standard td, 
+.fc-theme-standard th {
+    border-color: #f1f5f9 !important; /* Mycket diskreta linjer */
 }
 
-/* Dag-rubriker (Mån, Tis) */
+/* Rubriker (Mån, Tis...) */
 .fc-col-header-cell-cushion {
-    padding: 8px 0 !important; /* Mindre luft */
-    font-size: 0.7rem;
     color: #64748b;
+    font-weight: 700;
+    font-size: 0.75rem;
     text-transform: uppercase;
+    padding: 8px 0 !important;
+    text-decoration: none !important;
 }
 
-/* Dagens siffra */
+/* Dagsnummer */
 .fc-daygrid-day-top {
-    padding: 4px !important; /* Mindre luft */
     justify-content: flex-start !important; /* Siffra till vänster */
+    padding: 4px 6px !important;
 }
 .fc-daygrid-day-number {
-    font-size: 0.85rem;
     color: #334155;
-    padding: 4px !important;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-decoration: none !important;
 }
 
-/* Rutorna - Minimera höjden för att undvika scroll */
-.fc-daygrid-day-frame {
-    min-height: 80px !important; /* Tillräckligt för ca 3 event */
-    max-height: 100px; /* Förhindra att de blir för höga */
+/* Idag-markering */
+.fc-day-today { background-color: #f8fafc !important; }
+.fc-day-today .fc-daygrid-day-number {
+    color: #3b82f6;
+    font-weight: 700;
 }
 
-/* Scrollbar inuti rutan om det är MÅNGA jobb (scroller-fix) */
-.fc-daygrid-day-events {
-    margin-bottom: 0 !important;
-    min-height: 1.5em !important; 
-}
-
-/* --- EVENT DESIGN (Färgade Block) --- */
+/* --- 4. EVENT DESIGN (Premium Pastell Block) --- */
+/* Tar bort standard FullCalendar-styling */
 .fc-daygrid-event {
+    background: transparent !important;
+    border: none !important;
     margin-top: 1px !important;
     margin-bottom: 1px !important;
-    border: none !important;
-    background: transparent !important;
     cursor: pointer;
 }
 
-/* Den inre designen (pille) */
-.fc-desktop-pill {
-    /* Färger ärvs från JS (backgroundColor/borderColor) */
-    background-color: inherit; 
-    border-left: 3px solid; /* Tjockare kant till vänster */
-    border-color: inherit;
-    color: inherit;
+/* Vår custom div inuti eventet */
+.fc-premium-event {
+    /* Padding och form */
+    padding: 2px 6px;
+    border-radius: 4px;
+    box-shadow: 0 1px 1px rgba(0,0,0,0.05);
     
-    padding: 2px 4px;
-    border-radius: 3px;
-    font-size: 0.7rem;
+    /* Text */
+    font-size: 0.75rem;
     font-weight: 600;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    line-height: 1.3;
+    
+    /* Layout */
     display: flex;
-    gap: 4px;
-    line-height: 1.2;
+    gap: 5px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
-.fc-pill-time { opacity: 0.8; font-weight: 400; }
+.fc-event-time { font-weight: 400; opacity: 0.9; }
+.fc-event-title { overflow: hidden; text-overflow: ellipsis; }
 
-/* --- MOBILVYN (Extremt Kompakt) --- */
+/* --- 5. MOBILVY (Extremt Kompakt) --- */
+.fc-mobile-dot {
+    width: 6px; height: 6px; border-radius: 50%; margin: 1px;
+}
+
 @media (max-width: 768px) {
     #calendarView {
         border-radius: 0;
         border: none;
-        /* Ta bort all fast höjd, låt den flöda naturligt */
-        height: auto !important; 
-        min-height: 0 !important;
+        height: auto !important; /* Låt den flöda fritt */
     }
 
-    /* Header på mobil */
+    /* Ännu tajtare header på mobil */
     .fc-header-toolbar {
         padding: 8px 12px !important;
-        flex-wrap: nowrap; /* Tvinga på en rad */
-        justify-content: space-between !important;
+        justify-content: space-between !important; 
     }
     
-    /* Gruppera knapparna tajt */
-    .fc-toolbar-chunk { display: flex; gap: 4px; }
+    .fc-toolbar-title { font-size: 1.1rem !important; }
     
-    /* Titeln mindre */
-    .fc-toolbar-title { font-size: 1rem !important; }
-    
-    /* Rutnätet */
+    /* Mindre rutor på mobil för att slippa scroll */
     .fc-daygrid-day-frame {
-        min-height: 50px !important; /* Ännu lägre på mobil */
+        min-height: 50px !important; 
+        display: flex; flex-direction: column; align-items: center;
     }
     
-    /* Prickarna */
-    .fc-mobile-dot {
-        width: 6px; height: 6px; border-radius: 50%; margin: 1px;
-    }
+    /* Centrera prickarna */
     .fc-daygrid-day-events {
+        margin-bottom: 0 !important;
         display: flex; flex-wrap: wrap; justify-content: center; gap: 2px;
     }
+    
+    /* Ta bort marginaler på event-länken */
+    .fc-daygrid-event-harness { margin: 0 !important; }
 }
