@@ -4183,9 +4183,6 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     overflow: hidden;
     text-overflow: ellipsis; 
     display: block;
-    
-    /* Tvingar texten att ta färgen från inline-stylen */
-    color: inherit !important;
 }
 
 .fc-event-text {
@@ -4221,3 +4218,4 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
         margin-top: 2px !important;
     }
 }
+
