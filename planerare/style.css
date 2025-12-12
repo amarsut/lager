@@ -3832,3 +3832,55 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     top: 50% !important;
     transform: translateY(-50%) !important;
 }
+
+/* --- FIX 1: MÄRKESVÄLJARE (Alltid överst) --- */
+/* Måste vara högre än Kundmodalen (200001) */
+#brandSelectModal {
+    z-index: 300000 !important; 
+}
+
+/* --- FIX 2: ÅTERSTÄLL MENY-GRID I INSTÄLLNINGAR --- */
+.menu-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important; /* Tvinga två kolumner */
+    gap: 12px !important;
+    padding: 0 4px !important;
+    margin-bottom: 24px !important;
+}
+
+.menu-card {
+    background: #fff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 12px !important;
+    padding: 16px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 10px !important;
+    cursor: pointer !important;
+    transition: transform 0.1s !important;
+}
+.menu-card:active { transform: scale(0.96) !important; background: #f8fafc !important; }
+
+.menu-icon-box {
+    width: 48px !important; height: 48px !important;
+    border-radius: 12px !important;
+    display: flex !important; align-items: center !important; justify-content: center !important;
+}
+.menu-icon-box svg { width: 24px !important; height: 24px !important; }
+.menu-card span { font-size: 0.9rem !important; font-weight: 600 !important; color: #1e293b !important; }
+
+/* Färgteman */
+.menu-icon-box.blue   { background: #eff6ff !important; color: #3b82f6 !important; }
+.menu-icon-box.orange { background: #fff7ed !important; color: #f97316 !important; }
+.menu-icon-box.purple { background: #f3e8ff !important; color: #a855f7 !important; }
+.menu-icon-box.green  { background: #f0fdf4 !important; color: #22c55e !important; }
+
+
+/* --- FIX 3: JOBB-MODAL PÅ MOBIL (ÖVER KUND) --- */
+@media (max-width: 768px) {
+    /* Måste vara högre än kundmodalen (200001) */
+    #jobModal {
+        z-index: 300000 !important; 
+    }
+}
