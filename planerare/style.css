@@ -4042,137 +4042,255 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 
 /*KALENDERVY*/
 
-/* Primary colors */
-  --sx-color-primary: hsl(var(--primary));
-  --sx-color-on-primary: hsl(var(--primary-foreground));
-  --sx-color-primary-container: hsl(var(--muted));
-  --sx-color-on-primary-container: hsl(var(--muted-foreground));
+/* =======================================================
+   KALENDER: PREMIUM THEME (Shadcn Style) & MOBILFIX
+   ======================================================= */
 
-  /* Secondary colors */
-  --sx-color-secondary: hsl(var(--secondary));
-  --sx-color-on-secondary: hsl(var(--secondary-foreground));
-  --sx-color-secondary-container: hsl(var(--accent));
-  --sx-color-on-secondary-container: hsl(var(--accent-foreground));
-
-  /* Tertiary colors */
-  --sx-color-tertiary: hsl(var(--muted));
-  --sx-color-on-tertiary: hsl(var(--muted-foreground));
-  --sx-color-tertiary-container: hsl(var(--accent));
-  --sx-color-on-tertiary-container: hsl(var(--accent-foreground));
-
-  /* Surface colors */
-  --sx-color-surface: hsl(var(--background));
-  --sx-color-surface-dim: hsl(var(--muted));
-  --sx-color-surface-bright: hsl(var(--card));
-  --sx-color-on-surface: hsl(var(--foreground));
-  --sx-color-surface-container: hsl(var(--card));
-  --sx-color-surface-container-low: hsl(var(--muted));
-  --sx-color-surface-container-high: hsl(var(--accent));
-
-  /* Background colors */
-  --sx-color-background: hsl(var(--background));
-  --sx-color-on-background: hsl(var(--foreground));
-
-  /* Utility colors */
-  --sx-color-outline: hsl(var(--border));
-  --sx-color-outline-variant: hsl(var(--border));
-  --sx-color-shadow: hsl(var(--border));
-  --sx-color-surface-tint: hsl(var(--primary));
-
-  /* Neutral colors */
-  --sx-color-neutral: hsl(var(--foreground));
-  --sx-color-neutral-variant: hsl(var(--muted-foreground));
-
-  /* Internal colors */
-  --sx-internal-color-gray-ripple-background: hsl(var(--muted));
-  --sx-internal-color-light-gray: hsl(var(--muted));
-  --sx-internal-color-text: hsl(var(--foreground));
-
-  /* Radius */
-  --sx-rounding-extra-small: 0.5rem;
-  --sx-rounding-small: 0.75rem;
-  --sx-rounding-extra-large: 1rem;
-
-  /* Padding */
-  --sx-spacing-padding1: 2px;
-  --sx-spacing-padding2: 4px;
-  --sx-spacing-padding3: 8px;
-  --sx-spacing-padding4: 10px;
-  --sx-spacing-padding6: 12px;
-  --sx-spacing-modal-padding: 14px;
+/* --- 1. DEFINIERA FÄRGER & VARIABLER (Översatt från din kod) --- */
+#calendarView {
+    /* Basfärger */
+    --sx-color-primary: #3b82f6;          /* Din blå färg */
+    --sx-color-on-primary: #ffffff;
+    --sx-color-primary-container: #eff6ff;
+    --sx-color-on-primary-container: #1e3a8a;
+    
+    --sx-color-secondary: #f1f5f9;
+    --sx-color-on-secondary: #0f172a;
+    
+    --sx-color-surface: #ffffff;          /* Bakgrund */
+    --sx-color-surface-dim: #f8fafc;      /* Dimmed bakgrund */
+    --sx-color-on-surface: #0f172a;       /* Text */
+    
+    --sx-color-outline: #e2e8f0;          /* Ramar */
+    --sx-color-outline-variant: #e2e8f0;
+    
+    --sx-color-shadow: rgba(0, 0, 0, 0.05);
+    
+    /* Radius & Spacing */
+    --sx-rounding-extra-small: 6px;
+    --sx-rounding-small: 8px;
+    --sx-rounding-extra-large: 12px;
+    
+    /* Layout */
+    background: var(--sx-color-surface);
+    border: 1px solid var(--sx-color-outline);
+    border-radius: var(--sx-rounding-extra-large);
+    height: 850px;
+    padding: 0;
+    overflow: hidden;
+    font-family: 'Inter', sans-serif;
 }
 
-.sx-react-calendar-wrapper {
-  width: 100%;
-  max-width: 100%;
-  /* spacing.20 is because the header is spacing.16 + spacing.4 for sidebar padding */
-  height: calc(100svh - theme(spacing.20));
-  margin: 0;
+/* --- 2. HEADER & KNAPPAR (Exakt som Premium) --- */
+
+.sx__calendar-header {
+    display: flex !important;
+    align-items: center !important;
+    padding: 20px 24px !important;
+    background-color: var(--sx-color-surface);
+    border-bottom: 1px solid var(--sx-color-outline);
+    gap: 12px;
 }
 
-.sx__calendar {
-  border: none;
+/* Pilarna & Idag-knappen */
+.sx__chevron-wrapper, 
+.sx__today-button {
+    min-width: 36px !important;
+    height: 36px !important;
+    border-radius: var(--sx-rounding-extra-small) !important;
+    border: 1px solid var(--sx-color-outline) !important;
+    background-color: var(--sx-color-surface) !important;
+    box-shadow: 0 1px 2px var(--sx-color-shadow);
+    color: var(--sx-color-on-surface) !important;
+    
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-weight: 500 !important;
+    font-size: 0.85rem !important;
+    transition: background 0.1s;
 }
 
-.sx__view-selection-items {
-  border-radius: var(--sx-rounding-small);
-  overflow: hidden;
-  margin-top: 10px;
-  box-shadow: none;
-  border-width: 1px;
-  border-color: hsl(var(--border));
+/* Dölj texten i pilarna för att slippa dubbla rutor */
+.sx__chevron-wrapper { font-size: 0 !important; }
+.sx__chevron-wrapper svg { width: 18px; height: 18px; color: #64748b; }
+
+/* Hover */
+.sx__chevron-wrapper:hover, 
+.sx__today-button:hover {
+    background-color: #f8fafc !important;
+    border-color: #cbd5e1 !important;
 }
 
+/* Labels "View" och "Date" */
+.sx__view-selection,
+.sx__date-picker-wrapper {
+    position: relative;
+    margin-top: 14px;
+}
+.sx__view-selection::before {
+    content: "Vy"; position: absolute; top: -18px; left: 2px;
+    font-size: 0.7rem; color: #64748b; font-weight: 600;
+}
+.sx__date-picker-wrapper::before {
+    content: "Datum"; position: absolute; top: -18px; left: 2px;
+    font-size: 0.7rem; color: #64748b; font-weight: 600;
+}
+
+/* Dropdown-knapparna */
+.sx__view-selection,
+.sx__date-picker-wrapper {
+    height: 36px !important;
+    border-radius: var(--sx-rounding-extra-small) !important;
+    border: 1px solid var(--sx-color-outline) !important;
+    background-color: var(--sx-color-surface) !important;
+    box-shadow: 0 1px 2px var(--sx-color-shadow);
+    display: flex; align-items: center; padding: 0 10px !important;
+    min-width: 120px;
+}
+
+.sx__date-picker__selected-date,
+.sx__view-selection__selected-item {
+    font-size: 0.9rem !important;
+    font-weight: 500 !important;
+    color: #0f172a !important;
+    text-transform: capitalize !important;
+}
+
+/* Rubriken "December 2025" */
+.sx__calendar-header-content {
+    font-size: 1.25rem !important;
+    font-weight: 600 !important;
+    color: #0f172a;
+    text-transform: capitalize !important;
+    margin-right: auto !important; 
+    margin-left: 8px !important;
+}
+
+/* --- 3. DATUMVÄLJAREN (Popupen från din kod) --- */
 .sx__date-picker-popup {
-  border-radius: var(--sx-rounding-small);
-  overflow: hidden;
-  margin-top: 10px;
-  box-shadow: none;
-  border-width: 1px;
-  border-color: hsl(var(--border));
+    border-radius: var(--sx-rounding-small) !important;
+    overflow: hidden;
+    margin-top: 4px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+    border: 1px solid var(--sx-color-outline) !important;
+    width: 280px !important;
+    padding: 10px !important;
 }
 
-
-.sx__event-modal.sx__event-modal-default {
-  overflow: hidden;
-  box-shadow: none;
-  border-width: 1px;
-  border-color: hsl(var(--border));
+/* Dagarna i popupen */
+.sx__date-picker__day {
+    border-radius: var(--sx-rounding-extra-small) !important; /* Fyrkantig */
+    width: 32px !important; height: 32px !important;
+    font-size: 0.85rem !important;
+    color: #334155;
+}
+.sx__date-picker__day:hover:not(.is-selected) {
+    background-color: #f1f5f9 !important;
+}
+.sx__date-picker__day.is-selected {
+    background-color: var(--sx-color-primary) !important;
+    color: white !important;
 }
 
-.sx__forward-backward-navigation {
-  display: flex;
-  align-items: center;
-  justify-self: center;
-  gap: 6px;
+/* --- 4. RUTNÄT & EVENT --- */
+.sx__month-grid-day {
+    border-color: #f1f5f9 !important;
+}
+.sx__event {
+    border: none !important;
+    border-left: 3px solid !important;
+    border-radius: 4px !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    padding: 2px 6px !important;
+    font-size: 0.75rem !important;
+    font-weight: 500 !important;
+    background-color: var(--sx-event-color-container); /* Använder eventets bakgrund */
 }
 
-.sx__chevron-wrapper {
-  /* height: 100%;
-  width: 100%; */
-  min-width: 39px;
-  min-height: 39px;
-  border-radius: var(--sx-rounding-extra-small);
-}
-
-.sx__chevron.sx__chevron--next {
-  border-width: 0.1rem 0.1rem 0 0;
-}
-
-.sx__chevron.sx__chevron--previous {
-  border-width: 0.1rem 0.1rem 0 0;
-}
-
-.sx__date-input-chevron {
-  content: url("data:image/svg+xml,%3c%3fxml version='1.0' encoding='utf-8'%3f%3e%3c!-- Uploaded to: SVG Repo%2c www.svgrepo.com%2c Generator: SVG Repo Mixer Tools --%3e%3csvg width='800px' height='800px' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M6 9L12 15L18 9' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3e%3c/svg%3e");
-}
-
-.dark .sx__date-input-chevron {
-  content: url("data:image/svg+xml,%3c%3fxml version='1.0' encoding='utf-8'%3f%3e%3c!-- Uploaded to: SVG Repo%2c www.svgrepo.com%2c Generator: SVG Repo Mixer Tools --%3e%3csvg width='800px' height='800px' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M6 9L12 15L18 9' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3e%3c/svg%3e");
-}
-
-
-.sx__ripple::before,
-.sx__ripple::after {
+/* Ta bort "Ripple" effekt (från din kod) */
+.sx__ripple::before, .sx__ripple::after {
   all: unset !important;
+}
+
+/* --- 5. MOBILVYN (Kritisk fix) --- */
+@media (max-width: 768px) {
+    
+    #calendarView {
+        height: calc(100vh - 130px) !important;
+        border: none !important;
+        border-radius: 0 !important;
+        display: flex; flex-direction: column;
+    }
+    
+    .sx__calendar-wrapper { height: 100% !important; }
+
+    /* HEADER PÅ MOBIL - GRID LAYOUT */
+    .sx__calendar-header {
+        padding: 12px 16px !important;
+        display: grid !important;
+        grid-template-columns: auto 1fr auto;
+        grid-template-areas: 
+            "nav controls view"
+            "title picker picker";
+        gap: 12px;
+        height: auto !important;
+        align-items: center !important;
+    }
+
+    /* Placering */
+    .sx__today-button { grid-area: nav; width: auto !important; }
+    
+    .sx__header-navigation {
+        grid-area: controls; display: flex; gap: 8px;
+    }
+    .sx__chevron-wrapper { width: 40px !important; height: 40px !important; } /* Större pilar */
+
+    .sx__view-selection { 
+        grid-area: view; margin: 0 !important; 
+        min-width: auto !important; width: auto !important;
+        padding: 0 8px !important;
+    }
+    /* Dölj texten "Månad" på mobil, visa bara ikonen om du vill, annars låt vara */
+    
+    .sx__calendar-header-content {
+        grid-area: title;
+        margin: 0 !important; 
+        font-size: 1.1rem !important;
+        text-align: left;
+    }
+
+    .sx__date-picker-wrapper {
+        grid-area: picker;
+        margin: 0 !important;
+        width: 100% !important;
+    }
+
+    /* Dölj labels på mobil */
+    .sx__view-selection::before, .sx__date-picker-wrapper::before { display: none !important; }
+
+    /* RUTNÄTET PÅ MOBIL */
+    .sx__view-container { flex: 1; overflow-y: auto; background-color: #fff; }
+    .sx__month-grid-day { min-height: 60px !important; padding: 2px !important; display: flex; flex-direction: column; align-items: center; }
+    
+    /* EVENT SOM PRICKAR (DOTS) */
+    .sx__event {
+        width: 8px !important; height: 8px !important;
+        min-height: 0 !important; padding: 0 !important;
+        border-radius: 50% !important;
+        margin: 1px !important;
+        display: inline-block !important;
+        color: transparent !important;
+        border: none !important;
+        background-color: var(--sx-event-color, #3b82f6); /* Fallback blå */
+    }
+    
+    /* Dölj text och tider i eventen */
+    .sx__event-title, .sx__event-time { display: none !important; }
+    
+    /* Behållare för prickar */
+    .sx__month-grid-day__events {
+        display: flex !important; flex-wrap: wrap !important; justify-content: center; width: 100%;
+    }
 }
