@@ -4043,7 +4043,7 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 /*KALENDERVY*/
 
 /* =======================================================
-   FULLCALENDAR: COLOR POP EDITION (FINAL)
+   FULLCALENDAR: COLOR TEXT EDITION (FINAL)
    ======================================================= */
 
 #calendarView {
@@ -4098,7 +4098,6 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 }
 .fc-today-button:hover { background-color: #f8fafc !important; border-color: #cbd5e1 !important; }
 
-/* Pilar */
 .fc-prev-button, .fc-next-button {
     background: transparent !important;
     border: none !important;
@@ -4125,7 +4124,6 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     border-color: #f1f5f9 !important;
 }
 
-/* Rubriker (Mån, Tis) */
 .fc-col-header-cell-cushion {
     font-size: 0.75rem;
     color: #94a3b8;
@@ -4136,7 +4134,6 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 }
 .fc-col-header-cell { border-bottom: none !important; }
 
-/* Datum (Siffra) */
 .fc-daygrid-day-top {
     justify-content: center !important;
     padding-top: 4px !important;
@@ -4148,7 +4145,6 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     text-decoration: none !important;
 }
 
-/* Idag */
 .fc-day-today { background-color: transparent !important; }
 .fc-day-today .fc-daygrid-day-number {
     background-color: #3b82f6;
@@ -4160,13 +4156,12 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     font-weight: 600 !important;
 }
 
-/* Rutorna */
 .fc-daygrid-day-frame {
     min-height: 100px !important; 
     border-top: 1px solid #f1f5f9; 
 }
 
-/* --- EVENT DESIGN (FÄRGKORRIGERING) --- */
+/* --- EVENT DESIGN (FÄRGAD TEXT) --- */
 .fc-daygrid-event {
     margin: 2px 4px !important;
     background: transparent !important;
@@ -4182,8 +4177,8 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     /* Textinställningar */
     font-size: 0.75rem;
     
-    /* VIKTIGT: 500 gör färgen starkare/tydligare utan att vara "Fetstil" (700) */
-    font-weight: 500 !important; 
+    /* VIKTIGT: 600 gör färgen starkare och mer synlig */
+    font-weight: 600 !important; 
     
     line-height: 1.3;
     white-space: nowrap;
