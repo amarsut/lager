@@ -4211,18 +4211,12 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
         height: auto !important;
     }
 
-    /* Header padding */
     .fc-header-toolbar {
         padding: 10px 12px !important;
         justify-content: space-between !important;
     }
     
-    /* Justera titeln på mobil om du vill ha den ännu tunnare/mindre där */
-    .fc-toolbar-title { 
-        font-size: 1.1rem !important; 
-        margin-left: 0 !important; 
-        font-weight: 400 !important; /* Säkerställ att den är tunn även här */
-    }
+    .fc-toolbar-title { font-size: 1.1rem !important; margin-left: 0 !important; }
     
     /* Rutorna */
     .fc-daygrid-day-frame {
@@ -4230,27 +4224,31 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
         padding-bottom: 4px; /* Lite luft i botten */
     }
     
-    /* --- HÄR SKAPAR VI LINJERNA --- */
+    /* --- HÄR ÄR LINJE-FIXEN --- */
     
-    /* Behållaren: Stapla linjerna PÅ HÖJDEN (Samsung-style) */
+    /* Behållaren: Stapla linjerna PÅ HÖJDEN och TÄTT */
     .fc-daygrid-day-events {
         display: flex !important; 
         flex-direction: column !important; /* Stapla vertikalt */
         align-items: center !important;    /* Centrera */
         justify-content: flex-start;
-        gap: 2px; /* Avstånd mellan linjerna */
+        
+        /* FIX: Mindre mellanrum mellan linjerna (var 2px) */
+        gap: 1px !important; 
+        
         margin-top: 2px !important;
-        min-height: 12px; /* Reservera plats så rutan inte kollapsar */
+        min-height: 12px;
     }
 
-    /* Själva linjen */
+    /* Själva linjen: BREDARE */
     .fc-mobile-dot {
-        width: 16px !important;  /* Bredd på strecket */
-        height: 3px !important;  /* Tjocklek */
-        border-radius: 2px !important; /* Lite rundade hörn */
+        /* FIX: Bredare (var 6px, nu 24px) */
+        width: 24px !important;  
+        
+        height: 3px !important; 
+        border-radius: 2px !important;
         margin: 0 !important;
-        flex-shrink: 0; /* Förhindra att de krymps */
+        flex-shrink: 0;
     }
 }
-
 
