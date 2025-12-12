@@ -4043,240 +4043,180 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 /*KALENDERVY*/
 
 /* =======================================================
-   KALENDER DESIGN SYSTEM (FINAL FIX)
+   KALENDER DESIGN (REPARATION & SHADCN STYLE)
    ======================================================= */
 
-/* --- Container --- */
 #calendarView {
     background: white;
-    border-radius: 12px;
+    border-radius: 8px;
     border: 1px solid #e2e8f0;
-    height: 850px; /* Datorhöjd */
+    /* DATOR: Fast höjd för stabilitet */
+    height: 850px; 
     padding: 0;
     overflow: hidden;
     font-family: 'Inter', sans-serif;
+    --sx-color-primary: #3b82f6; /* Blå accentfärg */
 }
 
-/* --- 1. HEADER (Fixar layouten) --- */
+/* --- HEADER (Fixar dubbletterna) --- */
 .sx__calendar-header {
     display: flex !important;
-    align-items: flex-end !important; 
-    padding: 24px 24px 16px 24px !important;
+    align-items: center !important;
+    padding: 20px 24px !important;
     background-color: #fff;
     border-bottom: 1px solid #f1f5f9;
-    gap: 12px;
-    flex-wrap: nowrap !important;
+    gap: 16px;
+    margin-bottom: 0 !important;
 }
 
-/* --- 2. PILAR & IDAG-KNAPP (Fixar text-felet och dubbla rutor) --- */
+/* --- DATUM RUBRIK (December 2025) --- */
+.sx__calendar-header-content {
+    font-size: 1.5rem !important; /* Större och tunnare */
+    font-weight: 600 !important;
+    color: #0f172a;
+    text-transform: capitalize !important; /* Stor bokstav */
+    margin: 0 auto 0 0 !important; /* Vänsterställd, trycker knappar till höger */
+}
+
+/* --- NAVIGERINGSKNAPPAR (Pilar & Idag) --- */
 .sx__chevron-wrapper, 
 .sx__today-button {
     height: 36px !important;
-    width: 36px !important; /* Gör dem kvadratiska */
     background-color: #fff !important;
     border: 1px solid #e2e8f0 !important;
     border-radius: 6px !important;
     box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-    color: #334155 !important;
-    
-    /* DETTA LÖSER TEXT-PROBLEMET I BILD 2 */
-    font-size: 0 !important; /* Döljer texten "Föregående/Nästa" */
+    color: #0f172a !important;
+    transition: all 0.2s;
+    /* FIXAR DUBBLETTER: Tvinga texten att synas normalt eller dölj den */
+    font-size: 0.85rem !important; 
+    font-weight: 500 !important;
+}
+
+/* Pilar ska vara kvadratiska */
+.sx__chevron-wrapper {
+    width: 36px !important;
     display: flex !important;
     align-items: center;
     justify-content: center;
 }
 
-/* Se till att ikonen syns trots font-size 0 */
-.sx__chevron-wrapper svg,
-.sx__chevron-icon {
-    width: 18px !important;
-    height: 18px !important;
-    min-width: 18px; 
-}
+/* Dölj texten "Next"/"Previous" i pilarna, visa bara ikonen */
+.sx__chevron-wrapper span { 
+    display: none; 
+} 
 
-/* Hover-effekt */
 .sx__chevron-wrapper:hover, 
 .sx__today-button:hover {
     background-color: #f8fafc !important;
     border-color: #cbd5e1 !important;
 }
 
-/* Idag-knappen behöver texten, så vi återställer font-size där */
-.sx__today-button {
-    width: auto !important;
-    padding: 0 16px !important;
-    font-size: 0.85rem !important;
-    font-weight: 600 !important;
-}
+/* --- VY & DATUM VÄLJARE (Med etiketter ovanför) --- */
 
-/* --- 3. DATUM & VY VÄLJARE (Fixar dubbla rutor) --- */
-
-/* Själva texten "december 2025" */
-.sx__calendar-header-content {
-    font-size: 1.1rem !important;
-    font-weight: 700 !important;
-    color: #0f172a;
-    text-transform: capitalize !important;
-    margin: 0 auto 0 12px !important; /* Centrera inte, lägg till vänster om knapparna */
-    white-space: nowrap;
-}
-
-/* Behållare för knapparna till höger */
+/* Wrapper för View och Date */
 .sx__view-selection,
 .sx__date-picker-wrapper {
-    position: relative;
-    margin-top: 14px; /* Plats för label */
+    position: relative; /* För etiketten */
+    margin-top: 14px;   /* Plats för etiketten */
     height: 36px !important;
     background-color: #fff !important;
     border: 1px solid #e2e8f0 !important;
     border-radius: 6px !important;
     box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-    min-width: 120px;
-    display: flex; 
-    align-items: center;
-    padding: 0 12px !important;
+    min-width: 130px;
 }
 
-/* Labels "Vy" och "Datum" */
+/* Etiketter (View / Date) - Som i reklambilden */
 .sx__view-selection::before {
-    content: "Vy";
-    position: absolute; top: -18px; left: 0;
-    font-size: 0.7rem; color: #64748b; font-weight: 700; text-transform: uppercase;
+    content: "View";
+    position: absolute; top: -18px; left: 2px;
+    font-size: 0.7rem; color: #64748b; font-weight: 600;
 }
 .sx__date-picker-wrapper::before {
-    content: "Datum";
-    position: absolute; top: -18px; left: 0;
-    font-size: 0.7rem; color: #64748b; font-weight: 700; text-transform: uppercase;
+    content: "Date";
+    position: absolute; top: -18px; left: 2px;
+    font-size: 0.7rem; color: #64748b; font-weight: 600;
 }
 
-/* Text inuti knapparna */
 .sx__date-picker__selected-date,
 .sx__view-selection__selected-item {
     font-size: 0.9rem !important;
     font-weight: 500 !important;
-    color: #1e293b !important;
+    color: #0f172a !important;
     text-transform: capitalize !important;
 }
 
-/* --- 4. DATUMVÄLJAREN POPUP (Fixar Bild 3) --- */
+/* --- DATUMVÄLJAREN POPUP (Fixar Bild 3) --- */
 .sx__date-picker-popup {
-    width: 280px !important; /* Smalare */
-    padding: 10px !important;
-    border-radius: 8px !important;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1) !important;
     border: 1px solid #e2e8f0 !important;
+    border-radius: 8px !important;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+    width: 280px !important; /* Kompaktare */
+    padding: 12px !important;
 }
 
-/* Månadsrubrik i popup */
-.sx__date-picker__popup-header {
-    text-transform: capitalize !important;
-    font-weight: 700 !important;
-    font-size: 1rem !important;
-    padding-bottom: 10px !important;
-}
-
-/* Dagarna (Cirklar -> Rutor) */
 .sx__date-picker__day {
-    width: 32px !important;
-    height: 32px !important;
-    border-radius: 6px !important; /* Fyrkantiga med mjuka hörn */
-    font-size: 0.85rem !important;
+    border-radius: 6px !important; /* Inte runda cirklar, mjuka fyrkanter */
     font-weight: 500 !important;
     color: #334155;
-    margin: 2px !important;
+    width: 32px !important;
+    height: 32px !important;
 }
 
-.sx__date-picker__day:hover:not(.is-selected) {
-    background-color: #f1f5f9 !important;
-}
-
-/* Vald dag (Lila i din bild) */
+/* Vald dag (Lila/Blå) */
 .sx__date-picker__day.is-selected {
-    background-color: #6366f1 !important; /* Snygg indigo/lila */
+    background-color: #6366f1 !important; /* Lila accent från bild */
     color: white !important;
-    border-radius: 6px !important;
 }
 
-/* --- 5. RUTNÄT & EVENT --- */
-.sx__month-grid-day {
-    border-color: #f1f5f9 !important;
-}
-.sx__event {
-    border: none !important;
-    border-left: 3px solid !important;
-    border-radius: 3px !important;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-    padding: 2px 4px !important;
-    font-size: 0.75rem !important;
-    font-weight: 600 !important;
-    line-height: 1.3 !important;
-}
-
-/* --- 6. MOBILVYN (Fixar Bild 1) --- */
+/* --- MOBILVYN (Den kritiska fixen) --- */
 @media (max-width: 768px) {
     
     #calendarView {
-        /* Fyll hela skärmen minus header (60px) och meny (70px) */
-        height: calc(100vh - 130px) !important; 
+        /* VIKTIGT: Tvinga kalendern att fylla skärmen */
+        height: calc(100vh - 140px) !important; 
         margin: 0 !important;
         border: none !important;
         border-radius: 0 !important;
         display: flex; flex-direction: column;
     }
     
-    .sx__calendar-wrapper { height: 100% !important; }
+    .sx__calendar-wrapper { 
+        height: 100% !important; 
+        display: flex; flex-direction: column;
+    }
 
-    /* Headern på mobil */
+    /* Gör headern kompakt på mobil */
     .sx__calendar-header {
-        padding: 10px 12px !important;
+        padding: 12px !important;
         gap: 8px;
-        flex-wrap: wrap !important;
-        height: auto !important;
-        align-items: center !important;
+        flex-wrap: wrap;
     }
 
-    /* Visa Datum och Vy knapparna även på mobil, men gör dem mindre */
-    .sx__view-selection,
-    .sx__date-picker-wrapper {
-        display: flex !important;
-        min-width: auto !important;
-        width: auto !important;
-        padding: 0 8px !important;
-        height: 32px !important;
-        flex-grow: 1; /* Låt dem ta plats */
-    }
-    
-    /* Dölj labels på mobil för att spara höjd */
-    .sx__view-selection::before,
-    .sx__date-picker-wrapper::before {
-        display: none !important;
-    }
-    
-    /* Ta bort margin-top som var för labels */
-    .sx__view-selection,
-    .sx__date-picker-wrapper {
-        margin-top: 0 !important;
-    }
-
-    /* Rubriken */
+    /* Månadsrubriken */
     .sx__calendar-header-content {
-        width: 100%;
-        text-align: center;
-        margin: 0 0 8px 0 !important;
         font-size: 1.1rem !important;
+        width: 100%;
+        margin-bottom: 4px !important;
+        text-align: center !important;
         order: -1; /* Lägg rubriken överst */
     }
 
-    /* Gör pilar stora för fingrar */
+    /* Dölj knapparna "Vy" och "Datum" för att spara plats på mobil 
+       (Man kan ändå bläddra med pilarna) */
+    .sx__view-selection,
+    .sx__date-picker-wrapper {
+        display: none !important;
+    }
+
+    /* Gör pilarna stora och tryckvänliga */
     .sx__chevron-wrapper {
-        width: 40px !important; 
-        height: 40px !important;
+        width: 44px !important; 
+        height: 44px !important;
+        flex-grow: 1;
     }
     
-    /* Göm "Idag"-knappen på mobil för att spara plats om det är trångt, 
-       annars låt den vara */
-    /* .sx__today-button { display: none !important; } */
-
     /* Grid-innehållet */
     .sx__view-container {
         flex: 1;
@@ -4284,8 +4224,15 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
         background-color: #fff;
     }
 
-    /* Rutorna */
+    /* Rutorna i månadsvyn (Mindre padding så de får plats) */
     .sx__month-grid-day {
-        min-height: 70px !important; /* Tillräckligt höga */
+        min-height: 70px !important; 
+    }
+    
+    /* Eventen i mobilen */
+    .sx__event {
+        padding: 1px 4px !important;
+        font-size: 0.7rem !important;
+        border-radius: 2px !important;
     }
 }
