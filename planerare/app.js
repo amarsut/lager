@@ -2040,6 +2040,7 @@ function compressImage(file) {
 
 // Enkel bild-zoom funktion
 window.openImageZoom = function(src) {
+	addHistoryState();
     const modal = document.getElementById('imageZoomModal');
     const imgMain = document.getElementById('mmImgMain');
     const closeBtn = document.getElementById('mmCloseBtn');
@@ -2197,6 +2198,7 @@ function toggleCardActions(jobId, event) {
 // --- FUNKTIONER FÖR ATT VÄLJA BILMÄRKE ---
 
 function openBrandSelector(regnr) {
+	addHistoryState();
     const modal = document.getElementById('brandSelectModal');
     const grid = document.getElementById('brandGrid');
     const searchInput = document.getElementById('brandSearchInput');
