@@ -4042,3 +4042,176 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 
 /*KALENDERVY*/
 
+/* =======================================================
+   KALENDER STYLING (CLEAN & COMPACT)
+   ======================================================= */
+
+#calendarView {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    height: 800px;
+    padding: 0;
+    overflow: hidden;
+    font-family: 'Inter', sans-serif;
+}
+
+/* --- DATOR & MOBIL: Fixa knapparna (< >) --- */
+/* Detta gör knapparna fyrkantiga, vita och tar bort eventuell text */
+.sx__chevron-wrapper {
+    background-color: #fff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 6px !important;
+    width: 36px !important;
+    height: 36px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    cursor: pointer;
+}
+.sx__chevron-wrapper:hover {
+    background-color: #f8fafc !important;
+    border-color: #cbd5e1 !important;
+}
+/* Dölj text (Next/Prev) inuti pilarna om det finns */
+.sx__chevron-wrapper span { display: none !important; }
+/* Se till att ikonen syns */
+.sx__chevron-wrapper svg { width: 18px; height: 18px; color: #334155; }
+
+/* "Idag" och "Månad" knappar */
+.sx__today-button, .sx__view-selection {
+    background-color: #fff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 6px !important;
+    height: 36px !important;
+    font-weight: 600 !important;
+    color: #334155 !important;
+    text-transform: capitalize !important;
+}
+
+/* --- DATUMVÄLJAREN (Popupen) --- */
+.sx__date-picker-wrapper {
+    background-color: #fff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 6px !important;
+    height: 36px !important;
+}
+/* Rubriken i popupen (December 2025) */
+.sx__date-picker__popup-header {
+    text-transform: capitalize !important;
+    font-weight: 700 !important;
+}
+/* Dagarna i popupen - Fyrkantiga med mjuka hörn istället för runda */
+.sx__date-picker__day {
+    border-radius: 6px !important; 
+    width: 32px !important; height: 32px !important;
+    font-size: 0.9rem !important;
+}
+.sx__date-picker__day.is-selected {
+    background-color: #6366f1 !important; /* Lila accent */
+    color: white !important;
+}
+
+/* --- ENDAST MOBILVY (Max 768px) --- */
+@media (max-width: 768px) {
+    
+    #calendarView {
+        /* Fyll hela skärmen minus header (60px) och bottenmeny (70px) */
+        height: calc(100vh - 130px) !important;
+        border: none !important;
+        border-radius: 0 !important;
+    }
+
+    /* 1. Header Layout - KOMPAKT GRID PÅ 2 RADER */
+    .sx__calendar-header {
+        display: grid !important;
+        /* Rad 1: Idag | < > | Månad */
+        /* Rad 2: Rubrik (Månad År) | Datumväljare */
+        grid-template-areas: 
+            "nav controls view"
+            "title picker";
+        grid-template-columns: auto 1fr auto; /* Flexibel mitten */
+        gap: 8px 12px;
+        padding: 10px 12px !important;
+        background: #fff;
+        border-bottom: 1px solid #f1f5f9;
+        align-items: center;
+    }
+
+    /* Placera elementen i gridden */
+    .sx__today-button { grid-area: nav; width: auto !important; }
+    
+    /* Pilarna (< >) */
+    .sx__header-navigation {
+        grid-area: controls;
+        display: flex; gap: 8px;
+    }
+    
+    /* Månad/Vecka väljare */
+    .sx__view-selection { grid-area: view; margin: 0 !important; }
+
+    /* Rubriken "december 2025" */
+    .sx__calendar-header-content {
+        grid-area: title;
+        font-size: 1rem !important;
+        font-weight: 700 !important;
+        text-transform: capitalize !important;
+        margin: 0 !important;
+        text-align: left;
+        white-space: nowrap;
+    }
+
+    /* Datumväljaren (Dropdown) */
+    .sx__date-picker-wrapper {
+        grid-area: picker;
+        margin: 0 !important;
+        width: 100% !important;
+    }
+
+    /* 2. EVENT SOM PRICKAR (DOTS) */
+    .sx__event {
+        /* Krymp eventet till en liten cirkel */
+        width: 8px !important;
+        height: 8px !important;
+        min-height: 0 !important;
+        padding: 0 !important;
+        border-radius: 50% !important;
+        
+        /* Centrera i rutan */
+        margin: 2px auto !important; 
+        display: inline-block !important; /* Låt dem ligga bredvid varandra om plats finns */
+        
+        /* Dölj all text och ramar */
+        color: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        background-color: var(--sx-event-color, #3b82f6); /* Använd eventets färg */
+        
+        /* Hack för att dölja titeln men behålla färgen */
+        overflow: hidden;
+    }
+    
+    /* Göm titeln helt för säkerhets skull */
+    .sx__event-title, .sx__event-time {
+        display: none !important;
+    }
+
+    /* Fixa rutnätet så det ser bra ut */
+    .sx__month-grid-day {
+        min-height: 60px !important; /* Lagom höjd för att se prickarna */
+        padding: 2px !important;
+        display: flex;
+        flex-direction: column;
+        align-items: center; /* Centrera datum och prickar */
+    }
+    
+    /* Behållare för eventen i rutan */
+    .sx__month-grid-day__events {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        justify-content: center;
+        gap: 3px; /* Avstånd mellan prickarna */
+        width: 100%;
+    }
+}
