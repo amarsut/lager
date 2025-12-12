@@ -4404,7 +4404,7 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 	    /* Scrollning: Detta gör att du kan scrolla INUTI rutan */
 	    overflow-y: auto; 
 	    padding: 20px;
-	    padding-bottom: 80px; /* Extra luft i botten för scroll */
+	    padding-bottom: 75px; /* Extra luft i botten för scroll */
 	}
 	
 	#selectedDayView.show {
