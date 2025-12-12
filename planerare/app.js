@@ -299,6 +299,8 @@ function renderDashboard() {
     // 2. Uppdatera Stats
     updateStatsCounts(allJobs);
 
+	updateCustomerDatalist();
+
     const container = document.getElementById('jobListContainer');
     const isMobile = window.innerWidth <= 768; 
     
@@ -463,7 +465,9 @@ function createJobCard(job) {
             <div class="card-body">
                 <div class="info-row">
                     <span class="row-label">${iUser} Namn</span>
-                    <span class="row-value">${nameValueHtml}</span>
+                    <span class="row-value" onclick="event.stopPropagation(); openCustomerByName('${customer}')" style="cursor:pointer; text-decoration:underline; text-decoration-color:#cbd5e1; text-underline-offset:3px;">
+					    ${nameValueHtml}
+					</span>
                 </div>
                 <div class="info-row"><span class="row-label">${iBox} Paket</span><span class="row-value">${paket}</span></div>
                 <div class="info-row"><span class="row-label" title="Mätarställning">${iGauge} Mätarst.</span><span class="row-value">${mileage}</span></div>
@@ -530,9 +534,10 @@ function createJobRow(job) {
             <td>${fullDate}</td>
             <td>
                 <div class="customer-link">
-                    <svg class="icon-sm" style="color: ${iconColor}"><use href="${iconType}"></use></svg>
-                    <span>${job.kundnamn}</span>
-                </div>
+			    <div class="customer-link" onclick="event.stopPropagation(); openCustomerByName('${job.kundnamn}')" style="cursor:pointer;">
+				    <svg class="icon-sm" style="color: ${iconColor}"><use href="${iconType}"></use></svg>
+				    <span style="text-decoration:underline; text-decoration-color:#e2e8f0; text-underline-offset:3px;">${job.kundnamn}</span>
+				</div>
             </td>
             <td>${regPlate}</td>
             <td style="text-align:right" class="money-related">${job.kundpris || 0} kr</td>
@@ -2766,4 +2771,60 @@ function openCustomerModal(customer) {
 
     // Visa modal
     modal.classList.add('show');
+}
+
+/* =================================================================
+   KUND-LÄNKAR & AUTOCOMPLETE
+   ================================================================= */
+
+// 1. Öppna kundprofil genom att klicka på namnet
+function openCustomerByName(name) {
+    if (!name) return;
+    
+    // Använd din befintliga funktion för att hämta databasen
+    const db = getCustomerDatabase(); 
+    
+    // Hitta kunden (okänsligt för stora/små bokstäver)
+    const customer = db.find(c => c.name.toLowerCase() === name.toLowerCase());
+    
+    if (customer) {
+        openCustomerModal(customer);
+    } else {
+        // Fallback om namnet inte matchar exakt (t.ex. stavfel i gamla jobb)
+        // Vi skapar en "tillfällig" profil så man ändå ser historiken för det namnet
+        const tempCustomer = {
+            name: name,
+            totalSpent: 0,
+            visitCount: 0,
+            lastVisit: null,
+            vehicles: new Set(),
+            history: allJobs.filter(j => j.kundnamn.toLowerCase() === name.toLowerCase())
+        };
+        // Räkna ut datan snabbt
+        tempCustomer.history.forEach(j => {
+            tempCustomer.totalSpent += (parseInt(j.kundpris) || 0);
+            if(j.regnr) tempCustomer.vehicles.add(j.regnr);
+        });
+        openCustomerModal(tempCustomer);
+    }
+}
+
+// 2. Uppdatera listan med förslag (Autocomplete)
+function updateCustomerDatalist() {
+    const dataList = document.getElementById('customerListOptions');
+    if (!dataList) return;
+
+    dataList.innerHTML = '';
+    
+    // Hämta unika namn från alla jobb
+    const uniqueNames = [...new Set(allJobs.map(j => j.kundnamn ? j.kundnamn.trim().toUpperCase() : ""))];
+    
+    // Sortera och skapa options
+    uniqueNames.sort().forEach(name => {
+        if(name.length > 1) { // Skippa tomma/korta
+            const option = document.createElement('option');
+            option.value = name;
+            dataList.appendChild(option);
+        }
+    });
 }
