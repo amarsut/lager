@@ -1,4 +1,4 @@
-// calendar.js - FullCalendar Version
+// calendar.js
 
 let calendar = null;
 
@@ -6,44 +6,41 @@ function mapJobsToEvents(jobs) {
     return jobs
         .filter(job => !job.deleted && job.status !== 'avbokad')
         .map(job => {
-            // Datumhantering
             let start = job.datum;
             if (!start.includes('T')) {
-                // Om tid saknas, sätt 08:00
                 start = `${job.datum}T${job.tid || '08:00'}`;
             } else {
-                // Fixa till standard ISO-format
                 start = start.replace(' ', 'T');
             }
             
-            // Färgkodning (Premium Pastel Look)
-            // Vi sätter "borderColor" till den starka färgen (vänsterkanten)
-            // och "backgroundColor" till den ljusa pastellen.
-            let borderColor = '#3b82f6'; // Standard Blå
+            // Färgkodning (HELA rutan färgad, inte bara kant)
+            // Vi använder en ljusare bakgrund och en mörkare kant/text för snygg kontrast
             let bgColor = '#eff6ff';     // Ljusblå
+            let borderColor = '#3b82f6'; // Stark blå
             let textColor = '#1e3a8a';   // Mörkblå text
             
             if (job.status === 'klar') { 
-                borderColor = '#10b981'; bgColor = '#ecfdf5'; textColor = '#064e3b'; 
+                bgColor = '#ecfdf5'; borderColor = '#10b981'; textColor = '#064e3b'; 
             }
             if (job.status === 'faktureras') { 
-                borderColor = '#8b5cf6'; bgColor = '#f5f3ff'; textColor = '#4c1d95'; 
+                bgColor = '#f5f3ff'; borderColor = '#8b5cf6'; textColor = '#4c1d95'; 
             }
             if (job.status === 'offererad') { 
-                borderColor = '#f59e0b'; bgColor = '#fffbeb'; textColor = '#78350f'; 
+                bgColor = '#fffbeb'; borderColor = '#f59e0b'; textColor = '#78350f'; 
             }
 
             return {
                 id: job.id,
-                title: job.kundnamn, // Titel
+                title: job.kundnamn,
                 start: start,
                 extendedProps: {
-                    time: start.split('T')[1].substring(0, 5), // Spara tiden separat för visning
+                    time: start.split('T')[1].substring(0, 5),
                     status: job.status
                 },
                 backgroundColor: bgColor,
                 borderColor: borderColor,
-                textColor: textColor
+                textColor: textColor,
+                classNames: ['fc-event-custom'] // Lägg till klass för extra styling
             };
         });
 }
@@ -52,62 +49,52 @@ export function initCalendar(elementId, jobsData, onEventClickCallback) {
     const calendarEl = document.getElementById(elementId);
     if (!calendarEl) return;
 
-    // Rensa om den redan finns
-    if (calendar) {
-        calendar.destroy();
-        calendar = null;
-    }
+    if (calendar) calendar.destroy();
 
-    // Kolla om vi är på mobil
     const isMobile = window.innerWidth <= 768;
     const events = mapJobsToEvents(jobsData);
 
     calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'dayGridMonth', // Alltid månadsvy som standard
-        locale: 'sv',                // Svenska
-        firstDay: 1,                 // Måndag
+        initialView: 'dayGridMonth',
+        locale: 'sv',
+        firstDay: 1,
+        
+        // KOMPAKTARE VY: Visa bara nödvändiga veckor (oftast 5 istället för 6)
+        fixedWeekCount: false, 
+        
+        // Header (Titel i mitten, knappar på sidorna)
         headerToolbar: {
-            left: 'prev,next today', // Knappar till vänster
-            center: 'title',         // Titel i mitten
-            right: ''                // Inget till höger (renare)
+            left: 'prev,next today', 
+            center: 'title',         
+            right: ''                
         },
-        buttonText: {
-            today: 'Idag',
-            month: 'Månad',
-            week: 'Vecka',
-            day: 'Dag'
-        },
-        height: 'auto',              // Låt den ta plats
-        contentHeight: isMobile ? 'auto' : 800, // Högre på dator
+        buttonText: { today: 'Idag' },
+        
+        // Höjdhantering
+        height: 'auto', // Anpassa höjden efter innehållet
+        contentHeight: 'auto', // Ingen scrollbar
+        
         events: events,
         
-        // --- ANPASSAT UTSEENDE PÅ EVENTEN ---
         eventContent: function(arg) {
             const isMob = window.innerWidth <= 768;
-            const color = arg.event.borderColor; // Den starka färgen
+            const color = arg.event.borderColor; 
             
-            // 1. MOBIL: Visa bara en prick (DOT)
             if (isMob) {
-                return { 
-                    html: `<div class="fc-mobile-dot" style="background-color: ${color};"></div>` 
-                };
-            } 
-            
-            // 2. DATOR: Visa Tid + Kund (PREMIUM BLOCK)
-            else {
+                return { html: `<div class="fc-mobile-dot" style="background-color: ${color};"></div>` };
+            } else {
                 const time = arg.event.extendedProps.time;
                 const title = arg.event.title;
-                // Vi bygger HTML manuellt för att få den färgade kanten
+                // Skapa en färgad "pille" på datorn
                 return { 
-                    html: `<div class="fc-custom-event-content">
-                             <span class="fc-event-time">${time}</span>
-                             <span class="fc-event-title">${title}</span>
+                    html: `<div class="fc-desktop-pill">
+                             <span class="fc-pill-time">${time}</span>
+                             <span class="fc-pill-title">${title}</span>
                            </div>` 
                 };
             }
         },
 
-        // Klickhantering
         eventClick: function(info) {
             if (onEventClickCallback) onEventClickCallback(info.event.id);
         }
