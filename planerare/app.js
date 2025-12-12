@@ -646,6 +646,34 @@ function setupEventListeners() {
 	    });
 	}
 
+	// --- KOPPLA KALENDER FRÅN MENY/INSTÄLLNINGAR ---
+    const menuBtnCalendar = document.getElementById('menuBtnCalendar');
+    if (menuBtnCalendar) {
+        menuBtnCalendar.addEventListener('click', () => {
+            // 1. Stäng menyn (viktigt!)
+            closeSettings(); 
+
+            // 2. Dölj andra vyer
+            const statBar = document.getElementById('statBar');
+            const timelineView = document.getElementById('timelineView');
+            const customersView = document.getElementById('customersView');
+            
+            if(statBar) statBar.style.display = 'none';
+            if(timelineView) timelineView.style.display = 'none';
+            if(customersView) customersView.style.display = 'none';
+            
+            // 3. Visa kalendern
+            const calView = document.getElementById('calendarView');
+            if(calView) calView.style.display = 'block';
+
+            // 4. Ladda kalendern
+            // Vi väntar 200ms så menyn hinner stängas snyggt innan vi ritar kalendern
+            setTimeout(() => {
+                initCalendar('calendar-wrapper', allJobs, openEditModal);
+            }, 200);
+        });
+    }
+
 	/*MER MENY I INSTÄLLNINGAR _ MOBIL*/
 	document.getElementById('menuBtnCustomers').addEventListener('click', () => {
 	    // 1. Stäng "Mer"-menyn
