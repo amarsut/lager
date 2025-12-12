@@ -57,7 +57,7 @@ function renderDayList(dateStr, events) {
     container.classList.add('show');
 
     if (!history.state || !history.state.dayListOpen) {
-        history.pushState({ dayListOpen: true }, null, window.location.href);
+        history.pushState({ uiState: 'calendar', dayListOpen: true }, null, window.location.href);
     }
 
     if (dayEvents.length === 0) {
@@ -250,15 +250,11 @@ export function initCalendar(elementId, jobsData, onEventClickCallback) {
     const isMobileStart = window.innerWidth <= 768;
     if (isMobileStart) {
         const today = new Date();
-        // Format: YYYY-MM-DD (viktigt för att hitta rätt element)
-        const dateStr = today.getFullYear() + '-' + 
-                        String(today.getMonth() + 1).padStart(2, '0') + '-' + 
-                        String(today.getDate()).padStart(2, '0');
+        const dateStr = today.toISOString().split('T')[0]; // Enklare format YYYY-MM-DD
     
-        // 1. Hitta dagens element och markera det
         const dayEl = document.querySelector(`.fc-day[data-date="${dateStr}"]`);
         if (dayEl) dayEl.classList.add('fc-day-selected');
-    
+        
         renderDayList(dateStr, events); 
     }
 
