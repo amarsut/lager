@@ -4243,7 +4243,7 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     /* Själva linjen: BREDARE */
     .fc-mobile-dot {
         /* FIX: Bredare (var 6px, nu 24px) */
-        width: 24px !important;  
+        width: 36px !important;  
         
         height: 3px !important; 
         border-radius: 2px !important;
@@ -4251,4 +4251,5 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
         flex-shrink: 0;
     }
 }
+
 
