@@ -3884,3 +3884,16 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
         z-index: 300000 !important; 
     }
 }
+
+/* --- FIX: TA BORT TOMRUM I FORDONSSMODALEN --- */
+/* Eftersom denna modal inte har knappar i botten ska den inte ha extra luft */
+#vehicleModal .modal-body {
+    padding-bottom: 20px !important; 
+}
+
+/* På mobil kan vi behöva ta hänsyn till "swipa-hem-strecket" längst ner */
+@media (max-width: 768px) {
+    #vehicleModal .modal-body {
+        padding-bottom: calc(20px + env(safe-area-inset-bottom)) !important;
+    }
+}
