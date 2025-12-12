@@ -2631,17 +2631,12 @@ async function adjustInventoryBalance(litersToDeduct) {
 // Generera kunddatabas från jobb
 function getCustomerDatabase() {
     const customers = {};
-    
-    // Filtrera bort raderade jobb
     const validJobs = allJobs.filter(j => !j.deleted);
 
     validJobs.forEach(job => {
-        // Normalisera namn
         let rawName = job.kundnamn || "Okänd";
-        // Ta bort extra mellanslag och gör första bokstav stor
         let name = rawName.trim();
         
-        // Skippa "Drop-in" eller tomma namn om du vill
         if(name.length < 2 || name.toLowerCase() === 'okänd') return;
 
         if (!customers[name]) {
@@ -2650,14 +2645,15 @@ function getCustomerDatabase() {
                 totalSpent: 0,
                 visitCount: 0,
                 lastVisit: null,
-                vehicles: new Set(), // Unika regnr
+                firstVisit: null, // NYTT: För att se om kunden är ny
+                vehicles: new Set(),
                 history: []
             };
         }
 
         const c = customers[name];
+        const jobDate = new Date(job.datum);
         
-        // Addera data
         c.totalSpent += (parseInt(job.kundpris) || 0);
         c.visitCount++;
         c.history.push(job);
@@ -2666,15 +2662,12 @@ function getCustomerDatabase() {
             c.vehicles.add(job.regnr.toUpperCase());
         }
 
-        // Kolla datum för "senast sedd"
-        const jobDate = new Date(job.datum);
-        if (!c.lastVisit || jobDate > c.lastVisit) {
-            c.lastVisit = jobDate;
-        }
+        // Uppdatera datum
+        if (!c.lastVisit || jobDate > c.lastVisit) c.lastVisit = jobDate;
+        if (!c.firstVisit || jobDate < c.firstVisit) c.firstVisit = jobDate;
     });
 
-    // Konvertera till array och sortera: VIP (mest pengar) först
-    return Object.values(customers).sort((a, b) => b.totalSpent - a.totalSpent);
+    return Object.values(customers); // Returnera o-sorterad lista här
 }
 
 /* --- HJÄLPFUNKTIONER FÖR FÄRGER --- */
@@ -2703,42 +2696,64 @@ function renderCustomerView(searchTerm = '') {
     const container = document.getElementById('customerGrid');
     if(!container) return;
     
-    container.innerHTML = '';
-    const customers = getCustomerDatabase();
-    const term = searchTerm.toLowerCase();
+    // Hämta sorteringsval
+    const sortMode = document.getElementById('customerSortSelect')?.value || 'spent';
+    const term = (searchTerm || document.getElementById('customerSearchInput')?.value || '').toLowerCase();
 
-    // Filtrera listan baserat på sökning
-    const filtered = customers.filter(c => {
-        // Sök på namn
+    container.innerHTML = '';
+    let customers = getCustomerDatabase();
+
+    // 1. Filtrera
+    let filtered = customers.filter(c => {
         if (c.name.toLowerCase().includes(term)) return true;
-        // Sök på deras bilar (om regnr finns i deras lista)
         const hasCar = Array.from(c.vehicles).some(reg => reg.toLowerCase().includes(term));
         return hasCar;
     });
 
-    // Om tomt
+    // 2. Sortera
+    filtered.sort((a, b) => {
+        if (sortMode === 'spent') return b.totalSpent - a.totalSpent; // Högst omsättning först
+        if (sortMode === 'visits') return b.visitCount - a.visitCount; // Flest besök först
+        if (sortMode === 'recent') return new Date(b.lastVisit) - new Date(a.lastVisit); // Senast besök först
+        if (sortMode === 'alpha') return a.name.localeCompare(b.name); // A-Ö
+        return 0;
+    });
+
     if (filtered.length === 0) {
         container.innerHTML = `
             <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #94a3b8;">
-                <svg style="width:48px; height:48px; margin-bottom:10px; opacity:0.5;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
                 <p>Inga kunder hittades.</p>
             </div>`;
         return;
     }
 
-    // Loopa igenom och skapa kort
+    const now = new Date();
+
+    // 3. Rendera
     filtered.forEach(c => {
-        // Skapa initialer (Max 2 bokstäver)
         const initials = c.name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
-        
-        // Färg-magi
         const avatarBg = stringToColor(c.name);
         const avatarColor = stringToTextColor(c.name);
-        
-        // Kolla VIP-status (> 20.000 kr) - Du kan ändra gränsen här
         const isVip = c.totalSpent > 20000;
         
-        // Räkna bilar
+        // --- LOGIK FÖR TAGGAR ---
+        let tagsHtml = '';
+        
+        // Passiv: Ej setts på 6 månader (180 dagar)
+        const daysSinceLast = (now - c.lastVisit) / (1000 * 60 * 60 * 24);
+        if (daysSinceLast > 180) {
+            tagsHtml += `<span class="status-pill pill-passive">Passiv</span>`;
+        } 
+        // Ny: Första besöket var inom 30 dagar
+        else if ((now - c.firstVisit) / (1000 * 60 * 60 * 24) < 30) {
+            tagsHtml += `<span class="status-pill pill-new">Ny</span>`;
+        }
+        
+        // Stammis: Mer än 5 besök (Kan kombineras med andra taggar)
+        if (c.visitCount >= 5) {
+            tagsHtml += `<span class="status-pill pill-loyal">Stammis</span>`;
+        }
+
         const carCount = c.vehicles.size;
         const carText = carCount === 1 ? '1 fordon' : `${carCount} fordon`;
 
@@ -2751,8 +2766,10 @@ function renderCustomerView(searchTerm = '') {
                 ${initials}
             </div>
             <div class="c-info">
-                <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
-                    <h3>${c.name}</h3>
+                <div style="display:flex; justify-content:space-between; width:100%; align-items:flex-start;">
+                    <div style="display:flex; flex-direction:column; align-items:flex-start;">
+                        <h3>${c.name} ${tagsHtml}</h3>
+                    </div>
                     ${isVip ? '<span style="font-size:1rem;" title="VIP Kund">⭐</span>' : ''}
                 </div>
                 <div class="c-meta">
