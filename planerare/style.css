@@ -4381,7 +4381,7 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 
 	#selectedDayView {
 	    position: fixed;
-	    bottom: 70px;       /* VIKTIGT: Nollställ top så den inte täcker hela skärmen */
+	    bottom: 100px;       /* VIKTIGT: Nollställ top så den inte täcker hela skärmen */
 	    bottom: 0;       /* Fäst i botten */
 	    left: 0; 
 	    right: 0;
@@ -4404,13 +4404,14 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 	    /* Scrollning: Detta gör att du kan scrolla INUTI rutan */
 	    overflow-y: auto; 
 	    padding: 20px;
-	    padding-bottom: 20px; /* Extra luft i botten för scroll */
+	    padding-bottom: 60px; /* Extra luft i botten för scroll */
 	}
 	
 	#selectedDayView.show {
 	    transform: translateY(0); /* Glid upp till bottenläget */
 	}
 }
+
 
 
 
