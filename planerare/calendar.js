@@ -9,40 +9,45 @@ function mapJobsToEvents(jobs) {
     const realEvents = jobs
         .filter(job => !job.deleted && job.status !== 'avbokad')
         .map(job => {
-            // Hantera datum och tid
-            let startDateTime = job.datum; 
-            let timeString = "08:00"; // Fallback
+            let startDateTime = job.datum;
+            let timePrefix = ""; 
 
+            // 1. Hantera Datum & Tid
             if (!startDateTime.includes('T')) {
-                timeString = job.tid || '08:00';
-                startDateTime = `${job.datum} ${timeString}`;
+                // Om vi bara har datum, använd vald tid eller standard 08:00
+                const t = job.tid || '08:00';
+                timePrefix = t;
+                startDateTime = `${job.datum} ${t}`;
             } else {
+                // Om vi har ISO-sträng
                 startDateTime = startDateTime.replace('T', ' ');
-                // Extrahera tid från ISO-sträng om den finns där
                 try {
-                    timeString = startDateTime.split(' ')[1].substring(0, 5);
+                    // Extrahera klockslag (HH:mm) från strängen
+                    timePrefix = startDateTime.split(' ')[1].substring(0, 5);
                 } catch(e) {}
             }
 
+            // 2. Skapa slutdatum (1 timme senare som standard)
             let endDateTime = startDateTime;
             try {
-                const dateObj = new Date(startDateTime.replace(' ', 'T')); 
-                dateObj.setHours(dateObj.getHours() + 1);
+                const d = new Date(startDateTime.replace(' ', 'T'));
+                d.setHours(d.getHours() + 1);
                 
-                const year = dateObj.getFullYear();
-                const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-                const day = String(dateObj.getDate()).padStart(2, '0');
-                const hour = String(dateObj.getHours()).padStart(2, '0');
-                const min = String(dateObj.getMinutes()).padStart(2, '0');
-                endDateTime = `${year}-${month}-${day} ${hour}:${min}`;
+                // Formatera manuellt för att slippa tidszonskrångel
+                const Y = d.getFullYear();
+                const M = String(d.getMonth()+1).padStart(2,'0');
+                const D = String(d.getDate()).padStart(2,'0');
+                const H = String(d.getHours()).padStart(2,'0');
+                const m = String(d.getMinutes()).padStart(2,'0');
+                endDateTime = `${Y}-${M}-${D} ${H}:${m}`;
             } catch(e) {}
 
-            // PUNKT 6: Lägg till tiden i titeln
-            const displayTitle = `${timeString} ${job.kundnamn}`;
+            // 3. Skapa Titel: "10:00 KUNDNAMN" (Punkt 6)
+            const finalTitle = timePrefix ? `${timePrefix} ${job.kundnamn}` : job.kundnamn;
 
             return {
                 id: job.id,
-                title: displayTitle, 
+                title: finalTitle, 
                 start: startDateTime,
                 end: endDateTime,
                 description: job.paket || '',
@@ -67,20 +72,20 @@ export function initCalendar(elementId, jobsData, onEventClickCallback) {
 
     calendarApp = createCalendar({
         views: [viewMonthGrid, viewWeek, viewDay, viewMonthAgenda], 
-        defaultView: viewMonthGrid.name, // Månadsvy som standard (Punkt 8 delvis)
+        
+        // PUNKT 2: Månadsvy som standard (Mobil & Dator)
+        defaultView: viewMonthGrid.name, 
         
         events: events,
         locale: 'sv-SE',
         firstDayOfWeek: 1, 
         isDark: isDarkMode,
         
-        dayBoundaries: {
-            start: '06:00',
-            end: '20:00',
-        },
+        dayBoundaries: { start: '06:00', end: '20:00' },
 
         plugins: [dragAndDrop, eventModal],
 
+        // Färger (Behålls för att matcha stil)
         calendars: {
             bokad: { colorName: 'bokad', lightColors: { main: '#3b82f6', container: '#eff6ff', onContainer: '#1e3a8a' } },
             klar: { colorName: 'klar', lightColors: { main: '#10b981', container: '#ecfdf5', onContainer: '#064e3b' } },
@@ -91,9 +96,6 @@ export function initCalendar(elementId, jobsData, onEventClickCallback) {
         callbacks: {
             onEventClick(calendarEvent) {
                 if (onEventClickCallback) onEventClickCallback(calendarEvent.id);
-            },
-            onEventUpdate(updatedEvent) {
-                console.log('Event flyttat:', updatedEvent);
             }
         }
     });
