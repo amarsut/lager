@@ -3815,3 +3815,13 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 .menu-icon-box.orange { background: #fff7ed !important; color: #f97316 !important; }
 .menu-icon-box.purple { background: #f3e8ff !important; color: #a855f7 !important; }
 .menu-icon-box.green  { background: #f0fdf4 !important; color: #22c55e !important; }
+
+@media (max-width: 768px) {
+    /* Kundmodalen ligger på 200001.
+       Fordonsmodalen ligger på 200002.
+       Vi måste lägga Jobbmodalen HÖGRE än båda dessa.
+    */
+    #jobModal {
+        z-index: 300000 !important; 
+    }
+}
