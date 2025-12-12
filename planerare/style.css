@@ -4381,7 +4381,7 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 
 	#selectedDayView {
 	    position: fixed;
-	    bottom: 120px;       /* VIKTIGT: Nollställ top så den inte täcker hela skärmen */
+	    bottom: 110px;       /* VIKTIGT: Nollställ top så den inte täcker hela skärmen */
 	    bottom: 0;       /* Fäst i botten */
 	    left: 0; 
 	    right: 0;
