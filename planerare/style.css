@@ -3886,20 +3886,23 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 }
 
 /* =================================================================
-   FIX: TA BORT TOMRUM I FORDONSSMODALEN (DATOR)
+   FIX: FORDONSSMODAL PÅ DATOR (TVINGANDE)
    ================================================================= */
 
 @media (min-width: 769px) {
-    /* 1. Dölj footern helt i reg.nr-modalen eftersom den är tom */
-    #vehicleModal .modal-actions {
-        display: none !important;
-        padding: 0 !important;
-        height: 0 !important;
-        border: none !important;
+    /* 1. Tvinga kroppen att INTE ha jätte-padding i botten */
+    #vehicleModal .modal-body {
+        padding-bottom: 20px !important; /* Normal luft */
+        min-height: 0 !important;        /* Låt den inte vara onödigt hög */
+        overflow-y: auto !important;     /* Säkerställ scroll */
+        flex: 1 !important;              /* Fyll utrymmet */
     }
 
-    /* 2. Återställ paddingen i botten så texten går ända ner */
-    #vehicleModal .modal-body {
-        padding-bottom: 20px !important; 
+    /* 2. Säkerställ att innehållet fyller modalen snyggt */
+    #vehicleModal .modal-content {
+        display: flex !important;
+        flex-direction: column !important;
+        height: 600px !important;       /* Fast höjd för symmetri */
+        max-height: 85vh !important;
     }
 }
