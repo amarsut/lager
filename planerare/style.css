@@ -4043,17 +4043,21 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 /*KALENDERVY*/
 
 /* =======================================================
-   FULLCALENDAR: COLOR TEXT EDITION (FINAL)
+   FULLCALENDAR: NO WHITESPACE & COLOR TEXT (FIXED)
    ======================================================= */
 
 #calendarView {
     background: white;
     border-radius: 20px !important; 
     border: 1px solid #e2e8f0;
-    padding: 0;
+    padding: 0 !important;
     font-family: 'Inter', sans-serif;
     overflow: hidden;
-    min-height: 0;
+    
+    /* FIX: Ta bort tomrummet under kalendern */
+    height: auto !important; 
+    min-height: 0 !important;
+    display: block;
 }
 
 /* --- HEADER --- */
@@ -4098,6 +4102,7 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 }
 .fc-today-button:hover { background-color: #f8fafc !important; border-color: #cbd5e1 !important; }
 
+/* Pilar */
 .fc-prev-button, .fc-next-button {
     background: transparent !important;
     border: none !important;
@@ -4124,6 +4129,7 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     border-color: #f1f5f9 !important;
 }
 
+/* Rubriker */
 .fc-col-header-cell-cushion {
     font-size: 0.75rem;
     color: #94a3b8;
@@ -4134,6 +4140,7 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 }
 .fc-col-header-cell { border-bottom: none !important; }
 
+/* Datum */
 .fc-daygrid-day-top {
     justify-content: center !important;
     padding-top: 4px !important;
@@ -4156,12 +4163,15 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     font-weight: 600 !important;
 }
 
+/* Rutorna */
 .fc-daygrid-day-frame {
     min-height: 100px !important; 
     border-top: 1px solid #f1f5f9; 
+    /* Ta bort onödig padding i botten */
+    padding-bottom: 0 !important;
 }
 
-/* --- EVENT DESIGN (FÄRGAD TEXT) --- */
+/* --- EVENT DESIGN (FÄRG & TEXT) --- */
 .fc-daygrid-event {
     margin: 2px 4px !important;
     background: transparent !important;
@@ -4169,31 +4179,28 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     cursor: pointer;
 }
 
+/* Den inre rutan */
 .fc-premium-event {
-    /* Kompakt pille */
     padding: 2px 6px; 
     border-radius: 4px;
-    
-    /* Textinställningar */
     font-size: 0.75rem;
-    
-    /* VIKTIGT: 600 gör färgen starkare och mer synlig */
-    font-weight: 600 !important; 
-    
     line-height: 1.3;
+    
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis; 
     display: block;
     
-    /* Tvinga textfärgen att ärva från JS (där vi satte mainColor) */
+    /* FIX: Tvinga texten att ärva färgen från JS */
     color: inherit !important;
+    
+    /* FIX: Lite tjockare text så färgen syns */
+    font-weight: 700 !important; 
 }
 
 .fc-event-text {
-    /* Säkerställ att inner-texten inte skriver över färgen */
+    /* Säkerställ att span inuti inte ändrar färg */
     color: inherit !important;
-    font-weight: inherit !important;
 }
 
 /* --- MOBILVYN --- */
