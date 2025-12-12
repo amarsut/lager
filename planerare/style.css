@@ -4234,7 +4234,7 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
         justify-content: flex-start;
         
         /* FIX: Mindre mellanrum mellan linjerna (var 2px) */
-        gap: 1px !important; 
+        gap: 0px !important; 
         
         margin-top: 2px !important;
         min-height: 12px;
@@ -4251,6 +4251,7 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
         flex-shrink: 0;
     }
 }
+
 
 
 
