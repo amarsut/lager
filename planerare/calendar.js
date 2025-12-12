@@ -138,12 +138,14 @@ export function initCalendar(elementId, jobsData, onEventClickCallback) {
         
             const props = info.event.extendedProps;
             
-            // Hämta tid
+            // 1. Förbered data
             const dateObj = info.event.start;
-            // Format: 10.00
             const timeStr = dateObj ? dateObj.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' }).replace(':', '.') : '';
-        
-            // Skapa tooltip om den inte finns
+            const regNr = props.regnr || '---';
+            const customerName = info.event.title;
+            const commentText = props.description || '';
+            
+            // 2. Hämta eller skapa tooltip
             let tooltip = document.getElementById('fc-custom-tooltip');
             if (!tooltip) {
                 tooltip = document.createElement('div');
@@ -152,45 +154,65 @@ export function initCalendar(elementId, jobsData, onEventClickCallback) {
                 document.body.appendChild(tooltip);
             }
         
-            // Data
-            const regNr = props.regnr || '---';
-            const customerName = info.event.title;
-            // Om ingen kommentar finns, visa bindestreck eller tom sträng (välj själv)
-            const commentText = props.description || '-'; 
+            // 3. Ikoner (SVG)
+            // Status-ikonen (tar färgen från props.mainColor)
+            const iconStatus = `<svg class="tt-status-icon" style="color: ${props.mainColor};" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /></svg>`;
+            
+            // Grå ikoner
+            const iconComment = `<svg class="tt-icon tt-icon-gray" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>`;
+            const iconClock = `<svg class="tt-icon tt-icon-gray" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`;
         
-            // Ikoner (SVG)
-            const iconComment = `<svg class="tt-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>`;
-            const iconClock = `<svg class="tt-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`;
-        
-            // Bygg HTML enligt din önskan:
-            // 1. ABC123 • NAMN
-            // 2. (ikon) Kommentar
-            // 3. (ikon) 10.00
-            tooltip.innerHTML = `
+            // 4. Bygg HTML (Villkorlig rendering av kommentar)
+            let htmlContent = `
                 <div class="tt-row-primary">
+                    ${iconStatus}
                     <span class="tt-reg">${regNr}</span>
                     <span class="tt-sep">•</span>
                     <span class="tt-name">${customerName}</span>
-                </div>
+                </div>`;
+        
+            // Endast om kommentar finns
+            if (commentText.trim().length > 0) {
+                htmlContent += `
                 <div class="tt-row-detail">
                     ${iconComment}
                     <span>${commentText}</span>
-                </div>
+                </div>`;
+            }
+        
+            // Lägg alltid till tid
+            htmlContent += `
                 <div class="tt-row-time">
                     ${iconClock}
                     <span>${timeStr}</span>
-                </div>
-            `;
+                </div>`;
         
+            tooltip.innerHTML = htmlContent;
+        
+            // 5. Smart Positionering
+            // Vi måste visa den (utan opacity) för att kunna mäta storleken
             tooltip.classList.add('show');
-        
-            // Positionering (Samma som förut men med lite justering)
+            
+            const tooltipRect = tooltip.getBoundingClientRect();
             const x = info.jsEvent.clientX;
             const y = info.jsEvent.clientY;
             
-            // Placera tooltip en bit ifrån musen så den inte blinkar
-            tooltip.style.left = (x + 15) + 'px';
-            tooltip.style.top = (y + 10) + 'px';
+            // Standardposition: Nere till höger om musen
+            let top = y + 15;
+            let left = x + 15;
+        
+            // KOLL 1: Hamnar den utanför bottenkanten? -> Flytta upp
+            if (top + tooltipRect.height > window.innerHeight) {
+                top = y - tooltipRect.height - 10;
+            }
+        
+            // KOLL 2: Hamnar den utanför högerkanten? -> Flytta vänster
+            if (left + tooltipRect.width > window.innerWidth) {
+                left = x - tooltipRect.width - 10;
+            }
+        
+            tooltip.style.top = top + 'px';
+            tooltip.style.left = left + 'px';
         },
         
         eventMouseLeave: function(info) {
