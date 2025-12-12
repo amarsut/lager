@@ -657,18 +657,16 @@ function setupEventListeners() {
 	if (menuBtnCalendar) {
 	    menuBtnCalendar.addEventListener('click', () => {
 	        closeSettings();
-	        
 	        setTimeout(() => {
-	            addHistoryState(); // <--- LÄGG TILL DETTA
+	            addHistoryState('calendar'); // <--- ÄNDRAT HÄR: Skicka med 'calendar'
 	            
 	            document.getElementById('statBar').style.display = 'none';
 	            document.getElementById('timelineView').style.display = 'none';
 	            document.getElementById('customersView').style.display = 'none';
 	            document.getElementById('calendarView').style.display = 'block';
 	
-	            // Initiera kalendern
+	            // Starta kalendern
 	            setTimeout(() => {
-	                // Notera: Importera initCalendar korrekt eller använd window.initCalendar om den är global
 	                import('./calendar.js').then(module => {
 	                     module.initCalendar('calendar-wrapper', allJobs, openEditModal);
 	                });
@@ -679,17 +677,18 @@ function setupEventListeners() {
 
 	/*MER MENY I INSTÄLLNINGAR _ MOBIL*/
 	document.getElementById('menuBtnCustomers').addEventListener('click', () => {
-	    closeSettings(); // Detta gör en history.back() internt om modalen är öppen
-	    
-	    // Vi måste vänta en millisekund så back-eventet hinner klart, sen pushar vi nytt
+	    closeSettings();
 	    setTimeout(() => {
-	        addHistoryState(); // <--- LÄGG TILL DETTA (Skapar nytt "steg" för Kundvyn)
+	        addHistoryState('customers'); // <--- ÄNDRAT HÄR: Skicka med 'customers'
 	        
 	        document.getElementById('statBar').style.display = 'none';
 	        document.getElementById('timelineView').style.display = 'none';
 	        document.getElementById('calendarView').style.display = 'none';
 	        document.getElementById('customersView').style.display = 'block';
 	        renderCustomerView();
+	        
+	        // Uppdatera mobilmenyn så "Kunder" lyser om du har en sån knapp, annars släck hem
+	        document.querySelectorAll('.mobile-nav-item').forEach(btn => btn.classList.remove('active'));
 	    }, 50);
 	});
 
@@ -860,47 +859,59 @@ function setupEventListeners() {
 
 	// 1. Lyssna på när användaren trycker bakåt (eller swipar)
 	window.addEventListener('popstate', function(event) {
-	    // Kolla om någon modal är öppen
+	    // 1. Kolla om vi har modaler öppna (högst prioritet)
 	    const openModal = document.querySelector('.modal-backdrop.show');
 	    const chatWidget = document.getElementById('chatWidget');
 	    const mobileSearch = document.getElementById('mobileSearchModal');
 	    const imageZoom = document.getElementById('imageZoomModal');
 	    const vehicleModal = document.getElementById('vehicleModal');
 	
-	    // Prioritetsordning för att stänga saker:
-	    
-	    // 1. Bild-zoom
-	    if (imageZoom && imageZoom.style.display === 'flex') {
-	        imageZoom.style.display = 'none';
-	        return; // Stanna här, stäng inte mer
+	    // Stäng modaler i turordning (samma som förut)
+	    if (imageZoom && imageZoom.style.display === 'flex') { imageZoom.style.display = 'none'; return; }
+	    if (vehicleModal && vehicleModal.classList.contains('show')) { vehicleModal.classList.remove('show'); return; }
+	    if (chatWidget && chatWidget.style.display === 'flex') { 
+	        chatWidget.style.display = 'none'; 
+	        document.body.style.overflow = ''; 
+	        return; 
 	    }
+	    if (mobileSearch && mobileSearch.classList.contains('show')) { mobileSearch.classList.remove('show'); return; }
+	    if (openModal) { closeModals(); return; }
 	
-	    // 2. Fordons-modal (Specialfall då den ibland ligger över andra)
-	    if (vehicleModal && vehicleModal.classList.contains('show')) {
-	        vehicleModal.classList.remove('show');
-	        return;
-	    }
+	    // 2. NY LOGIK: Hantera navigering tillbaka till Översikt
+	    // Om historik-statet är tomt (null) betyder det att vi är på "bas-nivån"
+	    if (!event.state || !event.state.uiState) {
+	        
+	        // Kolla om vi råkar stå i Kundvyn
+	        const custView = document.getElementById('customersView');
+	        if (custView && custView.style.display === 'block') {
+	            // Återställ till Översikt
+	            custView.style.display = 'none';
+	            document.getElementById('statBar').style.display = ''; // Eller 'grid'
+	            document.getElementById('timelineView').style.display = 'block';
+	            
+	            // Markera "Vy"-knappen i menyn
+	            document.querySelectorAll('.mobile-nav-item').forEach(n => n.classList.remove('active'));
+	            document.getElementById('mobileHomeBtn').classList.add('active');
+	            return;
+	        }
 	
-	    // 3. Chatt-widget
-	    if (chatWidget && chatWidget.style.display === 'flex') {
-	        chatWidget.style.display = 'none';
-	        document.body.style.overflow = ''; // Lås upp scroll
-	        return;
-	    }
+	        // Kolla om vi råkar stå i Kalendervyn
+	        const calView = document.getElementById('calendarView');
+	        if (calView && calView.style.display === 'block') {
+	            // Återställ till Översikt
+	            calView.style.display = 'none';
+	            document.getElementById('statBar').style.display = '';
+	            document.getElementById('timelineView').style.display = 'block';
+	            
+	            // Dölj även dagvyn om den är öppen
+	            const dayView = document.getElementById('selectedDayView');
+	            if(dayView) dayView.classList.remove('show');
 	
-	    // 4. Mobil-sök
-	    if (mobileSearch && mobileSearch.classList.contains('show')) {
-	        mobileSearch.classList.remove('show');
-	        return;
+	            document.querySelectorAll('.mobile-nav-item').forEach(n => n.classList.remove('active'));
+	            document.getElementById('mobileHomeBtn').classList.add('active');
+	            return;
+	        }
 	    }
-	
-	    // 5. Vanliga modaler (Jobb-modal etc)
-	    if (openModal) {
-	        closeModals(); // Din befintliga funktion
-	        return;
-	    }
-	    
-	    // Om inget var öppet, låt webbläsaren göra sin vanliga "back" (vilket kan vara att stänga appen om historiken är slut)
 	});
     
 	// Hantera klick på Sök-knappen i menyn
@@ -2268,10 +2279,9 @@ function closeVehicleModal() {
 }
 
 // Hjälpfunktion för att lägga till ett "steg" i historiken
-function addHistoryState() {
-	// Vi lägger till ett "falskt" steg i historiken
-	// Detta gör att "Bakåt" tar bort detta steg istället för att stänga appen
-	history.pushState({ modalOpen: true }, null, window.location.href);
+function addHistoryState(viewName = 'modal') {
+    // Vi sparar vilket "läge" vi är i (t.ex. 'customers', 'calendar' eller 'modal')
+    history.pushState({ uiState: viewName }, null, window.location.href);
 }
 
 // Funktion för att visa/dölja åtgärdsmenyn inuti kortet
