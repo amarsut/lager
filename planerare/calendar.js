@@ -1,37 +1,56 @@
-// calendar.js
+import { createCalendar, viewDay, viewWeek, viewMonthGrid, viewMonthAgenda } from 'https://cdn.jsdelivr.net/npm/@schedule-x/calendar@1.53.0/+esm';
+import { createDragAndDropPlugin } from 'https://cdn.jsdelivr.net/npm/@schedule-x/drag-and-drop@1.53.0/+esm';
+import { createEventModalPlugin } from 'https://cdn.jsdelivr.net/npm/@schedule-x/event-modal@1.53.0/+esm';
 
-let calendar = null;
+let calendarApp = null;
 
 function mapJobsToEvents(jobs) {
     return jobs
         .filter(job => !job.deleted && job.status !== 'avbokad')
         .map(job => {
-            // Datumhantering
-            let start = job.datum;
-            if (!start.includes('T')) {
-                start = `${job.datum}T${job.tid || '08:00'}`;
+            let startDateTime = job.datum;
+            let timePrefix = ""; 
+
+            // 1. Hantera Datum & Tid
+            if (!startDateTime.includes('T')) {
+                // Om vi bara har datum, använd vald tid eller standard 08:00
+                const t = job.tid || '08:00';
+                timePrefix = t;
+                startDateTime = `${job.datum} ${t}`;
+            } else {
+                // Om vi har ISO-sträng
+                startDateTime = startDateTime.replace('T', ' ');
+                try {
+                    // Extrahera klockslag (HH:mm) från strängen
+                    timePrefix = startDateTime.split(' ')[1].substring(0, 5);
+                } catch(e) {}
             }
-            
-            // Färgkodning baserat på status (matchar din gamla stil)
-            let color = '#3b82f6'; // Bokad (Blå)
-            let borderColor = '#3b82f6';
-            
-            if (job.status === 'klar') { color = '#10b981'; borderColor = '#059669'; } // Grön
-            if (job.status === 'faktureras') { color = '#8b5cf6'; borderColor = '#7c3aed'; } // Lila
-            if (job.status === 'offererad') { color = '#f59e0b'; borderColor = '#d97706'; } // Orange
+
+            // 2. Skapa slutdatum (1 timme senare som standard)
+            let endDateTime = startDateTime;
+            try {
+                const d = new Date(startDateTime.replace(' ', 'T'));
+                d.setHours(d.getHours() + 1);
+                
+                // Formatera manuellt för att slippa tidszonskrångel
+                const Y = d.getFullYear();
+                const M = String(d.getMonth()+1).padStart(2,'0');
+                const D = String(d.getDate()).padStart(2,'0');
+                const H = String(d.getHours()).padStart(2,'0');
+                const m = String(d.getMinutes()).padStart(2,'0');
+                endDateTime = `${Y}-${M}-${D} ${H}:${m}`;
+            } catch(e) {}
+
+            // 3. Skapa Titel: "10:00 KUNDNAMN"
+            const finalTitle = timePrefix ? `${timePrefix} ${job.kundnamn}` : job.kundnamn;
 
             return {
                 id: job.id,
-                title: job.kundnamn,
-                start: start,
-                // FullCalendar räknar ut sluttid själv om den saknas, men vi kan sätta +1h
-                extendedProps: {
-                    status: job.status,
-                    paket: job.paket,
-                    regnr: job.regnr
-                },
-                backgroundColor: color,
-                borderColor: borderColor
+                title: finalTitle, 
+                start: startDateTime,
+                end: endDateTime,
+                description: job.paket || '',
+                calendarId: job.status 
             };
         });
 }
@@ -40,69 +59,81 @@ export function initCalendar(elementId, jobsData, onEventClickCallback) {
     const calendarEl = document.getElementById(elementId);
     if (!calendarEl) return;
 
-    // Rensa ev. gammal instans
-    if (calendar) {
-        calendar.destroy();
-    }
+    calendarEl.innerHTML = '';
 
-    const isMobile = window.innerWidth <= 768;
     const events = mapJobsToEvents(jobsData);
+    const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
 
-    calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'dayGridMonth', // Alltid månadsvy som start
-        locale: 'sv', // Svenska
-        firstDay: 1, // Måndag
-        headerToolbar: {
-            left: 'prev,next today', // Knappar till vänster
-            center: 'title',         // Titel i mitten
-            right: isMobile ? '' : 'dayGridMonth,timeGridWeek,timeGridDay' // Vyer till höger (dölj på mobil för att spara plats)
-        },
-        buttonText: {
-            today: 'Idag',
-            month: 'Månad',
-            week: 'Vecka',
-            day: 'Dag'
-        },
-        height: 'auto', // Anpassar höjden automatiskt
-        contentHeight: 800,
+    const dragAndDrop = createDragAndDropPlugin();
+    const eventModal = createEventModalPlugin();
+
+    calendarApp = createCalendar({
+        views: [viewMonthGrid, viewWeek, viewDay, viewMonthAgenda], 
+        
+        // --- VIKTIGT: ALLTID MÅNAD SOM STANDARD ---
+        defaultView: viewMonthGrid.name, 
+        
+        // --- VIKTIGT: STÄNG AV MOBIL-AUTO-LÄGE ---
+        // Detta gör att vi kan tvinga fram månadsvy även på små skärmar
+        isResponsive: false,
+        
         events: events,
+        locale: 'sv-SE',
+        firstDayOfWeek: 1, 
+        isDark: isDarkMode,
         
-        // --- MAGIN FÖR MOBILVYN ---
-        // Här bestämmer vi hur eventet ska se ut beroende på skärm
-        eventContent: function(arg) {
-            const isMob = window.innerWidth <= 768;
-            
-            // MOBIL: Visa bara en liten färgad prick
-            if (isMob) {
-                return { 
-                    html: `<div class="fc-mobile-dot" style="background-color: ${arg.event.backgroundColor};"></div>` 
-                };
-            } 
-            // DATOR: Visa Tid + Titel
-            else {
-                const time = arg.event.start.toLocaleTimeString('sv-SE', {hour:'2-digit', minute:'2-digit'});
-                return { 
-                    html: `<div class="fc-desktop-event"><b>${time}</b> ${arg.event.title}</div>` 
-                };
-            }
+        dayBoundaries: { start: '06:00', end: '20:00' },
+
+        plugins: [dragAndDrop, eventModal],
+
+        // Färgpalett (Premium Pastel Style)
+        calendars: {
+            bokad: { 
+                colorName: 'bokad', 
+                lightColors: { 
+                    main: '#3b82f6',       // Stark blå (kant)
+                    container: '#eff6ff',  // Ljusblå (bakgrund)
+                    onContainer: '#1e40af' // Mörkblå (text)
+                } 
+            },
+            klar: { 
+                colorName: 'klar', 
+                lightColors: { 
+                    main: '#10b981',       // Stark grön
+                    container: '#ecfdf5',  // Ljusgrön
+                    onContainer: '#065f46' // Mörkgrön
+                } 
+            },
+            faktureras: { 
+                colorName: 'faktureras', 
+                lightColors: { 
+                    main: '#8b5cf6',       // Stark lila
+                    container: '#f5f3ff',  // Ljuslila
+                    onContainer: '#5b21b6' // Mörklila
+                } 
+            },
+            offererad: { 
+                colorName: 'offererad', 
+                lightColors: { 
+                    main: '#f59e0b',       // Stark orange
+                    container: '#fffbeb',  // Ljusorange
+                    onContainer: '#92400e' // Mörkorange
+                } 
+            },
         },
 
-        // Klick på event
-        eventClick: function(info) {
-            if (onEventClickCallback) onEventClickCallback(info.event.id);
-        },
-        
-        // Klick på dag (för att skapa nytt jobb om du vill, valfritt)
-        dateClick: function(info) {
-            // Här kan du anropa openNewJobModal() och skicka med info.dateStr
+        callbacks: {
+            onEventClick(calendarEvent) {
+                if (onEventClickCallback) onEventClickCallback(calendarEvent.id);
+            }
         }
     });
 
-    calendar.render();
+    calendarApp.render(calendarEl);
 }
 
 export function setCalendarTheme(theme) {
-    // FullCalendar hanterar oftast detta via CSS-variabler, 
-    // men vi kan tvinga en omladdning om det behövs.
-    if (calendar) calendar.render();
+    if (calendarApp) {
+        calendarApp.setTheme(theme === 'dark' ? 'dark' : 'light');
+    }
 }
