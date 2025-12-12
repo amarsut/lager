@@ -3958,3 +3958,34 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
         padding: 10px 12px !important;   /* Kompaktare padding */
     }
 }
+
+/* =================================================================
+   FIX: LUFT I MODALER & HEADER-SYNLIGHET (MOBIL)
+   ================================================================= */
+
+@media (max-width: 768px) {
+
+    /* 1. MER LUFT I TOPPEN AV FORMULÄRET 
+       Detta trycker ner "Status" och "Paket" från rubriken */
+    .modal-body {
+        padding-top: 32px !important; /* Ökat från 20px för mer rymd */
+    }
+
+    /* 2. HEADER SYNLIGHET (Z-INDEX JUSTERING)
+       Din Header ligger på z-index 200000.
+       Vi sätter modalerna lägre än det, så headern syns.
+       Men vi håller dem höga nog att täcka annat innehåll. */
+
+    /* Kund-modalen: Under Header, men över vanligt innehåll */
+    #customerModal.show { 
+        z-index: 199980 !important; 
+    }
+
+    /* Fordons-modalen: Måste ligga ÖVER Kund (om man klickar på en bil därifrån), 
+       men fortfarande UNDER Headern */
+    #vehicleModal.show  { 
+        z-index: 199990 !important; 
+    }
+    
+    /* (Jobb-modalen ligger oftast runt 199999 i din kod, vilket är perfekt) */
+}
