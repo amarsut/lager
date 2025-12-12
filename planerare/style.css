@@ -4585,11 +4585,15 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 #customerSortSelect {
     appearance: none; /* Tar bort standard-pilen */
     -webkit-appearance: none;
-    padding-right: 32px !important;
+    padding-left: 48px !important; /* Ger plats åt ikonen till vänster */
+    padding-right: 32px !important; /* Plats för pilen till höger */
     background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
     background-repeat: no-repeat;
     background-position: right 12px center;
     background-size: 16px;
+	color: #111;
+    font-weight: 500;
+    cursor: pointer;
 }
 
 /* --- Status Taggar (Piller) --- */
@@ -4611,6 +4615,13 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 .pill-passive { background-color: #fee2e2; color: #991b1b; border: 1px solid #fecaca; } /* Röd */
 .pill-loyal { background-color: #e0f2fe; color: #075985; border: 1px solid #bae6fd; } /* Blå */
 
+/* 1. Gör filter-ikonen (strecken) svart och tjockare */
+.sort-wrapper .input-icon {
+    color: #111 !important; /* Tvingar svart färg */
+    stroke-width: 2.5px !important; /* Lite tjockare linjer */
+    z-index: 10; /* Säkerställer att den ligger över */
+}
+
 /* --- Mobilanpassning --- */
 @media (max-width: 768px) {
     .customer-toolbar {
@@ -4624,17 +4635,19 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     
     /* Flytta taggen till en ny rad i mobilkortet för att spara bredd */
     .c-info h3 {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
+        display: flex !important;
+        flex-wrap: wrap !important;
+        align-items: center !important;
+        gap: 8px !important; /* HÄR är lösningen: 8px mellanrum mellan namn och tagg */
     }
     
+    /* Justera margin på själva pillret */
     .status-pill {
-        margin-left: 0;
-        margin-top: 4px;
-        margin-right: 6px;
+        margin-left: 0 !important; /* Nollställ marginal då vi använder gap ovan istället */
+        margin-top: 0 !important;  /* Nollställ eventuell top-marginal */
     }
 }
+
 
 
 
