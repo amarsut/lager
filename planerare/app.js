@@ -671,8 +671,8 @@ function setupEventListeners() {
 	        // 4. Starta kalendern (med dina jobb och redigera-funktionen)
 	        // Vi använder setTimeout för att säkerställa att diven är synlig innan kalendern ritas
 	        setTimeout(() => {
-	            initCalendar('calendar-wrapper', allJobs, openEditModal);
-	        }, 50);
+			    initCalendar('calendar-wrapper', allJobs, openEditModal, handleCalendarDrop);
+		}, 50);
 	    });
 	}
 
@@ -695,7 +695,7 @@ function setupEventListeners() {
 	        // 4. Starta kalendern (Dagvyn öppnas automatiskt av kalendern, vilket lägger till NÄSTA steg)
 	        setTimeout(() => {
 	            import('./calendar.js').then(module => {
-	                 module.initCalendar('calendar-wrapper', allJobs, openEditModal);
+	                 module.initCalendar('calendar-wrapper', allJobs, openEditModal, handleCalendarDrop);
 	            });
 	        }, 50);
 	    });
@@ -1032,6 +1032,27 @@ function setupEventListeners() {
     
     // Spara jobb (Både nytt och redigerat)
     document.getElementById('jobModalForm').addEventListener('submit', handleSaveJob);
+}
+
+// --- CALENDAR DROP HANDLER ---
+async function handleCalendarDrop(jobId, newDateStr, revertFunc) {
+    // 1. Visuell feedback (Toast)
+    // Om du har en showToast-funktion, använd den. Annars console.log
+    console.log(`Flyttar jobb ${jobId} till ${newDateStr}`);
+
+    try {
+        // 2. Uppdatera Firebase
+        await db.collection('jobs').doc(jobId).update({
+            datum: newDateStr
+        });
+        // Valfritt: Visa en "Toast" här (Datum uppdaterat!)
+        
+    } catch (error) {
+        console.error("Kunde inte flytta jobb:", error);
+        alert("Kunde inte flytta jobbet. Ångrar...");
+        // 3. Om det misslyckas, flytta tillbaka kortet visuellt
+        if (revertFunc) revertFunc();
+    }
 }
 
 // --- MODAL FUNKTIONER ---
