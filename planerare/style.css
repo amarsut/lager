@@ -4746,6 +4746,52 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     height: 16px;
 }
 
+/*extra vy för obokade jobb*/
+
+/* Container */
+.unplanned-accordion {
+    margin: 0 10px 10px 10px; /* Samma marginal som dina kort */
+    background: #fffbeb;
+    border: 1px solid #fcd34d;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+/* Headern (Det man klickar på) */
+.unplanned-header {
+    padding: 10px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    background-color: #fffbeb;
+}
+
+/* Innehållet (Listan) */
+.unplanned-content {
+    display: none; /* Dold */
+    padding: 0 10px 10px 10px;
+    border-top: 1px solid #fcd34d;
+    background-color: #ffffff;
+}
+
+/* När den är öppen */
+.unplanned-content.open {
+    display: block;
+    animation: slideDown 0.2s ease-out;
+}
+
+/* Pilen roterar när öppen */
+.rotate-arrow {
+    transform: rotate(180deg);
+}
+
+/* Anpassa korten inuti så de ser "avskalade" ut */
+.unplanned-content .job-card-new {
+    border: 1px dashed #d1d5db !important;
+    box-shadow: none !important;
+    margin-bottom: 8px !important;
+}
 
 
 
