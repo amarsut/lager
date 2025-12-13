@@ -336,6 +336,7 @@ function renderDashboard() {
 
     const container = document.getElementById('jobListContainer');
     let jobsToDisplay = filterJobs(allJobs);
+	const isMobile = window.innerWidth <= 768;
 
 	// 1. Separera oplanerade jobb (OM vi är i mobilvy och filtret är "Alla" eller "Kommande")
     const unplannedContainer = document.getElementById('unplannedContainer');
@@ -389,7 +390,6 @@ function renderDashboard() {
 
     // Bygg HTML (Mobil eller Desktop)
     let htmlContent = '';
-    const isMobile = window.innerWidth <= 768;
 
     if (isMobile) {
         let lastDateStr = '';
