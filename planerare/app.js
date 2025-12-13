@@ -49,6 +49,7 @@ let currentSearchTerm = '';
 let currentExpenses = [];
 let jobsUnsubscribe = null;   // Håller koll på jobb-lyssnaren
 let specsUnsubscribe = null;  // Håller koll på fordons-lyssnaren
+let currentLimit = 50; // Hur många vi visar just nu
 
 // Chatt-variabler
 let chatUnsubscribe = null;
@@ -316,53 +317,67 @@ function initRealtimeListener() {
 
 // 4. RENDERA DASHBOARD
 function renderDashboard() {
-    // 1. Uppdatera Header Datum
     updateHeaderDate();
-    // 2. Uppdatera Stats
     updateStatsCounts(allJobs);
-
-	updateCustomerDatalist();
+    updateCustomerDatalist();
 
     const container = document.getElementById('jobListContainer');
-    const isMobile = window.innerWidth <= 768; 
-    
-    // filterJobs sorterar redan datan korrekt (Kommande = Stigande, Alla = Fallande)
     let jobsToDisplay = filterJobs(allJobs);
+
+    // --- NYTT: Pagination Logik ---
+    const totalJobs = jobsToDisplay.length;
+    let showLoadMoreBtn = false;
+
+    // Om vi visar "Alla" (eller om du vill ha det på alla filter), aktivera gränsen
+    if (currentStatusFilter === 'alla' && totalJobs > currentLimit) {
+        jobsToDisplay = jobsToDisplay.slice(0, currentLimit);
+        showLoadMoreBtn = true;
+    }
+    // -----------------------------
 
     if (jobsToDisplay.length === 0) {
         container.innerHTML = '<p style="text-align:center; padding:2rem; color:#888;">Inga jobb hittades.</p>';
         return;
     }
 
+    // Bygg HTML (Mobil eller Desktop)
+    let htmlContent = '';
+    const isMobile = window.innerWidth <= 768;
+
     if (isMobile) {
-        // --- MOBIL: DATUM UTANFÖR KORTET ---
-        let html = '';
         let lastDateStr = '';
-
-        // OBS: Vi sorterar INTE om här längre, vi litar på filterJobs ordning (Fix 2)
-        
         jobsToDisplay.forEach(job => {
-            const d = new Date(job.datum);
-            const dateHeader = d.toLocaleDateString('sv-SE', { weekday: 'short', day: 'numeric', month: 'short' });
-            const formattedHeader = dateHeader.charAt(0).toUpperCase() + dateHeader.slice(1); 
-
-            if (formattedHeader !== lastDateStr) {
-                html += `<div class="date-separator">${formattedHeader}</div>`;
-                lastDateStr = formattedHeader;
-            }
-            html += createJobCard(job);
+            // ... din datum-logik för separatorer ... (använd gärna getSmartDateString här också om du vill)
+            // Kopiera din befintliga loop-logik hit
+             htmlContent += createJobCard(job);
         });
-
-        container.innerHTML = html;
-
     } else {
-        // DESKTOP (Tabell)
-        let tableHTML = `<table id="jobsTable"><thead><tr><th>Status</th><th>Datum</th><th>Kund</th><th>Reg.nr</th><th style="text-align:right">Pris</th><th class="action-col">Åtgärder</th></tr></thead><tbody>`;
-        jobsToDisplay.forEach(job => tableHTML += createJobRow(job));
-        tableHTML += `</tbody></table>`;
-        container.innerHTML = tableHTML;
+        // Desktop tabell
+        htmlContent = `<table id="jobsTable"><thead>...</thead><tbody>`;
+        jobsToDisplay.forEach(job => htmlContent += createJobRow(job));
+        htmlContent += `</tbody></table>`;
     }
+
+    // --- NYTT: Lägg till "Visa mer"-knappen om det behövs ---
+    if (showLoadMoreBtn) {
+        const remaining = totalJobs - currentLimit;
+        htmlContent += `
+            <div style="text-align: center; padding: 20px;">
+                <button onclick="loadMoreJobs()" class="button secondary-outline" style="min-width: 200px;">
+                    Visa mer (${remaining} kvar)
+                </button>
+            </div>
+        `;
+    }
+    
+    container.innerHTML = htmlContent;
 }
+
+// --- NYTT: Funktionen som körs när man klickar på knappen ---
+window.loadMoreJobs = function() {
+    currentLimit += 50; // Öka med 50
+    renderDashboard();  // Rita om listan
+};
 
 // --- HJÄLPFUNKTION: Uppdatera datumet i headern ---
 function updateHeaderDate() {
@@ -399,8 +414,9 @@ function createJobCard(job) {
     let rawMonth = d.toLocaleDateString('sv-SE', { month: 'short' });
     let cleanMonth = rawMonth.replace(/\./g, '');
     let month = cleanMonth.charAt(0).toUpperCase() + cleanMonth.slice(1);
-    
-    const dateStr = `${d.getDate()} ${month}. ${d.getFullYear()}`;
+
+	const smartDate = getSmartDateString(job.datum);
+	const dateStr = smartDate;
     const timeStr = d.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
     
     const combinedText = (job.kommentar + " " + job.paket + " " + job.kundnamn + " " + (job.bilmodell || "")).toLowerCase();
@@ -525,15 +541,14 @@ function createJobRow(job) {
     };
     
     let fullDate = "---";
-    if (job.datum) {
-        try {
-            const d = new Date(job.datum);
-            const dateStr = d.toLocaleDateString('sv-SE', { weekday: 'short', day: 'numeric', month: 'short' });
-            const timeStr = d.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
-            const capDateStr = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
-            fullDate = `${capDateStr}. kl. ${timeStr.replace('.', ':')}`;
-        } catch(e) {}
-    }
+	if (job.datum) {
+	    const d = new Date(job.datum);
+	    const smartDate = getSmartDateString(job.datum); // Hämta "Idag", "Imorgon" osv
+	    const timeStr = d.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
+	    
+	    // Resultat: "Idag kl. 14:00" eller "12 dec kl. 08:00"
+	    fullDate = `<span style="font-weight:600; color:#374151;">${smartDate}</span> <span style="color:#9ca3af; font-size:0.85em;">kl. ${timeStr}</span>`;
+	}
 
     const nameLower = (job.kundnamn || '').toLowerCase();
     const isCorporate = ['bmg', 'fogarolli'].some(c => nameLower.includes(c));
@@ -966,15 +981,15 @@ function setupEventListeners() {
 	
     // Hantera klick på statistik-korten (Filter)
     document.querySelectorAll('.stat-card').forEach(card => {
-        card.addEventListener('click', () => {
-            document.querySelectorAll('.stat-card').forEach(c => c.classList.remove('active'));
-            card.classList.add('active');
-            currentStatusFilter = card.dataset.filter;
-            currentSearchTerm = '';
-            document.getElementById('searchBar').value = '';
-            renderDashboard();
-        });
-    });
+	    card.addEventListener('click', () => {
+	        // ... din gamla kod ...
+	        currentStatusFilter = card.dataset.filter;
+	        
+	        currentLimit = 50; // <--- NYTT: Återställ till 50 när vi byter flik
+	        
+	        renderDashboard();
+	    });
+	});
 
     // Hantera klick på rader i tabellen (Redigera jobb)
     document.getElementById('jobListContainer').addEventListener('click', (e) => {
@@ -2188,6 +2203,21 @@ window.openImageZoom = function(src) {
     }
 };
 
+window.copyInputValue = function(elementId, btn) {
+    const input = document.getElementById(elementId);
+    if(input && input.value) {
+        navigator.clipboard.writeText(input.value).then(() => {
+            // Visuell feedback: Byt ikon till en check tillfälligt
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+            
+            setTimeout(() => {
+                btn.innerHTML = originalHtml;
+            }, 1500);
+        });
+    }
+};
+
 // --- MOBIL SÖK LOGIK ---
 
 // Koppla knappen i menyn till att öppna modalen
@@ -3070,3 +3100,35 @@ window.saveSearchTerm = function() {
     // Spara tillbaka till minnet
     localStorage.setItem('searchHistory', JSON.stringify(history));
 };
+
+// Hjälpfunktion: Relativa datum (Idag, Imorgon, Måndag...)
+function getSmartDateString(dateInput) {
+    if (!dateInput) return '---';
+    
+    // Hantera om inmatningen är en sträng (YYYY-MM-DD...) eller Date-objekt
+    const d = new Date(dateInput);
+    if (isNaN(d.getTime())) return '---'; // Ogiltigt datum
+
+    const now = new Date();
+    
+    // Nollställ klockslag för att jämföra rena dagar
+    const dZero = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    const nowZero = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    
+    const diffMs = dZero - nowZero;
+    const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+
+    // Logik för text
+    if (diffDays === 0) return 'Idag';
+    if (diffDays === 1) return 'Imorgon';
+    if (diffDays === -1) return 'Igår';
+    
+    // Om det är inom 6 dagar (framåt eller bakåt), visa veckodag
+    const days = ['Söndag', 'Måndag', 'Tisdag', 'Onsdag', 'Torsdag', 'Fredag', 'Lördag'];
+    if (diffDays > 1 && diffDays < 7) return days[d.getDay()];
+    if (diffDays < -1 && diffDays > -7) return 'I ' + days[d.getDay()].toLowerCase() + 's'; // T.ex. "I tisdags"
+
+    // Annars: Vanligt datum (t.ex. 12 dec)
+    const months = ['jan', 'feb', 'mar', 'apr', 'maj', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'];
+    return `${d.getDate()} ${months[d.getMonth()]}`;
+}
