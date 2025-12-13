@@ -315,6 +315,19 @@ function initRealtimeListener() {
     });
 }
 
+window.toggleUnplanned = function() {
+    const list = document.getElementById('unplannedList');
+    const arrow = document.getElementById('unplannedArrow');
+    
+    if (list.classList.contains('open')) {
+        list.classList.remove('open');
+        arrow.classList.remove('rotate-arrow');
+    } else {
+        list.classList.add('open');
+        arrow.classList.add('rotate-arrow');
+    }
+};
+
 // 4. RENDERA DASHBOARD
 function renderDashboard() {
     updateHeaderDate();
@@ -323,6 +336,41 @@ function renderDashboard() {
 
     const container = document.getElementById('jobListContainer');
     let jobsToDisplay = filterJobs(allJobs);
+
+	// 1. Separera oplanerade jobb (OM vi är i mobilvy och filtret är "Alla" eller "Kommande")
+    const isMobile = window.innerWidth <= 768;
+    const unplannedContainer = document.getElementById('unplannedContainer');
+    
+    if (isMobile && (currentStatusFilter === 'alla' || currentStatusFilter === 'kommande')) {
+        
+        // Hitta jobben utan datum
+        const unplannedJobs = jobsToDisplay.filter(j => !j.datum || j.datum === '');
+        // Hitta jobben MED datum (resten)
+        const plannedJobs = jobsToDisplay.filter(j => j.datum && j.datum !== '');
+        
+        // Uppdatera huvudvariabeln så huvudlistan BARA visar planerade
+        jobsToDisplay = plannedJobs; 
+
+        // 2. Rendera den lilla "Dragspels-listan"
+        if (unplannedJobs.length > 0) {
+            unplannedContainer.style.display = 'block';
+            document.getElementById('unplannedCountText').textContent = `${unplannedJobs.length} väntar på bokning`;
+            
+            const uList = document.getElementById('unplannedList');
+            uList.innerHTML = '';
+            
+            unplannedJobs.forEach(job => {
+                // Använd din vanliga funktion för att skapa kort
+                uList.innerHTML += createJobCard(job); 
+            });
+            
+        } else {
+            unplannedContainer.style.display = 'none';
+        }
+    } else {
+        // Om desktop eller annat filter, göm special-listan
+        if(unplannedContainer) unplannedContainer.style.display = 'none';
+    }
 
     // --- NYTT: Pagination Logik ---
     const totalJobs = jobsToDisplay.length;
