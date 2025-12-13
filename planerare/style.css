@@ -4793,6 +4793,56 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     margin-bottom: 8px !important;
 }
 
+@media (max-width: 768px) {
+    
+    /* Gör om stat-bar till en horisontell scroll-lista */
+    .stat-bar {
+        display: flex !important; /* Byt från grid till flex */
+        overflow-x: auto !important; /* Tillåt scroll i sidled */
+        gap: 12px !important;
+        padding: 4px 16px 12px 16px !important; /* Lite luft för skuggan */
+        margin-bottom: 8px !important;
+        
+        /* Dölj scrollbaren för snyggare look */
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE */
+    }
+    
+    .stat-bar::-webkit-scrollbar { 
+        display: none; /* Chrome/Safari */
+    }
+
+    /* Gör korten mindre och fast storlek */
+    .stat-card {
+        min-width: 110px !important; /* Smala kort */
+        width: 110px !important;
+        min-height: 65px !important; /* Lägre höjd */
+        flex-shrink: 0; /* Förhindra att de krymper */
+        padding: 8px !important;
+        
+        /* Centrera innehållet */
+        align-items: center !important; 
+        text-align: center !important;
+    }
+
+    /* Justera texten i korten */
+    .stat-card-title {
+        font-size: 0.6rem !important;
+        justify-content: center !important;
+        white-space: nowrap;
+    }
+    
+    .stat-card-value {
+        font-size: 1.2rem !important; /* Något mindre siffra */
+        margin-top: 2px !important;
+    }
+    
+    /* Gör "Väntelista"-kortet tydligt gult/orange */
+    .stat-card[data-filter="oplanerad"] {
+        border: 1px dashed #f59e0b !important;
+        background: #fffbeb !important;
+    }
+}
 
 
 
