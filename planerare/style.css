@@ -4795,15 +4795,24 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 
 @media (max-width: 768px) {
 
-    /* --- 1. CONTAINERN (Ingen grå skugga/fade längre) --- */
+    /* --- 1. CONTAINERN (Scroll & Fade) --- */
     .stat-bar {
         display: flex !important;
-        overflow-x: auto !important; /* Scroll i sidled */
-        gap: 12px !important; /* Avstånd mellan korten */
-        padding: 10px 16px 20px 16px !important; /* Lite extra padding i botten */
+        overflow-x: auto !important;
+        gap: 12px !important;
+        padding: 4px 16px 20px 16px !important; /* Padding för skuggor */
         margin-bottom: 5px !important;
         
-        /* Tar bort scrollbar */
+        /* SCROLL SNAP: Kortet "låser" sig snyggt när man swipar */
+        scroll-snap-type: x mandatory; 
+        
+        /* FADE-EFFEKT (Modern teknik): 
+           Gör att innehållet tonas ut mot transparens på högerkanten. 
+           Inget grått lager, bara mjuk övergång. */
+        -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
+        mask-image: linear-gradient(to right, black 85%, transparent 100%);
+
+        /* Dölj scrollbar */
         scrollbar-width: none; 
         -ms-overflow-style: none;
     }
@@ -4812,69 +4821,74 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
         display: none;
     }
 
-    /* Vi tar bort ::after (gradienten) helt eftersom den störde */
+    /* Ta bort gammal fade om den ligger kvar */
     .stat-bar::after {
         display: none !important;
     }
 
-    /* --- 2. KORTEN (Mini-Desktop look) --- */
+    /* --- 2. KORTEN (Replika av Desktop: Vänsterställt & Högt) --- */
     .stat-card {
-        /* Både högre och bredare för att likna desktop */
-        min-width: 135px !important; 
-        height: 130px !important;    /* Rejäl höjd */
+        min-width: 140px !important; /* Lite bredare för att rymma text på rad */
+        height: 150px !important;    /* Punkt 2: Rejäl höjd (150px) */
         
-        /* Fyrkantiga hörn (inga rundningar) */
-        border-radius: 4px !important; /* Eller sätt 0px om du vill ha helt vassa hörn */
-        
+        scroll-snap-align: start;    /* Se till att kortet stannar snyggt vid kanten */
         flex-shrink: 0;
-        padding: 16px !important;
-        background: white; /* Se till att bakgrunden är vit */
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1); /* Diskret skugga som på desktop */
-
-        /* LAYOUT: Tvinga allt innehåll att staplas (Column) */
+        
+        border-radius: 4px !important; /* Fyrkantiga hörn */
+        padding: 16px 20px !important; /* Mer luft på sidorna */
+        
+        /* LAYOUT: Stapla (Rubrik uppe, Siffra nere) */
         display: flex !important;
         flex-direction: column !important;
-        justify-content: space-between !important; /* Sprid ut innehållet (Titel uppe, siffra nere) */
-        align-items: center !important;
-        text-align: center !important;
+        justify-content: space-between !important; /* Tryck isär rubrik och siffra */
+        
+        /* VIKTIGT: Vänsterställt (Punkt 5) */
+        align-items: flex-start !important; 
+        text-align: left !important;
+        
+        background: white;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
 
-    /* --- 3. TITEL & IKON (Fixar även "Alla jobb") --- */
+    /* --- 3. RUBRIK & IKON (Punkt 3 & 6: Samma rad!) --- */
     .stat-card-title {
-        font-size: 0.75rem !important; /* Liten versal text */
-        text-transform: uppercase;
-        color: #6b7280; /* Grå textfärg */
-        font-weight: 600;
-        letter-spacing: 0.5px;
-        margin: 0 !important;
-        width: 100%;
-        
-        /* Tvinga ikon och text att staplas om de ligger i samma container */
+        /* Tvinga Ikon + Text att ligga på RAD (Row) */
         display: flex !important;
-        flex-direction: column !important; 
+        flex-direction: row !important; 
         align-items: center !important;
         gap: 8px !important; /* Avstånd mellan ikon och text */
+        
+        font-size: 0.75rem !important;
+        text-transform: uppercase;
+        color: #6b7280;
+        font-weight: 600;
+        margin: 0 !important;
+        width: 100%;
     }
 
-    /* Justera ikonens storlek inuti titeln */
+    /* Fixa ikonstorleken */
     .stat-card-title svg, 
     .stat-card-title .icon-sm {
-        width: 20px !important;
-        height: 20px !important;
-        margin: 0 !important; /* Ingen marginal i sidled */
-        margin-bottom: 4px !important;
+        width: 18px !important;
+        height: 18px !important;
+        margin: 0 !important;
+        flex-shrink: 0; /* Hindra ikonen från att krympa */
     }
 
-    /* --- 4. SIFFRAN (Stor och tydlig) --- */
+    /* --- 4. SIFFRAN (Punkt 4: Tunnare & Vänsterställd) --- */
     .stat-card-value {
-        font-size: 2.2rem !important; /* Mycket stor siffra */
-        font-weight: 700;
+        font-size: 2.8rem !important; /* Stor siffra */
+        font-weight: 400 !important;  /* Punkt 4: Tunnare (400 = Regular, 500 = Medium) */
         color: #111827;
-        margin-top: auto !important; /* Tryck ner siffran lite */
-        margin-bottom: 10px !important; 
         line-height: 1;
+        margin: 0 !important;
+        
+        /* Säkerställ vänsterjustering */
+        align-self: flex-start !important; 
+        text-align: left !important;
     }
 }
+
 
 
 
