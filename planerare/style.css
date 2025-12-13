@@ -4795,22 +4795,19 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 
 @media (max-width: 768px) {
 
-    /* --- 1. CONTAINERN (Scroll & Fade) --- */
+    /* --- 1. CONTAINERN --- */
     .stat-bar {
         display: flex !important;
         overflow-x: auto !important;
         gap: 12px !important;
-        padding: 4px 16px 20px 16px !important; /* Padding i botten för skuggor */
+        padding: 4px 16px 20px 16px !important;
         margin-bottom: 5px !important;
         
-        /* SCROLL SNAP: Kortet "låser" sig snyggt när man swipar */
         scroll-snap-type: x mandatory; 
         
-        /* FADE-EFFEKT: Innehållet tonas ut mot transparens på högerkanten */
         -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
         mask-image: linear-gradient(to right, black 85%, transparent 100%);
 
-        /* Dölj scrollbar */
         scrollbar-width: none; 
         -ms-overflow-style: none;
     }
@@ -4819,28 +4816,25 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
         display: none;
     }
 
-    /* Ta bort gammal fade om den ligger kvar */
     .stat-bar::after {
         display: none !important;
     }
 
-    /* --- 2. KORTEN (Mini-Desktop look) --- */
+    /* --- 2. KORTEN (Hög & Vänsterställd) --- */
     .stat-card {
-        min-width: 140px !important; /* Bredare */
-        height: 150px !important;    /* Högre (150px) */
+        min-width: 140px !important;
+        height: 150px !important;
         
-        scroll-snap-align: start;    /* Lås vid vänsterkanten */
+        scroll-snap-align: start;
         flex-shrink: 0;
         
-        border-radius: 4px !important; /* Fyrkantiga hörn */
-        padding: 16px 20px !important; /* Luftigt */
+        border-radius: 4px !important;
+        padding: 16px 20px !important;
         
-        /* LAYOUT: Stapla (Rubrik uppe, Siffra nere) */
         display: flex !important;
         flex-direction: column !important;
         justify-content: space-between !important; 
         
-        /* VÄNSTERSTÄLLT */
         align-items: flex-start !important; 
         text-align: left !important;
         
@@ -4848,10 +4842,10 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
         box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
 
-    /* --- 3. RUBRIK & IKON (På samma rad) --- */
+    /* --- 3. RUBRIK & IKON --- */
     .stat-card-title {
         display: flex !important;
-        flex-direction: row !important; /* Tvinga rad */
+        flex-direction: row !important;
         align-items: center !important;
         gap: 8px !important;
         
@@ -4863,7 +4857,6 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
         width: 100%;
     }
 
-    /* Fixa ikonstorleken */
     .stat-card-title svg, 
     .stat-card-title .icon-sm {
         width: 18px !important;
@@ -4872,13 +4865,13 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
         flex-shrink: 0;
     }
 
-    /* --- 4. SIFFRAN (Tunn & Svart - FIXEN) --- */
+    /* --- 4. SIFFRAN (RÄTTAD) --- */
     .stat-card-value {
-        font-size: 2.6rem !important; 
-        font-weight: 500 !important;  /* Tunn text */
+        font-size: 2.4rem !important; 
+        font-weight: 500 !important;
         
-        /* VIKTIGT: Tvingar färgen till svart (överkör blå färg) */
-        color: #111827 !important; 
+        /* HÄR VAR FELET: Jag tog bort "color: ... !important" */
+        /* Nu kommer dina originalfärger (blå/lila/grön) att synas igen! */
         
         line-height: 1;
         margin: 0 !important;
@@ -4886,14 +4879,23 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
         text-align: left !important;
     }
 
-    /* --- 5. INNER-FIX (För "Alla jobb" specifikt) --- */
-    /* Detta garanterar att om siffran ligger i en <span> eller <b>, 
-       så tvingas den ändå bli svart och tunn */
+    /* --- 5. FIX FÖR "ALLA JOBB" STORLEK --- */
+    /* Detta tvingar ALLT inuti siffran att bli stort, oavsett om det är en span eller b */
     .stat-card-value * {
+        font-size: 2.8rem !important; /* Tvinga storleken */
+        font-weight: 500 !important;  /* Tvinga tjockleken */
+        
+        /* OBS: Vi sätter INTE färg här, så den behåller sin egen färg */
+    }
+    
+    /* SPECIFIKT FÖR ALLA JOBB-KORTET (Om den behöver vara svart) */
+    /* Om "Alla jobb" har filtret "alla", gör vi BARA den svart */
+    .stat-card[data-filter="alla"] .stat-card-value,
+    .stat-card[data-filter="alla"] .stat-card-value * {
         color: #111827 !important;
-        font-weight: 500 !important;
     }
 }
+
 
 
 
