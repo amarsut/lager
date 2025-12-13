@@ -4710,6 +4710,41 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     }
 }
 
+/* Wrapper för Input + Kopiera-knapp */
+.input-wrapper-copy {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-wrapper-copy input {
+    padding-right: 40px !important; /* Gör plats för knappen */
+}
+
+.btn-copy-input {
+    position: absolute;
+    right: 8px;
+    background: transparent;
+    border: none;
+    color: #9ca3af;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.btn-copy-input:hover {
+    color: #3b82f6;
+    background-color: rgba(59, 130, 246, 0.1);
+}
+
+.btn-copy-input svg {
+    width: 16px;
+    height: 16px;
+}
 
 
 
