@@ -4802,42 +4802,29 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
         gap: 12px !important;
         padding: 4px 16px 20px 16px !important;
         margin-bottom: 5px !important;
-        
         scroll-snap-type: x mandatory; 
-        
         -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
         mask-image: linear-gradient(to right, black 85%, transparent 100%);
-
         scrollbar-width: none; 
         -ms-overflow-style: none;
     }
     
-    .stat-bar::-webkit-scrollbar {
-        display: none;
-    }
+    .stat-bar::-webkit-scrollbar { display: none; }
+    .stat-bar::after { display: none !important; }
 
-    .stat-bar::after {
-        display: none !important;
-    }
-
-    /* --- 2. KORTEN (Hög & Vänsterställd) --- */
+    /* --- 2. KORTEN --- */
     .stat-card {
         min-width: 140px !important;
         height: 150px !important;
-        
         scroll-snap-align: start;
         flex-shrink: 0;
-        
         border-radius: 4px !important;
         padding: 16px 20px !important;
-        
         display: flex !important;
         flex-direction: column !important;
         justify-content: space-between !important; 
-        
         align-items: flex-start !important; 
         text-align: left !important;
-        
         background: white;
         box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
@@ -4848,7 +4835,6 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
         flex-direction: row !important;
         align-items: center !important;
         gap: 8px !important;
-        
         font-size: 0.75rem !important;
         text-transform: uppercase;
         color: #6b7280;
@@ -4857,44 +4843,41 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
         width: 100%;
     }
 
-    .stat-card-title svg, 
-    .stat-card-title .icon-sm {
+    .stat-card-title svg,  .stat-card-title .icon-sm {
         width: 18px !important;
         height: 18px !important;
         margin: 0 !important;
         flex-shrink: 0;
     }
 
-    /* --- 4. SIFFRAN (RÄTTAD) --- */
+    /* --- 4. SIFFRAN (DEN AGGRESSIVA FIXEN) --- */
+    
+    /* Grundregeln för behållaren */
     .stat-card-value {
         font-size: 2.4rem !important; 
-        font-weight: 500 !important;
-        
-        /* HÄR VAR FELET: Jag tog bort "color: ... !important" */
-        /* Nu kommer dina originalfärger (blå/lila/grön) att synas igen! */
-        
-        line-height: 1;
+        font-weight: 500 !important; /* Ändrat till 800 (Extra Bold) för att matcha bilden */
+        line-height: 1 !important;
         margin: 0 !important;
         align-self: flex-start !important; 
         text-align: left !important;
     }
 
-    /* --- 5. FIX FÖR "ALLA JOBB" STORLEK --- */
-    /* Detta tvingar ALLT inuti siffran att bli stort, oavsett om det är en span eller b */
-    .stat-card-value * {
-        font-size: 2.8rem !important; /* Tvinga storleken */
-        font-weight: 500 !important;  /* Tvinga tjockleken */
-        
-        /* OBS: Vi sätter INTE färg här, så den behåller sin egen färg */
+    /* SLÄGGAN: Tvinga ALLA tänkbara taggar inuti att ärva storlek och tjocklek.
+       Detta kör över eventuella <span>, <b>, <h3>, <strong> etc. */
+    .stat-card-value *, .stat-card-value span, .stat-card-value b, .stat-card-value strong, .stat-card-value em, .stat-card-value i {
+        font-size: inherit !important;   /* Ärv 2.8rem från föräldern */
+        font-weight: inherit !important; /* Ärv 800 från föräldern */
+        color: inherit !important;       /* Behåll sin egen färg (blå/svart) */
+        line-height: inherit !important;
+        margin: 0 !important;
     }
     
-    /* SPECIFIKT FÖR ALLA JOBB-KORTET (Om den behöver vara svart) */
-    /* Om "Alla jobb" har filtret "alla", gör vi BARA den svart */
-    .stat-card[data-filter="alla"] .stat-card-value,
-    .stat-card[data-filter="alla"] .stat-card-value * {
+    /* Specifik färg för "Alla jobb" om den är inställd så */
+    .stat-card[data-filter="alla"] .stat-card-value {
         color: #111827 !important;
     }
 }
+
 
 
 
