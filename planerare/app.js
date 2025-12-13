@@ -338,7 +338,6 @@ function renderDashboard() {
     let jobsToDisplay = filterJobs(allJobs);
 
 	// 1. Separera oplanerade jobb (OM vi är i mobilvy och filtret är "Alla" eller "Kommande")
-    const isMobile = window.innerWidth <= 768;
     const unplannedContainer = document.getElementById('unplannedContainer');
     
     if (isMobile && (currentStatusFilter === 'alla' || currentStatusFilter === 'kommande')) {
