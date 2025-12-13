@@ -419,9 +419,15 @@
 	                    <input type="text" id="kundnamn" class="input-gray uppercase-input" required autocomplete="off" list="customerListOptions" oninput="this.value = this.value.toUpperCase()">
 	                </div>
 	                <div class="form-group">
-	                    <label>Reg.nr</label>
-	                    <input type="text" id="regnr" class="input-gray uppercase-input" placeholder="ABC 123" oninput="this.value = this.value.toUpperCase()">
-	                </div>
+					    <label>Reg.nr</label>
+					    <div class="input-wrapper-copy">
+					        <input type="text" id="regnr" class="input-gray uppercase-input" placeholder="ABC 123" oninput="this.value = this.value.toUpperCase()">
+					        
+					        <button type="button" class="btn-copy-input" onclick="copyInputValue('regnr', this)" title="Kopiera">
+					            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+					        </button>
+					    </div>
+					</div>
 	            </div>
 	
 	            <div class="form-grid">
