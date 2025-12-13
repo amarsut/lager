@@ -1170,8 +1170,20 @@ async function handleSaveJob(e) {
     // Hämta värden från formuläret
     const kund = document.getElementById('kundnamn').value || "Okänd kund";
     const reg = document.getElementById('regnr').value.toUpperCase() || "OKÄNT";
-    const datum = document.getElementById('datum').value;
-    const tid = document.getElementById('tid').value;
+    
+    // --- NY LOGIK FÖR DATUM (VÄNTELISTA) ---
+    const datumInput = document.getElementById('datum').value;
+    const tidInput = document.getElementById('tid').value;
+    
+    let finalDateString = ""; // Standard är tom sträng (Oplanerat/Väntelista)
+
+    if (datumInput) {
+        // Om datum är valt, kombinera med tid (eller standard 08:00)
+        const timeStr = tidInput || "08:00";
+        finalDateString = `${datumInput}T${timeStr}`;
+    }
+    // ---------------------------------------
+
     const pris = parseInt(document.getElementById('kundpris').value) || 0;
     const status = document.getElementById('statusSelect').value;
     const paket = document.getElementById('paketSelect').value;
@@ -1183,7 +1195,7 @@ async function handleSaveJob(e) {
     const jobData = {
         kundnamn: kund,
         regnr: reg,
-        datum: `${datum}T${tid}`,
+        datum: finalDateString, // Sparas som "" om datum saknas
         kundpris: pris,
         status: status,
         paket: paket,
@@ -1205,7 +1217,6 @@ async function handleSaveJob(e) {
             
             // 3. Räkna ut skillnaden (Nytt - Gammalt)
             // Exempel: Ändra från 4L till 5L. Diff = 1L. Vi ska dra 1L till.
-            // Exempel: Ändra från 5L till 4L. Diff = -1L. Vi ska lägga tillbaka 1L.
             const diff = newOilAmount - oldOilAmount;
             
             // 4. Uppdatera jobbet
@@ -1230,6 +1241,9 @@ async function handleSaveJob(e) {
         
         closeModals();
         document.getElementById('jobModalForm').reset();
+        
+        // Visa en liten bekräftelse (om du lagt in toast-systemet, annars valfritt)
+        // showToast('Jobbet sparat!', 'success');
         
     } catch (err) {
         console.error("Fel vid spara:", err);
