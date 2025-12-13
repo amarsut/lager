@@ -4802,9 +4802,12 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
         gap: 12px !important;
         padding: 4px 16px 20px 16px !important;
         margin-bottom: 5px !important;
+        
         scroll-snap-type: x mandatory; 
+        
         -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
         mask-image: linear-gradient(to right, black 85%, transparent 100%);
+
         scrollbar-width: none; 
         -ms-overflow-style: none;
     }
@@ -4820,11 +4823,14 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
         flex-shrink: 0;
         border-radius: 4px !important;
         padding: 16px 20px !important;
+        
         display: flex !important;
         flex-direction: column !important;
         justify-content: space-between !important; 
+        
         align-items: flex-start !important; 
         text-align: left !important;
+        
         background: white;
         box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
@@ -4843,40 +4849,54 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
         width: 100%;
     }
 
-    .stat-card-title svg,  .stat-card-title .icon-sm {
+    .stat-card-title svg, 
+    .stat-card-title .icon-sm {
         width: 18px !important;
         height: 18px !important;
         margin: 0 !important;
         flex-shrink: 0;
     }
 
-    /* --- 4. SIFFRAN (DEN AGGRESSIVA FIXEN) --- */
+    /* --- 4. SIFFRAN (HÅRDKODAD FIX) --- */
     
-    /* Grundregeln för behållaren */
     .stat-card-value {
         font-size: 2.4rem !important; 
-        font-weight: 500 !important; /* Ändrat till 800 (Extra Bold) för att matcha bilden */
+        font-weight: 500 !important;
         line-height: 1 !important;
         margin: 0 !important;
         align-self: flex-start !important; 
         text-align: left !important;
+        
+        /* Nytt: Se till att container beter sig som flex om det behövs */
+        display: flex !important;
+        align-items: center !important;
     }
 
-    /* SLÄGGAN: Tvinga ALLA tänkbara taggar inuti att ärva storlek och tjocklek.
-       Detta kör över eventuella <span>, <b>, <h3>, <strong> etc. */
-    .stat-card-value *, .stat-card-value span, .stat-card-value b, .stat-card-value strong, .stat-card-value em, .stat-card-value i {
-        font-size: inherit !important;   /* Ärv 2.8rem från föräldern */
-        font-weight: inherit !important; /* Ärv 800 från föräldern */
-        color: inherit !important;       /* Behåll sin egen färg (blå/svart) */
-        line-height: inherit !important;
+    /* HÄR ÄR ÄNDRINGEN:
+       Vi använder inte 'inherit'. Vi skriver '2.8rem' rakt ut på ALLT.
+       Det tvingar ALLA inre element att bli exakt så stora. */
+    .stat-card-value > *,
+    .stat-card-value span,
+    .stat-card-value div,
+    .stat-card-value b,
+    .stat-card-value strong,
+    .stat-card-value i {
+        font-size: 2.4rem !important;  /* Tvinga storlek */
+        font-weight: 500 !important;   /* Tvinga tjocklek */
+        line-height: 1 !important;
         margin: 0 !important;
+        
+        /* Vi sätter INGEN färg här, så de behåller sin blå/gröna färg */
     }
-    
-    /* Specifik färg för "Alla jobb" om den är inställd så */
-    .stat-card[data-filter="alla"] .stat-card-value {
+
+    /* --- 5. FÄRGFIX FÖR "ALLA JOBB" --- */
+    /* Bara "Alla jobb"-kortet ska vara svart */
+    .stat-card[data-filter="alla"] .stat-card-value,
+    .stat-card[data-filter="alla"] .stat-card-value * {
         color: #111827 !important;
     }
 }
+
 
 
 
