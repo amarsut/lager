@@ -4794,55 +4794,81 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 }
 
 @media (max-width: 768px) {
-    
-    /* Gör om stat-bar till en horisontell scroll-lista */
+
+    /* --- HORISONTELL SCROLL-LISTA (Instagram-style) --- */
+
+    /* 1. Containern för korten */
     .stat-bar {
-        display: flex !important; /* Byt från grid till flex */
+        display: flex !important;
         overflow-x: auto !important; /* Tillåt scroll i sidled */
         gap: 12px !important;
-        padding: 4px 16px 12px 16px !important; /* Lite luft för skuggan */
-        margin-bottom: 8px !important;
-        
-        /* Dölj scrollbaren för snyggare look */
+        /* Lite mer padding runt om för att ge plats åt skuggor */
+        padding: 12px 16px 16px 16px !important;
+        margin-bottom: 10px !important;
+        position: relative; /* Viktigt! Behövs för att placera "faden" */
+
+        /* Dölj scrollbaren för en ren look */
         scrollbar-width: none; /* Firefox */
         -ms-overflow-style: none; /* IE */
     }
-    
-    .stat-bar::-webkit-scrollbar { 
+
+    .stat-bar::-webkit-scrollbar {
         display: none; /* Chrome/Safari */
     }
 
-    /* Gör korten mindre och fast storlek */
+    /* 2. Korten (Nu större och högre!) */
     .stat-card {
-        min-width: 110px !important; /* Smala kort */
-        width: 110px !important;
-        min-height: 65px !important; /* Lägre höjd */
-        flex-shrink: 0; /* Förhindra att de krymper */
-        padding: 8px !important;
-        
-        /* Centrera innehållet */
-        align-items: center !important; 
-        text-align: center !important;
+        min-width: 125px !important;  /* Något bredare än förut */
+        height: 95px !important;      /* <--- HÄR ÖKAR VI HÖJDEN (Gör dem maffigare) */
+        flex-shrink: 0;               /* VIKTIGT: Hindrar dem från att klämmas ihop */
+        padding: 12px !important;     /* Mer luft inuti */
+
+        /* Centrera innehållet snyggt */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+
+        /* En liten skugga för att lyfta dem från bakgrunden */
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05) !important;
     }
 
-    /* Justera texten i korten */
+    /* Justera textstorlekar för att matcha den nya höjden */
     .stat-card-title {
-        font-size: 0.6rem !important;
-        justify-content: center !important;
-        white-space: nowrap;
+        font-size: 0.7rem !important; /* Lite tydligare rubrik */
+        margin-bottom: 6px !important;
+        opacity: 0.8;
+        white-space: nowrap; /* Förhindra radbrytning i rubriken */
     }
-    
+
     .stat-card-value {
-        font-size: 1.2rem !important; /* Något mindre siffra */
-        margin-top: 2px !important;
+        font-size: 1.6rem !important; /* Stora, tydliga siffror */
+        font-weight: 800;
+        line-height: 1;
     }
-    
-    /* Gör "Väntelista"-kortet tydligt gult/orange */
-    .stat-card[data-filter="oplanerad"] {
-        border: 1px dashed #f59e0b !important;
-        background: #fffbeb !important;
+
+    /* 3. Den gråa "Faden" på högersidan */
+    /* Detta skapar ett "lager" ovanpå högerkanten */
+    .stat-bar::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        height: 100%; /* Täck hela höjden av listen */
+        width: 60px;  /* Hur bred faden ska vara */
+
+        /* Gradienten: Från helt genomskinlig (vänster) till svagt grå (höger) */
+        background: linear-gradient(to right, rgba(255,255,255,0), rgba(0,0,0,0.15));
+
+        /* VIKTIGT: Gör att man kan klicka/swipa "igenom" faden */
+        pointer-events: none;
+        /* Runda hörnen på faden så den följer containern (om den är rundad) */
+        border-top-right-radius: 12px;
+        border-bottom-right-radius: 12px;
     }
 }
+
 
 
 
