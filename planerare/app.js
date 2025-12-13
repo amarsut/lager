@@ -335,24 +335,25 @@ function renderDashboard() {
     updateCustomerDatalist();
 
     const container = document.getElementById('jobListContainer');
-    let jobsToDisplay = filterJobs(allJobs);
-	const isMobile = window.innerWidth <= 768;
-
-	// 1. Separera oplanerade jobb (OM vi är i mobilvy och filtret är "Alla" eller "Kommande")
-    const unplannedContainer = document.getElementById('unplannedContainer');
     
-    if (isMobile && (currentStatusFilter === 'alla' || currentStatusFilter === 'kommande')) {
-        
-        // Hitta jobben utan datum
-        const unplannedJobs = jobsToDisplay.filter(j => !j.datum || j.datum === '');
-        // Hitta jobben MED datum (resten)
-        const plannedJobs = jobsToDisplay.filter(j => j.datum && j.datum !== '');
-        
-        // Uppdatera huvudvariabeln så huvudlistan BARA visar planerade
-        jobsToDisplay = plannedJobs; 
+    // 1. Hämta alla jobb baserat på filtret
+    let jobsToDisplay = filterJobs(allJobs);
 
-        // 2. Rendera den lilla "Dragspels-listan"
+    // --- LOGIK FÖR OPLANERADE JOBB (Dragspelslista) ---
+    const unplannedContainer = document.getElementById('unplannedContainer');
+    const isMobile = window.innerWidth <= 768;
+
+    // Vi visar bara dragspelslistan om vi är på mobil OCH filtret är "Alla" eller "Kommande"
+    // (På "Väntelista"-fliken vill vi se dem som vanliga kort)
+    if (isMobile && unplannedContainer && (currentStatusFilter === 'alla' || currentStatusFilter === 'kommande')) {
+        
+        // Hitta jobb utan datum
+        const unplannedJobs = jobsToDisplay.filter(j => !j.datum || j.datum === '');
+        // Hitta jobb MED datum (som ska ligga i vanliga listan)
+        const plannedJobs = jobsToDisplay.filter(j => j.datum && j.datum !== '');
+
         if (unplannedJobs.length > 0) {
+            // Visa dragspelslistan
             unplannedContainer.style.display = 'block';
             document.getElementById('unplannedCountText').textContent = `${unplannedJobs.length} väntar på bokning`;
             
@@ -360,52 +361,68 @@ function renderDashboard() {
             uList.innerHTML = '';
             
             unplannedJobs.forEach(job => {
-                // Använd din vanliga funktion för att skapa kort
-                uList.innerHTML += createJobCard(job); 
+                // Skapa kortet men tvinga datumtexten
+                let cardHtml = createJobCard(job);
+                // Liten hack: Byt ut datumtexten mot "BOKA TID" visuellt i denna lista
+                cardHtml = cardHtml.replace('id="date-', 'style="color:#d97706; font-weight:800;" id="date-'); 
+                uList.innerHTML += cardHtml;
             });
             
+            // Uppdatera huvudlistan att BARA visa de planerade (så vi inte ser dubbletter)
+            jobsToDisplay = plannedJobs;
+            
         } else {
+            // Inga oplanerade jobb hittades i detta urval
             unplannedContainer.style.display = 'none';
         }
     } else {
-        // Om desktop eller annat filter, göm special-listan
+        // Om desktop eller annat filter -> Göm dragspelslistan
         if(unplannedContainer) unplannedContainer.style.display = 'none';
     }
+    // --------------------------------------------------
 
-    // --- NYTT: Pagination Logik ---
+    // --- Pagination (Visa mer) ---
     const totalJobs = jobsToDisplay.length;
     let showLoadMoreBtn = false;
 
-    // Om vi visar "Alla" (eller om du vill ha det på alla filter), aktivera gränsen
     if (currentStatusFilter === 'alla' && totalJobs > currentLimit) {
         jobsToDisplay = jobsToDisplay.slice(0, currentLimit);
         showLoadMoreBtn = true;
     }
-    // -----------------------------
 
+    // --- Rita ut huvudlistan ---
     if (jobsToDisplay.length === 0) {
-        container.innerHTML = '<p style="text-align:center; padding:2rem; color:#888;">Inga jobb hittades.</p>';
+        container.innerHTML = '<p style="text-align:center; padding:2rem; color:#888;">Inga jobb att visa här.</p>';
         return;
     }
 
-    // Bygg HTML (Mobil eller Desktop)
     let htmlContent = '';
 
     if (isMobile) {
+        // Mobilvy: Kort
         let lastDateStr = '';
         jobsToDisplay.forEach(job => {
-            // ... din datum-logik för separatorer ... (använd gärna getSmartDateString här också om du vill)
-            // Kopiera din befintliga loop-logik hit
-             htmlContent += createJobCard(job);
+            // Använd smart datum om funktionen finns, annars fallback
+            const dateVal = typeof getSmartDateString === 'function' ? getSmartDateString(job.datum) : job.datum.split('T')[0];
+            
+            // Sätt rubriker för datum (bara om det är ett planerat jobb)
+            if (job.datum) {
+                const formattedHeader = dateVal.charAt(0).toUpperCase() + dateVal.slice(1);
+                if (formattedHeader !== lastDateStr) {
+                    htmlContent += `<div class="date-separator">${formattedHeader}</div>`;
+                    lastDateStr = formattedHeader;
+                }
+            }
+            htmlContent += createJobCard(job);
         });
     } else {
-        // Desktop tabell
+        // Desktopvy: Tabell
         htmlContent = `<table id="jobsTable"><thead><tr><th>Status</th><th>Datum</th><th>Kund</th><th>Reg.nr</th><th style="text-align:right">Pris</th><th class="action-col">Åtgärder</th></tr></thead><tbody>`;
         jobsToDisplay.forEach(job => htmlContent += createJobRow(job));
         htmlContent += `</tbody></table>`;
     }
 
-    // --- NYTT: Lägg till "Visa mer"-knappen om det behövs ---
+    // Lägg till "Visa mer"-knapp
     if (showLoadMoreBtn) {
         const remaining = totalJobs - currentLimit;
         htmlContent += `
