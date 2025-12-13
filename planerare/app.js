@@ -353,7 +353,7 @@ function renderDashboard() {
         });
     } else {
         // Desktop tabell
-        htmlContent = `<table id="jobsTable"><thead>...</thead><tbody>`;
+        htmlContent = `<table id="jobsTable"><thead><tr><th>Status</th><th>Datum</th><th>Kund</th><th>Reg.nr</th><th style="text-align:right">Pris</th><th class="action-col">Åtgärder</th></tr></thead><tbody>`;
         jobsToDisplay.forEach(job => htmlContent += createJobRow(job));
         htmlContent += `</tbody></table>`;
     }
