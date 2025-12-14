@@ -4805,7 +4805,7 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     display: none;
     /* ÄNDRAT: Minska sid-padding från 16px till 6px. 
        Detta gör att korten blir bredare. */
-    padding: 0 6px 12px 6px !important; 
+    padding: 0 6px 16px 6px !important; 
     
     background-color: #ffffff;
     border-top: 1px solid #fed7aa;
@@ -4855,8 +4855,10 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     .stat-card {
         min-width: 140px !important;
         height: 150px !important;
+        
         scroll-snap-align: start;
         flex-shrink: 0;
+        
         border-radius: 4px !important;
         padding: 16px 20px !important;
         
@@ -4869,6 +4871,17 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
         
         background: white;
         box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+
+        /* NYTT: Reservera plats för linjen i botten men gör den osynlig först */
+        border-bottom: 4px solid transparent !important;
+        transition: border-color 0.2s; /* Mjuk övergång */
+    }
+
+    /* --- NY REGEL: HÄR ÄR FIXEN --- */
+    /* Detta gör att det valda kortet får den blå linjen */
+    .stat-card.active {
+        border-bottom: 4px solid #2563eb !important; /* Den blå färgen */
+        background-color: #feffff; /* (Valfritt) Extra vit för att markera */
     }
 
     /* --- 3. RUBRIK & IKON --- */
