@@ -4805,7 +4805,7 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     display: none;
     /* ÄNDRAT: Minska sid-padding från 16px till 6px. 
        Detta gör att korten blir bredare. */
-    padding: 0 6px 16px 6px !important; 
+    padding: 0 6px 12px 16px !important; 
     
     background-color: #ffffff;
     border-top: 1px solid #fed7aa;
