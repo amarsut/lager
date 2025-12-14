@@ -4859,8 +4859,8 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 
     /* --- 4. SIFFRAN (GENERELLT) --- */
     .stat-card-value {
-        font-size: 2.4rem !important; 
-        font-weight: 500 !important;
+        font-size: 2.2rem !important; 
+        font-weight: 600 !important;
         line-height: 1 !important;
         margin: 0 !important;
         align-self: flex-start !important; 
@@ -4870,17 +4870,18 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     /* --- 5. "SLÄGGAN" FÖR ALLA JOBB (DETTA FIXAR FELET) --- */
     /* Vi pekar ut just detta ID för att vara 100% säkra på att inget annat stör */
     #stat-all {
-        font-size: 2.4rem !important; 
-        font-weight: 500 !important;
+        font-size: 2.2rem !important; 
+        font-weight: 600 !important;
         color: #111827 !important; /* Svart färg */
     }
     
     /* Om du vill vara säker på att de andra behåller sina färger men får rätt storlek: */
     #stat-upcoming, #stat-invoice, #stat-finished, #stat-offered {
-        font-size: 2.4rem !important;
-        font-weight: 500 !important;
+        font-size: 2.2rem !important;
+        font-weight: 600 !important;
     }
 }
+
 
 
 
