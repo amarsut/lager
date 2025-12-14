@@ -3261,11 +3261,11 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 [data-theme="dark"] .drop-stats { color: #aaa; }
 [data-theme="dark"] .oil-badge.compact { background: #333; border-color: #444; color: #aaa; }
 
-//********* MODALER ENHETLIGT UPPDATERA SEN TA BORT DUBLETTER **********//
-//********* MODALER ENHETLIGT UPPDATERA SEN TA BORT DUBLETTER **********//
-//********* MODALER ENHETLIGT UPPDATERA SEN TA BORT DUBLETTER **********//
-//********* MODALER ENHETLIGT UPPDATERA SEN TA BORT DUBLETTER **********//
-//********* MODALER ENHETLIGT UPPDATERA SEN TA BORT DUBLETTER **********//
+/********* MODALER ENHETLIGT UPPDATERA SEN TA BORT DUBLETTER **********/
+/********* MODALER ENHETLIGT UPPDATERA SEN TA BORT DUBLETTER **********/
+/********* MODALER ENHETLIGT UPPDATERA SEN TA BORT DUBLETTER **********/
+/********* MODALER ENHETLIGT UPPDATERA SEN TA BORT DUBLETTER **********/
+/********* MODALER ENHETLIGT UPPDATERA SEN TA BORT DUBLETTER **********/
 
 
 /* =================================================================
@@ -4750,29 +4750,63 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 
 /* Container */
 .unplanned-accordion {
-    margin: 0 10px 10px 10px; /* Samma marginal som dina kort */
-    background: #fffbeb;
-    border: 1px solid #fcd34d;
-    border-radius: 8px;
+    margin: 0 16px 18px 10px !important;
+    
+    /* GRADIENT BAKGRUND: 
+       Går från mycket svag orange (vänster) till helt vitt (höger).
+       Detta ger den "fade"-effekt du efterfrågade. */
+    background: linear-gradient(90deg, #fff7ed 0%, #ffffff 80%) !important;
+    
+    /* Fyrkantig form och skugga för att matcha topp-korten */
+    border-radius: 4px !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+    
+    /* Ta bort gamla ramar */
+    border: none !important;
+    
+    /* VÄNSTER ACCENT: En tydlig orange linje till vänster */
+    border-left: 4px solid #f59e0b !important;
+    
     overflow: hidden;
 }
 
 /* Headern (Det man klickar på) */
 .unplanned-header {
-    padding: 10px 12px;
+    padding: 12px 16px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     cursor: pointer;
-    background-color: #fffbeb;
+    
+    /* Gör bakgrunden genomskinlig så gradienten syns igenom */
+    background-color: transparent !important; 
+    transition: background-color 0.2s;
+}
+
+.unplanned-header:active {
+    background-color: rgba(245, 158, 11, 0.05) !important; /* Liten effekt vid tryck */
+}
+
+/* En liten hover-effekt (mest för desktop, men skadar inte) */
+.unplanned-header:hover {
+    background-color: #f9fafb;
+}
+
+/* Texten i headern */
+#unplannedCountText {
+    font-weight: 600 !important;
+    color: #b45309 !important; /* Mörkare orange/brun ton för att matcha temat */
+    font-size: 0.95rem !important;
+    margin-left: 8px;
 }
 
 /* Innehållet (Listan) */
 .unplanned-content {
-    display: none; /* Dold */
-    padding: 0 10px 10px 10px;
-    border-top: 1px solid #fcd34d;
-    background-color: #ffffff;
+    display: none;
+    padding: 0 16px 16px 16px;
+    padding-top: 12px;
+    background-color: #ffffff; /* Vit bakgrund när listan fälls ut (för kontrast) */
+    border-top: 1px solid #fed7aa; /* Tunn orange linje som avdelare */
 }
 
 /* När den är öppen */
