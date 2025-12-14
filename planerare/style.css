@@ -4829,42 +4829,6 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     margin-bottom: 8px !important;
 }
 
-/* --- KOMPAKTA KORT I VÄNTELISTAN --- */
-
-/* 1. Själva kortet */
-.unplanned-content .job-card, 
-.unplanned-content div[class*="card"] { /* Fångar upp de flesta kort-klasser */
-    margin-bottom: 8px !important; /* Mindre avstånd mellan korten */
-    font-size: 0.9rem !important;  /* Lite mindre text generellt */
-}
-
-/* 2. Headern (Den färgade balken, t.ex. Blå/Röd) */
-.unplanned-content .job-card-header,
-.unplanned-content .card-header {
-    padding: 6px 10px !important; /* Mycket mindre luft än standard */
-    min-height: auto !important;  /* Ta bort ev. tvingad höjd */
-}
-
-/* 3. Innehållet (Rader med text) */
-.unplanned-content .job-card-body,
-.unplanned-content .card-body {
-    padding: 6px 0 !important; /* Minska luft runt innehållet */
-}
-
-/* 4. Specifika rader (Namn, Datum etc) */
-.unplanned-content .job-row,
-.unplanned-content p, 
-.unplanned-content div {
-    margin-bottom: 2px !important; /* Dra ihop raderna på höjden */
-    padding-left: 10px !important; /* Behåll lite indrag för texten */
-    padding-right: 10px !important;
-    line-height: 1.3 !important;   /* Tätare textrader */
-}
-
-/* 5. Dölj onödig info i väntelistan? (Valfritt) */
-/* Om du vill göra dem extremt kompakta kan du dölja kommentaren */
-/* .unplanned-content .job-comment { display: none !important; } */
-
 @media (max-width: 768px) {
 
     /* --- 1. CONTAINERN --- */
