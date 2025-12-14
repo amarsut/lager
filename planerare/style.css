@@ -4857,8 +4857,7 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
         flex-shrink: 0;
     }
 
-    /* --- 4. SIFFRAN (HÅRDKODAD FIX) --- */
-    
+    /* --- 4. SIFFRAN (GENERELLT) --- */
     .stat-card-value {
         font-size: 2.4rem !important; 
         font-weight: 500 !important;
@@ -4866,36 +4865,23 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
         margin: 0 !important;
         align-self: flex-start !important; 
         text-align: left !important;
-        
-        /* Nytt: Se till att container beter sig som flex om det behövs */
-        display: flex !important;
-        align-items: center !important;
     }
 
-    /* HÄR ÄR ÄNDRINGEN:
-       Vi använder inte 'inherit'. Vi skriver '2.8rem' rakt ut på ALLT.
-       Det tvingar ALLA inre element att bli exakt så stora. */
-    .stat-card-value > *,
-    .stat-card-value span,
-    .stat-card-value div,
-    .stat-card-value b,
-    .stat-card-value strong,
-    .stat-card-value i {
-        font-size: 2.4rem !important;  /* Tvinga storlek */
-        font-weight: 500 !important;   /* Tvinga tjocklek */
-        line-height: 1 !important;
-        margin: 0 !important;
-        
-        /* Vi sätter INGEN färg här, så de behåller sin blå/gröna färg */
+    /* --- 5. "SLÄGGAN" FÖR ALLA JOBB (DETTA FIXAR FELET) --- */
+    /* Vi pekar ut just detta ID för att vara 100% säkra på att inget annat stör */
+    #stat-all {
+        font-size: 2.4rem !important; 
+        font-weight: 500 !important;
+        color: #111827 !important; /* Svart färg */
     }
-
-    /* --- 5. FÄRGFIX FÖR "ALLA JOBB" --- */
-    /* Bara "Alla jobb"-kortet ska vara svart */
-    .stat-card[data-filter="alla"] .stat-card-value,
-    .stat-card[data-filter="alla"] .stat-card-value * {
-        color: #111827 !important;
+    
+    /* Om du vill vara säker på att de andra behåller sina färger men får rätt storlek: */
+    #stat-upcoming, #stat-invoice, #stat-finished, #stat-offered {
+        font-size: 2.4rem !important;
+        font-weight: 500 !important;
     }
 }
+
 
 
 
