@@ -156,7 +156,7 @@ export function initCalendar(elementId, jobsData, onEventClickCallback, onDropCa
             center: '',         
             
             // Höger sida: "Visa Obokade" + "Idag" (Med mellanslag emellan så de hamnar i samma grupp)
-            right: 'today, toggleSidebarBtn' 
+            right: 'today toggleSidebarBtn' 
         },
         buttonText: { today: 'Idag' },
 
