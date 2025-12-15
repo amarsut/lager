@@ -5148,7 +5148,11 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 .bg-unplanned .header-reg-clickable { color: white !important; }
 .bg-unplanned .brand-logo-img { filter: brightness(0) invert(1) opacity(0.95) !important; }
 
-/* --- 1. FÄRGTEMAN (CSS-Variabler) --- */
+/***
+STAT-KORT
+***/
+
+/* --- 1. FÄRGTEMAN (Samma som förut) --- */
 .stat-card[data-filter="backlog"]    { --theme: #ea580c; --bg: #fff7ed; --border: #ffedd5; }
 .stat-card[data-filter="kommande"]   { --theme: #3B82F6; --bg: #F0F9FF; --border: transparent; }
 .stat-card[data-filter="faktureras"] { --theme: #A855F7; --bg: #FAF5FF; --border: transparent; }
@@ -5156,60 +5160,66 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 .stat-card[data-filter="offererad"]  { --theme: #F97316; --bg: #FFF7ED; --border: transparent; }
 .stat-card[data-filter="alla"]       { --theme: #EAB308; --bg: #FEFCE8; --border: transparent; }
 
-/* --- 2. KORTENS UTSEENDE (Gemensamt för Dator & Mobil) --- */
+/* --- 2. KORTENS UTSEENDE --- */
 .stat-card {
-    /* Design */
     background: linear-gradient(135deg, #fff 0%, var(--bg, #fff) 100%);
     border: 1px solid var(--border, #f3f4f6);
     border-radius: 8px;
-    padding: 16px 20px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
     
-    /* Layout inuti kortet */
+    /* ÄNDRAT: Mindre padding (var 16px 20px) för att göra kortet kompaktare */
+    padding: 10px 16px; 
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
     display: flex; flex-direction: column; justify-content: space-between;
-    min-height: 100px;
+    min-height: 75px; /* ÄNDRAT: Minskad min-höjd (var 100px) */
     cursor: pointer; transition: all 0.2s;
 }
 
-/* Färg på text och ikoner */
 .stat-card .stat-card-value, .stat-card svg, .stat-card .icon-sm { color: var(--theme) !important; }
-.stat-card-title { font-size: 0.75rem; font-weight: 600; color: #64748b; text-transform: uppercase; display: flex; gap: 8px; align-items: center; }
-.stat-card-value { font-size: 2rem; font-weight: 700; line-height: 1; }
-.stat-subtext { font-size: 0.7rem; color: #9ca3af; margin-top: auto; }
+.stat-card-title { font-size: 0.7rem; font-weight: 600; color: #64748b; text-transform: uppercase; display: flex; gap: 6px; align-items: center; }
 
-/* Active State (Samma logik för alla) */
+/* ÄNDRAT: Lite mindre textstorlek på siffran (var 2rem) för att matcha höjden */
+.stat-card-value { font-size: 1.8rem; font-weight: 700; line-height: 1; }
+.stat-subtext { font-size: 0.65rem; color: #9ca3af; margin-top: auto; }
+
 .stat-card.active { border-bottom: 4px solid var(--theme) !important; background-color: #feffff; }
 
-/* --- 3. LAYOUT (Här skiljer sig Dator och Mobil) --- */
+/* --- 3. LAYOUT --- */
 
-/* DATOR: Rutnät (Grid) */
-.stat-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 24px; }
+/* DATOR */
+.stat-bar { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); 
+    gap: 12px; 
+    margin-bottom: 12px; /* ÄNDRAT: Mindre marginal under listan på dator (var 24px) */
+}
 .stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 15px rgba(0,0,0,0.05); }
 
-/* MOBIL: Scroll-lista (Använder media query för att byta layoutmetod) */
+/* MOBIL */
 @media (max-width: 768px) {
     .stat-bar {
-        display: flex; /* Byt från Grid till Flex */
-        overflow-x: auto; /* Tillåt scroll */
-        gap: 12px;
-        padding: 4px 16px 20px; /* Padding för skuggor */
-        scroll-snap-type: x mandatory; /* "Magnetisk" scroll */
+        display: flex; 
+        overflow-x: auto; 
+        gap: 10px;
+        /* ÄNDRAT: Mindre padding i botten (var 20px). 
+           Vi behöver dock ca 10px kvar för att inte klippa skuggorna */
+        padding: 4px 16px 10px; 
         
-        /* Dölj scrollbar men behåll funktion */
+        scroll-snap-type: x mandatory; 
         scrollbar-width: none; -ms-overflow-style: none;
         -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
     }
     .stat-bar::-webkit-scrollbar { display: none; }
 
     .stat-card {
-        min-width: 140px; /* Tvinga bredd i scroll-listan */
-        scroll-snap-align: start; /* Kortet fastnar i kanten */
+        min-width: 130px; 
+        scroll-snap-align: start; 
         flex-shrink: 0;
+        /* Om du vill ha en fast höjd i mobilen, sätt den här (t.ex. height: 80px;) */
     }
     
-    /* Justering för siffran i mobil */
-    .stat-card-value { font-size: 2.2rem; } 
+    .stat-card-value { font-size: 2rem; } 
 }
+
 
 
 
