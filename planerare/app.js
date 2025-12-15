@@ -3387,10 +3387,10 @@ function toggleCalendarSidebar() {
 
     if (sidebar.classList.contains('open')) {
         sidebar.classList.remove('open');
-        if(btn) btn.textContent = "Visa Obokade";
+        if(btn) btn.textContent = "Visa";
     } else {
         sidebar.classList.add('open');
-        if(btn) btn.textContent = "Dölj Sidovy";
+        if(btn) btn.textContent = "Dölj";
         renderUnplannedSidebar();
     }
 
