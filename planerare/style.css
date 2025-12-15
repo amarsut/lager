@@ -5164,7 +5164,7 @@ STAT-KORT
 .stat-card {
     background: linear-gradient(135deg, #fff 0%, var(--bg, #fff) 100%);
     border: 1px solid var(--border, #f3f4f6);
-    border-radius: 8px;
+    border-radius: 0px;
     
     /* ÄNDRAT: Mindre padding (var 16px 20px) för att göra kortet kompaktare */
     padding: 10px 16px; 
@@ -5180,7 +5180,6 @@ STAT-KORT
 /* ÄNDRAT: Lite mindre textstorlek på siffran (var 2rem) för att matcha höjden */
 .stat-card-value { font-size: 1.8rem; font-weight: 700; line-height: 1; }
 .stat-subtext { font-size: 0.65rem; color: #9ca3af; margin-top: auto; }
-
 .stat-card.active { border-bottom: 4px solid var(--theme) !important; background-color: #feffff; }
 
 /* --- 3. LAYOUT --- */
@@ -5216,9 +5215,9 @@ STAT-KORT
         flex-shrink: 0;
         /* Om du vill ha en fast höjd i mobilen, sätt den här (t.ex. height: 80px;) */
     }
-    
     .stat-card-value { font-size: 2rem; } 
 }
+
 
 
 
