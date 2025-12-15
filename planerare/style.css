@@ -5529,4 +5529,9 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     .fc-header-toolbar { flex-wrap: wrap; gap: 10px; }
 }
 
+/* Lägg till i style.css */
+.bg-unplanned { background-color: #94a3b8 !important; color: white !important; border-bottom-color: #64748b !important; }
+.bg-unplanned .header-status-badge { background-color: rgba(255,255,255,0.25) !important; color: white !important; }
+.bg-unplanned .header-reg-clickable { color: white !important; }
+.bg-unplanned .brand-logo-img { filter: brightness(0) invert(1) opacity(0.95) !important; }
 
