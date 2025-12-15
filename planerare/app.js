@@ -58,6 +58,7 @@ let isFetchingOlderChat = false;
 let expandedMessageIds = new Set();
 let isEditingMsg = false;
 let currentEditMsgId = null;
+let currentBacklogTab = 'unplanned'; // Standardflik: 'unplanned' (Väntar) eller 'offered' (Offererad)
 
 const TIMEOUT_MINUTES = 15; // Ändra här om du vill ha annan tid (t.ex. 60)
 const INACTIVITY_LIMIT_MS = TIMEOUT_MINUTES * 60 * 1000;
@@ -335,106 +336,119 @@ function renderDashboard() {
     updateCustomerDatalist();
 
     const container = document.getElementById('jobListContainer');
-    
-    // 1. Hämta alla jobb baserat på filtret
-    let jobsToDisplay = filterJobs(allJobs);
-
-    // --- LOGIK FÖR OPLANERADE JOBB (Dragspelslista) ---
-    const unplannedContainer = document.getElementById('unplannedContainer');
     const isMobile = window.innerWidth <= 768;
+    
+    // Vi nollställer containern först, men sparar variabeln för jobb
+    let jobsToDisplay = [];
 
-    // Vi visar bara dragspelslistan om vi är på mobil OCH filtret är "Alla" eller "Kommande"
-    // (På "Väntelista"-fliken vill vi se dem som vanliga kort)
-    if (isMobile && unplannedContainer && (currentStatusFilter === 'alla' || currentStatusFilter === 'kommande')) {
+    // --- LOGIK FÖR "BACKLOG" (Kombinerat kort: Väntar + Offert) ---
+    if (currentStatusFilter === 'backlog') {
         
-        // Hitta jobb utan datum
-        const unplannedJobs = jobsToDisplay.filter(j => !j.datum || j.datum === '');
-        // Hitta jobb MED datum (som ska ligga i vanliga listan)
-        const plannedJobs = jobsToDisplay.filter(j => j.datum && j.datum !== '');
+        // 1. Räkna antal för badgarna i flikarna
+        // Vi räknar alla aktiva jobb som matchar kriterierna
+        const unplannedCount = allJobs.filter(j => !j.deleted && (!j.datum || j.datum === '')).length;
+        const offeredCount = allJobs.filter(j => !j.deleted && j.status === 'offererad').length;
 
-        if (unplannedJobs.length > 0) {
-            // Visa dragspelslistan
-            unplannedContainer.style.display = 'block';
-            document.getElementById('unplannedCountText').textContent = `${unplannedJobs.length} väntar på bokning`;
-            
-            const uList = document.getElementById('unplannedList');
-            uList.innerHTML = '';
-            
-            unplannedJobs.forEach(job => {
-                // Skapa kortet men tvinga datumtexten
-                let cardHtml = createJobCard(job);
-                // Liten hack: Byt ut datumtexten mot "BOKA TID" visuellt i denna lista
-                cardHtml = cardHtml.replace('id="date-', 'style="color:#d97706; font-weight:800;" id="date-'); 
-                uList.innerHTML += cardHtml;
-            });
-            
-            // Uppdatera huvudlistan att BARA visa de planerade (så vi inte ser dubbletter)
-            jobsToDisplay = plannedJobs;
-            
+        // 2. Skapa HTML för Flikarna
+        const tabsHtml = `
+            <div class="filter-tabs-container">
+                <div class="filter-tab ${currentBacklogTab === 'unplanned' ? 'active' : ''}" 
+                     onclick="switchBacklogTab('unplanned')">
+                     Väntar Bokning <span class="tab-badge">${unplannedCount}</span>
+                </div>
+                <div class="filter-tab ${currentBacklogTab === 'offered' ? 'active' : ''}" 
+                     onclick="switchBacklogTab('offered')">
+                     Offererade <span class="tab-badge">${offeredCount}</span>
+                </div>
+            </div>
+        `;
+
+        // 3. Filtrera listan baserat på vald flik
+        if (currentBacklogTab === 'unplanned') {
+            // Visa jobb UTAN datum
+            jobsToDisplay = allJobs.filter(j => !j.deleted && (!j.datum || j.datum === ''));
         } else {
-            // Inga oplanerade jobb hittades i detta urval
-            unplannedContainer.style.display = 'none';
+            // Visa offererade jobb
+            jobsToDisplay = allJobs.filter(j => !j.deleted && j.status === 'offererad');
         }
-    } else {
-        // Om desktop eller annat filter -> Göm dragspelslistan
-        if(unplannedContainer) unplannedContainer.style.display = 'none';
-    }
-    // --------------------------------------------------
+        
+        // Sortera: Nyast skapad först (eftersom de inte har datum, eller datum är irrelevant)
+        // Vi använder created-fältet om det finns, annars fallback
+        jobsToDisplay.sort((a,b) => (b.created || '').localeCompare(a.created || ''));
 
-    // --- Pagination (Visa mer) ---
+        // 4. Lägg in flikarna i containern direkt
+        container.innerHTML = tabsHtml;
+
+    } else {
+        // --- VANLIG LOGIK FÖR ANDRA KORT (Kommande, Fakturering, Alla, Klar) ---
+        
+        // Här använder vi din gamla filterfunktion
+        jobsToDisplay = filterJobs(allJobs);
+        
+        // Töm containern helt eftersom vi inte har flikar här
+        container.innerHTML = ''; 
+    }
+
+    // --- PAGINATION (Visa mer) ---
     const totalJobs = jobsToDisplay.length;
     let showLoadMoreBtn = false;
 
-    if (currentStatusFilter === 'alla' && totalJobs > currentLimit) {
+    // Vi begränsar bara om vi INTE är i backlog-läget (där vill vi oftast se allt)
+    // eller om listan är väldigt lång.
+    if (totalJobs > currentLimit) {
         jobsToDisplay = jobsToDisplay.slice(0, currentLimit);
         showLoadMoreBtn = true;
     }
 
-    // --- Rita ut huvudlistan ---
+    // --- RITA UT LISTAN ---
     if (jobsToDisplay.length === 0) {
-        container.innerHTML = '<p style="text-align:center; padding:2rem; color:#888;">Inga jobb att visa här.</p>';
+        // Lägg till med += så vi inte skriver över flikarna om de finns
+        container.innerHTML += '<p style="text-align:center; padding:2rem; color:#888;">Inga jobb att visa här.</p>';
         return;
     }
 
     let htmlContent = '';
 
     if (isMobile) {
-        // Mobilvy: Kort
+        // --- MOBILVY: KORT ---
         let lastDateStr = '';
+        
         jobsToDisplay.forEach(job => {
-            // Använd smart datum om funktionen finns, annars fallback
-            const dateVal = typeof getSmartDateString === 'function' ? getSmartDateString(job.datum) : job.datum.split('T')[0];
-            
-            // Sätt rubriker för datum (bara om det är ett planerat jobb)
-            if (job.datum) {
+            // Datumrubriker (visas bara om jobbet har ett datum)
+            if (job.datum && job.datum !== '') {
+                const dateVal = typeof getSmartDateString === 'function' ? getSmartDateString(job.datum) : job.datum.split('T')[0];
                 const formattedHeader = dateVal.charAt(0).toUpperCase() + dateVal.slice(1);
+                
                 if (formattedHeader !== lastDateStr) {
                     htmlContent += `<div class="date-separator">${formattedHeader}</div>`;
                     lastDateStr = formattedHeader;
                 }
             }
+            
             htmlContent += createJobCard(job);
         });
     } else {
-        // Desktopvy: Tabell
+        // --- DESKTOPVY: TABELL ---
         htmlContent = `<table id="jobsTable"><thead><tr><th>Status</th><th>Datum</th><th>Kund</th><th>Reg.nr</th><th style="text-align:right">Pris</th><th class="action-col">Åtgärder</th></tr></thead><tbody>`;
         jobsToDisplay.forEach(job => htmlContent += createJobRow(job));
         htmlContent += `</tbody></table>`;
     }
 
-    // Lägg till "Visa mer"-knapp
+    // Lägg till listan i containern (efter eventuella flikar)
+    container.innerHTML += htmlContent;
+
+    // --- "VISA MER"-KNAPP ---
     if (showLoadMoreBtn) {
         const remaining = totalJobs - currentLimit;
-        htmlContent += `
+        const btnHtml = `
             <div style="text-align: center; padding: 20px;">
                 <button onclick="loadMoreJobs()" class="button secondary-outline" style="min-width: 200px;">
                     Visa mer (${remaining} kvar)
                 </button>
             </div>
         `;
+        container.innerHTML += btnHtml;
     }
-    
-    container.innerHTML = htmlContent;
 }
 
 // --- NYTT: Funktionen som körs när man klickar på knappen ---
@@ -470,23 +484,41 @@ const ICONS = {
 };
 
 
-// --- HJÄLPFUNKTION: Skapa Mobilkortet (FINAL LIST V5) ---
+// --- HJÄLPFUNKTION: Skapa Mobilkortet (KOMPLETT NY VERSION) ---
 function createJobCard(job) {
-    const d = new Date(job.datum);
+    // 1. TVINGA IN CSS (Säkerhetsåtgärd om style.css cacular)
+    if (!document.getElementById('temp-unplanned-style')) {
+        const style = document.createElement('style');
+        style.id = 'temp-unplanned-style';
+        style.innerHTML = `
+            .bg-unplanned { background-color: #94a3b8 !important; color: white !important; border-bottom-color: #64748b !important; }
+            .bg-unplanned .header-status-badge { background-color: rgba(255,255,255,0.25) !important; color: white !important; }
+            .bg-unplanned .header-reg-clickable { color: white !important; }
+            .bg-unplanned .brand-logo-img { filter: brightness(0) invert(1) opacity(0.95) !important; }
+        `;
+        document.head.appendChild(style);
+    }
+
+    // 2. Datum-logik (Mer robust kontroll)
+    // Vi kollar om datumet är null, undefined, tomt eller bara mellanslag
+    const hasDate = (job.datum && typeof job.datum === 'string' && job.datum.trim().length > 0);
+    
+    // Skapa datumobjekt
+    const d = hasDate ? new Date(job.datum) : new Date(); 
     const now = new Date(); 
 
-    let rawMonth = d.toLocaleDateString('sv-SE', { month: 'short' });
-    let cleanMonth = rawMonth.replace(/\./g, '');
-    let month = cleanMonth.charAt(0).toUpperCase() + cleanMonth.slice(1);
-
-	const smartDate = getSmartDateString(job.datum);
-	const dateStr = smartDate;
-    const timeStr = d.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
+    const smartDate = getSmartDateString(job.datum);
+    const dateStr = smartDate;
     
+    // Tid (Visa bara om datum finns)
+    const timeStr = hasDate 
+        ? d.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' }) 
+        : '';
+    
+    // Märkesikon
     const combinedText = (job.kommentar + " " + job.paket + " " + job.kundnamn + " " + (job.bilmodell || "")).toLowerCase();
     const brandUrl = getBrandIconUrl(combinedText, job.regnr);
 
-    // 1. Ikoner med tvingad storlek (16px)
     let iconHtml = '';
     const iconStyle = 'width:16px; height:16px; margin-right:6px; display:block;';
     
@@ -503,19 +535,32 @@ function createJobCard(job) {
     const mileage = '-';
 
     const statusRaw = job.status || 'bokad';
-    const statusText = statusRaw.toUpperCase(); 
+    
+    // VIKTIGT: "let" gör att vi kan ändra texten
+    let statusText = statusRaw.toUpperCase(); 
 
+    // Standardfärg
     let headerClass = 'bg-bokad'; 
 
-    if(statusRaw === 'klar') headerClass = 'bg-klar';
-    if(statusRaw === 'faktureras') headerClass = 'bg-faktureras';
-    if(statusRaw === 'avbokad') headerClass = 'bg-avbokad';
-    if(statusRaw === 'offererad') headerClass = 'bg-offererad';
-
-    if (statusRaw === 'bokad' && d < now) {
-        headerClass = 'bg-overdue';
+    // Bestäm färg och text
+    if (statusRaw === 'klar') headerClass = 'bg-klar';
+    else if (statusRaw === 'faktureras') headerClass = 'bg-faktureras';
+    else if (statusRaw === 'avbokad') headerClass = 'bg-avbokad';
+    else if (statusRaw === 'offererad') headerClass = 'bg-offererad';
+    
+    // --- SPECIAL-LOGIK FÖR VÄNTAR ---
+    else if (statusRaw === 'bokad') {
+        if (!hasDate) {
+            // Om inget datum finns -> Grå färg + Texten VÄNTAR
+            headerClass = 'bg-unplanned';
+            statusText = 'VÄNTAR';
+        } else if (d < now) {
+            // Om datum finns men passerat -> Röd färg (Overdue)
+            headerClass = 'bg-overdue';
+        }
     }
 
+    // Företagsikon vs Personikon
     const nameLower = (job.kundnamn || '').toLowerCase();
     const isCorporate = ['bmg', 'fogarolli', 'ab'].some(c => nameLower.includes(c));
     
@@ -533,16 +578,15 @@ function createJobCard(job) {
         commentHtml = `<span class="comment-text comment-placeholder">Inga kommentarer finns tillgängliga.</span>`;
     }
     
+    // Ikoner
     const iCal = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`;
     const iClock = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`;
-    const iComment = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`;
     const iTag = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>`;
     const iBox = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>`;
     const iGauge = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 14c1.66 0 3-1.34 3-3V5h-6v6c0 1.66 1.34 3 3 3z"/><path d="M12 14v7"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="M19.07 4.93L17.66 6.34"/><path d="M4.93 4.93L6.34 6.34"/></svg>`;
+    const iComment = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`;
     const iInfoSmall = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:12px; height:12px; margin-left:4px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`;
 
-    // --- HÄR ÄR FÖRÄNDRINGEN: Tvingande Inline Styles för Headern ---
-    // Height: 34px !important
     return `
         <div class="job-card-new" id="card-${job.id}" onclick="saveSearchTerm(); openEditModal('${job.id}')">
             
@@ -591,7 +635,7 @@ function createJobCard(job) {
                     <svg class="icon-sm"><use href="#icon-clipboard"></use></svg>
                 </button>
                 <button class="inline-action-btn danger" title="Radera Jobb" onclick="deleteJob('${job.id}')">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-sm"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path></svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-sm"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 12-2h4a2 2 0 0 12 2v2"></path></svg>
                 </button>
             </div>
 
@@ -672,11 +716,9 @@ function filterJobs(jobs) {
     // today.setHours(0,0,0,0);
 
     if (currentStatusFilter === 'kommande') {
-        // HÄR ÄR ÄNDRINGEN:
-        // Vi tog bort "&& new Date(j.datum) >= today"
-        // Nu visas ALLT som är bokat, även om datumet passerat.
-        return filtered.filter(j => j.status === 'bokad')
-                       .sort((a,b) => new Date(a.datum) - new Date(b.datum)); // Äldst först (så missade hamnar i toppen)
+        // Vi lägger till: && j.datum && j.datum !== ''
+        return filtered.filter(j => j.status === 'bokad' && j.datum && j.datum !== '')
+                       .sort((a,b) => new Date(a.datum) - new Date(b.datum));
                        
     } else if (currentStatusFilter === 'alla') {
         return filtered.sort((a,b) => new Date(b.datum) - new Date(a.datum));
@@ -689,13 +731,38 @@ function filterJobs(jobs) {
 // 6. UPPDATERA BADGES (SIFFROR)
 function updateStatsCounts(jobs) {
     const active = jobs.filter(j => !j.deleted);
-    const today = new Date(); today.setHours(0,0,0,0);
+    const today = new Date(); 
+    today.setHours(0,0,0,0);
 
-    document.getElementById('stat-upcoming').textContent = active.filter(j => j.status === 'bokad' && new Date(j.datum) >= today).length;
-    document.getElementById('stat-invoice').textContent = active.filter(j => j.status === 'faktureras').length;
-    document.getElementById('stat-finished').textContent = active.filter(j => j.status === 'klar').length;
-    document.getElementById('stat-offered').textContent = active.filter(j => j.status === 'offererad').length;
-    document.getElementById('stat-all').textContent = active.length;
+    // Hjälpfunktion: Uppdaterar bara om elementet faktiskt finns i HTML
+    const safeUpdate = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val;
+    };
+
+    // 1. Vanliga kort
+    const upcomingCount = active.filter(j => j.status === 'bokad' && new Date(j.datum) >= today).length;
+    const invoiceCount = active.filter(j => j.status === 'faktureras').length;
+    const finishedCount = active.filter(j => j.status === 'klar').length;
+    const allCount = active.length;
+
+    safeUpdate('stat-upcoming', upcomingCount);
+    safeUpdate('stat-invoice', invoiceCount);
+    safeUpdate('stat-finished', finishedCount);
+    safeUpdate('stat-all', allCount);
+
+    // 2. Hantera "Ej Bokat" (Backlog)
+    // Vi räknar ut dessa även om vi inte visar dem, för säkerhets skull
+    const unplannedCount = active.filter(j => !j.datum || j.datum === '').length;
+    const offeredCount = active.filter(j => j.status === 'offererad').length;
+
+    // Uppdatera det nya kombinerade kortet
+    safeUpdate('stat-backlog', unplannedCount + offeredCount);
+    safeUpdate('count-unplanned', unplannedCount);
+    safeUpdate('count-offered', offeredCount);
+
+    // Uppdatera det gamla kortet (om det råkar finnas kvar någonstans)
+    safeUpdate('stat-offered', offeredCount);
 }
 
 // 7. EVENT LISTENERS
@@ -750,13 +817,16 @@ function setupEventListeners() {
 	        // 2. Ersätt "Meny"-steg med "Kalender"-steg
 	        history.replaceState({ uiState: 'calendar' }, null, window.location.href);
 	
-	        // 3. Uppdatera UI
-	        document.getElementById('statBar').style.display = 'none';
+	        // 3. RENSA UI (Dölj allt som inte är kalender)
+	        document.getElementById('statBar').style.display = 'none';          // <--- Döljer statistikkorten
+	        document.getElementById('unplannedContainer').style.display = 'none'; // <--- Döljer gula rutan direkt
 	        document.getElementById('timelineView').style.display = 'none';
 	        document.getElementById('customersView').style.display = 'none';
+	        
+            // 4. Visa kalendern
 	        document.getElementById('calendarView').style.display = 'block';
 	
-	        // 4. Starta kalendern (Dagvyn öppnas automatiskt av kalendern, vilket lägger till NÄSTA steg)
+	        // 5. Starta kalendern
 	        setTimeout(() => {
 	            import('./calendar.js').then(module => {
 	                 module.initCalendar('calendar-wrapper', allJobs, openEditModal, handleCalendarDrop);
@@ -808,7 +878,7 @@ function setupEventListeners() {
 	document.getElementById('mobileHomeBtn').addEventListener('click', () => {
     document.querySelectorAll('.mobile-nav-item').forEach(btn => btn.classList.remove('active'));
     document.getElementById('mobileHomeBtn').classList.add('active');
-    document.getElementById('statBar').style.display = 'grid'; 
+    document.getElementById('statBar').style.display = '';
     document.getElementById('timelineView').style.display = 'block';    
     document.getElementById('customersView').style.display = 'none';
     
@@ -834,16 +904,18 @@ function setupEventListeners() {
             btnOverview.classList.add('active');
             
             // 2. Visa översikts-vyerna
-            // statBar har display: grid i CSS, så vi återställer till det (eller tom sträng för att låta CSS styra)
             const statBar = document.getElementById('statBar');
             if(statBar) statBar.style.display = ''; 
             
             const timelineView = document.getElementById('timelineView');
             if(timelineView) timelineView.style.display = 'block';
             
-            // 3. Dölj kundvyn
-            const customersView = document.getElementById('customersView');
-            if(customersView) customersView.style.display = 'none';
+            // 3. Dölj andra vyer
+            document.getElementById('customersView').style.display = 'none';
+            
+            // --- HÄR ÄR FIXEN: DÖLJ KALENDERN EXPLICIT ---
+            document.getElementById('calendarView').style.display = 'none';
+            document.getElementById('selectedDayView').classList.remove('show'); // Stäng även dagvyn om den är öppen
         });
     }
 
@@ -1045,15 +1117,20 @@ function setupEventListeners() {
 	
     // Hantera klick på statistik-korten (Filter)
     document.querySelectorAll('.stat-card').forEach(card => {
-	    card.addEventListener('click', () => {
-	        // ... din gamla kod ...
-	        currentStatusFilter = card.dataset.filter;
-	        
-	        currentLimit = 50; // <--- NYTT: Återställ till 50 när vi byter flik
-	        
-	        renderDashboard();
-	    });
-	});
+        card.addEventListener('click', function() { // Viktigt: Använd 'function' för att kunna använda 'this'
+            
+            // 1. Ta bort 'active' från ALLA kort först
+            document.querySelectorAll('.stat-card').forEach(c => c.classList.remove('active'));
+            
+            // 2. Lägg till 'active' på det kortet vi just klickade på
+            this.classList.add('active');
+
+            // 3. Uppdatera variabler och rendera
+            currentStatusFilter = this.dataset.filter;
+            currentLimit = 50; // Återställ limit
+            renderDashboard();
+        });
+    });
 
     // Hantera klick på rader i tabellen (Redigera jobb)
     document.getElementById('jobListContainer').addEventListener('click', (e) => {
@@ -1127,7 +1204,7 @@ function openNewJobModal() {
     form.reset();
     document.getElementById('jobId').value = "";
     document.getElementById('modalTitle').textContent = "Lägg till nytt jobb";
-    document.getElementById('datum').valueAsDate = new Date();
+    document.getElementById('datum').value = ""; // Tomt datum som standard
     document.getElementById('tid').value = "08:00";
     document.getElementById('statusSelect').value = "bokad";
     
@@ -3231,3 +3308,8 @@ function getSmartDateString(dateInput) {
     const months = ['jan', 'feb', 'mar', 'apr', 'maj', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'];
     return `${d.getDate()} ${months[d.getMonth()]}`;
 }
+
+window.switchBacklogTab = function(tabName) {
+    currentBacklogTab = tabName;
+    renderDashboard(); // Rita om sidan med nya fliken vald
+};
