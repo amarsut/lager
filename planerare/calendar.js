@@ -140,7 +140,7 @@ export function initCalendar(elementId, jobsData, onEventClickCallback, onDropCa
         // --- Anpassad knapp ---
         customButtons: {
             toggleSidebarBtn: {
-                text: 'Obokade',
+                text: 'Visa',
                 click: function() {
                     // Vi kallar den globala funktionen (definierad i app.js)
                     if(window.toggleCalendarSidebar) window.toggleCalendarSidebar();
@@ -156,7 +156,7 @@ export function initCalendar(elementId, jobsData, onEventClickCallback, onDropCa
             center: '',         
             
             // Höger sida: "Visa Obokade" + "Idag" (Med mellanslag emellan så de hamnar i samma grupp)
-            right: 'toggleSidebarBtn today' 
+            right: 'today, toggleSidebarBtn' 
         },
         buttonText: { today: 'Idag' },
 
