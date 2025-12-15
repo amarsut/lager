@@ -4040,8 +4040,6 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     }
 }
 
-/*KALENDERVY*/
-
 /* =======================================================
    FULLCALENDAR: NO WHITESPACE & COLOR TEXT (FIXED)
    ======================================================= */
@@ -4376,7 +4374,6 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
         cursor: pointer; /* Visar att det är klickbart */
     }
     
-    .fc-mobile-dot { width: 6px; height: 6px; border-radius: 50%; margin: 1px; }
     .fc-daygrid-day-events { display: flex; flex-wrap: wrap; justify-content: center; gap: 2px; margin-top: 2px !important; }
 
 	#selectedDayView {
@@ -4835,7 +4832,7 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 
     /* --- 1. CONTAINERN --- */
     .stat-bar {
-        display: flex !important;
+        display: flex;
         overflow-x: auto !important;
         gap: 12px !important;
         padding: 4px 16px 20px 16px !important;
@@ -4933,17 +4930,404 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     }
 }
 
+/* =======================================================
+   FINAL KALENDER-DESIGN (LÖSNING FÖR BOX-I-BOX)
+   ======================================================= */
 
+/* 1. GÖR YTTERBOXEN OSYNLIG (Tack vare classNames i JS) */
+.clean-event,
+.fc-event.clean-event,
+.clean-event .fc-event-main {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin-top: 1px !important; /* Litet mellanrum mellan jobben */
+}
 
+/* Ta bort den lilla "pricken" om den dyker upp */
+.fc-daygrid-event-dot { display: none !important; }
 
+/* 2. DIN DESIGN (Den inre boxen) */
+.fc-event-block-custom {
+    /* Layout */
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: pointer;
+    
+    /* Utseende */
+    border-radius: 4px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    transition: all 0.15s ease-in-out;
 
+    /* Vänsterkanten (Tjockleken) */
+    border-left-width: 6px !important;
+    border-left-style: solid !important;
+    /* Färgen sätts av JS */
 
+    /* Text & Luft */
+    padding: 3px 6px;
+    
+    /* Text-stil */
+    font-family: 'Inter', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600; /* Lite fetare */
+    line-height: 1.2;
+    color: inherit; /* Ärv färgen från JS */
+}
 
+.fc-event-block-custom:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+    z-index: 5;
+    position: relative;
+}
 
+/* 3. MOBILANPASSNING (Streck istället för text) */
+@media (max-width: 768px) {    
+    /* Göm text-innehållet på mobil om det skulle råka visas */
+    .clean-event .fc-event-block-custom {
+        display: none !important;
+    }
+}
 
+/* 4. KALENDERNS RAM & HEADER */
+#calendarView {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+}
 
+.fc-header-toolbar {
+    padding: 16px !important;
+    margin-bottom: 0 !important;
+}
 
+.fc-toolbar-title {
+    font-size: 1.2rem !important;
+    font-weight: 700 !important;
+    color: #1e293b;
+    text-transform: capitalize;
+}
 
+.fc-button {
+    background: transparent !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #334155 !important;
+    font-weight: 600 !important;
+    border-radius: 6px !important;
+    box-shadow: none !important;
+    text-transform: capitalize !important;
+}
 
+.fc-button-active, .fc-button:hover {
+    background: #f1f5f9 !important;
+    color: #0f172a !important;
+    border-color: #cbd5e1 !important;
+}
 
+/* Snyggare rutnät */
+.fc-theme-standard td, .fc-theme-standard th {
+    border-color: #f1f5f9 !important;
+}
 
+.fc-daygrid-day-frame {
+    min-height: 90px !important; /* Höjd på rutorna */
+}
+
+/* --- DESIGN FÖR "EJ BOKAT" KORTET (Backlog) --- */
+
+/* 1. Grundfärger (Ljus orange bakgrund) */
+.stat-card[data-filter="backlog"] {
+    background: linear-gradient(135deg, #ffffff 0%, #fff7ed 100%) !important;
+    border-color: #ffedd5 !important;
+}
+
+/* 2. Gör Huvudsiffran och Ikonen Orange */
+.stat-card[data-filter="backlog"] .stat-card-value,
+.stat-card[data-filter="backlog"] .stat-card-title svg {
+    color: #ea580c !important; /* Stark orange */
+}
+
+/* 3. Rubriktexten (Lite mörkare orange/brun) */
+.stat-card[data-filter="backlog"] .stat-card-title span {
+    color: #9a3412 !important; 
+}
+
+/* 4. Aktiv status (När vald) */
+.stat-card[data-filter="backlog"].active {
+    border-bottom: 4px solid #f97316 !important; /* Orange linje i botten */
+    background-color: #fff7ed !important;
+}
+
+/* 5. Justering av "väntar / offert" texten */
+.stat-subtext {
+    font-size: 0.7rem !important;
+    color: #9ca3af !important;
+    font-weight: 500 !important;
+    padding-top: 4px;
+}
+
+/* --- MOBILSPECIFIKT FÖR DETTA KORT --- */
+@media (max-width: 768px) {
+    /* Gör att detta kort beter sig som de andra på mobil */
+    .stat-card[data-filter="backlog"] {
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+        min-height: 100px !important; /* Lite högre för att rymma texten */
+    }
+    
+    /* Se till att siffran är lika stor som på de andra korten */
+    .stat-card[data-filter="backlog"] .stat-card-value {
+        font-size: 2.2rem !important;
+        font-weight: 600 !important;
+        margin-top: 60px !important;
+        align-self: flex-start !important;
+    }
+}
+
+/* --- DATORVY JUSTERINGAR (Ej Mobil) --- */
+@media (min-width: 769px) {
+    
+    /* Justera höjden på hela kortet "Ej bokat" */
+    .stat-card[data-filter="backlog"] {
+        min-height: 150px !important; /* Ändra denna siffra tills du är nöjd */
+        justify-content: space-between !important; /* Sprider ut innehållet snyggt */
+    }
+
+    /* Om du vill flytta ner siffran på datorn också (samma trick som du gjorde på mobilen) */
+    .stat-card[data-filter="backlog"] .stat-card-value {
+        position: absolute;
+        font-weight: 700 !important;
+        margin-top: 70px !important; /* Justera avståndet ner från rubriken */
+        font-size: 2.0rem !important; /* Du kan även ha större siffra på datorn om du vill */
+    }
+}
+
+/* --- FIX 1: Ta bort dubbla linjer på Backlog-kortet --- */
+.stat-card[data-filter="backlog"]::after {
+    display: none !important; /* Dölj standard-linjen */
+}
+
+/* Säkerställ att den orangea linjen syns tydligt vid aktivt val */
+.stat-card[data-filter="backlog"].active {
+    border-bottom: 4px solid #ea580c !important; /* Stark orange */
+    background-color: #fff7ed !important;        /* Ljus orange bakgrund */
+}
+
+/* --- FIX 2: Kompakta Flikar med Luft (Uppdaterad) --- */
+
+.filter-tabs-container {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Lite tajtare mellan knapparna */
+    
+    /* FIX 1: Skapar luft ovanför så de inte slår i toppen */
+    margin-top: 16px; 
+    margin-left: 6px;
+    
+    /* Justerad luft nedåt */
+    padding: 0 2px 12px 2px;
+    border-bottom: 1px solid #f1f5f9;
+    margin-bottom: 12px;
+}
+
+/* Knapp-stil (Kompaktare) */
+.filter-tab {
+    position: relative;
+    
+    /* FIX 2: Mindre padding för att göra den kompaktare */
+    padding: 4px 4px 4px 10px; 
+    
+    border-radius: 50px;
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    color: #64748b;
+    
+    /* Mindre textstorlek men fetstil för läsbarhet */
+    font-size: 0.75rem; 
+    font-weight: 700;
+    
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px; /* Mindre avstånd till siffran */
+    transition: all 0.2s ease;
+    user-select: none;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+}
+
+.filter-tab:hover {
+    background-color: #f8fafc;
+    border-color: #cbd5e1;
+    color: #334155;
+    transform: translateY(-1px);
+}
+
+/* Aktiv flik */
+.filter-tab.active {
+    background-color: #fff7ed;
+    color: #c2410c;
+    border-color: #fdba74;
+    box-shadow: 0 2px 4px rgba(234, 88, 12, 0.1);
+}
+
+/* Siffran (Badge) - Mindre och tightare */
+.tab-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f1f5f9;
+    color: #64748b;
+    
+    font-size: 0.7rem; /* Mindre siffra */
+    font-weight: 700;
+    
+    /* Mindre dimensioner på cirkeln/kapseln */
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 9px;
+    line-height: 1;
+}
+
+/* Aktiv siffra */
+.filter-tab.active .tab-badge {
+    background-color: #fb923c;
+    color: #ffffff;
+}
+
+/* Grått kort för jobb som väntar på datum */
+.bg-unplanned { 
+    background-color: #94a3b8 !important; /* Grå-blå ton */
+    color: white !important; 
+    border-bottom-color: #64748b !important; 
+}
+
+/* Tvinga text och ikoner att bli vita */
+.bg-unplanned .header-reg-clickable, 
+.bg-unplanned .header-status-badge { 
+    color: white !important; 
+}
+
+/* Gör bilmärkes-loggan vit */
+.bg-unplanned .brand-logo-img {
+    filter: brightness(0) invert(1) opacity(0.95);
+}
+
+/* =======================================================
+   MODERN COMPACT CALENDAR (CSS ONLY FIX)
+   ======================================================= */
+
+/* 1. Gör hela kalendern kompaktare */
+#calendarView {
+    height: auto !important;
+    min-height: 0 !important;
+    border-radius: 8px !important; /* Lite mindre rundning */
+}
+
+/* 2. Krymp header och knappar */
+.fc-header-toolbar {
+    padding: 8px 8px !important; /* Mycket mindre luft */
+    margin-bottom: 0 !important;
+}
+
+.fc-toolbar-title {
+    font-size: 1.1rem !important;
+    font-weight: 500 !important;
+}
+
+.fc-button {
+    height: 30px !important; /* Lägre knappar */
+    padding: 0 10px !important;
+    font-size: 0.8rem !important;
+    line-height: 1 !important;
+    border-radius: 4px !important;
+}
+
+/* 3. Gör dag-rutorna lägre (mindre scroll) */
+.fc-daygrid-day-frame {
+    min-height: 80px !important; /* Minskat från standard 100-120px */
+    padding: 2px !important;
+}
+
+/* Flytta datumsiffran till vänster (som bild 2) */
+.fc-daygrid-day-top {
+    flex-direction: row !important; 
+    padding: 2px 4px !important;
+}
+
+/* 4. FIXA EVENTEN: Från "Piller" till "Block" */
+
+/* Ta bort FullCalendars standard-luft */
+.fc-daygrid-event {
+    margin-top: 0px !important;
+    background: transparent !important;
+}
+
+/* Styla din egen .fc-premium-event (som genereras av JS) */
+.fc-premium-event {
+    /* Form */
+    border-radius: 3px !important; /* Nästan fyrkantig */
+    margin: 1px 0 !important;      /* Stapla dem tätt */
+    padding: 2px 4px !important;   /* Kompakt text */
+    width: 100% !important;        /* Fyll hela bredden */
+    
+    /* Kantlinje */
+    border-left-width: 4px !important; /* Tjockare färg-linje till vänster */
+    border-left-style: solid !important;
+    
+    /* Text */
+    font-family: 'Inter', sans-serif !important;
+    font-size: 0.75rem !important; /* Mindre text för att rymmas */
+    font-weight: 500 !important;
+    line-height: 1.2 !important;
+    
+    /* Visuellt */
+    box-shadow: none !important; /* Ta bort skuggor för platt look */
+    opacity: 0.95;
+    transition: opacity 0.1s;
+}
+
+.fc-premium-event:hover {
+    opacity: 1;
+    transform: none !important; /* Ingen hoppande effekt vid hover */
+    filter: brightness(0.95);   /* Liten markering bara */
+}
+
+/* 5. Göm ev. "prickar" som FullCalendar lägger till */
+.fc-daygrid-event-dot { display: none !important; }
+
+/* 6. Fixa textfärgen inuti eventet */
+/* Eftersom JS sätter färgen inline, kan vi tvinga texten att vara lite mörkare för läsbarhet */
+.fc-event-text {
+    filter: brightness(0.6) contrast(200%); /* Gör textfärgen mörkare automatiskt */
+}
+
+/* --- MOBILANPASSNING --- */
+@media (max-width: 768px) {
+    /* Ännu kompaktare rutor på mobil */
+    .fc-daygrid-day-frame {
+        min-height: 50px !important;
+    }
+    
+    /* Rubrikerna (Mån, Tis...) mindre */
+    .fc-col-header-cell-cushion {
+        font-size: 0.7rem !important;
+        padding: 4px 0 !important;
+    }
+    
+    /* Justera containern för mobil */
+    .fc-daygrid-day-events {
+        margin-top: 0 !important;
+        display: flex !important;
+        flex-direction: column !important; /* Stapla strecken */
+        gap: 1px !important;
+    }
+}
