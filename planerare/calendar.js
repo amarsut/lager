@@ -232,19 +232,28 @@ export function initCalendar(elementId, jobsData, onEventClickCallback, onDropCa
 
         // 2. Ta emot NYTT kort från sidomenyn
         eventReceive: function(info) {
+            console.log("🔥 eventReceive triggad! Något släpptes i kalendern.");
+            console.log("Event ID:", info.event.id);
+            console.log("Datum:", info.event.start);
+
             // Hämta datumet där vi släppte
             const newDate = info.event.start;
-            const newDateStr = formatDateForFirebase(newDate);
             
-            // Hämta ID från det dragna elementet (som FullCalendar parsat)
+            // Formatet ska vara YYYY-MM-DDTHH:MM
+            const newDateStr = formatDateForFirebase(newDate);
+            console.log("Formaterat datum:", newDateStr);
+            
             const jobId = info.event.id; 
             
-            // Ta bort det temporära eventet (vi ritar om kalendern när databasen uppdaterats)
+            // Ta bort det temporära eventet visuellt (vi laddar om från Firebase strax)
             info.event.remove();
 
-            // Anropa app.js för att spara
+            // Anropa app.js
             if (onExternalDropCallback) {
+                console.log("Anropar app.js callback...");
                 onExternalDropCallback(jobId, newDateStr);
+            } else {
+                console.error("❌ Ingen callback (handleExternalDrop) kopplad!");
             }
         },
 
