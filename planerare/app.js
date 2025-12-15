@@ -3345,19 +3345,20 @@ function renderUnplannedSidebar() {
 
     unplannedJobs.forEach(job => {
         const el = document.createElement('div');
+        // Klassen som ger den snygga kort-designen
         el.className = 'fc-event-draggable';
         
-        // VIKTIGT: Data-attribut som FullCalendar läser av vid drop
+        // Data för FullCalendar
         el.setAttribute('data-event', JSON.stringify({
             title: job.kundnamn,
-            id: job.id,
-            // Vi kan skicka med färg om vi vill, men kalendern sätter det sen baserat på status
+            id: job.id
         }));
 
+        // HTML Inuti kortet
         el.innerHTML = `
             <span class="drag-title">${job.kundnamn}</span>
             <div class="drag-meta">
-                <span>${job.regnr || '---'}</span>
+                <span>${job.regnr ? job.regnr : '---'}</span>
                 <span>${job.paket || 'Service'}</span>
             </div>
         `;
@@ -3365,8 +3366,7 @@ function renderUnplannedSidebar() {
         listContainer.appendChild(el);
     });
 
-    // 2. Initiera FullCalendar Draggable på containern
-    // Detta gör elementen inuti containern dragbara till kalendern
+    // Initiera Drag & Drop (Viktigt att göra detta varje gång listan ritas om)
     if (typeof FullCalendar !== 'undefined' && FullCalendar.Draggable) {
         new FullCalendar.Draggable(listContainer, {
             itemSelector: '.fc-event-draggable',
