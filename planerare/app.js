@@ -3371,26 +3371,25 @@ function renderUnplannedSidebar() {
 function initDraggableOneTime() {
     const containerEl = document.getElementById('external-events-list');
     
-    // Om elementet saknas eller om vi redan aktiverat det -> Avbryt
     if (!containerEl || containerEl.classList.contains('draggable-active')) return;
 
-    // Kontrollera att FullCalendar är laddat
     if (typeof FullCalendar === 'undefined' || !FullCalendar.Draggable) {
-        console.warn("FullCalendar Draggable plugin saknas/inte laddat ännu.");
+        console.warn("FullCalendar Draggable plugin saknas.");
         return;
     }
 
     new FullCalendar.Draggable(containerEl, {
         itemSelector: '.fc-event-draggable',
         eventData: function(eventEl) {
-            // Hämta JSON-datan vi sparade i attributet
             return JSON.parse(eventEl.getAttribute('data-event'));
-        }
+        },
+        // --- NYA RADER HÄR ---
+        appendTo: document.body, // Flyttar "drag-bilden" till body så den inte klipps av sidebaren
+        longPressDelay: 0        // Gör att det reagerar direkt på touch/mobil utan fördröjning
     });
 
-    // Markera som klar så vi inte gör det igen
     containerEl.classList.add('draggable-active');
-    console.log("✅ Drag & Drop aktiverat för sidopanelen.");
+    console.log("✅ Drag & Drop aktiverat (med appendTo: body).");
 }
 
 // Lägg till denna NYA funktion någonstans i app.js
