@@ -5333,15 +5333,21 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 }
 
 /*SIDOPANEL KALENDER DRAG & DROP*/
+/*SIDOPANEL KALENDER DRAG & DROP*/
+/*SIDOPANEL KALENDER DRAG & DROP*/
+/*SIDOPANEL KALENDER DRAG & DROP*/
 
-/* --- KALENDER SPLIT VIEW (FIXAD LAYOUT) --- */
+/* =======================================================
+   KALENDER & SPLIT VIEW - FINAL POLISHED
+   ======================================================= */
+
+/* --- 1. LAYOUT (Container) --- */
 .calendar-split-layout {
     display: flex;
-    /* Låt höjden styras av innehållet eller sätt min-height */
-    height: auto; 
-    min-height: 600px; 
+    height: auto;
+    min-height: 650px; /* Bra höjd på desktop */
     position: relative;
-    overflow: hidden;
+    overflow: visible; /* VIKTIGT: För att tooltips inte ska klippas */
     background: #fff;
     border-radius: 12px 12px 0 0;
     border: 1px solid #e2e8f0;
@@ -5349,116 +5355,187 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 }
 
 .calendar-main-area {
-    flex: 1; /* Tar all plats som finns kvar */
-    min-width: 0; /* VIKTIGT: Förhindrar flex-items från att vägra krympa */
-    transition: margin-right 0.3s ease; /* Mjuk övergång */
+    flex: 1; 
+    min-width: 0; 
+    padding: 0;
+    z-index: 1; 
 }
 
-/* --- SIDOPANELEN (Höger) --- */
+/* --- 2. HEADER & KNAPPAR (Ingen fetstil) --- */
+.fc-header-toolbar {
+    padding: 12px 20px !important;
+    margin-bottom: 0 !important;
+    align-items: center !important;
+}
+
+/* Titeln "December 2025" - Normal tjocklek */
+.fc-toolbar-title {
+    font-size: 1.1rem !important;
+    font-weight: 500 !important; /* Punkt 4: Inte fetstilt */
+    color: #1e293b;
+    margin-left: 12px !important;
+}
+
+.fc-toolbar-chunk {
+    display: flex;
+    align-items: center;
+}
+
+/* Knappar (Idag, Pilar, Visa Obokade) */
+.fc-button {
+    height: 34px !important;
+    padding: 0 14px !important;
+    font-size: 0.85rem !important;
+    font-weight: 500 !important; /* Normal text */
+    border-radius: 6px !important;
+    text-transform: none !important; /* Ingen ALL CAPS */
+    box-shadow: none !important;
+    display: flex; align-items: center; justify-content: center;
+}
+
+.fc-button-primary {
+    background-color: #fff !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #334155 !important;
+}
+.fc-button-primary:hover, .fc-button-primary.fc-button-active {
+    background-color: #f8fafc !important;
+    color: #0f172a !important;
+    border-color: #cbd5e1 !important;
+}
+
+/* --- 3. EVENT-DESIGN (Fixar textbrytning och hover) --- */
+
+/* Ta bort marginaler för kant-till-kant känsla */
+.fc-daygrid-event {
+    margin: 1px 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    cursor: pointer;
+}
+
+.modern-event-block {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 24px; /* Fast höjd för snyggare rader */
+    padding: 0 6px;
+    
+    /* Vänsterlinje */
+    border-left-width: 3px;
+    border-left-style: solid;
+    /* Färg sätts via JS */
+    
+    font-family: 'Inter', sans-serif;
+    font-size: 0.75rem;
+    line-height: 1;
+    border-radius: 0 3px 3px 0;
+    
+    /* Punkt 1: Hover-effekt */
+    transition: filter 0.1s, background-color 0.1s;
+    pointer-events: auto; 
+}
+
+.modern-event-block:hover {
+    filter: brightness(0.96); /* Subtil mörkare ton vid hover */
+}
+
+/* Punkt 4: Tid (Normal vikt) */
+.modern-event-time {
+    margin-right: 6px;
+    font-weight: 500; /* Inte fet */
+    opacity: 0.8;
+    flex-shrink: 0; /* Tiden får inte krympa */
+}
+
+/* Punkt 3: Titel (Hanterar "..." korrekt) */
+.modern-event-title {
+    font-weight: 400; /* Punkt 4: Normal vikt */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* Här kommer "..." */
+    flex: 1; /* Tar resten av platsen */
+    min-width: 0; /* VIKTIGT för att ellipsis ska fungera i flexbox */
+    
+    /* Punkt 2: Normalt textavstånd */
+    letter-spacing: normal; 
+}
+
+/* --- 4. SIDOPANELEN (Snyggare kort) --- */
 .calendar-sidebar {
-    width: 0; /* Dold som standard */
+    width: 0; 
     opacity: 0;
-    background-color: #ffffff;
+    background-color: #f8fafc; /* Ljusgrå bakgrund */
     border-left: 1px solid #e2e8f0;
     display: flex;
     flex-direction: column;
     transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s;
     overflow: hidden;
-    flex-shrink: 0; /* Får inte krympa */
+    flex-shrink: 0;
 }
 
 .calendar-sidebar.open {
-    width: 300px; /* Bredd när öppen */
+    width: 300px;
     opacity: 1;
 }
 
-/* --- EVENT DESIGN (KANT-TILL-KANT FIX) --- */
-
-/* 1. Ta bort marginalerna runt eventet så de nuddar kanten */
-.fc-daygrid-event {
-    margin-top: 1px !important;
-    margin-bottom: 1px !important;
-    margin-left: 0 !important;  /* Nollställ marginal */
-    margin-right: 0 !important; /* Nollställ marginal */
-    background: transparent !important;
-    border-radius: 0 !important; /* Fyrkantiga hörn mot kanten */
+.sidebar-inner-header {
+    padding: 16px;
+    display: flex; justify-content: space-between; align-items: center;
+    background: #fff; border-bottom: 1px solid #e2e8f0;
 }
+.sidebar-title { font-size: 0.8rem; font-weight: 600; color: #475569; text-transform: uppercase; }
+.badge-count { background: #e2e8f0; font-size: 0.75rem; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
 
-/* 2. Designa det inre blocket */
-.modern-event-block {
-    display: flex;
-    align-items: center;
-    width: 100%;
-    padding: 3px 6px;
-    
-    /* Vänsterkanten (Tjock linje) */
-    border-left-width: 4px; 
-    border-left-style: solid;
-    /* Färgen sätts via JS */
-    
-    /* Övrigt utseende */
-    font-family: 'Inter', sans-serif;
-    font-size: 0.75rem;
-    font-weight: 600;
-    line-height: 1.2;
-    border-radius: 0 3px 3px 0; /* Runda bara högerhörnen */
-    
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    cursor: pointer;
-    transition: filter 0.1s;
+.sidebar-search { padding: 12px; background: #fff; border-bottom: 1px solid #f1f5f9; }
+.sidebar-search input {
+    width: 100%; padding: 8px 12px;
+    border: 1px solid #e2e8f0; border-radius: 6px; background: #f8fafc;
+    font-size: 0.85rem; outline: none;
+}
+.sidebar-search input:focus { background: #fff; border-color: #3b82f6; }
+
+.draggable-list {
+    padding: 12px;
+    overflow-y: auto;
+    display: flex; flex-direction: column; gap: 8px;
 }
 
-.modern-event-block:hover {
-    filter: brightness(0.95);
+/* Punkt 5: Snygga kort i sidomenyn */
+.fc-event-draggable {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-left: 3px solid #94a3b8; /* Grå accent */
+    padding: 10px 12px;
+    border-radius: 6px;
+    cursor: grab;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+    transition: all 0.2s;
 }
 
-.modern-event-time {
-    margin-right: 6px;
-    font-weight: 700;
-    opacity: 0.9;
+.fc-event-draggable:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    border-color: #cbd5e1;
 }
 
-/* --- KNAPPAR & HEADER (Samma rad) --- */
-.fc-header-toolbar {
-    padding: 16px 20px !important;
-    margin-bottom: 0 !important;
+.drag-title {
+    font-size: 0.9rem; font-weight: 600; color: #1e293b;
+    display: block; margin-bottom: 4px;
+}
+.drag-meta {
+    display: flex; justify-content: space-between;
+    font-size: 0.75rem; color: #64748b;
 }
 
-/* Gör "Visa Obokade" knappen likadan som "Idag" */
-.fc-button-primary {
-    background-color: #fff !important;
-    border: 1px solid #e2e8f0 !important;
-    color: #334155 !important;
-    font-weight: 600 !important;
-    text-transform: capitalize !important;
-    box-shadow: none !important;
-    padding: 6px 16px !important;
-}
-.fc-button-primary:hover, 
-.fc-button-primary.fc-button-active {
-    background-color: #f8fafc !important;
-    border-color: #cbd5e1 !important;
-    color: #0f172a !important;
-}
-
-/* Placera Titeln bredvid pilarna */
-.fc-toolbar-chunk {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-.fc-toolbar-title {
-    font-size: 1.2rem !important;
-    font-weight: 700 !important;
-    margin-left: 0 !important;
+/* Tooltip Z-Index Fix */
+.calendar-tooltip {
+    z-index: 99999 !important; /* Alltid överst */
 }
 
 /* Mobilanpassning */
 @media (max-width: 768px) {
     .calendar-split-layout { flex-direction: column; }
     .calendar-sidebar.open { width: 100%; height: 350px; border-left: none; border-top: 1px solid #e2e8f0; }
-    .fc-header-toolbar { flex-direction: column; gap: 10px; align-items: flex-start; }
-    .fc-toolbar-chunk { width: 100%; justify-content: space-between; }
-}
+    .fc-header-toolbar { flex-wrap: wrap; gap: 10px; }
+		}
