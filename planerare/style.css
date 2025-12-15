@@ -5198,7 +5198,7 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 }
 
 /* 2. Konfiguration - Här bestämmer vi VILKA färger varje kort har */
-.stat-card[data-filter="backlog"]    { --theme-color: #ea580c; --bg-tint: #fff7ed; border-color: #ffedd5; }
+.stat-card[data-filter="backlog"]    { --theme-color: #ea580c; --bg-tint: #fff7ed; }
 .stat-card[data-filter="kommande"]   { --theme-color: #3B82F6; --bg-tint: #F0F9FF; }
 .stat-card[data-filter="faktureras"] { --theme-color: #A855F7; --bg-tint: #FAF5FF; }
 .stat-card[data-filter="klar"]       { --theme-color: #22C55E; --bg-tint: #F0FDF4; }
@@ -5214,6 +5214,7 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 .filter-tab.active { background-color: #fff7ed; color: #c2410c; border-color: #fdba74; }
 .tab-badge { background: #f1f5f9; color: #64748b; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; }
 .filter-tab.active .tab-badge { background: #fb923c; color: white; }
+
 
 
 
