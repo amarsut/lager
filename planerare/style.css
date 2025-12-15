@@ -5148,46 +5148,69 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 .bg-unplanned .header-reg-clickable { color: white !important; }
 .bg-unplanned .brand-logo-img { filter: brightness(0) invert(1) opacity(0.95) !important; }
 
-/* =========================================
-   4. DASHBOARD (STATISTIK)
-   ========================================= */
-.stat-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 24px; }
+/* ==========================================================================
+   1. FÄRG & LOGIK (Gäller alla enheter)
+   Här ställer vi in variabler så vi slipper upprepa färgkoder.
+   ========================================================================== */
+
+/* Standardinställningar för kortet */
 .stat-card {
-    padding: 16px 20px; min-height: 100px; background: #fff; border: 1px solid #f3f4f6; border-radius: 8px;
-    display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-}
-.stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 15px rgba(0,0,0,0.05); }
-.stat-card-title { font-size: 0.75rem; font-weight: 600; color: #64748b; text-transform: uppercase; display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-.stat-card-value { font-size: 2rem; font-weight: 700; line-height: 1; color: #111; }
+    --theme-color: #64748b; /* Standardfärg (grå) om inget filter matchar */
+    --bg-tint: #fff;        /* Standard bakgrund */
 
-/* Aktiva kort */
-.stat-card.active { background-color: #eff6ff; border-color: #bfdbfe; }
-.stat-card.active .stat-card-value { color: #1e3a8a; }
-
-/* Backlog (Ej Bokat) */
-/* 1. Huvudregler - Här bestämmer vi HUR färgerna ska användas */
-.stat-card {
-    /* Standardvärden (om inget filter matchas) */
-    --theme-color: #000;
-    --bg-tint: #fff;
-
-	/* Använd variablerna för att skapa stilen */
+    /* Gemensam design */
     background: linear-gradient(135deg, #ffffff 0%, var(--bg-tint) 100%);
-    transition: all 0.2s ease; /* Valfritt: gör det mjukt om man byter filter */
+    border: 1px solid #f3f4f6;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    
+    /* Förbered för animering */
+    transition: all 0.2s ease;
+    cursor: pointer;
+    position: relative; /* För att positionera element */
 }
 
-/* Sätter färg på siffran och eventuella ikoner (svg) */
+/* Koppla variablerna till text och ikoner */
 .stat-card .stat-card-value, 
-.stat-card svg {
-    color: var(--theme-color);
+.stat-card svg,
+.stat-card .icon-sm {
+    color: var(--theme-color) !important;
 }
 
-/* Hanterar Active-läget */
+/* Active-läge: Får en tjock linje i botten med rätt färg */
 .stat-card.active {
-    border-bottom: 4px solid var(--theme-color);
-    /* Om du vill att bakgrunden ska ändras vid active (från din backlog-kod): */
-    /* background-color: var(--bg-tint); */
+    border-bottom: 4px solid var(--theme-color) !important;
+    background-color: #feffff; /* Subtil ljusning av bakgrunden */
+}
+
+/* FÄRG-KONFIGURATIONER PER STATUS */
+.stat-card[data-filter="backlog"]    { --theme-color: #ea580c; --bg-tint: #fff7ed; border-color: #ffedd5; }
+.stat-card[data-filter="kommande"]   { --theme-color: #3B82F6; --bg-tint: #F0F9FF; }
+.stat-card[data-filter="faktureras"] { --theme-color: #A855F7; --bg-tint: #FAF5FF; }
+.stat-card[data-filter="klar"]       { --theme-color: #22C55E; --bg-tint: #F0FDF4; }
+.stat-card[data-filter="offererad"]  { --theme-color: #F97316; --bg-tint: #FFF7ED; }
+.stat-card[data-filter="alla"]       { --theme-color: #EAB308; --bg-tint: #FEFCE8; } /* Din nya snygga gula */
+
+
+/* ==========================================================================
+   2. TEXT & INNEHÅLL (Gemensamt)
+   ========================================================================== */
+
+.stat-card-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.stat-card-value {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
 }
 
 .stat-subtext {
@@ -5197,23 +5220,139 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     margin-top: auto;
 }
 
-/* 2. Konfiguration - Här bestämmer vi VILKA färger varje kort har */
-.stat-card[data-filter="backlog"]    { --theme-color: #ea580c; --bg-tint: #fff7ed; }
-.stat-card[data-filter="kommande"]   { --theme-color: #3B82F6; --bg-tint: #F0F9FF; }
-.stat-card[data-filter="faktureras"] { --theme-color: #A855F7; --bg-tint: #FAF5FF; }
-.stat-card[data-filter="klar"]       { --theme-color: #22C55E; --bg-tint: #F0FDF4; }
-.stat-card[data-filter="offererad"]  { --theme-color: #F97316; --bg-tint: #FFF7ED; }
-.stat-card[data-filter="alla"]       { --theme-color: #EAB308; --bg-tint: #FEFCE8; }
 
-/* Filter Tabs (För backlog) */
-.filter-tabs-container { display: flex; align-items: center; gap: 8px; margin: 16px 0 12px 6px; padding-bottom: 12px; border-bottom: 1px solid #f1f5f9; }
-.filter-tab {
-    padding: 4px 4px 4px 10px; border-radius: 50px; background: #fff; border: 1px solid #e2e8f0; color: #64748b;
-    font-size: 0.75rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px;
+/* ==========================================================================
+   3. DESKTOP / TABLET (Standardvy)
+   Rutnät (Grid) och hover-effekter
+   ========================================================================== */
+
+.stat-bar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
 }
-.filter-tab.active { background-color: #fff7ed; color: #c2410c; border-color: #fdba74; }
-.tab-badge { background: #f1f5f9; color: #64748b; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; }
-.filter-tab.active .tab-badge { background: #fb923c; color: white; }
+
+.stat-card {
+    padding: 16px 20px;
+    min-height: 100px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+/* Hover-effekt (Endast dator/mus) */
+@media (hover: hover) {
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 15px rgba(0,0,0,0.05);
+    }
+}
+
+
+/* ==========================================================================
+   4. MOBILVY (Max-width 768px)
+   Horisontell scroll (Carousel)
+   ========================================================================== */
+
+@media (max-width: 768px) {
+    
+    /* Gör om Grid till Flex-scroll */
+    .stat-bar {
+        display: flex;
+        overflow-x: auto !important;
+        gap: 12px !important;
+        padding: 4px 16px 20px 16px !important; /* Padding för att inte klippa skuggor */
+        margin-bottom: 5px !important;
+        
+        scroll-snap-type: x mandatory;
+        
+        /* Tona ut kanterna */
+        -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
+        mask-image: linear-gradient(to right, black 85%, transparent 100%);
+
+        /* Dölj scrollbar */
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    .stat-bar::-webkit-scrollbar { display: none; }
+    .stat-bar::after { display: none !important; }
+
+    /* Anpassa korten för mobil */
+    .stat-card {
+        min-width: 140px !important;
+        height: 150px !important;
+        
+        scroll-snap-align: start;
+        flex-shrink: 0;
+        
+        padding: 16px 20px !important;
+        align-items: flex-start !important;
+        text-align: left !important;
+        
+        /* Återställ eventuella desktop-inställningar */
+        min-height: auto;
+        border-bottom: 4px solid transparent; /* Platshållare för active border */
+    }
+
+    /* Justera textstorlekar specifikt för mobil om det behövs */
+    .stat-card-value {
+        font-size: 2.2rem !important; /* Lite större på mobil för tydlighet */
+    }
+}
+
+
+/* ==========================================================================
+   5. FILTER TABS (Extra komponent)
+   ========================================================================== */
+
+.filter-tabs-container { 
+    display: flex; 
+    align-items: center; 
+    gap: 8px; 
+    margin: 16px 0 12px 6px; 
+    padding-bottom: 12px; 
+    border-bottom: 1px solid #f1f5f9; 
+}
+
+.filter-tab {
+    padding: 4px 4px 4px 10px; 
+    border-radius: 50px; 
+    background: #fff; 
+    border: 1px solid #e2e8f0; 
+    color: #64748b;
+    font-size: 0.75rem; 
+    font-weight: 700; 
+    cursor: pointer; 
+    display: flex; 
+    align-items: center; 
+    gap: 6px;
+}
+
+.filter-tab.active { 
+    background-color: #fff7ed; 
+    color: #c2410c; 
+    border-color: #fdba74; 
+}
+
+.tab-badge { 
+    background: #f1f5f9; 
+    color: #64748b; 
+    min-width: 18px; 
+    height: 18px; 
+    padding: 0 5px; 
+    border-radius: 9px; 
+    font-size: 0.7rem; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+}
+
+.filter-tab.active .tab-badge { 
+    background: #fb923c; 
+    color: white; 
+}
+
 
 
 
