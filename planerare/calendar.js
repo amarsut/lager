@@ -36,7 +36,7 @@ function mapJobsToEvents(jobs) {
         });
 }
 
-// FIXAD FUNKTION: Renderar listan
+// FIXAD FUNKTION: Renderar listan för vald dag (Mobilvy)
 function renderDayList(dateStr, events) {
     const container = document.getElementById('selectedDayView');
     if (!container) return;
@@ -100,7 +100,15 @@ window.closeDayList = function() {
     }
 };
 
-export function initCalendar(elementId, jobsData, onEventClickCallback, onDropCallback) {
+// Hjälpfunktion för datumformat vid Drag & Drop
+function formatDateForFirebase(dateObj) {
+    const year = dateObj.getFullYear();
+    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const day = String(dateObj.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}T08:00`; // Sätter standardtid 08:00 vid drop
+}
+
+export function initCalendar(elementId, jobsData, onEventClickCallback, onDropCallback, onExternalDropCallback) {
     const wrapperEl = document.getElementById('calendar-wrapper');
     if (!wrapperEl) return;
 
@@ -115,11 +123,12 @@ export function initCalendar(elementId, jobsData, onEventClickCallback, onDropCa
         firstDay: 1,
         fixedWeekCount: false,
         showNonCurrentDates: false,
-        height: 'auto',
+        height: '100%', // Fyller hela höjden i vår nya split-view
         contentHeight: 'auto',
         
-        // --- NYTT: Aktivera Drag & Drop ---
-        editable: true,       // Tillåter att man drar events
+        // --- DRAG & DROP INSTÄLLNINGAR ---
+        editable: true,       // Tillåter att man drar events inuti kalendern
+        droppable: true,      // Tillåt drop från utsidan (Sidopanelen)
         eventStartEditable: true, 
         eventDurationEditable: false, // Vi låser längden (tills vidare)
         
@@ -128,8 +137,8 @@ export function initCalendar(elementId, jobsData, onEventClickCallback, onDropCa
             : { year: 'numeric', month: 'long' },
 
         headerToolbar: {
-            left: 'today prev,next title', 
-            center: '',         
+            left: 'prev,next today', 
+            center: 'title',         
             right: '' 
         },
         buttonText: { today: 'Idag' },
@@ -202,25 +211,29 @@ export function initCalendar(elementId, jobsData, onEventClickCallback, onDropCa
             }
         },
         
-        // --- NYTT: Hantera när man släpper eventet ---
+        // --- CALLBACKS ---
+        
+        // 1. När man flyttar ett jobb SOM REDAN FINNS i kalendern
         eventDrop: function(info) {
-            // Hämta det nya datumet
             const d = info.event.start;
+            const newDateStr = formatDateForFirebase(d);
+            if (onDropCallback) onDropCallback(info.event.id, newDateStr, info.revert);
+        },
+
+        // 2. När man drar in ett NYTT jobb från SIDOPANELEN
+        eventReceive: function(info) {
+            // Hämta info från det dragna elementet
+            const newDate = info.event.start;
+            const jobId = info.event.id; // Vi sätter ID på elementet i app.js
             
-            // Konvertera Date-objektet till din strängformat: YYYY-MM-DDTHH:MM
-            // Vi behåller tiden från eventet (om man drar till ny dag behålls tiden oftast)
+            // Ta bort eventet visuellt direkt (vi laddar om datan från Firebase strax ändå)
+            info.event.remove();
+
+            const newDateStr = formatDateForFirebase(newDate);
             
-            const year = d.getFullYear();
-            const month = String(d.getMonth() + 1).padStart(2, '0');
-            const day = String(d.getDate()).padStart(2, '0');
-            const hours = String(d.getHours()).padStart(2, '0');
-            const minutes = String(d.getMinutes()).padStart(2, '0');
-            
-            const newDateStr = `${year}-${month}-${day}T${hours}:${minutes}`;
-            
-            // Anropa callback-funktionen i app.js för att spara till Firebase
-            if (onDropCallback) {
-                onDropCallback(info.event.id, newDateStr, info.revert);
+            // Anropa app.js för att spara
+            if (onExternalDropCallback) {
+                onExternalDropCallback(jobId, newDateStr);
             }
         },
 
@@ -234,17 +247,15 @@ export function initCalendar(elementId, jobsData, onEventClickCallback, onDropCa
                 return { html: `<div class="fc-mobile-dot" style="background-color: ${props.mainColor};"></div>` };
             } 
             else {
-                let textString = `${props.time} `;
-                if (props.regnr) textString += `${props.regnr} `;
-                textString += arg.event.title;
-
+                // Den snygga "Block-designen"
                 return { 
                     html: `
-                    <div class="fc-premium-event" style="
-                        border-left: 3px solid ${props.mainColor}; 
+                    <div class="modern-event-block" style="
+                        border-left-color: ${props.mainColor}; 
                         background-color: ${props.lightColor}; 
-                        color: ${props.mainColor};">
-                        <span class="fc-event-text">${textString}</span>
+                        color: ${props.mainColor === '#3b82f6' ? '#1e3a8a' : (props.mainColor === '#10b981' ? '#064e3b' : (props.mainColor === '#f59e0b' ? '#78350f' : '#4c1d95'))};">
+                        <span class="modern-event-time">${props.time}</span>
+                        <span class="modern-event-title">${arg.event.title}</span>
                     </div>` 
                 };
             }
