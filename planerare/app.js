@@ -829,8 +829,14 @@ function setupEventListeners() {
 	        // 5. Starta kalendern
 	        setTimeout(() => {
 	            import('./calendar.js').then(module => {
-	                 module.initCalendar('calendar-wrapper', allJobs, openEditModal, handleCalendarDrop);
-	            });
+				     module.initCalendar(
+				         'calendar-wrapper', 
+				         allJobs, 
+				         openEditModal, 
+				         handleCalendarDrop,   // Din gamla för att flytta interna
+				         handleExternalDrop    // DEN NYA för sidopanelen!
+				     );
+				});
 	        }, 50);
 	    });
 	}
