@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=3">
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
@@ -285,27 +285,53 @@
             <main class="app-main">
                 <div class="main-content">
                     <div class="stat-bar" id="statBar">
-                        <div class="stat-card active" data-filter="kommande">
-                            <h3 class="stat-card-title"><svg class="icon-sm"><use href="#icon-briefcase"></use></svg><span>Kommande</span></h3>
-                            <p class="stat-card-value" id="stat-upcoming">0</p>
-                        </div>
-                        <div class="stat-card" data-filter="faktureras">
-                            <h3 class="stat-card-title"><svg class="icon-sm"><use href="#icon-clipboard"></use></svg><span>Fakturering</span></h3>
-                            <p class="stat-card-value" id="stat-invoice">0</p>
-                        </div>
-                        <div class="stat-card" data-filter="klar">
-                            <h3 class="stat-card-title"><svg class="icon-sm"><use href="#icon-check"></use></svg><span>Färdiga jobb</span></h3>
-                            <p class="stat-card-value" id="stat-finished">0</p>
-                        </div>
-                        <div class="stat-card" data-filter="offererad">
-                            <h3 class="stat-card-title"><svg class="icon-sm"><use href="#icon-file-text"></use></svg><span>Offererade</span></h3>
-                            <p class="stat-card-value" id="stat-offered">0</p>
-                        </div>
-                        <div class="stat-card" data-filter="alla">
-                            <h3 class="stat-card-title"><svg class="icon-sm"><use href="#icon-list"></use></svg><span>Alla jobb</span></h3>
-                            <p class="stat-card-value" id="stat-all">0</p>
-                        </div>
-                    </div>
+						<div class="stat-card active" data-filter="kommande">
+							<h3 class="stat-card-title">
+								<svg class="icon-sm"><use href="#icon-briefcase"></use></svg>
+								<span>Kommande</span>
+							</h3>
+							<p class="stat-card-value" id="stat-upcoming">0</p>
+						</div>
+
+						<div class="stat-card" data-filter="backlog">
+							<h3 class="stat-card-title">
+								<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+									<path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+								</svg>
+								<span>Ej Bokat</span>
+							</h3>
+							
+							<p class="stat-card-value" id="stat-backlog">0</p>
+							
+							<div class="stat-subtext" style="font-size: 0.7rem; color: #64748b; font-weight: 600; margin-top: auto;">
+								<span id="count-unplanned">0</span> väntar • <span id="count-offered">0</span> offert
+							</div>
+						</div>
+
+						<div class="stat-card" data-filter="faktureras">
+							<h3 class="stat-card-title">
+								<svg class="icon-sm"><use href="#icon-clipboard"></use></svg>
+								<span>Fakturering</span>
+							</h3>
+							<p class="stat-card-value" id="stat-invoice">0</p>
+						</div>
+
+						<div class="stat-card" data-filter="klar">
+							<h3 class="stat-card-title">
+								<svg class="icon-sm"><use href="#icon-check"></use></svg>
+								<span>Färdiga jobb</span>
+							</h3>
+							<p class="stat-card-value" id="stat-finished">0</p>
+						</div>
+
+						<div class="stat-card" data-filter="alla">
+							<h3 class="stat-card-title">
+								<svg class="icon-sm"><use href="#icon-list"></use></svg>
+								<span>Alla jobb</span>
+							</h3>
+							<p class="stat-card-value" id="stat-all">0</p>
+						</div>
+					</div>
 
 					<div id="unplannedContainer" class="unplanned-accordion mobile-only" style="display:none;">
     
@@ -938,7 +964,6 @@
 	    </div>
 	</div>
 
-	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@schedule-x/theme-default/dist/index.css">
 	<datalist id="customerListOptions"></datalist>
 	<script src="packages.js"></script>
 	<script src="config.js"></script>
