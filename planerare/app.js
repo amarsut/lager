@@ -3330,37 +3330,67 @@ function renderUnplannedSidebar() {
     const countBadge = document.getElementById('sidebarCount');
     if (!listContainer) return;
 
+    // Hämta jobben som saknar datum
     const unplannedJobs = allJobs.filter(j => !j.deleted && (!j.datum || j.datum === ''));
+    
     if(countBadge) countBadge.textContent = unplannedJobs.length;
 
     listContainer.innerHTML = '';
 
     if (unplannedJobs.length === 0) {
         listContainer.innerHTML = '<div style="text-align:center; color:#94a3b8; padding:20px; font-size:0.85rem;">Inga jobb att boka.</div>';
+    } else {
+        unplannedJobs.forEach(job => {
+            const el = document.createElement('div');
+            el.className = 'fc-event-draggable'; // Denna klass används av Draggable
+            
+            // VIKTIGT: Skapa data-objektet som FullCalendar läser
+            const eventObject = {
+                id: job.id,
+                title: job.kundnamn,
+                // Vi kan skicka med färg direkt här om vi vill, men calendar.js hanterar det oftast
+            };
+
+            el.setAttribute('data-event', JSON.stringify(eventObject));
+
+            el.innerHTML = `
+                <span class="drag-title">${job.kundnamn}</span>
+                <div class="drag-meta">
+                    <span>${job.regnr ? job.regnr : '---'}</span>
+                    <span>${job.paket || 'Service'}</span>
+                </div>
+            `;
+            listContainer.appendChild(el);
+        });
+    }
+
+    // Efter att vi ritat listan, se till att Draggable är aktiverat
+    initDraggableOneTime();
+}
+
+function initDraggableOneTime() {
+    const containerEl = document.getElementById('external-events-list');
+    
+    // Om elementet saknas eller om vi redan aktiverat det -> Avbryt
+    if (!containerEl || containerEl.classList.contains('draggable-active')) return;
+
+    // Kontrollera att FullCalendar är laddat
+    if (typeof FullCalendar === 'undefined' || !FullCalendar.Draggable) {
+        console.warn("FullCalendar Draggable plugin saknas/inte laddat ännu.");
         return;
     }
 
-    unplannedJobs.forEach(job => {
-        const el = document.createElement('div');
-        el.className = 'fc-event-draggable'; // Denna klass används av Draggable
-        
-        // Data-attributet läses av FullCalendar vid drop
-        el.setAttribute('data-event', JSON.stringify({
-            title: job.kundnamn,
-            id: job.id
-        }));
-
-        el.innerHTML = `
-            <span class="drag-title">${job.kundnamn}</span>
-            <div class="drag-meta">
-                <span>${job.regnr ? job.regnr : '---'}</span>
-                <span>${job.paket || 'Service'}</span>
-            </div>
-        `;
-        listContainer.appendChild(el);
+    new FullCalendar.Draggable(containerEl, {
+        itemSelector: '.fc-event-draggable',
+        eventData: function(eventEl) {
+            // Hämta JSON-datan vi sparade i attributet
+            return JSON.parse(eventEl.getAttribute('data-event'));
+        }
     });
-    
-    // OBS: Vi initierar INTE Draggable här längre!
+
+    // Markera som klar så vi inte gör det igen
+    containerEl.classList.add('draggable-active');
+    console.log("✅ Drag & Drop aktiverat för sidopanelen.");
 }
 
 // Lägg till denna NYA funktion någonstans i app.js
@@ -3398,15 +3428,15 @@ function toggleCalendarSidebar() {
         sidebar.classList.add('open');
         if(btn) btn.textContent = "Dölj";
         
-        renderUnplannedSidebar(); // 1. Rendera listan
-        initExternalDraggable();  // 2. Aktivera drag-funktionen (körs bara en gång tack vare spärren)
+        renderUnplannedSidebar(); 
+        
+        // Uppdatera kalenderns storlek efter animationen
+        setTimeout(() => {
+            if (window.currentCalendar) {
+                window.currentCalendar.updateSize();
+            }
+        }, 310);
     }
-
-    setTimeout(() => {
-        if (window.currentCalendar) {
-            window.currentCalendar.updateSize();
-        }
-    }, 310);
 }
 
 // 4. Enkel sökfunktion i sidopanelen
