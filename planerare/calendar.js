@@ -229,9 +229,6 @@ export function initCalendar(elementId, jobsData, onEventClickCallback, onDropCa
     
     // Spara kalendern globalt eller på window för att nå den från toggle-funktionen
     window.currentCalendar = calendar; 
-}
-
-    calendar.render();
 
     // Auto-välj idag på mobil... (Din befintliga kod här)
     const isMobileStart = window.innerWidth <= 768;
