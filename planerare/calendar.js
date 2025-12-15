@@ -123,7 +123,7 @@ export function initCalendar(elementId, jobsData, onEventClickCallback, onDropCa
         firstDay: 1,
         fixedWeekCount: false,
         showNonCurrentDates: false,
-        height: '100%',
+        height: 'auto',
         contentHeight: 'auto',
         
         // --- Drag & Drop ---
