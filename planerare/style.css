@@ -23,327 +23,183 @@
 * { box-sizing: border-box; }
 body { margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-color); color: var(--text-color); height: 100vh; overflow: hidden; }
 
-/* VIKTIGT: GLOBAL IKON-RESET (LÖSER JÄTTE-IKONERNA) */
+/* Dölj mobil-element på desktop */
+.mobile-only { display: none; }
+
+/* GLOBAL IKON-RESET (Löser jätte-ikoner, men tillåter specifika storlekar) */
 svg:not(:root) {
     width: 24px;
     height: 24px;
     display: inline-block;
-    flex-shrink: 0; /* Förhindrar att ikoner kläms ihop eller exploderar */
+    flex-shrink: 0;
     vertical-align: middle;
 }
-
-/* Specifika storlekar för mindre ikoner */
 .icon-sm, .nav-link svg, .stat-card-title svg { 
-    width: 18px !important; 
-    height: 18px !important; 
+    width: 18px !important; height: 18px !important; 
 }
 
-/* Dölj mobil-element på desktop */
-.mobile-only { display: none; }
+/* =========================================
+   2. LOGIN SCREEN (ÅTERSTÄLLD)
+   ========================================= */
+.login-screen {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 20000; padding: 20px;
+}
+.login-card {
+    background: #ffffff; width: 100%; max-width: 420px; padding: 48px 40px;
+    border-radius: 24px; box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.1);
+}
+.login-header { text-align: center; margin-bottom: 32px; }
+.login-logo-box {
+    width: 56px; height: 56px; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px auto;
+}
+.login-header h1 { font-size: 1.75rem; font-weight: 800; margin: 0 0 8px 0; }
+.login-header p { color: #6B7280; margin: 0; }
+.input-group { margin-bottom: 20px; }
+.input-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 8px; }
+.login-btn {
+    width: 100%; padding: 16px; background: #111827; color: white; border: none; border-radius: 12px;
+    font-size: 1rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.login-btn:hover { background-color: #000; }
+.login-footer { margin-top: 32px; text-align: center; border-top: 1px solid #F3F4F6; padding-top: 20px; font-size: 0.8rem; color: #9ca3af; }
 
 /* =========================================
-   2. LAYOUT (Sidebar & Main - DESKTOP)
+   3. LAYOUT (Sidebar & Main - DESKTOP)
    ========================================= */
 .app-layout { display: flex; height: 100vh; width: 100%; }
 
-/* --- SIDEBAR --- */
 .sidebar {
-    width: var(--sidebar-width);
-    background-color: var(--content-bg);
-    border-right: 1px solid var(--border-color);
+    width: var(--sidebar-width); background-color: var(--content-bg); border-right: 1px solid var(--border-color);
     display: flex; flex-direction: column; padding: 24px 16px;
 }
-
 .sidebar-header { padding-bottom: 24px; margin-bottom: 8px; }
 .app-logo-modern { display: flex; align-items: center; gap: 12px; font-weight: 700; font-size: 1.1rem; color: #111; }
 .logo-icon-box {
-    width: 36px; height: 36px;
-    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-    border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 2px 5px rgba(37, 99, 235, 0.2);
+    width: 36px; height: 36px; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    border-radius: 8px; display: flex; align-items: center; justify-content: center;
 }
-.logo-icon-box svg { width: 20px !important; height: 20px !important; stroke: white; }
+.logo-icon-box svg { stroke: white; }
 
-.sidebar-nav { display: flex; flex-direction: column; gap: 4px; }
 .nav-link {
-    display: flex; align-items: center; gap: 12px;
-    padding: 10px 14px; border-radius: 8px; border: none; background: transparent;
-    color: var(--text-color-light); font-weight: 500; font-size: 0.95rem; cursor: pointer; text-decoration: none;
-    text-align: left;
+    display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 8px; border: none; background: transparent;
+    color: var(--text-color-light); font-weight: 500; font-size: 0.95rem; cursor: pointer; text-align: left; width: 100%;
 }
 .nav-link:hover { background-color: #f9fafb; color: #333; }
 .nav-link.active { background-color: #eef2f6; color: #111; font-weight: 600; }
-.nav-link .nav-icon { color: #94a3b8; }
-.nav-link.active .nav-icon { color: #1f2937; }
-.nav-spacer { height: 1px; background-color: #f3f4f6; margin: 8px 0; }
-
 .sidebar-footer { margin-top: auto; padding-top: 1rem; border-top: 1px solid #f3f4f6; }
 .user-profile-card { display: flex; align-items: center; gap: 12px; padding: 10px; }
 .sidebar-avatar { width: 36px; height: 36px; border-radius: 50%; }
 .user-info { display: flex; flex-direction: column; flex-grow: 1; }
-.user-name { font-size: 0.85rem; font-weight: 600; color: #1f2937; }
+.user-name { font-size: 0.85rem; font-weight: 600; }
 .user-role { font-size: 0.7rem; color: #9ca3af; }
-.logout-icon-btn { background: none; border: none; color: #9ca3af; cursor: pointer; padding: 0; }
-.logout-icon-btn svg { width: 20px; height: 20px; }
 
-/* --- MAIN CONTENT --- */
 .main-content-wrapper { flex-grow: 1; display: flex; flex-direction: column; background-color: var(--bg-color); }
-
 .top-bar {
-    height: var(--header-height); 
-    background-color: var(--content-bg);
-    border-bottom: 1px solid #eef2f6; 
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 0 2rem; flex-shrink: 0; 
+    height: var(--header-height); background-color: var(--content-bg); border-bottom: 1px solid #eef2f6; 
+    display: flex; justify-content: space-between; align-items: center; padding: 0 2rem; flex-shrink: 0; 
 }
-
 .top-search-container { position: relative; width: 380px; height: 44px; }
 .top-search-container input {
-    width: 100%; height: 100%; padding: 0 16px 0 48px;
-    border: 1px solid #f1f5f9; border-radius: 12px; background-color: #F5F7FA;
-    font-size: 0.95rem; outline: none;
+    width: 100%; height: 100%; padding: 0 16px 0 48px; border: 1px solid #f1f5f9; border-radius: 12px; background-color: #F5F7FA; outline: none;
 }
 .search-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); width: 20px; color: #94a3b8; }
-
-.top-bar-actions { display: flex; align-items: center; gap: 12px; }
-.icon-btn {
-    width: 40px; height: 40px; border-radius: 8px; background: transparent; border: none;
-    display: flex; align-items: center; justify-content: center; color: var(--text-color-light); cursor: pointer;
-}
-.icon-btn:hover { background-color: #f1f5f9; color: #333; }
-.divider-vertical { width: 1px; height: 24px; background-color: #e2e8f0; margin: 0 8px; }
-
 .header-cta-btn {
     height: 44px; padding: 0 24px; background-color: var(--primary-color); color: white;
-    border-radius: 12px; font-weight: 600; font-size: 0.95rem; border: none;
-    display: flex; align-items: center; gap: 8px; cursor: pointer;
+    border-radius: 12px; font-weight: 600; border: none; display: flex; align-items: center; gap: 8px; cursor: pointer;
 }
-.header-cta-btn:hover { background-color: var(--primary-hover); }
-.header-cta-btn svg { width: 18px; height: 18px; }
 
 /* =========================================
-   3. DASHBOARD & STATISTIK (DESKTOP)
+   4. DASHBOARD & STATISTIK
    ========================================= */
 .app-main { overflow-y: auto; flex-grow: 1; }
 .main-content { max-width: 1110px; margin: 0 auto; padding: 2rem; }
 
-.stat-bar {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); 
-    gap: 12px; margin-bottom: 2rem;
-}
-
+.stat-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 2rem; }
 .stat-card {
-    padding: 16px 20px; min-height: 100px;
-    display: flex; flex-direction: column; justify-content: space-between;
-    border: 1px solid #f3f4f6;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-    position: relative;
-    cursor: pointer;
-    background: #fff;
-    border-radius: 4px;
+    padding: 16px 20px; min-height: 100px; display: flex; flex-direction: column; justify-content: space-between;
+    border: 1px solid #f3f4f6; background: #fff; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); cursor: pointer;
 }
-
-.stat-card-title {
-    font-size: 0.75rem; font-weight: 600; color: #64748b;
-    text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;
-    display: flex; align-items: center; gap: 6px;
-}
-.stat-card-value {
-    font-size: 2rem; font-weight: 700; line-height: 1; letter-spacing: -1px;
-    font-variant-numeric: tabular-nums; color: #111;
-}
-
-.stat-card.active {
-    background-color: #eff6ff; border-color: #bfdbfe;
-    box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.1);
-    transform: translateY(-2px);
-}
+.stat-card-title { font-size: 0.75rem; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+.stat-card-value { font-size: 2rem; font-weight: 700; line-height: 1; color: #111; }
+.stat-card.active { background-color: #eff6ff; border-color: #bfdbfe; transform: translateY(-2px); }
 .stat-card.active .stat-card-value { color: #1e3a8a; }
 
-/* Accentfärger */
-.stat-card[data-filter="kommande"] { color: var(--primary-color); }
-.stat-card[data-filter="faktureras"] { color: var(--invoice-color); }
-.stat-card[data-filter="klar"] { color: var(--success-color); }
-.stat-card[data-filter="offererad"] { color: var(--info-color); }
-.stat-card[data-filter="alla"] { color: var(--text-color-light); }
-
 /* Backlog-kort (Ej Bokat) */
-.stat-card[data-filter="backlog"] {
-    background: linear-gradient(135deg, #ffffff 0%, #fff7ed 100%);
-    border-color: #ffedd5;
-}
-.stat-card[data-filter="backlog"] .stat-card-value,
-.stat-card[data-filter="backlog"] svg { color: #ea580c; }
-.stat-card[data-filter="backlog"].active {
-    border-bottom: 4px solid #ea580c; background-color: #fff7ed;
-}
+.stat-card[data-filter="backlog"] { background: linear-gradient(135deg, #ffffff 0%, #fff7ed 100%); border-color: #ffedd5; }
+.stat-card[data-filter="backlog"] .stat-card-value, .stat-card[data-filter="backlog"] svg { color: #ea580c; }
+.stat-card[data-filter="backlog"].active { border-bottom: 4px solid #ea580c; background-color: #fff7ed; }
 
 /* =========================================
-   4. TABELL & KOMPONENTER (DESKTOP)
+   5. CRM / KUNDER (ÅTERSTÄLLD)
    ========================================= */
-.table-container {
-    background: white; border: 1px solid var(--border-color);
-    border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+.customer-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; width: 100%;
 }
-table { width: 100%; border-collapse: collapse; }
-thead { background-color: #f9fafb; border-bottom: 1px solid var(--border-color); }
-th { text-align: left; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #9CA3AF; padding: 10px 16px; }
-td { vertical-align: middle; font-size: 0.95rem; padding: 10px 16px; border-bottom: 1px solid #F3F4F6; }
-tbody tr { cursor: pointer; transition: background-color 0.2s; border-left: 3px solid transparent; }
-tbody tr:hover { background-color: #F9FAFB; border-left-color: var(--primary-color); }
-
-.status-badge {
-    display: inline-flex; align-items: center; justify-content: center;
-    padding: 6px 16px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; min-width: 80px; text-transform: capitalize;
+.customer-card {
+    background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px;
+    display: flex; align-items: center; gap: 16px; cursor: pointer; transition: transform 0.1s;
 }
-.status-bokad { background-color: #e0f2fe; color: #0369a1; }
-.status-klar { background-color: #dcfce7; color: #15803d; }
-.status-offererad { background-color: #f3f4f6; color: #4b5563; }
-.status-faktureras { background-color: #f3e8ff; color: #7e22ce; }
-.status-avbokad { background-color: #fee2e2; color: #b91c1c; }
-
-.customer-link { font-weight: 500; display: flex; align-items: center; gap: 6px; }
-.reg-plate {
-    display: inline-flex; align-items: center; background: #fff; border: 1px solid #d1d5db;
-    border-radius: 3px; font-family: 'Roboto Mono', monospace; font-weight: 700; height: 22px;
+.customer-card:hover { border-color: #0066FF; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+.c-avatar {
+    width: 48px; height: 48px; border-radius: 50%; background: #eff6ff; color: #0066FF;
+    font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
-.reg-plate .reg-country { background: #0052cc; color: white; padding: 0 3px; font-size: 0.6rem; height: 100%; display: flex; align-items: center; }
-.reg-plate .reg-number { padding: 0 6px; font-size: 0.85rem; color: #111; }
-
-.action-col { display: flex; justify-content: flex-end; gap: 8px; }
-.action-col .icon-btn { width: 32px; height: 32px; color: #9CA3AF; }
-.action-col .icon-btn:hover { color: #111; background-color: #F3F4F6; }
+.c-info h3 { margin: 0; font-size: 1rem; color: #1e293b; font-weight: 700; }
+.c-meta { font-size: 0.8rem; color: #64748b; margin-top: 2px; }
+.customer-toolbar { display: flex; gap: 12px; margin-bottom: 20px; }
+.cust-search { flex: 2; }
+.cust-stats-wrapper { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+.cust-stat-card { background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; justify-content: center; }
+.cs-label { font-size: 0.75rem; font-weight: 600; color: #6b7280; text-transform: uppercase; }
+.cs-value { font-size: 1.5rem; font-weight: 800; color: #111; }
 
 /* =========================================
-   5. MODALER (FIXAD)
-   ========================================= */
-.modal-backdrop {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 100;
-    backdrop-filter: blur(2px);
-}
-.modal-backdrop.show { display: flex; }
-
-.modal-content {
-    background-color: var(--content-bg);
-    border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-    position: relative; display: flex; flex-direction: column;
-    width: 100%; max-width: 550px; height: auto; max-height: 85vh;
-    margin: auto; overflow: hidden;
-}
-
-/* Header för Modaler (Unified) */
-.modal-header, .vehicle-header-row {
-    display: flex; align-items: center; justify-content: flex-start; gap: 12px;
-    background-color: #f8f9fa; border-bottom: 1px solid #e5e7eb;
-    padding: 0 16px; height: 60px; flex-shrink: 0;
-}
-.modal-header h2, #vehicleRegTitle {
-    font-size: 1.1rem; font-weight: 700; color: #111; margin: 0;
-}
-
-/* Back Button i Modaler */
-.simple-back-btn {
-    background: transparent; border: none; width: 40px; height: 100%;
-    display: flex; align-items: center; justify-content: center;
-    color: #111; cursor: pointer; flex-shrink: 0; padding: 0;
-}
-.simple-back-btn svg { width: 24px; height: 24px; stroke-width: 2.5px; }
-
-.modal-body {
-    padding: 20px 16px; flex: 1; overflow-y: auto;
-}
-
-/* Formulär Inputs */
-.form-group { margin-bottom: 16px; }
-.form-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.85rem; }
-.input-gray, select, textarea {
-    width: 100%; padding: 12px 16px; border: none; background-color: #F3F4F6;
-    border-radius: 8px; font-size: 0.95rem; color: #1f2937; outline: none; font-family: inherit;
-}
-.input-gray:focus { background-color: #E5E7EB; }
-.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.full-width { grid-column: span 2; }
-
-.input-field-wrapper { position: relative; }
-.input-field-wrapper svg.input-icon {
-    position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; color: #9ca3af;
-}
-.input-field-wrapper input { padding-left: 40px; }
-
-/* Footer Actions */
-.modal-actions {
-    display: flex; justify-content: flex-end; gap: 10px;
-    padding: 16px 24px; background-color: #fff; border-top: 1px solid #f3f4f6;
-}
-.button { padding: 10px 20px; border-radius: 8px; font-weight: 600; border: none; cursor: pointer; display: flex; align-items: center; gap: 8px; justify-content: center;}
-.button.primary-solid { background-color: var(--primary-color); color: white; }
-.button.secondary-outline { background-color: white; border: 1px solid var(--border-color); color: #374151; }
-
-/* Utgifter Sektion */
-.expense-section { margin-top: 20px; border-top: 1px solid #f3f4f6; padding-top: 20px; }
-.expense-item { display: flex; justify-content: space-between; padding: 8px 12px; background: #fff; border: 1px solid #e5e7eb; margin-bottom: 6px; border-radius: 6px; }
-.expense-input-row { display: grid; grid-template-columns: 2fr 1fr auto; gap: 10px; align-items: center; margin-top: 10px; }
-.button-outline-sm { padding: 8px 12px; border: 1px solid #e5e7eb; background: #fff; border-radius: 6px; cursor: pointer; display: flex; align-items: center; }
-
-/* =========================================
-   6. KALENDER (FIXAD HOVER & KNAPPAR)
+   6. KALENDER (FIXAD)
    ========================================= */
 #calendarView {
-    background: white; border-radius: 8px; border: 1px solid #e2e8f0;
-    height: auto !important; min-height: 0; display: block;
+    background: white; border-radius: 8px; border: 1px solid #e2e8f0; display: block;
 }
 .fc-header-toolbar {
     padding: 16px !important; margin-bottom: 0 !important; background: #fff; border-bottom: 1px solid #f1f5f9;
-    display: flex; align-items: center; justify-content: space-between; flex-wrap: nowrap;
+    display: flex; align-items: center; justify-content: space-between;
 }
-.fc-toolbar-title { font-size: 1.1rem; font-weight: 600; color: #1e293b; }
+/* Titel-fix: Mindre och inte så fet */
+.fc-toolbar-title { font-size: 1.2rem !important; font-weight: 600 !important; color: #1e293b; margin: 0; }
 
-/* Fixa knapparna */
 .fc-button {
     height: 36px; padding: 0 16px; font-size: 0.85rem; font-weight: 500;
-    background-color: #fff !important; border: 1px solid #e2e8f0 !important; color: #334155 !important; 
+    background-color: #fff !important; border: 1px solid #e2e8f0 !important; color: #334155 !important;
     text-transform: capitalize; border-radius: 6px !important; box-shadow: none !important;
 }
-.fc-button:hover, .fc-button-active {
-    background-color: #f1f5f9 !important; color: #0f172a !important; border-color: #cbd5e1 !important;
-}
-.fc-icon { font-size: 1.2em; }
+.fc-button:hover, .fc-button-active { background-color: #f1f5f9 !important; color: #0f172a !important; }
 
-.fc-daygrid-day-frame { min-height: 80px; padding: 2px; }
-/* Återställ pointer-events så hover fungerar */
-.fc-daygrid-event { 
-    margin-top: 1px !important; 
-    background: transparent !important; 
-    border: none !important; 
-    cursor: pointer;
-    pointer-events: auto !important; /* VIKTIGT FÖR HOVER */
-}
-
-/* Custom Event Block */
-.modern-event-block {
-    display: flex; align-items: center; width: 100%; height: 24px; padding: 0 6px;
-    border-left-width: 4px; border-left-style: solid; font-size: 0.75rem; font-weight: 500;
-    border-radius: 3px; overflow: hidden;
-}
-.modern-event-time { margin-right: 6px; font-weight: 700; opacity: 0.9; }
-
-/* Sidopanel Kalender */
-.calendar-split-layout { display: flex; height: auto; border-radius: 12px; }
+/* Sidebar fix */
+.calendar-split-layout { display: flex; height: auto; position: relative; }
 .calendar-main-area { flex: 1; min-width: 0; }
 .calendar-sidebar {
     width: 0; opacity: 0; background: #f8fafc; border-left: 1px solid #e2e8f0;
-    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s; overflow: hidden;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s; overflow: hidden; display: flex; flex-direction: column;
 }
 .calendar-sidebar.open { width: 250px; opacity: 1; }
-.fc-event-draggable {
-    background: #fff; border: 1px solid #e2e8f0; border-left: 3px solid #94a3b8;
-    padding: 10px; border-radius: 6px; cursor: grab; margin-bottom: 8px;
+.fc-event-draggable { background: #fff; border: 1px solid #e2e8f0; border-left: 3px solid #94a3b8; padding: 10px; margin-bottom: 8px; cursor: grab; }
+
+/* Tooltip (Hover) */
+.calendar-tooltip {
+    position: fixed; background: #ffffff; color: #1f2937; padding: 10px 14px;
+    border-radius: 8px; z-index: 99999; pointer-events: none;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.05);
+    width: auto; max-width: 280px; opacity: 0; transition: opacity 0.15s;
+    font-size: 0.85rem; display: flex; flex-direction: column; gap: 4px;
 }
+.calendar-tooltip.show { opacity: 1; }
+.tt-row-primary { display: flex; align-items: center; gap: 8px; font-weight: 600; }
 
 /* =========================================
-   7. CHATT & WIDGETS
+   7. CHATT (ÅTERSTÄLLD)
    ========================================= */
 #fabChat {
     position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px;
@@ -354,199 +210,126 @@ tbody tr:hover { background-color: #F9FAFB; border-left-color: var(--primary-col
 #fabChat svg { width: 28px !important; height: 28px !important; }
 
 .chat-widget {
-    position: fixed; bottom: 105px; right: 30px; width: clamp(400px, 40vw, 600px); height: 600px;
+    position: fixed; bottom: 105px; right: 30px; width: 400px; height: 600px;
     background: #fff; border-radius: 24px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
     display: flex; flex-direction: column; z-index: 1000; overflow: hidden;
+    border: 1px solid #e5e7eb;
+}
+.chat-header {
+    padding: 12px 16px; background: #fff; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; justify-content: space-between;
 }
 .chat-messages { flex: 1; overflow-y: auto; padding: 20px; background: #fff; display: flex; flex-direction: column; gap: 12px; }
 .chat-row { display: flex; flex-direction: column; max-width: 80%; }
 .chat-row.me { align-self: flex-end; align-items: flex-end; }
 .chat-row.other { align-self: flex-start; align-items: flex-start; }
-.chat-bubble { padding: 10px 16px; border-radius: 18px; font-size: 0.95rem; }
+.chat-bubble { padding: 10px 16px; border-radius: 18px; font-size: 0.95rem; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
 .chat-row.me .chat-bubble { background: #007AFF; color: white; border-bottom-right-radius: 4px; }
 .chat-row.other .chat-bubble { background: #F2F2F7; color: #111; border-bottom-left-radius: 4px; }
-
 .chat-input-area {
-    padding: 16px 20px; background: #fff; display: flex; align-items: center; gap: 12px; border-top: 1px solid #F2F2F7;
+    padding: 16px; background: #fff; display: flex; align-items: center; gap: 12px; border-top: 1px solid #F2F2F7;
 }
 .chat-input-area textarea {
     flex: 1; border: 1px solid #E5E5EA; border-radius: 24px; padding: 12px;
-    font-size: 0.95rem; resize: none; height: 48px; background: #F9F9F9;
+    font-size: 0.95rem; resize: none; height: 44px; background: #F9F9F9; outline: none;
 }
-
-/* Settings Menu Icons Fix */
-.menu-icon-box {
-    width: 48px; height: 48px; border-radius: 12px;
-    display: flex; align-items: center; justify-content: center;
+#chatSendBtn {
+    width: 40px; height: 40px; border-radius: 50%; background: #007AFF; color: white; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer;
 }
-.menu-icon-box svg { width: 24px !important; height: 24px !important; }
-.menu-icon-box.blue { background: #eff6ff; color: #3b82f6; }
-.menu-icon-box.orange { background: #fff7ed; color: #f97316; }
-.menu-icon-box.purple { background: #f3e8ff; color: #a855f7; }
-.menu-icon-box.green { background: #f0fdf4; color: #22c55e; }
 
 /* =========================================
-   8. SPECIFIKA DATOR-FIXAR
+   8. MODALER & FORMULÄR
    ========================================= */
-@media (min-width: 769px) {
-    /* Teknisk Data Kompakt */
-    ul.tech-list {
-        display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 0; list-style: none;
-    }
-    ul.tech-list li {
-        display: flex; align-items: center; background: #fff; border: 1px solid #e2e8f0; border-radius: 4px; min-height: 34px;
-    }
-    .spec-label-col {
-        width: 80px; background: #f8fafc; border-right: 1px solid #e2e8f0;
-        padding: 4px 8px; font-weight: 600; color: #64748b; font-size: 0.75rem; display: flex; align-items: center; gap: 4px;
-    }
-    .spec-value-col { flex-grow: 1; padding: 0 10px; display: flex; align-items: center; }
-    .spec-input { width: 100%; border: none; background: transparent; outline: none; font-size: 0.85rem; }
-    .spec-label-col svg { width: 14px !important; height: 14px !important; }
-    
-    /* Jobb Modal Dator */
-    #jobModal .modal-content { width: 500px; max-height: 85vh; padding: 0; }
-    #jobModal .modal-body { padding: 24px; }
-    #jobModal .modal-actions { position: relative; bottom: auto; border-top: 1px solid #e2e8f0; }
+.modal-backdrop {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 20000;
 }
+.modal-backdrop.show { display: flex; }
+.modal-content {
+    background-color: #fff; border-radius: 12px; width: 100%; max-width: 550px; max-height: 85vh; display: flex; flex-direction: column; overflow: hidden;
+}
+.modal-header, .vehicle-header-row {
+    height: 60px; padding: 0 16px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #e5e7eb; background: #f8f9fa; flex-shrink: 0;
+}
+.modal-header h2, #vehicleRegTitle { font-size: 1.1rem; font-weight: 700; margin: 0; }
+.simple-back-btn { background: transparent; border: none; cursor: pointer; display: flex; align-items: center; }
 
-/* =================================================================
-   9. STOPP - HÄR BÖRJAR MOBILVY (ALLT UNDER 768PX)
-   ================================================================= */
+.modal-body { padding: 20px; flex: 1; overflow-y: auto; }
+.form-group { margin-bottom: 16px; }
+.form-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.85rem; }
+.input-gray, select {
+    width: 100%; padding: 12px; border: none; background-color: #F3F4F6; border-radius: 8px; outline: none;
+}
+/* Fixa Kopiera-ikonen så den inte är enorm */
+.input-wrapper-copy { position: relative; display: flex; align-items: center; }
+.input-wrapper-copy input { padding-right: 40px; }
+.btn-copy-input {
+    position: absolute; right: 8px; background: transparent; border: none; cursor: pointer; padding: 4px;
+}
+.btn-copy-input svg { width: 16px !important; height: 16px !important; color: #9ca3af; }
+
+.modal-actions {
+    padding: 16px; border-top: 1px solid #f3f4f6; display: flex; justify-content: flex-end; gap: 10px; background: #fff;
+}
+.button { padding: 10px 20px; border-radius: 8px; font-weight: 600; border: none; cursor: pointer; }
+.button.primary-solid { background: #0066FF; color: white; }
+.button.secondary-outline { background: white; border: 1px solid #e5e7eb; color: #374151; }
+
+/* Reg.nr Modal specifik */
+.tech-section-wrapper { background: #f9fafb; padding: 16px; border-radius: 8px; border: 1px solid #e5e7eb; margin-bottom: 16px; }
+.tech-header-main { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; font-weight: 700; }
+.tech-list li { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
+.history-list-clean .history-item-clean { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f1f5f9; }
+
+/* =========================================
+   9. MOBILVY (ALLT UNDER 768PX)
+   ========================================= */
 @media (max-width: 768px) {
-    
-    /* --- Layout & Dölj Dator-saker --- */
-    .sidebar, .top-bar, #jobsTable thead, .header-cta-btn, .top-search-container, .divider-vertical { display: none !important; }
-    #fabChat { display: none !important; } /* Dölj chatt-knappen på mobil */
-    .table-container { background: transparent !important; border: none; box-shadow: none; padding: 0; }
-    .app-layout { display: block !important; height: auto !important; }
-    html, body { overflow-x: hidden; overflow-y: auto !important; background-color: #F8FAFC !important; }
+    .sidebar, .top-bar, #fabChat { display: none !important; }
     .mobile-only { display: block; }
-    .main-content { padding: 70px 10px 100px 10px !important; width: 100%; margin: 0; }
-
-    /* --- Sticky Header --- */
+    
     .mobile-header {
-        position: fixed !important; top: 0; left: 0; right: 0; height: 60px;
-        background: #F8FAFC; z-index: 200000; border-bottom: 1px solid #e2e8f0;
-        padding: 0 16px; display: flex; align-items: center; justify-content: space-between;
+        position: fixed; top: 0; left: 0; right: 0; height: 60px; background: #F8FAFC; z-index: 200000;
+        border-bottom: 1px solid #e2e8f0; padding: 0 16px; display: flex; align-items: center; justify-content: space-between;
     }
-    .header-day { display: block; font-size: 0.65rem; font-weight: 700; color: #94A3B8; letter-spacing: 1px; }
+    .header-day { display: block; font-size: 0.65rem; font-weight: 700; color: #94A3B8; }
     .header-date { font-size: 1rem; font-weight: 800; color: #1E293B; }
+    
+    .main-content { padding: 70px 10px 100px 10px !important; margin: 0; }
+    
+    /* Mobil Statistik */
+    .stat-bar { display: flex; overflow-x: auto; gap: 12px; padding-bottom: 10px; }
+    .stat-card { min-width: 140px; height: 100px; flex-shrink: 0; }
+    
+    /* Mobil Modaler (Fullskärm) */
+    .modal-backdrop.show, #vehicleModal.show, #customerModal.show, #jobModal.show {
+        position: fixed; top: 60px !important; width: 100%; height: calc(100dvh - 60px) !important;
+        background: #fff; z-index: 199999; display: flex; flex-direction: column; padding: 0 !important;
+    }
+    .modal-content { width: 100% !important; max-width: none !important; height: 100% !important; border-radius: 0; }
+    .modal-body { padding: 16px; padding-bottom: 80px; } /* Plats för knappar */
+    .modal-actions { position: fixed; bottom: 0; left: 0; right: 0; padding: 12px; z-index: 200000; border-top: 1px solid #eee; }
+    .modal-actions .button { flex: 1; height: 48px; }
 
-    /* --- Statistik Korten --- */
-    .stat-bar {
-        display: flex; overflow-x: auto !important; gap: 12px; padding: 4px 4px 12px 4px; margin-bottom: 5px;
-        scroll-snap-type: x mandatory; scrollbar-width: none;
-    }
-    .stat-card {
-        min-width: 140px; height: 90px; scroll-snap-align: start; flex-shrink: 0;
-        border-radius: 8px; padding: 12px; background: white; border: 1px solid #E2E8F0;
-        display: flex; flex-direction: column; justify-content: space-between;
-        border-bottom: 4px solid transparent; transition: border-color 0.2s;
-    }
-    .stat-card.active { border-bottom-color: #2563eb !important; background: #fff; }
-    .stat-card-title { font-size: 0.65rem; flex-direction: row; gap: 6px; }
-    .stat-card-value { font-size: 1.8rem !important; font-weight: 800; align-self: flex-start; color: #111; }
-    /* Backlog kortet mobil */
-    .stat-card[data-filter="backlog"] { min-height: 100px; justify-content: space-between; }
-    .stat-card[data-filter="backlog"] .stat-card-value { margin-top: auto; font-size: 1.8rem !important; }
-
-    /* --- Jobb Kort (Mobil) --- */
-    .job-card-new {
-        background: #FFFFFF; border: 1px solid #CBD5E1; border-radius: 8px; 
-        width: 100%; margin-bottom: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);
-        display: flex; flex-direction: column; overflow: hidden;
-    }
-    .card-header-strip {
-        padding: 8px 12px; display: flex; justify-content: space-between; align-items: center;
-        font-weight: 700; color: #fff; min-height: 34px;
-    }
-    .bg-bokad { background: #8ABCE6; } .bg-klar { background: #DCFCE7; color: #14532d; }
-    .bg-faktureras { background: #F3E8FF; color: #581c87; } .bg-unplanned { background: #94a3b8; color: #fff; }
-    
-    .card-body { padding: 12px; display: flex; flex-direction: column; gap: 6px; }
-    .info-row { display: grid; grid-template-columns: 90px 1fr; align-items: center; }
-    .row-label { color: #64748B; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; }
-    .row-value { font-weight: 500; font-size: 0.95rem; color: #111; }
-    
-    /* Expand Actions */
-    .card-actions-expand {
-        display: none; grid-template-columns: 1fr 1fr 1fr; gap: 8px; padding: 12px;
-        background: #f9fafb; border-top: 1px solid #e5e7eb;
-    }
-    .card-actions-expand.show { display: grid; }
-    .inline-action-btn {
-        padding: 10px; border-radius: 8px; border: 1px solid #e5e7eb; background: #fff;
-        display: flex; align-items: center; justify-content: center;
-    }
-
-    /* --- Modaler (Mobil Fullskärm) --- */
-    .modal-backdrop.show, #vehicleModal.show, #customerModal.show, #jobModal.show, #settingsModal.show {
-        position: fixed; top: 60px !important; left: 0; right: 0; bottom: 0;
-        width: 100%; height: calc(100dvh - 60px) !important;
-        background: #fff; z-index: 199999; display: flex !important; flex-direction: column;
-        padding: 0 !important; border-top: 1px solid #e5e7eb;
-    }
-    
-    .modal-content, .one-ui-container {
-        width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important;
-        border-radius: 0 !important; box-shadow: none !important; display: flex !important; flex-direction: column;
-    }
-    
-    .modal-header, .vehicle-header-row, .one-ui-header-simple {
-        position: sticky; top: 0; background: #f8f9fa; z-index: 50; padding: 0 16px;
-        height: 60px; min-height: 60px;
-    }
-    
-    .modal-body, .one-ui-content {
-        padding: 20px 16px 100px 16px !important; flex: 1; overflow-y: auto;
-    }
-    
-    /* Knappar i botten */
-    .modal-actions {
-        position: fixed; bottom: 0; left: 0; right: 0; background: #fff;
-        padding: 12px 16px; border-top: 1px solid #e5e7eb; z-index: 999;
-        display: flex; gap: 10px;
-    }
-    .modal-actions .button { flex: 1; height: 48px; display: flex; align-items: center; justify-content: center; }
-
-    /* Inputs Mobil */
-    .input-gray, select, textarea {
-        font-size: 16px !important; /* Förhindra zoom */
-        padding: 14px 16px;
-    }
-
-    /* --- Kalender Mobil --- */
-    #calendarView { border: none; border-radius: 0; margin-top: 10px; }
+    /* Mobil Kalender */
+    #calendarView { border: none; }
     .fc-header-toolbar { flex-wrap: wrap; gap: 8px; }
-    .fc-daygrid-day-frame { min-height: 50px !important; }
-    .fc-mobile-dot { width: 42px; height: 4px; border-radius: 2px; margin: 1px 0; background-color: #3b82f6; }
-    .fc-daygrid-day-events { display: flex; flex-direction: column; align-items: center; gap: 1px; margin-top: 2px; }
+    .fc-toolbar-title { font-size: 1.1rem !important; }
     .calendar-split-layout { flex-direction: column; }
-    .calendar-sidebar.open { width: 100%; height: 350px; }
-    .fc-toggleSidebarBtn-button { display: none !important; }
-
-    /* --- Chatt Mobil --- */
+    .calendar-sidebar.open { width: 100%; height: 300px; }
+    
+    /* Mobil Chatt */
     .chat-widget {
-        top: 60px !important; height: calc(100dvh - 60px) !important; width: 100% !important;
-        border-radius: 0 !important; max-width: none;
+        top: 60px !important; height: calc(100dvh - 60px) !important; width: 100% !important; border-radius: 0;
     }
-    .chat-input-area {
-        position: fixed; bottom: 0; left: 0; right: 0; z-index: 2000;
-        padding-bottom: max(10px, env(safe-area-inset-bottom));
-    }
+    .chat-input-area { position: fixed; bottom: 0; width: 100%; padding-bottom: max(10px, env(safe-area-inset-bottom)); }
 
-    /* --- Bottenmeny --- */
+    /* Bottenmeny */
     .mobile-nav {
         position: fixed; bottom: 0; left: 0; right: 0; background: #fff; height: 70px;
-        display: flex; justify-content: space-between; align-items: center;
-        padding: 0 10px; border-top: 1px solid #E5E7EB; z-index: 200000;
+        display: flex; justify-content: space-between; align-items: center; padding: 0 10px; border-top: 1px solid #E5E7EB; z-index: 200000;
         padding-bottom: env(safe-area-inset-bottom);
     }
-    .mobile-nav-item {
-        background: none; border: none; flex: 1; display: flex; flex-direction: column;
-        align-items: center; gap: 4px; color: #94A3B8;
-    }
+    .mobile-nav-item { background: none; border: none; flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; color: #94A3B8; }
     .mobile-nav-item.active { color: #111; }
     .mobile-nav-item svg { width: 24px !important; height: 24px !important; }
     .mobile-nav-item span { font-size: 0.7rem; font-weight: 600; }
