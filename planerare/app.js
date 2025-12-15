@@ -802,8 +802,14 @@ function setupEventListeners() {
 	        // 4. Starta kalendern (med dina jobb och redigera-funktionen)
 	        // Vi använder setTimeout för att säkerställa att diven är synlig innan kalendern ritas
 	        setTimeout(() => {
-			    initCalendar('calendar-wrapper', allJobs, openEditModal, handleCalendarDrop);
-		}, 50);
+			    initCalendar(
+			        'calendar-wrapper', 
+			        allJobs, 
+			        openEditModal, 
+			        handleCalendarDrop, 
+			        handleExternalDrop // <--- HÄR ÄR TILLÄGGET!
+			    );
+			}, 50);
 	    });
 	}
 
