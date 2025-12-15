@@ -126,56 +126,125 @@ export function initCalendar(elementId, jobsData, onEventClickCallback, onDropCa
         height: '100%',
         contentHeight: 'auto',
         
-        // Drag & Drop
+        // --- Drag & Drop ---
         editable: true,       
-        droppable: true,      
+        droppable: true,      // Måste vara true för att ta emot externa
         eventStartEditable: true, 
         eventDurationEditable: false,
         
-        // --- HÄR ÄR NYCKELN FÖR KNAPPEN ---
+        // --- PUNKT 5: Anpassat datumformat ---
+        titleFormat: isMobile 
+            ? { year: 'numeric', month: 'short' } // "Dec 2025" på mobil
+            : { year: 'numeric', month: 'long' }, // "December 2025" på dator
+
+        // --- Anpassad knapp ---
         customButtons: {
             toggleSidebarBtn: {
-                text: 'Visa Obokade', // Texten på knappen
+                text: 'Visa Obokade',
                 click: function() {
-                    toggleCalendarSidebar(); // Funktionen som körs
+                    // Vi kallar den globala funktionen (definierad i app.js)
+                    if(window.toggleCalendarSidebar) window.toggleCalendarSidebar();
                 }
             }
         },
 
-        // --- HÄR PLACERAR VI KNAPPEN ---
         headerToolbar: {
-            // Vänster: Pilar + Titel + Idag (allt i en klump)
             left: 'prev,next title', 
-            // Mitten: Tomt
             center: '',         
-            // Höger: Vår specialknapp + Idag
-            right: 'toggleSidebarBtn today' 
+            right: 'toggleSidebarBtn today' // Knappen döljs på mobil via CSS
         },
-        
         buttonText: { today: 'Idag' },
 
-        events: events,
+        // --- PUNKT 1: HOVER LOGIK (Fixad positionering) ---
+        eventMouseEnter: function(info) {
+            if (window.innerWidth <= 768) return; // Ingen hover på mobil
+            
+            const props = info.event.extendedProps;
+            const timeStr = props.time || '';
+            const regNr = props.regnr || '---';
+            const title = info.event.title;
+            const desc = props.description || '';
 
-        // ... (Klistra in dina callbacks: eventDrop, eventReceive, etc.) ...
-        // Jag inkluderar dem kortfattat här för helheten:
+            // Hämta eller skapa tooltip
+            let tooltip = document.getElementById('fc-custom-tooltip');
+            if (!tooltip) {
+                tooltip = document.createElement('div');
+                tooltip.id = 'fc-custom-tooltip';
+                tooltip.className = 'calendar-tooltip';
+                document.body.appendChild(tooltip); // Lägg i body för att undvika clipping
+            }
+
+            // Ikoner
+            const iClock = `<svg style="width:14px;height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`;
+            const iInfo = `<svg style="width:14px;height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`;
+
+            let html = `
+                <div class="tt-row-primary">
+                    <span style="color:${props.mainColor}">●</span>
+                    <span class="tt-reg">${regNr}</span>
+                    <span>${title}</span>
+                </div>`;
+            
+            if (desc) {
+                html += `<div class="tt-row-detail">${iInfo} <span>${desc}</span></div>`;
+            }
+            
+            html += `<div class="tt-row-time">${iClock} <span>${timeStr}</span></div>`;
+
+            tooltip.innerHTML = html;
+            tooltip.classList.add('show');
+
+            // Positionering (Följer INTE musen, utan ligger fast vid eventet för stabilitet)
+            const rect = info.el.getBoundingClientRect();
+            let top = rect.bottom + 5;
+            let left = rect.left + (rect.width / 2) - 100; // Centrera
+
+            // Håll inom skärmen
+            if (left < 10) left = 10;
+            if (top + 100 > window.innerHeight) top = rect.top - 100; // Flytta upp om det är trångt nere
+
+            tooltip.style.top = top + 'px';
+            tooltip.style.left = left + 'px';
+        },
         
+        eventMouseLeave: function() {
+            const tooltip = document.getElementById('fc-custom-tooltip');
+            if (tooltip) {
+                tooltip.classList.remove('show');
+                tooltip.style.left = '-9999px'; // Flytta bort
+            }
+        },
+
+        // --- PUNKT 3: DRAG & DROP LOGIK ---
+        
+        // 1. Flytta befintligt kort
         eventDrop: function(info) {
             const d = info.event.start;
+            // Skapa datumsträng: YYYY-MM-DDTHH:MM
             const newDateStr = formatDateForFirebase(d);
             if (onDropCallback) onDropCallback(info.event.id, newDateStr, info.revert);
         },
 
+        // 2. Ta emot NYTT kort från sidomenyn
         eventReceive: function(info) {
+            // Hämta datumet där vi släppte
             const newDate = info.event.start;
-            const jobId = info.event.id; 
-            info.event.remove();
             const newDateStr = formatDateForFirebase(newDate);
+            
+            // Hämta ID från det dragna elementet (som FullCalendar parsat)
+            const jobId = info.event.id; 
+            
+            // Ta bort det temporära eventet (vi ritar om kalendern när databasen uppdaterats)
+            info.event.remove();
+
+            // Anropa app.js för att spara
             if (onExternalDropCallback) {
                 onExternalDropCallback(jobId, newDateStr);
             }
         },
 
-        // --- UTSEENDE ---
+        events: events,
+        
         eventContent: function(arg) {
             const isMob = window.innerWidth <= 768;
             const props = arg.event.extendedProps;
@@ -184,7 +253,6 @@ export function initCalendar(elementId, jobsData, onEventClickCallback, onDropCa
                 return { html: `<div class="fc-mobile-dot" style="background-color: ${props.mainColor};"></div>` };
             } 
             else {
-                // Skapa texten
                 let displayText = arg.event.title;
                 if (props.regnr) displayText += ` (${props.regnr})`;
 
@@ -202,7 +270,6 @@ export function initCalendar(elementId, jobsData, onEventClickCallback, onDropCa
             }
         },
 
-        // Dina klick-handlers
         dateClick: function(info) {
             if (isMobile) {
                 document.querySelectorAll('.fc-day-selected').forEach(el => el.classList.remove('fc-day-selected'));
@@ -213,15 +280,18 @@ export function initCalendar(elementId, jobsData, onEventClickCallback, onDropCa
 
         eventClick: function(info) {
             if (isMobile) {
-                // ... mobilkod ...
+                const eventDate = info.event.startStr.split('T')[0];
+                const dayEl = document.querySelector(`.fc-day[data-date="${eventDate}"]`);
+                if (dayEl) {
+                    document.querySelectorAll('.fc-day-selected').forEach(el => el.classList.remove('fc-day-selected'));
+                    dayEl.classList.add('fc-day-selected');
+                }
+                renderDayList(eventDate, events);
+                info.jsEvent.stopPropagation();
             } else {
                 if (onEventClickCallback) onEventClickCallback(info.event.id);
             }
-        },
-        
-        // Behåll din hover-logik här
-        eventMouseEnter: function(info) { /* ... din kod ... */ },
-        eventMouseLeave: function(info) { /* ... din kod ... */ }
+        }
     });
 
     calendar.render();
