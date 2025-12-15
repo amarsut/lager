@@ -335,3 +335,25 @@ export function initCalendar(elementId, jobsData, onEventClickCallback, onDropCa
 export function setCalendarTheme(theme) {
     if (calendar) calendar.render();
 }
+
+// --- NY FUNKTION: Uppdatera eventen live ---
+export function updateCalendarEvents(jobsData) {
+    if (!calendar) return;
+
+    // 1. Mappa om datan
+    const newEvents = mapJobsToEvents(jobsData);
+
+    // 2. Ta bort alla gamla event och lägg in nya
+    calendar.removeAllEvents();
+    calendar.addEventSource(newEvents);
+    
+    // 3. Tvinga en omritning om vi är i mobilvy och har en vald dag
+    const isMobile = window.innerWidth <= 768;
+    if (isMobile) {
+        const selectedDay = document.querySelector('.fc-day-selected');
+        if (selectedDay) {
+            const dateStr = selectedDay.getAttribute('data-date');
+            renderDayList(dateStr, newEvents);
+        }
+    }
+}
