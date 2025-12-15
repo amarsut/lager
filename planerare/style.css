@@ -5338,16 +5338,17 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 /*SIDOPANEL KALENDER DRAG & DROP*/
 
 /* =======================================================
-   KALENDER & SPLIT VIEW - FINAL POLISHED
+   KALENDER & SPLIT VIEW - FINAL FIX
    ======================================================= */
 
-/* --- 1. LAYOUT (Container) --- */
+/* --- 1. LAYOUT & CONTAINER --- */
 .calendar-split-layout {
     display: flex;
     height: auto;
-    min-height: 650px; /* Bra höjd på desktop */
+    min-height: 650px; 
     position: relative;
-    overflow: visible; /* VIKTIGT: För att tooltips inte ska klippas */
+    /* FIX HOVER: 'visible' låter tooltip sticka utanför om det behövs */
+    overflow: visible !important; 
     background: #fff;
     border-radius: 12px 12px 0 0;
     border: 1px solid #e2e8f0;
@@ -5361,34 +5362,28 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     z-index: 1; 
 }
 
-/* --- 2. HEADER & KNAPPAR (Ingen fetstil) --- */
+/* --- 2. HEADER & KNAPPAR --- */
 .fc-header-toolbar {
     padding: 12px 20px !important;
     margin-bottom: 0 !important;
     align-items: center !important;
 }
 
-/* Titeln "December 2025" - Normal tjocklek */
 .fc-toolbar-title {
     font-size: 1.1rem !important;
-    font-weight: 500 !important; /* Punkt 4: Inte fetstilt */
+    font-weight: 500 !important; /* PUNKT 4: Ingen fetstil */
     color: #1e293b;
     margin-left: 12px !important;
+    text-transform: capitalize;
 }
 
-.fc-toolbar-chunk {
-    display: flex;
-    align-items: center;
-}
-
-/* Knappar (Idag, Pilar, Visa Obokade) */
 .fc-button {
     height: 34px !important;
     padding: 0 14px !important;
     font-size: 0.85rem !important;
-    font-weight: 500 !important; /* Normal text */
+    font-weight: 500 !important;
     border-radius: 6px !important;
-    text-transform: none !important; /* Ingen ALL CAPS */
+    text-transform: capitalize !important; 
     box-shadow: none !important;
     display: flex; align-items: center; justify-content: center;
 }
@@ -5404,68 +5399,74 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     border-color: #cbd5e1 !important;
 }
 
-/* --- 3. EVENT-DESIGN (Fixar textbrytning och hover) --- */
+/* --- 3. EVENT DESIGN (Kant-till-kant & Block) --- */
 
-/* Ta bort marginaler för kant-till-kant känsla */
+/* PUNKT 2: Tvinga bort all padding i dag-rutan */
+.fc-daygrid-day-events {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Ta bort marginaler på själva eventet */
 .fc-daygrid-event {
-    margin: 1px 0 !important;
+    margin: 1px 0 0 0 !important; /* Endast 1px i toppen för separation */
     border-radius: 0 !important;
     background: transparent !important;
     cursor: pointer;
+    padding: 0 !important;
 }
 
+/* Det inre blocket */
 .modern-event-block {
     display: flex;
     align-items: center;
     width: 100%;
-    height: 24px; /* Fast höjd för snyggare rader */
-    padding: 0 6px;
+    height: 22px; /* Lite kompaktare höjd */
+    
+    /* PUNKT 2: Starta texten direkt från kanten */
+    padding: 0 4px 0 6px; 
     
     /* Vänsterlinje */
-    border-left-width: 3px;
+    border-left-width: 4px;
     border-left-style: solid;
-    /* Färg sätts via JS */
     
     font-family: 'Inter', sans-serif;
     font-size: 0.75rem;
     line-height: 1;
-    border-radius: 0 3px 3px 0;
+    border-radius: 0; /* Helt fyrkantig */
     
-    /* Punkt 1: Hover-effekt */
-    transition: filter 0.1s, background-color 0.1s;
-    pointer-events: auto; 
+    transition: filter 0.1s;
+    position: relative; /* Viktigt för z-index */
 }
 
 .modern-event-block:hover {
-    filter: brightness(0.96); /* Subtil mörkare ton vid hover */
+    filter: brightness(0.95);
 }
 
-/* Punkt 4: Tid (Normal vikt) */
 .modern-event-time {
-    margin-right: 6px;
-    font-weight: 500; /* Inte fet */
+    margin-right: 4px;
+    font-weight: 500;
     opacity: 0.8;
-    flex-shrink: 0; /* Tiden får inte krympa */
+    flex-shrink: 0; 
+    font-size: 0.7rem;
 }
 
-/* Punkt 3: Titel (Hanterar "..." korrekt) */
+/* PUNKT 3: Hanterar "..." */
 .modern-event-title {
-    font-weight: 400; /* Punkt 4: Normal vikt */
+    font-weight: 400; /* PUNKT 4: Normal vikt */
     white-space: nowrap;
     overflow: hidden;
-    text-overflow: ellipsis; /* Här kommer "..." */
-    flex: 1; /* Tar resten av platsen */
-    min-width: 0; /* VIKTIGT för att ellipsis ska fungera i flexbox */
-    
-    /* Punkt 2: Normalt textavstånd */
+    text-overflow: ellipsis; 
+    flex: 1; 
+    min-width: 0;
     letter-spacing: normal; 
 }
 
-/* --- 4. SIDOPANELEN (Snyggare kort) --- */
+/* --- 4. SIDOPANELEN (Dra & Släpp) --- */
 .calendar-sidebar {
     width: 0; 
     opacity: 0;
-    background-color: #f8fafc; /* Ljusgrå bakgrund */
+    background-color: #f8fafc; 
     border-left: 1px solid #e2e8f0;
     display: flex;
     flex-direction: column;
@@ -5480,39 +5481,37 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 }
 
 .sidebar-inner-header {
-    padding: 16px;
+    padding: 12px 16px;
     display: flex; justify-content: space-between; align-items: center;
     background: #fff; border-bottom: 1px solid #e2e8f0;
 }
 .sidebar-title { font-size: 0.8rem; font-weight: 600; color: #475569; text-transform: uppercase; }
 .badge-count { background: #e2e8f0; font-size: 0.75rem; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
 
-.sidebar-search { padding: 12px; background: #fff; border-bottom: 1px solid #f1f5f9; }
+.sidebar-search { padding: 10px; background: #fff; border-bottom: 1px solid #f1f5f9; }
 .sidebar-search input {
-    width: 100%; padding: 8px 12px;
+    width: 100%; padding: 8px 10px;
     border: 1px solid #e2e8f0; border-radius: 6px; background: #f8fafc;
     font-size: 0.85rem; outline: none;
 }
-.sidebar-search input:focus { background: #fff; border-color: #3b82f6; }
 
 .draggable-list {
-    padding: 12px;
+    padding: 10px;
     overflow-y: auto;
-    display: flex; flex-direction: column; gap: 8px;
+    display: flex; flex-direction: column; gap: 6px;
 }
 
-/* Punkt 5: Snygga kort i sidomenyn */
+/* Sidomeny-korten */
 .fc-event-draggable {
     background: #ffffff;
     border: 1px solid #e2e8f0;
-    border-left: 3px solid #94a3b8; /* Grå accent */
-    padding: 10px 12px;
-    border-radius: 6px;
+    border-left: 3px solid #94a3b8; 
+    padding: 8px 10px;
+    border-radius: 4px;
     cursor: grab;
     box-shadow: 0 1px 2px rgba(0,0,0,0.02);
     transition: all 0.2s;
 }
-
 .fc-event-draggable:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 6px rgba(0,0,0,0.05);
@@ -5520,22 +5519,45 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 }
 
 .drag-title {
-    font-size: 0.9rem; font-weight: 600; color: #1e293b;
-    display: block; margin-bottom: 4px;
+    font-size: 0.85rem; font-weight: 600; color: #1e293b;
+    display: block; margin-bottom: 2px;
 }
 .drag-meta {
     display: flex; justify-content: space-between;
-    font-size: 0.75rem; color: #64748b;
+    font-size: 0.7rem; color: #64748b;
 }
 
-/* Tooltip Z-Index Fix */
+/* --- PUNKT 1: TOOLTIP CSS (Viktigt!) --- */
 .calendar-tooltip {
-    z-index: 99999 !important; /* Alltid överst */
+    position: fixed;
+    background: #ffffff;
+    color: #1f2937;
+    padding: 10px 14px;
+    border-radius: 8px;
+    z-index: 999999 !important; /* Extremt högt z-index */
+    pointer-events: none;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.05);
+    width: auto; max-width: 280px; min-width: 200px;
+    opacity: 0;
+    transition: opacity 0.1s ease-in-out;
+    display: flex; flex-direction: column; gap: 4px;
+    font-family: 'Inter', sans-serif;
+    border: 1px solid #e5e7eb;
 }
+.calendar-tooltip.show { opacity: 1; }
 
-/* Mobilanpassning */
+.tt-row-primary { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 0.9rem; }
+.tt-row-detail { display: flex; align-items: flex-start; gap: 8px; font-size: 0.8rem; color: #4b5563; }
+.tt-row-time { display: flex; align-items: center; gap: 8px; font-size: 0.75rem; color: #6b7280; margin-top: 4px; border-top: 1px solid #f3f4f6; padding-top: 4px; }
+.tt-reg { background:#f3f4f6; padding:1px 4px; border-radius:4px; font-size:0.8rem; }
+
+/* --- MOBILANPASSNING --- */
 @media (max-width: 768px) {
     .calendar-split-layout { flex-direction: column; }
     .calendar-sidebar.open { width: 100%; height: 350px; border-left: none; border-top: 1px solid #e2e8f0; }
+    
+    /* PUNKT 5: Dölj sidomeny-knappen på mobil */
+    .fc-toggleSidebarBtn-button { display: none !important; }
+    
     .fc-header-toolbar { flex-wrap: wrap; gap: 10px; }
-		}
+			  }
