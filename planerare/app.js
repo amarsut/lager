@@ -1,5 +1,5 @@
 // Importera kalenderfunktionen
-import { initCalendar, setCalendarTheme } from './calendar.js';
+import { initCalendar, setCalendarTheme, updateCalendarEvents } from './calendar.js';
 
 window.openNewJobModal = openNewJobModal;
 window.toggleChatWidget = toggleChatWidget;
@@ -307,6 +307,12 @@ function initRealtimeListener() {
             allJobs.push({ id: doc.id, ...doc.data() });
         });
         renderDashboard();
+
+		const calendarView = document.getElementById('calendarView');
+        if (calendarView && calendarView.style.display !== 'none') {
+            updateCalendarEvents(allJobs);
+        }
+		
     }, error => {
         console.error("Fel vid hämtning av jobb:", error);
         // Ignorera fel om det beror på att vi precis loggat ut
@@ -3366,21 +3372,25 @@ function toggleCalendarSidebar() {
     const btn = document.querySelector('.fc-toggleSidebarBtn-button');
 
     if (sidebar.classList.contains('open')) {
+        // DÖLJ
         sidebar.classList.remove('open');
         if(btn) btn.textContent = "Visa";
     } else {
+        // VISA
         sidebar.classList.add('open');
         if(btn) btn.textContent = "Dölj";
-        
         renderUnplannedSidebar(); 
-        
-        // Uppdatera kalenderns storlek efter animationen
-        setTimeout(() => {
-            if (window.currentCalendar) {
-                window.currentCalendar.updateSize();
-            }
-        }, 310);
     }
+
+    // --- FIXEN FÖR STORLEK ---
+    // Vi väntar på CSS-transitionen (300ms) och tvingar sedan en uppdatering
+    setTimeout(() => {
+        if (window.currentCalendar) {
+            window.currentCalendar.updateSize();
+        }
+        // Extra säkerhet: Skicka ett "fake" fönster-resize event
+        window.dispatchEvent(new Event('resize'));
+    }, 350); // Lite längre än CSS-transitionen (300ms) för att vara säker
 }
 
 // 4. Enkel sökfunktion i sidopanelen
