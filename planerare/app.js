@@ -594,7 +594,7 @@ function createJobCard(job) {
                 
                 <div class="header-reg-clickable" onclick="event.stopPropagation(); openVehicleModal('${regNr}')" style="display: flex; align-items: center; height: 100%;">
                     ${iconHtml} 
-                    <span style="font-size: 0.9rem; font-weight: 100; line-height: 1;">${regNr} (status)</span>
+                    <span style="font-size: 0.9rem; font-weight: 300; line-height: 1;">${regNr} (status)</span>
                     <span class="reg-info-sup" style="display: flex; align-items: center; opacity: 0.7;">${iInfoSmall}</span>
                 </div>
                 
