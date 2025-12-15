@@ -3380,17 +3380,27 @@ function renderUnplannedSidebar() {
 // 3. Funktion för att Toggle (Visa/Dölj)
 function toggleCalendarSidebar() {
     const sidebar = document.getElementById('external-events-sidebar');
-    const btnText = document.querySelector('#toggleSidebarBtn span');
     
+    // Eftersom knappen nu styrs av FullCalendar (vi kan inte nå den via ID lika lätt),
+    // kan vi ändra texten genom att leta upp klassen:
+    const btn = document.querySelector('.fc-toggleSidebarBtn-button');
+
     if (sidebar.classList.contains('open')) {
         sidebar.classList.remove('open');
-        if(btnText) btnText.textContent = "Visa Obokade";
+        if(btn) btn.textContent = "Visa Obokade";
     } else {
         sidebar.classList.add('open');
-        if(btnText) btnText.textContent = "Dölj Sidovy";
-        // Rendera listan när vi öppnar, ifall ny data kommit
+        if(btn) btn.textContent = "Dölj Sidovy";
         renderUnplannedSidebar();
     }
+
+    // --- HÄR ÄR MAGIN ---
+    // Vänta 300ms (samma som CSS transition) och säg åt kalendern att räkna om storleken
+    setTimeout(() => {
+        if (window.currentCalendar) {
+            window.currentCalendar.updateSize();
+        }
+    }, 310);
 }
 
 // 4. Enkel sökfunktion i sidopanelen
