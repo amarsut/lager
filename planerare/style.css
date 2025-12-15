@@ -5345,7 +5345,7 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 .calendar-split-layout {
     display: flex;
     height: auto;
-    min-height: 650px; 
+    min-height: 0; 
     position: relative;
     overflow: visible !important; 
     background: #fff;
@@ -5519,3 +5519,4 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     /* På mobil kan vi behöva stacka headern pga platsbrist */
     .fc-header-toolbar { flex-wrap: wrap; gap: 10px; }
 }
+
