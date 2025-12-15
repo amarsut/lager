@@ -3330,10 +3330,7 @@ function renderUnplannedSidebar() {
     const countBadge = document.getElementById('sidebarCount');
     if (!listContainer) return;
 
-    // Hitta jobb utan datum
     const unplannedJobs = allJobs.filter(j => !j.deleted && (!j.datum || j.datum === ''));
-    
-    // Uppdatera räknare
     if(countBadge) countBadge.textContent = unplannedJobs.length;
 
     listContainer.innerHTML = '';
@@ -3345,16 +3342,14 @@ function renderUnplannedSidebar() {
 
     unplannedJobs.forEach(job => {
         const el = document.createElement('div');
-        // Klassen som ger den snygga kort-designen
         el.className = 'fc-event-draggable';
         
-        // Data för FullCalendar
+        // VIKTIGT: Detta data-attribut läses av FullCalendar
         el.setAttribute('data-event', JSON.stringify({
             title: job.kundnamn,
             id: job.id
         }));
 
-        // HTML Inuti kortet
         el.innerHTML = `
             <span class="drag-title">${job.kundnamn}</span>
             <div class="drag-meta">
@@ -3362,15 +3357,18 @@ function renderUnplannedSidebar() {
                 <span>${job.paket || 'Service'}</span>
             </div>
         `;
-        
         listContainer.appendChild(el);
     });
 
-    // Initiera Drag & Drop (Viktigt att göra detta varje gång listan ritas om)
+    // --- HÄR ÄR FIXEN FÖR DRAG & DROP ---
+    // Initiera Draggable på containern om det inte redan är gjort
     if (typeof FullCalendar !== 'undefined' && FullCalendar.Draggable) {
+        // Förstör ev. gammal instans för att undvika dubbla listeners (valfritt men säkert)
+        // Men enklast är att skapa en ny på containern
         new FullCalendar.Draggable(listContainer, {
             itemSelector: '.fc-event-draggable',
             eventData: function(eventEl) {
+                // Parse:a datan vi lade in i attributet ovan
                 return JSON.parse(eventEl.getAttribute('data-event'));
             }
         });
