@@ -3313,3 +3313,110 @@ window.switchBacklogTab = function(tabName) {
     currentBacklogTab = tabName;
     renderDashboard(); // Rita om sidan med nya fliken vald
 };
+
+// Lägg till i setupEventListeners() eller init-funktionen
+window.toggleCalendarSidebar = toggleCalendarSidebar;
+window.filterDraggableList = filterDraggableList;
+
+// 1. Funktion för att rendera sidopanelen
+function renderUnplannedSidebar() {
+    const listContainer = document.getElementById('external-events-list');
+    const countBadge = document.getElementById('sidebarCount');
+    if (!listContainer) return;
+
+    // Hitta jobb utan datum
+    const unplannedJobs = allJobs.filter(j => !j.deleted && (!j.datum || j.datum === ''));
+    
+    // Uppdatera räknare
+    if(countBadge) countBadge.textContent = unplannedJobs.length;
+
+    listContainer.innerHTML = '';
+
+    if (unplannedJobs.length === 0) {
+        listContainer.innerHTML = '<div style="text-align:center; color:#94a3b8; padding:20px; font-size:0.85rem;">Inga jobb att boka.</div>';
+        return;
+    }
+
+    unplannedJobs.forEach(job => {
+        const el = document.createElement('div');
+        el.className = 'fc-event-draggable';
+        
+        // VIKTIGT: Data-attribut som FullCalendar läser av vid drop
+        el.setAttribute('data-event', JSON.stringify({
+            title: job.kundnamn,
+            id: job.id,
+            // Vi kan skicka med färg om vi vill, men kalendern sätter det sen baserat på status
+        }));
+
+        el.innerHTML = `
+            <span class="drag-title">${job.kundnamn}</span>
+            <div class="drag-meta">
+                <span>${job.regnr || '---'}</span>
+                <span>${job.paket || 'Service'}</span>
+            </div>
+        `;
+        
+        listContainer.appendChild(el);
+    });
+
+    // 2. Initiera FullCalendar Draggable på containern
+    // Detta gör elementen inuti containern dragbara till kalendern
+    if (typeof FullCalendar !== 'undefined' && FullCalendar.Draggable) {
+        new FullCalendar.Draggable(listContainer, {
+            itemSelector: '.fc-event-draggable',
+            eventData: function(eventEl) {
+                return JSON.parse(eventEl.getAttribute('data-event'));
+            }
+        });
+    }
+}
+
+// 3. Funktion för att Toggle (Visa/Dölj)
+function toggleCalendarSidebar() {
+    const sidebar = document.getElementById('external-events-sidebar');
+    const btnText = document.querySelector('#toggleSidebarBtn span');
+    
+    if (sidebar.classList.contains('open')) {
+        sidebar.classList.remove('open');
+        if(btnText) btnText.textContent = "Visa Obokade";
+    } else {
+        sidebar.classList.add('open');
+        if(btnText) btnText.textContent = "Dölj Sidovy";
+        // Rendera listan när vi öppnar, ifall ny data kommit
+        renderUnplannedSidebar();
+    }
+}
+
+// 4. Enkel sökfunktion i sidopanelen
+function filterDraggableList(term) {
+    const items = document.querySelectorAll('.fc-event-draggable');
+    const lowerTerm = term.toLowerCase();
+    
+    items.forEach(item => {
+        const text = item.innerText.toLowerCase();
+        item.style.display = text.includes(lowerTerm) ? 'block' : 'none';
+    });
+}
+
+// 5. Callback när man släpper ett jobb i kalendern (från sidopanelen)
+async function handleExternalDrop(jobId, newDateStr) {
+    try {
+        console.log(`Bokar jobb ${jobId} på datum ${newDateStr}`);
+        
+        // Uppdatera Firebase
+        await db.collection('jobs').doc(jobId).update({
+            datum: newDateStr,
+            status: 'bokad' // Ändra status automatiskt till bokad
+        });
+        
+        // Uppdatera listan i sidopanelen (ta bort det vi just drog)
+        renderUnplannedSidebar();
+        
+        // (Valfritt) Visa en toast/notis
+        // showToast("Jobb bokat!");
+
+    } catch (error) {
+        console.error("Fel vid extern drop:", error);
+        alert("Kunde inte uppdatera jobbet.");
+    }
+}
