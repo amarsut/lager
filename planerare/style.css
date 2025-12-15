@@ -1,95 +1,108 @@
 /* ==========================================================================
-   MASTER STYLE.CSS - RESTORED & CLEANED
+   INNEHÅLLSFÖRTECKNING
    ==========================================================================
-   1.  Variabler & Grund (Reset, Fonts)
-   2.  Layout (Sidebar, Top Bar, Login)
-   3.  Dashboard (Statistik, Filter Tabs)
-   4.  Jobb-kort (Desktop Tabell & Mobil Kort)
-   5.  Kalender (FullCalendar Customization & Drag-Drop)
-   6.  Kunder (Grid, Kort, Toolbar, Badges)
-   7.  Chatt (Messenger Style, Bubblor, Input, Edit Mode)
-   8.  Modaler Generellt (Backdrop, Animationer)
-   9.  Specifika Modaler (Jobb, Fordon/Teknisk Data, Kund, Märkesväljare)
-   10. Inställningar (One UI Style, Switchar, Lager)
-   11. Mobilanpassning (Sticky Headers, Nav, Z-Index fixar)
+   1.  Variabler & Reset
+   2.  Layout (Sidebar, Top Bar, Main Wrapper)
+   3.  Komponenter (Knappar, Inputs, Tabeller, Badges)
+   4.  Dashboard (Statistik-bar)
+   5.  Jobb-kort (Mobil & Desktop)
+   6.  Kalender (FullCalendar Overrides)
+   7.  Kunder (Grid, Kort, Toolbar)
+   8.  Chatt (Widget, Bubblor, Input)
+   9.  Modalsystem (Global, Fordon, Kund)
+   10. Inställningar & Menyer
+   11. Mobilanpassning (Media Queries)
    ========================================================================== */
 
 /* =========================================
-   1. VARIABLER & GRUND
+   1. VARIABLER & RESET
    ========================================= */
 :root {
     --primary-color: #0066FF;
     --primary-hover: #0052cc;
+    --primary-light: rgba(0, 102, 255, 0.1);
+    
     --bg-color: #f8f9fa;
     --content-bg: #FFFFFF;
+    
     --text-color: #111827;
     --text-color-light: #6B7280;
     --border-color: #E5E7EB;
     
-    /* Statusfärger */
     --success-color: #10b981;
     --danger-color: #ef4444;
     --info-color: #3b82f6;
     --warning-color: #f59e0b;
     --invoice-color: #bf5af2;
     
-    /* Layout */
     --sidebar-width: 250px;
     --header-height: 70px;
+    
+    /* Z-Index Lager */
+    --z-header: 100;
+    --z-modal: 2000;
+    --z-modal-top: 2100; /* För modaler ovanpå modaler */
+    --z-chat-fab: 3000;
 }
 
 * { box-sizing: border-box; }
 
 body {
-    margin: 0; font-family: 'Inter', sans-serif;
-    background-color: var(--bg-color); color: var(--text-color);
-    height: 100vh; overflow: hidden;
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    height: 100vh;
+    overflow: hidden; /* App-känsla */
 }
 
-/* Privacy Mode (Döljer siffror) */
+/* Privacy Mode (Suddig text) */
 body.privacy-active .stat-card-value, 
 body.privacy-active .money-related, 
-body.privacy-active .price-row .row-value, 
-body.privacy-active #kundpris, 
-body.privacy-active #vinstDisplay, 
-body.privacy-active #utgifterDisplay, 
+body.privacy-active .price-row .row-value,
+body.privacy-active #kundpris,
+body.privacy-active #vinstDisplay,
+body.privacy-active #utgifterDisplay,
 body.privacy-active #custTotalSpent {
     color: transparent !important;
     text-shadow: 0 0 10px rgba(0,0,0,0.4) !important;
     user-select: none;
 }
 
-/* Tabular Nums (Snyggare siffror) */
-.stat-card-value, .money-related, .row-value, input[type="number"] {
-    font-variant-numeric: tabular-nums;
-    font-feature-settings: "tnum";
-}
-
-/* Dölj element */
+/* Dölj mobil-element på desktop */
 .mobile-only { display: none !important; }
+
+/* SVG Standard */
 svg { width: 20px; height: 20px; flex-shrink: 0; }
 .icon-sm { width: 16px !important; height: 16px !important; }
 
 /* =========================================
-   2. LAYOUT (DESKTOP) & LOGIN
+   2. LAYOUT (SIDEBAR & TOP BAR)
    ========================================= */
 .app-layout { display: flex; height: 100vh; width: 100%; }
 
-/* Sidebar */
+/* --- Sidebar --- */
 .sidebar {
-    width: var(--sidebar-width); background-color: var(--content-bg);
+    width: var(--sidebar-width);
+    background-color: var(--content-bg);
     border-right: 1px solid var(--border-color);
     display: flex; flex-direction: column; padding: 24px 16px; flex-shrink: 0;
 }
+
 .sidebar-header { margin-bottom: 20px; }
 .app-logo-modern { display: flex; align-items: center; gap: 12px; font-weight: 700; font-size: 1.1rem; color: #111; }
 .logo-icon-box {
-    width: 36px; height: 36px; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-    border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white;
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    color: white;
 }
+
+.sidebar-nav { display: flex; flex-direction: column; gap: 4px; }
 .nav-link {
-    display: flex; align-items: center; gap: 12px; padding: 10px 14px;
-    border-radius: 8px; border: none; background: transparent;
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 14px; border-radius: 8px; border: none; background: transparent;
     color: var(--text-color-light); font-weight: 500; font-size: 0.9rem;
     cursor: pointer; text-align: left; width: 100%; text-decoration: none;
 }
@@ -102,84 +115,74 @@ svg { width: 20px; height: 20px; flex-shrink: 0; }
 .sidebar-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
 .user-info { display: flex; flex-direction: column; flex-grow: 1; overflow: hidden; }
 .user-name { font-size: 0.85rem; font-weight: 600; }
+.user-role { font-size: 0.7rem; color: #9ca3af; }
 .logout-icon-btn { background: none; border: none; cursor: pointer; color: #9ca3af; }
 
-/* Main Content & Top Bar */
+/* --- Main Content --- */
 .main-content-wrapper { flex-grow: 1; display: flex; flex-direction: column; background-color: var(--bg-color); overflow: hidden; }
+.app-main { overflow-y: auto; flex-grow: 1; padding: 24px; }
+.main-content { max-width: 1400px; margin: 0 auto; width: 100%; }
+
+/* --- Top Bar --- */
 .top-bar {
-    height: var(--header-height); background-color: var(--content-bg); border-bottom: 1px solid #eef2f6;
-    display: flex; justify-content: space-between; align-items: center; padding: 0 24px; flex-shrink: 0;
+    height: var(--header-height);
+    background-color: var(--content-bg);
+    border-bottom: 1px solid #eef2f6;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0 24px; flex-shrink: 0;
 }
+
 .top-search-container { position: relative; width: 380px; }
 .top-search-container input {
-    width: 100%; padding: 10px 16px 10px 40px; border: 1px solid #f1f5f9;
-    border-radius: 8px; background-color: #F5F7FA; outline: none; font-size: 0.9rem;
+    width: 100%; padding: 10px 16px 10px 40px;
+    border: 1px solid #f1f5f9; border-radius: 8px; background-color: #F5F7FA;
+    outline: none; font-size: 0.9rem;
 }
 .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
+
+.top-bar-actions { display: flex; align-items: center; gap: 16px; }
+.header-icon-btn { background: transparent; border: none; cursor: pointer; color: #64748b; padding: 8px; border-radius: 8px; }
+.header-icon-btn:hover { background-color: #f1f5f9; color: #111; }
+.divider-vertical { width: 1px; height: 24px; background-color: #e2e8f0; }
+
 .header-cta-btn {
     height: 40px; padding: 0 20px; background-color: var(--primary-color); color: white;
     border-radius: 8px; font-weight: 600; border: none; display: flex; align-items: center; gap: 8px; cursor: pointer;
 }
-.app-main { overflow-y: auto; flex-grow: 1; padding: 24px; }
-.main-content { max-width: 1400px; margin: 0 auto; width: 100%; }
-
-/* Login Screen */
-.login-screen {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-    display: flex; align-items: center; justify-content: center; z-index: 10000;
-}
-.login-card {
-    background: #ffffff; width: 100%; max-width: 420px; padding: 48px 40px;
-    border-radius: 24px; box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.1);
-}
-.login-btn {
-    width: 100%; padding: 16px; background: #111827; color: white; border: none;
-    border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; margin-top: 10px;
-}
+.header-cta-btn:hover { background-color: var(--primary-hover); }
 
 /* =========================================
-   3. DASHBOARD (STATISTIK)
+   3. KOMPONENTER (KNAPPAR, INPUTS, TABELL)
    ========================================= */
-.stat-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 24px; }
-.stat-card {
-    padding: 16px 20px; min-height: 100px; background: #fff; border: 1px solid #f3f4f6;
-    border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between;
-    cursor: pointer; transition: transform 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+/* Knappar */
+.button {
+    padding: 8px 16px; border-radius: 8px; font-weight: 600; border: none;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.9rem;
 }
-.stat-card:hover { transform: translateY(-3px); }
-.stat-card-title { font-size: 0.75rem; font-weight: 600; color: #64748b; text-transform: uppercase; display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-.stat-card-value { font-size: 2rem; font-weight: 700; line-height: 1; color: #111; }
+.button.primary-solid { background: var(--primary-color); color: white; }
+.button.secondary-outline { background: white; border: 1px solid #e5e7eb; color: #374151; }
+.icon-btn { width: 32px; height: 32px; border-radius: 6px; background: transparent; border: none; display: flex; align-items: center; justify-content: center; color: #9ca3af; cursor: pointer; }
+.icon-btn:hover { background: #f1f5f9; color: #111; }
 
-.stat-card.active { background-color: #eff6ff; border-color: #bfdbfe; }
-.stat-card.active .stat-card-value { color: #1e3a8a; }
-
-/* Backlog Kort (Speciellt utseende) */
-.stat-card[data-filter="backlog"] { background: linear-gradient(135deg, #ffffff 0%, #fff7ed 100%); border-color: #ffedd5; }
-.stat-card[data-filter="backlog"] .stat-card-value, .stat-card[data-filter="backlog"] svg { color: #ea580c; }
-.stat-card[data-filter="backlog"].active { border-bottom: 4px solid #ea580c; background-color: #fff7ed; }
-.stat-subtext { font-size: 0.7rem; color: #9ca3af; font-weight: 500; margin-top: auto; }
-
-/* Filter Tabs (Under statistiken) */
-.filter-tabs-container { display: flex; align-items: center; gap: 8px; margin: 16px 0 12px 6px; padding-bottom: 12px; border-bottom: 1px solid #f1f5f9; }
-.filter-tab {
-    padding: 4px 4px 4px 10px; border-radius: 50px; background: #fff; border: 1px solid #e2e8f0;
-    color: #64748b; font-size: 0.75rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px;
+/* Inputs */
+.input-gray, select, textarea {
+    width: 100%; padding: 12px; border: none; background-color: #F3F4F6;
+    border-radius: 8px; outline: none; font-size: 0.95rem; font-family: inherit;
+    font-weight: 500; color: #1f2937; transition: background 0.2s;
 }
-.filter-tab.active { background-color: #fff7ed; color: #c2410c; border-color: #fdba74; }
-.tab-badge { background: #f1f5f9; color: #64748b; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; }
-.filter-tab.active .tab-badge { background: #fb923c; color: white; }
+.input-gray:focus { background-color: #e5e7eb; }
+.form-group { margin-bottom: 16px; }
+.form-group label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.85rem; color: #374151; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.full-width { grid-column: span 2; }
 
-/* =========================================
-   4. JOBB (TABELL & KORT)
-   ========================================= */
-/* Desktop Tabell */
-.table-container { background: white; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; }
+/* Tabell */
+.table-container { background: white; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
 table { width: 100%; border-collapse: collapse; }
 thead { background-color: #f9fafb; border-bottom: 1px solid var(--border-color); }
 th { text-align: left; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: #64748b; padding: 12px 16px; }
 td { vertical-align: middle; font-size: 0.9rem; padding: 12px 16px; border-bottom: 1px solid #F3F4F6; white-space: nowrap; }
-tbody tr { cursor: pointer; transition: background 0.1s; border-left: 3px solid transparent; }
+tbody tr { cursor: pointer; transition: background-color 0.1s; border-left: 3px solid transparent; }
 tbody tr:hover { background-color: #F9FAFB; border-left-color: var(--primary-color); }
 
 /* Status Badges */
@@ -190,10 +193,51 @@ tbody tr:hover { background-color: #F9FAFB; border-left-color: var(--primary-col
 .status-offererad { background-color: #fff7ed; color: #c2410c; }
 .status-avbokad { background-color: #fee2e2; color: #b91c1c; }
 
-/* Mobil Kort (Används i listor) */
+/* Regnr Platta */
+.reg-plate { display: inline-flex; align-items: center; background: #fff; border: 1px solid #d1d5db; border-radius: 3px; font-family: 'Roboto Mono', monospace; font-weight: 700; height: 22px; font-size: 0.85rem; box-shadow: 0 1px 1px rgba(0,0,0,0.05); }
+.reg-plate .reg-country { background: #0052cc; color: white; padding: 0 4px; font-size: 0.6rem; height: 100%; display: flex; align-items: center; margin-right: 4px; }
+.reg-plate .reg-number { padding: 0 6px 0 0; color: #111; letter-spacing: 0.5px; }
+
+/* =========================================
+   4. DASHBOARD (STATISTIK)
+   ========================================= */
+.stat-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 24px; }
+.stat-card {
+    padding: 16px 20px; min-height: 100px; background: #fff; border: 1px solid #f3f4f6; border-radius: 8px;
+    display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+.stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 15px rgba(0,0,0,0.05); }
+.stat-card-title { font-size: 0.75rem; font-weight: 600; color: #64748b; text-transform: uppercase; display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.stat-card-value { font-size: 2rem; font-weight: 700; line-height: 1; color: #111; }
+
+/* Aktiva kort */
+.stat-card.active { background-color: #eff6ff; border-color: #bfdbfe; }
+.stat-card.active .stat-card-value { color: #1e3a8a; }
+
+/* Backlog (Ej Bokat) */
+.stat-card[data-filter="backlog"] { background: linear-gradient(135deg, #ffffff 0%, #fff7ed 100%); border-color: #ffedd5; }
+.stat-card[data-filter="backlog"] .stat-card-value, .stat-card[data-filter="backlog"] svg { color: #ea580c; }
+.stat-card[data-filter="backlog"].active { border-bottom: 4px solid #ea580c; background-color: #fff7ed; }
+.stat-subtext { font-size: 0.7rem; color: #9ca3af; font-weight: 500; margin-top: auto; }
+
+/* Filter Tabs (För backlog) */
+.filter-tabs-container { display: flex; align-items: center; gap: 8px; margin: 16px 0 12px 6px; padding-bottom: 12px; border-bottom: 1px solid #f1f5f9; }
+.filter-tab {
+    padding: 4px 4px 4px 10px; border-radius: 50px; background: #fff; border: 1px solid #e2e8f0; color: #64748b;
+    font-size: 0.75rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px;
+}
+.filter-tab.active { background-color: #fff7ed; color: #c2410c; border-color: #fdba74; }
+.tab-badge { background: #f1f5f9; color: #64748b; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; }
+.filter-tab.active .tab-badge { background: #fb923c; color: white; }
+
+/* =========================================
+   5. JOBB-KORT (MOBIL & EXPAND)
+   ========================================= */
+/* Dessa används främst i mobilen och i backlog-listan */
 .job-card-new {
-    background: #FFFFFF; border: 1px solid #CBD5E1; border-radius: 8px; width: 100%;
-    margin-bottom: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.02); display: flex; flex-direction: column; overflow: hidden;
+    background: #FFFFFF; border: 1px solid #CBD5E1; border-radius: 8px; width: 100%; margin-bottom: 12px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.02); display: flex; flex-direction: column; overflow: hidden;
 }
 .card-header-strip {
     padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; min-height: 34px; color: white; font-weight: 700;
@@ -206,50 +250,41 @@ tbody tr:hover { background-color: #F9FAFB; border-left-color: var(--primary-col
 .bg-unplanned { background: #94a3b8; }
 .bg-overdue { background: #ef4444; }
 
-/* Regnr Header i Kort */
 .header-reg-clickable { display: flex; align-items: center; gap: 6px; font-size: 0.95rem; cursor: pointer; }
 .brand-logo-img { width: 16px; height: 16px; object-fit: contain; filter: grayscale(100%) opacity(0.85); margin-right: 6px; }
+/* Gör ikoner vita på färgade bakgrunder */
 .bg-bokad .brand-logo-img, .bg-overdue .brand-logo-img, .bg-unplanned .brand-logo-img { filter: brightness(0) invert(1) opacity(0.95); }
 
-/* Kort Body */
 .card-body { padding: 12px; display: flex; flex-direction: column; gap: 6px; }
 .info-row { display: grid; grid-template-columns: 85px 1fr; align-items: center; }
 .row-label { color: #64748B; font-size: 0.8rem; display: flex; align-items: center; gap: 4px; }
 .row-value { font-weight: 500; font-size: 0.9rem; color: #111; overflow: hidden; text-overflow: ellipsis; }
 .card-comments-section { padding: 8px 12px; background: #F8FAFC; border-top: 1px solid #E2E8F0; display: flex; gap: 8px; font-size: 0.8rem; color: #334155; font-style: italic; }
 
-/* Kort Meny/Knappar */
-.card-menu-btn { background: transparent; border: none; padding: 4px; cursor: pointer; color: inherit; display: flex; }
+/* Expand Actions (Knappar under kortet) */
 .card-actions-expand { display: none; grid-template-columns: 1fr 1fr 1fr; gap: 8px; padding: 12px; background: #f9fafb; border-top: 1px solid #e5e7eb; }
 .card-actions-expand.show { display: grid; }
-.inline-action-btn { padding: 8px; border-radius: 6px; border: 1px solid #e5e7eb; background: #fff; display: flex; align-items: center; justify-content: center; }
-.inline-action-btn.success { background: #f0fdf4; border-color: #bbf7d0; color: #16A34A; }
-.inline-action-btn.warning { background: #faf5ff; border-color: #e9d5ff; color: #9333EA; }
-.inline-action-btn.danger { background: #fef2f2; border-color: #fecaca; color: #EF4444; }
-
-/* Unplanned Accordion */
-.unplanned-accordion { margin: 0 16px 18px 10px; background: linear-gradient(90deg, #fff7ed 0%, #ffffff 80%); border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-left: 4px solid #f59e0b; overflow: hidden; }
-.unplanned-header { padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-.unplanned-content { display: none; padding: 12px 6px; background: #ffffff; border-top: 1px solid #fed7aa; }
-.unplanned-content.open { display: block; animation: slideDown 0.2s ease-out; }
-.rotate-arrow { transform: rotate(180deg); }
+.inline-action-btn { padding: 8px; border-radius: 6px; border: 1px solid #e5e7eb; background: #fff; display: flex; align-items: center; justify-content: center; color: #64748b; }
+.inline-action-btn.success { color: var(--success-color); background: #f0fdf4; border-color: #bbf7d0; }
+.inline-action-btn.warning { color: #9333EA; background: #faf5ff; border-color: #e9d5ff; }
+.inline-action-btn.danger { color: var(--danger-color); background: #fef2f2; border-color: #fecaca; }
 
 /* =========================================
-   5. KALENDER (FULLCALENDAR)
+   6. KALENDER (FULLCALENDAR)
    ========================================= */
 #calendarView { background: white; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; display: block; }
-.fc-header-toolbar { padding: 16px 24px !important; margin-bottom: 0 !important; background: #fff; border-bottom: 1px solid #f1f5f9; display: flex; flex-direction: row; align-items: center; justify-content: space-between; }
+.fc-header-toolbar { padding: 16px 24px !important; margin-bottom: 0 !important; background: #fff; border-bottom: 1px solid #f1f5f9; display: flex; flex-direction: row; align-items: center; }
 .fc-toolbar-title { font-size: 1.2rem !important; font-weight: 600 !important; color: #1e293b; text-transform: capitalize; }
 .fc-button { height: 36px !important; border-radius: 8px !important; background: #fff !important; border: 1px solid #e2e8f0 !important; color: #334155 !important; font-weight: 600 !important; text-transform: capitalize !important; box-shadow: none !important; }
 .fc-button:hover, .fc-button-active { background: #f1f5f9 !important; color: #111 !important; border-color: #cbd5e1 !important; }
 
-/* Rutnät & Event Design */
+/* Rutnät & Events */
 .fc-theme-standard td, .fc-theme-standard th { border-color: #f1f5f9 !important; }
-.fc-daygrid-day-frame { min-height: 100px !important; padding-bottom: 0 !important; }
+.fc-col-header-cell-cushion { color: #94a3b8; font-weight: 600; text-transform: uppercase; font-size: 0.75rem; padding-top: 12px !important; }
+.fc-daygrid-day-frame { min-height: 100px !important; }
 .fc-daygrid-event { margin-top: 1px !important; background: transparent !important; border: none !important; }
-.fc-daygrid-event-dot { display: none !important; } /* Dölj standardpunkter */
 
-/* Custom Block Event */
+/* Custom Event Block (Designen på själva bokningen) */
 .modern-event-block {
     display: flex; align-items: center; width: 100%; padding: 2px 6px;
     border-left-width: 4px; border-left-style: solid;
@@ -258,32 +293,22 @@ tbody tr:hover { background-color: #F9FAFB; border-left-color: var(--primary-col
 }
 .modern-event-time { margin-right: 6px; opacity: 0.9; font-weight: 700; font-size: 0.7rem; }
 
-/* Split Layout (Sidopanel Drag & Drop) */
+/* Sidopanel (Drag & Drop) */
 .calendar-split-layout { display: flex; height: auto; position: relative; }
 .calendar-main-area { flex: 1; min-width: 0; }
 .calendar-sidebar { width: 0; opacity: 0; background: #f8fafc; border-left: 1px solid #e2e8f0; display: flex; flex-direction: column; transition: width 0.3s, opacity 0.2s; overflow: hidden; }
 .calendar-sidebar.open { width: 250px; opacity: 1; }
 .fc-event-draggable { background: #fff; border: 1px solid #e2e8f0; border-left: 3px solid #94a3b8; padding: 10px; border-radius: 6px; margin-bottom: 8px; cursor: grab; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
-
-/* Tooltip (Hover) */
-.calendar-tooltip {
-    position: fixed; background: #ffffff; color: #1f2937; padding: 10px 14px;
-    border-radius: 8px; z-index: 99999; pointer-events: none;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.05);
-    width: auto; max-width: 280px; opacity: 0; transition: opacity 0.15s;
-    display: flex; flex-direction: column; gap: 4px;
-}
-.calendar-tooltip.show { opacity: 1; }
-.tt-row-primary { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 0.9rem; }
+.fc-event-draggable:hover { transform: translateY(-2px); }
 
 /* =========================================
-   6. KUNDER (GRID & PROFILER)
+   7. KUNDER (CRM)
    ========================================= */
 .customer-toolbar { display: flex; gap: 12px; margin-bottom: 20px; }
 .cust-search { flex: 2; }
 .sort-wrapper { flex: 1; min-width: 160px; }
 
-/* Mini Dashboard */
+/* Mini Dashboard för Kunder */
 .cust-stats-wrapper { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 20px; }
 .cust-stat-card { background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
 .cs-label { font-size: 0.7rem; color: #9ca3af; font-weight: 700; text-transform: uppercase; }
@@ -292,11 +317,7 @@ tbody tr:hover { background-color: #F9FAFB; border-left-color: var(--primary-col
 
 /* Kund Grid */
 .customer-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; width: 100%; padding-bottom: 80px; }
-.customer-card {
-    background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px;
-    display: flex; align-items: center; gap: 16px; cursor: pointer; transition: all 0.1s;
-    min-height: 80px;
-}
+.customer-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; display: flex; align-items: center; gap: 16px; cursor: pointer; transition: all 0.1s; }
 .customer-card:hover { border-color: var(--primary-color); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
 
 .c-avatar { width: 48px; height: 48px; border-radius: 50%; background: #eff6ff; color: var(--primary-color); font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
@@ -304,14 +325,14 @@ tbody tr:hover { background-color: #F9FAFB; border-left-color: var(--primary-col
 .c-info h3 { margin: 0; font-size: 1rem; color: #1e293b; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 8px; }
 .c-meta { font-size: 0.8rem; color: #64748b; margin-top: 2px; }
 
-/* Status Piller */
+/* Taggar */
 .status-pill { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 6px; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; white-space: nowrap; }
 .pill-new { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
 .pill-passive { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
 .pill-loyal { background: #e0f2fe; color: #075985; border: 1px solid #bae6fd; }
 
 /* =========================================
-   7. CHATT (WIDGET & MESSENGER STYLE)
+   8. CHATT (WIDGET & STYLE)
    ========================================= */
 #fabChat {
     position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px;
@@ -319,82 +340,72 @@ tbody tr:hover { background-color: #F9FAFB; border-left-color: var(--primary-col
     box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: var(--z-chat-fab); cursor: pointer;
     display: flex; align-items: center; justify-content: center; transition: transform 0.2s;
 }
-#fabChat:hover { transform: scale(1.05); box-shadow: 0 15px 35px -8px rgba(59, 130, 246, 0.7); }
+#fabChat:hover { transform: scale(1.05); }
 #fabChat svg { width: 28px !important; height: 28px !important; stroke: white !important; }
 
 .chat-widget {
-    position: fixed; bottom: 105px; right: 30px; width: 400px; height: 600px; max-height: 80vh;
-    background: #fff; border-radius: 24px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+    position: fixed; bottom: 100px; right: 30px; width: 400px; height: 600px; max-height: 80vh;
+    background: #fff; border-radius: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.2);
     display: flex; flex-direction: column; z-index: var(--z-modal); overflow: hidden;
     animation: chatPopIn 0.3s ease-out forwards;
 }
-@keyframes chatPopIn { from { opacity: 0; transform: translateY(30px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes chatPopIn { from { opacity: 0; transform: translateY(20px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
 
-/* Chatt Header */
-.chat-header {
-    padding: 12px 16px; background: rgba(255,255,255,0.95); backdrop-filter: blur(12px);
-    border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; justify-content: space-between;
-}
-.full-width-search { flex: 1; background: #F1F5F9; height: 44px; border-radius: 22px; display: flex; align-items: center; padding-right: 8px; position: relative; margin-left: 8px; }
-#chatSearchInput { flex: 1; background: transparent; border: none; outline: none; padding-left: 36px; padding-right: 8px; height: 100%; }
-.search-icon-inside { position: absolute; left: 10px; width: 16px; color: #65676b; pointer-events: none; }
-
-/* Chatt Meddelanden */
+.chat-header { padding: 12px 16px; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; gap: 12px; }
 .chat-messages { flex: 1; overflow-y: auto; padding: 20px; background: #fff; display: flex; flex-direction: column; gap: 12px; }
-.chat-date-separator { text-align: center; font-size: 0.7rem; color: #8E8E93; font-weight: 600; margin: 8px 0; text-transform: uppercase; position: relative; display: flex; align-items: center; justify-content: center; }
-.chat-date-separator span { background: #fff; padding: 0 10px; z-index: 1; }
-.chat-date-separator::before { content: ''; position: absolute; left: 0; right: 0; height: 1px; background: #f2f2f7; }
 
+/* Bubblor */
 .chat-row { display: flex; flex-direction: column; max-width: 80%; position: relative; margin-bottom: 2px; }
 .chat-row.me { align-self: flex-end; align-items: flex-end; }
 .chat-row.other { align-self: flex-start; align-items: flex-start; }
 
-.chat-bubble { padding: 10px 16px; border-radius: 18px; font-size: 0.95rem; line-height: 1.45; box-shadow: 0 1px 2px rgba(0,0,0,0.05); position: relative; }
+.chat-bubble { padding: 10px 16px; border-radius: 18px; font-size: 0.95rem; line-height: 1.4; box-shadow: 0 1px 2px rgba(0,0,0,0.05); position: relative; }
 .chat-row.me .chat-bubble { background: #007AFF; color: white; border-bottom-right-radius: 4px; }
 .chat-row.other .chat-bubble { background: #F2F2F7; color: #111; border-bottom-left-radius: 4px; }
 .chat-time { font-size: 0.65rem; color: #9ca3af; margin-top: 4px; font-weight: 500; }
 
-/* Bilder */
+/* Bilder i chatt */
 .chat-bubble.is-image { background: transparent !important; padding: 0 !important; box-shadow: none !important; }
 .chat-bubble-image img { border-radius: 12px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.1); cursor: zoom-in; }
 
 /* Input Area */
-.chat-input-area { padding: 16px; background: #fff; border-top: 1px solid #f1f5f9; display: flex; align-items: flex-end; gap: 12px; position: relative; }
-.chat-input-area textarea {
-    flex: 1; border: 1px solid #e5e7eb; border-radius: 24px; padding: 12px 96px 12px 18px;
-    background: #F9F9F9; height: 48px; resize: none; font-size: 0.95rem; outline: none;
-}
-.chat-actions-left { position: absolute; right: 86px; bottom: 26px; display: flex; gap: 4px; z-index: 5; }
-#chatSendBtn { width: 48px; height: 48px; border-radius: 50%; background: #007AFF; color: white; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; box-shadow: 0 4px 12px rgba(0,122,255,0.25); }
+.chat-input-area { padding: 16px; background: #fff; border-top: 1px solid #f1f5f9; display: flex; align-items: center; gap: 12px; position: relative; }
+.chat-input-area textarea { flex: 1; border: 1px solid #e5e7eb; border-radius: 20px; padding: 10px 16px; background: #f9f9f9; height: 44px; resize: none; font-size: 0.95rem; }
+.chat-actions-left { position: absolute; right: 70px; display: flex; gap: 4px; }
+#chatSendBtn { width: 40px; height: 40px; border-radius: 50%; background: #007AFF; color: white; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
 
-/* Edit Mode */
+/* Redigering & Menyer */
 .message-options { position: absolute; top: 0; bottom: 0; display: flex; align-items: center; gap: 8px; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
 .chat-row:hover .message-options { opacity: 1; pointer-events: auto; }
 .chat-row.me .message-options { right: 100%; padding-right: 10px; }
 .chat-row.other .message-options { left: 100%; padding-left: 10px; }
 .option-btn { width: 28px; height: 28px; border-radius: 50%; background: #fff; border: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #64748b; }
+.option-btn:hover { background: #f1f5f9; transform: scale(1.1); }
 
+/* Edit Mode Overlay */
 .chat-widget.edit-mode .chat-messages { opacity: 0.4; pointer-events: none; filter: grayscale(80%); }
-.chat-edit-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background: #fff; border-bottom: 1px solid #f1f5f9; font-size: 0.95rem; font-weight: 700; }
+.chat-edit-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 16px; background: #fff; border-bottom: 1px solid #f1f5f9; font-size: 0.85rem; font-weight: 600; }
 
 /* =========================================
-   8. MODALER GENERELLT
+   9. MODALSYSTEM (GLOBAL DESIGN)
    ========================================= */
 .modal-backdrop {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center;
+    background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; 
     z-index: var(--z-modal); backdrop-filter: blur(2px);
 }
 .modal-backdrop.show { display: flex; }
 
 .modal-content {
-    background-color: var(--content-bg); width: 100%; max-width: 550px; max-height: 85vh;
+    background-color: var(--content-bg);
+    width: 100%; max-width: 550px; max-height: 85vh;
     border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-    display: flex; flex-direction: column; overflow: hidden; position: relative; margin: auto;
+    display: flex; flex-direction: column; overflow: hidden;
+    position: relative;
 }
 
-/* Enhetlig Header (Samsung One UI Style - Left Aligned) */
-.modal-header, .vehicle-header-row, .one-ui-header-simple, .messenger-search-header {
+/* Enhetlig Header för alla modaler */
+.modal-header, .vehicle-header-row, .one-ui-header-simple {
     height: 60px; padding: 0 16px; background: #f8f9fa; border-bottom: 1px solid #e2e8f0;
     display: flex; align-items: center; justify-content: flex-start; gap: 8px; flex-shrink: 0;
 }
@@ -407,26 +418,32 @@ tbody tr:hover { background-color: #F9FAFB; border-left-color: var(--primary-col
 }
 .simple-back-btn svg { width: 24px; height: 24px; stroke-width: 2.5px; }
 
-/* Enhetlig Body & Footer */
-.modal-body, .one-ui-content { padding: 20px 16px; flex: 1; overflow-y: auto; background: #fff; -webkit-overflow-scrolling: touch; }
-.modal-actions { padding: 16px 24px; border-top: 1px solid #f3f4f6; background: #fff; display: flex; justify-content: flex-end; gap: 10px; }
+/* Enhetlig Body */
+.modal-body, .one-ui-content {
+    padding: 20px 16px; flex: 1; overflow-y: auto; background: #fff;
+    -webkit-overflow-scrolling: touch;
+}
 
-/* =========================================
-   9. SPECIFIKA MODALER (FORDON, KUND, MÄRKE)
-   ========================================= */
+/* Enhetlig Footer */
+.modal-actions {
+    padding: 16px 24px; border-top: 1px solid #f3f4f6; background: #fff;
+    display: flex; justify-content: flex-end; gap: 10px;
+}
 
-/* --- Fordonsmodal (Teknisk Data) --- */
+/* --- Specifikt: Fordonsmodal (Teknisk Data) --- */
 .tech-section-wrapper { background: #F9FAFB; border: 1px solid #f3f4f6; border-radius: 12px; padding: 16px; margin-bottom: 20px; }
 .tech-header-main { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
 .tech-header-main h4 { margin: 0; font-size: 1rem; font-weight: 800; }
 
 .tech-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 0; margin: 0; list-style: none; }
-.tech-list li { display: flex; align-items: center; background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; overflow: hidden; font-size: 0.85rem; min-height: 34px; }
+.tech-list li {
+    display: flex; align-items: center; background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; overflow: hidden; font-size: 0.85rem;
+}
 .spec-label-col { width: 90px; background: #f8fafc; padding: 6px 8px; font-weight: 600; color: #64748b; border-right: 1px solid #e2e8f0; display: flex; align-items: center; gap: 6px; }
 .spec-value-col { flex: 1; padding: 6px 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .spec-input { width: 100%; border: none; background: transparent; font-weight: 500; color: #111; outline: none; padding: 0; }
 
-/* --- Kundmodal (Historik & Garage) --- */
+/* --- Specifikt: Kundmodal (Historik & Garage) --- */
 .customer-stats-row { display: grid; grid-template-columns: 1fr 1fr 1fr; border-bottom: 1px solid #e2e8f0; padding-bottom: 16px; margin-bottom: 16px; }
 .c-stat-box { display: flex; flex-direction: column; align-items: center; }
 .c-stat-label { font-size: 0.65rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; }
@@ -435,7 +452,8 @@ tbody tr:hover { background-color: #F9FAFB; border-left-color: var(--primary-col
 .vehicle-chips-container { display: flex; flex-wrap: wrap; gap: 8px; }
 .v-chip {
     background: #fff; border: 1px solid #e2e8f0; padding: 6px 10px; border-radius: 20px;
-    font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; cursor: pointer;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
 }
 .history-list-clean { border-left: 2px solid #e2e8f0; margin-left: 8px; padding-left: 20px; }
 .history-item-clean {
@@ -450,22 +468,15 @@ tbody tr:hover { background-color: #F9FAFB; border-left-color: var(--primary-col
 .h-desc-text { color: #64748b; font-size: 0.8rem; }
 .h-price { font-weight: 700; color: #10b981; font-size: 0.9rem; }
 
-/* --- Märkesväljare (Grid) --- */
-.brand-select-item { display: flex; flex-direction: column; align-items: center; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px; cursor: pointer; aspect-ratio: 1/1; }
-.brand-select-item:hover { background-color: #f3f4f6; border-color: #0066FF; transform: translateY(-2px); }
-.brand-select-item.selected { background-color: #eff6ff; border: 2px solid #0066FF; }
-.brand-select-item img { width: 32px; height: 32px; object-fit: contain; margin-bottom: 4px; }
-
 /* =========================================
-   10. INSTÄLLNINGAR (ONE UI)
+   10. INSTÄLLNINGAR (MENYER & SWITCHES)
    ========================================= */
 .one-ui-container { display: flex; flex-direction: column; height: 100%; background: #f2f2f2; }
-.one-ui-content { background: #f2f2f2; padding: 16px; flex: 1; overflow-y: auto; }
+.one-ui-content { background: #f2f2f2; padding: 16px; }
 
 .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
 .menu-card {
-    background: #fff; border-radius: 16px; padding: 20px; display: flex; flex-direction: column;
-    align-items: center; gap: 12px; cursor: pointer; border: 1px solid #e5e7eb;
+    background: #fff; border-radius: 16px; padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 12px; cursor: pointer; border: 1px solid #e5e7eb;
 }
 .menu-icon-box { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
 .menu-icon-box.blue { background: #eff6ff; color: #3b82f6; }
@@ -476,8 +487,17 @@ tbody tr:hover { background-color: #F9FAFB; border-left-color: var(--primary-col
 .settings-section-label { font-size: 0.75rem; font-weight: 700; color: #64748b; margin: 16px 4px 8px; text-transform: uppercase; }
 .settings-card-group { background: #fff; border-radius: 12px; overflow: hidden; border: 1px solid #e5e7eb; }
 .settings-item { padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; cursor: pointer; }
+.settings-item:last-child { border-bottom: none; }
 .settings-title { font-weight: 600; font-size: 0.95rem; }
 .settings-desc { font-size: 0.8rem; color: #9ca3af; }
+
+/* Android Switch */
+.android-switch { position: relative; display: inline-block; width: 42px; height: 24px; }
+.android-switch input { opacity: 0; width: 0; height: 0; }
+.android-switch .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #e5e7eb; transition: .3s; border-radius: 34px; }
+.android-switch .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+.android-switch input:checked + .slider { background-color: #3b82f6; }
+.android-switch input:checked + .slider:before { transform: translateX(18px); }
 
 /* Lagerstatus (Droppen) */
 .drop-card-layout { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
@@ -508,7 +528,9 @@ tbody tr:hover { background-color: #F9FAFB; border-left-color: var(--primary-col
     .header-date { font-size: 1rem; font-weight: 800; color: #1E293B; }
     
     /* 4. Innehåll (Scroll) */
-    .main-content { padding: 70px 10px 100px 10px !important; margin: 0; width: 100%; }
+    .main-content {
+        padding: 70px 10px 100px 10px !important; margin: 0; width: 100%;
+    }
     
     /* 5. Statistik (Horisontell Scroll) */
     .stat-bar {
@@ -526,7 +548,7 @@ tbody tr:hover { background-color: #F9FAFB; border-left-color: var(--primary-col
     .modal-backdrop.show, #vehicleModal.show, #customerModal.show, #jobModal.show, #settingsModal.show, .chat-widget[style*="display: flex"] {
         position: fixed; top: 60px !important; width: 100%; height: calc(100dvh - 60px) !important;
         background: #fff; z-index: var(--z-modal); display: flex; flex-direction: column; padding: 0 !important;
-        border-top: 1px solid #e5e7eb; align-items: stretch !important;
+        border-top: 1px solid #e5e7eb;
     }
     
     .modal-content, .one-ui-container {
@@ -566,9 +588,6 @@ tbody tr:hover { background-color: #F9FAFB; border-left-color: var(--primary-col
     #calendarView { border: none; border-radius: 0; margin-top: 10px; }
     .fc-header-toolbar { flex-wrap: wrap; gap: 10px; padding: 10px !important; }
     .fc-daygrid-day-frame { min-height: 50px !important; }
-    /* Fix för händelser: Block istället för prickar */
-    .fc-daygrid-day-events { display: flex; flex-direction: column; gap: 1px; }
-    .fc-mobile-dot { width: 100% !important; height: 4px !important; border-radius: 2px; margin: 0 !important; }
     .calendar-sidebar.open { width: 100%; height: 350px; }
     
     /* 10. Garage Chips i Kundvy (3 på rad) */
@@ -579,8 +598,4 @@ tbody tr:hover { background-color: #F9FAFB; border-left-color: var(--primary-col
     .messenger-search-container { background: #fff; height: 100%; display: flex; flex-direction: column; }
     .messenger-input-wrapper { flex: 1; background: #f0f2f5; border-radius: 20px; height: 40px; display: flex; align-items: center; position: relative; }
     #mobileSearchInput { width: 100%; height: 100%; background: transparent; border: none; padding-left: 36px; font-size: 16px; outline: none; }
-    
-    /* Z-Index Fix för Modaler på Modaler */
-    #jobModal { z-index: var(--z-modal-top) !important; }
-    #brandSelectModal { z-index: 20005 !important; }
 }
