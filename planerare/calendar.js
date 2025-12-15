@@ -8,16 +8,16 @@ function mapJobsToEvents(jobs) {
         .map(job => {
             // Datum & Tid
             let start = job.datum.includes('T') ? job.datum : `${job.datum}T${job.tid || '08:00'}`;
-            
+
             // Färgpalett
             let mainColor = '#3b82f6'; let lightColor = '#eff6ff'; // Blå
-            
+
             if (job.status === 'klar') { mainColor = '#10b981'; lightColor = '#ecfdf5'; } // Grön
             else if (job.status === 'faktureras') { mainColor = '#8b5cf6'; lightColor = '#f5f3ff'; } // Lila
             else if (job.status === 'offererad') { mainColor = '#f59e0b'; lightColor = '#fffbeb'; } // Orange
 
             let regnr = job.regnr && job.regnr !== 'OKÄNT' ? job.regnr : '';
-            
+
             return {
                 id: job.id,
                 title: job.kundnamn,
@@ -36,19 +36,19 @@ function mapJobsToEvents(jobs) {
         });
 }
 
-// FIXAD FUNKTION: Renderar listan för vald dag (Mobilvy)
+// FIXAD FUNKTION: Renderar listan
 function renderDayList(dateStr, events) {
     const container = document.getElementById('selectedDayView');
     if (!container) return;
 
     // FIX: Jämför bara de första 10 tecknen (YYYY-MM-DD) för att ignorera tid
     const dayEvents = events.filter(e => e.start.substring(0, 10) === dateStr);
-    
+
     // Sortera på tid
     dayEvents.sort((a,b) => a.start.localeCompare(b.start));
 
     container.style.display = 'block';
-    
+
     // Scrolla ner till listan så den syns
     setTimeout(() => {
         container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -66,7 +66,7 @@ function renderDayList(dateStr, events) {
     }
 
     let html = `<div class="day-list-header">Jobb ${dateStr}</div>`;
-    
+
     dayEvents.forEach(evt => {
         const props = evt.extendedProps;
         // Skapa kortet
@@ -100,15 +100,9 @@ window.closeDayList = function() {
     }
 };
 
-// Hjälpfunktion för datumformat vid Drag & Drop
-function formatDateForFirebase(dateObj) {
-    const year = dateObj.getFullYear();
-    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-    const day = String(dateObj.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}T08:00`; // Sätter standardtid 08:00 vid drop
-}
-
-export function initCalendar(elementId, jobsData, onEventClickCallback, onDropCallback, onExternalDropCallback) {
+export function initCalendar(elementId, jobsData, onEventClickCallback) {
+    const wrapperEl = document.getElementById('calendar-wrapper'); // OBS: Wrapper
+export function initCalendar(elementId, jobsData, onEventClickCallback, onDropCallback) {
     const wrapperEl = document.getElementById('calendar-wrapper');
     if (!wrapperEl) return;
 
@@ -120,15 +114,20 @@ export function initCalendar(elementId, jobsData, onEventClickCallback, onDropCa
     calendar = new FullCalendar.Calendar(wrapperEl, {
         initialView: 'dayGridMonth',
         locale: 'sv',
+        firstDay: 1, 
+        
+        fixedWeekCount: false, 
+        showNonCurrentDates: false, 
+        
         firstDay: 1,
         fixedWeekCount: false,
         showNonCurrentDates: false,
-        height: '100%', // Fyller hela höjden i vår nya split-view
+        height: 'auto',
         contentHeight: 'auto',
+
         
-        // --- DRAG & DROP INSTÄLLNINGAR ---
-        editable: true,       // Tillåter att man drar events inuti kalendern
-        droppable: true,      // Tillåt drop från utsidan (Sidopanelen)
+        // --- NYTT: Aktivera Drag & Drop ---
+        editable: true,       // Tillåter att man drar events
         eventStartEditable: true, 
         eventDurationEditable: false, // Vi låser längden (tills vidare)
         
@@ -137,21 +136,29 @@ export function initCalendar(elementId, jobsData, onEventClickCallback, onDropCa
             : { year: 'numeric', month: 'long' },
 
         headerToolbar: {
-            left: 'prev,next today', 
-            center: 'title',         
+            left: 'today prev,next title', 
+            center: '',         
             right: '' 
         },
+        
         buttonText: { today: 'Idag' },
 
+        // --- NY LOGIK FÖR HOVER (DESKTOP) ---
         // --- HOVER LOGIK (Din nya snygga kod) ---
         eventMouseEnter: function(info) {
+            if (window.innerWidth <= 768) return; // Endast desktop
+        
             if (window.innerWidth <= 768) return; 
             const props = info.event.extendedProps;
+            
+            // 1. Förbered data
             const dateObj = info.event.start;
             const timeStr = dateObj ? dateObj.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' }).replace(':', '.') : '';
             const regNr = props.regnr || '---';
             const customerName = info.event.title;
             const commentText = props.description || '';
+            
+            // 2. Hämta eller skapa tooltip
 
             let tooltip = document.getElementById('fc-custom-tooltip');
             if (!tooltip) {
@@ -160,10 +167,17 @@ export function initCalendar(elementId, jobsData, onEventClickCallback, onDropCa
                 tooltip.className = 'calendar-tooltip';
                 document.body.appendChild(tooltip);
             }
+        
+            // 3. Ikoner (SVG)
+            // Status-ikonen (tar färgen från props.mainColor)
 
             const iconStatus = `<svg class="tt-status-icon" style="color: ${props.mainColor};" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /></svg>`;
+            
+            // Grå ikoner
             const iconComment = `<svg class="tt-icon tt-icon-gray" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>`;
             const iconClock = `<svg class="tt-icon tt-icon-gray" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`;
+        
+            // 4. Bygg HTML (Villkorlig rendering av kommentar)
 
             let htmlContent = `
                 <div class="tt-row-primary">
@@ -172,6 +186,8 @@ export function initCalendar(elementId, jobsData, onEventClickCallback, onDropCa
                     <span class="tt-sep">•</span>
                     <span class="tt-name">${customerName}</span>
                 </div>`;
+        
+            // Endast om kommentar finns
 
             if (commentText.trim().length > 0) {
                 htmlContent += `
@@ -180,21 +196,40 @@ export function initCalendar(elementId, jobsData, onEventClickCallback, onDropCa
                     <span>${commentText}</span>
                 </div>`;
             }
+        
+            // Lägg alltid till tid
 
             htmlContent += `
                 <div class="tt-row-time">
                     ${iconClock}
                     <span>${timeStr}</span>
                 </div>`;
+        
 
             tooltip.innerHTML = htmlContent;
+        
+            // 5. Smart Positionering
+            // Vi måste visa den (utan opacity) för att kunna mäta storleken
             tooltip.classList.add('show');
-            
+
             const tooltipRect = tooltip.getBoundingClientRect();
             const x = info.jsEvent.clientX;
             const y = info.jsEvent.clientY;
+            
+            // Standardposition: Nere till höger om musen
             let top = y + 15;
             let left = x + 15;
+        
+            // KOLL 1: Hamnar den utanför bottenkanten? -> Flytta upp
+            if (top + tooltipRect.height > window.innerHeight) {
+                top = y - tooltipRect.height - 10;
+            }
+        
+            // KOLL 2: Hamnar den utanför högerkanten? -> Flytta vänster
+            if (left + tooltipRect.width > window.innerWidth) {
+                left = x - tooltipRect.width - 10;
+            }
+        
 
             if (top + tooltipRect.height > window.innerHeight) top = y - tooltipRect.height - 10;
             if (left + tooltipRect.width > window.innerWidth) left = x - tooltipRect.width - 10;
@@ -202,65 +237,67 @@ export function initCalendar(elementId, jobsData, onEventClickCallback, onDropCa
             tooltip.style.top = top + 'px';
             tooltip.style.left = left + 'px';
         },
-        
+
         eventMouseLeave: function(info) {
+            if (window.innerWidth <= 768) return;
+            
             const tooltip = document.getElementById('fc-custom-tooltip');
             if (tooltip) {
                 tooltip.classList.remove('show');
+                tooltip.style.left = '-9999px'; // Flytta bort helt
                 tooltip.style.left = '-9999px'; 
             }
         },
-        
-        // --- CALLBACKS ---
-        
-        // 1. När man flyttar ett jobb SOM REDAN FINNS i kalendern
+
+        // --- NYTT: Hantera när man släpper eventet ---
         eventDrop: function(info) {
+            // Hämta det nya datumet
             const d = info.event.start;
-            const newDateStr = formatDateForFirebase(d);
-            if (onDropCallback) onDropCallback(info.event.id, newDateStr, info.revert);
-        },
-
-        // 2. När man drar in ett NYTT jobb från SIDOPANELEN
-        eventReceive: function(info) {
-            // Hämta info från det dragna elementet
-            const newDate = info.event.start;
-            const jobId = info.event.id; // Vi sätter ID på elementet i app.js
             
-            // Ta bort eventet visuellt direkt (vi laddar om datan från Firebase strax ändå)
-            info.event.remove();
-
-            const newDateStr = formatDateForFirebase(newDate);
+            // Konvertera Date-objektet till din strängformat: YYYY-MM-DDTHH:MM
+            // Vi behåller tiden från eventet (om man drar till ny dag behålls tiden oftast)
             
-            // Anropa app.js för att spara
-            if (onExternalDropCallback) {
-                onExternalDropCallback(jobId, newDateStr);
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            const hours = String(d.getHours()).padStart(2, '0');
+            const minutes = String(d.getMinutes()).padStart(2, '0');
+            
+            const newDateStr = `${year}-${month}-${day}T${hours}:${minutes}`;
+            
+            // Anropa callback-funktionen i app.js för att spara till Firebase
+            if (onDropCallback) {
+                onDropCallback(info.event.id, newDateStr, info.revert);
             }
         },
 
         events: events,
-        
+
         eventContent: function(arg) {
             const isMob = window.innerWidth <= 768;
             const props = arg.event.extendedProps;
-            
+
             if (isMob) {
                 return { html: `<div class="fc-mobile-dot" style="background-color: ${props.mainColor};"></div>` };
             } 
             else {
-                // Den snygga "Block-designen"
+                let textString = `${props.time} `;
+                if (props.regnr) textString += `${props.regnr} `;
+                textString += arg.event.title;
+
                 return { 
                     html: `
-                    <div class="modern-event-block" style="
-                        border-left-color: ${props.mainColor}; 
+                    <div class="fc-premium-event" style="
+                        border-left: 3px solid ${props.mainColor}; 
                         background-color: ${props.lightColor}; 
-                        color: ${props.mainColor === '#3b82f6' ? '#1e3a8a' : (props.mainColor === '#10b981' ? '#064e3b' : (props.mainColor === '#f59e0b' ? '#78350f' : '#4c1d95'))};">
-                        <span class="modern-event-time">${props.time}</span>
-                        <span class="modern-event-title">${arg.event.title}</span>
+                        color: ${props.mainColor};">
+                        <span class="fc-event-text">${textString}</span>
                     </div>` 
                 };
             }
         },
 
+        // --- KLICK LOGIK (MOBIL) ---
         dateClick: function(info) {
             if (isMobile) {
                 document.querySelectorAll('.fc-day-selected').forEach(el => el.classList.remove('fc-day-selected'));
@@ -271,13 +308,21 @@ export function initCalendar(elementId, jobsData, onEventClickCallback, onDropCa
 
         eventClick: function(info) {
             if (isMobile) {
+                // NY LOGIK: Förhindra att redigeringsmodalen öppnas på mobil.
+                // Vi vill istället öppna daglistan även om man klickar på ett event.
+                // Hämta datumet från eventet
                 const eventDate = info.event.startStr.split('T')[0];
                 const dayEl = document.querySelector(`.fc-day[data-date="${eventDate}"]`);
+
                 document.querySelectorAll('.fc-day-selected').forEach(el => el.classList.remove('fc-day-selected'));
                 if (dayEl) dayEl.classList.add('fc-day-selected');
+                
                 renderDayList(eventDate, events);
+
+                // Stoppa eventbubbling för att säkerställa att inget annat händer
                 info.jsEvent.stopPropagation();
             } else {
+                // BEFINTLIG LOGIK FÖR DESKTOP: Öppna redigeringsmodal
                 if (onEventClickCallback) onEventClickCallback(info.event.id);
             }
         }
@@ -285,18 +330,24 @@ export function initCalendar(elementId, jobsData, onEventClickCallback, onDropCa
 
     calendar.render();
 
+    // --- NY KOD: Auto-välj idag på mobil ---
     // Auto-välj idag på mobil... (Din befintliga kod här)
     const isMobileStart = window.innerWidth <= 768;
     if (isMobileStart) {
         const today = new Date();
+        const dateStr = today.toISOString().split('T')[0]; // Enklare format YYYY-MM-DD
+    
         const dateStr = today.toISOString().split('T')[0];
         const dayEl = document.querySelector(`.fc-day[data-date="${dateStr}"]`);
         if (dayEl) dayEl.classList.add('fc-day-selected');
+        
         renderDayList(dateStr, events); 
     }
 
+    // PUNKT 4: Lägg till lyssnare för bakåtknappen
     window.addEventListener('popstate', function(event) {
         const container = document.getElementById('selectedDayView');
+        // Om vi backar och listan är öppen -> stäng den
         if (container && container.classList.contains('show')) {
             container.classList.remove('show');
             document.querySelectorAll('.fc-day-selected').forEach(el => el.classList.remove('fc-day-selected'));
