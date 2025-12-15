@@ -3342,9 +3342,9 @@ function renderUnplannedSidebar() {
 
     unplannedJobs.forEach(job => {
         const el = document.createElement('div');
-        el.className = 'fc-event-draggable';
+        el.className = 'fc-event-draggable'; // Denna klass används av Draggable
         
-        // VIKTIGT: Detta data-attribut läses av FullCalendar
+        // Data-attributet läses av FullCalendar vid drop
         el.setAttribute('data-event', JSON.stringify({
             title: job.kundnamn,
             id: job.id
@@ -3359,28 +3359,36 @@ function renderUnplannedSidebar() {
         `;
         listContainer.appendChild(el);
     });
+    
+    // OBS: Vi initierar INTE Draggable här längre!
+}
 
-    // --- HÄR ÄR FIXEN FÖR DRAG & DROP ---
-    // Initiera Draggable på containern om det inte redan är gjort
-    if (typeof FullCalendar !== 'undefined' && FullCalendar.Draggable) {
-        // Förstör ev. gammal instans för att undvika dubbla listeners (valfritt men säkert)
-        // Men enklast är att skapa en ny på containern
-        new FullCalendar.Draggable(listContainer, {
-            itemSelector: '.fc-event-draggable',
+// Lägg till denna NYA funktion någonstans i app.js
+function initExternalDraggable() {
+    const containerEl = document.getElementById('external-events-list');
+    
+    // Kontrollera att FullCalendar är laddat och att vi inte redan gjort detta
+    if (containerEl && typeof FullCalendar !== 'undefined' && FullCalendar.Draggable) {
+        
+        // Förhindra dubbel initiering genom att kolla en flagga på elementet
+        if (containerEl.classList.contains('draggable-initialized')) return;
+
+        new FullCalendar.Draggable(containerEl, {
+            itemSelector: '.fc-event-draggable', // VIKTIGT: Detta matchar klassen vi skapar i render-funktionen
             eventData: function(eventEl) {
-                // Parse:a datan vi lade in i attributet ovan
+                // Hämta JSON-datan vi sparade i elementet
                 return JSON.parse(eventEl.getAttribute('data-event'));
             }
         });
+
+        containerEl.classList.add('draggable-initialized');
+        console.log("External Draggable initialized!");
     }
 }
 
 // 3. Funktion för att Toggle (Visa/Dölj)
 function toggleCalendarSidebar() {
     const sidebar = document.getElementById('external-events-sidebar');
-    
-    // Eftersom knappen nu styrs av FullCalendar (vi kan inte nå den via ID lika lätt),
-    // kan vi ändra texten genom att leta upp klassen:
     const btn = document.querySelector('.fc-toggleSidebarBtn-button');
 
     if (sidebar.classList.contains('open')) {
@@ -3389,11 +3397,11 @@ function toggleCalendarSidebar() {
     } else {
         sidebar.classList.add('open');
         if(btn) btn.textContent = "Dölj";
-        renderUnplannedSidebar();
+        
+        renderUnplannedSidebar(); // 1. Rendera listan
+        initExternalDraggable();  // 2. Aktivera drag-funktionen (körs bara en gång tack vare spärren)
     }
 
-    // --- HÄR ÄR MAGIN ---
-    // Vänta 300ms (samma som CSS transition) och säg åt kalendern att räkna om storleken
     setTimeout(() => {
         if (window.currentCalendar) {
             window.currentCalendar.updateSize();
