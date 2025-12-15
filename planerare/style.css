@@ -123,108 +123,9 @@ body { margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-c
     padding: 2rem;     
 }
 
-/* =========================================
-   6. STATISTIK-BAR (DASHBOARD)
-   ========================================= */
-.stat-bar {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); 
-    gap: 12px; /* Minskat gap (var 1.5rem) för en tightare look */
-    margin-bottom: 2rem;
-}
-
-/* --- Stat Card Base --- */
-.stat-card {
-    /* Gör kortet lägre och bredare */
-    padding: 16px 20px; 
-    min-height: 100px; /* Mindre än förut */
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    border: 1px solid #f3f4f6;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.02); /* Mycket subtil skugga */
-}
-
-/* Titeln (Kommande, Fakturering...) */
-.stat-card-title {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: #64748b; /* Mjukare grå */
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 8px;
-}
-
-/* Siffran */
-.stat-card-value {
-    font-size: 2rem; /* Stor och tydlig */
-    font-weight: 700;
-    line-height: 1;
-    letter-spacing: -1px;
-}
-
-/* Animationsfördröjning för trappstegs-effekt */
-.stat-card:nth-child(1) { animation-delay: 0.1s; }
-.stat-card:nth-child(2) { animation-delay: 0.15s; }
-.stat-card:nth-child(3) { animation-delay: 0.2s; }
-.stat-card:nth-child(4) { animation-delay: 0.25s; }
-.stat-card:nth-child(5) { animation-delay: 0.3s; }
-
 @keyframes slideInUp {
     to { transform: translateY(0); opacity: 1; }
 }
-
-/* Hover & Active States */
-.stat-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-}
-
-.stat-card.active {
-    background-color: #eff6ff; /* Ljusblå bakgrund */
-    border-color: #bfdbfe;     /* Tunn blå kant */
-    box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.1); /* Blåtonad skugga */
-    transform: translateY(-2px); /* Lyfter lite */
-}
-
-.stat-card.active .stat-card-value {
-    color: #1e3a8a; /* Mörkblå text istället för svart */
-}
-[data-theme="dark"] .stat-card.active {
-    box-shadow: 0 0 0 2px rgba(10, 132, 255, 0.5);
-}
-
-/* Färgad linje i botten */
-.stat-card::after {
-    content: '';
-    position: absolute; bottom: 0; left: 0; right: 0;
-    height: 4px;
-    background: currentColor; /* Ärv färgen från texten */
-    opacity: 0.3;
-}
-
-/* --- Färgteman (Ljust Läge) --- */
-[data-theme="light"] .stat-card[data-filter="kommande"] { background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%); }
-[data-theme="light"] .stat-card[data-filter="faktureras"] { background: linear-gradient(135deg, #ffffff 0%, #fcf0ff 100%); }
-[data-theme="light"] .stat-card[data-filter="klar"] { background: linear-gradient(135deg, #ffffff 0%, #f0fff4 100%); }
-[data-theme="light"] .stat-card[data-filter="offererad"] { background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); }
-
-/* --- Accentfärger --- */
-.stat-card .icon-sm { transition: transform 0.3s ease; }
-.stat-card:hover .icon-sm { transform: scale(1.1); }
-
-.stat-card[data-filter="kommande"] { color: var(--primary-color); }
-.stat-card[data-filter="faktureras"] { color: var(--invoice-color); }
-.stat-card[data-filter="klar"] { color: var(--success-color); }
-.stat-card[data-filter="offererad"] { color: var(--info-color); }
-.stat-card[data-filter="alla"] { color: var(--text-color-light); }
-
-/* Tvinga textfärger att följa accentfärgen (förutom "Alla") */
-.stat-card:not([data-filter="alla"]) .stat-card-value,
-.stat-card:not([data-filter="alla"]) .icon-sm {
-    color: currentColor;
-}
-.stat-card[data-filter="alla"] .stat-card-value { color: var(--text-color); }
 
 /* --- TABELL --- */
 .table-container {
@@ -1346,54 +1247,6 @@ ul.tech-list li span {
         text-transform: uppercase; letter-spacing: 0.5px;
     }
     .date-separator:first-child { margin-top: 0; }
-
-    /* --- 3. STATISTIK-KORT --- */
-    .stat-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; padding: 0 2px; }
-    
-    .stat-card {
-        background: #FFFFFF; border: 1px solid #E2E8F0; 
-        border-radius: 4px; /* FIX 9: Mindre rundade hörn */
-        padding: 10px; min-height: 0; position: relative;
-        display: flex; flex-direction: column; justify-content: center;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.03); border-bottom-width: 1px;
-    }
-    .stat-card::after { display: none !important; }
-
-    .stat-card[data-filter="kommande"] { background: linear-gradient(135deg, #FFFFFF 0%, #F0F9FF 100%); }
-    .stat-card[data-filter="faktureras"] { background: linear-gradient(135deg, #FFFFFF 0%, #FAF5FF 100%); }
-    .stat-card[data-filter="klar"] { background: linear-gradient(135deg, #FFFFFF 0%, #F0FDF4 100%); }
-    .stat-card[data-filter="offererad"] { background: linear-gradient(135deg, #FFFFFF 0%, #FFF7ED 100%); }
-
-    .stat-card-title {
-        font-size: 0.65rem; margin-bottom: 4px;
-        display: flex; align-items: center; gap: 4px;
-        color: #64748B; text-transform: uppercase; font-weight: 600;
-    }
-    .stat-card-title svg { width: 12px; height: 12px; }
-    .stat-card-value { font-size: 1.4rem; font-weight: 800; line-height: 1; color: #0F172A; }
-    
-    .stat-card[data-filter="kommande"] .stat-card-value { color: #3B82F6; }
-    .stat-card[data-filter="faktureras"] .stat-card-value { color: #A855F7; }
-    .stat-card[data-filter="klar"] .stat-card-value { color: #22C55E; }
-    .stat-card[data-filter="offererad"] .stat-card-value { color: #F97316; }
-
-    .stat-card[data-filter="alla"] {
-        grid-column: span 2; flex-direction: row; align-items: center; justify-content: space-between;
-        padding: 8px 16px; height: 48px; 
-    }
-    .stat-card[data-filter="alla"] .stat-card-title { margin-bottom: 0; }
-    .stat-card[data-filter="alla"] .stat-card-value { font-size: 1.1rem; color: #111; margin: 0; }
-
-    .stat-card.active {
-        background-color: #ffffff; border-color: #E2E8F0; 
-        border-bottom-width: 4px; border-bottom-style: solid;
-        padding-bottom: 7px; transform: translateY(-1px);
-    }
-    .stat-card[data-filter="kommande"].active { border-bottom-color: #3B82F6; }
-    .stat-card[data-filter="faktureras"].active { border-bottom-color: #A855F7; }
-    .stat-card[data-filter="klar"].active { border-bottom-color: #22C55E; }
-    .stat-card[data-filter="offererad"].active { border-bottom-color: #F97316; }
-    .stat-card[data-filter="alla"].active { border-bottom-color: #64748B; }
 
     /* --- 4. JOBB-KORT --- */
     .job-card-new {
@@ -2526,49 +2379,6 @@ ul.tech-list li span {
     .login-screen { padding: 16px; align-items: center; }
 }
 
-
-/* --- FIX FÖR MOBIL STATISTIK & FÄRGER --- */
-
-/* 1. Ändra färgen på siffran i "Offererade" till orange */
-.stat-card[data-filter="offererad"] .stat-card-value {
-    color: #F97316 !important; /* Orange färg */
-}
-
-/* --- FIX FÖR MOBIL STATISTIK & FÄRGER --- */
-
-/* 1. Ändra färgen på siffran i "Offererade" till orange */
-.stat-card[data-filter="offererad"] .stat-card-value {
-    color: #F97316 !important; /* Orange färg */
-}
-
-/* ENDAST MOBILVY (Max 768px) */
-@media (max-width: 768px) {
-
-    /* 2. Gör de vanliga korten lägre (mindre höjd) */
-    .stat-card {
-        min-height: 80px !important; /* Minskat från tidigare standard */
-        padding: 8px 12px !important; /* Lite mindre luft inuti */
-    }
-
-    /* 3. Gör "Alla jobb" högre än de andra */
-    .stat-card[data-filter="alla"] {
-        min-height: 58px !important; /* Högre än de vanliga korten */
-        height: auto !important;      /* Låt den växa om det behövs */
-    }
-    
-    /* 4. Gör siffrorna större och fetare */
-    .stat-card-value {
-        font-size: 2rem !important; /* Ökat från 1.4rem */
-        font-weight: 900 !important;
-        margin-top: 4px !important;  /* Lite avstånd till rubriken */
-    }
-    
-    /* Justering för "Alla jobb" så texten och siffran ser bra ut */
-    .stat-card[data-filter="alla"] .stat-card-value {
-        font-size: 1.4rem !important; /* Ännu större för totalen */
-    }
-}
-
 @media (max-width: 768px) {
 	/*2. Snyggare Formulärfält (Tips #17 & #18)
 	Gör inputs stora, mjuka och moderna.*/
@@ -2807,20 +2617,6 @@ ul.tech-list li span {
 .card-menu-btn:active {
     opacity: 1; /* Tänds upp vid tryck */
 }
-}
-
-/* --- FIX: TYPSNITT & INMATNING --- */
-
-/* PUNKT 41: Tabular Nums (Siffror tar lika stor plats, snyggare i listor) */
-.stat-card-value, 
-.money-related, 
-.row-value, 
-.spec-input,
-input[type="time"],
-input[type="date"],
-input[type="number"] {
-    font-variant-numeric: tabular-nums;
-    font-feature-settings: "tnum";
 }
 
 /* PUNKT 3: Kapitalisering (Visuellt) */
@@ -4828,108 +4624,6 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     margin-bottom: 8px !important;
 }
 
-@media (max-width: 768px) {
-
-    /* --- 1. CONTAINERN --- */
-    .stat-bar {
-        display: flex;
-        overflow-x: auto !important;
-        gap: 12px !important;
-        padding: 4px 16px 20px 16px !important;
-        margin-bottom: 5px !important;
-        
-        scroll-snap-type: x mandatory; 
-        
-        -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
-        mask-image: linear-gradient(to right, black 85%, transparent 100%);
-
-        scrollbar-width: none; 
-        -ms-overflow-style: none;
-    }
-    
-    .stat-bar::-webkit-scrollbar { display: none; }
-    .stat-bar::after { display: none !important; }
-
-    /* --- 2. KORTEN --- */
-    .stat-card {
-        min-width: 140px !important;
-        height: 150px !important;
-        
-        scroll-snap-align: start;
-        flex-shrink: 0;
-        
-        border-radius: 4px !important;
-        padding: 16px 20px !important;
-        
-        display: flex !important;
-        flex-direction: column !important;
-        justify-content: space-between !important; 
-        
-        align-items: flex-start !important; 
-        text-align: left !important;
-        
-        background: white;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-
-        /* NYTT: Reservera plats för linjen i botten men gör den osynlig först */
-        border-bottom: 4px solid transparent !important;
-        transition: border-color 0.2s; /* Mjuk övergång */
-    }
-
-    /* --- NY REGEL: HÄR ÄR FIXEN --- */
-    /* Detta gör att det valda kortet får den blå linjen */
-    .stat-card.active {
-        border-bottom: 4px solid #2563eb !important; /* Den blå färgen */
-        background-color: #feffff; /* (Valfritt) Extra vit för att markera */
-    }
-
-    /* --- 3. RUBRIK & IKON --- */
-    .stat-card-title {
-        display: flex !important;
-        flex-direction: row !important;
-        align-items: center !important;
-        gap: 8px !important;
-        font-size: 0.75rem !important;
-        text-transform: uppercase;
-        color: #6b7280;
-        font-weight: 600;
-        margin: 0 !important;
-        width: 100%;
-    }
-
-    .stat-card-title svg, 
-    .stat-card-title .icon-sm {
-        width: 18px !important;
-        height: 18px !important;
-        margin: 0 !important;
-        flex-shrink: 0;
-    }
-
-    /* --- 4. SIFFRAN (GENERELLT) --- */
-    .stat-card-value {
-        font-size: 2.2rem !important; 
-        font-weight: 600 !important;
-        line-height: 1 !important;
-        margin: 0 !important;
-        align-self: flex-start !important; 
-        text-align: left !important;
-    }
-
-    /* --- 5. "SLÄGGAN" FÖR ALLA JOBB (DETTA FIXAR FELET) --- */
-    /* Vi pekar ut just detta ID för att vara 100% säkra på att inget annat stör */
-    #stat-all {
-        font-size: 2.2rem !important; 
-        font-weight: 600 !important;
-        color: #111827 !important; /* Svart färg */
-    }
-    
-    /* Om du vill vara säker på att de andra behåller sina färger men får rätt storlek: */
-    #stat-upcoming, #stat-invoice, #stat-finished, #stat-offered {
-        font-size: 2.2rem !important;
-        font-weight: 600 !important;
-    }
-}
-
 /* =======================================================
    FINAL KALENDER-DESIGN (LÖSNING FÖR BOX-I-BOX)
    ======================================================= */
@@ -5038,87 +4732,6 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 
 .fc-daygrid-day-frame {
     min-height: 90px !important; /* Höjd på rutorna */
-}
-
-/* --- DESIGN FÖR "EJ BOKAT" KORTET (Backlog) --- */
-
-/* 1. Grundfärger (Ljus orange bakgrund) */
-.stat-card[data-filter="backlog"] {
-    background: linear-gradient(135deg, #ffffff 0%, #fff7ed 100%) !important;
-    border-color: #ffedd5 !important;
-}
-
-/* 2. Gör Huvudsiffran och Ikonen Orange */
-.stat-card[data-filter="backlog"] .stat-card-value,
-.stat-card[data-filter="backlog"] .stat-card-title svg {
-    color: #ea580c !important; /* Stark orange */
-}
-
-/* 3. Rubriktexten (Lite mörkare orange/brun) */
-.stat-card[data-filter="backlog"] .stat-card-title span {
-    color: #9a3412 !important; 
-}
-
-/* 4. Aktiv status (När vald) */
-.stat-card[data-filter="backlog"].active {
-    border-bottom: 4px solid #f97316 !important; /* Orange linje i botten */
-    background-color: #fff7ed !important;
-}
-
-/* 5. Justering av "väntar / offert" texten */
-.stat-subtext {
-    font-size: 0.7rem !important;
-    color: #9ca3af !important;
-    font-weight: 500 !important;
-    padding-top: 4px;
-}
-
-/* --- MOBILSPECIFIKT FÖR DETTA KORT --- */
-@media (max-width: 768px) {
-    /* Gör att detta kort beter sig som de andra på mobil */
-    .stat-card[data-filter="backlog"] {
-        display: flex !important;
-        flex-direction: column !important;
-        justify-content: space-between !important;
-        min-height: 100px !important; /* Lite högre för att rymma texten */
-    }
-    
-    /* Se till att siffran är lika stor som på de andra korten */
-    .stat-card[data-filter="backlog"] .stat-card-value {
-        font-size: 2.2rem !important;
-        font-weight: 600 !important;
-        margin-top: 60px !important;
-        align-self: flex-start !important;
-    }
-}
-
-/* --- DATORVY JUSTERINGAR (Ej Mobil) --- */
-@media (min-width: 769px) {
-    
-    /* Justera höjden på hela kortet "Ej bokat" */
-    .stat-card[data-filter="backlog"] {
-        min-height: 150px !important; /* Ändra denna siffra tills du är nöjd */
-        justify-content: space-between !important; /* Sprider ut innehållet snyggt */
-    }
-
-    /* Om du vill flytta ner siffran på datorn också (samma trick som du gjorde på mobilen) */
-    .stat-card[data-filter="backlog"] .stat-card-value {
-        position: absolute;
-        font-weight: 700 !important;
-        margin-top: 70px !important; /* Justera avståndet ner från rubriken */
-        font-size: 2.0rem !important; /* Du kan även ha större siffra på datorn om du vill */
-    }
-}
-
-/* --- FIX 1: Ta bort dubbla linjer på Backlog-kortet --- */
-.stat-card[data-filter="backlog"]::after {
-    display: none !important; /* Dölj standard-linjen */
-}
-
-/* Säkerställ att den orangea linjen syns tydligt vid aktivt val */
-.stat-card[data-filter="backlog"].active {
-    border-bottom: 4px solid #ea580c !important; /* Stark orange */
-    background-color: #fff7ed !important;        /* Ljus orange bakgrund */
 }
 
 /* --- FIX 2: Kompakta Flikar med Luft (Uppdaterad) --- */
@@ -5534,3 +5147,36 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 .bg-unplanned .header-status-badge { background-color: rgba(255,255,255,0.25) !important; color: white !important; }
 .bg-unplanned .header-reg-clickable { color: white !important; }
 .bg-unplanned .brand-logo-img { filter: brightness(0) invert(1) opacity(0.95) !important; }
+
+/* =========================================
+   4. DASHBOARD (STATISTIK)
+   ========================================= */
+.stat-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 24px; }
+.stat-card {
+    padding: 16px 20px; min-height: 100px; background: #fff; border: 1px solid #f3f4f6; border-radius: 8px;
+    display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+.stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 15px rgba(0,0,0,0.05); }
+.stat-card-title { font-size: 0.75rem; font-weight: 600; color: #64748b; text-transform: uppercase; display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.stat-card-value { font-size: 2rem; font-weight: 700; line-height: 1; color: #111; }
+
+/* Aktiva kort */
+.stat-card.active { background-color: #eff6ff; border-color: #bfdbfe; }
+.stat-card.active .stat-card-value { color: #1e3a8a; }
+
+/* Backlog (Ej Bokat) */
+.stat-card[data-filter="backlog"] { background: linear-gradient(135deg, #ffffff 0%, #fff7ed 100%); border-color: #ffedd5; }
+.stat-card[data-filter="backlog"] .stat-card-value, .stat-card[data-filter="backlog"] svg { color: #ea580c; }
+.stat-card[data-filter="backlog"].active { border-bottom: 4px solid #ea580c; background-color: #fff7ed; }
+.stat-subtext { font-size: 0.7rem; color: #9ca3af; font-weight: 500; margin-top: auto; }
+
+/* Filter Tabs (För backlog) */
+.filter-tabs-container { display: flex; align-items: center; gap: 8px; margin: 16px 0 12px 6px; padding-bottom: 12px; border-bottom: 1px solid #f1f5f9; }
+.filter-tab {
+    padding: 4px 4px 4px 10px; border-radius: 50px; background: #fff; border: 1px solid #e2e8f0; color: #64748b;
+    font-size: 0.75rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px;
+}
+.filter-tab.active { background-color: #fff7ed; color: #c2410c; border-color: #fdba74; }
+.tab-badge { background: #f1f5f9; color: #64748b; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; }
+.filter-tab.active .tab-badge { background: #fb923c; color: white; }
