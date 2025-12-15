@@ -184,8 +184,10 @@ export function initCalendar(elementId, jobsData, onEventClickCallback, onDropCa
                 return { html: `<div class="fc-mobile-dot" style="background-color: ${props.mainColor};"></div>` };
             } 
             else {
-                // Den tjocka vänsterlinjen styrs nu via CSS på .modern-event-block
-                // Vi sätter border-color inline här
+                // Skapa texten
+                let displayText = arg.event.title;
+                if (props.regnr) displayText += ` (${props.regnr})`;
+
                 return { 
                     html: `
                     <div class="modern-event-block" style="
@@ -194,10 +196,7 @@ export function initCalendar(elementId, jobsData, onEventClickCallback, onDropCa
                         color: ${props.mainColor === '#3b82f6' ? '#1e3a8a' : (props.mainColor === '#10b981' ? '#064e3b' : (props.mainColor === '#f59e0b' ? '#78350f' : '#4c1d95'))};">
                         
                         <span class="modern-event-time">${props.time}</span>
-                        <span class="modern-event-title">
-                            ${arg.event.title} 
-                            ${props.regnr ? `<span style="opacity:0.7; font-size:0.9em; margin-left:4px;">(${props.regnr})</span>` : ''}
-                        </span>
+                        <span class="modern-event-title" title="${displayText}">${displayText}</span>
                     </div>` 
                 };
             }
