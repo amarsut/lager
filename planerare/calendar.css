@@ -220,48 +220,56 @@
 }
 
 /* =========================================
-   SCROLL-FIX: STOR KALENDER I LITEN RUTA
+   FIX: SCROLL ENDAST INUTI KALENDERN
    ========================================= */
 
-/* 1. Lås höjden på hela kalender-boxen */
+/* 1. Huvudbehållaren: Lås fast den på skärmen */
 #calendarView {
-    height: 85vh !important; /* Justera denna % om du vill ha den högre/lägre */
+    /* Sätt en fast höjd som passar skärmen (t.ex. 85% av fönstret) */
+    height: 85vh !important; 
+    max-height: 85vh !important;
+    
+    /* Flexbox krävs för att 'knuffa' inre delar rätt */
     display: flex;
     flex-direction: column;
-    overflow: hidden !important; /* Ingen scroll på själva ramen */
+    
+    /* VIKTIGT: Ingen scroll på hela lådan, vi vill scrolla inuti */
+    overflow: hidden !important; 
 }
 
-/* 2. Tvinga FullCalendars inre "sele" att hålla sig inom ramen */
+/* 2. Headern (Knapparna): Ska alltid synas, krymp inte */
+.fc-header-toolbar {
+    flex-shrink: 0 !important; /* Låt inte denna tryckas ihop */
+}
+
+/* 3. Kalender-kroppen: Ta all plats som blir över */
 .fc-view-harness {
     flex-grow: 1 !important;
     height: 100% !important;
-    overflow: hidden !important; /* Klipp av det som sticker ut */
+    overflow: hidden !important; /* Klipp det som sticker ut */
+    position: relative !important;
 }
 
-/* 3. AKTIVERA SCROLLEN (Här sker magin) */
-/* Vi säger åt rutan som håller dagarna att den får scrolla om det blir trångt */
-.fc-daygrid-body {
-    overflow-y: auto !important; 
-    overflow-x: hidden !important;
-    height: 100% !important; /* Fyll ut selen */
-}
-
-/* 4. Detta element måste också tillåta scroll */
-.fc-scroller-liquid-absolute,
+/* 4. DEN INRE SCROLLERN (Här är nyckeln) */
+/* FullCalendar har en specifik klass för scroll-ytan. Vi tvingar den att scrolla. */
 .fc-scroller {
-    overflow-y: auto !important;
+    overflow-y: auto !important; /* Scrollbar PÅ */
+    overflow-x: hidden !important;
+    height: 100% !important;
 }
 
-/* 5. Gör själva dag-rutorna höga */
+/* 5. Dagens rutor: Gör dem höga så att scrollen behövs */
 .fc-daygrid-day-frame {
-    min-height: 150px !important; /* Tvinga fram höjden som kräver scroll */
+    min-height: 150px !important; 
 }
 
-/* --- FIX FÖR STICKY HEADERS --- */
-/* Detta gör att veckodagarna (MÅN, TIS...) ligger kvar i toppen när du scrollar */
+/* 6. Fix för veckodagarna (Mån, Tis...) så de inte åker med när du scrollar */
 .fc-col-header-table {
+    width: 100% !important;
+}
+.fc-scrollgrid-section-header {
     position: sticky;
     top: 0;
     z-index: 10;
-    background: white;
-}
+    background: #fff; /* Så man inte ser texten bakom */
+                           }
