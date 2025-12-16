@@ -123,9 +123,108 @@ body { margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-c
     padding: 2rem;     
 }
 
+/* =========================================
+   6. STATISTIK-BAR (DASHBOARD)
+   ========================================= */
+.stat-bar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); 
+    gap: 12px; /* Minskat gap (var 1.5rem) för en tightare look */
+    margin-bottom: 2rem;
+}
+
+/* --- Stat Card Base --- */
+.stat-card {
+    /* Gör kortet lägre och bredare */
+    padding: 16px 20px; 
+    min-height: 100px; /* Mindre än förut */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border: 1px solid #f3f4f6;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02); /* Mycket subtil skugga */
+}
+
+/* Titeln (Kommande, Fakturering...) */
+.stat-card-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #64748b; /* Mjukare grå */
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+}
+
+/* Siffran */
+.stat-card-value {
+    font-size: 2rem; /* Stor och tydlig */
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -1px;
+}
+
+/* Animationsfördröjning för trappstegs-effekt */
+.stat-card:nth-child(1) { animation-delay: 0.1s; }
+.stat-card:nth-child(2) { animation-delay: 0.15s; }
+.stat-card:nth-child(3) { animation-delay: 0.2s; }
+.stat-card:nth-child(4) { animation-delay: 0.25s; }
+.stat-card:nth-child(5) { animation-delay: 0.3s; }
+
 @keyframes slideInUp {
     to { transform: translateY(0); opacity: 1; }
 }
+
+/* Hover & Active States */
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.stat-card.active {
+    background-color: #eff6ff; /* Ljusblå bakgrund */
+    border-color: #bfdbfe;     /* Tunn blå kant */
+    box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.1); /* Blåtonad skugga */
+    transform: translateY(-2px); /* Lyfter lite */
+}
+
+.stat-card.active .stat-card-value {
+    color: #1e3a8a; /* Mörkblå text istället för svart */
+}
+[data-theme="dark"] .stat-card.active {
+    box-shadow: 0 0 0 2px rgba(10, 132, 255, 0.5);
+}
+
+/* Färgad linje i botten */
+.stat-card::after {
+    content: '';
+    position: absolute; bottom: 0; left: 0; right: 0;
+    height: 4px;
+    background: currentColor; /* Ärv färgen från texten */
+    opacity: 0.3;
+}
+
+/* --- Färgteman (Ljust Läge) --- */
+[data-theme="light"] .stat-card[data-filter="kommande"] { background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%); }
+[data-theme="light"] .stat-card[data-filter="faktureras"] { background: linear-gradient(135deg, #ffffff 0%, #fcf0ff 100%); }
+[data-theme="light"] .stat-card[data-filter="klar"] { background: linear-gradient(135deg, #ffffff 0%, #f0fff4 100%); }
+[data-theme="light"] .stat-card[data-filter="offererad"] { background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); }
+
+/* --- Accentfärger --- */
+.stat-card .icon-sm { transition: transform 0.3s ease; }
+.stat-card:hover .icon-sm { transform: scale(1.1); }
+
+.stat-card[data-filter="kommande"] { color: var(--primary-color); }
+.stat-card[data-filter="faktureras"] { color: var(--invoice-color); }
+.stat-card[data-filter="klar"] { color: var(--success-color); }
+.stat-card[data-filter="offererad"] { color: var(--info-color); }
+.stat-card[data-filter="alla"] { color: var(--text-color-light); }
+
+/* Tvinga textfärger att följa accentfärgen (förutom "Alla") */
+.stat-card:not([data-filter="alla"]) .stat-card-value,
+.stat-card:not([data-filter="alla"]) .icon-sm {
+    color: currentColor;
+}
+.stat-card[data-filter="alla"] .stat-card-value { color: var(--text-color); }
 
 /* --- TABELL --- */
 .table-container {
@@ -1247,6 +1346,54 @@ ul.tech-list li span {
         text-transform: uppercase; letter-spacing: 0.5px;
     }
     .date-separator:first-child { margin-top: 0; }
+
+    /* --- 3. STATISTIK-KORT --- */
+    .stat-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; padding: 0 2px; }
+    
+    .stat-card {
+        background: #FFFFFF; border: 1px solid #E2E8F0; 
+        border-radius: 4px; /* FIX 9: Mindre rundade hörn */
+        padding: 10px; min-height: 0; position: relative;
+        display: flex; flex-direction: column; justify-content: center;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.03); border-bottom-width: 1px;
+    }
+    .stat-card::after { display: none !important; }
+
+    .stat-card[data-filter="kommande"] { background: linear-gradient(135deg, #FFFFFF 0%, #F0F9FF 100%); }
+    .stat-card[data-filter="faktureras"] { background: linear-gradient(135deg, #FFFFFF 0%, #FAF5FF 100%); }
+    .stat-card[data-filter="klar"] { background: linear-gradient(135deg, #FFFFFF 0%, #F0FDF4 100%); }
+    .stat-card[data-filter="offererad"] { background: linear-gradient(135deg, #FFFFFF 0%, #FFF7ED 100%); }
+
+    .stat-card-title {
+        font-size: 0.65rem; margin-bottom: 4px;
+        display: flex; align-items: center; gap: 4px;
+        color: #64748B; text-transform: uppercase; font-weight: 600;
+    }
+    .stat-card-title svg { width: 12px; height: 12px; }
+    .stat-card-value { font-size: 1.4rem; font-weight: 800; line-height: 1; color: #0F172A; }
+    
+    .stat-card[data-filter="kommande"] .stat-card-value { color: #3B82F6; }
+    .stat-card[data-filter="faktureras"] .stat-card-value { color: #A855F7; }
+    .stat-card[data-filter="klar"] .stat-card-value { color: #22C55E; }
+    .stat-card[data-filter="offererad"] .stat-card-value { color: #F97316; }
+
+    .stat-card[data-filter="alla"] {
+        grid-column: span 2; flex-direction: row; align-items: center; justify-content: space-between;
+        padding: 8px 16px; height: 48px; 
+    }
+    .stat-card[data-filter="alla"] .stat-card-title { margin-bottom: 0; }
+    .stat-card[data-filter="alla"] .stat-card-value { font-size: 1.1rem; color: #111; margin: 0; }
+
+    .stat-card.active {
+        background-color: #ffffff; border-color: #E2E8F0; 
+        border-bottom-width: 4px; border-bottom-style: solid;
+        padding-bottom: 7px; transform: translateY(-1px);
+    }
+    .stat-card[data-filter="kommande"].active { border-bottom-color: #3B82F6; }
+    .stat-card[data-filter="faktureras"].active { border-bottom-color: #A855F7; }
+    .stat-card[data-filter="klar"].active { border-bottom-color: #22C55E; }
+    .stat-card[data-filter="offererad"].active { border-bottom-color: #F97316; }
+    .stat-card[data-filter="alla"].active { border-bottom-color: #64748B; }
 
     /* --- 4. JOBB-KORT --- */
     .job-card-new {
@@ -2379,6 +2526,49 @@ ul.tech-list li span {
     .login-screen { padding: 16px; align-items: center; }
 }
 
+
+/* --- FIX FÖR MOBIL STATISTIK & FÄRGER --- */
+
+/* 1. Ändra färgen på siffran i "Offererade" till orange */
+.stat-card[data-filter="offererad"] .stat-card-value {
+    color: #F97316 !important; /* Orange färg */
+}
+
+/* --- FIX FÖR MOBIL STATISTIK & FÄRGER --- */
+
+/* 1. Ändra färgen på siffran i "Offererade" till orange */
+.stat-card[data-filter="offererad"] .stat-card-value {
+    color: #F97316 !important; /* Orange färg */
+}
+
+/* ENDAST MOBILVY (Max 768px) */
+@media (max-width: 768px) {
+
+    /* 2. Gör de vanliga korten lägre (mindre höjd) */
+    .stat-card {
+        min-height: 80px !important; /* Minskat från tidigare standard */
+        padding: 8px 12px !important; /* Lite mindre luft inuti */
+    }
+
+    /* 3. Gör "Alla jobb" högre än de andra */
+    .stat-card[data-filter="alla"] {
+        min-height: 58px !important; /* Högre än de vanliga korten */
+        height: auto !important;      /* Låt den växa om det behövs */
+    }
+    
+    /* 4. Gör siffrorna större och fetare */
+    .stat-card-value {
+        font-size: 2rem !important; /* Ökat från 1.4rem */
+        font-weight: 900 !important;
+        margin-top: 4px !important;  /* Lite avstånd till rubriken */
+    }
+    
+    /* Justering för "Alla jobb" så texten och siffran ser bra ut */
+    .stat-card[data-filter="alla"] .stat-card-value {
+        font-size: 1.4rem !important; /* Ännu större för totalen */
+    }
+}
+
 @media (max-width: 768px) {
 	/*2. Snyggare Formulärfält (Tips #17 & #18)
 	Gör inputs stora, mjuka och moderna.*/
@@ -2617,6 +2807,20 @@ ul.tech-list li span {
 .card-menu-btn:active {
     opacity: 1; /* Tänds upp vid tryck */
 }
+}
+
+/* --- FIX: TYPSNITT & INMATNING --- */
+
+/* PUNKT 41: Tabular Nums (Siffror tar lika stor plats, snyggare i listor) */
+.stat-card-value, 
+.money-related, 
+.row-value, 
+.spec-input,
+input[type="time"],
+input[type="date"],
+input[type="number"] {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
 }
 
 /* PUNKT 3: Kapitalisering (Visuellt) */
@@ -3854,9 +4058,16 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     display: block;
 }
 
+/*Mindre bredd på kalendern i datorvy*/
+@media (min-width: 769px) {
+    #calendarView {
+        width: 90%;
+    }
+}
+
 /* --- HEADER --- */
 .fc-header-toolbar {
-    padding: 16px 24px !important;
+    padding: 6px 24px !important;
     margin-bottom: 0 !important;
     background-color: #fff;
     border-bottom: 1px solid #f1f5f9;
@@ -3873,28 +4084,56 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 }
 
 .fc-toolbar-title {
-    font-size: 1.25rem !important;
+    font-size: 1.15rem !important;
     font-weight: 400 !important;
     color: #0f172a;
     text-transform: capitalize;
-    margin-left: 12px !important;
+    margin-left: 16px !important;
 }
 
-/* --- KNAPPAR --- */
-.fc-today-button {
+/* --- KNAPPAR I KALENDERN--- */
+.fc-button {
     height: 34px !important;
     padding: 0 16px !important;
     font-size: 0.9rem !important;
+    font-weight: 500 !important;
+    border-radius: 4px !important;
+    text-transform: capitalize !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+    outline: none !important;
+    
+    /* Standardfärger (Vit med grå ram) */
     background-color: #fff !important;
     border: 1px solid #e2e8f0 !important;
     color: #334155 !important;
-    font-weight: 500 !important;
-    border-radius: 8px !important;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
-    text-transform: capitalize !important;
-    outline: none !important;
+    
+    /* Nollställ FullCalendar standard */
+    background-image: none !important;
+    opacity: 1 !important;
 }
-.fc-today-button:hover { background-color: #f8fafc !important; border-color: #cbd5e1 !important; }
+
+/* Hover-effekt (När du håller musen över) */
+.fc-button:hover {
+    background-color: #f8fafc !important;
+    border-color: #cbd5e1 !important;
+    color: #0f172a !important;
+}
+
+/* Justera grupperingen så hörnen ser bra ut även när de sitter ihop */
+.fc-button-group > .fc-button {
+    margin: 0 !important;
+    border-radius: 0 !important; /* Raka hörn i mitten */
+}
+
+.fc-button-group > .fc-button:first-child {
+    border-top-left-radius: 4px !important;
+    border-bottom-left-radius: 4px !important;
+}
+
+.fc-button-group > .fc-button:last-child {
+    border-top-right-radius: 4px !important;
+    border-bottom-right-radius: 4px !important;
+}
 
 /* Pilar */
 .fc-prev-button, .fc-next-button {
@@ -3903,7 +4142,7 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     box-shadow: none !important;
     color: #64748b !important;
     padding: 0 !important;
-    width: 32px !important;
+    width: 52px !important;
     height: 32px !important;
     display: flex !important;
     align-items: center;
@@ -3924,26 +4163,12 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 }
 
 /* Rubriker */
-.fc-col-header-cell-cushion {
-    font-size: 0.75rem;
-    color: #94a3b8;
-    font-weight: 500 !important;
-    text-transform: uppercase;
-    padding: 12px 0 4px 0 !important;
-    text-decoration: none !important;
-}
 .fc-col-header-cell { border-bottom: none !important; }
 
 /* Datum */
 .fc-daygrid-day-top {
     justify-content: center !important;
     padding-top: 4px !important;
-}
-.fc-daygrid-day-number {
-    font-size: 0.9rem;
-    color: #334155;
-    font-weight: 500 !important;
-    text-decoration: none !important;
 }
 
 .fc-day-today { background-color: transparent !important; }
@@ -3967,16 +4192,25 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 
 /* --- EVENT DESIGN (FÄRG & TEXT) --- */
 .fc-daygrid-event {
-    margin: 2px 4px !important;
+    /* VIKTIGT: Sätt vänster/höger margin till 0 för att nå kanten */
+    margin: 1px 0 1px 0 !important; 
     background: transparent !important;
     border: none !important;
     cursor: pointer;
+    border-radius: 0 !important; /* Ingen rundning på container-nivå */
 }
 
 /* Den inre rutan */
 .fc-premium-event {
-    padding: 2px 6px; 
-    border-radius: 4px;
+    padding: 3px 6px; 
+    
+    /* ÄNDRING: Runda hörn BARA på högersidan för en snygg "flik"-effekt */
+    border-radius: 0 4px 4px 0; 
+    
+    /* Gör vänsterlinjen lite tjockare så den syns tydligt */
+    border-left-width: 4px !important; 
+    border-left-style: solid !important;
+
     font-size: 0.75rem;
     line-height: 1.3;
     
@@ -3985,13 +4219,19 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     text-overflow: ellipsis; 
     display: block;
     
-    /* FIX: Lite tjockare text så färgen syns */
-    font-weight: 500 !important; 
+    font-weight: 500 !important; /* Lite fetare text för tydlighet */
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03); /* Liten skugga för djup */
 }
 
+/* Liten hover-effekt */
+.fc-premium-event:hover {
+    filter: brightness(0.97); /* Något mörkare vid hover */
+}
+
+/* 6. Fixa textfärgen inuti eventet */
+/* Eftersom JS sätter färgen inline, kan vi tvinga texten att vara lite mörkare för läsbarhet */
 .fc-event-text {
-    /* Säkerställ att span inuti inte ändrar färg */
-    color: inherit !important;
+    filter: brightness(0.6) contrast(200%); /* Gör textfärgen mörkare automatiskt */
 }
 
 /* --- MOBILVYN --- */
@@ -4011,16 +4251,15 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
         justify-content: space-between !important;
     }
     
-    .fc-toolbar-title { font-size: 1.1rem !important; margin-left: 0 !important; }
-    
+    .fc-toolbar-title { 
+        display: none !important; /* <--- Detta döljer rubriken helt */
+    }    
     /* Rutorna */
     .fc-daygrid-day-frame {
         min-height: 50px !important; 
         padding-bottom: 4px; /* Lite luft i botten */
     }
-    
-    /* --- HÄR ÄR LINJE-FIXEN --- */
-    
+        
     /* Behållaren: Stapla linjerna PÅ HÖJDEN och TÄTT */
     .fc-daygrid-day-events {
         display: flex !important; 
@@ -4045,124 +4284,53 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
         margin: 0 !important;
         flex-shrink: 0;
     }
-}
 
-/* =======================================================
-   FULLCALENDAR: SAMSUNG STYLE (SELECTED DAY & LIST)
-   ======================================================= */
+    /*PÅ MOBIL NÄR RUTAN KOMMER NERIFRÅN KALENDERN*/
 
-/* --- 1. MARKERING AV VALD DAG --- */
-/* När man klickar på en dag får 'td'-elementet denna klass via JS */
-.fc-day-selected .fc-daygrid-day-top {
-    position: relative;
-}
-.fc-day-selected .fc-daygrid-day-number {
-    background-color: #1e293b; /* Mörkgrå cirkel */
-    color: white !important;
-    width: 26px; height: 26px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 700 !important;
-    z-index: 2;
-}
-
-/* --- 2. LISTAN UNDER KALENDERN --- */
-#selectedDayView {
-    position: absolute; /* Ligger "ovanpå" kalendern */
-    bottom: 0; left: 0; right: 0;
-    background-color: #fff;
-    border-top: 1px solid #e2e8f0;
-    border-radius: 20px 20px 0 0;
-    padding: 16px;
-    box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
-    z-index: 100;
-    
-    transform: translateY(100%); /* Dold (nere) som standard */
-    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); /* Mjuk animation */
-    
-    max-height: 50vh; /* Tar max halva skärmen */
-    overflow-y: auto;
-}
-
-#selectedDayView.show {
-    transform: translateY(0); /* Åker upp */
-}
-
-@keyframes slideUp {
-    from { transform: translateY(10px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-}
-
-.day-list-header {
-    font-size: 0.8rem; 
-    font-weight: 700; 
-    color: #94a3b8; 
-    text-transform: uppercase; 
-    margin-bottom: 12px;
-}
-
-.day-list-empty {
-    text-align: center; color: #94a3b8; font-style: italic; font-size: 0.9rem;
-}
-
-.day-list-item {
-    background: white;
-    border-radius: 8px;
-    padding: 10px 12px;
-    margin-bottom: 8px;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    cursor: pointer;
-}
-.day-list-item:active { background-color: #f1f5f9; }
-
-.day-list-time {
-    font-size: 0.85rem; font-weight: 600; color: #64748b;
-    min-width: 40px;
-}
-
-.day-list-info {
-    display: flex; flex-direction: column;
-}
-
-.day-list-title {
-    font-size: 0.95rem; font-weight: 600; color: #0f172a;
-}
-
-/* PUNKT 3: Regnr och Kommentar på samma rad */
-.day-list-meta {
-    display: flex; align-items: center; gap: 8px; margin-top: 2px;
-}
-.day-list-reg {
-    font-size: 0.75rem; color: #0f172a; font-weight: 600; font-family: monospace;
-    background: #e2e8f0; padding: 1px 4px; border-radius: 4px;
-}
-.day-list-desc {
-    font-size: 0.75rem; color: #64748b; font-style: italic;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;
-}
-
-/* --- JUSTERING AV CONTAINER (VIKTIGT FÖR ATT RUTAN INTE SKA GÖMMAS) --- */
-@media (max-width: 768px) {
-    #calendarView {
-        display: flex; 
-        flex-direction: column;
-        /* Låt den växa lite om listan visas, men max 70% av skärmen */
-        height: auto !important;
-        max-height: 70vh !important; 
-        overflow: hidden; /* Innehållet scrollar, inte containern */
-
-		border-radius: 0 !important; border: none;
+    @keyframes slideUp {
+        from { transform: translateY(10px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
     }
+
+    .day-list-header {
+        font-size: 0.8rem; 
+        font-weight: 700; 
+        color: #94a3b8; 
+        text-transform: uppercase; 
+        margin-bottom: 12px;
+    }
+
+    .day-list-empty { text-align: center; color: #94a3b8; font-style: italic; font-size: 0.9rem; }
+
+    .day-list-item {
+        background: white;
+        border-radius: 8px;
+        padding: 10px 12px;
+        margin-bottom: 8px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        cursor: pointer;
+    }
+    .day-list-item:active { background-color: #f1f5f9; }
+
+    .day-list-time { font-size: 0.85rem; font-weight: 600; color: #64748b; min-width: 40px; }
+
+    .day-list-info { display: flex; flex-direction: column; }
+
+    .day-list-title { font-size: 0.95rem; font-weight: 600; color: #0f172a; }
+
+    /* PUNKT 3: Regnr och Kommentar på samma rad */
+    .day-list-meta { display: flex; align-items: center; gap: 8px; margin-top: 2px; }
+    .day-list-reg { font-size: 0.75rem; color: #0f172a; font-weight: 600; font-family: monospace; background: #e2e8f0; padding: 1px 4px; border-radius: 4px; }
+    .day-list-desc { font-size: 0.75rem; color: #64748b; font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; }
     
     #calendar-wrapper {
         flex-shrink: 0; /* Kalendern ska inte krympa för mycket */
     }
 
 	.fc-header-toolbar { padding: 10px 12px !important; justify-content: space-between !important; }
-    .fc-toolbar-title { font-size: 1.1rem !important; margin-left: 0 !important; }
     
     /* PUNKT 1: Gör hela rutan klickbar */
     .fc-daygrid-day-frame {
@@ -4203,6 +4371,32 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 	#selectedDayView.show {
 	    transform: translateY(0); /* Glid upp till bottenläget */
 	}
+
+    /* --- LISTVY UTSEENDE (Både mobil och dator) --- */
+
+    /* Tvinga cellen att visa innehåll */
+    .fc-list-event-title { padding: 8px 12px !important; }
+    .fc-list-custom-content { display: flex; flex-direction: column; gap: 4px; width: 100%; }
+    .fc-list-top-row { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+    .fc-list-event-title { width: 100%; max-width: 0; box-sizing: border-box; }
+
+    .fc-list-reg-badge {
+        background-color: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        color: #475569;
+        font-family: monospace;
+        font-weight: 700;
+        font-size: 0.75rem;
+        padding: 2px 6px;
+        border-radius: 4px;
+        text-transform: uppercase;
+    }
+
+    .fc-list-desc-text {
+        font-size: 0.85rem; color: #6b7280; font-style: italic;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        display: block; max-width: 100%;
+    }
 }
 
 /* =========================================
@@ -4300,38 +4494,8 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 }
 
 /*SLUT PÅ CALENDAR TOOLTIP*/
+/*SLUT FULLCALENDAR: NO WHITESPACE & COLOR TEXT*/
 
-/* Kalender Legend Styles */
-.calendar-legend {
-    display: flex;
-    justify-content: center;
-    gap: 16px;
-    padding: 8px 0 12px 0;
-    background: #fff;
-    border-bottom: 1px solid #f1f5f9;
-}
-
-.legend-item {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 0.7rem;
-    color: #64748b;
-    font-weight: 600;
-    text-transform: uppercase;
-}
-
-.legend-item .dot {
-    width: 8px;
-    height: 3px; /* Minimalt streck/piller */
-    border-radius: 2px;
-    display: block;
-}
-
-.l-blue { background-color: #3b82f6; }
-.l-green { background-color: #10b981; }
-.l-purple { background-color: #8b5cf6; }
-.l-orange { background-color: #f59e0b; }
 
 /* FIX 1: Tvinga texten att flytta sig för ikonen i fordonsmodalen */
 @media (max-width: 768px) {
@@ -4624,114 +4788,187 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     margin-bottom: 8px !important;
 }
 
-/* =======================================================
-   FINAL KALENDER-DESIGN (LÖSNING FÖR BOX-I-BOX)
-   ======================================================= */
+@media (max-width: 768px) {
 
-/* 1. GÖR YTTERBOXEN OSYNLIG (Tack vare classNames i JS) */
-.clean-event,
-.fc-event.clean-event,
-.clean-event .fc-event-main {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    padding: 0 !important;
-    margin-top: 1px !important; /* Litet mellanrum mellan jobben */
-}
+    /* --- 1. CONTAINERN --- */
+    .stat-bar {
+        display: flex;
+        overflow-x: auto !important;
+        gap: 12px !important;
+        padding: 4px 16px 20px 16px !important;
+        margin-bottom: 5px !important;
+        
+        scroll-snap-type: x mandatory; 
+        
+        -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
+        mask-image: linear-gradient(to right, black 85%, transparent 100%);
 
-/* Ta bort den lilla "pricken" om den dyker upp */
-.fc-daygrid-event-dot { display: none !important; }
-
-/* 2. DIN DESIGN (Den inre boxen) */
-.fc-event-block-custom {
-    /* Layout */
-    display: block;
-    width: 100%;
-    box-sizing: border-box;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    cursor: pointer;
+        scrollbar-width: none; 
+        -ms-overflow-style: none;
+    }
     
-    /* Utseende */
-    border-radius: 4px;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-    transition: all 0.15s ease-in-out;
+    .stat-bar::-webkit-scrollbar { display: none; }
+    .stat-bar::after { display: none !important; }
 
-    /* Vänsterkanten (Tjockleken) */
-    border-left-width: 6px !important;
-    border-left-style: solid !important;
-    /* Färgen sätts av JS */
+    /* --- 2. KORTEN --- */
+    .stat-card {
+        min-width: 140px !important;
+        height: 150px !important;
+        
+        scroll-snap-align: start;
+        flex-shrink: 0;
+        
+        border-radius: 4px !important;
+        padding: 16px 20px !important;
+        
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important; 
+        
+        align-items: flex-start !important; 
+        text-align: left !important;
+        
+        background: white;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 
-    /* Text & Luft */
-    padding: 3px 6px;
+        /* NYTT: Reservera plats för linjen i botten men gör den osynlig först */
+        border-bottom: 4px solid transparent !important;
+        transition: border-color 0.2s; /* Mjuk övergång */
+    }
+
+    /* --- NY REGEL: HÄR ÄR FIXEN --- */
+    /* Detta gör att det valda kortet får den blå linjen */
+    .stat-card.active {
+        border-bottom: 4px solid #2563eb !important; /* Den blå färgen */
+        background-color: #feffff; /* (Valfritt) Extra vit för att markera */
+    }
+
+    /* --- 3. RUBRIK & IKON --- */
+    .stat-card-title {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: 8px !important;
+        font-size: 0.75rem !important;
+        text-transform: uppercase;
+        color: #6b7280;
+        font-weight: 600;
+        margin: 0 !important;
+        width: 100%;
+    }
+
+    .stat-card-title svg, 
+    .stat-card-title .icon-sm {
+        width: 18px !important;
+        height: 18px !important;
+        margin: 0 !important;
+        flex-shrink: 0;
+    }
+
+    /* --- 4. SIFFRAN (GENERELLT) --- */
+    .stat-card-value {
+        font-size: 2.2rem !important; 
+        font-weight: 600 !important;
+        line-height: 1 !important;
+        margin: 0 !important;
+        align-self: flex-start !important; 
+        text-align: left !important;
+    }
+
+    /* --- 5. "SLÄGGAN" FÖR ALLA JOBB (DETTA FIXAR FELET) --- */
+    /* Vi pekar ut just detta ID för att vara 100% säkra på att inget annat stör */
+    #stat-all {
+        font-size: 2.2rem !important; 
+        font-weight: 600 !important;
+        color: #111827 !important; /* Svart färg */
+    }
     
-    /* Text-stil */
-    font-family: 'Inter', sans-serif;
-    font-size: 0.75rem;
-    font-weight: 600; /* Lite fetare */
-    line-height: 1.2;
-    color: inherit; /* Ärv färgen från JS */
-}
-
-.fc-event-block-custom:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 3px 6px rgba(0,0,0,0.15);
-    z-index: 5;
-    position: relative;
-}
-
-/* 3. MOBILANPASSNING (Streck istället för text) */
-@media (max-width: 768px) {    
-    /* Göm text-innehållet på mobil om det skulle råka visas */
-    .clean-event .fc-event-block-custom {
-        display: none !important;
+    /* Om du vill vara säker på att de andra behåller sina färger men får rätt storlek: */
+    #stat-upcoming, #stat-invoice, #stat-finished, #stat-offered {
+        font-size: 2.2rem !important;
+        font-weight: 600 !important;
     }
 }
 
-/* 4. KALENDERNS RAM & HEADER */
-#calendarView {
-    background: white;
-    border-radius: 12px;
-    border: 1px solid #e2e8f0;
-    overflow: hidden;
+/* --- DESIGN FÖR "EJ BOKAT" KORTET (Backlog) --- */
+
+/* 1. Grundfärger (Ljus orange bakgrund) */
+.stat-card[data-filter="backlog"] {
+    background: linear-gradient(135deg, #ffffff 0%, #fff7ed 100%) !important;
+    border-color: #ffedd5 !important;
 }
 
-.fc-header-toolbar {
-    padding: 16px !important;
-    margin-bottom: 0 !important;
+/* 2. Gör Huvudsiffran och Ikonen Orange */
+.stat-card[data-filter="backlog"] .stat-card-value,
+.stat-card[data-filter="backlog"] .stat-card-title svg {
+    color: #ea580c !important; /* Stark orange */
 }
 
-.fc-toolbar-title {
-    font-size: 1.2rem !important;
-    font-weight: 700 !important;
-    color: #1e293b;
-    text-transform: capitalize;
+/* 3. Rubriktexten (Lite mörkare orange/brun) */
+.stat-card[data-filter="backlog"] .stat-card-title span {
+    color: #9a3412 !important; 
 }
 
-.fc-button {
-    background: transparent !important;
-    border: 1px solid #e2e8f0 !important;
-    color: #334155 !important;
-    font-weight: 600 !important;
-    border-radius: 6px !important;
-    box-shadow: none !important;
-    text-transform: capitalize !important;
+/* 4. Aktiv status (När vald) */
+.stat-card[data-filter="backlog"].active {
+    border-bottom: 4px solid #f97316 !important; /* Orange linje i botten */
+    background-color: #fff7ed !important;
 }
 
-.fc-button-active, .fc-button:hover {
-    background: #f1f5f9 !important;
-    color: #0f172a !important;
-    border-color: #cbd5e1 !important;
+/* 5. Justering av "väntar / offert" texten */
+.stat-subtext {
+    font-size: 0.7rem !important;
+    color: #9ca3af !important;
+    font-weight: 500 !important;
+    padding-top: 4px;
 }
 
-/* Snyggare rutnät */
-.fc-theme-standard td, .fc-theme-standard th {
-    border-color: #f1f5f9 !important;
+/* --- MOBILSPECIFIKT FÖR DETTA KORT --- */
+@media (max-width: 768px) {
+    /* Gör att detta kort beter sig som de andra på mobil */
+    .stat-card[data-filter="backlog"] {
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+        min-height: 100px !important; /* Lite högre för att rymma texten */
+    }
+    
+    /* Se till att siffran är lika stor som på de andra korten */
+    .stat-card[data-filter="backlog"] .stat-card-value {
+        font-size: 2.2rem !important;
+        font-weight: 600 !important;
+        margin-top: 60px !important;
+        align-self: flex-start !important;
+    }
 }
 
-.fc-daygrid-day-frame {
-    min-height: 90px !important; /* Höjd på rutorna */
+/* --- DATORVY JUSTERINGAR (Ej Mobil) --- */
+@media (min-width: 769px) {
+    
+    /* Justera höjden på hela kortet "Ej bokat" */
+    .stat-card[data-filter="backlog"] {
+        min-height: 150px !important; /* Ändra denna siffra tills du är nöjd */
+        justify-content: space-between !important; /* Sprider ut innehållet snyggt */
+    }
+
+    /* Om du vill flytta ner siffran på datorn också (samma trick som du gjorde på mobilen) */
+    .stat-card[data-filter="backlog"] .stat-card-value {
+        position: absolute;
+        font-weight: 700 !important;
+        margin-top: 70px !important; /* Justera avståndet ner från rubriken */
+        font-size: 2.0rem !important; /* Du kan även ha större siffra på datorn om du vill */
+    }
+}
+
+/* --- FIX 1: Ta bort dubbla linjer på Backlog-kortet --- */
+.stat-card[data-filter="backlog"]::after {
+    display: none !important; /* Dölj standard-linjen */
+}
+
+/* Säkerställ att den orangea linjen syns tydligt vid aktivt val */
+.stat-card[data-filter="backlog"].active {
+    border-bottom: 4px solid #ea580c !important; /* Stark orange */
+    background-color: #fff7ed !important;        /* Ljus orange bakgrund */
 }
 
 /* --- FIX 2: Kompakta Flikar med Luft (Uppdaterad) --- */
@@ -4833,394 +5070,3 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 .bg-unplanned .brand-logo-img {
     filter: brightness(0) invert(1) opacity(0.95);
 }
-
-/* =======================================================
-   MODERN COMPACT CALENDAR (CSS ONLY FIX)
-   ======================================================= */
-
-/* 1. Gör hela kalendern kompaktare */
-#calendarView {
-    height: auto !important;
-    min-height: 0 !important;
-    border-radius: 8px !important; /* Lite mindre rundning */
-}
-
-/* 2. Krymp header och knappar */
-.fc-header-toolbar {
-    padding: 8px 8px !important; /* Mycket mindre luft */
-    margin-bottom: 0 !important;
-}
-
-.fc-toolbar-title {
-    font-size: 1.1rem !important;
-    font-weight: 500 !important;
-}
-
-.fc-button {
-    height: 30px !important; /* Lägre knappar */
-    padding: 0 10px !important;
-    font-size: 0.8rem !important;
-    line-height: 1 !important;
-    border-radius: 4px !important;
-}
-
-/* 3. Gör dag-rutorna lägre (mindre scroll) */
-.fc-daygrid-day-frame {
-    min-height: 80px !important; /* Minskat från standard 100-120px */
-    padding: 2px !important;
-}
-
-/* Flytta datumsiffran till vänster (som bild 2) */
-.fc-daygrid-day-top {
-    flex-direction: row !important; 
-    padding: 2px 4px !important;
-}
-
-/* 4. FIXA EVENTEN: Från "Piller" till "Block" */
-
-/* Ta bort FullCalendars standard-luft */
-.fc-daygrid-event {
-    margin-top: 0px !important;
-    background: transparent !important;
-}
-
-/* Styla din egen .fc-premium-event (som genereras av JS) */
-.fc-premium-event {
-    /* Form */
-    border-radius: 3px !important; /* Nästan fyrkantig */
-    margin: 1px 0 !important;      /* Stapla dem tätt */
-    padding: 2px 4px !important;   /* Kompakt text */
-    width: 100% !important;        /* Fyll hela bredden */
-    
-    /* Kantlinje */
-    border-left-width: 4px !important; /* Tjockare färg-linje till vänster */
-    border-left-style: solid !important;
-    
-    /* Text */
-    font-family: 'Inter', sans-serif !important;
-    font-size: 0.75rem !important; /* Mindre text för att rymmas */
-    font-weight: 500 !important;
-    line-height: 1.2 !important;
-    
-    /* Visuellt */
-    box-shadow: none !important; /* Ta bort skuggor för platt look */
-    opacity: 0.95;
-    transition: opacity 0.1s;
-}
-
-.fc-premium-event:hover {
-    opacity: 1;
-    transform: none !important; /* Ingen hoppande effekt vid hover */
-    filter: brightness(0.95);   /* Liten markering bara */
-}
-
-/* 5. Göm ev. "prickar" som FullCalendar lägger till */
-.fc-daygrid-event-dot { display: none !important; }
-
-/* 6. Fixa textfärgen inuti eventet */
-/* Eftersom JS sätter färgen inline, kan vi tvinga texten att vara lite mörkare för läsbarhet */
-.fc-event-text {
-    filter: brightness(0.6) contrast(200%); /* Gör textfärgen mörkare automatiskt */
-}
-
-/* --- MOBILANPASSNING --- */
-@media (max-width: 768px) {
-    /* Ännu kompaktare rutor på mobil */
-    .fc-daygrid-day-frame {
-        min-height: 50px !important;
-    }
-    
-    /* Rubrikerna (Mån, Tis...) mindre */
-    .fc-col-header-cell-cushion {
-        font-size: 0.7rem !important;
-        padding: 4px 0 !important;
-    }
-    
-    /* Justera containern för mobil */
-    .fc-daygrid-day-events {
-        margin-top: 0 !important;
-        display: flex !important;
-        flex-direction: column !important; /* Stapla strecken */
-        gap: 1px !important;
-    }
-}
-
-/*SIDOPANEL KALENDER DRAG & DROP*/
-/*SIDOPANEL KALENDER DRAG & DROP*/
-/*SIDOPANEL KALENDER DRAG & DROP*/
-/*SIDOPANEL KALENDER DRAG & DROP*/
-
-/* =======================================================
-   KALENDER & SPLIT VIEW - FINAL FIX V2
-   ======================================================= */
-
-/* --- 1. LAYOUT & CONTAINER --- */
-.calendar-split-layout {
-    display: flex;
-    height: auto;
-    min-height: 0; 
-    position: relative;
-    overflow: visible !important; 
-    background: #fff;
-    border-radius: 12px 12px 0 0;
-    border: 1px solid #e2e8f0;
-    border-bottom: none;
-}
-
-.calendar-main-area {
-    flex: 1; 
-    min-width: 0; 
-    padding: 0;
-    z-index: 1; 
-}
-
-/* --- 2. HEADER & KNAPPAR (FIXAD RADBRYTNING) --- */
-.fc-header-toolbar {
-    padding: 16px 24px !important;
-    margin-bottom: 0 !important;
-    /* FIX: Tvinga flex-row så inget hamnar "på varandra" */
-    display: flex !important;
-    flex-direction: row !important; 
-    align-items: center !important;
-    justify-content: space-between !important;
-    flex-wrap: nowrap !important; /* Förhindra radbrytning */
-}
-
-/* Se till att grupperna av knappar (chunks) ligger på rad */
-.fc-toolbar-chunk {
-    display: flex !important;
-    align-items: center !important;
-    gap: 12px !important; /* Luft mellan knapparna */
-}
-
-.fc-toolbar-title {
-    font-size: 1.2rem !important;
-    font-weight: 600 !important; /* Lite pondus men inte fet */
-    color: #1e293b;
-    margin-left: 0 !important;
-    white-space: nowrap; /* Ingen radbrytning på titeln */
-}
-
-/* Gemensam knappstil */
-.fc-button {
-    height: 36px !important;
-    padding: 0 16px !important;
-    font-size: 0.85rem !important;
-    font-weight: 500 !important;
-    border-radius: 8px !important;
-    text-transform: capitalize !important; 
-    box-shadow: none !important;
-    display: flex; align-items: center; justify-content: center;
-    white-space: nowrap;
-}
-
-/* --- 3. EVENT DESIGN (FIXAD TEXT-HÖJD) --- */
-
-.fc-daygrid-day-events { margin: 0 !important; padding: 0 !important; }
-.fc-daygrid-event {
-    margin: 1px 0 0 0 !important; 
-    border-radius: 0 !important;
-    background: transparent !important;
-    cursor: pointer;
-    padding: 0 !important;
-}
-
-.modern-event-block {
-    display: flex;
-    /* FIX: Detta centrerar klockan och texten vertikalt exakt */
-    align-items: center; 
-    width: 100%;
-    height: 24px; /* Lite mer höjd så texten "andas" */
-    
-    padding: 0 6px; /* Texten börjar nära kanten */
-    
-    border-left-width: 4px;
-    border-left-style: solid;
-    
-    font-family: 'Inter', sans-serif;
-    font-size: 0.75rem;
-    /* FIX: Line-height 1 tar bort extra luft som kan göra höjden olika */
-    line-height: 1; 
-    border-radius: 0; 
-    
-    position: relative;
-}
-
-.modern-event-block:hover { filter: brightness(0.96); }
-
-.modern-event-time {
-    margin-right: 6px;
-    font-weight: 600;
-    opacity: 0.9;
-    flex-shrink: 0; 
-    font-size: 0.75rem;
-    /* FIX: Säkerställ att klockslag inte har marginaler som stör */
-    padding-top: 1px; 
-}
-
-.modern-event-title {
-    font-weight: 400; 
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis; 
-    flex: 1; 
-    min-width: 0;
-    /* FIX: Finjustera vertikal placering */
-    padding-top: 1px;
-}
-
-/* --- 4. SIDOPANELEN (SMALARE BREDD) --- */
-.calendar-sidebar {
-    width: 0; 
-    opacity: 0;
-    background-color: #f8fafc; 
-    border-left: 1px solid #e2e8f0;
-    display: flex;
-    flex-direction: column;
-    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s;
-    overflow: hidden;
-    flex-shrink: 0;
-}
-
-.calendar-sidebar.open {
-    /* FIX: Ändrat från 300px till 250px för smidigare look */
-    width: 250px; 
-    opacity: 1;
-}
-
-.sidebar-inner-header {
-    padding: 16px; /* Lite mer luft i headern */
-    display: flex; justify-content: space-between; align-items: center;
-    background: #fff; border-bottom: 1px solid #e2e8f0;
-}
-.sidebar-title { font-size: 0.75rem; font-weight: 700; color: #475569; text-transform: uppercase; }
-.badge-count { background: #e2e8f0; font-size: 0.75rem; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
-
-.sidebar-search { padding: 12px; background: #fff; border-bottom: 1px solid #f1f5f9; }
-.sidebar-search input {
-    width: 100%; padding: 8px 12px;
-    border: 1px solid #e2e8f0; border-radius: 6px; background: #f8fafc;
-    font-size: 0.85rem; outline: none;
-}
-
-.draggable-list {
-    padding: 12px;
-    overflow-y: auto;
-    display: flex; flex-direction: column; gap: 8px;
-}
-
-.fc-event-draggable {
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-left: 3px solid #94a3b8; 
-    padding: 10px;
-    border-radius: 6px;
-    cursor: grab;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.02);
-    touch-action: none;  /* Förhindrar scroll när man drar */
-    user-select: none;   /* Förhindrar att text markeras när man drar */
-    z-index: 9999;       /* Säkerställer att den ligger högt */
-}
-.fc-event-dragging {
-    opacity: 0.8;
-    transform: scale(1.05);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.2) !important;
-    z-index: 100000 !important; /* Måste vara högre än allt annat (inklusive modaler) */
-}
-.fc-event-draggable:hover { transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-
-.drag-title { font-size: 0.85rem; font-weight: 600; color: #1e293b; display: block; margin-bottom: 4px; }
-.drag-meta { display: flex; justify-content: space-between; font-size: 0.75rem; color: #64748b; }
-
-/* Mobilanpassning */
-@media (max-width: 768px) {
-    .calendar-split-layout { flex-direction: column; }
-    .calendar-sidebar.open { width: 100%; height: 350px; border-left: none; border-top: 1px solid #e2e8f0; }
-    .fc-toggleSidebarBtn-button { display: none !important; }
-    
-    /* På mobil kan vi behöva stacka headern pga platsbrist */
-    .fc-header-toolbar { flex-wrap: wrap; gap: 10px; }
-}
-
-/* Lägg till i style.css */
-.bg-unplanned { background-color: #94a3b8 !important; color: white !important; border-bottom-color: #64748b !important; }
-.bg-unplanned .header-status-badge { background-color: rgba(255,255,255,0.25) !important; color: white !important; }
-.bg-unplanned .header-reg-clickable { color: white !important; }
-.bg-unplanned .brand-logo-img { filter: brightness(0) invert(1) opacity(0.95) !important; }
-
-/***
-STAT-KORT
-***/
-
-/* --- 1. FÄRGTEMAN (Samma som förut) --- */
-.stat-card[data-filter="backlog"]    { --theme: #ea580c; --bg: #fff7ed; --border: #ffedd5; }
-.stat-card[data-filter="kommande"]   { --theme: #3B82F6; --bg: #F0F9FF; --border: transparent; }
-.stat-card[data-filter="faktureras"] { --theme: #A855F7; --bg: #FAF5FF; --border: transparent; }
-.stat-card[data-filter="klar"]       { --theme: #22C55E; --bg: #F0FDF4; --border: transparent; }
-.stat-card[data-filter="offererad"]  { --theme: #F97316; --bg: #FFF7ED; --border: transparent; }
-.stat-card[data-filter="alla"]       { --theme: #EAB308; --bg: #FEFCE8; --border: transparent; }
-
-/* --- 2. KORTENS UTSEENDE --- */
-.stat-card {
-    background: linear-gradient(135deg, #fff 0%, var(--bg, #fff) 100%);
-    border: 1px solid var(--border, #f3f4f6);
-    border-radius: 0px;
-    
-    /* ÄNDRAT: Mindre padding (var 16px 20px) för att göra kortet kompaktare */
-    padding: 10px 16px; 
-    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-    display: flex; flex-direction: column; justify-content: space-between;
-    min-height: 75px; /* ÄNDRAT: Minskad min-höjd (var 100px) */
-    cursor: pointer; transition: all 0.2s;
-}
-
-.stat-card .stat-card-value, .stat-card svg, .stat-card .icon-sm { color: var(--theme) !important; }
-.stat-card-title { font-size: 0.7rem; font-weight: 600; color: #64748b; text-transform: uppercase; display: flex; gap: 6px; align-items: center; }
-
-/* ÄNDRAT: Lite mindre textstorlek på siffran (var 2rem) för att matcha höjden */
-.stat-card-value { font-size: 1.8rem; font-weight: 700; line-height: 1; }
-.stat-subtext { font-size: 0.65rem; color: #9ca3af; margin-top: auto; }
-.stat-card.active { border-bottom: 4px solid var(--theme) !important; background-color: #feffff; }
-
-/* --- 3. LAYOUT --- */
-
-/* DATOR */
-.stat-bar { 
-    display: grid; 
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); 
-    gap: 12px; 
-    margin-bottom: 12px; /* ÄNDRAT: Mindre marginal under listan på dator (var 24px) */
-}
-.stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 15px rgba(0,0,0,0.05); }
-
-/* MOBIL */
-@media (max-width: 768px) {
-    .stat-bar {
-        display: flex; 
-        overflow-x: auto; 
-        gap: 10px;
-        /* ÄNDRAT: Mindre padding i botten (var 20px). 
-           Vi behöver dock ca 10px kvar för att inte klippa skuggorna */
-        padding: 4px 16px 10px; 
-        
-        scroll-snap-type: x mandatory; 
-        scrollbar-width: none; -ms-overflow-style: none;
-        -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
-    }
-    .stat-bar::-webkit-scrollbar { display: none; }
-
-    .stat-card {
-        min-width: 130px; 
-        scroll-snap-align: start; 
-        flex-shrink: 0;
-        /* Om du vill ha en fast höjd i mobilen, sätt den här (t.ex. height: 80px;) */
-    }
-    .stat-card-value { font-size: 2rem; } 
-}
-
-
-
-
-
-
-
