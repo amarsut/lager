@@ -1,5 +1,5 @@
 // Importera kalenderfunktionen
-import { initCalendar, setCalendarTheme, updateCalendarEvents } from './calendar.js';
+import { initCalendar, setCalendarTheme } from './calendar.js';
 
 window.openNewJobModal = openNewJobModal;
 window.toggleChatWidget = toggleChatWidget;
@@ -53,27 +53,15 @@ let currentLimit = 50; // Hur många vi visar just nu
 
 // Chatt-variabler
 let chatUnsubscribe = null;
+let currentChatLimit = 50;
 let isFetchingOlderChat = false;
+let expandedMessageIds = new Set();
 let isEditingMsg = false;
 let currentEditMsgId = null;
 let currentBacklogTab = 'unplanned'; // Standardflik: 'unplanned' (Väntar) eller 'offered' (Offererad)
 
 const TIMEOUT_MINUTES = 15; // Ändra här om du vill ha annan tid (t.ex. 60)
 const INACTIVITY_LIMIT_MS = TIMEOUT_MINUTES * 60 * 1000;
-
-// Globala ikoner för att slippa skapa dem i varje loop
-const GLOBAL_ICONS = {
-    USER: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`,
-    BRIEFCASE_GREEN: `<svg class="icon-sm" style="color: #10B981;" viewBox="0 0 64 64"><use href="#icon-office-building"></use></svg>`,
-    CALENDAR: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,
-    CLOCK: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
-    TAG: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>`,
-    BOX: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>`,
-    GAUGE: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 14c1.66 0 3-1.34 3-3V5h-6v6c0 1.66 1.34 3 3 3z"/><path d="M12 14v7"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="M19.07 4.93L17.66 6.34"/><path d="M4.93 4.93L6.34 6.34"/></svg>`,
-    COMMENT: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`,
-    INFO_SMALL: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:12px; height:12px; margin-left:4px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`,
-    DEFAULT_CAR: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px; height:16px; margin-right:6px; display:block;"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 17h8"/></svg>`
-};
 
 // --- 3. INLOGGNINGSHANTERARE & DATALADDNING ---
 auth.onAuthStateChanged((user) => {
@@ -307,12 +295,6 @@ function initRealtimeListener() {
             allJobs.push({ id: doc.id, ...doc.data() });
         });
         renderDashboard();
-
-		const calendarView = document.getElementById('calendarView');
-        if (calendarView && calendarView.style.display !== 'none') {
-            updateCalendarEvents(allJobs);
-        }
-		
     }, error => {
         console.error("Fel vid hämtning av jobb:", error);
         // Ignorera fel om det beror på att vi precis loggat ut
@@ -491,14 +473,42 @@ function updateHeaderDate() {
     }
 }
 
-// --- HJÄLPFUNKTION: Skapa Mobilkortet (OPTIMERAD) ---
+// Definiera ikoner som variabler för enklare hantering (kan läggas utanför funktionen)
+const ICONS = {
+    CAR: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 20a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h10z"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/><path d="M5 10H19"/></svg>',
+    USER: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+    CALENDAR: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
+    CLOCK: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+    PRICE: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',
+    COMMENT: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>'
+};
+
+
+// --- HJÄLPFUNKTION: Skapa Mobilkortet (KOMPLETT NY VERSION) ---
 function createJobCard(job) {
-    // Datum-logik
+    // 1. TVINGA IN CSS (Säkerhetsåtgärd om style.css cacular)
+    if (!document.getElementById('temp-unplanned-style')) {
+        const style = document.createElement('style');
+        style.id = 'temp-unplanned-style';
+        style.innerHTML = `
+            .bg-unplanned { background-color: #94a3b8 !important; color: white !important; border-bottom-color: #64748b !important; }
+            .bg-unplanned .header-status-badge { background-color: rgba(255,255,255,0.25) !important; color: white !important; }
+            .bg-unplanned .header-reg-clickable { color: white !important; }
+            .bg-unplanned .brand-logo-img { filter: brightness(0) invert(1) opacity(0.95) !important; }
+        `;
+        document.head.appendChild(style);
+    }
+
+    // 2. Datum-logik (Mer robust kontroll)
+    // Vi kollar om datumet är null, undefined, tomt eller bara mellanslag
     const hasDate = (job.datum && typeof job.datum === 'string' && job.datum.trim().length > 0);
+    
+    // Skapa datumobjekt
     const d = hasDate ? new Date(job.datum) : new Date(); 
     const now = new Date(); 
 
-    const dateStr = getSmartDateString(job.datum);
+    const smartDate = getSmartDateString(job.datum);
+    const dateStr = smartDate;
     
     // Tid (Visa bara om datum finns)
     const timeStr = hasDate 
@@ -515,7 +525,7 @@ function createJobCard(job) {
     if (brandUrl) {
         iconHtml = `<img src="${brandUrl}" class="brand-logo-img" alt="Logo" style="${iconStyle} object-fit:contain;">`;
     } else {
-        iconHtml = GLOBAL_ICONS.DEFAULT_CAR;
+        iconHtml = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="${iconStyle}"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 17h8"/></svg>`;
     }
 
     const price = job.kundpris ? `${job.kundpris}:-` : '0:-';
@@ -525,7 +535,11 @@ function createJobCard(job) {
     const mileage = '-';
 
     const statusRaw = job.status || 'bokad';
+    
+    // VIKTIGT: "let" gör att vi kan ändra texten
     let statusText = statusRaw.toUpperCase(); 
+
+    // Standardfärg
     let headerClass = 'bg-bokad'; 
 
     // Bestäm färg och text
@@ -533,11 +547,15 @@ function createJobCard(job) {
     else if (statusRaw === 'faktureras') headerClass = 'bg-faktureras';
     else if (statusRaw === 'avbokad') headerClass = 'bg-avbokad';
     else if (statusRaw === 'offererad') headerClass = 'bg-offererad';
+    
+    // --- SPECIAL-LOGIK FÖR VÄNTAR ---
     else if (statusRaw === 'bokad') {
         if (!hasDate) {
+            // Om inget datum finns -> Grå färg + Texten VÄNTAR
             headerClass = 'bg-unplanned';
             statusText = 'VÄNTAR';
         } else if (d < now) {
+            // Om datum finns men passerat -> Röd färg (Overdue)
             headerClass = 'bg-overdue';
         }
     }
@@ -546,8 +564,11 @@ function createJobCard(job) {
     const nameLower = (job.kundnamn || '').toLowerCase();
     const isCorporate = ['bmg', 'fogarolli', 'ab'].some(c => nameLower.includes(c));
     
+    const iUser = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
+    const iBriefcaseGreen = `<svg class="icon-sm" style="color: #10B981;" viewBox="0 0 64 64"><use href="#icon-office-building"></use></svg>`;
+    
     const nameValueHtml = isCorporate 
-        ? `<span class="company-icon-wrapper">${GLOBAL_ICONS.BRIEFCASE_GREEN}</span><span>${customer}</span>` 
+        ? `<span class="company-icon-wrapper">${iBriefcaseGreen}</span><span>${customer}</span>` 
         : `<span>${customer}</span>`;
 
     let commentHtml = '';
@@ -556,6 +577,15 @@ function createJobCard(job) {
     } else {
         commentHtml = `<span class="comment-text comment-placeholder">Inga kommentarer finns tillgängliga.</span>`;
     }
+    
+    // Ikoner
+    const iCal = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`;
+    const iClock = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`;
+    const iTag = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>`;
+    const iBox = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>`;
+    const iGauge = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 14c1.66 0 3-1.34 3-3V5h-6v6c0 1.66 1.34 3 3 3z"/><path d="M12 14v7"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="M19.07 4.93L17.66 6.34"/><path d="M4.93 4.93L6.34 6.34"/></svg>`;
+    const iComment = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`;
+    const iInfoSmall = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:12px; height:12px; margin-left:4px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`;
 
     return `
         <div class="job-card-new" id="card-${job.id}" onclick="saveSearchTerm(); openEditModal('${job.id}')">
@@ -564,8 +594,8 @@ function createJobCard(job) {
                 
                 <div class="header-reg-clickable" onclick="event.stopPropagation(); openVehicleModal('${regNr}')" style="display: flex; align-items: center; height: 100%;">
                     ${iconHtml} 
-                    <span style="font-size: 0.9rem; font-weight: 300; line-height: 1;">${regNr} (status)</span>
-                    <span class="reg-info-sup" style="display: flex; align-items: center; opacity: 0.7;">${GLOBAL_ICONS.INFO_SMALL}</span>
+                    <span style="font-size: 0.9rem; font-weight: 100; line-height: 1;">${regNr} (status)</span>
+                    <span class="reg-info-sup" style="display: flex; align-items: center; opacity: 0.7;">${iInfoSmall}</span>
                 </div>
                 
                 <div class="header-right-side" style="display:flex; align-items:center; gap:8px; height: 100%;">
@@ -580,20 +610,20 @@ function createJobCard(job) {
 
             <div class="card-body">
                 <div class="info-row">
-                    <span class="row-label">${GLOBAL_ICONS.USER} Namn</span>
+                    <span class="row-label">${iUser} Namn</span>
                     <span class="row-value" onclick="event.stopPropagation(); openCustomerByName('${customer}')" style="cursor:pointer; text-decoration:underline; text-decoration-color:#cbd5e1; text-underline-offset:3px;">
 					    ${nameValueHtml}
 					</span>
                 </div>
-                <div class="info-row"><span class="row-label">${GLOBAL_ICONS.BOX} Paket</span><span class="row-value">${paket}</span></div>
-                <div class="info-row"><span class="row-label" title="Mätarställning">${GLOBAL_ICONS.GAUGE} Mätarst.</span><span class="row-value">${mileage}</span></div>
-                <div class="info-row"><span class="row-label">${GLOBAL_ICONS.CALENDAR} Datum</span><span class="row-value">${dateStr}</span></div>
-                <div class="info-row"><span class="row-label">${GLOBAL_ICONS.CLOCK} Tid</span><span class="row-value">${timeStr}</span></div>
-                <div class="info-row price-row"><span class="row-label">${GLOBAL_ICONS.TAG} Att betala</span><span class="row-value">${price}</span></div>
+                <div class="info-row"><span class="row-label">${iBox} Paket</span><span class="row-value">${paket}</span></div>
+                <div class="info-row"><span class="row-label" title="Mätarställning">${iGauge} Mätarst.</span><span class="row-value">${mileage}</span></div>
+                <div class="info-row"><span class="row-label">${iCal} Datum</span><span class="row-value">${dateStr}</span></div>
+                <div class="info-row"><span class="row-label">${iClock} Tid</span><span class="row-value">${timeStr}</span></div>
+                <div class="info-row price-row"><span class="row-label">${iTag} Att betala</span><span class="row-value">${price}</span></div>
             </div>
 
             <div class="card-comments-section">
-                ${GLOBAL_ICONS.COMMENT}
+                ${iComment}
                 ${commentHtml}
             </div>
 
@@ -772,14 +802,8 @@ function setupEventListeners() {
 	        // 4. Starta kalendern (med dina jobb och redigera-funktionen)
 	        // Vi använder setTimeout för att säkerställa att diven är synlig innan kalendern ritas
 	        setTimeout(() => {
-			    initCalendar(
-			        'calendar-wrapper', 
-			        allJobs, 
-			        openEditModal, 
-			        handleCalendarDrop, 
-			        handleExternalDrop // <--- HÄR ÄR TILLÄGGET!
-			    );
-			}, 50);
+			    initCalendar('calendar-wrapper', allJobs, openEditModal, handleCalendarDrop);
+		}, 50);
 	    });
 	}
 
@@ -794,23 +818,19 @@ function setupEventListeners() {
 	        history.replaceState({ uiState: 'calendar' }, null, window.location.href);
 	
 	        // 3. RENSA UI (Dölj allt som inte är kalender)
-	        document.getElementById('statBar').style.display = 'none';          
-	        document.getElementById('unplannedContainer').style.display = 'none'; 
+	        document.getElementById('statBar').style.display = 'none';          // <--- Döljer statistikkorten
+	        document.getElementById('unplannedContainer').style.display = 'none'; // <--- Döljer gula rutan direkt
 	        document.getElementById('timelineView').style.display = 'none';
 	        document.getElementById('customersView').style.display = 'none';
 	        
             // 4. Visa kalendern
 	        document.getElementById('calendarView').style.display = 'block';
 	
-	        // 5. Starta kalendern (Använder den redan importerade funktionen)
+	        // 5. Starta kalendern
 	        setTimeout(() => {
-                 initCalendar(
-                     'calendar-wrapper', 
-                     allJobs, 
-                     openEditModal, 
-                     handleCalendarDrop,
-                     handleExternalDrop
-                 );
+	            import('./calendar.js').then(module => {
+	                 module.initCalendar('calendar-wrapper', allJobs, openEditModal, handleCalendarDrop);
+	            });
 	        }, 50);
 	    });
 	}
@@ -3293,136 +3313,3 @@ window.switchBacklogTab = function(tabName) {
     currentBacklogTab = tabName;
     renderDashboard(); // Rita om sidan med nya fliken vald
 };
-
-// Lägg till i setupEventListeners() eller init-funktionen
-window.toggleCalendarSidebar = toggleCalendarSidebar;
-window.filterDraggableList = filterDraggableList;
-
-// 1. Funktion för att rendera sidopanelen
-function renderUnplannedSidebar() {
-    const listContainer = document.getElementById('external-events-list');
-    const countBadge = document.getElementById('sidebarCount');
-    if (!listContainer) return;
-
-    // Hämta jobben som saknar datum
-    const unplannedJobs = allJobs.filter(j => !j.deleted && (!j.datum || j.datum === ''));
-    
-    if(countBadge) countBadge.textContent = unplannedJobs.length;
-
-    listContainer.innerHTML = '';
-
-    if (unplannedJobs.length === 0) {
-        listContainer.innerHTML = '<div style="text-align:center; color:#94a3b8; padding:20px; font-size:0.85rem;">Inga jobb att boka.</div>';
-    } else {
-        unplannedJobs.forEach(job => {
-            const el = document.createElement('div');
-            el.className = 'fc-event-draggable'; // Denna klass används av Draggable
-            
-            // VIKTIGT: Skapa data-objektet som FullCalendar läser
-            const eventObject = {
-                id: job.id,
-                title: job.kundnamn,
-                // Vi kan skicka med färg direkt här om vi vill, men calendar.js hanterar det oftast
-            };
-
-            el.setAttribute('data-event', JSON.stringify(eventObject));
-
-            el.innerHTML = `
-                <span class="drag-title">${job.kundnamn}</span>
-                <div class="drag-meta">
-                    <span>${job.regnr ? job.regnr : '---'}</span>
-                    <span>${job.paket || 'Service'}</span>
-                </div>
-            `;
-            listContainer.appendChild(el);
-        });
-    }
-
-    // Efter att vi ritat listan, se till att Draggable är aktiverat
-    initDraggableOneTime();
-}
-
-function initDraggableOneTime() {
-    const containerEl = document.getElementById('external-events-list');
-    
-    if (!containerEl || containerEl.classList.contains('draggable-active')) return;
-
-    if (typeof FullCalendar === 'undefined' || !FullCalendar.Draggable) {
-        console.warn("FullCalendar Draggable plugin saknas.");
-        return;
-    }
-
-    new FullCalendar.Draggable(containerEl, {
-        itemSelector: '.fc-event-draggable',
-        eventData: function(eventEl) {
-            return JSON.parse(eventEl.getAttribute('data-event'));
-        },
-        // --- NYA RADER HÄR ---
-        appendTo: document.body, // Flyttar "drag-bilden" till body så den inte klipps av sidebaren
-        longPressDelay: 0        // Gör att det reagerar direkt på touch/mobil utan fördröjning
-    });
-
-    containerEl.classList.add('draggable-active');
-    console.log("✅ Drag & Drop aktiverat (med appendTo: body).");
-}
-
-// 3. Funktion för att Toggle (Visa/Dölj)
-function toggleCalendarSidebar() {
-    const sidebar = document.getElementById('external-events-sidebar');
-    const btn = document.querySelector('.fc-toggleSidebarBtn-button');
-
-    if (sidebar.classList.contains('open')) {
-        // DÖLJ
-        sidebar.classList.remove('open');
-        if(btn) btn.textContent = "Visa";
-    } else {
-        // VISA
-        sidebar.classList.add('open');
-        if(btn) btn.textContent = "Dölj";
-        renderUnplannedSidebar(); 
-    }
-
-    // --- FIXEN FÖR STORLEK ---
-    // Vi väntar på CSS-transitionen (300ms) och tvingar sedan en uppdatering
-    setTimeout(() => {
-        if (window.currentCalendar) {
-            window.currentCalendar.updateSize();
-        }
-        // Extra säkerhet: Skicka ett "fake" fönster-resize event
-        window.dispatchEvent(new Event('resize'));
-    }, 350); // Lite längre än CSS-transitionen (300ms) för att vara säker
-}
-
-// 4. Enkel sökfunktion i sidopanelen
-function filterDraggableList(term) {
-    const items = document.querySelectorAll('.fc-event-draggable');
-    const lowerTerm = term.toLowerCase();
-    
-    items.forEach(item => {
-        const text = item.innerText.toLowerCase();
-        item.style.display = text.includes(lowerTerm) ? 'block' : 'none';
-    });
-}
-
-// 5. Callback när man släpper ett jobb i kalendern (från sidopanelen)
-async function handleExternalDrop(jobId, newDateStr) {
-    try {
-        console.log(`Bokar jobb ${jobId} på datum ${newDateStr}`);
-        
-        // Uppdatera Firebase
-        await db.collection('jobs').doc(jobId).update({
-            datum: newDateStr,
-            status: 'bokad' // Ändra status automatiskt till bokad
-        });
-        
-        // Uppdatera listan i sidopanelen (ta bort det vi just drog)
-        renderUnplannedSidebar();
-        
-        // (Valfritt) Visa en toast/notis
-        // showToast("Jobb bokat!");
-
-    } catch (error) {
-        console.error("Fel vid extern drop:", error);
-        alert("Kunde inte uppdatera jobbet.");
-    }
-}
