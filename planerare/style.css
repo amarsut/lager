@@ -4306,91 +4306,133 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 }
 
 /* =========================================
-   1. KALENDER-RUTNÄT (Återställt & Tydligt)
+   1. KALENDER-RUTNÄT (Basic & Clean)
    ========================================= */
 #calendarView {
     width: 100% !important;
-    border: 1px solid #cbd5e1; /* Ramen runt hela */
+    border: 1px solid #e2e8f0;
+    overflow: hidden; /* Håller hörnen rundade */
 }
 
-/* Tvinga linjerna att synas */
+/* Tydliga linjer i kalendern */
 .fc-theme-standard td, 
 .fc-theme-standard th {
-    border: 1px solid #cbd5e1 !important; /* Tydlig grå linje */
+    border: 1px solid #cbd5e1 !important;
 }
 
-.fc-scrollgrid {
-    border: none !important; /* Undvik dubbla ramar ytterst */
-}
+/* Ta bort dubbla ramar */
+.fc-scrollgrid { border: none !important; }
+.fc-theme-standard .fc-scrollgrid { border: none !important; }
+
 
 /* =========================================
-   2. LISTVY - PERFEKT JUSTERING
+   2. LISTVY - DEN ROBSTA LÖSNINGEN
    ========================================= */
 
-/* Nollställ tabellen helt */
+/* Nollställ tabellen */
 .fc-list-table {
     width: 100% !important;
-    table-layout: fixed !important; /* Lås kolumnerna */
+    table-layout: fixed !important; /* Låser totalbredden till 100% */
     border-collapse: collapse !important;
     border: none !important;
-    font-size: 0.85rem !important;
+    margin: 0 !important;
 }
 
 /* --- KOLUMN 1: TID (Vänster) --- */
 .fc-list-event-time {
-    width: 65px !important; /* Exakt bredd */
-    padding: 8px 0 8px 12px !important;
+    width: 70px !important; /* Ge den lite mer plats så den inte bryts */
     white-space: nowrap !important;
-    box-sizing: border-box !important;
-    border-bottom: 1px solid #f1f5f9 !important;
-}
-
-/* --- KOLUMN 2: PRICKEN (Mitten) - FELET VAR HÄR --- */
-.fc-list-event-graphic {
-    width: 26px !important; /* Sätt denna smalt! (Var "auto" förut) */
-    text-align: center !important;
-    padding: 8px 0 !important; /* Ta bort padding som knuffar texten */
+    padding: 10px 0 10px 15px !important;
     vertical-align: top !important;
     border-bottom: 1px solid #f1f5f9 !important;
+    box-sizing: border-box !important;
 }
 
-/* Justera pricken så den centreras i den smala kolumnen */
+/* --- KOLUMN 2: PRICKEN (Mitten) --- */
+.fc-list-event-graphic {
+    width: 40px !important; /* Fast bredd */
+    text-align: center !important;
+    vertical-align: top !important;
+    padding-top: 12px !important; /* Justera höjdledes för att matcha texten */
+    border-bottom: 1px solid #f1f5f9 !important;
+    box-sizing: border-box !important;
+}
+
+/* Själva pricken */
 .fc-list-event-dot {
-    margin: 6px auto 0 auto !important; /* Centrera */
-    display: block !important;
-    border-width: 5px !important;
+    display: inline-block !important;
+    box-sizing: content-box !important;
+    border-width: 5px !important; /* Tydlig prick */
 }
 
 /* --- KOLUMN 3: TEXTEN (Höger) --- */
 .fc-list-event-title {
-    width: auto !important; /* Ta resten av platsen */
-    padding: 6px 12px 6px 4px !important; /* Lite padding vänster, mer höger */
-    border-bottom: 1px solid #f1f5f9 !important;
+    width: auto !important; /* Tar resterande plats automatiskt */
+    padding: 8px 15px 8px 0 !important;
     vertical-align: top !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+    overflow: hidden !important; /* Klipper innehållet om det är för brett */
 }
 
-/* --- INNEHÅLL (Text & Badges) --- */
+/* --- INNEHÅLL (Inuti Text-kolumnen) --- */
+/* Vi lägger flexbox här inne istället för på cellen */
 .fc-list-custom-content {
     display: flex;
     flex-direction: column;
+    justify-content: center;
     gap: 2px !important;
+    
+    /* Detta tvingar texten att klippas snyggt */
     width: 100%;
+    max-width: 100%;
+    overflow: hidden;
 }
 
+/* Rad 1: Namn */
 .fc-list-top-row {
     display: flex;
     align-items: center;
-    gap: 8px !important;
-    flex-wrap: wrap; 
+    gap: 8px;
+    width: 100%;
 }
 
-/* Datum-rubrikerna */
+.fc-list-title-text {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #1e293b;
+    
+    /* Ellipsis (...) för långa namn */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Rad 2: Beskrivning */
+.fc-list-desc-text {
+    font-size: 0.8rem;
+    color: #64748b;
+    line-height: 1.3;
+    
+    /* Klipp text efter 1 rad */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+}
+
+/* Rubrikerna (Datum) */
 .fc-theme-standard .fc-list-day-cushion {
     background-color: #f8fafc !important;
-    border: 1px solid #cbd5e1 !important; /* Samma färg som kalendernätet */
-    border-left: none !important;
-    border-right: none !important;
-    padding: 4px 12px !important;
+    border: 1px solid #cbd5e1 !important;
+    border-left: none !important; border-right: none !important;
+    padding: 6px 15px !important;
+}
+.fc-list-day-text, .fc-list-day-side-text {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #64748b;
+    text-decoration: none !important;
 }
 
 /* =========================================
@@ -4795,6 +4837,7 @@ input[type=range]:active::-webkit-slider-thumb { transform: scale(1.1); border-c
 /* Dark mode stöd */
 [data-theme="dark"] input[type=range]::-webkit-slider-runnable-track { background: #333; }
 [data-theme="dark"] input[type=range]::-webkit-slider-thumb { background: #1c1c1e; border-color: #555; }
+
 
 
 
