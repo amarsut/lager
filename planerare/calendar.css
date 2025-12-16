@@ -70,7 +70,7 @@
 .fc-prev-button, .fc-next-button {
     width: 52px !important; height: 32px !important; padding: 0 !important;
     background: transparent !important; border: none !important; box-shadow: none !important;
-    color: #64748b !important; border-radius: 50% !important;
+    color: #0f172a !important; border-radius: 50% !important;
     display: flex !important; align-items: center; justify-content: center;
 }
 .fc-prev-button:hover, .fc-next-button:hover { background-color: #f1f5f9 !important; color: #0f172a !important; }
@@ -113,7 +113,7 @@
 
 /* Styla veckodagstexten "Mån", "Tis", "Ons", "Tors", "Fre" */
 .fc-daygrid-body tr:first-child .fc-daygrid-day-top::before {
-    font-size: 0.55rem; font-weight: 400; color: #0f172a;
+    font-size: 0.55rem; font-weight: 400; color: #64748b;
     text-transform: uppercase; letter-spacing: 1px; display: block; line-height: 1;
 }
 
