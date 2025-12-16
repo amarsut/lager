@@ -3340,9 +3340,15 @@ function initZoomSettings() {
 }
 
 function applyZoom(value) {
-    // Vi använder zoom för att skala hela gränssnittet (knappar, text, layout)
+    // 1. Applicera zoomen
     document.body.style.zoom = value + "%";
     
-    // Spara inställningen
+    // 2. Spara inställningen
     localStorage.setItem('appZoom', value);
+    
+    // 3. VIKTIGT: Trigga en "falsk" fönster-ändring.
+    // Detta tvingar FullCalendar att räkna om bredden direkt.
+    setTimeout(() => {
+        window.dispatchEvent(new Event('resize'));
+    }, 100); // En liten fördröjning så zoomen hinner sätta sig
 }
