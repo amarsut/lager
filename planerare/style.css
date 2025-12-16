@@ -4098,6 +4098,9 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     width: 100% !important;
 }
 
+.fc-col-header-cell-cushion { display: flex !important; justify-content: center !important; align-items: center !important; width: 100% !important; padding: 12px 0 !important; }
+
+
 .fc-header-toolbar {
     padding: 12px 24px !important;
     margin-bottom: 0 !important;
@@ -4702,6 +4705,7 @@ input[type=range]:active::-webkit-slider-thumb { transform: scale(1.1); border-c
 /* Dark mode stöd */
 [data-theme="dark"] input[type=range]::-webkit-slider-runnable-track { background: #333; }
 [data-theme="dark"] input[type=range]::-webkit-slider-thumb { background: #1c1c1e; border-color: #555; }
+
 
 
 
