@@ -18,9 +18,7 @@
 .fc-view-harness, .fc-view-harness-active,
 .fc-scrollgrid, .fc-scrollgrid-sync-table, 
 .fc-col-header-table, .fc-daygrid-body, .fc-daygrid-body-table {
-    width: 100% !important;
-    flex-grow: 1 !important;
-    height: 100% !important;
+    width: 100% !important; flex-grow: 1 !important; height: 100% !important;
 }
 
 /* --- 2. HEADER TOOLBAR --- */
@@ -45,7 +43,7 @@
     color: #334155 !important;       /* Samma mörka färg som övriga */
     background-color: #fff !important;
     border-color: #e2e8f0 !important;
-    font-weight: 500 !important;
+    font-weight: 400 !important;
     
     /* VIKTIGT: Ta bort "inaktiv" gråtoning om man är på dagens datum */
     opacity: 1 !important; 
@@ -54,7 +52,7 @@
 .fc-today-button:hover { background-color: #f8fafc !important; color: #0f172a !important; border-color: #cbd5e1 !important; }
 .fc-button {
     height: 34px !important; padding: 0 16px !important;
-    font-size: 0.9rem !important; font-weight: 500 !important;
+    font-size: 0.9rem !important; font-weight: 400 !important;
     border-radius: 4px !important; text-transform: capitalize !important;
     background-color: #fff !important; border: 1px solid #e2e8f0 !important;
     color: #334155 !important; box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
@@ -93,7 +91,7 @@
 }
 /* Siffran (Generell stil) */
 .fc-daygrid-day-top { flex-direction: row !important; justify-content: center !important; padding-top: 8px !important; }
-.fc-daygrid-day-number { font-size: 0.8rem; color: #334155; font-weight: 400 !important; text-decoration: none !important; z-index: 2; margin: 0 !important; }
+.fc-daygrid-day-number { font-size: 0.7rem; color: #334155; font-weight: 400 !important; text-decoration: none !important; z-index: 2; margin: 0 !important; }
 
 /* Dagens datum (Blå cirkel) */
 .fc-day-today { background-color: transparent !important; }
