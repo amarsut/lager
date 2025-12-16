@@ -4237,65 +4237,77 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     }
 
     /* --- LISTVY UTSEENDE (Både mobil och dator) --- */
-	/* 1. Datumrubrikerna (De grå balkarna: "20 December 2025") */
+	/* 1. Skala ner texten i hela list-tabellen */
+	.fc-list-table {
+	    font-size: 0.85rem !important; /* Gör all text ca 10-15% mindre */
+	}
+	
+	/* 2. Datumrubrikerna (Grå balkar) */
 	.fc-theme-standard .fc-list-day-cushion {
-	    padding: 6px 12px !important; /* Minskat från standard */
-	    background-color: #f1f5f9 !important; /* Ljusare grå för renare look */
-	    min-height: 28px !important; /* Tvinga ner höjden */
+	    padding: 3px 10px !important; /* Minimal luft */
+	    background-color: #f1f5f9 !important;
+	    min-height: 24px !important;  /* Mycket låg höjd */
 	}
 	
 	.fc-list-day-text, 
 	.fc-list-day-side-text {
-	    font-size: 0.8rem !important;
+	    font-size: 0.75rem !important; /* Mindre datumtext */
 	    font-weight: 700 !important;
 	    text-transform: uppercase;
 	    letter-spacing: 0.5px;
-	    color: #64748b !important;
 	    line-height: 1 !important;
 	}
-		
-    /* Tvinga cellen att visa innehåll */
-	.fc-list-event-title { padding: 6px 12px !important; /* Mycket mindre luft uppe/nere */ }    
-	.fc-list-event-time { display: none; } /* Dölj standardtiden om du vill */
-
-	/* Justera pricken (graphic) så den ligger i linje med den minskade höjden */
-	.fc-list-event-graphic {
-	    padding: 6px 0 6px 12px !important; 
-	    vertical-align: top !important; /* Se till att pricken ligger i toppen */
-	    padding-top: 10px !important;   /* Finjustering så pricken linjerar med texten */
+	
+	/* 3. Jobb-raderna (Eventen) */
+	.fc-list-event-title {
+	    padding: 4px 10px !important; /* Mycket tightare runt jobbet */
 	}
-    
-    /* Behållare för text */
-    .fc-list-custom-content {
+	
+	/* Pricken (Graphic) */
+	.fc-list-event-graphic {
+	    padding: 4px 0 4px 10px !important; 
+	    vertical-align: top !important;
+	    padding-top: 7px !important; /* Justera så pricken linjerar med den mindre texten */
+	}
+	
+	/* 4. Innehållet (Texten) */
+	.fc-list-custom-content {
 	    display: flex;
 	    flex-direction: column;
-	    gap: 0 !important; /* Ta bort mellanrummet mellan Titel och Beskrivning */
+	    gap: 0 !important;
 	}
-    
-    /* Rad 1: Titel + Badge */
-    .fc-list-top-row {
-	    margin-bottom: 1px !important; /* Minimalt avstånd ner till beskrivningen */
+	
+	.fc-list-top-row {
+	    margin-bottom: 0 !important; /* Inget mellanrum neråt */
+	    display: flex;
+	    align-items: center;
+	    gap: 6px !important; /* Lite mindre gap mellan namn och regnr */
 	}
-    .fc-list-title-text {
-	    font-size: 0.9rem !important;
+	
+	/* Kundnamn */
+	.fc-list-title-text {
+	    font-size: 0.85rem !important; /* Matchar den skalade storleken */
+	    font-weight: 700 !important;
+	    line-height: 1.2 !important;
 	}
-    
-    /* Regnr Badge */
-    .fc-list-reg-badge {
-	    font-size: 0.7rem !important;
-	    padding: 1px 5px !important;
-	}
-
-    /* Beskrivning (med "...") */
-    .fc-list-desc-text {
-	    font-size: 0.8rem !important;
-	    line-height: 1.25 !important; /* Tätare rader */
-	    margin-top: 0 !important;
+	
+	/* Beskrivning */
+	.fc-list-desc-text {
+	    font-size: 0.75rem !important; /* Riktigt liten och smidig text */
+	    line-height: 1.2 !important;
 	    color: #64748b !important;
 	}
-    
-    /* CSS-Hack för att tvinga tabellcellen att inte växa */
-    .fc-list-event-title { width: 100%; max-width: 0; box-sizing: border-box; }
+	
+	/* 5. Regnr Badge (Slimmad) */
+	.fc-list-reg-badge {
+	    font-size: 0.65rem !important;
+	    padding: 0 4px !important;
+	    height: 16px !important;
+	    line-height: 16px !important;
+	    display: inline-flex;
+	    align-items: center;
+	    border-radius: 3px !important;
+	}
 
     /* --- POPUP-LISTA (När man klickar på ett datum) --- */
     #selectedDayView {
@@ -4719,4 +4731,5 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 .bg-unplanned .brand-logo-img {
     filter: brightness(0) invert(1) opacity(0.95);
 }
+
 
