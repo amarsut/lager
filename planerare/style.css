@@ -4075,31 +4075,6 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
    FULLCALENDAR: OPTIMIZED & CLEAN (FINAL VERSION)
    ======================================================= */
 
-@media (min-width: 769px) {
-    /* Se till att kalendern fyller ut containern */
-	#calendar-wrapper {
-	    width: 100%;
-	    flex-grow: 1;
-	}
-
-	.fc-view-harness,
-	.fc-scroller,
-	.fc-scroller-liquid-absolute,
-	.fc-daygrid-body,
-	.fc-scrollgrid-sync-table,
-	.fc-list-table {
-	    width: 100% !important;
-	    max-width: 100% !important;
-	    box-sizing: border-box !important;
-	}
-
-	.fc-list-table { 
-	    font-size: 0.85rem !important; 
-	    table-layout: fixed !important; /* VIKTIGT */
-	    width: 100% !important; 
-	}
-}
-
 /* --- 1. GRUNDBEHÅLLARE --- */
 #calendarView {
     background: white;
@@ -4724,6 +4699,7 @@ input[type=range]:active::-webkit-slider-thumb { transform: scale(1.1); border-c
 /* Dark mode stöd */
 [data-theme="dark"] input[type=range]::-webkit-slider-runnable-track { background: #333; }
 [data-theme="dark"] input[type=range]::-webkit-slider-thumb { background: #1c1c1e; border-color: #555; }
+
 
 
 
