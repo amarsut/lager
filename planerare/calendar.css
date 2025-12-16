@@ -4,16 +4,14 @@
 
 /* --- 1. GRUNDBEHÅLLARE --- */
 #calendarView {
-    width: 100% !important;
-    flex-grow: 1;
+    height: auto !important;       /* VIKTIGT: Väx med innehållet */
+    min-height: 0 !important;
     display: flex;
     flex-direction: column;
     background: white;
-    border-radius: 8px;
     border: 1px solid #cbd5e1 !important;
-    overflow: hidden;
-
-    height: 78vh !important;
+    border-radius: 8px;
+    overflow: visible !important;  /* Låt den sticka iväg nedåt */
 }
 
 /* Tvinga FullCalendar att fylla ut (Löser zoom-glapp) */
@@ -83,15 +81,8 @@
 /* Dölj den gamla separata headern */
 .fc-col-header, .fc-scrollgrid-section-header { display: none !important; }
 
-/* Datumrutan - Layout 60px tidigare */
+/* Datumrutan - LAYOUT 60PX TIDIGARE */
 .fc-daygrid-day-frame { min-height: 70px !important; border-top: none !important; padding-bottom: 0 !important; }
-
-/* 2. Tvinga FullCalendar att använda scrollbar inuti rutnätet */
-.fc-scroller { overflow-y: auto !important; /* Tillåt vertikal scroll */ }
-/* 3. (Valfritt) Styla scrollbaren så den ser snygg ut */
-.fc-scroller::-webkit-scrollbar { width: 8px; }
-.fc-scroller::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
-.fc-scroller::-webkit-scrollbar-track { background: transparent; }
 
 /* Konfigurera toppen av rutan (Text + Siffra) ENDAST på första raden */
 .fc-daygrid-body tr:first-child .fc-daygrid-day-top {
@@ -132,7 +123,7 @@
     cursor: pointer; border-radius: 4px !important;
 }
 .fc-premium-event {
-    padding: 2px 6px; border-radius: 0 4px 4px 0;
+    padding: 6px 2px; border-radius: 0 4px 4px 0;
     border-left-width: 4px !important; border-left-style: solid !important;
     font-size: 0.7rem; font-weight: 400 !important; text-align: left !important;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;
@@ -151,9 +142,6 @@
     opacity: 0; transition: opacity 0.15s ease-in-out;
     display: flex; flex-direction: column; gap: 6px;
     font-weight: 400; font-family: 'Inter', sans-serif;
-    
-    /* FIX: Flytta ner (25px) och höger (10px) från muspekaren */
-    transform: translate(10px, 35px); 
 }
 .calendar-tooltip.show { opacity: 1; }
 
@@ -187,7 +175,7 @@
         border-right: none !important;
         border-top: 1px solid #cbd5e1 !important;
         border-bottom: 1px solid #cbd5e1 !important;
-        height: 70vh !important;  
+        height: 100% !important;  
         max-height: none !important;
         display: flex; 
         flex-direction: column; 
@@ -269,3 +257,39 @@
     .day-list-reg { font-size: 0.7rem; color: #334155; font-weight: 700; background: #e2e8f0; padding: 2px 6px; border-radius: 4px; }
     .day-list-desc { font-size: 0.75rem; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
 }
+
+/* utseende för listvy */
+
+.fc-list-day-cushion { background-color: #f1f5f9 !important;  padding: 8px 16px !important; }
+.fc-list-event-time {
+    width: 1% !important;        /* Krymp till minsta möjliga */
+    white-space: nowrap !important;
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+    color: #334155 !important;   /* Mörkare färg för läsbarhet */
+    vertical-align: top !important; /* Starta i toppen om texten är lång */
+    padding-top: 10px !important;   /* Justera så den livar med texten */
+}
+/* 5. KOLUMN 2: PRICKEN */
+.fc-list-event-graphic { padding-right: 12px !important; }
+.fc-list-event-dot { border-width: 4px !important; transform: scale(1.1); }
+.fc-list-event-title { vertical-align: top !important; color: #1e293b !important; font-size: 0.8rem !important; line-height: 1.2 !important; }
+.fc-list-event-title span {        
+    font-weight: 600 !important;
+}
+
+.fc-list-table { width: 100% !important;border-collapse: collapse !important; border: none !important; }
+
+/*RUBRIK 20 DECEMBER 2025 LÖRDAG*/
+.fc-list-day-text,
+.fc-list-day-side-text {
+    font-size: 0.75rem !important;
+    font-weight: 900 !important;
+    color: #64748b !important; /* Slate-500 */
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important; /* Lite glesare text */
+    text-decoration: none !important;
+}
+
+/*BLÅ HOVER ÖVER RADERNA*/
+.fc-list-event:hover td { background-color: #f0f9ff !important; /* Sky-50 */ }
