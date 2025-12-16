@@ -122,12 +122,11 @@ body { margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-c
     display: flex;
     flex-direction: column;
     flex: 1;
-    width: 100%; 
-    min-width: 0; /* Låter innehållet krympa om det behövs */
+    width: 100% !important; 
+    max-width: none !important;
     padding: 2rem;
     overflow-y: auto; 
     overflow-x: hidden;
-    height: 100vh; /* Lås höjden till skärmen */
 }
 
 /* =========================================
@@ -4077,33 +4076,30 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 
 /* --- 1. GRUNDBEHÅLLARE --- */
 #calendarView {
-    flex-grow: 1;
     width: 100% !important;
+    flex-grow: 1;
     display: flex;
     flex-direction: column;
     background: white;
     border-radius: 20px;
     border: 1px solid #cbd5e1;
     overflow: hidden;
-    min-height: 500px; 
 }
 
-/* Ta bort den gamla media-queryn som satte width: 90% */
-@media (min-width: 769px) {
-    #calendarView { width: 100% !important; } 
-}
-
-/* Tvinga FullCalendar att fylla ut #calendarView helt */
+/* Tvinga rit-ytan att fylla ut */
 .fc-view-harness,
 .fc-view-harness-active {
+    width: 100% !important;
     flex-grow: 1 !important;
     height: 100% !important;
-    width: 100% !important;
 }
 
-/* Ta bort eventuella inre gränser som skapar dubbla linjer */
-.fc-scrollgrid {
-    border: none !important;
+/* Tvinga de inre tabellerna (som skapar rutnätet) att vara 100% */
+.fc-scrollgrid,
+.fc-scrollgrid-sync-table,
+.fc-col-header-table,
+.fc-daygrid-body,
+.fc-daygrid-body-table {
     width: 100% !important;
 }
 
@@ -4729,6 +4725,7 @@ input[type=range]:active::-webkit-slider-thumb { transform: scale(1.1); border-c
 /* Dark mode stöd */
 [data-theme="dark"] input[type=range]::-webkit-slider-runnable-track { background: #333; }
 [data-theme="dark"] input[type=range]::-webkit-slider-thumb { background: #1c1c1e; border-color: #555; }
+
 
 
 
