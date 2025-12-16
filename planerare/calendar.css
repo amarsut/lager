@@ -218,3 +218,50 @@
     .day-list-reg { font-size: 0.7rem; color: #334155; font-weight: 700; background: #e2e8f0; padding: 2px 6px; border-radius: 4px; }
     .day-list-desc { font-size: 0.75rem; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
 }
+
+/* =========================================
+   SCROLL-FIX: STOR KALENDER I LITEN RUTA
+   ========================================= */
+
+/* 1. Lås höjden på hela kalender-boxen */
+#calendarView {
+    height: 85vh !important; /* Justera denna % om du vill ha den högre/lägre */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden !important; /* Ingen scroll på själva ramen */
+}
+
+/* 2. Tvinga FullCalendars inre "sele" att hålla sig inom ramen */
+.fc-view-harness {
+    flex-grow: 1 !important;
+    height: 100% !important;
+    overflow: hidden !important; /* Klipp av det som sticker ut */
+}
+
+/* 3. AKTIVERA SCROLLEN (Här sker magin) */
+/* Vi säger åt rutan som håller dagarna att den får scrolla om det blir trångt */
+.fc-daygrid-body {
+    overflow-y: auto !important; 
+    overflow-x: hidden !important;
+    height: 100% !important; /* Fyll ut selen */
+}
+
+/* 4. Detta element måste också tillåta scroll */
+.fc-scroller-liquid-absolute,
+.fc-scroller {
+    overflow-y: auto !important;
+}
+
+/* 5. Gör själva dag-rutorna höga */
+.fc-daygrid-day-frame {
+    min-height: 150px !important; /* Tvinga fram höjden som kräver scroll */
+}
+
+/* --- FIX FÖR STICKY HEADERS --- */
+/* Detta gör att veckodagarna (MÅN, TIS...) ligger kvar i toppen när du scrollar */
+.fc-col-header-table {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: white;
+}
