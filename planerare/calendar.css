@@ -91,7 +91,7 @@
 }
 /* Datumsiffran (Generell stil) */
 .fc-daygrid-day-top { flex-direction: row !important; justify-content: center !important; padding-top: 4px !important; }
-.fc-daygrid-day-number { font-size: 0.6rem; color: #334155; font-weight: 400 !important; text-decoration: none !important; z-index: 2; margin: 0 !important; }
+.fc-daygrid-day-number { font-size: 0.6rem; color: #0f172a; font-weight: 400 !important; text-decoration: none !important; z-index: 2; margin: 0 !important; }
 
 /* Dagens datum (Blå cirkel) */
 .fc-day-today { background-color: transparent !important; }
@@ -113,7 +113,7 @@
 
 /* Styla veckodagstexten "Mån", "Tis", "Ons", "Tors", "Fre" */
 .fc-daygrid-body tr:first-child .fc-daygrid-day-top::before {
-    font-size: 0.55rem; font-weight: 400; color: #64748b;
+    font-size: 0.55rem; font-weight: 400; color: #0f172a;
     text-transform: uppercase; letter-spacing: 1px; display: block; line-height: 1;
 }
 
