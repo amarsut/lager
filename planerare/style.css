@@ -4219,8 +4219,28 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     #calendar-wrapper { flex-shrink: 0; }
 
     /* Header (Dölj titel, visa knappar) */
-    .fc-header-toolbar { padding: 10px 12px !important; justify-content: space-between !important; }
+    .fc-header-toolbar {
+        display: flex !important;
+        flex-wrap: wrap !important;       /* VIKTIGT: Tillåter knapparna att hoppa ner om det är trångt */
+        justify-content: space-between !important;
+        gap: 8px !important;              /* Mindre mellanrum */
+        padding: 8px 12px !important;     /* Mindre luft runt om */
+        height: auto !important;          /* Låt höjden växa om det blir två rader */
+    }
     .fc-toolbar-title { display: none !important; }
+
+	.fc-button {
+        height: 30px !important;          /* Lägre knappar (var 34px) */
+        padding: 0 10px !important;       /* Smalare knappar (var 16px) */
+        font-size: 0.8rem !important;     /* Lite mindre text */
+        line-height: 28px !important;     /* Centrera texten vertikalt */
+    }
+
+    /* Justera pilarna (< >) så de matchar */
+    .fc-prev-button, .fc-next-button { width: 30px !important; height: 30px !important; padding: 0 !important; }
+    
+    /* Justera avståndet mellan knappgrupperna */
+    .fc-toolbar-chunk { gap: 8px !important; display: flex !important; align-items: center !important; }
 
     /* Rutorna (Mindre höjd, klickbara) */
     .fc-daygrid-day-frame { min-height: 50px !important; cursor: pointer; padding-bottom: 4px; }
@@ -4731,5 +4751,6 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 .bg-unplanned .brand-logo-img {
     filter: brightness(0) invert(1) opacity(0.95);
 }
+
 
 
