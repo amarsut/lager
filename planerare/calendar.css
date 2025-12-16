@@ -12,6 +12,8 @@
     border-radius: 8px;
     border: 1px solid #cbd5e1 !important;
     overflow: hidden;
+
+    height: 80vh !important;
 }
 
 /* Tvinga FullCalendar att fylla ut (Löser zoom-glapp) */
@@ -81,8 +83,15 @@
 /* Dölj den gamla separata headern */
 .fc-col-header, .fc-scrollgrid-section-header { display: none !important; }
 
-/* Datumrutan - Layout */
-.fc-daygrid-day-frame { min-height: 60px !important; border-top: none !important; padding-bottom: 0 !important; }
+/* Datumrutan - Layout 60px tidigare */
+.fc-daygrid-day-frame { min-height: 100px !important; border-top: none !important; padding-bottom: 0 !important; }
+
+/* 2. Tvinga FullCalendar att använda scrollbar inuti rutnätet */
+.fc-scroller { overflow-y: auto !important; /* Tillåt vertikal scroll */ }
+/* 3. (Valfritt) Styla scrollbaren så den ser snygg ut */
+.fc-scroller::-webkit-scrollbar { width: 8px; }
+.fc-scroller::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
+.fc-scroller::-webkit-scrollbar-track { background: transparent; }
 
 /* Konfigurera toppen av rutan (Text + Siffra) ENDAST på första raden */
 .fc-daygrid-body tr:first-child .fc-daygrid-day-top {
