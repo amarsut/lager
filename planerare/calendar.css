@@ -89,7 +89,7 @@
     flex-direction: column !important; justify-content: center !important;
     align-items: center !important; padding-top: 12px !important; gap: 4px;
 }
-/* Siffran (Generell stil) */
+/* Datumsiffran (Generell stil) */
 .fc-daygrid-day-top { flex-direction: row !important; justify-content: center !important; padding-top: 4px !important; }
 .fc-daygrid-day-number { font-size: 0.6rem; color: #334155; font-weight: 400 !important; text-decoration: none !important; z-index: 2; margin: 0 !important; }
 
@@ -111,7 +111,7 @@
 .fc-daygrid-body tr:first-child .fc-day-sat .fc-daygrid-day-top::before { content: "LÖR"; }
 .fc-daygrid-body tr:first-child .fc-day-sun .fc-daygrid-day-top::before { content: "SÖN"; }
 
-/* Styla veckodagstexten */
+/* Styla veckodagstexten "Mån", "Tis", "Ons", "Tors", "Fre" */
 .fc-daygrid-body tr:first-child .fc-daygrid-day-top::before {
     font-size: 0.55rem; font-weight: 400; color: #64748b;
     text-transform: uppercase; letter-spacing: 1px; display: block; line-height: 1;
