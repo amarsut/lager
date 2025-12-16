@@ -4111,8 +4111,25 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 
 /* --- HEADER (Mån, Tis...) --- */
 .fc-col-header-cell {
-    background-color: #f8fafc; /* Ljusgrå bakgrund på rubrikerna */
-    padding: 8px 0;
+    background-color: #f8fafc !important; /* Ljusgrå bakgrund */
+    border: 1px solid #cbd5e1 !important; /* Samma ramfärg som resten */
+    border-bottom: 1px solid #e2e8f0 !important; /* Lite ljusare linje neråt */
+    vertical-align: middle !important;
+}
+
+.fc-col-header-cell-cushion {
+    display: block !important;        /* Fyll hela cellen */
+    width: 100% !important;
+    padding: 10px 0 !important;       /* Luft ovanför och under texten */
+    
+    text-align: center !important;    /* VIKTIGT: Centrera texten */
+    
+    color: #64748b !important;        /* Snygg grå färg */
+    font-size: 0.75rem !important;    /* Lagom storlek */
+    font-weight: 700 !important;      /* Fetstil */
+    text-transform: uppercase !important; /* Versaler */
+    letter-spacing: 1px !important;   /* Lite luft mellan bokstäverna */
+    text-decoration: none !important; /* Ta bort understrykning */
 }
 
 /* --- 2. HEADER & TOOLBAR --- */
@@ -4192,7 +4209,7 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 /* --- 4. RUTNÄT & LINJER (CLEAN LOOK) --- */
 
 /* Datum (Siffrorna) */
-.fc-daygrid-day-top { justify-content: center !important; padding-top: 8px !important; }
+.fc-daygrid-day-top { flex-direction: row !important; justify-content: center !important; padding-top: 8px !important; }
 .fc-daygrid-day-number { 
     font-size: 0.8rem; color: #334155; font-weight: 400 !important; text-decoration: none !important; 
 }
@@ -4725,6 +4742,7 @@ input[type=range]:active::-webkit-slider-thumb { transform: scale(1.1); border-c
 /* Dark mode stöd */
 [data-theme="dark"] input[type=range]::-webkit-slider-runnable-track { background: #333; }
 [data-theme="dark"] input[type=range]::-webkit-slider-thumb { background: #1c1c1e; border-color: #555; }
+
 
 
 
