@@ -4734,4 +4734,60 @@ input[type=range]:active::-webkit-slider-thumb { transform: scale(1.1); border-c
 
 
 
+/* =========================================
+   HEADER ALIGNMENT FIX (ULTIMATE)
+   ========================================= */
+
+/* 1. Tvinga BÅDE rubrik-tabellen och kalender-kroppen att använda "Fixed Layout" */
+/* Detta gör att kolumnerna MÅSTE dela lika på utrymmet, oavsett innehåll */
+.fc-col-header-table,
+.fc-daygrid-body-table,
+.fc-scrollgrid-sync-table {
+    width: 100% !important;
+    table-layout: fixed !important;
+}
+
+/* 2. Döda "Spök-kolumnen" (Scrollbar-reserven) */
+/* Vi sätter bredden till 0 och döljer allt innehåll */
+.fc-scrollgrid-shrink {
+    width: 0 !important;
+    max-width: 0 !important;
+    min-width: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+}
+.fc-scrollgrid-shrink-cushion {
+    display: none !important;
+}
+
+/* 3. Centrera texten (MÅN, TIS...) och fixa padding */
+.fc-col-header-cell {
+    text-align: center !important;
+    vertical-align: middle !important;
+    border-bottom: 1px solid #e2e8f0 !important; /* Ljus linje under rubrik */
+    background-color: #f8fafc !important;        /* Ljusgrå bakgrund */
+}
+
+/* 4. Tvinga text-behållaren att fylla hela rutan */
+.fc-col-header-cell-cushion {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    padding: 12px 0 !important; /* Luft uppe/nere */
+    
+    /* Textstil */
+    text-decoration: none !important;
+    color: #64748b !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+}
+
+/* 5. Justera den generella TH-regeln du har i filen så den inte stör */
+/* Din generella "th" sätter text-align: left, vi måste överskriva det här */
+.fc-theme-standard th {
+    text-align: center !important;
+    border: 1px solid #cbd5e1 !important;
+}
 
