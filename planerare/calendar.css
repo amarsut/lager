@@ -188,45 +188,77 @@
     .day-list-desc { font-size: 0.75rem; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
 }
 
-/*LISTVY*/
-
 /* =========================================
-   LISTVY - BEGRÄNSA BREDD (FIX)
+   LISTVY - KOLUMN FIX (STYR UPP PRICKARNA)
    ========================================= */
 
-/* 1. Tvinga tabellen att hålla fast bredd (VIKTIGAST) */
+/* 1. Grundtabellen - Lås layouten */
 .fc-list-table {
     table-layout: fixed !important;
     width: 100% !important;
+    border-collapse: collapse !important;
 }
 
-/* 2. Sätt fast bredd på tid- och prick-kolumnen så de inte mosas */
+/* 2. KOLUMN 1: TIDEN (Vänster) */
 .fc-list-event-time {
-    width: 85px !important; /* Lagom för tid + datum */
+    width: 70px !important;       /* Fast bredd, lagom för "08:00" */
+    max-width: 70px !important;
     white-space: nowrap !important;
+    text-align: left !important;
+    vertical-align: top !important;
+    padding: 12px 0 12px 16px !important; /* Lite luft från kanten */
+    font-weight: 600 !important;
+    color: #64748b !important;
 }
+
+/* 3. KOLUMN 2: PRICKEN (Mitten - FELET LÅG HÄR) */
 .fc-list-event-graphic {
-    width: 40px !important;
+    width: 40px !important;       /* TVINGA denna att vara smal */
+    max-width: 40px !important;
+    text-align: center !important; /* Centrera pricken i sin lilla ruta */
+    vertical-align: top !important;
+    padding-top: 14px !important; /* Justera så den lirar med texten */
 }
 
-/* 3. Hantera den långa texten (Titel/Beskrivning) */
+/* 4. KOLUMN 3: RUBRIK & TEXT (Höger - Ska ta all plats) */
 .fc-list-event-title {
-    /* Alternativ A: Klipp texten med "..." (Snyggast & renast) */
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    
-    /* Alternativ B: Vill du att texten ska radbrytas istället?
-       Ta bort raderna ovan och använd dessa istället:
-       
-       white-space: normal !important;
-       word-break: break-word !important;
-    */
+    width: auto !important;       /* Ta allt utrymme som blir över */
+    vertical-align: top !important;
+    padding: 10px 16px 10px 0 !important; /* Ingen padding vänster mot pricken */
+    text-align: left !important;  /* Tvinga texten till vänster */
 }
 
-/* Om du har custom content (divar inuti) måste de också begränsas */
-.fc-list-event-title > div {
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
+/* --- STYLING AV TEXTEN (Gör skillnad på Regnr och Beskrivning) --- */
+
+/* Om du använder standard FullCalendar-data */
+.fc-list-event-title a {
+    display: flex;
+    flex-direction: column;
+    text-decoration: none !important;
+    color: inherit !important;
+    overflow: hidden;
+}
+
+/* Rad 1: Gör Regnr/Titel fetare och mörkare */
+.fc-list-event-title {
+    font-size: 0.95rem !important;
+    font-weight: 700 !important;
+    color: #1e293b !important;
+}
+
+/* Om du har beskrivning i samma cell, se till att den bryts snyggt */
+/* Detta kräver ofta att man har custom HTML, men detta hjälper standardvyn: */
+.fc-list-event-title i, 
+.fc-list-event-title span {
+    font-weight: 400 !important;
+    font-style: normal !important;
+    color: #64748b !important;
+    font-size: 0.85rem !important;
+    margin-top: 2px;
+    
+    /* Klipp text om den är för lång */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
 }
