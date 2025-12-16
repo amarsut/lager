@@ -22,7 +22,7 @@
 }
 
 * { box-sizing: border-box; }
-body { margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-color); color: var(--text-color); height: 100vh; overflow: hidden; }
+body { margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-color); color: var(--text-color); height: 100vh; overflow: hidden; display: flex !important;  flex-direction: row !important;  width: 100% !important; }
 
 /* =========================================
    2. LAYOUT (Sidebar & Main)
@@ -119,8 +119,13 @@ body { margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-c
    ========================================= */
 .app-main { overflow-y: auto; flex-grow: 1; }
 .main-content { 
-    /* Öka från 1080px till t.ex. 1400px eller ta bort max-width helt för fullbredd */
-    max-width: 100%;
+	/* --- NYTT: Fyll ut allt utrymme bredvid sidebaren --- */
+    flex-grow: 1 !important;  
+    flex-basis: 0 !important; 
+    min-width: 0 !important;  /* Viktigt trick för att kalendrar inte ska spränga layouten */
+	
+	width: auto !important;
+    max-width: none !important; /* Öka från 1080px till t.ex. 1400px eller ta bort max-width helt för fullbredd */
     margin: 0 auto;
     padding: 2rem;     
 }
@@ -4797,6 +4802,7 @@ input[type=range]:active::-webkit-slider-thumb { transform: scale(1.1); border-c
 /* Dark mode stöd */
 [data-theme="dark"] input[type=range]::-webkit-slider-runnable-track { background: #333; }
 [data-theme="dark"] input[type=range]::-webkit-slider-thumb { background: #1c1c1e; border-color: #555; }
+
 
 
 
