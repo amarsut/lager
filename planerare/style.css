@@ -4087,21 +4087,23 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 }
 
 /* Tvinga rit-ytan att fylla ut */
-.fc-view-harness,
-.fc-view-harness-active {
+.fc-view-harness, .fc-view-harness-active {
     width: 100% !important;
     flex-grow: 1 !important;
     height: 100% !important;
 }
 
 /* Tvinga de inre tabellerna (som skapar rutnätet) att vara 100% */
-.fc-scrollgrid,
-.fc-scrollgrid-sync-table,
-.fc-col-header-table,
-.fc-daygrid-body,
-.fc-daygrid-body-table {
+.fc-scrollgrid, .fc-scrollgrid-sync-table, .fc-col-header-table, .fc-daygrid-body, .fc-daygrid-body-table {
     width: 100% !important;
 }
+
+.fc-theme-standard td, .fc-theme-standard th {
+    border: 1px solid #cbd5e1 !important; /* Samma färg som kalendernätet */
+    border-bottom: 1px solid #cbd5e1 !important; 
+    background-color: #f8fafc !important;
+}
+
 
 /* Titel (Månad År) */
 .fc-toolbar-title {
@@ -4692,6 +4694,7 @@ input[type=range]:active::-webkit-slider-thumb { transform: scale(1.1); border-c
 /* Dark mode stöd */
 [data-theme="dark"] input[type=range]::-webkit-slider-runnable-track { background: #333; }
 [data-theme="dark"] input[type=range]::-webkit-slider-thumb { background: #1c1c1e; border-color: #555; }
+
 
 
 
