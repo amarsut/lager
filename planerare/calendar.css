@@ -187,3 +187,46 @@
     .day-list-reg { font-size: 0.7rem; color: #334155; font-weight: 700; background: #e2e8f0; padding: 2px 6px; border-radius: 4px; }
     .day-list-desc { font-size: 0.75rem; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
 }
+
+/*LISTVY*/
+
+/* =========================================
+   LISTVY - BEGRÄNSA BREDD (FIX)
+   ========================================= */
+
+/* 1. Tvinga tabellen att hålla fast bredd (VIKTIGAST) */
+.fc-list-table {
+    table-layout: fixed !important;
+    width: 100% !important;
+}
+
+/* 2. Sätt fast bredd på tid- och prick-kolumnen så de inte mosas */
+.fc-list-event-time {
+    width: 85px !important; /* Lagom för tid + datum */
+    white-space: nowrap !important;
+}
+.fc-list-event-graphic {
+    width: 40px !important;
+}
+
+/* 3. Hantera den långa texten (Titel/Beskrivning) */
+.fc-list-event-title {
+    /* Alternativ A: Klipp texten med "..." (Snyggast & renast) */
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    
+    /* Alternativ B: Vill du att texten ska radbrytas istället?
+       Ta bort raderna ovan och använd dessa istället:
+       
+       white-space: normal !important;
+       word-break: break-word !important;
+    */
+}
+
+/* Om du har custom content (divar inuti) måste de också begränsas */
+.fc-list-event-title > div {
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
