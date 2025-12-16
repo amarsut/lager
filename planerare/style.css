@@ -4074,7 +4074,7 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
    FULLCALENDAR: OPTIMIZED & CLEAN (FINAL VERSION)
    ======================================================= */
 
-/* --- 1. GRUNDBEHÅLLARE & STRUKTUR --- */
+/* --- 1. GRUNDBEHÅLLARE --- */
 #calendarView {
     width: 100% !important;
     flex-grow: 1;
@@ -4086,12 +4086,13 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     overflow: hidden;
 }
 
-/* Tvinga FullCalendars alla inre delar att fylla ut 100% (Löser zoom-glapp) */
+/* Tvinga FullCalendar att fylla ut (Löser zoom-glapp) */
 .fc-view-harness, .fc-view-harness-active,
 .fc-scrollgrid, .fc-scrollgrid-sync-table, 
 .fc-col-header-table, .fc-daygrid-body, .fc-daygrid-body-table {
     width: 100% !important;
     flex-grow: 1 !important;
+    height: 100% !important;
 }
 
 /* --- 2. HEADER TOOLBAR --- */
@@ -4110,7 +4111,7 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 .fc-toolbar-chunk { display: flex !important; align-items: center !important; gap: 12px; }
 .fc-toolbar-title { font-size: 1.15rem !important; font-weight: 400 !important; color: #0f172a; text-transform: capitalize; margin-left: 16px !important; }
 
-/* --- 3. KNAPPAR & NAVIGERING --- */
+/* --- 3. KNAPPAR --- */
 .fc-button {
     height: 34px !important; padding: 0 16px !important;
     font-size: 0.9rem !important; font-weight: 500 !important;
@@ -4120,10 +4121,9 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     outline: none !important; background-image: none !important;
     transition: all 0.2s ease;
 }
-
 .fc-button:hover { background-color: #f8fafc !important; border-color: #cbd5e1 !important; color: #0f172a !important; }
 
-/* Grupperade knappar (Border-radius fix) */
+/* Grupperade knappar (Runda hörn bara på kanterna) */
 .fc-button-group > .fc-button { margin: 0 !important; border-radius: 0 !important; }
 .fc-button-group > .fc-button:first-child { border-top-left-radius: 4px !important; border-bottom-left-radius: 4px !important; }
 .fc-button-group > .fc-button:last-child { border-top-right-radius: 4px !important; border-bottom-right-radius: 4px !important; }
@@ -4140,13 +4140,13 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 
 /* --- 4. DAGAR & RUTNÄT (DAGAR INUTI RUTORNA) --- */
 
-/* Dölj den gamla separata headern helt */
+/* Dölj den gamla separata headern */
 .fc-col-header, .fc-scrollgrid-section-header { display: none !important; }
 
 /* Datumrutan - Layout */
 .fc-daygrid-day-frame { min-height: 60px !important; border-top: none !important; padding-bottom: 0 !important; }
 
-/* Konfigurera toppen av datumrutan för att visa Text + Siffra (Bara rad 1) */
+/* Konfigurera toppen av rutan (Text + Siffra) ENDAST på första raden */
 .fc-daygrid-body tr:first-child .fc-daygrid-day-top {
     flex-direction: column !important; justify-content: center !important;
     align-items: center !important; padding-top: 12px !important; gap: 4px;
@@ -4198,15 +4198,15 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 .calendar-tooltip {
     position: fixed; background: #ffffff; color: #1f2937;
     padding: 12px 16px; border-radius: 12px; z-index: 99999;
-    pointer-events: none; /* Musen klickar igenom den */
+    pointer-events: none; /* VIKTIGT: Musen klickar igenom den = inget flimmer */
     box-shadow: 0 10px 30px rgba(0,0,0,0.1), 0 0 0 1px rgba(0,0,0,0.05);
     width: auto; max-width: 280px; min-width: 220px;
     opacity: 0; transition: opacity 0.15s ease-in-out;
     display: flex; flex-direction: column; gap: 6px;
     font-weight: 400; font-family: 'Inter', sans-serif;
     
-    /* NYTT: Flytta ner och höger från muspekaren så den inte är i vägen */
-    transform: translate(12px, 12px); 
+    /* FIX: Flytta ner (25px) och höger (10px) från muspekaren */
+    transform: translate(10px, 25px); 
 }
 .calendar-tooltip.show { opacity: 1; }
 
@@ -4259,7 +4259,6 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     .day-list-reg { font-size: 0.7rem; color: #334155; font-weight: 700; background: #e2e8f0; padding: 2px 6px; border-radius: 4px; }
     .day-list-desc { font-size: 0.75rem; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
 }
-
 
 /* FIX 1: Tvinga texten att flytta sig för ikonen i fordonsmodalen */
 @media (max-width: 768px) {
@@ -4580,3 +4579,4 @@ input[type=range]:active::-webkit-slider-thumb { transform: scale(1.1); border-c
 /* Dark mode stöd */
 [data-theme="dark"] input[type=range]::-webkit-slider-runnable-track { background: #333; }
 [data-theme="dark"] input[type=range]::-webkit-slider-thumb { background: #1c1c1e; border-color: #555; }
+
