@@ -187,20 +187,3 @@
     .day-list-reg { font-size: 0.7rem; color: #334155; font-weight: 700; background: #e2e8f0; padding: 2px 6px; border-radius: 4px; }
     .day-list-desc { font-size: 0.75rem; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
 }
-
-/* =========================================
-   LISTVY - FIXAD BREDD (BEHÅLL ALIGNMENT)
-   ========================================= */
-
-/* 1. Lås tabellen så den INTE får bli bredare än skärmen */
-.fc-list-table {
-    width: 100% !important;
-}
-
-/* 3. Låt texten (Titel/Beskrivning) ta all plats som blir över */
-.fc-list-event-title {
-   white-space: nowrap !important;
-   overflow: hidden !important;
-   text-overflow: ellipsis !important;
-   width: 20px;
-}
