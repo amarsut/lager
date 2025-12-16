@@ -119,14 +119,15 @@ body { margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-c
    ========================================= */
 .app-main { overflow-y: auto; flex-grow: 1; }
 .main-content {
+    display: flex;
+    flex-direction: column;
     flex: 1;                
-    display: flex;          
-    flex-direction: column; 
     width: 100%;            
-    min-width: 0;           /* VIKTIGT: Låter kalendern krympa om det blir för trångt */
+    min-width: 0;           /* Kritiskt: Låter flex-barn krympa om det blir för trångt */
     padding: 2rem;
-    overflow-y: auto;       /* Scrolla vertikalt om det behövs */
-    overflow-x: hidden;     /* Förhindra scroll i sidled */
+    overflow-y: auto;       /* Scrolla vertikalt */
+    overflow-x: hidden;     /* Förbjud sid-scroll */
+    height: 100vh;          /* Lås höjden till skärmen */
 }
 
 /* =========================================
@@ -4077,30 +4078,39 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 /* --- 1. GRUNDBEHÅLLARE --- */
 #calendarView {
     width: 100% !important;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;           /* Väx så mycket det går */
     background: white;
     border-radius: 20px;
     border: 1px solid #cbd5e1;
     overflow: hidden;
-    display: flex;          
-    flex-direction: column;
+    min-height: 500px;      /* Säkerhetshöjd */
 }
 
-/* Tvinga FullCalendars inre struktur att fylla ut */
+/* Ta bort den gamla media-queryn som satte width: 90% */
+@media (min-width: 769px) {
+    #calendarView { width: 100% !important; } 
+}
+
+/* Själva ytan där kalendern ritas */
 .fc-view-harness,
+.fc-view-harness-active {
+    flex-grow: 1 !important;
+    width: 100% !important;
+    height: 100% !important; 
+}
+
+/* Tabell-strukturen inuti */
 .fc-scrollgrid {
     width: 100% !important;
-    border: none !important; /* Vi har ramen på #calendarView istället */
+    border: none !important;
 }
 
-/* --- RUTNÄT & LINJER (Fixar att linjerna syns) --- */
+/* Rutnätet */
 .fc-theme-standard td, 
 .fc-theme-standard th {
-    border: 1px solid #cbd5e1 !important; /* Tydliga grå linjer */
-}
-
-/* Ta bort dubbla linjer i ytterkanten */
-.fc-theme-standard .fc-scrollgrid {
-    border: none !important;
+    border: 1px solid #cbd5e1 !important;
 }
 
 /* --- HEADER (Mån, Tis...) --- */
@@ -4719,6 +4729,7 @@ input[type=range]:active::-webkit-slider-thumb { transform: scale(1.1); border-c
 /* Dark mode stöd */
 [data-theme="dark"] input[type=range]::-webkit-slider-runnable-track { background: #333; }
 [data-theme="dark"] input[type=range]::-webkit-slider-thumb { background: #1c1c1e; border-color: #555; }
+
 
 
 
