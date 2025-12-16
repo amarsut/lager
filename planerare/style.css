@@ -32,6 +32,8 @@ body { margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-c
 /* --- SIDEBAR --- */
 .sidebar {
     width: var(--sidebar-width);
+	min-width: var(--sidebar-width); /*låt inte sidebaren minska i bredd*/
+    flex-shrink: 0; /*låt inte sidebaren minska i bredd*/
     background-color: var(--content-bg);
     border-right: 1px solid var(--border-color);
     display: flex; flex-direction: column; padding: 24px 16px;
@@ -4751,6 +4753,7 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 .bg-unplanned .brand-logo-img {
     filter: brightness(0) invert(1) opacity(0.95);
 }
+
 
 
 
