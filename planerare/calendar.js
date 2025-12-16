@@ -36,7 +36,7 @@ function mapJobsToEvents(jobs) {
         });
 }
 
-// FIXAD FUNKTION: Renderar listan för vald dag (Mobilvy)
+// FIXAD FUNKTION: Renderar listan
 function renderDayList(dateStr, events) {
     const container = document.getElementById('selectedDayView');
     if (!container) return;
@@ -100,15 +100,7 @@ window.closeDayList = function() {
     }
 };
 
-// Hjälpfunktion för datumformat vid Drag & Drop
-function formatDateForFirebase(dateObj) {
-    const year = dateObj.getFullYear();
-    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-    const day = String(dateObj.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}T08:00`; // Sätter standardtid 08:00 vid drop
-}
-
-export function initCalendar(elementId, jobsData, onEventClickCallback, onDropCallback, onExternalDropCallback) {
+export function initCalendar(elementId, jobsData, onEventClickCallback, onDropCallback) {
     const wrapperEl = document.getElementById('calendar-wrapper');
     if (!wrapperEl) return;
 
@@ -126,159 +118,165 @@ export function initCalendar(elementId, jobsData, onEventClickCallback, onDropCa
         height: 'auto',
         contentHeight: 'auto',
         
-        // --- Drag & Drop ---
-        editable: true,       
-        droppable: true,      // Måste vara true för att ta emot externa
+        // --- NYTT: Aktivera Drag & Drop ---
+        editable: true,       // Tillåter att man drar events
         eventStartEditable: true, 
-        eventDurationEditable: false,
+        eventDurationEditable: false, // Vi låser längden (tills vidare)
         
-        // --- PUNKT 5: Anpassat datumformat ---
         titleFormat: isMobile 
-            ? { year: 'numeric', month: 'short' } // "Dec 2025" på mobil
-            : { year: 'numeric', month: 'long' }, // "December 2025" på dator
+            ? { year: 'numeric', month: 'short' } 
+            : { year: 'numeric', month: 'long' },
 
-        // --- Anpassad knapp ---
-        customButtons: {
-            toggleSidebarBtn: {
-                text: 'Visa',
-                click: function() {
-                    // Vi kallar den globala funktionen (definierad i app.js)
-                    if(window.toggleCalendarSidebar) window.toggleCalendarSidebar();
+        headerToolbar: {
+            left: 'today prev,next title', 
+            center: '',         
+            right: 'dayGridMonth,listYear'
+        },
+        buttonText: { today: 'Idag', month: 'Månad' },
+        views: {
+            listYear: { 
+                buttonText: 'Lista',
+                // Detta sätter startdatumet för vyn till "idag" dynamiskt
+                validRange: function(nowDate) {
+                    return {
+                        start: nowDate // Startar från dagens datum
+                    };
                 }
             }
         },
 
-        headerToolbar: {
-            // Vänster sida: Pilar + Titel
-            left: 'prev,next title', 
-            
-            // Mitten: Tomt
-            center: '',         
-            
-            // Höger sida: "Visa Obokade" + "Idag" (Med mellanslag emellan så de hamnar i samma grupp)
-            right: 'today toggleSidebarBtn' 
-        },
-        buttonText: { today: 'Idag' },
-
-        // --- PUNKT 1: HOVER LOGIK (Fixad positionering) ---
+        // --- HOVER LOGIK (Din nya snygga kod) ---
         eventMouseEnter: function(info) {
-            if (window.innerWidth <= 768) return; // Ingen hover på mobil
-            
+            if (window.innerWidth <= 768) return; 
             const props = info.event.extendedProps;
-            const timeStr = props.time || '';
+            const dateObj = info.event.start;
+            const timeStr = dateObj ? dateObj.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' }).replace(':', '.') : '';
             const regNr = props.regnr || '---';
-            const title = info.event.title;
-            const desc = props.description || '';
+            const customerName = info.event.title;
+            const commentText = props.description || '';
 
-            // Hämta eller skapa tooltip
             let tooltip = document.getElementById('fc-custom-tooltip');
             if (!tooltip) {
                 tooltip = document.createElement('div');
                 tooltip.id = 'fc-custom-tooltip';
                 tooltip.className = 'calendar-tooltip';
-                document.body.appendChild(tooltip); // Lägg i body för att undvika clipping
+                document.body.appendChild(tooltip);
             }
 
-            // Ikoner
-            const iClock = `<svg style="width:14px;height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`;
-            const iInfo = `<svg style="width:14px;height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`;
+            const iconStatus = `<svg class="tt-status-icon" style="color: ${props.mainColor};" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /></svg>`;
+            const iconComment = `<svg class="tt-icon tt-icon-gray" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>`;
+            const iconClock = `<svg class="tt-icon tt-icon-gray" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`;
 
-            let html = `
+            let htmlContent = `
                 <div class="tt-row-primary">
-                    <span style="color:${props.mainColor}">●</span>
+                    ${iconStatus}
                     <span class="tt-reg">${regNr}</span>
-                    <span>${title}</span>
+                    <span class="tt-sep">•</span>
+                    <span class="tt-name">${customerName}</span>
                 </div>`;
-            
-            if (desc) {
-                html += `<div class="tt-row-detail">${iInfo} <span>${desc}</span></div>`;
+
+            if (commentText.trim().length > 0) {
+                htmlContent += `
+                <div class="tt-row-detail">
+                    ${iconComment}
+                    <span>${commentText}</span>
+                </div>`;
             }
-            
-            html += `<div class="tt-row-time">${iClock} <span>${timeStr}</span></div>`;
 
-            tooltip.innerHTML = html;
+            htmlContent += `
+                <div class="tt-row-time">
+                    ${iconClock}
+                    <span>${timeStr}</span>
+                </div>`;
+
+            tooltip.innerHTML = htmlContent;
             tooltip.classList.add('show');
+            
+            const tooltipRect = tooltip.getBoundingClientRect();
+            const x = info.jsEvent.clientX;
+            const y = info.jsEvent.clientY;
+            let top = y + 15;
+            let left = x + 15;
 
-            // Positionering (Följer INTE musen, utan ligger fast vid eventet för stabilitet)
-            const rect = info.el.getBoundingClientRect();
-            let top = rect.bottom + 5;
-            let left = rect.left + (rect.width / 2) - 100; // Centrera
-
-            // Håll inom skärmen
-            if (left < 10) left = 10;
-            if (top + 100 > window.innerHeight) top = rect.top - 100; // Flytta upp om det är trångt nere
+            if (top + tooltipRect.height > window.innerHeight) top = y - tooltipRect.height - 10;
+            if (left + tooltipRect.width > window.innerWidth) left = x - tooltipRect.width - 10;
 
             tooltip.style.top = top + 'px';
             tooltip.style.left = left + 'px';
         },
         
-        eventMouseLeave: function() {
+        eventMouseLeave: function(info) {
             const tooltip = document.getElementById('fc-custom-tooltip');
             if (tooltip) {
                 tooltip.classList.remove('show');
-                tooltip.style.left = '-9999px'; // Flytta bort
+                tooltip.style.left = '-9999px'; 
             }
         },
-
-        // --- PUNKT 3: DRAG & DROP LOGIK ---
         
-        // 1. Flytta befintligt kort
+        // --- NYTT: Hantera när man släpper eventet ---
         eventDrop: function(info) {
+            // Hämta det nya datumet
             const d = info.event.start;
-            // Skapa datumsträng: YYYY-MM-DDTHH:MM
-            const newDateStr = formatDateForFirebase(d);
-            if (onDropCallback) onDropCallback(info.event.id, newDateStr, info.revert);
-        },
-
-        // 2. Ta emot NYTT kort från sidomenyn
-        eventReceive: function(info) {
-            console.log("🔥 eventReceive triggad! Något släpptes i kalendern.");
-            console.log("Event ID:", info.event.id);
-            console.log("Datum:", info.event.start);
-
-            // Hämta datumet där vi släppte
-            const newDate = info.event.start;
             
-            // Formatet ska vara YYYY-MM-DDTHH:MM
-            const newDateStr = formatDateForFirebase(newDate);
-            console.log("Formaterat datum:", newDateStr);
+            // Konvertera Date-objektet till din strängformat: YYYY-MM-DDTHH:MM
+            // Vi behåller tiden från eventet (om man drar till ny dag behålls tiden oftast)
             
-            const jobId = info.event.id; 
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            const hours = String(d.getHours()).padStart(2, '0');
+            const minutes = String(d.getMinutes()).padStart(2, '0');
             
-            // Ta bort det temporära eventet visuellt (vi laddar om från Firebase strax)
-            info.event.remove();
-
-            // Anropa app.js
-            if (onExternalDropCallback) {
-                console.log("Anropar app.js callback...");
-                onExternalDropCallback(jobId, newDateStr);
-            } else {
-                console.error("❌ Ingen callback (handleExternalDrop) kopplad!");
+            const newDateStr = `${year}-${month}-${day}T${hours}:${minutes}`;
+            
+            // Anropa callback-funktionen i app.js för att spara till Firebase
+            if (onDropCallback) {
+                onDropCallback(info.event.id, newDateStr, info.revert);
             }
         },
 
         events: events,
         
         eventContent: function(arg) {
-            const isMob = window.innerWidth <= 768;
             const props = arg.event.extendedProps;
-            
+            const isList = arg.view.type.toLowerCase().includes('list');
+            const isMob = window.innerWidth <= 768;
+
+            // --- 1. LISTVY (Högst prioritet - Gäller både mobil och dator) ---
+            // Här ritar vi ut exakt samma info oavsett skärmstorlek
+            if (isList) {
+                let contentHtml = `
+                    <div class="fc-list-custom-content">
+                        <div class="fc-list-top-row">
+                            <span class="fc-list-title-text">${arg.event.title}</span>
+                            ${props.regnr ? `<span class="fc-list-reg-badge">${props.regnr}</span>` : ''}
+                        </div>
+                        ${props.description ? `<div class="fc-list-desc-text">${props.description}</div>` : ''}
+                    </div>
+                `;
+                return { html: contentHtml };
+            }
+
+            // --- 2. MOBIL MÅNADSVY (Vanlig kalender) ---
+            // Visa bara prickar här för att spara plats
             if (isMob) {
-                return { html: `<div class="fc-mobile-dot" style="background-color: ${props.mainColor};"></div>` };
+            return { html: `<div class="fc-mobile-dot" style="background-color: ${props.mainColor};"></div>` };
             } 
+
+            // --- 3. DATOR MÅNADSVY ---
+            // Visa stora block
             else {
-                let displayText = arg.event.title;
-                if (props.regnr) displayText += ` (${props.regnr})`;
+                let textString = `${props.time} `;
+                if (props.regnr) textString += `${props.regnr} `;
+                textString += arg.event.title;
 
                 return { 
                     html: `
-                    <div class="modern-event-block" style="
-                        border-left-color: ${props.mainColor}; 
+                    <div class="fc-premium-event" style="
+                        border-left: 3px solid ${props.mainColor}; 
                         background-color: ${props.lightColor}; 
-                        color: ${props.mainColor === '#3b82f6' ? '#1e3a8a' : (props.mainColor === '#10b981' ? '#064e3b' : (props.mainColor === '#f59e0b' ? '#78350f' : '#4c1d95'))};">
-                        
-                        <span class="modern-event-time">${props.time}</span>
-                        <span class="modern-event-title" title="${displayText}">${displayText}</span>
+                        color: ${props.mainColor};">
+                        <span class="fc-event-text">${textString}</span>
                     </div>` 
                 };
             }
@@ -296,10 +294,8 @@ export function initCalendar(elementId, jobsData, onEventClickCallback, onDropCa
             if (isMobile) {
                 const eventDate = info.event.startStr.split('T')[0];
                 const dayEl = document.querySelector(`.fc-day[data-date="${eventDate}"]`);
-                if (dayEl) {
-                    document.querySelectorAll('.fc-day-selected').forEach(el => el.classList.remove('fc-day-selected'));
-                    dayEl.classList.add('fc-day-selected');
-                }
+                document.querySelectorAll('.fc-day-selected').forEach(el => el.classList.remove('fc-day-selected'));
+                if (dayEl) dayEl.classList.add('fc-day-selected');
                 renderDayList(eventDate, events);
                 info.jsEvent.stopPropagation();
             } else {
@@ -309,9 +305,6 @@ export function initCalendar(elementId, jobsData, onEventClickCallback, onDropCa
     });
 
     calendar.render();
-    
-    // Spara kalendern globalt eller på window för att nå den från toggle-funktionen
-    window.currentCalendar = calendar; 
 
     // Auto-välj idag på mobil... (Din befintliga kod här)
     const isMobileStart = window.innerWidth <= 768;
@@ -334,26 +327,4 @@ export function initCalendar(elementId, jobsData, onEventClickCallback, onDropCa
 
 export function setCalendarTheme(theme) {
     if (calendar) calendar.render();
-}
-
-// --- NY FUNKTION: Uppdatera eventen live ---
-export function updateCalendarEvents(jobsData) {
-    if (!calendar) return;
-
-    // 1. Mappa om datan
-    const newEvents = mapJobsToEvents(jobsData);
-
-    // 2. Ta bort alla gamla event och lägg in nya
-    calendar.removeAllEvents();
-    calendar.addEventSource(newEvents);
-    
-    // 3. Tvinga en omritning om vi är i mobilvy och har en vald dag
-    const isMobile = window.innerWidth <= 768;
-    if (isMobile) {
-        const selectedDay = document.querySelector('.fc-day-selected');
-        if (selectedDay) {
-            const dateStr = selectedDay.getAttribute('data-date');
-            renderDayList(dateStr, newEvents);
-        }
-    }
 }
