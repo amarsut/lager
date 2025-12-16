@@ -4121,6 +4121,17 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 
 /* 1. Dölj "Scrollbar-rutan" i headern (Den tomma rutan till höger) */
 .fc-scrollgrid-shrink {
+    width: 0 !important;
+    min-width: 0 !important;
+    max-width: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    overflow: hidden !important;
+    display: table-cell !important; /* Håll tabellen hel, men gör cellen tom */
+}
+
+/* Ta även bort dess innehålls-wrapper */
+.fc-scrollgrid-shrink-cushion {
     display: none !important;
 }
 
@@ -4751,6 +4762,7 @@ input[type=range]:active::-webkit-slider-thumb { transform: scale(1.1); border-c
 /* Dark mode stöd */
 [data-theme="dark"] input[type=range]::-webkit-slider-runnable-track { background: #333; }
 [data-theme="dark"] input[type=range]::-webkit-slider-thumb { background: #1c1c1e; border-color: #555; }
+
 
 
 
