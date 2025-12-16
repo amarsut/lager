@@ -3340,15 +3340,15 @@ function initZoomSettings() {
 }
 
 function applyZoom(value) {
-    // 1. Applicera zoomen
+    // 1. Sätt zoomen
     document.body.style.zoom = value + "%";
     
-    // 2. Spara inställningen
+    // 2. Spara
     localStorage.setItem('appZoom', value);
     
-    // 3. VIKTIGT: Trigga en "falsk" fönster-ändring.
-    // Detta tvingar FullCalendar att räkna om bredden direkt.
+    // 3. VIKTIGT: Trigga en "resize" efter en kort stund.
+    // Detta får FullCalendar att inse att den måste rita om sig.
     setTimeout(() => {
         window.dispatchEvent(new Event('resize'));
-    }, 100); // En liten fördröjning så zoomen hinner sätta sig
+    }, 50);
 }
