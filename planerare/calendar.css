@@ -204,3 +204,22 @@
    text-overflow: ellipsis !important;
    width: 117px;
 }
+
+/* --- FIX: TA BORT INRE KANTER SÅ DEN YTTRE RAMEN BESTÄMMER FORMEN --- */
+
+/* Ta bort ramen på själva rutnätet så det inte krockar med behållaren */
+.fc-scrollgrid, 
+.fc-theme-standard td, 
+.fc-theme-standard th {
+    border-color: #cbd5e1 !important; /* Se till att inre linjer har rätt färg */
+}
+
+/* Ta bort den tjocka ytterkanten på FullCalendars inre tabell */
+.fc-theme-standard .fc-scrollgrid {
+    border: none !important;
+}
+
+/* Om du använder Listvyn: Ta bort dess yttre ram också */
+.fc-list {
+    border: none !important;
+}
