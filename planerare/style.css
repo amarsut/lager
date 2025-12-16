@@ -4106,7 +4106,9 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 /* Rutnätet */
 .fc-theme-standard td, 
 .fc-theme-standard th {
-    border: 1px solid #cbd5e1 !important;
+    border: 1px solid #cbd5e1 !important; /* Samma färg som kalendernätet */
+    border-bottom: 1px solid #cbd5e1 !important; 
+    background-color: #f8fafc !important;
 }
 
 /* --- HEADER (Mån, Tis...) --- */
@@ -4117,19 +4119,26 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     vertical-align: middle !important;
 }
 
+/* 1. Dölj "Scrollbar-rutan" i headern (Den tomma rutan till höger) */
+.fc-scrollgrid-shrink {
+    display: none !important;
+}
+
+/* 2. Snygga till dag-rubrikerna (MÅN, TIS...) */
 .fc-col-header-cell-cushion {
-    display: block !important;        /* Fyll hela cellen */
+    display: flex !important;       /* Använd flex för exakt centrering */
+    align-items: center !important;
+    justify-content: center !important;
+    
     width: 100% !important;
-    padding: 10px 0 !important;       /* Luft ovanför och under texten */
+    padding: 12px 0 !important;     /* Lite mer luft för balans */
     
-    text-align: center !important;    /* VIKTIGT: Centrera texten */
-    
-    color: #64748b !important;        /* Snygg grå färg */
-    font-size: 0.75rem !important;    /* Lagom storlek */
-    font-weight: 700 !important;      /* Fetstil */
-    text-transform: uppercase !important; /* Versaler */
-    letter-spacing: 1px !important;   /* Lite luft mellan bokstäverna */
-    text-decoration: none !important; /* Ta bort understrykning */
+    color: #64748b !important;
+    font-size: 0.75rem !important;
+    font-weight: 800 !important;    /* Lite fetare för tydlighet */
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+    text-decoration: none !important;
 }
 
 /* --- 2. HEADER & TOOLBAR --- */
@@ -4742,6 +4751,7 @@ input[type=range]:active::-webkit-slider-thumb { transform: scale(1.1); border-c
 /* Dark mode stöd */
 [data-theme="dark"] input[type=range]::-webkit-slider-runnable-track { background: #333; }
 [data-theme="dark"] input[type=range]::-webkit-slider-thumb { background: #1c1c1e; border-color: #555; }
+
 
 
 
