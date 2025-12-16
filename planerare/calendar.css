@@ -38,9 +38,20 @@
 }
 
 .fc-toolbar-chunk { display: flex !important; align-items: center !important; gap: 12px; }
-.fc-toolbar-title { font-size: 1.15rem !important; font-weight: 400 !important; color: #0f172a; text-transform: capitalize; margin-left: 16px !important; }
+.fc-toolbar-title { font-size: 1.15rem !important; font-weight: 400 !important; color: #0f172a; text-transform: capitalize; margin-left: 10px !important; }
 
 /* --- 3. KNAPPAR --- */
+.fc-today-button {
+    color: #334155 !important;       /* Samma mörka färg som övriga */
+    background-color: #fff !important;
+    border-color: #e2e8f0 !important;
+    font-weight: 500 !important;
+    
+    /* VIKTIGT: Ta bort "inaktiv" gråtoning om man är på dagens datum */
+    opacity: 1 !important; 
+    cursor: pointer !important;
+}
+.fc-today-button:hover { background-color: #f8fafc !important; color: #0f172a !important; border-color: #cbd5e1 !important; }
 .fc-button {
     height: 34px !important; padding: 0 16px !important;
     font-size: 0.9rem !important; font-weight: 500 !important;
@@ -149,9 +160,16 @@
 .tt-status-icon { width: 14px; height: 14px; flex-shrink: 0; fill: currentColor; }
 
 /* 1. Ta bort ramen runt hela rutnätet */
-.fc-theme-standard .fc-scrollgrid {
-    border: none !important;
-}
+.fc-theme-standard .fc-scrollgrid { border: none !important; }
+
+/* 2. Ingen högerkant på sista kolumnen (Gäller rubriker och dagar) */
+.fc-theme-standard th:last-child, .fc-theme-standard td:last-child { border-right: none !important; }
+
+/* 3. Ingen bottenkant på sista raden i kalendern */
+.fc-daygrid-body tr:last-child td { border-bottom: none !important; }
+
+/* 4. Säkerställ att tabellens "fot" inte ritar en linje */
+.fc-scrollgrid-section-footer table, .fc-scrollgrid-section-body table { border-bottom: none !important; }
 
 /* --- 7. MOBILANPASSNING (MAX 768PX) --- */
 @media (max-width: 768px) {
