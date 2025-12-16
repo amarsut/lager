@@ -83,10 +83,9 @@
 /* Dölj den gamla separata headern */
 .fc-col-header, .fc-scrollgrid-section-header { display: none !important; }
 
-@media (min-width: 769px) {
-   /* Datumrutan - Layout 60px tidigare */
-   .fc-daygrid-day-frame { min-height: 100px !important; border-top: none !important; padding-bottom: 0 !important; }
-}
+/* Datumrutan - Layout 60px tidigare */
+.fc-daygrid-day-frame { min-height: 70px !important; border-top: none !important; padding-bottom: 0 !important; }
+
 /* 2. Tvinga FullCalendar att använda scrollbar inuti rutnätet */
 .fc-scroller { overflow-y: auto !important; /* Tillåt vertikal scroll */ }
 /* 3. (Valfritt) Styla scrollbaren så den ser snygg ut */
