@@ -120,7 +120,7 @@ body { margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-c
 .app-main { overflow-y: auto; flex-grow: 1; }
 .main-content { 
     /* Öka från 1080px till t.ex. 1400px eller ta bort max-width helt för fullbredd */
-    max-width: 1110px; 
+    max-width: 100%;
     margin: 0 auto;
     padding: 2rem;     
 }
@@ -4767,6 +4767,7 @@ input[type=range]:active::-webkit-slider-thumb { transform: scale(1.1); border-c
 /* Dark mode stöd */
 [data-theme="dark"] input[type=range]::-webkit-slider-runnable-track { background: #333; }
 [data-theme="dark"] input[type=range]::-webkit-slider-thumb { background: #1c1c1e; border-color: #555; }
+
 
 
 
