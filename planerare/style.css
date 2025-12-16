@@ -4092,6 +4092,12 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 	    max-width: 100% !important;
 	    box-sizing: border-box !important;
 	}
+
+	.fc-list-table { 
+	    font-size: 0.85rem !important; 
+	    table-layout: fixed !important; /* VIKTIGT */
+	    width: 100% !important; 
+	}
 }
 
 /* --- 1. GRUNDBEHÅLLARE --- */
@@ -4718,6 +4724,7 @@ input[type=range]:active::-webkit-slider-thumb { transform: scale(1.1); border-c
 /* Dark mode stöd */
 [data-theme="dark"] input[type=range]::-webkit-slider-runnable-track { background: #333; }
 [data-theme="dark"] input[type=range]::-webkit-slider-thumb { background: #1c1c1e; border-color: #555; }
+
 
 
 
