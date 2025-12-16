@@ -202,4 +202,5 @@
    white-space: nowrap !important;
    overflow: hidden !important;
    text-overflow: ellipsis !important;
+   width: 117px;
 }
