@@ -115,8 +115,8 @@ export function initCalendar(elementId, jobsData, onEventClickCallback, onDropCa
         firstDay: 1,
         fixedWeekCount: false,
         showNonCurrentDates: false,
-        height: 'auto',
-        contentHeight: 'auto',
+        height: '100%', //auto
+        contentHeight: '100%', //auto
         
         // --- NYTT: Aktivera Drag & Drop ---
         editable: true,       // Tillåter att man drar events
