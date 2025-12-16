@@ -134,7 +134,7 @@
     font-weight: 400; font-family: 'Inter', sans-serif;
     
     /* FIX: Flytta ner (25px) och höger (10px) från muspekaren */
-    transform: translate(10px, 25px); 
+    transform: translate(10px, 35px); 
 }
 .calendar-tooltip.show { opacity: 1; }
 
@@ -146,6 +146,11 @@
 .tt-icon { width: 14px; height: 14px; flex-shrink: 0; display: block; }
 .tt-icon-gray { color: #9ca3af; transform: translateY(1px); }
 .tt-status-icon { width: 14px; height: 14px; flex-shrink: 0; fill: currentColor; }
+
+/* 1. Ta bort ramen runt hela rutnätet */
+.fc-theme-standard .fc-scrollgrid {
+    border: none !important;
+}
 
 /* --- 7. MOBILANPASSNING (MAX 768PX) --- */
 @media (max-width: 768px) {
