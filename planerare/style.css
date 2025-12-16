@@ -4258,38 +4258,48 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
         border-radius: 2px !important; margin: 0 !important; flex-shrink: 0;
     }
 
-    /* --- LISTVY UTSEENDE (Både mobil och dator) --- */
-	/* 1. Skala ner texten i hela list-tabellen */
-	.fc-list-table {
-	    font-size: 0.85rem !important; /* Gör all text ca 10-15% mindre */
-	}
+    /* =========================================
+   LISTVY UTSEENDE (KOMPAKT & RESPONSIV)
+   ========================================= */
+	/* 1. Tvinga tabellen att hålla sig inom ramen */
+	.fc-list-table { font-size: 0.85rem !important; table-layout: fixed !important; width: 100% !important; }
 	
 	/* 2. Datumrubrikerna (Grå balkar) */
-	.fc-theme-standard .fc-list-day-cushion {
-	    padding: 3px 10px !important; /* Minimal luft */
-	    background-color: #f1f5f9 !important;
-	    min-height: 24px !important;  /* Mycket låg höjd */
-	}
+	.fc-theme-standard .fc-list-day-cushion { padding: 3px 10px !important; background-color: #f1f5f9 !important; min-height: 24px !important; }
 	
 	.fc-list-day-text, 
 	.fc-list-day-side-text {
-	    font-size: 0.75rem !important; /* Mindre datumtext */
+	    font-size: 0.75rem !important;
 	    font-weight: 700 !important;
 	    text-transform: uppercase;
 	    letter-spacing: 0.5px;
 	    line-height: 1 !important;
 	}
 	
-	/* 3. Jobb-raderna (Eventen) */
-	.fc-list-event-title {
-	    padding: 4px 10px !important; /* Mycket tightare runt jobbet */
+	/* 3. Kolumnernas bredd & beteende */
+	
+	/* Tid-kolumnen (om den visas) */
+	.fc-list-event-time {
+	    width: 50px !important; /* Fast bredd */
+	    white-space: nowrap !important;
+	    padding: 4px 0 4px 10px !important;
+	    box-sizing: border-box !important;
 	}
 	
-	/* Pricken (Graphic) */
+	/* Pricken (Graphic) - Smal kolumn */
 	.fc-list-event-graphic {
-	    padding: 4px 0 4px 10px !important; 
+	    width: 24px !important; /* Smal kolumn för pricken */
+	    padding: 4px 0 4px 6px !important; 
 	    vertical-align: top !important;
-	    padding-top: 7px !important; /* Justera så pricken linjerar med den mindre texten */
+	    padding-top: 7px !important; 
+	}
+	
+	/* Huvudkolumnen (Jobbet) - Tar resten av platsen */
+	.fc-list-event-title {
+	    padding: 4px 10px 4px 4px !important; /* Tight padding */
+	    width: auto !important;
+	    overflow: hidden !important; /* Klipp innehåll som sticker ut */
+	    box-sizing: border-box !important;
 	}
 	
 	/* 4. Innehållet (Texten) */
@@ -4297,27 +4307,41 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 	    display: flex;
 	    flex-direction: column;
 	    gap: 0 !important;
+	    width: 100%; /* Fyll cellen */
+	    min-width: 0; /* Tillåter flex-barn att krympa */
 	}
 	
 	.fc-list-top-row {
-	    margin-bottom: 0 !important; /* Inget mellanrum neråt */
+	    margin-bottom: 0 !important;
 	    display: flex;
 	    align-items: center;
-	    gap: 6px !important; /* Lite mindre gap mellan namn och regnr */
+	    gap: 6px !important;
+	    flex-wrap: wrap; /* Låt regnr hoppa ner om det är extremt trångt */
 	}
 	
 	/* Kundnamn */
 	.fc-list-title-text {
-	    font-size: 0.85rem !important; /* Matchar den skalade storleken */
+	    font-size: 0.85rem !important;
 	    font-weight: 700 !important;
 	    line-height: 1.2 !important;
+	    white-space: nowrap; /* Håll namnet på en rad */
+	    overflow: hidden;
+	    text-overflow: ellipsis; /* Visa ... om namnet är för långt */
+	    max-width: 100%;
 	}
 	
 	/* Beskrivning */
 	.fc-list-desc-text {
-	    font-size: 0.75rem !important; /* Riktigt liten och smidig text */
+	    font-size: 0.75rem !important;
 	    line-height: 1.2 !important;
 	    color: #64748b !important;
+	    
+	    /* Truncate-logik för beskrivning */
+	    white-space: nowrap;
+	    overflow: hidden;
+	    text-overflow: ellipsis;
+	    display: block;
+	    max-width: 100%;
 	}
 	
 	/* 5. Regnr Badge (Slimmad) */
@@ -4329,7 +4353,13 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 	    display: inline-flex;
 	    align-items: center;
 	    border-radius: 3px !important;
+	    flex-shrink: 0; /* Badgen ska inte krympa */
 	}
+	
+	/* --- SÄKERHETSÅTGÄRD FÖR WRAPPERS --- */
+	/* Se till att ingen inre behållare i kalendern får växa fritt */
+	.fc-view-harness, 
+	.fc-view-harness-active { width: 100% !important; max-width: 100% !important; overflow: hidden !important;  }
 
     /* --- POPUP-LISTA (När man klickar på ett datum) --- */
     #selectedDayView {
@@ -4767,6 +4797,7 @@ input[type=range]:active::-webkit-slider-thumb { transform: scale(1.1); border-c
 /* Dark mode stöd */
 [data-theme="dark"] input[type=range]::-webkit-slider-runnable-track { background: #333; }
 [data-theme="dark"] input[type=range]::-webkit-slider-thumb { background: #1c1c1e; border-color: #555; }
+
 
 
 
