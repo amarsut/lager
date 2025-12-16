@@ -4086,72 +4086,6 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     overflow: hidden;
 }
 
-/* Tvinga rit-ytan att fylla ut */
-.fc-view-harness,
-.fc-view-harness-active {
-    width: 100% !important;
-    flex-grow: 1 !important;
-    height: 100% !important;
-}
-
-/* Tvinga de inre tabellerna (som skapar rutnätet) att vara 100% */
-.fc-scrollgrid,
-.fc-scrollgrid-sync-table,
-.fc-col-header-table,
-.fc-daygrid-body,
-.fc-daygrid-body-table {
-    width: 100% !important;
-}
-
-/* Rutnätet */
-.fc-theme-standard td, 
-.fc-theme-standard th {
-    border: 1px solid #cbd5e1 !important; /* Samma färg som kalendernätet */
-    border-bottom: 1px solid #cbd5e1 !important; 
-    background-color: #f8fafc !important;
-}
-
-/* --- HEADER (Mån, Tis...) --- */
-.fc-col-header-cell {
-    background-color: #f8fafc !important; /* Ljusgrå bakgrund */
-    border: 1px solid #cbd5e1 !important; /* Samma ramfärg som resten */
-    border-bottom: 1px solid #e2e8f0 !important; /* Lite ljusare linje neråt */
-    vertical-align: middle !important;
-}
-
-/* 1. Dölj "Scrollbar-rutan" i headern (Den tomma rutan till höger) */
-.fc-scrollgrid-shrink {
-    display: none !important;
-}
-
-/* Detta gör att de kvarvarande 7 dagarna delar exakt lika på utrymmet */
-.fc-col-header-table {
-    width: 100% !important;
-    table-layout: fixed !important;
-}
-
-/* Ta även bort dess innehålls-wrapper */
-.fc-scrollgrid-shrink-cushion {
-    display: none !important;
-}
-
-/* 3. Säkerställ att texten i rubriken fyller ut sin nya bredd */
-.fc-col-header-cell-cushion {
-    display: flex !important;
-    justify-content: center !important;
-    align-items: center !important;
-    width: 100% !important;
-    padding: 12px 0 !important;
-}
-
-/*2*/
-
-.fc-toolbar-chunk {
-    display: flex !important;
-    align-items: center !important;
-    gap: 12px; /* Avstånd mellan knappar inom samma grupp */
-}
-
 /* Titel (Månad År) */
 .fc-toolbar-title {
     font-size: 1.15rem !important;
@@ -4741,6 +4675,7 @@ input[type=range]:active::-webkit-slider-thumb { transform: scale(1.1); border-c
 /* Dark mode stöd */
 [data-theme="dark"] input[type=range]::-webkit-slider-runnable-track { background: #333; }
 [data-theme="dark"] input[type=range]::-webkit-slider-thumb { background: #1c1c1e; border-color: #555; }
+
 
 
 
