@@ -118,16 +118,15 @@ body { margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-c
    3. DASHBOARD (Statistik & Tabell)
    ========================================= */
 .app-main { overflow-y: auto; flex-grow: 1; }
-.main-content { 
-	/* --- NYTT: Fyll ut allt utrymme bredvid sidebaren --- */
-    flex-grow: 1 !important;  
-    flex-basis: 0 !important; 
-    min-width: 0 !important;  /* Viktigt trick för att kalendrar inte ska spränga layouten */
-	
-	width: auto !important;
-    max-width: none !important; /* Öka från 1080px till t.ex. 1400px eller ta bort max-width helt för fullbredd */
-    margin: 0 auto;
-    padding: 2rem;     
+.main-content {
+    flex: 1;                /* Ta upp allt ledigt utrymme */
+    width: 100%;            /* Säkerställ full bredd */
+    min-width: 0;           /* VIKTIGT: Låter flex-barn (kalendern) krympa om det behövs */
+    padding: 2rem;
+    overflow-y: auto;       /* Scrolla vertikalt */
+    overflow-x: hidden;     /* Ingen scroll i sidled */
+    display: flex;          
+    flex-direction: column; /* Stapla innehåll snyggt */
 }
 
 /* =========================================
@@ -4077,15 +4076,36 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 
 /* --- 1. GRUNDBEHÅLLARE --- */
 #calendarView {
+    width: 100% !important;
     background: white;
-    border-radius: 20px !important; 
-    border: 1px solid #e2e8f0;
-    padding: 0 !important;
-    font-family: 'Inter', sans-serif;
+    border-radius: 20px;
+    border: 1px solid #cbd5e1;
     overflow: hidden;
-    height: auto !important; 
-    display: block;
-    width: 100% !important; /* Alltid 100% */
+    display: flex;          /* Flexbox löser ofta bredd-buggar i FullCalendar */
+    flex-direction: column;
+}
+/* Tvinga FullCalendars inre struktur att fylla ut */
+.fc-view-harness,
+.fc-scrollgrid {
+    width: 100% !important;
+    border: none !important; /* Vi har ramen på #calendarView istället */
+}
+
+/* --- RUTNÄT & LINJER (Fixar att linjerna syns) --- */
+.fc-theme-standard td, 
+.fc-theme-standard th {
+    border: 1px solid #cbd5e1 !important; /* Tydliga grå linjer */
+}
+
+/* Ta bort dubbla linjer i ytterkanten */
+.fc-theme-standard .fc-scrollgrid {
+    border: none !important;
+}
+
+/* --- HEADER (Mån, Tis...) --- */
+.fc-col-header-cell {
+    background-color: #f8fafc; /* Ljusgrå bakgrund på rubrikerna */
+    padding: 8px 0;
 }
 
 /* --- 2. HEADER & TOOLBAR --- */
@@ -4207,6 +4227,64 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 .fc-premium-event:hover { filter: brightness(0.95); }
 .fc-event-text { filter: brightness(0.5) contrast(200%); } /* Mörkare text */
 
+/* =========================================
+   LISTVY - SEPARAT FIX
+   ========================================= */
+
+/* Tvinga list-tabellen att hålla 100% bredd */
+.fc-list-table {
+    width: 100% !important;
+    table-layout: fixed !important; /* Låser kolumnbredderna */
+    border-collapse: collapse !important;
+    margin: 0 !important;
+    font-size: 0.85rem !important;
+}
+
+/* Kolumn 1: TID */
+.fc-list-event-time {
+    width: 70px !important;
+    white-space: nowrap !important;
+    padding: 10px 0 10px 15px !important;
+    box-sizing: border-box !important;
+}
+
+/* Kolumn 2: PRICK (Smal) */
+.fc-list-event-graphic {
+    width: 40px !important;
+    text-align: center !important;
+    padding-top: 12px !important;
+}
+
+/* Kolumn 3: TEXT (Resten) */
+.fc-list-event-title {
+    width: auto !important;
+    padding: 8px 15px 8px 0 !important;
+    overflow: hidden !important;
+}
+
+/* Innehåll i text-kolumnen */
+.fc-list-custom-content {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.fc-list-title-text {
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+}
+
+.fc-list-desc-text {
+    color: #64748b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+}
 
 /* =========================================
    6. MOBILANPASSNING (MAX 768PX)
@@ -4699,6 +4777,7 @@ input[type=range]:active::-webkit-slider-thumb { transform: scale(1.1); border-c
 /* Dark mode stöd */
 [data-theme="dark"] input[type=range]::-webkit-slider-runnable-track { background: #333; }
 [data-theme="dark"] input[type=range]::-webkit-slider-thumb { background: #1c1c1e; border-color: #555; }
+
 
 
 
