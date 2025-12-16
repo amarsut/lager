@@ -90,7 +90,7 @@
     align-items: center !important; padding-top: 12px !important; gap: 4px;
 }
 /* Siffran (Generell stil) */
-.fc-daygrid-day-top { flex-direction: row !important; justify-content: center !important; padding-top: 8px !important; }
+.fc-daygrid-day-top { flex-direction: row !important; justify-content: center !important; padding-top: 4px !important; }
 .fc-daygrid-day-number { font-size: 0.7rem; color: #334155; font-weight: 400 !important; text-decoration: none !important; z-index: 2; margin: 0 !important; }
 
 /* Dagens datum (Blå cirkel) */
