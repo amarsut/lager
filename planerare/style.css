@@ -4074,7 +4074,7 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
    FULLCALENDAR: OPTIMIZED & CLEAN (FINAL VERSION)
    ======================================================= */
 
-/* --- 1. GRUNDBEHÅLLARE --- */
+/* --- 1. GRUNDBEHÅLLARE & STRUKTUR --- */
 #calendarView {
     width: 100% !important;
     flex-grow: 1;
@@ -4086,308 +4086,179 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     overflow: hidden;
 }
 
-/* Tvinga rit-ytan att fylla ut */
-.fc-view-harness, .fc-view-harness-active {
+/* Tvinga FullCalendars alla inre delar att fylla ut 100% (Löser zoom-glapp) */
+.fc-view-harness, .fc-view-harness-active,
+.fc-scrollgrid, .fc-scrollgrid-sync-table, 
+.fc-col-header-table, .fc-daygrid-body, .fc-daygrid-body-table {
     width: 100% !important;
     flex-grow: 1 !important;
-    height: 100% !important;
 }
 
-/* Tvinga de inre tabellerna (som skapar rutnätet) att vara 100% */
-.fc-scrollgrid, .fc-scrollgrid-sync-table, .fc-col-header-table, .fc-daygrid-body, .fc-daygrid-body-table {
-    width: 100% !important;
-}
-
-.fc-col-header-cell-cushion { display: flex !important; justify-content: center !important; align-items: center !important; width: 100% !important; padding: 12px 0 !important; }
-
+/* --- 2. HEADER TOOLBAR --- */
 .fc-header-toolbar {
     padding: 12px 24px !important;
     margin-bottom: 0 !important;
     background-color: #fff;
     border-bottom: 1px solid #f1f5f9;
-    
-    /* Flexbox inställningar för att hålla allt på en rad */
     display: flex !important;
     align-items: center !important;
-    justify-content: space-between !important; /* Separerar vänster och höger grupp */
-    flex-wrap: nowrap !important; /* Förbjuder radbrytning */
+    justify-content: space-between !important;
+    flex-wrap: nowrap !important;
     gap: 16px;
 }
 
-.fc-toolbar-chunk {
-    display: flex !important;
-    align-items: center !important;
-    gap: 12px; /* Avstånd mellan knappar inom samma grupp */
-}
+.fc-toolbar-chunk { display: flex !important; align-items: center !important; gap: 12px; }
+.fc-toolbar-title { font-size: 1.15rem !important; font-weight: 400 !important; color: #0f172a; text-transform: capitalize; margin-left: 16px !important; }
 
-/* Titel (Månad År) */
-.fc-toolbar-title {
-    font-size: 1.15rem !important;
-    font-weight: 400 !important;
-    color: #0f172a;
-    text-transform: capitalize;
-    margin-left: 16px !important;
-}
-
-/* --- 3. KNAPPAR (Idag, Månad, Lista) --- */
+/* --- 3. KNAPPAR & NAVIGERING --- */
 .fc-button {
-    height: 34px !important;
-    padding: 0 16px !important;
-    font-size: 0.9rem !important;
-    font-weight: 500 !important;
-    border-radius: 4px !important;
-    text-transform: capitalize !important;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
-    outline: none !important;
-    
-    /* Standardfärg (Vit) */
-    background-color: #fff !important;
-    border: 1px solid #e2e8f0 !important;
-    color: #334155 !important;
-    
-    /* Återställ standard */
-    background-image: none !important;
-    opacity: 1 !important;
+    height: 34px !important; padding: 0 16px !important;
+    font-size: 0.9rem !important; font-weight: 500 !important;
+    border-radius: 4px !important; text-transform: capitalize !important;
+    background-color: #fff !important; border: 1px solid #e2e8f0 !important;
+    color: #334155 !important; box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+    outline: none !important; background-image: none !important;
     transition: all 0.2s ease;
 }
 
-/* Hover */
-.fc-button:hover {
-    background-color: #f8fafc !important;
-    border-color: #cbd5e1 !important;
-    color: #0f172a !important;
-}
+.fc-button:hover { background-color: #f8fafc !important; border-color: #cbd5e1 !important; color: #0f172a !important; }
 
-/* Grupperade knappar (Runda hörn bara på kanterna) */
+/* Grupperade knappar (Border-radius fix) */
 .fc-button-group > .fc-button { margin: 0 !important; border-radius: 0 !important; }
 .fc-button-group > .fc-button:first-child { border-top-left-radius: 4px !important; border-bottom-left-radius: 4px !important; }
 .fc-button-group > .fc-button:last-child { border-top-right-radius: 4px !important; border-bottom-right-radius: 4px !important; }
 
 /* Pilar (< >) */
 .fc-prev-button, .fc-next-button {
+    width: 52px !important; height: 32px !important; padding: 0 !important;
     background: transparent !important; border: none !important; box-shadow: none !important;
-    color: #64748b !important; padding: 0 !important;
-    width: 52px !important; height: 32px !important;
-    border-radius: 50% !important; display: flex !important; align-items: center; justify-content: center;
+    color: #64748b !important; border-radius: 50% !important;
+    display: flex !important; align-items: center; justify-content: center;
 }
 .fc-prev-button:hover, .fc-next-button:hover { background-color: #f1f5f9 !important; color: #0f172a !important; }
 .fc-icon { font-size: 1.2rem !important; }
 
-/* --- 4. RUTNÄT & LINJER (CLEAN LOOK) --- */
+/* --- 4. DAGAR & RUTNÄT (DAGAR INUTI RUTORNA) --- */
 
-/* Datum (Siffrorna) */
-.fc-daygrid-day-top { flex-direction: row !important; justify-content: center !important; padding-top: 8px !important; }
-.fc-daygrid-day-number { 
-    font-size: 0.8rem; color: #334155; font-weight: 400 !important; text-decoration: none !important; 
+/* Dölj den gamla separata headern helt */
+.fc-col-header, .fc-scrollgrid-section-header { display: none !important; }
+
+/* Datumrutan - Layout */
+.fc-daygrid-day-frame { min-height: 60px !important; border-top: none !important; padding-bottom: 0 !important; }
+
+/* Konfigurera toppen av datumrutan för att visa Text + Siffra (Bara rad 1) */
+.fc-daygrid-body tr:first-child .fc-daygrid-day-top {
+    flex-direction: column !important; justify-content: center !important;
+    align-items: center !important; padding-top: 12px !important; gap: 4px;
 }
+/* Siffran (Generell stil) */
+.fc-daygrid-day-top { flex-direction: row !important; justify-content: center !important; padding-top: 8px !important; }
+.fc-daygrid-day-number { font-size: 0.8rem; color: #334155; font-weight: 400 !important; text-decoration: none !important; z-index: 2; margin: 0 !important; }
 
 /* Dagens datum (Blå cirkel) */
 .fc-day-today { background-color: transparent !important; }
 .fc-day-today .fc-daygrid-day-number {
-    background-color: #3b82f6; color: white;
+    background-color: #3b82f6; color: white; margin-top: 2px !important;
     width: 28px; height: 28px; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
     font-size: 0.85rem; font-weight: 600 !important;
 }
 
-/* Dagrutorna */
-.fc-daygrid-day-frame {
-    min-height: 60px !important;
-    border-top: none !important; /* Ingen linje i toppen av rutan */
-    padding-bottom: 0 !important;
+/* --- INJICERA VECKODAGAR (CSS TEXT) --- */
+.fc-daygrid-body tr:first-child .fc-day-mon .fc-daygrid-day-top::before { content: "MÅN"; }
+.fc-daygrid-body tr:first-child .fc-day-tue .fc-daygrid-day-top::before { content: "TIS"; }
+.fc-daygrid-body tr:first-child .fc-day-wed .fc-daygrid-day-top::before { content: "ONS"; }
+.fc-daygrid-body tr:first-child .fc-day-thu .fc-daygrid-day-top::before { content: "TORS"; }
+.fc-daygrid-body tr:first-child .fc-day-fri .fc-daygrid-day-top::before { content: "FRE"; }
+.fc-daygrid-body tr:first-child .fc-day-sat .fc-daygrid-day-top::before { content: "LÖR"; }
+.fc-daygrid-body tr:first-child .fc-day-sun .fc-daygrid-day-top::before { content: "SÖN"; }
+
+/* Styla veckodagstexten */
+.fc-daygrid-body tr:first-child .fc-daygrid-day-top::before {
+    font-size: 0.65rem; font-weight: 500; color: #64748b;
+    text-transform: uppercase; letter-spacing: 1px; display: block; line-height: 1;
 }
 
 /* --- 5. EVENTS (DESKTOP) --- */
 .fc-daygrid-event {
-    margin: 1px 2px !important; /* Lite luft runt */
-    background: transparent !important; border: none !important;
+    margin: 1px 2px !important; background: transparent !important; border: none !important;
     cursor: pointer; border-radius: 4px !important;
 }
-
-/* Den inre rutan (Fliken) */
 .fc-premium-event {
-    padding: 2px 6px;
-    border-radius: 0 4px 4px 0; /* Flik-utseende */
+    padding: 2px 6px; border-radius: 0 4px 4px 0;
     border-left-width: 4px !important; border-left-style: solid !important;
-    font-size: 0.7rem; font-weight: 400 !important;
-    text-align: left !important;
+    font-size: 0.7rem; font-weight: 400 !important; text-align: left !important;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
-    transition: filter 0.2s;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03); transition: filter 0.2s;
 }
 .fc-premium-event:hover { filter: brightness(0.95); }
-.fc-event-text { filter: brightness(0.5) contrast(200%); } /* Mörkare text */
+.fc-event-text { filter: brightness(0.5) contrast(200%); }
 
-/* =========================================
-   6. MOBILANPASSNING (MAX 768PX)
-   ========================================= */
+/* --- 6. TOOLTIP (FIXAD POSITION) --- */
+.calendar-tooltip {
+    position: fixed; background: #ffffff; color: #1f2937;
+    padding: 12px 16px; border-radius: 12px; z-index: 99999;
+    pointer-events: none; /* Musen klickar igenom den */
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1), 0 0 0 1px rgba(0,0,0,0.05);
+    width: auto; max-width: 280px; min-width: 220px;
+    opacity: 0; transition: opacity 0.15s ease-in-out;
+    display: flex; flex-direction: column; gap: 6px;
+    font-weight: 400; font-family: 'Inter', sans-serif;
+    
+    /* NYTT: Flytta ner och höger från muspekaren så den inte är i vägen */
+    transform: translate(12px, 12px); 
+}
+.calendar-tooltip.show { opacity: 1; }
+
+.tt-row-primary { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; color: #111827; white-space: nowrap; }
+.tt-reg { text-transform: uppercase; letter-spacing: 0.5px; }
+.tt-name { overflow: hidden; text-overflow: ellipsis; }
+.tt-row-detail { display: flex; align-items: flex-start; gap: 8px; font-size: 0.85rem; color: #374151; line-height: 1.4; padding-top: 2px; }
+.tt-row-time { display: flex; align-items: center; gap: 8px; font-size: 0.75rem; color: #6b7280; margin-top: 2px; }
+.tt-icon { width: 14px; height: 14px; flex-shrink: 0; display: block; }
+.tt-icon-gray { color: #9ca3af; transform: translateY(1px); }
+.tt-status-icon { width: 14px; height: 14px; flex-shrink: 0; fill: currentColor; }
+
+/* --- 7. MOBILANPASSNING (MAX 768PX) --- */
 @media (max-width: 768px) {
-    /* Kalender-container */
-    #calendarView {
-        border-radius: 0 !important; border: none;
-        height: auto !important; max-height: 70vh !important;
-        display: flex; flex-direction: column; overflow: hidden;
-    }
+    #calendarView { border-radius: 0 !important; border: none; height: auto !important; max-height: 70vh !important; }
     #calendar-wrapper { flex-shrink: 0; }
 
-    /* Header (Dölj titel, visa knappar) */
     .fc-header-toolbar {
-        display: flex !important;
-        flex-wrap: wrap !important;       /* VIKTIGT: Tillåter knapparna att hoppa ner om det är trångt */
-        justify-content: space-between !important;
-        gap: 8px !important;              /* Mindre mellanrum */
-        padding: 8px 12px !important;     /* Mindre luft runt om */
-        height: auto !important;          /* Låt höjden växa om det blir två rader */
+        flex-wrap: wrap !important; justify-content: space-between !important;
+        gap: 8px !important; padding: 8px 12px !important; height: auto !important;
     }
     .fc-toolbar-title { display: none !important; }
-
-	.fc-button {
-        height: 30px !important;          /* Lägre knappar (var 34px) */
-        padding: 0 10px !important;       /* Smalare knappar (var 16px) */
-        font-size: 0.8rem !important;     /* Lite mindre text */
-        line-height: 28px !important;     /* Centrera texten vertikalt */
-    }
-
-    /* Justera pilarna (< >) så de matchar */
+    .fc-button { height: 30px !important; padding: 0 10px !important; font-size: 0.8rem !important; line-height: 28px !important; }
     .fc-prev-button, .fc-next-button { width: 30px !important; height: 30px !important; padding: 0 !important; }
     
-    /* Justera avståndet mellan knappgrupperna */
-    .fc-toolbar-chunk { gap: 8px !important; display: flex !important; align-items: center !important; }
-
-    /* Rutorna (Mindre höjd, klickbara) */
     .fc-daygrid-day-frame { min-height: 50px !important; cursor: pointer; padding-bottom: 4px; }
+    .fc-daygrid-day-events { display: flex !important; flex-direction: column !important; align-items: center !important; gap: 2px !important; margin-top: 2px !important; min-height: 12px; }
+    .fc-mobile-dot { width: 32px !important; height: 4px !important; border-radius: 2px !important; margin: 0 !important; flex-shrink: 0; }
     
-    /* Events (Prickar) */
-    .fc-daygrid-day-events {
-        display: flex !important; flex-direction: column !important;
-        align-items: center !important; justify-content: flex-start;
-        gap: 2px !important; margin-top: 2px !important; min-height: 12px;
-    }
-    .fc-mobile-dot {
-        width: 32px !important; height: 4px !important;
-        border-radius: 2px !important; margin: 0 !important; flex-shrink: 0;
-    }
-	
-	/* --- SÄKERHETSÅTGÄRD FÖR WRAPPERS --- */
-	/* Se till att ingen inre behållare i kalendern får växa fritt */
-	.fc-view-harness, 
-	.fc-view-harness-active { width: 100% !important; max-width: 100% !important; overflow: hidden !important;  }
-
-    /* --- POPUP-LISTA (När man klickar på ett datum) --- */
+    /* Popup-lista Mobil */
     #selectedDayView {
-        position: fixed; bottom: 0; left: 0; right: 0;
-        width: 100%; height: auto; max-height: 80vh;
-        background-color: #ffffff; z-index: 2000;
-        border-radius: 24px 24px 0 0;
-        box-shadow: 0 -10px 40px rgba(0,0,0,0.15);
-        transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-        overflow-y: auto; padding: 20px; padding-bottom: 80px;
+        position: fixed; bottom: 0; left: 0; right: 0; width: 100%; height: auto; max-height: 80vh;
+        background-color: #ffffff; z-index: 2000; border-radius: 24px 24px 0 0;
+        box-shadow: 0 -10px 40px rgba(0,0,0,0.15); transform: translateY(100%);
+        transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); overflow-y: auto; padding: 20px 20px 80px 20px;
     }
     #selectedDayView.show { transform: translateY(0); }
-
-    .day-list-header {
-        font-size: 0.8rem; font-weight: 700; color: #94a3b8;
-        text-transform: uppercase; margin-bottom: 12px;
-    }
+    .day-list-header { font-size: 0.8rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 12px; }
     .day-list-empty { text-align: center; color: #94a3b8; font-style: italic; font-size: 0.9rem; padding: 20px; }
-
     .day-list-item {
         background: white; border-radius: 12px; padding: 12px 16px; margin-bottom: 10px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.03); border: 1px solid #f1f5f9;
         display: flex; align-items: center; gap: 12px; cursor: pointer;
     }
     .day-list-item:active { background-color: #f8fafc; transform: scale(0.98); }
-
     .day-list-time { font-size: 0.9rem; font-weight: 600; color: #64748b; min-width: 45px; }
     .day-list-info { display: flex; flex-direction: column; flex: 1; min-width: 0; }
     .day-list-title { font-size: 1rem; font-weight: 600; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    
     .day-list-meta { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
     .day-list-reg { font-size: 0.7rem; color: #334155; font-weight: 700; background: #e2e8f0; padding: 2px 6px; border-radius: 4px; }
     .day-list-desc { font-size: 0.75rem; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
 }
-
-/* =========================================
-   7. TOOLTIP (DESKTOP HOVER)
-   ========================================= */
-.calendar-tooltip {
-    position: fixed; background: #ffffff; color: #1f2937;
-    padding: 12px 16px; border-radius: 12px;
-    z-index: 99999; pointer-events: none;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1), 0 0 0 1px rgba(0,0,0,0.05);
-    width: auto; max-width: 280px; min-width: 220px;
-    opacity: 0; transition: opacity 0.15s ease-in-out;
-    display: flex; flex-direction: column; gap: 6px;
-    font-weight: 400; font-family: 'Inter', sans-serif;
-}
-.calendar-tooltip.show { opacity: 1; }
-
-/* --- Rader --- */
-
-/* Rad 1: StatusIkon + Regnr + Namn */
-.tt-row-primary {
-    display: flex;
-    align-items: center;
-    gap: 8px; /* Lite mer avstånd till status-ikonen */
-    font-size: 0.9rem;
-    color: #111827; 
-    white-space: nowrap;
-}
-
-.tt-reg { text-transform: uppercase; letter-spacing: 0.5px; }
-.tt-sep { color: #d1d5db; font-size: 0.7rem; margin: 0 2px; }
-.tt-name { 
-    overflow: hidden; 
-    text-overflow: ellipsis; 
-}
-
-/* Rad 2: Kommentar */
-.tt-row-detail {
-    display: flex;
-    align-items: flex-start; 
-    gap: 8px;
-    font-size: 0.85rem;
-    color: #374151;
-    line-height: 1.4;
-    padding-top: 2px;
-}
-
-/* Rad 3: Tid */
-.tt-row-time {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.75rem; /* Mindre text */
-    color: #6b7280;     /* Ljusare grå */
-    margin-top: 2px;
-}
-
-/* --- Ikoner --- */
-
-/* Gemensam storlek för alla ikoner i vänsterkanten */
-.tt-icon {
-    width: 14px;
-    height: 14px;
-    flex-shrink: 0;
-    display: block;
-}
-
-/* Specifik färg för de grå ikonerna (klocka/kommentar) */
-.tt-icon-gray {
-    color: #9ca3af; 
-    transform: translateY(1px); /* Finjustera höjdled mot texten */
-}
-
-/* Status-ikonen (Fylld cirkel) */
-.tt-status-icon {
-    width: 14px; 
-    height: 14px;
-    flex-shrink: 0;
-    fill: currentColor; /* Tar färgen från inline-style */
-}
-
-/*SLUT PÅ CALENDAR TOOLTIP*/
-/*SLUT FULLCALENDAR: NO WHITESPACE & COLOR TEXT*/
 
 
 /* FIX 1: Tvinga texten att flytta sig för ikonen i fordonsmodalen */
@@ -4709,59 +4580,3 @@ input[type=range]:active::-webkit-slider-thumb { transform: scale(1.1); border-c
 /* Dark mode stöd */
 [data-theme="dark"] input[type=range]::-webkit-slider-runnable-track { background: #333; }
 [data-theme="dark"] input[type=range]::-webkit-slider-thumb { background: #1c1c1e; border-color: #555; }
-
-
-
-/* =========================================
-   ULTIMAT LÖSNING: DAGAR INUTI RUTORNA
-   (Garanterar 100% perfekt linjering vid zoom)
-   ========================================= */
-
-/* 1. Dölj den gamla separata headern helt */
-.fc-col-header,
-.fc-scrollgrid-section-header {
-    display: none !important;
-}
-
-/* 2. Konfigurera toppen av datumrutan för att visa text + siffra */
-/* Vi gör detta ENDAST på första raden (tr:first-child) */
-.fc-daygrid-body tr:first-child .fc-daygrid-day-top {
-    flex-direction: column !important; /* Stapla vertikalt (Text överst, siffra under) */
-    justify-content: center !important;
-    align-items: center !important;
-    padding-top: 12px !important; /* Lite mer luft i toppen */
-    gap: 4px; /* Avstånd mellan "MÅN" och siffran */
-}
-
-/* 3. Injicera texten via CSS i första raden */
-/* FullCalendar sätter klasser som .fc-day-mon på varje cell, vi använder dem */
-.fc-daygrid-body tr:first-child .fc-day-mon .fc-daygrid-day-top::before { content: "MÅN"; }
-.fc-daygrid-body tr:first-child .fc-day-tue .fc-daygrid-day-top::before { content: "TIS"; }
-.fc-daygrid-body tr:first-child .fc-day-wed .fc-daygrid-day-top::before { content: "ONS"; }
-.fc-daygrid-body tr:first-child .fc-day-thu .fc-daygrid-day-top::before { content: "TORS"; }
-.fc-daygrid-body tr:first-child .fc-day-fri .fc-daygrid-day-top::before { content: "FRE"; }
-.fc-daygrid-body tr:first-child .fc-day-sat .fc-daygrid-day-top::before { content: "LÖR"; }
-.fc-daygrid-body tr:first-child .fc-day-sun .fc-daygrid-day-top::before { content: "SÖN"; }
-
-/* 4. Styla den nya texten */
-.fc-daygrid-body tr:first-child .fc-daygrid-day-top::before {
-    font-size: 0.65rem;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    display: block;
-    line-height: 1;
-}
-
-/* 5. Justera datum-siffran lite */
-.fc-daygrid-day-number {
-    z-index: 2;
-    margin: 0 !important; /* Se till att den inte har konstig marginal */
-}
-
-/* Justering för "Idag"-cirkeln så den inte krockar med texten */
-.fc-day-today .fc-daygrid-day-number {
-    margin-top: 2px !important;
-}
-
-
