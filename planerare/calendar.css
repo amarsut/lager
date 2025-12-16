@@ -224,7 +224,7 @@
     .fc-toolbar-chunk { gap: 8px !important; display: flex !important; align-items: center !important; }
 
     /* Rutorna (Mindre höjd, klickbara) */
-    .fc-daygrid-day-frame { min-height: 60px !important; cursor: pointer; padding-bottom: 4px; }
+    .fc-daygrid-day-frame { min-height: 50px !important; cursor: pointer; padding-bottom: 4px; }
     
     /* Events (Prickar) */
     .fc-daygrid-day-events {
