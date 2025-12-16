@@ -119,14 +119,14 @@ body { margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-c
    ========================================= */
 .app-main { overflow-y: auto; flex-grow: 1; }
 .main-content {
-    flex: 1;                /* Ta upp allt ledigt utrymme */
-    width: 100%;            /* Säkerställ full bredd */
-    min-width: 0;           /* VIKTIGT: Låter flex-barn (kalendern) krympa om det behövs */
-    padding: 2rem;
-    overflow-y: auto;       /* Scrolla vertikalt */
-    overflow-x: hidden;     /* Ingen scroll i sidled */
+    flex: 1;                
     display: flex;          
-    flex-direction: column; /* Stapla innehåll snyggt */
+    flex-direction: column; 
+    width: 100%;            
+    min-width: 0;           /* VIKTIGT: Låter kalendern krympa om det blir för trångt */
+    padding: 2rem;
+    overflow-y: auto;       /* Scrolla vertikalt om det behövs */
+    overflow-x: hidden;     /* Förhindra scroll i sidled */
 }
 
 /* =========================================
@@ -4081,9 +4081,10 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     border-radius: 20px;
     border: 1px solid #cbd5e1;
     overflow: hidden;
-    display: flex;          /* Flexbox löser ofta bredd-buggar i FullCalendar */
+    display: flex;          
     flex-direction: column;
 }
+
 /* Tvinga FullCalendars inre struktur att fylla ut */
 .fc-view-harness,
 .fc-scrollgrid {
@@ -4226,65 +4227,6 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 }
 .fc-premium-event:hover { filter: brightness(0.95); }
 .fc-event-text { filter: brightness(0.5) contrast(200%); } /* Mörkare text */
-
-/* =========================================
-   LISTVY - SEPARAT FIX
-   ========================================= */
-
-/* Tvinga list-tabellen att hålla 100% bredd */
-.fc-list-table {
-    width: 100% !important;
-    table-layout: fixed !important; /* Låser kolumnbredderna */
-    border-collapse: collapse !important;
-    margin: 0 !important;
-    font-size: 0.85rem !important;
-}
-
-/* Kolumn 1: TID */
-.fc-list-event-time {
-    width: 70px !important;
-    white-space: nowrap !important;
-    padding: 10px 0 10px 15px !important;
-    box-sizing: border-box !important;
-}
-
-/* Kolumn 2: PRICK (Smal) */
-.fc-list-event-graphic {
-    width: 40px !important;
-    text-align: center !important;
-    padding-top: 12px !important;
-}
-
-/* Kolumn 3: TEXT (Resten) */
-.fc-list-event-title {
-    width: auto !important;
-    padding: 8px 15px 8px 0 !important;
-    overflow: hidden !important;
-}
-
-/* Innehåll i text-kolumnen */
-.fc-list-custom-content {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.fc-list-title-text {
-    font-weight: 700;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: block;
-}
-
-.fc-list-desc-text {
-    color: #64748b;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: block;
-}
 
 /* =========================================
    6. MOBILANPASSNING (MAX 768PX)
@@ -4777,6 +4719,7 @@ input[type=range]:active::-webkit-slider-thumb { transform: scale(1.1); border-c
 /* Dark mode stöd */
 [data-theme="dark"] input[type=range]::-webkit-slider-runnable-track { background: #333; }
 [data-theme="dark"] input[type=range]::-webkit-slider-thumb { background: #1c1c1e; border-color: #555; }
+
 
 
 
