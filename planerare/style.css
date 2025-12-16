@@ -119,14 +119,16 @@ body { margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-c
    ========================================= */
 .app-main { overflow-y: auto; flex-grow: 1; }
 .main-content {
-    display: flex;
     flex-direction: column;
-    flex: 1;
-    width: 100% !important; 
-    max-width: none !important;
+    width: 87% !important; 
     padding: 2rem;
-    overflow-y: auto; 
-    overflow-x: hidden;
+}
+@media (max-width: 768px) {
+    .main-content { 
+        flex-direction: column;
+        width: 100% !important; 
+        padding: 0rem;   
+    }
 }
 
 /* =========================================
@@ -350,7 +352,7 @@ body { margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-c
 /* --- TABELL --- */
 .table-container {
     background: white; border: 1px solid var(--border-color);
-    border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 table { width: 100%; border-collapse: collapse; }
 thead { background-color: #f9fafb; border-bottom: 1px solid var(--border-color); }
@@ -3217,7 +3219,9 @@ input[type="number"] {
 .android-switch input:checked + .slider:before { transform: translateX(18px); }
 
 /* --- PRIVACY MODE --- */
-body.privacy-active .stat-card-value, body.privacy-active .money-related, body.privacy-active .price-row .row-value, body.privacy-active #kundpris, body.privacy-active #vinstDisplay, body.privacy-active #utgifterDisplay, body.privacy-active .expense-item strong, body.privacy-active .stat-card[data-filter="offererad"] .stat-card-value {
+body.privacy-active .stat-card-value, body.privacy-active .money-related, body.privacy-active .price-row .row-value, body.privacy-active #kundpris, body.privacy-active #vinstDisplay, body.privacy-active #utgifterDisplay, body.privacy-active .expense-item strong, 
+body.privacy-active .stat-card[data-filter="offererad"] .stat-card-value,
+body.privacy-active .stat-card[data-filter="backlog"] .stat-card-value {
     color: transparent !important; text-shadow: 0 0 10px rgba(0,0,0,0.4) !important; user-select: none;
 }
 
