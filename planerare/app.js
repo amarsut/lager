@@ -3340,14 +3340,8 @@ function initZoomSettings() {
 }
 
 function applyZoom(value) {
-    // Omvandla procent (t.ex. 90) till decimal (0.9)
-    const scale = value / 100;
-    
-    // Standard font-size är 16px. Vi skalar den.
-    // Detta påverkar alla mått som använder 'rem' (vilket Tailwind/din CSS gör).
-    const newFontSize = (16 * scale) + 'px';
-    
-    document.documentElement.style.fontSize = newFontSize;
+    // Vi använder zoom för att skala hela gränssnittet (knappar, text, layout)
+    document.body.style.zoom = value + "%";
     
     // Spara inställningen
     localStorage.setItem('appZoom', value);
