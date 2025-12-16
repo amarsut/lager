@@ -195,27 +195,11 @@
 /* 1. Lås tabellen så den INTE får bli bredare än skärmen */
 .fc-list-table {
     width: 100% !important;
-    table-layout: fixed !important; /* Detta stoppar expansionen */
-}
-
-/* 2. TRICKET: Krymp tid- och prick-kolumnen till minimum */
-/* width: 1px lurar webbläsaren att göra dem så smala som innehållet tillåter */
-.fc-list-event-time,
-.fc-list-event-graphic {
-    width: 1px !important;
-    white-space: nowrap !important; /* Tiden får inte brytas */
 }
 
 /* 3. Låt texten (Titel/Beskrivning) ta all plats som blir över */
 .fc-list-event-title {
-    /* Tillåt texten att radbrytas snyggt inuti rutan */
-    white-space: normal !important; 
-    word-wrap: break-word !important; 
-    overflow-wrap: break-word !important;
-    
-    /* Om du hellre vill klippa texten med "...", byt raderna ovan mot:
-       white-space: nowrap !important;
-       overflow: hidden !important;
-       text-overflow: ellipsis !important;
-    */
+   white-space: nowrap !important;
+   overflow: hidden !important;
+   text-overflow: ellipsis !important;
 }
