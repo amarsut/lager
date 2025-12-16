@@ -4100,7 +4100,6 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 
 .fc-col-header-cell-cushion { display: flex !important; justify-content: center !important; align-items: center !important; width: 100% !important; padding: 12px 0 !important; }
 
-
 .fc-header-toolbar {
     padding: 12px 24px !important;
     margin-bottom: 0 !important;
@@ -4115,6 +4114,11 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     gap: 16px;
 }
 
+.fc-toolbar-chunk {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px; /* Avstånd mellan knappar inom samma grupp */
+}
 
 /* Titel (Månad År) */
 .fc-toolbar-title {
@@ -4708,86 +4712,47 @@ input[type=range]:active::-webkit-slider-thumb { transform: scale(1.1); border-c
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /* =========================================
-   HEADER ALIGNMENT FIX (ULTIMATE)
+   HEADER ALIGNMENT FIX (MATEMATISK TVÅNG)
    ========================================= */
 
-/* 1. Tvinga BÅDE rubrik-tabellen och kalender-kroppen att använda "Fixed Layout" */
-/* Detta gör att kolumnerna MÅSTE dela lika på utrymmet, oavsett innehåll */
+/* 1. Tvinga tabellerna att sträcka ut sig helt */
 .fc-col-header-table,
 .fc-daygrid-body-table,
 .fc-scrollgrid-sync-table {
     width: 100% !important;
-    table-layout: fixed !important;
+    table-layout: fixed !important; /* Lås layouten */
 }
 
-/* 2. Döda "Spök-kolumnen" (Scrollbar-reserven) */
-/* Vi sätter bredden till 0 och döljer allt innehåll */
+/* 2. Ta bort den spökande scroll-kolumnen helt */
 .fc-scrollgrid-shrink {
-    width: 0 !important;
-    max-width: 0 !important;
-    min-width: 0 !important;
-    padding: 0 !important;
-    border: none !important;
-}
-.fc-scrollgrid-shrink-cushion {
     display: none !important;
+    width: 0 !important;
 }
 
-/* 3. Centrera texten (MÅN, TIS...) och fixa padding */
-.fc-col-header-cell {
-    text-align: center !important;
-    vertical-align: middle !important;
-    border-bottom: 1px solid #e2e8f0 !important; /* Ljus linje under rubrik */
-    background-color: #f8fafc !important;        /* Ljusgrå bakgrund */
+/* 3. DEN VIKTIGASTE DELEN: Tvinga exakt bredd på kolumnerna */
+/* Vi kör över FullCalendars alla beräkningar här */
+.fc-col-header-cell,    /* Rubrikcellen (MÅN, TIS...) */
+.fc-daygrid-day {       /* Datumcellen (Rutan) */
+    width: 14.2857% !important; /* 100% / 7 dagar = ~14.28% */
+    max-width: 14.2857% !important;
+    min-width: 14.2857% !important;
+    box-sizing: border-box !important;
 }
 
-/* 4. Tvinga text-behållaren att fylla hela rutan */
+/* 4. Centrera texten snyggt i rubriken */
 .fc-col-header-cell-cushion {
     display: flex !important;
-    align-items: center !important;
     justify-content: center !important;
+    align-items: center !important;
     width: 100% !important;
-    padding: 12px 0 !important; /* Luft uppe/nere */
-    
-    /* Textstil */
+    padding: 12px 0 !important;
     text-decoration: none !important;
-    color: #64748b !important;
-    font-weight: 800 !important;
-    text-transform: uppercase !important;
-    letter-spacing: 1px !important;
 }
 
-/* 5. Justera den generella TH-regeln du har i filen så den inte stör */
-/* Din generella "th" sätter text-align: left, vi måste överskriva det här */
-.fc-theme-standard th {
+/* 5. Säkerställ att texten är centrerad i cellen */
+.fc-col-header-cell {
     text-align: center !important;
-    border: 1px solid #cbd5e1 !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    background-color: #f8fafc !important;
 }
-
