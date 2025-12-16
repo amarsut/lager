@@ -4237,30 +4237,62 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
     }
 
     /* --- LISTVY UTSEENDE (Både mobil och dator) --- */
+	/* 1. Datumrubrikerna (De grå balkarna: "20 December 2025") */
+	.fc-theme-standard .fc-list-day-cushion {
+	    padding: 6px 12px !important; /* Minskat från standard */
+	    background-color: #f1f5f9 !important; /* Ljusare grå för renare look */
+	    min-height: 28px !important; /* Tvinga ner höjden */
+	}
+	
+	.fc-list-day-text, 
+	.fc-list-day-side-text {
+	    font-size: 0.8rem !important;
+	    font-weight: 700 !important;
+	    text-transform: uppercase;
+	    letter-spacing: 0.5px;
+	    color: #64748b !important;
+	    line-height: 1 !important;
+	}
+		
     /* Tvinga cellen att visa innehåll */
-    .fc-list-event-title { padding: 10px 16px !important; border-bottom: 1px solid #f1f5f9; }
-    .fc-list-event-time { display: none; } /* Dölj standardtiden om du vill */
+	.fc-list-event-title { padding: 6px 12px !important; /* Mycket mindre luft uppe/nere */ }    
+	.fc-list-event-time { display: none; } /* Dölj standardtiden om du vill */
+
+	/* Justera pricken (graphic) så den ligger i linje med den minskade höjden */
+	.fc-list-event-graphic {
+	    padding: 6px 0 6px 12px !important; 
+	    vertical-align: top !important; /* Se till att pricken ligger i toppen */
+	    padding-top: 10px !important;   /* Finjustering så pricken linjerar med texten */
+	}
     
     /* Behållare för text */
-    .fc-list-custom-content { display: flex; flex-direction: column; gap: 4px; width: 100%; }
+    .fc-list-custom-content {
+	    display: flex;
+	    flex-direction: column;
+	    gap: 0 !important; /* Ta bort mellanrummet mellan Titel och Beskrivning */
+	}
     
     /* Rad 1: Titel + Badge */
-    .fc-list-top-row { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
-    .fc-list-title-text { font-weight: 700; color: #1f2937; font-size: 0.95rem; }
+    .fc-list-top-row {
+	    margin-bottom: 1px !important; /* Minimalt avstånd ner till beskrivningen */
+	}
+    .fc-list-title-text {
+	    font-size: 0.9rem !important;
+	}
     
     /* Regnr Badge */
     .fc-list-reg-badge {
-        background-color: #f1f5f9; border: 1px solid #e2e8f0; color: #475569;
-        font-family: monospace; font-weight: 700; font-size: 0.75rem;
-        padding: 2px 6px; border-radius: 4px; text-transform: uppercase;
-    }
+	    font-size: 0.7rem !important;
+	    padding: 1px 5px !important;
+	}
 
     /* Beskrivning (med "...") */
     .fc-list-desc-text {
-        font-size: 0.85rem; color: #6b7280; font-style: italic;
-        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        display: block; max-width: 100%;
-    }
+	    font-size: 0.8rem !important;
+	    line-height: 1.25 !important; /* Tätare rader */
+	    margin-top: 0 !important;
+	    color: #64748b !important;
+	}
     
     /* CSS-Hack för att tvinga tabellcellen att inte växa */
     .fc-list-event-title { width: 100%; max-width: 0; box-sizing: border-box; }
@@ -4687,3 +4719,4 @@ body.privacy-active .stat-card-value, body.privacy-active .money-related, body.p
 .bg-unplanned .brand-logo-img {
     filter: brightness(0) invert(1) opacity(0.95);
 }
+
