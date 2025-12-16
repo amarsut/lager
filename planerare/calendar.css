@@ -192,7 +192,51 @@
    LISTVY - FORCE ALIGNMENT (AGRESSIV FIX)
    ========================================= */
 
-/* 1. Grundtabellen - Lås layouten */
+/* =========================================
+   LISTVY - FIX (Bredd + Positionering)
+   ========================================= */
+
+/* 1. Behållaren: Tvinga tabellen att hålla sig inom skärmen */
 .fc-list-table {
+    table-layout: fixed !important;
     width: 100% !important;
+    border-collapse: collapse !important;
+}
+
+/* 2. TIDEN (Vänster kolumn) */
+/* Sätt bredd till 1% -> Tvingar den att bli så smal som texten "08:00" tillåter */
+.fc-list-event-time {
+    width: 1% !important; 
+    white-space: nowrap !important; /* Förbjud radbrytning av tiden */
+    padding-right: 15px !important; /* Lite luft till höger */
+    text-align: left !important;
+    vertical-align: top !important;
+}
+
+/* 3. PRICKEN (Mitten kolumn) - HÄR ÄR NYCKELN */
+/* Sätt bredd till 1px -> Tvingar den att kollapsa helt runt pricken */
+.fc-list-event-graphic {
+    width: 1px !important; 
+    white-space: nowrap !important;
+    padding: 0 10px 0 0 !important; /* 10px luft till höger mot texten */
+    text-align: center !important;
+    vertical-align: top !important;
+}
+
+/* 4. TEXTEN (Höger kolumn) */
+/* Ingen bredd satt = Den tar automatiskt allt utrymme som blir över (ca 85-90%) */
+.fc-list-event-title {
+    text-align: left !important;
+    vertical-align: top !important;
+    
+    /* Hantera text som är för lång */
+    white-space: nowrap !important;    /* Eller 'normal' om du vill ha radbrytning */
+    overflow: hidden !important;       /* Klipp texten vid kanten */
+    text-overflow: ellipsis !important; /* Lägg till "..." */
+}
+
+/* 5. Justering av själva pricken så den centreras snyggt i sin smala kolumn */
+.fc-list-event-dot {
+    margin: 6px auto 0 auto !important; /* Putta ner den lite så den livar med texten */
+    display: block !important;
 }
