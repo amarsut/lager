@@ -4713,46 +4713,55 @@ input[type=range]:active::-webkit-slider-thumb { transform: scale(1.1); border-c
 
 
 /* =========================================
-   HEADER ALIGNMENT FIX (MATEMATISK TVÅNG)
+   ULTIMAT LÖSNING: DAGAR INUTI RUTORNA
+   (Garanterar 100% perfekt linjering vid zoom)
    ========================================= */
 
-/* 1. Tvinga tabellerna att sträcka ut sig helt */
-.fc-col-header-table,
-.fc-daygrid-body-table,
-.fc-scrollgrid-sync-table {
-    width: 100% !important;
-    table-layout: fixed !important; /* Lås layouten */
-}
-
-/* 2. Ta bort den spökande scroll-kolumnen helt */
-.fc-scrollgrid-shrink {
+/* 1. Dölj den gamla separata headern helt */
+.fc-col-header,
+.fc-scrollgrid-section-header {
     display: none !important;
-    width: 0 !important;
 }
 
-/* 3. DEN VIKTIGASTE DELEN: Tvinga exakt bredd på kolumnerna */
-/* Vi kör över FullCalendars alla beräkningar här */
-.fc-col-header-cell,    /* Rubrikcellen (MÅN, TIS...) */
-.fc-daygrid-day {       /* Datumcellen (Rutan) */
-    width: 14.2857% !important; /* 100% / 7 dagar = ~14.28% */
-    max-width: 14.2857% !important;
-    min-width: 14.2857% !important;
-    box-sizing: border-box !important;
-}
-
-/* 4. Centrera texten snyggt i rubriken */
-.fc-col-header-cell-cushion {
-    display: flex !important;
+/* 2. Konfigurera toppen av datumrutan för att visa text + siffra */
+/* Vi gör detta ENDAST på första raden (tr:first-child) */
+.fc-daygrid-body tr:first-child .fc-daygrid-day-top {
+    flex-direction: column !important; /* Stapla vertikalt (Text överst, siffra under) */
     justify-content: center !important;
     align-items: center !important;
-    width: 100% !important;
-    padding: 12px 0 !important;
-    text-decoration: none !important;
+    padding-top: 12px !important; /* Lite mer luft i toppen */
+    gap: 4px; /* Avstånd mellan "MÅN" och siffran */
 }
 
-/* 5. Säkerställ att texten är centrerad i cellen */
-.fc-col-header-cell {
-    text-align: center !important;
-    border-bottom: 1px solid #e2e8f0 !important;
-    background-color: #f8fafc !important;
+/* 3. Injicera texten via CSS i första raden */
+/* FullCalendar sätter klasser som .fc-day-mon på varje cell, vi använder dem */
+.fc-daygrid-body tr:first-child .fc-day-mon .fc-daygrid-day-top::before { content: "MÅN"; }
+.fc-daygrid-body tr:first-child .fc-day-tue .fc-daygrid-day-top::before { content: "TIS"; }
+.fc-daygrid-body tr:first-child .fc-day-wed .fc-daygrid-day-top::before { content: "ONS"; }
+.fc-daygrid-body tr:first-child .fc-day-thu .fc-daygrid-day-top::before { content: "TORS"; }
+.fc-daygrid-body tr:first-child .fc-day-fri .fc-daygrid-day-top::before { content: "FRE"; }
+.fc-daygrid-body tr:first-child .fc-day-sat .fc-daygrid-day-top::before { content: "LÖR"; }
+.fc-daygrid-body tr:first-child .fc-day-sun .fc-daygrid-day-top::before { content: "SÖN"; }
+
+/* 4. Styla den nya texten */
+.fc-daygrid-body tr:first-child .fc-daygrid-day-top::before {
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: #64748b;        /* Samma grå färg som förut */
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: block;
+    line-height: 1;
 }
+
+/* 5. Justera datum-siffran lite */
+.fc-daygrid-day-number {
+    z-index: 2;
+    margin: 0 !important; /* Se till att den inte har konstig marginal */
+}
+
+/* Justering för "Idag"-cirkeln så den inte krockar med texten */
+.fc-day-today .fc-daygrid-day-number {
+    margin-top: 2px !important;
+}
+
