@@ -2635,6 +2635,7 @@ function initSettings() {
     }
     setTheme(savedTheme);
 
+    initZoomSettings();
     setupSwipeGestures();
 }
 
@@ -3313,3 +3314,35 @@ window.switchBacklogTab = function(tabName) {
     currentBacklogTab = tabName;
     renderDashboard(); // Rita om sidan med nya fliken vald
 };
+
+function initZoomSettings() {
+    const slider = document.getElementById('zoomSlider');
+    const display = document.getElementById('zoomDisplay');
+    
+    if (!slider || !display) return;
+
+    // 1. Hämta sparad zoom eller standard 100
+    const savedZoom = localStorage.getItem('appZoom') || '100';
+    
+    // 2. Applicera direkt vid start
+    applyZoom(savedZoom);
+    
+    // 3. Uppdatera UI (slider och text)
+    slider.value = savedZoom;
+    display.textContent = savedZoom + '%';
+
+    // 4. Lyssna på ändringar (Live preview)
+    slider.addEventListener('input', (e) => {
+        const val = e.target.value;
+        display.textContent = val + '%';
+        applyZoom(val);
+    });
+}
+
+function applyZoom(value) {
+    // Sätter zoom på hela kroppen
+    document.body.style.zoom = value + "%";
+    
+    // Spara inställningen
+    localStorage.setItem('appZoom', value);
+}
