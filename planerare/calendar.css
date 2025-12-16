@@ -202,8 +202,5 @@
    white-space: nowrap !important;
    overflow: hidden !important;
    text-overflow: ellipsis !important;
-   width: 50px;
+   width: 20px;
 }
-
-/* Ta bort ramen på själva rutnätet så det inte krockar med behållaren */
-.fc-scrollgrid, .fc-theme-standard td, .fc-theme-standard th { border-color: #cbd5e1 !important; }
