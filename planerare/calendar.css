@@ -202,7 +202,7 @@
    white-space: nowrap !important;
    overflow: hidden !important;
    text-overflow: ellipsis !important;
-   width: 117px;
+   width: 50px;
 }
 
 /* Ta bort ramen på själva rutnätet så det inte krockar med behållaren */
