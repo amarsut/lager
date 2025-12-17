@@ -14,7 +14,7 @@
     background: #fff;
     border: 1px solid #f3f4f6;
     box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-    border-radius: 4px; /* Lite rundare hörn ser modernare ut */
+    border-radius: 8px; /* Lite rundare hörn ser modernare ut */
     
     display: flex;
     flex-direction: column;
@@ -164,26 +164,23 @@
 @media (max-width: 768px) {
     .stat-bar {
         display: flex;
-        flex-wrap: nowrap !important;
-        overflow-x: auto !important;
+        gap: 12px;
+        margin-bottom: 2rem;
         
-        /* Justera padding */
-        padding: 4px 16px 20px 16px !important;
-        margin-bottom: 5px !important;
-        
-        /* Justera marginalen till höger så toningen hamnar rätt */
-        margin-right: 0px !important; 
-        
-        /* Dölj scrollbar */
-        scrollbar-width: none; 
-        -ms-overflow-style: none;
+        /* FULL BREDD + LITEN PADDING */
+        width: 100%;
+        padding-left: 8px;   /* 8px är oftast tajtare än jobbkortens marginal */
+        padding-right: 8px;
+        box-sizing: border-box; /* Gör att padding räknas in i bredden */
 
         /* Detta gör att högerkanten mjukt övergår till genomskinligt */
         -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
         mask-image: linear-gradient(to right, black 85%, transparent 100%);
         
-        /* Viktigt: Ta bort den gamla background-image lösningen om den ligger kvar */
-        background-image: none !important;
+        /* Scroll-egenskaper */
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch; /* Mjukare scroll på iPhone */
+        scrollbar-width: none; /* Dölj scrollbar Firefox */
     }
     
     /* Dölj scrollbar för Webkit (Chrome/Safari) */
