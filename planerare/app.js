@@ -758,20 +758,21 @@ function updateStatsCounts(jobs) {
     const offeredCount = active.filter(j => j.status === 'offererad').length;
 
     // Uppdatera det nya kombinerade kortet
-	safeUpdate('stat-backlog', unplannedCount + offeredCount);
+    safeUpdate('stat-backlog', unplannedCount + offeredCount);
 
-    // Hitta behållaren för textraden i HTML
+    // Hitta raden och rendera minimala siffror med färgkoder
     const backlogRow = document.querySelector('.backlog-row');
     if (backlogRow) {
-        // Skapa snyggare HTML med rader och badges
         backlogRow.innerHTML = `
-            <div class="stat-row-item">
-                <span class="stat-label">Väntar</span>
-                <span class="stat-badge orange">${unplannedCount}</span>
-            </div>
-            <div class="stat-row-item">
-                <span class="stat-label">Offert</span>
-                <span class="stat-badge blue">${offeredCount}</span>
+            <div class="mini-stat-wrapper">
+                <div class="mini-stat orange" title="Väntar">
+                    <span class="status-dot"></span>
+                    <span class="status-num">${unplannedCount}</span>
+                </div>
+                <div class="mini-stat blue" title="Offererad">
+                    <span class="status-dot"></span>
+                    <span class="status-num">${offeredCount}</span>
+                </div>
             </div>
         `;
     }
