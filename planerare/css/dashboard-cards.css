@@ -215,9 +215,9 @@
 
 /* Texten "Väntar" / "Offert" */
 .sub-stat {
-    font-size: 0.7rem;      /* Liten, diskret storlek */
+    font-size: 0.4rem;      /* Liten, diskret storlek */
     color: #94a3b8;         /* Ljusgrå (skriker inte) */
-    font-weight: 600;
+    font-weight: 400;
     text-transform: uppercase; /* Gör det lite mer "dashboard-aktigt" */
     letter-spacing: 0.03em;
 }
@@ -225,9 +225,9 @@
 /* Siffrorna (3 och 2) */
 .sub-val {
     color: #475569;         /* Mörkare grå för läsbarhet */
-    font-weight: 700;
+    font-weight: 500;
     margin-left: 4px;       /* Liten luft mellan text och siffra */
-    font-size: 0.75rem;
+    font-size: 0.65rem;
 }
 
 /* Valfritt: En liten prick emellan om du vill ha separation utan streck */
