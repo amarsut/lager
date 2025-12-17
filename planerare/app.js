@@ -824,6 +824,7 @@ function setupEventListeners() {
 	        setTimeout(() => {
 			    initCalendar('calendar-wrapper', allJobs, openEditModal, handleCalendarDrop);
 		}, 50);
+        window.scrollTo(0, 0);
 	    });
 	}
 
@@ -852,6 +853,7 @@ function setupEventListeners() {
 	                 module.initCalendar('calendar-wrapper', allJobs, openEditModal, handleCalendarDrop);
 	            });
 	        }, 50);
+            window.scrollTo(0, 0);
 	    });
 	}
 
@@ -874,7 +876,8 @@ function setupEventListeners() {
 	    renderCustomerView();
 	    
 	    document.querySelectorAll('.mobile-nav-item').forEach(btn => btn.classList.remove('active'));
-	});
+        window.scrollTo(0, 0);
+    });
 
 	// --- KOPPLA MOBIL-KNAPPEN "KUNDER" ---
 	const mobileCustBtn = document.getElementById('mobileCustomersBtn');
@@ -894,6 +897,7 @@ function setupEventListeners() {
 	        
 	        // 4. Ladda listan
 	        renderCustomerView();
+            window.scrollTo(0, 0);
 	    });
 	}
 
@@ -959,6 +963,7 @@ function setupEventListeners() {
             // --- HÄR ÄR FIXEN: DÖLJ KALENDERN EXPLICIT ---
             document.getElementById('calendarView').style.display = 'none';
             document.getElementById('selectedDayView').classList.remove('show'); // Stäng även dagvyn om den är öppen
+            window.scrollTo(0, 0);
         });
     }
 
@@ -981,6 +986,7 @@ function setupEventListeners() {
 	        
 	        // 4. Ladda data
 	        renderCustomerView();
+            window.scrollTo(0, 0);
 	    });
 	}
 	
@@ -1122,7 +1128,8 @@ function setupEventListeners() {
 	        // Återställ menyn
 	        document.querySelectorAll('.mobile-nav-item').forEach(n => n.classList.remove('active'));
 	        document.getElementById('mobileHomeBtn').classList.add('active');
-	    }
+            window.scrollTo(0, 0);
+        }
 	});
 
     // Om vi swipar tillbaka och statisticsView är öppen -> Stäng den
