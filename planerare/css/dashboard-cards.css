@@ -335,3 +335,37 @@
 
 /* Hover-effekt för att visa vad det betyder (valfritt, bra för desktop) */
 .mini-stat:hover .status-dot { transform: scale(1.2); transition: transform 0.2s; }
+
+/* --- Minimalistisk Text under siffran --- */
+
+/* Justera huvud-siffran (5:an) så den inte har onödigt mellanrum neråt */
+.stat-card[data-filter="backlog"] .stat-card-value {
+    margin-bottom: 2px !important; /* Litet mellanrum ner till texten */
+}
+
+/* Behållaren för textraden */
+.backlog-row {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Avstånd mellan "Väntar" och "Offert" */
+    
+    font-size: 0.75rem; /* Liten, diskret textstorlek */
+    color: #94a3b8;     /* Ljusgrå färg (Slate-400) för att inte ta fokus */
+    font-weight: 500;
+    
+    margin-top: 0;      /* Ingen marginal uppåt, ligger tätt mot siffran */
+    line-height: 1;     /* Håller raden kompakt */
+}
+
+/* Siffrorna i miniraden (3 och 2) */
+.sub-val {
+    color: #475569;     /* Lite mörkare grå (Slate-600) för läsbarhet */
+    font-weight: 600;
+    margin-left: 2px;   /* Liten luft mellan ord och siffra */
+}
+
+/* Avdelaren (strecket) */
+.sub-divider {
+    color: #e2e8f0;     /* Mycket ljus grå, knappt synlig */
+    font-size: 0.8rem;
+}
