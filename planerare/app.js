@@ -760,20 +760,14 @@ function updateStatsCounts(jobs) {
     // Uppdatera det nya kombinerade kortet
     safeUpdate('stat-backlog', unplannedCount + offeredCount);
 
-    // Hitta raden och rendera minimala siffror med färgkoder
+    // Hitta raden och lägg in en ren textrad
     const backlogRow = document.querySelector('.backlog-row');
     if (backlogRow) {
+        // Vi använder en "non-breaking space" (&nbsp;) för att hålla ihop orden
         backlogRow.innerHTML = `
-            <div class="mini-stat-wrapper">
-                <div class="mini-stat orange" title="Väntar">
-                    <span class="status-dot"></span>
-                    <span class="status-num">${unplannedCount}</span>
-                </div>
-                <div class="mini-stat blue" title="Offererad">
-                    <span class="status-dot"></span>
-                    <span class="status-num">${offeredCount}</span>
-                </div>
-            </div>
+            <span class="sub-stat">Väntar <b class="sub-val">${unplannedCount}</b></span>
+            <span class="sub-divider">|</span>
+            <span class="sub-stat">Offert <b class="sub-val">${offeredCount}</b></span>
         `;
     }
 
