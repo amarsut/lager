@@ -202,6 +202,7 @@ function renderHeatmap(jobs) {
 
     const dayCounts = [0,0,0,0,0]; // Mån-Fre (Index 0=Mån)
     
+    // Räkna jobben
     jobs.forEach(j => {
         const d = new Date(j.datum);
         let day = d.getDay(); // 0=Sön, 1=Mån...
@@ -210,17 +211,20 @@ function renderHeatmap(jobs) {
         }
     });
 
-    const max = Math.max(...dayCounts, 1); // För att räkna höjd %
+    const max = Math.max(...dayCounts, 1); 
     const days = ['M', 'T', 'O', 'T', 'F'];
 
     days.forEach((d, i) => {
         const count = dayCounts[i];
-        const height = Math.round((count / max) * 100);
+        // Sätt min-height så man ser stapeln även om den är låg, men 0 är 0
+        const height = count === 0 ? 2 : Math.round((count / max) * 100);
         const isHigh = height === 100 && count > 0;
         
         container.innerHTML += `
         <div class="hm-col">
-            <div class="hm-bar ${isHigh ? 'high' : ''}" style="height:${height}%" title="${count} jobb"></div>
+            <span class="hm-val">${count}</span>
+            
+            <div class="hm-bar ${isHigh ? 'high' : ''}" style="height:${height}%"></div>
             <span class="hm-day">${d}</span>
         </div>`;
     });
