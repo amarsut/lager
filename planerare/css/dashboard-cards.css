@@ -274,7 +274,7 @@
 .stat-inline-row {
     display: flex;
     align-items: center;
-    gap: 0px;          /* Luft mellan "Väntar" och "Offert" */
+    gap: 1px;          /* Luft mellan "Väntar" och "Offert" */
 }
 
 /* Texten "Väntar" / "Offert" */
