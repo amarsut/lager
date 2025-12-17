@@ -215,3 +215,29 @@
     margin-top: 0 !important; /* Nollställ marginaler så den inte "flyter" fel */
     margin-bottom: 0 !important;
 }
+
+/* Ny styling för uppdelad statistik i "Ej bokat"-kortet */
+.backlog-row {
+    display: flex !important;
+    flex-direction: column !important; /* Stapla raderna på varandra */
+    gap: 6px !important;               /* Luft mellan raderna */
+    width: 100%;
+    margin-top: auto;                  /* Tryck ner till botten */
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+    color: #64748b;
+}
+
+.stat-value-pill {
+    font-weight: 700;
+    color: #ea580c;           /* Orange text */
+    background: #ffedd5;      /* Ljus orange bakgrund */
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+}
