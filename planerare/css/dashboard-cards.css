@@ -23,7 +23,7 @@
     flex-direction: column;
     justify-content: space-between; /* Trycker isär Rubrik och Siffra */
     
-    padding: 16px 20px;
+    padding: 16px 20px 32px 20px;
     position: relative;
     cursor: pointer;
     transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s, background-color 0.2s;
@@ -156,6 +156,26 @@
         font-size: 1.8rem !important; 
         margin-top: auto !important; /* Tryck ner siffran till botten */
     }
+
+   /* Anpassningar för Ej Bokat-texten på mobil */
+    .backlog-row {
+        left: 16px !important; /* Justera vänsterkanten så den matchar mobil-padding */
+        bottom: 8px !important; /* Ligg kvar snyggt i botten */
+    }
+
+    .sub-stat {
+        font-size: 0.6rem !important; /* Mindre text (VÄNTAR/OFFERT) */
+        letter-spacing: 0px !important; /* Spara plats */
+    }
+
+    .sub-val {
+        font-size: 0.7rem !important; /* Mindre siffror */
+        margin-left: 2px !important;
+    }
+
+    .stat-inline-row {
+        gap: 8px !important; /* Minska avståndet mellan grupperna */
+    }
 }
 
 
@@ -209,7 +229,7 @@
 /* Behållare för raden */
 .stat-inline-row {
     display: flex;
-    align-items: center;
+    align-items: right;
     gap: 5px;          /* Luft mellan "Väntar" och "Offert" */
 }
 
