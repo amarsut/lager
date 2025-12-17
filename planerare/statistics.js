@@ -1,19 +1,16 @@
-// statistics.js - Felsäker version
+// statistics.js - Final med Prognos & Heatmap
 
 let revenueChart = null;
 let currentJobsData = []; 
 let currentFilter = 3; 
+let currentViewMode = 'revenue';
 
-// --- 1. Öppna Vyn ---
+// --- 1. ÖPPNA VYN ---
 export function openStatisticsView(allJobs) {
-    console.log("Öppnar statistik...", allJobs); // Felsökning
-
-    // Säkerställ att vi har en array
     currentJobsData = Array.isArray(allJobs) ? allJobs : [];
     
-    // Dölj andra vyer
-    const views = ['statBar', 'timelineView', 'calendarView', 'customersView', 'settingsModal'];
-    views.forEach(id => {
+    // UI Setup
+    ['statBar', 'timelineView', 'calendarView', 'customersView', 'settingsModal'].forEach(id => {
         const el = document.getElementById(id);
         if(el) {
             if(el.classList.contains('modal-backdrop')) el.classList.remove('show');
@@ -21,73 +18,77 @@ export function openStatisticsView(allJobs) {
         }
     });
 
-    // Visa statistikvyn
     const view = document.getElementById('statisticsView');
-    if (view) view.style.display = 'block';
-
-    // Rensa ev. dolda stilar från tidigare försök
     const content = document.getElementById('statsContent');
     const skeleton = document.getElementById('statsSkeleton');
-    if(content) {
-        content.style.opacity = '1'; 
-        content.style.display = 'block';
-    }
-    if(skeleton) skeleton.style.display = 'none'; // Stäng av skeleton för att vara säker
+
+    if (view) view.style.display = 'block';
+    if (content) { content.style.opacity = '1'; content.style.display = 'block'; }
+    if (skeleton) skeleton.style.display = 'none';
 
     window.scrollTo(0, 0);
+    closeDrillDown();
 
-    // Ladda filter
     const saved = localStorage.getItem('statsFilter');
     currentFilter = saved ? (saved === 'all' ? 'all' : parseInt(saved)) : 3;
     
-    // Uppdatera UI för knappen
     updateFilterUI(currentFilter);
-    
     history.pushState({ uiState: 'statistics' }, null, window.location.href);
 
-    // Kör renderingen direkt (ingen timeout/animation som kan strula)
-    try {
-        renderStats(currentFilter);
-    } catch (e) {
-        console.error("Fel vid rendering av statistik:", e);
-        alert("Ett fel uppstod när statistiken skulle ritas ut. Kolla konsolen.");
-    }
+    renderStats(currentFilter);
 }
 
-// --- 2. Filter-funktioner ---
+// --- 2. NAVIGERING & INTERAKTION ---
+window.goToOverviewFromStats = function() {
+    document.getElementById('statisticsView').style.display = 'none';
+    const statBar = document.getElementById('statBar');
+    const timeline = document.getElementById('timelineView');
+    if (statBar) statBar.style.display = ''; 
+    if (timeline) timeline.style.display = 'block';
+    if (history.state && history.state.uiState === 'statistics') history.back();
+}
+
+window.toggleChartMode = function(mode, btn) {
+    currentViewMode = mode;
+    document.querySelectorAll('.seg-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    if(navigator.vibrate) navigator.vibrate(5);
+    renderStats(currentFilter);
+    closeDrillDown();
+}
+
 window.toggleStatsFilterMenu = function() {
     const drawer = document.getElementById('statsFilterDrawer');
-    if (drawer) {
-        drawer.style.display = (drawer.style.display === 'none') ? 'block' : 'none';
-    }
+    if (drawer) drawer.style.display = (drawer.style.display === 'none') ? 'block' : 'none';
 }
 
 window.setStatsFilter = function(months, btn) {
     currentFilter = months;
     localStorage.setItem('statsFilter', months);
-    
     document.getElementById('statsFilterDrawer').style.display = 'none';
     updateFilterUI(months);
     renderStats(months);
+    closeDrillDown();
+}
+
+window.closeDrillDown = function() {
+    const el = document.getElementById('drillDownContainer');
+    if(el) el.style.display = 'none';
 }
 
 function updateFilterUI(val) {
-    // Uppdatera texten på knappen
     const labelMap = { 1: '1 Mån', 3: '3 Mån', 6: '6 Mån', 12: '1 År', 'all': 'Allt' };
-    const labelEl = document.getElementById('currentFilterLabel');
-    if (labelEl) labelEl.textContent = labelMap[val] || '3 Mån';
-
-    // Markera aktivt val i listan
+    const lbl = document.getElementById('currentFilterLabel');
+    if(lbl) lbl.textContent = labelMap[val] || '3 Mån';
     document.querySelectorAll('.filter-pill-large').forEach(btn => {
         btn.classList.remove('active');
-        const onclickAttr = btn.getAttribute('onclick');
-        if (onclickAttr && (onclickAttr.includes(`(${val},`) || (val === 'all' && onclickAttr.includes("'all'")))) {
+        if (btn.getAttribute('onclick').includes(`(${val},`) || (val==='all' && btn.innerText.includes('All'))) {
             btn.classList.add('active');
         }
     });
 }
 
-// --- 3. Rendering ---
+// --- 3. CORE LOGIC ---
 function renderStats(months) {
     const now = new Date();
     let startDate = new Date();
@@ -101,89 +102,180 @@ function renderStats(months) {
         prevStartDate.setMonth(startDate.getMonth() - months);
     }
 
-    // Datumtext
+    // 1. Datumtext
     const dOpt = { day: 'numeric', month: 'short' };
-    const dateRangeEl = document.getElementById('statsDateRange');
-    if(dateRangeEl) {
-        dateRangeEl.textContent = months === 'all' ? "All tid" : `${startDate.toLocaleDateString('sv-SE', dOpt)} – Idag`;
-    }
+    const dateEl = document.getElementById('statsDateRange');
+    if(dateEl) dateEl.textContent = months === 'all' ? "All tid" : `${startDate.toLocaleDateString('sv-SE', dOpt)} – Idag`;
 
+    // 2. Data för KPI:er
     const currData = getDataForPeriod(startDate, now);
     const prevData = getDataForPeriod(prevStartDate, startDate);
 
-    // Uppdatera siffror
-    safeSetText('statTotalRevenue', currData.total.toLocaleString() + ' kr');
-    safeSetText('statCompletedJobs', currData.count);
-    
-    const currAvg = currData.count > 0 ? Math.round(currData.total / currData.count) : 0;
-    const prevAvg = prevData.count > 0 ? Math.round(prevData.total / prevData.count) : 0;
-    safeSetText('statAvgValue', currAvg.toLocaleString() + ' kr');
+    // 3. Uppdatera KPI-korten
+    animateNumber('statTotalRevenue', currData.totalRevenue);
+    renderTrend('trendRevenue', currData.totalRevenue, prevData.totalRevenue);
 
-    renderTrend('trendRevenue', currData.total, prevData.total);
-    renderTrend('trendAvg', currAvg, prevAvg);
+    const jobsEl = document.getElementById('statCompletedJobs');
+    if(jobsEl) jobsEl.textContent = currData.count;
 
-    renderChart(currData.jobs, months);
+    const avg = currData.count > 0 ? Math.round(currData.totalRevenue / currData.count) : 0;
+    const prevAvg = prevData.count > 0 ? Math.round(prevData.totalRevenue / prevData.count) : 0;
+    animateNumber('statAvgValue', avg);
+    renderTrend('trendAvg', avg, prevAvg);
+
+    // 4. MÅNADSMÅL (Låst till nuvarande månad)
+    renderMonthlyGoal();
+
+    // 5. PROGNOS (Bokade jobb framåt/nu)
+    renderForecast();
+
+    // 6. HEATMAP (Beläggning per veckodag för vald period)
+    renderHeatmap(currData.jobs);
+
+    // 7. GRAF & LISTOR
+    renderChart(currData.jobs, months, currentViewMode);
     renderTopList(currData.customerSpend);
+}
+
+// --- NY FUNKTION: Månadsmål ---
+function renderMonthlyGoal() {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+    // Filtrera fram klara/fakturerade jobb för DENNA månad
+    const monthJobs = currentJobsData.filter(j => {
+        if (j.deleted || !j.datum) return false;
+        if (j.status !== 'klar' && j.status !== 'faktureras') return false;
+        const d = new Date(j.datum);
+        return d >= startOfMonth && d <= endOfMonth;
+    });
+
+    const monthRevenue = monthJobs.reduce((sum, j) => sum + (parseInt(j.kundpris) || 0), 0);
+    const goal = 10000; // Ditt mål
+    let percent = Math.round((monthRevenue / goal) * 100);
+    
+    // UI Update
+    const bar = document.getElementById('goalBar');
+    const txt = document.getElementById('goalPercent');
+    const label = document.getElementById('goalLabel');
+
+    if(label) {
+        const monthName = now.toLocaleDateString('sv-SE', {month:'long'});
+        label.textContent = `Månadsmål (${monthName.charAt(0).toUpperCase() + monthName.slice(1)})`;
+    }
+
+    if (bar && txt) {
+        setTimeout(() => { bar.style.width = Math.min(percent, 100) + '%'; }, 100);
+        txt.textContent = percent + '%';
+        if (percent >= 100) {
+            bar.className = 'progress-fill success';
+            txt.innerHTML = '🎉 Mål nått!';
+            txt.style.color = '#d97706';
+        } else {
+            bar.className = 'progress-fill';
+            txt.style.color = '#0f172a';
+        }
+    }
+}
+
+// --- NY FUNKTION: Prognos ---
+function renderForecast() {
+    // Hitta alla 'bokade' (ej klara)
+    const bookedJobs = currentJobsData.filter(j => 
+        !j.deleted && j.status === 'bokad'
+    );
+    
+    const totalValue = bookedJobs.reduce((sum, j) => sum + (parseInt(j.kundpris) || 0), 0);
+    
+    animateNumber('forecastValue', totalValue);
+    
+    const countEl = document.getElementById('forecastCount');
+    if(countEl) countEl.textContent = `${bookedJobs.length} jobb väntar`;
+}
+
+// --- NY FUNKTION: Heatmap ---
+function renderHeatmap(jobs) {
+    const container = document.getElementById('heatmapContainer');
+    if(!container) return;
+    container.innerHTML = '';
+
+    const dayCounts = [0,0,0,0,0]; // Mån-Fre (Index 0=Mån)
+    
+    jobs.forEach(j => {
+        const d = new Date(j.datum);
+        let day = d.getDay(); // 0=Sön, 1=Mån...
+        if(day >= 1 && day <= 5) {
+            dayCounts[day-1]++;
+        }
+    });
+
+    const max = Math.max(...dayCounts, 1); // För att räkna höjd %
+    const days = ['M', 'T', 'O', 'T', 'F'];
+
+    days.forEach((d, i) => {
+        const count = dayCounts[i];
+        const height = Math.round((count / max) * 100);
+        const isHigh = height === 100 && count > 0;
+        
+        container.innerHTML += `
+        <div class="hm-col">
+            <div class="hm-bar ${isHigh ? 'high' : ''}" style="height:${height}%" title="${count} jobb"></div>
+            <span class="hm-day">${d}</span>
+        </div>`;
+    });
 }
 
 function getDataForPeriod(start, end) {
     const jobs = currentJobsData.filter(j => {
         if (j.deleted || !j.datum) return false;
-        // Räkna bara klara/fakturerade
         if (j.status !== 'klar' && j.status !== 'faktureras') return false;
         const d = new Date(j.datum);
         return d >= start && d < end;
     });
 
-    let total = 0;
+    let totalRevenue = 0;
+    let totalProfit = 0;
     const customerSpend = {};
+
     jobs.forEach(j => {
-        const p = parseInt(j.kundpris) || 0;
-        total += p;
+        const rev = parseInt(j.kundpris) || 0;
+        const profit = calculateJobProfit(j);
+        totalRevenue += rev;
+        totalProfit += profit;
         const c = j.kundnamn || 'Okänd';
-        customerSpend[c] = (customerSpend[c] || 0) + p;
+        customerSpend[c] = (customerSpend[c] || 0) + rev;
     });
 
-    return { jobs, total, count: jobs.length, customerSpend };
+    return { jobs, totalRevenue, totalProfit, count: jobs.length, customerSpend };
 }
 
-function safeSetText(id, text) {
-    const el = document.getElementById(id);
-    if(el) el.textContent = text;
-}
-
-function renderTrend(elId, curr, prev) {
-    const el = document.getElementById(elId);
-    if (!el) return;
-    
-    if (!prev || prev === 0) {
-        el.innerHTML = '<span style="color:#cbd5e1">-</span>';
-        return;
+function calculateJobProfit(job) {
+    const intakt = parseInt(job.kundpris) || 0;
+    let utgiftSumma = 0;
+    if (job.utgifter && Array.isArray(job.utgifter)) {
+        utgiftSumma = job.utgifter.reduce((sum, item) => sum + (parseInt(item.pris) || 0), 0);
+    } else if (job.utgifterTotal) {
+        utgiftSumma = parseInt(job.utgifterTotal) || 0;
     }
-    const diff = curr - prev;
-    const pct = Math.round((diff / prev) * 100);
-    
-    if (diff >= 0) el.innerHTML = `<span style="color:#10b981">▲ ${pct}%</span>`;
-    else el.innerHTML = `<span style="color:#ef4444">▼ ${Math.abs(pct)}%</span>`;
+    return intakt - utgiftSumma;
 }
 
-function renderChart(jobs, months) {
+function renderChart(jobs, months, mode) {
     const ctx = document.getElementById('revenueChartCanvas');
     if (!ctx) return;
-    
     if (revenueChart) revenueChart.destroy();
 
-    // Om inga jobb finns, visa tom graf
+    // Hantera tomt
     if(jobs.length === 0) {
-        // Skapa tom graf
-        revenueChart = new Chart(ctx, { type: 'bar', data: {labels:[], datasets:[]} });
+        revenueChart = new Chart(ctx, {type:'bar', data:{labels:[], datasets:[]}});
         return;
     }
 
     const grouped = {};
     jobs.forEach(j => {
         const d = new Date(j.datum);
-        const p = parseInt(j.kundpris) || 0;
+        const val = mode === 'profit' ? calculateJobProfit(j) : (parseInt(j.kundpris) || 0);
         let key, label;
 
         if (months === 1) {
@@ -195,26 +287,29 @@ function renderChart(jobs, months) {
             label = label.charAt(0).toUpperCase() + label.slice(1);
         }
 
-        if (!grouped[key]) grouped[key] = { label: label, val: 0, sort: d };
-        grouped[key].val += p;
+        if (!grouped[key]) grouped[key] = { label: label, val: 0, sort: d, jobs: [] };
+        grouped[key].val += val;
+        grouped[key].jobs.push(j);
     });
 
     const dataArr = Object.values(grouped).sort((a,b) => a.sort - b.sort);
-
+    const colorTop = mode === 'profit' ? '#10b981' : '#3b82f6';
+    
     const gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 300);
-    gradient.addColorStop(0, '#3b82f6');
-    gradient.addColorStop(1, '#93c5fd');
+    gradient.addColorStop(0, colorTop);
+    gradient.addColorStop(1, 'rgba(255,255,255,0)');
 
     revenueChart = new Chart(ctx, {
         type: 'bar',
         data: {
             labels: dataArr.map(d => d.label),
             datasets: [{
+                label: mode === 'profit' ? 'Vinst' : 'Omsättning',
                 data: dataArr.map(d => d.val),
                 backgroundColor: gradient,
                 borderRadius: 4,
                 barThickness: 'flex',
-                maxBarThickness: 40
+                maxBarThickness: 45
             }]
         },
         options: {
@@ -223,26 +318,59 @@ function renderChart(jobs, months) {
             plugins: { legend: { display: false } },
             scales: {
                 y: { display: false },
-                x: { grid: { display: false }, ticks: { font: { size: 11, weight: '600' }, color: '#64748b' } }
+                x: { grid: { display: false }, ticks: { font: { weight: '600' }, color: '#64748b' } }
+            },
+            onClick: (e) => {
+                const points = revenueChart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, true);
+                if (points.length) {
+                    const idx = points[0].index;
+                    const item = dataArr[idx];
+                    showDrillDown(item.jobs, item.label);
+                }
             }
         }
     });
 }
 
+function showDrillDown(jobs, label) {
+    const container = document.getElementById('drillDownContainer');
+    const list = document.getElementById('drillDownList');
+    const title = document.getElementById('drillDownTitle');
+    
+    if(container && list) {
+        container.style.display = 'block';
+        title.textContent = `Detaljer för ${label}`;
+        list.innerHTML = '';
+
+        const sorted = jobs.sort((a,b) => (parseInt(b.kundpris)||0) - (parseInt(a.kundpris)||0));
+        sorted.forEach(j => {
+            const val = currentViewMode === 'profit' ? calculateJobProfit(j) : (parseInt(j.kundpris)||0);
+            const colorClass = currentViewMode === 'profit' ? 'text-green' : 'text-blue';
+            
+            list.innerHTML += `
+            <div class="drill-item" onclick="if(window.openEditModal) openEditModal('${j.id}')">
+                <div class="drill-left">
+                    <span class="drill-reg">${j.regnr || 'Inget Reg'}</span>
+                    <span class="drill-desc">${j.kundnamn} • ${j.paket || 'Service'}</span>
+                </div>
+                <span class="drill-price ${colorClass}">${val.toLocaleString()} kr</span>
+            </div>`;
+        });
+        container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+}
+
 function renderTopList(spendObj) {
     const el = document.getElementById('topCustomersList');
-    if (!el) return;
+    if(!el) return;
     el.innerHTML = '';
-    
     const sorted = Object.entries(spendObj).sort((a,b) => b[1] - a[1]).slice(0, 5);
     
-    if (sorted.length === 0) {
-        el.innerHTML = '<p style="text-align:center; color:#cbd5e1; font-size:0.8rem; padding:10px;">Ingen data</p>';
-        return;
-    }
+    if(sorted.length === 0) { el.innerHTML = '<p style="color:#cbd5e1; text-align:center; padding:10px;">Ingen data</p>'; return; }
 
     sorted.forEach(([name, amount], i) => {
-        const initials = name.slice(0,2).toUpperCase();
+        const clean = name.replace(/[^a-zA-ZåäöÅÄÖ ]/g, "").trim() || "?";
+        const initials = clean.substring(0,2).toUpperCase();
         const colors = ['#3b82f6','#10b981','#f59e0b','#8b5cf6','#ef4444'];
         const bg = colors[name.length % colors.length];
         
@@ -252,12 +380,25 @@ function renderTopList(spendObj) {
                 <div style="width:36px; height:36px; border-radius:50%; background:${bg}20; color:${bg}; display:flex; align-items:center; justify-content:center; font-size:0.8rem; font-weight:700;">${initials}</div>
                 <div style="display:flex; flex-direction:column;">
                     <span style="font-size:0.9rem; font-weight:600; color:#334155;">${name}</span>
-                    <span style="font-size:0.7rem; color:#94a3b8;">#${i+1} Bästa kund</span>
+                    <span style="font-size:0.7rem; color:#94a3b8;">#${i+1}</span>
                 </div>
             </div>
             <span style="font-size:0.9rem; font-weight:700; color:#1e293b;">${amount.toLocaleString()} kr</span>
         </div>`;
     });
+}
+
+function animateNumber(id, end) {
+    const el = document.getElementById(id);
+    if(el) el.innerText = (end || 0).toLocaleString() + ' kr';
+}
+
+function renderTrend(elId, curr, prev) {
+    const el = document.getElementById(elId);
+    if(!el) return;
+    if(!prev || prev === 0) { el.innerHTML = '<span style="color:#cbd5e1">-</span>'; return; }
+    const pct = Math.round(((curr - prev)/prev)*100);
+    el.innerHTML = pct >= 0 ? `<span style="color:#10b981">▲ ${pct}%</span>` : `<span style="color:#ef4444">▼ ${Math.abs(pct)}%</span>`;
 }
 
 window.downloadStatsChart = function() {
@@ -267,24 +408,5 @@ window.downloadStatsChart = function() {
         link.download = 'graf.png';
         link.href = canvas.toDataURL();
         link.click();
-    }
-}
-
-// --- 4. NAVIGERING (FIX FÖR BAKÅTKNAPP) ---
-
-window.goToOverviewFromStats = function() {
-    // 1. Dölj statistikvyn
-    document.getElementById('statisticsView').style.display = 'none';
-    
-    // 2. Visa startsidan (Dashboard) igen
-    const statBar = document.getElementById('statBar');
-    const timeline = document.getElementById('timelineView');
-    
-    if (statBar) statBar.style.display = ''; // Återställ till flex/grid (tom sträng tar bort 'none')
-    if (timeline) timeline.style.display = 'block';
-    
-    // 3. Hantera webbläsarhistoriken (så man inte fastnar om man trycker Back i webbläsaren sen)
-    if (history.state && history.state.uiState === 'statistics') {
-        history.back();
     }
 }
