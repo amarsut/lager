@@ -182,190 +182,53 @@
    FIX FÖR EJ BOKAT (BACKLOG) LAYOUT
    ========================================= */
 
-/* Gör kortet till en flex-kolumn så vi kan byta ordning på sakerna */
+/* Flex-container för att styra ordningen på elementen */
 .stat-card[data-filter="backlog"] {
     display: flex;
     flex-direction: column;
 }
 
-/* 1. Rubriken ska ligga överst (Order 1) */
+/* 1. Rubriken (Ej Bokat) ligger alltid överst */
 .stat-card[data-filter="backlog"] .stat-card-title {
     order: 1;
 }
 
-/* 2. Textraden "3 väntar..." ska ligga i mitten (Order 2) */
-.backlog-row {
-    order: 2;               /* Lägg den som nummer 2 */
-    display: flex;          /* Lägg innehållet på en rad (Inte 2 rader!) */
-    flex-direction: row;
-    gap: 12px;              /* Luft mellan "väntar" och "offert" */
-    
-    font-size: 0.75rem;     /* Lagom liten text */
-    font-weight: 600;
-    color: #ea580c;         /* Orange textfärg */
-    
-    margin-bottom: auto;    /* MAGI: Detta trycker ner allt under (siffran) till botten */
-    width: 100%;
-    padding-top: 4px;       /* Lite luft upp mot rubriken */
-}
-
-/* 3. Siffran ska ligga längst ner (Order 3) */
+/* 2. Huvudsiffran (5) - Vi sätter denna som nummer 2 */
 .stat-card[data-filter="backlog"] .stat-card-value {
-    order: 3;               /* Lägg den sist */
-    margin-top: 0 !important; /* Nollställ marginaler så den inte "flyter" fel */
-    margin-bottom: 0 !important;
-}
-
-/* Ny styling för uppdelad statistik i "Ej bokat"-kortet */
-.backlog-row {
-    display: flex !important;
-    flex-direction: column !important; /* Stapla raderna på varandra */
-    gap: 6px !important;               /* Luft mellan raderna */
-    width: 100%;
-    margin-top: auto;                  /* Tryck ner till botten */
-}
-
-.stat-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.8rem;
-    color: #64748b;
-}
-
-.stat-value-pill {
-    font-weight: 700;
-    color: #ea580c;           /* Orange text */
-    background: #ffedd5;      /* Ljus orange bakgrund */
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-size: 0.75rem;
-}
-
-/* --- Uppdaterad design för Ej Bokat-kortet --- */
-
-/* Gör så att raderna hamnar under varandra */
-.backlog-row {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 8px !important;
-    width: 100%;
-    margin-top: auto; /* Trycker ner infon till botten av kortet */
-    padding-top: 8px;
-}
-
-/* Enskild rad (Väntar ... 3) */
-.stat-row-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.85rem;
-    color: #64748b;
-    width: 100%;
-}
-
-/* Siffer-brickan (Pill) */
-.stat-badge {
-    font-weight: 700;
-    padding: 2px 10px;
-    border-radius: 12px;
-    font-size: 0.75rem;
-    min-width: 30px;
-    text-align: center;
-}
-
-/* Färger för brickorna */
-.stat-badge.orange {
-    background-color: #fff7ed;
-    color: #c2410c;
-    border: 1px solid #ffedd5;
-}
-
-.stat-badge.blue {
-    background-color: #eff6ff;
-    color: #1d4ed8;
-    border: 1px solid #dbeafe;
-}
-
-/* --- Minimalistisk design för Ej Bokat --- */
-
-/* Justera huvudsiffran så den inte tar för mycket plats nedåt */
-.stat-card[data-filter="backlog"] .stat-card-value {
-    margin-bottom: 4px !important;
-}
-
-/* Behållaren för de små siffrorna */
-.backlog-row {
-    margin-top: 0;
-    width: 100%;
-}
-
-.mini-stat-wrapper {
-    display: flex;
-    gap: 16px; /* Luft mellan grupperna */
-    align-items: center;
-}
-
-/* Enskild grupp (Prick + Siffra) */
-.mini-stat {
-    display: flex;
-    align-items: center;
-    gap: 6px; /* Avstånd mellan prick och siffra */
-}
-
-/* Den färgade pricken */
-.status-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    display: block;
-}
-
-/* Siffran - Fet och mörkgrå för läsbarhet */
-.status-num {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: #334155; /* Mörkgrå, nästan svart */
+    order: 2;
+    margin-top: auto;       /* Trycker ner hela paketet mot botten */
+    margin-bottom: 0 !important; /* Ingen luft under siffran, så texten kommer nära */
     line-height: 1;
 }
 
-/* Färgteman - Justera dessa hex-koder om du vill ha exakt dina nyanser */
-.mini-stat.orange .status-dot { background-color: #ef4444;box-shadow: 0 0 0 2px #fee2e2; } /* Röd/Orange med glow */
-.mini-stat.blue .status-dot { background-color: #bf5af2; box-shadow: 0 0 0 2px #f5d0fe; } /* Rosa/Lila med glow */
-
-/* Hover-effekt för att visa vad det betyder (valfritt, bra för desktop) */
-.mini-stat:hover .status-dot { transform: scale(1.2); transition: transform 0.2s; }
-
-/* --- Minimalistisk Text under siffran --- */
-
-/* Justera huvud-siffran (5:an) så den inte har onödigt mellanrum neråt */
-.stat-card[data-filter="backlog"] .stat-card-value {
-    margin-bottom: 2px !important; /* Litet mellanrum ner till texten */
-}
-
-/* Behållaren för textraden */
+/* 3. Textraden (Väntar | Offert) - Vi sätter denna som nummer 3 (SIST) */
 .backlog-row {
+    order: 3;               /* Hamnar UNDER siffran */
+    
     display: flex;
     align-items: center;
-    gap: 8px; /* Avstånd mellan "Väntar" och "Offert" */
+    gap: 8px;               /* Lagom luft mellan "Väntar" och "Offert" */
     
-    font-size: 0.75rem; /* Liten, diskret textstorlek */
-    color: #94a3b8;     /* Ljusgrå färg (Slate-400) för att inte ta fokus */
+    font-size: 0.7rem;      /* Liten och proffsig textstorlek */
+    color: #94a3b8;         /* Diskret grå färg */
     font-weight: 500;
     
-    margin-top: 0;      /* Ingen marginal uppåt, ligger tätt mot siffran */
-    line-height: 1;     /* Håller raden kompakt */
+    margin-top: 4px;        /* Liten marginal upp mot siffran */
+    margin-bottom: 0;
+    line-height: 1;
 }
 
-/* Siffrorna i miniraden (3 och 2) */
+/* Styling för de små siffrorna (3 och 2) */
 .sub-val {
-    color: #475569;     /* Lite mörkare grå (Slate-600) för läsbarhet */
-    font-weight: 600;
-    margin-left: 2px;   /* Liten luft mellan ord och siffra */
+    color: #475569;         /* Lite mörkare grå för läsbarhet */
+    font-weight: 700;
+    margin-left: 3px;
 }
 
-/* Avdelaren (strecket) */
+/* Det lilla strecket mellan orden */
 .sub-divider {
-    color: #e2e8f0;     /* Mycket ljus grå, knappt synlig */
+    color: #e2e8f0;         /* Mycket ljus grå */
     font-size: 0.8rem;
+    position: relative;
+    top: -1px;
 }
