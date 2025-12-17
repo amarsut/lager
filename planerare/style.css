@@ -4428,4 +4428,56 @@ input[type=range]:active::-webkit-slider-thumb { transform: scale(1.1); border-c
 [data-theme="dark"] input[type=range]::-webkit-slider-thumb { background: #1c1c1e; border-color: #555; }
 
 
+/* =========================================
+   FIX FÖR STARTSIDANS KORT (ÖVERSIKTEN)
+   ========================================= */
+
+/* Tvinga grid-raderna att anpassa sig efter det högsta kortet */
+.stat-grid {
+    grid-auto-rows: 1fr; /* Magisk kod som gör alla kort i en rad lika höga */
+    align-items: stretch;
+}
+
+/* Säkerställ att korten fyller ut sin plats */
+.stat-card {
+    height: 100%; 
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    
+    /* Återställ eventuell "kompakt" padding om den råkat ärvas */
+    padding: 20px !important; 
+    min-height: 150px; /* Tvinga fram en bra höjd så de ser "fylliga" ut igen */
+}
+
+/* På mobilen specifikt */
+@media (max-width: 768px) {
+    .stat-grid {
+        /* Tvinga 2 kolumner och se till att de fyller bredden */
+        grid-template-columns: 1fr 1fr; 
+        gap: 16px !important; /* Lite mer luft (som på Bild 2) */
+    }
+    
+    .stat-card {
+        padding: 16px !important;
+        /* Säkerställ att korten inte blir för platta */
+        min-height: 140px; 
+    }
+
+    /* Gör siffrorna stora och tydliga igen om de krympt */
+    .stat-value {
+        font-size: 1.6rem !important;
+        font-weight: 800;
+        margin-top: auto; /* Tryck ner siffran mot botten */
+        padding-top: 12px;
+    }
+}
+
+/* Hindra ikonen från att bli mosad om texten är lång */
+.stat-icon-box {
+    flex-shrink: 0;
+    width: 48px !important; 
+    height: 48px !important;
+}
 
