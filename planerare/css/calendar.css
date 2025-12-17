@@ -1,330 +1,295 @@
-// calendar.js
+/* =======================================================
+   FULLCALENDAR: OPTIMIZED & CLEAN (FINAL VERSION)
+   ======================================================= */
 
-let calendar = null;
-
-function mapJobsToEvents(jobs) {
-    return jobs
-        .filter(job => !job.deleted && job.status !== 'avbokad')
-        .map(job => {
-            // Datum & Tid
-            let start = job.datum.includes('T') ? job.datum : `${job.datum}T${job.tid || '08:00'}`;
-            
-            // Färgpalett
-            let mainColor = '#3b82f6'; let lightColor = '#eff6ff'; // Blå
-            
-            if (job.status === 'klar') { mainColor = '#10b981'; lightColor = '#ecfdf5'; } // Grön
-            else if (job.status === 'faktureras') { mainColor = '#8b5cf6'; lightColor = '#f5f3ff'; } // Lila
-            else if (job.status === 'offererad') { mainColor = '#f59e0b'; lightColor = '#fffbeb'; } // Orange
-
-            let regnr = job.regnr && job.regnr !== 'OKÄNT' ? job.regnr : '';
-            
-            return {
-                id: job.id,
-                title: job.kundnamn,
-                start: start,
-                extendedProps: {
-                    time: start.split('T')[1].substring(0, 5).replace(':', '.'),
-                    regnr: regnr,
-                    status: job.status,
-                    mainColor: mainColor,
-                    lightColor: lightColor,
-                    description: job.kommentar || ''
-                },
-                backgroundColor: mainColor, 
-                borderColor: mainColor
-            };
-        });
+/* --- 1. GRUNDBEHÅLLARE --- */
+#calendarView {
+    height: auto !important;       /* VIKTIGT: Väx med innehållet */
+    min-height: 0 !important;
+    display: flex;
+    flex-direction: column;
+    background: white;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 8px;
+    overflow: visible !important;  /* Låt den sticka iväg nedåt */
 }
 
-// FIXAD FUNKTION: Renderar listan
-function renderDayList(dateStr, events) {
-    const container = document.getElementById('selectedDayView');
-    if (!container) return;
+/* Tvinga FullCalendar att fylla ut (Löser zoom-glapp) */
+.fc-view-harness, .fc-view-harness-active,
+.fc-scrollgrid, .fc-scrollgrid-sync-table, 
+.fc-col-header-table, .fc-daygrid-body, .fc-daygrid-body-table {
+    width: 100% !important; flex-grow: 1 !important; height: 100% !important;
+}
 
-    // FIX: Jämför bara de första 10 tecknen (YYYY-MM-DD) för att ignorera tid
-    const dayEvents = events.filter(e => e.start.substring(0, 10) === dateStr);
+/* --- 2. HEADER TOOLBAR --- */
+.fc-header-toolbar {
+    padding: 12px 24px !important;
+    margin-bottom: 0 !important;
+    background-color: #fff;
+    border-bottom: 1px solid #cbd5e1 !important;
+    border-radius: 8px 8px 0 0 !important; 
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    flex-wrap: nowrap !important;
+    gap: 16px;
+}
+
+.fc-toolbar-chunk { display: flex !important; align-items: center !important; gap: 12px; }
+.fc-toolbar-title { font-size: 1.15rem !important; font-weight: 400 !important; color: #0f172a; text-transform: capitalize; margin-left: 10px !important; }
+
+/* --- 3. KNAPPAR --- */
+.fc-today-button {
+    color: #334155 !important;       /* Samma mörka färg som övriga */
+    background-color: #fff !important;
+    border-color: #e2e8f0 !important;
+    font-weight: 400 !important;
     
-    // Sortera på tid
-    dayEvents.sort((a,b) => a.start.localeCompare(b.start));
+    /* VIKTIGT: Ta bort "inaktiv" gråtoning om man är på dagens datum */
+    opacity: 1 !important; 
+    cursor: pointer !important;
+}
+.fc-today-button:hover { background-color: #f8fafc !important; color: #0f172a !important; border-color: #cbd5e1 !important; }
+.fc-button {
+    height: 34px !important; padding: 0 16px !important;
+    font-size: 0.9rem !important; font-weight: 400 !important;
+    border-radius: 4px !important; text-transform: capitalize !important;
+    background-color: #fff !important; border: 1px solid #e2e8f0 !important;
+    color: #334155 !important; box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+    outline: none !important; background-image: none !important;
+    transition: all 0.2s ease;
+}
+.fc-button:hover { background-color: #f8fafc !important; border-color: #cbd5e1 !important; color: #0f172a !important; }
 
-    container.style.display = 'block';
+/* Grupperade knappar (Runda hörn bara på kanterna) */
+.fc-button-group > .fc-button { margin: 0 !important; border-radius: 0 !important; }
+.fc-button-group > .fc-button:first-child { border-top-left-radius: 4px !important; border-bottom-left-radius: 4px !important; }
+.fc-button-group > .fc-button:last-child { border-top-right-radius: 4px !important; border-bottom-right-radius: 4px !important; }
+
+/* Pilar (< >) */
+.fc-prev-button, .fc-next-button {
+    width: 52px !important; height: 32px !important; padding: 0 !important;
+    background: transparent !important; border: none !important; box-shadow: none !important;
+    color: #0f172a !important; border-radius: 50% !important;
+    display: flex !important; align-items: center; justify-content: center;
+}
+.fc-prev-button:hover, .fc-next-button:hover { background-color: #f1f5f9 !important; color: #0f172a !important; }
+.fc-icon { font-size: 1.2rem !important; }
+
+/* --- 4. DAGAR & RUTNÄT (DAGAR INUTI RUTORNA) --- */
+
+/* Dölj den gamla separata headern */
+.fc-col-header, .fc-scrollgrid-section-header { display: none !important; }
+
+/* Datumrutan - LAYOUT 60PX TIDIGARE */
+.fc-daygrid-day-frame { min-height: 70px !important; border-top: none !important; padding-bottom: 0 !important; }
+
+/* Konfigurera toppen av rutan (Text + Siffra) ENDAST på första raden */
+.fc-daygrid-body tr:first-child .fc-daygrid-day-top {
+    flex-direction: column !important; justify-content: center !important;
+    align-items: center !important; padding-top: 12px !important; gap: 4px;
+}
+/* Datumsiffran (Generell stil) */
+.fc-daygrid-day-top { flex-direction: row !important; justify-content: center !important; padding-top: 4px !important; }
+.fc-daygrid-day-number { font-size: 0.7rem; color: #0f172a; font-weight: 400 !important; text-decoration: none !important; z-index: 2; margin: 0 !important; }
+
+/* Dagens datum (Blå cirkel) */
+.fc-day-today { background-color: transparent !important; }
+.fc-day-today .fc-daygrid-day-number {
+    background-color: #3b82f6; color: white; margin-top: 2px !important;
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.85rem; font-weight: 400 !important;
+}
+
+/* --- INJICERA VECKODAGAR (CSS TEXT) --- */
+.fc-daygrid-body tr:first-child .fc-day-mon .fc-daygrid-day-top::before { content: "MÅN"; }
+.fc-daygrid-body tr:first-child .fc-day-tue .fc-daygrid-day-top::before { content: "TIS"; }
+.fc-daygrid-body tr:first-child .fc-day-wed .fc-daygrid-day-top::before { content: "ONS"; }
+.fc-daygrid-body tr:first-child .fc-day-thu .fc-daygrid-day-top::before { content: "TORS"; }
+.fc-daygrid-body tr:first-child .fc-day-fri .fc-daygrid-day-top::before { content: "FRE"; }
+.fc-daygrid-body tr:first-child .fc-day-sat .fc-daygrid-day-top::before { content: "LÖR"; }
+.fc-daygrid-body tr:first-child .fc-day-sun .fc-daygrid-day-top::before { content: "SÖN"; }
+
+/* Styla veckodagstexten "Mån", "Tis", "Ons", "Tors", "Fre" */
+.fc-daygrid-body tr:first-child .fc-daygrid-day-top::before {
+    font-size: 0.55rem; font-weight: 300; color: #64748b;
+    text-transform: uppercase; letter-spacing: 1px; display: block; line-height: 1;
+}
+
+/* --- 5. EVENTS (DESKTOP) --- */
+.fc-daygrid-event {
+    margin: 1px 2px !important; background: transparent !important; border: none !important;
+    cursor: pointer; border-radius: 4px !important;
+}
+.fc-premium-event {
+    padding: 6px 2px; border-radius: 0 4px 4px 0;
+    border-left-width: 4px !important; border-left-style: solid !important;
+    font-size: 0.7rem; font-weight: 400 !important; text-align: left !important;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03); transition: filter 0.2s;
+}
+.fc-premium-event:hover { filter: brightness(0.95); }
+.fc-event-text { filter: brightness(0.5) contrast(200%); }
+
+/* --- 6. TOOLTIP (FIXAD POSITION) --- */
+.calendar-tooltip {
+    position: fixed; background: #ffffff; color: #1f2937;
+    padding: 12px 16px; border-radius: 12px; z-index: 99999;
+    pointer-events: none; /* VIKTIGT: Musen klickar igenom den = inget flimmer */
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1), 0 0 0 1px rgba(0,0,0,0.05);
+    width: auto; max-width: 280px; min-width: 220px;
+    opacity: 0; transition: opacity 0.15s ease-in-out;
+    display: flex; flex-direction: column; gap: 6px;
+    font-weight: 400; font-family: 'Inter', sans-serif;
+}
+.calendar-tooltip.show { opacity: 1; }
+
+.tt-row-primary { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; color: #111827; white-space: nowrap; }
+.tt-reg { text-transform: uppercase; letter-spacing: 0.5px; }
+.tt-name { overflow: hidden; text-overflow: ellipsis; }
+.tt-row-detail { display: flex; align-items: flex-start; gap: 8px; font-size: 0.85rem; color: #374151; line-height: 1.4; padding-top: 2px; }
+.tt-row-time { display: flex; align-items: center; gap: 8px; font-size: 0.75rem; color: #6b7280; margin-top: 2px; }
+.tt-icon { width: 14px; height: 14px; flex-shrink: 0; display: block; }
+.tt-icon-gray { color: #9ca3af; transform: translateY(1px); }
+.tt-status-icon { width: 14px; height: 14px; flex-shrink: 0; fill: currentColor; }
+
+/* 1. Ta bort ramen runt hela rutnätet */
+.fc-theme-standard .fc-scrollgrid { border: none !important; }
+
+/* 2. Ingen högerkant på sista kolumnen (Gäller rubriker och dagar) */
+.fc-theme-standard th:last-child, .fc-theme-standard td:last-child { border-right: none !important; }
+
+/* 3. Ingen bottenkant på sista raden i kalendern */
+.fc-daygrid-body tr:last-child td { border-bottom: none !important; }
+
+/* 4. Säkerställ att tabellens "fot" inte ritar en linje */
+.fc-scrollgrid-section-footer table, .fc-scrollgrid-section-body table { border-bottom: none !important; }
+
+/* --- 7. MOBILANPASSNING (MAX 768PX) --- */
+@media (max-width: 768px) {
+    /* Kalender-container */
+    #calendarView {
+        border-radius: 0 !important;
+        border-left: none !important;
+        border-right: none !important;
+        border-top: 1px solid #cbd5e1 !important;
+        border-bottom: 1px solid #cbd5e1 !important;
+        height: 100% !important;  
+        max-height: none !important;
+        display: flex; 
+        flex-direction: column; 
+        overflow: hidden;
+    }
     
-    // Scrolla ner till listan så den syns
-    setTimeout(() => {
-        container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }, 100);
+    #calendar-wrapper { flex-shrink: 0; }
 
-    container.classList.add('show');
-
-    if (!history.state || !history.state.dayListOpen) {
-        history.pushState({ uiState: 'calendar', dayListOpen: true }, null, window.location.href);
+    /* Header (Dölj titel, visa knappar) */
+    .fc-header-toolbar {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        justify-content: space-between !important;
+        gap: 8px !important; 
+        padding: 8px 12px !important;
+        height: auto !important; /* Låt headern växa om knapparna tar plats */
+        flex-shrink: 0 !important; /* Krymp inte headern */
     }
-
-    if (dayEvents.length === 0) {
-        container.innerHTML = `<div class="day-list-empty">Inga jobb detta datum (${dateStr})</div>`;
-        return;
-    }
-
-    let html = `<div class="day-list-header">Jobb ${dateStr}</div>`;
     
-    dayEvents.forEach(evt => {
-        const props = evt.extendedProps;
-        // Skapa kortet
-        html += `
-        <div class="day-list-item" onclick="if(window.openEditModal) window.openEditModal('${evt.id}')" style="border-left: 4px solid ${props.mainColor};">
-            <div class="day-list-time">${props.time}</div>
-            <div class="day-list-info">
-                <span class="day-list-title">${evt.title}</span>
-                <div class="day-list-meta">
-                    ${props.regnr ? `<span class="day-list-reg">${props.regnr}</span>` : ''}
-                    ${props.description ? `<span class="day-list-desc">${props.description}</span>` : ''}
-                </div>
-            </div>
-        </div>`;
-    });
+    .fc-toolbar-title { display: none !important; }
 
-    container.innerHTML = html;
-}
-
-// Global funktion för att stänga listan
-window.closeDayList = function() {
-    const container = document.getElementById('selectedDayView');
-    if (container) {
-        container.classList.remove('show');
-        // Ta bort markeringen i kalendern
-        document.querySelectorAll('.fc-day-selected').forEach(el => el.classList.remove('fc-day-selected'));
-    }
-    // Om vi stänger manuellt, backa historiken om den är öppen
-    if (history.state && history.state.dayListOpen) {
-        history.back();
-    }
-};
-
-export function initCalendar(elementId, jobsData, onEventClickCallback, onDropCallback) {
-    const wrapperEl = document.getElementById('calendar-wrapper');
-    if (!wrapperEl) return;
-
-    if (calendar) calendar.destroy();
-
-    const isMobile = window.innerWidth <= 768;
-    const events = mapJobsToEvents(jobsData);
-
-    calendar = new FullCalendar.Calendar(wrapperEl, {
-        initialView: 'dayGridMonth',
-        locale: 'sv',
-        firstDay: 1,
-        fixedWeekCount: false,
-        showNonCurrentDates: false,
-        height: 'auto', //auto
-        contentHeight: 'auto', //auto
-        
-        // --- NYTT: Aktivera Drag & Drop ---
-        editable: true,       // Tillåter att man drar events
-        eventStartEditable: true, 
-        eventDurationEditable: false, // Vi låser längden (tills vidare)
-        
-        titleFormat: isMobile 
-            ? { year: 'numeric', month: 'short' } 
-            : { year: 'numeric', month: 'long' },
-
-        headerToolbar: {
-            left: 'today prev,next title', 
-            center: '',         
-            right: 'dayGridMonth,listYear'
-        },
-        buttonText: { today: 'Idag', month: 'Månad' },
-        views: {
-            listYear: { 
-                buttonText: 'Lista',
-                // Detta sätter startdatumet för vyn till "idag" dynamiskt
-                validRange: function(nowDate) {
-                    return {
-                        start: nowDate // Startar från dagens datum
-                    };
-                }
-            }
-        },
-
-        // --- HOVER LOGIK (Din nya snygga kod) ---
-        eventMouseEnter: function(info) {
-            if (window.innerWidth <= 768) return; 
-            const props = info.event.extendedProps;
-            const dateObj = info.event.start;
-            const timeStr = dateObj ? dateObj.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' }).replace(':', '.') : '';
-            const regNr = props.regnr || '---';
-            const customerName = info.event.title;
-            const commentText = props.description || '';
-
-            let tooltip = document.getElementById('fc-custom-tooltip');
-            if (!tooltip) {
-                tooltip = document.createElement('div');
-                tooltip.id = 'fc-custom-tooltip';
-                tooltip.className = 'calendar-tooltip';
-                document.body.appendChild(tooltip);
-            }
-
-            const iconStatus = `<svg class="tt-status-icon" style="color: ${props.mainColor};" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /></svg>`;
-            const iconComment = `<svg class="tt-icon tt-icon-gray" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>`;
-            const iconClock = `<svg class="tt-icon tt-icon-gray" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`;
-
-            let htmlContent = `
-                <div class="tt-row-primary">
-                    ${iconStatus}
-                    <span class="tt-reg">${regNr}</span>
-                    <span class="tt-sep">•</span>
-                    <span class="tt-name">${customerName}</span>
-                </div>`;
-
-            if (commentText.trim().length > 0) {
-                htmlContent += `
-                <div class="tt-row-detail">
-                    ${iconComment}
-                    <span>${commentText}</span>
-                </div>`;
-            }
-
-            htmlContent += `
-                <div class="tt-row-time">
-                    ${iconClock}
-                    <span>${timeStr}</span>
-                </div>`;
-
-            tooltip.innerHTML = htmlContent;
-            tooltip.classList.add('show');
-            
-            const tooltipRect = tooltip.getBoundingClientRect();
-            const x = info.jsEvent.clientX;
-            const y = info.jsEvent.clientY;
-            let top = y + 15;
-            let left = x + 15;
-
-            if (top + tooltipRect.height > window.innerHeight) top = y - tooltipRect.height - 10;
-            if (left + tooltipRect.width > window.innerWidth) left = x - tooltipRect.width - 10;
-
-            tooltip.style.top = top + 'px';
-            tooltip.style.left = left + 'px';
-        },
-        
-        eventMouseLeave: function(info) {
-            const tooltip = document.getElementById('fc-custom-tooltip');
-            if (tooltip) {
-                tooltip.classList.remove('show');
-                tooltip.style.left = '-9999px'; 
-            }
-        },
-        
-        // --- NYTT: Hantera när man släpper eventet ---
-        eventDrop: function(info) {
-            // Hämta det nya datumet
-            const d = info.event.start;
-            
-            // Konvertera Date-objektet till din strängformat: YYYY-MM-DDTHH:MM
-            // Vi behåller tiden från eventet (om man drar till ny dag behålls tiden oftast)
-            
-            const year = d.getFullYear();
-            const month = String(d.getMonth() + 1).padStart(2, '0');
-            const day = String(d.getDate()).padStart(2, '0');
-            const hours = String(d.getHours()).padStart(2, '0');
-            const minutes = String(d.getMinutes()).padStart(2, '0');
-            
-            const newDateStr = `${year}-${month}-${day}T${hours}:${minutes}`;
-            
-            // Anropa callback-funktionen i app.js för att spara till Firebase
-            if (onDropCallback) {
-                onDropCallback(info.event.id, newDateStr, info.revert);
-            }
-        },
-
-        events: events,
-        
-        eventContent: function(arg) {
-            const props = arg.event.extendedProps;
-            const isList = arg.view.type.toLowerCase().includes('list');
-            const isMob = window.innerWidth <= 768;
-
-            // --- 1. LISTVY (Högst prioritet - Gäller både mobil och dator) ---
-            // Här ritar vi ut exakt samma info oavsett skärmstorlek
-            if (isList) {
-                let contentHtml = `
-                    <div class="fc-list-custom-content">
-                        <div class="fc-list-top-row">
-                            <span class="fc-list-title-text">${arg.event.title}</span>
-                            ${props.regnr ? `<span class="fc-list-reg-badge">${props.regnr}</span>` : ''}
-                        </div>
-                        ${props.description ? `<div class="fc-list-desc-text">${props.description}</div>` : ''}
-                    </div>
-                `;
-                return { html: contentHtml };
-            }
-
-            // --- 2. MOBIL MÅNADSVY (Vanlig kalender) ---
-            // Visa bara prickar här för att spara plats
-            if (isMob) {
-            return { html: `<div class="fc-mobile-dot" style="background-color: ${props.mainColor};"></div>` };
-            } 
-
-            // --- 3. DATOR MÅNADSVY ---
-            // Visa stora block
-            else {
-                let textString = `${props.time} `;
-                if (props.regnr) textString += `${props.regnr} `;
-                textString += arg.event.title;
-
-                return { 
-                    html: `
-                    <div class="fc-premium-event" style="
-                        border-left: 3px solid ${props.mainColor}; 
-                        background-color: ${props.lightColor}; 
-                        color: ${props.mainColor};">
-                        <span class="fc-event-text">${textString}</span>
-                    </div>` 
-                };
-            }
-        },
-
-        dateClick: function(info) {
-            if (isMobile) {
-                document.querySelectorAll('.fc-day-selected').forEach(el => el.classList.remove('fc-day-selected'));
-                if (info.dayEl) info.dayEl.classList.add('fc-day-selected');
-                renderDayList(info.dateStr, events);
-            }
-        },
-
-        eventClick: function(info) {
-            if (isMobile) {
-                const eventDate = info.event.startStr.split('T')[0];
-                const dayEl = document.querySelector(`.fc-day[data-date="${eventDate}"]`);
-                document.querySelectorAll('.fc-day-selected').forEach(el => el.classList.remove('fc-day-selected'));
-                if (dayEl) dayEl.classList.add('fc-day-selected');
-                renderDayList(eventDate, events);
-                info.jsEvent.stopPropagation();
-            } else {
-                if (onEventClickCallback) onEventClickCallback(info.event.id);
-            }
-        }
-    });
-
-    calendar.render();
-
-    // Auto-välj idag på mobil... (Din befintliga kod här)
-    const isMobileStart = window.innerWidth <= 768;
-    if (isMobileStart) {
-        const today = new Date();
-        const dateStr = today.toISOString().split('T')[0];
-        const dayEl = document.querySelector(`.fc-day[data-date="${dateStr}"]`);
-        if (dayEl) dayEl.classList.add('fc-day-selected');
-        renderDayList(dateStr, events); 
+    .fc-button {
+        height: 30px !important;
+        padding: 0 10px !important;
+        font-size: 0.8rem !important;
+        line-height: 28px !important;
     }
 
-    window.addEventListener('popstate', function(event) {
-        const container = document.getElementById('selectedDayView');
-        if (container && container.classList.contains('show')) {
-            container.classList.remove('show');
-            document.querySelectorAll('.fc-day-selected').forEach(el => el.classList.remove('fc-day-selected'));
-        }
-    });
+    /* Justera pilarna (< >) så de matchar */
+    .fc-prev-button, .fc-next-button { width: 30px !important; height: 30px !important; padding: 0 !important; }
+    
+    /* Justera avståndet mellan knappgrupperna */
+    .fc-toolbar-chunk { gap: 8px !important; display: flex !important; align-items: center !important; }
+
+    /* Rutorna (Mindre höjd, klickbara) */
+    .fc-daygrid-day-frame { min-height: 40px !important; cursor: pointer; padding-bottom: 4px; }
+    
+    /* Events (Prickar) */
+    .fc-daygrid-day-events {
+        display: flex !important; flex-direction: column !important;
+        align-items: center !important; justify-content: flex-start;
+        gap: 2px !important; margin-top: 2px !important; min-height: 12px;
+    }
+    .fc-mobile-dot {
+        width: 32px !important; height: 4px !important;
+        border-radius: 2px !important; margin: 0 !important; flex-shrink: 0;
+    }
+    
+    /* --- POPUP-LISTA (När man klickar på ett datum) --- */
+    #selectedDayView {
+        position: fixed; bottom: 0; left: 0; right: 0;
+        width: 100%; height: auto; max-height: 80vh;
+        background-color: #ffffff; z-index: 2000;
+        border-radius: 24px 24px 0 0;
+        box-shadow: 0 -10px 40px rgba(0,0,0,0.15);
+        transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+        overflow-y: auto; padding: 20px; padding-bottom: 80px;
+    }
+    #selectedDayView.show { transform: translateY(0); }
+
+    .day-list-header {
+        font-size: 0.8rem; font-weight: 700; color: #94a3b8;
+        text-transform: uppercase; margin-bottom: 12px;
+    }
+    .day-list-empty { text-align: center; color: #94a3b8; font-style: italic; font-size: 0.9rem; padding: 20px; }
+
+    .day-list-item {
+        background: white; border-radius: 12px; padding: 12px 16px; margin-bottom: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.03); border: 1px solid #f1f5f9;
+        display: flex; align-items: center; gap: 12px; cursor: pointer;
+    }
+    .day-list-item:active { background-color: #f8fafc; transform: scale(0.98); }
+
+    .day-list-time { font-size: 0.9rem; font-weight: 600; color: #64748b; min-width: 45px; }
+    .day-list-info { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+    .day-list-title { font-size: 1rem; font-weight: 600; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    
+    .day-list-meta { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+    .day-list-reg { font-size: 0.7rem; color: #334155; font-weight: 700; background: #e2e8f0; padding: 2px 6px; border-radius: 4px; }
+    .day-list-desc { font-size: 0.75rem; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
 }
 
-export function setCalendarTheme(theme) {
-    if (calendar) calendar.render();
+/* utseende för listvy */
+
+.fc-list-day-cushion { background-color: #f1f5f9 !important;  padding: 8px 16px !important; }
+.fc-list-event-time {
+    width: 1% !important;        /* Krymp till minsta möjliga */
+    white-space: nowrap !important;
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+    color: #334155 !important;   /* Mörkare färg för läsbarhet */
+    vertical-align: top !important; /* Starta i toppen om texten är lång */
+    padding-top: 10px !important;   /* Justera så den livar med texten */
 }
+/* 5. KOLUMN 2: PRICKEN */
+.fc-list-event-graphic { padding-right: 12px !important; }
+.fc-list-event-dot { border-width: 4px !important; transform: scale(1.1); }
+.fc-list-event-title { vertical-align: top !important; color: #1e293b !important; font-size: 0.8rem !important; line-height: 1.2 !important; }
+.fc-list-event-title span {        
+    font-weight: 600 !important;
+}
+
+.fc-list-table { width: 100% !important;border-collapse: collapse !important; border: none !important; }
+
+/*RUBRIK 20 DECEMBER 2025 LÖRDAG*/
+.fc-list-day-text,
+.fc-list-day-side-text {
+    font-size: 0.75rem !important;
+    font-weight: 900 !important;
+    color: #64748b !important; /* Slate-500 */
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important; /* Lite glesare text */
+    text-decoration: none !important;
+}
+
+/*BLÅ HOVER ÖVER RADERNA*/
+.fc-list-event:hover td { background-color: #f0f9ff !important; /* Sky-50 */ }
