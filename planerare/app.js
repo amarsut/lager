@@ -757,17 +757,16 @@ function updateStatsCounts(jobs) {
     const unplannedCount = active.filter(j => !j.datum || j.datum === '').length;
     const offeredCount = active.filter(j => j.status === 'offererad').length;
 
-    // Uppdatera det nya kombinerade kortet
+    // Uppdatera "Ej Bokat"-kortet
     safeUpdate('stat-backlog', unplannedCount + offeredCount);
 
-    // Hitta raden och lägg in en ren textrad
+    // Hitta raden och lägg in diskret text
     const backlogRow = document.querySelector('.backlog-row');
     if (backlogRow) {
-        // Vi använder en "non-breaking space" (&nbsp;) för att hålla ihop orden
         backlogRow.innerHTML = `
-            <span class="sub-stat">Väntar <b class="sub-val">${unplannedCount}</b></span>
+            <span class="sub-text">Väntar <b class="sub-val">${unplannedCount}</b></span>
             <span class="sub-divider">|</span>
-            <span class="sub-stat">Offert <b class="sub-val">${offeredCount}</b></span>
+            <span class="sub-text">Offert <b class="sub-val">${offeredCount}</b></span>
         `;
     }
 
