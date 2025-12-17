@@ -175,7 +175,7 @@
     .stat-card {
         /* Smalare kort (32vw) för att se mer */
         flex: 0 0 32vw !important; 
-        width: 32vw !important;
+        width: 36vw !important;
         
         /* Högre kort */
         height: 160px !important; 
@@ -192,9 +192,9 @@
     
     /* Justera textraden för mobil */
     .backlog-row {
-        left: 12px !important;
-        bottom: 12px !important;
-        gap: 8px !important;
+        left: 10px !important;
+        bottom: 5px !important;
+        gap: 4px !important;
     }
     
     .sub-stat {
