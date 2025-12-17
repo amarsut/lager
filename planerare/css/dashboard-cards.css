@@ -241,3 +241,48 @@
     border-radius: 12px;
     font-size: 0.75rem;
 }
+
+/* --- Uppdaterad design för Ej Bokat-kortet --- */
+
+/* Gör så att raderna hamnar under varandra */
+.backlog-row {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    width: 100%;
+    margin-top: auto; /* Trycker ner infon till botten av kortet */
+    padding-top: 8px;
+}
+
+/* Enskild rad (Väntar ... 3) */
+.stat-row-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+    color: #64748b;
+    width: 100%;
+}
+
+/* Siffer-brickan (Pill) */
+.stat-badge {
+    font-weight: 700;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    min-width: 30px;
+    text-align: center;
+}
+
+/* Färger för brickorna */
+.stat-badge.orange {
+    background-color: #fff7ed;
+    color: #c2410c;
+    border: 1px solid #ffedd5;
+}
+
+.stat-badge.blue {
+    background-color: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #dbeafe;
+}
