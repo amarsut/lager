@@ -4217,3 +4217,55 @@ input[type=range]:active::-webkit-slider-thumb { transform: scale(1.1); border-c
 
 
 
+
+/* --- MODERNA JOBBKORT MED GRADIENTER --- */
+
+.job-card-new {
+    /* Grundinställning: Vit med mycket svag grå toning (för "Övriga") */
+    background: linear-gradient(145deg, #ffffff 0%, #f9fafb 100%);
+    border: 1px solid #f3f4f6; /* Ljusare border */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03); /* Mjukare skugga */
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Klicka-effekt */
+.job-card-new:active {
+    transform: scale(0.98);
+}
+
+/* --- STATUS-BASERADE GRADIENTER (Matchar dina dashboard-kort) --- */
+
+/* Kommande (Blå) - Svag isblå toning */
+.job-card-new.status-kommande, 
+.job-card-new[data-status="kommande"] {
+    background: linear-gradient(145deg, #ffffff 0%, #eff6ff 100%) !important;
+    border-color: #dbeafe !important;
+}
+
+/* Faktureras (Lila) - Svag lila toning */
+.job-card-new.status-faktureras,
+.job-card-new[data-status="faktureras"] {
+    background: linear-gradient(145deg, #ffffff 0%, #faf5ff 100%) !important;
+    border-color: #f3e8ff !important;
+}
+
+/* Klar (Grön) - Svag mint-toning */
+.job-card-new.status-klar,
+.job-card-new[data-status="klar"] {
+    background: linear-gradient(145deg, #ffffff 0%, #f0fdf4 100%) !important;
+    border-color: #dcfce7 !important;
+}
+
+/* Offererad/Ej Bokat (Orange) - Svag persiko-toning */
+.job-card-new.status-offererad,
+.job-card-new[data-status="offererad"] {
+    background: linear-gradient(145deg, #ffffff 0%, #fff7ed 100%) !important;
+    border-color: #ffedd5 !important;
+}
+
+/* Avbokad (Röd) - Svag röd toning */
+.job-card-new.status-avbokad,
+.job-card-new[data-status="avbokad"] {
+    background: linear-gradient(145deg, #ffffff 0%, #fef2f2 100%) !important;
+    border-color: #fee2e2 !important;
+}
