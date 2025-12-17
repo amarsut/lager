@@ -338,17 +338,24 @@ function showDrillDown(jobs, label) {
     const title = document.getElementById('drillDownTitle');
     
     if(container && list) {
+        // 1. Visa containern och sätt innehåll
         container.style.display = 'block';
         title.textContent = `Detaljer för ${label}`;
         list.innerHTML = '';
 
+        // 2. Sortera och rendera listan
         const sorted = jobs.sort((a,b) => (parseInt(b.kundpris)||0) - (parseInt(a.kundpris)||0));
         sorted.forEach(j => {
             const val = currentViewMode === 'profit' ? calculateJobProfit(j) : (parseInt(j.kundpris)||0);
             const colorClass = currentViewMode === 'profit' ? 'text-green' : 'text-blue';
             
+            // Kolla om openEditModal finns innan vi lägger till onclick
+            const clickAction = (typeof window.openEditModal === 'function') 
+                ? `onclick="openEditModal('${j.id}')"` 
+                : '';
+
             list.innerHTML += `
-            <div class="drill-item" onclick="if(window.openEditModal) openEditModal('${j.id}')">
+            <div class="drill-item" ${clickAction}>
                 <div class="drill-left">
                     <span class="drill-reg">${j.regnr || 'Inget Reg'}</span>
                     <span class="drill-desc">${j.kundnamn} • ${j.paket || 'Service'}</span>
@@ -356,7 +363,26 @@ function showDrillDown(jobs, label) {
                 <span class="drill-price ${colorClass}">${val.toLocaleString()} kr</span>
             </div>`;
         });
-        container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+        // 3. SMART SCROLL (FIXEN)
+        // Vi letar upp graf-kortet istället för listan
+        const chartCard = document.querySelector('.chart-card-compact');
+        
+        if (chartCard) {
+            // Räkna ut var kortet är i förhållande till sidans topp
+            const rect = chartCard.getBoundingClientRect();
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            
+            // Justera för din sticky header (ca 70-80px höjd)
+            const headerOffset = 80; 
+            
+            const finalPosition = rect.top + scrollTop - headerOffset;
+
+            window.scrollTo({
+                top: finalPosition,
+                behavior: 'smooth'
+            });
+        }
     }
 }
 
