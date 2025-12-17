@@ -16,6 +16,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 	<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 	<div id="loadingOverlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #ffffff; z-index: 20000; display: flex; align-items: center; justify-content: center;">
@@ -304,7 +305,7 @@
 							
 							<p class="stat-card-value" id="stat-backlog">0</p>
 							
-							<div class="stat-subtext" style="font-size: 0.7rem; color: #64748b; font-weight: 600; margin-top: auto;">
+							<div class="stat-subtext money-related" style="font-size: 0.7rem; color: #64748b; font-weight: 600; margin-top: auto;">
 								<span id="count-unplanned">0</span> väntar • <span id="count-offered">0</span> offert
 							</div>
 						</div>
@@ -405,6 +406,74 @@
 					    </div>
 					
 					    <div id="customerGrid" class="customer-grid"></div>
+					</div>
+
+					<div id="statisticsView" style="display: none; background: var(--bg-color); min-height: 100vh; padding-bottom: 80px;">
+    
+						<div class="one-ui-header-simple sticky-header-fix">
+							<button class="simple-back-btn" onclick="goToOverviewFromStats()">
+								<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+									<line x1="19" y1="12" x2="5" y2="12"></line>
+									<polyline points="12 19 5 12 12 5"></polyline>
+								</svg>
+							</button>
+							<h1 class="header-simple-title">Ekonomi</h1>
+						</div>
+
+						<div class="stats-controls-bar">
+							<div id="statsDateRange" class="date-range-text">Laddar datum...</div>
+							<button class="filter-toggle-btn" onclick="toggleStatsFilterMenu()">
+								<span id="currentFilterLabel">3 Mån</span>
+								<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+							</button>
+						</div>
+
+						<div id="statsFilterDrawer" class="filter-drawer" style="display:none;">
+							<div class="filter-drawer-scroll">
+								<button class="filter-pill-large" onclick="setStatsFilter(1, this)">1 Månad</button>
+								<button class="filter-pill-large active" onclick="setStatsFilter(3, this)">3 Månader</button>
+								<button class="filter-pill-large" onclick="setStatsFilter(6, this)">6 Månader</button>
+								<button class="filter-pill-large" onclick="setStatsFilter(12, this)">1 År</button>
+								<button class="filter-pill-large" onclick="setStatsFilter('all', this)">All tid</button>
+							</div>
+						</div>
+
+						<div id="statsContent" class="stats-content-wrapper" style="opacity: 0; transition: opacity 0.3s ease;">
+							<div class="fun-stats-grid compact-row">
+								<div class="fun-stat-card compact">
+									<span class="fs-label">Omsättning</span>
+									<span class="fs-val highlight-blue" id="statTotalRevenue">0</span>
+									<div id="trendRevenue" class="trend-mini">--</div>
+								</div>
+								<div class="fun-stat-card compact">
+									<span class="fs-label">Genomfört</span>
+									<span class="fs-val highlight-dark" id="statCompletedJobs">0</span>
+									<span class="fs-sub-label">st jobb</span>
+								</div>
+								<div class="fun-stat-card compact">
+									<span class="fs-label">Snittnota</span>
+									<span class="fs-val highlight-green" id="statAvgValue">0</span>
+									<div id="trendAvg" class="trend-mini">--</div>
+								</div>
+							</div>
+
+							<div class="chart-card-compact" style="margin-top: 12px;">
+								<div class="chart-header-row">
+									<span class="chart-label">Trend</span>
+									<button class="icon-btn-tiny" onclick="downloadStatsChart()">
+										<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+									</button>
+								</div>
+								<div class="chart-canvas-container">
+									<canvas id="revenueChartCanvas"></canvas>
+								</div>
+							</div>
+
+							<div class="top-list-card" style="margin-top: 12px;">
+								<h3 class="top-list-title">Bästa Kunder</h3>
+								<div id="topCustomersList"></div>
+							</div>
+						</div>
 					</div>
 
                 </div>
@@ -737,187 +806,157 @@
 	</div>
 
 	<div id="settingsModal" class="modal-backdrop one-ui-backdrop" style="z-index: 20002;">
-	    <div class="one-ui-container">
-	        
-	        <div class="one-ui-header-simple">
-	            <button class="simple-back-btn" onclick="closeSettings()">
-	                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-	            </button>
-	            <h1 class="header-simple-title">Meny</h1>
-	        </div>
-	
-	        <div class="one-ui-content compact-mode">
-	            
-	            <div class="settings-section-label">GENVÄGAR</div>
-	            
-	            <div class="menu-grid">
-	                <div class="menu-card" id="menuBtnCustomers">
-	                    <div class="menu-icon-box blue">
-	                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-	                    </div>
-	                    <span>Kunder</span>
-	                </div>
-	
-	                <div class="menu-card">
-	                    <div class="menu-icon-box orange">
-	                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
-	                    </div>
-	                    <span>Lager</span>
-	                </div>
-	                
-	                <div class="menu-card" id="menuBtnCalendar"> <div class="menu-icon-box purple">
-					        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-					    </div>
-					    <span>Kalender</span>
+		<div class="one-ui-container">
+			
+			<div class="one-ui-header-simple">
+				<button class="simple-back-btn" onclick="closeSettings()">
+					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+				</button>
+				<h1 class="header-simple-title">Meny</h1>
+			</div>
+
+			<div class="one-ui-content compact-mode">
+				
+				<div class="settings-section-label">GENVÄGAR</div>
+				<div class="menu-grid">
+					<div class="menu-card" id="menuBtnCustomers">
+						<div class="menu-icon-box blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></div>
+						<span>Kunder</span>
 					</div>
-	
-	                <div class="menu-card">
-	                    <div class="menu-icon-box green">
-	                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-	                    </div>
-	                    <span>Statistik</span>
-	                </div>
-	            </div>
-	
-	            <div class="settings-separator" style="margin: 24px 0;"></div>
-	
-	            <div class="settings-section-label">VISNING</div>
-	            
-	            <div class="settings-card-group">
-	                <label class="settings-item">
-	                    <div class="settings-text-col">
-	                        <span class="settings-title">Privacy Mode</span>
-	                        <span class="settings-desc">Dölj belopp i översikten</span>
-	                    </div>
-	                    <div class="android-switch">
-	                        <input type="checkbox" id="privacyToggle">
-	                        <span class="slider"></span>
-	                    </div>
-	                </label>
-	
-	                <div class="settings-separator"></div>
-	
-	                <label class="settings-item">
-	                    <div class="settings-text-col">
-	                        <span class="settings-title">Mörkt läge</span>
-	                        <span class="settings-desc">Byt utseende</span>
-	                    </div>
-	                    <div class="android-switch">
-	                        <input type="checkbox" id="themeToggle">
-	                        <span class="slider"></span>
-	                    </div>
-	                </label>
-	            </div>
+					<div class="menu-card">
+						<div class="menu-icon-box orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg></div>
+						<span>Lager</span>
+					</div>
+					<div class="menu-card" id="menuBtnCalendar"> 
+						<div class="menu-icon-box purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></div>
+						<span>Kalender</span>
+					</div>
+					<div class="menu-card" id="menuBtnStatistics"> 
+						<div class="menu-icon-box green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg></div>
+						<span>Statistik</span>
+					</div>
+				</div>
+
+				<div class="settings-separator" style="margin: 24px 0;"></div>
+
+				<div class="settings-section-label">VISNING</div>
+				<div class="settings-card-group">
+					<label class="settings-item">
+						<div class="settings-text-col">
+							<span class="settings-title">Privacy Mode</span>
+							<span class="settings-desc">Dölj belopp i översikten</span>
+						</div>
+						<div class="android-switch">
+							<input type="checkbox" id="privacyToggle"><span class="slider"></span>
+						</div>
+					</label>
+					<div class="settings-separator"></div>
+					<label class="settings-item">
+						<div class="settings-text-col">
+							<span class="settings-title">Mörkt läge</span>
+							<span class="settings-desc">Byt utseende</span>
+						</div>
+						<div class="android-switch">
+							<input type="checkbox" id="themeToggle"><span class="slider"></span>
+						</div>
+					</label>
+				</div>
 
 				<div class="settings-separator"></div>
 
 				<div class="settings-item" style="flex-direction: column; align-items: flex-start; gap: 12px;">
-				    <div style="display: flex; justify-content: space-between; width: 100%;">
-				        <div class="settings-text-col">
-				            <span class="settings-title">Zoom & Skala</span>
-				            <span class="settings-desc">Justera storleken på hela appen</span>
-				        </div>
-				        <span id="zoomDisplay" style="font-weight: 700; color: #3b82f6; font-size: 0.9rem;">100%</span>
-				    </div>
-				    
-				    <div class="zoom-slider-container" style="width: 100%; display: flex; align-items: center; gap: 12px;">
-				        <span style="font-size: 0.8rem; color: #9ca3af;">A</span>
-				        <input type="range" id="zoomSlider" min="75" max="110" step="5" value="100" style="flex: 1;">
-				        <span style="font-size: 1.1rem; font-weight: 700; color: #111;">A</span>
-				    </div>
+					<div style="display: flex; justify-content: space-between; width: 100%;">
+						<div class="settings-text-col">
+							<span class="settings-title">Zoom & Skala</span>
+							<span class="settings-desc">Justera storleken på hela appen</span>
+						</div>
+						<span id="zoomDisplay" style="font-weight: 700; color: #3b82f6; font-size: 0.9rem;">100%</span>
+					</div>
+					<div class="zoom-slider-container" style="width: 100%; display: flex; align-items: center; gap: 12px;">
+						<span style="font-size: 0.8rem; color: #9ca3af;">A</span>
+						<input type="range" id="zoomSlider" min="75" max="110" step="5" value="100" style="flex: 1;">
+						<span style="font-size: 1.1rem; font-weight: 700; color: #111;">A</span>
+					</div>
 				</div>
-	
-	            <div class="settings-section-label">LAGERHANTERING</div>
-	            <div class="settings-card-group">
-	                <div class="settings-item inventory-card">
-	                    
-	                    <div class="drop-card-layout">
-	                        <div class="drop-icon-container">
-	                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-	                                <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" class="drop-outline"></path>
-	                                <path d="M12 18a2 2 0 1 0 0-4 2 2 0 0 0 0 4z" fill="currentColor" class="drop-inner"></path>
-	                            </svg>
-	                        </div>
-	
-	                        <div class="drop-info">
-	                            <div class="drop-header">
-	                                <span class="settings-title">Motorolja 5W-30</span>
-	                                <span class="oil-badge compact" id="oilDateBadge" style="display:none;">---</span>
-	                            </div>
-	                            <div class="drop-stats">
-	                                <span id="oilLevelText">Laddar...</span>
-	                            </div>
-	                        </div>
-	
-	                        <div class="drop-percent">
-	                            <span id="oilPercent">0%</span>
-	                        </div>
-	                    </div>
-	
-	                    <div class="oil-progress-bg compact-bar">
-	                        <div id="oilProgressBar" class="oil-progress-fill" style="width: 0%;"></div>
-	                    </div>
-	
-	                    <button class="refill-text-btn" onclick="toggleOilForm()">
-	                        + Registrera nytt fat
-	                    </button>
-	
-	                    <div id="oilRefillForm" class="oil-refill-container" style="display:none;">
-	                        <div class="refill-box">
-	                            <p class="refill-title">Registrera inköp</p>
-	                            <div class="refill-inputs">
-	                                <div class="input-group-small">
-	                                    <label>Volym (Liter)</label>
-	                                    <input type="number" id="newBarrelVol" value="208" placeholder="208">
-	                                </div>
-	                                <div class="input-group-small">
-	                                    <label>Inköpsdatum</label>
-	                                    <input type="date" id="newBarrelDate">
-	                                </div>
-	                            </div>
-	                            <button class="save-barrel-btn" onclick="saveNewBarrel()">
-	                                Spara & Nollställ
-	                            </button>
-	                        </div>
-	                    </div>
-	
-	                </div>
-	            </div>
+
+				<div class="settings-section-label">LAGERHANTERING</div>
+				<div class="settings-card-group">
+					<div class="settings-item inventory-card">
+						<div class="drop-card-layout">
+							<div class="drop-icon-container">
+								<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+									<path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" class="drop-outline"></path>
+									<path d="M12 18a2 2 0 1 0 0-4 2 2 0 0 0 0 4z" fill="currentColor" class="drop-inner"></path>
+								</svg>
+							</div>
+							<div class="drop-info">
+								<div class="drop-header">
+									<span class="settings-title">Motorolja 5W-30</span>
+									<span class="oil-badge compact" id="oilDateBadge" style="display:none;">---</span>
+								</div>
+								<div class="drop-stats">
+									<span id="oilLevelText">Laddar...</span>
+								</div>
+							</div>
+							<div class="drop-percent">
+								<span id="oilPercent">0%</span>
+							</div>
+						</div>
+						<div class="oil-progress-bg compact-bar">
+							<div id="oilProgressBar" class="oil-progress-fill" style="width: 0%;"></div>
+						</div>
+						<button class="refill-text-btn" onclick="toggleOilForm()">+ Registrera nytt fat</button>
+						<div id="oilRefillForm" class="oil-refill-container" style="display:none;">
+							<div class="refill-box">
+								<p class="refill-title">Registrera inköp</p>
+								<div class="refill-inputs">
+									<div class="input-group-small">
+										<label>Volym (Liter)</label>
+										<input type="number" id="newBarrelVol" value="208" placeholder="208">
+									</div>
+									<div class="input-group-small">
+										<label>Inköpsdatum</label>
+										<input type="date" id="newBarrelDate">
+									</div>
+								</div>
+								<button class="save-barrel-btn" onclick="saveNewBarrel()">Spara & Nollställ</button>
+							</div>
+						</div>
+					</div>
+				</div>
 
 				<div class="settings-section-label">SYSTEM</div>
 				<div class="settings-card-group">
-				    <button class="settings-item" id="btnHardReset" style="width:100%; border:none; text-align:left;">
-				        <div class="settings-text-col">
-				            <span class="settings-title" style="color: #ef4444;">Tvinga uppdatering</span>
-				            <span class="settings-desc">Rensar cache och hämtar senaste versionen</span>
-				        </div>
-				        <div style="color: #ef4444;">
-				            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:20px; height:20px;">
-				                <path d="M23 4v6h-6"></path>
-				                <path d="M1 20v-6h6"></path>
-				                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
-				            </svg>
-				        </div>
-				    </button>
+					<button class="settings-item" id="btnHardReset" style="width:100%; border:none; text-align:left;">
+						<div class="settings-text-col">
+							<span class="settings-title" style="color: #ef4444;">Tvinga uppdatering</span>
+							<span class="settings-desc">Rensar cache och hämtar senaste versionen</span>
+						</div>
+						<div style="color: #ef4444;">
+							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:20px; height:20px;">
+								<path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+							</svg>
+						</div>
+					</button>
 				</div>
-	
-	            <div class="settings-section-label">KONTO</div>
-	            <div class="settings-card-group">
-	                <div class="sidebar-profile-clone">
-	                    <img src="" alt="Profil" class="sidebar-avatar settings-user-avatar">
-	                    <div class="user-info">
-	                        <span class="user-name settings-user-name">Laddar...</span>
-	                        <span class="user-role settings-user-email">Inloggad</span>
-	                    </div>
-	                    <button class="logout-icon-btn" title="Logga ut" onclick="handleLogout()">
-	                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-	                    </button>
-	                </div>
-	            </div>
-	
-	            <div class="one-ui-footer">Version 1.6.2</div>
-	        </div>
-	    </div>
+
+				<div class="settings-section-label">KONTO</div>
+				<div class="settings-card-group">
+					<div class="sidebar-profile-clone">
+						<img src="" alt="Profil" class="sidebar-avatar settings-user-avatar">
+						<div class="user-info">
+							<span class="user-name settings-user-name">Laddar...</span>
+							<span class="user-role settings-user-email">Inloggad</span>
+						</div>
+						<button class="logout-icon-btn" title="Logga ut" onclick="handleLogout()">
+							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+						</button>
+					</div>
+				</div>
+				
+				<div class="one-ui-footer">Version 1.6.5</div>
+			</div>
+		</div>
 	</div>
 
 	<div id="customerModal" class="modal-backdrop">
