@@ -4211,3 +4211,71 @@ input[type=range]:active::-webkit-slider-thumb { transform: scale(1.1); border-c
 
 
 
+
+@media (max-width: 768px) {
+
+    /* --- COMPACT JOB CARD DESIGN --- */
+    
+    .job-card-new {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+        padding: 12px 16px !important;
+        margin-bottom: 10px !important;
+        position: relative;
+        border-left: 5px solid #e2e8f0; /* Default grå kant */
+    }
+
+    /* Exempel på status-färger (anpassa klassnamnen efter din kod) */
+    .job-card-new.status-kommande { border-left-color: #0066FF; }
+    .job-card-new.status-klar { border-left-color: #30d158; }
+    .job-card-new.status-faktureras { border-left-color: #bf5af2; }
+
+    /* Dölj alla text-etiketter (t.ex. "Namn:", "Datum:") */
+    .job-card-new .row-label {
+        display: none !important;
+    }
+
+    /* Gör om raderna till en mer flytande layout */
+    .job-card-new .card-row {
+        display: inline-block;
+        margin-right: 12px;
+        margin-bottom: 2px;
+    }
+
+    /* --- STYLA INNEHÅLLET --- */
+
+    /* 1. KUNDNAMN / REGNR (Antar att detta är första raderna) */
+    /* Du kan behöva ge dessa rader en specifik klass i HTML, t.ex. "header-info" */
+    .job-card-new .card-row:first-child .row-value,
+    .job-card-new .card-row:nth-child(2) .row-value {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #1f2937;
+        display: block; /* Egen rad */
+    }
+
+    /* 2. SEKUNDÄR INFO (Datum, Tid, Paket) */
+    .job-card-new .row-value {
+        font-size: 0.85rem;
+        color: #64748b; /* Mjukare grå */
+        display: flex;
+        align-items: center;
+        gap: 6px; /* Avstånd till ikonen */
+    }
+
+    /* 3. PRIS (Om du har det) - Lyft fram det */
+    /* Kräver att du sätter en klass på pris-raden, t.ex. "price-row" */
+    .job-card-new .price-row .row-value {
+        color: #059669; /* Grön */
+        font-weight: 700;
+        font-size: 0.9rem;
+    }
+    
+    /* Ikonerna */
+    .job-card-new i, 
+    .job-card-new svg {
+        color: #94a3b8; /* Ljusare ikonfärg */
+        font-size: 1rem;
+    }
+}
