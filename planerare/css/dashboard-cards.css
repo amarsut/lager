@@ -177,3 +177,41 @@
         min-height: 150px; /* Lite högre på datorn */
     }
 }
+
+/* =========================================
+   FIX FÖR EJ BOKAT (BACKLOG) LAYOUT
+   ========================================= */
+
+/* Gör kortet till en flex-kolumn så vi kan byta ordning på sakerna */
+.stat-card[data-filter="backlog"] {
+    display: flex;
+    flex-direction: column;
+}
+
+/* 1. Rubriken ska ligga överst (Order 1) */
+.stat-card[data-filter="backlog"] .stat-card-title {
+    order: 1;
+}
+
+/* 2. Textraden "3 väntar..." ska ligga i mitten (Order 2) */
+.backlog-row {
+    order: 2;               /* Lägg den som nummer 2 */
+    display: flex;          /* Lägg innehållet på en rad (Inte 2 rader!) */
+    flex-direction: row;
+    gap: 12px;              /* Luft mellan "väntar" och "offert" */
+    
+    font-size: 0.75rem;     /* Lagom liten text */
+    font-weight: 600;
+    color: #ea580c;         /* Orange textfärg */
+    
+    margin-bottom: auto;    /* MAGI: Detta trycker ner allt under (siffran) till botten */
+    width: 100%;
+    padding-top: 4px;       /* Lite luft upp mot rubriken */
+}
+
+/* 3. Siffran ska ligga längst ner (Order 3) */
+.stat-card[data-filter="backlog"] .stat-card-value {
+    order: 3;               /* Lägg den sist */
+    margin-top: 0 !important; /* Nollställ marginaler så den inte "flyter" fel */
+    margin-bottom: 0 !important;
+}
