@@ -1,14 +1,12 @@
 /* ==========================================================================
-   DASHBOARD CARDS (STATISTIK-KORTEN PÅ STARTSIDAN)
+   DASHBOARD CARDS - FINAL CLEAN VERSION
    Fil: dashboard-cards.css
-   Beskrivning: Hanterar korten för Kommande, Faktureras, Klar etc.
    ========================================================================== */
 
 /* --- 1. CONTAINERN (STAT-BAR) --- */
 .stat-bar {
     gap: 12px;
     margin-bottom: 2rem;
-    /* Layout (Flex/Grid) styrs i Media Queries nedan */
 }
 
 /* --- 2. BAS-STIL FÖR KORTEN --- */
@@ -16,35 +14,37 @@
     background: #fff;
     border: 1px solid #f3f4f6;
     box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-    border-radius: 4px; /* Eller vad du föredrar */
+    border-radius: 12px; /* Lite rundare hörn ser modernare ut */
     
-    /* Layout inuti kortet */
     display: flex;
     flex-direction: column;
-    justify-content: space-between; /* Trycker isär Rubrik och Siffra */
     
-    padding: 16px 20px 32px 20px;
-    position: relative;
+    /* NYCKELN TILL LINJERING: 
+       Vi sätter en fast botten-padding (42px) på ALLA kort.
+       Då hamnar alla stora siffror på exakt samma avstånd från kanten.
+       Utrymmet under (42px) använder vi för textraden på "Ej bokat". */
+    padding: 16px 16px 42px 16px; 
+    
+    position: relative; /* För att kunna placera textraden absolut */
     cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s, background-color 0.2s;
+    transition: transform 0.2s, box-shadow 0.2s;
     
     /* Osynlig border i botten som tänds vid active */
-    border-bottom: 4px solid transparent !important;
+    border-bottom: 3px solid transparent !important;
 }
 
 .stat-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
 }
 
-/* --- 3. INNEHÅLL (TEXT & SIFFROR) --- */
+/* --- 3. INNEHÅLL --- */
 .stat-card-title {
     font-size: 0.75rem;
     font-weight: 600;
-    color: #64748b;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    margin: 0 0 8px 0;
+    margin: 0;
     display: flex; 
     align-items: center; 
     gap: 8px;
@@ -52,110 +52,115 @@
 }
 
 .stat-card-value {
-    font-size: 2rem;
+    font-size: 2.2rem;
     font-weight: 700;
     line-height: 1;
-    margin: 0; /* VIKTIGT: Ingen margin som knuffar runt den */
     
-    /* Siffror tar lika stor plats (snyggare) */
-    font-variant-numeric: tabular-nums;
-    font-feature-settings: "tnum";
+    /* Tryck ner siffran så långt det går mot padding-kanten */
+    margin-top: auto; 
+    margin-bottom: 0;
 }
 
 /* Ikoner */
 .stat-card-title svg, 
 .stat-card-title .icon-sm {
     width: 18px; height: 18px; flex-shrink: 0;
-    color: currentColor;
 }
 
-/* Aktivt kort (Markerat) */
-.stat-card.active {
-    background-color: #eff6ff; 
-    border-color: #bfdbfe;     
-    box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.1);
-    transform: translateY(-2px);
+/* --- 4. TEXTRADEN (EJ BOKAT) --- */
+.backlog-row {
+    position: absolute;
+    bottom: 12px;       /* Ligger snyggt i botten-paddingen */
+    left: 16px;         /* Matchar sid-paddingen */
+    width: auto;
+    
+    display: flex;
+    align-items: center;
+    gap: 12px;          /* Luft mellan grupperna */
+    
+    pointer-events: none; /* Klick går igenom till kortet */
+}
+
+.sub-stat {
+    font-size: 0.75rem;
+    color: #94a3b8;     /* Diskret grå */
+    font-weight: 500;
+}
+
+.sub-val {
+    color: #475569;     /* Lite mörkare siffra */
+    font-weight: 700;
+    margin-right: 3px;  /* Siffran först -> Litet mellanrum till texten */
+}
+
+/* Mellanrum om du vill ha det (annars tom) */
+.sub-spacer {
+    width: 1px;
+    height: 12px;
+    background: #e2e8f0; /* Tunt vertikalt streck */
+    display: block;
 }
 
 /* =========================================
    FÄRGTEMAN (COLORS)
    ========================================= */
 
-/* --- Kommande (Blå) --- */
+/* Kommande (Blå) */
 .stat-card[data-filter="kommande"] { 
     background: linear-gradient(135deg, #ffffff 0%, #eff6ff 100%) !important;
     border-color: #dbeafe !important;
 }
 .stat-card[data-filter="kommande"] .stat-card-value,
 .stat-card[data-filter="kommande"] .stat-card-title svg,
-.stat-card[data-filter="kommande"] .stat-card-title span {
-    color: #0066FF !important;
-}
-.stat-card[data-filter="kommande"].active { 
-    border-bottom-color: #0066FF !important; 
-}
+.stat-card[data-filter="kommande"] .stat-card-title span { color: #0066FF !important; }
+.stat-card[data-filter="kommande"].active { border-bottom-color: #0066FF !important; }
 
-/* --- Faktureras (Lila) --- */
+/* Faktureras (Lila) */
 .stat-card[data-filter="faktureras"] { 
     background: linear-gradient(135deg, #ffffff 0%, #faf5ff 100%) !important;
     border-color: #f3e8ff !important;
 }
 .stat-card[data-filter="faktureras"] .stat-card-value,
 .stat-card[data-filter="faktureras"] .stat-card-title svg,
-.stat-card[data-filter="faktureras"] .stat-card-title span {
-    color: #bf5af2 !important;
-}
-.stat-card[data-filter="faktureras"].active { 
-    border-bottom-color: #bf5af2 !important; 
-}
+.stat-card[data-filter="faktureras"] .stat-card-title span { color: #bf5af2 !important; }
+.stat-card[data-filter="faktureras"].active { border-bottom-color: #bf5af2 !important; }
 
-/* --- Klar (Grön) --- */
+/* Klar (Grön) */
 .stat-card[data-filter="klar"] { 
     background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%) !important;
     border-color: #dcfce7 !important;
 }
 .stat-card[data-filter="klar"] .stat-card-value,
 .stat-card[data-filter="klar"] .stat-card-title svg,
-.stat-card[data-filter="klar"] .stat-card-title span {
-    color: #30d158 !important;
-}
-.stat-card[data-filter="klar"].active { 
-    border-bottom-color: #30d158 !important; 
-}
+.stat-card[data-filter="klar"] .stat-card-title span { color: #30d158 !important; }
+.stat-card[data-filter="klar"].active { border-bottom-color: #30d158 !important; }
 
-/* --- Alla Jobb (Mörkgrå/Svart) --- */
+/* Alla Jobb (Mörkgrå) */
 .stat-card[data-filter="alla"] { 
     background: linear-gradient(135deg, #ffffff 0%, #f3f4f6 100%) !important;
     border-color: #e5e7eb !important;
 }
 .stat-card[data-filter="alla"] .stat-card-value,
 .stat-card[data-filter="alla"] .stat-card-title svg,
-.stat-card[data-filter="alla"] .stat-card-title span {
-    color: #1f2937 !important; /* Mörkgrå nyans */
-}
-.stat-card[data-filter="alla"].active { 
-    border-bottom-color: #1f2937 !important; 
-}
+.stat-card[data-filter="alla"] .stat-card-title span { color: #374151 !important; }
+.stat-card[data-filter="alla"].active { border-bottom-color: #374151 !important; }
 
-/* --- Ej Bokat (Orange) --- */
+/* Ej Bokat (Orange) */
 .stat-card[data-filter="backlog"] {
     background: linear-gradient(135deg, #ffffff 0%, #fff7ed 100%) !important;
     border-color: #ffedd5 !important;
-    position: relative; 
 }
 .stat-card[data-filter="backlog"] .stat-card-value,
 .stat-card[data-filter="backlog"] .stat-card-title svg,
-.stat-card[data-filter="backlog"] .stat-card-title span { 
-    color: #ea580c !important; 
-}
-.stat-card[data-filter="backlog"].active {
-    border-bottom-color: #ea580c !important;
-}
+.stat-card[data-filter="backlog"] .stat-card-title span { color: #ea580c !important; }
+.stat-card[data-filter="backlog"].active { border-bottom-color: #ea580c !important; }
 
 
 /* =========================================
-   MOBILANPASSNING (UPDATERAD)
+   MOBILANPASSNING & DESKTOP GRID
    ========================================= */
+
+/* --- MOBIL (Smalare, Högre, Scroll) --- */
 @media (max-width: 768px) {
     .stat-bar {
         display: flex;
@@ -165,167 +170,50 @@
         margin-bottom: 5px !important;
         margin-right: -16px;
         scrollbar-width: none; 
-        -ms-overflow-style: none;
     }
-    .stat-bar::-webkit-scrollbar { display: none; }
-
+    
     .stat-card {
-        /* Lite bredare än 32vw för att texten ska få plats, men smalare än förut */
-        flex: 0 0 34vw !important; 
-        width: 34vw !important;
+        /* Smalare kort (32vw) för att se mer */
+        flex: 0 0 32vw !important; 
+        width: 32vw !important;
         
         /* Högre kort */
-        height: 170px !important; 
-        min-height: 170px !important;
+        height: 160px !important; 
+        min-height: 160px !important;
         
-        /* HÄR JUSTERAR DU HÖJDEN PÅ SIFFRAN */
-        /* Ordningen är: Topp | Höger | Botten (denna justeras) | Vänster */
-        padding: 16px 12px 30px 12px !important;
-        
-        min-width: unset !important;
-        max-width: unset !important;
+        /* Lite mindre padding på sidorna på mobil */
+        padding-left: 12px !important;
+        padding-right: 12px !important;
     }
 
     .stat-card-value {
         font-size: 1.8rem !important; 
-        /* Siffran trycks ner mot padding-kanten, som nu är 38px upp */
-        margin-top: auto !important; 
     }
-
-    /* --- Anpassningar för "Ej Bokat"-texten på mobil --- */
     
+    /* Justera textraden för mobil */
     .backlog-row {
-        /* Placera texten snyggt i den utökade botten-ytan */
-        left: 12px !important;   /* Matchar den nya sido-paddingen */
-        bottom: 10px !important; /* Ligger luftigt ovanför linjen */
-        width: auto !important;
-        white-space: nowrap !important; /* Tvingar texten att stanna på en rad */
-    }
-
-    .stat-inline-row {
-        gap: 6px !important; /* Tajtare mellanrum mellan grupperna */
-    }
-
-    .sub-stat {
-        font-size: 0.6rem !important; /* Liten men läsbar text */
-        letter-spacing: -0.01em !important; /* Knip ihop texten lite */
-    }
-
-    .sub-val {
-        font-size: 0.7rem !important;
-        margin-left: 2px !important;
+        left: 12px !important;
+        bottom: 12px !important;
+        gap: 8px !important;
     }
     
-    .sub-divider {
-        margin: 0 2px !important; /* Minska utrymmet runt strecket */
-        opacity: 0.5;
+    .sub-stat {
+        font-size: 0.65rem !important; /* Mindre text så den får plats */
+        white-space: nowrap;
     }
 }
 
-
-/* =========================================
-   DATORANPASSNING (GRID)
-   ========================================= */
+/* --- DESKTOP (Grid) --- */
 @media (min-width: 769px) {
     .stat-bar {
         display: grid;
-        /* Smalare spalter: minmax 140px */
+        /* Smalare och högre spalter */
         grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-        grid-auto-rows: 1fr; 
-        align-items: stretch;
+        grid-auto-rows: 1fr;
     }
     
     .stat-card {
         height: 100%;
-        width: 100%;
-        min-height: 180px; /* Betydligt högre på datorn */
-    }
-}
-
-/* =========================================
-   FIX FÖR EJ BOKAT - PRO DESIGN
-   ========================================= */
-
-/* Gör kortet redo för absolut positionering */
-.stat-card[data-filter="backlog"] {
-    position: relative;
-    /* Behåll gradienten */
-    background: linear-gradient(135deg, #ffffff 0%, #fff7ed 100%) !important;
-    border-color: #ffedd5 !important;
-}
-
-/* Huvudsiffran (5) - Påverkas inte, ligger kvar i flödet */
-.stat-card[data-filter="backlog"] .stat-card-value {
-    color: #ea580c !important; /* Orange */
-    margin-bottom: 0 !important; 
-}
-
-/* Textraden - Placerad absolut i botten */
-.backlog-row {
-    position: absolute;
-    bottom: 8px;        /* Ligger snyggt ovanför linjen */
-    left: 20px;         /* Matchar sidmarginalen */
-    width: auto;
-    margin: 0;
-    padding: 0;
-    pointer-events: none;
-}
-
-/* Flex-behållare för raden */
-.stat-inline-row {
-    display: flex;
-    align-items: center;
-    gap: 8px; /* Avstånd mellan grupperna och punkten */
-}
-
-/* Gruppering (Label + Siffra) */
-.sub-group {
-    display: flex;
-    align-items: baseline; /* Ser till att text och siffra står på samma baslinje */
-    gap: 4px; /* Litet mellanrum mellan ord och siffra */
-}
-
-/* Texten "VÄNTAR" / "OFFERT" */
-.sub-label {
-    font-size: 0.65rem;      /* Mycket liten och diskret (Micro-label) */
-    color: #94a3b8;          /* Ljusgrå/Slate-400 - Stjäl inte fokus */
-    font-weight: 700;
-    letter-spacing: 0.05em;  /* Lite luft mellan bokstäverna */
-    text-transform: uppercase;
-}
-
-/* Siffrorna (3 och 2) */
-.sub-val {
-    color: #ea580c;          /* ORANGE - Matchar kortets tema! */
-    font-weight: 800;        /* Fet stil */
-    font-size: 0.85rem;      /* Lite större än texten */
-}
-
-/* Punkten emellan (•) */
-.sub-separator {
-    color: #cbd5e1;          /* Mycket ljus grå punkt */
-    font-size: 0.6rem;
-    position: relative;
-    top: -1px;               /* Finjustera höjden */
-}
-
-/* --- MOBILANPASSNING FÖR DENNA RAD --- */
-@media (max-width: 768px) {
-    .backlog-row {
-        left: 12px !important;   /* Matchar mobilens padding */
-        bottom: 10px !important; 
-        white-space: nowrap !important;
-    }
-    
-    .stat-inline-row {
-        gap: 6px !important;
-    }
-    
-    .sub-label {
-        font-size: 0.6rem !important;
-    }
-    
-    .sub-val {
-        font-size: 0.75rem !important;
+        min-height: 170px; /* Högre på desktop */
     }
 }
