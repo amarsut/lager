@@ -298,19 +298,18 @@
 							<p class="stat-card-value" id="stat-upcoming">0</p>
 						</div>
 
-						<div class="stat-card" data-filter="backlog">
-							<h3 class="stat-card-title">
-								<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-									<path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-								</svg>
-								<span>Ej Bokat</span>
-							</h3>
-							
-							<p class="stat-card-value" id="stat-backlog">0</p>
-							
-							<div class="stat-subtext money-related" style="font-size: 0.7rem; color: #64748b; font-weight: 600; margin-top: auto;">
-								<span id="count-unplanned">0</span> väntar • <span id="count-offered">0</span> offert
-							</div>
+						<div class="stat-card" data-filter="backlog" onclick="/*...*/">
+						    <div class="stat-card-title">
+						        <svg class="icon-sm"><use href="#icon-clock"></use></svg>
+						        <span>Ej Bokat</span>
+						    </div>
+						
+						    <h3 class="stat-card-value money-related" id="stat-backlog">0</h3>
+						
+						    <div class="backlog-row money-related">
+						        <span><span id="count-unplanned">0</span> väntar</span>
+						        <span><span id="count-offered">0</span> offert</span>
+						    </div>
 						</div>
 
 						<div class="stat-card" data-filter="faktureras">
