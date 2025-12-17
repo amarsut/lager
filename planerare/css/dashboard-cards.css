@@ -272,13 +272,13 @@
 /* Behållare för raden */
 .stat-inline-row {
     display: flex;
-    align-items: right;
-    gap: 5px;          /* Luft mellan "Väntar" och "Offert" */
+    align-items: center;
+    gap: 3px;          /* Luft mellan "Väntar" och "Offert" */
 }
 
 /* Texten "Väntar" / "Offert" */
 .sub-stat {
-    font-size: 0.65rem;      /* Liten, diskret storlek */
+    font-size: 0.55rem;      /* Liten, diskret storlek */
     color: #94a3b8;         /* Ljusgrå (skriker inte) */
     font-weight: 400;
     text-transform: uppercase; /* Gör det lite mer "dashboard-aktigt" */
@@ -289,7 +289,7 @@
 .sub-val {
     color: #475569;         /* Mörkare grå för läsbarhet */
     font-weight: 500;
-    margin-left: 2px;       /* Liten luft mellan text och siffra */
+    margin-left: 1px;       /* Liten luft mellan text och siffra */
     font-size: 0.65rem;
 }
 
