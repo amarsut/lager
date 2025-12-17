@@ -286,3 +286,52 @@
     color: #1d4ed8;
     border: 1px solid #dbeafe;
 }
+
+/* --- Minimalistisk design för Ej Bokat --- */
+
+/* Justera huvudsiffran så den inte tar för mycket plats nedåt */
+.stat-card[data-filter="backlog"] .stat-card-value {
+    margin-bottom: 4px !important;
+}
+
+/* Behållaren för de små siffrorna */
+.backlog-row {
+    margin-top: 0;
+    width: 100%;
+}
+
+.mini-stat-wrapper {
+    display: flex;
+    gap: 16px; /* Luft mellan grupperna */
+    align-items: center;
+}
+
+/* Enskild grupp (Prick + Siffra) */
+.mini-stat {
+    display: flex;
+    align-items: center;
+    gap: 6px; /* Avstånd mellan prick och siffra */
+}
+
+/* Den färgade pricken */
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: block;
+}
+
+/* Siffran - Fet och mörkgrå för läsbarhet */
+.status-num {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #334155; /* Mörkgrå, nästan svart */
+    line-height: 1;
+}
+
+/* Färgteman - Justera dessa hex-koder om du vill ha exakt dina nyanser */
+.mini-stat.orange .status-dot { background-color: #ef4444;box-shadow: 0 0 0 2px #fee2e2; } /* Röd/Orange med glow */
+.mini-stat.blue .status-dot { background-color: #bf5af2; box-shadow: 0 0 0 2px #f5d0fe; } /* Rosa/Lila med glow */
+
+/* Hover-effekt för att visa vad det betyder (valfritt, bra för desktop) */
+.mini-stat:hover .status-dot { transform: scale(1.2); transition: transform 0.2s; }
