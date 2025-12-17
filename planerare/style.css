@@ -118,10 +118,11 @@ body { margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-c
    3. DASHBOARD (Statistik & Tabell)
    ========================================= */
 .app-main { overflow-y: auto; flex-grow: 1; }
-.main-content {
-    flex-direction: column;
-    width: 87% !important; 
-    padding: 2rem;
+.main-content { 
+    /* Öka från 1080px till t.ex. 1400px eller ta bort max-width helt för fullbredd */
+    max-width: 1110px; 
+    margin: 0 auto;
+    padding: 2rem;     
 }
 
 /* =========================================
@@ -1438,13 +1439,6 @@ ul.tech-list li span {
     
     /* Visa mobil-specifika element */
     .mobile-only { display: block; }
-
-	.main-content { 
-	    /* Öka från 1080px till t.ex. 1400px eller ta bort max-width helt för fullbredd */
-	    max-width: 1110px; 
-	    margin: 0 auto;
-	    padding: 2rem;     
-	}
 
     .main-content { padding: 10px; padding-bottom: 100px; width: 100%; margin: 0; }
 
@@ -4432,5 +4426,6 @@ input[type=range]:active::-webkit-slider-thumb { transform: scale(1.1); border-c
 /* Dark mode stöd */
 [data-theme="dark"] input[type=range]::-webkit-slider-runnable-track { background: #333; }
 [data-theme="dark"] input[type=range]::-webkit-slider-thumb { background: #1c1c1e; border-color: #555; }
+
 
 
