@@ -4454,24 +4454,45 @@ input[type=range]:active::-webkit-slider-thumb { transform: scale(1.1); border-c
 /* På mobilen specifikt */
 @media (max-width: 768px) {
     .stat-grid {
-        /* Tvinga 2 kolumner och se till att de fyller bredden */
-        grid-template-columns: 1fr 1fr; 
-        gap: 16px !important; /* Lite mer luft (som på Bild 2) */
+        display: flex !important;      /* Byt från Grid till Flex */
+        overflow-x: auto;              /* Tillåt scroll i sidled */
+        gap: 12px !important;          /* Lagom mellanrum */
+        padding-bottom: 12px;          /* Lite luft under för scrollkänslan */
+        
+        /* Nollställ grid-regler så de inte stör */
+        grid-template-columns: unset !important;
+        grid-auto-rows: unset !important;
+        
+        /* Se till att scrollen går hela vägen ut i kanten om du har padding på sidan */
+        margin-right: -16px;
+        padding-right: 16px; 
     }
     
     .stat-card {
-        padding: 16px !important;
-        /* Säkerställ att korten inte blir för platta */
-        min-height: 140px; 
+        /* MAGISKA SIFFRAN: 40vw = ca 40% av skärmen. 
+           Det gör att 2 hela kort + en bit av det 3:e syns (2.3 - 2.5 st) */
+        flex: 0 0 40vw !important; 
+        width: 40vw !important;
+        
+        /* Justera höjden så de blir snygga och kompakta */
+        min-height: 120px !important; 
+        padding: 14px !important;
     }
 
-    /* Gör siffrorna stora och tydliga igen om de krympt */
+    /* Justera textstorlek för att passa de smalare korten */
     .stat-value {
-        font-size: 1.6rem !important;
-        font-weight: 800;
-        margin-top: auto; /* Tryck ner siffran mot botten */
-        padding-top: 12px;
+        font-size: 1.4rem !important;
+        margin-top: auto;
     }
+    
+    .stat-label {
+        font-size: 0.8rem !important;
+        white-space: nowrap; /* Förhindra radbrytning av rubriken om möjligt */
+    }
+
+    /* Göm den fula scroll-listen men behåll funktionen */
+    .stat-grid::-webkit-scrollbar { display: none; }
+    .stat-grid { -ms-overflow-style: none; scrollbar-width: none; }
 }
 
 /* Hindra ikonen från att bli mosad om texten är lång */
@@ -4480,4 +4501,5 @@ input[type=range]:active::-webkit-slider-thumb { transform: scale(1.1); border-c
     width: 48px !important; 
     height: 48px !important;
 }
+
 
