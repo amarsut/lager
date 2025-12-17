@@ -85,9 +85,10 @@
 .stat-card[data-filter="kommande"] { 
     background: linear-gradient(135deg, #ffffff 0%, #eff6ff 100%) !important;
     border-color: #dbeafe !important;
-    color: #0066FF !important; 
 }
-.stat-card[data-filter="kommande"] .stat-card-value {
+.stat-card[data-filter="kommande"] .stat-card-value,
+.stat-card[data-filter="kommande"] .stat-card-title svg,
+.stat-card[data-filter="kommande"] .stat-card-title span {
     color: #0066FF !important;
 }
 .stat-card[data-filter="kommande"].active { 
@@ -98,9 +99,10 @@
 .stat-card[data-filter="faktureras"] { 
     background: linear-gradient(135deg, #ffffff 0%, #faf5ff 100%) !important;
     border-color: #f3e8ff !important;
-    color: #bf5af2 !important; 
 }
-.stat-card[data-filter="faktureras"] .stat-card-value {
+.stat-card[data-filter="faktureras"] .stat-card-value,
+.stat-card[data-filter="faktureras"] .stat-card-title svg,
+.stat-card[data-filter="faktureras"] .stat-card-title span {
     color: #bf5af2 !important;
 }
 .stat-card[data-filter="faktureras"].active { 
@@ -111,41 +113,40 @@
 .stat-card[data-filter="klar"] { 
     background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%) !important;
     border-color: #dcfce7 !important;
-    color: #30d158 !important; 
 }
-.stat-card[data-filter="klar"] .stat-card-value {
+.stat-card[data-filter="klar"] .stat-card-value,
+.stat-card[data-filter="klar"] .stat-card-title svg,
+.stat-card[data-filter="klar"] .stat-card-title span {
     color: #30d158 !important;
 }
 .stat-card[data-filter="klar"].active { 
     border-bottom-color: #30d158 !important; 
 }
 
-/* --- Alla Jobb (Grå) --- */
+/* --- Alla Jobb (Mörkgrå/Svart) --- */
 .stat-card[data-filter="alla"] { 
     background: linear-gradient(135deg, #ffffff 0%, #f3f4f6 100%) !important;
     border-color: #e5e7eb !important;
-    color: #6B7280 !important; 
 }
-.stat-card[data-filter="alla"] .stat-card-value { 
-    color: #111827 !important; 
+.stat-card[data-filter="alla"] .stat-card-value,
+.stat-card[data-filter="alla"] .stat-card-title svg,
+.stat-card[data-filter="alla"] .stat-card-title span {
+    color: #1f2937 !important; /* Mörkgrå nyans */
 }
 .stat-card[data-filter="alla"].active { 
-    border-bottom-color: #111827 !important; 
+    border-bottom-color: #1f2937 !important; 
 }
 
-/* --- Ej Bokat (Orange) - Behålls som referens --- */
+/* --- Ej Bokat (Orange) --- */
 .stat-card[data-filter="backlog"] {
     background: linear-gradient(135deg, #ffffff 0%, #fff7ed 100%) !important;
     border-color: #ffedd5 !important;
-    position: relative; /* Viktigt för din text-layout! */
+    position: relative; 
 }
+.stat-card[data-filter="backlog"] .stat-card-value,
 .stat-card[data-filter="backlog"] .stat-card-title svg,
 .stat-card[data-filter="backlog"] .stat-card-title span { 
     color: #ea580c !important; 
-}
-.stat-card[data-filter="backlog"] .stat-card-value { 
-    color: #ea580c !important;
-    margin-bottom: 0 !important;
 }
 .stat-card[data-filter="backlog"].active {
     border-bottom-color: #ea580c !important;
@@ -273,7 +274,7 @@
 .stat-inline-row {
     display: flex;
     align-items: center;
-    gap: 3px;          /* Luft mellan "Väntar" och "Offert" */
+    gap: 2px;          /* Luft mellan "Väntar" och "Offert" */
 }
 
 /* Texten "Väntar" / "Offert" */
