@@ -137,13 +137,13 @@
     .stat-bar::-webkit-scrollbar { display: none; }
 
     .stat-card {
-        /* EXAKT 2.5 kort synliga (40% bredd) */
-        flex: 0 0 40vw !important; 
-        width: 40vw !important;
+        /* Smalare: ca 3 kort synliga (32% bredd) */
+        flex: 0 0 32vw !important; 
+        width: 32vw !important;
         
-        /* Fast höjd för enhetlighet */
-        height: 140px !important; 
-        min-height: 140px !important;
+        /* Högre kort */
+        height: 170px !important; 
+        min-height: 170px !important;
         
         padding: 16px !important;
         
@@ -165,16 +165,16 @@
 @media (min-width: 769px) {
     .stat-bar {
         display: grid;
-        /* Auto-fit gör att de fyller raden snyggt */
-        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-        grid-auto-rows: 1fr; /* Alla kort lika höga */
+        /* Smalare spalter: minmax 140px */
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        grid-auto-rows: 1fr; 
         align-items: stretch;
     }
     
     .stat-card {
         height: 100%;
         width: 100%;
-        min-height: 150px; /* Lite högre på datorn */
+        min-height: 180px; /* Betydligt högre på datorn */
     }
 }
 
