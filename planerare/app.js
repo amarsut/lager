@@ -760,14 +760,19 @@ function updateStatsCounts(jobs) {
     // Uppdatera "Ej Bokat"-kortet
     safeUpdate('stat-backlog', unplannedCount + offeredCount);
 
-    // Hitta raden och lägg in allt på en rad
     const backlogRow = document.querySelector('.backlog-row');
     if (backlogRow) {
         backlogRow.innerHTML = `
             <div class="stat-inline-row">
-                <span class="sub-stat">Väntar <b class="sub-val">${unplannedCount}</b></span>
-                <span class="sub-spacer"></span>
-                <span class="sub-stat">Offert <b class="sub-val">${offeredCount}</b></span>
+                <span class="sub-group">
+                    <span class="sub-label">VÄNTAR</span>
+                    <b class="sub-val">${unplannedCount}</b>
+                </span>
+                <span class="sub-separator">&bull;</span>
+                <span class="sub-group">
+                    <span class="sub-label">OFFERT</span>
+                    <b class="sub-val">${offeredCount}</b>
+                </span>
             </div>
         `;
     }
