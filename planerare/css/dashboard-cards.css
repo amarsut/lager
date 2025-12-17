@@ -81,39 +81,75 @@
    FÄRGTEMAN (COLORS)
    ========================================= */
 
-/* Kommande (Blå) */
-.stat-card[data-filter="kommande"] { color: var(--primary-color, #0066FF); }
-.stat-card[data-filter="kommande"].active { border-bottom-color: var(--primary-color, #0066FF) !important; }
+/* --- Kommande (Blå) --- */
+.stat-card[data-filter="kommande"] { 
+    background: linear-gradient(135deg, #ffffff 0%, #eff6ff 100%) !important;
+    border-color: #dbeafe !important;
+    color: #0066FF !important; 
+}
+.stat-card[data-filter="kommande"] .stat-card-value {
+    color: #0066FF !important;
+}
+.stat-card[data-filter="kommande"].active { 
+    border-bottom-color: #0066FF !important; 
+}
 
-/* Faktureras (Lila) */
-.stat-card[data-filter="faktureras"] { color: var(--invoice-color, #bf5af2); }
-.stat-card[data-filter="faktureras"].active { border-bottom-color: var(--invoice-color, #bf5af2) !important; }
+/* --- Faktureras (Lila) --- */
+.stat-card[data-filter="faktureras"] { 
+    background: linear-gradient(135deg, #ffffff 0%, #faf5ff 100%) !important;
+    border-color: #f3e8ff !important;
+    color: #bf5af2 !important; 
+}
+.stat-card[data-filter="faktureras"] .stat-card-value {
+    color: #bf5af2 !important;
+}
+.stat-card[data-filter="faktureras"].active { 
+    border-bottom-color: #bf5af2 !important; 
+}
 
-/* Klar (Grön) */
-.stat-card[data-filter="klar"] { color: var(--success-color, #30d158); }
-.stat-card[data-filter="klar"].active { border-bottom-color: var(--success-color, #30d158) !important; }
+/* --- Klar (Grön) --- */
+.stat-card[data-filter="klar"] { 
+    background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%) !important;
+    border-color: #dcfce7 !important;
+    color: #30d158 !important; 
+}
+.stat-card[data-filter="klar"] .stat-card-value {
+    color: #30d158 !important;
+}
+.stat-card[data-filter="klar"].active { 
+    border-bottom-color: #30d158 !important; 
+}
 
-/* Offererad (Orange/Blå kombo) */
-.stat-card[data-filter="offererad"] { color: var(--info-color, #0a84ff); }
-.stat-card[data-filter="offererad"].active { border-bottom-color: var(--info-color, #0a84ff) !important; }
+/* --- Alla Jobb (Grå) --- */
+.stat-card[data-filter="alla"] { 
+    background: linear-gradient(135deg, #ffffff 0%, #f3f4f6 100%) !important;
+    border-color: #e5e7eb !important;
+    color: #6B7280 !important; 
+}
+.stat-card[data-filter="alla"] .stat-card-value { 
+    color: #111827 !important; 
+}
+.stat-card[data-filter="alla"].active { 
+    border-bottom-color: #111827 !important; 
+}
 
-/* Backlog / Ej Bokat (Mörk Orange) */
+/* --- Ej Bokat (Orange) - Behålls som referens --- */
 .stat-card[data-filter="backlog"] {
     background: linear-gradient(135deg, #ffffff 0%, #fff7ed 100%) !important;
     border-color: #ffedd5 !important;
+    position: relative; /* Viktigt för din text-layout! */
 }
-.stat-card[data-filter="backlog"] .stat-card-value,
-.stat-card[data-filter="backlog"] .stat-card-title svg { color: #ea580c !important; }
-.stat-card[data-filter="backlog"] .stat-card-title span { color: #9a3412 !important; }
+.stat-card[data-filter="backlog"] .stat-card-title svg,
+.stat-card[data-filter="backlog"] .stat-card-title span { 
+    color: #ea580c !important; 
+}
+.stat-card[data-filter="backlog"] .stat-card-value { 
+    color: #ea580c !important;
+    margin-bottom: 0 !important;
+}
 .stat-card[data-filter="backlog"].active {
     border-bottom-color: #ea580c !important;
-    background-color: #fff7ed !important;
 }
-
-/* Alla Jobb (Svart/Grå) */
-.stat-card[data-filter="alla"] { color: #6B7280; }
-.stat-card[data-filter="alla"] .stat-card-value { color: #111827; }
-.stat-card[data-filter="alla"].active { border-bottom-color: #111827 !important; }
 
 
 /* =========================================
@@ -141,9 +177,9 @@
         height: 170px !important; 
         min-height: 170px !important;
         
-        /* VIKTIGT: Mindre padding på sidorna (12px) ger mer plats åt texten.
-           Mer padding i botten (38px) flyttar upp ALLA siffror så de inte krockar. */
-        padding: 16px 12px 38px 12px !important;
+        /* HÄR JUSTERAR DU HÖJDEN PÅ SIFFRAN */
+        /* Ordningen är: Topp | Höger | Botten (denna justeras) | Vänster */
+        padding: 16px 12px 30px 12px !important;
         
         min-width: unset !important;
         max-width: unset !important;
