@@ -117,64 +117,71 @@
 
 
 /* =========================================
-   MOBILANPASSNING (SWIPE-LISTA)
+   MOBILANPASSNING (UPDATERAD)
    ========================================= */
 @media (max-width: 768px) {
     .stat-bar {
-        display: flex;       /* Lägg på rad */
-        flex-wrap: nowrap !important;   /* Ingen radbrytning */
-        overflow-x: auto !important;    /* Scrolla i sidled */
-        
-        /* Luft runt om */
-        padding: 4px 16px 20px 16px !important; 
+        display: flex;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        padding: 4px 16px 20px 16px !important;
         margin-bottom: 5px !important;
-        margin-right: -16px; /* Kompensera för sid-padding */
-        
-        /* Dölj scrollbar */
+        margin-right: -16px;
         scrollbar-width: none; 
         -ms-overflow-style: none;
     }
     .stat-bar::-webkit-scrollbar { display: none; }
 
     .stat-card {
-        /* Smalare: ca 3 kort synliga (32% bredd) */
-        flex: 0 0 32vw !important; 
-        width: 32vw !important;
+        /* Lite bredare än 32vw för att texten ska få plats, men smalare än förut */
+        flex: 0 0 34vw !important; 
+        width: 34vw !important;
         
         /* Högre kort */
         height: 170px !important; 
         min-height: 170px !important;
         
-        padding: 16px !important;
+        /* VIKTIGT: Mindre padding på sidorna (12px) ger mer plats åt texten.
+           Mer padding i botten (38px) flyttar upp ALLA siffror så de inte krockar. */
+        padding: 16px 12px 38px 12px !important;
         
-        /* Nollställ eventuella gamla desktop-regler */
         min-width: unset !important;
         max-width: unset !important;
     }
 
     .stat-card-value {
         font-size: 1.8rem !important; 
-        margin-top: auto !important; /* Tryck ner siffran till botten */
+        /* Siffran trycks ner mot padding-kanten, som nu är 38px upp */
+        margin-top: auto !important; 
     }
 
-   /* Anpassningar för Ej Bokat-texten på mobil */
+    /* --- Anpassningar för "Ej Bokat"-texten på mobil --- */
+    
     .backlog-row {
-        left: 16px !important; /* Justera vänsterkanten så den matchar mobil-padding */
-        bottom: 8px !important; /* Ligg kvar snyggt i botten */
-    }
-
-    .sub-stat {
-        font-size: 0.6rem !important; /* Mindre text (VÄNTAR/OFFERT) */
-        letter-spacing: 0px !important; /* Spara plats */
-    }
-
-    .sub-val {
-        font-size: 0.7rem !important; /* Mindre siffror */
-        margin-left: 2px !important;
+        /* Placera texten snyggt i den utökade botten-ytan */
+        left: 12px !important;   /* Matchar den nya sido-paddingen */
+        bottom: 10px !important; /* Ligger luftigt ovanför linjen */
+        width: auto !important;
+        white-space: nowrap !important; /* Tvingar texten att stanna på en rad */
     }
 
     .stat-inline-row {
-        gap: 8px !important; /* Minska avståndet mellan grupperna */
+        gap: 6px !important; /* Tajtare mellanrum mellan grupperna */
+    }
+
+    .sub-stat {
+        font-size: 0.6rem !important; /* Liten men läsbar text */
+        letter-spacing: -0.01em !important; /* Knip ihop texten lite */
+    }
+
+    .sub-val {
+        font-size: 0.7rem !important;
+        margin-left: 2px !important;
+    }
+    
+    .sub-divider {
+        margin: 0 2px !important; /* Minska utrymmet runt strecket */
+        opacity: 0.5;
     }
 }
 
