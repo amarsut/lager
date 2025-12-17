@@ -1,5 +1,6 @@
 // Importera kalenderfunktionen
 import { initCalendar, setCalendarTheme } from './calendar.js';
+import { openStatisticsView } from './statistics.js'; // Bytte namn på funktionen'
 
 window.openNewJobModal = openNewJobModal;
 window.toggleChatWidget = toggleChatWidget;
@@ -768,6 +769,15 @@ function updateStatsCounts(jobs) {
 // 7. EVENT LISTENERS
 function setupEventListeners() {
 
+    /*Statistikvy*/
+    const statsBtn = document.getElementById('menuBtnStatistics');
+    if (statsBtn) {
+        statsBtn.addEventListener('click', () => {
+            // Anropa den nya View-funktionen
+            openStatisticsView(allJobs);
+        });
+    }
+
 	// --- FIX: Sortering i Kundvyn ---
 	const sortSelect = document.getElementById('customerSortSelect');
 	if (sortSelect) {
@@ -1049,6 +1059,14 @@ function setupEventListeners() {
 	        // Gör inget här, calendar.js hanterar stängningen av listan visuellt
 	        return; 
 	    }
+
+        if (state && state.uiState === 'statistics') {
+            // Om vi backar från statistikvyn -> Gå till översikt
+            document.getElementById('statisticsView').style.display = 'none';
+            document.getElementById('statBar').style.display = '';
+            document.getElementById('timelineView').style.display = 'block';
+            return;
+        }
 	
 	    // Om vi är tillbaka på Kalender-vyn (efter att ha stängt daglistan)
 	    if (state && state.uiState === 'calendar') {
@@ -1652,7 +1670,7 @@ function drawVehicleHistoryList(jobs) {
                     <span class="h-desc-text" title="${commentText}">${commentText}</span>
                 </div>
             </div>
-            <div class="h-price">${job.kundpris} kr</div>
+            <div class="h-price money-related">${job.kundpris} kr</div>
         `;
         container.appendChild(row);
     });
@@ -3023,7 +3041,7 @@ function renderCustomerView(searchTerm = '') {
                 <div class="c-meta">
                     <span>${carText}</span> • <span>${c.visitCount} besök</span>
                 </div>
-                <div class="c-meta" style="color:${isVip ? '#d97706' : '#64748b'}; font-weight:${isVip ? '700' : '500'}; margin-top:4px;">
+                <div class="c-meta money-related" style="color:${isVip ? '#d97706' : '#64748b'}; font-weight:${isVip ? '700' : '500'}; margin-top:4px;">
                     Totalt: ${c.totalSpent.toLocaleString()} kr
                 </div>
             </div>
@@ -3120,7 +3138,7 @@ function openCustomerModal(customer) {
                     ${regPart}
                 </div>
             </div>
-            <div class="h-price">${job.kundpris} kr</div>
+            <div class="h-price money-related">${job.kundpris} kr</div>
         `;
         historyContainer.appendChild(row);
     });
