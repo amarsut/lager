@@ -265,59 +265,66 @@ body { margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-c
    MOBILANPASSNING (MAX 768PX)
    ========================================= */
 @media (max-width: 768px) {
-    /* Containern (Scrollbar) */
+    /* --- 1. Containern (Horisontell Scroll-lista) --- */
     .stat-bar {
-        display: flex;
-        overflow-x: auto !important;
-        gap: 12px !important;
-        padding: 4px 16px 20px 16px !important;
+        display: flex !important;       /* Flexbox för att lägga dem på rad */
+        flex-wrap: nowrap !important;   /* Förbjud radbrytning */
+        overflow-x: auto !important;    /* Tillåt scroll i sidled */
+        gap: 12px !important;           /* Mellanrum mellan korten */
+        
+        /* Luft runt om så skuggorna syns och scrollkänslan blir bra */
+        padding: 4px 16px 20px 16px !important; 
         margin-bottom: 5px !important;
         
-        scroll-snap-type: x mandatory;
-        
-        /* Fade-effekt på sidorna */
-        -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
-        mask-image: linear-gradient(to right, black 85%, transparent 100%);
-
+        /* Dölj den fula scroll-listen men behåll funktionen */
         scrollbar-width: none; 
         -ms-overflow-style: none;
     }
     .stat-bar::-webkit-scrollbar { display: none; }
 
-    /* Korten (Mobil) */
+    /* --- 2. Korten (Exakt 2.5 st synliga) --- */
     .stat-card {
-        min-width: 140px !important;
-        height: 150px !important;
-        scroll-snap-align: start;
-        flex-shrink: 0;
+        /* MAGISK BREDD: 40vw = 40% av skärmen. 
+           40+40=80%, vilket lämnar 20% till det tredje kortet (halvt synligt) */
+        flex: 0 0 40vw !important; 
+        width: 40vw !important;
         
-        padding: 16px 20px !important;
-        align-items: flex-start !important; 
-        text-align: left !important;
+        /* Nollställ gamla bredd-regler */
+        min-width: unset !important; 
+        max-width: unset !important;
+
+        /* Fast höjd så alla kort blir exakt lika höga oavsett innehåll */
+        height: 140px !important; 
+        
+        /* Inre layout */
+        padding: 16px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important; /* Sprider ut innehållet */
+        
+        /* Nollställ scroll-snap om det bråkade */
+        scroll-snap-align: unset !important; 
     }
 
-    /* Rubrik & Ikon (Mobil) */
+    /* --- 3. Justera text & siffror för den nya storleken --- */
     .stat-card-title {
         width: 100%;
         margin: 0 !important;
-    }
-    .stat-card-title svg, .stat-card-title .icon-sm {
-        width: 18px !important; height: 18px !important; flex-shrink: 0;
-    }
-
-    /* Siffror (Mobil - Större) */
-    .stat-card-value {
-        font-size: 2.2rem !important;
-        font-weight: 600 !important;
-        margin: 0 !important;
+        white-space: nowrap; /* Förhindra att rubriken radbryts fult */
     }
     
-    /* Special för Backlog på mobil */
-    .stat-card[data-filter="backlog"] {
-        justify-content: space-between !important;
+    .stat-card-value {
+        font-size: 1.8rem !important; /* Lagom storlek för 40vw bredd */
+        font-weight: 700 !important;
+        margin: 0 !important;
     }
-    .stat-card[data-filter="backlog"] .stat-card-value {
-        margin-top: 60px !important;
+
+    /* Ikoner */
+    .stat-card-title svg, 
+    .stat-card-title .icon-sm {
+        width: 16px !important; 
+        height: 16px !important; 
+        flex-shrink: 0;
     }
 }
 
@@ -4427,79 +4434,5 @@ input[type=range]:active::-webkit-slider-thumb { transform: scale(1.1); border-c
 [data-theme="dark"] input[type=range]::-webkit-slider-runnable-track { background: #333; }
 [data-theme="dark"] input[type=range]::-webkit-slider-thumb { background: #1c1c1e; border-color: #555; }
 
-
-/* =========================================
-   FIX FÖR STARTSIDANS KORT (ÖVERSIKTEN)
-   ========================================= */
-
-/* Tvinga grid-raderna att anpassa sig efter det högsta kortet */
-.stat-grid {
-    grid-auto-rows: 1fr; /* Magisk kod som gör alla kort i en rad lika höga */
-    align-items: stretch;
-}
-
-/* Säkerställ att korten fyller ut sin plats */
-.stat-card {
-    height: 100%; 
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    
-    /* Återställ eventuell "kompakt" padding om den råkat ärvas */
-    padding: 20px !important; 
-    min-height: 150px; /* Tvinga fram en bra höjd så de ser "fylliga" ut igen */
-}
-
-/* På mobilen specifikt */
-@media (max-width: 768px) {
-    .stat-grid {
-        display: flex !important;      /* Byt från Grid till Flex */
-        overflow-x: auto;              /* Tillåt scroll i sidled */
-        gap: 12px !important;          /* Lagom mellanrum */
-        padding-bottom: 12px;          /* Lite luft under för scrollkänslan */
-        
-        /* Nollställ grid-regler så de inte stör */
-        grid-template-columns: unset !important;
-        grid-auto-rows: unset !important;
-        
-        /* Se till att scrollen går hela vägen ut i kanten om du har padding på sidan */
-        margin-right: -16px;
-        padding-right: 16px; 
-    }
-    
-    .stat-card {
-        /* MAGISKA SIFFRAN: 40vw = ca 40% av skärmen. 
-           Det gör att 2 hela kort + en bit av det 3:e syns (2.3 - 2.5 st) */
-        flex: 0 0 40vw !important; 
-        width: 40vw !important;
-        
-        /* Justera höjden så de blir snygga och kompakta */
-        min-height: 120px !important; 
-        padding: 14px !important;
-    }
-
-    /* Justera textstorlek för att passa de smalare korten */
-    .stat-value {
-        font-size: 1.4rem !important;
-        margin-top: auto;
-    }
-    
-    .stat-label {
-        font-size: 0.8rem !important;
-        white-space: nowrap; /* Förhindra radbrytning av rubriken om möjligt */
-    }
-
-    /* Göm den fula scroll-listen men behåll funktionen */
-    .stat-grid::-webkit-scrollbar { display: none; }
-    .stat-grid { -ms-overflow-style: none; scrollbar-width: none; }
-}
-
-/* Hindra ikonen från att bli mosad om texten är lång */
-.stat-icon-box {
-    flex-shrink: 0;
-    width: 48px !important; 
-    height: 48px !important;
-}
 
 
