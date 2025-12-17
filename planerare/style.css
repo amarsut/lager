@@ -1554,6 +1554,39 @@ ul.tech-list li span {
     .comment-placeholder { color: #94A3B8; font-style: normal; }
     .card-comments-section svg { color: #94A3B8; margin-top: 2px; flex-shrink: 0; }
 
+    /* --- GÖRA JOBBKORTEN MER KOMPAKT --- */
+
+    /* Minska luften runt innehållet i kortet */
+    .job-card-new .card-body {
+        padding: 6px 10px !important; /* Var 10px 12px */
+        gap: 2px !important;          /* Var 4px */
+    }
+
+    /* Minska höjden på varje rad inuti kortet */
+    .job-card-new .info-row {
+        min-height: 18px;             /* Tvinga ner höjden */
+        line-height: 1.2;
+    }
+
+    /* Minska marginalen till pris-raden */
+    .job-card-new .info-row.price-row {
+        margin-top: 4px !important;   /* Var 6px */
+        padding-top: 4px !important;  /* Var 6px */
+    }
+
+    /* Tighta till kommentarsfältet */
+    .job-card-new .card-comments-section {
+        padding: 6px 10px !important; /* Var 8px 12px */
+        margin-top: 0 !important;     /* Ta bort ev. marginal */
+    }
+
+    /* Gör knapparna i botten lite lägre om de tar plats */
+    .job-card-new .card-actions-expand {
+        padding: 6px 10px !important;
+    }
+    .job-card-new .inline-action-btn {
+        height: 32px !important;      /* Justera knapphöjd vid behov */
+    }
 
     /* --- 5. MODALER & CHATT --- */
     
@@ -3219,7 +3252,13 @@ input[type="number"] {
 .android-switch input:checked + .slider:before { transform: translateX(18px); }
 
 /* --- PRIVACY MODE --- */
-body.privacy-active .stat-card-value, body.privacy-active .money-related, body.privacy-active .price-row .row-value, body.privacy-active #kundpris, body.privacy-active #vinstDisplay, body.privacy-active #utgifterDisplay, body.privacy-active .expense-item strong, 
+body.privacy-active .stat-card-value, 
+body.privacy-active .money-related, 
+body.privacy-active .price-row .row-value, 
+body.privacy-active #kundpris, 
+body.privacy-active #vinstDisplay, 
+body.privacy-active #utgifterDisplay, 
+body.privacy-active .expense-item strong, 
 body.privacy-active .stat-card[data-filter="offererad"] .stat-card-value,
 body.privacy-active .stat-card[data-filter="backlog"] .stat-card-value {
     color: transparent !important; text-shadow: 0 0 10px rgba(0,0,0,0.4) !important; user-select: none;
@@ -4395,3 +4434,211 @@ input[type=range]:active::-webkit-slider-thumb { transform: scale(1.1); border-c
 [data-theme="dark"] input[type=range]::-webkit-slider-thumb { background: #1c1c1e; border-color: #555; }
 
 
+/* Layout för Statistik-vyn */
+
+/* =========================================
+   STANDARD HEADER & STATISTIK FIX
+   ========================================= */
+
+/* --- 1. HEADER (IDENTISK MED ANDRA VYER) --- */
+
+/* Grundstilen för headern (Samma som Inställningar) */
+.one-ui-header-simple {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px;
+    padding: 16px 20px; /* Standard One UI padding */
+    background: white;
+    border-bottom: 1px solid #f1f5f9;
+    min-height: 60px;   /* Standardhöjd */
+    box-sizing: border-box;
+}
+
+/* Sticky-tillägg för Statistik (Endast positionering, ingen storleksändring!) */
+.one-ui-header-simple.sticky-header-fix {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    margin: 0;
+    width: 100%;
+    /* Vi behåller samma background och padding som grundklassen */
+    background: rgba(255, 255, 255, 0.98); /* Liten transparens */
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+/* Titel */
+.header-simple-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-color);
+    margin: 0;
+    line-height: 1.2;
+}
+
+/* Bakåtknapp (Standard) */
+.simple-back-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    color: var(--text-color);
+    padding: 8px;
+    margin-left: -8px; /* Kompenserar för padding så ikonen linjerar med kanten */
+    cursor: pointer;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+}
+.simple-back-btn:active { background: #f1f5f9; }
+
+/* 2. Controls Bar (Datum & Filterknapp) */
+.stats-controls-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px; /* Matcha header padding i sidled */
+    background: transparent;
+}
+
+.date-range-text {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #64748b;
+}
+
+.filter-toggle-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #1e293b;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    cursor: pointer;
+}
+.filter-toggle-btn svg { width: 14px; height: 14px; margin-top: 1px; }
+
+/* 3. Filter Drawer (Menyn) */
+.filter-drawer {
+    background: white;
+    border-bottom: 1px solid #f1f5f9;
+    padding: 12px 20px;
+    animation: slideDown 0.2s ease-out;
+}
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.filter-drawer-scroll {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    -ms-overflow-style: none; scrollbar-width: none;
+}
+.filter-drawer-scroll::-webkit-scrollbar { display: none; }
+
+.filter-pill-large {
+    padding: 8px 16px;
+    border-radius: 8px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    color: #64748b;
+    font-size: 0.85rem;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+}
+.filter-pill-large.active {
+    background: #1e293b;
+    color: white;
+    border-color: #1e293b;
+}
+
+/* 4. Grid Layout (Tvingad 3-kolumn) */
+.fun-stats-grid.compact-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr !important;
+    gap: 8px;
+    padding: 0 16px;
+    width: 100%;
+}
+
+.fun-stat-card.compact {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 12px 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.fs-label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: #94a3b8;
+    margin-bottom: 4px;
+}
+
+.fs-val {
+    font-size: 1rem;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.1;
+}
+@media (max-width: 360px) { .fs-val { font-size: 0.9rem; } }
+
+.trend-mini { font-size: 0.7rem; font-weight: 700; margin-top: 4px; }
+
+/* 5. Övrigt */
+.chart-card-compact, .top-list-card {
+    background: white;
+    padding: 16px;
+    border-radius: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    border: 1px solid #e2e8f0;
+    margin: 12px 16px;
+}
+
+.chart-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.chart-label, .top-list-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+}
+
+.icon-btn-tiny {
+    background: transparent; border: none; color: #94a3b8; cursor: pointer; padding: 4px;
+}
+
+/* Privacy Mode */
+body.privacy-mode .highlight-blue,
+body.privacy-mode .highlight-dark,
+body.privacy-mode .highlight-green,
+body.privacy-mode .fs-val,
+body.privacy-mode canvas {
+    filter: blur(5px);
+}
+.highlight-blue { color: #3b82f6; }
+.highlight-green { color: #10b981; }
+.highlight-dark { color: #1e293b; }
