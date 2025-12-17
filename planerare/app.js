@@ -808,6 +808,8 @@ function setupEventListeners() {
 	        
 	        // 3. Visa kalendern
 	        document.getElementById('calendarView').style.display = 'block';
+            const statsView = document.getElementById('statisticsView');
+            if (statsView) statsView.style.display = 'none';
 	
 	        // 4. Starta kalendern (med dina jobb och redigera-funktionen)
 	        // Vi använder setTimeout för att säkerställa att diven är synlig innan kalendern ritas
@@ -858,6 +860,8 @@ function setupEventListeners() {
 	    document.getElementById('timelineView').style.display = 'none';
 	    document.getElementById('calendarView').style.display = 'none';
 	    document.getElementById('customersView').style.display = 'block';
+        const statsView = document.getElementById('statisticsView');
+        if (statsView) statsView.style.display = 'none';
 	    
 	    renderCustomerView();
 	    
@@ -877,13 +881,32 @@ function setupEventListeners() {
 	
 	        // 3. Visa Kundvyn, dölj andra
 	        document.getElementById('statBar').style.display = 'none';
-	        document.getElementById('timelineView').style.display = 'none';
+	        document.getsElementById('timelineView').style.display = 'none';
 	        document.getElementById('customersView').style.display = 'block';
 	        
 	        // 4. Ladda listan
 	        renderCustomerView();
 	    });
 	}
+
+    const mobileHomeBtn = document.getElementById('mobileHomeBtn');
+    if (mobileHomeBtn) {
+        mobileHomeBtn.addEventListener('click', () => {
+            // 1. Dölj Statistikvyn (FIXEN)
+            document.getElementById('statisticsView').style.display = 'none';
+            
+            // 2. Visa översikten
+            document.getElementById('timelineView').style.display = 'block';
+            document.getElementById('statBar').style.display = ''; // Återställ flex/grid
+            
+            // 3. Dölj annat
+            document.getElementById('calendarView').style.display = 'none';
+            document.getElementById('customersView').style.display = 'none';
+            
+            // 4. Scrolla upp (din befintliga kod)
+            window.scrollTo({top:0, behavior:'smooth'});
+        });
+    }
 	
 	document.getElementById('mobileHomeBtn').addEventListener('click', () => {
     document.querySelectorAll('.mobile-nav-item').forEach(btn => btn.classList.remove('active'));
@@ -922,6 +945,8 @@ function setupEventListeners() {
             
             // 3. Dölj andra vyer
             document.getElementById('customersView').style.display = 'none';
+            const statsView = document.getElementById('statisticsView');
+            if (statsView) statsView.style.display = 'none';
             
             // --- HÄR ÄR FIXEN: DÖLJ KALENDERN EXPLICIT ---
             document.getElementById('calendarView').style.display = 'none';
@@ -1091,6 +1116,22 @@ function setupEventListeners() {
 	        document.getElementById('mobileHomeBtn').classList.add('active');
 	    }
 	});
+
+    // Om vi swipar tillbaka och statisticsView är öppen -> Stäng den
+    const statsView = document.getElementById('statisticsView');
+    
+    if (statsView && statsView.style.display === 'block') {
+        // Vi var i statistiken, nu döljer vi den
+        statsView.style.display = 'none';
+        
+        // Återställ startsidan
+        document.getElementById('statBar').style.display = ''; 
+        document.getElementById('timelineView').style.display = 'block';
+        
+        // Dölj ev. filtermeny om den var öppen
+        const filterDrawer = document.getElementById('statsFilterDrawer');
+        if(filterDrawer) filterDrawer.style.display = 'none';
+    }
     
 	// Hantera klick på Sök-knappen i menyn
 	document.getElementById('mobileSearchBtn')?.addEventListener('click', () => {
