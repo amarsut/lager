@@ -243,56 +243,89 @@
 }
 
 /* =========================================
-   FIX FÖR EJ BOKAT - PROFFSIG & MINIMAL
+   FIX FÖR EJ BOKAT - PRO DESIGN
    ========================================= */
 
 /* Gör kortet redo för absolut positionering */
 .stat-card[data-filter="backlog"] {
     position: relative;
+    /* Behåll gradienten */
+    background: linear-gradient(135deg, #ffffff 0%, #fff7ed 100%) !important;
+    border-color: #ffedd5 !important;
 }
 
-/* Huvudsiffran (5) - Rör den inte, så den linjerar med andra kort */
+/* Huvudsiffran (5) - Påverkas inte, ligger kvar i flödet */
 .stat-card[data-filter="backlog"] .stat-card-value {
+    color: #ea580c !important; /* Orange */
     margin-bottom: 0 !important; 
-    /* Om siffran krockar med texten, öka padding-bottom på kortet nedan istället */
 }
 
 /* Textraden - Placerad absolut i botten */
 .backlog-row {
     position: absolute;
-    bottom: 6px;        /* Ligger precis ovanför den färgade linjen */
-    left: 20px;         /* Matchar kortets padding (samma som titeln) */
+    bottom: 8px;        /* Ligger snyggt ovanför linjen */
+    left: 20px;         /* Matchar sidmarginalen */
     width: auto;
-    
-    display: block;     /* Säkerställer att containern beter sig normalt */
     margin: 0;
     padding: 0;
-    pointer-events: none; /* Gör att man klickar "igenom" texten på kortet */
+    pointer-events: none;
 }
 
-/* Behållare för raden */
+/* Flex-behållare för raden */
 .stat-inline-row {
     display: flex;
     align-items: center;
-    gap: 1px;          /* Luft mellan "Väntar" och "Offert" */
+    gap: 8px; /* Avstånd mellan grupperna och punkten */
 }
 
-/* Texten "Väntar" / "Offert" */
-.sub-stat {
-    font-size: 0.55rem;      /* Liten, diskret storlek */
-    color: #94a3b8;         /* Ljusgrå (skriker inte) */
-    font-weight: 400;
-    text-transform: uppercase; /* Gör det lite mer "dashboard-aktigt" */
-    letter-spacing: 0.03em;
+/* Gruppering (Label + Siffra) */
+.sub-group {
+    display: flex;
+    align-items: baseline; /* Ser till att text och siffra står på samma baslinje */
+    gap: 4px; /* Litet mellanrum mellan ord och siffra */
+}
+
+/* Texten "VÄNTAR" / "OFFERT" */
+.sub-label {
+    font-size: 0.65rem;      /* Mycket liten och diskret (Micro-label) */
+    color: #94a3b8;          /* Ljusgrå/Slate-400 - Stjäl inte fokus */
+    font-weight: 700;
+    letter-spacing: 0.05em;  /* Lite luft mellan bokstäverna */
+    text-transform: uppercase;
 }
 
 /* Siffrorna (3 och 2) */
 .sub-val {
-    color: #475569;         /* Mörkare grå för läsbarhet */
-    font-weight: 500;
-    margin-left: 1px;       /* Liten luft mellan text och siffra */
-    font-size: 0.65rem;
+    color: #ea580c;          /* ORANGE - Matchar kortets tema! */
+    font-weight: 800;        /* Fet stil */
+    font-size: 0.85rem;      /* Lite större än texten */
 }
 
-/* Valfritt: En liten prick emellan om du vill ha separation utan streck */
-/* .sub-spacer { ... } - Lämna tom för bara mellanrum */
+/* Punkten emellan (•) */
+.sub-separator {
+    color: #cbd5e1;          /* Mycket ljus grå punkt */
+    font-size: 0.6rem;
+    position: relative;
+    top: -1px;               /* Finjustera höjden */
+}
+
+/* --- MOBILANPASSNING FÖR DENNA RAD --- */
+@media (max-width: 768px) {
+    .backlog-row {
+        left: 12px !important;   /* Matchar mobilens padding */
+        bottom: 10px !important; 
+        white-space: nowrap !important;
+    }
+    
+    .stat-inline-row {
+        gap: 6px !important;
+    }
+    
+    .sub-label {
+        font-size: 0.6rem !important;
+    }
+    
+    .sub-val {
+        font-size: 0.75rem !important;
+    }
+}
