@@ -206,7 +206,7 @@
     
     /* Justera textraden för mobil */
     .backlog-row {
-        left: 12px !important;
+        left: 15px !important;
         bottom: 2px !important;
         gap: 4px !important;
     }
