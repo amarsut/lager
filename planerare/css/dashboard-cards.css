@@ -192,8 +192,8 @@
     
     /* Justera textraden för mobil */
     .backlog-row {
-        left: 10px !important;
-        bottom: 3px !important;
+        left: 12px !important;
+        bottom: 2px !important;
         gap: 4px !important;
     }
     
