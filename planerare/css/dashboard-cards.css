@@ -210,12 +210,12 @@
 .stat-inline-row {
     display: flex;
     align-items: center;
-    gap: 12px;          /* Luft mellan "Väntar" och "Offert" */
+    gap: 5px;          /* Luft mellan "Väntar" och "Offert" */
 }
 
 /* Texten "Väntar" / "Offert" */
 .sub-stat {
-    font-size: 0.4rem;      /* Liten, diskret storlek */
+    font-size: 0.65rem;      /* Liten, diskret storlek */
     color: #94a3b8;         /* Ljusgrå (skriker inte) */
     font-weight: 400;
     text-transform: uppercase; /* Gör det lite mer "dashboard-aktigt" */
@@ -226,7 +226,7 @@
 .sub-val {
     color: #475569;         /* Mörkare grå för läsbarhet */
     font-weight: 500;
-    margin-left: 4px;       /* Liten luft mellan text och siffra */
+    margin-left: 2px;       /* Liten luft mellan text och siffra */
     font-size: 0.65rem;
 }
 
