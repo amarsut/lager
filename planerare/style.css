@@ -338,16 +338,6 @@ body { margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-c
         gap: 12px;
         margin-bottom: 2rem;
     }
-    
-    /* Backlog justering dator */
-    .stat-card[data-filter="backlog"] {
-        min-height: 150px !important;
-        justify-content: space-between !important;
-    }
-    .stat-card[data-filter="backlog"] .stat-card-value {
-        position: absolute;
-        margin-top: 70px !important;
-    }
 }
 
 /* --- TABELL --- */
@@ -4433,6 +4423,7 @@ input[type=range]:active::-webkit-slider-thumb { transform: scale(1.1); border-c
 /* Dark mode stöd */
 [data-theme="dark"] input[type=range]::-webkit-slider-runnable-track { background: #333; }
 [data-theme="dark"] input[type=range]::-webkit-slider-thumb { background: #1c1c1e; border-color: #555; }
+
 
 
 
