@@ -179,56 +179,56 @@
 }
 
 /* =========================================
-   FIX FÖR EJ BOKAT (BACKLOG) LAYOUT
+   FIX FÖR EJ BOKAT - PROFFSIG & MINIMAL
    ========================================= */
 
-/* Flex-container för att styra ordningen på elementen */
+/* Gör kortet redo för absolut positionering */
 .stat-card[data-filter="backlog"] {
-    display: flex;
-    flex-direction: column;
+    position: relative;
 }
 
-/* 1. Rubriken (Ej Bokat) ligger alltid överst */
-.stat-card[data-filter="backlog"] .stat-card-title {
-    order: 1;
-}
-
-/* 2. Huvudsiffran (5) - Vi sätter denna som nummer 2 */
+/* Huvudsiffran (5) - Rör den inte, så den linjerar med andra kort */
 .stat-card[data-filter="backlog"] .stat-card-value {
-    order: 2;
-    margin-top: auto;       /* Trycker ner hela paketet mot botten */
-    margin-bottom: 0 !important; /* Ingen luft under siffran, så texten kommer nära */
-    line-height: 1;
+    margin-bottom: 0 !important; 
+    /* Om siffran krockar med texten, öka padding-bottom på kortet nedan istället */
 }
 
-/* 3. Textraden (Väntar | Offert) - Vi sätter denna som nummer 3 (SIST) */
+/* Textraden - Placerad absolut i botten */
 .backlog-row {
-    order: 3;               /* Hamnar UNDER siffran */
+    position: absolute;
+    bottom: 6px;        /* Ligger precis ovanför den färgade linjen */
+    left: 20px;         /* Matchar kortets padding (samma som titeln) */
+    width: auto;
     
+    display: block;     /* Säkerställer att containern beter sig normalt */
+    margin: 0;
+    padding: 0;
+    pointer-events: none; /* Gör att man klickar "igenom" texten på kortet */
+}
+
+/* Behållare för raden */
+.stat-inline-row {
     display: flex;
     align-items: center;
-    gap: 8px;               /* Lagom luft mellan "Väntar" och "Offert" */
-    
-    font-size: 0.7rem;      /* Liten och proffsig textstorlek */
-    color: #94a3b8;         /* Diskret grå färg */
-    font-weight: 500;
-    
-    margin-top: 4px;        /* Liten marginal upp mot siffran */
-    margin-bottom: 0;
-    line-height: 1;
+    gap: 12px;          /* Luft mellan "Väntar" och "Offert" */
 }
 
-/* Styling för de små siffrorna (3 och 2) */
+/* Texten "Väntar" / "Offert" */
+.sub-stat {
+    font-size: 0.7rem;      /* Liten, diskret storlek */
+    color: #94a3b8;         /* Ljusgrå (skriker inte) */
+    font-weight: 600;
+    text-transform: uppercase; /* Gör det lite mer "dashboard-aktigt" */
+    letter-spacing: 0.03em;
+}
+
+/* Siffrorna (3 och 2) */
 .sub-val {
-    color: #475569;         /* Lite mörkare grå för läsbarhet */
+    color: #475569;         /* Mörkare grå för läsbarhet */
     font-weight: 700;
-    margin-left: 3px;
+    margin-left: 4px;       /* Liten luft mellan text och siffra */
+    font-size: 0.75rem;
 }
 
-/* Det lilla strecket mellan orden */
-.sub-divider {
-    color: #e2e8f0;         /* Mycket ljus grå */
-    font-size: 0.8rem;
-    position: relative;
-    top: -1px;
-}
+/* Valfritt: En liten prick emellan om du vill ha separation utan streck */
+/* .sub-spacer { ... } - Lämna tom för bara mellanrum */
