@@ -16,7 +16,7 @@
     background: #fff;
     border: 1px solid #f3f4f6;
     box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-    border-radius: 12px; /* Eller vad du föredrar */
+    border-radius: 4px; /* Eller vad du föredrar */
     
     /* Layout inuti kortet */
     display: flex;
