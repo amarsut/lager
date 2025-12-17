@@ -2302,114 +2302,6 @@ ul.tech-list li span {
     margin-right: 4px;
 }
 
-/* =================================================================
-   LOGIN SCREEN (PREMIUM STYLE)
-   ================================================================= */
-
-.login-screen {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-    display: flex; align-items: center; justify-content: center;
-    z-index: 10000;
-    padding: 20px;
-}
-
-.login-card {
-    background: #ffffff;
-    width: 100%; max-width: 420px;
-    padding: 48px 40px;
-    border-radius: 24px;
-    box-shadow: 
-        0 4px 6px -1px rgba(0, 0, 0, 0.05), 
-        0 20px 50px -10px rgba(0, 0, 0, 0.1);
-    animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-@keyframes slideUpFade {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.login-header {
-    text-align: center; margin-bottom: 32px;
-}
-
-.login-logo-box {
-    width: 56px; height: 56px;
-    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-    border-radius: 16px;
-    display: flex; align-items: center; justify-content: center;
-    margin: 0 auto 24px auto;
-    box-shadow: 0 10px 20px -5px rgba(37, 99, 235, 0.4);
-}
-.login-logo-box svg { width: 28px; height: 28px; }
-
-.login-header h1 {
-    font-size: 1.75rem; font-weight: 800; color: #111827; margin: 0 0 8px 0; letter-spacing: -0.5px;
-}
-.login-header p {
-    font-size: 0.95rem; color: #6B7280; margin: 0;
-}
-
-.input-group { margin-bottom: 20px; }
-.input-group label {
-    display: block; font-size: 0.85rem; font-weight: 600; color: #374151; margin-bottom: 8px;
-}
-
-.input-field-wrapper {
-    position: relative;
-}
-.input-field-wrapper .input-icon {
-    position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
-    width: 20px; height: 20px; color: #9CA3AF; transition: color 0.2s;
-}
-.input-field-wrapper input {
-    width: 100%;
-    padding: 14px 16px 14px 48px; /* Plats för ikon */
-    border: 1px solid #E5E7EB; border-radius: 12px;
-    background: #F9FAFB; font-size: 1rem; color: #111; outline: none;
-    transition: all 0.2s; font-family: inherit;
-}
-.input-field-wrapper input:focus {
-    background: #fff; border-color: #3b82f6;
-    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
-}
-.input-field-wrapper input:focus + .input-icon { color: #3b82f6; } /* Funkar om svg ligger efter input i html, annars via js eller css-has */
-.input-field-wrapper input:focus ~ .input-icon, 
-.input-field-wrapper:focus-within .input-icon { color: #3b82f6; }
-
-.login-btn {
-    width: 100%; padding: 16px;
-    background: #111827; color: white;
-    border: none; border-radius: 12px;
-    font-size: 1rem; font-weight: 600; cursor: pointer;
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-    transition: transform 0.1s, background-color 0.2s;
-    margin-top: 10px;
-}
-.login-btn:hover { background-color: #000; transform: translateY(-1px); }
-.login-btn:active { transform: translateY(0); }
-.btn-arrow { width: 18px; height: 18px; transition: transform 0.2s; }
-.login-btn:hover .btn-arrow { transform: translateX(3px); }
-
-.login-error {
-    margin-top: 16px; padding: 12px;
-    background: #FEF2F2; color: #DC2626;
-    border-radius: 8px; font-size: 0.9rem; text-align: center;
-    border: 1px solid #FECACA;
-}
-
-.login-footer {
-    margin-top: 32px; text-align: center; border-top: 1px solid #F3F4F6; padding-top: 20px;
-}
-.login-footer p { color: #9CA3AF; font-size: 0.8rem; margin: 0; }
-
-/* Mobilanpassning */
-@media (max-width: 480px) {
-    .login-card { padding: 32px 24px; max-width: 100%; height: auto; border-radius: 20px; }
-    .login-screen { padding: 16px; align-items: center; }
-}
-
 @media (max-width: 768px) {
 	/*2. Snyggare Formulärfält (Tips #17 & #18)
 	Gör inputs stora, mjuka och moderna.*/
@@ -4208,6 +4100,7 @@ input[type=range]:active::-webkit-slider-thumb { transform: scale(1.1); border-c
 /* Dark mode stöd */
 [data-theme="dark"] input[type=range]::-webkit-slider-runnable-track { background: #333; }
 [data-theme="dark"] input[type=range]::-webkit-slider-thumb { background: #1c1c1e; border-color: #555; }
+
 
 
 
