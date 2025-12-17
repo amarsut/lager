@@ -394,3 +394,52 @@ body.privacy-mode .insight-value,
 body.privacy-mode canvas {
     filter: blur(5px);
 }
+
+/* Beläggning - Siffran ovanför stapeln */
+.hm-val {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #64748b;
+    margin-bottom: 2px; /* Lite luft ner till stapeln */
+}
+
+/* Om det är "högtryck" gör vi siffran blå också */
+.hm-col:has(.hm-bar.high) .hm-val {
+    color: #3b82f6;
+}
+
+/* --- DATOR-ANPASSNING (FIXAD HÖJD) --- */
+@media (min-width: 992px) {
+    
+    /* 1. Göm mobil-headern helt */
+    #statisticsView .one-ui-header-simple.sticky-header-fix {
+        display: none !important;
+    }
+
+    /* 2. TVINGA UPP VYN MED NEGATIV MARGINAL */
+    /* Om du fortfarande har tomrum, öka minustecknet (t.ex. -40px) */
+    #statisticsView {
+        padding-top: 0 !important;
+        margin-top: -20px !important; 
+        min-height: auto !important; /* Förhindra att den tvingar fram höjd */
+    }
+
+    /* 3. Justera Filter-raden så den agerar ny topp */
+    .stats-controls-bar {
+        padding: 24px 32px 10px 32px !important;
+        max-width: 1200px;
+        margin: 0 auto;
+        
+        /* Säkerställ att den ligger överst */
+        position: relative;
+        z-index: 10;
+    }
+    
+    /* 4. Centrera innehållet */
+    .stats-content-wrapper {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 16px;
+    }
+}
+
