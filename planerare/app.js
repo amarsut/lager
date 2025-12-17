@@ -758,9 +758,23 @@ function updateStatsCounts(jobs) {
     const offeredCount = active.filter(j => j.status === 'offererad').length;
 
     // Uppdatera det nya kombinerade kortet
-    safeUpdate('stat-backlog', unplannedCount + offeredCount);
-    safeUpdate('count-unplanned', unplannedCount);
-    safeUpdate('count-offered', offeredCount);
+	safeUpdate('stat-backlog', unplannedCount + offeredCount);
+	
+	// Hitta elementet för backlog-raden
+	const backlogRow = document.querySelector('.backlog-row');
+	if (backlogRow) {
+	    // Ersätt hela innehållet med snyggare HTML
+	    backlogRow.innerHTML = `
+	        <div class="stat-row">
+	            <span class="stat-label">Väntar</span>
+	            <span class="stat-value-pill">${unplannedCount}</span>
+	        </div>
+	        <div class="stat-row">
+	            <span class="stat-label">Offert</span>
+	            <span class="stat-value-pill">${offeredCount}</span>
+	        </div>
+	    `;
+	}
 
     // Uppdatera det gamla kortet (om det råkar finnas kvar någonstans)
     safeUpdate('stat-offered', offeredCount);
