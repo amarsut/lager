@@ -457,16 +457,58 @@
 								</div>
 							</div>
 
+							<div class="goal-card compact">
+								<div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:6px;">
+									<span class="fs-label" id="goalLabel" style="margin:0;">Månadsmål</span>
+									<span class="fs-val" style="font-size:0.85rem;" id="goalPercent">0%</span>
+								</div>
+								<div class="progress-track">
+									<div class="progress-fill" id="goalBar" style="width: 0%"></div>
+								</div>
+							</div>
+
+							<div class="insights-grid">
+								
+								<div class="insight-card purple-theme">
+									<div class="card-icon-header">
+										<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+										<span>Prognos (Bokat)</span>
+									</div>
+									<div class="insight-value" id="forecastValue">0 kr</div>
+									<div class="insight-sub" id="forecastCount">0 jobb väntar</div>
+								</div>
+
+								<div class="insight-card">
+									<div class="card-icon-header">
+										<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20v-6M6 20V10M18 20V4"></path></svg>
+										<span>Beläggning</span>
+									</div>
+									<div class="heatmap-container" id="heatmapContainer">
+										</div>
+								</div>
+							</div>
+
 							<div class="chart-card-compact" style="margin-top: 12px;">
 								<div class="chart-header-row">
 									<span class="chart-label">Trend</span>
-									<button class="icon-btn-tiny" onclick="downloadStatsChart()">
-										<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-									</button>
+									<div class="segmented-control">
+										<button class="seg-btn active" onclick="toggleChartMode('revenue', this)">Omsättning</button>
+										<button class="seg-btn" onclick="toggleChartMode('profit', this)">Vinst</button>
+									</div>
 								</div>
 								<div class="chart-canvas-container">
 									<canvas id="revenueChartCanvas"></canvas>
 								</div>
+							</div>
+
+							<div id="drillDownContainer" class="top-list-card" style="margin-top: 12px; display:none;">
+								<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+									<h3 class="top-list-title" id="drillDownTitle">Detaljer</h3>
+									<button class="icon-btn-tiny" onclick="closeDrillDown()">
+										<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+									</button>
+								</div>
+								<div id="drillDownList"></div>
 							</div>
 
 							<div class="top-list-card" style="margin-top: 12px;">
