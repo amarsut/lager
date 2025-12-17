@@ -121,7 +121,7 @@
    ========================================= */
 @media (max-width: 768px) {
     .stat-bar {
-        display: flex !important;       /* Lägg på rad */
+        display: flex;       /* Lägg på rad */
         flex-wrap: nowrap !important;   /* Ingen radbrytning */
         overflow-x: auto !important;    /* Scrolla i sidled */
         
