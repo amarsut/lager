@@ -14,7 +14,7 @@
     background: #fff;
     border: 1px solid #f3f4f6;
     box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-    border-radius: 12px; /* Lite rundare hörn ser modernare ut */
+    border-radius: 4px; /* Lite rundare hörn ser modernare ut */
     
     display: flex;
     flex-direction: column;
