@@ -19,7 +19,6 @@ window.openBrandSelector = openBrandSelector;
 window.saveTechSpec = saveTechSpec;
 window.filterVehicleHistory = filterVehicleHistory;
 window.openEditModal = openEditModal; 
-window.closeViewModal = closeViewModal; // <--- OCH DENNA
 // Slut på kalender
 
 // 1. FIREBASE KONFIGURATION
