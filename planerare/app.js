@@ -590,7 +590,7 @@ function createJobCard(job) {
     const iInfoSmall = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:12px; height:12px; margin-left:4px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`;
 
     return `
-        <div class="job-card-new status-${statusRaw}" id="card-${job.id}" onclick="saveSearchTerm(); openViewModal('${job.id}')">
+        <div class="job-card-new status-${statusRaw}" id="card-${job.id}" onclick="window.openViewModal('${job.id}')">
             
             <div class="card-header-strip ${headerClass}" style="padding: 0 10px !important; display: flex !important; align-items: center !important;">
 
@@ -3609,31 +3609,39 @@ function applyZoom(value) {
    VIEW MODAL (LÄSLÄGE)
    ========================================== */
 
-function openViewModal(jobId) {
-    // 1. Hitta jobbet i listan
+/* ==========================================
+   VIEW MODAL (SÄKER VERSION)
+   ========================================== */
+
+// VIKTIGT: Vi definierar den direkt på window så HTML hittar den direkt
+window.openViewModal = function(jobId) {
+    console.log("Försöker öppna jobb med ID:", jobId); // Debug-logg
+
+    // 1. Hitta jobbet
     const job = allJobs.find(j => j.id === jobId);
-    if (!job) return console.error("Jobb saknas:", jobId);
+    
+    if (!job) {
+        alert("Kunde inte hitta jobbet. Prova att ladda om sidan.");
+        return;
+    }
 
-    currentViewingJob = job;
+    // Spara det globalt så vi kan redigera det sen
+    // Vi lägger det också på window för att vara säkra
+    window.currentViewingJob = job;
 
-    // Hjälpfunktion för att sätta text säkert
+    // Hjälpfunktion för text
     const setText = (id, text) => {
         const el = document.getElementById(id);
         if (el) el.textContent = text || '-';
     };
 
-    // 2. Fyll i Data (Använder dina svenska fältnamn)
-    
-    // Header
+    // --- FYLL I DATA ---
     setText('viewRegNr', job.regnr || 'OKÄNT');
-    setText('viewStatusBadge', job.status ? job.status.toUpperCase() : 'BOKAD');
-    
-    // Bil & Modell
-    // Om du inte har 'bilmodell' sparat separat, visar vi paketet eller lämnar tomt
-    setText('viewModel', job.bilmodell || job.paket || 'Fordon'); 
-    setText('viewMilage', job.matarstallning ? job.matarstallning + ' mil' : ''); 
+    setText('viewStatusBadge', job.status ? job.status.toUpperCase() : 'NY');
+    setText('viewModel', job.bilmodell || job.paket || 'Fordon');
+    setText('viewMilage', job.matarstallning ? job.matarstallning + ' mil' : '');
 
-    // Datum & Tid
+    // Datum
     let dateStr = '-';
     let timeStr = '-';
     if (job.datum && job.datum.includes('T')) {
@@ -3644,10 +3652,9 @@ function openViewModal(jobId) {
     setText('viewDate', dateStr);
     setText('viewTime', timeStr);
 
-    // Kundinfo
-    setText('viewCustomerName', job.kundnamn || 'Okänd kund');
+    // Kund & Telefon
+    setText('viewCustomerName', job.kundnamn || 'Okänd');
     
-    // Telefon (Hanterar både 'telefon' och 'phone' ifall du bytt namn)
     const phoneVal = job.telefon || job.phone || '';
     const phoneLink = document.getElementById('viewPhoneLink');
     const phoneText = document.getElementById('viewPhoneText');
@@ -3656,20 +3663,23 @@ function openViewModal(jobId) {
         if (phoneVal) {
             phoneText.textContent = phoneVal;
             phoneLink.href = `tel:${phoneVal}`;
-            phoneLink.style.display = 'flex'; // Visa chippet
+            phoneLink.style.display = 'flex';
         } else {
-            phoneLink.style.display = 'none'; // Dölj om inget nummer
+            phoneLink.style.display = 'none';
         }
     }
 
     // Ekonomi
     const intPris = parseInt(job.kundpris) || 0;
     
-    // Räkna utgifter från din array
+    // Räkna utgifter
     let totalUtgifter = 0;
     if (job.utgifter && Array.isArray(job.utgifter)) {
         job.utgifter.forEach(u => totalUtgifter += (parseInt(u.kostnad) || 0));
+    } else if (job.expense) {
+        totalUtgifter = parseInt(job.expense);
     }
+    
     const vinst = intPris - totalUtgifter;
 
     setText('viewPrice', intPris.toLocaleString() + ':-');
@@ -3681,27 +3691,33 @@ function openViewModal(jobId) {
         profitEl.style.color = vinst >= 0 ? '#10B981' : '#EF4444';
     }
 
-    // Beskrivning & Internt
-    // Använd 'kommentar' eftersom det är det du sparar i handleSaveJob
+    // Beskrivning
     setText('viewDescription', job.kommentar || 'Ingen beskrivning.');
     
-    // Om du har interna noteringar (exempelvis sparat som 'internalNotes')
+    // Interna noteringar
     const internalBox = document.querySelector('.internal-box');
     const internalText = document.getElementById('viewInternalNotes');
     
-    if (job.internalNotes && job.internalNotes.trim() !== "") {
+    // (Anpassa fältnamnet 'internalNotes' om du heter något annat i databasen)
+    const iNotes = job.internalNotes || ''; 
+    
+    if (internalText && iNotes.trim() !== "") {
         if(internalBox) internalBox.style.display = 'block';
-        if(internalText) internalText.textContent = job.internalNotes;
+        internalText.textContent = iNotes;
     } else {
         if(internalBox) internalBox.style.display = 'none';
     }
 
-    // Koppla "Redigera"-knappen i modalen
+    // Koppla Redigera-knappen
     const editBtn = document.getElementById('btnEditJob');
     if (editBtn) {
-        editBtn.onclick = function() {
-            closeViewModal(); // Stäng denna
-            openEditModal(job.id); // Öppna redigering
+        // Vi tar bort gamla lyssnare genom att klona knappen (enkelt trick)
+        const newBtn = editBtn.cloneNode(true);
+        editBtn.parentNode.replaceChild(newBtn, editBtn);
+        
+        newBtn.onclick = function() {
+            closeViewModal();
+            openEditModal(job.id);
         };
     }
 
@@ -3709,16 +3725,16 @@ function openViewModal(jobId) {
     const modal = document.getElementById('viewJobModal');
     if (modal) {
         modal.style.display = 'flex';
-        addHistoryState();
+        // Lägg till historik om funktionen finns
+        if (typeof addHistoryState === 'function') addHistoryState();
+    } else {
+        console.error("Hittade inte modalen med id 'viewJobModal' i HTML");
     }
-}
+};
 
-function closeViewModal() {
+// Definiera stäng-funktionen direkt på window också
+window.closeViewModal = function() {
     const modal = document.getElementById('viewJobModal');
     if (modal) modal.style.display = 'none';
-    
-    // Backa historiken om den är öppen via historik
-    if (history.state && history.state.modalOpen) {
-        history.back();
-    }
-}
+    if (history.state && history.state.modalOpen) history.back();
+};
