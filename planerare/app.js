@@ -487,161 +487,91 @@ const ICONS = {
 
 // --- HJÄLPFUNKTION: Skapa Mobilkortet (KOMPLETT NY VERSION) ---
 function createJobCard(job) {
-    // 1. TVINGA IN CSS (Säkerhetsåtgärd om style.css cacular)
-    if (!document.getElementById('temp-unplanned-style')) {
-        const style = document.createElement('style');
-        style.id = 'temp-unplanned-style';
-        style.innerHTML = `
-            .bg-unplanned { background-color: #94a3b8 !important; color: white !important; border-bottom-color: #64748b !important; }
-            .bg-unplanned .header-status-badge { background-color: rgba(255,255,255,0.25) !important; color: white !important; }
-            .bg-unplanned .header-reg-clickable { color: white !important; }
-            .bg-unplanned .brand-logo-img { filter: brightness(0) invert(1) opacity(0.95) !important; }
-        `;
-        document.head.appendChild(style);
-    }
-
-    // 2. Datum-logik (Mer robust kontroll)
-    // Vi kollar om datumet är null, undefined, tomt eller bara mellanslag
-    const hasDate = (job.datum && typeof job.datum === 'string' && job.datum.trim().length > 0);
+    // 1. Förbered data & ikoner (samma som förut)
+    // ... (behåll din befintliga kod för datum, ikoner, brandUrl osv här uppe) ...
+    // För enkelhetens skull i detta svar utgår jag från att variablerna 
+    // regNr, statusRaw, statusText, headerClass, iconHtml, nameValueHtml, etc. är definierade som i din förra kod.
     
-    // Skapa datumobjekt
-    const d = hasDate ? new Date(job.datum) : new Date(); 
-    const now = new Date(); 
+    // OM DU BEHÖVER KODEN FÖR VARIABLERNA IGEN, SÄG TILL! 
+    // Här fokuserar jag på logiken för expansionen.
 
-    const smartDate = getSmartDateString(job.datum);
-    const dateStr = smartDate;
-    
-    // Tid (Visa bara om datum finns)
-    const timeStr = hasDate 
-        ? d.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' }) 
-        : '';
-    
-    // Märkesikon
-    const combinedText = (job.kommentar + " " + job.paket + " " + job.kundnamn + " " + (job.bilmodell || "")).toLowerCase();
-    const brandUrl = getBrandIconUrl(combinedText, job.regnr);
+    // --- RÄKNA UT EKONOMI ---
+    const pris = parseInt(job.kundpris) || 0;
+    let totalUtgift = 0;
+    let expenseRows = '';
 
-    let iconHtml = '';
-    const iconStyle = 'width:16px; height:16px; margin-right:6px; display:block;';
-    
-    if (brandUrl) {
-        iconHtml = `<img src="${brandUrl}" class="brand-logo-img" alt="Logo" style="${iconStyle} object-fit:contain;">`;
-    } else {
-        iconHtml = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="${iconStyle}"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 17h8"/></svg>`;
-    }
-
-    const price = job.kundpris ? `${job.kundpris}:-` : '0:-';
-    const regNr = (job.regnr && job.regnr.toUpperCase() !== 'OKÄNT') ? job.regnr.toUpperCase() : '---';
-    const customer = job.kundnamn ? job.kundnamn : 'Okänd'; 
-    const paket = job.paket ? job.paket : '-';
-    const mileage = '-';
-
-    const statusRaw = job.status || 'bokad';
-    
-    // VIKTIGT: "let" gör att vi kan ändra texten
-    let statusText = statusRaw.toUpperCase(); 
-
-    // Standardfärg
-    let headerClass = 'bg-bokad'; 
-
-    // Bestäm färg och text
-    if (statusRaw === 'klar') headerClass = 'bg-klar';
-    else if (statusRaw === 'faktureras') headerClass = 'bg-faktureras';
-    else if (statusRaw === 'avbokad') headerClass = 'bg-avbokad';
-    else if (statusRaw === 'offererad') headerClass = 'bg-offererad';
-    
-    // --- SPECIAL-LOGIK FÖR VÄNTAR ---
-    else if (statusRaw === 'bokad') {
-        if (!hasDate) {
-            // Om inget datum finns -> Grå färg + Texten VÄNTAR
-            headerClass = 'bg-unplanned';
-            statusText = 'VÄNTAR';
-        } else if (d < now) {
-            // Om datum finns men passerat -> Röd färg (Overdue)
-            headerClass = 'bg-overdue';
-        }
-    }
-
-    // Företagsikon vs Personikon
-    const nameLower = (job.kundnamn || '').toLowerCase();
-    const isCorporate = ['bmg', 'fogarolli', 'ab'].some(c => nameLower.includes(c));
-    
-    const iUser = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
-    const iBriefcaseGreen = `<svg class="icon-sm" style="color: #10B981;" viewBox="0 0 64 64"><use href="#icon-office-building"></use></svg>`;
-    
-    const nameValueHtml = isCorporate 
-        ? `<span class="company-icon-wrapper">${iBriefcaseGreen}</span><span>${customer}</span>` 
-        : `<span>${customer}</span>`;
-
-    let commentHtml = '';
-    if (job.kommentar && job.kommentar.length > 0) {
-        commentHtml = `<span class="comment-text">${job.kommentar}</span>`;
-    } else {
-        commentHtml = `<span class="comment-text comment-placeholder">Inga kommentarer finns tillgängliga.</span>`;
+    if (job.utgifter && Array.isArray(job.utgifter)) {
+        job.utgifter.forEach(u => {
+            const kostnad = parseInt(u.kostnad) || 0;
+            totalUtgift += kostnad;
+            // Skapa en rad för varje utgift
+            expenseRows += `<li><span>${u.namn}</span> <span>-${kostnad}:-</span></li>`;
+        });
     }
     
-    // Ikoner
-    const iCal = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`;
-    const iClock = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`;
-    const iTag = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>`;
-    const iBox = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>`;
-    const iGauge = `<svg viewBox="0 0 1024 1024" fill="currentColor" stroke="none" width="24" height="24"><path d="M512 896a384 384 0 1 0 0-768 384 384 0 0 0 0 768zm0 64a448 448 0 1 1 0-896 448 448 0 0 1 0 896z"></path><path d="M192 512a320 320 0 1 1 640 0 32 32 0 1 1-64 0 256 256 0 1 0-512 0 32 32 0 0 1-64 0z"></path><path d="M570.432 627.84A96 96 0 1 1 509.568 608l60.992-187.776A32 32 0 1 1 631.424 440l-60.992 187.776zM502.08 734.464a32 32 0 1 0 19.84-60.928 32 32 0 0 0-19.84 60.928z"></path></svg>`;    const iComment = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`;
-    const iInfoSmall = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:12px; height:12px; margin-left:4px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`;
+    // Om inga utgifter finns
+    if (expenseRows === '') expenseRows = '<li><span>Inga registrerade utgifter</span> <span>0:-</span></li>';
 
+    const vinst = pris - totalUtgift;
+    const vinstClass = vinst >= 0 ? '' : 'loss'; // Röd text om förlust
+    const vinstTecken = vinst >= 0 ? '+' : '';
+
+    // --- BYGG HTML ---
+    // Notera onclick: Vi kör toggleCardExpand istället för openModal
+    
     return `
-        <div class="job-card-new status-${statusRaw}" id="card-${job.id}" onclick="window.openViewModal('${job.id}')">
+        <div class="job-card-new status-${statusRaw}" id="card-${job.id}" onclick="toggleCardExpand('${job.id}', event)">
             
             <div class="card-header-strip ${headerClass}" style="padding: 0 10px !important; display: flex !important; align-items: center !important;">
-
-                <div class="header-reg-clickable" onclick="event.stopPropagation(); openVehicleModal('${regNr}')" style="display: flex; align-items: center; height: 100%;">
+                <div class="header-reg-clickable" style="display: flex; align-items: center; height: 100%;">
                     ${iconHtml} 
                     <span>${regNr}</span>
-                    <span class="reg-info-sup" style="display: flex; align-items: center; opacity: 0.7;">${iInfoSmall}</span>
                 </div>
-                
                 <div class="header-right-side" style="display:flex; align-items:center; gap:8px; height: 100%;">
-                    <div class="header-status-badge" 
-                        onclick="event.stopPropagation(); toggleCardActions('${job.id}', event)"
-                        style="padding: 1px 6px; font-size: 0.65rem; border-radius: 4px; line-height: 1.2; cursor: pointer;">
-                        ${statusText}
-                    </div>
-                    <button class="card-menu-btn" onclick="event.stopPropagation(); toggleCardActions('${job.id}', event)" style="height: 30px; width: 30px; display: flex; align-items: center; justify-content: center; padding: 0; background: transparent; border: none; color: inherit;">
-                        <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
-                    </button>
+                    <div class="header-status-badge">${statusText}</div>
                 </div>
             </div>
 
             <div class="card-body">
                 <div class="info-row">
                     <span class="row-label">${iUser} Namn</span>
-                    <span class="row-value" onclick="event.stopPropagation(); openCustomerByName('${customer}')" style="cursor:pointer; text-decoration:underline; text-decoration-color:#cbd5e1; text-underline-offset:3px;">
-					    ${nameValueHtml}
-					</span>
+                    <span class="row-value">${nameValueHtml}</span>
                 </div>
                 <div class="info-row"><span class="row-label">${iBox} Paket</span><span class="row-value">${paket}</span></div>
-                <div class="info-row"><span class="row-label" title="Mätarställning">${iGauge} Mätarst.</span><span class="row-value">${mileage}</span></div>
-                <div class="info-row"><span class="row-label">${iCal} Datum</span><span class="row-value">${dateStr}</span></div>
-                <div class="info-row"><span class="row-label">${iClock} Tid</span><span class="row-value">${timeStr}</span></div>
-                <div class="info-row price-row"><span class="row-label">${iTag} Att betala</span><span class="row-value">${price}</span></div>
+                <div class="info-row"><span class="row-label">${iCal} Datum</span><span class="row-value">${dateStr} ${timeStr}</span></div>
+                <div class="info-row price-row"><span class="row-label">${iTag} Att betala</span><span class="row-value">${price}:-</span></div>
             </div>
 
-            <div class="card-comments-section">
-                ${iComment}
-                ${commentHtml}
-            </div>
+            <div class="card-expanded-details" id="details-${job.id}" onclick="event.stopPropagation()">
+                
+                <div class="expand-section">
+                    <div class="expand-label">${iComment} ARBETSBESKRIVNING</div>
+                    <div class="expand-text">${job.kommentar || 'Ingen beskrivning.'}</div>
+                </div>
 
-            <div class="card-actions-expand" id="actions-${job.id}" onclick="event.stopPropagation()">
-                <button class="inline-action-btn success" title="Markera som Klar" onclick="setStatus('${job.id}', 'klar')">
-                    <svg class="icon-sm"><use href="#icon-check"></use></svg>
-                </button>
-                <button class="inline-action-btn warning" title="Till Fakturering" onclick="setStatus('${job.id}', 'faktureras')">
-                    <svg class="icon-sm"><use href="#icon-clipboard"></use></svg>
-                </button>
-                <button class="inline-action-btn danger" title="Radera Jobb" onclick="deleteJob('${job.id}')">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-sm"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 12-2h4a2 2 0 0 12 2v2"></path></svg>
-                </button>
-            </div>
+                <div class="expand-section">
+                    <div class="expand-label">${iTag} EKONOMI & VINST</div>
+                    <ul class="expense-list-mini">
+                        ${expenseRows}
+                    </ul>
+                    <div class="profit-highlight ${vinstClass}">
+                        <span>VINST (Marginal)</span>
+                        <span style="font-size:1.1rem;">${vinstTecken}${vinst}:-</span>
+                    </div>
+                </div>
 
-        </div>`;
+                <div class="expand-actions">
+                    <button class="btn-expand btn-close-expand" onclick="toggleCardExpand('${job.id}', event)">
+                        Stäng
+                    </button>
+                    <button class="btn-expand btn-edit-big" onclick="openEditModal('${job.id}')">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                        Redigera / Ändra
+                    </button>
+                </div>
+
+            </div>
+            </div>`;
 }
 
 // Hjälpfunktion: Skapa DESKTOP RAD (Samma som innan men inkluderad för helhet)
@@ -3738,4 +3668,23 @@ window.copyToClipboard = function(elementId) {
         btn.innerHTML = `<svg width="16" height="16" fill="none" stroke="#10B981" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>`; // Grön check
         setTimeout(() => { btn.innerHTML = originalHtml; }, 1500);
     });
+};
+
+window.toggleCardExpand = function(jobId, event) {
+    if(event) event.stopPropagation(); // Förhindra dubbelklick
+
+    const card = document.getElementById(`card-${jobId}`);
+    
+    // 1. Stäng alla ANDRA kort först (Accordion-effekt)
+    // Om du vill kunna ha flera öppna samtidigt, ta bort detta block.
+    document.querySelectorAll('.job-card-new.expanded').forEach(otherCard => {
+        if (otherCard.id !== `card-${jobId}`) {
+            otherCard.classList.remove('expanded');
+        }
+    });
+
+    // 2. Toggla detta kort
+    if (card) {
+        card.classList.toggle('expanded');
+    }
 };
