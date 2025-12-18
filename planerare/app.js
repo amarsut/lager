@@ -617,10 +617,7 @@ function createJobCard(job) {
                 <div class="info-row price-row"><span class="row-label">${iTag} Att betala</span><span class="row-value">${pris}:-</span></div>
             </div>
 
-            <div class="card-comments-section">
-                ${iComment}
-                ${commentHtml}
-            </div>
+            <div class="card-comments-section">${iComment}${commentHtml}</div>
 
             <div class="card-actions-expand" id="actions-${job.id}" onclick="event.stopPropagation()">
                 <button class="inline-action-btn success" title="Markera som Klar" onclick="setStatus('${job.id}', 'klar')">
