@@ -19,6 +19,8 @@ window.openBrandSelector = openBrandSelector;
 window.saveTechSpec = saveTechSpec;
 window.filterVehicleHistory = filterVehicleHistory;
 window.openEditModal = openEditModal; 
+window.openViewModal = openViewModal;   // <--- LÄGG TILL DENNA
+window.closeViewModal = closeViewModal; // <--- OCH DENNA
 // Slut på kalender
 
 // 1. FIREBASE KONFIGURATION
@@ -3601,4 +3603,124 @@ function applyZoom(value) {
     setTimeout(() => {
         window.dispatchEvent(new Event('resize'));
     }, 50);
+}
+
+/* ==========================================
+   VIEW MODAL (LÄSLÄGE)
+   ========================================== */
+
+let currentViewingJob = null;
+
+function openViewModal(jobId) {
+    // 1. Hitta jobbet i listan
+    const job = allJobs.find(j => j.id === jobId);
+    if (!job) return console.error("Jobb saknas:", jobId);
+
+    currentViewingJob = job;
+
+    // Hjälpfunktion för att sätta text säkert
+    const setText = (id, text) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = text || '-';
+    };
+
+    // 2. Fyll i Data (Använder dina svenska fältnamn)
+    
+    // Header
+    setText('viewRegNr', job.regnr || 'OKÄNT');
+    setText('viewStatusBadge', job.status ? job.status.toUpperCase() : 'BOKAD');
+    
+    // Bil & Modell
+    // Om du inte har 'bilmodell' sparat separat, visar vi paketet eller lämnar tomt
+    setText('viewModel', job.bilmodell || job.paket || 'Fordon'); 
+    setText('viewMilage', job.matarstallning ? job.matarstallning + ' mil' : ''); 
+
+    // Datum & Tid
+    let dateStr = '-';
+    let timeStr = '-';
+    if (job.datum && job.datum.includes('T')) {
+        const parts = job.datum.split('T');
+        dateStr = parts[0];
+        timeStr = parts[1];
+    }
+    setText('viewDate', dateStr);
+    setText('viewTime', timeStr);
+
+    // Kundinfo
+    setText('viewCustomerName', job.kundnamn || 'Okänd kund');
+    
+    // Telefon (Hanterar både 'telefon' och 'phone' ifall du bytt namn)
+    const phoneVal = job.telefon || job.phone || '';
+    const phoneLink = document.getElementById('viewPhoneLink');
+    const phoneText = document.getElementById('viewPhoneText');
+    
+    if (phoneLink && phoneText) {
+        if (phoneVal) {
+            phoneText.textContent = phoneVal;
+            phoneLink.href = `tel:${phoneVal}`;
+            phoneLink.style.display = 'flex'; // Visa chippet
+        } else {
+            phoneLink.style.display = 'none'; // Dölj om inget nummer
+        }
+    }
+
+    // Ekonomi
+    const intPris = parseInt(job.kundpris) || 0;
+    
+    // Räkna utgifter från din array
+    let totalUtgifter = 0;
+    if (job.utgifter && Array.isArray(job.utgifter)) {
+        job.utgifter.forEach(u => totalUtgifter += (parseInt(u.kostnad) || 0));
+    }
+    const vinst = intPris - totalUtgifter;
+
+    setText('viewPrice', intPris.toLocaleString() + ':-');
+    setText('viewExpense', totalUtgifter.toLocaleString() + ':-');
+    
+    const profitEl = document.getElementById('viewProfit');
+    if (profitEl) {
+        profitEl.textContent = vinst.toLocaleString() + ':-';
+        profitEl.style.color = vinst >= 0 ? '#10B981' : '#EF4444';
+    }
+
+    // Beskrivning & Internt
+    // Använd 'kommentar' eftersom det är det du sparar i handleSaveJob
+    setText('viewDescription', job.kommentar || 'Ingen beskrivning.');
+    
+    // Om du har interna noteringar (exempelvis sparat som 'internalNotes')
+    const internalBox = document.querySelector('.internal-box');
+    const internalText = document.getElementById('viewInternalNotes');
+    
+    if (job.internalNotes && job.internalNotes.trim() !== "") {
+        if(internalBox) internalBox.style.display = 'block';
+        if(internalText) internalText.textContent = job.internalNotes;
+    } else {
+        if(internalBox) internalBox.style.display = 'none';
+    }
+
+    // Koppla "Redigera"-knappen i modalen
+    const editBtn = document.getElementById('btnEditJob');
+    if (editBtn) {
+        editBtn.onclick = function() {
+            closeViewModal(); // Stäng denna
+            openEditModal(job.id); // Öppna redigering
+        };
+    }
+
+    // Visa modalen
+    const modal = document.getElementById('viewJobModal');
+    if (modal) {
+        modal.style.display = 'flex';
+        addHistoryState();
+    }
+}
+
+function closeViewModal() {
+    const modal = document.getElementById('viewJobModal');
+    if (modal) modal.style.display = 'none';
+    
+    // Backa historiken om den är öppen via historik
+    if (history.state && history.state.modalOpen) {
+        history.back();
+    }
 }
