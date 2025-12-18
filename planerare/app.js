@@ -3874,7 +3874,9 @@ window.toggleCardExpand = function(jobId, event) {
             setTimeout(() => {
                 card.scrollIntoView({ 
                     behavior: 'smooth', 
-                    block: 'nearest', // Scrolla så lite som möjligt för att få in kortet i bild
+					//Vill du hellre att kortet alltid ska åka högst upp på skärmen när man klickar? 
+					//Ändra då block: 'nearest' till block: 'start'. (Men 'nearest' brukar upplevas mjukare).
+                    block: 'start', // Scrolla så lite som möjligt för att få in kortet i bild
                     inline: 'start' 
                 });
             }, 300);
