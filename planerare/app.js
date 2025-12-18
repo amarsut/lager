@@ -487,7 +487,7 @@ const ICONS = {
 
 // --- HJÄLPFUNKTION: Skapa Mobilkortet (KOMPLETT NY VERSION) ---
 function createJobCard(job) {
-    // 1. CSS-FIX (Säkerställer att färgerna funkar)
+    // 1. CSS-FIX (Behåll denna)
     if (!document.getElementById('temp-unplanned-style')) {
         const style = document.createElement('style');
         style.id = 'temp-unplanned-style';
@@ -500,20 +500,15 @@ function createJobCard(job) {
         document.head.appendChild(style);
     }
 
-    // 2. Datum & Tid (Återställd logik)
+    // 2. Datum & Tid
     const hasDate = (job.datum && typeof job.datum === 'string' && job.datum.trim().length > 0);
     const d = hasDate ? new Date(job.datum) : new Date(); 
     const now = new Date(); 
-
     const smartDate = typeof getSmartDateString === 'function' ? getSmartDateString(job.datum) : job.datum;
     const dateStr = smartDate;
+    const timeStr = hasDate ? d.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' }) : '';
     
-    // Tidsträng (visas på egen rad som du ville)
-    const timeStr = hasDate 
-        ? d.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' }) 
-        : '';
-    
-    // 3. Status & Färg
+    // 3. Status
     const statusRaw = job.status || 'bokad';
     let statusText = statusRaw.toUpperCase(); 
     let headerClass = 'bg-bokad'; 
@@ -523,38 +518,28 @@ function createJobCard(job) {
     else if (statusRaw === 'avbokad') headerClass = 'bg-avbokad';
     else if (statusRaw === 'offererad') headerClass = 'bg-offererad';
     else if (statusRaw === 'bokad') {
-        if (!hasDate) {
-            headerClass = 'bg-unplanned';
-            statusText = 'VÄNTAR';
-        } else if (d < now) {
-            headerClass = 'bg-overdue';
-        }
+        if (!hasDate) { headerClass = 'bg-unplanned'; statusText = 'VÄNTAR'; } 
+        else if (d < now) { headerClass = 'bg-overdue'; }
     }
 
     // 4. Ikoner & Märke
     const combinedText = (job.kommentar + " " + job.paket + " " + job.kundnamn + " " + (job.bilmodell || "")).toLowerCase();
     const brandUrl = typeof getBrandIconUrl === 'function' ? getBrandIconUrl(combinedText, job.regnr) : null;
-
-    let iconHtml = '';
     const iconStyle = 'width:16px; height:16px; margin-right:6px; display:block;';
     
-    if (brandUrl) {
-        iconHtml = `<img src="${brandUrl}" class="brand-logo-img" alt="Logo" style="${iconStyle} object-fit:contain;">`;
-    } else {
-        iconHtml = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="${iconStyle}"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 17h8"/></svg>`;
-    }
+    let iconHtml = brandUrl 
+        ? `<img src="${brandUrl}" class="brand-logo-img" alt="Logo" style="${iconStyle} object-fit:contain;">`
+        : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="${iconStyle}"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 17h8"/></svg>`;
 
-    // 5. Variabler för innehåll
+    // 5. Innehållsvariabler
     const regNr = (job.regnr && job.regnr.toUpperCase() !== 'OKÄNT') ? job.regnr.toUpperCase() : '---';
     const customer = job.kundnamn ? job.kundnamn : 'Okänd'; 
     const paket = job.paket ? job.paket : '-';
-    // Försöker hämta mätarställning om det finns, annars '-'
     const mileage = job.matarstallning ? job.matarstallning + ' mil' : (job.milage ? job.milage + ' mil' : '-');
-
     const nameLower = (job.kundnamn || '').toLowerCase();
     const isCorporate = ['bmg', 'fogarolli', 'ab'].some(c => nameLower.includes(c));
     
-    // 6. SVG-ikoner (Dina original)
+    // SVG Assets
     const iUser = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
     const iBriefcaseGreen = `<svg class="icon-sm" style="color: #10B981;" viewBox="0 0 64 64"><use href="#icon-office-building"></use></svg>`;
     const iCal = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`;
@@ -570,14 +555,14 @@ function createJobCard(job) {
         : `<span>${customer}</span>`;
 
     let commentHtml = '';
+    // Här säkerställer vi att kommentaren visas (och CSS styr om den är lång)
     if (job.kommentar && job.kommentar.length > 0) {
-        // Visar kort version eller hela beroende på CSS, men den finns där som standard
         commentHtml = `<span class="comment-text">${job.kommentar}</span>`;
     } else {
         commentHtml = `<span class="comment-text comment-placeholder">Inga kommentarer finns tillgängliga.</span>`;
     }
 
-    // 7. RÄKNA UT EKONOMI (För expanderad vy)
+    // 7. RÄKNA UT EKONOMI
     const pris = parseInt(job.kundpris) || 0;
     let totalUtgift = 0;
     let expenseRows = '';
@@ -592,8 +577,8 @@ function createJobCard(job) {
     if (expenseRows === '') expenseRows = '<li><span style="opacity:0.6;">Inga utgifter</span> <span>0:-</span></li>';
 
     const vinst = pris - totalUtgift;
-    const vinstClass = vinst >= 0 ? '' : 'loss';
     const vinstTecken = vinst >= 0 ? '+' : '';
+    const winOrLoss = vinst >= 0 ? 'win' : 'loss';
 
     // 8. RETURNERA HTML
     return `
@@ -629,7 +614,6 @@ function createJobCard(job) {
                 <div class="info-row"><span class="row-label" title="Mätarställning">${iGauge} Mätarst.</span><span class="row-value">${mileage}</span></div>
                 <div class="info-row"><span class="row-label">${iCal} Datum</span><span class="row-value">${dateStr}</span></div>
                 <div class="info-row"><span class="row-label">${iClock} Tid</span><span class="row-value">${timeStr}</span></div>
-                
                 <div class="info-row price-row"><span class="row-label">${iTag} Att betala</span><span class="row-value">${pris}:-</span></div>
             </div>
 
@@ -653,18 +637,14 @@ function createJobCard(job) {
             <div class="card-expanded-details" id="details-${job.id}" onclick="event.stopPropagation()">
                 
                 <div class="expand-section">
-                    <div class="expand-label">${iComment} HEL BESKRIVNING</div>
-                    <div class="expand-text">${job.kommentar || 'Ingen beskrivning.'}</div>
-                </div>
-
-                <div class="expand-section">
-                    <div class="expand-label">${iTag} EKONOMI & VINST SPECIFIKATION</div>
+                    <div class="expand-label">${iTag} EKONOMI SPECIFIKATION</div>
                     <ul class="expense-list-mini">
                         ${expenseRows}
                     </ul>
-                    <div class="profit-highlight ${vinstClass}">
+                    
+                    <div class="profit-row-simple">
                         <span>VINST</span>
-                        <span style="font-size:1.1rem;">${vinstTecken}${vinst}:-</span>
+                        <span class="profit-val ${winOrLoss}">${vinstTecken}${vinst}:-</span>
                     </div>
                 </div>
 
