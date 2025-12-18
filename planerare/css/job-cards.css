@@ -360,9 +360,6 @@
 .phone-link { text-decoration: none; font-size: 1.1rem; margin-left: 4px; }
 
 /* 6. HUVUDNUMRET: Beskrivning */
-.view-section.main-focus {
-    padding: 20px;
-}
 .view-section label {
     display: block; font-size: 0.7rem; font-weight: 700; color: #9ca3af; 
     margin-bottom: 8px; letter-spacing: 0.5px;
@@ -449,3 +446,57 @@
 .view-section label {
     display: flex; align-items: center;
 }
+
+/* ==========================================
+   PRO NOTE DESIGN (Kompakt & Snyggt)
+   ========================================== */
+
+/* Ta bort onödig padding runt sektionen */
+.view-section.main-focus {
+    padding: 12px 20px; /* Mindre luft än förut */
+}
+
+/* Själva "Lappen" */
+.pro-note-container {
+    background-color: #f8fafc; /* Mycket ljus gråblå ton */
+    border-radius: 8px;
+    border-left: 4px solid #0066FF; /* Din accentfärg - ger "officiell" känsla */
+    overflow: hidden;
+}
+
+/* Rubrikraden inuti lappen */
+.pro-note-header {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 12px 4px 12px; /* Kompakt topp */
+}
+.pro-note-header span {
+    font-size: 0.7rem; 
+    font-weight: 700; 
+    color: #64748b; /* Mörkgrå text */
+    letter-spacing: 0.5px;
+}
+.pro-note-header svg {
+    color: #0066FF; /* Blå ikon */
+    opacity: 0.8;
+}
+
+/* Textkroppen */
+.pro-note-body {
+    padding: 0 12px 10px 12px; /* Luft i botten */
+}
+
+.description-text {
+    margin: 0;
+    font-size: 0.95rem; /* Något mindre än förut för att spara plats */
+    line-height: 1.45;  /* Tightare radavstånd */
+    color: #1e293b;     /* Mörkblå/Svart för bra läsbarhet */
+    white-space: pre-wrap; /* Behåll radbrytningar från input */
+    
+    /* Scrolla om texten är jättelång (förhindrar att modalen växer för mycket) */
+    max-height: 200px; 
+    overflow-y: auto;
+}
+
+/* Snygg scrollbar för beskrivningen (Chrome/Safari/Edge) */
+.description-text::-webkit-scrollbar { width: 4px; }
+.description-text::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
