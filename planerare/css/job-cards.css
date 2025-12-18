@@ -339,101 +339,99 @@
         stroke-width: 2.5px; /* Lite fetare prickar för tydlighet */
     }
 
+   /* --- EXPANDERBARA KORT --- */
+   /* Den dolda delen (stängd som standard) */
+   .card-expanded-details {
+       display: none;
+       padding: 0 16px 16px 16px;
+       border-top: 1px solid rgba(0,0,0,0.05);
+       margin-top: 10px;
+       animation: expandFade 0.2s ease-out;
+   }
+   
+   /* När kortet har klassen 'expanded', visa detaljerna */
+   .job-card-new.expanded .card-expanded-details {
+       display: block;
+   }
+   
+   /* Animation för mjuk känsla */
+   @keyframes expandFade {
+       from { opacity: 0; transform: translateY(-5px); }
+       to { opacity: 1; transform: translateY(0); }
+   }
+   
+   /* Sektioner inuti expansionen */
+   .expand-section { margin-top: 16px; }
+   
+   .expand-label {
+       font-size: 0.7rem; font-weight: 700; color: #94a3b8; 
+       text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;
+       display: flex; align-items: center; gap: 6px;
+   }
+   
+   /* Beskrivningstext */
+   .expand-text {
+       font-size: 0.95rem; color: #334155; line-height: 1.5;
+       background: #f8fafc; padding: 10px; border-radius: 8px;
+       white-space: pre-wrap; /* Behåll radbrytningar */
+   }
+   
+   /* Ekonomi-listan */
+   .expense-list-mini {
+       list-style: none; padding: 0; margin: 0;
+       font-size: 0.85rem; color: #64748b;
+   }
+   .expense-list-mini li {
+       display: flex; justify-content: space-between;
+       padding: 4px 0; border-bottom: 1px dashed #e2e8f0;
+   }
+   .expense-list-mini li:last-child { border-bottom: none; }
+   
+   /* Vinst-raden (Highlight) */
+   .profit-highlight {
+       display: flex; justify-content: space-between; align-items: center;
+       background: #f0fdf4; /* Ljusgrön bakgrund */
+       padding: 10px 12px; border-radius: 8px; margin-top: 10px;
+       font-weight: 700; color: #166534; border: 1px solid #bbf7d0;
+   }
+   .profit-highlight.loss {
+       background: #fef2f2; color: #991b1b; border: 1px solid #fecaca;
+   }
+   
+   /* Action-knappar i botten av expansionen */
+   .expand-actions {
+       display: flex; gap: 10px; margin-top: 20px;
+   }
+   .btn-expand {
+       flex: 1; padding: 12px; border-radius: 8px; border: none;
+       font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+   }
+   .btn-edit-big { background: #0066FF; color: white; }
+   .btn-close-expand { background: #f1f5f9; color: #475569; }
+   
+   .card-expand-icon {
+       display: flex; justify-content: center; margin-top: 8px; opacity: 0.3; transition: transform 0.3s;
+   }
+   .job-card-new.expanded .card-expand-icon {
+       transform: rotate(180deg); opacity: 0.6;
+   }
+   
+   .card-expand-chevron {
+       display: flex; 
+       justify-content: center; 
+       margin-top: -5px; /* Dra upp den lite */
+       padding-bottom: 4px;
+       transition: transform 0.3s ease;
+   }
+   /* Rotera pilen när kortet är öppet */
+   .job-card-new.expanded .card-expand-chevron {
+       transform: rotate(180deg);
+   }
+   
+   .job-card-new {
+       scroll-margin-top: 20px; /* Detta skapar mellanrummet mot taket! */
+   }
 
 } /* <--- HÄR stängs nu media queryn korrekt för hela filen */
 
-/********* JOBB MODAL/ÖVERSIKT *********/
 
-/* --- EXPANDERBARA KORT --- */
-
-/* Den dolda delen (stängd som standard) */
-.card-expanded-details {
-    display: none;
-    padding: 0 16px 16px 16px;
-    border-top: 1px solid rgba(0,0,0,0.05);
-    margin-top: 10px;
-    animation: expandFade 0.2s ease-out;
-}
-
-/* När kortet har klassen 'expanded', visa detaljerna */
-.job-card-new.expanded .card-expanded-details {
-    display: block;
-}
-
-/* Animation för mjuk känsla */
-@keyframes expandFade {
-    from { opacity: 0; transform: translateY(-5px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* Sektioner inuti expansionen */
-.expand-section { margin-top: 16px; }
-
-.expand-label {
-    font-size: 0.7rem; font-weight: 700; color: #94a3b8; 
-    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;
-    display: flex; align-items: center; gap: 6px;
-}
-
-/* Beskrivningstext */
-.expand-text {
-    font-size: 0.95rem; color: #334155; line-height: 1.5;
-    background: #f8fafc; padding: 10px; border-radius: 8px;
-    white-space: pre-wrap; /* Behåll radbrytningar */
-}
-
-/* Ekonomi-listan */
-.expense-list-mini {
-    list-style: none; padding: 0; margin: 0;
-    font-size: 0.85rem; color: #64748b;
-}
-.expense-list-mini li {
-    display: flex; justify-content: space-between;
-    padding: 4px 0; border-bottom: 1px dashed #e2e8f0;
-}
-.expense-list-mini li:last-child { border-bottom: none; }
-
-/* Vinst-raden (Highlight) */
-.profit-highlight {
-    display: flex; justify-content: space-between; align-items: center;
-    background: #f0fdf4; /* Ljusgrön bakgrund */
-    padding: 10px 12px; border-radius: 8px; margin-top: 10px;
-    font-weight: 700; color: #166534; border: 1px solid #bbf7d0;
-}
-.profit-highlight.loss {
-    background: #fef2f2; color: #991b1b; border: 1px solid #fecaca;
-}
-
-/* Action-knappar i botten av expansionen */
-.expand-actions {
-    display: flex; gap: 10px; margin-top: 20px;
-}
-.btn-expand {
-    flex: 1; padding: 12px; border-radius: 8px; border: none;
-    font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
-}
-.btn-edit-big { background: #0066FF; color: white; }
-.btn-close-expand { background: #f1f5f9; color: #475569; }
-
-.card-expand-icon {
-    display: flex; justify-content: center; margin-top: 8px; opacity: 0.3; transition: transform 0.3s;
-}
-.job-card-new.expanded .card-expand-icon {
-    transform: rotate(180deg); opacity: 0.6;
-}
-
-.card-expand-chevron {
-    display: flex; 
-    justify-content: center; 
-    margin-top: -5px; /* Dra upp den lite */
-    padding-bottom: 4px;
-    transition: transform 0.3s ease;
-}
-/* Rotera pilen när kortet är öppet */
-.job-card-new.expanded .card-expand-chevron {
-    transform: rotate(180deg);
-}
-
-.job-card-new {
-    scroll-margin-top: 20px; /* Detta skapar mellanrummet mot taket! */
-}
