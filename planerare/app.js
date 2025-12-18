@@ -588,7 +588,7 @@ function createJobCard(job) {
     const iInfoSmall = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:12px; height:12px; margin-left:4px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`;
 
     return `
-        <div class="job-card-new status-${statusRaw}" id="card-${job.id}" onclick="saveSearchTerm(); openEditModal('${job.id}')">
+        <div class="job-card-new status-${statusRaw}" id="card-${job.id}" onclick="saveSearchTerm(); openViewModal('${job.id}')">
             
             <div class="card-header-strip ${headerClass}" style="padding: 0 10px !important; display: flex !important; align-items: center !important;">
 
@@ -1289,6 +1289,121 @@ function openNewJobModal() {
 
     document.getElementById('jobModal').classList.add('show');
 }
+
+// Global variabel för att hålla reda på vilket jobb vi tittar på
+let currentViewingJob = null;
+
+window.openViewModal = function(jobId) {
+    // 1. Hitta jobbet i din globala lista 'allJobs' baserat på ID
+    const job = allJobs.find(j => j.id === jobId);
+    
+    if (!job) {
+        console.error("Hittade inte jobb med ID:", jobId);
+        return;
+    }
+
+    currentViewingJob = job; // Spara jobbet så vi kan skicka det till redigering sen
+
+    // Helper för att formatera pengar
+    const formatMoney = (val) => val ? parseInt(val).toLocaleString() + ':-' : '0:-';
+
+    // 2. Fyll i data i HTML-elementen
+    // (Se till att dessa ID:n finns i din HTML-kod för modalen)
+    const setText = (id, text) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = text;
+    };
+
+    setText('viewRegNr', job.regNr || (job.regnr ? job.regnr.toUpperCase() : '??? ???'));
+    setText('viewStatusBadge', job.status ? job.status.toUpperCase() : 'NY');
+    setText('viewModel', job.carModel || (job.bilmodell ? job.bilmodell : 'Fordon'));
+    setText('viewMilage', job.milage ? job.milage + ' mil' : '');
+
+    // Datum & Tid
+    const datum = job.datum ? job.datum.split('T')[0] : '-';
+    const tid = job.datum && job.datum.includes('T') ? job.datum.split('T')[1] : '-';
+    setText('viewDate', datum);
+    setText('viewTime', tid);
+
+    // Kund
+    setText('viewCustomerName', job.customerName || job.kundnamn || 'Ingen kund');
+    
+    const phoneLink = document.getElementById('viewPhoneLink');
+    const phoneText = document.getElementById('viewPhoneText');
+    const phoneVal = job.phone || job.telefon || '';
+    
+    if (phoneLink && phoneText) {
+        if (phoneVal) {
+            phoneText.textContent = phoneVal;
+            phoneLink.href = `tel:${phoneVal}`;
+            phoneLink.style.display = 'flex';
+        } else {
+            phoneLink.style.display = 'none';
+        }
+    }
+
+    // EKONOMI
+    // Obs: I din app.js heter fältet 'kundpris', inte 'price'
+    const price = parseInt(job.kundpris) || 0;
+    const expense = parseInt(job.expense) || 0; // Se till att du sparar 'expense' om du har det, annars räkna från utgifter
+    
+    // Om du vill räkna utgifter från din array 'utgifter':
+    let totalUtgifter = 0;
+    if (job.utgifter && Array.isArray(job.utgifter)) {
+         job.utgifter.forEach(u => totalUtgifter += (parseInt(u.kostnad) || 0));
+    }
+    
+    const profit = price - totalUtgifter;
+
+    setText('viewPrice', formatMoney(price));
+    setText('viewExpense', formatMoney(totalUtgifter));
+    
+    const profitEl = document.getElementById('viewProfit');
+    if (profitEl) {
+        profitEl.textContent = formatMoney(profit);
+        profitEl.style.color = profit >= 0 ? '#10B981' : '#EF4444';
+    }
+
+    // Beskrivningar
+    // Obs: I din app.js heter fältet 'kommentar', inte 'description'
+    setText('viewDescription', job.kommentar || job.description || 'Ingen beskrivning.');
+    
+    const internalBox = document.querySelector('.internal-box');
+    const internalText = document.getElementById('viewInternalNotes');
+    
+    // Anpassa fältnamnet för interna noteringar om du har ett sådant
+    const internalNoteVal = job.internalNotes || ''; 
+
+    if (internalText && internalNoteVal.trim() !== "") {
+        if(internalBox) internalBox.style.display = 'block';
+        internalText.textContent = internalNoteVal;
+    } else {
+        if(internalBox) internalBox.style.display = 'none';
+    }
+
+    // Koppla Redigera-knappen
+    const btnEdit = document.getElementById('btnEditJob');
+    if (btnEdit) {
+        btnEdit.onclick = function() {
+            closeViewModal(); 
+            openEditModal(currentViewingJob.id); // Din befintliga funktion tar ID
+        };
+    }
+
+    // Visa modalen
+    const modal = document.getElementById('viewJobModal');
+    if (modal) {
+        modal.style.display = 'flex';
+        // Lägg till i historiken (använd din befintliga funktion)
+        if (typeof addHistoryState === 'function') addHistoryState();
+    }
+};
+
+window.closeViewModal = function() {
+    const modal = document.getElementById('viewJobModal');
+    if (modal) modal.style.display = 'none';
+    if (history.state && history.state.modalOpen) history.back();
+};
 
 function openEditModal(id) {
 	addHistoryState();
