@@ -1980,18 +1980,20 @@ async function saveTechSpec(regnr, field, newValue) {
 // ==========================================
 
 function toggleChatWidget() {
-	addHistoryState();
+    addHistoryState();
     const chatWidget = document.getElementById('chatWidget');
     if (!chatWidget) return;
 
     if (chatWidget.style.display === 'flex') {
         chatWidget.style.display = 'none';
-        document.body.style.overflow = ''; // Lås upp scroll
+        document.body.style.overflow = ''; 
     } else {
         chatWidget.style.display = 'flex';
-        document.body.style.overflow = 'hidden'; // Lås bakgrundsscroll på mobil
+        document.body.style.overflow = 'hidden'; 
         
-        // Scrolla till botten direkt
+        // VI TOG BORT updateChatBadge(0) HÄR
+        // Eftersom vi visar totalen ska den alltid synas.
+
         setTimeout(() => {
             const chatList = document.getElementById('chatMessages');
             if (chatList) chatList.scrollTop = chatList.scrollHeight;
@@ -2126,11 +2128,11 @@ function initChat() {
 }
 
 function setupChatListener(limit) {
-    if (chatUnsubscribe) chatUnsubscribe(); // Stäng ev. gammal lyssnare
+    if (chatUnsubscribe) chatUnsubscribe();
 
     const chatList = document.getElementById('chatMessages');
     
-    // Hjälpfunktion: Kolla om två datum är samma dag
+    // Hjälpfunktion för datum
     const isSameDay = (d1, d2) => {
         return d1.getFullYear() === d2.getFullYear() &&
                d1.getMonth() === d2.getMonth() &&
@@ -2143,32 +2145,35 @@ function setupChatListener(limit) {
         .onSnapshot(snapshot => {
             const docs = [];
             snapshot.forEach(doc => docs.push({ id: doc.id, ...doc.data() }));
-            
-            // Vänd ordningen så nyaste hamnar längst ner
-            docs.reverse();
+            docs.reverse(); // Nyaste längst ner
 
-            chatList.innerHTML = ''; // Rensa listan
+            // --- HÄR ÄR ÄNDRINGEN ---
+            // Vi räknar bara hur många meddelanden vi faktiskt har hämtat
+            const totalMessages = docs.length;
+            
+            // Uppdatera badgen med totalen
+            updateChatBadge(totalMessages);
+            // ------------------------
+
+            chatList.innerHTML = ''; 
 
             if (docs.length === 0) {
-                // Snyggare tom-state
                 chatList.innerHTML = '<div style="text-align:center; padding:30px; color:#9ca3af; font-size:0.9rem;">Inga meddelanden än.</div>';
                 return;
             }
 
-            let lastDateKey = null; // Håller koll på datum-gruppering
+            let lastDateKey = null;
 
             docs.forEach(data => {
-                // Datum-separator logic
+                // (Samma datum-logik som förut)
                 if (data.timestamp) {
                     const msgDateObj = new Date(data.timestamp);
-                    // Skapa en nyckel för jämförelse (t.ex. "Mon Dec 02 2024")
                     const currentDateKey = msgDateObj.toDateString();
 
                     if (currentDateKey !== lastDateKey) {
                         const sep = document.createElement('div');
                         sep.className = 'chat-date-separator'; 
                         
-                        // --- LOGIK FÖR IDAG / IGÅR ---
                         const today = new Date();
                         const yesterday = new Date();
                         yesterday.setDate(yesterday.getDate() - 1);
@@ -2180,30 +2185,22 @@ function setupChatListener(limit) {
                         } else if (isSameDay(msgDateObj, yesterday)) {
                             displayText = 'Igår';
                         } else {
-                            // Fallback: "9 dec" (Svenskt format)
                             let options = { day: 'numeric', month: 'short' };
-                            // Om det är ett annat år, visa det också
                             if (msgDateObj.getFullYear() !== today.getFullYear()) {
                                 options.year = 'numeric';
                             }
-                            displayText = msgDateObj.toLocaleDateString('sv-SE', options).replace('.', ''); // Tar bort ev. punkt
+                            displayText = msgDateObj.toLocaleDateString('sv-SE', options).replace('.', '');
                         }
 
-                        // VIKTIGT: Wrappa i <span> för att CSS-linjen ska ligga bakom texten snyggt
                         sep.innerHTML = `<span>${displayText}</span>`;
-                        
                         chatList.appendChild(sep);
                         lastDateKey = currentDateKey;
                     }
                 }
                 
-                // Rendera bubblan (använder din befintliga funktion)
-                // OBS: Se till att skicka med ID också om du vill ha högerklick-menyn
-                // Eftersom docs redan har 'id' inbakat (se rad 14) så skickar vi hela 'data'-objektet
                 renderChatBubble(data, chatList);
             });
 
-            // Scrolla till botten vid första laddningen
             if (limit === 50) {
                 setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
             }
@@ -2211,6 +2208,36 @@ function setupChatListener(limit) {
         }, error => {
             console.error("Fel vid chatt-hämtning:", error);
         });
+}
+
+// Hjälpfunktion för att visa/dölja badgen på knappen
+function updateChatBadge(count) {
+    // 1. Hämta knapparna
+    const desktopBtn = document.getElementById('fabChat');
+    const mobileBtn = document.getElementById('mobileChatBtn'); // Nu hittar den knappen!
+
+    // 2. Hjälpfunktion som sätter badge på en knapp
+    const setBadge = (btn) => {
+        if (!btn) return;
+        
+        let badge = btn.querySelector('.chat-notification-badge');
+
+        if (count > 0) {
+            if (!badge) {
+                badge = document.createElement('div');
+                badge.className = 'chat-notification-badge';
+                btn.appendChild(badge);
+            }
+            // Visa max "99+" om det är många
+            badge.textContent = count > 99 ? '99+' : count;
+        } else {
+            if (badge) badge.remove();
+        }
+    };
+
+    // 3. Uppdatera båda
+    setBadge(desktopBtn);
+    setBadge(mobileBtn);
 }
 
 function renderChatBubble(data, container) {
@@ -2279,6 +2306,7 @@ function renderChatBubble(data, container) {
         img.src = data.image;
         img.loading = "lazy";
         img.onclick = () => window.openImageZoom(data.image);
+        //img.onclick = () => window.openImageZoom(data.imageUrl, data.id);
         imgContainer.appendChild(img);
         bubble.appendChild(imgContainer);
     }
@@ -2431,26 +2459,58 @@ function compressImage(file) {
 }
 
 // Enkel bild-zoom funktion
-window.openImageZoom = function(src) {
-	addHistoryState();
+window.openImageZoom = function(src, docId) {
+    addHistoryState();
     const modal = document.getElementById('imageZoomModal');
     const imgMain = document.getElementById('mmImgMain');
     const closeBtn = document.getElementById('mmCloseBtn');
-    
+    const deleteBtn = document.getElementById('mmDeleteBtn');
+
     if (modal && imgMain) {
+        // Visa bilden direkt
         imgMain.src = src;
-        modal.style.display = 'flex';
+        imgMain.dataset.id = docId || ''; 
         
-        if(closeBtn) {
-            closeBtn.onclick = () => {
-                modal.style.display = 'none';
+        // Debug: Se i konsolen (F12) om vi har ett ID
+        //console.log("Öppnar bild:", src, "Med ID:", docId);
+
+        modal.style.display = 'flex';
+
+        // Stäng-funktion
+        const closeModal = () => {
+            modal.style.display = 'none';
+            if (history.state && history.state.modalOpen) history.back();
+        };
+        if(closeBtn) closeBtn.onclick = closeModal;
+        modal.onclick = (e) => {
+            if (e.target === modal || e.target.classList.contains('image-modal-toolbar')) closeModal();
+        };
+
+        // --- FIX FÖR RADERA-KNAPPEN ---
+        if (deleteBtn) {
+            // Om vi har ett ID, visa knappen. Annars dölj den.
+            if (docId) {
+                deleteBtn.style.display = 'flex'; // Visa knappen
+            } else {
+                console.warn("Varning: Inget bild-ID skickades med. Radering ej möjlig.");
+                deleteBtn.style.display = 'none'; // Dölj om vi inte kan radera
+            }
+
+            deleteBtn.onclick = async (e) => {
+                e.stopPropagation();
+                const currentDocId = imgMain.dataset.id;
+                if (!currentDocId) return alert("Fel: Kan inte hitta bildens ID.");
+
+                if (confirm('Radera bilden permanent?')) {
+                    try {
+                        await db.collection("notes").doc(currentDocId).delete();
+                        closeModal();
+                    } catch (error) {
+                        alert("Kunde inte radera: " + error.message);
+                    }
+                }
             };
         }
-        
-        // Stäng vid klick utanför bilden
-        modal.onclick = (e) => {
-            if (e.target === modal) modal.style.display = 'none';
-        };
     }
 };
 
