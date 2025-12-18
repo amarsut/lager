@@ -421,3 +421,15 @@
 .job-card-new.expanded .card-expand-icon {
     transform: rotate(180deg); opacity: 0.6;
 }
+
+.card-expand-chevron {
+    display: flex; 
+    justify-content: center; 
+    margin-top: -5px; /* Dra upp den lite */
+    padding-bottom: 4px;
+    transition: transform 0.3s ease;
+}
+/* Rotera pilen när kortet är öppet */
+.job-card-new.expanded .card-expand-chevron {
+    transform: rotate(180deg);
+}
