@@ -3850,11 +3850,11 @@ window.copyToClipboard = function(elementId) {
 };
 
 window.toggleCardExpand = function(jobId, event) {
-    if(event) event.stopPropagation(); // Stoppa klicket från att bubbla upp
+    if(event) event.stopPropagation();
 
     const card = document.getElementById(`card-${jobId}`);
     
-    // 1. Stäng alla andra kort (Accordion-effekt)
+    // 1. Stäng alla andra
     document.querySelectorAll('.job-card-new.expanded').forEach(otherCard => {
         if (otherCard.id !== `card-${jobId}`) {
             otherCard.classList.remove('expanded');
@@ -3863,21 +3863,24 @@ window.toggleCardExpand = function(jobId, event) {
 
     // 2. Toggla detta kort
     if (card) {
-        // Kolla om vi håller på att öppna eller stänga
         const isOpening = !card.classList.contains('expanded');
-        
         card.classList.toggle('expanded');
 
-        // 3. AUTO-SCROLL (Endast om vi öppnar kortet)
+        // 3. SMART AUTO-SCROLL (Med offset för header)
         if (isOpening) {
-            // Vänta 300ms (så animationen/expansionen hinner ske)
             setTimeout(() => {
-                card.scrollIntoView({ 
-                    behavior: 'smooth', 
-					//Vill du hellre att kortet alltid ska åka högst upp på skärmen när man klickar? 
-					//Ändra då block: 'nearest' till block: 'start'. (Men 'nearest' brukar upplevas mjukare).
-                    block: 'start', // Scrolla så lite som möjligt för att få in kortet i bild
-                    inline: 'nearest' 
+                // HÄR ÄR FIXEN:
+                // Vi räknar ut var kortet är, och drar av pixlar för att skapa marginal uppåt
+                
+                const offset = 80; // <-- JUSTERA DENNA SIFFRA! (80px brukar vara lagom för header + luft)
+                const bodyRect = document.body.getBoundingClientRect().top;
+                const elementRect = card.getBoundingClientRect().top;
+                const elementPosition = elementRect - bodyRect;
+                const offsetPosition = elementPosition - offset;
+
+                window.scrollTo({
+                    top: offsetPosition,
+                    behavior: 'smooth'
                 });
             }, 300);
         }
