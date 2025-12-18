@@ -3728,3 +3728,14 @@ window.closeViewModal = function() {
     if (modal) modal.style.display = 'none';
     if (history.state && history.state.modalOpen) history.back();
 };
+
+window.copyToClipboard = function(elementId) {
+    const text = document.getElementById(elementId).innerText;
+    navigator.clipboard.writeText(text).then(() => {
+        // Visuell feedback (byt färg på ikonen tillfälligt)
+        const btn = document.querySelector('.icon-copy-btn');
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = `<svg width="16" height="16" fill="none" stroke="#10B981" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>`; // Grön check
+        setTimeout(() => { btn.innerHTML = originalHtml; }, 1500);
+    });
+};
