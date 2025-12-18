@@ -3850,12 +3850,11 @@ window.copyToClipboard = function(elementId) {
 };
 
 window.toggleCardExpand = function(jobId, event) {
-    if(event) event.stopPropagation(); // Förhindra dubbelklick
+    if(event) event.stopPropagation(); // Stoppa klicket från att bubbla upp
 
     const card = document.getElementById(`card-${jobId}`);
     
-    // 1. Stäng alla ANDRA kort först (Accordion-effekt)
-    // Om du vill kunna ha flera öppna samtidigt, ta bort detta block.
+    // 1. Stäng alla andra kort (Accordion-effekt)
     document.querySelectorAll('.job-card-new.expanded').forEach(otherCard => {
         if (otherCard.id !== `card-${jobId}`) {
             otherCard.classList.remove('expanded');
@@ -3864,6 +3863,21 @@ window.toggleCardExpand = function(jobId, event) {
 
     // 2. Toggla detta kort
     if (card) {
+        // Kolla om vi håller på att öppna eller stänga
+        const isOpening = !card.classList.contains('expanded');
+        
         card.classList.toggle('expanded');
+
+        // 3. AUTO-SCROLL (Endast om vi öppnar kortet)
+        if (isOpening) {
+            // Vänta 300ms (så animationen/expansionen hinner ske)
+            setTimeout(() => {
+                card.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'nearest', // Scrolla så lite som möjligt för att få in kortet i bild
+                    inline: 'start' 
+                });
+            }, 300);
+        }
     }
 };
