@@ -2491,35 +2491,54 @@ function stopChatMenuTimer() {
 
 // Funktion för att öppna/stänga meny vid klick
 window.toggleMessageMenu = function(msgId, event) {
-    if(event) event.stopPropagation();
+    // Stoppa klicket från att bubbla upp
+    if(event) {
+        event.stopPropagation();
+        event.preventDefault(); 
+    }
 
     const row = document.querySelector(`.chat-row[data-message-id="${msgId}"]`);
-    
+    if (!row) return;
+
     // Om vi klickar på en ny rad, stäng alla andra först
     document.querySelectorAll('.chat-row.show-menu').forEach(el => {
         if(el !== row) el.classList.remove('show-menu');
     });
 
-    if(row) {
-        const wasOpen = row.classList.contains('show-menu');
-        
-        // Toggla klassen
-        if (wasOpen) {
-            row.classList.remove('show-menu');
-            stopChatMenuTimer();
-        } else {
-            row.classList.add('show-menu');
-            // Starta timer direkt när den öppnas
-            startChatMenuTimer(); 
-        }
+    // Toggla menyn för den aktuella raden
+    const isOpening = !row.classList.contains('show-menu');
+    
+    if (isOpening) {
+        row.classList.add('show-menu');
+        startMenuTimer(); // Starta nedräkning direkt
+    } else {
+        row.classList.remove('show-menu');
+        stopMenuTimer();
     }
 };
+
+// Starta nedräkning (Stänger ALLA menyer om 4 sekunder)
+function startMenuTimer() {
+    stopMenuTimer(); // Rensa gammal
+    chatMenuTimer = setTimeout(() => {
+        document.querySelectorAll('.chat-row.show-menu').forEach(el => {
+            el.classList.remove('show-menu');
+        });
+    }, 4000);
+}
+
+// Stoppa nedräkning (När musen är över menyn)
+function stopMenuTimer() {
+    if (chatMenuTimer) clearTimeout(chatMenuTimer);
+}
 
 // Uppdaterad renderChatBubble (Punkt 3: Snyggare struktur)
 function renderChatBubble(data, container) {
     const messageId = data.id; 
 
     const row = document.createElement('div');
+    
+    // Bestäm klass baserat på plattform (me/other/system)
     let senderType = 'other';
     if (data.platform === 'system') senderType = 'system';
     else senderType = (data.platform === 'mobil' || data.platform === 'dator') ? 'me' : 'other';
@@ -2527,43 +2546,45 @@ function renderChatBubble(data, container) {
     row.className = `chat-row ${senderType}`;
     row.dataset.messageId = messageId;
     
-    // --- NY LOGIK FÖR TIMER & KLICK ---
+    // --- TIMER LOGIK ---
+    // Mus in: Stoppa timer (håll menyn öppen)
+    row.onmouseenter = stopMenuTimer;
+    // Mus ut: Starta timer (stäng om 4 sek)
+    row.onmouseleave = startMenuTimer;
     
-    // 1. Klick öppnar/stänger menyn (mobil + desktop)
+    // Klick på bubblan öppnar menyn
+    // Använd onclick direkt på raden
     row.onclick = (e) => window.toggleMessageMenu(messageId, e);
-    
-    // 2. Mus in: Stoppa timer (håll öppen)
-    row.onmouseenter = stopChatMenuTimer;
-    
-    // 3. Mus ut: Starta timer (stäng om 3 sek)
-    row.onmouseleave = startChatMenuTimer;
 
-    // --- MODERN ACTION MENU ---
+    // --- MENY HTML ---
     const menu = document.createElement('div');
     menu.className = 'chat-action-menu';
     
-    // Lägg till mouseenter/leave på själva menyn också för säkerhets skull
-    menu.onmouseenter = stopChatMenuTimer;
-    menu.onmouseleave = startChatMenuTimer;
+    // VIKTIGT: Stoppa timer även om man hovrar över själva menyn
+    menu.onmouseenter = stopMenuTimer;
+    menu.onmouseleave = startMenuTimer;
 
+    // Notera: Jag tog bort 'onmousedown' på knapparna för att undvika konflikter.
+    // stopPropagation() i funktionerna räcker.
     menu.innerHTML = `
-        <button class="action-emoji-btn" onmousedown="event.preventDefault()" onclick="window.setReaction('${messageId}', '🕒', event)">🕒</button>
-        <button class="action-emoji-btn" onmousedown="event.preventDefault()" onclick="window.setReaction('${messageId}', '✅', event)">✅</button>
-        <button class="action-emoji-btn" onmousedown="event.preventDefault()" onclick="window.setReaction('${messageId}', '❌', event)">❌</button>
-        <button class="action-emoji-btn" onmousedown="event.preventDefault()" onclick="window.setReaction('${messageId}', '⚠️', event)">⚠️</button>
+        <button class="action-emoji-btn" onclick="window.setReaction('${messageId}', '🕒', event)">🕒</button>
+        <button class="action-emoji-btn" onclick="window.setReaction('${messageId}', '✅', event)">✅</button>
+        <button class="action-emoji-btn" onclick="window.setReaction('${messageId}', '❌', event)">❌</button>
+        <button class="action-emoji-btn" onclick="window.setReaction('${messageId}', '⚠️', event)">⚠️</button>
         
         <div class="action-separator"></div>
         
-        <button class="action-icon-btn" title="Redigera" onmousedown="event.preventDefault()" onclick="window.enterEditMode(this.closest('.chat-row'), '${data.text || ''}'); event.stopPropagation();">
+        <button class="action-icon-btn" title="Redigera" onclick="handleEditClick('${messageId}', '${data.text || ''}', event)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
         </button>
-        <button class="action-icon-btn danger" title="Ta bort" onmousedown="event.preventDefault()" onclick="window.deleteChatMessage('${messageId}'); event.stopPropagation();">
+        
+        <button class="action-icon-btn danger" title="Ta bort" onclick="window.deleteChatMessage('${messageId}'); event.stopPropagation();">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
         </button>
     `;
     row.appendChild(menu);
 
-    // Bubbla & Innehåll
+    // --- BUBBLA & INNEHÅLL ---
     const bubble = document.createElement('div');
     bubble.className = 'chat-bubble';
     if (data.type === 'image' || data.image) {
@@ -2584,7 +2605,8 @@ function renderChatBubble(data, container) {
         const img = document.createElement('img');
         img.src = data.image;
         img.loading = "lazy";
-        img.onclick = (e) => { e.stopPropagation(); window.openImageZoom(data.image, messageId); }; // Skicka med ID för radering
+        // Klick på bild ska zooma, inte öppna meny (stopPropagation)
+        img.onclick = (e) => { e.stopPropagation(); window.openImageZoom(data.image, messageId); }; 
         imgContainer.appendChild(img);
         bubble.appendChild(imgContainer);
     }
@@ -2594,11 +2616,8 @@ function renderChatBubble(data, container) {
         const reactionBadge = document.createElement('div');
         reactionBadge.className = 'reaction-badge-display';
         reactionBadge.textContent = data.reaction;
-        // Se till att klick på reaktionen inte bubblar upp konstigt
-        reactionBadge.onclick = (e) => { 
-            e.stopPropagation(); 
-            window.setReaction(messageId, data.reaction, e); 
-        }; 
+        // Klick på reaktionen ska kunna toggla den
+        reactionBadge.onclick = (e) => window.setReaction(messageId, data.reaction, e); 
         bubble.appendChild(reactionBadge);
     }
 
@@ -2615,6 +2634,20 @@ function renderChatBubble(data, container) {
 
     container.appendChild(row);
 }
+
+// NY HJÄLPFUNKTION FÖR REDIGERING (För att slippa strul med `this`)
+window.handleEditClick = function(msgId, text, event) {
+    if(event) event.stopPropagation();
+    
+    // Hitta raden manuellt via ID istället för "this"
+    const row = document.querySelector(`.chat-row[data-message-id="${msgId}"]`);
+    
+    // Stäng menyn
+    if(row) row.classList.remove('show-menu');
+    
+    // Starta redigering
+    window.enterEditMode(row, text);
+};
 
 // ==========================================================================
 // FUNKTIONER FÖR REDIGERING & BORTTAGNING (Korrigerad Databas-sökväg)
@@ -3968,16 +4001,14 @@ window.toggleMessageMenu = function(msgId, event) {
 
 // 2. Sätta eller ta bort en reaktion
 window.setReaction = async function(msgId, emoji, event) {
-    // VIKTIGT: Stoppa klicket från att nå raden (som skulle stänga menyn direkt)
-    if(event) {
-        event.preventDefault();
-        event.stopPropagation();
-    }
+    // VIKTIGT: Endast stopPropagation här. 
+    // preventDefault hindrade klicket från att registreras på vissa enheter.
+    if(event) event.stopPropagation();
 
+    // Hitta raden för visuell feedback
     const row = document.querySelector(`.chat-row[data-message-id="${msgId}"]`);
     
-    // Valfritt: Stäng menyn direkt när man valt en emoji för renare känsla
-    // Om du vill ha kvar menyn öppen, ta bort raden nedan:
+    // (Valfritt) Stäng menyn direkt när man valt en emoji
     if(row) row.classList.remove('show-menu'); 
 
     try {
@@ -3986,7 +4017,7 @@ window.setReaction = async function(msgId, emoji, event) {
         
         if (doc.exists) {
             const data = doc.data();
-            // Toggle: Om samma emoji redan finns -> Ta bort den (null)
+            // Toggle-logik: Om samma emoji redan finns -> Ta bort den (null). Annars sätt ny.
             const newReaction = (data.reaction === emoji) ? null : emoji;
             
             await docRef.update({
