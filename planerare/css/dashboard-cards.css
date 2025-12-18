@@ -165,7 +165,7 @@
     .stat-bar {
         display: flex;
         gap: 12px;
-        margin-bottom: 2rem;
+        margin-bottom: 1rem;
         
         /* FULL BREDD + LITEN PADDING */
         width: 100%;
