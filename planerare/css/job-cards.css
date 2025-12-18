@@ -171,34 +171,39 @@
 
     /* --- 5. KOMMENTARER & ACTIONS --- */
     .card-comments-section {
-       /* Använd Grid för att låsa ikonen till vänster och texten till höger */
-       display: grid !important;
-       grid-template-columns: 20px 1fr; /* 20px för ikon, resten för text */
-       align-items: start; /* Börja längst upp */
-       gap: 0; /* Inget extra gap, vi styr det med kolumnbredden */
+       display: flex;              /* Lägger ikon och text på rad */
+       align-items: flex-start;    /* Låser mot toppen */
+       gap: 12px;                  /* Luft mellan ikon och text */
        
-       margin-top: 8px;
-       padding-top: 8px;
+       margin-top: 10px;
        border-top: 1px dashed #e2e8f0;
        
-       /* Återställ textstilen */
-       font-size: 0.9rem;
-       color: #334155;
-       white-space: normal !important; 
+       /* HÄR JUSTERAR VI POSITIIONEN: */
+       padding-top: 12px;
+       padding-bottom: 5px;
+       padding-left: 15px;  /* Flyttar in allt från vänster kant */
+       padding-right: 15px; /* Flyttar in allt från höger kant */
    }
-   /* Styla ikonen så den blir lagom stor och diskret */
+   
+   /* Din fix för ikonen */
    .card-comments-section svg {
        width: 16px;
        height: 16px;
        color: #94a3b8;
-       /* VIKTIGT: Flytta ner ikonen några pixlar så den matchar textens baslinje */
+       flex-shrink: 0;      /* Förhindrar att ikonen trycks ihop */
+       
+       /* VIKTIGT: Tryck ner ikonen så den matchar textens första rad */
        margin-top: 3px; 
    }
+   
+   /* Styla texten snyggt */
    .comment-text {
-       line-height: 1.5; /* Bra läsbarhet */
-       white-space: pre-wrap; /* Behåller radbrytningar från input */
-       word-break: break-word; /* Bryter långa ord så inget sticker ut */
+       font-size: 0.9rem;
+       line-height: 1.5;
+       color: #334155;
        margin: 0;
+       white-space: pre-wrap; /* Behåller radbrytningar */
+       word-break: break-word; 
    }
    
    /* Dölj ev. tomma element */
