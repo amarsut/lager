@@ -368,3 +368,40 @@
 
 /* Divider justering */
 .view-divider { border-top: 1px solid #F1F5F9; margin: 16px 0; }
+
+/* TVINGANDE CSS FÖR ATT MODALEN SKA SYNAS */
+.view-modal-overlay {
+    /* 1. Positionering */
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    
+    /* 2. Lager-ordning (Z-Index) - Extremt högt värde */
+    z-index: 2147483647 !important; /* Maxvärde för 32-bit integer */
+    
+    /* 3. Utseende (Bakgrund) */
+    background: rgba(0, 0, 0, 0.6) !important;
+    backdrop-filter: blur(4px);
+    
+    /* 4. Flex-layout för att centrera kortet */
+    display: none; /* JS ändrar denna till flex */
+    justify-content: center;
+    align-items: center; /* Centrera på desktop */
+}
+
+/* Mobil-anpassning: Ligg i botten */
+@media (max-width: 768px) {
+    .view-modal-overlay {
+        align-items: flex-end !important; /* Längst ner på mobil */
+    }
+    
+    .view-modal-card {
+        width: 100% !important;
+        border-radius: 20px 20px 0 0 !important; /* Runda hörn upptill */
+        margin: 0 !important;
+        max-height: 85vh !important; /* Inte högre än 85% av skärmen */
+        overflow-y: auto !important;
+    }
+}
