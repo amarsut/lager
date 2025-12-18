@@ -32,7 +32,7 @@
         display: flex; 
         justify-content: space-between; 
         align-items: center;
-        min-height: 34px;
+        min-height: 28px;
         color: #1e293b;
         
         /* 3D-känsla och struktur */
@@ -44,8 +44,9 @@
         border-bottom: none !important; 
     }
     
+    /* Registreringsnummer position i headern */
     .header-reg-clickable {
-        display: flex; align-items: center; gap: 6px;
+        display: flex; align-items: center; gap: 0px;
         font-weight: 700; font-size: 0.95rem; 
         letter-spacing: 0.5px; text-transform: uppercase;
         cursor: pointer; position: relative;
@@ -69,8 +70,7 @@
     
     /* Bokad (Blå) */
     .bg-bokad { background-color: #8ABCE6; color: white; }
-    .job-card-new.status-bokad { background: linear-gradient(160deg, #ffffff 50%, #eff6ff 100%) !important; }
-    .bg-bokad .header-status-badge { color: #8ABCE6 !important; background: #eff6ff !important; }
+    .job-card-new.status-bokad { background: linear-gradient(160deg, #ffffff 50%, #eff6ff 100%) !important; }    .bg-bokad .header-status-badge { color: #8ABCE6 !important; background: #eff6ff !important; }
     .bg-bokad .brand-logo-img { filter: brightness(0) invert(1) opacity(0.9); }
 
     /* Klar (Grön) */
@@ -80,7 +80,7 @@
 
     /* Faktureras (Lila) */
     .bg-faktureras { background-color: #F3E8FF; color: #581c87; }
-    .job-card-new.status-faktureras { background: linear-gradient(160deg, #ffffff 50%, #faf5ff 100%) !important; }
+    .job-card-new.status-faktureras { background: linear-gradient(170deg, #ffffff 50%, #f3e8ff 100%) !important; border-color: #e9d5ff !important; }
     .bg-faktureras .header-status-badge { color: #581c87 !important; background: #f5f3ff !important; }
 
     /* Offererad (Orange) */
@@ -149,6 +149,13 @@
         margin: 0; 
     }
 
+    /* Registreringsnummer i headern */
+    .header-reg-clickable span {
+        font-size: 0.9rem !important; /* Din önskade storlek */
+        font-weight: 600 !important;  /* Tjocklek */
+        margin-bottom: 1px; /* Höjden på reg.nr */
+    }
+
     /* Kundnamn (första raden) */
     .info-row:first-child .row-value span { 
         color: #0f172a !important;
@@ -164,9 +171,10 @@
 
     /* --- 5. KOMMENTARER & ACTIONS --- */
     .card-comments-section {
+        background-color: transparent !important; 
+        border-top: 1px solid rgba(0,0,0,0.06) !important;
         margin-top: 0 !important; 
         padding: 6px 10px !important;
-        background-color: #F8FAFC; border-top: 1px solid #E2E8F0;
         display: flex; align-items: flex-start; gap: 8px;
     }
     .comment-text {
@@ -179,6 +187,7 @@
         background: transparent; border: none; color: inherit; 
         opacity: 0.7; padding: 0 0 0 4px; width: auto; 
         display: flex; align-items: center; line-height: 0;
+        margin-left: 0 !important;
     }
     
     .card-actions-expand {
@@ -240,5 +249,45 @@
     }
 
     .filter-tab.active .tab-badge { background-color: #fb923c; color: #ffffff; }
+
+    /* --- MENY KNAPP I HEADERN "..." --- */
+    .card-menu-btn {
+        /* Vit bakgrund för kontrast */
+        background-color: #ffffff !important; 
+        
+        /* Ingen ram, använd skugga istället för renare look */
+        border: none !important; 
+        
+        /* Mörkgrå färg på prickarna oavsett header-färg */
+        color: #475569 !important; 
+        
+        /* Mindre storlek så den ryms snyggt i headern */
+        width: 18px !important;       
+        height: 18px !important;
+        border-radius: 50%;           
+        
+        /* Centrera ikonen */
+        display: flex; 
+        align-items: center; 
+        justify-content: center;
+        
+        /* Placering */
+        margin-left: 8px; 
+        
+        /* Mjuk skugga för att den ska "poppa" ut */
+        box-shadow: 0 2px 4px rgba(0,0,0,0.12);
+        
+        transition: transform 0.1s ease, background 0.2s;
+        z-index: 20;
+    }
+
+    /* Anpassa prickarnas storlek */
+    .card-menu-btn svg {
+        width: 16px !important; /* Lite mindre ikon */
+        height: 16px !important;
+        opacity: 0.9;
+        stroke-width: 2.5px; /* Lite fetare prickar för tydlighet */
+    }
+
 
 } /* <--- HÄR stängs nu media queryn korrekt för hela filen */
