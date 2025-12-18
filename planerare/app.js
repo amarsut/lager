@@ -487,7 +487,7 @@ const ICONS = {
 
 // --- HJÄLPFUNKTION: Skapa Mobilkortet (KOMPLETT NY VERSION) ---
 function createJobCard(job) {
-    // 1. TVINGA IN CSS (Säkerhetsåtgärd om style.css cacular)
+    // 1. CSS-FIX (Säkerställer att färgerna funkar)
     if (!document.getElementById('temp-unplanned-style')) {
         const style = document.createElement('style');
         style.id = 'temp-unplanned-style';
@@ -500,7 +500,7 @@ function createJobCard(job) {
         document.head.appendChild(style);
     }
 
-    // 2. Datum-logik
+    // 2. Datum & Tid (Återställd logik)
     const hasDate = (job.datum && typeof job.datum === 'string' && job.datum.trim().length > 0);
     const d = hasDate ? new Date(job.datum) : new Date(); 
     const now = new Date(); 
@@ -508,12 +508,12 @@ function createJobCard(job) {
     const smartDate = typeof getSmartDateString === 'function' ? getSmartDateString(job.datum) : job.datum;
     const dateStr = smartDate;
     
-    // Tid
+    // Tidsträng (visas på egen rad som du ville)
     const timeStr = hasDate 
         ? d.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' }) 
         : '';
     
-    // 3. Status & Färg (Här definieras statusRaw!)
+    // 3. Status & Färg
     const statusRaw = job.status || 'bokad';
     let statusText = statusRaw.toUpperCase(); 
     let headerClass = 'bg-bokad'; 
@@ -548,13 +548,13 @@ function createJobCard(job) {
     const regNr = (job.regnr && job.regnr.toUpperCase() !== 'OKÄNT') ? job.regnr.toUpperCase() : '---';
     const customer = job.kundnamn ? job.kundnamn : 'Okänd'; 
     const paket = job.paket ? job.paket : '-';
-    const mileage = job.milage ? job.milage + ' mil' : '-';
+    // Försöker hämta mätarställning om det finns, annars '-'
+    const mileage = job.matarstallning ? job.matarstallning + ' mil' : (job.milage ? job.milage + ' mil' : '-');
 
-    // Företagskoll
     const nameLower = (job.kundnamn || '').toLowerCase();
     const isCorporate = ['bmg', 'fogarolli', 'ab'].some(c => nameLower.includes(c));
     
-    // SVG-Ikoner (Dina original)
+    // 6. SVG-ikoner (Dina original)
     const iUser = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
     const iBriefcaseGreen = `<svg class="icon-sm" style="color: #10B981;" viewBox="0 0 64 64"><use href="#icon-office-building"></use></svg>`;
     const iCal = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`;
@@ -569,7 +569,15 @@ function createJobCard(job) {
         ? `<span class="company-icon-wrapper">${iBriefcaseGreen}</span><span>${customer}</span>` 
         : `<span>${customer}</span>`;
 
-    // 6. RÄKNA UT EKONOMI (NYTT!)
+    let commentHtml = '';
+    if (job.kommentar && job.kommentar.length > 0) {
+        // Visar kort version eller hela beroende på CSS, men den finns där som standard
+        commentHtml = `<span class="comment-text">${job.kommentar}</span>`;
+    } else {
+        commentHtml = `<span class="comment-text comment-placeholder">Inga kommentarer finns tillgängliga.</span>`;
+    }
+
+    // 7. RÄKNA UT EKONOMI (För expanderad vy)
     const pris = parseInt(job.kundpris) || 0;
     let totalUtgift = 0;
     let expenseRows = '';
@@ -587,8 +595,7 @@ function createJobCard(job) {
     const vinstClass = vinst >= 0 ? '' : 'loss';
     const vinstTecken = vinst >= 0 ? '+' : '';
 
-    // 7. RETURNERA HTML (Kortet + Expanderad del)
-    // OBS: onclick="toggleCardExpand"
+    // 8. RETURNERA HTML
     return `
         <div class="job-card-new status-${statusRaw}" id="card-${job.id}" onclick="toggleCardExpand('${job.id}', event)">
             
@@ -600,7 +607,14 @@ function createJobCard(job) {
                 </div>
                 
                 <div class="header-right-side" style="display:flex; align-items:center; gap:8px; height: 100%;">
-                    <div class="header-status-badge">${statusText}</div>
+                    <div class="header-status-badge" 
+                        onclick="event.stopPropagation(); toggleCardActions('${job.id}', event)"
+                        style="padding: 1px 6px; font-size: 0.65rem; border-radius: 4px; line-height: 1.2; cursor: pointer;">
+                        ${statusText}
+                    </div>
+                    <button class="card-menu-btn" onclick="event.stopPropagation(); toggleCardActions('${job.id}', event)" style="height: 30px; width: 30px; display: flex; align-items: center; justify-content: center; padding: 0; background: transparent; border: none; color: inherit;">
+                        <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+                    </button>
                 </div>
             </div>
 
@@ -613,19 +627,38 @@ function createJobCard(job) {
                 </div>
                 <div class="info-row"><span class="row-label">${iBox} Paket</span><span class="row-value">${paket}</span></div>
                 <div class="info-row"><span class="row-label" title="Mätarställning">${iGauge} Mätarst.</span><span class="row-value">${mileage}</span></div>
-                <div class="info-row"><span class="row-label">${iCal} Datum</span><span class="row-value">${dateStr} ${timeStr}</span></div>
+                <div class="info-row"><span class="row-label">${iCal} Datum</span><span class="row-value">${dateStr}</span></div>
+                <div class="info-row"><span class="row-label">${iClock} Tid</span><span class="row-value">${timeStr}</span></div>
+                
                 <div class="info-row price-row"><span class="row-label">${iTag} Att betala</span><span class="row-value">${pris}:-</span></div>
+            </div>
+
+            <div class="card-comments-section">
+                ${iComment}
+                ${commentHtml}
+            </div>
+
+            <div class="card-actions-expand" id="actions-${job.id}" onclick="event.stopPropagation()">
+                <button class="inline-action-btn success" title="Markera som Klar" onclick="setStatus('${job.id}', 'klar')">
+                    <svg class="icon-sm"><use href="#icon-check"></use></svg>
+                </button>
+                <button class="inline-action-btn warning" title="Till Fakturering" onclick="setStatus('${job.id}', 'faktureras')">
+                    <svg class="icon-sm"><use href="#icon-clipboard"></use></svg>
+                </button>
+                <button class="inline-action-btn danger" title="Radera Jobb" onclick="deleteJob('${job.id}')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-sm"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 12-2h4a2 2 0 0 12 2v2"></path></svg>
+                </button>
             </div>
 
             <div class="card-expanded-details" id="details-${job.id}" onclick="event.stopPropagation()">
                 
                 <div class="expand-section">
-                    <div class="expand-label">${iComment} ARBETSBESKRIVNING</div>
+                    <div class="expand-label">${iComment} HEL BESKRIVNING</div>
                     <div class="expand-text">${job.kommentar || 'Ingen beskrivning.'}</div>
                 </div>
 
                 <div class="expand-section">
-                    <div class="expand-label">${iTag} EKONOMI & VINST</div>
+                    <div class="expand-label">${iTag} EKONOMI & VINST SPECIFIKATION</div>
                     <ul class="expense-list-mini">
                         ${expenseRows}
                     </ul>
