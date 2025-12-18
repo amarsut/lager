@@ -487,11 +487,45 @@ const ICONS = {
 
 // --- HJÄLPFUNKTION: Skapa Mobilkortet (KOMPLETT NY VERSION) ---
 function createJobCard(job) {
-    // 1. CSS-FIX (Behåll denna)
-    if (!document.getElementById('temp-unplanned-style')) {
+    // 1. INJICERA STYLING DIREKT (Garanterar att det ser rätt ut oavsett CSS-fil)
+    if (!document.getElementById('temp-card-style')) {
         const style = document.createElement('style');
-        style.id = 'temp-unplanned-style';
+        style.id = 'temp-card-style';
         style.innerHTML = `
+            /* Fix för kommentars-sektionen */
+            .card-comments-section {
+                display: flex !important;        /* Lägg på rad */
+                flex-direction: row !important;  /* Vänster till höger */
+                align-items: flex-start !important; /* Justera mot toppen */
+                gap: 10px !important;            /* Mellanrum mellan ikon och text */
+                
+                margin-top: 12px !important;
+                padding-top: 12px !important;
+                border-top: 1px dashed #e2e8f0 !important;
+                width: 100% !important;
+            }
+            
+            /* Tvinga ikonen att vara stilla */
+            .card-comments-section svg {
+                flex-shrink: 0 !important;       /* Får INTE krympa */
+                width: 18px !important;
+                height: 18px !important;
+                margin-top: 2px !important;      /* Finjustering så den linjerar med första textraden */
+                color: #94a3b8 !important;
+            }
+
+            /* Texten får ta all plats som blir över */
+            .comment-text {
+                flex: 1 !important;
+                font-size: 0.9rem !important;
+                line-height: 1.5 !important;
+                color: #334155 !important;
+                white-space: pre-wrap !important; /* Behåll radbrytningar */
+                word-break: break-word !important;
+                margin: 0 !important;
+            }
+
+            /* Dina tidigare status-färger (samma som förut) */
             .bg-unplanned { background-color: #94a3b8 !important; color: white !important; border-bottom-color: #64748b !important; }
             .bg-unplanned .header-status-badge { background-color: rgba(255,255,255,0.25) !important; color: white !important; }
             .bg-unplanned .header-reg-clickable { color: white !important; }
@@ -531,7 +565,7 @@ function createJobCard(job) {
         ? `<img src="${brandUrl}" class="brand-logo-img" alt="Logo" style="${iconStyle} object-fit:contain;">`
         : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="${iconStyle}"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 17h8"/></svg>`;
 
-    // 5. Innehållsvariabler
+    // 5. Innehåll
     const regNr = (job.regnr && job.regnr.toUpperCase() !== 'OKÄNT') ? job.regnr.toUpperCase() : '---';
     const customer = job.kundnamn ? job.kundnamn : 'Okänd'; 
     const paket = job.paket ? job.paket : '-';
@@ -555,11 +589,10 @@ function createJobCard(job) {
         : `<span>${customer}</span>`;
 
     let commentHtml = '';
-    // Här säkerställer vi att kommentaren visas (och CSS styr om den är lång)
     if (job.kommentar && job.kommentar.length > 0) {
         commentHtml = `<span class="comment-text">${job.kommentar}</span>`;
     } else {
-        commentHtml = `<span class="comment-text comment-placeholder">Inga kommentarer finns tillgängliga.</span>`;
+        commentHtml = `<span class="comment-text comment-placeholder">Inga kommentarer.</span>`;
     }
 
     // 7. RÄKNA UT EKONOMI
@@ -632,13 +665,11 @@ function createJobCard(job) {
             </div>
 
             <div class="card-expanded-details" id="details-${job.id}" onclick="event.stopPropagation()">
-                
                 <div class="expand-section">
                     <div class="expand-label">${iTag} EKONOMI SPECIFIKATION</div>
                     <ul class="expense-list-mini">
                         ${expenseRows}
                     </ul>
-                    
                     <div class="profit-row-simple">
                         <span>VINST</span>
                         <span class="profit-val ${winOrLoss}">${vinstTecken}${vinst}:-</span>
