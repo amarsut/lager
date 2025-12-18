@@ -2364,22 +2364,22 @@ function setupChatListener(limit) {
     };
 
     chatUnsubscribe = db.collection("notes")
-        .orderBy("timestamp", "desc")
-        .limit(limit)
-        .onSnapshot(snapshot => {
-            const docs = [];
-            snapshot.forEach(doc => docs.push({ id: doc.id, ...doc.data() }));
-            docs.reverse(); // Nyaste längst ner
-
-            // --- HÄR ÄR ÄNDRINGEN ---
-            // Vi räknar bara hur många meddelanden vi faktiskt har hämtat
-            const totalMessages = docs.length;
-            
-            // Uppdatera badgen med totalen
-            updateChatBadge(totalMessages);
-            // ------------------------
-
-            chatList.innerHTML = ''; 
+	    .orderBy("timestamp", "desc")
+	    .limit(limit)
+	    .onSnapshot(snapshot => {
+	        const docs = [];
+	        snapshot.forEach(doc => docs.push({ id: doc.id, ...doc.data() }));
+	        docs.reverse(); // Nyaste längst ner
+	
+	        // --- HÄR ÄR ÄNDRINGEN FÖR NOTISER ---
+	        // Räkna antal meddelanden som har reaktionen "🕒" (Klocka)
+	        const clockCount = docs.filter(msg => msg.reaction === '🕒').length;
+	        
+	        // Uppdatera badgen baserat på klockor
+	        updateChatBadge(clockCount);
+	        // ------------------------------------
+	
+	        chatList.innerHTML = '';
 
             if (docs.length === 0) {
                 chatList.innerHTML = '<div style="text-align:center; padding:30px; color:#9ca3af; font-size:0.9rem;">Inga meddelanden än.</div>';
@@ -2467,54 +2467,48 @@ function updateChatBadge(count) {
 function renderChatBubble(data, container) {
     const messageId = data.id; 
 
-    // 1. Skapa Wrapper (Raden)
+    // 1. Wrapper (Raden)
     const row = document.createElement('div');
     
     let senderType = 'other';
-    // Ändra logiken här om du har ett riktigt inloggningssystem
-    // Just nu: system = system, allt annat = me (för demo) eller other
     if (data.platform === 'system') senderType = 'system';
-    else if (data.isMe) senderType = 'me'; // Exempel om du har sådan data
-    else senderType = data.platform === 'mobil' || data.platform === 'dator' ? 'me' : 'other';
-    
-    // Tvinga 'me' för att testa (eller behåll din logik för vem som är vem)
-    // I din kod antog du att allt icke-system var 'me'. 
-    // Om du vill simulera motpart, se till att senderType blir 'other'.
+    else senderType = (data.platform === 'mobil' || data.platform === 'dator') ? 'me' : 'other';
 
     row.className = `chat-row ${senderType}`;
     row.dataset.messageId = messageId;
-    row.style.position = 'relative';
-
-    // --- HÄR ÄR ÄNDRINGEN: SKAPA MENYN FÖR ALLA ---
-    // Vi tog bort "if (senderType === 'me')" så nu skapas den alltid.
     
-    const optionsMenu = document.createElement('div');
-    optionsMenu.className = 'message-options';
-    optionsMenu.innerHTML = `
-        <button class="option-btn edit" title="Redigera">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" /></svg>
+    // Hantera klick på hela raden för mobil (visa meny)
+    row.onclick = (e) => toggleMessageMenu(messageId, e);
+
+    // 2. Action Menu (Teams-stil)
+    // OBS: Vi använder onclick="setReaction(...)"
+    const menu = document.createElement('div');
+    menu.className = 'chat-action-menu';
+    menu.innerHTML = `
+        <button class="action-emoji-btn" onclick="setReaction('${messageId}', '🕒', event)">🕒</button>
+        <button class="action-emoji-btn" onclick="setReaction('${messageId}', '✅', event)">✅</button>
+        <button class="action-emoji-btn" onclick="setReaction('${messageId}', '❌', event)">❌</button>
+        <button class="action-emoji-btn" onclick="setReaction('${messageId}', '⚠️', event)">⚠️</button>
+        
+        <div class="action-separator"></div>
+        
+        <button class="action-icon-btn" title="Redigera" onclick="enterEditMode(this.closest('.chat-row'), '${data.text || ''}'); event.stopPropagation();">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
         </button>
-        <button class="option-btn delete danger" title="Ta bort">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
+        <button class="action-icon-btn danger" title="Ta bort" onclick="deleteChatMessage('${messageId}'); event.stopPropagation();">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
         </button>
     `;
+    row.appendChild(menu);
 
-    // Koppla knapparna
-    optionsMenu.querySelector('.edit').onclick = () => enterEditMode(row, data.text || "");
-    optionsMenu.querySelector('.delete').onclick = () => deleteChatMessage(messageId);
-    
-    row.appendChild(optionsMenu);
-    // --- SLUT PÅ ÄNDRING ---
-
-    // 2. Skapa Bubblan
+    // 3. Bubblan
     const bubble = document.createElement('div');
     bubble.className = 'chat-bubble';
-
     if (data.type === 'image' || data.image) {
         bubble.classList.add('is-image');
     }
 
-    // Text-innehåll
+    // Textinnehåll
     if (data.text) {
         const textDiv = document.createElement('div');
         textDiv.className = 'bubble-text-content';
@@ -2522,31 +2516,36 @@ function renderChatBubble(data, container) {
         bubble.appendChild(textDiv);
     }
 
-    // Bild-innehåll
+    // Bildinnehåll
     if (data.image) {
         const imgContainer = document.createElement('div');
         imgContainer.className = 'chat-bubble-image';
         const img = document.createElement('img');
         img.src = data.image;
         img.loading = "lazy";
-        img.onclick = () => window.openImageZoom(data.image);
-        //img.onclick = () => window.openImageZoom(data.imageUrl, data.id);
+        img.onclick = (e) => { e.stopPropagation(); window.openImageZoom(data.image); };
         imgContainer.appendChild(img);
         bubble.appendChild(imgContainer);
     }
 
+    // --- REAKTION (BADGE) ---
+    // Om det finns en reaktion i datan, visa den i hörnet
+    if (data.reaction) {
+        const reactionBadge = document.createElement('div');
+        reactionBadge.className = 'reaction-badge-display';
+        reactionBadge.textContent = data.reaction;
+        // Klick på badgen kan ta bort den (valfritt)
+        reactionBadge.onclick = (e) => setReaction(messageId, data.reaction, e); 
+        bubble.appendChild(reactionBadge);
+    }
+
     row.appendChild(bubble);
 
-    // 3. Tidsstämpel
+    // 4. Tidsstämpel
     if (data.timestamp) {
         const timeDiv = document.createElement('div');
         timeDiv.className = 'chat-time';
-        let t;
-        if (data.timestamp && typeof data.timestamp.toDate === 'function') {
-            t = data.timestamp.toDate();
-        } else {
-            t = new Date(data.timestamp);
-        }
+        let t = (data.timestamp && typeof data.timestamp.toDate === 'function') ? data.timestamp.toDate() : new Date(data.timestamp);
         timeDiv.textContent = t.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
         row.appendChild(timeDiv);
     }
@@ -3884,5 +3883,47 @@ window.toggleCardExpand = function(jobId, event) {
                 });
             }, 300);
         }
+    }
+};
+
+// --- NYA CHATT-FUNKTIONER ---
+
+// 1. Hantera klick på mobil (visa/dölj meny)
+window.toggleMessageMenu = function(msgId, event) {
+    // Förhindra att klicket stänger ner widgeten eller gör annat
+    if(event) event.stopPropagation();
+
+    const row = document.querySelector(`.chat-row[data-message-id="${msgId}"]`);
+    
+    // Stäng alla andra menyer först
+    document.querySelectorAll('.chat-row.show-menu').forEach(el => {
+        if(el !== row) el.classList.remove('show-menu');
+    });
+
+    if(row) row.classList.toggle('show-menu');
+};
+
+// 2. Sätta eller ta bort en reaktion
+window.setReaction = async function(msgId, emoji, event) {
+    if(event) event.stopPropagation();
+
+    const row = document.querySelector(`.chat-row[data-message-id="${msgId}"]`);
+    if(row) row.classList.remove('show-menu'); // Dölj menyn
+
+    try {
+        const docRef = db.collection('notes').doc(msgId);
+        const doc = await docRef.get();
+        
+        if (doc.exists) {
+            const data = doc.data();
+            // Om samma emoji redan finns -> Ta bort den (toggle). Annars sätt ny.
+            const newReaction = (data.reaction === emoji) ? null : emoji;
+            
+            await docRef.update({
+                reaction: newReaction
+            });
+        }
+    } catch (error) {
+        console.error("Fel vid reaktion:", error);
     }
 };
