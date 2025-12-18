@@ -3606,30 +3606,26 @@ function applyZoom(value) {
 }
 
 /* ==========================================
-   VIEW MODAL (LÄSLÄGE)
+   VIEW MODAL (OFFENTLIG & SÄKER VERSION)
    ========================================== */
 
-/* ==========================================
-   VIEW MODAL (SÄKER VERSION)
-   ========================================== */
-
-// VIKTIGT: Vi definierar den direkt på window så HTML hittar den direkt
+// VIKTIGT: Vi sätter 'window.' först. Nu KAN INTE webbläsaren missa den!
 window.openViewModal = function(jobId) {
-    console.log("Försöker öppna jobb med ID:", jobId); // Debug-logg
+    console.log("Klick registrerat på jobb ID:", jobId); // Denna ska synas i konsolen nu
 
-    // 1. Hitta jobbet
+    // 1. Hitta jobbet i listan
     const job = allJobs.find(j => j.id === jobId);
     
     if (!job) {
-        alert("Kunde inte hitta jobbet. Prova att ladda om sidan.");
+        console.error("Kunde inte hitta jobbdata för ID:", jobId);
+        alert("Något gick fel. Försök ladda om sidan.");
         return;
     }
 
-    // Spara det globalt så vi kan redigera det sen
-    // Vi lägger det också på window för att vara säkra
+    // Spara globalt (bra för redigering senare)
     window.currentViewingJob = job;
 
-    // Hjälpfunktion för text
+    // Hjälpfunktion
     const setText = (id, text) => {
         const el = document.getElementById(id);
         if (el) el.textContent = text || '-';
@@ -3652,7 +3648,7 @@ window.openViewModal = function(jobId) {
     setText('viewDate', dateStr);
     setText('viewTime', timeStr);
 
-    // Kund & Telefon
+    // Kund
     setText('viewCustomerName', job.kundnamn || 'Okänd');
     
     const phoneVal = job.telefon || job.phone || '';
@@ -3672,7 +3668,6 @@ window.openViewModal = function(jobId) {
     // Ekonomi
     const intPris = parseInt(job.kundpris) || 0;
     
-    // Räkna utgifter
     let totalUtgifter = 0;
     if (job.utgifter && Array.isArray(job.utgifter)) {
         job.utgifter.forEach(u => totalUtgifter += (parseInt(u.kostnad) || 0));
@@ -3697,8 +3692,6 @@ window.openViewModal = function(jobId) {
     // Interna noteringar
     const internalBox = document.querySelector('.internal-box');
     const internalText = document.getElementById('viewInternalNotes');
-    
-    // (Anpassa fältnamnet 'internalNotes' om du heter något annat i databasen)
     const iNotes = job.internalNotes || ''; 
     
     if (internalText && iNotes.trim() !== "") {
@@ -3711,13 +3704,15 @@ window.openViewModal = function(jobId) {
     // Koppla Redigera-knappen
     const editBtn = document.getElementById('btnEditJob');
     if (editBtn) {
-        // Vi tar bort gamla lyssnare genom att klona knappen (enkelt trick)
+        // Ta bort gamla klick-kopplingar genom att klona knappen
         const newBtn = editBtn.cloneNode(true);
         editBtn.parentNode.replaceChild(newBtn, editBtn);
         
         newBtn.onclick = function() {
-            closeViewModal();
-            openEditModal(job.id);
+            window.closeViewModal();
+            // Använd din gamla redigera-funktion
+            if(window.openEditModal) window.openEditModal(job.id);
+            else openEditModal(job.id); 
         };
     }
 
@@ -3725,14 +3720,14 @@ window.openViewModal = function(jobId) {
     const modal = document.getElementById('viewJobModal');
     if (modal) {
         modal.style.display = 'flex';
-        // Lägg till historik om funktionen finns
+        // Lägg till historik
         if (typeof addHistoryState === 'function') addHistoryState();
     } else {
-        console.error("Hittade inte modalen med id 'viewJobModal' i HTML");
+        console.error("Hittar inte <div id='viewJobModal'> i din HTML!");
     }
 };
 
-// Definiera stäng-funktionen direkt på window också
+// Definiera stäng-funktionen på window också
 window.closeViewModal = function() {
     const modal = document.getElementById('viewJobModal');
     if (modal) modal.style.display = 'none';
