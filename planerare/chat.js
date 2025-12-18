@@ -10,18 +10,26 @@ let chatMenuTimer = null; // Fix för "ReferenceError"
 
 // Gör funktionen global
 window.toggleChatWidget = function() {
-    // Lägg till historikstate
-    if (typeof addHistoryState === 'function') addHistoryState();
-    
     const chatWidget = document.getElementById('chatWidget');
     if (!chatWidget) return;
 
-    if (chatWidget.style.display === 'flex') {
+    const isOpen = chatWidget.style.display === 'flex';
+
+    if (isOpen) {
+        // Om vi stänger manuellt via knappen, rensa historik-steget
         chatWidget.style.display = 'none';
         document.body.style.overflow = ''; 
+        if (history.state && history.state.uiState === 'chat') {
+            history.back();
+        }
     } else {
+        // ÖPPNA: Lägg till ett historik-state
         chatWidget.style.display = 'flex';
         document.body.style.overflow = 'hidden'; 
+        
+        // Detta gör att "Bakåt" stänger chatten istället för appen
+        history.pushState({ uiState: 'chat' }, null, window.location.href);
+
         setTimeout(() => {
             const chatList = document.getElementById('chatMessages');
             if (chatList) chatList.scrollTop = chatList.scrollHeight;
@@ -42,13 +50,13 @@ window.initChat = function() {
     const fileInputGallery = document.getElementById('chatFileInputGallery');
     const fileInputCamera = document.getElementById('chatFileInputCamera');
     const galleryBtn = document.getElementById('toggleGalleryBtn');
-if (galleryBtn) {
-    galleryBtn.onclick = (e) => {
-        e.preventDefault();
-        e.stopPropagation(); // Hindrar klicket från att "bubbla" och stänga chatten
-        openChatGallery();
-    };
-}
+    if (galleryBtn) {
+        galleryBtn.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation(); // Hindrar klicket från att "bubbla" och stänga chatten
+            openChatGallery();
+        };
+    }
     const closeGalleryBtn = document.getElementById('closeGalleryBtn');
 
     if (galleryBtn) galleryBtn.onclick = openChatGallery;
@@ -81,7 +89,9 @@ if (galleryBtn) {
                     type: 'text'
                 });
                 chatInput.value = '';
-                setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
+                setTimeout(() => {
+                    chatList.scrollTo({ top: chatList.scrollHeight, behavior: 'smooth' });
+                }, 100);
             } catch (err) {
                 console.error("Fel vid sändning:", err);
             }
@@ -202,7 +212,13 @@ function setupChatListener(limit) {
             });
 
             if (limit === 50) {
-                setTimeout(() => chatList.scrollTop = chatList.scrollHeight, 100);
+                // Vänta en millisekund på att bilderna ska börja renderas
+                setTimeout(() => {
+                    chatList.scrollTo({
+                        top: chatList.scrollHeight,
+                        behavior: 'instant' // 'instant' är bättre vid första laddning
+                    });
+                }, 50);
             }
         });
 }
@@ -419,7 +435,12 @@ function enterEditMode(rowElement, currentText) {
     inputField.focus();
     chatWidget.classList.add('edit-mode');
     if(editHeader) editHeader.style.display = 'flex';
-    if(sendBtn) sendBtn.innerHTML = '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+    if(sendBtn) {
+        sendBtn.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>`;
+    }
 }
 
 function exitEditMode() {
@@ -433,7 +454,13 @@ function exitEditMode() {
     inputField.value = '';
     chatWidget.classList.remove('edit-mode');
     if(editHeader) editHeader.style.display = 'none';
-    if(sendBtn) sendBtn.innerHTML = '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>';
+    if(sendBtn) {
+        sendBtn.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>`;
+    }
 }
 
 // BILDHANTERING
