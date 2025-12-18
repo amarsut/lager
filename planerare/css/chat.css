@@ -585,3 +585,106 @@ NOTIS-BADGE (Antal nya meddelanden)
     border: 1px solid #fff; /* Vit ram runt den röda pricken */
     z-index: 100;
 }
+
+/*HÖGERKLICK MENY / EMOJI / REDIGERA / TA BORT MENY*/
+
+/* --- TEAMS-LIKNANDE ACTION MENU --- */
+
+/* Wrapper för att positionera menyn relativt meddelandet */
+.chat-row {
+    position: relative; /* Viktigt! */
+    margin-bottom: 24px; /* Lite extra plats för reaktioner nertill */
+}
+
+/* Själva menyn (Dold som standard) */
+.chat-action-menu {
+    display: none;
+    position: absolute;
+    top: -35px; /* Svävar ovanför */
+    background-color: #ffffff;
+    border: 1px solid #e5e5ea;
+    border-radius: 20px;
+    padding: 4px 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    z-index: 100;
+    flex-direction: row;
+    align-items: center;
+    gap: 2px;
+    animation: popInMenu 0.2s ease-out;
+}
+
+/* Visa menyn vid hover (Desktop) eller när klassen .show-menu finns (Mobil) */
+.chat-row:hover .chat-action-menu,
+.chat-row.show-menu .chat-action-menu {
+    display: flex;
+}
+
+/* Positionering av menyn beroende på vem som skrev */
+.chat-row.me .chat-action-menu { right: 0; }
+.chat-row.other .chat-action-menu { left: 0; }
+
+/* Emoji-knappar i menyn */
+.action-emoji-btn {
+    background: transparent;
+    border: none;
+    font-size: 1.1rem;
+    padding: 4px 6px;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: background 0.2s, transform 0.1s;
+    line-height: 1;
+}
+.action-emoji-btn:hover {
+    background-color: #f2f2f7;
+    transform: scale(1.2);
+}
+
+/* Skiljelinje */
+.action-separator {
+    width: 1px;
+    height: 18px;
+    background-color: #e5e5ea;
+    margin: 0 4px;
+}
+
+/* Redigera/Ta bort knappar i menyn */
+.action-icon-btn {
+    background: transparent;
+    border: none;
+    color: #8e8e93;
+    padding: 4px 6px;
+    cursor: pointer;
+    border-radius: 8px;
+    display: flex; align-items: center;
+}
+.action-icon-btn:hover { background-color: #f2f2f7; color: #007aff; }
+.action-icon-btn.danger:hover { background-color: #fee2e2; color: #ff3b30; }
+.action-icon-btn svg { width: 16px; height: 16px; }
+
+/* --- REAKTION (HÖGRA NEDRE HÖRNET) --- */
+.reaction-badge-display {
+    position: absolute;
+    bottom: -12px;
+    right: -5px;
+    background-color: #ffffff;
+    border: 1px solid #e5e5ea;
+    border-radius: 12px;
+    padding: 2px 6px;
+    font-size: 0.85rem;
+    line-height: 1;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    z-index: 10;
+    cursor: pointer;
+    animation: popInBadge 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Om meddelandet är från "other", flytta badgen lite så den inte krockar */
+.chat-row.other .reaction-badge-display {
+    right: auto;
+    left: -5px;
+}
+
+@keyframes popInMenu {
+    from { opacity: 0; transform: translateY(5px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
