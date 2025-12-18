@@ -171,39 +171,40 @@
 
     /* --- 5. KOMMENTARER & ACTIONS --- */
     .card-comments-section {
-       display: flex !important;    /* Lägger ikon och text på rad */
-       align-items: flex-start;     /* Justera mot toppen så det ser bra ut vid lång text */
-       gap: 8px;                    /* Lagom avstånd mellan ikon och text */
+       /* Använd Grid för att låsa ikonen till vänster och texten till höger */
+       display: grid !important;
+       grid-template-columns: 20px 1fr; /* 20px för ikon, resten för text */
+       align-items: start; /* Börja längst upp */
+       gap: 0; /* Inget extra gap, vi styr det med kolumnbredden */
        
-       margin-top: 10px;            /* Lite luft upp mot resten av kortet */
-       padding-top: 10px;
-       border-top: 1px dashed #e2e8f0; /* Diskret avdelare */
+       margin-top: 8px;
+       padding-top: 8px;
+       border-top: 1px dashed #e2e8f0;
        
-       /* Återställ whitespace på behållaren så HTML-koden inte skapar tomrum */
+       /* Återställ textstilen */
+       font-size: 0.9rem;
+       color: #334155;
        white-space: normal !important; 
    }
    /* Styla ikonen så den blir lagom stor och diskret */
    .card-comments-section svg {
-       flex-shrink: 0;              /* Förhindra att ikonen krymps */
        width: 16px;
        height: 16px;
-       color: #94a3b8;              /* Ljusgrå färg */
-       margin-top: 3px;             /* Finjustera höjden mot texten */
+       color: #94a3b8;
+       /* VIKTIGT: Flytta ner ikonen några pixlar så den matchar textens baslinje */
+       margin-top: 3px; 
    }
    .comment-text {
-       font-size: 0.9rem;
-       color: #334155;
-       line-height: 1.4;
-       
-       /* VIKTIGT: Behåll radbrytningar i TEXTEN, men inte runt omkring */
-       white-space: pre-wrap;       
-       word-break: break-word;
+       line-height: 1.5; /* Bra läsbarhet */
+       white-space: pre-wrap; /* Behåller radbrytningar från input */
+       word-break: break-word; /* Bryter långa ord så inget sticker ut */
+       margin: 0;
    }
-   /* Dölj platshållaren helt om det inte finns kommentarer (om du vill ha det kompaktare) */
+   
+   /* Dölj ev. tomma element */
    .comment-placeholder {
-       color: #cbd5e1;
        font-style: italic;
-       font-size: 0.85rem;
+       color: #cbd5e1;
    }
 
    /* 2. Ny Diskret Vinst-rad (Kvitto-stil) */
