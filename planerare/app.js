@@ -2464,12 +2464,45 @@ function updateChatBadge(count) {
     setBadge(mobileBtn);
 }
 
+// --- FIX FÖR PUNKT 4: Gör funktionerna globala så onclick="" hittar dem ---
+window.enterEditMode = enterEditMode;
+window.deleteChatMessage = deleteChatMessage;
+window.setReaction = setReaction;
+window.toggleMessageMenu = toggleMessageMenu;
+
+// --- PUNKT 5: Timer-variabel ---
+let menuCloseTimer = null;
+
+function toggleMessageMenu(msgId, event) {
+    if(event) event.stopPropagation();
+
+    const row = document.querySelector(`.chat-row[data-message-id="${msgId}"]`);
+    
+    // Om vi öppnar en ny, stäng alla andra först
+    document.querySelectorAll('.chat-row.show-menu').forEach(el => {
+        if(el !== row) el.classList.remove('show-menu');
+    });
+
+    if(row) {
+        // Toggla menyn
+        const isOpening = !row.classList.contains('show-menu');
+        row.classList.toggle('show-menu');
+
+        // PUNKT 5: Auto-stängning efter 4 sekunder om man inte gör något
+        if (isOpening) {
+            if (menuCloseTimer) clearTimeout(menuCloseTimer);
+            menuCloseTimer = setTimeout(() => {
+                row.classList.remove('show-menu');
+            }, 4000); // 4 sekunder
+        }
+    }
+};
+
+// Uppdaterad renderChatBubble (Punkt 3: Snyggare struktur)
 function renderChatBubble(data, container) {
     const messageId = data.id; 
 
-    // 1. Wrapper (Raden)
     const row = document.createElement('div');
-    
     let senderType = 'other';
     if (data.platform === 'system') senderType = 'system';
     else senderType = (data.platform === 'mobil' || data.platform === 'dator') ? 'me' : 'other';
@@ -2477,11 +2510,12 @@ function renderChatBubble(data, container) {
     row.className = `chat-row ${senderType}`;
     row.dataset.messageId = messageId;
     
-    // Hantera klick på hela raden för mobil (visa meny)
+    // Klick på mobil öppnar menyn
     row.onclick = (e) => toggleMessageMenu(messageId, e);
+    // På desktop, pausa timern om man hovrar
+    row.onmouseenter = () => { if(menuCloseTimer) clearTimeout(menuCloseTimer); };
 
-    // 2. Action Menu (Teams-stil)
-    // OBS: Vi använder onclick="setReaction(...)"
+    // --- MODERN ACTION MENU ---
     const menu = document.createElement('div');
     menu.className = 'chat-action-menu';
     menu.innerHTML = `
@@ -2492,23 +2526,22 @@ function renderChatBubble(data, container) {
         
         <div class="action-separator"></div>
         
-        <button class="action-icon-btn" title="Redigera" onclick="enterEditMode(this.closest('.chat-row'), '${data.text || ''}'); event.stopPropagation();">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+        <button class="action-icon-btn" title="Redigera" onclick="window.enterEditMode(this.closest('.chat-row'), '${data.text || ''}'); event.stopPropagation();">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
         </button>
-        <button class="action-icon-btn danger" title="Ta bort" onclick="deleteChatMessage('${messageId}'); event.stopPropagation();">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+        <button class="action-icon-btn danger" title="Ta bort" onclick="window.deleteChatMessage('${messageId}'); event.stopPropagation();">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
         </button>
     `;
     row.appendChild(menu);
 
-    // 3. Bubblan
+    // Bubbla & Innehåll
     const bubble = document.createElement('div');
     bubble.className = 'chat-bubble';
     if (data.type === 'image' || data.image) {
         bubble.classList.add('is-image');
     }
 
-    // Textinnehåll
     if (data.text) {
         const textDiv = document.createElement('div');
         textDiv.className = 'bubble-text-content';
@@ -2516,7 +2549,6 @@ function renderChatBubble(data, container) {
         bubble.appendChild(textDiv);
     }
 
-    // Bildinnehåll
     if (data.image) {
         const imgContainer = document.createElement('div');
         imgContainer.className = 'chat-bubble-image';
@@ -2528,20 +2560,18 @@ function renderChatBubble(data, container) {
         bubble.appendChild(imgContainer);
     }
 
-    // --- REAKTION (BADGE) ---
-    // Om det finns en reaktion i datan, visa den i hörnet
+    // --- REAKTION (Hängande under) ---
     if (data.reaction) {
         const reactionBadge = document.createElement('div');
         reactionBadge.className = 'reaction-badge-display';
         reactionBadge.textContent = data.reaction;
-        // Klick på badgen kan ta bort den (valfritt)
-        reactionBadge.onclick = (e) => setReaction(messageId, data.reaction, e); 
+        reactionBadge.onclick = (e) => window.setReaction(messageId, data.reaction, e); 
         bubble.appendChild(reactionBadge);
     }
 
     row.appendChild(bubble);
 
-    // 4. Tidsstämpel
+    // Tid
     if (data.timestamp) {
         const timeDiv = document.createElement('div');
         timeDiv.className = 'chat-time';
