@@ -2473,27 +2473,47 @@ window.toggleMessageMenu = toggleMessageMenu;
 // --- PUNKT 5: Timer-variabel ---
 let menuCloseTimer = null;
 
-function toggleMessageMenu(msgId, event) {
+// --- FÖRBÄTTRAD MENY-LOGIK FÖR CHATT ---
+let chatMenuTimer = null;
+
+// Startar nedräkningen för att stänga menyn
+function startChatMenuTimer() {
+    stopChatMenuTimer(); // Rensa ev. pågående timer
+    chatMenuTimer = setTimeout(() => {
+        // Stäng alla öppna menyer
+        document.querySelectorAll('.chat-row.show-menu').forEach(el => {
+            el.classList.remove('show-menu');
+        });
+    }, 3000); // 3 sekunder
+}
+
+// Stoppar nedräkningen (när man hovrar)
+function stopChatMenuTimer() {
+    if (chatMenuTimer) clearTimeout(chatMenuTimer);
+}
+
+// Funktion för att öppna/stänga meny vid klick
+window.toggleMessageMenu = function(msgId, event) {
     if(event) event.stopPropagation();
 
     const row = document.querySelector(`.chat-row[data-message-id="${msgId}"]`);
     
-    // Om vi öppnar en ny, stäng alla andra först
+    // Om vi klickar på en ny rad, stäng alla andra först
     document.querySelectorAll('.chat-row.show-menu').forEach(el => {
         if(el !== row) el.classList.remove('show-menu');
     });
 
     if(row) {
-        // Toggla menyn
-        const isOpening = !row.classList.contains('show-menu');
-        row.classList.toggle('show-menu');
-
-        // PUNKT 5: Auto-stängning efter 4 sekunder om man inte gör något
-        if (isOpening) {
-            if (menuCloseTimer) clearTimeout(menuCloseTimer);
-            menuCloseTimer = setTimeout(() => {
-                row.classList.remove('show-menu');
-            }, 4000); // 4 sekunder
+        const wasOpen = row.classList.contains('show-menu');
+        
+        // Toggla klassen
+        if (wasOpen) {
+            row.classList.remove('show-menu');
+            stopChatMenuTimer();
+        } else {
+            row.classList.add('show-menu');
+            // Starta timer direkt när den öppnas
+            startChatMenuTimer(); 
         }
     }
 };
@@ -2510,26 +2530,37 @@ function renderChatBubble(data, container) {
     row.className = `chat-row ${senderType}`;
     row.dataset.messageId = messageId;
     
-    // Klick på mobil öppnar menyn
-    row.onclick = (e) => toggleMessageMenu(messageId, e);
-    // På desktop, pausa timern om man hovrar
-    row.onmouseenter = () => { if(menuCloseTimer) clearTimeout(menuCloseTimer); };
+    // --- NY LOGIK FÖR TIMER & KLICK ---
+    
+    // 1. Klick öppnar/stänger menyn (mobil + desktop)
+    row.onclick = (e) => window.toggleMessageMenu(messageId, e);
+    
+    // 2. Mus in: Stoppa timer (håll öppen)
+    row.onmouseenter = stopChatMenuTimer;
+    
+    // 3. Mus ut: Starta timer (stäng om 3 sek)
+    row.onmouseleave = startChatMenuTimer;
 
     // --- MODERN ACTION MENU ---
     const menu = document.createElement('div');
     menu.className = 'chat-action-menu';
+    
+    // Lägg till mouseenter/leave på själva menyn också för säkerhets skull
+    menu.onmouseenter = stopChatMenuTimer;
+    menu.onmouseleave = startChatMenuTimer;
+
     menu.innerHTML = `
-        <button class="action-emoji-btn" onclick="setReaction('${messageId}', '🕒', event)">🕒</button>
-        <button class="action-emoji-btn" onclick="setReaction('${messageId}', '✅', event)">✅</button>
-        <button class="action-emoji-btn" onclick="setReaction('${messageId}', '❌', event)">❌</button>
-        <button class="action-emoji-btn" onclick="setReaction('${messageId}', '⚠️', event)">⚠️</button>
+        <button class="action-emoji-btn" onmousedown="event.preventDefault()" onclick="window.setReaction('${messageId}', '🕒', event)">🕒</button>
+        <button class="action-emoji-btn" onmousedown="event.preventDefault()" onclick="window.setReaction('${messageId}', '✅', event)">✅</button>
+        <button class="action-emoji-btn" onmousedown="event.preventDefault()" onclick="window.setReaction('${messageId}', '❌', event)">❌</button>
+        <button class="action-emoji-btn" onmousedown="event.preventDefault()" onclick="window.setReaction('${messageId}', '⚠️', event)">⚠️</button>
         
         <div class="action-separator"></div>
         
-        <button class="action-icon-btn" title="Redigera" onclick="window.enterEditMode(this.closest('.chat-row'), '${data.text || ''}'); event.stopPropagation();">
+        <button class="action-icon-btn" title="Redigera" onmousedown="event.preventDefault()" onclick="window.enterEditMode(this.closest('.chat-row'), '${data.text || ''}'); event.stopPropagation();">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
         </button>
-        <button class="action-icon-btn danger" title="Ta bort" onclick="window.deleteChatMessage('${messageId}'); event.stopPropagation();">
+        <button class="action-icon-btn danger" title="Ta bort" onmousedown="event.preventDefault()" onclick="window.deleteChatMessage('${messageId}'); event.stopPropagation();">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
         </button>
     `;
@@ -2545,6 +2576,7 @@ function renderChatBubble(data, container) {
     if (data.text) {
         const textDiv = document.createElement('div');
         textDiv.className = 'bubble-text-content';
+        // Enkel länk-hantering
         textDiv.innerHTML = data.text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');
         bubble.appendChild(textDiv);
     }
@@ -2555,7 +2587,7 @@ function renderChatBubble(data, container) {
         const img = document.createElement('img');
         img.src = data.image;
         img.loading = "lazy";
-        img.onclick = (e) => { e.stopPropagation(); window.openImageZoom(data.image); };
+        img.onclick = (e) => { e.stopPropagation(); window.openImageZoom(data.image, messageId); }; // Skicka med ID för radering
         imgContainer.appendChild(img);
         bubble.appendChild(imgContainer);
     }
@@ -2565,7 +2597,11 @@ function renderChatBubble(data, container) {
         const reactionBadge = document.createElement('div');
         reactionBadge.className = 'reaction-badge-display';
         reactionBadge.textContent = data.reaction;
-        reactionBadge.onclick = (e) => window.setReaction(messageId, data.reaction, e); 
+        // Se till att klick på reaktionen inte bubblar upp konstigt
+        reactionBadge.onclick = (e) => { 
+            e.stopPropagation(); 
+            window.setReaction(messageId, data.reaction, e); 
+        }; 
         bubble.appendChild(reactionBadge);
     }
 
@@ -3935,10 +3971,17 @@ window.toggleMessageMenu = function(msgId, event) {
 
 // 2. Sätta eller ta bort en reaktion
 window.setReaction = async function(msgId, emoji, event) {
-    if(event) event.stopPropagation();
+    // VIKTIGT: Stoppa klicket från att nå raden (som skulle stänga menyn direkt)
+    if(event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
 
     const row = document.querySelector(`.chat-row[data-message-id="${msgId}"]`);
-    if(row) row.classList.remove('show-menu'); // Dölj menyn
+    
+    // Valfritt: Stäng menyn direkt när man valt en emoji för renare känsla
+    // Om du vill ha kvar menyn öppen, ta bort raden nedan:
+    if(row) row.classList.remove('show-menu'); 
 
     try {
         const docRef = db.collection('notes').doc(msgId);
@@ -3946,7 +3989,7 @@ window.setReaction = async function(msgId, emoji, event) {
         
         if (doc.exists) {
             const data = doc.data();
-            // Om samma emoji redan finns -> Ta bort den (toggle). Annars sätt ny.
+            // Toggle: Om samma emoji redan finns -> Ta bort den (null)
             const newReaction = (data.reaction === emoji) ? null : emoji;
             
             await docRef.update({
