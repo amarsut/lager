@@ -487,45 +487,106 @@ const ICONS = {
 
 // --- HJÄLPFUNKTION: Skapa Mobilkortet (KOMPLETT NY VERSION) ---
 function createJobCard(job) {
-    // 1. INJICERA STYLING DIREKT (Garanterar att det ser rätt ut oavsett CSS-fil)
-    if (!document.getElementById('temp-card-style')) {
+    // 1. INJICERA STYLING (V4 - Pixel Perfect Linjering)
+    if (!document.getElementById('temp-card-style-v4')) {
         const style = document.createElement('style');
-        style.id = 'temp-card-style';
+        style.id = 'temp-card-style-v4';
         style.innerHTML = `
-            /* Fix för kommentars-sektionen */
+            /* 1. Huvudkortets kropp (Referens) */
+            .card-body {
+                padding: 10px !important; /* Detta är standarden vi ska matcha */
+            }
+
+            /* 2. Kommentars-sektionen */
             .card-comments-section {
-                display: flex !important;        /* Lägg på rad */
-                flex-direction: row !important;  /* Vänster till höger */
-                align-items: flex-start !important; /* Justera mot toppen */
-                gap: 10px !important;            /* Mellanrum mellan ikon och text */
+                display: flex !important;
+                flex-direction: row !important;
+                align-items: flex-start !important;
                 
-                margin-top: 12px !important;
-                padding-top: 12px !important;
+                /* VIKTIGT: Matcha card-body padding exakt */
+                padding: 8px 10px 8px 10px !important; 
+                
+                gap: 6px !important; /* Samma gap som övre ikoner */
                 border-top: 1px dashed #e2e8f0 !important;
+                margin-top: 0 !important;
                 width: 100% !important;
+                box-sizing: border-box !important;
             }
             
-            /* Tvinga ikonen att vara stilla */
+            /* Ikonen i kommentarsfältet */
             .card-comments-section svg {
-                flex-shrink: 0 !important;       /* Får INTE krympa */
-                width: 18px !important;
-                height: 18px !important;
-                margin-top: 2px !important;      /* Finjustering så den linjerar med första textraden */
+                width: 16px !important;
+                height: 16px !important;
+                color: #94a3b8 !important;
+                flex-shrink: 0 !important;
+                margin-top: 3px !important; /* Justera mot textraden */
+            }
+
+            /* 3. Expanderad del (Behållaren) */
+            .card-expanded-details {
+                /* VIKTIGT: Matcha card-body padding exakt */
+                padding: 10px 10px 16px 10px !important; 
+                
+                border-top: 1px solid rgba(0,0,0,0.05) !important;
+                background-color: #fcfcfc !important; /* Svag nyansskillnad */
+                display: none;
+            }
+            
+            .job-card-new.expanded .card-expanded-details {
+                display: block !important;
+            }
+
+            /* 4. Rubriker i expansionen (Ekonomi-ikonen) */
+            .expand-label {
+                font-size: 0.7rem !important; 
+                font-weight: 700 !important; 
+                color: #94a3b8 !important; 
+                text-transform: uppercase !important; 
+                letter-spacing: 0.5px !important; 
+                margin-bottom: 8px !important;
+                
+                /* Flexbox för att linjera ikonen */
+                display: flex !important; 
+                align-items: center !important; 
+                gap: 6px !important; /* Samma gap som överallt annars */
+            }
+            
+            .expand-label svg {
+                width: 16px !important;
+                height: 16px !important;
                 color: #94a3b8 !important;
             }
 
-            /* Texten får ta all plats som blir över */
+            /* Textstilar */
             .comment-text {
-                flex: 1 !important;
                 font-size: 0.9rem !important;
                 line-height: 1.5 !important;
                 color: #334155 !important;
-                white-space: pre-wrap !important; /* Behåll radbrytningar */
-                word-break: break-word !important;
                 margin: 0 !important;
+                white-space: pre-wrap !important; 
+                word-break: break-word !important; 
             }
 
-            /* Dina tidigare status-färger (samma som förut) */
+            .comment-placeholder { color: #cbd5e1 !important; font-style: italic !important; }
+
+            /* Ekonomi-lista */
+            .expense-list-mini { list-style: none !important; padding: 0 !important; margin: 0 0 12px 0 !important; }
+            .expense-list-mini li { 
+                display: flex !important; justify-content: space-between !important; 
+                padding: 4px 0 !important; border-bottom: 1px dashed #e2e8f0 !important; 
+                font-size: 0.85rem !important; color: #64748b !important;
+            }
+            
+            /* Vinst-rad */
+            .profit-row-simple {
+                display: flex !important; justify-content: space-between !important; align-items: center !important;
+                padding-top: 10px !important;
+                font-size: 0.95rem !important; font-weight: 700 !important; color: #334155 !important;
+            }
+            .profit-val.win { color: #10B981 !important; }
+            .profit-val.loss { color: #EF4444 !important; }
+
+            /* Dina status-färger (oförändrade) */
             .bg-unplanned { background-color: #94a3b8 !important; color: white !important; border-bottom-color: #64748b !important; }
             .bg-unplanned .header-status-badge { background-color: rgba(255,255,255,0.25) !important; color: white !important; }
             .bg-unplanned .header-reg-clickable { color: white !important; }
@@ -556,7 +617,7 @@ function createJobCard(job) {
         else if (d < now) { headerClass = 'bg-overdue'; }
     }
 
-    // 4. Ikoner & Märke
+    // 4. Ikoner
     const combinedText = (job.kommentar + " " + job.paket + " " + job.kundnamn + " " + (job.bilmodell || "")).toLowerCase();
     const brandUrl = typeof getBrandIconUrl === 'function' ? getBrandIconUrl(combinedText, job.regnr) : null;
     const iconStyle = 'width:16px; height:16px; margin-right:6px; display:block;';
@@ -581,13 +642,13 @@ function createJobCard(job) {
     const iTag = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>`;
     const iBox = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>`;
     const iGauge = `<svg viewBox="0 0 1024 1024" fill="currentColor" stroke="none" width="24" height="24"><path d="M512 896a384 384 0 1 0 0-768 384 384 0 0 0 0 768zm0 64a448 448 0 1 1 0-896 448 448 0 0 1 0 896z"></path><path d="M192 512a320 320 0 1 1 640 0 32 32 0 1 1-64 0 256 256 0 1 0-512 0 32 32 0 0 1-64 0z"></path><path d="M570.432 627.84A96 96 0 1 1 509.568 608l60.992-187.776A32 32 0 1 1 631.424 440l-60.992 187.776zM502.08 734.464a32 32 0 1 0 19.84-60.928 32 32 0 0 0-19.84 60.928z"></path></svg>`;    
-    const iComment = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`;
-    const iInfoSmall = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:12px; height:12px; margin-left:4px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`;
+    const iCommentSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`;
 
     const nameValueHtml = isCorporate 
         ? `<span class="company-icon-wrapper">${iBriefcaseGreen}</span><span>${customer}</span>` 
         : `<span>${customer}</span>`;
 
+    // 6. Kommentar
     let commentHtml = '';
     if (job.kommentar && job.kommentar.length > 0) {
         commentHtml = `<span class="comment-text">${job.kommentar}</span>`;
@@ -595,7 +656,7 @@ function createJobCard(job) {
         commentHtml = `<span class="comment-text comment-placeholder">Inga kommentarer.</span>`;
     }
 
-    // 7. RÄKNA UT EKONOMI
+    // 7. Ekonomi
     const pris = parseInt(job.kundpris) || 0;
     let totalUtgift = 0;
     let expenseRows = '';
@@ -647,10 +708,10 @@ function createJobCard(job) {
                 <div class="info-row"><span class="row-label" title="Mätarställning">${iGauge} Mätarst.</span><span class="row-value">${mileage}</span></div>
                 <div class="info-row"><span class="row-label">${iCal} Datum</span><span class="row-value">${dateStr}</span></div>
                 <div class="info-row"><span class="row-label">${iClock} Tid</span><span class="row-value">${timeStr}</span></div>
-                <div class="info-row price-row"><span class="row-label">${iTag} Att betala</span><span class="row-value">${pris}:-</span></div>
+                <div class="info-row price-row"><span class="row-label">${iTag} Att betala</span><span class="row-value">${pris}</span></div>
             </div>
 
-            <div class="card-comments-section">${iComment}${commentHtml}</div>
+            <div class="card-comments-section">${iCommentSvg}${commentHtml}</div>
 
             <div class="card-actions-expand" id="actions-${job.id}" onclick="event.stopPropagation()">
                 <button class="inline-action-btn success" title="Markera som Klar" onclick="setStatus('${job.id}', 'klar')">
