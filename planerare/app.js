@@ -725,6 +725,10 @@ function createJobCard(job) {
                 </button>
             </div>
 
+			<div class="card-expand-chevron">
+			    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+			</div>
+
             <div class="card-expanded-details" id="details-${job.id}" onclick="event.stopPropagation()">
                 <div class="expand-section">
                     <div class="expand-label">${iTag} EKONOMI SPECIFIKATION</div>
