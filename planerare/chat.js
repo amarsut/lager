@@ -41,6 +41,18 @@ window.initChat = function() {
     const cameraBtn = document.getElementById('chatCameraBtn'); 
     const fileInputGallery = document.getElementById('chatFileInputGallery');
     const fileInputCamera = document.getElementById('chatFileInputCamera');
+    const galleryBtn = document.getElementById('toggleGalleryBtn');
+if (galleryBtn) {
+    galleryBtn.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation(); // Hindrar klicket från att "bubbla" och stänga chatten
+        openChatGallery();
+    };
+}
+    const closeGalleryBtn = document.getElementById('closeGalleryBtn');
+
+    if (galleryBtn) galleryBtn.onclick = openChatGallery;
+    if (closeGalleryBtn) closeGalleryBtn.onclick = closeChatGallery;
 
     if (closeBtn) closeBtn.onclick = window.toggleChatWidget;
     if (closeEditBtn) closeEditBtn.onclick = exitEditMode;
@@ -75,6 +87,58 @@ window.initChat = function() {
             }
         }
     };
+
+    // --- SÖKFUNKTIONALITET MED HIGHLIGHT ---
+    const chatSearchInput = document.getElementById('chatSearchInput');
+    const clearSearchBtn = document.getElementById('clearChatSearch');
+
+    if (chatSearchInput) {
+        chatSearchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.trim();
+            const lowerSearchTerm = searchTerm.toLowerCase();
+            const messages = document.querySelectorAll('#chatMessages .chat-row');
+            
+            if (clearSearchBtn) {
+                clearSearchBtn.style.display = searchTerm ? 'block' : 'none';
+            }
+
+            messages.forEach(row => {
+                const textElement = row.querySelector('.bubble-text-content');
+                if (!textElement) {
+                    // Hantera bildmeddelanden: dölj om vi söker
+                    row.style.display = searchTerm ? 'none' : 'flex';
+                    return;
+                }
+
+                // Hämta den råa texten (utan gammal highlight-HTML)
+                // Vi använder dataset för att lagra originaltexten så vi inte tappar data
+                if (!textElement.dataset.originalText) {
+                    textElement.dataset.originalText = textElement.innerText;
+                }
+                const originalText = textElement.dataset.originalText;
+
+                if (searchTerm === "") {
+                    row.style.display = 'flex';
+                    textElement.innerHTML = originalText; // Återställ original
+                } else if (originalText.toLowerCase().includes(lowerSearchTerm)) {
+                    row.style.display = 'flex';
+                    
+                    // Skapa en regex för att hitta sökordet (case-insensitive)
+                    const regex = new RegExp(`(${searchTerm})`, 'gi');
+                    
+                    // Ersätt texten med highlight-versionen
+                    textElement.innerHTML = originalText.replace(regex, '<span class="search-highlight">$1</span>');
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            
+            // Dölj datumavskiljare vid sökning
+            document.querySelectorAll('.chat-date-separator').forEach(sep => {
+                sep.style.display = searchTerm ? 'none' : 'flex';
+            });
+        });
+    }
 
     if (sendBtn) sendBtn.onclick = handleChatAction;
     if (chatInput) {
@@ -198,11 +262,21 @@ window.setReaction = async function(msgId, emoji, event) {
     } catch (error) { console.error(error); }
 };
 
-window.handleEditClick = function(msgId, text, event) {
-    if(event) { event.stopPropagation(); event.preventDefault(); }
+window.handleEditClick = function(msgId, event) {
+    if(event) { 
+        event.stopPropagation(); 
+        event.preventDefault(); 
+    }
+    
     const row = document.querySelector(`.chat-row[data-message-id="${msgId}"]`);
-    if(row) row.classList.remove('show-menu');
-    enterEditMode(row, text);
+    
+    if(row) {
+        row.classList.remove('show-menu');
+        const textElement = row.querySelector('.bubble-text-content');
+        const text = textElement ? textElement.innerText : "";
+        
+        enterEditMode(row, text);
+    }
 };
 
 window.deleteChatMessage = async function(messageId) {
@@ -241,7 +315,7 @@ function renderChatBubble(data, container) {
         <button class="action-emoji-btn" onclick="window.setReaction('${messageId}', '❌', event)">❌</button>
         <button class="action-emoji-btn" onclick="window.setReaction('${messageId}', '⚠️', event)">⚠️</button>
         <div class="action-separator"></div>
-        <button class="action-icon-btn" title="Redigera" onclick="window.handleEditClick('${messageId}', '${data.text || ''}', event)">
+        <button class="action-icon-btn" title="Redigera" onclick="window.handleEditClick('${messageId}', event)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
         </button>
         <button class="action-icon-btn danger" title="Ta bort" onclick="window.deleteChatMessage('${messageId}'); event.stopPropagation();">
@@ -443,3 +517,43 @@ window.openImageZoom = function(src, docId) {
         }
     }
 };
+
+// Öppna galleriet
+function openChatGallery() {
+    const galleryModal = document.getElementById('chatGalleryModal');
+    const galleryContent = document.getElementById('chatGalleryContent');
+    if (!galleryModal || !galleryContent) return;
+
+    galleryContent.innerHTML = ''; // Rensa gamla bilder
+    
+    // Hitta alla bild-rader som just nu finns i DOM:en
+    const imageElements = document.querySelectorAll('.chat-bubble-image img');
+    
+    if (imageElements.length === 0) {
+        galleryContent.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:40px; color:#8e8e93;">Inga bilder i chatten.</div>';
+    } else {
+        imageElements.forEach(img => {
+            const div = document.createElement('div');
+            div.className = 'gallery-item';
+            // Vi klonar bilden för att behålla src och docId
+            const clone = document.createElement('img');
+            clone.src = img.src;
+            
+            div.onclick = () => {
+                // Använd din befintliga zoom-funktion!
+                window.openImageZoom(img.src, img.closest('.chat-row')?.dataset.messageId);
+            };
+            
+            div.appendChild(clone);
+            galleryContent.appendChild(div);
+        });
+    }
+
+    galleryModal.style.display = 'flex';
+}
+
+// Stäng galleriet
+function closeChatGallery() {
+    const galleryModal = document.getElementById('chatGalleryModal');
+    if (galleryModal) galleryModal.style.display = 'none';
+}
