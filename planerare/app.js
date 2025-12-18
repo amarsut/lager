@@ -487,12 +487,12 @@ const ICONS = {
 
 // --- HJÄLPFUNKTION: Skapa Mobilkortet (KOMPLETT NY VERSION) ---
 function createJobCard(job) {
-    // 1. INJICERA STYLING (V6 - Fix för 2 rader text)
-    if (!document.getElementById('temp-card-style-v6')) {
+    // 1. INJICERA STYLING (V7 - Kursiv text)
+    if (!document.getElementById('temp-card-style-v7')) {
         const style = document.createElement('style');
-        style.id = 'temp-card-style-v6';
+        style.id = 'temp-card-style-v7';
         style.innerHTML = `
-            /* 1. Standard padding för alla delar */
+            /* 1. Standard padding */
             .card-body, .card-comments-section, .card-expanded-details {
                 padding: 10px !important;
             }
@@ -517,14 +517,17 @@ function createJobCard(job) {
                 margin-top: 3px !important; 
             }
 
-            /* 3. TEXT-BEGRÄNSNING (Detta fixar 2 rader) */
+            /* 3. TEXT-STIL (Nu med kursiv stil) */
             .comment-text {
                 font-size: 0.9rem !important;
                 line-height: 1.5 !important;
-                color: #334155 !important;
+                color: #334155 !important; /* Mörkgrå */
                 margin: 0 !important;
                 
-                /* Magin för att klippa efter 2 rader */
+                /* HÄR ÄR ÄNDRINGEN: Kursiv stil */
+                font-style: italic !important;
+                
+                /* Klipp efter 2 rader */
                 display: -webkit-box !important;
                 -webkit-line-clamp: 2 !important;
                 -webkit-box-orient: vertical !important;
@@ -535,9 +538,9 @@ function createJobCard(job) {
                 word-break: break-word !important; 
             }
 
-            /* 4. EXPANDERAT LÄGE: Visa all text */
+            /* 4. EXPANDERAT LÄGE */
             .job-card-new.expanded .comment-text {
-                -webkit-line-clamp: unset !important; /* Ta bort gränsen */
+                -webkit-line-clamp: unset !important; 
                 overflow: visible !important;
                 display: block !important;
             }
