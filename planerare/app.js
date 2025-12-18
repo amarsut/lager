@@ -3609,8 +3609,6 @@ function applyZoom(value) {
    VIEW MODAL (LÄSLÄGE)
    ========================================== */
 
-let currentViewingJob = null;
-
 function openViewModal(jobId) {
     // 1. Hitta jobbet i listan
     const job = allJobs.find(j => j.id === jobId);
