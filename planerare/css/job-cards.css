@@ -294,209 +294,73 @@
 
 /********* JOBB MODAL/ÖVERSIKT *********/
 
-/* ============================================================
-   VIEW MODAL - KOMPAKT & FOKUS PÅ INNEHÅLL
-   ============================================================ */
+/* --- EXPANDERBARA KORT --- */
 
-/* 1. Bakgrund & Position */
-.view-modal-overlay {
-    position: fixed !important; top: 0; left: 0; right: 0; bottom: 0;
-    background-color: rgba(0, 0, 0, 0.65) !important;
-    backdrop-filter: blur(4px);
-    z-index: 2147483647 !important;
-    display: none; /* JS ändrar till flex */
-    justify-content: center; align-items: flex-end; /* Botten på mobil */
+/* Den dolda delen (stängd som standard) */
+.card-expanded-details {
+    display: none;
+    padding: 0 16px 16px 16px;
+    border-top: 1px solid rgba(0,0,0,0.05);
+    margin-top: 10px;
+    animation: expandFade 0.2s ease-out;
 }
 
-/* 2. Kortet */
-.view-modal-card {
-    background: #fff !important;
-    width: 100% !important; max-width: 500px !important; /* Lite smalare för kompakt känsla */
-    border-radius: 16px 16px 0 0 !important;
-    box-shadow: 0 -10px 30px rgba(0,0,0,0.3) !important;
-    display: flex !important; flex-direction: column !important;
-    max-height: 85vh !important;
-    animation: slideUp 0.25s ease-out;
+/* När kortet har klassen 'expanded', visa detaljerna */
+.job-card-new.expanded .card-expanded-details {
+    display: block;
 }
 
-@keyframes slideUp { from {transform: translateY(100%);} to {transform: translateY(0);} }
-
-/* 3. Kompakt Header */
-.compact-header {
-    padding: 12px 20px !important;
-    border-bottom: 1px solid #eee;
-    display: flex; justify-content: space-between; align-items: center;
-    background: #fff;
-}
-.view-header-left h2 { margin: 0; font-size: 1.25rem; font-weight: 800; color: #111; }
-.header-subtext { font-size: 0.85rem; color: #666; font-weight: 500; display: block; margin-top: 2px;}
-.close-view-btn {
-    background: #f1f1f1; border: none; width: 30px; height: 30px; border-radius: 50%;
-    font-size: 14px; color: #555; cursor: pointer;
+/* Animation för mjuk känsla */
+@keyframes expandFade {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-/* 4. Body (Mindre padding) */
-.compact-body {
-    padding: 0 !important;
-    overflow-y: auto;
-    flex: 1;
+/* Sektioner inuti expansionen */
+.expand-section { margin-top: 16px; }
+
+.expand-label {
+    font-size: 0.7rem; font-weight: 700; color: #94a3b8; 
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;
+    display: flex; align-items: center; gap: 6px;
 }
 
-/* 5. Info Strip (Datum & Kund på en rad) */
-.info-strip {
+/* Beskrivningstext */
+.expand-text {
+    font-size: 0.95rem; color: #334155; line-height: 1.5;
+    background: #f8fafc; padding: 10px; border-radius: 8px;
+    white-space: pre-wrap; /* Behåll radbrytningar */
+}
+
+/* Ekonomi-listan */
+.expense-list-mini {
+    list-style: none; padding: 0; margin: 0;
+    font-size: 0.85rem; color: #64748b;
+}
+.expense-list-mini li {
     display: flex; justify-content: space-between;
-    padding: 12px 20px;
-    background: #f9fafb;
-    border-bottom: 1px solid #eee;
+    padding: 4px 0; border-bottom: 1px dashed #e2e8f0;
 }
-.info-item {
-    display: flex; align-items: center; gap: 6px;
-    font-size: 0.9rem; font-weight: 500; color: #374151;
-}
-.info-item .icon { font-size: 1rem; opacity: 0.7; }
-.time-pill { 
-    background: #e5e7eb; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; 
-}
-.phone-link { text-decoration: none; font-size: 1.1rem; margin-left: 4px; }
+.expense-list-mini li:last-child { border-bottom: none; }
 
-/* 6. HUVUDNUMRET: Beskrivning */
-.view-section label {
-    display: block; font-size: 0.7rem; font-weight: 700; color: #9ca3af; 
-    margin-bottom: 8px; letter-spacing: 0.5px;
-}
-.description-text {
-    font-size: 1.05rem; /* Lite större text här */
-    line-height: 1.5;
-    color: #111;
-    white-space: pre-wrap; /* Behåller radbrytningar */
-    margin: 0;
-}
-
-/* 7. Intern Box (Kompakt) */
-.internal-box {
-    margin: 0 20px 20px 20px;
-    padding: 10px 12px;
-    background: #fffbeb; border: 1px solid #fef3c7; border-radius: 8px;
-}
-.internal-text { font-style: italic; font-size: 0.9rem; color: #92400e; margin: 0; }
-
-/* 8. Ekonomi-Strip (Längst ner, liten) */
-.finance-strip {
+/* Vinst-raden (Highlight) */
+.profit-highlight {
     display: flex; justify-content: space-between; align-items: center;
-    padding: 10px 20px;
-    background: #f8fafc;
-    border-top: 1px solid #f1f5f9;
-    margin-top: auto; /* Tryck ner mot botten om det finns plats */
+    background: #f0fdf4; /* Ljusgrön bakgrund */
+    padding: 10px 12px; border-radius: 8px; margin-top: 10px;
+    font-weight: 700; color: #166534; border: 1px solid #bbf7d0;
 }
-.fin-col { display: flex; align-items: center; gap: 6px; }
-.fin-col .lbl { font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; font-weight: 600; }
-.fin-col .val { font-size: 0.9rem; font-weight: 600; color: #475569; }
-.fin-col .val.profit { color: #10b981; }
-.fin-sep { width: 1px; height: 16px; background: #e2e8f0; }
-
-/* 9. Footer */
-.compact-actions {
-    padding: 12px 20px;
-    background: #fff; border-top: 1px solid #eee;
-    display: flex; gap: 10px;
-    padding-bottom: max(12px, env(safe-area-inset-bottom));
-}
-.action-btn {
-    flex: 1; padding: 12px; border-radius: 8px; border: none; 
-    font-weight: 600; font-size: 0.95rem; cursor: pointer;
-}
-.action-btn.secondary { background: #f3f4f6; color: #333; }
-.action-btn.primary { background: #0066FF; color: #fff; }
-
-/* Desktop Adjustment */
-@media (min-width: 768px) {
-    .view-modal-overlay { align-items: center; }
-    .view-modal-card { border-radius: 16px !important; }
+.profit-highlight.loss {
+    background: #fef2f2; color: #991b1b; border: 1px solid #fecaca;
 }
 
-/* Styling för SVG ikoner */
-.info-item .icon svg {
-    width: 18px; 
-    height: 18px; 
-    color: #0066FF; /* Samsung Blue för ikonerna */
-    opacity: 1; /* Full styrka */
+/* Action-knappar i botten av expansionen */
+.expand-actions {
+    display: flex; gap: 10px; margin-top: 20px;
 }
-
-/* Tids-pillret med ikon */
-.time-pill {
-    display: flex; align-items: center; gap: 4px;
-    background: #e5e7eb; 
-    padding: 3px 8px; 
-    border-radius: 6px; 
-    font-size: 0.8rem; 
-    font-weight: 700;
-    color: #374151;
+.btn-expand {
+    flex: 1; padding: 12px; border-radius: 8px; border: none;
+    font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
 }
-
-/* Kopiera-knapp bredvid regnr */
-.icon-copy-btn {
-    background: none; border: none; padding: 4px;
-    color: #9ca3af; cursor: pointer; display: flex;
-    transition: color 0.2s;
-}
-.icon-copy-btn:hover { color: #0066FF; }
-.icon-copy-btn:active { transform: scale(0.95); }
-
-/* Rubrik-ikoner (Beskrivning) */
-.view-section label {
-    display: flex; align-items: center;
-}
-
-/* ==========================================
-   PRO NOTE DESIGN (Kompakt & Snyggt)
-   ========================================== */
-
-/* Ta bort onödig padding runt sektionen */
-.view-section.main-focus {
-    padding: 12px 20px; /* Mindre luft än förut */
-}
-
-/* Själva "Lappen" */
-.pro-note-container {
-    background-color: #f8fafc; /* Mycket ljus gråblå ton */
-    border-radius: 8px;
-    border-left: 4px solid #0066FF; /* Din accentfärg - ger "officiell" känsla */
-    overflow: hidden;
-}
-
-/* Rubrikraden inuti lappen */
-.pro-note-header {
-    display: flex; align-items: center; gap: 6px;
-    padding: 8px 12px 4px 12px; /* Kompakt topp */
-}
-.pro-note-header span {
-    font-size: 0.7rem; 
-    font-weight: 700; 
-    color: #64748b; /* Mörkgrå text */
-    letter-spacing: 0.5px;
-}
-.pro-note-header svg {
-    color: #0066FF; /* Blå ikon */
-    opacity: 0.8;
-}
-
-/* Textkroppen */
-.pro-note-body {
-    padding: 0 12px 10px 12px; /* Luft i botten */
-}
-
-.description-text {
-    margin: 0;
-    font-size: 0.95rem; /* Något mindre än förut för att spara plats */
-    line-height: 1.45;  /* Tightare radavstånd */
-    color: #1e293b;     /* Mörkblå/Svart för bra läsbarhet */
-    white-space: pre-wrap; /* Behåll radbrytningar från input */
-    
-    /* Scrolla om texten är jättelång (förhindrar att modalen växer för mycket) */
-    max-height: 200px; 
-    overflow-y: auto;
-}
-
-/* Snygg scrollbar för beskrivningen (Chrome/Safari/Edge) */
-.description-text::-webkit-scrollbar { width: 4px; }
-.description-text::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+.btn-edit-big { background: #0066FF; color: white; }
+.btn-close-expand { background: #f1f5f9; color: #475569; }
