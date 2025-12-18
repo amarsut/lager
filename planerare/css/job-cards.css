@@ -291,3 +291,80 @@
 
 
 } /* <--- HÄR stängs nu media queryn korrekt för hela filen */
+
+/********* JOBB MODAL/ÖVERSIKT *********/
+
+/* --- VIEW MODAL UPDATES --- */
+
+/* Text & Layout Helpers */
+.icon-label {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 0.7rem; font-weight: 700; color: #9CA3AF; 
+    letter-spacing: 0.5px; text-transform: uppercase;
+    margin-bottom: 4px;
+}
+.icon-label svg { width: 14px; height: 14px; opacity: 0.8; }
+.icon-label.muted { color: #64748B; }
+.icon-label.warning { color: #D97706; } /* Orange för interna noter */
+
+.text-muted { color: #9CA3AF; font-weight: 400; font-size: 0.9em; margin-left: 6px; }
+.text-bold { font-weight: 600; color: #1F2937; font-size: 1.1rem; }
+.italic { font-style: italic; color: #4B5563; }
+
+/* Grid System för Datum/Tid/Bil */
+.view-grid-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* 2 kolumner */
+    gap: 16px;
+    margin-bottom: 8px;
+}
+.view-item.full-width { grid-column: span 2; } /* Bilen tar hela bredden */
+
+.view-value { font-size: 1rem; font-weight: 600; color: #111827; }
+.view-value-large { font-size: 1.2rem; font-weight: 700; color: #111827; }
+
+/* Kund-raden */
+.view-row-spread {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 4px;
+}
+.phone-chip {
+    display: flex; align-items: center; gap: 6px;
+    background: #EFF6FF; color: #0066FF;
+    padding: 6px 12px; border-radius: 20px;
+    text-decoration: none; font-weight: 600; font-size: 0.9rem;
+    transition: background 0.2s;
+}
+.phone-chip:hover { background: #DBEAFE; }
+
+/* EKONOMI-BOXEN (Viktig!) */
+.finance-box {
+    display: flex;
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    padding: 12px 0;
+    margin: 10px 0;
+}
+.finance-item {
+    flex: 1;
+    text-align: center;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.finance-divider {
+    width: 1px; background: #E2E8F0; height: 30px; align-self: center;
+}
+.finance-val { font-size: 1rem; font-weight: 700; color: #334155; margin-top: 2px; }
+.finance-val.profit { color: #10B981; font-size: 1.1rem; } /* Grön vinst */
+
+/* Interna noteringar box */
+.internal-box {
+    background: #FFFBEB; /* Ljusgul bakgrund */
+    border: 1px solid #FEF3C7;
+    border-radius: 8px;
+    padding: 12px;
+    margin-top: 16px;
+}
+
+/* Divider justering */
+.view-divider { border-top: 1px solid #F1F5F9; margin: 16px 0; }
