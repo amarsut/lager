@@ -2491,7 +2491,7 @@ function stopChatMenuTimer() {
 
 // Funktion för att öppna/stänga meny vid klick
 window.toggleMessageMenu = function(msgId, event) {
-    // Stoppa klicket från att bubbla upp
+    // Stoppa klicket från att bubbla upp till dokumentet
     if(event) {
         event.stopPropagation();
         event.preventDefault(); 
@@ -2510,7 +2510,7 @@ window.toggleMessageMenu = function(msgId, event) {
     
     if (isOpening) {
         row.classList.add('show-menu');
-        startMenuTimer(); // Starta nedräkning direkt
+        startMenuTimer(); // Starta nedräkning direkt när den öppnas
     } else {
         row.classList.remove('show-menu');
         stopMenuTimer();
@@ -2519,7 +2519,7 @@ window.toggleMessageMenu = function(msgId, event) {
 
 // Starta nedräkning (Stänger ALLA menyer om 4 sekunder)
 function startMenuTimer() {
-    stopMenuTimer(); // Rensa gammal
+    stopMenuTimer(); // Rensa gammal så vi inte får dubbla timers
     chatMenuTimer = setTimeout(() => {
         document.querySelectorAll('.chat-row.show-menu').forEach(el => {
             el.classList.remove('show-menu');
@@ -2532,13 +2532,29 @@ function stopMenuTimer() {
     if (chatMenuTimer) clearTimeout(chatMenuTimer);
 }
 
+window.handleEditClick = function(msgId, text, event) {
+    if(event) {
+        event.stopPropagation(); // Stoppa klicket från att stänga menyn direkt
+        event.preventDefault();
+    }
+    
+    // Hitta raden manuellt via ID
+    const row = document.querySelector(`.chat-row[data-message-id="${msgId}"]`);
+    
+    // Stäng menyn snyggt
+    if(row) row.classList.remove('show-menu');
+    
+    // Starta redigering
+    window.enterEditMode(row, text);
+};
+
 // Uppdaterad renderChatBubble (Punkt 3: Snyggare struktur)
 function renderChatBubble(data, container) {
     const messageId = data.id; 
 
     const row = document.createElement('div');
     
-    // Bestäm klass baserat på plattform (me/other/system)
+    // Bestäm klass baserat på plattform
     let senderType = 'other';
     if (data.platform === 'system') senderType = 'system';
     else senderType = (data.platform === 'mobil' || data.platform === 'dator') ? 'me' : 'other';
@@ -2553,7 +2569,6 @@ function renderChatBubble(data, container) {
     row.onmouseleave = startMenuTimer;
     
     // Klick på bubblan öppnar menyn
-    // Använd onclick direkt på raden
     row.onclick = (e) => window.toggleMessageMenu(messageId, e);
 
     // --- MENY HTML ---
@@ -2564,8 +2579,7 @@ function renderChatBubble(data, container) {
     menu.onmouseenter = stopMenuTimer;
     menu.onmouseleave = startMenuTimer;
 
-    // Notera: Jag tog bort 'onmousedown' på knapparna för att undvika konflikter.
-    // stopPropagation() i funktionerna räcker.
+    // Här använder vi våra nya funktioner direkt i HTML-strängen
     menu.innerHTML = `
         <button class="action-emoji-btn" onclick="window.setReaction('${messageId}', '🕒', event)">🕒</button>
         <button class="action-emoji-btn" onclick="window.setReaction('${messageId}', '✅', event)">✅</button>
@@ -4001,11 +4015,11 @@ window.toggleMessageMenu = function(msgId, event) {
 
 // 2. Sätta eller ta bort en reaktion
 window.setReaction = async function(msgId, emoji, event) {
-    // VIKTIGT: Endast stopPropagation här. 
-    // preventDefault hindrade klicket från att registreras på vissa enheter.
-    if(event) event.stopPropagation();
+    if(event) {
+        event.stopPropagation(); // Hindra klicket från att nå raden (som stänger menyn)
+        event.preventDefault();
+    }
 
-    // Hitta raden för visuell feedback
     const row = document.querySelector(`.chat-row[data-message-id="${msgId}"]`);
     
     // (Valfritt) Stäng menyn direkt när man valt en emoji
@@ -4017,7 +4031,7 @@ window.setReaction = async function(msgId, emoji, event) {
         
         if (doc.exists) {
             const data = doc.data();
-            // Toggle-logik: Om samma emoji redan finns -> Ta bort den (null). Annars sätt ny.
+            // Toggle: Om samma emoji redan finns -> Ta bort den (null). Annars sätt ny.
             const newReaction = (data.reaction === emoji) ? null : emoji;
             
             await docRef.update({
