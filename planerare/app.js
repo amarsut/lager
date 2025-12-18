@@ -739,6 +739,9 @@ function createJobCard(job) {
                         <span>VINST</span>
                         <span class="profit-val ${winOrLoss}">${vinstTecken}${vinst}:-</span>
                     </div>
+					<div style="width:100%; height:6px; background:#e2e8f0; border-radius:3px; margin-top:8px; overflow:hidden;">
+					    <div style="width:${Math.max(0, Math.min(100, (vinst/pris)*100))}%; height:100%; background:${vinst >= 0 ? '#10B981' : '#EF4444'};"></div>
+					</div>
                 </div>
 
                 <div class="expand-actions">
