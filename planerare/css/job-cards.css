@@ -170,40 +170,44 @@
     }
 
     /* --- 5. KOMMENTARER & ACTIONS --- */
-    .card-comments-section {
-       display: flex;              /* Lägger ikon och text på rad */
-       align-items: flex-start;    /* Låser mot toppen */
-       gap: 12px;                  /* Luft mellan ikon och text */
+    /* --- PERFEKT LINJERAD KOMMENTAR --- */
+
+   .card-comments-section {
+       display: flex;
+       flex-direction: row;
+       align-items: flex-start; /* Låser mot toppen */
        
-       margin-top: 10px;
+       /* Matcha paddingen som card-body har (oftast 10px) */
+       padding: 10px; 
+       
+       /* Samma avstånd som mellan ikon och text på raderna ovanför (Namn, Datum etc) */
+       gap: 6px; 
+       
        border-top: 1px dashed #e2e8f0;
-       
-       /* HÄR JUSTERAR VI POSITIIONEN: */
-       padding-top: 12px;
-       padding-bottom: 5px;
-       padding-left: 15px;  /* Flyttar in allt från vänster kant */
-       padding-right: 15px; /* Flyttar in allt från höger kant */
+       margin-top: 0; /* Vi använder padding istället för margin */
+       width: 100%;
+       box-sizing: border-box;
    }
    
-   /* Din fix för ikonen */
+   /* Justera ikonen */
    .card-comments-section svg {
        width: 16px;
        height: 16px;
        color: #94a3b8;
-       flex-shrink: 0;      /* Förhindrar att ikonen trycks ihop */
+       flex-shrink: 0; /* Förhindra att den kläms ihop */
        
-       /* VIKTIGT: Tryck ner ikonen så den matchar textens första rad */
+       /* Denna lilla knuff nedåt gör att ikonen linjerar med textens första rad */
        margin-top: 3px; 
    }
    
-   /* Styla texten snyggt */
+   /* Texten */
    .comment-text {
        font-size: 0.9rem;
        line-height: 1.5;
        color: #334155;
        margin: 0;
-       white-space: pre-wrap; /* Behåller radbrytningar */
-       word-break: break-word; 
+       white-space: pre-wrap; 
+       word-break: break-word;
    }
    
    /* Dölj ev. tomma element */
