@@ -173,21 +173,16 @@
     /* --- PERFEKT LINJERAD KOMMENTAR --- */
 
    .card-comments-section {
-       display: flex;
-       flex-direction: row;
-       align-items: flex-start; /* Låser mot toppen */
-       
-       /* Matcha paddingen som card-body har (oftast 10px) */
-       padding: 10px; 
-       
-       /* Samma avstånd som mellan ikon och text på raderna ovanför (Namn, Datum etc) */
-       gap: 6px; 
-       
-       border-top: 1px dashed #e2e8f0;
-       margin-top: 0; /* Vi använder padding istället för margin */
-       width: 100%;
-       box-sizing: border-box;
-   }
+        display: flex;
+        flex-direction: row;
+        align-items: flex-start;
+        padding: 8px 10px; /* Reduced from 10px to tighten space */
+        gap: 6px;
+        border-top: 1px dashed #e2e8f0;
+        margin-top: 0;
+        width: 100%;
+        box-sizing: border-box;
+    }
    
    /* Justera ikonen */
    .card-comments-section svg {
@@ -342,12 +337,12 @@
    /* --- EXPANDERBARA KORT --- */
    /* Den dolda delen (stängd som standard) */
    .card-expanded-details {
-       display: none;
-       padding: 0 16px 16px 16px;
-       border-top: 1px solid rgba(0,0,0,0.05);
-       margin-top: 10px;
-       animation: expandFade 0.2s ease-out;
-   }
+        display: none;
+        padding: 0 10px 12px 10px; /* Reduced side/bottom padding */
+        border-top: 1px solid rgba(0,0,0,0.05);
+        /* margin-top: 10px; <--- REMOVE THIS LINE to close the gap above the line */
+        animation: expandFade 0.2s ease-out;
+    }
    
    /* När kortet har klassen 'expanded', visa detaljerna */
    .job-card-new.expanded .card-expanded-details {
@@ -361,13 +356,21 @@
    }
    
    /* Sektioner inuti expansionen */
-   .expand-section { margin-top: 16px; }
+   .expand-section { 
+        margin-top: 8px; /* Reduced from 16px to close gap below the line */
+    }
    
-   .expand-label {
-       font-size: 0.7rem; font-weight: 700; color: #94a3b8; 
-       text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;
-       display: flex; align-items: center; gap: 6px;
-   }
+    .expand-label {
+        font-size: 0.65rem; /* Slightly smaller for a cleaner look */
+        font-weight: 700; 
+        color: #94a3b8; 
+        text-transform: uppercase; 
+        letter-spacing: 0.5px; 
+        margin-bottom: 4px; /* Tightened */
+        display: flex; 
+        align-items: center; 
+        gap: 6px;
+    }
    
    /* Beskrivningstext */
    .expand-text {
