@@ -2470,9 +2470,6 @@ window.deleteChatMessage = deleteChatMessage;
 window.setReaction = setReaction;
 window.toggleMessageMenu = toggleMessageMenu;
 
-// --- PUNKT 5: Timer-variabel ---
-let menuCloseTimer = null;
-
 // --- FÖRBÄTTRAD MENY-LOGIK FÖR CHATT ---
 let chatMenuTimer = null;
 
