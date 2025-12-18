@@ -19,7 +19,6 @@ window.openBrandSelector = openBrandSelector;
 window.saveTechSpec = saveTechSpec;
 window.filterVehicleHistory = filterVehicleHistory;
 window.openEditModal = openEditModal; 
-window.openViewModal = openViewModal;   // <--- LÄGG TILL DENNA
 window.closeViewModal = closeViewModal; // <--- OCH DENNA
 // Slut på kalender
 
@@ -3606,23 +3605,23 @@ function applyZoom(value) {
 }
 
 /* ==========================================
-   VIEW MODAL (OFFENTLIG & SÄKER VERSION)
+   VIEW MODAL (LÄSLÄGE - SÄKER VERSION)
    ========================================== */
 
-// VIKTIGT: Vi sätter 'window.' först. Nu KAN INTE webbläsaren missa den!
+// VIKTIGT: Vi definierar den direkt på window. 
+// Då behöver du INTE ha någon rad i toppen av filen.
 window.openViewModal = function(jobId) {
-    console.log("Klick registrerat på jobb ID:", jobId); // Denna ska synas i konsolen nu
+    console.log("Öppnar vy för jobb ID:", jobId);
 
-    // 1. Hitta jobbet i listan
+    // 1. Hitta jobbet
     const job = allJobs.find(j => j.id === jobId);
     
     if (!job) {
-        console.error("Kunde inte hitta jobbdata för ID:", jobId);
-        alert("Något gick fel. Försök ladda om sidan.");
+        console.error("Jobb saknas i listan:", jobId);
         return;
     }
 
-    // Spara globalt (bra för redigering senare)
+    // Spara globalt
     window.currentViewingJob = job;
 
     // Hjälpfunktion
@@ -3701,16 +3700,14 @@ window.openViewModal = function(jobId) {
         if(internalBox) internalBox.style.display = 'none';
     }
 
-    // Koppla Redigera-knappen
+    // Koppla Redigera-knappen (med kloning för att ta bort gamla events)
     const editBtn = document.getElementById('btnEditJob');
     if (editBtn) {
-        // Ta bort gamla klick-kopplingar genom att klona knappen
         const newBtn = editBtn.cloneNode(true);
         editBtn.parentNode.replaceChild(newBtn, editBtn);
         
         newBtn.onclick = function() {
             window.closeViewModal();
-            // Använd din gamla redigera-funktion
             if(window.openEditModal) window.openEditModal(job.id);
             else openEditModal(job.id); 
         };
@@ -3720,14 +3717,13 @@ window.openViewModal = function(jobId) {
     const modal = document.getElementById('viewJobModal');
     if (modal) {
         modal.style.display = 'flex';
-        // Lägg till historik
         if (typeof addHistoryState === 'function') addHistoryState();
     } else {
-        console.error("Hittar inte <div id='viewJobModal'> i din HTML!");
+        console.error("Hittade inte modalen med ID 'viewJobModal' i HTML-filen.");
     }
 };
 
-// Definiera stäng-funktionen på window också
+// Samma sak för stäng-funktionen
 window.closeViewModal = function() {
     const modal = document.getElementById('viewJobModal');
     if (modal) modal.style.display = 'none';
