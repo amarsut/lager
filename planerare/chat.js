@@ -192,7 +192,7 @@ function setupChatListener(limit) {
             const clockCount = docs.filter(msg => msg.reaction === '🕒').length;
             updateChatBadge(clockCount);
 
-            chatList.innerHTML = '';
+            chatList.innerHTML = '<div style="flex-grow: 1;"></div>';
             if (docs.length === 0) {
                 chatList.innerHTML = '<div style="text-align:center; padding:30px; color:#9ca3af; font-size:0.9rem;">Inga meddelanden än.</div>';
                 return;
@@ -567,7 +567,8 @@ function openChatGallery() {
             clone.src = img.src;
             
             div.onclick = () => {
-                // Använd din befintliga zoom-funktion!
+                closeChatGallery(); // Stäng galleriet först
+                // Använd din befintliga zoom-funktion
                 window.openImageZoom(img.src, img.closest('.chat-row')?.dataset.messageId);
             };
             
