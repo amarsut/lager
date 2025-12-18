@@ -294,179 +294,125 @@
 
 /********* JOBB MODAL/ÖVERSIKT *********/
 
-/* --- VIEW MODAL UPDATES --- */
-
 /* ============================================================
-   FIX FÖR VIEW MODAL (LÄSLÄGE)
+   VIEW MODAL - KOMPAKT & FOKUS PÅ INNEHÅLL
    ============================================================ */
 
-/* 1. Mörk bakgrund bakom kortet */
+/* 1. Bakgrund & Position */
 .view-modal-overlay {
-    position: fixed !important;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background-color: rgba(0, 0, 0, 0.6) !important; /* Mörkare dimning */
-    backdrop-filter: blur(5px); /* Suddig bakgrund */
-    z-index: 10000 !important;
-    
-    display: none; /* JS sköter display: flex */
-    flex-direction: column;
-    justify-content: flex-end; /* Ligger i botten på mobil */
-    align-items: center;
+    position: fixed !important; top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(0, 0, 0, 0.65) !important;
+    backdrop-filter: blur(4px);
+    z-index: 2147483647 !important;
+    display: none; /* JS ändrar till flex */
+    justify-content: center; align-items: flex-end; /* Botten på mobil */
 }
 
-/* 2. Själva Kortet (Det vita pappret) */
+/* 2. Kortet */
 .view-modal-card {
-    background-color: #ffffff !important; /* VIKTIGT: Vit bakgrund */
-    width: 100% !important;
-    max-width: 600px !important;
-    max-height: 90vh !important; /* Inte högre än 90% av skärmen */
-    
-    border-radius: 20px 20px 0 0 !important; /* Runda hörn upptill */
-    box-shadow: 0 -5px 25px rgba(0,0,0,0.2) !important;
-    
-    display: flex !important;
-    flex-direction: column !important;
-    overflow: hidden !important; /* Så inget sticker ut */
-    animation: slideUpModal 0.3s ease-out forwards;
+    background: #fff !important;
+    width: 100% !important; max-width: 500px !important; /* Lite smalare för kompakt känsla */
+    border-radius: 16px 16px 0 0 !important;
+    box-shadow: 0 -10px 30px rgba(0,0,0,0.3) !important;
+    display: flex !important; flex-direction: column !important;
+    max-height: 85vh !important;
+    animation: slideUp 0.25s ease-out;
 }
 
-@keyframes slideUpModal {
-    from { transform: translateY(100%); }
-    to { transform: translateY(0); }
-}
+@keyframes slideUp { from {transform: translateY(100%);} to {transform: translateY(0);} }
 
-/* 3. Header (Regnr och Status) */
-.view-modal-header {
-    background: #ffffff;
-    padding: 20px 24px;
-    border-bottom: 1px solid #f3f4f6;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-shrink: 0; /* Krymp inte headern */
-}
-
-.view-modal-header h2 {
-    font-size: 1.5rem !important; /* Lagom storlek på Regnr */
-    margin: 0 !important;
-    color: #111827;
-    font-weight: 800;
-}
-
-.close-view-btn {
-    background: #f3f4f6 !important;
-    border: none !important;
-    border-radius: 50% !important;
-    width: 36px; height: 36px;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer;
-    color: #374151;
-}
-
-/* 4. Innehållet (Scrollbart) */
-.view-modal-body {
-    flex: 1;
-    overflow-y: auto !important; /* Scrolla om innehållet är långt */
-    padding: 24px;
+/* 3. Kompakt Header */
+.compact-header {
+    padding: 12px 20px !important;
+    border-bottom: 1px solid #eee;
+    display: flex; justify-content: space-between; align-items: center;
     background: #fff;
 }
-
-/* Fixa text och rader */
-.view-grid-row {
-    display: grid !important;
-    grid-template-columns: 1fr 1fr; /* Två kolumner */
-    gap: 16px;
-    margin-bottom: 20px;
+.view-header-left h2 { margin: 0; font-size: 1.25rem; font-weight: 800; color: #111; }
+.header-subtext { font-size: 0.85rem; color: #666; font-weight: 500; display: block; margin-top: 2px;}
+.close-view-btn {
+    background: #f1f1f1; border: none; width: 30px; height: 30px; border-radius: 50%;
+    font-size: 14px; color: #555; cursor: pointer;
 }
 
-.view-item {
-    display: flex; flex-direction: column;
-}
-
-.icon-label {
-    font-size: 0.75rem; 
-    font-weight: 700; 
-    color: #9ca3af; 
-    margin-bottom: 4px;
-    display: flex; align-items: center; gap: 5px;
-    text-transform: uppercase;
-}
-
-.view-value {
-    font-size: 1rem; 
-    font-weight: 600; 
-    color: #1f2937;
-}
-
-.view-value-large {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: #111;
-}
-
-/* 5. Ekonomi-boxen (Den vita rutan i din bild) */
-.finance-box {
-    background: #f8fafc !important; /* Ljusgrå bakgrund, inte vit */
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 15px;
-    margin: 20px 0;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-}
-
-.finance-item { text-align: center; }
-.finance-val { font-size: 1.1rem; font-weight: 700; color: #334155; margin-top: 4px;}
-.finance-val.profit { color: #10b981; }
-
-.view-divider {
-    height: 1px;
-    background: #f3f4f6;
-    margin: 20px 0;
-    border: none;
-}
-
-/* 6. Footer med knappar */
-.view-modal-actions {
-    padding: 16px 24px;
-    background: #ffffff;
-    border-top: 1px solid #f3f4f6;
-    display: flex;
-    gap: 12px;
-    padding-bottom: max(20px, env(safe-area-inset-bottom)); /* För iPhone X */
-}
-
-.action-btn {
+/* 4. Body (Mindre padding) */
+.compact-body {
+    padding: 0 !important;
+    overflow-y: auto;
     flex: 1;
-    padding: 14px;
-    border-radius: 12px;
-    border: none;
-    font-weight: 600;
-    font-size: 1rem;
-    cursor: pointer;
-    text-align: center;
 }
 
-.action-btn.secondary {
-    background-color: #f3f4f6 !important;
-    color: #374151 !important;
+/* 5. Info Strip (Datum & Kund på en rad) */
+.info-strip {
+    display: flex; justify-content: space-between;
+    padding: 12px 20px;
+    background: #f9fafb;
+    border-bottom: 1px solid #eee;
+}
+.info-item {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 0.9rem; font-weight: 500; color: #374151;
+}
+.info-item .icon { font-size: 1rem; opacity: 0.7; }
+.time-pill { 
+    background: #e5e7eb; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; 
+}
+.phone-link { text-decoration: none; font-size: 1.1rem; margin-left: 4px; }
+
+/* 6. HUVUDNUMRET: Beskrivning */
+.view-section.main-focus {
+    padding: 20px;
+}
+.view-section label {
+    display: block; font-size: 0.7rem; font-weight: 700; color: #9ca3af; 
+    margin-bottom: 8px; letter-spacing: 0.5px;
+}
+.description-text {
+    font-size: 1.05rem; /* Lite större text här */
+    line-height: 1.5;
+    color: #111;
+    white-space: pre-wrap; /* Behåller radbrytningar */
+    margin: 0;
 }
 
-.action-btn.primary {
-    background-color: #0066FF !important; /* Din blå färg */
-    color: white !important;
+/* 7. Intern Box (Kompakt) */
+.internal-box {
+    margin: 0 20px 20px 20px;
+    padding: 10px 12px;
+    background: #fffbeb; border: 1px solid #fef3c7; border-radius: 8px;
 }
+.internal-text { font-style: italic; font-size: 0.9rem; color: #92400e; margin: 0; }
 
-/* DESKTOP-JUSTERING (Centrera rutan istället för botten) */
+/* 8. Ekonomi-Strip (Längst ner, liten) */
+.finance-strip {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 20px;
+    background: #f8fafc;
+    border-top: 1px solid #f1f5f9;
+    margin-top: auto; /* Tryck ner mot botten om det finns plats */
+}
+.fin-col { display: flex; align-items: center; gap: 6px; }
+.fin-col .lbl { font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; font-weight: 600; }
+.fin-col .val { font-size: 0.9rem; font-weight: 600; color: #475569; }
+.fin-col .val.profit { color: #10b981; }
+.fin-sep { width: 1px; height: 16px; background: #e2e8f0; }
+
+/* 9. Footer */
+.compact-actions {
+    padding: 12px 20px;
+    background: #fff; border-top: 1px solid #eee;
+    display: flex; gap: 10px;
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+}
+.action-btn {
+    flex: 1; padding: 12px; border-radius: 8px; border: none; 
+    font-weight: 600; font-size: 0.95rem; cursor: pointer;
+}
+.action-btn.secondary { background: #f3f4f6; color: #333; }
+.action-btn.primary { background: #0066FF; color: #fff; }
+
+/* Desktop Adjustment */
 @media (min-width: 768px) {
-    .view-modal-overlay {
-        justify-content: center !important; /* Centrera */
-        padding: 40px;
-    }
-    .view-modal-card {
-        border-radius: 20px !important; /* Runda hörn runtom */
-        height: auto !important;
-        max-height: 80vh !important;
-    }
+    .view-modal-overlay { align-items: center; }
+    .view-modal-card { border-radius: 16px !important; }
 }
