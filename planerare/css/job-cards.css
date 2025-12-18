@@ -433,3 +433,7 @@
 .job-card-new.expanded .card-expand-chevron {
     transform: rotate(180deg);
 }
+
+.job-card-new {
+    scroll-margin-top: 20px; /* Detta skapar mellanrummet mot taket! */
+}
