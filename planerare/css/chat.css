@@ -400,17 +400,19 @@
 
 
 /* =================================================================
-   MOBILANPASSNING (NY DESIGN FÖR BILDMODAL)
+   MOBILANPASSNING - SAMSUNG GALLERI STYLE
+   Helt svart bakgrund, minimalistiska ikoner i topp och botten.
    ================================================================= */
 @media (max-width: 768px) {
-    /* Gör bakgrunden helt svart för fokus */
+    /* 1. Bakgrunden och containern */
     .image-modal-overlay {
-        background: #000000 !important;
+        background-color: #000000 !important; /* Helt svart */
+        backdrop-filter: none !important;
     }
 
-    /* Låt bilden ta maximal plats */
     .image-modal-content {
-        padding: 0 !important;
+        /* Lämna plats i topp och botten så inte bilden hamnar under knapparna */
+        padding: 70px 0 80px 0 !important; 
         width: 100% !important;
         height: 100% !important;
         display: flex !important;
@@ -420,67 +422,66 @@
 
     #mmImgMain {
         max-width: 100vw !important;
-        max-height: 80vh !important; /* Lämna plats nere för knappar */
-        border-radius: 0 !important;
+        max-height: 100% !important;
+        border-radius: 0 !important; /* Raka kanter */
         box-shadow: none !important;
         object-fit: contain !important;
     }
 
-    /* --- VERKTYGSFÄLTET (Botten) --- */
+    /* 2. Bryt isär den gamla verktygsraden */
+    /* Vi gör containern osynlig och "statisk" så vi kan flytta knapparna fritt */
     .image-modal-toolbar.glass-pill {
-        position: absolute !important;
-        bottom: 0 !important; left: 0 !important; right: 0 !important;
-        width: 100% !important;
-        border-radius: 0 !important; 
+        position: static !important; 
+        background: transparent !important;
         border: none !important;
-        background: linear-gradient(to top, rgba(0,0,0,0.9) 10%, transparent) !important;
-        padding: 0 40px 40px 40px !important; /* Bra med luft runt knapparna */
-        justify-content: space-between !important; /* En knapp i varje hörn */
         box-shadow: none !important;
-        display: flex !important;
-        align-items: center !important;
+        padding: 0 !important;
+        width: 0 !important; height: 0 !important;
+        display: contents !important; /* Låter knapparna agera som om containern inte fanns */
     }
 
-    /* Dölj text och avdelare på mobil */
-    .toolbar-btn span { display: none !important; }
-    .toolbar-divider { display: none !important; }
+    /* Dölj text och avdelare */
+    .toolbar-btn span, .toolbar-divider { display: none !important; }
 
-    /* --- KNAPPARNA (STORA & TYDLIGA) --- */
+    /* 3. Gemensam stil för knapparna (Minimalistiska ikoner) */
     .toolbar-btn {
-        width: 60px !important;   /* Stor tryckyta */
-        height: 60px !important;
-        background: rgba(255, 255, 255, 0.15) !important; /* Synlig cirkel */
-        border-radius: 50% !important;
-        padding: 0 !important;    /* Nollställ padding för perfekt centrering */
+        position: fixed !important; /* Fäst dem på skärmen */
+        z-index: 25 !important;
+        background: transparent !important; /* Ingen bakgrundscirkel */
+        border: none !important;
+        border-radius: 0 !important;
+        padding: 15px !important; /* Stor touch-yta runt ikonen */
+        width: auto !important;
+        height: auto !important;
         display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        backdrop-filter: blur(5px);
-        -webkit-backdrop-filter: blur(5px);
-        border: 1px solid rgba(255,255,255,0.1) !important;
+        align-items: center !important; justify-content: center !important;
     }
     
-    /* Aktiv effekt när man trycker */
-    .toolbar-btn:active {
-        background: rgba(255, 255, 255, 0.3) !important;
-        transform: scale(0.95);
+    /* Ikonernas utseende */
+    .toolbar-btn svg {
+        width: 26px !important;  /* Lagom storlek */
+        height: 26px !important;
+        stroke: #ffffff !important; /* Rent vita ikoner */
+        stroke-width: 2px !important;
+        filter: drop-shadow(0 1px 3px rgba(0,0,0,0.5)); /* Liten skugga för kontrast */
+    }
+    
+    /* Tryckeffekt */
+    .toolbar-btn:active svg { opacity: 0.6; }
+
+    /* 4. Placera STÄNG-knappen (Topp Vänster) */
+    #mmCloseBtn {
+        top: calc(10px + env(safe-area-inset-top)) !important; /* Ta hänsyn till "notchen" på iPhone */
+        left: 10px !important;
     }
 
-    /* --- IKONERNA --- */
-    .toolbar-btn svg {
-        width: 28px !important;  /* Större ikoner */
-        height: 28px !important;
-        stroke: #ffffff !important;
-        stroke-width: 2px !important;
-    }
-    
-    /* Specifik färg för radera-ikonen (röd ton men ljus nog för svart bakgrund) */
-    #mmDeleteBtn svg {
-        stroke: #ff6b6b !important; 
-    }
+    /* 5. Placera RADERA-knappen (Botten Höger) */
     #mmDeleteBtn {
-        background: rgba(255, 59, 48, 0.15) !important; /* Svag röd bakgrund */
+        bottom: calc(20px + env(safe-area-inset-bottom)) !important;
+        right: 20px !important;
     }
+    /* Gör radera-ikonen lite rödaktig för tydlighet, eller behåll vit om du vill */
+    #mmDeleteBtn svg { stroke: #ff5f57 !important; }
 }
 
 /* --- Mobilanpassning --- */
@@ -501,4 +502,22 @@
     .toolbar-btn span { display: none; } /* Dölj text, visa bara ikoner på mobil */
     .toolbar-btn { padding: 12px 20px; }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
