@@ -882,6 +882,7 @@ function updateStatsCounts(jobs) {
 
 // 7. EVENT LISTENERS
 function setupEventListeners() {
+    document.body.classList.add('view-dashboard');
 
     /*Statistikvy*/
     const statsBtn = document.getElementById('menuBtnStatistics');
