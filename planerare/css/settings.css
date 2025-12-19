@@ -297,3 +297,27 @@ body.privacy-active .stat-card[data-filter="backlog"] .stat-card-value {
 .menu-icon-box.purple { background: #f3e8ff !important; color: #a855f7 !important; }
 .menu-icon-box.green  { background: #f0fdf4 !important; color: #22c55e !important; }
 
+/* --- ZOOM SLIDER STYLING --- */
+input[type=range] { -webkit-appearance: none; /* Ta bort standardutseende */ width: 100%; background: transparent;  cursor: pointer; }
+
+/* Spåret (Track) */
+input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; background: #e5e7eb; border-radius: 4px; }
+
+/* Tummen (Knappen man drar i) */
+input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    height: 20px;
+    width: 20px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 1px solid #d1d5db;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    margin-top: -7px; /* Justera för att centrera på spåret */
+    transition: transform 0.1s;
+}
+
+input[type=range]:active::-webkit-slider-thumb { transform: scale(1.1); border-color: #3b82f6; background: #3b82f6; }
+
+/* Dark mode stöd */
+[data-theme="dark"] input[type=range]::-webkit-slider-runnable-track { background: #333; }
+[data-theme="dark"] input[type=range]::-webkit-slider-thumb { background: #1c1c1e; border-color: #555; }
