@@ -59,54 +59,121 @@
     to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-/* --- 3. Header --- */
+/* --- 3. Header (Centrerad & Balanserad) --- */
 .chat-header {
     height: 60px;
-    padding: 0 16px;
-    background: rgba(255, 255, 255, 0.5) !important; /* Genomskinlig */
+    padding: 0 12px; /* Luft på sidorna */
+    background: rgba(255, 255, 255, 0.8) !important;
     border-bottom: 1px solid rgba(0,0,0,0.05) !important;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
+    backdrop-filter: blur(10px);
+    
+    /* Flexbox för att centrera vertikalt */
+    display: flex !important;
+    align-items: center !important; 
+    justify-content: flex-start !important; /* Starta från vänster */
+    gap: 10px !important; /* Avståndet mellan pilen och sökfältet */
+    
     flex-shrink: 0;
     z-index: 10;
 }
 
-/* Sökfält */
-.chat-search-wrapper {
-    position: relative;
-    flex: 1;
-    display: flex;
-    align-items: center;
-}
-.chat-search-wrapper input {
-    width: 100%;
-    height: 40px;
-    padding: 0 12px 0 38px;
-    border: none;
-    border-radius: 12px;
-    font-size: 0.95rem;
-    background: rgba(118, 118, 128, 0.12); /* Apple-grå */
-    color: #1C1C1E;
-    outline: none;
+/* Back-knapp (Pilen) */
+#closeChatWidget {
+    width: 40px !important; 
+    height: 40px !important;
+    background: transparent !important;
+    border: none !important;
+    border-radius: 50%; /* Gör hover-effekten rund */
+    
+    /* Centrera ikonen i knappen */
+    display: flex !important; 
+    align-items: center !important; 
+    justify-content: center !important;
+    
+    color: #1C1C1E; 
+    cursor: pointer; 
+    flex-shrink: 0;
+    padding: 0 !important;
+    margin: 0 !important;
     transition: background 0.2s;
 }
-.chat-search-wrapper input:focus { background: rgba(118, 118, 128, 0.18); }
+#closeChatWidget:hover { background: rgba(0,0,0,0.05) !important; }
 
-/* Knappar i header */
-#closeChatWidget, .header-icon-btn {
-    background: rgba(118, 118, 128, 0.12);
-    border: none; border-radius: 12px;
-    width: 40px; height: 40px;
-    display: flex; align-items: center; justify-content: center;
-    color: #555; cursor: pointer; transition: all 0.2s; flex-shrink: 0;
+/* Sökfält Wrapper - Tar upp all plats i mitten */
+.chat-search-wrapper {
+    flex: 1 !important;        /* Väx för att fylla bredden */
+    height: 40px !important;   /* Lås höjden till samma som knappen */
+    max-width: 100%;
+    position: relative !important;
+    display: flex !important;
+    align-items: center !important; /* Centrera innehållet vertikalt */
 }
-#closeChatWidget:hover { background: rgba(118, 118, 128, 0.2); color: #000; }
+
+/* Själva textfältet */
+.chat-search-wrapper input {
+    width: 100% !important;
+    height: 100% !important;   /* Fyller wrappern (40px) */
+    padding: 0 12px 0 38px !important; /* Plats för vänster ikon */
+    padding-right: 80px !important;    /* Plats för höger ikoner */
+    margin: 0 !important;
+    
+    border: none !important;
+    border-radius: 20px !important; /* Lite rundare hörn för mjukare look */
+    font-size: 0.95rem !important;
+    background: rgba(118, 118, 128, 0.12) !important; /* Apple-grå */
+    color: #1C1C1E !important;
+    outline: none !important;
+    font-family: inherit;
+}
+.chat-search-wrapper input:focus { background: rgba(118, 118, 128, 0.18) !important; }
+
+/* Sökikon (Vänster) */
+.search-icon-inside {
+    position: absolute !important; 
+    left: 12px !important; 
+    top: 50% !important; 
+    transform: translateY(-50%) !important;
+    width: 18px !important; 
+    height: 18px !important; 
+    color: #8E8E93 !important; 
+    pointer-events: none;
+}
+
+/* Verktyg (AI & Galleri) inuti sökfältet (Höger) */
+.inside-search-tools {
+    position: absolute !important;
+    right: 8px !important; /* Lite luft från kanten */
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    height: 28px !important; /* Begränsad höjd så de passar i input */
+    display: flex !important;
+    align-items: center !important;
+    gap: 2px !important;
+    z-index: 10 !important;
+}
+
 .tool-icon-btn {
-    background: transparent; border: none; padding: 6px; cursor: pointer; color: #666;
+    background: transparent !important; 
+    border: none !important; 
+    width: 28px !important; 
+    height: 28px !important; 
+    padding: 0 !important;
+    cursor: pointer; 
+    color: #666;
+    display: flex !important; 
+    align-items: center; 
+    justify-content: center;
+    border-radius: 50%;
 }
-.tool-icon-btn:hover { color: #0066FF; }
+.tool-icon-btn:hover { background: rgba(0,0,0,0.05) !important; color: #000; }
+.tool-icon-btn svg { width: 18px; height: 18px; }
+
+.tool-divider { 
+    width: 1px !important; 
+    height: 16px !important; 
+    background: rgba(0,0,0,0.15) !important; 
+    margin: 0 4px !important; 
+}
 
 /* --- 4. Meddelandelista --- */
 .chat-messages {
