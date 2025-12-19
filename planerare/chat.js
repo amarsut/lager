@@ -42,7 +42,6 @@ window.toggleChatWidget = function() {
 };
 
 window.initChat = function() {
-    console.log("Chat initialized"); 
     const chatList = document.getElementById('chatMessages');
     if (!chatList) return;
 
@@ -50,40 +49,60 @@ window.initChat = function() {
     const sendBtn = document.getElementById('chatSendBtn');
     const closeBtn = document.getElementById('closeChatWidget');
     const closeEditBtn = document.getElementById('closeEditBtn');
-    
-    // Galleri & Kamera knappar
     const plusBtn = document.getElementById('chatPlusBtn');      
     const cameraBtn = document.getElementById('chatCameraBtn'); 
     const fileInputGallery = document.getElementById('chatFileInputGallery');
     const fileInputCamera = document.getElementById('chatFileInputCamera');
-    
-    // Galleri-knappen i Header (Säker fix)
     const galleryBtn = document.getElementById('toggleGalleryBtn');
-    const closeGalleryBtn = document.getElementById('closeGalleryBtn');
-
     if (galleryBtn) {
-        // Tar bort gamla event för att undvika dubbelklicksproblem och lägger till nytt
-        const newGalleryBtn = galleryBtn.cloneNode(true);
-        galleryBtn.parentNode.replaceChild(newGalleryBtn, galleryBtn);
-        
-        newGalleryBtn.onclick = (e) => {
-            e.preventDefault(); 
-            e.stopPropagation();
+        galleryBtn.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation(); // Hindrar klicket från att "bubbla" och stänga chatten
             openChatGallery();
         };
     }
+    const closeGalleryBtn = document.getElementById('closeGalleryBtn');
 
-    if (closeGalleryBtn) {
-        closeGalleryBtn.onclick = (e) => {
-            e.preventDefault();
-            closeChatGallery();
-        };
-    }
+    if (galleryBtn) galleryBtn.onclick = openChatGallery;
+    if (closeGalleryBtn) closeGalleryBtn.onclick = closeChatGallery;
 
     if (closeBtn) closeBtn.onclick = window.toggleChatWidget;
     if (closeEditBtn) closeEditBtn.onclick = exitEditMode;
 
-    // --- SÖKFUNKTIONALITET ---
+    // Hantera Skicka / Spara
+    const handleChatAction = async () => {
+        const text = chatInput.value.trim();
+        if (!text) return;
+
+        if (isEditingMsg && currentEditMsgId) {
+            try {
+                await window.db.collection('notes').doc(currentEditMsgId).update({
+                    text: text,
+                    isEdited: true
+                });
+                exitEditMode(); 
+            } catch (err) {
+                console.error("Fel vid uppdatering:", err);
+            }
+        } else {
+            try {
+                await window.db.collection("notes").add({
+                    text: text,
+                    timestamp: new Date().toISOString(),
+                    platform: window.innerWidth <= 768 ? 'mobil' : 'dator',
+                    type: 'text'
+                });
+                chatInput.value = '';
+                setTimeout(() => {
+                    chatList.scrollTo({ top: chatList.scrollHeight, behavior: 'smooth' });
+                }, 100);
+            } catch (err) {
+                console.error("Fel vid sändning:", err);
+            }
+        }
+    };
+
+    // --- SÖKFUNKTIONALITET MED HIGHLIGHT ---
     const chatSearchInput = document.getElementById('chatSearchInput');
     const clearSearchBtn = document.getElementById('clearChatSearch');
 
@@ -93,14 +112,20 @@ window.initChat = function() {
             const lowerSearchTerm = searchTerm.toLowerCase();
             const messages = document.querySelectorAll('#chatMessages .chat-row');
             
-            if (clearSearchBtn) clearSearchBtn.style.display = searchTerm ? 'block' : 'none';
+            if (clearSearchBtn) {
+                clearSearchBtn.style.display = searchTerm ? 'block' : 'none';
+            }
 
             messages.forEach(row => {
                 const textElement = row.querySelector('.bubble-text-content');
                 if (!textElement) {
+                    // Hantera bildmeddelanden: dölj om vi söker
                     row.style.display = searchTerm ? 'none' : 'flex';
                     return;
                 }
+
+                // Hämta den råa texten (utan gammal highlight-HTML)
+                // Vi använder dataset för att lagra originaltexten så vi inte tappar data
                 if (!textElement.dataset.originalText) {
                     textElement.dataset.originalText = textElement.innerText;
                 }
@@ -108,38 +133,35 @@ window.initChat = function() {
 
                 if (searchTerm === "") {
                     row.style.display = 'flex';
-                    textElement.innerHTML = originalText;
+                    textElement.innerHTML = originalText; // Återställ original
                 } else if (originalText.toLowerCase().includes(lowerSearchTerm)) {
                     row.style.display = 'flex';
+                    
+                    // Skapa en regex för att hitta sökordet (case-insensitive)
                     const regex = new RegExp(`(${searchTerm})`, 'gi');
+                    
+                    // Ersätt texten med highlight-versionen
                     textElement.innerHTML = originalText.replace(regex, '<span class="search-highlight">$1</span>');
                 } else {
                     row.style.display = 'none';
                 }
             });
+            
+            // Dölj datumavskiljare vid sökning
+            document.querySelectorAll('.chat-date-separator').forEach(sep => {
+                sep.style.display = searchTerm ? 'none' : 'flex';
+            });
         });
-        
-        if (clearSearchBtn) {
-            clearSearchBtn.onclick = () => {
-                chatSearchInput.value = '';
-                chatSearchInput.dispatchEvent(new Event('input'));
-            };
-        }
     }
 
-    // Input Events
-    if (chatInput && sendBtn) {
+    if (sendBtn) sendBtn.onclick = handleChatAction;
+    if (chatInput) {
         chatInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
-                // Kalla på din befintliga handleChatAction om den ligger utanför,
-                // annars definiera den här inne.
-                // Om du har koden jag gav dig förut, ligger handleChatAction i scopet.
-                // För säkerhets skull kan du trigga klicket:
-                sendBtn.click();
+                handleChatAction();
             }
         });
-        // Obs: Se till att sendBtn.onclick är kopplat till din sänd-logik
     }
 
     if (plusBtn && fileInputGallery) {
