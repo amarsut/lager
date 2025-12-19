@@ -1678,3 +1678,34 @@ ul.tech-list li span {
         left: 12px !important;
     }
 }
+
+/* --- FIX: GÖR KUNDMODAL HELVIT (Lik Fordonsmodal) --- */
+
+/* 1. Ändra bakgrunden på hela kroppen till vit */
+#customerModal .modal-body {
+    background-color: #fff !important;
+    padding: 0 !important;
+}
+
+/* 2. Ta bort mellanrum och "kort-stil" från sektionerna */
+#customerModal .customer-section {
+    background-color: #fff !important;
+    margin-bottom: 0 !important;       /* Inget mellanrum mellan boxar */
+    border-radius: 0 !important;       /* Inga rundade hörn */
+    box-shadow: none !important;       /* Ingen skugga */
+    
+    /* Lägg till en tunn linje mellan sektionerna istället */
+    border-bottom: 1px solid #e2e8f0 !important; 
+    padding: 24px 20px !important;     /* Lite luft inuti varje sektion */
+}
+
+/* 3. Ta bort linjen på den sista sektionen så det ser snyggt ut */
+#customerModal .customer-section:last-child {
+    border-bottom: none !important;
+}
+
+/* 4. (Valfritt) Justera rubriker så de passar den vita stilen */
+#customerModal .section-title {
+    padding-left: 0 !important;
+    margin-bottom: 16px !important;
+}
