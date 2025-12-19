@@ -393,7 +393,7 @@ tbody tr button { cursor: pointer; z-index: 2; position: relative; }
     /* --- Header Fix (Sticky) --- */
     .mobile-header {
         position: fixed !important; top: 0; left: 0; right: 0; height: 60px;
-        background-color: #F8FAFC; z-index: 200000; border-bottom: 1px solid #e2e8f0;
+        background-color: #F8FAFC; z-index: 99; border-bottom: 1px solid #e2e8f0;
         padding: 0 16px; display: flex; align-items: center; justify-content: space-between;
         box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
@@ -426,4 +426,21 @@ tbody tr button { cursor: pointer; z-index: 2; position: relative; }
     .cust-stat-card { padding: 12px 10px; align-items: center; }
     .cs-label { font-size: 0.65rem; margin-bottom: 2px; }
     .cs-value { font-size: 1.2rem; }
+
+    /* --- Sök Modal --- */
+    #mobileSearchModal {
+        z-index: 2000 !important;
+    }
+    .messenger-search-container {
+        position: fixed !important;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background-color: #fff;
+        z-index: 200002;
+    }
+    .messenger-search-header {
+        position: relative;
+        background-color: #fff;
+        z-index: 10;
+    }
 }
+
