@@ -291,16 +291,15 @@
 .chat-row.me .chat-action-menu { right: 0; }
 .chat-row.other .chat-action-menu { left: 0; }
 .chat-row:hover .chat-action-menu, .chat-row.show-menu .chat-action-menu { display: flex; }
+.chat-row:hover, .chat-row.show-menu { z-index: 100; } /* Lyfter raden över datum */
 
 .action-emoji-btn, .action-icon-btn {
     background: transparent; border: none; cursor: pointer;
     display: flex; align-items: center; justify-content: center;
     transition: transform 0.2s;
 }
-.action-emoji-btn:hover { transform: scale(1.2); }
-
-/*TILLAGT*/
-.chat-row:hover, .chat-row.show-menu { z-index: 100; } /* Lyfter raden över datum */
+.action-emoji-btn { font-size: 1.3rem; width: 32px; height: 32px; border-radius: 50%; }
+.action-emoji-btn:hover { transform: scale(1.2); background: rgba(0,0,0,0.05); }
 
 .action-icon-btn { color: #64748b; width: 32px; height: 32px; border-radius: 50%; }
 .action-icon-btn:hover { background: #f1f5f9; color: #007aff; }
@@ -316,7 +315,6 @@
     animation: popInBadge 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 .chat-row.other .reaction-badge-display { right: auto; left: 10px; }
-/*SLUT PÅ TILLAGT*/
 
 @keyframes popInBadge { from { transform: scale(0); } to { transform: scale(1); } }
 @keyframes popInMenu { from { opacity: 0; transform: translateY(10px) scale(0.9); } to { opacity: 1; transform: translateY(0) scale(1); } }
@@ -400,4 +398,8 @@
     .toolbar-btn span { display: none; } /* Dölj text, visa bara ikoner på mobil */
     .toolbar-btn { padding: 12px 20px; }
 }
+
+
+
+
 
