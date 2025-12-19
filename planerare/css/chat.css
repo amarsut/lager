@@ -638,3 +638,29 @@ body #chatWidget .chat-row.system .chat-bubble {
         height: calc(60px + env(safe-area-inset-top)) !important;
     }
 }
+
+/* Ny behållare för text + ikoner */
+.input-field-container {
+    position: relative; /* Viktigt för att kunna låsa ikonerna */
+    flex: 1;            /* Ta upp all plats bredvid sänd-knappen */
+    display: flex;      /* Säkerställer att textarean fyller ut */
+}
+
+/* Uppdaterad positionering för ikonerna */
+.chat-actions-left { 
+    position: absolute; 
+    right: 10px;        /* Låst till högerkanten av textfältet */
+    top: 50%;           /* Placera mitten på 50% av höjden */
+    transform: translateY(-50%); /* Justera exakt centrum */
+    bottom: auto;       /* Ta bort gammal kod */
+    
+    display: flex; 
+    gap: 4px; 
+    z-index: 5;
+}
+
+/* Justera textarean så den inte skriver över ikonerna */
+.chat-input-area textarea {
+    width: 100%;
+    padding-right: 90px !important; /* Plats för ikonerna */
+}
