@@ -710,7 +710,7 @@ body #chatWidget .chat-row.system .chat-bubble {
 .icons-inside-right {
     position: absolute !important;
     right: 6px !important;
-    bottom: 4px !important; /* Lås mot botten så de följer med om rutan växer */
+    bottom: 6px !important; /* Lås mot botten så de följer med om rutan växer */
     display: flex !important;
     gap: 2px !important;
     height: 32px !important;
