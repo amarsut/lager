@@ -1688,12 +1688,6 @@ ul.tech-list li span {
         padding-top: 0 !important; /* Ta bort "safe-area" padding eftersom vi inte är i toppen */
         min-height: 60px !important; /* Garantera höjd */
     }
-
-    /* 5. Justera Z-Index så Headern (200000) alltid ligger överst,
-       men modalerna (199xxx) ligger över allt annat innehåll */
-    .mobile-header {
-        z-index: 200000 !important;
-    }
 }
 
 /* FIX 1: Tvinga texten att flytta sig för ikonen i fordonsmodalen */
