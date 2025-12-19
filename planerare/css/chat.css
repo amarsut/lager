@@ -453,7 +453,144 @@
     /* Badge i mobilmenyn */
     #mobileChatBtn { position: relative; }
     #mobileChatBtn .chat-notification-badge {
-        top: 2px !important; right: 20px !important;
+        top: 5px !important; right: 15px !important;
         min-width: 16px; height: 16px; font-size: 0.6rem;
+    }
+}
+
+/* --- MOBIL HEADER LOGIK --- */
+@media (max-width: 768px) {
+    /* 1. Dölj header globalt som standard */
+    .mobile-header {
+        display: none !important;
+    }
+
+    /* 2. Visa ENDAST om vi är på dashboard-vyn (och chatten är stängd) */
+    body.view-dashboard:not(.chat-open) .mobile-header {
+        display: flex !important;
+    }
+
+    /* 3. Justera main-content så den inte har padding i toppen när headern är borta */
+    body:not(.view-dashboard) .main-content,
+    body.chat-open .main-content {
+        padding-top: 0 !important;
+    }
+}
+
+/* --- HELSKÄRMS-CHATT (MOBIL) --- */
+@media (max-width: 768px) {
+    .chat-widget {
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 100vw !important;
+        height: 100dvh !important; /* dvh hanterar webbläsarens adressfält bättre */
+        max-height: none !important;
+        border-radius: 0 !important;
+        margin: 0 !important;
+        z-index: 999999 !important; /* Allra högst upp */
+        background: #fff; /* Fallback */
+    }
+    
+    /* Justera inre element för helskärm */
+    .chat-messages {
+        padding-top: 20px !important; /* Lite luft mot toppen */
+    }
+}
+
+/* --- PREMIUM CHATT DESIGN --- */
+
+/* 1. Bakgrund med Glassmorphism (Suddig effekt) */
+.chat-widget {
+    background: rgba(255, 255, 255, 0.85) !important; /* Halvgenomskinlig vit */
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 0 50px rgba(0,0,0,0.1) !important; /* Mjukare, större skugga */
+}
+
+/* 2. Header: Gör den helt genomskinlig men med blur */
+.chat-header {
+    background: rgba(255, 255, 255, 0.5) !important;
+    border-bottom: 1px solid rgba(0,0,0,0.05) !important;
+    backdrop-filter: blur(10px);
+}
+
+/* 3. Dina bubblor (Avsändare) - Modern Gradient */
+.chat-row.me .chat-bubble {
+    background: linear-gradient(135deg, #0066FF 0%, #0052cc 100%) !important;
+    box-shadow: 0 4px 15px rgba(0, 102, 255, 0.3); /* "Glow" effekt */
+    border: none !important;
+    color: white;
+    font-weight: 400;
+    border-radius: 20px 20px 4px 20px !important; /* Unik form */
+}
+
+/* 4. Andras bubblor (Mottagare) - Ren och mjuk */
+/* --- TVINGANDE STIL FÖR MOTTAGARE & SYSTEM (GRÅ BUBBLA) --- */
+body #chatWidget .chat-row.other .chat-bubble, body #chatWidget .chat-row.system .chat-bubble {
+    background: linear-gradient(135deg, #FFFFFF 0%, #F3F4F6 100%) !important;
+    color: #111827 !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08) !important;
+    border: none !important;
+    font-weight: 400 !important;
+    border-radius: 20px 20px 20px 4px !important;
+}
+
+/* Fix för system-ikonen (detektiven) om den hamnar snett */
+body #chatWidget .chat-row.system .chat-bubble {
+    background: linear-gradient(135deg, #F9FAFB 0%, #E5E7EB 100%) !important; /* Lite mörkare för system */
+}
+
+/* 5. Input-området - Flytande känsla */
+.chat-input-area {
+    background: rgba(255, 255, 255, 0.7) !important;
+    backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(0,0,0,0.05) !important;
+    padding-bottom: max(20px, env(safe-area-inset-bottom)) !important;
+}
+
+.chat-input-area textarea {
+    background: #ffffff !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    border: 1px solid rgba(0,0,0,0.05) !important;
+    border-radius: 25px !important; /* Pill-shape */
+    transition: all 0.3s ease;
+}
+
+.chat-input-area textarea:focus {
+    box-shadow: 0 4px 15px rgba(0, 102, 255, 0.15);
+    transform: translateY(-1px);
+}
+
+/* 6. Sänd-knappen - Neumorphic touch */
+#chatSendBtn {
+    background: linear-gradient(135deg, #0066FF 0%, #0052cc 100%) !important;
+    box-shadow: 0 4px 12px rgba(0, 102, 255, 0.3);
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+#chatSendBtn:active {
+    transform: scale(0.9);
+}
+
+/*GÖR CHATTEN HELSKÄRM OCH GÖMMER SIDANS HEADER*/
+
+@media (max-width: 768px) {
+    #chatWidget {
+        position: fixed !important;
+        top: 0 !important;      /* Starta från absoluta toppen */
+        left: 0 !important;
+        width: 100% !important;
+        height: 100% !important; /* Helskärm */
+        z-index: 99999 !important; /* Högre än headern */
+        margin: 0 !important;
+        border-radius: 0 !important;
+    }
+
+    /* Justera header inuti chatten så den inte krockar med telefonens statusfält */
+    .chat-header {
+        padding-top: env(safe-area-inset-top); 
+        height: calc(60px + env(safe-area-inset-top)) !important;
     }
 }
