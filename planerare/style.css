@@ -1428,49 +1428,59 @@ input[type=range]:active::-webkit-slider-thumb { transform: scale(1.1); border-c
 
 
 /* =========================================
-   FIX: HELSKÄRMS-MODALER & ICKE-STICKY HEADER
+   FIX: HELSKÄRMS-MODALER & ICKE-STICKY HEADER (KORRIGERAD)
    ========================================= */
 
 @media (max-width: 768px) {
 
-    /* 1. Gör headern icke-sticky (följer med när man scrollar) */
-    .mobile-header {
-        position: relative !important; /* Ändrat från fixed */
-        top: auto !important;
-        box-shadow: none !important;   /* Valfritt: tar bort skuggan för en plattare look */
+    /* 1. VIKTIGT: Ändra riktning på body så headern hamnar ÖVER innehållet, inte bredvid */
+    body {
+        flex-direction: column !important;
     }
 
-    /* 2. Ta bort extra utrymme ovanför innehållet */
-    /* Tidigare hade du padding-top: 70px här för att kompensera för den fasta headern */
+    /* 2. Gör headern icke-sticky */
+    .mobile-header {
+        position: relative !important;
+        top: auto !important;
+        width: 100% !important;
+        flex-shrink: 0 !important; /* Förhindra att den krymps */
+        box-shadow: none !important;
+    }
+
+    /* 3. Ta bort padding eftersom headern nu tar plats i flödet */
     .main-content {
         padding-top: 0 !important; 
     }
 
-    /* 3. Gör Fordon (Reg.nr) och Kund modalen Helskärm */
-    /* Vi sätter top: 0 och height: 100dvh för att täcka allt */
+    /* 4. Helskärms-modaler (Regnr & Kund) */
+    /* top: 0 och height: 100dvh gör att den täcker hela skärmen */
     #vehicleModal.show,
     #customerModal.show {
-        top: 0 !important;              
+        position: fixed !important; /* Måste vara fixed för att täcka skärmen */
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;              
         height: 100dvh !important;      
+        width: 100vw !important;
         padding-top: 0 !important;      
-        z-index: 210000 !important;     /* Se till att de ligger över allt annat */
+        z-index: 210000 !important; /* Ligger över allt */
+        background-color: #f8fafc !important; /* Bakgrundsfärg så man inte ser igenom */
     }
 
-    /* 4. Justera modalernas innehåll för helskärm */
+    /* 5. Anpassa innehållet i modalerna */
     #vehicleModal .modal-content,
     #customerModal .modal-content {
         height: 100% !important;
         max-height: none !important;
         border-radius: 0 !important;
-        border-top: none !important;
+        border: none !important;
     }
 
-    /* 5. Eftersom headern inte är sticky längre, behöver vi inte justera 
-       modal-headern för att "börja under" den gamla menyn. 
-       Vi nollställer sticky-inställningarna inuti modalen också. */
+    /* 6. Återställ header-position inuti modalerna */
     .vehicle-header-row,
     #customerModal .modal-header {
-        position: relative !important; /* Ändrat från sticky */
+        position: relative !important;
         top: auto !important;
     }
 }
