@@ -11,6 +11,7 @@
 
     <link rel="stylesheet" href="style.css">
 
+	<link rel="stylesheet" href="css/modals.css">
 	<link rel="stylesheet" href="css/job-cards.css">
 	<link rel="stylesheet" href="css/calendar.css"> 
 	<link rel="stylesheet" href="css/chat.css"> 
@@ -24,6 +25,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 	<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
 	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+	
 </head>
 <body>
 	<div id="loadingOverlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #ffffff; z-index: 20000; display: flex; align-items: center; justify-content: center;">
@@ -589,7 +591,7 @@
 	
 	            <div class="form-grid">
 				    <div class="form-group">
-				        <label>Datum <span style="font-weight:400; color:#9ca3af; font-size:0.75rem;">(Lämna tomt för väntelista)</span></label>
+				        <label>Datum <span style="font-weight:400; color:#9ca3af; font-size:0.75rem;">(väntelista)</span></label>
 				        <input type="date" id="datum" class="input-gray">
 				    </div>
 				    <div class="form-group">
@@ -614,8 +616,8 @@
 	                <div id="expenseList" class="expense-list"></div>
 	
 	                <div class="expense-input-row">
-	                    <input type="text" id="nyUtgiftNamn" class="input-gray" placeholder="Utgiftens namn (t.ex. Filter)">
-	                    <input type="number" id="nyUtgiftPris" class="input-gray" placeholder="Kostnad">
+	                    <input type="text" id="nyUtgiftNamn" class="input-gray" placeholder="T.ex Oljefilter">
+	                    <input type="number" id="nyUtgiftPris" class="input-gray" placeholder="Pris (KR)">
 	                    <button type="button" id="btnAddExpense" class="button-outline-sm">
 	                        <svg class="icon-sm"><use href="#icon-plus"></use></svg> Lägg till
 	                    </button>
