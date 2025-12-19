@@ -205,8 +205,13 @@
 
 /* Ikoner inuti input (Gem/Kamera) */
 .chat-actions-left { 
-    position: absolute; right: 80px; bottom: 25px;
-    display: flex; gap: 4px; z-index: 5;
+    position: absolute; 
+    right: 75px !important; /* Minskat från 80px */
+    top: 32px !important;
+    display: flex; 
+    gap: 4px; 
+    z-index: 20; /* Ökat z-index för att vara säker på att de ligger överst */
+    pointer-events: auto; /* Säkerställer att de går att klicka på */
 }
 .chat-actions-left .icon-btn { 
     color: #8E8E93; width: 32px; height: 32px; border-radius: 50%;
@@ -602,3 +607,124 @@ body #chatWidget .chat-input-area textarea:focus {
     background: #FFFFFF !important;
 }
 
+/*
+__________________________________________________
+*/
+
+/* Grundläggande Header */
+.chat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+    padding: 0 12px;
+    background: rgba(255, 255, 255, 0.85); /* Glass-effekt */
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+    position: relative;
+    overflow: hidden; /* Viktigt för animationer */
+}
+
+/* Behållare för Titel + Ikoner */
+.header-content-default {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-left: 8px;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+/* Titel-styling (För att det inte ska se tomt ut) */
+.header-title-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+.chat-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1C1C1E;
+    line-height: 1.1;
+}
+.chat-subtitle {
+    font-size: 0.75rem;
+    color: #34C759; /* Grön för "Online" */
+    font-weight: 500;
+}
+
+/* Högerställda ikoner */
+/* Justering av ikon-gruppen i headern */
+.header-actions {
+    display: flex;
+    gap: 4px;
+    
+    /* Flytta gruppen uppåt och åt höger */
+    margin-right: -25px !important; /* Dra dem närmare högerkanten */
+    margin-top: -14px;   /* Dra dem lite uppåt */
+}
+
+/* Om du vill finjustera sök-knappen specifikt (t.ex. om den ser lägre ut än de andra) */
+#btnOpenSearch svg {
+    transform: translateY(-1px); /* Finjustering av bara ikonen */
+}
+
+/* Stil för ikon-knapparna */
+.header-tool-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: #1C1C1E;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.header-tool-btn:hover {
+    background: rgba(0,0,0,0.05);
+}
+
+/* --- SÖK-VY (Dold default) --- */
+.header-search-bar {
+    position: absolute;
+    top: 0;
+    left: 50px; /* Lämna plats för Tillbaka-knappen */
+    right: 0;
+    bottom: 0;
+    background: #fff; /* Täck över titeln */
+    display: flex;
+    align-items: center;
+    padding-right: 12px;
+    
+    /* Animation start-läge */
+    opacity: 0;
+    transform: translateX(20px); 
+    pointer-events: none;
+    transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.header-search-bar input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 1rem;
+    outline: none;
+    height: 100%;
+    padding: 0 8px;
+}
+
+/* --- AKTIVT LÄGE (När man klickar på sök) --- */
+.chat-header.search-active .header-content-default {
+    opacity: 0;
+    transform: translateX(-20px);
+    pointer-events: none;
+}
+
+.chat-header.search-active .header-search-bar {
+    opacity: 1;
+    transform: translateX(0);
+    pointer-events: auto;
+}
