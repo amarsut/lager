@@ -377,3 +377,57 @@
     .toolbar-btn span { display: none; } /* Dölj text, visa bara ikoner på mobil */
     .toolbar-btn { padding: 12px 20px; }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* --- 7. Menyn för meddelanden (Högerklick/Hover) --- */
+.chat-action-menu {
+    display: none; position: absolute; top: -45px;
+    background-color: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(8px); border: 1px solid rgba(0,0,0,0.08);
+    border-radius: 30px; padding: 6px 10px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+    align-items: center; gap: 6px; z-index: 2000;
+    animation: popInMenu 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.chat-row.me .chat-action-menu { right: 0; }
+.chat-row.other .chat-action-menu { left: 0; }
+.chat-row:hover .chat-action-menu, .chat-row.show-menu .chat-action-menu { display: flex; }
+.chat-row:hover, .chat-row.show-menu { z-index: 100; } /* Lyfter raden över datum */
+
+.action-emoji-btn, .action-icon-btn {
+    background: transparent; border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 0.2s;
+}
+.action-emoji-btn { font-size: 1.3rem; width: 32px; height: 32px; border-radius: 50%; }
+.action-emoji-btn:hover { transform: scale(1.2); background: rgba(0,0,0,0.05); }
+
+.action-icon-btn { color: #64748b; width: 32px; height: 32px; border-radius: 50%; }
+.action-icon-btn:hover { background: #f1f5f9; color: #007aff; }
+.action-icon-btn.danger:hover { background: #fef2f2; color: #ef4444; }
+.action-separator { width: 1px; height: 20px; background: #e5e5ea; margin: 0 4px; }
+
+/* Reaktioner (liten ikon på bubblan) */
+.reaction-badge-display {
+    position: absolute; bottom: -6px; right: -6px;
+    background: #fff; border: 2px solid #fff; border-radius: 12px;
+    padding: 2px 5px; font-size: 0.85rem; cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1); z-index: 10;
+    animation: popInBadge 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.chat-row.other .reaction-badge-display { right: auto; left: 10px; }
+
+@keyframes popInBadge { from { transform: scale(0); } to { transform: scale(1); } }
+@keyframes popInMenu { from { opacity: 0; transform: translateY(10px) scale(0.9); } to { opacity: 1; transform: translateY(0) scale(1); } }
