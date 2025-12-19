@@ -139,3 +139,38 @@
         letter-spacing: 0.5px;
     }
 }
+
+/*
+___________________________________________________________________________________________________________________
+*/
+
+/* =================================================================
+   LOGIN SCREEN (PREMIUM STYLE)
+   ================================================================= */
+
+.input-group { margin-bottom: 20px; }
+.input-group label {
+    display: block; font-size: 0.85rem; font-weight: 600; color: #374151; margin-bottom: 8px;
+}
+
+.input-field-wrapper {
+    position: relative;
+}
+.input-field-wrapper .input-icon {
+    position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
+    width: 20px; height: 20px; color: #9CA3AF; transition: color 0.2s;
+}
+.input-field-wrapper input {
+    width: 100%;
+    padding: 14px 16px 14px 48px; /* Plats för ikon */
+    border: 1px solid #E5E7EB; border-radius: 12px;
+    background: #F9FAFB; font-size: 1rem; color: #111; outline: none;
+    transition: all 0.2s; font-family: inherit;
+}
+.input-field-wrapper input:focus {
+    background: #fff; border-color: #3b82f6;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+.input-field-wrapper input:focus + .input-icon { color: #3b82f6; } /* Funkar om svg ligger efter input i html, annars via js eller css-has */
+.input-field-wrapper input:focus ~ .input-icon, 
+.input-field-wrapper:focus-within .input-icon { color: #3b82f6; }
