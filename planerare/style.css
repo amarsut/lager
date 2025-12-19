@@ -1292,7 +1292,7 @@ ________________________________________________________________________________
     
     /* 1. Se till att Headern ligger absolut överst */
     .mobile-header {
-        z-index: 1999997 !important;
+        z-index: 999 !important;
     }
 
     /* 2. Justera BÅDE Jobb- och Fordonsmodalen */
@@ -1320,4 +1320,5 @@ ________________________________________________________________________________
 	    to { opacity: 1; transform: translateY(0); }
 	}
 }
+
 
