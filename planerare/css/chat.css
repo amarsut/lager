@@ -538,6 +538,50 @@ body #chatWidget .chat-row.other .chat-bubble, body #chatWidget .chat-row.system
     border-radius: 20px 20px 20px 4px !important;
 }
 
+/* --- ANIMATIONER FÖR MEDDELANDEN --- */
+
+/* Definiera animationen: Glid upp + Tona in */
+@keyframes messagePopIn {
+    0% {
+        opacity: 0;
+        transform: translateY(15px) scale(0.98);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/*ANIMATION NÄR MAN SKICKAR MEDDELANDE*/
+/* Applicera på alla meddelanderader */
+.chat-row {
+    animation: messagePopIn 0.3s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+    will-change: transform, opacity; /* Prestanda-optimering */
+}
+
+/* Snyggare, diskretare tidsstämplar (Bonus-fix) */
+.chat-time {
+    font-size: 11px !important;
+    color: #9CA3AF !important; /* Ljusgrå (Tailwind gray-400) */
+    margin-top: 4px !important;
+    font-weight: 400;
+    opacity: 0.8;
+}
+
+/* Justera tidsstämpeln för "Mig" så den ligger snyggt till höger */
+.chat-row.me .chat-time {
+    text-align: right;
+    margin-right: 2px;
+}
+
+/* Justera tidsstämpeln för "Andra" så den ligger snyggt till vänster */
+.chat-row.other .chat-time,
+.chat-row.system .chat-time {
+    text-align: left;
+    margin-left: 2px;
+}
+/*SLUT PÅ ANIMATION VID SKICKA MEDDELANDE*/
+
 /* Fix för system-ikonen (detektiven) om den hamnar snett */
 body #chatWidget .chat-row.system .chat-bubble {
     background: linear-gradient(135deg, #F9FAFB 0%, #E5E7EB 100%) !important; /* Lite mörkare för system */
