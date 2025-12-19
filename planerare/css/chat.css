@@ -647,30 +647,112 @@ body #chatWidget .chat-row.system .chat-bubble {
     }
 }
 
+/* ==========================================================================
+   FINAL FIX: INPUT MED INBAKADE IKONER
+   ========================================================================== */
+
+/* Huvudboxen längst ner */
 #chatInputArea {
+    background: #fff !important;
+    padding: 10px !important;
+    border-top: 1px solid #eee !important;
     display: flex !important;
-    flex-direction: row !important;
-    align-items: flex-end !important;
-    gap: 8px !important;
+    flex-direction: column !important; /* För att edit-header ska ligga överst */
 }
 
-#chatSendBtn {
+/* Raden med Input och Skicka-knapp */
+.chat-bottom-row {
     display: flex !important;
-    width: 44px !important;
-    height: 44px !important;
-    background-color: #0066FF !important;
-    border-radius: 50% !important;
+    align-items: flex-end !important; /* Justera mot botten */
+    gap: 8px !important;
+    width: 100% !important;
+    position: relative !important;
+}
+
+/* --- 1. WRAPPERN (Den synliga grå rutan) --- */
+.input-wrapper {
+    flex: 1 !important; /* Ta all plats */
+    background-color: #f0f2f5 !important;
+    border-radius: 20px !important;
+    position: relative !important; /* För att kunna positionera ikonerna inuti */
+    min-height: 40px !important;
+    display: flex !important;
+    align-items: center !important;
+    border: 1px solid transparent !important;
+    transition: border 0.2s !important;
+}
+
+.input-wrapper:focus-within {
+    border-color: #0066FF !important;
+    background-color: #fff !important;
+}
+
+/* --- 2. TEXTFÄLTET --- */
+#chatInput {
+    width: 100% !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 10px 12px !important;
+    
+    /* VIKTIGT: Padding höger så texten inte hamnar bakom ikonerna */
+    padding-right: 75px !important; 
+    
+    margin: 0 !important;
+    font-size: 16px !important;
+    line-height: 1.4 !important;
+    max-height: 120px !important;
+    resize: none !important;
+    min-height: 40px !important;
+}
+
+/* --- 3. IKONERNA (Inuti rutan, högerställda) --- */
+.icons-inside-right {
+    position: absolute !important;
+    right: 6px !important;
+    bottom: 4px !important; /* Lås mot botten så de följer med om rutan växer */
+    display: flex !important;
+    gap: 2px !important;
+    height: 32px !important;
+    align-items: center !important;
+    z-index: 10 !important;
+}
+
+.icon-btn-small {
+    background: transparent !important;
+    border: none !important;
+    width: 32px !important;
+    height: 32px !important;
+    color: #0066FF !important;
+    display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    border: none !important;
-    flex-shrink: 0 !important;
-    margin-bottom: 2px !important;
-    z-index: 100 !important;
+    cursor: pointer !important;
+    padding: 0 !important;
 }
-
-#chatSendBtn svg {
-    stroke: white !important;
+.icon-btn-small svg {
     width: 20px !important;
     height: 20px !important;
-    display: block !important;
+}
+
+/* --- 4. SKICKA KNAPPEN (Utanför rutan) --- */
+.send-btn-round {
+    width: 40px !important;
+    height: 40px !important;
+    background-color: #0066FF !important;
+    border-radius: 50% !important;
+    border: none !important;
+    color: white !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important; /* Får INTE krympa */
+    margin-bottom: 2px !important; /* Justera marginellt mot input */
+    cursor: pointer !important;
+}
+
+.send-btn-round svg {
+    width: 20px !important;
+    height: 20px !important;
+    stroke: white !important;
 }
