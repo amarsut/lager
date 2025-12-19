@@ -530,13 +530,40 @@ ul.tech-list li span {
         display: none; 
     }
     .chat-widget[style*="display: flex"] { display: flex !important; }
+
+    .modal-content {
+	    width: 100% !important; height: 100dvh !important;
+	    max-width: 100% !important; max-height: 100dvh !important;
+	    border-radius: 0 !important; margin: 0 !important;
+	    display: flex !important; flex-direction: column !important;
+	    box-shadow: none !important;
+	    padding: 0 !important; /* <--- NYTT: Tar bort den tjocka ramen runt allt */
+	}
+
+	.modal-header {
+	    /* Mindre luft runt rubriken */
+	    padding: 16px 16px 0 16px !important; 
+	    margin-bottom: 10px !important;
+	}
+	
+	.modal-body {
+	    /* Mindre marginaler på sidorna (16px istället för 30px) ger bredare fält */
+	    padding: 0 16px 20px 16px !important; 
+	    flex: 1; 
+	    overflow-y: auto;
+	}
 	
 	/* Tvinga fälten att utnyttja hela bredden */
 	.form-group, .input-wrapper, .input-gray {
 	    width: 100% !important;
 	    box-sizing: border-box !important;
 	}
-	
+
+    .modal-body {
+        flex: 1; overflow-y: auto; padding-bottom: 20px; -webkit-overflow-scrolling: touch;
+        scrollbar-width: none; 
+        -ms-overflow-style: none; 
+    }
     .modal-body::-webkit-scrollbar { display: none; }
 
 
