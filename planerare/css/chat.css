@@ -205,18 +205,6 @@
     gap: 8px !important; width: 100% !important; position: relative !important;
 }
 
-/* Mikrofon-knapp (Vänster) */
-.icon-btn-round.secondary-action {
-    width: 40px; height: 40px;
-    background: #F2F2F7; color: #0066FF;
-    border-radius: 50%; border: none;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; flex-shrink: 0;
-    transition: background 0.2s;
-}
-.icon-btn-round.secondary-action:hover { background: #E5E5EA; }
-.icon-btn-round.secondary-action svg { width: 20px; height: 20px; }
-
 /* Input Wrapper (Mitten) */
 .input-wrapper {
     flex: 1 !important;
@@ -399,7 +387,42 @@
     .toolbar-btn { padding: 12px 20px; }
 }
 
+/* ==========================================================
+   FIX FÖR STORA IKONER I INPUT (PLUS & KAMERA)
+   ========================================================== */
 
+/* 1. Sätt en strikt storlek på själva knapp-behållaren */
+.icons-inside-right .icon-btn-small {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important; /* Förhindrar att den trycks ihop */
+    padding: 6px !important;    /* Luft runt ikonen så den inte nuddar kanten */
+    background: transparent !important;
+    border: none !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
 
+/* 2. Sätt en strikt storlek på själva SVG-ikonen inuti */
+.icons-inside-right .icon-btn-small svg {
+    width: 20px !important;     /* Tvingar bredden */
+    height: 20px !important;    /* Tvingar höjden */
+    min-width: 20px !important;
+    min-height: 20px !important;
+    max-width: 20px !important;
+    max-height: 20px !important;
+    stroke-width: 2px !important; /* Säkerställer att linjerna inte blir för tjocka */
+}
 
-
+/* Justering av positionen för ikon-gruppen så de ligger snyggt till höger */
+.icons-inside-right {
+    position: absolute !important;
+    right: 8px !important;
+    bottom: 50% !important;
+    transform: translateY(50%) !important; /* Centrerar vertikalt */
+    display: flex !important;
+    gap: 2px !important;
+    z-index: 10 !important;
+    height: 32px !important; /* Samma höjd som knapparna */
+}
