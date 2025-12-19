@@ -208,10 +208,11 @@
     position: absolute; right: 80px; bottom: 25px;
     display: flex; gap: 4px; z-index: 5;
 }
-.chat-actions-left .icon-btn { 
-    color: #8E8E93; width: 32px; height: 32px; border-radius: 50%;
-    background: transparent; border: none; cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
+.chat-actions-left .icon-btn {
+    width: 32px;
+    height: 32px;
+    color: #0066FF;             /* Gör dem blå (Messenger-stil) */
+    background: transparent !important;
 }
 .chat-actions-left .icon-btn:hover { color: #007AFF; background: rgba(0, 122, 255, 0.1); }
 
@@ -596,11 +597,18 @@ body #chatWidget .chat-row.system .chat-bubble {
 }
 
 .chat-input-area textarea {
-    background: #ffffff !important;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    border: 1px solid rgba(0,0,0,0.05) !important;
-    border-radius: 25px !important; /* Pill-shape */
-    transition: all 0.3s ease;
+    flex: 1;                    /* Fyller resten av bredden */
+    background: transparent !important; /* Ingen egen färg */
+    border: none !important;    /* Ingen egen ram */
+    box-shadow: none !important;
+    padding: 8px 0 !important;  /* Mindre padding */
+    margin: 0;
+    min-height: 24px;           /* Bas-höjd */
+    max-height: 140px;          /* Max innan scroll */
+    resize: none;
+    font-size: 16px;            /* Förhindrar zoom på iPhone */
+    line-height: 1.4;
+    color: #050505;
 }
 
 .chat-input-area textarea:focus {
@@ -641,26 +649,40 @@ body #chatWidget .chat-row.system .chat-bubble {
 
 /* Ny behållare för text + ikoner */
 .input-field-container {
-    position: relative; /* Viktigt för att kunna låsa ikonerna */
-    flex: 1;            /* Ta upp all plats bredvid sänd-knappen */
-    display: flex;      /* Säkerställer att textarean fyller ut */
+    display: flex;              /* Lägger ikoner och text på rad */
+    align-items: center;        /* Centrerar dem vertikalt PERFEKT */
+    background: #f0f2f5;        /* Flytta färgen hit */
+    border: 1px solid #e5e5ea;  /* Flytta ramen hit */
+    border-radius: 24px;        /* Mjukare hörn */
+    padding: 4px 12px;          /* Luft runt innehållet */
+    flex: 1;                    /* Ta all plats bredvid sänd-knappen */
+    min-height: 44px;           /* Garanterad höjd */
+    transition: border-color 0.2s;
 }
 
 /* Uppdaterad positionering för ikonerna */
 .chat-actions-left { 
-    position: absolute; 
-    right: 10px;        /* Låst till högerkanten av textfältet */
-    top: 50%;           /* Placera mitten på 50% av höjden */
-    transform: translateY(-50%); /* Justera exakt centrum */
-    bottom: auto;       /* Ta bort gammal kod */
-    
+    position: static;           /* Ta bort absolute! */
     display: flex; 
-    gap: 4px; 
-    z-index: 5;
+    align-items: center;
+    gap: 2px;                   /* Avstånd mellan ikonerna */
+    margin-right: 8px;          /* Avstånd till texten */
+    transform: none;            /* Ta bort gammal centrering */
+}
+
+/* Vid fokus: markera hela behållaren, inte bara textrutan */
+.input-field-container:focus-within {
+    border-color: #0066FF;      /* Din primärfärg */
+    background: #fff;
 }
 
 /* Justera textarean så den inte skriver över ikonerna */
 .chat-input-area textarea {
     width: 100%;
     padding-right: 90px !important; /* Plats för ikonerna */
+}
+
+/* Ta bort den gamla padding-right som gjorde plats för ikoner */
+.chat-input-area textarea::placeholder {
+    color: #65676b;
 }
