@@ -1426,3 +1426,51 @@ input[type=range]:active::-webkit-slider-thumb { transform: scale(1.1); border-c
 [data-theme="dark"] input[type=range]::-webkit-slider-thumb { background: #1c1c1e; border-color: #555; }
 
 
+
+/* =========================================
+   FIX: HELSKÄRMS-MODALER & ICKE-STICKY HEADER
+   ========================================= */
+
+@media (max-width: 768px) {
+
+    /* 1. Gör headern icke-sticky (följer med när man scrollar) */
+    .mobile-header {
+        position: relative !important; /* Ändrat från fixed */
+        top: auto !important;
+        box-shadow: none !important;   /* Valfritt: tar bort skuggan för en plattare look */
+    }
+
+    /* 2. Ta bort extra utrymme ovanför innehållet */
+    /* Tidigare hade du padding-top: 70px här för att kompensera för den fasta headern */
+    .main-content {
+        padding-top: 0 !important; 
+    }
+
+    /* 3. Gör Fordon (Reg.nr) och Kund modalen Helskärm */
+    /* Vi sätter top: 0 och height: 100dvh för att täcka allt */
+    #vehicleModal.show,
+    #customerModal.show {
+        top: 0 !important;              
+        height: 100dvh !important;      
+        padding-top: 0 !important;      
+        z-index: 210000 !important;     /* Se till att de ligger över allt annat */
+    }
+
+    /* 4. Justera modalernas innehåll för helskärm */
+    #vehicleModal .modal-content,
+    #customerModal .modal-content {
+        height: 100% !important;
+        max-height: none !important;
+        border-radius: 0 !important;
+        border-top: none !important;
+    }
+
+    /* 5. Eftersom headern inte är sticky längre, behöver vi inte justera 
+       modal-headern för att "börja under" den gamla menyn. 
+       Vi nollställer sticky-inställningarna inuti modalen också. */
+    .vehicle-header-row,
+    #customerModal .modal-header {
+        position: relative !important; /* Ändrat från sticky */
+        top: auto !important;
+    }
+}
