@@ -1,1713 +1,339 @@
-/* =========================================
-   4. MODALER & UI KOMPONENTER
-   ========================================= */
+/* =================================================================
+   MODALS.CSS - MASTER VERSION (RENSAD & ORGANISERAD)
+   ================================================================= */
+
+/* -----------------------------------------------------------------
+   1. BAS-STYLER (GEMENSAMT FÖR ALLA STORLEKAR)
+   ----------------------------------------------------------------- */
+
+/* Backdrop (Mörk bakgrund) */
 .modal-backdrop {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 100;
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5);
     backdrop-filter: blur(2px);
+    display: none;
+    align-items: center; 
+    justify-content: center;
+    /* Grundnivå för modaler. Specifika modaler får högre index längre ner. */
+    z-index: 2000; 
 }
+
 .modal-backdrop.show {
-    display: flex; /* Gör att barn-element (content) kan centrerad */
-    justify-content: center; /* Centrera horisontellt */
-    align-items: center; /* Centrera vertikalt */
+    display: flex;
 }
+
+/* Modal Content (Själva rutan) */
 .modal-content {
-    background-color: var(--content-bg);
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    background-color: #fff;
+    /* Bas-utseende, storlekar justeras i Media Queries */
     position: relative;
     display: flex;
     flex-direction: column;
-    
-    /* FIX: Dator-storlek */
-    width: 100%;
-    max-width: 550px; /* Begränsar bredden på dator */
-    height: auto;     /* Låter höjden anpassa sig */
-    max-height: 85vh; /* Men max 85% av skärmen */
-    margin: auto;     /* Centrerar modalen */
-    overflow-y: auto; 
-}
-.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-.modal-header h2 { margin: 0; font-size: 1.25rem; }
-.modal-close-btn { background: none; border: none; cursor: pointer; }
-
-/* Formulär */
-.form-group { margin-bottom: 16px; display: flex; flex-direction: column; }
-.form-group label { 
-    margin-bottom: 8px; 
-    font-weight: 600; 
-    font-size: 0.85rem; 
-    color: #111827;
+    overflow: hidden; /* Förhindrar att innehåll sticker ut utanför rundade hörn */
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
 }
 
-/* Den nya grå stilen på inputs */
-.input-gray {
+/* --- HEADER --- */
+.modal-header,
+.vehicle-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start; /* Vänsterställt */
+    gap: 12px;
+    height: 60px;
+    padding: 0 16px;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e5e7eb;
+    flex-shrink: 0; /* Får ej krympa */
+}
+
+/* Titlar */
+.modal-header h2,
+#vehicleRegTitle {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #111;
+    line-height: 1;
+}
+
+/* Tillbaka/Stäng-knapp */
+.simple-back-btn,
+.modal-close-btn,
+#vehicleModalClose {
+    background: transparent;
+    border: none;
+    padding: 0;
+    width: 36px; 
+    height: 36px;
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    color: #111;
+    cursor: pointer;
+    border-radius: 50%;
+    transition: background 0.2s;
+}
+.simple-back-btn:hover { background-color: #e5e7eb; }
+.simple-back-btn svg { width: 24px; height: 24px; stroke-width: 2.5px; }
+
+/* --- BODY (SCROLLBAR DEL) --- */
+.modal-body {
+    flex: 1; /* Tar upp resterande höjd */
+    overflow-y: auto;
+    padding: 20px 16px;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* --- FOOTER / ACTIONS --- */
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 16px 24px;
+    background-color: #fff;
+    border-top: 1px solid #f3f4f6;
+    flex-shrink: 0;
+}
+
+/* Knappar */
+.button {
+    padding: 0 20px;
+    height: 40px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: opacity 0.2s;
+}
+.button:active { opacity: 0.8; }
+
+.primary-solid, .button.primary { background-color: #0066FF; color: white; border: none; }
+.secondary-outline, .button.secondary { background-color: white; border: 1px solid #e5e7eb; color: #374151; }
+.button-outline-sm {
+    padding: 0 16px; height: 42px;
+    border: 1px solid #e5e7eb; background: white;
+    border-radius: 8px; font-weight: 600; cursor: pointer;
+    display: flex; align-items: center; gap: 6px;
+}
+
+/* --- FORMULÄR & INPUTS --- */
+.form-group { margin-bottom: 16px; display: flex; flex-direction: column; width: 100%; }
+.form-group label { margin-bottom: 8px; font-weight: 600; font-size: 0.85rem; color: #374151; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.full-width { grid-column: span 2; }
+
+.input-gray, select, textarea {
     width: 100%;
-    padding: 12px 16px;
-    border: none; /* Ingen kantlinje enligt bild */
-    background-color: #F3F4F6; /* Ljusgrå bakgrund */
+    padding: 10px 12px;
+    border: 1px solid transparent;
+    background-color: #F3F4F6;
     border-radius: 8px;
     font-size: 0.95rem;
     color: #1f2937;
     outline: none;
-    transition: background-color 0.2s;
     font-family: inherit;
+    box-sizing: border-box;
 }
+.input-gray:focus { background-color: #fff; border-color: #0066FF; box-shadow: 0 0 0 3px rgba(0,102,255,0.1); }
 
-.input-gray:focus {
-    background-color: #E5E7EB; /* Lite mörkare vid fokus */
-    box-shadow: 0 0 0 2px rgba(0,0,0,0.05);
-}
-
-/* Grid layout för 2 kolumner (Namn/Regnr etc) */
-.form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-bottom: 4px; /* Lite justering */
-}
-
-.full-width { grid-column: span 2; }
-.form-group-split { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.name-reg-wrapper { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
-
-.modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; padding-top: 16px; border-top: 1px solid #f3f4f6; }
-.button { padding: 10px 20px; border-radius: 8px; font-weight: 600; border: none; cursor: pointer; }
-.button.primary { background-color: var(--primary-color); color: white; }
-.button.secondary { background-color: white; border: 1px solid var(--border-color); color: #374151; }
-
-/* Notis-prick (Badge) */
+/* --- SPECIFIKA KOMPONENTER --- */
+/* Badge för notiser */
 .header-badge {
-    position: absolute !important;
-    top: 10px !important;
-    right: 10px !important;
-    width: 8px !important; 
-    height: 8px !important;
-    background-color: #ef4444 !important;
-    border: 2px solid #ffffff !important;
-    border-radius: 50% !important;
-    padding: 0 !important;
-}
-/* Hjälpklasser */
-.icon { width: 24px; height: 24px; }
-.icon-sm { width: 18px; height: 18px; }
-.money-related { font-family: monospace; font-weight: 600; }
-
-
-
-
-
-/**********************************/
-
-
-
-
-
-/* --- Utgifter & Vinst Sektion --- */
-.expense-section {
-    margin-top: 20px;
-    margin-bottom: 20px;
-    padding-top: 20px;
-    border-top: 1px solid #f3f4f6;
+    position: absolute; top: 10px; right: 10px;
+    width: 8px; height: 8px;
+    background-color: #ef4444; border: 2px solid #fff; border-radius: 50%;
 }
 
-.expense-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-}
+/* Utgifter sektion i Jobb */
+.expense-section { margin-top: 20px; padding-top: 20px; border-top: 1px solid #f3f4f6; }
+.expense-header { display: flex; justify-content: space-between; margin-bottom: 12px; }
+.expense-input-row { display: grid; grid-template-columns: 2fr 1fr auto; gap: 10px; }
+.expense-item { display: flex; justify-content: space-between; padding: 8px 12px; background: #fff; border: 1px solid #e5e7eb; border-radius: 6px; margin-bottom: 6px; }
 
-.profit-display {
-    font-size: 0.9rem;
-    font-weight: 600;
-}
-
-.expense-input-row {
-    display: grid;
-    grid-template-columns: 2fr 1fr auto; /* Namn, Pris, Knapp */
-    gap: 10px;
-    align-items: center;
-}
-
-.expense-list {
-    margin-bottom: 12px;
-}
-
-.expense-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 12px;
-    background: #fff;
-    border: 1px solid #e5e7eb;
-    border-radius: 6px;
-    margin-bottom: 6px;
-    font-size: 0.9rem;
-}
-
-.btn-remove-expense {
-    background: none; border: none; color: #ef4444; cursor: pointer; font-size: 1.2rem; line-height: 1; padding: 0 4px;
-}
-
-/* --- Knappar (Enligt bild) --- */
-.button-outline-sm {
-    padding: 10px 16px;
-    border: 1px solid #e5e7eb;
-    background: white;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex; align-items: center; gap: 6px;
-    height: 42px; /* Matcha input höjden */
-}
-.button-outline-sm:hover { background: #f9fafb; }
-
-.secondary-outline {
-    background: white;
-    border: 1px solid #e5e7eb;
-    color: #374151;
-    font-weight: 600;
-    padding: 10px 20px;
-    border-radius: 8px;
-}
-
-.primary-solid {
-    background-color: #0066FF; /* Den blå färgen från bilden */
-    color: white;
-    font-weight: 600;
-    border: none;
-    padding: 10px 24px;
-    border-radius: 8px;
-}
-.primary-solid:hover { background-color: #0052cc; }
-
-/* =========================================
-   NYA FORDONS MODAL STYLES (Matchar Bilden)
-   ========================================= */
-
-/* Gör modalen lagom bred */
-.modal-wide { width: 680px; max-width: 95vw; padding: 0; }
-
-/* Header */
-.vehicle-header-row {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 24px 24px 10px 24px;
-}
-
-.reg-group { 
-    display: flex; 
-    align-items: center; 
-    gap: 8px; /* Avstånd mellan REGNR och knappen */
-}
-#vehicleRegTitle {
-    font-size: 2rem; 
-    font-weight: 800; 
-    letter-spacing: 0.5px;
-    margin: 0; 
-    color: #111; 
-    line-height: 1;
-}
-
+/* Regnr Kopiera-knapp */
 #btnCopyRegModal {
-    background: transparent;
-    border: 1px solid #e5e7eb; /* Tunn grå ram */
-    border-radius: 6px;
-    cursor: pointer;
-    padding: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #6b7280;
-    transition: all 0.2s ease;
-    width: 32px;
-    height: 32px;
+    width: 32px; height: 32px;
+    background: #F1F5F9; border-radius: 8px; border: none;
+    display: flex; align-items: center; justify-content: center;
+    color: #64748B; cursor: pointer;
 }
 
-#btnCopyRegModal:hover {
-    background-color: #f3f4f6;
-    color: #111;
-    border-color: #d1d5db;
-}
-
-#btnCopyRegModal svg {
-    width: 16px;
-    height: 16px;
-}
-
-/* Biluppgifter-knappen (Orange stil) */
-.biluppgifter-btn {
-    display: inline-flex; align-items: center; gap: 6px;
-    background-color: #fff7ed; /* Ljus orange */
-    color: #c2410c;            /* Mörk orange text */
-    border: 1px solid #ffedd5;
-    padding: 6px 12px; border-radius: 6px;
-    font-size: 0.85rem; font-weight: 600; text-decoration: none;
-    transition: all 0.2s;
-}
-.biluppgifter-btn:hover { background-color: #ffedd5; transform: translateY(-1px); }
-
-.oljemagasinet-btn {
-    display: inline-flex; 
-    align-items: center; 
-    gap: 8px;
-    background-color: #F3F4F6; /* Ljusgrå bakgrund */
-    color: #374151;            /* Mörkgrå text */
-    border: 1px solid #E5E7EB; /* Tunn grå ram */
-    padding: 6px 12px; 
-    border-radius: 6px;
-    font-size: 0.85rem; 
-    font-weight: 600; 
-    text-decoration: none;
-    transition: all 0.2s ease;
-    margin-right: 8px; /* Lite avstånd till stäng-krysset */
-}
-
-.oljemagasinet-btn:hover {
-    background-color: #E5E7EB;
-    color: #111;
-    transform: translateY(-1px);
-    border-color: #d1d5db;
-}
-
-.header-actions { display: flex; align-items: center; gap: 12px; }
-
-/* Senaste ägare badge */
-.senaste-agare-box {
-    background-color: #f3f4f6; color: #4b5563;
-    display: inline-block; padding: 4px 12px; border-radius: 6px;
-    font-size: 0.85rem; font-weight: 500; 
-    margin: 0 0 20px 24px; /* Marginal vänster för att linjera med rubrik */
-}
-
-/* =========================================
-   NYA KOMPAKTA TEKNISK DATA STYLES
-   ========================================= */
-
-/* Wrapper runt hela sektionen (den grå rutan) */
-.tech-section-wrapper {
-    background-color: #F9FAFB;
-    margin: 0 24px 20px 24px;
-    border-radius: 12px;
-    padding: 24px; /* Lite mer padding för luft */
-    border: 1px solid #f3f4f6;
-}
-
-/* Huvudrubriken i datan (t.ex. bilikon + "Teknisk Data RGB123") */
-.tech-header-main {
-    display: flex; align-items: center; gap: 12px; margin-bottom: 20px;
-}
-.brand-icon-svg { width: 28px; height: 28px; color: #111; }
-.tech-header-main h4 {
-    margin: 0; font-size: 1.2rem; font-weight: 800; color: #111;
-}
-
-/* Själva listan (ul) */
-ul.tech-list {
-    display: grid;
-    grid-template-columns: 1fr 1.1fr; /* Gör högerkolumnen lite bredare för att undvika radbrytning */
-    gap: 6px 20px;       /* 6px vertikalt gap, 20px horisontellt */
-    padding: 0; 
-    margin: 0;
-    list-style: none;
-}
-
-/* Varje rad i listan (li) */
-ul.tech-list li {
-    display: flex; 
-    align-items: center; /* Centrera ikon och text vertikalt */
-    gap: 10px;           /* Avstånd mellan ikon och text */
-    font-size: 0.9rem; 
-    color: #374151; 
-    line-height: 1.3;
-    margin: 0;           /* VIKTIGT: Nollställ marginaler så Grid styr avståndet */
-    min-width: 0;        /* Förhindrar flex-problem */
-}
-ul.tech-list li:last-child { margin-bottom: 0; }
-
-/* Ikonerna i listan */
-.spec-icon-svg {
-    width: 18px; 
-    height: 18px; 
-    color: #6b7280; 
-    flex-shrink: 0;      /* Ikonen får inte krympa */
-}
-
-/* Fetstilta etiketter (t.ex. "Motor:") */
-ul.tech-list li b {
-    color: #111; 
-    font-weight: 600; 
-    margin-right: 4px;
-    white-space: nowrap; /* Håller etiketten (t.ex. "Motor:") på en rad */
-}
-
-/* --- Sök och Tabell --- */
-.history-search-wrapper {
-    position: relative; /* Viktigt för att ikonen ska kunna placeras */
-    margin: 0 24px 10px 24px;
-    height: 40px; 
-    display: flex; 
-    align-items: center;
-}
-
-.history-search-wrapper input {
-    width: 100%;
-    height: 100%;
-    padding-left: 40px; /* <--- HÄR är lösningen! Ger plats åt ikonen */
-    padding-right: 12px;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    font-size: 0.9rem;
-    outline: none;
-    transition: border-color 0.2s;
-}
-
-.history-search-wrapper input:focus {
-    border-color: var(--primary-color);
-}
-
-.history-search-wrapper .search-icon {
-    position: absolute;
-    left: 12px;
-    top: 50%;
-    transform: translateY(-50%); /* Centrerar ikonen exakt i höjdled */
-    width: 18px;
-    height: 18px;
-    color: #9ca3af;
-    pointer-events: none; /* Gör att man kan klicka "genom" ikonen */
-}
-
-.history-table {
-    width: 100%; border-collapse: collapse; margin-bottom: 20px;
-}
-.history-table th {
-    text-align: left; font-size: 0.7rem; font-weight: 700; 
-    color: #9ca3af; padding: 12px 24px; border-bottom: 1px solid #f3f4f6;
-    text-transform: uppercase; letter-spacing: 0.5px;
-}
-.history-table td {
-    padding: 12px 24px; font-size: 0.9rem; color: #1f2937;
-    border-bottom: 1px solid #f9fafb;
-}
-
-/* --- Redigerbara fält i Teknisk Data --- */
-.spec-input {
-    background: transparent;
-    border: none;
-    border-bottom: 1px dashed #d1d5db;
-    font-family: inherit;
-    font-size: 0.9rem;
-    color: #374151;
-    
-    /* ÄNDRINGARNA HÄR: */
-    width: auto;          /* Låt den anpassa sig */
-    min-width: 60px;      /* Alltid minst så här bred (för att kunna klicka) */
-    display: inline-block;
-    padding: 0;
-    transition: all 0.2s;
-}
-
-/* Behåll dina hover/focus effekter som innan */
-.spec-input:hover { border-bottom-color: var(--primary-color); background-color: #f9fafb; }
-.spec-input:focus { outline: none; border-bottom: 2px solid var(--primary-color); background-color: #fff; font-weight: 500; }
-
-/* Justera listan så input-fältet får plats */
-ul.tech-list li span {
-    display: flex;
-    align-items: center;
-    width: 100%; /* Låt texten ta upp hela bredden */
-}
-
-/* FIX DATORVY 3: Stäng-knappen i modalen (Fordonsdata) */
-#vehicleModalClose {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    border: 1px solid transparent;
-    background-color: transparent; /* Ta bort grå bakgrund */
-    color: #6b7280;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-#vehicleModalClose:hover {
-    background-color: #f3f4f6;
-    color: #111;
-}
-/* Se till att SVG syns */
-#vehicleModalClose svg {
-    width: 24px;
-    height: 24px;
-    display: block;
-}
-
-/* _____ MOBILVY NEDAN ______ */
-/* _____ MOBILVY NEDAN ______ */
-/* _____ MOBILVY NEDAN ______ */
-/* _____ MOBILVY NEDAN ______ */
-/* _____ MOBILVY NEDAN ______ */
-
-/* =========================================
-   MOBIL-OPTIMERING - FINAL V21 (IKONER, FÖRETAG & KOMPAKT)
-   ========================================= */
-
-/* FIX 10: Dölj mobil-element på desktop (Global regel) */
-.mobile-only { display: none; }
-
-@media (max-width: 768px) {
-    
-    /* --- 1. LAYOUT & GRUND --- */
-    .sidebar, .top-bar, #jobsTable thead, .header-cta-btn, .top-search-container, .divider-vertical { display: none !important; }
-    
-    /* Dölj desktop-specifika knappar i header men behåll struktur om behövs */
-    .top-bar-actions .icon-btn:not(#headerPrivacyToggle) { display: none; }
-    
-    .table-container { background: transparent !important; border: none !important; box-shadow: none !important; padding: 0 !important; }
-    
-    .app-layout { display: block !important; height: auto !important; }
-    html, body { 
-        overflow-x: hidden; 
-        overflow-y: auto !important; 
-        background-color: #F8FAFC !important; 
-    }
-    
-    /* Visa mobil-specifika element */
-    .mobile-only { display: block; }
-
-    .main-content { padding: 10px; padding-bottom: 100px; width: 100%; margin: 0; }
-
-    /* --- 2. HEADER & DATUM --- */
-    .mobile-header {
-        display: flex; align-items: center; justify-content: space-between;
-        padding: 0 4px; margin-bottom: 12px;
-    }
-    .header-blue-btn {
-        background-color: #FFFFFF; border: 1px solid #E2E8F0; color: #64748B;
-        width: 32px; height: 32px; border-radius: 8px;
-        display: flex; align-items: center; justify-content: center;
-        cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.03);
-    }
-    .header-date-group { text-align: right; }
-    .header-day { display: block; font-size: 0.65rem; font-weight: 700; color: #94A3B8; letter-spacing: 1px; }
-    .header-date { font-size: 1rem; font-weight: 800; color: #1E293B; }
-
-    .date-separator {
-        font-size: 0.75rem; font-weight: 700; color: #64748B;
-        margin: 16px auto 6px auto; width: 95%; 
-        text-transform: uppercase; letter-spacing: 0.5px;
-    }
-    .date-separator:first-child { margin-top: 0; }
-
-    /* --- 5. MODALER & CHATT --- */
-    
-    .modal-backdrop { display: none !important; }
-
-    .modal-backdrop.show, 
-    .modal-backdrop[style*="display: flex"] {
-        display: flex !important;
-        align-items: flex-end !important;
-        padding: 0 !important;
-        background-color: #fff !important;
-        z-index: 10000 !important;
-        position: fixed !important;
-        top: 0; left: 0; right: 0; bottom: 0;
-    }
-
-    /* Chatt Widget */
-    .chat-widget {
-        position: fixed !important;
-        top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
-        width: 100% !important; height: 100dvh !important;
-        max-width: 100% !important; max-height: 100dvh !important;
-        background-color: #fff !important;
-        z-index: 10000 !important;
-        border-radius: 0 !important; margin: 0 !important;
-        flex-direction: column !important;
-        box-shadow: none !important;
-        display: none; 
-    }
-    .chat-widget[style*="display: flex"] { display: flex !important; }
-
-    .modal-content {
-	    width: 100% !important; height: 100dvh !important;
-	    max-width: 100% !important; max-height: 100dvh !important;
-	    border-radius: 0 !important; margin: 0 !important;
-	    display: flex !important; flex-direction: column !important;
-	    box-shadow: none !important;
-	    padding: 0 !important; /* <--- NYTT: Tar bort den tjocka ramen runt allt */
-	}
-
-	.modal-header {
-	    /* Mindre luft runt rubriken */
-	    padding: 16px 16px 0 16px !important; 
-	    margin-bottom: 10px !important;
-	}
-	
-	.modal-body {
-	    /* Mindre marginaler på sidorna (16px istället för 30px) ger bredare fält */
-	    padding: 0 16px 20px 16px !important; 
-	    flex: 1; 
-	    overflow-y: auto;
-	}
-	
-	/* Tvinga fälten att utnyttja hela bredden */
-	.form-group, .input-wrapper, .input-gray {
-	    width: 100% !important;
-	    box-sizing: border-box !important;
-	}
-
-    .modal-body {
-        flex: 1; overflow-y: auto; padding-bottom: 20px; -webkit-overflow-scrolling: touch;
-        scrollbar-width: none; 
-        -ms-overflow-style: none; 
-    }
-    .modal-body::-webkit-scrollbar { display: none; }
-
-
-    /* --- BILD-ZOOM MODAL --- */
-    #imageZoomModal[style*="display: flex"] {
-        background-color: rgba(0, 0, 0, 0.95) !important;
-        align-items: center !important; justify-content: center !important;
-        display: flex !important; 
-    }
-    #imageZoomModal .image-zoom-content {
-        height: auto !important; width: 100% !important;
-        background: transparent !important;
-        display: flex; flex-direction: column;
-        justify-content: center; align-items: center;
-    }
-    #imageZoomModal img {
-        max-height: 80vh !important; max-width: 95vw !important;
-        width: auto !important; object-fit: contain !important;
-        border-radius: 4px !important;
-    }
-
-    /* --- FORDON MODAL --- */
-    #vehicleModal .modal-content { padding: 0 !important; }
-
-    .vehicle-header-row {
-        background: #fff; padding: 12px 16px !important;
-        display: grid !important; grid-template-columns: 1fr auto; 
-        align-items: center; border-bottom: 1px solid #f1f5f9;
-        margin: 0 !important; position: sticky; top: 0; z-index: 50;
-    }
-
-    .reg-group { display: flex; align-items: center; gap: 10px; justify-content: flex-start !important; }
-    #vehicleRegTitle { font-size: 1.8rem !important; font-weight: 800; letter-spacing: 1px; color: #111; margin: 0; }
-    
-    #btnCopyRegModal {
-        position: static !important; background: #F1F5F9; color: #64748B; 
-        width: 32px; height: 32px; border-radius: 8px; border: none;
-        display: flex; align-items: center; justify-content: center;
-    }
-
-    #vehicleModalClose {
-        display: flex !important; background: transparent; color: #111;
-        width: 36px; height: 36px; border-radius: 50%; border: none;
-        align-items: center; justify-content: center; cursor: pointer;
-    }
-    #vehicleModalClose svg { width: 24px; height: 24px; }
-
-    .header-actions {
-        display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
-        padding: 16px 16px 0 16px; margin: 0;
-    }
-    .biluppgifter-btn, .oljemagasinet-btn {
-        width: 100%; justify-content: center; height: 40px; margin: 0 !important;
-        font-size: 0.9rem !important; border-radius: 8px !important;
-        background-color: #F8FAFC !important; border: 1px solid #E2E8F0 !important; color: #334155 !important;
-    }
-    
-    .senaste-agare-box {
-        margin: 16px !important; width: auto !important;
-        background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 6px;
-        text-align: center; font-weight: 500; padding: 10px !important;
-        font-size: 0.85rem; color: #64748B;
-    }
-
-    /* --- TEKNISK DATA (KOMPAKT GRID MED LINJE) --- */
-    .tech-section-wrapper { 
-        margin: 0 !important; 
-        padding: 0 16px !important; 
-        border: none !important; 
-        background: transparent !important; 
-    }
-    .tech-header-main { 
-        display: flex !important; 
-        align-items: center; 
-        gap: 8px; 
-        margin-bottom: 8px; /* Lite mindre marginal under rubriken */
-    }
-    .tech-header-main h4 { margin: 0; font-size: 1rem; }
-
-    ul.tech-list {
-        display: flex !important; 
-        flex-direction: column !important; 
-        gap: 0 !important;
-        border: 1px solid #E2E8F0; 
-        border-radius: 8px; 
-        overflow: hidden; 
-        background: #fff;
-    }
-
-    ul.tech-list li {
-        display: grid !important;
-        grid-template-columns: 90px 1fr !important; /* Minskad vänsterkolumn från 100px till 90px */
-        border-bottom: 1px solid #f1f5f9 !important;
-        margin: 0 !important; 
-        padding: 0 !important;
-        background: transparent !important; 
-        min-height: 32px !important; /* Minskad höjd från 38px */
-    }
-    ul.tech-list li:last-child { border-bottom: none !important; }
-    
-    /* Vänster kolumn */
-    .spec-label-col {
-        display: flex;
-        align-items: center;
-        gap: 6px; /* Tajtare avstånd mellan ikon och text */
-        padding: 4px 8px; /* Mindre padding (var 6px 12px) */
-        background-color: #F8FAFC; 
-        border-right: 1px solid #E2E8F0; 
-    }
-    
-    .spec-label-col svg {
-        width: 14px; height: 14px; color: #94A3B8; flex-shrink: 0;
-    }
-    
-    .spec-label-col b {
-        font-size: 0.8rem; color: #64748B; font-weight: 600; 
-        white-space: nowrap;
-    }
-
-    /* Höger kolumn */
-    .spec-value-col {
-        display: flex;
-        align-items: center;
-        /* Padding: Top/Bottom=4px, Right=8px, Left=6px (närmare linjen) */
-        padding: 4px 8px 4px 6px; 
-        background-color: #fff;
-        overflow: hidden; /* Nödvändigt för text-hantering */
-    }
-
-    .spec-input {
-        font-size: 0.80rem; /* Mindre text */
-    	letter-spacing: -0.3px; /* Tryck ihop bokstäverna lite */
-        font-weight: 600; 
-        color: #0F172A; 
-        border: none !important; 
-        background: transparent !important; 
-        padding: 0 !important; 
-        width: 100% !important; 
-        outline: none;
-        
-        /* Hantera text som är för lång (se tips nedan) */
-        text-overflow: ellipsis; 
-        white-space: nowrap;
-        overflow: hidden;
-    }
-
-    /* --- HISTORIK --- */
-    .history-search-wrapper { margin: 24px 16px 12px 16px !important; }
-    .history-search-wrapper input { 
-        width: 100%; border-radius: 8px; background: #F1F5F9; border: none; height: 40px; padding-left: 40px;
-    }
-    .history-table { width: 100%; margin-top: 0; }
-    .history-table thead { display: none; } 
-    
-    #vehicleHistoryList tr {
-        display: grid; grid-template-columns: 80px 1fr auto; 
-        gap: 10px; align-items: center;
-        padding: 12px 16px; border-bottom: 1px solid #f1f5f9; background: #fff;
-    }
-    #vehicleHistoryList td { padding: 0 !important; border: none !important; }
-    #vehicleHistoryList td:nth-child(1) { font-size: 0.8rem; color: #64748B; font-weight: 500; }
-    #vehicleHistoryList td:nth-child(2) { 
-        font-size: 0.9rem; font-weight: 600; color: #0F172A; 
-        white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
-    }
-    #vehicleHistoryList td:nth-child(3) { display: none; }
-    #vehicleHistoryList td:nth-child(4) { font-size: 0.9rem; font-weight: 700; color: #16A34A; text-align: right; }
-
-
-    /* --- 6. JOBB MODAL --- */
-    
-    /* FIX 5: Lägre footer */
-    .modal-actions {
-	    margin-top: auto !important; 
-	    border-top: 1px solid #f1f5f9 !important;
-	    padding: 16px !important; /* Lite mer luft */
-	    background: #fff; /* Täck bakomliggande text om man scrollar */
-	    position: sticky;
-	    bottom: 0;
-	    z-index: 10;
-	    justify-content: flex-end !important;
-	}
-    .modal-actions .button { 
-        padding: 0 16px !important; 
-        font-size: 0.9rem !important; 
-        height: 40px !important; /* Tvinga lägre knapphöjd */
-        line-height: 38px !important;
-        display: flex; align-items: center; justify-content: center;
-    }
-
-    /* FIX 7: Breda inputfält */
-    #jobModalForm .form-group input, 
-    #jobModalForm .form-group select,
-    #jobModalForm .form-group textarea {
-        width: 100% !important; 
-    }
-    
-    /* FIX 8: Större textfält & auto-växande */
-    #jobModalForm textarea {
-        min-height: 100px !important;
-        field-sizing: content; 
-    }
-
-    /* FIX 7: Endast "+" tecken på knappen */
-    #btnAddExpense {
-        font-size: 0 !important; /* Dölj text "Lägg till" */
-        width: 42px !important;
-        padding: 0 !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        flex-shrink: 0;
-    }
-    #btnAddExpense svg { margin: 0 !important; width: 20px !important; height: 20px !important; }
-
-    #jobModalForm .form-group {
-        margin-bottom: 12px !important; 
-    }
-    #jobModalForm input, 
-    #jobModalForm select {
-        padding: 0 12px !important;
-        height: 42px !important;
-        font-size: 16px !important;
-    }
-    
-    #jobModalForm .form-group-split {
-        gap: 12px !important;
-    }
-
-    /* --- 7. CHATT (FIX 4: IKONER I FÄLTET) --- */
-    
-    .chat-input-area {
-        padding: 10px 12px !important;
-        gap: 8px !important;
-        align-items: center !important;
-        min-height: 60px;
-        position: relative !important; /* Viktigt för positionering */
-    }
-
-    /* Textrutan - tar all ledig plats */
-    .chat-input-area textarea {
-        flex: 1 !important; /* Tar upp bredden minus knappen */
-        padding: 12px 75px 12px 16px !important; /* Höger padding ger plats åt ikonerna */
-        height: 44px !important;
-        min-height: 44px !important;
-        border-radius: 22px !important;
-        margin: 0 !important;
-        width: auto !important;
-        box-sizing: border-box;
-        overflow-y: hidden !important; 
-        scrollbar-width: none; 
-        -ms-overflow-style: none;
-    }
-
-    /* Vänsterikoner (Kamera/Galleri) -> Flyttade så de ligger INUTI fältet men VÄNSTER om skicka-knappen */
-    .chat-actions-left { 
-        position: absolute !important;
-        right: 74px !important; /* 12px padding + 44px knapp + 8px gap = ca 64px från högerkanten */
-        top: 50% !important;
-        transform: translateY(-50%) !important;
-        margin: 0 !important;
-        gap: 4px !important;
-        display: flex;
-        align-items: center;
-        z-index: 20;
-    }
-    
-    .chat-actions-left .icon-btn {
-        width: 32px !important; height: 32px !important; 
-        color: #94A3B8 !important; 
-        margin: 0 !important;
-        background: transparent !important;
-        padding: 0 !important;
-        display: flex; align-items: center; justify-content: center;
-    }
-    
-    /* Justera storlek på ikonerna i textfältet */
-    .chat-actions-left .icon-btn svg {
-        width: 20px !important; height: 20px !important;
-    }
-
-    /* Skicka-knappen - Helt centrerad */
-    #chatSendBtn {
-        position: static !important;
-        width: 44px !important; height: 44px !important;
-        margin: 0 !important;
-        border-radius: 50%;
-        display: flex !important;
-        align-items: center !important;     /* Centrera vertikalt */
-        justify-content: center !important; /* Centrera horisontellt */
-        padding: 0 !important;              /* Nollställ padding som kan störa */
-        box-shadow: none !important;
-        flex-shrink: 0;
-    }
-    
-    /* Pilen inuti knappen */
-    #chatSendBtn svg { 
-        width: 20px !important; 
-        height: 20px !important; 
-        margin: 0 !important; 
-        display: block; 
-        transform: translateX(0px) !important; /* Liten optisk justering så pilen ser centrerad ut */
-    }
-
-
-    /* --- 8. BOTTENMENY --- */
-    .mobile-nav {
-        position: fixed; bottom: 0; left: 0; right: 0;
-        background: #ffffff; height: 70px; 
-        display: flex; justify-content: space-between; align-items: center;
-        padding: 0 10px; border-top: 1px solid #E5E7EB; z-index: 9999;
-    }
-    .mobile-nav-item {
-        background: none; border: none; flex: 1; 
-        display: flex; flex-direction: column; align-items: center; justify-content: center;
-        gap: 4px; color: #94A3B8; cursor: pointer; height: 100%;
-    }
-    .mobile-nav-item.active { color: #111; } 
-    .mobile-nav-item svg { width: 24px !important; height: 24px !important; stroke-width: 2px; }
-    .mobile-nav-item span { font-size: 0.7rem; font-weight: 600; }
-
-    #mobileAddJobBtn {
-        width: auto !important; height: 100% !important; transform: none !important; 
-        background: none !important; border: none !important; box-shadow: none !important;
-        border-radius: 0 !important; display: flex !important;
-        flex-direction: column !important; align-items: center !important;
-        justify-content: center !important; flex: 1; color: #94A3B8 !important;
-    }
-    #mobileAddJobBtn svg { width: 24px !important; height: 24px !important; color: inherit !important; }
-    #mobileAddJobBtn:active { color: #111 !important; }
-    
-    #mobileSearchModal {
-	    position: fixed !important;
-	    top: 0; left: 0; right: 0; bottom: 0;
-	    z-index: 99999 !important; /* Extremt högt z-index */
-	    background: #fff;
-	    display: none; /* Dold som standard */
-	}
-
-	#mobileSearchModal.show {
-	    display: block !important;
-	}
-}
-
-/* =========================================
-   FIX FÖR DATORVY: TEKNISK DATA (MAXIMAL KOMPAKTNESS)
-   Gäller endast skärmar bredare än 768px
-   ========================================= */
-@media (min-width: 769px) {
-
-    /* Behållaren: Grid med 2 kolumner */
-    ul.tech-list {
-        display: grid;
-        grid-template-columns: 1fr 1fr; /* Två kolumner */
-        gap: 6px; /* EXTREMT TÄT: Minskat avstånd mellan rutorna */
-        border: none;
-        background: transparent;
-        padding: 0;
-        margin: 0;
-        list-style: none;
-    }
-
-    /* Varje "kort" (Rad) */
-    ul.tech-list li {
-        display: flex; 
-        align-items: stretch;
-        background: #fff;
-        border: 1px solid #e2e8f0;
-        border-radius: 4px; /* Mindre rundning för super-kompakt känsla */
-        overflow: hidden;
-        min-height: 34px; /* MINSKAD HÖJD: Tvinga ner höjden */
-    }
-
-    /* Vänster del (Ikon + Label) */
-    .spec-label-col {
-        width: 80px; /* ÄNNU SMALARE: Ger maximalt utrymme till värdet */
-        flex-shrink: 0;
-        background-color: #f8fafc;
-        border-right: 1px solid #e2e8f0;
-        display: flex;
-        align-items: center;
-        gap: 4px; /* Mindre gap mellan ikon och text */
-        padding: 4px 8px; /* MINSKAD LUFT: Liten padding inuti */
-        font-weight: 600;
-        color: #64748b;
-        font-size: 0.75rem; /* Mindre text för etiketten */
-    }
-
-    /* Höger del (Värdet/Input) */
-    .spec-value-col {
-        flex-grow: 1;
-        display: flex;
-        align-items: center;
-        padding: 0 10px;
-        background-color: #fff;
-        min-width: 0; 
-        overflow: hidden; /* Hantera överflöd */
-    }
-    
-    /* Input-fältet på dator */
-    .spec-input {
-        width: 100%;
-        border: none;
-        background: transparent;
-        font-size: 0.85rem; /* Lätt mindre storlek */
-        color: #0f172a;
-        font-weight: 500;
-        outline: none;
-        padding: 4px 0; /* MAXIMAL KOMPAKTNESS: Nästan ingen vertikal padding */
-        
-        /* FIX för att visa lång text och hantera overflow (t.ex. BMW 335i...) */
-        white-space: nowrap; /* Håll texten på en rad */
-        overflow: hidden; 
-        text-overflow: ellipsis; /* Visa ... om texten är för lång */
-    }
-    
-    /* Ikoner */
-    .spec-icon-svg {
-        width: 13px; 
-        height: 13px;
-        color: #94a3b8;
-    }
-}
-
-/* =================================================================
-   FIX: 1. MOBIL MODAL FOOTER (Knapparna i botten)
-   ================================================================= */
-@media (max-width: 768px) {
-    /* Gör så att modalen tar hela skärmen och använder flexbox */
-    #jobModal .modal-content, 
-    #jobModalForm {
-        height: 100vh !important;
-        display: flex !important;
-        flex-direction: column !important;
-        overflow: hidden !important; /* Förhindrar dubbla scrollbars */
-    }
-
-    /* Gör så att innehållet (inputs) kan scrolla men lämnar plats för footern */
-    #jobModalForm .modal-body,
-    #jobModal .modal-body {
-        flex: 1 !important; /* Tar all tillgänglig plats */
-        overflow-y: auto !important;
-        padding-bottom: 100px !important; /* Extra plats så man kan scrolla fram sista fältet */
-    }
-
-    /* Lås fast knapparna i botten */
-    .modal-actions {
-        position: fixed !important;
-        bottom: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
-        background: #ffffff !important;
-        border-top: 1px solid #e5e7eb !important;
-        padding: 12px 16px !important;
-        z-index: 9999 !important;
-        box-shadow: 0 -4px 10px rgba(0,0,0,0.05) !important;
-        margin: 0 !important;
-        display: flex !important;
-        
-        justify-content: flex-end !important; /* ÄNDRAT: Tryck mot höger */
-        gap: 10px !important;
-    }
-
-    /* Gör knapparna större och tydligare på mobil */
-    .modal-actions .button {
-        height: 40px !important;
-        font-size: 0.95rem !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-		
-        flex: 0 0 auto !important; /* Förhindra att de sträcks ut */
-        width: auto !important;   /* ÄNDRAT: Anpassa bredd efter text */
-        min-width: 100px;         /* Minsta bredd för att vara tryckvänliga */
-        padding: 0 20px !important;
-    }
-}
-
-/********* MODALER ENHETLIGT UPPDATERA SEN TA BORT DUBLETTER **********/
-/********* MODALER ENHETLIGT UPPDATERA SEN TA BORT DUBLETTER **********/
-/********* MODALER ENHETLIGT UPPDATERA SEN TA BORT DUBLETTER **********/
-/********* MODALER ENHETLIGT UPPDATERA SEN TA BORT DUBLETTER **********/
-/********* MODALER ENHETLIGT UPPDATERA SEN TA BORT DUBLETTER **********/
-
-
-/* =================================================================
-   ENHETLIG HEADER DESIGN (Vänsterställd titel - One UI Style)
-   ================================================================= */
-
-/* --- 1. Uppdaterad Modal-struktur --- */
-.modal-content {
-    background-color: var(--content-bg);
-    padding: 0 !important; /* Låter headern gå kant-till-kant */
-    border-radius: 12px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    
-    width: 100%;
-    max-width: 550px;
-    height: auto;
-    max-height: 85vh;
-    margin: auto;
-    overflow: hidden;
-}
-
-/* --- 2. Headern (Container) --- */
-.modal-header {
-    display: flex;
-    align-items: center;
-    
-    /* ÄNDRING: Vänsterställ allt istället för space-between */
-    justify-content: flex-start !important; 
-    
-    /* ÄNDRING: Avståndet mellan Pilen och Texten */
-    gap: 4px !important; 
-    
-    background-color: #f8f9fa !important;       
-    border-bottom: 1px solid #e5e7eb !important; 
-    padding: 0 16px !important;    
-    height: 60px !important;
-    flex-shrink: 0;
-    margin-bottom: 0 !important;
-    position: relative;
-}
-
-/* --- 3. Titeln (Mindre & Nära pilen) --- */
-.modal-header h2,
-#vehicleRegTitle { 
-    margin: 0 !important;
-    padding: 0 !important;
-    
-    /* ÄNDRING: Ta bort absolut positionering så den hamnar bredvid pilen */
-    position: static !important;
-    transform: none !important;
-    left: auto !important;
-    text-align: left !important;
-    
-    /* Textstorlek */
-    font-size: 1.1rem !important; /* Mindre text */
-    font-weight: 700 !important;
-    color: #111;
-    
-    /* Finjustering av textens vertikala position */
-    line-height: 1;
-    padding-top: 2px !important; 
-}
-
-/* --- 4. Tillbaka-knappen (Pilen) --- */
-.simple-back-btn,
-.messenger-back-btn {
-    background: transparent;
-    border: none;
-    padding: 0;
-    
-    /* Storlek på klick-ytan */
-    width: 40px; 
-    height: 100%;
-    
-    display: flex;
-    align-items: center;
-    justify-content: flex-start; /* Ikonen längst till vänster */
-    
-    color: #111 !important;
-    cursor: pointer;
-    flex-shrink: 0; /* Pilen får inte krympa */
-    
-    /* Justera marginalen negativt om du vill ha den ÄNNU närmare kanten */
-    margin-left: -4px; 
-}
-
-.simple-back-btn svg,
-.messenger-back-btn svg {
-    width: 24px;
-    height: 24px;
-    stroke-width: 2.5px;
-}
-
-/* --- 5. Kroppen --- */
-.modal-body {
-        /* ÄNDRING: Ändrade första siffran (Top) från 0 till 20px */
-        padding: 20px 16px 20px 16px !important; 
-        
-        flex: 1 !important; 
-        overflow-y: auto !important;
-        padding-bottom: 100px !important; /* Behåll denna för att kunna scrolla förbi knapparna */
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: none; 
-        -ms-overflow-style: none; 
-    }
-
-/* --- 6. Footern --- */
-.modal-actions { 
-    display: flex; 
-    justify-content: flex-end; 
-    gap: 10px; 
-    padding: 16px 24px; 
-    background-color: #fff; 
-    border-top: 1px solid #f3f4f6; 
-    margin-top: 0; 
-    position: relative;
-    z-index: 10;
-}
-
-/* --- 7. Fordons-modalen (Samma stil) --- */
-.vehicle-header-row {
-    display: flex; 
-    align-items: center;
-    
-    /* Samma logik som modal-header */
-    justify-content: flex-start !important;
-    gap: 8px !important;
-    
-    background-color: #f8f9fa !important;  
-    border-bottom: 1px solid #e5e7eb !important; 
-    padding: 0 16px !important; 
-    height: 60px !important;
-    
-    margin: 0 !important; 
-    position: sticky; 
-    top: 0; 
-    z-index: 50;
-}
-
-/* --- 8. Sök-modalen (Messenger) --- */
-.messenger-search-header {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start !important;
-    gap: 8px !important;
-    
-    padding: 0 12px; 
-    height: 60px !important;
-    background-color: #f8f9fa !important; 
-    border-bottom: 1px solid #e5e7eb !important;
-}
-
-/* =================================================================
-   KUND- & FORDONSSYSTEM (MASTER CSS - FINAL)
-   ================================================================= */
-
-/* --- 1. Z-INDEX HIERARKI (LIVSVIKTIGT) --- */
-/* Detta styr vad som ligger överst. Rör ej ordningen! */
-
-/* Kundmodalen (Lägst av modalerna) */
-#customerModal { z-index: 20000 !important; }
-
-/* Fordonsmodalen (Måste ligga ÖVER kundmodalen) */
-#vehicleModal { z-index: 20050 !important; }
-
-/* Jobbmodalen (Nytt jobb - Högst av standardmodalerna) */
-#jobModal { z-index: 20100 !important; }
-
-/* Märkesväljaren (Absolut högst) */
-#brandSelectModal { z-index: 300000 !important; }
-
-
-/* --- 2. KUNDVY (LISTAN) --- */
-.customer-grid {
-    display: grid !important;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)) !important;
-    gap: 12px !important;
-    padding-bottom: 80px !important;
-    width: 100% !important;
-}
-
-/* Sökfältet padding */
-#customerSearchInput { padding-left: 42px !important; }
-
-/* Kundkortet */
-.customer-card {
-    background: #fff !important;
-    border: 1px solid #e2e8f0 !important;
-    border-radius: 12px !important;
-    padding: 16px !important;
-    display: flex !important; /* VIKTIGT FÖR LAYOUTEN */
-    align-items: center !important;
-    gap: 16px !important;
-    cursor: pointer !important;
-    transition: transform 0.1s, box-shadow 0.1s !important;
-    min-height: 80px !important;
-}
-.customer-card:active { transform: scale(0.98) !important; }
-.customer-card:hover { border-color: #0066FF !important; box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important; }
-
-/* Avatarer */
-.c-avatar {
-    width: 48px !important; height: 48px !important;
-    border-radius: 50% !important;
-    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-    color: #0066FF;
-    font-weight: 700; font-size: 1.1rem;
-    display: flex !important; align-items: center !important; justify-content: center !important;
-    flex-shrink: 0 !important; /* Får inte krympa */
-}
-.c-avatar.vip {
-    background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%) !important;
-    color: #d97706 !important; border: 1px solid #fcd34d !important;
-}
-
-/* Text i kortet */
-.c-info { flex: 1 !important; min-width: 0 !important; }
-.c-info h3 { margin: 0 !important; font-size: 1rem !important; color: #1e293b !important; font-weight: 700 !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.c-meta { font-size: 0.8rem !important; color: #64748b !important; margin-top: 2px !important; }
-
-
-/* --- 3. INNEHÅLL I MODALER (STATISTIK & GARAGE) --- */
-
-/* Statistik-raden (Detta var trasigt på din bild) */
+/* Kundstatistik (Grid) */
 .customer-stats-row {
-    display: grid !important;
-    grid-template-columns: 1fr 1fr 1fr !important; /* Tre kolumner */
-    background: #fff !important;
-    padding: 16px !important;
-    border-bottom: 1px solid #e2e8f0 !important;
-    margin-bottom: 0 !important;
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px; padding: 16px; background: #fff; border-bottom: 1px solid #e2e8f0;
 }
-.c-stat-box { 
-    display: flex !important; 
-    flex-direction: column !important; 
-    align-items: center !important; 
-    gap: 2px !important; 
-}
-.c-stat-label { font-size: 0.65rem !important; color: #94a3b8 !important; font-weight: 700 !important; text-transform: uppercase !important; }
-.c-stat-value { font-size: 1.1rem !important; font-weight: 800 !important; color: #0f172a !important; text-align: center !important; }
-
-/* Sektioner */
-.customer-section {
-    padding: 16px !important;
-    background: #fff !important;
-    border-bottom: 1px solid #e2e8f0 !important;
-    margin-bottom: 10px !important;
-}
-.customer-section:last-child { border-bottom: none !important; margin-bottom: 0 !important; }
-.section-title { font-size: 0.75rem !important; font-weight: 800 !important; color: #94a3b8 !important; text-transform: uppercase !important; margin: 0 0 10px 0 !important; }
+.c-stat-box { display: flex; flex-direction: column; align-items: center; }
+.c-stat-label { font-size: 0.65rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; }
+.c-stat-value { font-size: 1.1rem; font-weight: 800; color: #0f172a; }
 
 /* Garage Chips */
-.vehicle-chips-container { display: flex !important; flex-wrap: wrap !important; gap: 6px !important; }
+.vehicle-chips-container { display: flex; flex-wrap: wrap; gap: 8px; }
 .v-chip {
-    background: #fff !important; border: 1px solid #e2e8f0 !important;
-    padding: 6px 10px !important; border-radius: 20px !important;
-    font-size: 0.85rem !important; font-weight: 600 !important; color: #1e293b !important;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.03) !important;
-    display: flex !important; align-items: center !important;
-    cursor: pointer !important;
+    background: #fff; border: 1px solid #e2e8f0; padding: 6px 10px;
+    border-radius: 20px; font-size: 0.85rem; font-weight: 600;
+    display: flex; align-items: center; cursor: pointer;
 }
-.v-chip img { width: 14px !important; height: 14px !important; margin-right: 6px !important; }
-
-/* Historiklista (Tidslinje) */
-.history-list-clean {
-    position: relative !important; padding-left: 20px !important;
-    border-left: 2px solid #e2e8f0 !important; margin-left: 8px !important; margin-top: 10px !important;
-}
-.history-item-clean {
-    position: relative !important; display: grid !important; 
-    grid-template-columns: 1fr auto !important; gap: 12px !important;
-    padding: 12px 0 !important; border-bottom: 1px solid #f1f5f9 !important;
-    cursor: pointer !important;
-}
-.history-item-clean:last-child { border-bottom: none !important; }
-.history-item-clean::before {
-    content: ''; position: absolute !important; left: -26px !important; top: 18px !important;
-    width: 10px !important; height: 10px !important; background: #e2e8f0 !important;
-    border: 2px solid #fff !important; border-radius: 50% !important;
-    box-shadow: 0 0 0 1px #cbd5e1 !important;
-}
-.h-info-col { overflow: hidden !important; min-width: 0 !important; }
-.h-date { font-size: 0.85rem !important; font-weight: 700 !important; color: #1e293b !important; margin-bottom: 2px !important; }
-.h-desc-row { display: flex !important; align-items: center !important; width: 100% !important; }
-.h-desc-text {
-    font-size: 0.8rem !important; color: #64748b !important; font-weight: 400 !important;
-    white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; flex-shrink: 1 !important;
-}
-.h-desc-reg {
-    font-size: 0.8rem !important; font-weight: 600 !important; color: #475569 !important;
-    white-space: nowrap !important; flex-shrink: 0 !important; margin-left: 4px !important;
-}
-.h-price { font-size: 0.9rem !important; font-weight: 700 !important; color: #10b981 !important; white-space: nowrap !important; align-self: flex-start !important; }
-
-/* Knappar & Ikoner */
-.header-icon-action {
-    width: 36px !important; height: 36px !important;
-    border-radius: 8px !important; border: 1px solid #e2e8f0 !important;
-    background: #fff !important; color: #64748b !important;
-    display: flex !important; align-items: center !important; justify-content: center !important;
-    cursor: pointer !important;
-}
-.header-icon-action img { width: 20px !important; height: 20px !important; object-fit: contain !important; display: block !important; }
-.vip-badge-pill {
-    background: #fffbeb !important; color: #b45309 !important; padding: 2px 8px !important;
-    border-radius: 12px !important; font-size: 0.65rem !important; font-weight: 800 !important;
-    border: 1px solid #fcd34d !important; display: flex !important; align-items: center !important; gap: 4px !important; text-transform: uppercase !important;
-}
-
-/* Modal Footer Knappar (Gemensamt) */
-.modal-actions button {
-    display: flex !important; align-items: center !important; justify-content: center !important;
-    gap: 8px !important; line-height: 1 !important;
-    border-radius: 12px !important; font-weight: 600 !important; cursor: pointer !important;
-}
-.modal-actions .secondary-outline { background: #fff !important; border: 1px solid #e2e8f0 !important; color: #334155 !important; }
-.modal-actions .primary-solid { background: #0066FF !important; border: none !important; color: #fff !important; }
+.v-chip img { width: 14px; height: 14px; margin-right: 6px; }
 
 
-/* =================================================================
-   4. RESPONSIVITET (MOBIL & DATOR)
-   ================================================================= */
-
-/* --- A. DATORVY (Min 769px) --- */
+/* -----------------------------------------------------------------
+   2. DESKTOP-SPECIFIKA STYLER (min-width: 769px)
+   ----------------------------------------------------------------- */
 @media (min-width: 769px) {
-    /* Centrera modalerna */
-    #customerModal, #vehicleModal {
-        align-items: center !important; justify-content: center !important; padding-top: 0 !important;
-    }
     
-    /* Box-storlek */
-    #customerModal .modal-content, 
-    #vehicleModal .modal-content {
-        width: 600px !important; max-width: 90vw !important;
-        height: 600px !important; /* Fast höjd för symmetri */
-        max-height: 85vh !important;
-        border-radius: 12px !important; overflow: hidden !important;
-        display: flex !important; flex-direction: column !important;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important;
+    /* Centrerad modal-box */
+    .modal-content {
+        width: 100%; max-width: 550px;
+        height: auto; max-height: 85vh;
+        margin: auto;
+        border-radius: 12px;
     }
 
-    .modal-body { 
-        flex: 1 !important; overflow-y: auto !important; 
-        padding-bottom: 20px !important; /* Normal padding */
-    }
-    
-    /* SPECIFIKT FÖR FORDON (Ta bort tomrum om inga knappar) */
-    #vehicleModal .modal-body { padding-bottom: 0 !important; }
+    .modal-wide .modal-content { max-width: 700px; }
 
-    /* Footer (Knappar till höger) */
-    #customerModal .modal-actions {
-        display: flex !important; justify-content: flex-end !important;
-        padding: 16px 24px !important; width: 100% !important;
-        background: #fff !important; border-top: 1px solid #f1f5f9 !important;
+    /* Fordonsspecifik desktop */
+    #vehicleModal .modal-body { padding-bottom: 0; }
+    
+    /* Teknisk data Grid (Desktop) */
+    ul.tech-list {
+        display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+        padding: 0; list-style: none;
     }
-    #customerModal .modal-actions button {
-        width: auto !important; min-width: 120px !important; height: 40px !important;
+    ul.tech-list li {
+        display: flex; align-items: center;
+        background: #fff; border: 1px solid #e2e8f0; border-radius: 4px;
+        overflow: hidden; min-height: 34px;
     }
+    .spec-label-col { width: 90px; background: #f8fafc; padding: 4px 8px; font-size: 0.75rem; font-weight: 600; border-right: 1px solid #e2e8f0; }
+    .spec-value-col { flex: 1; padding: 0 10px; }
+    .spec-input { width: 100%; border: none; background: transparent; font-size: 0.85rem; outline: none; }
 }
 
-/* --- B. MOBILVY (Max 768px) --- */
+
+/* -----------------------------------------------------------------
+   3. MOBIL-SPECIFIKA STYLER (max-width: 768px)
+   ----------------------------------------------------------------- */
 @media (max-width: 768px) {
+
+    /* --- Z-INDEX HIERARKI (VIKTIGT!) --- */
+    /* Headern i main css ligger ofta på 200000. 
+       Vi lägger modalerna strax under den, men över varandra. */
     
-    /* Fullskärm & Z-Index fix */
-    #customerModal.show, #vehicleModal.show {
-        display: flex !important; flex-direction: column !important;
+    .modal-backdrop { z-index: 199000; } /* Grundnivå */
+
+    /* Ordning: Kund < Fordon < Jobb < Märkesväljare */
+    #customerModal.show { z-index: 199980 !important; }
+    #vehicleModal.show  { z-index: 199990 !important; }
+    #jobModal           { z-index: 199999 !important; }
+    #brandSelectModal   { z-index: 300000 !important; }
+
+    /* --- LAYOUT & POSITIONERING --- */
+    /* Gör så att modalen startar UNDER headern (60px) */
+    #customerModal.show,
+    #vehicleModal.show,
+    #jobModal.show {
+        display: flex !important;
+        flex-direction: column !important;
         position: fixed !important;
-        top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
-        width: 100vw !important; height: 100dvh !important;
+        
+        top: 60px !important; /* Starta under headern */
+        left: 0 !important; right: 0 !important; bottom: 0 !important;
+        
+        width: 100vw !important;
+        height: calc(100dvh - 60px) !important; /* Fyll resten av skärmen */
+        
         background: #f8fafc !important;
         padding: 0 !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
     }
     
-    /* På mobil måste Customer ligga över main header (200k), 
-       och Vehicle MÅSTE ligga över Customer */
-    #customerModal.show { z-index: 200001 !important; }
-    #vehicleModal.show  { z-index: 200002 !important; }
-
-    /* Layout: Flex Column */
-    #customerModal .modal-content,
-    #vehicleModal .modal-content {
-        display: flex !important; flex-direction: column !important;
-        height: 100% !important; width: 100% !important;
-        border-radius: 0 !important; padding: 0 !important;
+    /* Själva innehålls-containern fyller hela ytan */
+    .modal-content {
+        width: 100% !important; height: 100% !important;
+        max-width: none !important; max-height: none !important;
+        border-radius: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
     }
 
-    /* Header (Fast) */
-    .modal-header {
-        flex: 0 0 auto !important; min-height: 50px !important;
-        padding-top: env(safe-area-inset-top) !important;
-        background: #fff !important; border-bottom: 1px solid #e2e8f0 !important;
-        display: flex !important; align-items: center !important; justify-content: space-between !important;
-        padding: 0 16px !important;
+    /* --- HEADER (STICKY) --- */
+    .modal-header, 
+    .vehicle-header-row {
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 50;
+        background: #fff !important;
+        height: 50px !important; /* Lite kompaktare på mobil */
+        min-height: 50px !important;
+        padding: 0 12px !important;
+        border-bottom: 1px solid #e2e8f0 !important;
     }
 
-    /* Body (Scroll) */
+    /* --- BODY (SCROLL) --- */
     .modal-body {
-        flex: 1 !important; overflow-y: auto !important;
-        -webkit-overflow-scrolling: touch !important;
-        padding-top: 0 !important;
+        padding: 16px !important;
+        padding-bottom: 100px !important; /* Plats för footer-knappar */
     }
     
-    /* Specifik padding för Kund (knappar) vs Fordon (inga knappar) */
-    #customerModal .modal-body { padding-bottom: 100px !important; }
-    #vehicleModal .modal-body { padding-bottom: 30px !important; }
-
-    /* Footer (Kund) */
-    #customerModal .modal-actions {
-        position: fixed !important; bottom: 0 !important; left: 0 !important; right: 0 !important;
-        background: #fff !important; border-top: 1px solid #e2e8f0 !important;
+    /* --- FOOTER (FIXED BOTTOM) --- */
+    .modal-actions {
+        position: fixed !important;
+        bottom: 0 !important; left: 0 !important; right: 0 !important;
+        background: #fff !important;
+        border-top: 1px solid #e2e8f0 !important;
         padding: 12px 16px !important;
         padding-bottom: max(12px, env(safe-area-inset-bottom)) !important;
         z-index: 100 !important;
-        display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 12px !important;
+        
+        display: grid !important; 
+        grid-template-columns: 1fr 1fr !important; /* Två lika stora knappar */
+        gap: 12px !important;
     }
-    #customerModal .modal-actions button { width: 100% !important; height: 48px !important; }
     
-    /* Grid fix för Kundlista på mobil */
-    .customer-grid { display: flex !important; flex-direction: column !important; gap: 8px !important; }
-    .customer-card { min-height: auto !important; }
-}
+    /* Om det bara finns en knapp eller annat innehåll */
+    #jobModal .modal-actions { display: flex !important; justify-content: flex-end !important; }
+    
+    .modal-actions .button { width: 100% !important; height: 48px !important; }
 
-@media (max-width: 768px) {
-    /* Kundmodalen ligger på 200001.
-       Fordonsmodalen ligger på 200002.
-       Vi måste lägga Jobbmodalen HÖGRE än båda dessa.
-    */
-    #jobModal {
-        z-index: 300000 !important; 
+    /* --- KOMPONENT-JUSTERINGAR FÖR MOBIL --- */
+    
+    /* Fordonshistorik sök */
+    .history-search-wrapper input { padding-left: 40px !important; }
+    .history-search-wrapper .search-icon { left: 12px !important; z-index: 10; }
+
+    /* Teknisk Data (Mobil-lista) */
+    ul.tech-list {
+        display: flex !important; flex-direction: column !important;
+        border: 1px solid #e2e8f0; border-radius: 8px; background: #fff;
     }
-}
-
-/* =================================================================
-   FIX: GARAGE - TVINGA 3 PÅ RAD (MOBIL)
-   ================================================================= */
-
-@media (max-width: 768px) {
+    ul.tech-list li {
+        display: grid !important; grid-template-columns: 90px 1fr !important;
+        border-bottom: 1px solid #f1f5f9 !important; margin: 0 !important; min-height: 40px;
+    }
+    ul.tech-list li:last-child { border-bottom: none !important; }
     
-    /* Behållaren: Byt från Flex till Grid med exakt 3 kolumner */
+    .spec-label-col { width: auto !important; border-right: 1px solid #f1f5f9; background: #f8fafc; }
+    .spec-input { font-size: 0.9rem !important; padding: 0 !important; }
+
+    /* Garage (3 på rad) */
     .vehicle-chips-container {
-        display: grid !important;
-        grid-template-columns: repeat(3, 1fr) !important; /* 1fr = 1 "andel" av bredden */
-        gap: 6px !important;
+        display: grid !important; grid-template-columns: repeat(3, 1fr) !important; gap: 6px !important;
     }
+    .v-chip { justify-content: center !important; width: 100% !important; padding: 6px 2px !important; font-size: 0.75rem !important; }
 
-    /* Chipsen: Anpassa så de passar i de smalare rutorna */
-    .v-chip {
-        justify-content: center !important; /* Centrera innehållet */
-        width: 100% !important;             /* Fyll hela rutan */
-        padding: 6px 2px !important;        /* Minimal padding på sidorna */
-        font-size: 0.75rem !important;      /* Något mindre text för att garantera plats */
-        white-space: nowrap !important;     /* Förbjud radbrytning inuti */
-        text-overflow: clip !important;     /* Klipp om det mot förmodan är för långt */
-    }
-
-    /* Ikonen inuti */
-    .v-chip img {
-        margin-right: 4px !important;       /* Minska avståndet till texten */
-        width: 12px !important;
-        height: 12px !important;
-    }
-}
-
-/* =================================================================
-   FIX: JOBB-MODAL & INSTÄLLNINGAR (SPECIFIKA JUSTERINGAR)
-   ================================================================= */
-
-/* --- MOBILVY: FIXA RUBRIKENS POSITION --- */
-@media (max-width: 768px) {
+    /* Jobb Modal: Inputs och Textarea */
+    #jobModalForm input, #jobModalForm select { height: 44px !important; font-size: 16px !important; /* 16px förhindrar iOS zoom */ }
+    #jobModalForm textarea { min-height: 100px !important; }
     
-    /* 4. Fixa titeln i Jobb-modalen (låg till höger) */
-    #jobModal .modal-header,
-    .one-ui-header-simple {
-        justify-content: flex-start !important; /* Vänsterställ allt */
-        gap: 16px !important; /* Lagom avstånd mellan pil och text */
+    /* Dölj/Visa knappar i header */
+    .header-actions .biluppgifter-btn, 
+    .header-actions .oljemagasinet-btn {
+        width: 100%; justify-content: center; margin-top: 8px;
     }
-    
-    /* 5. Justera "Meny"-titeln i Inställningar */
-    .header-simple-title {
-        margin: 0 !important; /* Ta bort onödig marginal */
-        text-align: left !important;
-        flex: 1 !important; /* Låt den ta plats */
-    }
-    
-    /* Säkerställ att pilen inte har konstig marginal */
-    .simple-back-btn {
-        margin: 0 !important;
-        padding: 0 !important;
-        width: 24px !important; /* Fast bredd */
-        display: flex !important; 
-        justify-content: center !important;
-    }
-}
-
-/* =================================================================
-   FIX: JOBBMODAL DATOR - DEFINITIV LÖSNING
-   Detta städar upp layouten, tar bort tomrum och fixar knapparna.
-   ================================================================= */
-
-@media (min-width: 769px) {
-    
-    /* 1. Behållaren (Själva vita rutan) */
-    #jobModal .modal-content {
-        display: flex !important;        /* Flexbox för att stapla delarna korrekt */
-        flex-direction: column !important;
-        
-        width: 500px !important;         /* Lagom bredd */
-        max-width: 90vw !important;
-        
-        height: auto !important;         /* VIKTIGT: Låt höjden anpassas efter innehållet */
-        max-height: 85vh !important;     /* Men bli inte högre än skärmen */
-        
-        background: #fff !important;
-        border-radius: 12px !important;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.2) !important;
-        overflow: hidden !important;     /* Se till att inget sticker ut (runda hörn) */
-        padding: 0 !important;           /* Nollställ padding här, vi har det i body */
-    }
-
-    /* 2. Header (Titel + Kryss) */
-    #jobModal .modal-header {
-        flex-shrink: 0 !important;       /* Får inte krympa */
-        background: #fff !important;
-        border-bottom: 1px solid #f1f5f9 !important;
-    }
-
-    /* 3. Body (Formuläret) */
-    #jobModal .modal-body {
-        flex: 1 1 auto !important;       /* Ta upp ledigt utrymme men krymp om det behövs */
-        overflow-y: auto !important;     /* Scrolla BARA här om det blir för högt */
-        padding: 24px !important;        /* Luft runt formuläret */
-        display: block !important;
-        height: auto !important;
-    }
-
-    /* 4. Footer (Knapparna) */
-    #jobModal .modal-actions {
-        position: relative !important;   /* VIKTIGT: Lägg tillbaka den i flödet, inte fixed! */
-        flex-shrink: 0 !important;       /* Får inte krympa eller försvinna */
-        
-        background: #fff !important;
-        border-top: 1px solid #e2e8f0 !important;
-        padding: 16px 24px !important;
-        margin: 0 !important;
-        
-        display: flex !important;
-        justify-content: flex-end !important;
-        gap: 10px !important;
-        z-index: 10;
-        
-        width: 100% !important;
-        box-sizing: border-box !important;
-        bottom: auto !important;         /* Nollställ mobil-regler */
-        left: auto !important;
-    }
-
-    /* 5. Snygga till inputs på dator */
-    #jobModal input,
-    #jobModal select,
-    #jobModal textarea {
-        font-size: 0.9rem !important;    /* Lite mindre text än på mobil */
-        padding: 10px 12px !important;   /* Kompaktare padding */
-    }
-}
-
-/* =================================================================
-   FIX: LUFT I MODALER & HEADER-SYNLIGHET (MOBIL)
-   ================================================================= */
-
-@media (max-width: 768px) {
-
-    /* 1. MER LUFT I TOPPEN AV FORMULÄRET 
-       Detta trycker ner "Status" och "Paket" från rubriken */
-    .modal-body {
-        padding-top: 22px !important; /* Ökat från 20px för mer rymd */
-    }
-
-    /* 2. HEADER SYNLIGHET (Z-INDEX JUSTERING)
-       Din Header ligger på z-index 200000.
-       Vi sätter modalerna lägre än det, så headern syns.
-       Men vi håller dem höga nog att täcka annat innehåll. */
-
-    /* Kund-modalen: Under Header, men över vanligt innehåll */
-    #customerModal.show { 
-        z-index: 199980 !important; 
-    }
-
-    /* Fordons-modalen: Måste ligga ÖVER Kund (om man klickar på en bil därifrån), 
-       men fortfarande UNDER Headern */
-    #vehicleModal.show  { 
-        z-index: 199990 !important; 
-    }
-    
-    /* (Jobb-modalen ligger oftast runt 199999 i din kod, vilket är perfekt) */
-}
-
-/* =================================================================
-   FIX: MODAL-HEADER SYNLIGHET (Tvingande regler)
-   Läggs sist i style.css för att skriva över gamla regler
-   ================================================================= */
-
-@media (max-width: 768px) {
-
-    /* 1. Tvinga ner modalerna så de startar UNDER headern (60px) */
-    #customerModal.show,
-    #vehicleModal.show {
-        top: 60px !important;              /* Starta exakt under din header */
-        height: calc(100dvh - 60px) !important; /* Ta resten av höjden */
-        padding-top: 0 !important;         /* Ta bort padding som kan störa */
-        align-items: flex-start !important; /* Se till att innehållet börjar i toppen */
-    }
-
-    /* 2. Se till att innehålls-containern fyller hela ytan */
-    #customerModal .modal-content,
-    #vehicleModal .modal-content {
-        height: 100% !important;
-        border-radius: 0 !important;
-        max-height: none !important;
-    }
-
-    /* 3. Justera Fordons-headern */
-    .vehicle-header-row {
-        position: sticky !important;
-        top: 0 !important;
-        z-index: 100 !important;
-        background: #f8f9fa !important; /* Viktigt så inte innehåll syns igenom vid scroll */
-        margin-top: 0 !important;
-    }
-
-    /* 4. Justera Kund-headern */
-    #customerModal .modal-header {
-        position: sticky !important;
-        top: 0 !important;
-        z-index: 100 !important;
-        background: #f8f9fa !important;
-        padding-top: 0 !important; /* Ta bort "safe-area" padding eftersom vi inte är i toppen */
-        min-height: 60px !important; /* Garantera höjd */
-    }
-
-    /* 5. Justera Z-Index så Headern (200000) alltid ligger överst,
-       men modalerna (199xxx) ligger över allt annat innehåll */
-    .mobile-header {
-        z-index: 200000 !important;
-    }
-}
-
-/* FIX 1: Tvinga texten att flytta sig för ikonen i fordonsmodalen */
-@media (max-width: 768px) {
-    #vehicleModal #vehicleHistorySearch {
-        padding-left: 42px !important; /* Ger plats åt förstoringsglaset */
-        text-indent: 0 !important;
-        width: 100% !important;
-        box-sizing: border-box !important;
-    }
-    
-    /* Säkra att ikonen ligger ovanpå */
-    #vehicleModal .input-field-wrapper .input-icon {
-        z-index: 10;
-        left: 12px !important;
-    }
+    .header-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 0 16px 10px 16px; }
 }
