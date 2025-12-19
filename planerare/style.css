@@ -937,4 +937,65 @@ ________________________________________________________________________________
 
 
 
+/* =========================================
+   KUND DASHBOARD (MINI STATS)
+   ========================================= */
+.cust-stats-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.cust-stat-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+}
+
+.cs-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+    white-space: nowrap;
+}
+
+.cs-value {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #111827;
+    line-height: 1;
+}
+
+.cs-value.text-green { color: #16a34a; }
+
+/* --- Mobilanpassning --- */
+@media (max-width: 768px) {
+    .cust-stats-wrapper {
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+
+    .cust-stat-card {
+        padding: 12px 10px; /* Kompaktare padding */
+        align-items: center; /* Centrera texten */
+    }
+
+    .cs-label {
+        font-size: 0.65rem; /* Mindre rubrik */
+        margin-bottom: 2px;
+    }
+
+    .cs-value {
+        font-size: 1.2rem; /* Något mindre siffra */
+    }
+}
 
