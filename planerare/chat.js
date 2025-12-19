@@ -69,6 +69,40 @@ window.initChat = function() {
     if (closeBtn) closeBtn.onclick = window.toggleChatWidget;
     if (closeEditBtn) closeEditBtn.onclick = exitEditMode;
 
+    // --- SÖK-TOGGLE LOGIK ---
+    const btnOpenSearch = document.getElementById('btnOpenSearch');
+    const btnCloseSearch = document.getElementById('btnCloseSearch');
+    const chatHeader = document.getElementById('chatHeader');
+    const searchInput = document.getElementById('chatSearchInput');
+
+    // Öppna sök
+    if (btnOpenSearch) {
+        btnOpenSearch.onclick = () => {
+            chatHeader.classList.add('search-active');
+            // Vänta pyttelite så animationen hinner starta innan fokus
+            setTimeout(() => searchInput.focus(), 100);
+        };
+    }
+
+    // Stäng sök (X-knappen)
+    if (btnCloseSearch) {
+        btnCloseSearch.onclick = () => {
+            chatHeader.classList.remove('search-active');
+            searchInput.value = ''; // Rensa söktext
+            // Trigga en "input"-händelse så att sök-filtreringen nollställs (visar alla meddelanden igen)
+            searchInput.dispatchEvent(new Event('input'));
+        };
+    }
+
+    // Stäng sök om man trycker ESC
+    if (searchInput) {
+        searchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                btnCloseSearch.click();
+            }
+        });
+    }
+
     // Hantera Skicka / Spara
     const handleChatAction = async () => {
         const text = chatInput.value.trim();
