@@ -783,13 +783,13 @@ TEST
 }
 
 /* I din HTML: lägg disabled på knappen om input är tom */
-#chatSendBtn:disabled {
+.send-btn-round:disabled {
     background-color: #f1f5f9;
     color: #cbd5e1;
     cursor: default;
     transform: none; /* Ingen studs om den är avstängd */
 }
-#chatSendBtn:not(:disabled) {
+.send-btn-round:not(:disabled) {
     background-color: var(--primary-color);
     color: white;
     box-shadow: 0 2px 5px rgba(0, 102, 255, 0.3);
