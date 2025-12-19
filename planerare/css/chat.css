@@ -648,29 +648,27 @@ body #chatWidget .chat-row.system .chat-bubble {
 }
 
 /* ==========================================================================
-   FIX: INPUT FÄLT & IKONER (LÄGG LÄNGST NER I CHAT.CSS)
+   FIX: INPUT HÖGERSTÄLLDA IKONER & SKICKA-KNAPP (LÄGG LÄNGST NER)
    ========================================================================== */
 
-/* 1. Nollställ knappar för att undvika dubbla ikoner eller konstiga bakgrunder */
+/* 1. Nollställ knappar inuti input-området */
 #chatInputArea .icon-btn {
-    background-image: none !important; /* Tar bort eventuella bakgrundsbilder */
-    background-color: transparent !important;
+    background: transparent !important;
     border: none !important;
     box-shadow: none !important;
     padding: 0 !important;
-    margin: 0 !important;
     width: 32px !important;
     height: 32px !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    position: static !important; /* Tvingar in dem i flödet */
+    position: static !important;
 }
 
-/* 2. Behållaren för input + ikoner */
+/* 2. Behållaren (Flexbox) */
 .input-field-container {
     display: flex !important;
-    align-items: center !important; /* Centrerar vertikalt */
+    align-items: center !important;
     background: #f0f2f5 !important;
     border: 1px solid #e5e5ea !important;
     border-radius: 24px !important;
@@ -680,37 +678,33 @@ body #chatWidget .chat-row.system .chat-bubble {
     position: relative !important;
 }
 
-/* 3. Ikon-gruppen (Vänsterställd) */
-.chat-actions-left {
-    display: flex !important;
-    align-items: center !important;
-    gap: 4px !important;
-    margin-right: 4px !important;
-    
-    /* VIKTIGT: Nollställ gamla positioneringar som förstör på mobil */
-    position: static !important; 
-    top: auto !important;
-    right: auto !important;
-    bottom: auto !important;
-    transform: none !important;
-}
-
-/* 4. Textfältet */
+/* 3. Textfältet (Nu till vänster) */
 .chat-input-area textarea {
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
-    padding: 8px 0 !important;
+    padding: 8px 0 !important; 
+    padding-left: 8px !important; /* Lite luft till vänsterkanten */
     margin: 0 !important;
-    flex: 1 !important; /* Tar upp resten av bredden */
-    font-size: 16px !important; /* Förhindrar zoom på iPhone */
+    flex: 1 !important; 
+    font-size: 16px !important;
     min-height: 24px !important;
-    
-    /* VIKTIGT: Ta bort padding-right som användes förut */
-    padding-right: 0 !important; 
 }
 
-/* 5. Sänd-knappen (Utanför behållaren) */
+/* 4. Ikon-gruppen (Nu till höger) */
+.chat-actions-left {
+    display: flex !important;
+    align-items: center !important;
+    gap: 2px !important;
+    margin-left: 4px !important; /* Luft mellan text och ikoner */
+    margin-right: 0 !important;
+    position: static !important;
+    transform: none !important;
+}
+/* Gör ikonerna blå */
+.chat-actions-left .icon-btn { color: #0066FF !important; }
+
+/* 5. FIX: Skicka-knappen & dess Ikon */
 #chatSendBtn {
     margin-left: 8px !important;
     width: 40px !important;
@@ -718,4 +712,20 @@ body #chatWidget .chat-row.system .chat-bubble {
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
+    background-color: #0066FF !important; /* Säkerställ blå bakgrund */
+    border-radius: 50% !important;
+    border: none !important;
+    flex-shrink: 0 !important;
+}
+
+/* Tvinga fram ikonen inuti sänd-knappen */
+#chatSendBtn svg, 
+#chatSendBtn .icon {
+    width: 20px !important;
+    height: 20px !important;
+    stroke: white !important; /* Vit färg på pilen */
+    fill: none !important;
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
 }
