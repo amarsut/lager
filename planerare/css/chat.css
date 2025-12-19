@@ -648,84 +648,55 @@ body #chatWidget .chat-row.system .chat-bubble {
 }
 
 /* ==========================================================================
-   FIX: INPUT HÖGERSTÄLLDA IKONER & SKICKA-KNAPP (LÄGG LÄNGST NER)
+   FIX: SKICKA-KNAPPEN (TVINGA FRAM DEN)
    ========================================================================== */
 
-/* 1. Nollställ knappar inuti input-området */
-#chatInputArea .icon-btn {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    padding: 0 !important;
-    width: 32px !important;
-    height: 32px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    position: static !important;
+/* 1. Tvinga föräldern att lägga saker på rad (Detta är nyckeln!) */
+#chatInputArea {
+    display: flex !important;           /* Lägg barnen på rad */
+    flex-direction: row !important;     /* Vänster till höger */
+    align-items: flex-end !important;   /* Justera mot botten (snyggast när rutan växer) */
+    padding: 10px !important;           /* Lite luft runt om */
+    gap: 8px !important;                /* Mellanrum mellan ruta och knapp */
+    background: #fff !important;        /* Vit bakgrund */
+    min-height: 60px !important;        /* Garanterad höjd */
+    box-sizing: border-box !important;
 }
 
-/* 2. Behållaren (Flexbox) */
+/* 2. Justera text-behållaren att ta all plats */
 .input-field-container {
-    display: flex !important;
-    align-items: center !important;
-    background: #f0f2f5 !important;
-    border: 1px solid #e5e5ea !important;
-    border-radius: 24px !important;
-    padding: 4px 8px !important;
-    flex: 1 !important;
-    min-height: 44px !important;
-    position: relative !important;
+    flex: 1 !important;                 /* Ta all ledig plats */
+    width: auto !important;             /* Låt flex styra bredden */
+    margin-bottom: 2px !important;      /* Finjustering mot botten */
 }
 
-/* 3. Textfältet (Nu till vänster) */
-.chat-input-area textarea {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    padding: 8px 0 !important; 
-    padding-left: 8px !important; /* Lite luft till vänsterkanten */
-    margin: 0 !important;
-    flex: 1 !important; 
-    font-size: 16px !important;
-    min-height: 24px !important;
-}
-
-/* 4. Ikon-gruppen (Nu till höger) */
-.chat-actions-left {
-    display: flex !important;
-    align-items: center !important;
-    gap: 2px !important;
-    margin-left: 4px !important; /* Luft mellan text och ikoner */
-    margin-right: 0 !important;
-    position: static !important;
-    transform: none !important;
-}
-/* Gör ikonerna blå */
-.chat-actions-left .icon-btn { color: #0066FF !important; }
-
-/* 5. FIX: Skicka-knappen & dess Ikon */
+/* 3. Tvinga fram skicka-knappen och se till att den syns */
 #chatSendBtn {
-    margin-left: 8px !important;
-    width: 40px !important;
-    height: 40px !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    background-color: #0066FF !important; /* Säkerställ blå bakgrund */
-    border-radius: 50% !important;
+    
+    width: 44px !important;             /* Lite större klick-yta */
+    height: 44px !important;
+    
+    background-color: #0066FF !important; /* Blå färg */
+    border-radius: 50% !important;        /* Rund */
     border: none !important;
-    flex-shrink: 0 !important;
+    flex-shrink: 0 !important;            /* Får INTE krympa/försvinna */
+    margin: 0 !important;
+    margin-bottom: 2px !important;        /* Lira med textrutan */
+    
+    opacity: 1 !important;
+    visibility: visible !important;
+    z-index: 100 !important;
 }
 
-/* Tvinga fram ikonen inuti sänd-knappen */
-#chatSendBtn svg, 
+/* 4. Tvinga fram ikonen INUTI knappen (om den blivit vit/osynlig) */
+#chatSendBtn svg,
 #chatSendBtn .icon {
     width: 20px !important;
     height: 20px !important;
-    stroke: white !important; /* Vit färg på pilen */
+    stroke: white !important;
     fill: none !important;
     display: block !important;
-    opacity: 1 !important;
-    visibility: visible !important;
 }
