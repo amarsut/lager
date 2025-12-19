@@ -1,19 +1,12 @@
-/* =================================================================
-   PLANERARE - MASTER STYLE.CSS (RENSAD & ORGANISERAD)
-   ================================================================= */
-
-/* -----------------------------------------------------------------
-   1. VARIABLER & RESET
-   ----------------------------------------------------------------- */
+/* =========================================
+   1. VARIABLER & GRUNDINSTÄLLNINGAR
+   ========================================= */
 :root {
-    /* Färger */
     --primary-color: #0066FF;
     --primary-hover: #0052cc;
-    --primary-light: rgba(0, 102, 255, 0.15);
-    
+    --primary-light: rgba(0, 102, 255, 0.15); /* Tydligare accent för aktiva kort */
     --bg-color: #f8f9fa;
     --content-bg: #FFFFFF;
-    
     --text-color: #111827;
     --text-color-light: #6B7280;
     --border-color: #E5E7EB;
@@ -23,56 +16,39 @@
     --info-color: #0a84ff;
     --invoice-color: #bf5af2;
     
-    /* Mått */
     --sidebar-width: 250px;
     --header-height: 76px;
-    --mobile-header-height: 60px;
-    --bottom-nav-height: 70px;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
 * { box-sizing: border-box; }
+body { margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-color); color: var(--text-color); height: 100vh; overflow: hidden; display: flex !important;  flex-direction: row !important;  width: 100% !important; }
 
-body { 
-    margin: 0; 
-    font-family: 'Inter', sans-serif; 
-    background-color: var(--bg-color); 
-    color: var(--text-color); 
-    height: 100vh; 
-    overflow: hidden; 
-    display: flex;       /* VIKTIGT FÖR LAYOUT */
-    flex-direction: row; /* Default: Sida vid sida (Sidebar + Main) */
-    width: 100%;
-}
+/* =========================================
+   2. LAYOUT (Sidebar & Main)
+   ========================================= */
+.app-layout { display: flex; height: 100vh; width: 100%; }
 
-/* -----------------------------------------------------------------
-   2. GLOBAL LAYOUT (DESKTOP DEFAULT)
-   ----------------------------------------------------------------- */
-.app-layout { 
-    display: flex; 
-    height: 100vh; 
-    width: 100%; 
-}
-
-/* --- Sidebar --- */
+/* --- SIDEBAR --- */
 .sidebar {
     width: var(--sidebar-width);
-    min-width: var(--sidebar-width);
-    flex-shrink: 0;
+	min-width: var(--sidebar-width); /*låt inte sidebaren minska i bredd*/
+    flex-shrink: 0; /*låt inte sidebaren minska i bredd*/
     background-color: var(--content-bg);
     border-right: 1px solid var(--border-color);
-    display: flex; 
-    flex-direction: column; 
-    padding: 24px 16px;
-    z-index: 50;
+    display: flex; flex-direction: column; padding: 24px 16px;
 }
 
 .sidebar-header { padding-bottom: 24px; margin-bottom: 8px; }
 .app-logo-modern { display: flex; align-items: center; gap: 12px; font-weight: 700; font-size: 1.1rem; color: #111; }
 .logo-icon-box {
-    width: 36px; height: 36px;
-    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-    border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); /* Snygg blå */
+    border-radius: 8px; /* Mjuka hörn */
+    display: flex;
+    align-items: center;
+    justify-content: center;
     box-shadow: 0 2px 5px rgba(37, 99, 235, 0.2);
 }
 .logo-icon-box svg { width: 20px; height: 20px; }
@@ -81,12 +57,13 @@ body {
 .nav-link {
     display: flex; align-items: center; gap: 12px;
     padding: 10px 14px; border-radius: 8px; border: none; background: transparent;
-    color: var(--text-color-light); font-weight: 500; font-size: 0.95rem; 
-    cursor: pointer; text-decoration: none; text-align: left;
+    color: var(--text-color-light); font-weight: 500; font-size: 0.95rem; cursor: pointer; text-decoration: none;
+    text-align: left;
 }
 .nav-link:hover { background-color: #f9fafb; color: #333; }
 .nav-link.active { background-color: #eef2f6; color: #111; font-weight: 600; }
 .nav-link .nav-icon { width: 20px; height: 20px; color: #94a3b8; }
+.nav-link.active .nav-icon { color: #1f2937; }
 .nav-spacer { height: 1px; background-color: #f3f4f6; margin: 8px 0; }
 
 .sidebar-footer { margin-top: auto; padding-top: 1rem; border-top: 1px solid #f3f4f6; }
@@ -97,88 +74,22 @@ body {
 .user-role { font-size: 0.7rem; color: #9ca3af; }
 .logout-icon-btn { background: none; border: none; color: #9ca3af; cursor: pointer; }
 
-/* --- Main Content Area --- */
-.main-content-wrapper { 
-    flex-grow: 1; 
-    display: flex; 
-    flex-direction: column; 
-    background-color: var(--bg-color); 
-    overflow: hidden; 
-}
+/* --- MAIN CONTENT --- */
+.main-content-wrapper { flex-grow: 1; display: flex; flex-direction: column; background-color: var(--bg-color); }
 
+/* --- HEADER --- */
 .top-bar {
+    /* FIX 1: Tvinga header-höjden korrekt */
     height: var(--header-height); 
     background-color: var(--content-bg);
     border-bottom: 1px solid #eef2f6; 
-    display: flex; justify-content: space-between; align-items: center;
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
     padding: 0 2rem;
     flex-shrink: 0; 
 }
 
-.app-main { 
-    overflow-y: auto; 
-    flex-grow: 1; 
-}
-
-.main-content { 
-    max-width: 1200px; 
-    margin: 0 auto;
-    padding: 2rem;     
-    width: 100%;
-}
-
-/* -----------------------------------------------------------------
-   3. KOMPONENTER (Inputs, Knappar, Badges)
-   ----------------------------------------------------------------- */
-
-/* Inputs (Grå modern stil) */
-.input-gray, select, textarea {
-    width: 100%;
-    padding: 12px 16px;
-    border: 1px solid transparent;
-    background-color: #F3F4F6;
-    border-radius: 12px;
-    font-size: 0.95rem;
-    color: #1f2937;
-    outline: none;
-    font-family: inherit;
-    transition: all 0.2s ease;
-}
-.input-gray:focus, select:focus, textarea:focus {
-    background-color: #fff;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.1);
-}
-
-/* Uppercase helpers */
-.uppercase-input { text-transform: uppercase; }
-.capitalize-input { text-transform: capitalize; }
-
-/* Knappar */
-.button {
-    height: 40px; padding: 0 20px;
-    border-radius: 8px; font-weight: 600; font-size: 0.9rem;
-    cursor: pointer; border: none;
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-    transition: opacity 0.2s;
-}
-.button.primary { background-color: var(--primary-color); color: white; }
-.button.primary:hover { background-color: var(--primary-hover); }
-.button.secondary { background-color: white; border: 1px solid var(--border-color); color: #374151; }
-
-.icon-btn {
-    width: 40px; height: 40px; border-radius: 8px; background: transparent; border: none;
-    display: flex; align-items: center; justify-content: center; color: var(--text-color-light); cursor: pointer;
-}
-.icon-btn:hover { background-color: #f1f5f9; color: #333; }
-
-.header-cta-btn {
-    height: 44px; padding: 0 24px; background-color: var(--primary-color); color: white;
-    border-radius: 12px; font-weight: 600; font-size: 0.95rem; border: none;
-    display: flex; align-items: center; gap: 8px; cursor: pointer;
-}
-
-/* Sökfält i Header */
 .top-search-container { position: relative; width: 380px; height: 44px; }
 .top-search-container input {
     width: 100%; height: 100%; padding: 0 16px 0 48px;
@@ -186,11 +97,35 @@ body {
     font-size: 0.95rem; outline: none;
 }
 .search-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); width: 20px; color: #94a3b8; }
+
+.top-bar-actions { display: flex; align-items: center; gap: 12px; }
+.icon-btn {
+    width: 40px; height: 40px; border-radius: 8px; background: transparent; border: none;
+    display: flex; align-items: center; justify-content: center; color: var(--text-color-light); cursor: pointer;
+}
+.icon-btn:hover { background-color: #f1f5f9; color: #333; }
 .divider-vertical { width: 1px; height: 24px; background-color: #e2e8f0; margin: 0 8px; }
 
-/* -----------------------------------------------------------------
-   4. TABELLER & LISTOR
-   ----------------------------------------------------------------- */
+.header-cta-btn {
+    height: 44px; padding: 0 24px; background-color: var(--primary-color); color: white;
+    border-radius: 12px; font-weight: 600; font-size: 0.95rem; border: none;
+    display: flex; align-items: center; gap: 8px; cursor: pointer;
+}
+.header-cta-btn:hover { background-color: var(--primary-hover); }
+.header-cta-btn svg { width: 18px; height: 18px; }
+
+/* =========================================
+   3. DASHBOARD (Statistik & Tabell)
+   ========================================= */
+.app-main { overflow-y: auto; flex-grow: 1; }
+.main-content { 
+    /* Öka från 1080px till t.ex. 1400px eller ta bort max-width helt för fullbredd */
+    max-width: 1110px; 
+    margin: 0 auto;
+    padding: 2rem;     
+}
+
+/* --- TABELL --- */
 .table-container {
     background: white; border: 1px solid var(--border-color);
     border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
@@ -198,268 +133,1354 @@ body {
 table { width: 100%; border-collapse: collapse; }
 thead { background-color: #f9fafb; border-bottom: 1px solid var(--border-color); }
 th { 
-    text-align: left; font-size: 0.75rem; font-weight: 700; 
-    text-transform: uppercase; color: #9CA3AF; letter-spacing: 0.05em; 
-    padding: 10px 16px;
+    text-align: left; 
+    font-size: 0.75rem; 
+    font-weight: 700; 
+    text-transform: uppercase; 
+    color: #9CA3AF; /* Ljusare grå som på bilden */
+    letter-spacing: 0.05em; 
 }
+
 td { 
-    vertical-align: middle; font-size: 0.95rem;
-    background-color: #fff; padding: 10px 16px;
-    border-bottom: 1px solid #F3F4F6; white-space: nowrap;
+    vertical-align: middle; 
+    font-size: 0.95rem;
+    background-color: #fff;
+    transition: background-color 0.2s, border-left-color 0.2s;
 }
-tbody tr { cursor: pointer; transition: background-color 0.2s; border-left: 3px solid transparent; }
-tbody tr:hover { background-color: #F9FAFB; border-left-color: var(--primary-color); }
 
-/* Status Badges */
+/* Generell cell-styling - Mindre padding för lägre rader */
+th, td {
+    padding: 10px 16px; /* Minskat från 16px 24px för kompaktare rader */
+    white-space: nowrap; /* Förhindrar att text bryts på ny rad */
+    border-bottom: 1px solid #F3F4F6;
+}
+
+/* Ta bort den tjocka border-left vid hover för en renare look */
+tr { border-left: 3px solid transparent; transition: border-left-color 0.2s ease, background-color 0.2s; }
+tr:hover { background-color: #F9FAFB; border-left: 3px solid var(--primary-color); }
+
+/* Gör rader klickbara och tydliga */
+tbody tr { 
+    cursor: pointer; 
+    position: relative; /* För ripple-effekter om man vill ha det senare */
+}
+
+/* Men låt knappar ha sin vanliga cursor */
+tbody tr button {
+    cursor: pointer;
+    z-index: 2; /* Säkerställ att knappar ligger över rad-klicket */
+    position: relative;
+}
+
+/* Tabell-element */
 .status-badge {
-    display: inline-flex; align-items: center; justify-content: center;
-    padding: 4px 12px; border-radius: 6px;
-    font-size: 0.75rem; font-weight: 700; line-height: 1;
-    min-width: 80px; text-transform: capitalize;
+    display: inline-flex; 
+    align-items: center; justify-content: center;
+    padding: 6px 16px; /* Bredare badge */
+    border-radius: 6px; /* Lite mer fyrkantig än helt rund (piller) */
+    font-size: 0.75rem; 
+    font-weight: 700;
+    line-height: 1;
+    min-width: 80px; 
+    text-transform: capitalize;
 }
-.status-bokad { background-color: #e0f2fe; color: #0369a1; }
-.status-klar { background-color: #dcfce7; color: #15803d; }
-.status-offererad { background-color: #f3f4f6; color: #4b5563; }
-.status-faktureras { background-color: #f3e8ff; color: #7e22ce; }
-.status-avbokad { background-color: #fee2e2; color: #b91c1c; }
 
-/* Registreringsskylt */
+/* Färger inspirerade av din bild */
+.status-bokad { background-color: #e0f2fe; color: #0369a1; }     /* Ljusblå */
+.status-klar { background-color: #dcfce7; color: #15803d; }      /* Mörkgrön */
+.status-offererad { background-color: #f3f4f6; color: #4b5563; } /* Grå */
+.status-faktureras { background-color: #f3e8ff; color: #7e22ce; } /* Lila */
+.status-avbokad { background-color: #fee2e2; color: #b91c1c; }   /* Röd */
+.customer-link { background: none; border: none; font-size: 0.85rem; font-weight: 500; color: #111; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+.customer-icon { width: 16px; height: 16px; color: var(--primary-color); }
+
+/* Blå reg-skylt */
 .reg-plate {
-    display: inline-flex; align-items: center; padding: 0;
-    background-color: #fff; border: 1px solid #d1d5db; border-radius: 3px;
-    font-family: 'Roboto Mono', monospace; font-weight: 700;
-    box-shadow: 0 1px 1px rgba(0,0,0,0.05); height: 22px; overflow: hidden;
-}
-.reg-plate .reg-country {
-    background-color: #0052cc; color: white; font-size: 0.6rem;
-    padding: 0 3px; display: flex; align-items: center; justify-content: center;
-    height: 100%; margin-right: 4px;
-}
-.reg-plate .reg-number {
-    padding: 0 6px 0 2px; color: #111; font-size: 0.85rem; letter-spacing: 1px;
-}
-.brand-logo-img {
-    width: 20px; height: 20px; object-fit: contain;
-    margin-right: 6px; filter: grayscale(100%) opacity(0.85); display: block;
+    display: inline-flex !important;
+    align-items: center;
+    padding: 0 !important;
+    background-color: #fff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 3px !important;
+    font-family: 'Roboto Mono', monospace; /* Monospace för känsla */
+    font-weight: 700;
+    box-shadow: 0 1px 1px rgba(0,0,0,0.05);
+    height: 22px !important; /* Fixerad höjd */
+    overflow: hidden;
 }
 
-/* -----------------------------------------------------------------
-   5. LOGIN SCREEN
-   ----------------------------------------------------------------- */
+.reg-plate .reg-country {
+    background-color: #0052cc !important; 
+    color: white !important;
+    font-size: 0.6rem;
+    padding: 0 3px !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    margin-right: 4px;
+}
+
+.reg-plate .reg-number {
+    padding: 0 6px 0 2px !important;
+    color: #111 !important;
+    font-size: 0.85rem !important;
+    letter-spacing: 1px;
+    line-height: 1;
+}
+/* --- Åtgärdsknappar (Subtila) --- */
+.action-col {
+    display: flex;             /* Detta tvingar dem att ligga på rad */
+    flex-direction: row;       /* Horisontell riktning */
+    align-items: center;
+    justify-content: flex-end; /* Tryck dem till höger */
+    gap: 8px;                  /* Avstånd mellan ikonerna */
+}
+
+/* Justera knapparna så de ser ut som på bilden (gråa och rena) */
+.action-col .icon-btn {
+    width: 32px; 
+    height: 32px; 
+    border-radius: 6px;
+    color: #9CA3AF; /* Ljusgrå inaktiv färg */
+    background: transparent;
+    transition: all 0.2s;
+}
+
+.action-col .icon-btn:hover {
+    color: #111827; /* Mörk vid hover */
+    background-color: #F3F4F6;
+}
+
+/* Specifikt för papperskorgen vid hover */
+.action-col .icon-btn[title="Radera"]:hover {
+    color: #EF4444; 
+    background-color: #FEF2F2;
+}
+
+
+
+/* =================================================================
+   MESSENGER-STIL PÅ SÖKMODAL (MOBIL)
+   ================================================================= */
+@media (max-width: 768px) {
+    
+    /* Behållaren som täcker hela skärmen */
+    .messenger-search-container {
+        background-color: #ffffff;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Header: Pil + Input */
+    .messenger-search-header {
+        display: flex;
+        align-items: center;
+        padding: 8px 12px;
+        gap: 12px; /* Avstånd mellan pil och fält */
+        background: #fff;
+        /* Valfritt: Messenger har ibland ingen border, ibland en tunn */
+        /* border-bottom: 1px solid #f0f0f0; */ 
+    }
+
+    /* Tillbaka-pilen */
+    .messenger-back-btn {
+        background: transparent;
+        border: none;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        width: 36px;
+        height: 36px;
+        color: #0F172A; /* Svart pil */
+        border-radius: 50%;
+        transition: background 0.2s;
+    }
+    .messenger-back-btn:active {
+        background-color: #f2f2f2;
+    }
+    .messenger-back-btn svg {
+        width: 24px;
+        height: 24px;
+    }
+
+    /* Wrappern runt inputfältet (Den grå korven) */
+    .messenger-input-wrapper {
+        flex: 1;
+        position: relative;
+        background-color: #f0f2f5; /* Messenger grå */
+        border-radius: 20px;       /* Rundade hörn */
+        height: 40px;
+        display: flex;
+        align-items: center;
+        overflow: hidden;
+    }
+
+    /* Sökikonen inuti fältet (valfritt, men snyggt) */
+    .search-icon-inside {
+        position: absolute;
+        left: 12px;
+        width: 16px;
+        height: 16px;
+        color: #65676b; /* Mörkgrå ikon */
+        pointer-events: none;
+    }
+
+    /* Själva textfältet */
+    #mobileSearchInput {
+        width: 100%;
+        height: 100%;
+        background: transparent;
+        border: none;
+        outline: none;
+        padding-left: 36px; /* Plats för förstoringsglaset */
+        padding-right: 16px;
+        font-size: 16px; /* Bra storlek för mobil */
+        color: #050505;
+    }
+    
+    /* Placeholder-färg */
+    #mobileSearchInput::placeholder {
+        color: #65676b;
+        font-weight: 400;
+    }
+
+    /* Resultatlistan */
+    .messenger-results-area {
+        flex: 1;
+        overflow-y: auto;
+        padding: 0;
+        background-color: #fff;
+    }
+}
+
+/* =================================================================
+   CHATT HEADER & RENSA-KNAPP (Messenger Style)
+   ================================================================= */
+
+/* 1. Styla det lilla rensa-krysset inuti inputfälten */
+.clear-input-btn {
+    background: none; border: none; padding: 0;
+    width: 24px; height: 24px;
+    display: flex; align-items: center; justify-content: center;
+    color: #8E8E93; /* Ljusgrå färg */
+    cursor: pointer;
+    margin-right: 8px; /* Lite luft till högerkanten */
+    flex-shrink: 0;
+}
+.clear-input-btn svg { width: 18px; height: 18px; }
+.clear-input-btn:hover { color: #3b82f6; }
+
+/* 2. Uppdatera Chat Header att matcha Sökmodalen */
+.chat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Sprider ut Pil - Sök - Verktyg */
+    gap: 8px;
+    padding: 8px 12px;
+    background: #fff;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+/* Anpassa sökfältet i chatten så det ser ut som det andra */
+.chat-header .messenger-input-wrapper {
+    flex: 1; /* Tar upp all plats i mitten */
+    background-color: #f0f2f5;
+    border-radius: 20px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+/* Sök-inputen i chatten */
+#chatSearchInput {
+    width: 100%; height: 100%;
+    background: transparent; border: none; outline: none;
+    padding-left: 36px; /* Plats för ikonen */
+    padding-right: 8px; /* Plats för krysset */
+    font-size: 16px; color: #050505;
+}
+
+/* Justera verktygen till höger */
+.chat-header-tools {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+/* Sökikonen inuti */
+.chat-header .search-icon-inside {
+    position: absolute; left: 10px;
+    width: 16px; height: 16px; color: #65676b;
+    pointer-events: none;
+}
+
+/* =================================================================
+   NY CHATT HEADER DESIGN (INTEGRERADE KNAPPAR)
+   ================================================================= */
+
+/* 1. Rensa upp pilen (Ta bort grå bakgrund) */
+.messenger-back-btn.clean-arrow {
+    background: transparent !important; /* Ingen färg */
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    margin-right: 4px;
+    color: #000000 !important;
+}
+.messenger-back-btn.clean-arrow:hover {
+    background-color: #f1f5f9 !important; /* Liten hover-effekt vid behov */
+}
+
+/* 2. Sökfältet tar all plats */
+.full-width-search {
+    flex: 1; /* Väx och ta all plats */
+    background-color: #F1F5F9; /* Samma grå som på din bild */
+    height: 44px; /* Lite högre för att rymma knapparna snyggt */
+    border-radius: 22px; /* Mjukare rundning */
+    display: flex;
+    align-items: center;
+    position: relative;
+    padding-right: 8px; /* Lite luft till höger */
+}
+
+/* Justera inputfältet så det inte krockar med knapparna */
+#chatSearchInput {
+    flex: 1; /* Ta upp platsen till vänster om knapparna */
+    min-width: 0; /* Förhindra overflow */
+    padding-right: 8px; /* Luft innan knapparna börjar */
+}
+
+/* 3. Behållare för knapparna inuti fältet */
+.inside-search-tools {
+    display: flex;
+    align-items: center;
+    height: 100%;
+}
+
+/* 4. Avdelare (Strecken mellan knapparna) */
+.tool-divider {
+    width: 1px;
+    height: 24px; /* Höjden på strecket */
+    background-color: #CBD5E1; /* Grå färg på strecket */
+    margin: 0 2px;
+}
+
+/* 5. Ikon-knapparna inuti */
+.tool-icon-btn {
+    background: transparent;
+    border: none;
+    width: 36px;
+    height: 100%; /* Fyll höjden för klickyta */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #475569; /* Mörkgrå färg på ikoner */
+    transition: color 0.2s;
+}
+
+.tool-icon-btn:hover {
+    color: #000;
+}
+
+.tool-icon-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* Specifik styling för AI-stjärnorna om man vill */
+.sparkle-icon {
+    width: 20px;
+    height: 20px;
+}
+
+/* Justera rensa-krysset så det inte krockar */
+#clearChatSearch {
+    margin-right: 4px;
+}
+
+/* =================================================================
+   LOGIN SCREEN (PREMIUM STYLE)
+   ================================================================= */
+
 .login-screen {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
     display: flex; align-items: center; justify-content: center;
-    z-index: 10000; padding: 20px;
+    z-index: 10000;
+    padding: 20px;
 }
+
 .login-card {
-    background: #ffffff; width: 100%; max-width: 420px;
-    padding: 48px 40px; border-radius: 24px;
-    box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.1);
+    background: #ffffff;
+    width: 100%; max-width: 420px;
+    padding: 48px 40px;
+    border-radius: 24px;
+    box-shadow: 
+        0 4px 6px -1px rgba(0, 0, 0, 0.05), 
+        0 20px 50px -10px rgba(0, 0, 0, 0.1);
     animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
-@keyframes slideUpFade { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-.login-header { text-align: center; margin-bottom: 32px; }
+
+@keyframes slideUpFade {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.login-header {
+    text-align: center; margin-bottom: 32px;
+}
+
 .login-logo-box {
     width: 56px; height: 56px;
     background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-    border-radius: 16px; margin: 0 auto 24px auto;
+    border-radius: 16px;
     display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 24px auto;
     box-shadow: 0 10px 20px -5px rgba(37, 99, 235, 0.4);
 }
-.login-header h1 { font-size: 1.75rem; font-weight: 800; color: #111; margin-bottom: 8px; }
-.input-field-wrapper { position: relative; }
-.input-field-wrapper .input-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); width: 20px; color: #9CA3AF; }
-.input-field-wrapper input { padding-left: 48px; }
-.login-btn {
-    width: 100%; padding: 16px; background: #111827; color: white;
-    border: none; border-radius: 12px; font-size: 1rem; font-weight: 600;
-    cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
-    margin-top: 20px;
-}
-.login-btn:hover { background-color: #000; }
+.login-logo-box svg { width: 28px; height: 28px; }
 
-/* -----------------------------------------------------------------
-   6. SAMSUNG ONE UI / INSTÄLLNINGAR
-   ----------------------------------------------------------------- */
-.one-ui-backdrop {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.5); z-index: 20002; display: none;
+.login-header h1 {
+    font-size: 1.75rem; font-weight: 800; color: #111827; margin: 0 0 8px 0; letter-spacing: -0.5px;
 }
-.one-ui-backdrop.show { display: flex; align-items: center; justify-content: center; }
+.login-header p {
+    font-size: 0.95rem; color: #6B7280; margin: 0;
+}
+
+.input-group { margin-bottom: 20px; }
+.input-group label {
+    display: block; font-size: 0.85rem; font-weight: 600; color: #374151; margin-bottom: 8px;
+}
+
+.input-field-wrapper {
+    position: relative;
+}
+.input-field-wrapper .input-icon {
+    position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
+    width: 20px; height: 20px; color: #9CA3AF; transition: color 0.2s;
+}
+.input-field-wrapper input {
+    width: 100%;
+    padding: 14px 16px 14px 48px; /* Plats för ikon */
+    border: 1px solid #E5E7EB; border-radius: 12px;
+    background: #F9FAFB; font-size: 1rem; color: #111; outline: none;
+    transition: all 0.2s; font-family: inherit;
+}
+.input-field-wrapper input:focus {
+    background: #fff; border-color: #3b82f6;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+.input-field-wrapper input:focus + .input-icon { color: #3b82f6; } /* Funkar om svg ligger efter input i html, annars via js eller css-has */
+.input-field-wrapper input:focus ~ .input-icon, 
+.input-field-wrapper:focus-within .input-icon { color: #3b82f6; }
+
+.login-btn {
+    width: 100%; padding: 16px;
+    background: #111827; color: white;
+    border: none; border-radius: 12px;
+    font-size: 1rem; font-weight: 600; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: transform 0.1s, background-color 0.2s;
+    margin-top: 10px;
+}
+.login-btn:hover { background-color: #000; transform: translateY(-1px); }
+.login-btn:active { transform: translateY(0); }
+.btn-arrow { width: 18px; height: 18px; transition: transform 0.2s; }
+.login-btn:hover .btn-arrow { transform: translateX(3px); }
+
+.login-error {
+    margin-top: 16px; padding: 12px;
+    background: #FEF2F2; color: #DC2626;
+    border-radius: 8px; font-size: 0.9rem; text-align: center;
+    border: 1px solid #FECACA;
+}
+
+.login-footer {
+    margin-top: 32px; text-align: center; border-top: 1px solid #F3F4F6; padding-top: 20px;
+}
+.login-footer p { color: #9CA3AF; font-size: 0.8rem; margin: 0; }
+
+/* Mobilanpassning */
+@media (max-width: 480px) {
+    .login-card { padding: 32px 24px; max-width: 100%; height: auto; border-radius: 20px; }
+    .login-screen { padding: 16px; align-items: center; }
+}
+
+@media (max-width: 768px) {
+	/*2. Snyggare Formulärfält (Tips #17 & #18)
+	Gör inputs stora, mjuka och moderna.*/
+    /* Inputs och Selects */
+    .input-gray, select, textarea {
+        background-color: #F3F4F6 !important; /* Ljusgrå */
+        border: 1px solid transparent !important;
+        border-radius: 12px !important;
+        padding: 14px 16px !important; /* Mer luft */
+        font-size: 16px !important; /* Förhindrar zoom på iPhone */
+        transition: all 0.2s ease;
+        color: #1F2937 !important;
+        font-weight: 500;
+    }
+
+    /* Fokus-effekt */
+    .input-gray:focus, select:focus, textarea:focus {
+        background-color: #fff !important;
+        border-color: #0066FF !important;
+        box-shadow: 0 0 0 4px rgba(0, 102, 255, 0.1) !important;
+        outline: none;
+    }
+    
+    /* Etiketter */
+    label {
+        font-size: 0.85rem !important;
+        font-weight: 700 !important;
+        color: #4B5563 !important;
+        margin-bottom: 6px !important;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+}
+
+/* 1. Kundpris-sektionen */
+.price-section {
+    /* Linje ovanför */
+    border-top: 1px solid #E5E7EB !important;
+    padding-top: 24px !important;
+    margin-top: 16px !important;
+    
+    /* NYTT: Minska avståndet ner till nästa sektion */
+    margin-bottom: 8px !important; 
+}
+
+/* 2. Utgifts-sektionen */
+.expense-section {
+    /* Ta bort linje ovanför, lägg till linje under */
+    border-top: none !important;
+    border-bottom: 1px solid #E5E7EB !important;
+    
+    /* NYTT: Ta bort all extra luft i toppen så den hamnar närmare priset */
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+    
+    /* Behåll luft i botten */
+    padding-bottom: 24px !important;
+    margin-bottom: 24px !important;
+}
+
+/* Mobil-specifik justering */
+@media (max-width: 768px) {
+    .price-section {
+        padding-top: 20px !important;
+    }
+    /* Se till att etiketten "UTGIFTER" inte hamnar för nära input-fältet */
+    .expense-header {
+        margin-top: 4px !important; 
+    }
+}
+
+/* --- FIX: GLOBAL STICKY HEADER --- */
+
+@media (max-width: 768px) {
+
+    /* 1. Lås fast headern i toppen */
+    .mobile-header {
+        position: fixed !important;
+        top: 0; left: 0; right: 0;
+        height: 60px;               /* Bestämd höjd */
+        background-color: #F8FAFC;  /* Bakgrundsfärg så man inte ser igenom */
+        z-index: 200000;            /* Högre än ALLT annat (modaler har ofta 10000) */
+        border-bottom: 1px solid #e2e8f0;
+        padding: 0 16px;            /* Snyggare marginaler */
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05); /* Liten skugga för separation */
+    }
+
+    /* 2. Tryck ner innehållet på startsidan så det inte hamnar under headern */
+    .main-content {
+        padding-top: 70px !important; /* 60px header + 10px luft */
+    }
+
+    /* 3. Justera ALLA MODALER så de börjar under headern */
+    /* Detta gäller Jobbmodal, Fordonsmodal och Sökmodal */
+    .modal-backdrop.show, 
+    #vehicleModal.show,
+    #mobileSearchModal.show {
+        top: 60px !important;              /* Börja 60px ner */
+        height: calc(100dvh - 60px) !important; /* Ta resten av höjden */
+        border-top: 1px solid #e5e7eb;     /* En liten linje i toppen */
+    }
+
+    /* 4. Justera CHATTEN specifikt */
+    .chat-widget[style*="display: flex"] {
+        top: 60px !important;              
+        height: calc(100dvh - 60px) !important; 
+        border-top: 1px solid #e5e7eb;
+    }
+
+    /* 5. Fixa fordonsmodalens header så den inte krockar */
+    .vehicle-header-row {
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 50;
+    }
+}
+
+/* --- FIX: JOBB-MODALER UNDER HEADER --- */
+
+@media (max-width: 768px) {
+    
+    /* 1. Se till att Headern ligger absolut överst */
+    .mobile-header {
+        z-index: 200000 !important;
+    }
+
+    /* 2. Justera BÅDE Jobb- och Fordonsmodalen */
+    #jobModal,
+    #vehicleModal {
+        top: 60px !important;                   /* Börja exakt under headern */
+        height: calc(100dvh - 60px) !important; /* Fyll resten av skärmen */
+        z-index: 199999 !important;             /* Lägre än headern, men högre än innehållet */
+        padding-top: 0 !important;              
+    }
+
+    /* 3. Justera innehållet i båda */
+    #jobModal .modal-content,
+    #vehicleModal .modal-content {
+        height: 100% !important;
+        border-top: 1px solid #e5e7eb !important;
+        border-radius: 0 !important;
+    }
+    
+    /* KNAPPAR UNDER JOBBKORT */
+    
+	/* Animation */
+	@keyframes slideDown {
+	    from { opacity: 0; transform: translateY(-10px); }
+	    to { opacity: 1; transform: translateY(0); }
+	}
+}
+
+/* --- FIX: TYPSNITT & INMATNING --- */
+
+/* PUNKT 3: Kapitalisering (Visuellt) */
+.uppercase-input {
+    text-transform: uppercase;
+}
+
+.capitalize-input {
+    text-transform: capitalize;
+}
+
+/* PUNKT 31: Knapp för "Visa alla" i historik */
+.show-more-btn {
+    background: none;
+    border: none;
+    color: #3B82F6;
+    font-weight: 600;
+    padding: 10px;
+    width: 100%;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+.show-more-btn:hover {
+    text-decoration: underline;
+    background-color: #f9fafb;
+}
+
+/* --- FIX: MÄRKESLOGGOR I HEADER --- */
+
+/* Grundstil för loggan (Mörkgrå för ljusa kort) */
+.brand-logo-img {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    
+    /* NYTT: Dra loggan åt vänster för att matcha ikonerna under */
+    margin-left: -3px !important; 
+    margin-right: 6px !important; 
+    transform: translateY(0px); /* Finjustering höjd */
+    
+    filter: grayscale(100%) opacity(0.85); 
+    display: block;
+}
+
+/* --- BRAND SELECTOR STYLES --- */
+.brand-select-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    aspect-ratio: 1/1; /* Gör dem kvadratiska */
+}
+
+.brand-select-item:hover {
+    background-color: #f3f4f6;
+    border-color: #0066FF;
+    transform: translateY(-2px);
+}
+
+.brand-select-item.selected {
+    background-color: #eff6ff;
+    border: 2px solid #0066FF;
+}
+
+.brand-select-item img {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+    margin-bottom: 4px;
+}
+
+.brand-select-item span {
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: capitalize;
+    color: #374151;
+    text-align: center;
+}
+
+/* Se till att märkesväljaren syns ovanför allt annat på mobil */
+@media (max-width: 768px) {
+    #brandSelectModal.show {
+        z-index: 210000 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+}
+
+/* --- STYLING FÖR MÄRKES-KNAPPEN (Samma som Copy-knappen) --- */
+#btnEditBrandModal {
+    background: transparent;
+    border: 1px solid #e5e7eb; /* Tunn grå ram (Desktop) */
+    border-radius: 6px;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6b7280;
+    transition: all 0.2s ease;
+    width: 32px;  /* Samma bredd som kopiera */
+    height: 32px; /* Samma höjd som kopiera */
+    margin-left: 8px;
+}
+
+#btnEditBrandModal:hover {
+    background-color: #f3f4f6;
+    color: #111;
+    border-color: #d1d5db;
+}
+
+/* Styla bilden inuti knappen */
+.brand-btn-icon {
+    width: 20px;       /* Ökad storlek (var 16px) */
+    height: 20px;      /* Ökad storlek */
+    object-fit: contain;
+    filter: grayscale(100%); /* Svartvit för att matcha stilen */
+    opacity: 0.8;      /* Lite mjukare ton */
+    display: block;
+}
+
+/* --- MOBILANPASSNING (Matcha kopiera-knappen på mobil) --- */
+@media (max-width: 768px) {
+    #btnEditBrandModal {
+        position: static !important; 
+        background: #F1F5F9 !important; /* Ljusgrå bakgrund på mobil */
+        color: #64748B !important; 
+        border: none !important;        /* Ingen ram på mobil */
+        border-radius: 8px !important;
+    }
+}
+
+/* INSTÄLLNINGAR MENY*/
+
+/* =========================================
+   SAMSUNG ONE UI DESIGN SYSTEM (FINAL V3)
+   ========================================= */
+
+/* --- GRUNDLAYOUT (FIXED HEADER SCROLL) --- */
+.one-ui-backdrop.show {
+    background-color: #f2f2f2 !important;
+    display: block !important;
+    padding: 0 !important;
+    z-index: 20002 !important;
+}
 
 .one-ui-container {
-    width: 100%; height: 100%; background-color: #f2f2f2;
-    display: flex; flex-direction: column; overflow: hidden;
-}
-@media (min-width: 769px) {
-    .one-ui-container { max-width: 420px; max-height: 80vh; border-radius: 12px; }
+    width: 100%; 
+    height: 100%;
+    display: flex; 
+    flex-direction: column; /* Stapla Header + Content */
+    background-color: #f2f2f2;
+    overflow: hidden; /* VIKTIGT: Förhindrar att hela containern scrollar */
 }
 
+/* --- HEADER (NU LÅST I TOPPEN) --- */
 .one-ui-header-simple {
-    height: 60px; background: #f8f9fa; border-bottom: 1px solid #e5e7eb;
-    display: flex; align-items: center; padding: 0 16px; gap: 16px; flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    height: 60px;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e5e7eb;
+    flex-shrink: 0; /* VIKTIGT: Headern krymper inte */
+    gap: 16px;
+    position: relative; 
+    z-index: 10;
 }
-.header-simple-title { font-size: 1.1rem; font-weight: 700; color: #111; margin: 0; }
 
-.one-ui-content.compact-mode { padding: 20px 16px; flex-grow: 1; overflow-y: auto; }
+.simple-back-btn {
+    background: transparent; border: none; padding: 0;
+    width: 24px; height: 24px;
+    display: flex; align-items: center; justify-content: center;
+    color: #111; cursor: pointer;
+}
+.simple-back-btn svg { width: 24px; height: 24px; stroke-width: 2.5px; }
 
-/* Inställningskort */
-.settings-section-label { font-size: 0.75rem; font-weight: 700; color: #64748b; margin: 16px 4px 8px 4px; }
-.settings-card-group { background: #fff; border-radius: 12px; overflow: hidden; border: 1px solid #e5e7eb; margin-bottom: 20px; }
-.settings-item { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; cursor: pointer; background: #fff; }
-.settings-item:hover { background-color: #f9fafb; }
+.header-simple-title {
+    font-size: 1.1rem; font-weight: 700; color: #111; margin: 0;
+}
+
+/* --- CONTENT (SCROLLBAR AREA) --- */
+.one-ui-content.compact-mode {
+    padding: 20px 16px 40px 16px;
+    flex-grow: 1;      /* Tar upp resten av höjden */
+    overflow-y: auto;  /* Bara denna del scrollar */
+    -webkit-overflow-scrolling: touch; /* Mjuk scroll på iPhone */
+}
+
+/* --- DESKTOP FIX --- */
+@media (min-width: 769px) {
+    .one-ui-backdrop.show {
+        background-color: rgba(0,0,0,0.4) !important;
+        display: flex !important; align-items: center; justify-content: center;
+    }
+    .one-ui-container {
+        max-width: 420px; height: auto; max-height: 80vh;
+        border-radius: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        /* Behövs för att modalen ska funka snyggt på dator */
+        display: flex; flex-direction: column; 
+    }
+}
+
+/* --- CARDS & ITEMS --- */
+.settings-section-label {
+    font-size: 0.75rem; font-weight: 700; color: #64748b;
+    margin: 8px 4px 8px 4px; text-transform: uppercase; letter-spacing: 0.5px;
+}
+.settings-section-label:first-child { margin-top: 0; }
+
+.settings-card-group {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px; /* Lite mindre radie för kompaktare känsla */
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+.settings-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px; /* Lite mindre padding */
+    background: #fff;
+    cursor: pointer;
+}
+.settings-item:active { background-color: #f9fafb; }
+
+.settings-separator { height: 1px; background-color: #f1f5f9; margin: 0 16px; }
+.settings-text-col { display: flex; flex-direction: column; }
 .settings-title { font-size: 0.95rem; font-weight: 600; color: #1f2937; }
-.settings-desc { font-size: 0.8rem; color: #9ca3af; }
-.settings-separator { height: 1px; background: #f1f5f9; margin: 0 16px; }
+.settings-desc { font-size: 0.8rem; color: #9ca3af; margin-top: 2px; }
 
-/* Meny Grid (Genvägar) */
-.menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
-.menu-card {
-    background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px;
-    display: flex; flex-direction: column; align-items: center; gap: 10px; cursor: pointer;
+/* --- LAGERSTATUS (KOMPAKT & SNYGG) --- */
+.inventory-card {
+    display: block !important; padding: 16px !important;
 }
-.menu-icon-box { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
-.menu-icon-box.blue { background: #eff6ff; color: #3b82f6; }
-.menu-icon-box.orange { background: #fff7ed; color: #f97316; }
-.menu-icon-box.purple { background: #f3e8ff; color: #a855f7; }
-.menu-icon-box.green { background: #f0fdf4; color: #22c55e; }
 
-/* Switch Toggle */
-.android-switch { position: relative; width: 42px; height: 24px; }
+/* Titel-raden */
+.inventory-header-row {
+    display: flex; 
+    align-items: center; 
+    gap: 8px; 
+    flex-wrap: wrap; /* Säkrar om texten blir lång */
+    margin-bottom: 8px;
+}
+
+/* Badgen på samma rad */
+.oil-badge {
+    background-color: #f1f5f9;
+    color: #64748b;
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+    white-space: nowrap;
+    border: 1px solid #e2e8f0;
+}
+
+/* Siffror och Procent */
+.inventory-stats-compact {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    margin-bottom: 6px;
+}
+.stat-main-text { font-size: 0.9rem; color: #64748b; font-weight: 500; }
+.stat-percent-text { font-size: 1.1rem; font-weight: 800; color: #111; }
+
+.oil-progress-bg {
+    width: 100%; height: 8px; background-color: #f1f5f9;
+    border-radius: 4px; overflow: hidden; margin-bottom: 12px;
+}
+.oil-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #f97316 0%, #fb923c 100%);
+    border-radius: 4px; transition: width 0.6s;
+}
+.oil-progress-fill.critical { background: #ef4444; }
+
+/* Liten snygg text-knapp */
+.refill-text-btn {
+    width: 100%; text-align: center;
+    color: #3b82f6; font-size: 0.85rem; font-weight: 600;
+    background: none; border: none; padding: 8px 0 0 0;
+    cursor: pointer; border-top: 1px solid #f8fafc;
+}
+.refill-text-btn:active { opacity: 0.7; }
+
+/* Utfällbar box */
+.oil-refill-container { margin-top: 12px; animation: slideDown 0.2s ease-out; }
+.refill-box { background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; }
+.refill-title { font-size: 0.8rem; font-weight: 700; margin: 0 0 8px 0; color: #334155; }
+.refill-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+.input-group-small label { font-size: 0.7rem; display: block; margin-bottom: 2px; color: #64748b; font-weight: 600; }
+.input-group-small input { width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem; }
+.save-barrel-btn { width: 100%; background: #0f172a; color: white; border: none; padding: 8px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; }
+
+@keyframes slideDown { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
+/* --- PROFIL & TOGGLES --- */
+.sidebar-profile-clone { display: flex; align-items: center; gap: 12px; padding: 12px; background: #fff; }
+.sidebar-profile-clone .user-info { display: flex; flex-direction: column; flex-grow: 1; }
+.sidebar-profile-clone .user-name { font-size: 0.9rem; font-weight: 600; color: #1f2937; }
+.sidebar-profile-clone .user-role { font-size: 0.75rem; color: #9ca3af; }
+.sidebar-profile-clone .logout-icon-btn { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border: none; background: transparent; color: #9ca3af; cursor: pointer; }
+.sidebar-profile-clone .logout-icon-btn:hover { color: #ef4444; background-color: #fef2f2; border-radius: 8px; }
+
+.android-switch { position: relative; display: inline-block; width: 42px; height: 24px; }
 .android-switch input { opacity: 0; width: 0; height: 0; }
 .android-switch .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #e5e7eb; transition: .3s; border-radius: 34px; }
-.android-switch .slider:before { content: ""; position: absolute; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+.android-switch .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
 .android-switch input:checked + .slider { background-color: #3b82f6; }
 .android-switch input:checked + .slider:before { transform: translateX(18px); }
 
+/* --- PRIVACY MODE --- */
+body.privacy-active .stat-card-value, 
+body.privacy-active .money-related, 
+body.privacy-active .price-row .row-value, 
+body.privacy-active #kundpris, 
+body.privacy-active #vinstDisplay, 
+body.privacy-active #utgifterDisplay, 
+body.privacy-active .expense-item strong, 
+body.privacy-active .stat-card[data-filter="offererad"] .stat-card-value,
+body.privacy-active .stat-card[data-filter="backlog"] .stat-card-value {
+    color: transparent !important; text-shadow: 0 0 10px rgba(0,0,0,0.4) !important; user-select: none;
+}
 
-/* -----------------------------------------------------------------
-   7. MOBILANPASSNING & Z-INDEX (HÄR ÄR FIXEN)
-   ----------------------------------------------------------------- */
-.mobile-only { display: none; }
+/* --- DARK MODE --- */
+[data-theme="dark"] .one-ui-container, [data-theme="dark"] .one-ui-header-simple { background-color: #000; border-color: #333; }
+[data-theme="dark"] .simple-back-btn, [data-theme="dark"] .header-simple-title { color: #fff; }
+[data-theme="dark"] .settings-card-group, [data-theme="dark"] .settings-item, [data-theme="dark"] .sidebar-profile-clone { background-color: #1c1c1e; border-color: #333; }
+[data-theme="dark"] .settings-title, [data-theme="dark"] .user-name, [data-theme="dark"] .stat-percent-text { color: #fff; }
+[data-theme="dark"] .oil-badge { background-color: #333; color: #ccc; border-color: #444; }
+[data-theme="dark"] .refill-box { background-color: #1c1c1e; border-color: #333; }
+[data-theme="dark"] .refill-title { color: #fff; }
+[data-theme="dark"] .input-group-small label { color: #888; }
+[data-theme="dark"] .input-group-small input { background-color: #333; border-color: #444; color: #fff; }
+[data-theme="dark"] .android-switch .slider { background-color: #444; }
+[data-theme="dark"] .settings-separator { background-color: #333; }
 
+/* --- LAGERSTATUS (DROPPE DESIGN - KOMPAKT) --- */
+
+.drop-card-layout {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+/* 1. Ikonen (Droppen) */
+.drop-icon-container {
+    width: 40px; height: 40px;
+    background-color: #fff7ed; /* Ljus orange bakgrund */
+    border-radius: 50%; /* Cirkel */
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+.drop-icon-container svg {
+    width: 24px; height: 24px; 
+    color: #ea580c; /* Mörkare orange */
+}
+/* Gör den lilla cirkeln inuti fylld */
+.drop-inner { fill: #ea580c; } 
+
+/* 2. Text Mitten */
+.drop-info {
+    flex-grow: 1;
+    display: flex; flex-direction: column; gap: 2px;
+}
+.drop-header {
+    display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+}
+.oil-badge.compact {
+    font-size: 0.65rem; padding: 1px 5px; 
+    border: 1px solid #e5e7eb; background: #f9fafb; color: #64748b;
+}
+.drop-stats {
+    font-size: 0.85rem; color: #64748b; font-weight: 500;
+}
+
+/* 3. Procent Höger */
+.drop-percent {
+    font-size: 1.25rem; font-weight: 800; color: #ea580c;
+}
+
+/* 4. Progress Bar (Tunnare) */
+.oil-progress-bg.compact-bar {
+    height: 6px; margin-bottom: 8px; /* Tunnare än förut */
+}
+
+/* Dark Mode för Droppen */
+[data-theme="dark"] .drop-icon-container { background-color: #331f0f; }
+[data-theme="dark"] .drop-icon-container svg { color: #fb923c; }
+[data-theme="dark"] .drop-inner { fill: #fb923c; }
+[data-theme="dark"] .drop-stats { color: #aaa; }
+[data-theme="dark"] .oil-badge.compact { background: #333; border-color: #444; color: #aaa; }
+
+
+/* --- FIX 2: ÅTERSTÄLL MENY-GRID I INSTÄLLNINGAR --- */
+.menu-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important; /* Tvinga två kolumner */
+    gap: 12px !important;
+    padding: 0 4px !important;
+    margin-bottom: 24px !important;
+}
+
+.menu-card {
+    background: #fff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 12px !important;
+    padding: 16px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 10px !important;
+    cursor: pointer !important;
+    transition: transform 0.1s !important;
+}
+.menu-card:active { transform: scale(0.96) !important; background: #f8fafc !important; }
+
+.menu-icon-box {
+    width: 48px !important; height: 48px !important;
+    border-radius: 12px !important;
+    display: flex !important; align-items: center !important; justify-content: center !important;
+}
+.menu-icon-box svg { width: 24px !important; height: 24px !important; }
+.menu-card span { font-size: 0.9rem !important; font-weight: 600 !important; color: #1e293b !important; }
+
+/* Färgteman */
+.menu-icon-box.blue   { background: #eff6ff !important; color: #3b82f6 !important; }
+.menu-icon-box.orange { background: #fff7ed !important; color: #f97316 !important; }
+.menu-icon-box.purple { background: #f3e8ff !important; color: #a855f7 !important; }
+.menu-icon-box.green  { background: #f0fdf4 !important; color: #22c55e !important; }
+
+
+.search-chip {
+    background: #f1f5f9;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    color: #334155;
+    cursor: pointer;
+    border: 1px solid #e2e8f0;
+}
+.search-chip:active { background: #e2e8f0; }
+
+/* =========================================
+   NY KUND-TOOLBAR & STATUS TAGGAR
+   ========================================= */
+
+/* --- Toolbar Layout --- */
+.customer-toolbar {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.cust-search { flex: 2; } /* Sökfältet tar mer plats */
+.sort-wrapper { flex: 1; min-width: 160px; }
+
+/* Justering av select-pilen så den ser snygg ut */
+#customerSortSelect {
+    appearance: none; /* Tar bort standard-pilen */
+    -webkit-appearance: none;
+    padding-left: 48px !important; /* Ger plats åt ikonen till vänster */
+    padding-right: 32px !important; /* Plats för pilen till höger */
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+	color: #111;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+/* --- Status Taggar (Piller) --- */
+.status-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-left: 8px;
+    white-space: nowrap;
+}
+
+/* Färgkoder */
+.pill-new { background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0; } /* Grön */
+.pill-passive { background-color: #fee2e2; color: #991b1b; border: 1px solid #fecaca; } /* Röd */
+.pill-loyal { background-color: #e0f2fe; color: #075985; border: 1px solid #bae6fd; } /* Blå */
+
+/* 1. Gör filter-ikonen (strecken) svart och tjockare */
+.sort-wrapper .input-icon {
+    color: #111 !important; /* Tvingar svart färg */
+    stroke-width: 2.5px !important; /* Lite tjockare linjer */
+    z-index: 10; /* Säkerställer att den ligger över */
+}
+
+/* --- Mobilanpassning --- */
 @media (max-width: 768px) {
-    /* --- Layout Reset --- */
-    body { 
-        flex-direction: column; /* VIKTIGT: Stapla header och innehåll vertikalt */
-        overflow-y: auto;
-        background-color: #f8fafc;
+    .customer-toolbar {
+        flex-direction: column; /* Stapla på varandra i mobil */
+        gap: 10px;
     }
     
-    .app-layout { display: block; height: auto; }
-    
-    /* Dölj desktop-element */
-    .sidebar, .top-bar, #jobsTable thead, .header-cta-btn, .top-search-container, .divider-vertical { 
-        display: none !important; 
+    .sort-wrapper {
+        width: 100%;
     }
     
-    /* Visa mobil-element */
-    .mobile-only { display: block; }
-    
-    .main-content { 
-        padding: 0 16px 100px 16px; /* Padding för innehåll + bottenmeny */
-        width: 100%; 
-        margin: 0; 
-        max-width: none;
-    }
-
-    /* --- Mobil Header (Icke-sticky per önskemål, men layout hanterar det) --- */
-    .mobile-header {
-        position: relative; /* Ändrat från fixed/sticky */
-        height: var(--mobile-header-height);
-        background-color: #f8fafc;
-        display: flex; align-items: center; justify-content: space-between;
-        padding: 0 4px; 
-        margin-bottom: 12px;
-        z-index: 50;
+    /* Flytta taggen till en ny rad i mobilkortet för att spara bredd */
+    .c-info h3 {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        align-items: center !important;
+        gap: 8px !important; /* HÄR är lösningen: 8px mellanrum mellan namn och tagg */
     }
     
-    /* Datumstyling i header */
-    .header-date-group { text-align: right; }
-    .header-day { display: block; font-size: 0.65rem; font-weight: 700; color: #94A3B8; letter-spacing: 1px; }
-    .header-date { font-size: 1rem; font-weight: 800; color: #1E293B; }
-    .header-blue-btn {
-        background: #fff; border: 1px solid #e2e8f0; color: #64748b;
-        width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center;
-    }
-
-    /* --- Z-INDEX HIERARKI (VIKTIGAST!) --- */
-    /* Nivå 1: Innehåll
-       Nivå 50: Header / Nav
-       Nivå 1000: Modaler (Kunder, Fordon, Jobb)
-       Nivå 2000: Popups (Märkesväljare, One UI Inställningar)
-    */
-
-    /* Modaler - Fullskärm på mobil */
-    .modal-backdrop.show,
-    #vehicleModal.show,
-    #customerModal.show,
-    #jobModal.show {
-        position: fixed !important;
-        top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
-        width: 100vw !important; height: 100dvh !important;
-        background-color: #f8fafc !important; /* Bakgrundsfärg */
-        z-index: 1000 !important; /* Över header */
-        display: flex !important; flex-direction: column !important;
-        padding: 0 !important;
-        border-radius: 0 !important;
-    }
-
-    /* Innehållsfix för fullskärmsmodaler */
-    .modal-content {
-        width: 100% !important; height: 100% !important;
-        max-width: none !important; max-height: none !important;
-        border-radius: 0 !important; border: none !important; box-shadow: none !important;
-        padding: 0 !important;
-        display: flex !important; flex-direction: column !important;
-    }
-
-    .modal-header, .vehicle-header-row {
-        flex: 0 0 auto; 
-        height: 60px;
-        position: relative !important; /* Ingen sticky behövs i fullskärm */
-        background: #fff !important;
-        border-bottom: 1px solid #e2e8f0 !important;
-        padding: 0 16px !important;
-        justify-content: flex-start !important; /* Vänsterställ rubriker */
-    }
-
-    .modal-body {
-        flex: 1; overflow-y: auto; padding: 20px 16px !important;
-        padding-bottom: 120px !important; /* Plats för footer-knappar */
-    }
-
-    /* Footer / Actions i botten */
-    .modal-actions {
-        position: fixed !important; bottom: 0 !important; left: 0 !important; right: 0 !important;
-        background: #fff !important; border-top: 1px solid #e2e8f0 !important;
-        padding: 16px !important; z-index: 1010 !important;
-        display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 12px !important;
-    }
-    .modal-actions button { width: 100% !important; height: 48px !important; }
-
-    /* --- Bottenmeny (Nav) --- */
-    .mobile-nav {
-        position: fixed; bottom: 0; left: 0; right: 0;
-        background: #fff; height: var(--bottom-nav-height);
-        display: flex; justify-content: space-between; align-items: center;
-        padding: 0 10px; border-top: 1px solid #e5e7eb;
-        z-index: 900; /* Under modalerna, över innehåll */
-    }
-    .mobile-nav-item {
-        background: none; border: none; flex: 1; display: flex; flex-direction: column; 
-        align-items: center; justify-content: center; gap: 4px; color: #94a3b8;
-    }
-    .mobile-nav-item.active { color: #111; }
-    
-    /* Chatt Widget Overlay */
-    .chat-widget[style*="display: flex"] {
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: #fff; z-index: 2000;
+    /* Justera margin på själva pillret */
+    .status-pill {
+        margin-left: 0 !important; /* Nollställ marginal då vi använder gap ovan istället */
+        margin-top: 0 !important;  /* Nollställ eventuell top-marginal */
     }
 }
 
-/* --- Märkesväljare (Extra hög Z-Index) --- */
-#brandSelectModal { z-index: 3000 !important; }
-#brandSelectModal .modal-content { max-height: 80vh !important; height: auto !important; }
+/* =========================================
+   KUND DASHBOARD (MINI STATS)
+   ========================================= */
+.cust-stats-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.cust-stat-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+}
+
+.cs-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+    white-space: nowrap;
+}
+
+.cs-value {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #111827;
+    line-height: 1;
+}
+
+.cs-value.text-green { color: #16a34a; }
+
+/* --- Mobilanpassning --- */
+@media (max-width: 768px) {
+    .cust-stats-wrapper {
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+
+    .cust-stat-card {
+        padding: 12px 10px; /* Kompaktare padding */
+        align-items: center; /* Centrera texten */
+    }
+
+    .cs-label {
+        font-size: 0.65rem; /* Mindre rubrik */
+        margin-bottom: 2px;
+    }
+
+    .cs-value {
+        font-size: 1.2rem; /* Något mindre siffra */
+    }
+}
+
+/* Wrapper för Input + Kopiera-knapp */
+.input-wrapper-copy {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-wrapper-copy input {
+    padding-right: 40px !important; /* Gör plats för knappen */
+}
+
+.btn-copy-input {
+    position: absolute;
+    right: 8px;
+    background: transparent;
+    border: none;
+    color: #9ca3af;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.btn-copy-input:hover {
+    color: #3b82f6;
+    background-color: rgba(59, 130, 246, 0.1);
+}
+
+.btn-copy-input svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* --- ZOOM SLIDER STYLING --- */
+input[type=range] { -webkit-appearance: none; /* Ta bort standardutseende */ width: 100%; background: transparent;  cursor: pointer; }
+
+/* Spåret (Track) */
+input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; background: #e5e7eb; border-radius: 4px; }
+
+/* Tummen (Knappen man drar i) */
+input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    height: 20px;
+    width: 20px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 1px solid #d1d5db;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    margin-top: -7px; /* Justera för att centrera på spåret */
+    transition: transform 0.1s;
+}
+
+input[type=range]:active::-webkit-slider-thumb { transform: scale(1.1); border-color: #3b82f6; background: #3b82f6; }
+
+/* Dark mode stöd */
+[data-theme="dark"] input[type=range]::-webkit-slider-runnable-track { background: #333; }
+[data-theme="dark"] input[type=range]::-webkit-slider-thumb { background: #1c1c1e; border-color: #555; }
+
+
+
+/* =========================================
+   FIX: HELSKÄRMS-MODALER & ICKE-STICKY HEADER (KORRIGERAD)
+   ========================================= */
+
+@media (max-width: 768px) {
+
+    /* 1. VIKTIGT: Ändra riktning på body så headern hamnar ÖVER innehållet, inte bredvid */
+    body {
+        flex-direction: column !important;
+    }
+
+    /* 2. Gör headern icke-sticky */
+    .mobile-header {
+        position: relative !important;
+        top: auto !important;
+        width: 100% !important;
+        flex-shrink: 0 !important; /* Förhindra att den krymps */
+        box-shadow: none !important;
+    }
+
+    /* 3. Ta bort padding eftersom headern nu tar plats i flödet */
+    .main-content {
+        padding-top: 0 !important; 
+    }
+
+    /* 4. Helskärms-modaler (Regnr & Kund) */
+    /* top: 0 och height: 100dvh gör att den täcker hela skärmen */
+    #vehicleModal.show,
+    #customerModal.show {
+        position: fixed !important; /* Måste vara fixed för att täcka skärmen */
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;              
+        height: 100dvh !important;      
+        width: 100vw !important;
+        padding-top: 0 !important;      
+        z-index: 210000 !important; /* Ligger över allt */
+        background-color: #f8fafc !important; /* Bakgrundsfärg så man inte ser igenom */
+    }
+
+    /* 5. Anpassa innehållet i modalerna */
+    #vehicleModal .modal-content,
+    #customerModal .modal-content {
+        height: 100% !important;
+        max-height: none !important;
+        border-radius: 0 !important;
+        border: none !important;
+    }
+
+    /* 6. Återställ header-position inuti modalerna */
+    .vehicle-header-row,
+    #customerModal .modal-header {
+        position: relative !important;
+        top: auto !important;
+    }
+}
