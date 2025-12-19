@@ -400,17 +400,17 @@
 
 
 /* =================================================================
-   MOBILANPASSNING - SAMSUNG ONE UI STYLE (Blur & Layout)
+   MOBILANPASSNING - SAMSUNG ONE UI (FIXAD BLUR)
    ================================================================= */
 @media (max-width: 768px) {
-    /* 1. Bakgrund med Blur (Frostad effekt) */
+    /* 1. Bakgrunden - Nyckeln till blur är "rgba" med lägre siffra */
     .image-modal-overlay {
-        background: rgba(0, 0, 0, 0.7) !important; /* Halvgenomskinlig svart */
-        backdrop-filter: blur(20px) !important;     /* Kraftig oskärpa på bakgrunden */
-        -webkit-backdrop-filter: blur(20px) !important;
+        background-color: rgba(0, 0, 0, 0.6) !important; /* 60% svart, resten genomskinligt */
+        backdrop-filter: blur(15px) !important;          /* Suddar innehållet bakom */
+        -webkit-backdrop-filter: blur(15px) !important;  /* KRÄVS för iPhone */
     }
 
-    /* 2. Bildens storlek (Mindre för att ge luft) */
+    /* 2. Bilden - Samsung-storlek */
     .image-modal-content {
         padding: 0 !important;
         width: 100% !important;
@@ -422,16 +422,14 @@
 
     #mmImgMain {
         max-width: 100vw !important;
-        max-height: 75vh !important; /* Begränsa höjden (Samsung-stil) */
+        max-height: 70vh !important; /* Lite mindre för att ge plats åt UI */
         width: auto !important;
-        border-radius: 12px !important; /* Mjukare hörn på bilden */
-        box-shadow: 0 10px 40px rgba(0,0,0,0.5) !important; /* Djup */
+        border-radius: 0 !important;
+        box-shadow: 0 5px 30px rgba(0,0,0,0.3) !important;
         object-fit: contain !important;
     }
 
-    /* 3. Simulera Samsungs verktygsfält (Topp och Botten) */
-    
-    /* Nollställ den gamla containern */
+    /* 3. Nollställ gamla verktygsfältet */
     .image-modal-toolbar.glass-pill {
         position: static !important; width: 0 !important; height: 0 !important;
         padding: 0 !important; border: none !important; background: transparent !important;
@@ -439,49 +437,47 @@
     }
     .toolbar-btn span, .toolbar-divider { display: none !important; }
 
-    /* Gemensam stil för knapparna */
+    /* 4. Gemensam stil för knapparna (Rena ikoner utan bakgrund) */
     .toolbar-btn {
         position: fixed !important; z-index: 30 !important;
-        background: transparent !important; border: none !important;
+        background: transparent !important; 
+        border: none !important;
         width: auto !important; height: auto !important;
         padding: 20px !important; margin: 0 !important;
         display: flex !important; align-items: center !important; justify-content: center !important;
     }
 
-    /* --- STÄNG-KNAPP (Topp Vänster) --- */
+    /* --- STÄNG-KNAPP (Topp Vänster - "Tillbaka-pil"-känsla) --- */
     #mmCloseBtn {
         top: calc(10px + env(safe-area-inset-top)) !important;
-        left: 10px !important;
+        left: 5px !important;
     }
     
-    /* --- RADERA-KNAPP (Botten - Samsung Style) --- */
+    /* --- RADERA-KNAPP (Botten Mitten/Höger - Samsung Style) --- */
+    /* Samsung har ofta radera-ikonen i en bottenmeny. Vi lägger den "flytande" nere till höger men rent. */
     #mmDeleteBtn {
-        bottom: 0 !important;
-        left: 0 !important;
-        width: 100% !important; /* Hela bredden */
-        height: calc(60px + env(safe-area-inset-bottom)) !important;
-        background: rgba(0,0,0,0.5) !important; /* Mörk bottenplatta */
-        padding-bottom: env(safe-area-inset-bottom) !important; /* Justera för iPhone-strecket */
-        justify-content: center !important;
-        border-top: 1px solid rgba(255,255,255,0.1) !important;
+        bottom: calc(20px + env(safe-area-inset-bottom)) !important;
+        right: 20px !important;
+        background: transparent !important; /* Ingen mörk platta, renare look */
+        border: none !important;
     }
 
-    /* --- IKON-STYLING (Tunna linjer, One UI) --- */
+    /* --- IKONERNA --- */
     .toolbar-btn svg {
-        width: 24px !important;
-        height: 24px !important;
-        stroke: #ffffff !important; /* Rent vit */
-        stroke-width: 1.5px !important; /* Tunnare linjer för elegans */
-        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        width: 26px !important;
+        height: 26px !important;
+        stroke: #ffffff !important;
+        stroke-width: 1.5px !important;
+        filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5)); /* Skugga så de syns mot ljusa bilder */
     }
 
-    /* Gör radera-ikonen vit (inte röd) för att matcha Samsung */
+    /* Samsung använder vit ikon för radera, inte röd, i bildvisningsläget */
     #mmDeleteBtn svg {
         stroke: #ffffff !important;
     }
     
     /* Tryck-effekt */
-    .toolbar-btn:active svg { opacity: 0.5; transform: scale(0.9); transition: 0.1s; }
+    .toolbar-btn:active { opacity: 0.5; transform: scale(0.9); }
 }
 
 /* --- Mobilanpassning --- */
