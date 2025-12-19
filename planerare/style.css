@@ -687,90 +687,6 @@ tbody tr button {
     }
 }
 
-/* --- FIX: GLOBAL STICKY HEADER --- */
-
-@media (max-width: 768px) {
-
-    /* 1. Lås fast headern i toppen */
-    .mobile-header {
-        position: fixed !important;
-        top: 0; left: 0; right: 0;
-        height: 60px;               /* Bestämd höjd */
-        background-color: #F8FAFC;  /* Bakgrundsfärg så man inte ser igenom */
-        z-index: 200000;            /* Högre än ALLT annat (modaler har ofta 10000) */
-        border-bottom: 1px solid #e2e8f0;
-        padding: 0 16px;            /* Snyggare marginaler */
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05); /* Liten skugga för separation */
-    }
-
-    /* 2. Tryck ner innehållet på startsidan så det inte hamnar under headern */
-    .main-content {
-        padding-top: 70px !important; /* 60px header + 10px luft */
-    }
-
-    /* 3. Justera ALLA MODALER så de börjar under headern */
-    /* Detta gäller Jobbmodal, Fordonsmodal och Sökmodal */
-    .modal-backdrop.show, 
-    #vehicleModal.show,
-    #mobileSearchModal.show {
-        top: 60px !important;              /* Börja 60px ner */
-        height: calc(100dvh - 60px) !important; /* Ta resten av höjden */
-        border-top: 1px solid #e5e7eb;     /* En liten linje i toppen */
-    }
-
-    /* 4. Justera CHATTEN specifikt */
-    .chat-widget[style*="display: flex"] {
-        top: 60px !important;              
-        height: calc(100dvh - 60px) !important; 
-        border-top: 1px solid #e5e7eb;
-    }
-
-    /* 5. Fixa fordonsmodalens header så den inte krockar */
-    .vehicle-header-row {
-        position: sticky !important;
-        top: 0 !important;
-        z-index: 50;
-    }
-}
-
-/* --- FIX: JOBB-MODALER UNDER HEADER --- */
-
-@media (max-width: 768px) {
-    
-    /* 1. Se till att Headern ligger absolut överst */
-    .mobile-header {
-        z-index: 200000 !important;
-    }
-
-    /* 2. Justera BÅDE Jobb- och Fordonsmodalen */
-    #jobModal,
-    #vehicleModal {
-        top: 60px !important;                   /* Börja exakt under headern */
-        height: calc(100dvh - 60px) !important; /* Fyll resten av skärmen */
-        z-index: 199999 !important;             /* Lägre än headern, men högre än innehållet */
-        padding-top: 0 !important;              
-    }
-
-    /* 3. Justera innehållet i båda */
-    #jobModal .modal-content,
-    #vehicleModal .modal-content {
-        height: 100% !important;
-        border-top: 1px solid #e5e7eb !important;
-        border-radius: 0 !important;
-    }
-    
-    /* KNAPPAR UNDER JOBBKORT */
-    
-	/* Animation */
-	@keyframes slideDown {
-	    from { opacity: 0; transform: translateY(-10px); }
-	    to { opacity: 1; transform: translateY(0); }
-	}
-}
-
 /* --- FIX: TYPSNITT & INMATNING --- */
 
 /* PUNKT 3: Kapitalisering (Visuellt) */
@@ -1484,3 +1400,4 @@ input[type=range]:active::-webkit-slider-thumb { transform: scale(1.1); border-c
         top: auto !important;
     }
 }
+
