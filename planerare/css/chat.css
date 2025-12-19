@@ -647,56 +647,30 @@ body #chatWidget .chat-row.system .chat-bubble {
     }
 }
 
-/* ==========================================================================
-   FIX: SKICKA-KNAPPEN (TVINGA FRAM DEN)
-   ========================================================================== */
-
-/* 1. Tvinga föräldern att lägga saker på rad (Detta är nyckeln!) */
 #chatInputArea {
-    display: flex !important;           /* Lägg barnen på rad */
-    flex-direction: row !important;     /* Vänster till höger */
-    align-items: flex-end !important;   /* Justera mot botten (snyggast när rutan växer) */
-    padding: 10px !important;           /* Lite luft runt om */
-    gap: 8px !important;                /* Mellanrum mellan ruta och knapp */
-    background: #fff !important;        /* Vit bakgrund */
-    min-height: 60px !important;        /* Garanterad höjd */
-    box-sizing: border-box !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: flex-end !important;
+    gap: 8px !important;
 }
 
-/* 2. Justera text-behållaren att ta all plats */
-.input-field-container {
-    flex: 1 !important;                 /* Ta all ledig plats */
-    width: auto !important;             /* Låt flex styra bredden */
-    margin-bottom: 2px !important;      /* Finjustering mot botten */
-}
-
-/* 3. Tvinga fram skicka-knappen och se till att den syns */
 #chatSendBtn {
     display: flex !important;
+    width: 44px !important;
+    height: 44px !important;
+    background-color: #0066FF !important;
+    border-radius: 50% !important;
     align-items: center !important;
     justify-content: center !important;
-    
-    width: 44px !important;             /* Lite större klick-yta */
-    height: 44px !important;
-    
-    background-color: #0066FF !important; /* Blå färg */
-    border-radius: 50% !important;        /* Rund */
     border: none !important;
-    flex-shrink: 0 !important;            /* Får INTE krympa/försvinna */
-    margin: 0 !important;
-    margin-bottom: 2px !important;        /* Lira med textrutan */
-    
-    opacity: 1 !important;
-    visibility: visible !important;
+    flex-shrink: 0 !important;
+    margin-bottom: 2px !important;
     z-index: 100 !important;
 }
 
-/* 4. Tvinga fram ikonen INUTI knappen (om den blivit vit/osynlig) */
-#chatSendBtn svg,
-#chatSendBtn .icon {
+#chatSendBtn svg {
+    stroke: white !important;
     width: 20px !important;
     height: 20px !important;
-    stroke: white !important;
-    fill: none !important;
     display: block !important;
 }
