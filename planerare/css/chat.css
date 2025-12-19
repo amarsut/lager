@@ -1,10 +1,11 @@
 /* ==========================================================================
-   MODERN CHAT - PREMIUM DESIGN (UPDATED)
+   MODERN CHAT - FINAL VERSION (FIXED LAYOUT & FONTS)
    ========================================================================== */
 
-/* --- 1. Flytande Chatt-knapp (FAB) --- */
+/* --- 1. Flytande Chatt-knapp (FAB - Desktop) --- */
 @media (min-width: 769px) {
     #fabChat {
+        display: flex !important; /* Tvinga visning */
         position: fixed !important;
         bottom: 30px !important;
         right: 30px !important;
@@ -16,12 +17,12 @@
         border: none !important;
         box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
         z-index: 2147483647 !important;
-        display: flex !important;
         align-items: center;
         justify-content: center;
         cursor: pointer !important;
         transition: transform 0.2s, box-shadow 0.2s;
     }
+    #fabChat svg { width: 28px !important; height: 28px !important; stroke: white !important; }
     #fabChat:hover {
         transform: translateY(-3px) scale(1.05) !important;
         box-shadow: 0 15px 35px -8px rgba(59, 130, 246, 0.7) !important;
@@ -39,7 +40,6 @@
     width: clamp(400px, 40vw, 500px); 
     height: 600px;
     max-height: 80vh;
-    /* Glassmorphism bakgrund */
     background: rgba(255, 255, 255, 0.85) !important;
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
@@ -59,12 +59,13 @@
     to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-/* --- 3. Header --- */
+/* --- 3. Header (Centrerad Sök) --- */
 .chat-header {
     height: 60px;
-    padding: 0 16px;
-    background: rgba(255, 255, 255, 0.5) !important; /* Genomskinlig */
+    padding: 0 12px;
+    background: rgba(255, 255, 255, 0.6) !important;
     border-bottom: 1px solid rgba(0,0,0,0.05) !important;
+    backdrop-filter: blur(10px);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -73,40 +74,65 @@
     z-index: 10;
 }
 
-/* Sökfält */
+/* Back-knapp */
+#closeChatWidget {
+    background: transparent;
+    border: none;
+    width: 40px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+    color: #1C1C1E; cursor: pointer; flex-shrink: 0;
+}
+
+/* Sökfält Wrapper - Tar upp all plats i mitten */
 .chat-search-wrapper {
     position: relative;
-    flex: 1;
+    flex: 1 !important; /* VIKTIGT: Fyller utrymmet */
     display: flex;
     align-items: center;
+    max-width: 100%;
 }
+
 .chat-search-wrapper input {
-    width: 100%;
+    width: 100% !important;
     height: 40px;
-    padding: 0 12px 0 38px;
+    padding: 0 12px 0 38px; /* Plats för vänster ikon */
+    padding-right: 80px !important; /* Plats för höger ikoner (AI/Galleri) */
     border: none;
     border-radius: 12px;
     font-size: 0.95rem;
-    background: rgba(118, 118, 128, 0.12); /* Apple-grå */
+    background: rgba(118, 118, 128, 0.12);
     color: #1C1C1E;
     outline: none;
     transition: background 0.2s;
+    font-family: inherit; /* Fixar fonten i sök */
 }
 .chat-search-wrapper input:focus { background: rgba(118, 118, 128, 0.18); }
 
-/* Knappar i header */
-#closeChatWidget, .header-icon-btn {
-    background: rgba(118, 118, 128, 0.12);
-    border: none; border-radius: 12px;
-    width: 40px; height: 40px;
-    display: flex; align-items: center; justify-content: center;
-    color: #555; cursor: pointer; transition: all 0.2s; flex-shrink: 0;
+/* Sökikon (Vänster) */
+.search-icon-inside {
+    position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+    width: 18px; height: 18px; color: #8E8E93; pointer-events: none;
 }
-#closeChatWidget:hover { background: rgba(118, 118, 128, 0.2); color: #000; }
+
+/* Verktyg (AI & Galleri) inuti sökfältet (Höger) */
+.inside-search-tools {
+    position: absolute !important;
+    right: 6px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    z-index: 10 !important;
+    height: 100%;
+}
+
 .tool-icon-btn {
     background: transparent; border: none; padding: 6px; cursor: pointer; color: #666;
+    display: flex; align-items: center; justify-content: center;
 }
 .tool-icon-btn:hover { color: #0066FF; }
+.tool-divider { width: 1px; height: 16px; background: rgba(0,0,0,0.1); margin: 0 2px; }
 
 /* --- 4. Meddelandelista --- */
 .chat-messages {
@@ -189,8 +215,9 @@
 /* Highlight vid sök */
 .search-highlight { background-color: #ffeb3b; color: #000; border-radius: 2px; }
 
-/* --- 6. Input Area (Botten) --- */
-.chat-input-area {
+
+/* --- 6. Input Area (Botten) & FONT FIX --- */
+#chatInputArea {
     background: rgba(255, 255, 255, 0.8) !important;
     backdrop-filter: blur(20px);
     border-top: 1px solid rgba(0,0,0,0.05) !important;
@@ -205,7 +232,7 @@
     gap: 8px !important; width: 100% !important; position: relative !important;
 }
 
-/* Input Wrapper (Mitten) */
+/* Input Wrapper */
 .input-wrapper {
     flex: 1 !important;
     background-color: #f0f2f5 !important;
@@ -220,21 +247,28 @@
     border-color: #0066FF !important; background-color: #fff !important;
 }
 
+/* TEXTFÄLTET - HÄR ÄR FONT FIXEN */
 #chatInput {
     width: 100% !important; background: transparent !important;
     border: none !important; box-shadow: none !important;
     padding: 10px 12px !important; 
     padding-right: 75px !important; /* Plats för ikoner */
-    margin: 0 !important; font-size: 16px !important; line-height: 1.4 !important;
+    margin: 0 !important; 
+    
+    /* Font inställningar */
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+    font-size: 16px !important; 
+    line-height: 1.4 !important;
+    color: #000 !important;
+
     max-height: 120px !important; resize: none !important; min-height: 40px !important;
-    color: #000;
 }
 
-/* Ikoner inuti input (Höger) - FIXAD STORLEK */
+/* Ikoner inuti input (Höger) */
 .icons-inside-right {
     position: absolute !important; 
     right: 8px !important; 
-    top: 50% !important;            /* Centrera vertikalt */
+    top: 50% !important;            
     transform: translateY(-50%) !important; 
     display: flex !important; 
     gap: 2px !important; 
@@ -246,57 +280,38 @@
 .icon-btn-small {
     background: transparent !important; border: none !important;
     width: 32px !important; height: 32px !important;
-    min-width: 32px !important; /* Förhindrar att den trycks ihop */
-    padding: 6px !important;    /* Luft runt ikonen */
+    min-width: 32px !important;
+    padding: 6px !important;
     color: #8E8E93 !important; 
     display: flex !important; align-items: center; justify-content: center !important;
     cursor: pointer !important;
 }
 .icon-btn-small:hover { color: #0066FF !important; }
-
-/* Tvinga SVG storlek så de inte blir jättestora */
 .icon-btn-small svg {
-    width: 20px !important;
-    height: 20px !important;
-    min-width: 20px !important;
-    min-height: 20px !important;
+    width: 20px !important; height: 20px !important;
+    min-width: 20px !important; min-height: 20px !important;
     stroke-width: 2px !important;
 }
 
-/* Skicka Knapp (Höger) */
+/* Skicka Knapp */
 .send-btn-round {
     width: 40px !important; height: 40px !important;
-    background-color: #0066FF !important; /* Alltid blå */
+    background-color: #0066FF !important;
     border-radius: 50% !important; border: none !important;
     color: white !important;
     display: flex !important; align-items: center; justify-content: center !important;
     flex-shrink: 0 !important; cursor: pointer;
     box-shadow: 0 4px 12px rgba(0, 102, 255, 0.3);
-    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition: all 0.2s;
+    opacity: 1 !important;
 }
-/* Ikonen inuti är alltid vit */
 .send-btn-round svg {
-    width: 20px !important; height: 20px !important;
-    stroke: white !important;
-    transition: transform 0.2s;
+    width: 20px !important; height: 20px !important; stroke: white !important;
 }
-
-/* Hover/Active effekter */
-.send-btn-round:hover { transform: scale(1.05); box-shadow: 0 6px 15px rgba(0, 102, 255, 0.4); }
 .send-btn-round:active { transform: scale(0.95); }
 
-/* (Valfritt) Om du vill att den ska se inaktiv ut när fältet är tomt,
-   men ändå vara blå, kan du sänka opaciteten.
-   Ta bort detta block om du vill att den alltid ska se likadan ut. */
-.send-btn-round:disabled,
-.send-btn-round:not(.is-active) {
-   opacity: 0.6; /* Lite genomskinlig om inaktiv */
-   cursor: default;
-   box-shadow: none;
-   transform: none !important;
-}
 
-/* --- 7. Menyn för meddelanden (Högerklick/Hover) --- */
+/* --- 7. Menyn för meddelanden --- */
 .chat-action-menu {
     display: none; position: absolute; top: -45px;
     background-color: rgba(255, 255, 255, 0.95);
@@ -304,139 +319,77 @@
     border-radius: 30px; padding: 6px 10px;
     box-shadow: 0 8px 20px rgba(0,0,0,0.12);
     align-items: center; gap: 6px; z-index: 2000;
-    animation: popInMenu 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 .chat-row.me .chat-action-menu { right: 0; }
 .chat-row.other .chat-action-menu { left: 0; }
 .chat-row:hover .chat-action-menu, .chat-row.show-menu .chat-action-menu { display: flex; }
-.chat-row:hover, .chat-row.show-menu { z-index: 100; } /* Lyfter raden över datum */
 
 .action-emoji-btn, .action-icon-btn {
     background: transparent; border: none; cursor: pointer;
     display: flex; align-items: center; justify-content: center;
     transition: transform 0.2s;
 }
-.action-emoji-btn { font-size: 1.3rem; width: 32px; height: 32px; border-radius: 50%; }
-.action-emoji-btn:hover { transform: scale(1.2); background: rgba(0,0,0,0.05); }
+.action-emoji-btn:hover { transform: scale(1.2); }
 
-.action-icon-btn { color: #64748b; width: 32px; height: 32px; border-radius: 50%; }
-.action-icon-btn:hover { background: #f1f5f9; color: #007aff; }
-.action-icon-btn.danger:hover { background: #fef2f2; color: #ef4444; }
-.action-separator { width: 1px; height: 20px; background: #e5e5ea; margin: 0 4px; }
 
-/* Reaktioner (liten ikon på bubblan) */
-.reaction-badge-display {
-    position: absolute; bottom: -6px; right: -6px;
-    background: #fff; border: 2px solid #fff; border-radius: 12px;
-    padding: 2px 5px; font-size: 0.85rem; cursor: pointer;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1); z-index: 10;
-    animation: popInBadge 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-.chat-row.other .reaction-badge-display { right: auto; left: 0px; }
-
-@keyframes popInBadge { from { transform: scale(0); } to { transform: scale(1); } }
-@keyframes popInMenu { from { opacity: 0; transform: translateY(10px) scale(0.9); } to { opacity: 1; transform: translateY(0) scale(1); } }
-
-/* --- 8. BILD ZOOM MODAL (PREMIUM & MODERN MOBIL) --- */
-.image-modal-overlay {
-    display: none; /* JS ändrar till flex */
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    z-index: 2147483647 !important;
-    background: rgba(0, 0, 0, 0.92); /* Mycket mörk bakgrund för fokus */
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    flex-direction: column;
-    align-items: center; justify-content: center;
-    animation: fadeInModal 0.25s ease-out forwards;
+/* --- 8. NOTIS BADGE (DESKTOP & MOBIL FIX) --- */
+.chat-notification-badge {
+    position: absolute !important;
+    background-color: #FF3B30 !important;
+    color: white !important;
+    font-weight: 700 !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center !important;
+    border: 2px solid #ffffff !important;
+    z-index: 100 !important;
 }
 
-@keyframes fadeInModal { from { opacity: 0; } to { opacity: 1; } }
-
-.image-modal-content {
-    position: relative; width: 100%; height: 100%;
-    display: flex; align-items: center; justify-content: center;
-    /* Padding så bilden inte nuddar menyn på desktop */
-    padding: 40px 20px 100px 20px;
+/* Desktop Badge (på FAB) */
+#fabChat .chat-notification-badge {
+    top: -2px !important; right: -2px !important;
+    min-width: 22px; height: 22px; border-radius: 11px;
+    font-size: 0.75rem;
 }
 
-#mmImgMain {
-    max-width: 95vw; max-height: 85vh;
-    object-fit: contain;
-    border-radius: 8px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-    transform: scale(0.96);
-    animation: zoomInImage 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1) forwards;
-    transition: transform 0.3s;
-}
-@keyframes zoomInImage { to { transform: scale(1); } }
-
-/* --- DESKTOP VERKTYGSFÄLT (Pillret) --- */
-.image-modal-toolbar.glass-pill {
-    position: absolute; bottom: 40px; z-index: 10;
-    display: flex; align-items: center;
-    background: rgba(30, 30, 30, 0.85); /* Mörkare */
-    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 100px; padding: 6px;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.3);
-}
-
-.toolbar-btn {
-    background: transparent; border: none; color: rgba(255,255,255,0.9);
-    padding: 10px 20px; font-size: 0.9rem; font-weight: 600;
-    display: flex; align-items: center; gap: 10px;
-    cursor: pointer; border-radius: 100px; transition: all 0.2s;
-}
-.toolbar-btn:hover { background: rgba(255,255,255,0.15); color: white; }
-.toolbar-btn svg { width: 22px; height: 22px; stroke-width: 2px; }
-
-.toolbar-divider {
-    width: 1px; height: 24px; background: rgba(255,255,255,0.2); margin: 0 4px;
-}
-
-.text-red { color: #ff5f57; }
-.text-red:hover { background: rgba(255, 95, 87, 0.15); color: #ff5f57; }
-
-
-/* =================================================================
-   MOBILANPASSNING - SAMSUNG ONE UI STYLE (FIXAD BLUR & ID-PRIO)
-   ================================================================= */
+/* Mobil Badge (i navbaren) */
 @media (max-width: 768px) {
+    #mobileChatBtn { position: relative !important; }
     
-    /* 1. BAKGRUND (Använder ID för att tvinga igenom stilen) */
+    #mobileChatBtn .chat-notification-badge {
+        top: 0px !important; 
+        right: 18px !important; /* Justerat så den hamnar snyggt på ikonen */
+        min-width: 18px; 
+        height: 18px; 
+        border-radius: 9px;
+        font-size: 0.7rem;
+        border: 1px solid #fff !important;
+    }
+}
+
+
+/* --- 9. BILD MODAL (SAMSUNG STYLE) --- */
+/* Mobil-specifik design för bildvisaren */
+@media (max-width: 768px) {
+    /* Bakgrund */
     #imageZoomModal {
-        /* 45% svart - resten genomskinligt för att släppa igenom bakgrunden */
         background-color: rgba(0, 0, 0, 0.45) !important;
-        
-        /* Kraftig oskärpa (Samsung style) */
         backdrop-filter: blur(15px) !important;
         -webkit-backdrop-filter: blur(15px) !important;
     }
 
-    /* 2. BILDENS STORLEK & PLACERING */
     .image-modal-content {
-        padding: 0 !important;
-        width: 100% !important;
-        height: 100% !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
+        padding: 0 !important; width: 100% !important; height: 100% !important;
+        display: flex !important; align-items: center; justify-content: center !important;
     }
 
     #mmImgMain {
-        max-width: 100vw !important;
-        /* Begränsad höjd ger "luft" och ser lyxigare ut */
-        max-height: 70vh !important; 
-        width: auto !important;
-        
-        /* Ingen border-radius eller skugga på mobil för renare look */
-        border-radius: 0 !important;
-        box-shadow: none !important; 
-        object-fit: contain !important;
+        max-width: 100vw !important; max-height: 70vh !important;
+        width: auto !important; border-radius: 0 !important;
+        box-shadow: none !important; object-fit: contain !important;
     }
 
-    /* 3. DÖLJ DET GAMLA VERKTYGSFÄLTET */
+    /* Dölj gamla verktygsfältet */
     .image-modal-toolbar.glass-pill {
         position: static !important; width: 0 !important; height: 0 !important;
         padding: 0 !important; border: none !important; background: transparent !important;
@@ -444,48 +397,47 @@
     }
     .toolbar-btn span, .toolbar-divider { display: none !important; }
 
-    /* 4. KNAPPAR (Minimalistiska, utan bakgrundsplatta) */
+    /* Knappar (Samsung style) */
     .toolbar-btn {
-        position: fixed !important; 
-        z-index: 99999 !important; /* Säkerställ att de ligger överst */
-        background: transparent !important; 
-        border: none !important;
-        width: 60px !important; height: 60px !important; /* Stor träffyta */
+        position: fixed !important; z-index: 99999 !important;
+        background: transparent !important; border: none !important;
+        width: 60px !important; height: 60px !important;
         padding: 0 !important; margin: 0 !important;
-        display: flex !important; align-items: center !important; justify-content: center !important;
+        display: flex !important; align-items: center; justify-content: center !important;
     }
 
-    /* --- STÄNG (Uppe till vänster - Tillbaka-pil) --- */
-    #mmCloseBtn {
-        top: calc(10px + env(safe-area-inset-top)) !important;
-        left: 10px !important;
-    }
+    /* Stäng (Topp Vänster) */
+    #mmCloseBtn { top: calc(10px + env(safe-area-inset-top)) !important; left: 10px !important; }
     
-    /* --- RADERA (Nere till höger - Samsung standard) --- */
-    #mmDeleteBtn {
-        bottom: calc(20px + env(safe-area-inset-bottom)) !important;
-        right: 20px !important;
-    }
+    /* Radera (Botten Höger) */
+    #mmDeleteBtn { bottom: calc(20px + env(safe-area-inset-bottom)) !important; right: 20px !important; }
 
-    /* --- IKON-DESIGN --- */
     .toolbar-btn svg {
-        width: 26px !important;
-        height: 26px !important;
-        stroke: #ffffff !important;     /* Kritvita ikoner */
-        stroke-width: 1.5px !important; /* Tunna eleganta linjer */
-        
-        /* Liten skugga så ikonen syns även mot ljusa bilder */
+        width: 26px !important; height: 26px !important;
+        stroke: #ffffff !important; stroke-width: 1.5px !important;
         filter: drop-shadow(0 1px 3px rgba(0,0,0,0.5)) !important;
     }
-
-    /* Tvinga radera-ikonen vit (tar bort eventuell röd färg) */
     #mmDeleteBtn svg { stroke: #ffffff !important; }
-
-    /* Touch-effekt */
-    .toolbar-btn:active { opacity: 0.6; transform: scale(0.92); transition: 0.1s; }
 }
 
-/* --- Mobilanpassning --- */
+/* Desktop Modal */
+@media (min-width: 769px) {
+    .image-modal-overlay {
+        display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+        z-index: 2147483647 !important;
+        background: rgba(0, 0, 0, 0.9); backdrop-filter: blur(10px);
+        flex-direction: column; align-items: center; justify-content: center;
+    }
+    .image-modal-toolbar.glass-pill {
+        position: absolute; bottom: 40px; z-index: 10;
+        display: flex; align-items: center;
+        background: rgba(30, 30, 30, 0.85); backdrop-filter: blur(20px);
+        border: 1px solid rgba(255,255,255,0.1); border-radius: 100px; padding: 6px;
+    }
+    .toolbar-btn { color: #fff; }
+}
+
+/* --- Mobilanpassning Generellt --- */
 @media (max-width: 768px) {
     .chat-widget {
         top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
@@ -499,26 +451,4 @@
     .chat-input-area { 
         padding-bottom: max(10px, env(safe-area-inset-bottom)) !important;
     }
-    .image-modal-toolbar.glass-pill { bottom: 30px; }
-    .toolbar-btn span { display: none; } /* Dölj text, visa bara ikoner på mobil */
-    .toolbar-btn { padding: 12px 20px; }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
