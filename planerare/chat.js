@@ -16,20 +16,24 @@ window.toggleChatWidget = function() {
     const isOpen = chatWidget.style.display === 'flex';
 
     if (isOpen) {
-        // Om vi stänger manuellt via knappen, rensa historik-steget
+        // STÄNGER
         chatWidget.style.display = 'none';
+        document.body.classList.remove('chat-open'); // Ta bort klassen
         document.body.style.overflow = ''; 
+        
+        // Återställ eventuell historik
         if (history.state && history.state.uiState === 'chat') {
             history.back();
         }
     } else {
-        // ÖPPNA: Lägg till ett historik-state
+        // ÖPPNAR
         chatWidget.style.display = 'flex';
+        document.body.classList.add('chat-open'); // Lägg till klassen (döljer headern via CSS)
         document.body.style.overflow = 'hidden'; 
         
-        // Detta gör att "Bakåt" stänger chatten istället för appen
         history.pushState({ uiState: 'chat' }, null, window.location.href);
 
+        // Scrolla till botten
         setTimeout(() => {
             const chatList = document.getElementById('chatMessages');
             if (chatList) chatList.scrollTop = chatList.scrollHeight;
