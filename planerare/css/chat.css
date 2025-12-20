@@ -265,15 +265,40 @@
 /* Textfält */
 .chat-input-area textarea {
     flex: 1;
-    min-height: 38px !important; height: 38px !important; max-height: 140px;
+    min-height: 40px !important; 
+    height: 40px !important; 
+    max-height: 40px !important; /* Lås höjden */
+    
     background: #FFFFFF !important;
     border: 1px solid rgba(0,0,0,0.1) !important;
     border-radius: 25px !important;
-    padding-top: 8px !important; padding-bottom: 8px !important;
-    padding-left: 14px !important; padding-right: 90px !important; /* Plats för ikoner */
-    font-size: 0.95rem; font-family: inherit; resize: none; outline: none;
+    
+    /* Centrera texten vertikalt */
+    padding: 0 14px !important; 
+    padding-right: 90px !important; /* Plats för ikoner */
+    line-height: 38px !important;   /* Matchar höjden minus border för perfekt mitten-text */
+    
+    font-size: 0.95rem; 
+    font-family: inherit; 
+    resize: none; 
+    outline: none;
     box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    transition: all 0.2s ease; margin: 0 !important; line-height: 20px !important;
+    transition: all 0.2s ease; 
+    margin: 0 !important;
+    
+    /* NYTT: Tvinga texten att gå åt höger */
+    white-space: nowrap !important;
+    overflow-x: auto !important;  /* Tillåt scroll i sidled */
+    overflow-y: hidden !important; /* Ingen höjd-scroll */
+    
+    /* Dölj scrollbar för en renare look */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+}
+
+/* Dölj scrollbar i textrutan (Chrome/Safari/Opera) */
+.chat-input-area textarea::-webkit-scrollbar {
+    display: none;
 }
 .chat-input-area textarea:focus {
     box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.15) !important;
@@ -537,4 +562,22 @@
 .chat-widget.edit-mode #chatSendBtn {
     grid-area: button; width: 36px; height: 36px; margin-left: 8px; align-self: center;
     background-color: #0084ff;
+}
+/* --- FIX FÖR TEXTPOSITION I REDIGERINGSLÄGE --- */
+.chat-widget.edit-mode .chat-input-area textarea {
+    /* 1. Nollställ padding i toppen/botten så texten inte knuffas fel */
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    
+    /* 2. Samma höjd och centrering som vanliga läget */
+    height: 40px !important;
+    line-height: 20px !important;
+    
+    /* 3. Justera sidorna */
+    padding-left: 14px !important;
+    /* Eftersom ikonerna (gem/kamera) är dolda i redigering, minskar vi höger-paddingen */
+    padding-right: 14px !important; 
+    
+    /* 4. Säkerställ bakgrundsfärg */
+    background: #f0f2f5 !important;
 }
