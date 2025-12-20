@@ -1,3 +1,6 @@
+* {
+    -webkit-tap-highlight-color: transparent;
+}
 /* ==========================================================================
    MODERN CHAT - CLEAN & OPTIMIZED (v2.0)
    ========================================================================== */
@@ -168,7 +171,7 @@
     background-color: transparent; /* Låt widgetens bakgrund synas */
     scrollbar-width: thin; scrollbar-color: #D1D1D6 transparent;
 }
-@media (max-width: 768px) { .chat-messages { padding-top: 10px; } }
+@media (max-width: 768px) { .chat-messages { overscroll-behavior-y: contain; padding-top: 10px; } }
 
 .chat-messages::-webkit-scrollbar { width: 6px; }
 .chat-messages::-webkit-scrollbar-thumb { background-color: #D1D1D6; border-radius: 3px; }
