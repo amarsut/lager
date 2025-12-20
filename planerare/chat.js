@@ -541,47 +541,166 @@ function compressImage(file) {
     });
 }
 
+let currentGalleryImages = []; // Lista på alla bilder i chatten
+let currentImageIndex = 0;
+
 window.openImageZoom = function(src, docId) {
-    if (typeof addHistoryState === 'function') addHistoryState();
+    // 1. Samla in alla bilder som finns i chatten just nu
+    const imgElements = Array.from(document.querySelectorAll('.chat-bubble-image img'));
+    
+    // 2. Skapa en lista med objekt { src, id }
+    currentGalleryImages = imgElements.map(img => ({
+        src: img.src,
+        id: img.closest('.chat-row')?.dataset.messageId || ''
+    }));
+
+    // 3. Hitta index för bilden vi klickade på
+    currentImageIndex = currentGalleryImages.findIndex(img => img.src === src);
+    if (currentImageIndex === -1) currentImageIndex = 0;
+
+    // 4. Uppdatera UI
+    updateGalleryUI();
+    
+    // 5. Visa modalen
     const modal = document.getElementById('imageZoomModal');
+    modal.style.display = 'flex';
+    
+    // Historik-hantering (så man kan backa ur bilden)
+    if (typeof addHistoryState === 'function') addHistoryState();
+};
+
+function updateGalleryUI() {
+    const imgObj = currentGalleryImages[currentImageIndex];
     const imgMain = document.getElementById('mmImgMain');
-    const deleteBtn = document.getElementById('mmDeleteBtn');
-    const closeBtn = document.getElementById('mmCloseBtn'); // Lägg till stängknappen
+    const counter = document.getElementById('galleryCounter');
+    
+    // Byt bild och data
+    imgMain.src = imgObj.src;
+    imgMain.dataset.id = imgObj.id;
+    
+    // Uppdatera räknare (t.ex. "3 / 10")
+    counter.textContent = `${currentImageIndex + 1} / ${currentGalleryImages.length}`;
 
-    if (modal && imgMain) {
-        imgMain.src = src;
-        imgMain.dataset.id = docId || ''; 
-        modal.style.display = 'flex';
+    // Hantera pilar (inaktivera om första/sista)
+    const btnPrev = document.getElementById('btnPrevImg');
+    const btnNext = document.getElementById('btnNextImg');
+    if(btnPrev) btnPrev.style.opacity = currentImageIndex === 0 ? '0.3' : '1';
+    if(btnNext) btnNext.style.opacity = currentImageIndex === currentGalleryImages.length - 1 ? '0.3' : '1';
+}
 
-        // --- FIX: Stängknapp ---
-        if(closeBtn) {
-            closeBtn.onclick = () => {
-                modal.style.display = 'none';
-                if (history.state && history.state.modalOpen) history.back();
-            };
-        }
+// --- NAVIGATION ---
+function prevImage() {
+    if (currentImageIndex > 0) {
+        currentImageIndex--;
+        updateGalleryUI();
+    }
+}
 
-        modal.onclick = (e) => {
-            if (e.target === modal || e.target.classList.contains('image-modal-toolbar')) {
-                modal.style.display = 'none';
-                if (history.state && history.state.modalOpen) history.back();
+function nextImage() {
+    if (currentImageIndex < currentGalleryImages.length - 1) {
+        currentImageIndex++;
+        updateGalleryUI();
+    }
+}
+
+// Koppla knappar (Körs när scriptet laddas eller initieras)
+document.addEventListener('DOMContentLoaded', () => {
+    // Navigering
+    document.getElementById('btnPrevImg')?.addEventListener('click', (e) => { e.stopPropagation(); prevImage(); });
+    document.getElementById('btnNextImg')?.addEventListener('click', (e) => { e.stopPropagation(); nextImage(); });
+    
+    // Stäng
+    document.getElementById('mmCloseBtn')?.addEventListener('click', () => {
+        document.getElementById('imageZoomModal').style.display = 'none';
+    });
+
+    // Ladda ner
+    document.getElementById('mmDownloadBtn')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const src = document.getElementById('mmImgMain').src;
+        const link = document.createElement('a');
+        link.href = src;
+        link.download = `bild-${Date.now()}.jpg`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    });
+
+    // Dela (Vidarebefordra)
+    document.getElementById('mmShareBtn')?.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const src = document.getElementById('mmImgMain').src;
+        if (navigator.share) {
+            try {
+                // Försök dela som fil om möjligt, annars URL
+                const blob = await (await fetch(src)).blob();
+                const file = new File([blob], "bild.jpg", { type: blob.type });
+                await navigator.share({
+                    files: [file],
+                    title: 'Bild från chatten'
+                });
+            } catch (err) {
+                console.log("Dela avbröts eller stöds ej fullt ut, delar länk...", err);
+                 // Fallback: Dela länk
+                 navigator.share({ url: src });
             }
-        };
+        } else {
+            alert("Din webbläsare stödjer inte delning.");
+        }
+    });
 
-        if (deleteBtn) {
-            deleteBtn.style.display = docId ? 'flex' : 'none';
-            deleteBtn.onclick = async (e) => {
-                e.stopPropagation();
-                if (confirm('Radera bilden permanent?')) {
-                    try {
-                        await window.db.collection("notes").doc(docId).delete();
-                        modal.style.display = 'none';
-                    } catch (error) { console.error(error); }
+    // Radera
+    document.getElementById('mmDeleteBtn')?.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const id = document.getElementById('mmImgMain').dataset.id;
+        if (id && confirm('Radera bilden permanent?')) {
+            try {
+                await window.db.collection("notes").doc(id).delete();
+                // Ta bort från listan och stäng/uppdatera
+                currentGalleryImages.splice(currentImageIndex, 1);
+                if (currentGalleryImages.length === 0) {
+                    document.getElementById('imageZoomModal').style.display = 'none';
+                } else {
+                    if (currentImageIndex >= currentGalleryImages.length) currentImageIndex--;
+                    updateGalleryUI();
                 }
-            };
+            } catch (error) { console.error(error); }
+        }
+    });
+
+    // --- SWIPE LOGIK (Touch) ---
+    const modal = document.getElementById('imageZoomModal');
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    modal.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+    }, {passive: true});
+
+    modal.addEventListener('touchend', (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        handleSwipe();
+    }, {passive: true});
+
+    function handleSwipe() {
+        const threshold = 50; // Hur långt man måste dra
+        if (touchEndX < touchStartX - threshold) {
+            nextImage(); // Swipe Vänster -> Nästa
+        }
+        if (touchEndX > touchStartX + threshold) {
+            prevImage(); // Swipe Höger -> Föregående
         }
     }
-};
+    
+    // Tangentbordsstyrning (Pilarna)
+    document.addEventListener('keydown', (e) => {
+        if (document.getElementById('imageZoomModal').style.display === 'flex') {
+            if (e.key === 'ArrowLeft') prevImage();
+            if (e.key === 'ArrowRight') nextImage();
+            if (e.key === 'Escape') document.getElementById('mmCloseBtn').click();
+        }
+    });
+});
 
 // Öppna galleriet
 function openChatGallery() {
