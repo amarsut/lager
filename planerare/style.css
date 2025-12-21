@@ -444,3 +444,150 @@ tbody tr button { cursor: pointer; z-index: 2; position: relative; }
     }
 }
 
+/* =========================================
+   GLOBAL STANDARD HEADER & BUTTONS
+   ========================================= */
+
+/* 1. Standard Header (Använd denna överallt) */
+.std-header {
+    height: 60px;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    background: rgba(255, 255, 255, 0.95); /* Nästan helt vit */
+    backdrop-filter: blur(10px);          /* Snygg oskärpa bakom */
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid #F2F2F7;     /* Subtil linje */
+    gap: 12px;
+    
+    /* Mobilanpassning */
+    position: sticky; 
+    top: 0; 
+    z-index: 100;
+    padding-top: env(safe-area-inset-top); /* Hanterar iPhone "Notch" */
+    box-sizing: content-box; /* Gör att padding-top inte krymper höjden */
+}
+
+/* Ta bort border om man vill ha en renare look ("Clean" variant) */
+.std-header.clean {
+    border-bottom: none;
+    background: transparent;
+}
+
+/* 2. Standard Tillbaka-knapp (Soft Circle) */
+.std-back-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%; /* Alltid cirkel */
+    background: #F2F2F7; /* Ljusgrå bakgrund (iOS/Samsung style) */
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #1C1C1E; /* Mörkgrå ikon */
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    flex-shrink: 0; /* Krymp inte */
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Standard Action Button (Ikoner till höger i headern) */
+.std-action-btn {
+    width: 40px; 
+    height: 40px;
+    /* NYTT: Tvinga knappen att behålla sin storlek, krymp aldrig! */
+    flex-shrink: 0;
+
+    border-radius: 50%; 
+    border: none;
+    background: transparent;
+    color: #1C1C1E;
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    cursor: pointer; 
+    transition: background 0.2s;
+}
+
+.std-back-btn:active {
+    background: #E5E5EA; /* Mörkare vid klick */
+    transform: scale(0.96);
+}
+
+.std-back-btn:hover {
+    background: #E5E5EA; /* Hover-effekt för desktop */
+}
+
+.std-back-btn svg {
+    width: 22px;
+    height: 22px;
+    stroke-width: 2.5px; /* Lite fetare linjer för tydlighet */
+    stroke: currentColor;
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+/* 3. Standard Titel */
+.std-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #000;
+    flex: 1; /* Tar upp plats så knappar till höger hamnar rätt */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Centrerad titel (valfritt) */
+.std-header.center-title .std-title {
+    text-align: center;
+    margin-right: 40px; /* Balanserar tillbaka-knappen så texten blir exakt mitten */
+}
+
+
+/* --- CSS-LÖSNING: HELSKÄRMSVYER PÅ MOBIL --- */
+@media (max-width: 768px) {
+    
+    /* 1. Gör vyerna till helskärmslager som täcker allt */
+    #customersView, #statisticsView, #calendarView {
+        /* Vi behåller position fixed för att täcka skärmen, 
+           men display styrs av JavaScript (block/none) */
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100dvh !important; /* dvh är toppen för mobil! */
+        
+        z-index: 9999 !important; 
+        background-color: #f8f9fa !important;
+        
+        overflow-y: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        
+        /* FIX: Se till att de inte ligger "osynligt" ivägen om JS missar */
+        pointer-events: auto; 
+    }
+
+    /* 2. Hantera Notchen (iPhone toppen) */
+    #customersView .std-header, 
+    #statisticsView .std-header, 
+    #calendarView .std-header { 
+        padding-top: env(safe-area-inset-top) !important; 
+        height: auto !important; 
+        min-height: 60px; 
+        position: sticky; 
+        top: 0; 
+        z-index: 50; 
+        background: rgba(255,255,255,0.98); /* Lite mindre genomskinlig */
+    }
+    
+    /* 3. Padding i botten så man kan scrolla hela vägen ner */
+    #customersView .customer-grid, 
+    #statisticsView .stats-content-wrapper, 
+    #calendarView #calendar-wrapper { 
+        padding-bottom: 80px !important; /* Ökat lite för att vara säker */
+    }
+}
+
