@@ -882,7 +882,6 @@ function updateStatsCounts(jobs) {
 
 // 7. EVENT LISTENERS
 function setupEventListeners() {
-    document.body.classList.add('view-dashboard');
 
     /*Statistikvy*/
     const statsBtn = document.getElementById('menuBtnStatistics');
@@ -1354,6 +1353,63 @@ function setupEventListeners() {
     
     // Spara jobb (Både nytt och redigerat)
     document.getElementById('jobModalForm').addEventListener('submit', handleSaveJob);
+
+    // --- ENKEL NAVIGERING: TILLBAKA TILL ÖVERSIKT ---
+    
+    // Funktion för att gå till översikten (Samma som "Vy"-knappen)
+    function goToOverview() {
+        // 1. Dölj alla undersidor
+        document.getElementById('customersView').style.display = 'none';
+        document.getElementById('calendarView').style.display = 'none';
+        const statsView = document.getElementById('statisticsView');
+        if (statsView) statsView.style.display = 'none';
+
+        // 2. Visa översikten
+        document.getElementById('timelineView').style.display = 'block';
+        document.getElementById('statBar').style.display = ''; // Återställs till flex/grid
+        
+        // 3. Hantera meny-knappar (Markera "Vy" som aktiv)
+        document.querySelectorAll('.mobile-nav-item').forEach(btn => btn.classList.remove('active'));
+        const homeBtn = document.getElementById('mobileHomeBtn');
+        if (homeBtn) homeBtn.classList.add('active');
+        
+        // Desktop-meny
+        document.querySelectorAll('.nav-link').forEach(btn => btn.classList.remove('active'));
+        const overviewBtn = document.getElementById('btnOverview');
+        if (overviewBtn) overviewBtn.classList.add('active');
+
+        // 4. Scrolla upp
+        window.scrollTo(0, 0);
+    }
+
+    // Koppla "Tillbaka"-knappen i KALENDERN
+    const btnBackCal = document.getElementById('btnBackCalendar');
+    if (btnBackCal) {
+        // Ta bort gamla lyssnare genom att klona knappen (ett trick för att rensa event)
+        const newBtn = btnBackCal.cloneNode(true);
+        btnBackCal.parentNode.replaceChild(newBtn, btnBackCal);
+        
+        newBtn.addEventListener('click', goToOverview);
+    }
+
+    // Koppla "Tillbaka"-knappen i KUNDER
+    const btnBackCust = document.getElementById('btnBackCustomers');
+    if (btnBackCust) {
+        const newBtn = btnBackCust.cloneNode(true);
+        btnBackCust.parentNode.replaceChild(newBtn, btnBackCust);
+        
+        newBtn.addEventListener('click', goToOverview);
+    }
+
+    // Koppla "Tillbaka"-knappen i STATISTIK
+    const btnBackStats = document.getElementById('btnBackStats');
+    if (btnBackStats) {
+        const newBtn = btnBackStats.cloneNode(true);
+        btnBackStats.parentNode.replaceChild(newBtn, btnBackStats);
+        
+        newBtn.addEventListener('click', goToOverview);
+    }
+
 }
 
 // --- CALENDAR DROP HANDLER ---
