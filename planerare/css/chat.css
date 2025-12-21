@@ -584,23 +584,7 @@
     background-color: #0084ff;
 }
 /* --- FIX FÖR TEXTPOSITION I REDIGERINGSLÄGE --- */
-.chat-widget.edit-mode .chat-input-area textarea {
-    /* 1. Nollställ padding i toppen/botten så texten inte knuffas fel */
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
-    
-    /* 2. Samma höjd och centrering som vanliga läget */
-    height: 40px !important;
-    line-height: 20px !important;
-    
-    /* 3. Justera sidorna */
-    padding-left: 14px !important;
-    /* Eftersom ikonerna (gem/kamera) är dolda i redigering, minskar vi höger-paddingen */
-    padding-right: 14px !important; 
-    
-    /* 4. Säkerställ bakgrundsfärg */
-    background: #f0f2f5 !important;
-}
+.chat-widget.edit-mode .chat-input-area textarea { padding-top: 0 !important; padding-bottom: 0 !important; height: 40px !important; line-height: 20px !important; padding-left: 14px !important; padding-right: 14px !important; background: #f0f2f5 !important; }
 
 /* Scroll-till-botten knapp */
 .chat-scroll-btn {
@@ -640,3 +624,90 @@
 
 .unpin-btn { background: none; border: none; color: #94a3b8; cursor: pointer; padding: 4px; display: flex; }
 .unpin-btn svg { width: 16px; height: 16px; }
+
+/*
+
+AI RELATERAT UTSEENDE OCH ANIMATIONER ---
+
+*/
+
+/* --- AI MODE STYLES --- */
+
+/* Bakgrundsfärg när AI är igång */
+.ai-mode-active .chat-widget {
+    background: linear-gradient(to bottom, #f8faff, #f0f4ff);
+}
+
+/* Gemini Ikon Aktiv */
+#toggleAiBtn.active-ai {
+    background-color: transparent !important; /* Ingen cirkel */
+    color: #8b5cf6 !important;            /* Gemini-lila färg på loggan */
+    border-color: transparent !important;
+    transform: scale(1.1);                 /* Behåll en liten förstoring för feedback */
+    filter: drop-shadow(0 0 3px rgba(139, 92, 246, 0.3)); /* Valfritt: ett svagt lila sken */
+}
+
+/* Input-fältet i AI-läge */
+.ai-input-active input#chatInput {
+    border: 2px solid #818cf8 !important;
+    background-color: #ffffff !important;
+    box-shadow: 0 0 15px rgba(99, 102, 241, 0.15);
+}
+
+/* CHIPS (Förslagen) */
+.ai-chips-scroll {
+    display: flex;
+    gap: 8px;
+    padding: 10px 15px;
+    overflow-x: auto;
+    background: rgba(255,255,255,0.9);
+    border-bottom: 1px solid #e2e8f0;
+    white-space: nowrap;
+    /* Dölj scrollbar men behåll funktion */
+    -ms-overflow-style: none;  
+    scrollbar-width: none;  
+}
+.ai-chips-scroll::-webkit-scrollbar { display: none; }
+
+.ai-chip {
+    background: #eff6ff;
+    color: #1e40af;
+    border: 1px solid #dbeafe;
+    border-radius: 20px;
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0; /* Förhindra att de krymps */
+}
+.ai-chip:active { transform: scale(0.95); background: #dbeafe; }
+
+/* AI Meddelanden (Unik stil) */
+.chat-bubble.ai-response {
+    background: #ffffff;
+    border-left: 3px solid #6366f1; /* Lila kant */
+    color: #1e293b;
+    border-radius: 4px 12px 12px 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    font-family: 'Inter', sans-serif; /* Läsbar font */
+    max-width: 90%;
+}
+
+/* En liten disclaimer i botten av bubblan */
+.ai-disclaimer {
+    font-size: 0.65rem;
+    color: #94a3b8;
+    margin-top: 8px;
+    display: block;
+    border-top: 1px solid #f1f5f9;
+    padding-top: 4px;
+}
+
+/* Välkomstskärm */
+.ai-welcome-screen {
+    text-align: center;
+    padding: 40px 20px;
+    color: #64748b;
+}
+.ai-sparkle-bg { font-size: 3rem; margin-bottom: 10px; opacity: 0.8; }
