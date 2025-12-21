@@ -1,2190 +1,3458 @@
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js';
-import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot, query, orderBy as firestoreOrderBy } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
+// Importera kalenderfunktionen
+import { initCalendar, setCalendarTheme } from './calendar.js';
+import { openStatisticsView } from './statistics.js'; // Bytte namn på funktionen'
 
-// FIREBASE KONFIGURATION
+window.openNewJobModal = openNewJobModal;
+window.toggleChatWidget = toggleChatWidget;
+window.openSettingsModal = openSettingsModal;
+window.handleLogout = handleLogout;
+window.closeSettings = closeSettings;
+window.toggleOilForm = toggleOilForm;
+window.saveNewBarrel = saveNewBarrel;
+window.closeVehicleModal = closeVehicleModal;
+window.openVehicleModal = openVehicleModal;
+window.openCustomerByName = openCustomerByName;
+window.toggleCardActions = toggleCardActions;
+window.setStatus = setStatus;
+window.deleteJob = deleteJob;
+window.openBrandSelector = openBrandSelector;
+window.saveTechSpec = saveTechSpec;
+window.filterVehicleHistory = filterVehicleHistory;
+window.openEditModal = openEditModal; 
+// Slut på kalender
+
+// 1. FIREBASE KONFIGURATION
 const firebaseConfig = {
-  apiKey: "AIzaSyAC4SLwVEzP3CPO4lLfDeZ71iU0xdr49sw", 
-  authDomain: "lagerdata-a9b39.firebaseapp.com",
-  projectId: "lagerdata-a9b39",
-  storageBucket: "lagerdata-a9b39.firebasestorage.app",
-  messagingSenderId: "615646392577",
-  appId: "1:615646392577:web:fd816443728e88b218eb00"
+  apiKey: "AIzaSyDwCQkUl-je3L3kF7EuxRC6Dm6Gw2N0nJw",
+  authDomain: "planerare-f6006.firebaseapp.com",
+  projectId: "planerare-f6006",
+  storageBucket: "planerare-f6006.firebasestorage.app",
+  messagingSenderId: "360462069749",
+  appId: "1:360462069749:web:c754879f3f75d5ef3cbabc",
+  measurementId: "G-L6516XLZ1Y"
 };
 
-// --- REGISTRERA SERVICE WORKER FÖR PWA INSTALLATION ---
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./service-worker.js')
-            .then(registration => {
-                console.log('Service Worker registrerad framgångsrikt med scope:', registration.scope);
-            })
-            .catch(error => {
-                console.log('Service Worker registrering misslyckades:', error);
-            });
-    });
+// 2. INITIERA FIREBASE DIREKT (Högst upp)
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    // --- Skrolla till toppen vid omladdning ---
-    if ('scrollRestoration' in history) {
-        history.scrollRestoration = 'manual';
-    }
-    window.scrollTo(0, 0);
-    
-    // --- VIKTIGT: Flyttade updateSyncStatus UTANFÖR try...catch ---
-    const syncStatusElement = document.getElementById('sync-status');
-    function updateSyncStatus(status, message) {
-        if (!syncStatusElement) return;
-        const textEl = syncStatusElement.querySelector('.text');
-        if (!textEl) return; // Säkerhetskoll
-    
-        syncStatusElement.classList.remove('flash');
-        syncStatusElement.className = `sync-${status}`;
-        syncStatusElement.title = message;
-        textEl.textContent = message;
-    
-        // --- LÄGG TILL DETTA BLOCK ---
-        textEl.style.opacity = 1; // Se till att den syns
-    
-        // Om status är OK, tona ut texten efter 4 sekunder
-        if (status === 'ok') {
-            setTimeout(() => {
-                textEl.style.opacity = 0;
-            }, 4000);
-        }
-        // --- SLUT PÅ NYTT BLOCK ---
-    }
-    
-    try {
-        // Initialisera Firebase
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const INVENTORY_COLLECTION = 'lager';
-        
-        // DOM-ELEMENT
-        // Listor
-        const serviceArtiklarLista = document.getElementById('service-artiklar-lista');
-        const motorChassiArtiklarLista = document.getElementById('motor-chassi-artiklar-lista');
-        const andraMarkenArtiklarLista = document.getElementById('andra-marken-artiklar-lista');
-        const slutILagerLista = document.getElementById('slut-i-lager-lista');
-        
-        const serviceArtiklarKortLista = document.getElementById('service-artiklar-kort-lista');
-        const motorChassiArtiklarKortLista = document.getElementById('motor-chassi-artiklar-kort-lista');
-        const andraMarkenArtiklarKortLista = document.getElementById('andra-marken-artiklar-kort-lista');
-        const slutILagerKortLista = document.getElementById('slut-i-lager-kort-lista');
-        
-        // Sektioner & Tomma lägen
-        const slutILagerSektion = document.getElementById('slut-i-lager-wrapper');
-        const slutILagerTitel = document.getElementById('slut-i-lager-titel');
-        const fullEmptyState = document.getElementById('full-empty-state');
-        const emptyStateAddBtn = document.getElementById('empty-state-add-btn');
-        const emptyStates = {
-            service: document.getElementById('service-empty-state'),
-            motorChassi: document.getElementById('motor-chassi-empty-state'),
-            andraMarken: document.getElementById('andra-marken-empty-state'),
-            slutILager: document.getElementById('slut-i-lager-empty-state')
-        };
-        
-        // Sök & Filter
-        const desktopSearchInput = document.getElementById('desktop-search-input');
-        const mobileSearchInput = document.getElementById('mobile-search-input');
-        const desktopClearSearchBtn = document.getElementById('desktop-clear-search-btn');
-        const mobileClearSearchBtn = document.getElementById('mobile-clear-search-btn');
-        const desktopSearchResults = document.getElementById('desktop-search-results');
-        const mobileSearchResults = document.getElementById('mobile-search-results');
-        const categoryFilterBar = document.getElementById('category-filter-bar');
-        const toolbarFilterBadge = document.getElementById('toolbar-filter-badge');
+// Skapa globala referenser direkt
+const db = firebase.firestore();
+const auth = firebase.auth(); // Nu är 'auth' definierad korrekt
 
-        // Modaler & Formulär
-        const addItemModal = document.getElementById('addModal');
-        const addForm = document.getElementById('add-article-form');
-        const addFormSubmitBtn = addForm.querySelector('button[type="submit"]');
+window.db = db;
+window.auth = auth;
 
-        const editModal = document.getElementById('editModal');
-        const editForm = document.getElementById('edit-article-form');
-        const editFormSubmitBtn = editForm.querySelector('button[type="submit"]');
-        
-        const confirmationModal = document.getElementById('confirmationModal');
-        
-        // Global sök
-        const globalSearchInput = document.getElementById('global-search-input');
-        const globalSearchBtn = document.getElementById('global-search-btn');
-        const globalSearchResults = document.getElementById('global-search-results');
-        const biluppgifterResultContainer = document.getElementById('biluppgifter-result-container');
-        const internalResultsContainer = document.getElementById('internal-results-container');
-        const externalResultsContainer = document.getElementById('external-results-container');
-        const exportLinksContainer = document.getElementById('export-search-links-container');
-        const searchDisclaimer = document.getElementById('search-disclaimer');
-        const quickAddFromSearchBtn = document.createElement('button');
-        quickAddFromSearchBtn.id = 'quick-add-from-search';
-        quickAddFromSearchBtn.className = 'btn-primary';
+console.log("Firebase initierad.");
 
-        // Toolbar & Knappar
-        const toolbarAddBtn = document.getElementById('toolbar-add-btn');
-        const fabAddBtn = document.getElementById('fab-add-btn');
-        const pwaInstallBtn = document.getElementById('pwa-install-btn');
-        
-        // App-meny & Dashboard
-        const dashboardContainer = document.querySelector('.app-menu-content .dashboard-container');
-        const statTotalItems = document.getElementById('stat-total-items');
-        const statTotalUnits = document.getElementById('stat-total-units');
-        const statOutOfStock = document.getElementById('stat-out-of-stock');
-        const recentItemsList = document.getElementById('recent-items-list');
-        const recentItemsEmpty = document.getElementById('recent-items-empty');
-        const topValueList = document.getElementById('top-value-list');
-        const topValueEmpty = document.getElementById('top-value-empty');
-        const appMenuBtn = document.getElementById('app-menu-btn');
-        const appMenuModal = document.getElementById('app-menu-modal');
-        const appMenuOverlay = document.getElementById('app-menu-overlay');
-        const appMenuCloseBtn = document.getElementById('app-menu-close-btn');
+// Globala variabler
+let allJobs = []; 
+let currentStatusFilter = 'kommande'; 
+let currentSearchTerm = '';
+let currentExpenses = [];
+let jobsUnsubscribe = null;   // Håller koll på jobb-lyssnaren
+let specsUnsubscribe = null;  // Håller koll på fordons-lyssnaren
+let currentLimit = 50; // Hur många vi visar just nu
 
-        // Exportera
-        const exportCsvBtn = document.getElementById('export-csv-btn');
-        const exportJsonBtn = document.getElementById('export-json-btn');
-        
-        // Övrigt
-        const initialLoader = document.getElementById('initial-loader');
-        const themeToggle = document.getElementById('theme-toggle-cb');
-        const metaThemeColor = document.querySelector('meta[name="theme-color"]');
-        const rowActionPopover = document.getElementById('row-action-popover');
-        const popoverContent = document.getElementById('popover-content');
-        
-        const badges = {
-            service: document.getElementById('badge-service'),
-            motorChassi: document.getElementById('badge-motor-chassi'),
-            andraMarken: document.getElementById('badge-andra-marken'),
-            slutILager: document.getElementById('badge-slut-i-lager')
-        };
-        
-        const HISTORY_KEY = 'globalSearchHistory';
-        const MAX_HISTORY_ITEMS = 5;
-        
-        // GLOBALA VARIABLER
-        let inventory = []; 
-        let selectedItemId = null;
-        let currentSort = { column: 'name', direction: 'desc' };
-        let currentFilter = 'Alla';
-        let confirmCallback = null; 
-        let deferredInstallPrompt = null;
-        let currentExternalLinks = [];
-        let isNavigatingViaSearch = false;
-        let isPopoverOpen = false;
-        let currentPopoverItemId = null;
+let currentBacklogTab = 'unplanned'; // Standardflik: 'unplanned' (Väntar) eller 'offered' (Offererad)
 
-        const stopWords = ['till', 'för', 'en', 'ett', 'och', 'eller', 'med', 'på', 'i', 'av', 'det', 'den', 'som', 'att', 'är', 'har', 'kan', 'ska', 'vill', 'sig', 'här', 'nu', 'från', 'man', 'vi', 'du', 'ni'];
+const TIMEOUT_MINUTES = 15; // Ändra här om du vill ha annan tid (t.ex. 60)
+const INACTIVITY_LIMIT_MS = TIMEOUT_MINUTES * 60 * 1000;
 
-        // ----------------------------------------------------------------------
-        // LÄNK-FUNKTIONER (inkl. historik)
-        // ----------------------------------------------------------------------
+// --- 3. INLOGGNINGSHANTERARE & DATALADDNING ---
+auth.onAuthStateChanged((user) => {
+    const loginScreen = document.getElementById('loginScreen');
+    const mainApp = document.getElementById('mainApp');
+    const loadingOverlay = document.getElementById('loadingOverlay');
 
-        function saveSearchToHistory(term) {
-            if (!term) return;
-            let history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
-            history = history.filter(h => h.toLowerCase() !== term.toLowerCase());
-            history.unshift(term);
-            if (history.length > MAX_HISTORY_ITEMS) {
-                history = history.slice(0, MAX_HISTORY_ITEMS);
-            }
-            localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
-            renderSearchHistory();
-        }
+    // Dölj laddningsskärmen (Nu vet vi status!)
+    if (loadingOverlay) loadingOverlay.style.display = 'none';
+
+    if (user) {
+        // --- ANVÄNDARE ÄR INLOGGAD ---
+        if(loginScreen) loginScreen.style.display = 'none';
+        if(mainApp) mainApp.style.display = 'flex'; 
         
-        function removeSearchFromHistory(term) {
-            let history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
-            history = history.filter(h => h.toLowerCase() !== term.toLowerCase());
-            localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
-            renderSearchHistory();
+        // --- 1. HÄMTA ELEMENT (SIDEBAR & INSTÄLLNINGAR) ---
+        // Sidebar
+        const sidebarNameEl = document.querySelector('.user-name');
+        const sidebarAvatarEl = document.querySelector('.sidebar-avatar');
+
+        // Inställningsmeny (Nya elementen)
+        const settingsNameEl = document.querySelector('.settings-user-name');
+        const settingsEmailEl = document.querySelector('.settings-user-email');
+        const settingsAvatarEl = document.querySelector('.settings-user-avatar');
+
+        // --- 2. LOGIK FÖR NAMN & AVATAR ---
+        let displayName = "Användare";
+        
+        if(user.email) {
+            // Ta namnet före @-tecknet
+            const emailName = user.email.split('@')[0]; 
+            
+            // Om namnet har punkt (t.ex. amar.sut), ersätt med mellanslag och gör stor bokstav
+            // Resultat: "amar.sut" -> "Amar Sut"
+            displayName = emailName
+                .split('.')
+                .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+                .join(' ');
         }
 
-        function renderSearchHistory() {
-            const historyContainer = document.getElementById('global-search-history');
-            if (!historyContainer) return;
-            const history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
-            
-            if (history.length === 0) {
-                historyContainer.innerHTML = '';
-                return;
-            }
-            
-            let historyHTML = '';
-            history.forEach(term => {
-                historyHTML += `<span class="history-item">
-                                    <span class="history-term">${term}</span>
-                                    <i class="delete-history" data-term="${term}">&times;</i>
-                                </span>`;
-            });
-            historyContainer.innerHTML = historyHTML;
-            
-            historyContainer.querySelectorAll('.history-term').forEach(item => {
-                item.addEventListener('click', (e) => {
-                    const term = e.target.textContent;
-                    globalSearchInput.value = term;
-                    globalSearchInput.dispatchEvent(new Event('input'));
-                    handleGlobalSearch(term);
-                    document.querySelector('.global-search-container').scrollIntoView({ behavior: 'smooth', block: 'center' });
-                });
-            });
-            
-            historyContainer.querySelectorAll('.delete-history').forEach(item => {
-                item.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const term = e.target.getAttribute('data-term');
-                    removeSearchFromHistory(term);
-                });
-            });
-        }
-      
-        function formatPrice(price) { return new Intl.NumberFormat('sv-SE', { style: 'currency', currency: 'SEK', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(price); }
-        function generateAeroMLink(f) { if (!f) return null; const s = f.replace(/[\s-]/g, ''); return `https://aeromotors.se/sok?s=${s}&layered_id_feature_1586%5B%5D=3&sort_by=price.asc`; }
-        function generateTrodoLink(f) { if (!f) return null; const s = f.replace(/[\s-]/g, ''); const q = encodeURIComponent(s); return `https://www.trodo.se/catalogsearch/result/premium?filter[quality_group]=2&product_list_dir=asc&product_list_order=price&q=${q}`; }
-        function generateThansenLink(f) { if (!f) return null; const s = f.replace(/[\s-]/g, ''); const q = encodeURIComponent(s); return `https://www.thansen.se/search/?query=${q}`; }
-        function generateSkruvatLink(f) { if (!f) return null; const s = encodeURIComponent(f.replace(/[\s-]/g, '')); return `https://skruvat.se/search?q=${s}`; }
-        function generateVortoLink(f) { if (!f) return null; const s = encodeURIComponent(f.replace(/[\s-]/g, '')); return `https://vorto.se/sok?search=${s}`; }
-        function generateAutodocLink(f) { if (!f) return null; const s = encodeURIComponent(f.replace(/[\s-]/g, '')); return `https://autodoc.se/search?keyword=${s}`; }
-        function generateBildelsbasenLink(f) { if (!f) return null; const s = encodeURIComponent(f.replace(/[\s-]/g, '')); return `https://bildelsbasen.se/sv-se/OEM/${s}`; }
-        function generateReservdelar24Link(f) { if (!f) return null; const s = encodeURIComponent(f.replace(/[\s-]/g, '')); return `https://reservdelar24.se/suche.html?keyword=${s}`; }
+        // Skapa URL för UI Avatars
+        const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=eff6ff&color=3b82f6&bold=true`;
+
+        // --- 3. UPPDATERA UI ---
         
-        function hideSearchDropdowns() {
-            desktopSearchResults.style.display = 'none';
-            mobileSearchResults.style.display = 'none';
+        // Uppdatera Sidebar
+        if (sidebarNameEl) sidebarNameEl.textContent = displayName;
+        if (sidebarAvatarEl) sidebarAvatarEl.src = avatarUrl;
+
+        // Uppdatera Inställningsmeny
+        if (settingsNameEl) settingsNameEl.textContent = displayName;
+        if (settingsEmailEl) settingsEmailEl.textContent = user.email; // Visar exakt e-post
+        if (settingsAvatarEl) settingsAvatarEl.src = avatarUrl;
+
+        // --- 4. STARTA APPENS FUNKTIONER ---
+        startInactivityCheck();
+        initRealtimeListener(); 
+        if (window.initChat) window.initChat();
+        
+        // NYTT: Starta lyssnaren för lagerstatus (Olja)
+        initInventoryListener();
+        
+        // Initiera inställningar (Privacy/Mörkt läge)
+        if (typeof initSettings === 'function') {
+            initSettings();
         }
         
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.search-wrapper') && !e.target.closest('#sticky-search-bar')) {
-                hideSearchDropdowns();
-            }
-            if (isPopoverOpen && !e.target.closest('#row-action-popover') && !e.target.closest('.row-action-btn')) {
-                closeRowActionPopover();
-            }
-            if (!e.target.closest('.link-dropdown-container')) {
-                document.querySelectorAll('.dropdown-menu.visible').forEach(d => d.classList.remove('visible'));
-            }
-        });
-
-        // ----------------------------------------------------------------------
-        // GLOBAL SÖK-FUNKTION
-        // ----------------------------------------------------------------------
-        const externalSearchProviders = [
-            { name: "Trodo", linkGenerator: generateTrodoLink, icon: "https://www.trodo.se/media/favicon/default/favicon-96x96.png" },
-            { name: "AeroMotors", linkGenerator: generateAeroMLink, icon: "https://aeromotors.se/img/favicon.ico?1678367017" },
-            { name: "Thansen", linkGenerator: generateThansenLink, icon: "https://cdn.thg.dk/DAT/dom/img/logo-thg.ico" },
-            { name: "Skruvat", linkGenerator: generateSkruvatLink, icon: "https://www.skruvat.se/favicon.ico" },
-            { name: "Vorto.se", linkGenerator: generateVortoLink, icon: "https://www.vorto.se/favicon.ico" },
-            { name: "Autodoc", linkGenerator: generateAutodocLink, icon: "https://autodoc.se/assets/54eb94/images/favicon-196x196.png" },
-            { name: "Bildelsbasen*", linkGenerator: generateBildelsbasenLink, icon: "https://www.bildelsbasen.se/favicon.ico" },
-            { name: "Reservdelar24", linkGenerator: generateReservdelar24Link, icon: "https://www.reservdelar24.se/favicon.ico" },
-        ];
+    } else {
+        // --- UTLOGGAD ---
+        if(loginScreen) loginScreen.style.display = 'flex';
+        if(mainApp) mainApp.style.display = 'none';
         
-        function isRegNr(term) {
-            const regNrRegex = /^[A-ZÅÄÖ]{3}[\s]?[0-9]{2}[A-ZÅÄÖ0-9]{1}$/;
-            const cleanRegNr = term.replace(/\s/g, '');
-            return regNrRegex.test(term) || (cleanRegNr.length === 6 && regNrRegex.test(cleanRegNr));
-        }
-
-        function updateGlobalSearchButton(term) {
-            const btnText = globalSearchBtn.querySelector('.btn-text');
-            const btnIcon = globalSearchBtn.querySelector('.icon-span');
-            
-            if (isRegNr(term)) {
-                btnText.textContent = 'Fordons-sök';
-                btnIcon.textContent = 'directions_car';
-            } else if (term.trim() !== '') {
-                btnText.textContent = 'Jämför priser';
-                btnIcon.textContent = 'compare_arrows';
-            } else {
-                btnText.textContent = 'Sök';
-                btnIcon.textContent = 'search';
-            }
-        }
-
-        async function handleGlobalSearch(searchTermOverride) {
-            const searchTerm = (searchTermOverride ? searchTermOverride.trim().toUpperCase() : globalSearchInput.value.trim().toUpperCase());
-            if (searchTerm === '') {
-                globalSearchResults.style.display = 'none';
-                return;
-            }
-            
-            globalSearchBtn.disabled = true;
-            saveSearchToHistory(searchTerm); 
-            
-            if (isRegNr(searchTerm)) {
-                const cleanRegNr = searchTerm.replace(/\s/g, '');
-                
-                const biluppgifterLink = `https://biluppgifter.se/fordon/${cleanRegNr}#vehicle-data`;
-                const carInfoLink = `https://car.info/sv-se/license-plate/S/${cleanRegNr}#attributes`;
-                
-                biluppgifterResultContainer.innerHTML = `
-                    <h4 class="internal-search-title">Fordonsuppslag:</h4>
-                    <div class="provider-card">
-                        <img src="https://biluppgifter.se/favicon/favicon.ico" alt="Biluppgifter.se" class="provider-card-logo">
-                        <div class="provider-card-content">
-                            <span class="provider-card-name">${cleanRegNr} (Biluppgifter)</span>
-                            <a href="${biluppgifterLink}" target="_blank" class="btn-provider-search">Visa</a>
-                        </div>
-                    </div>
-                    <div class="provider-card">
-                        <img src="https://car.info/favicon.ico" alt="Car.info" class="provider-card-logo">
-                        <div class="provider-card-content">
-                            <span class="provider-card-name">${cleanRegNr} (Car.info)</span>
-                            <a href="${carInfoLink}" target="_blank" class="btn-provider-search">Visa</a>
-                        </div>
-                    </div>
-                `;
-                biluppgifterResultContainer.style.display = 'block';
-                
-                internalResultsContainer.innerHTML = '';
-                externalResultsContainer.innerHTML = '';
-                exportLinksContainer.style.display = 'none';
-                searchDisclaimer.style.display = 'none';
-                globalSearchResults.style.display = 'block';
-
-                document.getElementById('global-search-close-btn').addEventListener('click', () => { 
-                  globalSearchResults.style.display = 'none'; 
-                });
-                
-                setTimeout(() => {
-                  document.querySelector('.global-search-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }, 50);
-                
-                globalSearchBtn.disabled = false;
-                return; 
-            }
-
-            biluppgifterResultContainer.style.display = 'none';
-            
-            try {
-                internalResultsContainer.innerHTML = '';
-                externalResultsContainer.innerHTML = '';
-                exportLinksContainer.style.display = 'none';
-                searchDisclaimer.style.display = 'none';
-                globalSearchResults.style.display = 'block';
-                currentExternalLinks = []; 
-                
-                document.querySelector('.global-search-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-                const searchTermNoSpace = searchTerm.replace(/\s/g, '');
-
-                const internalMatches = inventory.filter(item => {
-                    const itemServiceFilter = (item.service_filter || '').toUpperCase().replace(/\s/g, '');
-                    const itemName = (item.name || '').toUpperCase();
-                    
-                    return itemServiceFilter.includes(searchTermNoSpace) || itemName.includes(searchTerm);
-                });
-                
-                let internalHTML = '';
-                if (internalMatches.length > 0) {
-                    internalHTML = '<h4 class="internal-search-title">Hittades i ditt lager:</h4>';
-                    internalMatches.forEach(item => { 
-                        internalHTML += `<a href="#" class="internal-result-item" data-id="${item.id}"><div><strong>${item.service_filter}</strong> - ${item.name}</div><span>Antal: ${item.quantity}</span></a>`; 
-                    });
-                } else {
-                    internalHTML = '<h4 class="internal-search-title">Inga träffar i ditt lager</h4>';
-                }
-                internalResultsContainer.innerHTML = internalHTML;
-                if (internalMatches.length === 0) {
-                    quickAddFromSearchBtn.innerHTML = `<span class="icon-span">add_circle</span>Lägg till "${searchTerm}" i lagret`;
-                    quickAddFromSearchBtn.setAttribute('data-search-term', searchTerm);
-                    internalResultsContainer.appendChild(quickAddFromSearchBtn);
-                }
-
-                // 2. Externa resultat
-                let externalHTML = '';
-                let hasDisclaimer = false;
-                
-                externalSearchProviders.forEach(provider => {
-                    const link = provider.linkGenerator(searchTerm);
-                    if (link) {
-                        currentExternalLinks.push({ name: provider.name, link: link });
-                        if (provider.name.includes('Bildelsbasen')) {
-                            hasDisclaimer = true;
-                        }
-                        
-                        externalHTML += `
-                            <div class="provider-card">
-                                <img src="${provider.icon}" alt="${provider.name}" class="provider-card-logo">
-                                <div class="provider-card-content">
-                                    <span class="provider-card-name">${provider.name}</span>
-                                    <a href="${link}" target="_blank" class="btn-provider-search">Sök</a>
-                                </div>
-                            </div>
-                        `;
-                    } else {
-                        externalHTML += `
-                            <div class="provider-card disabled">
-                                <img src="${provider.icon}" alt="${provider.name}" class="provider-card-logo">
-                                <div class="provider-card-content">
-                                    <span class="provider-card-name">${provider.name}</span>
-                                    <a class="btn-provider-search">Sök</a>
-                                </div>
-                            </div>
-                        `;
-                    }
-                });
-                
-                externalResultsContainer.innerHTML = externalHTML;
-                
-                if (currentExternalLinks.length > 0) {
-                    exportLinksContainer.style.display = 'inline-block';
-                }
-                if (hasDisclaimer) {
-                    searchDisclaimer.style.display = 'block';
-                }
-
-                // 3. Återbind lyssnare
-                document.querySelectorAll('.internal-result-item').forEach(link => {
-                    link.addEventListener('click', (e) => {
-                        e.preventDefault(); 
-                        const itemId = e.currentTarget.getAttribute('data-id');
-                        
-                        // 1. Dölj sökresultaten OMEDELBART.
-                        //    Detta orsakar den stora layout-shiften.
-                        globalSearchResults.style.display = 'none';
-
-                        // 2. Vänta en kort stund (t.ex. 50ms) för webbläsaren
-                        //    att rita om sidan och stabilisera den nya layouten.
-                        setTimeout(() => {
-                            // 3. Scrolla NU, när allt är stabilt.
-                            //    Vi kan nu använda 'smooth' (false) igen.
-                            scrollToAndHighlight(itemId, false);
-                        }, 50); // 50ms fördröjning
-                    });
-                });
-                
-                document.getElementById('global-search-close-btn').addEventListener('click', () => { 
-                  globalSearchResults.style.display = 'none'; 
-                });
-                
-            } catch (error) {
-                console.error("Fel vid global sökning: ", error);
-                showToast("Ett fel inträffade vid sökningen", "error");
-            } finally {
-                globalSearchBtn.disabled = false;
-            }
-        }
+        // Stäng av lyssnare om de är igång
+        if (window.stopChatListener) window.stopChatListener();
+        if (typeof jobsUnsubscribe === 'function') jobsUnsubscribe();
+        if (typeof specsUnsubscribe === 'function') specsUnsubscribe();
         
-        function handleCopyAllLinks(buttonEl, type = 'text') {
-            if (currentExternalLinks.length === 0) return;
-            let contentToCopy = '';
-            if (type === 'json') {
-                const linksObject = currentExternalLinks.reduce((acc, item) => {
-                    acc[item.name] = item.link;
-                    return acc;
-                }, {});
-                contentToCopy = JSON.stringify(linksObject, null, 2);
-            } else {
-                contentToCopy = currentExternalLinks.map(item => item.link).join('\n');
-            }
-            navigator.clipboard.writeText(contentToCopy).then(() => {
-                const originalText = buttonEl.innerHTML;
-                buttonEl.innerHTML = 'Kopierat!';
-                buttonEl.disabled = true;
-                setTimeout(() => {
-                    buttonEl.innerHTML = originalText;
-                    buttonEl.disabled = false;
-                }, 1500);
-            }).catch(() => {
-                showToast('Kunde inte kopiera länkar', 'error');
-            });
-        }
-
-        // ----------------------------------------------------------------------
-        // TEMA, TOASTS, PWA
-        // ----------------------------------------------------------------------
-
-        function setTheme(theme) {
-            document.body.setAttribute('data-theme', theme);
-            localStorage.setItem('app_theme', theme);
-            themeToggle.checked = (theme === 'dark');
-            const color = theme === 'dark' ? '#111827' : '#f8fafc'; 
-            if (metaThemeColor) {
-                metaThemeColor.setAttribute('content', color);
-            }
-        }
-
-        function checkTheme() {
-            const savedTheme = localStorage.getItem('app_theme');
-            if (savedTheme) {
-                setTheme(savedTheme);
-            } else {
-                const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-                setTheme(prefersDark ? 'dark' : 'light');
-            }
-        }
-        
-        function showToast(message, type = 'info') {
-            const container = document.getElementById('toast-container');
-            if (!container) return;
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            let icon = 'info';
-            if (type === 'success') icon = 'check_circle';
-            if (type === 'error') icon = 'error';
-            toast.innerHTML = `<span class="icon-span toast-icon">${icon}</span> ${message}`;
-            container.appendChild(toast);
-            setTimeout(() => {
-                toast.classList.add('exiting');
-                toast.addEventListener('animationend', () => {
-                    toast.remove();
-                });
-            }, 3000);
-        }
-        
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault(); 
-            deferredInstallPrompt = e;
-            pwaInstallBtn.style.display = 'inline-flex';
-        });
-        
-        async function handlePwaInstall() {
-            if (deferredInstallPrompt) {
-                deferredInstallPrompt.prompt();
-                const { outcome } = await deferredInstallPrompt.userChoice;
-                if (outcome === 'accepted') {
-                    pwaInstallBtn.style.display = 'none';
-                }
-                deferredInstallPrompt = null;
-            }
-        }
-
-        // ----------------------------------------------------------------------
-        // APP-MENY & EXPORT
-        // ----------------------------------------------------------------------
-
-        function openAppMenu() {
-            appMenuModal.style.display = 'flex';
-            appMenuOverlay.style.display = 'block';
-            appMenuModal.classList.remove('closing');
-            appMenuOverlay.classList.remove('closing');
-        }
-        
-        function closeAppMenu() {
-            appMenuModal.classList.add('closing');
-            appMenuOverlay.classList.add('closing');
-            setTimeout(() => {
-                appMenuModal.style.display = 'none';
-                appMenuOverlay.style.display = 'none';
-            }, 200);
-        }
-
-        function downloadFile(content, fileName, contentType) {
-            const a = document.createElement('a');
-            const file = new Blob([content], { type: contentType });
-            a.href = URL.createObjectURL(file);
-            a.download = fileName;
-            a.click();
-            URL.revokeObjectURL(a.href);
-        }
-
-        function exportToJSON() {
-            const dataStr = JSON.stringify(inventory, null, 2);
-            downloadFile('lager_export.json', dataStr, 'application/json');
-            showToast('Lager exporterat som JSON', 'success');
-        }
-
-        function exportToCSV() {
-            if (inventory.length === 0) {
-                showToast('Lagret är tomt, inget att exportera', 'info');
-                return;
-            }
-            
-            const headers = Object.keys(inventory[0]).join(',');
-            const rows = inventory.map(item => {
-                return Object.values(item).map(value => {
-                    let strValue = String(value || '');
-                    if (strValue.includes(',')) {
-                        strValue = `"${strValue}"`;
-                    }
-                    return strValue;
-                }).join(',');
-            });
-            
-            const csvContent = [headers, ...rows].join('\n');
-            downloadFile('lager_export.csv', csvContent, 'text/csv;charset=utf-8;');
-            showToast('Lager exporterat som CSV', 'success');
-        }
-
-
-        // ----------------------------------------------------------------------
-        // MODAL-HANTERING (ÄNDRAD)
-        // ----------------------------------------------------------------------
-        
-        /**
-         * Öppnar en modal baserat på ID.
-         * @param {string} modalId ID på modal-elementet som ska öppnas.
-         */
-        function openModal(modalId) {
-            const modal = document.getElementById(modalId);
-            if (!modal) return;
-
-            // --- NYTT: Lås bakgrunds-scroll ---
-            document.body.style.overflow = 'hidden';
-            
-            modal.style.display = 'flex';
-            // En liten fördröjning så att CSS-animationen hinner starta
-            setTimeout(() => {
-                modal.classList.add('open');
-            }, 10); 
-
-            const firstInput = modal.querySelector('input[type="text"], input[type="number"], select');
-            if (firstInput) {
-                setTimeout(() => firstInput.focus(), 100); // Liten fördröjning för animation
-            }
-        }
-
-        /**
-         * Stänger en modal baserat på ID eller element.
-         * @param {string | HTMLElement} modalIdentifier ID eller själva modal-elementet.
-         */
-        function closeModal(modalIdentifier) {
-            const modal = (typeof modalIdentifier === 'string')
-                ? document.getElementById(modalIdentifier)
-                : (modalIdentifier.closest ? modalIdentifier.closest('.modal') : null);
-
-            if (!modal || !modal.classList.contains('open')) return;
-            
-            // --- NYTT: Lås upp bakgrunds-scroll ---
-            document.body.style.overflow = '';
-            
-            modal.classList.remove('open');
-            
-            // Lyssna efter att animationen är klar innan display: none
-            const onAnimationEnd = () => {
-                if (!modal.classList.contains('open')) {
-                    modal.style.display = 'none';
-                }
-                modal.removeEventListener('animationend', onAnimationEnd);
-            };
-            
-            modal.addEventListener('animationend', onAnimationEnd);
-
-            // Fallback om animationend-eventet av nån anledning inte körs
-            setTimeout(() => {
-                 if (!modal.classList.contains('open')) {
-                    modal.style.display = 'none';
-                }
-            }, 300); // 300ms matchar CSS-animationen
-        }
-        
-        // ----------------------------------------------------------------------
-        // GRÄNSSNITT OCH HUVUDFUNKTIONER (UPPDATERADE)
-        // ----------------------------------------------------------------------
-        
-        // --- POPOVER-LOGIK ---
-        function openRowActionPopover(event) {
-            event.stopPropagation();
-            const buttonEl = event.currentTarget;
-            const itemId = parseInt(buttonEl.dataset.id, 10);
-            
-            if (isPopoverOpen && currentPopoverItemId === itemId) {
-                closeRowActionPopover();
-                return;
-            }
-            
-            const item = inventory.find(i => i.id === itemId);
-            if (!item) return;
-
-            const trodoLink = generateTrodoLink(item.service_filter);
-            const aeroMLink = generateAeroMLink(item.service_filter);
-            const thansenLink = generateThansenLink(item.service_filter);
-            const egenLink = item.link;
-            
-            let html = '';
-            const linkIcon = "open_in_new"; 
-            
-            if (trodoLink) html += `<button class="btn-popover link-btn" data-action="open-link" data-url="${trodoLink}"><span class="icon-span">${linkIcon}</span>Trodo</button>`;
-            if (aeroMLink) html += `<button class="btn-popover link-btn" data-action="open-link" data-url="${aeroMLink}"><span class="icon-span">${linkIcon}</span>AeroMotors</button>`;
-            if (thansenLink) html += `<button class="btn-popover link-btn" data-action="open-link" data-url="${thansenLink}"><span class="icon-span">${linkIcon}</span>Thansen</button>`;
-            if (egenLink) html += `<button class="btn-popover link-btn" data-action="open-link" data-url="${egenLink}"><span class="icon-span">link</span>Egen Länk</button>`;
-            
-            if (html !== '') {
-                html += '<hr style="border: none; border-top: 1px solid var(--border-color); margin: 6px 0;">';
-            }
-
-            html += `<button class="btn-popover edit-btn" data-action="edit" data-id="${itemId}"><span class="icon-span">edit</span>Ändra</button>`;
-            html += `<button class="btn-popover delete-btn" data-action="delete" data-id="${itemId}"><span class="icon-span">delete</span>Ta bort</button>`;
-            
-            popoverContent.innerHTML = html;
-            
-            const btnRect = buttonEl.getBoundingClientRect();
-            rowActionPopover.style.display = 'block';
-            const popoverRect = rowActionPopover.getBoundingClientRect();
-            
-            let top = btnRect.top + window.scrollY - (popoverRect.height / 2) + (btnRect.height / 2);
-            let left = btnRect.left + window.scrollX - popoverRect.width - 10;
-
-            if (left < 10) {
-                left = btnRect.right + window.scrollX + 10;
-            }
-            if (top < (window.scrollY + 10)) {
-                top = window.scrollY + 10;
-            }
-            if (top + popoverRect.height > (window.scrollY + window.innerHeight - 10)) {
-                top = window.scrollY + window.innerHeight - popoverRect.height - 10;
-            }
-            
-            rowActionPopover.style.top = `${top}px`;
-            rowActionPopover.style.left = `${left}px`;
-            
-            isPopoverOpen = true;
-            currentPopoverItemId = itemId;
-            
-            popoverContent.querySelectorAll('button').forEach(btn => btn.addEventListener('click', handlePopoverAction));
-        }
-
-        function closeRowActionPopover() {
-            if (!isPopoverOpen) return;
-            rowActionPopover.style.display = 'none';
-            popoverContent.innerHTML = '';
-            isPopoverOpen = false;
-            currentPopoverItemId = null;
-        }
-
-        function handlePopoverAction(event) {
-            event.stopPropagation();
-            const button = event.currentTarget;
-            const action = button.dataset.action;
-            const url = button.dataset.url;
-            const id = parseInt(button.dataset.id, 10);
-            
-            closeRowActionPopover();
-            
-            switch (action) {
-                case 'open-link':
-                    window.open(url, '_blank');
-                    break;
-                case 'edit':
-                    handleEdit(id);
-                    break;
-                case 'delete':
-                    handleDelete(id);
-                    break;
-            }
-        }
-        
-        function bindRowActionButtons() {
-            document.querySelectorAll('.row-action-btn').forEach(btn => {
-                const newBtn = btn.cloneNode(true);
-                btn.parentNode.replaceChild(newBtn, btn);
-                newBtn.addEventListener('click', openRowActionPopover);
-            });
-        }
-        
-        // --- SLUT POPOVER-LOGIK ---
-
-        function renderDashboard(currentInventory) {
-            const inStock = currentInventory.filter(item => item.quantity > 0);
-            const totalUnits = inStock.reduce((sum, item) => sum + item.quantity, 0);
-            const inStockItems = inStock.length;
-            const outOfStockItems = currentInventory.length - inStockItems;
-
-            statTotalItems.textContent = inStockItems;
-            statTotalUnits.textContent = totalUnits;
-            statOutOfStock.textContent = outOfStockItems;
-        }
-        
-        function renderRecentItems(currentInventory) {
-            const sortedItems = [...currentInventory].sort((a, b) => (b.lastUpdated || b.id) - (a.lastUpdated || a.id));
-            const recent = sortedItems.slice(0, 5);
-            
-            if (recent.length === 0) {
-                recentItemsList.innerHTML = '';
-                recentItemsEmpty.style.display = 'block';
-            } else {
-                recentItemsEmpty.style.display = 'none';
-                let html = '';
-                recent.forEach(item => {
-                    html += `<a href="#" class="recent-item" data-id="${item.id}">
-                                <span class="recent-item-category">${item.category || 'Övrigt'}</span>
-                                <strong>${item.service_filter}</strong>
-                                <span>${item.name}</span>
-                             </a>`;
-                });
-                recentItemsList.innerHTML = html;
-            }
-        }
-        
-        function renderTopValueItems(currentInventory) {
-            const inStock = currentInventory.filter(item => item.quantity > 0);
-            
-            const valuedItems = inStock.map(item => ({
-                ...item,
-                totalValue: (item.price || 0) * (item.quantity || 0)
-            })).sort((a, b) => b.totalValue - a.totalValue);
-            
-            const top5 = valuedItems.slice(0, 5);
-            
-            if (top5.length === 0) {
-                topValueList.innerHTML = '';
-                topValueEmpty.style.display = 'block';
-            } else {
-                topValueEmpty.style.display = 'none';
-                let html = '';
-                top5.forEach(item => {
-                    html += `<a href="#" class="top-value-item" data-id="${item.id}">
-                                <span class="top-value-badge">${formatPrice(item.totalValue)}</span>
-                                <strong>${item.service_filter}</strong>
-                                <span>${item.name} (Antal: ${item.quantity})</span>
-                             </a>`;
-                });
-                topValueList.innerHTML = html;
-            }
-        }
-        
-        function updateCategoryBadges(currentInventory) {
-            const serviceItems = currentInventory.filter(i => i.category === 'Service' && i.quantity > 0);
-            const motorItems = currentInventory.filter(i => (i.category === 'Motor/Chassi' || i.category === 'Övrigt' || !i.category) && i.quantity > 0);
-            const andraItems = currentInventory.filter(i => i.category === 'Andra Märken' && i.quantity > 0);
-            const slutItems = currentInventory.filter(i => i.quantity <= 0);
-
-            badges.service.textContent = `${serviceItems.length} st`;
-            badges.motorChassi.textContent = `${motorItems.length} st`;
-            badges.andraMarken.textContent = `${andraItems.length} st`;
-            badges.slutILager.textContent = `${slutItems.length} st`;
-        }
-
-        function escapeHTML(str) {
-            if (typeof str !== 'string') return '';
-            return str.replace(/[&<>"']/g, function(match) {
-                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[match];
-            });
-        }
-
-        function parseNotes(notesText) {
-            if (!notesText) return '';
-            const plateRegex = /\[([A-ZÅÄÖ0-9]{1,3}[\s]?[A-ZÅÄÖ0-9]{1,3})\]/gi;
-            const parts = notesText.split(plateRegex);
-            let html = '';
-            for (let i = 0; i < parts.length; i++) {
-                if (i % 2 === 1) {
-                    const plateContent = parts[i].toUpperCase();
-                    html += `<span class="plate-tag"><span class="plate-eu-s">S</span><span class="plate-text">${escapeHTML(plateContent)}</span></span>`;
-                } else if (parts[i]) {
-                    html += escapeHTML(parts[i]);
-                }
-            }
-            return html;
-        }
-
-        function extractPlatesHTML(notesText) {
-            if (!notesText) return '';
-            const plateRegex = /\[([A-ZÅÄÖ0-9]{1,3}[\s]?[A-ZÅÄÖ0-9]{1,3})\]/gi;
-            let matches;
-            let html = '';
-            while ((matches = plateRegex.exec(notesText)) !== null) {
-                const plateContent = matches[1].toUpperCase();
-                html += `<span class="plate-tag"><span class="plate-eu-s">S</span><span class="plate-text">${escapeHTML(plateContent)}</span></span>`;
-            }
-            return html;
-        }
-        
-        function guessCategoryFromName(name) {
-            const lowerName = name.toLowerCase();
-            const serviceWords = ['filter', 'olja', 'tändstift', 'bromsbelägg', 'bromsskiva', 'olja', 'glykol', 'spolarvätska', 'torkarblad', 'bromsok', 'glödstift'];
-            const motorWords = ['länkarm', 'bussning', 'stötdämpare', 'fjäder', 'motorfäste', 'avgassystem', 'kamrem', 'vattenpump', 'drivknut', 'hjullager', 'styrled', 'spindel', 'krängningshämmare'];
-            
-            if (serviceWords.some(word => lowerName.includes(word))) {
-                return 'Service';
-            }
-            if (motorWords.some(word => lowerName.includes(word))) {
-                return 'Motor/Chassi';
-            }
-            return '';
-        }
-
-        // --- SKAPA HTML FÖR RAD (DESKTOP) ---
-        function createInventoryRow(item, isOutOfStock) {
-            const row = document.createElement('div');
-            row.className = 'artikel-rad';
-            row.setAttribute('data-id', item.id);
-            row.onclick = (e) => handleRowSelect(item.id, e.currentTarget);
-            if (selectedItemId === item.id) {
-                row.classList.add('selected');
-            }
-
-            const statusClass = item.quantity > 0 ? 'i-lager' : 'slut';
-            const statusText = item.quantity > 0 ? 'I lager' : 'Slut';
-            const formattedNotes = parseNotes(item.notes || '');
-            const safeServiceFilter = escapeHTML(item.service_filter).replace(/'/g, "\\'");
-            const safeName = escapeHTML(item.name).replace(/'/g, "\\'");
-
-            const trodoLink = generateTrodoLink(item.service_filter);
-            const aeroMLink = generateAeroMLink(item.service_filter);
-            const egenLink = item.link;
-            const primarySearchLink = trodoLink || aeroMLink || egenLink;
-            const primarySearchText = trodoLink ? 'Trodo' : (aeroMLink ? 'AeroMotors' : (egenLink ? 'Egen Länk' : ''));
-
-            row.innerHTML = `
-                <span class="cell-copy-wrapper">
-                    ${primarySearchLink ? `
-                        <button class="search-btn" onclick="window.open('${primarySearchLink}', '_blank'); event.stopPropagation();" title="Sök på ${primarySearchText}">
-                            <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>
-                        </button>
-                    ` : ''}
-                    <button class="copy-btn" onclick="copyToClipboard(this, '${safeServiceFilter}', 'Artikelnummer'); event.stopPropagation();" title="Kopiera Artikelnummer">&#x1F4CB;</button>
-                    <span class="cell-copy-text">${escapeHTML(item.service_filter)}</span>
-                </span>
-                <span title="${safeName}">${escapeHTML(item.name)}</span>
-                <span>${formatPrice(item.price)}</span>
-                <div class="quantity-cell">
-                    <button class="qty-btn" onclick="adjustQuantity(${item.id}, -1, this); event.stopPropagation();">-</button>
-                    <span>${item.quantity}</span>
-                    <button class="qty-btn" onclick="adjustQuantity(${item.id}, 1, this); event.stopPropagation();">+</button>
-                </div>
-                <span style="display: flex; align-items: center;">
-                    <span class="${statusClass}">${statusText}</span>
-                </span>
-                <span class="notes-cell" title="${escapeHTML(item.notes || '')}">${formattedNotes}</span>
-                <div class="action-buttons-cell">
-                    <button class="btn-secondary row-action-btn" data-id="${item.id}" title="Åtgärder" onclick="event.stopPropagation();">
-                        <span class="icon-span">more_vert</span>
-                    </button>
-                </div>
-            `;
-            return row;
-        }
-        
-        // --- SKAPA HTML FÖR KORT (MOBIL) ---
-        function createInventoryCard(item) {
-            const card = document.createElement('div');
-            card.className = 'artikel-kort';
-            card.setAttribute('data-id', item.id);
-            card.onclick = (e) => handleRowSelect(item.id, e.currentTarget);
-            if (selectedItemId === item.id) {
-                card.classList.add('selected');
-            }
-
-            const statusClass = item.quantity > 0 ? 'i-lager' : 'slut';
-            if (statusClass === 'slut') {
-                  card.classList.add('status-slut');
-            } else {
-                  // Lägg till en klass för kategorin, t.ex. "category-service"
-                  // Ersätter / med - för att få en giltig klass
-                  const categoryClass = (item.category || 'ovrigt').toLowerCase().replace(/[\s\/]/g, '-');
-                  card.classList.add('category-' + categoryClass);
-            }
-            const statusText = item.quantity > 0 ? 'I lager' : 'Slut';
-            const formattedNotes = parseNotes(item.notes || '');
-            const safeServiceFilter = escapeHTML(item.service_filter).replace(/'/g, "\\'");
-            
-            const trodoLink = generateTrodoLink(item.service_filter);
-            
-            card.innerHTML = `
-                <div class="artikel-kort-header">
-                    <div class="artikel-kort-header-text">
-                        <div class="artikel-kort-artnr-wrapper">
-                            <span class="artikel-kort-artnr" title="${safeServiceFilter}">${escapeHTML(item.service_filter)}</span>
-                        </div>
-                        <div class="artikel-kort-name" title="${escapeHTML(item.name)}">${escapeHTML(item.name)}</div>
-                    </div>
-                    
-                    <div class="artikel-kort-actions">
-                        <button class="copy-btn" onclick="copyToClipboard(this, '${safeServiceFilter}', 'Artikelnummer'); event.stopPropagation();" title="Kopiera Artikelnummer">&#x1F4CB;</button>
-                        
-                        ${trodoLink ? `
-                            <button class="search-btn" onclick="window.open('${trodoLink}', '_blank'); event.stopPropagation();" title="Sök på Trodo">
-                                <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>
-                            </button>
-                        ` : ''}
-                        
-                        <button class="btn-secondary row-action-btn" data-id="${item.id}" title="Åtgärder" onclick="event.stopPropagation();">
-                            <span class="icon-span">more_vert</span>
-                        </button>
-                    </div>
-                    </div>
-                <div class="artikel-kort-body">
-                    <div>
-                        <div class="artikel-kort-label">Pris</div>
-                        <div class="artikel-kort-price">${formatPrice(item.price)}</div>
-                    </div>
-                    <div class="quantity-cell">
-                        <button class="qty-btn" onclick="adjustQuantity(${item.id}, -1, this); event.stopPropagation();">-</button>
-                        <span>${item.quantity}</span>
-                        <button class="qty-btn" onclick="adjustQuantity(${item.id}, 1, this); event.stopPropagation();">+</button>
-                    </div>
-                    <div>
-                        <div class="artikel-kort-label">Status</div>
-                        <span class="${statusClass}" style="font-weight: 600;">${statusText}</span>
-                    </div>
-                </div>
-                ${formattedNotes ? `
-                <div class="artikel-kort-footer">
-                    <span class="notes-cell" title="${escapeHTML(item.notes || '')}">${formattedNotes}</span>
-                </div>
-                ` : ''}
-            `;
-            return card;
-        }
-
-        // --- KOPIERA OCH ERSÄTT HELA renderInventory-FUNKTIONEN MED DETTA ---
-
-        // --- KOPIERA OCH ERSÄTT HELA renderInventory-FUNKTIONEN MED DETTA ---
-
-        // --- KOPIERA OCH ERSÄTT HELA FUNKTIONEN ---
-
-        function renderInventory(data, searchTerm = '') {
-            closeRowActionPopover(); 
-            
-            // Rensa listor
-            serviceArtiklarLista.innerHTML = '';
-            motorChassiArtiklarLista.innerHTML = '';
-            andraMarkenArtiklarLista.innerHTML = '';
-            slutILagerLista.innerHTML = '';
-            
-            serviceArtiklarKortLista.innerHTML = '';
-            motorChassiArtiklarKortLista.innerHTML = '';
-            andraMarkenArtiklarKortLista.innerHTML = '';
-            slutILagerKortLista.innerHTML = '';
-            
-            // Hämta elementen för sektionerna
-            const serviceWrapper = document.getElementById('service-artiklar-wrapper');
-            const motorWrapper = document.getElementById('motor-chassi-artiklar-wrapper');
-            const andraWrapper = document.getElementById('andra-marken-artiklar-wrapper');
-            const serviceTitle = document.getElementById('service-artiklar-titel');
-            const motorTitle = document.getElementById('motor-chassi-artiklar-titel');
-            const andraTitle = document.getElementById('andra-marken-artiklar-titel');
-            // (Lade till saknade referenser från din kod)
-            const slutILagerSektion = document.getElementById('slut-i-lager-wrapper');
-            const slutILagerTitel = document.getElementById('slut-i-lager-titel');
-        
-            // Definiera artikellistorna
-            const iLager = data.filter(item => item.quantity > 0);
-            let slutILager = data.filter(item => item.quantity <= 0); // Använd let för att kunna sortera
-        
-            const serviceArtiklar = iLager.filter(item => item.category === 'Service');
-            const motorChassiArtiklar = iLager.filter(item => item.category === 'Motor/Chassi' || item.category === 'Övrigt' || !item.category);
-            const andraMarkenArtiklar = iLager.filter(item => item.category === 'Andra Märken');
-        
-            // Sortera slut-i-lager-listan efter senast uppdaterad (nyast först)
-            slutILager.sort((a, b) => (b.lastUpdated || b.id) - (a.lastUpdated || a.id));
-        
-            // Fyll listorna med de filtrerade artiklarna
-            serviceArtiklar.forEach(item => {
-                serviceArtiklarLista.appendChild(createInventoryRow(item, false));
-                serviceArtiklarKortLista.appendChild(createInventoryCard(item));
-            });
-            motorChassiArtiklar.forEach(item => {
-                motorChassiArtiklarLista.appendChild(createInventoryRow(item, false));
-                motorChassiArtiklarKortLista.appendChild(createInventoryCard(item));
-            });
-            andraMarkenArtiklar.forEach(item => {
-                andraMarkenArtiklarLista.appendChild(createInventoryRow(item, false));
-                andraMarkenArtiklarKortLista.appendChild(createInventoryCard(item));
-            });
-            slutILager.forEach(item => {
-                slutILagerLista.appendChild(createInventoryRow(item, true));
-                slutILagerKortLista.appendChild(createInventoryCard(item));
-            });
-        
-            // === NY LOGIK FÖR ATT HANTERA TOMMA LÄGEN OCH SÖKNINGAR ===
-            const isSearchActive = searchTerm.length > 0;
-            
-            // Hämta vår nya "tom sökning"-platshållare
-            const searchEmptyState = document.getElementById('search-empty-state');
-            const searchEmptyStateText = document.getElementById('search-empty-state-text');
-            
-            // Kontrollera om sökningen gav noll träffar totalt
-            const allListsEmptyFromSearch = data.length === 0 && isSearchActive;
-            
-            // Kontrollera om hela lagret är tomt (när ingen sökning är aktiv)
-            const isTotalInventoryEmpty = inventory.length === 0 && !isSearchActive;
-        
-            // Dölj båda tomma-läges-elementen som standard
-            fullEmptyState.style.display = 'none'; 
-            if (searchEmptyState) searchEmptyState.style.display = 'none';
-        
-            if (allListsEmptyFromSearch) {
-                // FALL 1: SÖKNING GAV NOLL TRÄFFAR TOTALT (Din bild)
-                // Visa den nya, kompakta "search-empty-state"
-                if (searchEmptyState) {
-                    if (searchEmptyStateText) { 
-                        searchEmptyStateText.textContent = `Din sökning på "${escapeHTML(searchTerm)}" gav inga resultat.`;
-                    }
-                    searchEmptyState.style.display = 'flex';
-                }
-        
-                // Dölj alla kategori-sektioner
-                serviceTitle.style.display = 'none'; serviceWrapper.style.display = 'none';
-                motorTitle.style.display = 'none'; motorWrapper.style.display = 'none';
-                andraTitle.style.display = 'none'; andraWrapper.style.display = 'none';
-                slutILagerTitel.style.display = 'none'; slutILagerSektion.style.display = 'none';
-            
-            } else if (isTotalInventoryEmpty) {
-                // FALL 2: HELA LAGRET ÄR TOMT (Utan aktiv sökning)
-                // Visa den stora "full-empty-state"
-                fullEmptyState.style.display = 'flex';
-                fullEmptyState.querySelector('h4').textContent = 'Ditt lager är tomt';
-                fullEmptyState.querySelector('p').textContent = 'Börja med att lägga till din första artikel.';
-                fullEmptyState.querySelector('#empty-state-add-btn').style.display = 'inline-flex';
-        
-                // Dölj alla kategori-sektioner
-                serviceTitle.style.display = 'none'; serviceWrapper.style.display = 'none';
-                motorTitle.style.display = 'none'; motorWrapper.style.display = 'none';
-                andraTitle.style.display = 'none'; andraWrapper.style.display = 'none';
-                slutILagerTitel.style.display = 'none'; slutILagerSektion.style.display = 'none';
-            
-            } else {
-                // FALL 3: STANDARD-VY (Antingen ingen sökning, eller en sökning som gav träffar)
-                
-                // Dölj båda "tom"-meddelandena
-                fullEmptyState.style.display = 'none'; 
-                if (searchEmptyState) searchEmptyState.style.display = 'none';
-        
-                // === LOGIK FÖR ATT ÖPPNA/STÄNGA PANELER ===
-                
-                // 1. Återställ alla paneler till sitt sparade (eller stängda) läge FÖRST
-                //    om ingen sökning är aktiv.
-                if (!isSearchActive) {
-                    // Denna funktion läser localStorage och återställer .collapsed-klasser
-                    initializeCollapseState(); 
-                }
-        
-                // 2. Bestäm vilka paneler som ska visas baserat på filter
-                const isServiceCategoryActive = (currentFilter === 'Alla' || currentFilter === 'Service');
-                const isMotorCategoryActive = (currentFilter === 'Alla' || currentFilter === 'Motor/Chassi');
-                const isAndraCategoryActive = (currentFilter === 'Alla' || currentFilter === 'Andra Märken');
-                const isSlutCategoryActive = (currentFilter === 'Slut');
-        
-                // 3. Loopa igenom och tillämpa logik
-                // (Säkerställer att alla referenser finns)
-                const sections = [
-                    { title: serviceTitle, wrapper: serviceWrapper, articles: serviceArtiklar, active: isServiceCategoryActive, emptyState: emptyStates.service, listDesktop: serviceArtiklarLista, listMobile: serviceArtiklarKortLista },
-                    { title: motorTitle, wrapper: motorWrapper, articles: motorChassiArtiklar, active: isMotorCategoryActive, emptyState: emptyStates.motorChassi, listDesktop: motorChassiArtiklarLista, listMobile: motorChassiArtiklarKortLista },
-                    { title: andraTitle, wrapper: andraWrapper, articles: andraMarkenArtiklar, active: isAndraCategoryActive, emptyState: emptyStates.andraMarken, listDesktop: andraMarkenArtiklarLista, listMobile: andraMarkenArtiklarKortLista },
-                    { title: slutILagerTitel, wrapper: slutILagerSektion, articles: slutILager, active: isSlutCategoryActive, emptyState: emptyStates.slutILager, listDesktop: slutILagerLista, listMobile: slutILagerKortLista }
-                ];
-        
-                sections.forEach(section => {
-                    // Säkerhetskoll om en HTML-referens saknas
-                    if (!section.title || !section.wrapper) return; 
-                    
-                    const hasResults = section.articles.length > 0;
-                    
-                    if (isSearchActive) {
-                        // --- SÖKNING ÄR AKTIV ---
-                        if (hasResults && section.active) {
-                            // Sökning har träffar: Visa OCH tvinga panelen att öppnas
-                            section.title.style.display = 'flex';
-                            section.wrapper.style.display = 'block';
-                            section.title.setAttribute('data-state', 'open');
-                            section.wrapper.classList.remove('collapsed');
-                        } else {
-                            // Sökning har inga träffar: Dölj panelen
-                            section.title.style.display = 'none';
-                            section.wrapper.style.display = 'none';
-                        }
-                    } else {
-                        // --- INGEN SÖKNING (STANDARD-VY) ---
-                        // Visa/dölj baserat på filter
-                        section.title.style.display = section.active ? 'flex' : 'none';
-                        section.wrapper.style.display = section.active ? 'block' : 'none';
-                        
-                        // Visa "tom"-rutan inuti om panelen är tom
-                        if (section.emptyState) {
-                            section.emptyState.style.display = section.active && !hasResults ? 'flex' : 'none';
-                        }
-                    }
-        
-                    // Hantera "Slut i Lager"-filtret (specialfall)
-                    if (currentFilter === 'Slut') {
-                        if (section.title.id !== 'slut-i-lager-titel') {
-                            section.title.style.display = 'none';
-                            section.wrapper.style.display = 'none';
-                        }
-                    } else {
-                        if (section.title.id === 'slut-i-lager-titel') {
-                            section.title.style.display = 'none';
-                            section.wrapper.style.display = 'none';
-                        }
-                    }
-        
-                    // Dölj listorna om de är tomma (så att "Tom-stat" syns när man inte söker)
-                    if(section.listDesktop) section.listDesktop.style.display = hasResults ? 'block' : 'none';
-                    if(section.listMobile) section.listMobile.style.display = hasResults ? '' : 'none';
-                });
-        
-            } // Slut på FALL 3
-        
-            bindRowActionButtons();
-        }
-        // --- SLUT PÅ renderInventory-FUNKTIONEN ---
-
-        function calculateRelevance(item, searchWords) {
-            let score = 0; 
-            const serviceFilter = (item.service_filter || '').toLowerCase().replace(/\s/g, ''); 
-            const name = (item.name || '').toLowerCase(); 
-            const notes = (item.notes || '').toLowerCase(); 
-            const category = (item.category || '').toLowerCase();
-            
-            searchWords.forEach(word => {
-                const cleanWord = word.replace(/[^a-z0-9]/g, ''); 
-                if (serviceFilter.includes(cleanWord)) { score += 5; } 
-                if (name.includes(cleanWord)) { score += 3; } 
-                if (category.includes(cleanWord)) { score += 2; } 
-                if (notes.includes(cleanWord)) { score += 1; } 
-                if (serviceFilter === cleanWord || name === cleanWord) { score += 5; }
-            }); 
-            return score;
-        }
-
-        function renderSearchDropdown(searchTerm, results) {
-            if (searchTerm.length < 1 || results.length === 0) {
-                hideSearchDropdowns();
-                return;
-            }
-
-            let html = '';
-            results.slice(0, 10).forEach(item => {
-                const platesHTML = extractPlatesHTML(item.notes || '');
-                html += `<a href="#" class="search-result-item" data-id="${item.id}">
-                            <div class="search-result-content">
-                                <div class="search-result-text">
-                                    <strong>${escapeHTML(item.service_filter)}</strong>
-                                    <span>${escapeHTML(item.name)}</span>
-                                </div>
-                                <div class="search-result-plates">
-                                    ${platesHTML}
-                                </div>
-                            </div>
-                         </a>`;
-            });
-
-            desktopSearchResults.innerHTML = html;
-            mobileSearchResults.innerHTML = html;
-            desktopSearchResults.style.display = 'block';
-            mobileSearchResults.style.display = 'block';
-
-            addDropdownListeners();
-        }
-
-        function clearAndHideSearch() {
-            desktopSearchInput.value = '';
-            mobileSearchInput.value = '';
-            
-            desktopSearchResults.innerHTML = '';
-            mobileSearchResults.innerHTML = '';
-            hideSearchDropdowns();
-            
-            desktopClearSearchBtn.style.display = 'none';
-            mobileClearSearchBtn.style.display = 'none';
-            
-            applySearchFilter('');
-        }
-
-        function addDropdownListeners() {
-            document.querySelectorAll('.search-result-item').forEach(item => {
-                item.replaceWith(item.cloneNode(true));
-            });
-            
-            document.querySelectorAll('.search-result-item').forEach(item => {
-                item.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    isNavigatingViaSearch = true; 
-                    
-                    const itemId = e.currentTarget.getAttribute('data-id');
-                    clearAndHideSearch();
-                    scrollToAndHighlight(itemId, false);
-                    
-                    setTimeout(() => {
-                        isNavigatingViaSearch = false;
-                    }, 100);
-                });
-            });
-        }
-        
-        function sortAndRender(searchTermOverride) {
-            let searchTerm = (searchTermOverride !== undefined ? searchTermOverride : desktopSearchInput.value).toLowerCase().trim();
-            let processedInventory = [...inventory];
-            let syntaxFilterUsed = false;
-            let generalSearchTerm = '';
-
-            const syntaxMatches = searchTerm.match(/(k:|kategori:|p>|p<|q=|q>|q<)(\S+)/g) || [];
-            
-            if (syntaxMatches.length > 0) {
-                syntaxFilterUsed = true;
-                generalSearchTerm = searchTerm.replace(/(k:|kategori:|p>|p<|q=|q>|q<)(\S+)/g, '').trim();
-                
-                syntaxMatches.forEach(match => {
-                    if (match.startsWith('k:') || match.startsWith('kategori:')) {
-                        const filterWord = match.split(':')[1];
-                        let foundFilter = null;
-                        if (filterWord.includes('service')) foundFilter = 'Service';
-                        else if (filterWord.includes('motor')) foundFilter = 'Motor/Chassi';
-                        else if (filterWord.includes('andra')) foundFilter = 'Andra Märken';
-                        else if (filterWord.includes('slut')) foundFilter = 'Slut';
-                        else if (filterWord.includes('alla')) foundFilter = 'Alla';
-                        if (foundFilter) currentFilter = foundFilter;
-                    } else if (match.startsWith('p>')) {
-                        const value = parseFloat(match.substring(2));
-                        if (!isNaN(value)) processedInventory = processedInventory.filter(i => i.price > value);
-                    } else if (match.startsWith('p<')) {
-                        const value = parseFloat(match.substring(2));
-                        if (!isNaN(value)) processedInventory = processedInventory.filter(i => i.price < value);
-                    } else if (match.startsWith('q=')) {
-                        const value = parseInt(match.substring(2), 10);
-                        if (!isNaN(value)) processedInventory = processedInventory.filter(i => i.quantity === value);
-                        if (value === 0) currentFilter = 'Slut';
-                    } else if (match.startsWith('q>')) {
-                        const value = parseInt(match.substring(2), 10);
-                        if (!isNaN(value)) processedInventory = processedInventory.filter(i => i.quantity > value);
-                    } else if (match.startsWith('q<')) {
-                        const value = parseInt(match.substring(2), 10);
-                        if (!isNaN(value)) processedInventory = processedInventory.filter(i => i.quantity < value);
-                    }
-                });
-            } else {
-                generalSearchTerm = searchTerm;
-            }
-
-            categoryFilterBar.querySelectorAll('.btn-secondary').forEach(btn => {
-                btn.classList.toggle('active', btn.getAttribute('data-filter') === currentFilter);
-            });
-            
-            if (currentFilter !== 'Alla') {
-                toolbarFilterBadge.textContent = currentFilter.toUpperCase();
-                toolbarFilterBadge.style.display = 'inline-flex';
-                if (currentFilter === 'Slut') {
-                    toolbarFilterBadge.classList.add('filter-slut');
-                } else {
-                    toolbarFilterBadge.classList.remove('filter-slut');
-                }
-            } else {
-                toolbarFilterBadge.style.display = 'none';
-                toolbarFilterBadge.classList.remove('filter-slut');
-            }
-
-            if (currentFilter !== 'Alla' && !syntaxFilterUsed) {
-                if (currentFilter === 'Slut') {
-                    processedInventory = processedInventory.filter(item => item.quantity <= 0);
-                } else {
-                    processedInventory = processedInventory.filter(item => item.quantity > 0 && 
-                        (item.category === currentFilter || (currentFilter === 'Motor/Chassi' && (item.category === 'Övrigt' || !item.category)))
-                    );
-                }
-            }
-
-            let dropdownResults = [];
-            if (generalSearchTerm !== '') {
-                const searchWords = generalSearchTerm.split(/\s+/).filter(word => word.length > 1 && !stopWords.includes(word));
-                if (searchWords.length === 0 && generalSearchTerm.length > 0) { searchWords.push(generalSearchTerm); }
-
-                processedInventory = processedInventory
-                    .map(item => ({ ...item, relevanceScore: calculateRelevance(item, searchWords) }))
-                    .filter(item => item.relevanceScore > 0)
-                    .sort((a, b) => b.relevanceScore - a.relevanceScore);
-                
-                if (!syntaxFilterUsed) {
-                    dropdownResults = [...processedInventory];
-                }
-            } 
-            else {
-                processedInventory.sort((a, b) => {
-                    let aVal = a[currentSort.column]; let bVal = b[currentSort.column];
-                    if (typeof aVal === 'string' && typeof bVal === 'string') {
-                        return currentSort.direction === 'asc' ? aVal.localeCompare(bVal, 'sv') : bVal.localeCompare(aVal, 'sv');
-                    } else {
-                        return currentSort.direction === 'asc' ? (aVal || 0) - (bVal || 0) : (bVal || 0) - (aVal || 0);
-                    }
-                });
-            }
-            
-            const resultsForDropdown = syntaxFilterUsed ? processedInventory : dropdownResults;
-            renderSearchDropdown(generalSearchTerm, resultsForDropdown);
-
-            renderInventory(processedInventory, generalSearchTerm);
-          
-            document.querySelectorAll('.header span[data-sort]').forEach(span => {
-                span.classList.remove('active', 'asc', 'desc');
-                const icon = span.querySelector('.sort-icon');
-                if (icon) icon.textContent = ''; 
-            });
-            
-            const activeHeader = document.querySelector(`.header span[data-sort="${currentSort.column}"]`);
-            if (activeHeader) {
-                activeHeader.classList.add('active', currentSort.direction);
-                const icon = activeHeader.querySelector('.sort-icon');
-                if (icon) {
-                    if(generalSearchTerm === '') {
-                        icon.textContent = currentSort.direction === 'asc' ? ' ▲' : ' ▼';
-                    }
-                }
-            }
-            
-            localStorage.setItem('app_sort', JSON.stringify(currentSort));
-            localStorage.setItem('app_filter', currentFilter);
-        }
-
-        function applySearchFilter(term) {
-             if (isNavigatingViaSearch) return;
-             clearTimeout(window.searchTimeout);
-             window.searchTimeout = setTimeout(() => sortAndRender(term), 150);
-        }
-        
-        async function saveInventoryItem(itemData) { const itemRef = doc(db, INVENTORY_COLLECTION, String(itemData.id)); await setDoc(itemRef, itemData); }
-        async function deleteInventoryItem(itemId) { const itemRef = doc(db, INVENTORY_COLLECTION, String(itemId)); await deleteDoc(itemRef); }
-        
-        function setupRealtimeListener() {
-            const q = query(collection(db, INVENTORY_COLLECTION), firestoreOrderBy("name"));
-            
-            onSnapshot(q, (querySnapshot) => {
-                const tempInventory = [];
-                querySnapshot.forEach((doc) => { tempInventory.push(doc.data()); });
-                inventory = tempInventory;
-                
-                if (!currentSort.column) {
-                    currentSort = { column: 'name', direction: 'asc' };
-                }
-
-                applySearchFilter(desktopSearchInput.value);
-                renderDashboard(inventory); 
-                updateCategoryBadges(inventory);
-                renderRecentItems(inventory);
-                renderTopValueItems(inventory);
-                
-                const now = new Date();
-                updateSyncStatus('ok', `Synkroniserad ${now.toLocaleTimeString('sv-SE')}`);
-                
-                syncStatusElement.classList.add('flash');
-                setTimeout(() => syncStatusElement.classList.remove('flash'), 1200);
-                
-                if (initialLoader) {
-                    initialLoader.style.opacity = '0';
-                    setTimeout(() => initialLoader.style.display = 'none', 300);
-                }
-                
-            }, (error) => {
-                console.error("Realtime listener error: ", error);
-                updateSyncStatus('error', 'Synk-fel: Se konsolen');
-                if (initialLoader) {
-                    initialLoader.querySelector('p').textContent = 'Kunde inte ansluta...';
-                }
-            });
-        }
-        
-        function loadPersistentState() {
-            const savedSort = localStorage.getItem('app_sort');
-            const savedFilter = localStorage.getItem('app_filter');
-            
-            if (savedSort) {
-                currentSort = JSON.parse(savedSort);
-            }
-            if (savedFilter) {
-                currentFilter = savedFilter;
-                document.querySelectorAll('#category-filter-bar .btn-secondary').forEach(btn => {
-                    btn.classList.toggle('active', btn.getAttribute('data-filter') === currentFilter);
-                });
-            }
-        }
-
-        function validateForm(form, isEdit = false) {
-            let isValid = true;
-            form.querySelectorAll('.has-error').forEach(el => el.classList.remove('has-error'));
-            form.querySelectorAll('.form-warning').forEach(el => el.textContent = '');
-
-            const requiredFields = form.querySelectorAll('[required]');
-            
-            requiredFields.forEach(field => {
-                if (!field.value || field.value.trim() === '') {
-                    isValid = false;
-                    const wrapper = field.closest('.form-field-full, .form-field-half');
-                    if (wrapper) {
-                        wrapper.classList.add('has-error');
-                        const warningEl = wrapper.querySelector('.form-warning');
-                        if (warningEl) {
-                            warningEl.textContent = 'Detta fält är obligatoriskt.';
-                        }
-                    }
-                }
-            });
-            
-            if (!isEdit) {
-                const serviceFilterField = form.querySelector('#add_service_filter');
-                const serviceFilter = (serviceFilterField.value || '').trim().toUpperCase();
-                
-                if (serviceFilter && inventory.some(item => item.service_filter === serviceFilter)) {
-                    isValid = false;
-                    const wrapper = serviceFilterField.closest('.form-field-full');
-                    if (wrapper) {
-                        wrapper.classList.add('has-error');
-                        const warningEl = wrapper.querySelector('.form-warning');
-                        if (warningEl) {
-                            warningEl.textContent = `Artikeln ${serviceFilter} finns redan.`;
-                        }
-                    }
-                }
-            }
-            
-            if (!isValid) {
-                const modalContent = form.closest('.modal-content');
-                if (modalContent) {
-                    modalContent.classList.add('shake');
-                    setTimeout(() => modalContent.classList.remove('shake'), 500);
-                }
-            }
-            
-            return isValid;
-        }
-        
-        function scrollToAndHighlight(itemId, instant = false) { // <-- 1. NY PARAMETER
-            const elements = document.querySelectorAll(`.artikel-rad[data-id="${itemId}"], .artikel-kort[data-id="${itemId}"]`);
-            
-            if (elements.length === 0) return;
-
-            const element = Array.from(elements).find(el => {
-                return window.getComputedStyle(el).display !== 'none';
-            });
-            
-            if (element) {
-                
-                // 2. BESTÄM SCROLL-BETEENDE
-                const scrollBehavior = instant ? 'auto' : 'smooth'; 
-
-                // 3. KONTROLLERA OM PANELEN ÄR STÄNGD
-                const wrapper = element.closest('.lager-wrapper');
-                if (wrapper && wrapper.classList.contains('collapsed')) {
-                    const wrapperId = wrapper.id; 
-                    const titleId = wrapperId.replace('-wrapper', '-titel');
-                    const title = document.getElementById(titleId);
-
-                    if (title) {
-                        title.setAttribute('data-state', 'open');
-                        wrapper.classList.remove('collapsed');
-                        localStorage.setItem(title.id, 'open'); 
-                    }
-                }
-
-                // 4. SCROLLA MED RÄTT BETEENDE
-                // Vi använder en liten fördröjning för att vara säkra på att panelen hinner öppnas
-                setTimeout(() => {
-                    element.scrollIntoView({ behavior: scrollBehavior, block: 'center' }); // <-- 5. ANVÄND VARIABELN
-
-                    document.querySelectorAll('.artikel-rad.highlight, .artikel-kort.highlight').forEach(r => r.classList.remove('highlight'));
-                    
-                    element.classList.add('highlight');
-                    
-                    const twinSelector = element.classList.contains('artikel-rad') 
-                        ? `.artikel-kort[data-id="${itemId}"]` 
-                        : `.artikel-rad[data-id="${itemId}"]`;
-                    const twinElement = document.querySelector(twinSelector);
-                    
-                    if (twinElement) {
-                        twinElement.classList.add('highlight');
-                    }
-                }, 50); // Liten fördröjning för att låta panelen öppnas
-            }
-        }
-
-        async function handleFormSubmit(event) {
-            event.preventDefault();
-            
-            if (!validateForm(addForm, false)) {
-                showToast('Vänligen fyll i alla obligatoriska fält.', 'error');
-                return;
-            }
-
-            const serviceFilter = (addForm.querySelector('#add_service_filter').value || '').trim().toUpperCase();
-
-            addFormSubmitBtn.disabled = true; 
-            addFormSubmitBtn.innerHTML = '<span class="icon-span">hourglass_top</span>Sparar...';
-            
-            const newItem = {
-                id: Date.now(), 
-                service_filter: serviceFilter, 
-                name: (addForm.querySelector('#add_name').value || '').trim().toUpperCase(), 
-                price: parseFloat(addForm.querySelector('#add_price').value) || 0.00,
-                quantity: parseInt(addForm.querySelector('#add-quantity').value, 10) || 0,
-                category: addForm.querySelector('#add_category').value || 'Övrigt', 
-                notes: (addForm.querySelector('#add_notes').value || '').trim(),
-                link: (addForm.querySelector('#add_link').value || '').trim(),
-                lastUpdated: Date.now()
-            };
-            
-            await saveInventoryItem(newItem);
-            
-            addForm.reset();
-            addForm.querySelector('#add-quantity').value = 1; 
-            addForm.querySelectorAll('.form-warning').forEach(el => el.textContent = '');
-            addForm.querySelectorAll('.has-error').forEach(el => el.classList.remove('has-error'));
-            addForm.querySelectorAll('.quick-category-btn').forEach(b => b.classList.remove('active'));
-            
-            addFormSubmitBtn.disabled = false; 
-            addFormSubmitBtn.innerHTML = '<span class="icon-span">save</span>Spara Artikel';
-            
-            closeModal(addItemModal);
-            
-            showToast('Artikel sparad!', 'success');
-            
-            setTimeout(() => scrollToAndHighlight(newItem.id), 300);
-        }
-        
-        function handleRowSelect(id, element) {
-            document.querySelectorAll('.artikel-rad.selected, .artikel-kort.selected').forEach(r => r.classList.remove('selected'));
-            
-            if (selectedItemId === id) { 
-                selectedItemId = null; 
-            } else { 
-                selectedItemId = id; 
-                element.classList.add('selected'); 
-                
-                const twinSelector = element.classList.contains('artikel-rad') 
-                    ? `.artikel-kort[data-id="${id}"]` 
-                    : `.artikel-rad[data-id="${id}"]`;
-                const twinElement = document.querySelector(twinSelector);
-                if (twinElement) {
-                    twinElement.classList.add('selected');
-                }
-            }
-        }
-
-        window.handleEdit = function(id, isOrderMode = false) {
-            const item = inventory.find(i => i.id === id);
-            if (item) {
-                editForm.querySelectorAll('.has-error').forEach(el => el.classList.remove('has-error'));
-                editForm.querySelectorAll('.form-warning').forEach(el => el.textContent = '');
-            
-                editForm.querySelector('#edit-id').value = item.id;
-                editForm.querySelector('#edit-service_filter').value = item.service_filter;
-                editForm.querySelector('#edit-name').value = item.name;
-                editForm.querySelector('#edit-price').value = item.price;
-                editForm.querySelector('#edit-quantity').value = isOrderMode ? 1 : item.quantity;
-                editForm.querySelector('#edit-category').value = item.category;
-                editForm.querySelector('#edit-notes').value = item.notes;
-                editForm.querySelector('#edit-link').value = item.link;
-                
-                const titleEl = editModal.querySelector('h3');
-                const iconEl = editModal.querySelector('h3 .icon-span');
-                
-                if (isOrderMode) {
-                    titleEl.childNodes[1].nodeValue = ' Beställ Artikel';
-                    iconEl.textContent = 'shopping_cart';
-                    editFormSubmitBtn.innerHTML = '<span class="icon-span">check</span>Markera som Beställd';
-                } else {
-                    titleEl.childNodes[1].nodeValue = ' Redigera Artikel';
-                    iconEl.textContent = 'edit';
-                    editFormSubmitBtn.innerHTML = '<span class="icon-span">save</span>Spara Ändringar';
-                }
-                
-                openModal('editModal');
-            }
-        }
-
-        async function handleEditSubmit(event) {
-            event.preventDefault();
-            
-            if (!validateForm(editForm, true)) {
-                showToast('Vänligen fyll i alla obligatoriska fält.', 'error');
-                return;
-            }
-
-            const originalHTML = editFormSubmitBtn.innerHTML;
-            editFormSubmitBtn.disabled = true; 
-            editFormSubmitBtn.innerHTML = '<span class="icon-span">hourglass_top</span>Sparar...';
-
-            const id = parseInt(editForm.querySelector('#edit-id').value, 10);
-            const originalItem = inventory.find(i => i.id === id);
-            
-            const updatedItem = {
-                ...originalItem,
-                service_filter: editForm.querySelector('#edit-service_filter').value.trim().toUpperCase(),
-                name: editForm.querySelector('#edit-name').value.trim().toUpperCase(),
-                price: parseFloat(editForm.querySelector('#edit-price').value) || 0.00,
-                quantity: parseInt(editForm.querySelector('#edit-quantity').value, 10) || 0,
-                category: editForm.querySelector('#edit-category').value,
-                notes: editForm.querySelector('#edit-notes').value.trim(),
-                link: editForm.querySelector('#edit-link').value.trim(),
-                lastUpdated: Date.now()
-            };
-
-            await saveInventoryItem(updatedItem);
-            editFormSubmitBtn.disabled = false; 
-            editFormSubmitBtn.innerHTML = originalHTML;
-            
-            closeModal(editModal);
-            
-            showToast('Ändringar sparade!', 'success');
-            
-            setTimeout(() => scrollToAndHighlight(updatedItem.id), 300);
-        }
-        
-        window.adjustQuantity = async function(id, change, buttonEl) {
-            const item = inventory.find(i => i.id === id);
-            if (item) {
-                const newQuantity = Math.max(0, item.quantity + change);
-                const updatedItem = {...item, quantity: newQuantity, lastUpdated: Date.now() };
-                await saveInventoryItem(updatedItem);
-
-                const element = buttonEl.closest('.artikel-rad, .artikel-kort');
-                if (element) {
-                    element.classList.remove('flash-quantity');
-                    requestAnimationFrame(() => {
-                        element.classList.add('flash-quantity');
-                    });
-                    element.addEventListener('animationend', () => {
-                        element.classList.remove('flash-quantity');
-                    }, { once: true });
-                }
-            }
-        }
-        
-        window.handleDelete = function(id) {
-            const item = inventory.find(i => i.id === id);
-            showCustomConfirmation(
-                `Är du säker på att du vill ta bort <strong>${item.name} (${item.service_filter})</strong>?`,
-                async (result) => {
-                    if (result) {
-                        await deleteInventoryItem(id);
-                        showToast('Artikel borttagen', 'info');
-                    }
-                }, 'Bekräfta Borttagning', true
-            );
-        }
-        
-        window.copyToClipboard = (buttonEl, text, typeName) => {
-            const row = buttonEl.closest('.artikel-rad, .artikel-kort');
-            
-            navigator.clipboard.writeText(text).then(() => {
-                const originalContent = buttonEl.innerHTML;
-                buttonEl.innerHTML = '✅';
-                buttonEl.disabled = true;
-                
-                showToast(`${typeName} kopierad: ${text}`, 'success');
-                
-                if (row) {
-                    row.classList.add('flash-success');
-                    row.addEventListener('animationend', () => {
-                        row.classList.remove('flash-success');
-                    }, { once: true });
-                }
-                
-                setTimeout(() => {
-                    buttonEl.innerHTML = originalContent;
-                    buttonEl.disabled = false;
-                }, 1000);
-            }).catch(() => {
-                showToast('Kunde inte kopiera', 'error');
-            });
-        };
-        
-        function closeConfirmationModal() { 
-            closeModal(confirmationModal);
-            confirmCallback = null; 
-        }
-
-        function showCustomConfirmation(message, callback, title = 'Bekräfta', isDanger = false) {
-            confirmationModal.querySelector('#confirmationTitle').innerHTML = title;
-            confirmationModal.querySelector('#confirmationMessage').innerHTML = message;
-            confirmationModal.querySelector('#confirmNo').style.display = 'inline-flex';
-            
-            const yesBtn = confirmationModal.querySelector('#confirmYes');
-            const iconEl = confirmationModal.querySelector('#confirmationIcon');
-            
-            yesBtn.className = 'btn-primary';
-            
-            if (isDanger) {
-                yesBtn.classList.add('btn-danger');
-                iconEl.textContent = 'warning';
-                iconEl.style.color = 'var(--danger-color)';
-            } else {
-                iconEl.textContent = 'help';
-                iconEl.style.color = 'var(--primary-color)';
-            }
-            
-            openModal('confirmationModal');
-            confirmCallback = callback;
-        }
-        
-        async function handlePasteAndFill() {
-            try {
-                const text = await navigator.clipboard.readText();
-                const parts = text.split(/\s+/);
-                if (parts.length > 0) {
-                    const artnr = parts[0].toUpperCase();
-                    const name = parts.slice(1).join(' ').toUpperCase();
-                    
-                    addForm.querySelector('#add_service_filter').value = artnr;
-                    if (name) {
-                        addForm.querySelector('#add_name').value = name;
-                    }
-                    showToast('Innehåll inklistrat!', 'success');
-                    
-                    addForm.querySelector('#add_service_filter').dispatchEvent(new Event('input'));
-                }
-            } catch (err) {
-                showToast('Kunde inte läsa urklipp', 'error');
-            }
-        }
-        
-        function initializeListeners() {
-            addForm.addEventListener('submit', handleFormSubmit);
-            
-            document.getElementById('add-qty-plus').addEventListener('click', () => {
-                const input = document.getElementById('add-quantity');
-                input.value = parseInt(input.value || 0, 10) + 1;
-            });
-            document.getElementById('add-qty-minus').addEventListener('click', () => {
-                const input = document.getElementById('add-quantity');
-                input.value = Math.max(0, parseInt(input.value || 0, 10) - 1);
-            });
-            
-            document.getElementById('edit-qty-plus').addEventListener('click', () => {
-                const input = document.getElementById('edit-quantity');
-                input.value = parseInt(input.value || 0, 10) + 1;
-            });
-            document.getElementById('edit-qty-minus').addEventListener('click', () => {
-                const input = document.getElementById('edit-quantity');
-                input.value = Math.max(0, parseInt(input.value || 0, 10) - 1);
-            });
-            
-            editForm.addEventListener('submit', handleEditSubmit);
-            
-            const handleSearchInput = (e) => {
-                const term = e.target.value;
-                if (e.target.id === 'desktop-search-input') {
-                    mobileSearchInput.value = term;
-                } else {
-                    desktopSearchInput.value = term;
-                }
-                const showClear = term.length > 0;
-                desktopClearSearchBtn.style.display = showClear ? 'block' : 'none';
-                mobileClearSearchBtn.style.display = showClear ? 'block' : 'none';
-                applySearchFilter(term);
-            };
-
-            desktopSearchInput.addEventListener('input', handleSearchInput);
-            mobileSearchInput.addEventListener('input', handleSearchInput);
-        
-            // --- ÄNDRAD: Lade till scroll-logik vid Enter ---
-            const handleSearchKeydown = (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    e.target.blur(); // Dölj tangentbordet
-
-                    // --- NYTT: Skrolla till filter-knapparna ---
-                    const targetElement = document.getElementById('category-filter-bar');
-                    if (targetElement) {
-                        let stickyHeaderHeight = 0;
-                        const stickyToolbar = document.querySelector('.top-toolbar');
-                        const stickySearchBar = document.getElementById('sticky-search-bar');
-                        
-                        // Hitta vilket sticky-element som är aktivt
-                        if (stickyToolbar && window.getComputedStyle(stickyToolbar).position === 'sticky') {
-                            stickyHeaderHeight = stickyToolbar.offsetHeight;
-                        } else if (stickySearchBar && window.getComputedStyle(stickySearchBar).display !== 'none') {
-                            stickyHeaderHeight = stickySearchBar.offsetHeight;
-                        }
-
-                        // Beräkna positionen
-                        const targetRect = targetElement.getBoundingClientRect();
-                        const targetScrollY = window.scrollY + targetRect.top - stickyHeaderHeight - 20; // 20px marginal
-
-                        window.scrollTo({
-                            top: targetScrollY,
-                            behavior: 'smooth'
-                        });
-                    }
-                    // --- SLUT NYTT ---
-                }
-            };
-            desktopSearchInput.addEventListener('keydown', handleSearchKeydown);
-            mobileSearchInput.addEventListener('keydown', handleSearchKeydown);
-            
-            const handleClearSearch = () => {
-                clearAndHideSearch();
-                desktopSearchInput.focus();
-            };
-
-            desktopClearSearchBtn.addEventListener('click', handleClearSearch);
-            mobileClearSearchBtn.addEventListener('click', handleClearSearch);
-
-            addForm.querySelector('#add_service_filter').addEventListener('input', (e) => {
-                const value = e.target.value.trim().toUpperCase();
-                const warningEl = e.target.closest('.form-field-full').querySelector('.form-warning');
-                
-                if (value && inventory.some(item => item.service_filter === value)) {
-                    warningEl.textContent = 'Detta artikelnummer finns redan!';
-                    e.target.closest('.form-field-full').classList.add('has-error');
-                } else {
-                    warningEl.textContent = '';
-                    e.target.closest('.form-field-full').classList.remove('has-error');
-                }
-            });
-
-            if (fabAddBtn) {
-                fabAddBtn.addEventListener('click', () => openModal('addModal'));
-            }
-            if (toolbarAddBtn) {
-                toolbarAddBtn.addEventListener('click', () => openModal('addModal'));
-            }
-            if (emptyStateAddBtn) {
-                emptyStateAddBtn.addEventListener('click', () => openModal('addModal'));
-            }
-            
-            document.querySelectorAll('.lager-container').forEach(c => { 
-                c.addEventListener('scroll', () => {
-                    c.classList.toggle('scrolled', c.scrollTop > 1);
-                    closeRowActionPopover();
-                }); 
-            });
-
-            // --- ÄNDRAD: Generell lyssnare för alla .modal-close-btn ---
-            document.querySelectorAll('.modal-close-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    closeModal(btn.closest('.modal'));
-                });
-            });
-
-            // Lyssnare för att stänga modal vid klick på bakgrund
-            document.querySelectorAll('.modal').forEach(modal => {
-                modal.addEventListener('click', (e) => {
-                    if (e.target === modal) {
-                        closeModal(modal);
-                    }
-                });
-            });
-            
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape') {
-                    // Stäng den översta (senast öppnade) modalen
-                    const openModals = document.querySelectorAll('.modal.open');
-                    if (openModals.length > 0) {
-                        closeModal(openModals[openModals.length - 1]);
-                    }
-                    
-                    closeRowActionPopover();
-                    if(globalSearchResults.style.display === 'block') {
-                        globalSearchResults.style.display = 'none';
-                    }
-                    hideSearchDropdowns();
-                }
-            });
-            
-            document.querySelectorAll('.header span[data-sort]').forEach(header => {
-                header.addEventListener('click', () => {
-                    const column = header.getAttribute('data-sort');
-                    if (desktopSearchInput.value !== '') { 
-                        clearAndHideSearch();
-                    }
-                    const direction = (currentSort.column === column && currentSort.direction === 'asc') ? 'desc' : 'asc';
-                    currentSort = { column, direction };
-                    applySearchFilter('');
-                });
-            });
-            
-            document.getElementById('confirmYes').addEventListener('click', () => { if (confirmCallback) confirmCallback(true); closeConfirmationModal(); });
-            document.getElementById('confirmNo').addEventListener('click', () => { if (confirmCallback) confirmCallback(false); closeConfirmationModal(); });
-
-            document.querySelectorAll('.collapsible-header').forEach(header => {
-                header.addEventListener('click', () => {
-                    const wrapperId = header.id.replace('-titel', '-wrapper'); const wrapper = document.getElementById(wrapperId); if (!wrapper) return;
-                    const isClosed = header.getAttribute('data-state') === 'closed'; const newState = isClosed ? 'open' : 'closed';
-                    header.setAttribute('data-state', newState); wrapper.classList.toggle('collapsed', !isClosed);
-                    localStorage.setItem(header.id, newState);
-                });
-            });
-
-            if (globalSearchBtn) { globalSearchBtn.addEventListener('click', (e) => { e.preventDefault(); handleGlobalSearch(); }); }
-            globalSearchInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); handleGlobalSearch(); } });
-            globalSearchInput.addEventListener('input', (e) => { updateGlobalSearchButton(e.target.value.trim().toUpperCase()); });
-
-            document.getElementById('btn-copy-all-links-text').addEventListener('click', (e) => {
-                handleCopyAllLinks(e.currentTarget, 'text');
-            });
-            document.getElementById('btn-copy-all-links-json').addEventListener('click', (e) => {
-                handleCopyAllLinks(e.currentTarget, 'json');
-            });
-            
-            quickAddFromSearchBtn.addEventListener('click', () => {
-                const searchTerm = quickAddFromSearchBtn.getAttribute('data-search-term');
-                
-                const parts = searchTerm.split(/\s+/);
-                const artnr = parts[0] || '';
-                const name = parts.slice(1).join(' ').toUpperCase();
-                const guessedCategory = guessCategoryFromName(name);
-
-                openModal('addModal');
-                
-                addForm.querySelector('#add_service_filter').value = artnr;
-                addForm.querySelector('#add_name').value = name;
-                
-                if (guessedCategory) {
-                    addForm.querySelector('#add_category').value = guessedCategory;
-                    addForm.querySelector('#add_category').dispatchEvent(new Event('change'));
-                }
-                
-                globalSearchResults.style.display = 'none';
-                
-                setTimeout(() => {
-                    if (name) {
-                        addForm.querySelector('#add_price').focus();
-                    } else {
-                        addForm.querySelector('#add_name').focus();
-                    }
-                }, 50);
-            });
-            
-            if (recentItemsList) {
-                recentItemsList.addEventListener('click', (e) => {
-                    const itemLink = e.target.closest('.recent-item');
-                    if (itemLink) {
-                        e.preventDefault();
-                        const itemId = itemLink.getAttribute('data-id');
-                        closeAppMenu();
-                        setTimeout(() => scrollToAndHighlight(itemId), 250);
-                    }
-                });
-            }
-            
-            if (topValueList) {
-                topValueList.addEventListener('click', (e) => {
-                    const itemLink = e.target.closest('.top-value-item');
-                    if (itemLink) {
-                        e.preventDefault();
-                        const itemId = itemLink.getAttribute('data-id');
-                        closeAppMenu();
-                        setTimeout(() => scrollToAndHighlight(itemId), 250);
-                    }
-                });
-            }
-            
-            if (dashboardContainer) {
-                dashboardContainer.addEventListener('click', (e) => {
-                    const statCard = e.target.closest('.dashboard-stat');
-                    if (statCard && statCard.dataset.filterTarget) {
-                        const filter = statCard.dataset.filterTarget;
-                        currentFilter = filter;
-                        categoryFilterBar.querySelectorAll('.btn-secondary').forEach(btn => {
-                            btn.classList.toggle('active', btn.getAttribute('data-filter') === currentFilter);
-                        });
-                        applySearchFilter(desktopSearchInput.value);
-                        closeAppMenu();
-                    }
-                });
-            }
-
-            appMenuBtn.addEventListener('click', openAppMenu);
-            appMenuOverlay.addEventListener('click', closeAppMenu);
-            appMenuCloseBtn.addEventListener('click', closeAppMenu);
-            
-            exportCsvBtn.addEventListener('click', exportToCSV);
-            exportJsonBtn.addEventListener('click', exportToJSON);
-            document.getElementById('paste-artnr-btn').addEventListener('click', handlePasteAndFill);
-
-            addForm.querySelectorAll('.quick-category-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const category = btn.getAttribute('data-category');
-                    addForm.querySelector('#add_category').value = category;
-                    addForm.querySelectorAll('.quick-category-btn').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    
-                    const wrapper = btn.closest('.form-field-full');
-                    if(wrapper) {
-                        wrapper.classList.remove('has-error');
-                        const warningEl = wrapper.querySelector('.form-warning');
-                        if (warningEl) warningEl.textContent = '';
-                    }
-                });
-            });
-            
-            addForm.querySelector('#add_category').addEventListener('change', (e) => {
-                const selectedCategory = e.target.value;
-                addForm.querySelectorAll('.quick-category-btn').forEach(btn => {
-                    btn.classList.toggle('active', btn.getAttribute('data-category') === selectedCategory);
-                });
-            });
-            
-            [addForm, editForm].forEach(form => {
-                form.querySelectorAll('[required]').forEach(field => {
-                    field.addEventListener('input', (e) => {
-                        if (e.target.value.trim() !== '') {
-                            const wrapper = e.target.closest('.form-field-full, .form-field-half');
-                            if (wrapper && wrapper.classList.contains('has-error')) {
-                                wrapper.classList.remove('has-error');
-                                const warningEl = wrapper.querySelector('.form-warning');
-                                if (warningEl) warningEl.textContent = '';
-                            }
-                        }
-                    });
-                });
-            });
-
-            const backToTopBtn = document.getElementById('back-to-top-btn');
-            if (backToTopBtn) {
-                window.addEventListener('scroll', () => { 
-                    backToTopBtn.style.display = window.scrollY > 300 ? 'flex' : 'none'; 
-                    closeRowActionPopover();
-                    hideSearchDropdowns();
-                });
-                backToTopBtn.addEventListener('click', () => { window.scrollTo({ top: 0, behavior: 'smooth' }); });
-            }
-            
-            if(themeToggle) {
-                themeToggle.addEventListener('change', () => {
-                    setTheme(themeToggle.checked ? 'dark' : 'light');
-                });
-            }
-            
-            if(pwaInstallBtn) {
-                pwaInstallBtn.addEventListener('click', handlePwaInstall);
-            }
-            
-            if (categoryFilterBar) {
-                categoryFilterBar.addEventListener('click', (e) => {
-                    if (e.target.tagName === 'BUTTON') {
-                        const filter = e.target.getAttribute('data-filter');
-                        if (filter) {
-                            currentFilter = filter;
-                            if(desktopSearchInput.value) {
-                                clearAndHideSearch();
-                            }
-                            applySearchFilter('');
-                        }
-                    }
-                });
-            }
-        }
-        
-        function initializeCollapseState() {
-            document.querySelectorAll('.collapsible-header').forEach(header => {
-                const savedState = localStorage.getItem(header.id); const wrapperId = header.id.replace('-titel', '-wrapper'); const wrapper = document.getElementById(wrapperId);
-                if (savedState === 'closed') { header.setAttribute('data-state', 'closed'); if (wrapper) { wrapper.classList.add('collapsed'); } } 
-            });
-        }
-
-        // KÖR ALLT I ORDNING
-        checkTheme();
-        updateSyncStatus('connecting', 'Ansluter...'); 
-        initializeCollapseState();
-        loadPersistentState();
-        initializeListeners(); 
-        renderSearchHistory();
-        setupRealtimeListener();
-
-    } catch (e) {
-        console.error("App Initialization Error:", e);
-        updateSyncStatus('error', 'Initieringsfel! Se konsol.'); 
-        if(initialLoader) initialLoader.querySelector('p').textContent = 'Kritiskt fel vid initiering.';
+        // Stäng av lager-lyssnaren om den finns (du kan behöva skapa en variabel för den också om du vill vara strikt)
+        // Men eftersom vi laddar om sidan vid utloggning är det oftast lugnt.
     }
 });
 
+// Global cache för sparade märken (Regnr -> Märke)
+let vehicleBrandCache = {}; 
+
+// Lista över tillgängliga märken (Namn: Ikon-slug)
+const AVAILABLE_BRANDS = {
+    'Volvo': 'volvo', 'BMW': 'bmw', 'Audi': 'audi', 'VW': 'volkswagen',
+    /*'Mercedes': 'mercedes',*/ 'Tesla': 'tesla', 'Toyota': 'toyota', 'Ford': 'ford', 
+    'Kia': 'kia', /*'Saab': 'saab',*/ 'Porsche': 'porsche', 'Seat': 'seat', 
+    'Skoda': 'skoda', 'Nissan': 'nissan', 'Peugeot': 'peugeot', 'Renault': 'renault', 
+    'Fiat': 'fiat', 'Iveco': 'iveco', 'Honda': 'honda', 'Mazda': 'mazda',
+    'Hyundai': 'hyundai', 'Polestar': 'polestar', 'Mini': 'mini', 'Jeep': 'jeep',
+    /*'Land Rover': 'landrover',*/ 'Subaru': 'subaru', 'Suzuki': 'suzuki', /*'Lexus': 'lexus',*/
+    'Chevrolet': 'chevrolet', 'Citroen': 'citroen', 'Opel': 'opel', 'Dacia': 'dacia'
+};
+
+// --- HJÄLPFUNKTION (Högst upp i app.js) ---
+function getBrandIconUrl(text, regnr) {
+    // 1. PRIORITET: Kolla om vi har sparat ett märke manuellt för detta regnr
+    if (regnr && vehicleBrandCache[regnr]) {
+        const brandSlug = vehicleBrandCache[regnr];
+        return `https://cdn.simpleicons.org/${brandSlug}`;
+    }
+
+    // 2. FALLBACK: Gissa baserat på text (din gamla logik)
+    const searchStr = (text || '').toLowerCase();
+    
+    // Vi använder vår globala lista AVAILABLE_BRANDS för att söka
+    for (const [name, iconName] of Object.entries(AVAILABLE_BRANDS)) {
+        // Sök på både märkesnamnet (t.ex "volvo") och slugen (t.ex "volkswagen")
+        if (searchStr.includes(name.toLowerCase()) || searchStr.includes(iconName)) {
+            return `https://cdn.simpleicons.org/${iconName}`;
+        }
+    }
+    
+    // Specialfall för "Merc" / "Benz" som inte täcks av listan exakt
+    if (searchStr.includes('merc') || searchStr.includes('benz')) return `https://cdn.simpleicons.org/mercedes`;
+
+    return null;
+}
+
+// --- HJÄLPFUNKTION: AVANCERAD SÖKNING ---
+function jobMatchesSearch(job, searchTerm) {
+    if (!searchTerm) return true;
+    const term = searchTerm.toLowerCase();
+    
+    // Hämta data säkert (om fältet saknas blir det tom text)
+    const kund = (job.kundnamn || '').toLowerCase();
+    const reg = (job.regnr || '').toLowerCase();
+    const kommentar = (job.kommentar || '').toLowerCase(); // Anteckningar
+    const paket = (job.paket || '').toLowerCase();
+    const status = (job.status || '').toLowerCase();
+    
+    // Sök igenom utgiftslistan (delar)
+    let parts = "";
+    if (job.utgifter && Array.isArray(job.utgifter)) {
+        parts = job.utgifter.map(u => (u.namn || '').toLowerCase()).join(' ');
+    }
+
+    // Returnera SANT om sökordet finns i NÅGOT av fälten
+    return kund.includes(term) || 
+           reg.includes(term) || 
+           kommentar.includes(term) || 
+           paket.includes(term) || 
+           status.includes(term) ||
+           parts.includes(term);
+}
+
+// 3. STARTA APPENS UI (När sidan laddat klart)
+document.addEventListener('DOMContentLoaded', function() {
+    try {
+        console.log("Sidan laddad, kopplar event listeners...");
+        setupEventListeners();
+        
+        // Koppla inloggningsformuläret
+        const loginForm = document.getElementById('loginForm');
+        if (loginForm) {
+            loginForm.addEventListener('submit', handleLogin);
+        }
+        
+        // Koppla logga ut-knapp
+        const logoutBtn = document.querySelector('.logout-icon-btn');
+        if(logoutBtn) {
+            logoutBtn.addEventListener('click', handleLogout);
+        }
+
+    } catch (e) {
+        console.error("Fel vid start:", e);
+    }
+	initSettings();
+});
+
+function handleLogin(e) {
+    e.preventDefault();
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+    const errorEl = document.getElementById('loginError');
+    const btn = e.target.querySelector('button');
+    
+    // UI Feedback
+    const originalText = btn.innerHTML;
+    btn.innerHTML = 'Loggar in...';
+    btn.disabled = true;
+    if(errorEl) errorEl.style.display = 'none';
+
+    firebase.auth().signInWithEmailAndPassword(email, password)
+        .catch((error) => {
+            let msg = "Fel e-post eller lösenord.";
+            if(error.code === 'auth/user-not-found') msg = "Kontot finns inte.";
+            if(error.code === 'auth/wrong-password') msg = "Fel lösenord.";
+            
+            if(errorEl) {
+                errorEl.textContent = msg;
+                errorEl.style.display = 'block';
+            }
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        });
+}
+
+function handleLogout() {
+    if(confirm("Vill du logga ut?")) {
+        // 1. Stoppa lyssnarna för att slippa felmeddelanden
+        if (jobsUnsubscribe) jobsUnsubscribe();
+        if (specsUnsubscribe) specsUnsubscribe();
+        if (chatUnsubscribe) chatUnsubscribe(); // Om du har chatt igång
+
+        // 2. Logga ut från Firebase
+        firebase.auth().signOut().then(() => {
+            // 3. Tvinga stängning av inställningsmenyn och andra modaler
+            document.querySelectorAll('.modal-backdrop').forEach(el => {
+                el.classList.remove('show');
+                el.style.display = 'none'; // Säkerställ att de döljs
+            });
+
+            // 4. Ladda om sidan för en fräsch start (tar bort all gammal data ur minnet)
+            window.location.reload();
+        });
+    }
+}
+
+// 3. HÄMTA DATA
+function initRealtimeListener() {
+    const container = document.getElementById('jobListContainer');
+    
+    // VIKTIGT: Spara lyssnaren i variabeln 'jobsUnsubscribe'
+    jobsUnsubscribe = db.collection("jobs").onSnapshot(snapshot => {
+        allJobs = [];
+        snapshot.forEach(doc => {
+            allJobs.push({ id: doc.id, ...doc.data() });
+        });
+        renderDashboard();
+    }, error => {
+        console.error("Fel vid hämtning av jobb:", error);
+        // Ignorera fel om det beror på att vi precis loggat ut
+        if (error.code === 'permission-denied') {
+            // Gör inget, vi har troligen loggat ut
+        }
+    });
+	
+	// VIKTIGT: Spara lyssnaren i variabeln 'specsUnsubscribe'
+    specsUnsubscribe = db.collection("vehicleSpecs").onSnapshot(snapshot => {
+        vehicleBrandCache = {}; 
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            if (data.brand_manual) {
+                vehicleBrandCache[doc.id] = data.brand_manual;
+            }
+        });
+        renderDashboard();
+    });
+}
+
+window.toggleUnplanned = function() {
+    const list = document.getElementById('unplannedList');
+    const arrow = document.getElementById('unplannedArrow');
+    
+    if (list.classList.contains('open')) {
+        list.classList.remove('open');
+        arrow.classList.remove('rotate-arrow');
+    } else {
+        list.classList.add('open');
+        arrow.classList.add('rotate-arrow');
+    }
+};
+
+// 4. RENDERA DASHBOARD
+function renderDashboard() {
+    updateHeaderDate();
+    updateStatsCounts(allJobs);
+    updateCustomerDatalist();
+
+    const container = document.getElementById('jobListContainer');
+    const isMobile = window.innerWidth <= 768;
+    
+    // Vi nollställer containern först, men sparar variabeln för jobb
+    let jobsToDisplay = [];
+
+    // --- LOGIK FÖR "BACKLOG" (Kombinerat kort: Väntar + Offert) ---
+    if (currentStatusFilter === 'backlog') {
+        
+        // 1. Räkna antal för badgarna i flikarna
+        // Vi räknar alla aktiva jobb som matchar kriterierna
+        const unplannedCount = allJobs.filter(j => !j.deleted && (!j.datum || j.datum === '')).length;
+        const offeredCount = allJobs.filter(j => !j.deleted && j.status === 'offererad').length;
+
+        // 2. Skapa HTML för Flikarna
+        const tabsHtml = `
+            <div class="filter-tabs-container">
+                <div class="filter-tab ${currentBacklogTab === 'unplanned' ? 'active' : ''}" 
+                     onclick="switchBacklogTab('unplanned')">
+                     Väntar Bokning <span class="tab-badge">${unplannedCount}</span>
+                </div>
+                <div class="filter-tab ${currentBacklogTab === 'offered' ? 'active' : ''}" 
+                     onclick="switchBacklogTab('offered')">
+                     Offererade <span class="tab-badge">${offeredCount}</span>
+                </div>
+            </div>
+        `;
+
+        // 3. Filtrera listan baserat på vald flik
+        if (currentBacklogTab === 'unplanned') {
+            // Visa jobb UTAN datum
+            jobsToDisplay = allJobs.filter(j => !j.deleted && (!j.datum || j.datum === ''));
+        } else {
+            // Visa offererade jobb
+            jobsToDisplay = allJobs.filter(j => !j.deleted && j.status === 'offererad');
+        }
+        
+        // Sortera: Nyast skapad först (eftersom de inte har datum, eller datum är irrelevant)
+        // Vi använder created-fältet om det finns, annars fallback
+        jobsToDisplay.sort((a,b) => (b.created || '').localeCompare(a.created || ''));
+
+        // 4. Lägg in flikarna i containern direkt
+        container.innerHTML = tabsHtml;
+
+    } else {
+        // --- VANLIG LOGIK FÖR ANDRA KORT (Kommande, Fakturering, Alla, Klar) ---
+        
+        // Här använder vi din gamla filterfunktion
+        jobsToDisplay = filterJobs(allJobs);
+        
+        // Töm containern helt eftersom vi inte har flikar här
+        container.innerHTML = ''; 
+    }
+
+    // --- PAGINATION (Visa mer) ---
+    const totalJobs = jobsToDisplay.length;
+    let showLoadMoreBtn = false;
+
+    // Vi begränsar bara om vi INTE är i backlog-läget (där vill vi oftast se allt)
+    // eller om listan är väldigt lång.
+    if (totalJobs > currentLimit) {
+        jobsToDisplay = jobsToDisplay.slice(0, currentLimit);
+        showLoadMoreBtn = true;
+    }
+
+    // --- RITA UT LISTAN ---
+    if (jobsToDisplay.length === 0) {
+        // Lägg till med += så vi inte skriver över flikarna om de finns
+        container.innerHTML += '<p style="text-align:center; padding:2rem; color:#888;">Inga jobb att visa här.</p>';
+        return;
+    }
+
+    let htmlContent = '';
+
+    if (isMobile) {
+        // --- MOBILVY: KORT ---
+        let lastDateStr = '';
+        
+        jobsToDisplay.forEach(job => {
+            // Datumrubriker (visas bara om jobbet har ett datum)
+            if (job.datum && job.datum !== '') {
+                const dateVal = typeof getSmartDateString === 'function' ? getSmartDateString(job.datum) : job.datum.split('T')[0];
+                const formattedHeader = dateVal.charAt(0).toUpperCase() + dateVal.slice(1);
+                
+                if (formattedHeader !== lastDateStr) {
+                    htmlContent += `<div class="date-separator">${formattedHeader}</div>`;
+                    lastDateStr = formattedHeader;
+                }
+            }
+            
+            htmlContent += createJobCard(job);
+        });
+    } else {
+        // --- DESKTOPVY: TABELL ---
+        htmlContent = `<table id="jobsTable"><thead><tr><th>Status</th><th>Datum</th><th>Kund</th><th>Reg.nr</th><th style="text-align:right">Pris</th><th class="action-col">Åtgärder</th></tr></thead><tbody>`;
+        jobsToDisplay.forEach(job => htmlContent += createJobRow(job));
+        htmlContent += `</tbody></table>`;
+    }
+
+    // Lägg till listan i containern (efter eventuella flikar)
+    container.innerHTML += htmlContent;
+
+    // --- "VISA MER"-KNAPP ---
+    if (showLoadMoreBtn) {
+        const remaining = totalJobs - currentLimit;
+        const btnHtml = `
+            <div style="text-align: center; padding: 20px;">
+                <button onclick="loadMoreJobs()" class="button secondary-outline" style="min-width: 200px;">
+                    Visa mer (${remaining} kvar)
+                </button>
+            </div>
+        `;
+        container.innerHTML += btnHtml;
+    }
+}
+
+// --- NYTT: Funktionen som körs när man klickar på knappen ---
+window.loadMoreJobs = function() {
+    currentLimit += 50; // Öka med 50
+    renderDashboard();  // Rita om listan
+};
+
+// --- HJÄLPFUNKTION: Uppdatera datumet i headern ---
+function updateHeaderDate() {
+    const now = new Date();
+    const days = ['SÖN','MÅN','TIS','ONS','TORS','FRE','LÖR'];
+    const months = ['JAN','FEB','MAR','APR','MAJ','JUN','JUL','AUG','SEP','OKT','NOV','DEC'];
+    
+    const dayEl = document.getElementById('headerCurrentDay');
+    const dateEl = document.getElementById('headerCurrentDate');
+    
+    // Uppdatera bara om elementen finns (finns bara i mobil-vyn)
+    if(dayEl && dateEl) {
+        dayEl.textContent = days[now.getDay()];
+        dateEl.textContent = `${now.getDate()} ${months[now.getMonth()]}`;
+    }
+}
+
+// Definiera ikoner som variabler för enklare hantering (kan läggas utanför funktionen)
+const ICONS = {
+    CAR: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 20a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h10z"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/><path d="M5 10H19"/></svg>',
+    USER: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+    CALENDAR: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
+    CLOCK: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+    PRICE: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',
+    COMMENT: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>'
+};
 
 
+// --- HJÄLPFUNKTION: Skapa Mobilkortet (KOMPLETT NY VERSION) ---
+function createJobCard(job) {
+    // 1. INJICERA STYLING (V7 - Kursiv text)
+    if (!document.getElementById('temp-card-style-v7')) {
+        const style = document.createElement('style');
+        style.id = 'temp-card-style-v7';
+        style.innerHTML = `
+            /* 1. Standard padding */
+            .card-body, .card-comments-section, .card-expanded-details {
+                padding: 10px !important;
+            }
+
+            /* 2. Kommentars-sektionen */
+            .card-comments-section {
+                display: flex !important;
+                flex-direction: row !important;
+                align-items: flex-start !important;
+                gap: 6px !important; 
+                border-top: 1px dashed #e2e8f0 !important;
+                margin-top: 0 !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+            }
+            
+            .card-comments-section svg {
+                width: 16px !important;
+                height: 16px !important;
+                color: #94a3b8 !important;
+                flex-shrink: 0 !important;
+                margin-top: 3px !important; 
+            }
+
+            /* 3. TEXT-STIL (Nu med kursiv stil) */
+            .comment-text {
+                font-size: 0.9rem !important;
+                line-height: 1.5 !important;
+                color: #334155 !important; /* Mörkgrå */
+                margin: 0 !important;
+                
+                /* HÄR ÄR ÄNDRINGEN: Kursiv stil */
+                font-style: italic !important;
+                
+                /* Klipp efter 2 rader */
+                display: -webkit-box !important;
+                -webkit-line-clamp: 2 !important;
+                -webkit-box-orient: vertical !important;
+                overflow: hidden !important;
+                text-overflow: ellipsis !important;
+                
+                white-space: pre-wrap !important; 
+                word-break: break-word !important; 
+            }
+
+            /* 4. EXPANDERAT LÄGE */
+            .job-card-new.expanded .comment-text {
+                -webkit-line-clamp: unset !important; 
+                overflow: visible !important;
+                display: block !important;
+            }
+
+            /* 5. Expanderad detalj-del */
+            .card-expanded-details {
+                border-top: 1px solid rgba(0,0,0,0.05) !important;
+                background-color: #fcfcfc !important; 
+                display: none;
+                padding-bottom: 16px !important;
+            }
+            
+            .job-card-new.expanded .card-expanded-details {
+                display: block !important;
+            }
+
+            /* Övriga stilar */
+            .expand-label {
+                font-size: 0.7rem !important; 
+                font-weight: 700 !important; 
+                color: #94a3b8 !important; 
+                text-transform: uppercase !important; 
+                letter-spacing: 0.5px !important; 
+                margin-bottom: 8px !important;
+                display: flex !important; 
+                align-items: center !important; 
+                gap: 6px !important;
+            }
+            .expand-label svg { width: 16px !important; height: 16px !important; color: #94a3b8 !important; }
+            .comment-placeholder { color: #cbd5e1 !important; font-style: italic !important; }
+
+            .expense-list-mini { list-style: none !important; padding: 0 !important; margin: 0 0 12px 0 !important; }
+            .expense-list-mini li { 
+                display: flex !important; justify-content: space-between !important; 
+                padding: 4px 0 !important; border-bottom: 1px dashed #e2e8f0 !important; 
+                font-size: 0.85rem !important; color: #64748b !important;
+            }
+            .profit-row-simple {
+                display: flex !important; justify-content: space-between !important; align-items: center !important;
+                padding-top: 10px !important;
+                font-size: 0.95rem !important; font-weight: 700 !important; color: #334155 !important;
+            }
+            .profit-val.win { color: #10B981 !important; }
+            .profit-val.loss { color: #EF4444 !important; }
+
+            .bg-unplanned { background-color: #94a3b8 !important; color: white !important; border-bottom-color: #64748b !important; }
+            .bg-unplanned .header-status-badge { background-color: rgba(255,255,255,0.25) !important; color: white !important; }
+            .bg-unplanned .header-reg-clickable { color: white !important; }
+            .bg-unplanned .brand-logo-img { filter: brightness(0) invert(1) opacity(0.95) !important; }
+        `;
+        document.head.appendChild(style);
+    }
+
+    // 2. Datum & Tid
+    const hasDate = (job.datum && typeof job.datum === 'string' && job.datum.trim().length > 0);
+    const d = hasDate ? new Date(job.datum) : new Date(); 
+    const now = new Date(); 
+    const smartDate = typeof getSmartDateString === 'function' ? getSmartDateString(job.datum) : job.datum;
+    const dateStr = smartDate;
+    const timeStr = hasDate ? d.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' }) : '';
+    
+    // 3. Status
+    const statusRaw = job.status || 'bokad';
+    let statusText = statusRaw.toUpperCase(); 
+    let headerClass = 'bg-bokad'; 
+
+    if (statusRaw === 'klar') headerClass = 'bg-klar';
+    else if (statusRaw === 'faktureras') headerClass = 'bg-faktureras';
+    else if (statusRaw === 'avbokad') headerClass = 'bg-avbokad';
+    else if (statusRaw === 'offererad') headerClass = 'bg-offererad';
+    else if (statusRaw === 'bokad') {
+        if (!hasDate) { headerClass = 'bg-unplanned'; statusText = 'VÄNTAR'; } 
+        else if (d < now) { headerClass = 'bg-overdue'; }
+    }
+
+    // 4. Ikoner
+    const combinedText = (job.kommentar + " " + job.paket + " " + job.kundnamn + " " + (job.bilmodell || "")).toLowerCase();
+    const brandUrl = typeof getBrandIconUrl === 'function' ? getBrandIconUrl(combinedText, job.regnr) : null;
+    const iconStyle = 'width:16px; height:16px; margin-right:6px; display:block;';
+    
+    let iconHtml = brandUrl 
+        ? `<img src="${brandUrl}" class="brand-logo-img" alt="Logo" style="${iconStyle} object-fit:contain;">`
+        : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="${iconStyle}"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 17h8"/></svg>`;
+
+    // 5. Innehåll
+    const regNr = (job.regnr && job.regnr.toUpperCase() !== 'OKÄNT') ? job.regnr.toUpperCase() : '---';
+    const customer = job.kundnamn ? job.kundnamn : 'Okänd'; 
+    const paket = job.paket ? job.paket : '-';
+    const mileage = job.matarstallning ? job.matarstallning + ' mil' : (job.milage ? job.milage + ' mil' : '-');
+    const nameLower = (job.kundnamn || '').toLowerCase();
+    const isCorporate = ['bmg', 'fogarolli', 'ab'].some(c => nameLower.includes(c));
+    
+    // SVG Assets
+    const iUser = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
+    const iBriefcaseGreen = `<svg class="icon-sm" style="color: #10B981;" viewBox="0 0 64 64"><use href="#icon-office-building"></use></svg>`;
+    const iCal = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`;
+    const iClock = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`;
+    const iTag = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>`;
+    const iBox = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>`;
+    const iGauge = `<svg viewBox="0 0 1024 1024" fill="currentColor" stroke="none" width="24" height="24"><path d="M512 896a384 384 0 1 0 0-768 384 384 0 0 0 0 768zm0 64a448 448 0 1 1 0-896 448 448 0 0 1 0 896z"></path><path d="M192 512a320 320 0 1 1 640 0 32 32 0 1 1-64 0 256 256 0 1 0-512 0 32 32 0 0 1-64 0z"></path><path d="M570.432 627.84A96 96 0 1 1 509.568 608l60.992-187.776A32 32 0 1 1 631.424 440l-60.992 187.776zM502.08 734.464a32 32 0 1 0 19.84-60.928 32 32 0 0 0-19.84 60.928z"></path></svg>`;    
+    const iCommentSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`;
+    const iInfoSmall = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:12px; height:12px; margin-left:4px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`;
+
+    const nameValueHtml = isCorporate 
+        ? `<span class="company-icon-wrapper">${iBriefcaseGreen}</span><span>${customer}</span>` 
+        : `<span>${customer}</span>`;
+
+    // 6. Kommentar
+    let commentHtml = '';
+    if (job.kommentar && job.kommentar.length > 0) {
+        commentHtml = `<span class="comment-text">${job.kommentar}</span>`;
+    } else {
+        commentHtml = `<span class="comment-text comment-placeholder">Inga kommentarer.</span>`;
+    }
+
+    // 7. Ekonomi
+    const pris = parseInt(job.kundpris) || 0;
+    let totalUtgift = 0;
+    let expenseRows = '';
+
+    if (job.utgifter && Array.isArray(job.utgifter)) {
+        job.utgifter.forEach(u => {
+            const kostnad = parseInt(u.kostnad) || 0;
+            totalUtgift += kostnad;
+            expenseRows += `<li><span>${u.namn}</span> <span>-${kostnad}:-</span></li>`;
+        });
+    }
+    if (expenseRows === '') expenseRows = '<li><span style="opacity:0.6;">Inga utgifter</span> <span>0:-</span></li>';
+
+    const vinst = pris - totalUtgift;
+    const vinstTecken = vinst >= 0 ? '+' : '';
+    const winOrLoss = vinst >= 0 ? 'win' : 'loss';
+
+    // 8. RETURNERA HTML
+    return `
+        <div class="job-card-new status-${statusRaw}" id="card-${job.id}" onclick="toggleCardExpand('${job.id}', event)">
+            
+            <div class="card-header-strip ${headerClass}" style="padding: 0 10px !important; display: flex !important; align-items: center !important;">
+                <div class="header-reg-clickable" onclick="event.stopPropagation(); openVehicleModal('${regNr}')" style="display: flex; align-items: center; height: 100%;">
+                    ${iconHtml} 
+                    <span>${regNr}</span>
+                    <span class="reg-info-sup" style="display: flex; align-items: center; opacity: 0.7;">${iInfoSmall}</span>
+                </div>
+                
+                <div class="header-right-side" style="display:flex; align-items:center; gap:8px; height: 100%;">
+                    <div class="header-status-badge" 
+                        onclick="event.stopPropagation(); toggleCardActions('${job.id}', event)"
+                        style="padding: 1px 6px; font-size: 0.65rem; border-radius: 4px; line-height: 1.2; cursor: pointer;">
+                        ${statusText}
+                    </div>
+                    <button class="card-menu-btn" onclick="event.stopPropagation(); toggleCardActions('${job.id}', event)" style="height: 30px; width: 30px; display: flex; align-items: center; justify-content: center; padding: 0; background: transparent; border: none; color: inherit;">
+                        <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <div class="info-row">
+                    <span class="row-label">${iUser} Namn</span>
+                    <span class="row-value" onclick="event.stopPropagation(); openCustomerByName('${customer}')" style="cursor:pointer; text-decoration:underline; text-decoration-color:#cbd5e1; text-underline-offset:3px;">
+					    ${nameValueHtml}
+					</span>
+                </div>
+                <div class="info-row"><span class="row-label">${iBox} Paket</span><span class="row-value">${paket}</span></div>
+                <div class="info-row"><span class="row-label" title="Mätarställning">${iGauge} Mätarst.</span><span class="row-value">${mileage}</span></div>
+                <div class="info-row"><span class="row-label">${iCal} Datum</span><span class="row-value">${dateStr}</span></div>
+                <div class="info-row"><span class="row-label">${iClock} Tid</span><span class="row-value">${timeStr}</span></div>
+                <div class="info-row price-row"><span class="row-label">${iTag} Att betala</span><span class="row-value">${pris}:-</span></div>
+            </div>
+
+            <div class="card-comments-section">${iCommentSvg}${commentHtml}</div>
+
+            <div class="card-actions-expand" id="actions-${job.id}" onclick="event.stopPropagation()">
+                <button class="inline-action-btn success" title="Markera som Klar" onclick="setStatus('${job.id}', 'klar')">
+                    <svg class="icon-sm"><use href="#icon-check"></use></svg>
+                </button>
+                <button class="inline-action-btn warning" title="Till Fakturering" onclick="setStatus('${job.id}', 'faktureras')">
+                    <svg class="icon-sm"><use href="#icon-clipboard"></use></svg>
+                </button>
+                <button class="inline-action-btn danger" title="Radera Jobb" onclick="deleteJob('${job.id}')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-sm"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 12-2h4a2 2 0 0 12 2v2"></path></svg>
+                </button>
+            </div>
+
+			<div class="card-expand-chevron">
+			    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+			</div>
+
+            <div class="card-expanded-details" id="details-${job.id}" onclick="event.stopPropagation()">
+                <div class="expand-section">
+                    <div class="expand-label">${iTag} EKONOMI SPECIFIKATION</div>
+                    <ul class="expense-list-mini">
+                        ${expenseRows}
+                    </ul>
+                    <div class="profit-row-simple">
+                        <span>VINST</span>
+                        <span class="profit-val ${winOrLoss}">${vinstTecken}${vinst}:-</span>
+                    </div>
+					<div style="width:100%; height:6px; background:#e2e8f0; border-radius:3px; margin-top:8px; overflow:hidden;">
+					    <div style="width:${Math.max(0, Math.min(100, (vinst/pris)*100))}%; height:100%; background:${vinst >= 0 ? '#10B981' : '#EF4444'};"></div>
+					</div>
+                </div>
+
+                <div class="expand-actions">
+                    <button class="btn-expand btn-close-expand" onclick="toggleCardExpand('${job.id}', event)">Stäng</button>
+                    <button class="btn-expand btn-edit-big" onclick="openEditModal('${job.id}')">Redigera</button>
+                </div>
+            </div>
+            
+        </div>`;
+}
+
+// Hjälpfunktion: Skapa DESKTOP RAD (Samma som innan men inkluderad för helhet)
+function createJobRow(job) {
+    const statusText = {
+        'bokad': 'Bokad', 'klar': 'Slutfört', 'faktureras': 'Fakturering', 'offererad': 'Offererad', 'avbokad': 'Avbokad'
+    };
+    
+    let fullDate = "---";
+	if (job.datum) {
+	    const d = new Date(job.datum);
+	    const smartDate = getSmartDateString(job.datum); // Hämta "Idag", "Imorgon" osv
+	    const timeStr = d.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
+	    
+	    // Resultat: "Idag kl. 14:00" eller "12 dec kl. 08:00"
+	    fullDate = `<span style="font-weight:600; color:#374151;">${smartDate}</span> <span style="color:#9ca3af; font-size:0.85em;">kl. ${timeStr}</span>`;
+	}
+
+    const nameLower = (job.kundnamn || '').toLowerCase();
+    const isCorporate = ['bmg', 'fogarolli'].some(c => nameLower.includes(c));
+    const iconType = isCorporate ? '#icon-office-building' : '#icon-user';
+    const iconColor = isCorporate ? '#10B981' : '#0066FF'; 
+
+	const regPlate = (job.regnr && job.regnr.toUpperCase() !== 'OKÄNT') 
+	    ? `<div class="reg-plate" style="cursor:pointer;" onclick="event.stopPropagation(); openVehicleModal('${job.regnr}')">
+	         <span class="reg-country">S</span>
+	         <span class="reg-number">${job.regnr}</span>
+	       </div>` 
+	    : '---';
+
+    // FIX 11: Inline SVG för papperskorgen
+    const trashIcon = `<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`;
+
+    return `
+        <tr data-id="${job.id}" class="job-row">
+            <td><span class="status-badge status-${job.status}">${statusText[job.status] || job.status}</span></td>
+            <td>${fullDate}</td>
+            <td>
+                <div class="customer-link">
+			    <div class="customer-link" onclick="event.stopPropagation(); openCustomerByName('${job.kundnamn}')" style="cursor:pointer;">
+				    <svg class="icon-sm" style="color: ${iconColor}"><use href="${iconType}"></use></svg>
+				    <span style="text-decoration:underline; text-decoration-color:#e2e8f0; text-underline-offset:3px;">${job.kundnamn}</span>
+				</div>
+            </td>
+            <td>${regPlate}</td>
+            <td style="text-align:right" class="money-related">${job.kundpris || 0} kr</td>
+            <td class="action-col">
+                <button class="icon-btn" title="Klar" onclick="event.stopPropagation(); setStatus('${job.id}', 'klar')"><svg class="icon-sm"><use href="#icon-check"></use></svg></button>
+                <button class="icon-btn" title="Radera" onclick="event.stopPropagation(); deleteJob('${job.id}')">${trashIcon}</button>
+            </td>
+        </tr>
+    `;
+}
+
+// Lägg till en listener för att rita om när man ändrar storlek på fönstret
+window.addEventListener('resize', renderDashboard);
+
+// 5. FILTER-LOGIK
+function filterJobs(jobs) {
+    let filtered = jobs.filter(j => !j.deleted);
+
+    // 1. SÖKNING
+    if (currentSearchTerm) {
+        filtered = filtered.filter(j => jobMatchesSearch(j, currentSearchTerm));
+        // Vid sökning, sortera alltid på datum (nyast först)
+        return filtered.sort((a,b) => new Date(b.datum) - new Date(a.datum));
+    }
+
+    // 2. VANLIG FILTRERING (Om vi inte söker)
+    
+    // Vi behöver inte "today" variabeln längre för filtreringen av kommande,
+    // men den kan vara bra att ha kvar om du vill göra annan logik senare.
+    // const today = new Date();
+    // today.setHours(0,0,0,0);
+
+    if (currentStatusFilter === 'kommande') {
+        // Vi lägger till: && j.datum && j.datum !== ''
+        return filtered.filter(j => j.status === 'bokad' && j.datum && j.datum !== '')
+                       .sort((a,b) => new Date(a.datum) - new Date(b.datum));
+                       
+    } else if (currentStatusFilter === 'alla') {
+        return filtered.sort((a,b) => new Date(b.datum) - new Date(a.datum));
+    } else {
+        return filtered.filter(j => j.status === currentStatusFilter)
+                       .sort((a, b) => new Date(b.datum) - new Date(a.datum));
+    }   
+}
+
+// 6. UPPDATERA BADGES (SIFFROR)
+function updateStatsCounts(jobs) {
+    const active = jobs.filter(j => !j.deleted);
+    const today = new Date(); 
+    today.setHours(0,0,0,0);
+
+    // Hjälpfunktion: Uppdaterar bara om elementet faktiskt finns i HTML
+    const safeUpdate = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val;
+    };
+
+    // 1. Vanliga kort
+    const upcomingCount = active.filter(j => j.status === 'bokad' && new Date(j.datum) >= today).length;
+    const invoiceCount = active.filter(j => j.status === 'faktureras').length;
+    const finishedCount = active.filter(j => j.status === 'klar').length;
+    const allCount = active.length;
+
+    safeUpdate('stat-upcoming', upcomingCount);
+    safeUpdate('stat-invoice', invoiceCount);
+    safeUpdate('stat-finished', finishedCount);
+    safeUpdate('stat-all', allCount);
+
+    // 2. Hantera "Ej Bokat" (Backlog)
+    // Vi räknar ut dessa även om vi inte visar dem, för säkerhets skull
+    const unplannedCount = active.filter(j => !j.datum || j.datum === '').length;
+    const offeredCount = active.filter(j => j.status === 'offererad').length;
+
+    // Uppdatera "Ej Bokat"-kortet
+    safeUpdate('stat-backlog', unplannedCount + offeredCount);
+
+    // Hitta raden och lägg in enkel, ren data
+    const backlogRow = document.querySelector('.backlog-row');
+    if (backlogRow) {
+        backlogRow.innerHTML = `
+            <span class="sub-stat"><b class="sub-val">${unplannedCount}</b> väntar</span>
+            <span class="sub-spacer"></span>
+            <span class="sub-stat"><b class="sub-val">${offeredCount}</b> offert</span>
+        `;
+    }
+
+    // Uppdatera det gamla kortet (om det råkar finnas kvar någonstans)
+    safeUpdate('stat-offered', offeredCount);
+}
+
+// 7. EVENT LISTENERS
+function setupEventListeners() {
+
+    /*Statistikvy*/
+    const statsBtn = document.getElementById('menuBtnStatistics');
+    if (statsBtn) {
+        statsBtn.addEventListener('click', () => {
+            // 1. Stäng menyn (eftersom knappen ligger där)
+            document.getElementById('settingsModal').classList.remove('show');
+
+            // 2. VIKTIGT: Lägg till historik så back-knappen funkar!
+            // Detta säger till webbläsaren: "Nu är vi på statistiksidan"
+            addHistoryState('statistics'); 
+
+            // 3. Anropa den nya View-funktionen
+            openStatisticsView(allJobs);
+        });
+    }
+
+	// --- FIX: Sortering i Kundvyn ---
+	const sortSelect = document.getElementById('customerSortSelect');
+	if (sortSelect) {
+	    sortSelect.addEventListener('change', () => {
+	        // Anropa render-funktionen direkt när man ändrar i listan
+	        renderCustomerView();
+	    });
+	}
+
+	// Koppla uppdateringsknappen
+	const updateBtn = document.getElementById('btnHardReset');
+	if (updateBtn) {
+	    updateBtn.addEventListener('click', forceUpdateApp);
+	}
+
+	// --- KALENDER KNAPP ---
+	const navCalendar = document.getElementById('navCalendar');
+	if (navCalendar) {
+	    navCalendar.addEventListener('click', () => {
+            addHistoryState('calendar');
+
+	        // 1. Markera knappen som aktiv
+	        document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
+	        navCalendar.classList.add('active');
+	
+	        // 2. Dölj andra vyer
+	        document.getElementById('statBar').style.display = 'none';
+	        document.getElementById('timelineView').style.display = 'none';
+	        document.getElementById('customersView').style.display = 'none';
+	        
+	        // 3. Visa kalendern
+	        document.getElementById('calendarView').style.display = 'block';
+            const statsView = document.getElementById('statisticsView');
+            if (statsView) statsView.style.display = 'none';
+	
+	        // 4. Starta kalendern (med dina jobb och redigera-funktionen)
+	        // Vi använder setTimeout för att säkerställa att diven är synlig innan kalendern ritas
+	        setTimeout(() => {
+			    initCalendar('calendar-wrapper', allJobs, openEditModal, handleCalendarDrop);
+		}, 50);
+        window.scrollTo(0, 0);
+	    });
+	}
+
+	// --- KOPPLA KALENDER FRÅN MENY/INSTÄLLNINGAR ---
+    const menuBtnCalendar = document.getElementById('menuBtnCalendar');
+	if (menuBtnCalendar) {
+	    menuBtnCalendar.addEventListener('click', () => {
+	        // 1. Dölj menyn manuellt
+	        document.getElementById('settingsModal').classList.remove('show');
+	
+	        // 2. Ersätt "Meny"-steg med "Kalender"-steg
+	        addHistoryState('customers');
+	
+	        // 3. RENSA UI (Dölj allt som inte är kalender)
+	        document.getElementById('statBar').style.display = 'none';          // <--- Döljer statistikkorten
+	        document.getElementById('unplannedContainer').style.display = 'none'; // <--- Döljer gula rutan direkt
+	        document.getElementById('timelineView').style.display = 'none';
+	        document.getElementById('customersView').style.display = 'none';
+	        
+            // 4. Visa kalendern
+	        document.getElementById('calendarView').style.display = 'block';
+	
+	        // 5. Starta kalendern
+	        setTimeout(() => {
+	            import('./calendar.js').then(module => {
+	                 module.initCalendar('calendar-wrapper', allJobs, openEditModal, handleCalendarDrop);
+	            });
+	        }, 50);
+            window.scrollTo(0, 0);
+	    });
+	}
+
+	/*MER MENY I INSTÄLLNINGAR _ MOBIL*/
+	document.getElementById('menuBtnCustomers').addEventListener('click', () => {
+	    // 1. Dölj menyn manuellt utan att backa historiken än
+	    document.getElementById('settingsModal').classList.remove('show');
+	    
+	    // 2. Ersätt nuvarande "Meny"-steg med "Kunder"-steg
+	    addHistoryState('customers');
+	
+	    // 3. Uppdatera UI
+	    document.getElementById('statBar').style.display = 'none';
+	    document.getElementById('timelineView').style.display = 'none';
+	    document.getElementById('calendarView').style.display = 'none';
+	    document.getElementById('customersView').style.display = 'block';
+        const statsView = document.getElementById('statisticsView');
+        if (statsView) statsView.style.display = 'none';
+	    
+	    renderCustomerView();
+	    
+	    document.querySelectorAll('.mobile-nav-item').forEach(btn => btn.classList.remove('active'));
+        window.scrollTo(0, 0);
+    });
+
+	// --- KOPPLA MOBIL-KNAPPEN "KUNDER" ---
+	const mobileCustBtn = document.getElementById('mobileCustomersBtn');
+	if (mobileCustBtn) {
+	    mobileCustBtn.addEventListener('click', () => {
+	        // 1. Byt aktiv knapp i menyn
+	        document.querySelectorAll('.mobile-nav-item').forEach(btn => btn.classList.remove('active'));
+	        mobileCustBtn.classList.add('active');
+	
+	        // 2. Hantera historik (för back-knappen)
+	        addHistoryState('customers');
+	
+	        // 3. Visa Kundvyn, dölj andra
+	        document.getElementById('statBar').style.display = 'none';
+	        document.getsElementById('timelineView').style.display = 'none';
+	        document.getElementById('customersView').style.display = 'block';
+	        
+	        // 4. Ladda listan
+	        renderCustomerView();
+            window.scrollTo(0, 0);
+	    });
+	}
+
+    const mobileHomeBtn = document.getElementById('mobileHomeBtn');
+    if (mobileHomeBtn) {
+        mobileHomeBtn.addEventListener('click', () => {
+            // 1. Dölj Statistikvyn (FIXEN)
+            document.getElementById('statisticsView').style.display = 'none';
+            
+            // 2. Visa översikten
+            document.getElementById('timelineView').style.display = 'block';
+            document.getElementById('statBar').style.display = ''; // Återställ flex/grid
+            
+            // 3. Dölj annat
+            document.getElementById('calendarView').style.display = 'none';
+            document.getElementById('customersView').style.display = 'none';
+            
+            // 4. Scrolla upp (din befintliga kod)
+            window.scrollTo({top:0, behavior:'smooth'});
+        });
+    }
+	
+	document.getElementById('mobileHomeBtn').addEventListener('click', () => {
+    document.querySelectorAll('.mobile-nav-item').forEach(btn => btn.classList.remove('active'));
+    document.getElementById('mobileHomeBtn').classList.add('active');
+    document.getElementById('statBar').style.display = '';
+    document.getElementById('timelineView').style.display = 'block';    
+    document.getElementById('customersView').style.display = 'none';
+    
+    const calView = document.getElementById('calendarView');
+    if(calView) calView.style.display = 'none';
+
+    const dayList = document.getElementById('selectedDayView');
+	    if(dayList) {
+	        dayList.style.display = 'none';
+	        dayList.classList.remove('show');
+	    }
+	
+	    window.scrollTo({top:0, behavior:'smooth'});
+	});
+
+	// --- NAVIGERING: ÖVERSIKT (TILLBAKA) ---
+    const btnOverview = document.getElementById('btnOverview');
+    
+    if (btnOverview) {
+        btnOverview.addEventListener('click', () => {
+            // 1. Uppdatera UI (Markera knappen som aktiv)
+            document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
+            btnOverview.classList.add('active');
+            
+            // 2. Visa översikts-vyerna
+            const statBar = document.getElementById('statBar');
+            if(statBar) statBar.style.display = ''; 
+            
+            const timelineView = document.getElementById('timelineView');
+            if(timelineView) timelineView.style.display = 'block';
+            
+            // 3. Dölj andra vyer
+            document.getElementById('customersView').style.display = 'none';
+            const statsView = document.getElementById('statisticsView');
+            if (statsView) statsView.style.display = 'none';
+            
+            // --- HÄR ÄR FIXEN: DÖLJ KALENDERN EXPLICIT ---
+            document.getElementById('calendarView').style.display = 'none';
+            document.getElementById('selectedDayView').classList.remove('show'); // Stäng även dagvyn om den är öppen
+            window.scrollTo(0, 0);
+        });
+    }
+
+	// Hitta knappen för "Kunder" i sidebaren (du kanske måste ge den ett ID i HTML, t.ex. id="navCustomers")
+	const navCustomers = document.getElementById('navCustomers');
+
+	if (navCustomers) {
+	    navCustomers.addEventListener('click', () => {
+            addHistoryState('customers');
+
+	        // 1. UI Uppdatering
+	        document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
+	        navCustomers.classList.add('active');
+	        
+	        // 2. Dölj ALLA andra vyer (inklusive kalendern!)
+	        document.getElementById('statBar').style.display = 'none';
+	        document.getElementById('timelineView').style.display = 'none';
+	        document.getElementById('calendarView').style.display = 'none'; 
+	        
+	        // 3. Visa Kundvyn
+	        document.getElementById('customersView').style.display = 'block';
+	        
+	        // 4. Ladda data
+	        renderCustomerView();
+            window.scrollTo(0, 0);
+	    });
+	}
+	
+	// Sökfunktion för kunder
+	document.getElementById('customerSearchInput')?.addEventListener('input', (e) => {
+	    renderCustomerView(e.target.value);
+	});
+	
+	// Stäng modal
+	document.getElementById('closeCustomerModalBtn')?.addEventListener('click', () => {
+	    document.getElementById('customerModal').classList.remove('show');
+	});
+
+	// Hantera val av paket (Smart ifyllnad med Olje-kalkylator)
+    const paketSelect = document.getElementById('paketSelect');
+    if (paketSelect) {
+        paketSelect.addEventListener('change', (e) => {
+            const val = e.target.value;
+            const paketData = servicePaket[val];
+
+            if (paketData) {
+                // 1. Fyll i kommentar
+                const kommentarFalt = document.getElementById('kommentar');
+                if (kommentarFalt) {
+                    kommentarFalt.value = paketData.kommentar;
+                }
+
+                // Nollställ listor
+                currentExpenses = []; 
+                let totalKundPris = paketData.arbetskostnad || 0; // Börja med arbetskostnaden
+
+                // 2. Hantera material (om det finns)
+                if (paketData.material && paketData.material.length > 0) {
+                    
+                    paketData.material.forEach(item => {
+                        
+                        // --- A. FLYTANDE (OLJA) ---
+                        if (item.typ === 'flytande') {
+                            // Fråga om antal liter
+                            let input = prompt(`Hur många liter ${item.namn}?`, "4");
+                            
+                            // Hantera inmatning (byt komma mot punkt)
+                            let liter = input ? parseFloat(input.replace(',', '.')) : 0;
+                            
+                            if (!isNaN(liter) && liter > 0) {
+                                // A1. Räkna ut vad KUNDEN ska betala
+                                const kostnadForKund = liter * item.prisKundPerLiter;
+                                totalKundPris += kostnadForKund;
+
+                                // A2. Räkna ut DIN utgift (Inköpspris)
+                                const dinKostnad = Math.round(liter * item.prisInkopPerLiter);
+                                
+                                // Lägg till i utgiftslistan (Osynligt för kunden, syns för din vinst)
+                                currentExpenses.push({
+                                    namn: `${item.namn} (${liter}L à ${item.prisInkopPerLiter}kr)`,
+                                    kostnad: dinKostnad
+                                });
+                            }
+                        } 
+                        
+                        // --- B. FASTA DELAR (OLJEFILTER) ---
+                        else {
+                            // B1. Lägg på priset till kundens total
+                            totalKundPris += item.prisKund;
+
+                            // B2. Lägg till din inköpskostnad i utgiftslistan
+                            currentExpenses.push({
+                                namn: item.namn,
+                                kostnad: item.prisInkop || 0 // Om du satt 0 blir utgiften 0
+                            });
+                        }
+                    });
+                }
+
+                // 3. Uppdatera UI
+                document.getElementById('kundpris').value = totalKundPris;
+                renderExpenses(); // Rita ut utgiftslistan och räkna vinst
+            }
+        });
+    }
+
+	// --- HISTORIK-HANTERING (BACK-KNAPP) ---
+
+	// 1. Lyssna på när användaren trycker bakåt (eller swipar)
+	window.addEventListener('popstate', function(event) {
+	    // 1. Stäng modaler (Högst prioritet) - Ingen ändring här
+	    const modals = [
+	        document.getElementById('imageZoomModal'),
+	        document.getElementById('vehicleModal'),
+	        document.getElementById('chatWidget'),
+	        document.getElementById('mobileSearchModal'),
+	        document.querySelector('.modal-backdrop.show')
+	    ];
+	    
+	    for (let m of modals) {
+	        if (m && (m.style.display === 'flex' || m.classList.contains('show'))) {
+	            if(m.classList.contains('show')) m.classList.remove('show');
+	            else m.style.display = 'none';
+	            document.body.style.overflow = '';
+	            return; // Stanna här, vi har hanterat back-trycket
+	        }
+	    }
+	
+	    // 2. Hantera Vyer baserat på historik-state
+	    const state = event.state;
+	
+	    // Om vi har ett aktivt dag-läge i kalendern (Swipe 1 i Kalender)
+	    if (state && state.dayListOpen) {
+	        // Gör inget här, calendar.js hanterar stängningen av listan visuellt
+	        return; 
+	    }
+
+        if (state && state.uiState === 'statistics') {
+            // Om vi backar från statistikvyn -> Gå till översikt
+            document.getElementById('statisticsView').style.display = 'none';
+            document.getElementById('statBar').style.display = '';
+            document.getElementById('timelineView').style.display = 'block';
+            return;
+        }
+	
+	    // Om vi är tillbaka på Kalender-vyn (efter att ha stängt daglistan)
+	    if (state && state.uiState === 'calendar') {
+	        // Se till att kalendern syns och daglistan är borta
+	        document.getElementById('selectedDayView').classList.remove('show');
+	        return;
+	    }
+	
+	    // 3. Om vi är tillbaka på "Basen" (Inget state eller tomt state)
+	    // Detta händer vid sista swipen
+	    if (!state || !state.uiState) {
+	        // Återställ till Översikt
+	        document.getElementById('customersView').style.display = 'none';
+	        document.getElementById('calendarView').style.display = 'none';
+	        document.getElementById('selectedDayView').classList.remove('show'); // Säkerställ att den är borta
+	        
+	        document.getElementById('statBar').style.display = ''; // Visa grid/flex
+	        document.getElementById('timelineView').style.display = 'block';
+	        
+	        // Återställ menyn
+	        document.querySelectorAll('.mobile-nav-item').forEach(n => n.classList.remove('active'));
+	        document.getElementById('mobileHomeBtn').classList.add('active');
+            window.scrollTo(0, 0);
+        }
+	});
+
+    // Om vi swipar tillbaka och statisticsView är öppen -> Stäng den
+    const statsView = document.getElementById('statisticsView');
+    
+    if (statsView && statsView.style.display === 'block') {
+        // Vi var i statistiken, nu döljer vi den
+        statsView.style.display = 'none';
+        
+        // Återställ startsidan
+        document.getElementById('statBar').style.display = ''; 
+        document.getElementById('timelineView').style.display = 'block';
+        
+        // Dölj ev. filtermeny om den var öppen
+        const filterDrawer = document.getElementById('statsFilterDrawer');
+        if(filterDrawer) filterDrawer.style.display = 'none';
+    }
+    
+	// Hantera klick på Sök-knappen i menyn
+	document.getElementById('mobileSearchBtn')?.addEventListener('click', () => {
+        const searchModal = document.getElementById('mobileSearchModal');
+        const searchInput = document.getElementById('mobileSearchInput');
+        const resultsContainer = document.getElementById('mobileSearchResults');
+
+        // 1. Öppna modalen
+        searchModal.classList.add('show');
+        
+        // 2. Nollställ
+        searchInput.value = '';
+        
+        // 3. Markera knappen som aktiv
+        document.querySelectorAll('.mobile-nav-item').forEach(btn => btn.classList.remove('active'));
+        document.getElementById('mobileSearchBtn').classList.add('active');
+
+        // 4. VISA START-VYN (Snabbval + Historik) - HÄR ÄR ÄNDRINGEN
+        renderSearchZeroState();
+
+        // 5. Fokusera
+        setTimeout(() => {
+            searchInput.focus();
+        }, 100);
+    });
+	
+    // Hantera klick på statistik-korten (Filter)
+    document.querySelectorAll('.stat-card').forEach(card => {
+        card.addEventListener('click', function() { // Viktigt: Använd 'function' för att kunna använda 'this'
+            
+            // 1. Ta bort 'active' från ALLA kort först
+            document.querySelectorAll('.stat-card').forEach(c => c.classList.remove('active'));
+            
+            // 2. Lägg till 'active' på det kortet vi just klickade på
+            this.classList.add('active');
+
+            // 3. Uppdatera variabler och rendera
+            currentStatusFilter = this.dataset.filter;
+            currentLimit = 50; // Återställ limit
+            renderDashboard();
+        });
+    });
+
+    // Hantera klick på rader i tabellen (Redigera jobb)
+    document.getElementById('jobListContainer').addEventListener('click', (e) => {
+        // Hitta närmaste tr-element (rad)
+        const row = e.target.closest('tr');
+        // Om vi klickade på en rad och den har ett ID
+        if (row && row.dataset.id) {
+            openEditModal(row.dataset.id);
+        }
+    });
+
+	// --- NYTT: KOPPLA CHATT-KNAPPEN ---
+    const fabChat = document.getElementById('fabChat');
+    if (fabChat) {
+        fabChat.addEventListener('click', () => {
+            toggleChatWidget();
+        });
+    }
+
+    // Sökfältet
+    document.getElementById('searchBar').addEventListener('input', (e) => {
+        currentSearchTerm = e.target.value;
+        renderDashboard();
+    });
+
+    // Modal: Nytt Jobb (FAB)
+    document.getElementById('fabAddJob').addEventListener('click', () => {
+        openNewJobModal();
+    });
+
+    // Stäng-knappar
+    const backBtn = document.getElementById('modalBackBtn');
+	if (backBtn) {
+	    backBtn.addEventListener('click', (e) => {
+	        e.preventDefault(); // Förhindra standardbeteende
+	        closeModals();
+	    });
+	}
+    document.getElementById('modalCancelBtn').addEventListener('click', closeModals);
+    
+    // Spara jobb (Både nytt och redigerat)
+    document.getElementById('jobModalForm').addEventListener('submit', handleSaveJob);
+
+    // --- ENKEL NAVIGERING: TILLBAKA TILL ÖVERSIKT ---
+    
+    // Funktion för att gå till översikten (Samma som "Vy"-knappen)
+    function goToOverview() {
+        // 1. Dölj alla undersidor
+        document.getElementById('customersView').style.display = 'none';
+        document.getElementById('calendarView').style.display = 'none';
+        const statsView = document.getElementById('statisticsView');
+        if (statsView) statsView.style.display = 'none';
+
+        // 2. Visa översikten
+        document.getElementById('timelineView').style.display = 'block';
+        document.getElementById('statBar').style.display = ''; // Återställs till flex/grid
+        
+        // 3. Hantera meny-knappar (Markera "Vy" som aktiv)
+        document.querySelectorAll('.mobile-nav-item').forEach(btn => btn.classList.remove('active'));
+        const homeBtn = document.getElementById('mobileHomeBtn');
+        if (homeBtn) homeBtn.classList.add('active');
+        
+        // Desktop-meny
+        document.querySelectorAll('.nav-link').forEach(btn => btn.classList.remove('active'));
+        const overviewBtn = document.getElementById('btnOverview');
+        if (overviewBtn) overviewBtn.classList.add('active');
+
+        // 4. Scrolla upp
+        window.scrollTo(0, 0);
+    }
+
+    // Koppla "Tillbaka"-knappen i KALENDERN
+    const btnBackCal = document.getElementById('btnBackCalendar');
+    if (btnBackCal) {
+        // Ta bort gamla lyssnare genom att klona knappen (ett trick för att rensa event)
+        const newBtn = btnBackCal.cloneNode(true);
+        btnBackCal.parentNode.replaceChild(newBtn, btnBackCal);
+        
+        newBtn.addEventListener('click', goToOverview);
+    }
+
+    // Koppla "Tillbaka"-knappen i KUNDER
+    const btnBackCust = document.getElementById('btnBackCustomers');
+    if (btnBackCust) {
+        const newBtn = btnBackCust.cloneNode(true);
+        btnBackCust.parentNode.replaceChild(newBtn, btnBackCust);
+        
+        newBtn.addEventListener('click', goToOverview);
+    }
+
+    // Koppla "Tillbaka"-knappen i STATISTIK
+    const btnBackStats = document.getElementById('btnBackStats');
+    if (btnBackStats) {
+        const newBtn = btnBackStats.cloneNode(true);
+        btnBackStats.parentNode.replaceChild(newBtn, btnBackStats);
+        
+        newBtn.addEventListener('click', goToOverview);
+    }
+
+}
+
+// --- CALENDAR DROP HANDLER ---
+async function handleCalendarDrop(jobId, newDateStr, revertFunc) {
+    // 1. Visuell feedback (Toast)
+    // Om du har en showToast-funktion, använd den. Annars console.log
+    console.log(`Flyttar jobb ${jobId} till ${newDateStr}`);
+
+    try {
+        // 2. Uppdatera Firebase
+        await db.collection('jobs').doc(jobId).update({
+            datum: newDateStr
+        });
+        // Valfritt: Visa en "Toast" här (Datum uppdaterat!)
+        
+    } catch (error) {
+        console.error("Kunde inte flytta jobb:", error);
+        alert("Kunde inte flytta jobbet. Ångrar...");
+        // 3. Om det misslyckas, flytta tillbaka kortet visuellt
+        if (revertFunc) revertFunc();
+    }
+}
+
+// --- MODAL FUNKTIONER ---
+
+function openNewJobModal() {
+	addHistoryState();
+    const form = document.getElementById('jobModalForm');
+    form.reset();
+    document.getElementById('jobId').value = "";
+    document.getElementById('modalTitle').textContent = "Lägg till nytt jobb";
+    document.getElementById('datum').value = ""; // Tomt datum som standard
+    document.getElementById('tid').value = "08:00";
+    document.getElementById('statusSelect').value = "bokad";
+    
+    // Nollställ utgifter
+    currentExpenses = [];
+    renderExpenses();
+
+    document.getElementById('jobModal').classList.add('show');
+}
+
+// Global variabel för att hålla reda på vilket jobb vi tittar på
+let currentViewingJob = null;
+
+window.openViewModal = function(jobId) {
+    // 1. Hitta jobbet i din globala lista 'allJobs' baserat på ID
+    const job = allJobs.find(j => j.id === jobId);
+    
+    if (!job) {
+        console.error("Hittade inte jobb med ID:", jobId);
+        return;
+    }
+
+    currentViewingJob = job; // Spara jobbet så vi kan skicka det till redigering sen
+
+    // Helper för att formatera pengar
+    const formatMoney = (val) => val ? parseInt(val).toLocaleString() + ':-' : '0:-';
+
+    // 2. Fyll i data i HTML-elementen
+    // (Se till att dessa ID:n finns i din HTML-kod för modalen)
+    const setText = (id, text) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = text;
+    };
+
+    setText('viewRegNr', job.regNr || (job.regnr ? job.regnr.toUpperCase() : '??? ???'));
+    setText('viewStatusBadge', job.status ? job.status.toUpperCase() : 'NY');
+    setText('viewModel', job.carModel || (job.bilmodell ? job.bilmodell : 'Fordon'));
+    setText('viewMilage', job.milage ? job.milage + ' mil' : '');
+
+    // Datum & Tid
+    const datum = job.datum ? job.datum.split('T')[0] : '-';
+    const tid = job.datum && job.datum.includes('T') ? job.datum.split('T')[1] : '-';
+    setText('viewDate', datum);
+    setText('viewTime', tid);
+
+    // Kund
+    setText('viewCustomerName', job.customerName || job.kundnamn || 'Ingen kund');
+    
+    const phoneLink = document.getElementById('viewPhoneLink');
+    const phoneText = document.getElementById('viewPhoneText');
+    const phoneVal = job.phone || job.telefon || '';
+    
+    if (phoneLink && phoneText) {
+        if (phoneVal) {
+            phoneText.textContent = phoneVal;
+            phoneLink.href = `tel:${phoneVal}`;
+            phoneLink.style.display = 'flex';
+        } else {
+            phoneLink.style.display = 'none';
+        }
+    }
+
+    // EKONOMI
+    // Obs: I din app.js heter fältet 'kundpris', inte 'price'
+    const price = parseInt(job.kundpris) || 0;
+    const expense = parseInt(job.expense) || 0; // Se till att du sparar 'expense' om du har det, annars räkna från utgifter
+    
+    // Om du vill räkna utgifter från din array 'utgifter':
+    let totalUtgifter = 0;
+    if (job.utgifter && Array.isArray(job.utgifter)) {
+         job.utgifter.forEach(u => totalUtgifter += (parseInt(u.kostnad) || 0));
+    }
+    
+    const profit = price - totalUtgifter;
+
+    setText('viewPrice', formatMoney(price));
+    setText('viewExpense', formatMoney(totalUtgifter));
+    
+    const profitEl = document.getElementById('viewProfit');
+    if (profitEl) {
+        profitEl.textContent = formatMoney(profit);
+        profitEl.style.color = profit >= 0 ? '#10B981' : '#EF4444';
+    }
+
+    // Beskrivningar
+    // Obs: I din app.js heter fältet 'kommentar', inte 'description'
+    setText('viewDescription', job.kommentar || job.description || 'Ingen beskrivning.');
+    
+    const internalBox = document.querySelector('.internal-box');
+    const internalText = document.getElementById('viewInternalNotes');
+    
+    // Anpassa fältnamnet för interna noteringar om du har ett sådant
+    const internalNoteVal = job.internalNotes || ''; 
+
+    if (internalText && internalNoteVal.trim() !== "") {
+        if(internalBox) internalBox.style.display = 'block';
+        internalText.textContent = internalNoteVal;
+    } else {
+        if(internalBox) internalBox.style.display = 'none';
+    }
+
+    // Koppla Redigera-knappen
+    const btnEdit = document.getElementById('btnEditJob');
+    if (btnEdit) {
+        btnEdit.onclick = function() {
+            closeViewModal(); 
+            openEditModal(currentViewingJob.id); // Din befintliga funktion tar ID
+        };
+    }
+
+    // Visa modalen
+    const modal = document.getElementById('viewJobModal');
+    if (modal) {
+        modal.style.display = 'flex';
+        // Lägg till i historiken (använd din befintliga funktion)
+        if (typeof addHistoryState === 'function') addHistoryState();
+    }
+};
+
+window.closeViewModal = function() {
+    const modal = document.getElementById('viewJobModal');
+    if (modal) modal.style.display = 'none';
+    if (history.state && history.state.modalOpen) history.back();
+};
+
+function openEditModal(id) {
+	addHistoryState();
+    const job = allJobs.find(j => j.id === id);
+    if (!job) return;
+
+    // Sätt ID och Titel
+    document.getElementById('jobId').value = job.id;
+    document.getElementById('modalTitle').textContent = "Redigera jobb";
+
+    // Fyll i standardfält
+    document.getElementById('kundnamn').value = job.kundnamn || '';
+    document.getElementById('regnr').value = job.regnr || '';
+    document.getElementById('kundpris').value = job.kundpris || 0;
+    document.getElementById('statusSelect').value = job.status || 'bokad';
+    document.getElementById('paketSelect').value = job.paket || '';     // NYTT
+    document.getElementById('kommentar').value = job.kommentar || '';   // NYTT
+
+    // Datum och Tid
+    if (job.datum && job.datum.includes('T')) {
+        const parts = job.datum.split('T');
+        document.getElementById('datum').value = parts[0];
+        document.getElementById('tid').value = parts[1];
+    }
+
+    // UTGIFTER: Ladda in och rendera
+	currentExpenses = Array.isArray(job.utgifter) ? job.utgifter : []; 
+	renderExpenses();
+
+    document.getElementById('jobModal').classList.add('show');
+}
+
+function closeModals() {
+    document.querySelectorAll('.modal-backdrop').forEach(m => m.classList.remove('show'));
+	if (history.state && history.state.modalOpen) {
+        history.back();
+    }
+}
+
+// 8. DATABAS-FUNKTIONER
+
+async function handleSaveJob(e) {
+    e.preventDefault();
+    
+    const jobIdElement = document.getElementById('jobId');
+    const jobId = jobIdElement ? jobIdElement.value : "";
+    
+    // Hämta värden från formuläret
+    const kund = document.getElementById('kundnamn').value || "Okänd kund";
+    const reg = document.getElementById('regnr').value.toUpperCase() || "OKÄNT";
+    
+    // --- NY LOGIK FÖR DATUM (VÄNTELISTA) ---
+    const datumInput = document.getElementById('datum').value;
+    const tidInput = document.getElementById('tid').value;
+    
+    let finalDateString = ""; // Standard är tom sträng (Oplanerat/Väntelista)
+
+    if (datumInput) {
+        // Om datum är valt, kombinera med tid (eller standard 08:00)
+        const timeStr = tidInput || "08:00";
+        finalDateString = `${datumInput}T${timeStr}`;
+    }
+    // ---------------------------------------
+
+    const pris = parseInt(document.getElementById('kundpris').value) || 0;
+    const status = document.getElementById('statusSelect').value;
+    const paket = document.getElementById('paketSelect').value;
+    const kommentar = document.getElementById('kommentar').value;
+
+    // Räkna ut hur mycket olja som finns i formuläret just nu
+    const newOilAmount = calculateOilFromExpenses(currentExpenses);
+
+    const jobData = {
+        kundnamn: kund,
+        regnr: reg,
+        datum: finalDateString, // Sparas som "" om datum saknas
+        kundpris: pris,
+        status: status,
+        paket: paket,
+        kommentar: kommentar,
+        utgifter: currentExpenses || [],
+        deleted: false
+    };
+
+    try {
+        if (jobId && jobId.trim() !== "") {
+            // --- REDIGERA BEFINTLIGT JOBB ---
+            
+            // 1. Hämta det GAMLA jobbet först för att se vad vi hade förut
+            const oldDoc = await db.collection("jobs").doc(jobId).get();
+            const oldData = oldDoc.data();
+            
+            // 2. Räkna ut hur mycket olja det gamla jobbet hade
+            const oldOilAmount = calculateOilFromExpenses(oldData.utgifter);
+            
+            // 3. Räkna ut skillnaden (Nytt - Gammalt)
+            // Exempel: Ändra från 4L till 5L. Diff = 1L. Vi ska dra 1L till.
+            const diff = newOilAmount - oldOilAmount;
+            
+            // 4. Uppdatera jobbet
+            await db.collection("jobs").doc(jobId).update(jobData);
+            
+            // 5. Justera lagret om det blev någon skillnad
+            if (diff !== 0) {
+                await adjustInventoryBalance(diff);
+            }
+
+        } else {
+            // --- SKAPA NYTT JOBB ---
+            
+            jobData.created = new Date().toISOString();
+            await db.collection("jobs").add(jobData);
+            
+            // Dra av hela mängden olja eftersom det är nytt
+            if (newOilAmount > 0) {
+                await adjustInventoryBalance(newOilAmount);
+            }
+        }
+        
+        closeModals();
+        document.getElementById('jobModalForm').reset();
+        
+        // Visa en liten bekräftelse (om du lagt in toast-systemet, annars valfritt)
+        // showToast('Jobbet sparat!', 'success');
+        
+    } catch (err) {
+        console.error("Fel vid spara:", err);
+        alert("Kunde inte spara. Felkod: " + err.message);
+    }
+}
+
+// --- HJÄLPFUNKTION: Räkna ut och dra av olja ---
+async function deductOilFromInventory(expenses) {
+    let totalOilToDeduct = 0;
+
+    // Loopa igenom utgifterna
+    expenses.forEach(item => {
+        const name = item.namn || "";
+        const nameLower = name.toLowerCase();
+        
+        // Logik: Leta efter siffra följt av "l" eller "liter"
+        // Exempel som fungerar: "Motorolja (4.7L)", "Olja 5,5 liter", "4L Olja"
+        if (nameLower.includes('olja')) {
+            // Regex för att hitta tal (med punkt eller komma)
+            const match = name.match(/(\d+[.,]?\d*)\s*(l|liter)/i); 
+            
+            if (match) {
+                // Byt ut eventuellt komma mot punkt för att JS ska förstå det
+                const numberString = match[1].replace(',', '.');
+                const liters = parseFloat(numberString);
+                
+                if (!isNaN(liters)) {
+                    totalOilToDeduct += liters;
+                }
+            }
+        }
+    });
+
+    if (totalOilToDeduct > 0) {
+        console.log(`Drar av ${totalOilToDeduct} liter från lagret...`);
+        
+        const inventoryRef = db.collection('settings').doc('inventory');
+        
+        // Använd increment med negativt värde
+        await inventoryRef.update({
+            motorOil: firebase.firestore.FieldValue.increment(-totalOilToDeduct)
+        });
+        
+        // (Valfritt) Visa en liten popup att det lyckades
+        // alert(`Drog av ${totalOilToDeduct}L från lagret.`);
+    }
+}
+
+async function setStatus(id, status) {
+    try {
+        await db.collection("jobs").doc(id).update({ status: status });
+    } catch (err) { console.error(err); }
+}
+
+async function deleteJob(id) {
+    if(confirm("Vill du ta bort detta jobb?")) {
+        try {
+            // 1. Hämta jobbet först
+            const doc = await db.collection("jobs").doc(id).get();
+            
+            if (doc.exists) {
+                const data = doc.data();
+                
+                // SÄKERHETSSPÄRR: Om jobbet redan är raderat, gör ingenting!
+                if (data.deleted) {
+                    console.warn("Jobbet är redan raderat. Avbryter.");
+                    return; 
+                }
+                
+                // 2. Räkna ut oljemängden som ska återföras
+                const oilToRefund = calculateOilFromExpenses(data.utgifter);
+                
+                // 3. Markera som raderat
+                await db.collection("jobs").doc(id).update({ deleted: true });
+                
+                // 4. Lägg tillbaka oljan i lagret
+                if (oilToRefund > 0) {
+                    await adjustInventoryBalance(-oilToRefund);
+                    console.log(`Återförde ${oilToRefund} liter till lagret.`);
+                }
+            }
+        } catch (err) { 
+            console.error(err); 
+            alert("Kunde inte radera jobbet.");
+        }
+    }
+}
+
+// Lägg till utgift-knapp
+document.getElementById('btnAddExpense').addEventListener('click', () => {
+    const namnInput = document.getElementById('nyUtgiftNamn');
+    const prisInput = document.getElementById('nyUtgiftPris');
+    
+    const namn = namnInput.value.trim();
+    const kostnad = parseInt(prisInput.value);
+
+    if (namn && kostnad > 0) {
+        currentExpenses.push({ namn: namn, kostnad: kostnad });
+        namnInput.value = '';
+        prisInput.value = '';
+        renderExpenses(); // Rita om listan och räkna vinst
+    }
+});
+
+// Uppdatera vinst när kundpris ändras
+document.getElementById('kundpris').addEventListener('input', renderExpenses);
+
+function renderExpenses() {
+    const listContainer = document.getElementById('expenseList');
+    listContainer.innerHTML = '';
+    
+    let totalUtgifter = 0;
+    
+    // Skydd: Om currentExpenses inte är en array, nollställ den och avbryt.
+    if (!Array.isArray(currentExpenses)) {
+        currentExpenses = [];
+    }
+
+    // Loopa igenom utgifter och skapa HTML
+    currentExpenses.forEach((item, index) => {
+        totalUtgifter += item.kostnad;
+        
+        const div = document.createElement('div');
+        div.className = 'expense-item';
+        div.innerHTML = `
+            <span>${item.namn}</span>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <strong>-${item.kostnad} kr</strong>
+                <button type="button" class="btn-remove-expense" onclick="removeExpense(${index})">&times;</button>
+            </div>
+        `;
+        listContainer.appendChild(div);
+    });
+
+    // Räkna ut vinst
+    const kundpris = parseInt(document.getElementById('kundpris').value) || 0;
+    const vinst = kundpris - totalUtgifter;
+
+    // Uppdatera texten
+    document.getElementById('utgifterDisplay').textContent = totalUtgifter;
+    const vinstEl = document.getElementById('vinstDisplay');
+    vinstEl.textContent = `${vinst} kr`;
+    
+    // Byt färg om förlust
+    vinstEl.style.color = vinst >= 0 ? '#10B981' : '#EF4444';
+}
+
+// Ta bort en utgift
+window.removeExpense = function(index) {
+    currentExpenses.splice(index, 1);
+    renderExpenses();
+};
+
+window.executeSearch = function(term) {
+    const input = document.getElementById('mobileSearchInput');
+    input.value = term;
+    // Trigga input-eventet manuellt för att köra sökningen
+    input.dispatchEvent(new Event('input'));
+};
+
+// ==========================================
+// FORDONSHISTORIK & TEKNISK DATA MODAL (ANPASSAD FÖR vehicleModal)
+// ==========================================
+
+function openVehicleModal(regnr) {
+    addHistoryState(); // Lägg till i historiken för mobil-back-knapp
+    
+    if(!regnr || regnr === '---') return;
+    
+    const cleanReg = regnr.replace(/\s/g, '').toUpperCase();
+    const modal = document.getElementById('vehicleModal');
+    
+    if (!modal) return;
+
+    // 1. Sätt Titel (Regnr)
+    const titleEl = document.getElementById('vehicleRegTitle');
+    if(titleEl) titleEl.textContent = cleanReg;
+
+    // 2. Injicera Header-knappar (Kopiera & Märke)
+    const btnContainer = document.getElementById('vehicleHeaderBtns');
+    if (btnContainer) {
+        // Hämta märke för ikonen
+        const currentLogoUrl = getBrandIconUrl('volvo', cleanReg) || getBrandIconUrl('', cleanReg); 
+        
+        // Skapa bild-tagg eller fallback-svg
+        const logoImgHtml = currentLogoUrl 
+            ? `<img src="${currentLogoUrl}" style="width:18px; height:18px; object-fit:contain; filter:grayscale(100%); opacity:0.7;">` 
+            : `<svg style="width:16px; height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path></svg>`;
+
+        btnContainer.innerHTML = `
+            <button class="header-icon-action" title="Kopiera" onclick="navigator.clipboard.writeText('${cleanReg}')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+            </button>
+            <button class="header-icon-action" title="Ändra märke" onclick="openBrandSelector('${cleanReg}')">
+                ${logoImgHtml}
+            </button>
+        `;
+    }
+
+    // 3. Uppdatera Externa Länkar
+    const linkBiluppg = document.getElementById('linkBiluppgifter');
+    const linkOljemag = document.getElementById('linkOljemagasinet');
+    
+    if(linkBiluppg) linkBiluppg.href = `https://biluppgifter.se/fordon/${cleanReg}`;
+    if(linkOljemag) linkOljemag.href = `https://www.oljemagasinet.se/`;
+
+    // 4. Hantera AI-Knappen & Teknisk Data
+    const specsContainer = document.getElementById('techDataContainer'); 
+    const fetchContainer = document.getElementById('fetchDataContainer');
+    const fetchBtn = document.getElementById('btnFetchTechData');
+
+    // Nollställ vyerna först (visa inget innan vi vet status)
+    if(specsContainer) specsContainer.style.display = 'none';
+    if(fetchContainer) fetchContainer.style.display = 'none';
+
+    // Konfigurera knappen
+    if (fetchBtn) {
+        // VIKTIGT: Sätt onclick här så vi får med rätt 'cleanReg'
+        fetchBtn.onclick = function() { 
+            fetchTechnicalData(cleanReg); 
+        };
+        
+        // Återställ utseende (om den var "Laddar..." förut)
+        fetchBtn.disabled = false;
+        fetchBtn.innerHTML = `<svg class="icon-sm" style="margin-right:8px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> Hämta med AI`;
+    }
+
+    // Kolla databasen om vi redan har data
+    db.collection("vehicleSpecs").doc(cleanReg).get().then(doc => {
+        if (doc.exists) {
+            const data = doc.data();
+            // Kolla om datan verkar giltig (har modell eller olja)
+            if (data.model || data.oil || data.engine) {
+                if(specsContainer) {
+                    specsContainer.innerHTML = generateTechSpecHTML(data, cleanReg);
+                    specsContainer.style.display = 'block';
+                }
+                if(fetchContainer) fetchContainer.style.display = 'none';
+            } else {
+                // Dokumentet finns men är tomt/felaktigt
+                if(fetchContainer) fetchContainer.style.display = 'block';
+            }
+        } else {
+            // Inget dokument = Visa hämta-knappen
+            if(fetchContainer) fetchContainer.style.display = 'block';
+        }
+    }).catch(err => {
+        console.error("Fel vid hämtning av specs:", err);
+        // Vid fel, visa knappen så man kan försöka igen
+        if(fetchContainer) fetchContainer.style.display = 'block';
+    });
+
+    // 5. Nollställ sökfältet i historiken
+    const searchInput = document.getElementById('vehicleHistorySearch');
+    if(searchInput) searchInput.value = '';
+
+    // 6. Ladda Historik
+    renderVehicleHistory(cleanReg);
+
+    // 7. Visa Modalen
+    modal.classList.add('show');
+}
+
+let currentVehicleHistory = [];
+
+function renderVehicleHistory(regnr) {
+    // 1. Hämta all data
+    currentVehicleHistory = allJobs.filter(j => j.regnr === regnr && !j.deleted)
+                                   .sort((a,b) => new Date(b.datum) - new Date(a.datum));
+
+    // 2. Uppdatera ägare
+    const ownerEl = document.getElementById('vehicleOwner'); 
+    if(ownerEl) {
+        ownerEl.textContent = currentVehicleHistory.length > 0 ? currentVehicleHistory[0].kundnamn : "---";
+    }
+
+    // 3. Nollställ sökfält
+    const searchInput = document.getElementById('vehicleHistorySearch');
+    if(searchInput) searchInput.value = '';
+
+    // 4. Rita listan
+    drawVehicleHistoryList(currentVehicleHistory);
+}
+
+// Hjälpfunktion som ritar HTML (används av både render och sök)
+function drawVehicleHistoryList(jobs) {
+    const container = document.getElementById('vehicleHistoryList');
+    if(!container) return;
+    
+    container.innerHTML = '';
+
+    if (jobs.length === 0) {
+        container.innerHTML = '<div style="text-align:center; padding:30px; color:#9ca3af; font-size:0.85rem;">Ingen historik hittades.</div>';
+        return;
+    }
+
+    jobs.forEach(job => {
+        const row = document.createElement('div');
+        row.className = 'history-item-clean';
+        row.onclick = () => openEditModal(job.id);
+
+        const dateStr = job.datum.split('T')[0];
+        
+        // Textlogik: Prioritera Kommentar, sen Paket, sen "Service"
+        let commentText = job.kommentar && job.kommentar.trim().length > 0 ? job.kommentar : (job.paket || 'Service');
+
+        row.innerHTML = `
+            <div class="h-info-col">
+                <div class="h-date">${dateStr}</div>
+                <div class="h-desc-row">
+                    <span class="h-desc-text" title="${commentText}">${commentText}</span>
+                </div>
+            </div>
+            <div class="h-price money-related">${job.kundpris} kr</div>
+        `;
+        container.appendChild(row);
+    });
+}
+
+// Sökfunktion (anropas direkt från HTML oninput)
+function filterVehicleHistory(term) {
+    const lower = term.toLowerCase();
+    const filtered = currentVehicleHistory.filter(j => {
+        const txt = (j.kommentar || '') + ' ' + (j.paket || '') + ' ' + (j.kundnamn || '');
+        return txt.toLowerCase().includes(lower);
+    });
+    drawVehicleHistoryList(filtered);
+}
+
+// ==========================================
+// AI & TEKNISK DATA LOGIK
+// ==========================================
+
+async function fetchTechnicalData(regnr) {
+    const cleanReg = regnr.replace(/\s/g, '').toUpperCase();
+    const docRef = db.collection("vehicleSpecs").doc(cleanReg);
+    
+    const fetchBtn = document.getElementById('btnFetchTechData');
+    const specsContainer = document.getElementById('techDataContainer'); 
+    const fetchContainer = document.getElementById('fetchDataContainer');
+
+    if(fetchBtn) {
+        fetchBtn.disabled = true;
+        fetchBtn.innerHTML = `<span>⏳ Analyserar med AI...</span>`;
+    }
+
+    try {
+        // ÄNDRING: Ta emot datan direkt från funktionen istället för att läsa från DB
+        const data = await scrapeAndAnalyze(cleanReg, docRef);
+        
+        // Nu har vi "data" direkt. Vi behöver inte göra docRef.get()
+        if(specsContainer) {
+            specsContainer.innerHTML = generateTechSpecHTML(data, cleanReg);
+            specsContainer.style.display = 'block';
+        }
+        if(fetchContainer) fetchContainer.style.display = 'none';
+        
+        showToast('Teknisk data hämtad och sparad!', 'success');
+
+    } catch (error) {
+        console.error("Fel vid AI-hämtning:", error);
+        // ... din felhantering ...
+        if(fetchBtn) {
+            fetchBtn.disabled = false;
+            fetchBtn.innerHTML = `<span>Försök igen</span>`;
+        }
+    }
+}
+
+// Skrapar Biluppgifter.se och skickar till Gemini AI
+async function scrapeAndAnalyze(regnr, docRef) {
+    // 1. Skrapa data via Proxy
+    const proxy = "https://corsproxy.io/?";
+    const url = `https://biluppgifter.se/fordon/${regnr}`;
+    
+    const response = await fetch(proxy + encodeURIComponent(url));
+    if (!response.ok) throw new Error("Kunde inte nå biluppgifter");
+    
+    const htmlText = await response.text();
+    // Rensa texten lite för att spara tokens
+    const rawText = htmlText.replace(/\s+/g, ' ').substring(0, 15000);
+
+    // 2. Förbered AI-prompten (Be om JSON)
+    const prompt = `
+        Du är en expertmekaniker. Analysera denna rådata för bilen ${regnr}:
+        """${rawText}"""
+
+        Din uppgift: Extrahera teknisk data och returnera ENDAST ett JSON-objekt. 
+        Gissa kvalificerat om exakt data saknas (t.ex. motorkod baserat på hk/modell).
+        
+        Formatet ska vara exakt så här (inga markdown-backticks, bara rå JSON):
+        {
+            "model": "T.ex. Volvo V70 D4 (2015)",
+            "engine": "T.ex. D4204T5 (181 hk)",
+            "oil": "T.ex. 5.2 L • 0W-20",
+            "ac": "T.ex. R134a (700g)",
+            "timing_belt": "T.ex. 15 000 mil / 10 år",
+            "torque": "Hjul 140 Nm • Plugg 38 Nm",
+            "battery": "T.ex. 80Ah AGM (Bagage)",
+            "tow_weight": "T.ex. 1800 Kg"
+        }
+    `;
+
+    // 3. Anropa Gemini API
+    const apiKey = CONFIG.AI_API_KEY; 
+    const aiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+
+    const aiResponse = await fetch(aiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+    });
+
+    if(!aiResponse.ok) throw new Error(`AI API Error: ${aiResponse.status}`);
+
+    const aiData = await aiResponse.json();
+    
+    // 4. Parsa svaret
+    let aiText = aiData.candidates[0].content.parts[0].text;
+    aiText = aiText.replace(/```json/g, '').replace(/```/g, '').trim();
+    
+    const vehicleData = JSON.parse(aiText);
+
+    // 5. Spara till Firebase
+    await docRef.set(vehicleData);
+	
+	return vehicleData;
+}
+
+// --- HJÄLPFUNKTION: Bygg HTML från lösa fält (DENNA BEHÖVS FÖR NYA DESIGNEN) ---
+function generateTechSpecHTML(data, regnr) {
+    let brandIcon = '#icon-brand-generic';
+    const modelStr = (data.model || '').toLowerCase();
+    
+    if (modelStr.includes('volvo')) brandIcon = '#icon-brand-volvo';
+    else if (modelStr.includes('bmw')) brandIcon = '#icon-brand-bmw';
+    else if (modelStr.includes('audi')) brandIcon = '#icon-brand-audi';
+    else if (modelStr.includes('mercedes') || modelStr.includes('benz')) brandIcon = '#icon-brand-merc';
+    else if (modelStr.includes('vw') || modelStr.includes('volkswagen')) brandIcon = '#icon-brand-vw';
+    else if (modelStr.includes('seat')) brandIcon = '#icon-brand-seat';
+    else if (modelStr.includes('skoda')) brandIcon = '#icon-brand-skoda';
+    else if (modelStr.includes('fiat')) brandIcon = '#icon-brand-fiat';
+
+	const createInput = (key, val) => {
+	        const value = val || '';
+	        
+	        let extraStyle = '';
+	        if (key === 'oil') {
+	            extraStyle = 'font-weight: 600; font-size: 1em;';
+	        }
+
+	        return `<input class="spec-input" 
+	                       style="${extraStyle}"
+	                       value="${value}" 
+	                       onchange="saveTechSpec('${regnr}', '${key}', this.value)">`;
+	    };
+
+    return `
+        <div class="tech-header-main">
+           <svg class="brand-icon-svg"><use href="${brandIcon}"></use></svg>
+           <h4>Teknisk Data ${regnr}</h4>
+        </div>
+        <ul class="tech-list">
+            <li>
+                <div class="spec-label-col">
+                    <svg class="spec-icon-svg"><use href="#icon-car-v2"></use></svg> 
+                    <b>Bil</b>
+                </div>
+                <div class="spec-value-col">
+                    ${createInput('model', data.model)}
+                </div>
+            </li>
+            <li>
+                <div class="spec-label-col">
+                    <svg class="spec-icon-svg"><use href="#icon-belt-v2"></use></svg> 
+                    <b>Kamrem</b>
+                </div>
+                <div class="spec-value-col">
+                    ${createInput('timing_belt', data.timing_belt)}
+                </div>
+            </li>
+            
+            <li>
+                <div class="spec-label-col">
+                    <svg class="spec-icon-svg"><use href="#icon-engine-v2"></use></svg> 
+                    <b>Motor</b>
+                </div>
+                <div class="spec-value-col">
+                    ${createInput('engine', data.engine)}
+                </div>
+            </li>
+            <li>
+                <div class="spec-label-col">
+                    <svg class="spec-icon-svg"><use href="#icon-torque-v2"></use></svg> 
+                    <b>Moment</b>
+                </div>
+                <div class="spec-value-col">
+                    ${createInput('torque', data.torque)}
+                </div>
+            </li>
+
+            <li>
+                <div class="spec-label-col">
+                    <svg class="spec-icon-svg"><use href="#icon-oil-v2"></use></svg> 
+                    <b>Olja</b>
+                </div>
+                <div class="spec-value-col">
+                    ${createInput('oil', data.oil)}
+                </div>
+            </li>
+            <li>
+                <div class="spec-label-col">
+                    <svg class="spec-icon-svg"><use href="#icon-battery-v2"></use></svg> 
+                    <b>Batteri</b>
+                </div>
+                <div class="spec-value-col">
+                    ${createInput('battery', data.battery)}
+                </div>
+            </li>
+
+            <li>
+                <div class="spec-label-col">
+                    <svg class="spec-icon-svg"><use href="#icon-ac-v2"></use></svg> 
+                    <b>AC</b>
+                </div>
+                <div class="spec-value-col">
+                    ${createInput('ac', data.ac)}
+                </div>
+            </li>
+            <li>
+                <div class="spec-label-col">
+                    <svg class="spec-icon-svg"><use href="#icon-weight-v2"></use></svg> 
+                    <b>Drag</b>
+                </div>
+                <div class="spec-value-col">
+                    ${createInput('tow_weight', data.tow_weight)}
+                </div>
+            </li>
+        </ul>
+    `;
+}
+
+// --- Spara teknisk data när man ändrar manuellt ---
+async function saveTechSpec(regnr, field, newValue) {
+    const cleanReg = regnr.replace(/\s/g, '').toUpperCase();
+    
+    try {
+        // Uppdatera ENDAST det fältet som ändrades i Firebase
+        await db.collection("vehicleSpecs").doc(cleanReg).update({
+            [field]: newValue
+        });
+        
+        // Visa en liten bekräftelse (Toast)
+        showToast(`Uppdaterade ${field} till: ${newValue}`, 'success');
+        
+    } catch (error) {
+        console.error("Kunde inte spara ändring:", error);
+        showToast("Kunde inte spara ändringen.", 'danger');
+    }
+}
+
+window.copyInputValue = function(elementId, btn) {
+    const input = document.getElementById(elementId);
+    if(input && input.value) {
+        navigator.clipboard.writeText(input.value).then(() => {
+            // Visuell feedback: Byt ikon till en check tillfälligt
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+            
+            setTimeout(() => {
+                btn.innerHTML = originalHtml;
+            }, 1500);
+        });
+    }
+};
+
+// --- MOBIL SÖK LOGIK ---
+
+// Koppla knappen i menyn till att öppna modalen
+document.getElementById('mobileSearchBtn')?.addEventListener('click', () => {
+	addHistoryState();
+    const searchModal = document.getElementById('mobileSearchModal');
+    const searchInput = document.getElementById('mobileSearchInput');
+    const resultsContainer = document.getElementById('mobileSearchResults');
+    
+    searchModal.classList.add('show');
+    searchInput.value = ''; // Rensa gammal sökning
+    resultsContainer.innerHTML = ''; // Rensa resultat
+    setTimeout(() => searchInput.focus(), 100); // Fokusera i fältet
+    
+    // Flytta "active" klassen i menyn
+    document.querySelectorAll('.mobile-nav-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById('mobileSearchBtn').classList.add('active');
+});
+
+// Stäng sök-modalen
+document.getElementById('closeMobileSearchBtn')?.addEventListener('click', () => {
+    document.getElementById('mobileSearchModal').classList.remove('show');
+	if (history.state && history.state.modalOpen) {
+        history.back();
+    }
+    // Sätt tillbaka Hem som aktiv
+    document.querySelectorAll('.mobile-nav-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById('mobileHomeBtn').classList.add('active');
+});
+
+// Live-sökning när man skriver
+document.getElementById('mobileSearchInput')?.addEventListener('input', (e) => {
+    const term = e.target.value; 
+    const resultsContainer = document.getElementById('mobileSearchResults');
+    
+    // NYTT: Om fältet är tomt, visa Snabbval/Historik igen
+    if (term.length === 0) {
+        renderSearchZeroState();
+        return;
+    }
+    
+    if (term.length < 2) {
+        resultsContainer.innerHTML = '<p style="text-align:center; color:#9ca3af; margin-top:20px;">Skriv minst 2 tecken för att söka.</p>';
+        return;
+    }
+    
+    // ... resten av din sök-kod är oförändrad ...
+    const filteredJobs = allJobs.filter(job => !job.deleted && jobMatchesSearch(job, term));
+    
+    if (filteredJobs.length === 0) {
+        resultsContainer.innerHTML = '<p style="text-align:center; color:#9ca3af; margin-top:20px;">Inga träffar.</p>';
+    } else {
+        resultsContainer.innerHTML = filteredJobs.map(job => createJobCard(job)).join('');
+    }
+});
+
+function startInactivityCheck() {
+    // Sätt starttid om det saknas
+    if (!localStorage.getItem('lastActivity')) {
+        localStorage.setItem('lastActivity', Date.now());
+    }
+
+    // 1. Lyssna på aktivitet (Touch, mus, tangenter)
+    const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
+    events.forEach(event => {
+        document.addEventListener(event, () => {
+            // Varje gång man rör skärmen, spara ny tid
+            localStorage.setItem('lastActivity', Date.now());
+        }, true);
+    });
+
+    // 2. Starta en intervall som kollar klockan varje minut
+    setInterval(checkTime, 60000); 
+    
+    // Gör en kontroll direkt vid start också
+    checkTime();
+}
+
+function checkTime() {
+    // Hämta när användaren senast rörde skärmen
+    const lastActive = parseInt(localStorage.getItem('lastActivity') || Date.now());
+    const now = Date.now();
+    const timeDiff = now - lastActive;
+
+    // Om skillnaden är större än gränsen (30 min)
+    if (timeDiff > INACTIVITY_LIMIT_MS) {
+	    console.log("Tiden ute. Loggar ut...");
+	    
+	    localStorage.removeItem('lastActivity');
+	    
+	    firebase.auth().signOut().then(() => {
+	        // Ingen alert här längre
+	        window.location.reload(); 
+	    });
+	}
+}
 
 
+function closeVehicleModal() {
+    document.getElementById('vehicleModal').classList.remove('show');
+    if (history.state && history.state.modalOpen) {
+        history.back();
+    }
+}
 
+// Hjälpfunktion för att lägga till ett "steg" i historiken
+function addHistoryState(viewName = 'modal') {
+    // Vi sparar vilket "läge" vi är i (t.ex. 'customers', 'calendar' eller 'modal')
+    history.pushState({ uiState: viewName }, null, window.location.href);
+}
 
+// Funktion för att visa/dölja åtgärdsmenyn inuti kortet
+function toggleCardActions(jobId, event) {
+    // Stoppa klicket från att öppna modalen
+    if(event) event.stopPropagation();
 
+    // Hitta panelen för just detta jobb
+    const panel = document.getElementById(`actions-${jobId}`);
+    const menuBtn = event.currentTarget; // Knappen vi tryckte på
+    
+    if (panel) {
+        // Om den redan är öppen, stäng den
+        if (panel.classList.contains('show')) {
+            panel.classList.remove('show');
+            menuBtn.style.opacity = "0.8"; // Återställ knappens utseende
+        } else {
+            // Stäng alla andra öppna paneler först (så bara en är öppen åt gången)
+            document.querySelectorAll('.card-actions-expand.show').forEach(el => {
+                el.classList.remove('show');
+            });
+            
+            // Visa denna panel
+            panel.classList.add('show');
+            menuBtn.style.opacity = "1"; // Markera knappen som aktiv
+        }
+    }
+}
 
+// --- FUNKTIONER FÖR ATT VÄLJA BILMÄRKE ---
 
+function openBrandSelector(regnr) {
+	addHistoryState();
+    const modal = document.getElementById('brandSelectModal');
+    const grid = document.getElementById('brandGrid');
+    const searchInput = document.getElementById('brandSearchInput');
+    
+    // Rensa grid och sök
+    grid.innerHTML = '';
+    searchInput.value = '';
+    
+    // Funktion för att rendera listan
+    const renderBrands = (filter = '') => {
+        grid.innerHTML = '';
+        Object.entries(AVAILABLE_BRANDS).forEach(([name, slug]) => {
+            if (name.toLowerCase().includes(filter.toLowerCase())) {
+                const div = document.createElement('div');
+                div.className = 'brand-select-item';
+                
+                // Markera om detta är det valda märket
+                if (vehicleBrandCache[regnr] === slug) {
+                    div.classList.add('selected');
+                }
 
+                div.innerHTML = `
+                    <img src="https://cdn.simpleicons.org/${slug}" loading="lazy">
+                    <span>${name}</span>
+                `;
+                div.onclick = () => saveBrandSelection(regnr, slug);
+                grid.appendChild(div);
+            }
+        });
+    };
 
+    // Rendera alla märken först
+    renderBrands();
 
+    // Koppla sökfunktionen
+    searchInput.oninput = (e) => renderBrands(e.target.value);
 
+    modal.classList.add('show');
+}
 
+async function saveBrandSelection(regnr, brandSlug) {
+    try {
+        // 1. Spara till Firestore (vehicleSpecs)
+        // Vi använder set med merge:true ifall dokumentet inte finns än
+        await db.collection("vehicleSpecs").doc(regnr).set({
+            brand_manual: brandSlug
+        }, { merge: true });
 
+        // 2. Stäng modalen
+        document.getElementById('brandSelectModal').classList.remove('show');
+        
+        // 3. Uppdatera ikonen i Fordonsmodalen direkt (visuell feedback)
+		const editBtn = document.getElementById('btnEditBrandModal');
+		if (editBtn) {
+		    editBtn.innerHTML = `<img src="https://cdn.simpleicons.org/${brandSlug}" class="brand-btn-icon">`;
+		}
 
+        // Notis (valfritt)
+        // alert("Märke uppdaterat!"); 
 
+    } catch (error) {
+        console.error("Fel vid sparande av märke:", error);
+        alert("Kunde inte spara valet.");
+    }
+}
 
+// --- INSTÄLLNINGAR & PRIVACY MODE ---
 
+function initSettings() {
+    // 1. Privacy Mode
+    // Hämta värdet (default false)
+    const savedPrivacy = localStorage.getItem('privacyMode') === 'true';
+    
+    // Hämta checkboxen
+    const pToggle = document.getElementById('privacyToggle');
+    
+    // Debug: Se om vi hittar elementet
+    console.log("Init Settings. Found toggle:", pToggle);
 
+    if(pToggle) {
+        // Sätt visuellt läge
+        pToggle.checked = savedPrivacy;
+        
+        // Lyssna på ÄNDRINGAR i checkboxen
+        pToggle.addEventListener('change', (e) => {
+            console.log("Privacy changed to:", e.target.checked);
+            setPrivacyMode(e.target.checked);
+        });
+    }
 
+    // Applicera läget direkt vid start
+    setPrivacyMode(savedPrivacy);
 
+    // 2. Dark Mode (Samma logik)
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    const tToggle = document.getElementById('themeToggle');
+    if(tToggle) {
+        tToggle.checked = savedTheme === 'dark';
+        tToggle.addEventListener('change', (e) => {
+            const newTheme = e.target.checked ? 'dark' : 'light';
+            setTheme(newTheme);
+        });
+    }
+    setTheme(savedTheme);
 
+    initZoomSettings();
+    setupSwipeGestures();
+}
+
+// Applicerar klassen på <body>
+function setPrivacyMode(isActive) {
+    if (isActive) {
+        document.body.classList.add('privacy-active');
+    } else {
+        document.body.classList.remove('privacy-active');
+    }
+    localStorage.setItem('privacyMode', isActive);
+}
+
+// Öppnar modalen och lägger till historik
+function openSettingsModal() {
+    addHistoryState();
+    document.getElementById('settingsModal').classList.add('show');
+}
+
+// Stänger modalen och backar historiken (vilket triggar stängning)
+function closeSettings() {
+    if (history.state && history.state.modalOpen) {
+        history.back();
+    } else {
+        document.getElementById('settingsModal').classList.remove('show');
+    }
+}
+
+// Initiera direkt
+initSettings();
+
+function setTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+    
+    // Uppdatera kalenderns tema också
+    setCalendarTheme(theme);
+}
+
+// --- 5. SWIPE GESTURE (SAMSUNG STYLE) ---
+function setupSwipeGestures() {
+    const modal = document.getElementById('settingsModal');
+    if(!modal) return;
+
+    let touchStartX = 0;
+
+    // Lyssna när fingret landar
+    modal.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+    }, {passive: true});
+
+    // Lyssna när fingret lyfter
+    modal.addEventListener('touchend', (e) => {
+        const touchEndX = e.changedTouches[0].screenX;
+        
+        // Om man dragit mer än 70px åt höger -> Gå tillbaka
+        if (touchEndX > touchStartX + 70) {
+            // VIKTIGT: Vi anropar history.back() här. 
+            // Då används din befintliga "swipa tillbaka"-logik för att stänga modalen.
+            if (history.state && history.state.modalOpen) {
+                history.back(); 
+            } else {
+                modal.classList.remove('show');
+            }
+        }
+    }, {passive: true});
+}
+
+// Lägg denna funktion någonstans i app.js
+function initInventoryListener() {
+    db.collection('settings').doc('inventory').onSnapshot(doc => {
+        if (doc.exists) {
+            const data = doc.data();
+            const current = data.motorOil || 0;
+            const max = data.oilStartAmount || 208; 
+            const date = data.oilStartDate || "";
+
+            // UI Element
+            const textEl = document.getElementById('oilLevelText');
+            const percentEl = document.getElementById('oilPercent');
+            const barEl = document.getElementById('oilProgressBar');
+            const dateEl = document.getElementById('oilDateBadge');
+
+            // --- HÄR ÄR ÄNDRINGEN ---
+            // Vi använder toFixed(1) för att alltid visa en decimal (t.ex. "150.5")
+            // Om du vill ta bort .0 på heltal kan du använda parseFloat(current.toFixed(1))
+            let displayCurrent = parseFloat(current.toFixed(1)); 
+            
+            if (textEl) textEl.textContent = `${displayCurrent} / ${max} liter`;
+            // ------------------------
+            
+            // Uppdatera procent & bar
+            let percent = (current / max) * 100;
+            if (percent > 100) percent = 100;
+            if (percent < 0) percent = 0;
+
+            if (percentEl) percentEl.textContent = Math.round(percent) + '%';
+            if (barEl) {
+                barEl.style.width = `${percent}%`;
+                // Röd färg om mindre än 10% kvar
+                if(percent < 10) barEl.classList.add('critical');
+                else barEl.classList.remove('critical');
+            }
+
+            // Uppdatera Datum-badge
+            if (dateEl) {
+                if (date) {
+                    dateEl.textContent = `Inköpt: ${date}`; 
+                    dateEl.style.display = 'inline-block';
+                } else {
+                    dateEl.style.display = 'none';
+                }
+            }
+        }
+    });
+}
+
+// 2. Visa/Dölj formuläret
+function toggleOilForm() {
+    const form = document.getElementById('oilRefillForm');
+    const dateInput = document.getElementById('newBarrelDate');
+    
+    if (form.style.display === 'none') {
+        form.style.display = 'block';
+        // Sätt dagens datum som förval
+        if (!dateInput.value) {
+            dateInput.valueAsDate = new Date();
+        }
+    } else {
+        form.style.display = 'none';
+    }
+}
+
+// 3. Spara nytt fat till Firebase
+async function saveNewBarrel() {
+    const volInput = document.getElementById('newBarrelVol');
+    const dateInput = document.getElementById('newBarrelDate');
+    
+    const newVolume = parseFloat(volInput.value);
+    const newDate = dateInput.value;
+
+    if (!newVolume || !newDate) {
+        alert("Fyll i både volym och datum.");
+        return;
+    }
+
+    if (confirm(`Bekräfta nytt fat: \nVolym: ${newVolume} liter\nDatum: ${newDate}\n\nDetta återställer lagersaldot.`)) {
+        try {
+            await db.collection('settings').doc('inventory').set({
+                motorOil: newVolume,        // Nuvarande mängd (fullt)
+                oilStartAmount: newVolume,  // Maxkapacitet
+                oilStartDate: newDate       // Datum
+            }, { merge: true }); // Merge behåller ev. andra fält
+
+            // Dölj formuläret och ge feedback
+            toggleOilForm();
+            alert("Nytt fat registrerat!"); 
+
+        } catch (error) {
+            console.error("Fel vid uppdatering:", error);
+            alert("Kunde inte spara.");
+        }
+    }
+}
+
+// 1. En ren funktion som bara räknar ut liter från en lista med utgifter
+function calculateOilFromExpenses(expenses) {
+    if (!expenses || !Array.isArray(expenses)) return 0;
+    
+    let totalLiters = 0;
+    expenses.forEach(item => {
+        const name = (item.namn || "").toLowerCase();
+        // Letar efter "olja" och en siffra följt av "l" eller "liter"
+        if (name.includes('olja')) {
+            const match = name.match(/(\d+[.,]?\d*)\s*(l|liter)/i);
+            if (match) {
+                // Ersätt komma med punkt (t.ex. 4,5 -> 4.5)
+                const val = parseFloat(match[1].replace(',', '.'));
+                if (!isNaN(val)) totalLiters += val;
+            }
+        }
+    });
+    return totalLiters;
+}
+
+// 2. Funktion som justerar saldot (Kan både dra av och lägga till)
+async function adjustInventoryBalance(litersToDeduct) {
+    // Om litersToDeduct är positivt (t.ex. 4) -> Dras 4 liter av.
+    // Om litersToDeduct är negativt (t.ex. -4) -> Läggs 4 liter till (minus minus blir plus).
+    
+    if (litersToDeduct === 0) return;
+
+    const inventoryRef = db.collection('settings').doc('inventory');
+    
+    try {
+        await inventoryRef.update({
+            motorOil: firebase.firestore.FieldValue.increment(-litersToDeduct)
+        });
+        console.log(`Lager justerat med: ${-litersToDeduct} liter.`);
+    } catch (err) {
+        console.error("Kunde inte justera lagret:", err);
+    }
+}
+
+/* ==========================================
+   KUNDHANTERING (VIRTUELL CRM)
+   ========================================== */
+
+// Generera kunddatabas från jobb
+function getCustomerDatabase() {
+    const customers = {};
+    const validJobs = allJobs.filter(j => !j.deleted);
+
+    validJobs.forEach(job => {
+        let rawName = job.kundnamn || "Okänd";
+        let name = rawName.trim();
+        
+        if(name.length < 2 || name.toLowerCase() === 'okänd') return;
+
+        if (!customers[name]) {
+            customers[name] = {
+                name: name,
+                totalSpent: 0,
+                visitCount: 0,
+                lastVisit: null,
+                firstVisit: null, // NYTT: För att se om kunden är ny
+                vehicles: new Set(),
+                history: []
+            };
+        }
+
+        const c = customers[name];
+        const jobDate = new Date(job.datum);
+        
+        c.totalSpent += (parseInt(job.kundpris) || 0);
+        c.visitCount++;
+        c.history.push(job);
+        
+        if (job.regnr && job.regnr.toUpperCase() !== 'OKÄNT' && job.regnr !== '---') {
+            c.vehicles.add(job.regnr.toUpperCase());
+        }
+
+        // Uppdatera datum
+        if (!c.lastVisit || jobDate > c.lastVisit) c.lastVisit = jobDate;
+        if (!c.firstVisit || jobDate < c.firstVisit) c.firstVisit = jobDate;
+    });
+
+    return Object.values(customers); // Returnera o-sorterad lista här
+}
+
+/* --- HJÄLPFUNKTIONER FÖR FÄRGER --- */
+function stringToColor(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const hue = Math.abs(hash % 360);
+    // 70% saturation, 90% lightness ger fina pastellfärger
+    return `hsl(${hue}, 70%, 90%)`; 
+}
+
+function stringToTextColor(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const hue = Math.abs(hash % 360);
+    // Mörkare variant av samma färg för texten
+    return `hsl(${hue}, 80%, 30%)`; 
+}
+
+/* --- RENDER CUSTOMER VIEW (HELA FUNKTIONEN) --- */
+function renderCustomerView(searchTerm = '') {
+    const container = document.getElementById('customerGrid');
+    if(!container) return;
+    
+    // Hämta sorteringsval
+    const sortMode = document.getElementById('customerSortSelect')?.value || 'spent';
+    const term = (searchTerm || document.getElementById('customerSearchInput')?.value || '').toLowerCase();
+
+    container.innerHTML = '';
+    let customers = getCustomerDatabase();
+
+	// --- NYTT: UPPDATERA MINI-DASHBOARD ---
+    
+    // 1. Totalt antal kunder
+    const totalCount = customers.length;
+    
+    // 2. Nya denna månad
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+    
+    // Räkna kunder vars 'firstVisit' är denna månad
+    const newCount = customers.filter(c => {
+        if (!c.firstVisit) return false; // Säkerhetskoll
+        return c.firstVisit.getMonth() === currentMonth && 
+               c.firstVisit.getFullYear() === currentYear;
+    }).length;
+
+    // 3. Återkommande % (Kunder med mer än 1 besök)
+    const returningCount = customers.filter(c => c.visitCount > 1).length;
+    const returnRate = totalCount > 0 ? Math.round((returningCount / totalCount) * 100) : 0;
+
+    const csTotalEl = document.getElementById('csTotal');
+    const csNewEl = document.getElementById('csNew');
+    const csRetEl = document.getElementById('csReturning');
+    const csMonthEl = document.getElementById('csMonthName');
+
+    if(csTotalEl) csTotalEl.textContent = totalCount;
+    if(csNewEl) csNewEl.textContent = `+${newCount}`;
+    if(csRetEl) csRetEl.textContent = `${returnRate}%`;
+    
+    // Uppdatera månadsnamn (t.ex. "NYA I JAN")
+    const monthNames = ["JAN", "FEB", "MAR", "APR", "MAJ", "JUN", "JUL", "AUG", "SEP", "OKT", "NOV", "DEC"];
+    if(csMonthEl) csMonthEl.textContent = monthNames[currentMonth];
+
+    // 1. Filtrera
+    let filtered = customers.filter(c => {
+        if (c.name.toLowerCase().includes(term)) return true;
+        const hasCar = Array.from(c.vehicles).some(reg => reg.toLowerCase().includes(term));
+        return hasCar;
+    });
+
+    // 2. Sortera
+    filtered.sort((a, b) => {
+        if (sortMode === 'spent') return b.totalSpent - a.totalSpent; // Högst omsättning först
+        if (sortMode === 'visits') return b.visitCount - a.visitCount; // Flest besök först
+        if (sortMode === 'recent') return new Date(b.lastVisit) - new Date(a.lastVisit); // Senast besök först
+        if (sortMode === 'alpha') return a.name.localeCompare(b.name); // A-Ö
+        return 0;
+    });
+
+    if (filtered.length === 0) {
+        container.innerHTML = `
+            <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #94a3b8;">
+                <p>Inga kunder hittades.</p>
+            </div>`;
+        return;
+    }
+
+    // 3. Rendera
+    filtered.forEach(c => {
+        const initials = c.name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
+        const avatarBg = stringToColor(c.name);
+        const avatarColor = stringToTextColor(c.name);
+        const isVip = c.totalSpent > 20000;
+        
+        // --- LOGIK FÖR TAGGAR ---
+        let tagsHtml = '';
+        
+        // Passiv: Ej setts på 6 månader (180 dagar)
+        const daysSinceLast = (now - c.lastVisit) / (1000 * 60 * 60 * 24);
+        if (daysSinceLast > 180) {
+            tagsHtml += `<span class="status-pill pill-passive">Passiv</span>`;
+        } 
+        // Ny: Första besöket var inom 30 dagar
+        else if ((now - c.firstVisit) / (1000 * 60 * 60 * 24) < 30) {
+            tagsHtml += `<span class="status-pill pill-new">Ny</span>`;
+        }
+        
+        // Stammis: Mer än 5 besök (Kan kombineras med andra taggar)
+        if (c.visitCount >= 5) {
+            tagsHtml += `<span class="status-pill pill-loyal">Stammis</span>`;
+        }
+
+        const carCount = c.vehicles.size;
+        const carText = carCount === 1 ? '1 fordon' : `${carCount} fordon`;
+
+        const card = document.createElement('div');
+        card.className = 'customer-card';
+        card.onclick = () => openCustomerModal(c);
+        
+        card.innerHTML = `
+            <div class="c-avatar" style="background-color: ${avatarBg}; color: ${avatarColor};">
+                ${initials}
+            </div>
+            <div class="c-info">
+                <div style="display:flex; justify-content:space-between; width:100%; align-items:flex-start;">
+                    <div style="display:flex; flex-direction:column; align-items:flex-start;">
+                        <h3>${c.name} ${tagsHtml}</h3>
+                    </div>
+                    ${isVip ? '<span style="font-size:1rem;" title="VIP Kund">⭐</span>' : ''}
+                </div>
+                <div class="c-meta">
+                    <span>${carText}</span> • <span>${c.visitCount} besök</span>
+                </div>
+                <div class="c-meta money-related" style="color:${isVip ? '#d97706' : '#64748b'}; font-weight:${isVip ? '700' : '500'}; margin-top:4px;">
+                    Totalt: ${c.totalSpent.toLocaleString()} kr
+                </div>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+}
+
+// Öppna profilen
+function openCustomerModal(customer) {
+	addHistoryState();
+    const modal = document.getElementById('customerModal');
+    
+    // 1. Fyll Header
+    document.getElementById('modalCustomerName').textContent = customer.name;
+    
+    const badgeContainer = document.getElementById('modalCustomerBadge');
+    if (customer.totalSpent > 20000) {
+        badgeContainer.innerHTML = `<div class="vip-badge-pill"><span>⭐</span> VIP KUND</div>`;
+    } else {
+        badgeContainer.innerHTML = '';
+    }
+
+    // 2. Fyll Stats
+    document.getElementById('custTotalSpent').textContent = customer.totalSpent.toLocaleString() + ' kr';
+    document.getElementById('custVisitCount').textContent = customer.visitCount;
+    
+    // Räkna dagar sedan besök
+    if (customer.lastVisit) {
+        const diffTime = Math.abs(new Date() - customer.lastVisit);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+        document.getElementById('custLastSeen').textContent = `${diffDays} dgr sen`;
+    } else {
+        document.getElementById('custLastSeen').textContent = "-";
+    }
+
+    // 3. Fyll Fordon
+    const vehicleContainer = document.getElementById('custVehicleList');
+    vehicleContainer.innerHTML = '';
+    
+    if(customer.vehicles.size === 0) {
+        vehicleContainer.innerHTML = '<span style="color:#9ca3af; font-size:0.85rem;">Inga regnr sparade.</span>';
+    } else {
+        customer.vehicles.forEach(reg => {
+            // Hämta märke för ikonen
+            const brandUrl = getBrandIconUrl('', reg);
+            const iconHtml = brandUrl ? `<img src="${brandUrl}" style="width:14px; height:14px; opacity:0.7;">` : '🚗';
+            
+            const btn = document.createElement('div');
+            btn.className = 'v-chip';
+            btn.innerHTML = `${iconHtml} ${reg}`;
+            btn.onclick = () => openVehicleModal(reg); // Återanvänd din befintliga funktion!
+            vehicleContainer.appendChild(btn);
+        });
+    }
+
+    // 4. Fyll Historik (Uppdaterad med kommentarer)
+    const historyContainer = document.getElementById('custHistoryList');
+    historyContainer.innerHTML = '';
+    
+    const sortedHistory = customer.history.sort((a,b) => new Date(b.datum) - new Date(a.datum));
+    
+    if (sortedHistory.length === 0) {
+        historyContainer.innerHTML = `
+            <div style="text-align:center; padding: 30px 0; color:#9ca3af;">
+                <p style="font-size:0.9rem;">Ingen historik än.</p>
+            </div>`;
+    }
+
+    sortedHistory.forEach(job => {
+        const row = document.createElement('div');
+        row.className = 'history-item-clean';
+        row.onclick = () => openEditModal(job.id);
+        
+        const dateStr = job.datum.split('T')[0];
+        
+        // Hämta texten
+        let rawText = job.kommentar && job.kommentar.trim().length > 0 
+            ? job.kommentar 
+            : (job.paket || 'Service');
+            
+        // Förbered regnr-delen
+        let regPart = '';
+        if (job.regnr && job.regnr !== '---') {
+            // Vi lägger regnr i en separat span som inte får krympa (flex-shrink: 0)
+            regPart = `<span class="h-desc-reg">• ${job.regnr}</span>`;
+        }
+
+        row.innerHTML = `
+            <div class="h-info-col" style="width:100%; overflow:hidden;">
+                <div class="h-date">${dateStr}</div>
+                <div class="h-desc-row">
+                    <span class="h-desc-text">${rawText}</span>
+                    ${regPart}
+                </div>
+            </div>
+            <div class="h-price money-related">${job.kundpris} kr</div>
+        `;
+        historyContainer.appendChild(row);
+    });
+
+    // 5. Koppla Action-knappar (HÄR ÄR DEN NYA KODEN)
+    
+    // --- Ring / Hitta.se Logik ---
+    const callBtn = document.getElementById('btnCallCustomer');
+    
+    // Jag har lagt in riktiga ikoner i HTML-strängen här nedanför:
+    if (customer.phone) {
+        // Om telefonnummer finns: Visa "Ring"
+        callBtn.innerHTML = `
+            <svg class="icon-sm" style="margin-right:6px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg> 
+            Ring`;
+        callBtn.onclick = () => window.location.href = `tel:${customer.phone}`;
+    } else {
+        // Om nummer saknas: Visa "Hitta.se"
+        callBtn.innerHTML = `
+            <svg class="icon-sm" style="margin-right:6px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            Hitta.se`;
+        callBtn.onclick = () => window.open(`https://www.hitta.se/sök?vad=${encodeURIComponent(customer.name)}`, '_blank');
+    }
+
+    // --- Nytt Jobb Logik ---
+    const newJobBtn = document.getElementById('btnNewJobForCustomer');
+    newJobBtn.onclick = () => {
+        modal.classList.remove('show'); // Stäng kundprofil
+        openNewJobModal(); // Öppna nytt jobb
+        // Vänta lite så modalen hinner öppnas, fyll sen i namnet
+        setTimeout(() => {
+            document.getElementById('kundnamn').value = customer.name;
+        }, 100);
+    };
+
+    // Visa modal
+    modal.classList.add('show');
+}
+
+/* =================================================================
+   KUND-LÄNKAR & AUTOCOMPLETE
+   ================================================================= */
+
+// 1. Öppna kundprofil genom att klicka på namnet
+function openCustomerByName(name) {
+    if (!name) return;
+    
+    // Använd din befintliga funktion för att hämta databasen
+    const db = getCustomerDatabase(); 
+    
+    // Hitta kunden (okänsligt för stora/små bokstäver)
+    const customer = db.find(c => c.name.toLowerCase() === name.toLowerCase());
+    
+    if (customer) {
+        openCustomerModal(customer);
+    } else {
+        // Fallback om namnet inte matchar exakt (t.ex. stavfel i gamla jobb)
+        // Vi skapar en "tillfällig" profil så man ändå ser historiken för det namnet
+        const tempCustomer = {
+            name: name,
+            totalSpent: 0,
+            visitCount: 0,
+            lastVisit: null,
+            vehicles: new Set(),
+            history: allJobs.filter(j => j.kundnamn.toLowerCase() === name.toLowerCase())
+        };
+        // Räkna ut datan snabbt
+        tempCustomer.history.forEach(j => {
+            tempCustomer.totalSpent += (parseInt(j.kundpris) || 0);
+            if(j.regnr) tempCustomer.vehicles.add(j.regnr);
+        });
+        openCustomerModal(tempCustomer);
+    }
+}
+
+// 2. Uppdatera listan med förslag (Autocomplete)
+function updateCustomerDatalist() {
+    const dataList = document.getElementById('customerListOptions');
+    if (!dataList) return;
+
+    dataList.innerHTML = '';
+    
+    // Hämta unika namn från alla jobb
+    const uniqueNames = [...new Set(allJobs.map(j => j.kundnamn ? j.kundnamn.trim().toUpperCase() : ""))];
+    
+    // Sortera och skapa options
+    uniqueNames.sort().forEach(name => {
+        if(name.length > 1) { // Skippa tomma/korta
+            const option = document.createElement('option');
+            option.value = name;
+            dataList.appendChild(option);
+        }
+    });
+}
+
+// Funktion för att tvinga uppdatering (Hard Reload)
+async function forceUpdateApp() {
+    if (!confirm("Detta kommer att starta om appen och hämta den senaste versionen. Vill du fortsätta?")) {
+        return;
+    }
+
+    const btn = document.getElementById('btnHardReset');
+    if(btn) btn.innerHTML = '<span style="padding:12px;">Uppdaterar...</span>';
+
+    try {
+        // 1. Avregistrera Service Workers (om de finns)
+        if ('serviceWorker' in navigator) {
+            const registrations = await navigator.serviceWorker.getRegistrations();
+            for (const registration of registrations) {
+                await registration.unregister();
+            }
+        }
+
+        // 2. Rensa Cache Storage (Där PWA sparar filer)
+        if ('caches' in window) {
+            const keys = await caches.keys();
+            for (const key of keys) {
+                await caches.delete(key);
+            }
+        }
+
+        // 3. Tvinga omladdning från servern (ignorerar webbläsarens lokala cache)
+        window.location.reload(true);
+
+    } catch (error) {
+        console.error("Kunde inte rensa cache:", error);
+        // Fallback: Ladda om ändå
+        window.location.reload();
+    }
+}
+
+// Gör funktionen tillgänglig globalt (så knappen hittar den om du använder onclick i HTML)
+window.forceUpdateApp = forceUpdateApp;
+
+window.saveSearchTerm = function() {
+    const input = document.getElementById('mobileSearchInput');
+    const term = input ? input.value.trim() : "";
+    
+    // Spara bara om det är mer än 2 tecken
+    if(term.length < 2) return;
+    
+    // Hämta gammal historik
+    let history = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+    
+    // Ta bort ordet om det redan finns (för att lägga det överst igen)
+    history = history.filter(t => t.toLowerCase() !== term.toLowerCase());
+    
+    // Lägg till det nya ordet först i listan
+    history.unshift(term);
+    
+    // Spara max 5 senaste sökningar
+    if (history.length > 5) history.pop();
+    
+    // Spara tillbaka till minnet
+    localStorage.setItem('searchHistory', JSON.stringify(history));
+};
+
+// Hjälpfunktion: Relativa datum (Idag, Imorgon, Måndag...)
+function getSmartDateString(dateInput) {
+    if (!dateInput) return '---';
+    
+    // Hantera om inmatningen är en sträng (YYYY-MM-DD...) eller Date-objekt
+    const d = new Date(dateInput);
+    if (isNaN(d.getTime())) return '---'; // Ogiltigt datum
+
+    const now = new Date();
+    
+    // Nollställ klockslag för att jämföra rena dagar
+    const dZero = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    const nowZero = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    
+    const diffMs = dZero - nowZero;
+    const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+
+    // Logik för text
+    if (diffDays === 0) return 'Idag';
+    if (diffDays === 1) return 'Imorgon';
+    if (diffDays === -1) return 'Igår';
+    
+    // Om det är inom 6 dagar (framåt eller bakåt), visa veckodag
+    const days = ['Söndag', 'Måndag', 'Tisdag', 'Onsdag', 'Torsdag', 'Fredag', 'Lördag'];
+    if (diffDays > 1 && diffDays < 7) return days[d.getDay()];
+    if (diffDays < -1 && diffDays > -7) return 'I ' + days[d.getDay()].toLowerCase() + 's'; // T.ex. "I tisdags"
+
+    // Annars: Vanligt datum (t.ex. 12 dec)
+    const months = ['jan', 'feb', 'mar', 'apr', 'maj', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'];
+    return `${d.getDate()} ${months[d.getMonth()]}`;
+}
+
+window.switchBacklogTab = function(tabName) {
+    currentBacklogTab = tabName;
+    renderDashboard(); // Rita om sidan med nya fliken vald
+};
+
+function initZoomSettings() {
+    const slider = document.getElementById('zoomSlider');
+    const display = document.getElementById('zoomDisplay');
+    
+    if (!slider || !display) return;
+
+    // 1. Hämta sparad zoom eller standard 100
+    const savedZoom = localStorage.getItem('appZoom') || '100';
+    
+    // 2. Applicera direkt vid start
+    applyZoom(savedZoom);
+    
+    // 3. Uppdatera UI (slider och text)
+    slider.value = savedZoom;
+    display.textContent = savedZoom + '%';
+
+    // 4. Lyssna på ändringar (Live preview)
+    slider.addEventListener('input', (e) => {
+        const val = e.target.value;
+        display.textContent = val + '%';
+        applyZoom(val);
+    });
+}
+
+function applyZoom(value) {
+    // 1. Sätt zoomen
+    document.body.style.zoom = value + "%";
+    
+    // 2. Spara
+    localStorage.setItem('appZoom', value);
+    
+    // 3. VIKTIGT: Trigga en "resize" efter en kort stund.
+    // Detta får FullCalendar att inse att den måste rita om sig.
+    setTimeout(() => {
+        window.dispatchEvent(new Event('resize'));
+    }, 50);
+}
+
+/* ==========================================
+   VIEW MODAL (LÄSLÄGE - SÄKER VERSION)
+   ========================================== */
+
+// VIKTIGT: Vi definierar den direkt på window. 
+// Då behöver du INTE ha någon rad i toppen av filen.
+window.openViewModal = function(jobId) {
+    console.log("Öppnar vy för jobb ID:", jobId);
+
+    // 1. Hitta jobbet
+    const job = allJobs.find(j => j.id === jobId);
+    
+    if (!job) {
+        console.error("Jobb saknas i listan:", jobId);
+        return;
+    }
+
+    // Spara globalt
+    window.currentViewingJob = job;
+
+    // Hjälpfunktion
+    const setText = (id, text) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = text || '-';
+    };
+
+    // --- FYLL I DATA ---
+    setText('viewRegNr', job.regnr || 'OKÄNT');
+    setText('viewStatusBadge', job.status ? job.status.toUpperCase() : 'NY');
+    setText('viewModel', job.bilmodell || job.paket || 'Fordon');
+    setText('viewMilage', job.matarstallning ? job.matarstallning + ' mil' : '');
+
+    // Datum
+    let dateStr = '-';
+    let timeStr = '-';
+    if (job.datum && job.datum.includes('T')) {
+        const parts = job.datum.split('T');
+        dateStr = parts[0];
+        timeStr = parts[1];
+    }
+    setText('viewDate', dateStr);
+    setText('viewTime', timeStr);
+
+    // Kund
+    setText('viewCustomerName', job.kundnamn || 'Okänd');
+    
+    const phoneVal = job.telefon || job.phone || '';
+    const phoneLink = document.getElementById('viewPhoneLink');
+    const phoneText = document.getElementById('viewPhoneText');
+    
+    if (phoneLink && phoneText) {
+        if (phoneVal) {
+            phoneText.textContent = phoneVal;
+            phoneLink.href = `tel:${phoneVal}`;
+            phoneLink.style.display = 'flex';
+        } else {
+            phoneLink.style.display = 'none';
+        }
+    }
+
+    // Ekonomi
+    const intPris = parseInt(job.kundpris) || 0;
+    
+    let totalUtgifter = 0;
+    if (job.utgifter && Array.isArray(job.utgifter)) {
+        job.utgifter.forEach(u => totalUtgifter += (parseInt(u.kostnad) || 0));
+    } else if (job.expense) {
+        totalUtgifter = parseInt(job.expense);
+    }
+    
+    const vinst = intPris - totalUtgifter;
+
+    setText('viewPrice', intPris.toLocaleString() + ':-');
+    setText('viewExpense', totalUtgifter.toLocaleString() + ':-');
+    
+    const profitEl = document.getElementById('viewProfit');
+    if (profitEl) {
+        profitEl.textContent = vinst.toLocaleString() + ':-';
+        profitEl.style.color = vinst >= 0 ? '#10B981' : '#EF4444';
+    }
+
+    // Beskrivning
+    setText('viewDescription', job.kommentar || 'Ingen beskrivning.');
+    
+    // Interna noteringar
+    const internalBox = document.querySelector('.internal-box');
+    const internalText = document.getElementById('viewInternalNotes');
+    const iNotes = job.internalNotes || ''; 
+    
+    if (internalText && iNotes.trim() !== "") {
+        if(internalBox) internalBox.style.display = 'block';
+        internalText.textContent = iNotes;
+    } else {
+        if(internalBox) internalBox.style.display = 'none';
+    }
+
+    // Koppla Redigera-knappen (med kloning för att ta bort gamla events)
+    const editBtn = document.getElementById('btnEditJob');
+    if (editBtn) {
+        const newBtn = editBtn.cloneNode(true);
+        editBtn.parentNode.replaceChild(newBtn, editBtn);
+        
+        newBtn.onclick = function() {
+            window.closeViewModal();
+            if(window.openEditModal) window.openEditModal(job.id);
+            else openEditModal(job.id); 
+        };
+    }
+
+    // Visa modalen
+    const modal = document.getElementById('viewJobModal');
+    if (modal) {
+        modal.style.display = 'flex';
+        if (typeof addHistoryState === 'function') addHistoryState();
+    } else {
+        console.error("Hittade inte modalen med ID 'viewJobModal' i HTML-filen.");
+    }
+};
+
+// Samma sak för stäng-funktionen
+window.closeViewModal = function() {
+    const modal = document.getElementById('viewJobModal');
+    if (modal) modal.style.display = 'none';
+    if (history.state && history.state.modalOpen) history.back();
+};
+
+window.copyToClipboard = function(elementId) {
+    const text = document.getElementById(elementId).innerText;
+    navigator.clipboard.writeText(text).then(() => {
+        // Visuell feedback (byt färg på ikonen tillfälligt)
+        const btn = document.querySelector('.icon-copy-btn');
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = `<svg width="16" height="16" fill="none" stroke="#10B981" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>`; // Grön check
+        setTimeout(() => { btn.innerHTML = originalHtml; }, 1500);
+    });
+};
+
+window.toggleCardExpand = function(jobId, event) {
+    if(event) event.stopPropagation();
+
+    const card = document.getElementById(`card-${jobId}`);
+    
+    // 1. Stäng alla andra
+    document.querySelectorAll('.job-card-new.expanded').forEach(otherCard => {
+        if (otherCard.id !== `card-${jobId}`) {
+            otherCard.classList.remove('expanded');
+        }
+    });
+
+    // 2. Toggla detta kort
+    if (card) {
+        const isOpening = !card.classList.contains('expanded');
+        card.classList.toggle('expanded');
+
+        // 3. SMART AUTO-SCROLL (Med offset för header)
+        if (isOpening) {
+            setTimeout(() => {
+                // HÄR ÄR FIXEN:
+                // Vi räknar ut var kortet är, och drar av pixlar för att skapa marginal uppåt
+                
+                const offset = 80; // <-- JUSTERA DENNA SIFFRA! (80px brukar vara lagom för header + luft)
+                const bodyRect = document.body.getBoundingClientRect().top;
+                const elementRect = card.getBoundingClientRect().top;
+                const elementPosition = elementRect - bodyRect;
+                const offsetPosition = elementPosition - offset;
+
+                window.scrollTo({
+                    top: offsetPosition,
+                    behavior: 'smooth'
+                });
+            }, 300);
+        }
+    }
+};
+
+// --- NY FUNKTION: Visa "Noll-läge" i sök (Snabbval + Historik) ---
+function renderSearchZeroState() {
+    const container = document.getElementById('mobileSearchResults');
+    if (!container) return;
+
+    // Hämta din befintliga historik
+    const history = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+
+    let html = `<div style="padding:20px;">`;
+
+    // 1. SNABBVAL (NYTT!) - Färdiga filterknappar
+    html += `
+        <p style="font-size:0.75rem; color:#94a3b8; font-weight:700; margin-bottom:12px; text-transform:uppercase; letter-spacing:0.5px;">Snabbval</p>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:24px;">
+            <button onclick="executeSearch('Faktureras')" style="background:#fee2e2; color:#ef4444; border:none; padding:8px 16px; border-radius:20px; font-size:0.85rem; font-weight:600; cursor:pointer;">Faktureras</button>
+            <button onclick="executeSearch('Klar')" style="background:#dcfce7; color:#16a34a; border:none; padding:8px 16px; border-radius:20px; font-size:0.85rem; font-weight:600; cursor:pointer;">Färdiga</button>
+            <button onclick="executeSearch('Bokad')" style="background:#e0f2fe; color:#0284c7; border:none; padding:8px 16px; border-radius:20px; font-size:0.85rem; font-weight:600; cursor:pointer;">Bokade</button>
+        </div>
+    `;
+
+    // 2. SENASTE SÖKNINGAR (Din gamla data, men snyggare lista)
+    if (history.length > 0) {
+        html += `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <p style="font-size:0.75rem; color:#94a3b8; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">Senaste</p>
+                <button onclick="clearSearchHistory()" style="background:none; border:none; color:#3b82f6; font-size:0.75rem; cursor:pointer;">Rensa</button>
+            </div>
+            <div style="display:flex; flex-direction:column;">
+        `;
+        
+        history.forEach(term => {
+            // Vi gör om det till en lista med klock-ikon istället för chips (ser proffsigare ut för historik)
+            html += `
+                <div onclick="executeSearch('${term}')" style="display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid #f1f5f9; cursor:pointer;">
+                    <svg style="color:#cbd5e1; width:16px; height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    <span style="font-size:0.95rem; color:#334155;">${term}</span>
+                    <svg style="color:#e2e8f0; width:16px; height:16px; margin-left:auto;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </div>
+            `;
+        });
+        html += `</div>`;
+    } else {
+        html += `<p style="font-size:0.85rem; color:#cbd5e1; font-style:italic;">Inga tidigare sökningar.</p>`;
+    }
+
+    html += `</div>`;
+    container.innerHTML = html;
+}
+
+// Funktion för att rensa historik
+window.clearSearchHistory = function() {
+    localStorage.removeItem('searchHistory');
+    renderSearchZeroState(); // Rita om direkt
+};
