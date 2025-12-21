@@ -16,36 +16,35 @@
     width: 100%; 
     height: 100%;
     display: flex; 
-    flex-direction: column; /* Stapla Header + Content */
+    flex-direction: column;
     background-color: #f2f2f2;
-    overflow: hidden; /* VIKTIGT: Förhindrar att hela containern scrollar */
+    
+    /* FIXEN: Ändra från hidden till visible så headern får plats med "notchen" */
+    overflow: visible; 
+    position: relative;
+    box-sizing: border-box;
 }
 
-/* --- HEADER (NU LÅST I TOPPEN) --- */
-.one-ui-header-simple {
-    display: flex;
-    align-items: center;
-    padding: 0 16px;
-    height: 60px;
-    background-color: #f8f9fa;
-    border-bottom: 1px solid #e5e7eb;
-    flex-shrink: 0; /* VIKTIGT: Headern krymper inte */
-    gap: 16px;
-    position: relative; 
-    z-index: 10;
+/* Lägg till detta för att skydda headern */
+.one-ui-container .std-header {
+    flex-shrink: 0;
+    z-index: 100;
+    background: rgba(255, 255, 255, 0.95); /* Säkerställ bakgrund */
+    position: sticky;
+    top: 0;
 }
 
-.simple-back-btn {
-    background: transparent; border: none; padding: 0;
-    width: 24px; height: 24px;
-    display: flex; align-items: center; justify-content: center;
-    color: #111; cursor: pointer;
+/* Låt innehållet scrolla istället för containern */
+.one-ui-container .one-ui-content {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
-.simple-back-btn svg { width: 24px; height: 24px; stroke-width: 2.5px; }
 
-.header-simple-title {
-    font-size: 1.1rem; font-weight: 700; color: #111; margin: 0;
-}
+
+/* ÄNDRING 4: Låt innehållet (inte containern) sköta scrollen */
+.one-ui-container .settings-content, .one-ui-container .main-content { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+
 
 /* --- CONTENT (SCROLLBAR AREA) --- */
 .one-ui-content.compact-mode {
