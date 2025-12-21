@@ -200,8 +200,16 @@
 /* Bubbla Design (Premium) */
 .chat-bubble {
     padding: 10px 16px; 
-    font-size: 0.95rem; line-height: 1.45; position: relative;
-    word-wrap: break-word;
+    font-size: 0.95rem; 
+    line-height: 1.45; 
+    position: relative;
+    
+    /* FIXAR ÖVERFLÖDE: */
+    word-wrap: break-word;      /* Gammal standard */
+    overflow-wrap: anywhere;    /* Modern standard, bryter även långa länkar */
+    word-break: break-word;     /* Extra säkerhet */
+    
+    max-width: 100%; /* För säkerhets skull */
 }
 
 /* JAG (Blå gradient) */
