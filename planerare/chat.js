@@ -69,6 +69,23 @@ window.initChat = function() {
     if (closeBtn) closeBtn.onclick = window.toggleChatWidget;
     if (closeEditBtn) closeEditBtn.onclick = exitEditMode;
 
+    // Scroll-lyssnare för knappen
+    if (chatList) {
+        chatList.addEventListener('scroll', () => {
+            const btn = document.getElementById('chatScrollBtn');
+            if (!btn) return;
+            
+            // Om vi är mer än 300px från botten -> Visa knapp
+            const distanceToBottom = chatList.scrollHeight - chatList.scrollTop - chatList.clientHeight;
+            
+            if (distanceToBottom > 300) {
+                btn.classList.add('visible');
+            } else {
+                btn.classList.remove('visible');
+            }
+        });
+    }
+
     // --- SÖK-TOGGLE LOGIK ---
     const btnOpenSearch = document.getElementById('btnOpenSearch');
     const btnCloseSearch = document.getElementById('btnCloseSearch');
@@ -236,6 +253,23 @@ function setupChatListener(limit) {
                 return;
             }
 
+            const pinnedMsg = docs.find(d => d.isPinned === true);
+            const pinContainer = document.getElementById('pinnedMessageContainer');
+            const pinText = document.getElementById('pinnedTextPreview');
+
+            if (pinnedMsg && pinContainer) {
+                currentPinnedId = pinnedMsg.id;
+                pinContainer.style.display = 'flex';
+                
+                // Visa text (eller "Bild" om det är en bild)
+                let content = pinnedMsg.text || '';
+                if (pinnedMsg.type === 'image') content = '📷 Bild';
+                pinText.textContent = content;
+            } else if (pinContainer) {
+                currentPinnedId = null;
+                pinContainer.style.display = 'none';
+            }
+
             let lastDateKey = null;
             docs.forEach(data => {
                 if (data.timestamp) {
@@ -365,6 +399,8 @@ function renderChatBubble(data, container) {
     menu.onmouseenter = stopMenuTimer;
     menu.onmouseleave = startMenuTimer;
 
+    const pinFill = data.isPinned ? "#007aff" : "none";
+        const pinStroke = data.isPinned ? "#007aff" : "currentColor";
     // Notera: Vi använder onclick med window.funktioner
     menu.innerHTML = `
         <button class="action-emoji-btn" onclick="window.setReaction('${messageId}', '🕒', event)">🕒</button>
@@ -378,6 +414,12 @@ function renderChatBubble(data, container) {
         <button class="action-icon-btn danger" title="Ta bort" onclick="window.deleteChatMessage('${messageId}'); event.stopPropagation();">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
         </button>
+        <button class="action-icon-btn" title="${data.isPinned ? 'Lossa' : 'Fäst'}" onclick="window.togglePinMessage('${messageId}', event)">
+               <svg viewBox="0 0 24 24" fill="${pinFill}" stroke="${pinStroke}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:20px; height:20px;">
+                    <line x1="12" y1="17" x2="12" y2="22"></line>
+                    <path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"></path>
+                </svg>
+            </button>
     `;
     row.appendChild(menu);
 
@@ -745,3 +787,54 @@ function closeChatGallery() {
     const galleryModal = document.getElementById('chatGalleryModal');
     if (galleryModal) galleryModal.style.display = 'none';
 }
+
+window.scrollToBottomSmooth = function() {
+    const chatList = document.getElementById('chatMessages');
+    if (chatList) {
+        chatList.scrollTo({ top: chatList.scrollHeight, behavior: 'smooth' });
+    }
+};
+
+// Global variabel för att veta vilket meddelande som är fäst just nu
+let currentPinnedId = null;
+
+// Spara/Ta bort Pin i databasen
+window.togglePinMessage = async function(msgId, event) {
+    if(event) { event.stopPropagation(); window.toggleMessageMenu(msgId); } // Stäng menyn
+
+    // 1. Om vi redan har ett annat fäst meddelande, "av-fäst" det först (om du bara vill ha 1 åt gången)
+    if (currentPinnedId && currentPinnedId !== msgId) {
+        await window.db.collection('notes').doc(currentPinnedId).update({ isPinned: false });
+    }
+
+    // 2. Hämta status för det valda meddelandet
+    const docRef = window.db.collection('notes').doc(msgId);
+    const doc = await docRef.get();
+    
+    if (doc.exists) {
+        const isPinned = doc.data().isPinned || false;
+        // Byt status (true <-> false)
+        await docRef.update({ isPinned: !isPinned });
+    }
+};
+
+window.unpinCurrentMessage = async function() {
+    if (currentPinnedId) {
+        await window.db.collection('notes').doc(currentPinnedId).update({ isPinned: false });
+    }
+};
+
+// Scrolla till det fästa meddelandet
+window.scrollToPinned = function() {
+    if (!currentPinnedId) return;
+    const el = document.querySelector(`.chat-row[data-message-id="${currentPinnedId}"]`);
+    if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Highlighta det lite
+        el.style.transition = 'transform 0.3s';
+        el.style.transform = 'scale(1.05)';
+        setTimeout(() => el.style.transform = 'scale(1)', 300);
+    } else {
+        alert("Meddelandet är för gammalt för att visas i listan.");
+    }
+};
