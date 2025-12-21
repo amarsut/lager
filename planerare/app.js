@@ -39,6 +39,14 @@ if (!firebase.apps.length) {
 
 // Skapa globala referenser direkt
 const db = firebase.firestore();
+db.enablePersistence()
+  .catch((err) => {
+      if (err.code == 'failed-precondition') {
+          console.log('Offline-läge: Kan bara köras i en flik åt gången.');
+      } else if (err.code == 'unimplemented') {
+          console.log('Webbläsaren stödjer inte offline-läge.');
+      }
+  });
 const auth = firebase.auth(); // Nu är 'auth' definierad korrekt
 
 window.db = db;
@@ -3456,3 +3464,4 @@ window.clearSearchHistory = function() {
     localStorage.removeItem('searchHistory');
     renderSearchZeroState(); // Rita om direkt
 };
+
