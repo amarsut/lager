@@ -601,3 +601,42 @@
     /* 4. Säkerställ bakgrundsfärg */
     background: #f0f2f5 !important;
 }
+
+/* Scroll-till-botten knapp */
+.chat-scroll-btn {
+    position: absolute;
+    bottom: 80px; /* Ovanför textfältet */
+    right: 20px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #fff;
+    border: 1px solid #e5e5ea;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    color: #007aff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(10px);
+    transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+    z-index: 50;
+}
+.chat-scroll-btn.visible { opacity: 1; pointer-events: auto; transform: translateY(0); }
+.chat-scroll-btn svg { width: 20px; height: 20px; }
+
+/* Fäst meddelande list */
+.pinned-message-bar {
+    background: #f8fafc; border-bottom: 1px solid #e2e8f0; padding: 8px 12px; display: flex; align-items: center;
+    justify-content: space-between; cursor: pointer; font-size: 0.85rem; z-index: 10;
+}
+.pinned-bar-left { display: flex; align-items: center; gap: 8px; overflow: hidden; }
+.pin-icon-small { width: 14px; height: 14px; color: #007aff; flex-shrink: 0; }
+.pinned-content { display: flex; flex-direction: column; overflow: hidden; }
+.pinned-label { font-size: 0.7rem; font-weight: 700; color: #007aff; text-transform: uppercase; }
+.pinned-text { color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.unpin-btn { background: none; border: none; color: #94a3b8; cursor: pointer; padding: 4px; display: flex; }
+.unpin-btn svg { width: 16px; height: 16px; }
