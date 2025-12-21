@@ -371,13 +371,41 @@
 
 					<div id="mobileUpcomingContainer" class="mobile-only"></div>
 
-					<div id="calendarView">
+					<div id="calendarView" style="display: none;">
+						<div class="std-header">
+							<button class="std-back-btn" id="btnBackCalendar"> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+									<polyline points="15 18 9 12 15 6"></polyline>
+								</svg>
+							</button>
+							<h2 class="std-title">Kalender</h2>
+							
+							<button class="std-action-btn" onclick="goToToday()" title="Gå till idag">
+								<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+									<rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+								</svg>
+							</button>
+						</div>
 					    <div id="calendar-wrapper"></div>
 						
 						<div id="selectedDayView" style="display:none;"></div>
 					</div>
 
 					<div id="customersView" style="display: none;">
+						<div class="std-header">
+							<button class="std-back-btn" id="btnBackCustomers"> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+									<polyline points="15 18 9 12 15 6"></polyline>
+								</svg>
+							</button>
+							<h2 class="std-title">Kunder</h2>
+
+							<button class="std-action-btn" onclick="renderCustomerView()" title="Uppdatera listan">
+								<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+									<path d="M23 4v6h-6"></path>
+									<path d="M1 20v-6h6"></path>
+									<path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+								</svg>
+							</button>
+						</div>
 						<div class="cust-stats-wrapper">
 						    <div class="cust-stat-card">
 						        <div class="cs-label">Totalt Kunder</div>
@@ -418,14 +446,20 @@
 
 					<div id="statisticsView" style="display: none; background: var(--bg-color); min-height: 100vh; padding-bottom: 80px;">
     
-						<div class="one-ui-header-simple sticky-header-fix">
-							<button class="simple-back-btn" onclick="goToOverviewFromStats()">
-								<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-									<line x1="19" y1="12" x2="5" y2="12"></line>
-									<polyline points="12 19 5 12 12 5"></polyline>
+						<div class="std-header">
+							<button class="std-back-btn" id="btnBackStats"> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+									<polyline points="15 18 9 12 15 6"></polyline>
 								</svg>
 							</button>
-							<h1 class="header-simple-title">Ekonomi</h1>
+							<h1 class="std-title">Ekonomi</h1>
+
+							<button class="std-action-btn" onclick="renderDashboard()" title="Uppdatera statistik">
+								<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+									<path d="M23 4v6h-6"></path>
+									<path d="M1 20v-6h6"></path>
+									<path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+								</svg>
+							</button>
 						</div>
 
 						<div class="stats-controls-bar">
@@ -533,16 +567,11 @@
 
     <div id="jobModal" class="modal-backdrop">
 	    <div class="modal-content">
-	        <div class="modal-header">
-			    <button class="simple-back-btn" id="modalBackBtn">
-			        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-			            <line x1="19" y1="12" x2="5" y2="12"></line>
-			            <polyline points="12 19 5 12 12 5"></polyline>
-			        </svg>
-			    </button>
-			    
-			    <h2 id="modalTitle">Redigera Jobb</h2>
-	        </div>
+	        <div class="std-header">
+				<button class="std-back-btn" id="modalBackBtn"> <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
+				</button>
+				<h2 class="std-title" id="modalTitle">Redigera Jobb</h2>
+			</div>
 	        
 	        <form id="jobModalForm" class="modal-body">
 	            <input type="hidden" id="jobId">
@@ -641,24 +670,24 @@
 	<div id="vehicleModal" class="modal-backdrop">
 	    <div class="modal-content modal-wide">
 	        
-	        <div class="modal-header">
-	            <div style="display: flex; align-items: center; gap: 12px;">
-	                <button class="simple-back-btn" onclick="closeVehicleModal()">
-	                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-	                </button>
-	                <h2 id="vehicleRegTitle" style="font-size: 1.2rem; font-weight:700;">---</h2>
-	                <div id="vehicleHeaderBtns" style="display:flex; gap:8px;"></div>
-	            </div>
-	
-	            <div style="display:flex; gap:8px;">
-	                <a href="#" target="_blank" id="linkBiluppgifter" class="header-icon-action">
-	                    <img src="https://biluppgifter.se/favicon.ico" alt="B">
-	                </a>
-	                <a href="#" target="_blank" id="linkOljemagasinet" class="header-icon-action">
-	                    <img src="https://www.google.com/s2/favicons?domain=oljemagasinet.se" alt="O">
-	                </a>
-	            </div>
-	        </div>
+	        <div class="std-header">
+				<button class="std-back-btn" onclick="closeVehicleModal()">
+					<svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
+				</button>
+				
+				<h2 class="std-title" id="vehicleRegTitle">---</h2>
+
+				<div style="display:flex; align-items:center; gap:8px;">
+					<div id="vehicleHeaderBtns" style="display:flex; gap:8px;"></div>
+					
+					<a href="#" target="_blank" id="linkBiluppgifter" class="header-icon-action">
+						<img src="https://biluppgifter.se/favicon.ico" alt="B" style="width:24px; height:24px; border-radius:4px;">
+					</a>
+					<a href="#" target="_blank" id="linkOljemagasinet" class="header-icon-action">
+						<img src="https://www.google.com/s2/favicons?domain=oljemagasinet.se" alt="O" style="width:24px; height:24px; border-radius:4px;">
+					</a>
+				</div>
+			</div>
 	
 	        <div class="modal-body" style="background: #f8fafc; padding: 0 !important;">
 	            
@@ -698,42 +727,43 @@
 	</div>
 
 	<div id="chatWidget" class="chat-widget" style="display: none;">
-	    <div class="chat-header" id="chatHeader">
-			<button id="closeChatWidget" class="header-icon-btn" title="Stäng">
-				<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-					<polyline points="15 18 9 12 15 6"></polyline>
-				</svg>
-			</button>
+	    <div class="chat-header std-header" id="chatHeader">
+    
+    <button id="closeChatWidget" class="std-back-btn" title="Stäng">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+    </button>
 
-			<div class="header-content-default" id="headerDefault">
-				
-				<div class="header-title-info">
-					<span class="chat-title">AI Assistent</span>
-					<span class="chat-subtitle">Online</span>
-				</div>
+    <div class="header-content-default" id="headerDefault" style="flex:1; display:flex; align-items:center; justify-content:space-between;">
+        
+        <div class="header-title-info" style="display:flex; flex-direction:column; justify-content:center;">
+            <h2 class="std-title" style="margin:0; font-size: 1rem; line-height: 1.2;">AI Assistent</h2>
+            <span class="chat-subtitle" style="font-size: 0.75rem; color: #34C759; font-weight: 500;">Online</span>
+        </div>
 
-				<div class="header-actions">
-					<button class="header-tool-btn" id="btnOpenSearch" title="Sök">
-						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-					</button>
-					
-					<button class="header-tool-btn" id="toggleGalleryBtn" title="Galleri">
-						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-					</button>
-					
-					<button class="header-tool-btn" id="toggleAiBtn" title="AI Verktyg">
-						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10H12V2z"></path><path d="M12 2a10 10 0 0 1 10 10"></path><path d="M12 2v10"></path></svg>
-					</button>
-				</div>
-			</div>
+        <div class="header-actions" style="display:flex; gap: 4px;">
+            <button class="std-action-btn" id="btnOpenSearch" title="Sök">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </button>
+            
+            <button class="std-action-btn" id="toggleGalleryBtn" title="Galleri">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+            </button>
+            
+            <button class="std-action-btn" id="toggleAiBtn" title="AI Verktyg">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10H12V2z"></path><path d="M12 2a10 10 0 0 1 10 10"></path><path d="M12 2v10"></path></svg>
+            </button>
+        </div>
+    </div>
 
-			<div class="header-search-bar" id="headerSearchBar">
-				<input type="text" id="chatSearchInput" placeholder="Sök meddelande..." autocomplete="off">
-				<button class="header-tool-btn close-search" id="btnCloseSearch">
-					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-				</button>
-			</div>
-		</div>
+    <div class="header-search-bar" id="headerSearchBar">
+        <input type="text" id="chatSearchInput" placeholder="Sök meddelande..." autocomplete="off">
+        <button class="std-action-btn close-search" id="btnCloseSearch">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+    </div>
+</div>
 	
 	    <div id="chatMessages" class="chat-messages">
 	        </div>
@@ -829,11 +859,11 @@
 	</div>
 
 	<div id="chatGalleryModal" class="chat-gallery-overlay" style="display: none;">
-		<div class="chat-gallery-header">
-			<button class="simple-back-btn" id="closeGalleryBtn">
-				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+		<div class="std-header">
+			<button class="std-back-btn" id="closeGalleryBtn">
+				<svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
 			</button>
-			<h2 class="header-simple-title" style="margin-left: 10px;">Galleri</h2>
+			<h2 class="std-title">Galleri</h2>
 		</div>
 		<div id="chatGalleryContent" class="chat-gallery-grid">
 			</div>
@@ -841,25 +871,23 @@
 
 	<div id="mobileSearchModal" class="modal-overlay mobile-only" style="z-index: 2000;">
 	    <div class="messenger-search-container">
-	        <div class="messenger-search-header">
-	            <button id="closeMobileSearchBtn" class="messenger-back-btn">
-	                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-	                    <line x1="19" y1="12" x2="5" y2="12"></line>
-	                    <polyline points="12 19 5 12 12 5"></polyline>
-	                </svg>
-	            </button>
-	            <div class="messenger-input-wrapper">
-				    <svg class="search-icon-inside" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-				        <circle cx="11" cy="11" r="8"></circle>
-				        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-				    </svg>
-				    <input type="text" id="mobileSearchInput" placeholder="Sök i konversationen" autocomplete="off">
-				    
-				    <button class="clear-input-btn" id="clearMobileSearch" style="display: none;">
-				        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z"/></svg>
-				    </button>
+	        <div class="std-header">
+				<button class="std-back-btn" id="closeMobileSearchBtn">
+					<svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
+				</button>
+				
+				<div class="messenger-input-wrapper" style="flex:1; margin-left: 0;">
+					<svg class="search-icon-inside" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<circle cx="11" cy="11" r="8"></circle>
+						<line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+					</svg>
+					<input type="text" id="mobileSearchInput" placeholder="Sök i konversationen" autocomplete="off">
+					
+					<button class="clear-input-btn" id="clearMobileSearch" style="display: none;">
+						<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z"/></svg>
+					</button>
 				</div>
-	        </div>
+			</div>
 	
 	        <div id="mobileSearchResults" class="messenger-results-area">
 	            </div>
@@ -919,11 +947,13 @@
 	<div id="settingsModal" class="modal-backdrop one-ui-backdrop" style="z-index: 20002;">
 		<div class="one-ui-container">
 			
-			<div class="one-ui-header-simple">
-				<button class="simple-back-btn" onclick="closeSettings()">
-					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+			<div class="std-header">
+				<button class="std-back-btn" onclick="closeSettings()">
+					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<polyline points="15 18 9 12 15 6"></polyline>
+					</svg>
 				</button>
-				<h1 class="header-simple-title">Meny</h1>
+				<h2 class="std-title">Meny</h2>
 			</div>
 
 			<div class="one-ui-content compact-mode">
@@ -1073,15 +1103,14 @@
 	<div id="customerModal" class="modal-backdrop">
 	    <div class="modal-content modal-wide">
 	        
-	        <div class="modal-header">
-	            <div style="display: flex; align-items: center; gap: 8px;">
-	                <button class="simple-back-btn" id="closeCustomerModalBtn">
-	                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-	                </button>
-	                <h2 id="modalCustomerName" style="font-size: 1.2rem; font-weight:700;">Kundnamn</h2>
-	            </div>
-	            <div id="modalCustomerBadge"></div>
-	        </div>
+	        <div class="std-header">
+				<button class="std-back-btn" id="closeCustomerModalBtn">
+					<svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
+				</button>
+				<h2 class="std-title" id="modalCustomerName">Kundnamn</h2>
+				
+				<div id="modalCustomerBadge"></div>
+			</div>
 	
 	        <div class="modal-body" style="background: #f8fafc;">
 	            
