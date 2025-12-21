@@ -1256,44 +1256,28 @@ function setupEventListeners() {
     
 	// Hantera klick på Sök-knappen i menyn
 	document.getElementById('mobileSearchBtn')?.addEventListener('click', () => {
-	    const searchModal = document.getElementById('mobileSearchModal');
-	    const searchInput = document.getElementById('mobileSearchInput');
-	    const resultsContainer = document.getElementById('mobileSearchResults');
+        const searchModal = document.getElementById('mobileSearchModal');
+        const searchInput = document.getElementById('mobileSearchInput');
+        const resultsContainer = document.getElementById('mobileSearchResults');
 
-	    // 1. Öppna modalen
-	    searchModal.classList.add('show');
-	    
-	    // 2. Nollställ gamla sökningar för en fräsch start
-	    searchInput.value = '';
-	    resultsContainer.innerHTML = '';
-	    
-	    // 3. Markera knappen som aktiv i menyn
-	    document.querySelectorAll('.mobile-nav-item').forEach(btn => btn.classList.remove('active'));
-	    document.getElementById('mobileSearchBtn').classList.add('active');
+        // 1. Öppna modalen
+        searchModal.classList.add('show');
+        
+        // 2. Nollställ
+        searchInput.value = '';
+        
+        // 3. Markera knappen som aktiv
+        document.querySelectorAll('.mobile-nav-item').forEach(btn => btn.classList.remove('active'));
+        document.getElementById('mobileSearchBtn').classList.add('active');
 
-		const history = JSON.parse(localStorage.getItem('searchHistory') || '[]');
-    
-	    if (history.length > 0) {
-	        let html = `<div style="padding:16px;">
-	            <p style="font-size:0.75rem; color:#94a3b8; font-weight:700; margin-bottom:10px; text-transform:uppercase;">Senaste</p>
-	            <div style="display:flex; flex-wrap:wrap; gap:8px;">`;
-	            
-	        history.forEach(term => {
-	            html += `<span class="search-chip" onclick="executeSearch('${term}')">${term}</span>`;
-	        });
-	        
-	        html += `</div></div>`;
-	        resultsContainer.innerHTML = html;
-	    } else {
-	        resultsContainer.innerHTML = ''; 
-	    }
+        // 4. VISA START-VYN (Snabbval + Historik) - HÄR ÄR ÄNDRINGEN
+        renderSearchZeroState();
 
-	    // 4. VIKTIGT: Sätt fokus i rutan (Tangentbordet kommer upp)
-	    // Vi väntar 100ms för att säkerställa att modalen hunnit bli synlig först
-	    setTimeout(() => {
-	        searchInput.focus();
-	    }, 100);
-	});
+        // 5. Fokusera
+        setTimeout(() => {
+            searchInput.focus();
+        }, 100);
+    });
 	
     // Hantera klick på statistik-korten (Filter)
     document.querySelectorAll('.stat-card').forEach(card => {
@@ -2302,12 +2286,18 @@ document.getElementById('mobileSearchInput')?.addEventListener('input', (e) => {
     const term = e.target.value; 
     const resultsContainer = document.getElementById('mobileSearchResults');
     
+    // NYTT: Om fältet är tomt, visa Snabbval/Historik igen
+    if (term.length === 0) {
+        renderSearchZeroState();
+        return;
+    }
+    
     if (term.length < 2) {
         resultsContainer.innerHTML = '<p style="text-align:center; color:#9ca3af; margin-top:20px;">Skriv minst 2 tecken för att söka.</p>';
         return;
     }
     
-    // HÄR ÄR FIXEN: Vi lägger till "!job.deleted" i filtret
+    // ... resten av din sök-kod är oförändrad ...
     const filteredJobs = allJobs.filter(job => !job.deleted && jobMatchesSearch(job, term));
     
     if (filteredJobs.length === 0) {
@@ -3399,4 +3389,59 @@ window.toggleCardExpand = function(jobId, event) {
             }, 300);
         }
     }
+};
+
+// --- NY FUNKTION: Visa "Noll-läge" i sök (Snabbval + Historik) ---
+function renderSearchZeroState() {
+    const container = document.getElementById('mobileSearchResults');
+    if (!container) return;
+
+    // Hämta din befintliga historik
+    const history = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+
+    let html = `<div style="padding:20px;">`;
+
+    // 1. SNABBVAL (NYTT!) - Färdiga filterknappar
+    html += `
+        <p style="font-size:0.75rem; color:#94a3b8; font-weight:700; margin-bottom:12px; text-transform:uppercase; letter-spacing:0.5px;">Snabbval</p>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:24px;">
+            <button onclick="executeSearch('Faktureras')" style="background:#fee2e2; color:#ef4444; border:none; padding:8px 16px; border-radius:20px; font-size:0.85rem; font-weight:600; cursor:pointer;">Faktureras</button>
+            <button onclick="executeSearch('Klar')" style="background:#dcfce7; color:#16a34a; border:none; padding:8px 16px; border-radius:20px; font-size:0.85rem; font-weight:600; cursor:pointer;">Färdiga</button>
+            <button onclick="executeSearch('Bokad')" style="background:#e0f2fe; color:#0284c7; border:none; padding:8px 16px; border-radius:20px; font-size:0.85rem; font-weight:600; cursor:pointer;">Bokade</button>
+        </div>
+    `;
+
+    // 2. SENASTE SÖKNINGAR (Din gamla data, men snyggare lista)
+    if (history.length > 0) {
+        html += `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <p style="font-size:0.75rem; color:#94a3b8; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">Senaste</p>
+                <button onclick="clearSearchHistory()" style="background:none; border:none; color:#3b82f6; font-size:0.75rem; cursor:pointer;">Rensa</button>
+            </div>
+            <div style="display:flex; flex-direction:column;">
+        `;
+        
+        history.forEach(term => {
+            // Vi gör om det till en lista med klock-ikon istället för chips (ser proffsigare ut för historik)
+            html += `
+                <div onclick="executeSearch('${term}')" style="display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid #f1f5f9; cursor:pointer;">
+                    <svg style="color:#cbd5e1; width:16px; height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    <span style="font-size:0.95rem; color:#334155;">${term}</span>
+                    <svg style="color:#e2e8f0; width:16px; height:16px; margin-left:auto;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </div>
+            `;
+        });
+        html += `</div>`;
+    } else {
+        html += `<p style="font-size:0.85rem; color:#cbd5e1; font-style:italic;">Inga tidigare sökningar.</p>`;
+    }
+
+    html += `</div>`;
+    container.innerHTML = html;
+}
+
+// Funktion för att rensa historik
+window.clearSearchHistory = function() {
+    localStorage.removeItem('searchHistory');
+    renderSearchZeroState(); // Rita om direkt
 };
