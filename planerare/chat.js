@@ -1,713 +1,870 @@
-* {
-    -webkit-tap-highlight-color: transparent;
-}
-/* ==========================================================================
-   MODERN CHAT - CLEAN & OPTIMIZED (v2.0)
-   ========================================================================== */
+// ==========================================
+// CHATT - SEPARAT FIL (chat.js)
+// ==========================================
 
-/* --- 1. Flytande Chatt-knapp (FAB) --- */
-@media (min-width: 769px) {
-    #fabChat {
-        position: fixed !important;
-        bottom: 30px !important;
-        right: 30px !important;
-        width: 60px !important;
-        height: 60px !important;
-        background-color: #0066FF !important;
-        color: white !important;
-        border-radius: 50% !important;
-        border: none !important;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
-        z-index: 2147483647 !important;
-        display: flex !important;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer !important;
-        transition: transform 0.2s, box-shadow 0.2s;
-    }
-    #fabChat svg { width: 28px !important; height: 28px !important; stroke: white !important; }
-    #fabChat:hover {
-        transform: translateY(-3px) scale(1.05) !important;
-        box-shadow: 0 15px 35px -8px rgba(59, 130, 246, 0.7) !important;
-    }
-}
-@media (max-width: 768px) {
-    #fabChat { display: none !important; }
-}
+// Globala variabler för chatten
+let chatUnsubscribe = null;
+let isEditingMsg = false;
+let currentEditMsgId = null;
+let chatMenuTimer = null; // Fix för "ReferenceError"
 
-/* --- 2. Huvudfönster (Widget Container) --- */
-#chatWidget {
-    position: fixed;
-    z-index: 1000;
-    background: rgba(255, 255, 255, 0.85); /* Glassmorphism */
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255,255,255,0.3);
-    display: flex; 
-    flex-direction: column;
-    overflow: hidden;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    animation: chatPopIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
+// Gör funktionen global
+window.toggleChatWidget = function() {
+    const chatWidget = document.getElementById('chatWidget');
+    if (!chatWidget) return;
 
-/* Desktop position */
-@media (min-width: 769px) {
-    #chatWidget {
-        bottom: 105px; 
-        right: 30px;
-        width: clamp(400px, 40vw, 500px); 
-        height: 600px;
-        max-height: 80vh;
-        border-radius: 24px;
-    }
-}
+    const isOpen = chatWidget.style.display === 'flex';
 
-/* Mobil position (Helskärm) */
-@media (max-width: 768px) {
-    #chatWidget {
-        top: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
-        bottom: 0 !important;
-        width: 100% !important;
-        height: 100% !important;
-        margin: 0 !important;
-        border-radius: 0 !important;
-        z-index: 99999 !important;
-        background: #fff; /* Fallback på mobil */
-    }
-}
-
-@keyframes chatPopIn {
-    from { opacity: 0; transform: translateY(30px) scale(0.96); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-/* --- 3. Header (WhatsApp/Telegram Style) --- */
-.chat-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 60px;
-    padding: 0 12px;
-    background: rgba(255, 255, 255, 0.5); /* Genomskinlig */
-    backdrop-filter: blur(10px);
-    border-bottom: 1px solid rgba(0,0,0,0.06);
-    position: relative;
-    overflow: hidden;
-    flex-shrink: 0;
-}
-
-/* Mobil header anpassning */
-@media (max-width: 768px) {
-    .chat-header {
-        padding-top: env(safe-area-inset-top); 
-        height: calc(60px + env(safe-area-inset-top));
-    }
-}
-
-/* Standard Header Innehåll */
-.header-content-default {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding-left: 8px;
-    transition: transform 0.2s ease, opacity 0.2s ease;
-}
-
-/* Titlar */
-.header-title-info { display: flex; flex-direction: column; justify-content: center; }
-.chat-title { font-size: 1rem; font-weight: 600; color: #1C1C1E; line-height: 1.1; }
-.chat-subtitle { font-size: 0.75rem; color: #34C759; font-weight: 500; }
-
-/* Header Knappar */
-.header-icon-btn, .header-tool-btn {
-    width: 40px; height: 40px;
-    border-radius: 50%; border: none;
-    background: transparent; color: #1C1C1E;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; transition: background 0.2s;
-}
-.header-icon-btn { background: #F2F2F7; color: #8E8E93; border-radius: 12px; } /* Tillbaka-knapp fyrkantig */
-.header-icon-btn:hover, .header-tool-btn:hover { background: rgba(0,0,0,0.05); color: #000; }
-
-/* Justering av ikon-gruppen i headern */
-.header-actions {
-    display: flex; gap: 4px;
-}
-@media (max-width: 768px) {
-    .header-actions { margin-right: -25px; margin-top: -14px; }
-}
-@media (min-width: 769px) {
-    .header-actions { margin-right: -8px; margin-top: -4px; }
-}
-
-/* Sök-fält (Dold default) */
-.header-search-bar {
-    position: absolute; top: 0; left: 50px; right: 0; bottom: 0;
-    background: #fff;
-    display: flex; align-items: center; padding-right: 12px;
-    opacity: 0; transform: translateX(20px); pointer-events: none;
-    transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
-    padding-top: env(safe-area-inset-top); /* Mobil fix */
-}
-.header-search-bar input {
-    flex: 1; border: none; background: transparent; font-size: 1rem;
-    outline: none; height: 100%; padding: 0 8px;
-}
-
-/* Header Aktivt Sök-läge */
-.chat-header.search-active .header-content-default { opacity: 0; transform: translateX(-20px); pointer-events: none; }
-.chat-header.search-active .header-search-bar { opacity: 1; transform: translateX(0); pointer-events: auto; }
-
-/* --- 4. Meddelandelista --- */
-.chat-messages {
-    flex: 1;
-    overflow-y: auto;
-    padding: 20px 16px;
-    display: flex; flex-direction: column;
-    gap: 8px;
-    background-color: transparent; /* Låt widgetens bakgrund synas */
-    scrollbar-width: thin; scrollbar-color: #D1D1D6 transparent;
-}
-@media (max-width: 768px) { .chat-messages { overscroll-behavior-y: contain; padding-top: 10px; } }
-
-.chat-messages::-webkit-scrollbar { width: 6px; }
-.chat-messages::-webkit-scrollbar-thumb { background-color: #D1D1D6; border-radius: 3px; }
-
-/* Datumavskiljare */
-.chat-date-separator {
-    text-align: center; font-size: 0.7rem; color: #8E8E93; font-weight: 600;
-    margin: 12px 0; text-transform: uppercase; letter-spacing: 0.5px;
-    position: relative; display: flex; align-items: center; justify-content: center;
-}
-.chat-date-separator span { background: #fff; padding: 0 10px; border-radius: 10px; z-index: 1; }
-.chat-date-separator::before { content: ''; position: absolute; left: 0; right: 0; height: 1px; background: #E5E5EA; z-index: 0; }
-
-/* --- 5. Meddelandebubblor --- */
-.chat-row {
-    display: flex; flex-direction: column; max-width: 80%;
-    position: relative; margin-bottom: 20px;
-    animation: bubblePop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-}
-.chat-row:last-child { margin-bottom: 0; }
-@keyframes bubblePop { from { opacity: 0; transform: scale(0.9) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
-
-.chat-row.me { align-self: flex-end; align-items: flex-end; }
-.chat-row.other, .chat-row.system { align-self: flex-start; align-items: flex-start; }
-
-/* Bubbla Design (Premium) */
-.chat-bubble {
-    padding: 10px 16px; 
-    font-size: 0.95rem; 
-    line-height: 1.45; 
-    position: relative;
-    
-    /* FIXAR ÖVERFLÖDE: */
-    word-wrap: break-word;      /* Gammal standard */
-    overflow-wrap: anywhere;    /* Modern standard, bryter även långa länkar */
-    word-break: break-word;     /* Extra säkerhet */
-    
-    max-width: 100%; /* För säkerhets skull */
-}
-
-/* JAG (Blå gradient) */
-.chat-row.me .chat-bubble {
-    background: linear-gradient(135deg, #0066FF 0%, #0052cc 100%) !important;
-    box-shadow: 0 4px 15px rgba(0, 102, 255, 0.3);
-    color: white; border-radius: 20px 20px 4px 20px !important;
-}
-.chat-row.me .chat-bubble a { color: white; text-decoration: underline; }
-
-/* ANDRA (Vit/Grå) */
-.chat-row.other .chat-bubble {
-    background: #E9E9EB !important; /* Mörkare, klassisk iOS grå */
-    color: #000000 !important;
-    box-shadow: none !important; /* Plattare look är oftast renare */
-    border-radius: 20px 20px 20px 4px !important;
-}
-
-/* SYSTEM (Ljusgrå) */
-.chat-row.system .chat-bubble {
-    background: #E9E9EB !important; /* Mörkare, klassisk iOS grå */
-    color: #000000 !important;
-    box-shadow: none !important; /* Plattare look är oftast renare */
-    border-radius: 20px 20px 20px 4px !important;
-}
-.chat-row.system { align-self: center; max-width: 90%; margin-bottom: 10px; }
-
-/* Bildbubblor */
-.chat-bubble.is-image { background: transparent !important; padding: 0 !important; box-shadow: none !important; }
-.chat-bubble-image img {
-    border-radius: 18px; max-width: 100%; max-height: 300px;
-    display: block; cursor: zoom-in; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    transition: transform 0.2s;
-}
-.chat-bubble-image img:hover { transform: scale(1.02); }
-
-/* Tidsstämpel */
-.chat-time { font-size: 0.65rem; color: #9CA3AF; margin-top: 4px; font-weight: 500; }
-.chat-row.me .chat-time { text-align: right; margin-right: 4px; }
-.chat-row.other .chat-time { text-align: left; margin-left: 4px; }
-
-/* Sök-highlight */
-.search-highlight { background-color: #ffeb3b; color: #000; border-radius: 2px; }
-
-/* --- 6. Input Area (Compact Footer) --- */
-.chat-input-area {
-    min-height: 60px !important;
-    background: #FFFFFF;
-    display: flex; align-items: center !important; /* Centrerad */
-    gap: 12px;
-    border-top: 1px solid #F2F2F7;
-    position: relative;
-    
-    /* Compact Padding */
-    padding-top: 8px !important;
-    padding-left: 10px !important;
-    padding-right: 10px !important;
-    padding-bottom: max(8px, env(safe-area-inset-bottom)) !important;
-}
-
-/* Textfält */
-.chat-input-area textarea {
-    flex: 1;
-    min-height: 40px !important; 
-    height: 40px !important; 
-    max-height: 40px !important; /* Lås höjden */
-    
-    background: #FFFFFF !important;
-    border: 1px solid rgba(0,0,0,0.1) !important;
-    border-radius: 25px !important;
-    
-    /* Centrera texten vertikalt */
-    padding: 0 14px !important; 
-    padding-right: 90px !important; /* Plats för ikoner */
-    line-height: 38px !important;   /* Matchar höjden minus border för perfekt mitten-text */
-    
-    font-size: 0.95rem; 
-    font-family: inherit; 
-    resize: none; 
-    outline: none;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    transition: all 0.2s ease; 
-    margin: 0 !important;
-    
-    /* NYTT: Tvinga texten att gå åt höger */
-    white-space: nowrap !important;
-    overflow-x: auto !important;  /* Tillåt scroll i sidled */
-    overflow-y: hidden !important; /* Ingen höjd-scroll */
-    
-    /* Dölj scrollbar för en renare look */
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE/Edge */
-}
-
-/* Dölj scrollbar i textrutan (Chrome/Safari/Opera) */
-.chat-input-area textarea::-webkit-scrollbar {
-    display: none;
-}
-.chat-input-area textarea:focus {
-    box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.15) !important;
-    border-color: transparent !important;
-}
-
-/* Ikoner inuti input (Gem/Kamera) - Centrerade med transform */
-.chat-actions-left { 
-    position: absolute; 
-    top: 50% !important; transform: translateY(-50%) !important;
-    right: 65px !important; /* Avstånd från högerkanten av textrutan */
-    display: flex; gap: 4px; z-index: 20;
-    pointer-events: auto; bottom: auto !important;
-}
-.chat-actions-left .icon-btn { 
-    color: #8E8E93; width: 32px; height: 32px; border-radius: 50%;
-    background: transparent; border: none; cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-}
-.chat-actions-left .icon-btn:hover { color: #007AFF; background: rgba(0, 122, 255, 0.1); }
-
-/* Sänd-knapp */
-#chatSendBtn {
-    width: 38px !important; height: 38px !important; border-radius: 50%;
-    background: linear-gradient(135deg, #0066FF 0%, #0052cc 100%) !important;
-    color: white; border: none; flex-shrink: 0; margin: 0 !important;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; transition: transform 0.2s;
-    box-shadow: 0 4px 10px rgba(0, 122, 255, 0.2);
-}
-#chatSendBtn:active { transform: scale(0.9); }
-#chatSendBtn svg { width: 18px; height: 18px; margin-left: 2px; }
-
-/* Edit Mode styling för input */
-.chat-widget.edit-mode .chat-input-area {
-    display: grid !important; grid-template-columns: 1fr auto;
-    gap: 8px; align-items: center;
-}
-.chat-widget.edit-mode .chat-actions-left { display: none !important; }
-
-/* --- 7. Menyn för meddelanden (Högerklick/Hover) --- */
-.chat-action-menu {
-    display: none; position: absolute; top: -45px;
-    background-color: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(8px); border: 1px solid rgba(0,0,0,0.08);
-    border-radius: 30px; padding: 6px 10px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
-    align-items: center; gap: 6px; z-index: 2000;
-    animation: popInMenu 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-.chat-row.me .chat-action-menu { right: 0; }
-.chat-row.other .chat-action-menu { left: 0; }
-.chat-row:hover .chat-action-menu, .chat-row.show-menu .chat-action-menu { display: flex; }
-.chat-row:hover, .chat-row.show-menu { z-index: 100; } /* Lyfter raden över datum */
-
-.action-emoji-btn, .action-icon-btn {
-    background: transparent; border: none; cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    transition: transform 0.2s;
-}
-.action-emoji-btn { font-size: 1.3rem; width: 32px; height: 32px; border-radius: 50%; }
-.action-emoji-btn:hover { transform: scale(1.2); background: rgba(0,0,0,0.05); }
-
-.action-icon-btn { color: #64748b; width: 32px; height: 32px; border-radius: 50%; }
-.action-icon-btn:hover { background: #f1f5f9; color: #007aff; }
-.action-icon-btn.danger:hover { background: #fef2f2; color: #ef4444; }
-.action-separator { width: 1px; height: 20px; background: #e5e5ea; margin: 0 4px; }
-
-/* Reaktioner (liten ikon på bubblan) */
-.reaction-badge-display {
-    position: absolute; bottom: -8px; right: -12px;
-    background: #fff; border: 2px solid #fff; border-radius: 12px;
-    padding: 2px 4px; font-size: 0.85rem; cursor: pointer;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1); z-index: 10;
-    animation: popInBadge 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-.chat-row.other .reaction-badge-display { right: auto; left: 10px; }
-
-@keyframes popInBadge { from { transform: scale(0); } to { transform: scale(1); } }
-@keyframes popInMenu { from { opacity: 0; transform: translateY(10px) scale(0.9); } to { opacity: 1; transform: translateY(0) scale(1); } }
-
-/* --- 8. Galleri Overlay --- */
-.chat-gallery-overlay {
-    position: fixed; z-index: 2147483647 !important;
-    background: #ffffff; display: flex; flex-direction: column;
-    overflow: hidden;
-    bottom: 105px; right: 30px;
-    width: clamp(400px, 40vw, 500px); height: 600px; max-height: 80vh;
-    border-radius: 24px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-    animation: galleryFadeIn 0.2s ease-out forwards;
-}
-@media (max-width: 768px) {
-    .chat-gallery-overlay {
-        top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
-        width: 100% !important; height: 100% !important; max-height: none !important;
-        border-radius: 0 !important; margin: 0 !important;
-    }
-}
-@keyframes galleryFadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
-
-.chat-gallery-header {
-    height: 60px; padding: 0 16px; display: flex; align-items: center; gap: 12px;
-    border-bottom: 1px solid #f2f2f7; background: #fff;
-}
-@media (max-width: 768px) { .chat-gallery-header { padding-top: env(safe-area-inset-top); height: auto; padding-bottom: 10px; } }
-
-.chat-gallery-grid {
-    flex: 1;
-    overflow-y: auto;
-    display: grid !important; /* Tvinga grid */
-    grid-template-columns: repeat(3, 1fr) !important; /* 3 kolumner */
-    gap: 2px;
-    padding: 2px;
-    align-content: start; /* Hindrar att de sträcks ut om få bilder */
-}
-
-.gallery-item {
-    position: relative;
-    aspect-ratio: 1/1; /* Kvadratisk */
-    width: 100%;
-    overflow: hidden;
-    background: #f0f0f0;
-    cursor: pointer;
-}
-
-.gallery-item img {
-    width: 100% !important;
-    height: 100% !important;
-    object-fit: cover !important; /* Klipp bilden snyggt */
-    display: block;
-}
-
-/* --- 9. Bildvisare (Samsung One UI Style) --- */
-.image-modal-overlay {
-    display: none; 
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    z-index: 999999 !important;
-    
-    /* NYTT: Glossy effekt istället för solid svart */
-    background-color: rgba(0, 0, 0, 0.6) !important; 
-    backdrop-filter: blur(15px) !important;
-    -webkit-backdrop-filter: blur(15px) !important;
-    
-    flex-direction: column; 
-    justify-content: space-between;
-    animation: fadeInModal 0.2s ease-out;
-}
-@media (max-width: 768px) {
-    #imageZoomModal.image-modal-overlay {
-        /* Sänkte från 0.8 till 0.6 för att släppa igenom mer ljus */
-        background-color: rgba(0, 0, 0, 0.6) !important; 
-        backdrop-filter: blur(15px) !important;
-        -webkit-backdrop-filter: blur(15px) !important;
-    }
-}
-@keyframes fadeInModal { from { opacity: 0; } to { opacity: 1; } }
-
-/* Top Bar */
-.gallery-top-bar {
-    height: 60px; display: flex; justify-content: center; align-items: center;
-    padding-top: env(safe-area-inset-top); z-index: 10; pointer-events: none;
-}
-#galleryCounter {
-    color: #fff; font-size: 0.95rem; font-weight: 600; opacity: 0.9;
-    background: rgba(0,0,0,0.3); padding: 4px 12px; border-radius: 20px;
-}
-@media (max-width: 768px) { .gallery-top-bar { padding-top: 20px !important; } }
-
-/* Main Image Area */
-.gallery-main-area {
-    flex: 1; display: flex; align-items: center; justify-content: center;
-    position: relative; width: 100%; overflow: hidden;
-}
-#mmImgMain {
-    max-width: 85vw; max-height: 70vh; object-fit: contain;
-    border-radius: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-    transition: transform 0.2s ease;
-}
-/* Mobilspecifik bildstorlek */
-@media (max-width: 768px) {
-    #imageZoomModal #mmImgMain {
-        max-height: 70vh !important;
-        max-width: 85vw !important;
-        border-radius: 24px !important;
-    }
-}
-
-/* Navigation Arrows */
-.nav-arrow {
-    position: absolute; top: 50%; transform: translateY(-50%);
-    background: rgba(255,255,255,0.1); border: none; color: white;
-    width: 44px; height: 44px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center; cursor: pointer;
-    backdrop-filter: blur(10px); z-index: 5;
-}
-.nav-arrow.prev { left: 15px; } .nav-arrow.next { right: 15px; }
-@media (hover: none) and (pointer: coarse) { .nav-arrow { display: none; } }
-
-/* Bottom Toolbar */
-.gallery-bottom-bar.compact-bar {
-    min-height: 90px; padding-top: 10px;
-    padding-bottom: max(10px, env(safe-area-inset-bottom));
-    display: flex; justify-content: space-evenly; align-items: flex-start;
-}
-.gallery-action-btn {
-    background: transparent; border: none; display: flex; flex-direction: column;
-    align-items: center; gap: 4px; cursor: pointer; color: #fff; width: 55px;
-}
-.gallery-action-btn .icon-circle {
-    width: 38px; height: 38px; border-radius: 50%;
-    background: rgba(255, 255, 255, 0.1);
-    display: flex; align-items: center; justify-content: center;
-}
-.gallery-action-btn svg { width: 20px; height: 20px; stroke: #fff; }
-.gallery-action-btn span { font-size: 0.7rem; color: #ddd; }
-.gallery-action-btn.danger .icon-circle { background: rgba(255, 59, 48, 0.15); }
-
-
-/* --- 8. Notis Badge --- */
-.chat-notification-badge {
-    position: absolute; top: -4px; right: -4px;
-    background-color: #FF3B30; color: white;
-    font-size: 0.75rem; font-weight: 700;
-    min-width: 22px; height: 22px; border-radius: 11px;
-    display: flex; align-items: center; justify-content: center;
-    border: 2px solid #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    z-index: 20; animation: popInBadge 0.3s forwards;
-}
-
-@media (max-width: 768px) {
-    /* Se till att knappen är relativ så badgen hamnar rätt */
-    #mobileChatBtn { position: relative; }
-
-    #mobileChatBtn .chat-notification-badge {
-        /* PLACERING: Justera dessa för att "krama" ikonen */
-        top: 3px !important;       /* Lite högre upp än förut */
-        right: 15px !important;    /* Flytta in den mer mot mitten (ikonen är centrerad) */
+    if (isOpen) {
+        // STÄNGER
+        chatWidget.style.display = 'none';
+        document.body.classList.remove('chat-open'); // Ta bort klassen
+        document.body.style.overflow = ''; 
         
-        /* STORLEK: Öka lite för läsbarhet */
-        min-width: 18px !important; 
-        height: 18px !important; 
-        font-size: 0.7rem !important; /* Lite tydligare siffra */
+        // Återställ eventuell historik
+        if (history.state && history.state.uiState === 'chat') {
+            history.back();
+        }
+    } else {
+        // ÖPPNAR
+        chatWidget.style.display = 'flex';
+        document.body.classList.add('chat-open'); // Lägg till klassen (döljer headern via CSS)
+        document.body.style.overflow = 'hidden'; 
         
-        /* DESIGN: Snygg vit kant runt (gör att den "skär" in i ikonen snyggt) */
-        border: 2px solid #ffffff !important; 
-        box-shadow: 0 1px 2px rgba(0,0,0,0.15) !important;
-        padding: 0 4px !important; /* Om det blir tvåsiffrigt (99) växer den snyggt */
+        history.pushState({ uiState: 'chat' }, null, window.location.href);
+
+        // Scrolla till botten
+        setTimeout(() => {
+            const chatList = document.getElementById('chatMessages');
+            if (chatList) chatList.scrollTop = chatList.scrollHeight;
+        }, 100);
+    }
+};
+
+window.initChat = function() {
+    const chatList = document.getElementById('chatMessages');
+    if (!chatList) return;
+
+    const chatInput = document.getElementById('chatInput');
+    const sendBtn = document.getElementById('chatSendBtn');
+    const closeBtn = document.getElementById('closeChatWidget');
+    const closeEditBtn = document.getElementById('closeEditBtn');
+    const plusBtn = document.getElementById('chatPlusBtn');      
+    const cameraBtn = document.getElementById('chatCameraBtn'); 
+    const fileInputGallery = document.getElementById('chatFileInputGallery');
+    const fileInputCamera = document.getElementById('chatFileInputCamera');
+    const galleryBtn = document.getElementById('toggleGalleryBtn');
+    if (galleryBtn) {
+        galleryBtn.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation(); // Hindrar klicket från att "bubbla" och stänga chatten
+            openChatGallery();
+        };
+    }
+    const closeGalleryBtn = document.getElementById('closeGalleryBtn');
+
+    if (galleryBtn) galleryBtn.onclick = openChatGallery;
+    if (closeGalleryBtn) closeGalleryBtn.onclick = closeChatGallery;
+
+    if (closeBtn) closeBtn.onclick = window.toggleChatWidget;
+    if (closeEditBtn) closeEditBtn.onclick = exitEditMode;
+
+    // Scroll-lyssnare för knappen
+    if (chatList) {
+        chatList.addEventListener('scroll', () => {
+            const btn = document.getElementById('chatScrollBtn');
+            if (!btn) return;
+            
+            // Om vi är mer än 300px från botten -> Visa knapp
+            const distanceToBottom = chatList.scrollHeight - chatList.scrollTop - chatList.clientHeight;
+            
+            if (distanceToBottom > 300) {
+                btn.classList.add('visible');
+            } else {
+                btn.classList.remove('visible');
+            }
+        });
+    }
+
+    // --- SÖK-TOGGLE LOGIK ---
+    const btnOpenSearch = document.getElementById('btnOpenSearch');
+    const btnCloseSearch = document.getElementById('btnCloseSearch');
+    const chatHeader = document.getElementById('chatHeader');
+    const searchInput = document.getElementById('chatSearchInput');
+
+    // Öppna sök
+    if (btnOpenSearch) {
+        btnOpenSearch.onclick = () => {
+            chatHeader.classList.add('search-active');
+            // Vänta pyttelite så animationen hinner starta innan fokus
+            setTimeout(() => searchInput.focus(), 100);
+        };
+    }
+
+    // Stäng sök (X-knappen)
+    if (btnCloseSearch) {
+        btnCloseSearch.onclick = () => {
+            chatHeader.classList.remove('search-active');
+            searchInput.value = ''; // Rensa söktext
+            // Trigga en "input"-händelse så att sök-filtreringen nollställs (visar alla meddelanden igen)
+            searchInput.dispatchEvent(new Event('input'));
+        };
+    }
+
+    // Stäng sök om man trycker ESC
+    if (searchInput) {
+        searchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                btnCloseSearch.click();
+            }
+        });
+    }
+
+    // --- SÖKFUNKTIONALITET MED HIGHLIGHT ---
+    const chatSearchInput = document.getElementById('chatSearchInput');
+    const clearSearchBtn = document.getElementById('clearChatSearch');
+
+    if (chatSearchInput) {
+        chatSearchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.trim();
+            const lowerSearchTerm = searchTerm.toLowerCase();
+            const messages = document.querySelectorAll('#chatMessages .chat-row');
+            
+            if (clearSearchBtn) {
+                clearSearchBtn.style.display = searchTerm ? 'block' : 'none';
+            }
+
+            messages.forEach(row => {
+                const textElement = row.querySelector('.bubble-text-content');
+                if (!textElement) {
+                    // Hantera bildmeddelanden: dölj om vi söker
+                    row.style.display = searchTerm ? 'none' : 'flex';
+                    return;
+                }
+
+                // Hämta den råa texten (utan gammal highlight-HTML)
+                // Vi använder dataset för att lagra originaltexten så vi inte tappar data
+                if (!textElement.dataset.originalText) {
+                    textElement.dataset.originalText = textElement.innerText;
+                }
+                const originalText = textElement.dataset.originalText;
+
+                if (searchTerm === "") {
+                    row.style.display = 'flex';
+                    textElement.innerHTML = originalText; // Återställ original
+                } else if (originalText.toLowerCase().includes(lowerSearchTerm)) {
+                    row.style.display = 'flex';
+                    
+                    // Skapa en regex för att hitta sökordet (case-insensitive)
+                    const regex = new RegExp(`(${searchTerm})`, 'gi');
+                    
+                    // Ersätt texten med highlight-versionen
+                    textElement.innerHTML = originalText.replace(regex, '<span class="search-highlight">$1</span>');
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            
+            // Dölj datumavskiljare vid sökning
+            document.querySelectorAll('.chat-date-separator').forEach(sep => {
+                sep.style.display = searchTerm ? 'none' : 'flex';
+            });
+        });
+    }
+
+    if (chatInput) {
+        chatInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                window.sendMessage(); // Anropa den nya globala funktionen
+            }
+        });
+    }
+
+    if (plusBtn && fileInputGallery) {
+        plusBtn.onclick = () => fileInputGallery.click();
+        fileInputGallery.onchange = (e) => handleImageUpload(e.target.files[0]);
+    }
+    if (cameraBtn && fileInputCamera) {
+        cameraBtn.onclick = () => fileInputCamera.click();
+        fileInputCamera.onchange = (e) => handleImageUpload(e.target.files[0]);
+    }
+
+    setupChatListener(50);
+};
+
+window.stopChatListener = function() {
+    if (chatUnsubscribe) chatUnsubscribe();
+};
+
+function setupChatListener(limit) {
+    if (chatUnsubscribe) chatUnsubscribe();
+    const chatList = document.getElementById('chatMessages');
+
+    chatUnsubscribe = window.db.collection("notes")
+        .orderBy("timestamp", "desc")
+        .limit(limit)
+        .onSnapshot(snapshot => {
+            const docs = [];
+            snapshot.forEach(doc => docs.push({ id: doc.id, ...doc.data() }));
+            docs.reverse();
+
+            // Notis-badge
+            const clockCount = docs.filter(msg => msg.reaction === '🕒').length;
+            updateChatBadge(clockCount);
+
+            chatList.innerHTML = '<div style="flex-grow: 1;"></div>';
+            if (docs.length === 0) {
+                chatList.innerHTML = '<div style="text-align:center; padding:30px; color:#9ca3af; font-size:0.9rem;">Inga meddelanden än.</div>';
+                return;
+            }
+
+            const pinnedMsg = docs.find(d => d.isPinned === true);
+            const pinContainer = document.getElementById('pinnedMessageContainer');
+            const pinText = document.getElementById('pinnedTextPreview');
+
+            if (pinnedMsg && pinContainer) {
+                currentPinnedId = pinnedMsg.id;
+                pinContainer.style.display = 'flex';
+                
+                // Visa text (eller "Bild" om det är en bild)
+                let content = pinnedMsg.text || '';
+                if (pinnedMsg.type === 'image') content = '📷 Bild';
+                pinText.textContent = content;
+            } else if (pinContainer) {
+                currentPinnedId = null;
+                pinContainer.style.display = 'none';
+            }
+
+            let lastDateKey = null;
+            docs.forEach(data => {
+                if (data.timestamp) {
+                    const msgDateObj = new Date(data.timestamp);
+                    const currentDateKey = msgDateObj.toDateString();
+                    if (currentDateKey !== lastDateKey) {
+                        renderDateSeparator(chatList, msgDateObj);
+                        lastDateKey = currentDateKey;
+                    }
+                }
+                renderChatBubble(data, chatList);
+            });
+
+            if (limit === 50) {
+                // Vänta en millisekund på att bilderna ska börja renderas
+                setTimeout(() => {
+                    chatList.scrollTo({
+                        top: chatList.scrollHeight,
+                        behavior: 'instant' // 'instant' är bättre vid första laddning
+                    });
+                }, 50);
+            }
+        });
+}
+
+// --- TIMER LOGIK ---
+function stopMenuTimer() {
+    if (chatMenuTimer) {
+        clearTimeout(chatMenuTimer);
+        chatMenuTimer = null;
     }
 }
 
-/* --- 9. Edit Mode (Redigering) --- */
-.chat-widget.edit-mode .chat-messages { opacity: 0.4; pointer-events: none; filter: grayscale(80%); }
-.chat-widget.edit-mode .chat-actions-left { display: none !important; }
-.chat-widget.edit-mode .chat-input-area {
-    display: grid !important;
-    grid-template-areas: "header header" "input button";
-    grid-template-columns: 1fr auto;
-    padding: 0 10px 10px 10px !important;
-    border-radius: 0;
-}
-.chat-widget.edit-mode .chat-edit-header {
-    grid-area: header; display: flex !important; justify-content: space-between; 
-    align-items: center; padding: 8px; font-size: 13px; font-weight: 600;
-}
-.chat-widget.edit-mode #closeEditBtn {
-    background: none; border: none; font-size: 18px; color: #65676b; cursor: pointer;
-}
-.chat-widget.edit-mode #chatInput {
-    grid-area: input; background: #f0f2f5 !important; border-radius: 20px !important;
-    height: 40px !important; padding: 10px 16px !important;
-}
-.chat-widget.edit-mode #chatSendBtn {
-    grid-area: button; width: 36px; height: 36px; margin-left: 8px; align-self: center;
-    background-color: #0084ff;
-}
-/* --- FIX FÖR TEXTPOSITION I REDIGERINGSLÄGE --- */
-.chat-widget.edit-mode .chat-input-area textarea { padding-top: 0 !important; padding-bottom: 0 !important; height: 40px !important; line-height: 20px !important; padding-left: 14px !important; padding-right: 14px !important; background: #f0f2f5 !important; }
-
-/* Scroll-till-botten knapp */
-.chat-scroll-btn {
-    position: absolute;
-    bottom: 80px; /* Ovanför textfältet */
-    right: 20px;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: #fff;
-    border: 1px solid #e5e5ea;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    color: #007aff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    opacity: 0;
-    pointer-events: none;
-    transform: translateY(10px);
-    transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
-    z-index: 50;
-}
-.chat-scroll-btn.visible { opacity: 1; pointer-events: auto; transform: translateY(0); }
-.chat-scroll-btn svg { width: 20px; height: 20px; }
-
-/* Fäst meddelande list */
-.pinned-message-bar {
-    background: #f8fafc; border-bottom: 1px solid #e2e8f0; padding: 8px 12px; display: flex; align-items: center;
-    justify-content: space-between; cursor: pointer; font-size: 0.85rem; z-index: 10;
-}
-.pinned-bar-left { display: flex; align-items: center; gap: 8px; overflow: hidden; }
-.pin-icon-small { width: 14px; height: 14px; color: #007aff; flex-shrink: 0; }
-.pinned-content { display: flex; flex-direction: column; overflow: hidden; }
-.pinned-label { font-size: 0.7rem; font-weight: 700; color: #007aff; text-transform: uppercase; }
-.pinned-text { color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-.unpin-btn { background: none; border: none; color: #94a3b8; cursor: pointer; padding: 4px; display: flex; }
-.unpin-btn svg { width: 16px; height: 16px; }
-
-/*
-
-AI RELATERAT UTSEENDE OCH ANIMATIONER ---
-
-*/
-
-/* --- AI MODE STYLES --- */
-
-/* Bakgrundsfärg när AI är igång */
-.ai-mode-active .chat-widget {
-    background: linear-gradient(to bottom, #f8faff, #f0f4ff);
+function startMenuTimer() {
+    stopMenuTimer();
+    chatMenuTimer = setTimeout(() => {
+        document.querySelectorAll('.chat-row.show-menu').forEach(el => {
+            el.classList.remove('show-menu');
+        });
+    }, 4000); 
 }
 
-/* Gemini Ikon Aktiv */
-#toggleAiBtn.active-ai {
-    background-color: transparent !important; /* Ingen cirkel */
-    color: #8b5cf6 !important;            /* Gemini-lila färg på loggan */
-    border-color: transparent !important;
-    transform: scale(1.1);                 /* Behåll en liten förstoring för feedback */
-    filter: drop-shadow(0 0 3px rgba(139, 92, 246, 0.3)); /* Valfritt: ett svagt lila sken */
+// --- GLOBALA KNAPP-FUNKTIONER (Fixade) ---
+
+window.toggleMessageMenu = function(msgId, event) {
+    // NYTT: Om vi klickade på en länk (A-tagg), gör inget (låt länken öppnas)
+    if (event && event.target.tagName === 'A') return;
+
+    if(event) { event.stopPropagation(); event.preventDefault(); }
+
+    const row = document.querySelector(`.chat-row[data-message-id="${msgId}"]`);
+    if (!row) return;
+
+    document.querySelectorAll('.chat-row.show-menu').forEach(el => {
+        if(el !== row) el.classList.remove('show-menu');
+    });
+
+    const isOpening = !row.classList.contains('show-menu');
+    if (isOpening) {
+        row.classList.add('show-menu');
+        startMenuTimer();
+    } else {
+        row.classList.remove('show-menu');
+        stopMenuTimer();
+    }
+};
+
+window.setReaction = async function(msgId, emoji, event) {
+    if(event) event.stopPropagation();
+    const row = document.querySelector(`.chat-row[data-message-id="${msgId}"]`);
+    if(row) row.classList.remove('show-menu'); 
+
+    try {
+        const docRef = window.db.collection('notes').doc(msgId);
+        const doc = await docRef.get();
+        if (doc.exists) {
+            const data = doc.data();
+            const newReaction = (data.reaction === emoji) ? null : emoji;
+            await docRef.update({ reaction: newReaction });
+        }
+    } catch (error) { console.error(error); }
+};
+
+window.handleEditClick = function(msgId, event) {
+    if(event) { 
+        event.stopPropagation(); 
+        event.preventDefault(); 
+    }
+    
+    const row = document.querySelector(`.chat-row[data-message-id="${msgId}"]`);
+    
+    if(row) {
+        row.classList.remove('show-menu');
+        const textElement = row.querySelector('.bubble-text-content');
+        const text = textElement ? textElement.innerText : "";
+        
+        enterEditMode(row, text);
+    }
+};
+
+window.deleteChatMessage = async function(messageId) {
+    if (!confirm("Ta bort meddelandet?")) return;
+    try {
+        await window.db.collection('notes').doc(messageId).delete();
+    } catch (error) { console.error(error); }
+};
+
+// --- RENDER CHAT BUBBLE (Fixad version) ---
+function renderChatBubble(data, container) {
+    const messageId = data.id; 
+    const row = document.createElement('div');
+    
+    let senderType = 'other';
+    if (data.platform === 'system') senderType = 'system';
+    else senderType = (data.platform === 'mobil' || data.platform === 'dator') ? 'me' : 'other';
+
+    row.className = `chat-row ${senderType}`;
+    row.dataset.messageId = messageId;
+    
+    // Timer events
+    row.onmouseenter = stopMenuTimer;
+    row.onmouseleave = startMenuTimer;
+    row.onclick = (e) => window.toggleMessageMenu(messageId, e);
+
+    const menu = document.createElement('div');
+    menu.className = 'chat-action-menu';
+    menu.onmouseenter = stopMenuTimer;
+    menu.onmouseleave = startMenuTimer;
+
+    const pinFill = data.isPinned ? "#007aff" : "none";
+        const pinStroke = data.isPinned ? "#007aff" : "currentColor";
+    // Notera: Vi använder onclick med window.funktioner
+    menu.innerHTML = `
+        <button class="action-emoji-btn" onclick="window.setReaction('${messageId}', '🕒', event)">🕒</button>
+        <button class="action-emoji-btn" onclick="window.setReaction('${messageId}', '✅', event)">✅</button>
+        <button class="action-emoji-btn" onclick="window.setReaction('${messageId}', '❌', event)">❌</button>
+        <button class="action-emoji-btn" onclick="window.setReaction('${messageId}', '⚠️', event)">⚠️</button>
+        <div class="action-separator"></div>
+        <button class="action-icon-btn" title="Redigera" onclick="window.handleEditClick('${messageId}', event)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+        </button>
+        <button class="action-icon-btn danger" title="Ta bort" onclick="window.deleteChatMessage('${messageId}'); event.stopPropagation();">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+        </button>
+        <button class="action-icon-btn" title="${data.isPinned ? 'Lossa' : 'Fäst'}" onclick="window.togglePinMessage('${messageId}', event)">
+               <svg viewBox="0 0 24 24" fill="${pinFill}" stroke="${pinStroke}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:20px; height:20px;">
+                    <line x1="12" y1="17" x2="12" y2="22"></line>
+                    <path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"></path>
+                </svg>
+            </button>
+    `;
+    row.appendChild(menu);
+
+    const bubble = document.createElement('div');
+    bubble.className = 'chat-bubble';
+    if (data.type === 'image' || data.image) bubble.classList.add('is-image');
+
+    if (data.text) {
+        const textDiv = document.createElement('div');
+        textDiv.className = 'bubble-text-content';
+        textDiv.innerHTML = data.text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');
+        bubble.appendChild(textDiv);
+    }
+
+    if (data.image) {
+        const imgContainer = document.createElement('div');
+        imgContainer.className = 'chat-bubble-image';
+        const img = document.createElement('img');
+        img.src = data.image;
+        img.loading = "lazy";
+        img.onclick = (e) => { e.stopPropagation(); window.openImageZoom(data.image, messageId); };
+        imgContainer.appendChild(img);
+        bubble.appendChild(imgContainer);
+    }
+
+    if (data.reaction) {
+        const reactionBadge = document.createElement('div');
+        reactionBadge.className = 'reaction-badge-display';
+        reactionBadge.textContent = data.reaction;
+        reactionBadge.onclick = (e) => window.setReaction(messageId, data.reaction, e); 
+        bubble.appendChild(reactionBadge);
+    }
+
+    row.appendChild(bubble);
+
+    if (data.timestamp) {
+        const timeDiv = document.createElement('div');
+        timeDiv.className = 'chat-time';
+        let t = new Date(data.timestamp);
+        timeDiv.textContent = t.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        row.appendChild(timeDiv);
+    }
+
+    container.appendChild(row);
 }
 
-/* Input-fältet i AI-läge */
-.ai-input-active input#chatInput {
-    border: 2px solid #818cf8 !important;
-    background-color: #ffffff !important;
-    box-shadow: 0 0 15px rgba(99, 102, 241, 0.15);
+// --- HJÄLPFUNKTIONER (Datum, Badge, EditMode, Bilder) ---
+
+function renderDateSeparator(container, dateObj) {
+    const sep = document.createElement('div');
+    sep.className = 'chat-date-separator'; 
+    const today = new Date();
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    let displayText = '';
+    if (dateObj.toDateString() === today.toDateString()) displayText = 'Idag';
+    else if (dateObj.toDateString() === yesterday.toDateString()) displayText = 'Igår';
+    else displayText = dateObj.toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' });
+
+    sep.innerHTML = `<span>${displayText}</span>`;
+    container.appendChild(sep);
 }
 
-/* CHIPS (Förslagen) */
-.ai-chips-scroll {
-    display: flex;
-    gap: 8px;
-    padding: 10px 15px;
-    overflow-x: auto;
-    background: rgba(255,255,255,0.9);
-    border-bottom: 1px solid #e2e8f0;
-    white-space: nowrap;
-    /* Dölj scrollbar men behåll funktion */
-    -ms-overflow-style: none;  
-    scrollbar-width: none;  
-}
-.ai-chips-scroll::-webkit-scrollbar { display: none; }
-
-.ai-chip {
-    background: #eff6ff;
-    color: #1e40af;
-    border: 1px solid #dbeafe;
-    border-radius: 20px;
-    padding: 6px 12px;
-    font-size: 0.85rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-    flex-shrink: 0; /* Förhindra att de krymps */
-}
-.ai-chip:active { transform: scale(0.95); background: #dbeafe; }
-
-/* AI Meddelanden (Unik stil) */
-.chat-bubble.ai-response {
-    background: #ffffff;
-    border-left: 3px solid #6366f1; /* Lila kant */
-    color: #1e293b;
-    border-radius: 4px 12px 12px 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    font-family: 'Inter', sans-serif; /* Läsbar font */
-    max-width: 90%;
+function updateChatBadge(count) {
+    const setBadge = (btn) => {
+        if (!btn) return;
+        let badge = btn.querySelector('.chat-notification-badge');
+        if (count > 0) {
+            if (!badge) {
+                badge = document.createElement('div');
+                badge.className = 'chat-notification-badge';
+                btn.appendChild(badge);
+            }
+            badge.textContent = count > 99 ? '99+' : count;
+        } else {
+            if (badge) badge.remove();
+        }
+    };
+    setBadge(document.getElementById('fabChat'));
+    setBadge(document.getElementById('mobileChatBtn'));
 }
 
-/* En liten disclaimer i botten av bubblan */
-.ai-disclaimer {
-    font-size: 0.65rem;
-    color: #94a3b8;
-    margin-top: 8px;
-    display: block;
-    border-top: 1px solid #f1f5f9;
-    padding-top: 4px;
+function enterEditMode(rowElement, currentText) {
+    const messageId = rowElement.dataset.messageId;
+    if (!messageId) return;
+    isEditingMsg = true;
+    currentEditMsgId = messageId;
+
+    const chatWidget = document.getElementById('chatWidget');
+    const inputField = document.getElementById('chatInput');
+    const editHeader = document.getElementById('chatEditHeader');
+    const sendBtn = document.getElementById('chatSendBtn');
+
+    inputField.value = currentText;
+    inputField.focus();
+    chatWidget.classList.add('edit-mode');
+    if(editHeader) editHeader.style.display = 'flex';
+    if(sendBtn) {
+        sendBtn.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>`;
+    }
 }
 
-/* Välkomstskärm */
-.ai-welcome-screen {
-    text-align: center;
-    padding: 40px 20px;
-    color: #64748b;
+function exitEditMode() {
+    isEditingMsg = false;
+    currentEditMsgId = null;
+    const chatWidget = document.getElementById('chatWidget');
+    const inputField = document.getElementById('chatInput');
+    const editHeader = document.getElementById('chatEditHeader');
+    const sendBtn = document.getElementById('chatSendBtn');
+
+    inputField.value = '';
+    chatWidget.classList.remove('edit-mode');
+    if(editHeader) editHeader.style.display = 'none';
+    if(sendBtn) {
+        sendBtn.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>`;
+    }
 }
-.ai-sparkle-bg { font-size: 3rem; margin-bottom: 10px; opacity: 0.8; }
+
+// BILDHANTERING
+async function handleImageUpload(file) {
+    if (!file) return;
+    console.log("Bearbetar bild...");
+    try {
+        const base64Image = await compressImage(file);
+        await window.db.collection("notes").add({
+            image: base64Image, text: "", type: 'image',
+            timestamp: new Date().toISOString(),
+            platform: window.innerWidth <= 768 ? 'mobil' : 'dator'
+        });
+        document.getElementById('chatFileInputGallery').value = '';
+        document.getElementById('chatFileInputCamera').value = '';
+    } catch (err) { console.error(err); }
+}
+
+function compressImage(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target.result;
+            img.onload = () => {
+                const maxWidth = 800; 
+                const scaleSize = maxWidth / img.width;
+                const newWidth = (img.width > maxWidth) ? maxWidth : img.width;
+                const newHeight = (img.width > maxWidth) ? (img.height * scaleSize) : img.height;
+                const canvas = document.createElement('canvas');
+                canvas.width = newWidth; canvas.height = newHeight;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, newWidth, newHeight);
+                resolve(canvas.toDataURL('image/jpeg', 0.7));
+            };
+            img.onerror = (err) => reject(err);
+        };
+        reader.onerror = (err) => reject(err);
+    });
+}
+
+let currentGalleryImages = []; // Lista på alla bilder i chatten
+let currentImageIndex = 0;
+
+window.openImageZoom = function(src, docId) {
+    // 1. Samla in alla bilder som finns i chatten just nu
+    const imgElements = Array.from(document.querySelectorAll('.chat-bubble-image img'));
+    
+    // 2. Skapa en lista med objekt { src, id }
+    currentGalleryImages = imgElements.map(img => ({
+        src: img.src,
+        id: img.closest('.chat-row')?.dataset.messageId || ''
+    }));
+
+    // 3. Hitta index för bilden vi klickade på
+    currentImageIndex = currentGalleryImages.findIndex(img => img.src === src);
+    if (currentImageIndex === -1) currentImageIndex = 0;
+
+    // 4. Uppdatera UI
+    updateGalleryUI();
+    
+    // 5. Visa modalen
+    const modal = document.getElementById('imageZoomModal');
+    modal.style.display = 'flex';
+    
+    // Historik-hantering (så man kan backa ur bilden)
+    if (typeof addHistoryState === 'function') addHistoryState();
+};
+
+function updateGalleryUI() {
+    const imgObj = currentGalleryImages[currentImageIndex];
+    const imgMain = document.getElementById('mmImgMain');
+    const counter = document.getElementById('galleryCounter');
+    
+    // Byt bild och data
+    imgMain.src = imgObj.src;
+    imgMain.dataset.id = imgObj.id;
+    
+    // Uppdatera räknare (t.ex. "3 / 10")
+    counter.textContent = `${currentImageIndex + 1} / ${currentGalleryImages.length}`;
+
+    // Hantera pilar (inaktivera om första/sista)
+    const btnPrev = document.getElementById('btnPrevImg');
+    const btnNext = document.getElementById('btnNextImg');
+    if(btnPrev) btnPrev.style.opacity = currentImageIndex === 0 ? '0.3' : '1';
+    if(btnNext) btnNext.style.opacity = currentImageIndex === currentGalleryImages.length - 1 ? '0.3' : '1';
+}
+
+// --- NAVIGATION ---
+function prevImage() {
+    if (currentImageIndex > 0) {
+        currentImageIndex--;
+        updateGalleryUI();
+    }
+}
+
+function nextImage() {
+    if (currentImageIndex < currentGalleryImages.length - 1) {
+        currentImageIndex++;
+        updateGalleryUI();
+    }
+}
+
+// Koppla knappar (Körs när scriptet laddas eller initieras)
+document.addEventListener('DOMContentLoaded', () => {
+    // Navigering
+    document.getElementById('btnPrevImg')?.addEventListener('click', (e) => { e.stopPropagation(); prevImage(); });
+    document.getElementById('btnNextImg')?.addEventListener('click', (e) => { e.stopPropagation(); nextImage(); });
+    
+    // Stäng
+    document.getElementById('mmCloseBtn')?.addEventListener('click', () => {
+        document.getElementById('imageZoomModal').style.display = 'none';
+    });
+
+    // Ladda ner
+    document.getElementById('mmDownloadBtn')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const src = document.getElementById('mmImgMain').src;
+        const link = document.createElement('a');
+        link.href = src;
+        link.download = `bild-${Date.now()}.jpg`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    });
+
+    // Dela (Vidarebefordra)
+    document.getElementById('mmShareBtn')?.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const src = document.getElementById('mmImgMain').src;
+        if (navigator.share) {
+            try {
+                // Försök dela som fil om möjligt, annars URL
+                const blob = await (await fetch(src)).blob();
+                const file = new File([blob], "bild.jpg", { type: blob.type });
+                await navigator.share({
+                    files: [file],
+                    title: 'Bild från chatten'
+                });
+            } catch (err) {
+                console.log("Dela avbröts eller stöds ej fullt ut, delar länk...", err);
+                 // Fallback: Dela länk
+                 navigator.share({ url: src });
+            }
+        } else {
+            alert("Din webbläsare stödjer inte delning.");
+        }
+    });
+
+    // Radera
+    document.getElementById('mmDeleteBtn')?.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const id = document.getElementById('mmImgMain').dataset.id;
+        if (id && confirm('Radera bilden permanent?')) {
+            try {
+                await window.db.collection("notes").doc(id).delete();
+                // Ta bort från listan och stäng/uppdatera
+                currentGalleryImages.splice(currentImageIndex, 1);
+                if (currentGalleryImages.length === 0) {
+                    document.getElementById('imageZoomModal').style.display = 'none';
+                } else {
+                    if (currentImageIndex >= currentGalleryImages.length) currentImageIndex--;
+                    updateGalleryUI();
+                }
+            } catch (error) { console.error(error); }
+        }
+    });
+
+    // --- SWIPE LOGIK (Touch) ---
+    const modal = document.getElementById('imageZoomModal');
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    modal.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+    }, {passive: true});
+
+    modal.addEventListener('touchend', (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        handleSwipe();
+    }, {passive: true});
+
+    function handleSwipe() {
+        const threshold = 50; // Hur långt man måste dra
+        if (touchEndX < touchStartX - threshold) {
+            nextImage(); // Swipe Vänster -> Nästa
+        }
+        if (touchEndX > touchStartX + threshold) {
+            prevImage(); // Swipe Höger -> Föregående
+        }
+    }
+    
+    // Tangentbordsstyrning (Pilarna)
+    document.addEventListener('keydown', (e) => {
+        if (document.getElementById('imageZoomModal').style.display === 'flex') {
+            if (e.key === 'ArrowLeft') prevImage();
+            if (e.key === 'ArrowRight') nextImage();
+            if (e.key === 'Escape') document.getElementById('mmCloseBtn').click();
+        }
+    });
+});
+
+// Öppna galleriet
+function openChatGallery() {
+    const galleryModal = document.getElementById('chatGalleryModal');
+    const galleryContent = document.getElementById('chatGalleryContent');
+    if (!galleryModal || !galleryContent) return;
+
+    galleryContent.innerHTML = ''; // Rensa gamla bilder
+    
+    // Hitta alla bild-rader som just nu finns i DOM:en
+    const imageElements = document.querySelectorAll('.chat-bubble-image img');
+    
+    if (imageElements.length === 0) {
+        galleryContent.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:40px; color:#8e8e93;">Inga bilder i chatten.</div>';
+    } else {
+        imageElements.forEach(img => {
+            const div = document.createElement('div');
+            div.className = 'gallery-item';
+            // Vi klonar bilden för att behålla src och docId
+            const clone = document.createElement('img');
+            clone.src = img.src;
+            
+            div.onclick = () => {
+                closeChatGallery(); // Stäng galleriet först
+                // Använd din befintliga zoom-funktion
+                window.openImageZoom(img.src, img.closest('.chat-row')?.dataset.messageId);
+            };
+            
+            div.appendChild(clone);
+            galleryContent.appendChild(div);
+        });
+    }
+
+    galleryModal.style.display = 'flex';
+}
+
+// Stäng galleriet
+function closeChatGallery() {
+    const galleryModal = document.getElementById('chatGalleryModal');
+    if (galleryModal) galleryModal.style.display = 'none';
+}
+
+window.scrollToBottomSmooth = function() {
+    const chatList = document.getElementById('chatMessages');
+    if (chatList) {
+        chatList.scrollTo({ top: chatList.scrollHeight, behavior: 'smooth' });
+    }
+};
+
+// Global variabel för att veta vilket meddelande som är fäst just nu
+let currentPinnedId = null;
+
+// Spara/Ta bort Pin i databasen
+window.togglePinMessage = async function(msgId, event) {
+    if(event) { event.stopPropagation(); window.toggleMessageMenu(msgId); } // Stäng menyn
+
+    // 1. Om vi redan har ett annat fäst meddelande, "av-fäst" det först (om du bara vill ha 1 åt gången)
+    if (currentPinnedId && currentPinnedId !== msgId) {
+        await window.db.collection('notes').doc(currentPinnedId).update({ isPinned: false });
+    }
+
+    // 2. Hämta status för det valda meddelandet
+    const docRef = window.db.collection('notes').doc(msgId);
+    const doc = await docRef.get();
+    
+    if (doc.exists) {
+        const isPinned = doc.data().isPinned || false;
+        // Byt status (true <-> false)
+        await docRef.update({ isPinned: !isPinned });
+    }
+};
+
+window.unpinCurrentMessage = async function() {
+    if (currentPinnedId) {
+        await window.db.collection('notes').doc(currentPinnedId).update({ isPinned: false });
+    }
+};
+
+// Scrolla till det fästa meddelandet
+window.scrollToPinned = function() {
+    if (!currentPinnedId) return;
+    const el = document.querySelector(`.chat-row[data-message-id="${currentPinnedId}"]`);
+    if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Highlighta det lite
+        el.style.transition = 'transform 0.3s';
+        el.style.transform = 'scale(1.05)';
+        setTimeout(() => el.style.transform = 'scale(1)', 300);
+    } else {
+        alert("Meddelandet är för gammalt för att visas i listan.");
+    }
+};
+
+// ==========================================
+// NYA FUNKTIONER FÖR AI-INTEGRATION
+// ==========================================
+
+// 1. Separerad funktion för att spara till vanliga chatten
+window.saveMessageToFirebase = async function(text) {
+    const chatList = document.getElementById('chatMessages');
+    const chatInput = document.getElementById('chatInput');
+
+    // Hantera redigering (Din gamla logik)
+    if (isEditingMsg && currentEditMsgId) {
+        try {
+            await window.db.collection('notes').doc(currentEditMsgId).update({
+                text: text,
+                isEdited: true
+            });
+            // Vi antar att exitEditMode är global eller flyttas ut, 
+            // annars får du kopiera exit-logiken hit.
+            if(window.exitEditMode) window.exitEditMode(); 
+        } catch (err) {
+            console.error("Fel vid uppdatering:", err);
+        }
+    } else {
+        // Skicka nytt meddelande
+        try {
+            await window.db.collection("notes").add({
+                text: text,
+                timestamp: new Date().toISOString(),
+                platform: window.innerWidth <= 768 ? 'mobil' : 'dator',
+                type: 'text'
+            });
+            
+            // Scrolla ner
+            if(chatList) {
+                setTimeout(() => {
+                    chatList.scrollTo({ top: chatList.scrollHeight, behavior: 'smooth' });
+                }, 100);
+            }
+        } catch (err) {
+            console.error("Fel vid sändning:", err);
+        }
+    }
+};
+
+// 2. Den nya "Huvudväxeln"
+window.sendMessage = async function() {
+    const input = document.getElementById('chatInput');
+    const text = input.value.trim();
+    if (!text) return;
+
+    // --- AI VÄXEL ---
+    // Om AI-läget är på (variabeln ligger i ai.js), skicka dit
+    if (window.isAiMode && window.handleAiMessage) {
+        window.handleAiMessage(text);
+        return; // VIKTIGT: Stoppa här så det inte hamnar i Firebase
+    }
+    // ----------------
+
+    // Annars, spara som vanligt
+    await window.saveMessageToFirebase(text);
+    input.value = ''; // Rensa rutan
+};
+
