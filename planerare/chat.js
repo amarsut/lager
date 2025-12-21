@@ -281,6 +281,9 @@ function startMenuTimer() {
 // --- GLOBALA KNAPP-FUNKTIONER (Fixade) ---
 
 window.toggleMessageMenu = function(msgId, event) {
+    // NYTT: Om vi klickade på en länk (A-tagg), gör inget (låt länken öppnas)
+    if (event && event.target.tagName === 'A') return;
+
     if(event) { event.stopPropagation(); event.preventDefault(); }
 
     const row = document.querySelector(`.chat-row[data-message-id="${msgId}"]`);
