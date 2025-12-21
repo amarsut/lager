@@ -887,7 +887,14 @@ function setupEventListeners() {
     const statsBtn = document.getElementById('menuBtnStatistics');
     if (statsBtn) {
         statsBtn.addEventListener('click', () => {
-            // Anropa den nya View-funktionen
+            // 1. Stäng menyn (eftersom knappen ligger där)
+            document.getElementById('settingsModal').classList.remove('show');
+
+            // 2. VIKTIGT: Lägg till historik så back-knappen funkar!
+            // Detta säger till webbläsaren: "Nu är vi på statistiksidan"
+            addHistoryState('statistics'); 
+
+            // 3. Anropa den nya View-funktionen
             openStatisticsView(allJobs);
         });
     }
@@ -911,6 +918,8 @@ function setupEventListeners() {
 	const navCalendar = document.getElementById('navCalendar');
 	if (navCalendar) {
 	    navCalendar.addEventListener('click', () => {
+            addHistoryState('calendar');
+
 	        // 1. Markera knappen som aktiv
 	        document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
 	        navCalendar.classList.add('active');
@@ -942,7 +951,7 @@ function setupEventListeners() {
 	        document.getElementById('settingsModal').classList.remove('show');
 	
 	        // 2. Ersätt "Meny"-steg med "Kalender"-steg
-	        history.replaceState({ uiState: 'calendar' }, null, window.location.href);
+	        addHistoryState('customers');
 	
 	        // 3. RENSA UI (Dölj allt som inte är kalender)
 	        document.getElementById('statBar').style.display = 'none';          // <--- Döljer statistikkorten
@@ -969,7 +978,7 @@ function setupEventListeners() {
 	    document.getElementById('settingsModal').classList.remove('show');
 	    
 	    // 2. Ersätt nuvarande "Meny"-steg med "Kunder"-steg
-	    history.replaceState({ uiState: 'customers' }, null, window.location.href);
+	    addHistoryState('customers');
 	
 	    // 3. Uppdatera UI
 	    document.getElementById('statBar').style.display = 'none';
@@ -994,7 +1003,7 @@ function setupEventListeners() {
 	        mobileCustBtn.classList.add('active');
 	
 	        // 2. Hantera historik (för back-knappen)
-	        addHistoryState();
+	        addHistoryState('customers');
 	
 	        // 3. Visa Kundvyn, dölj andra
 	        document.getElementById('statBar').style.display = 'none';
@@ -1078,6 +1087,8 @@ function setupEventListeners() {
 
 	if (navCustomers) {
 	    navCustomers.addEventListener('click', () => {
+            addHistoryState('customers');
+
 	        // 1. UI Uppdatering
 	        document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
 	        navCustomers.classList.add('active');
