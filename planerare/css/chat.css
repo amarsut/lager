@@ -538,11 +538,23 @@
 }
 
 @media (max-width: 768px) {
-    /* Badge i mobilmenyn */
+    /* Se till att knappen är relativ så badgen hamnar rätt */
     #mobileChatBtn { position: relative; }
+
     #mobileChatBtn .chat-notification-badge {
-        top: 5px !important; right: 15px !important;
-        min-width: 16px; height: 16px; font-size: 0.6rem;
+        /* PLACERING: Justera dessa för att "krama" ikonen */
+        top: 3px !important;       /* Lite högre upp än förut */
+        right: 15px !important;    /* Flytta in den mer mot mitten (ikonen är centrerad) */
+        
+        /* STORLEK: Öka lite för läsbarhet */
+        min-width: 18px !important; 
+        height: 18px !important; 
+        font-size: 0.7rem !important; /* Lite tydligare siffra */
+        
+        /* DESIGN: Snygg vit kant runt (gör att den "skär" in i ikonen snyggt) */
+        border: 2px solid #ffffff !important; 
+        box-shadow: 0 1px 2px rgba(0,0,0,0.15) !important;
+        padding: 0 4px !important; /* Om det blir tvåsiffrigt (99) växer den snyggt */
     }
 }
 
