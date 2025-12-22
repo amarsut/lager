@@ -565,6 +565,7 @@ tbody tr button { cursor: pointer; z-index: 2; position: relative; }
         overflow-y: auto !important;
         margin: 0 !important;
         padding: 0 !important;
+        padding-top: 20px !important;
         
         /* FIX: Se till att de inte ligger "osynligt" ivägen om JS missar */
         pointer-events: auto; 
@@ -604,6 +605,7 @@ tbody tr button { cursor: pointer; z-index: 2; position: relative; }
 /*
 TEST TEST TEST
 */
+
 
 
 
