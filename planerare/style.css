@@ -687,3 +687,57 @@ TEST TEST TEST
     font-size: 0.65rem !important; /* Mindre saldo-text */
     font-weight: 700;
 }
+
+/* --- SNYGGA SEKTIONSRUBRIKER --- */
+.search-section-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 25px 15px 15px 15px; /* Matchar din önskade padding på sidorna */
+    user-select: none;
+}
+
+.search-section-divider .material-icons {
+    font-size: 18px;
+    padding: 6px;
+    border-radius: 6px;
+}
+
+/* Specifik färg för Lager-ikon */
+.search-section-divider.lager-header .material-icons {
+    background: #fff7ed;
+    color: #ea580c;
+}
+
+/* Specifik färg för Jobb-ikon */
+.search-section-divider.jobb-header .material-icons {
+    background: #eff6ff;
+    color: #2563eb;
+}
+
+.search-section-divider .header-text {
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    white-space: nowrap;
+}
+
+.search-section-divider .header-count {
+    font-size: 0.65rem;
+    background: #f1f5f9;
+    color: #475569;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 700;
+}
+
+/* Den tunna linjen som fyller ut resten av bredden */
+.search-section-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, #e2e8f0, transparent);
+}
+
