@@ -573,7 +573,7 @@ tbody tr button { cursor: pointer; z-index: 2; position: relative; }
    /* 2. Skapa luft SPECIFIKT under den klistriga headern i kundvyn */
     #customersView .cust-stats-wrapper {
         /* Justera detta värde för att få exakt det avstånd du önskar */
-        margin-top: 80px !important; 
+        margin-top: 10px !important; 
         padding: 0 16px !important;
     }
 
@@ -611,6 +611,7 @@ tbody tr button { cursor: pointer; z-index: 2; position: relative; }
 /*
 TEST TEST TEST
 */
+
 
 
 
