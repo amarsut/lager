@@ -741,3 +741,73 @@ TEST TEST TEST
     background: linear-gradient(to right, #e2e8f0, transparent);
 }
 
+/* --- SÖK-FILTER-KNAPP & MENY --- */
+.search-results-header {
+    position: relative;
+    display: flex;
+    justify-content: flex-end;
+    padding: 10px 15px 0 0;
+    margin-bottom: -10px; /* Drar upp den så den ligger i linje med rubriken */
+    z-index: 10;
+}
+
+.filter-toggle-btn {
+    background: #f1f5f9;
+    border: none;
+    border-radius: 8px;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #64748b;
+    transition: all 0.2s;
+}
+
+.filter-toggle-btn:hover {
+    background: #e2e8f0;
+    color: #1e293b;
+}
+
+/* Den lilla dropdown-menyn */
+.filter-dropdown {
+    position: absolute;
+    top: 50px;
+    right: 15px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+    width: 150px;
+    display: none; /* Dold som standard */
+    flex-direction: column;
+    padding: 5px;
+    z-index: 100;
+}
+
+.filter-dropdown.show {
+    display: flex;
+}
+
+.filter-option {
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #475569;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.filter-option:hover {
+    background: #f8fafc;
+    color: #2563eb;
+}
+
+.filter-option.active {
+    background: #eff6ff;
+    color: #2563eb;
+}
