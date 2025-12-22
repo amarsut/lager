@@ -2379,7 +2379,7 @@ document.getElementById('closeMobileSearchBtn')?.addEventListener('click', () =>
 
 // Live-sökning när man skriver
 document.getElementById('mobileSearchInput')?.addEventListener('input', async (e) => {
-    const term = e.target.value; 
+    const term = e.target.value.trim(); 
     const resultsContainer = document.getElementById('mobileSearchResults');
     
     if (term.length === 0) {
@@ -2387,38 +2387,52 @@ document.getElementById('mobileSearchInput')?.addEventListener('input', async (e
         return;
     }
     
-    // 1. Sök i Jobb (befintlig kod)
+    // Sök i båda källorna
     const filteredJobs = allJobs.filter(job => !job.deleted && jobMatchesSearch(job, term));
-    
-    // 2. Sök i Lager (NYTT)
     const lagerResults = await searchLager(term);
 
-    // 3. Visa resultat kombinerat
-    if (filteredJobs.length === 0 && lagerResults.length === 0) {
-        resultsContainer.innerHTML = '<p style="text-align:center; color:#9ca3af; margin-top:20px;">Inga träffar.</p>';
-    } else {
-        // Skapa HTML för lager-träffar
-        const lagerHtml = lagerResults.map(item => `
-            <div class="search-result-item" style="border-left: 4px solid #f59e0b; background: #fffbeb;">
-                <div style="display:flex; justify-content:space-between; width:100%;">
-                    <div>
-                        <strong style="color:#92400e; font-size:0.7rem; display:block;">LAGERARTIKEL</strong>
-                        <div style="font-weight:700;">${item.service_filter}</div>
-                        <div style="font-size:0.85rem; color:#4b5563;">${item.name}</div>
-                    </div>
-                    <div style="text-align:right;">
-                        <div style="font-weight:800;">${item.price} kr</div>
-                        <div style="font-size:0.75rem; color:${item.quantity > 0 ? '#16a34a' : '#ef4444'};">
-                            Saldo: ${item.quantity} st
+    let finalHtml = '';
+
+    // 1. LAGER-SEKTION (Om träffar finns)
+    if (lagerResults.length > 0) {
+        finalHtml += `
+            <div class="search-section-header">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-xs"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+                ARTIKLAR I LAGER (${lagerResults.length})
+            </div>
+            <div class="lager-results-wrapper">
+                ${lagerResults.map(item => `
+                    <div class="lager-mini-card">
+                        <div class="l-main">
+                            <span class="l-artnr">${item.service_filter || '---'}</span>
+                            <span class="l-name">${item.name || ''}</span>
+                        </div>
+                        <div class="l-side">
+                            <span class="l-price">${item.price}:-</span>
+                            <span class="l-qty ${item.quantity > 0 ? 'in' : 'out'}">${item.quantity} st</span>
                         </div>
                     </div>
-                </div>
+                `).join('')}
             </div>
-        `).join('');
-
-        const jobsHtml = filteredJobs.map(job => createJobCard(job)).join('');
-        resultsContainer.innerHTML = lagerHtml + jobsHtml;
+        `;
     }
+
+    // 2. JOBB-SEKTION
+    if (filteredJobs.length > 0) {
+        finalHtml += `
+            <div class="search-section-header">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-xs"><path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                BOKADE JOBB (${filteredJobs.length})
+            </div>
+            ${filteredJobs.map(job => createJobCard(job)).join('')}
+        `;
+    }
+
+    if (filteredJobs.length === 0 && lagerResults.length === 0) {
+        finalHtml = '<p class="search-no-results">Inga träffar hittades.</p>';
+    }
+
+    resultsContainer.innerHTML = finalHtml;
 });
 
 function startInactivityCheck() {
