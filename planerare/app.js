@@ -1403,24 +1403,25 @@ function setupEventListeners() {
 	            <div class="lager-search-section-desktop">
 	                <div class="lager-header-divider">LAGER</div>
 	                <div class="lager-results-grid">
-	                    ${lagerResults.map(item => `
-	                        <div class="lager-result-card-desktop">
-	                            <div class="l-card-main">
-	                                <strong class="l-artnr">${item.service_filter || '---'}</strong>
-	                                <div class="l-name">${item.name || ''}</div>
-	                            </div>
-	                            <div class="l-card-side">
-	                                <div class="l-price">${item.price}:-</div>
-	                                <div style="font-size:0.7rem; color:${item.quantity > 0 ? '#16a34a' : '#ef4444'}">
-	                                    ${item.quantity > 0 ? 'Saldo: ' + item.quantity : 'Slut'}
-	                                </div>
-	                            </div>
-	                        </div>
-	                    `).join('')}
-	                </div>
-	                <div class="lager-header-divider">JOBBLISTA</div>
-	            </div>`;
-	    }
+		        ${lagerResults.map(item => `
+		            <div class="lager-result-card-desktop">
+		                <div class="l-card-main">
+		                    <span class="l-badge">LAGER</span>
+		                    <div class="l-info">
+		                        <strong class="l-artnr">${item.service_filter || '---'}</strong>
+		                        <div class="l-name">${item.name || ''}</div>
+		                    </div>
+		                </div>
+		                <div class="l-card-side">
+		                    <div class="l-price">${item.price}:-</div>
+		                    <div class="l-stock ${item.quantity > 0 ? 'in' : 'out'}">
+		                        ${item.quantity > 0 ? 'Saldo: ' + item.quantity : 'Slut'}
+		                    </div>
+		                </div>
+		            </div>
+		        `).join('')}
+		    </div>
+		`;
 	
 	    // 3. Rita ut tabellen eller korten (beroende på vy)
 	    const isMobile = window.innerWidth <= 768;
