@@ -1385,25 +1385,43 @@ function setupEventListeners() {
 	// Hjälpfunktion för att rita i huvudfönstret (Dator)
 	function renderCombinedResultsToContainer(container, jobs, lager) {
 	    let html = '';
+	    const isMobile = window.innerWidth <= 768;
 	    
-	    // Lager-sektion (om aktiv)
+	    // 1. LAGER-SEKTION (Snygg grid-vy)
 	    if (lager.length > 0 && (activeSearchFilter === 'all' || activeSearchFilter === 'lager')) {
-	        html += `<div class="search-section-header">LAGERARTIKLAR</div><div class="lager-results-grid">${lager.map(i => createLagerMiniCard(i)).join('')}</div>`;
+	        html += `<div class="search-section-header">LAGERARTIKLAR (${lager.length})</div>`;
+	        html += `<div class="lager-results-grid">${lager.map(i => createLagerMiniCard(i)).join('')}</div>`;
 	    }
 	    
-	    // Jobb-sektion (om aktiv)
+	    // 2. JOBB-SEKTION
 	    if (jobs.length > 0 && (activeSearchFilter === 'all' || activeSearchFilter === 'jobb')) {
-	        html += `<div class="search-section-header">BOKADE JOBB</div>`;
-	        const isMobile = window.innerWidth <= 768;
+	        html += `<div class="search-section-header">BOKADE JOBB (${jobs.length})</div>`;
+	        
 	        if (!isMobile) {
-	            html += `<table id="jobsTable"><thead><tr><th>Status</th><th>Datum</th><th>Kund</th><th>Reg.nr</th><th style="text-align:right">Pris</th><th class="action-col">Åtgärder</th></tr></thead><tbody>`;
-	            jobs.forEach(job => html += createJobRow(job));
-	            html += `</tbody></table>`;
+	            // Skapa en riktig tabell för datorn så att raderna ser rätt ut
+	            html += `
+	                <table id="jobsTable">
+	                    <thead>
+	                        <tr>
+	                            <th>Status</th>
+	                            <th>Datum</th>
+	                            <th>Kund</th>
+	                            <th>Reg.nr</th>
+	                            <th style="text-align:right">Pris</th>
+	                            <th class="action-col">Åtgärder</th>
+	                        </tr>
+	                    </thead>
+	                    <tbody>
+	                        ${jobs.map(job => createJobRow(job)).join('')}
+	                    </tbody>
+	                </table>`;
 	        } else {
+	            // Använd kort-vyn för mobilen
 	            html += jobs.map(job => createJobCard(job)).join('');
 	        }
 	    }
-	    container.innerHTML = html || '<p class="search-no-results">Inga träffar.</p>';
+	    
+	    container.innerHTML = html || '<p class="search-no-results">Inga träffar hittades.</p>';
 	}
 	
 	// Ny hjälpfunktion för att rita ut sökresultat på skrivbordet
