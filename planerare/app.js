@@ -3659,48 +3659,86 @@ async function handleSearch(term, isMobile) {
         return;
     }
 
-    // Hämta data
-    const filteredJobs = allJobs.filter(job => !job.deleted && jobMatchesSearch(job, term));
-    const lagerResults = await searchLager(term);
+    const searchTerm = term.toLowerCase();
+    
+    // Hämta data (Filtrerade jobb och Lagerartiklar)
+    const filteredJobs = allJobs.filter(job => !job.deleted && jobMatchesSearch(job, searchTerm));
+    const lagerResults = await searchLager(searchTerm);
 
     let html = '';
 
-    // 1. LAGER-SEKTION (Om träffar finns)
+    // 1. LAGER-SEKTION (Kompakta kort i rutnät)
     if (lagerResults.length > 0) {
-    html += `
-        <div class="search-section-divider lager-header">
-            <span class="material-icons">inventory_2</span>
-            <span class="header-text">Lagerartiklar</span>
-            <span class="header-count">${lagerResults.length}</span>
-        </div>
-        <div class="lager-results-grid">
-            ${lagerResults.map(item => `
+        html += `
+            <div class="search-section-divider lager-header">
+                <span class="material-icons">inventory_2</span>
+                <span class="header-text">Lagerartiklar</span>
+                <span class="header-count">${lagerResults.length}</span>
+            </div>
+            <div class="lager-results-grid">
+                ${lagerResults.map(item => `
+                    <div class="lager-result-card-desktop">
+                        <div class="l-card-main">
+                            <span class="l-badge">LAGER</span>
+                            <div class="l-info">
+                                <strong class="l-artnr">${item.service_filter || '---'}</strong>
+                                <div class="l-name">${item.name || ''}</div>
+                            </div>
+                        </div>
+                        <div class="l-card-side">
+                            <div class="l-price">${item.price}:-</div>
+                            <div class="l-stock ${item.quantity > 0 ? 'in' : 'out'}">
+                                ${item.quantity > 0 ? 'Saldo: ' + item.quantity : 'Slut'}
+                            </div>
+                        </div>
+                    </div>
                 `).join('')}
-        </div>
-    `;
-}
-
-// 2. JOBB-RUBRIK
-if (filteredJobs.length > 0) {
-    html += `
-        <div class="search-section-divider jobb-header">
-            <span class="material-icons">assignment</span>
-            <span class="header-text">Bokade Jobb</span>
-            <span class="header-count">${filteredJobs.length}</span>
-        </div>
-    `;
-    
-    if (!isMobile) {
-        // Din tabell för datorn här...
-    } else {
-        // Dina jobb-kort för mobilen här...
+            </div>
+        `;
     }
+
+    // 2. JOBB-SEKTION (Tabell på dator, Kort på mobil)
+    if (filteredJobs.length > 0) {
+        html += `
+            <div class="search-section-divider jobb-header">
+                <span class="material-icons">assignment</span>
+                <span class="header-text">Bokade Jobb</span>
+                <span class="header-count">${filteredJobs.length}</span>
+            </div>
+        `;
+        
+        if (!isMobile) {
+            html += `
+                <table id="jobsTable">
+                    <thead>
+                        <tr>
+                            <th>Status</th>
+                            <th>Datum</th>
+                            <th>Kund</th>
+                            <th>Reg.nr</th>
+                            <th style="text-align:right">Pris</th>
+                            <th class="action-col">Åtgärder</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${filteredJobs.map(job => createJobRow(job)).join('')}
+                    </tbody>
+                </table>`;
+        } else {
+            html += filteredJobs.map(job => createJobCard(job)).join('');
+        }
+    }
+
+    // Visa resultat eller "Inga träffar"
+    resultsContainer.innerHTML = html || `
+        <div style="text-align:center; padding:40px; color:#94a3b8;">
+            <span class="material-icons" style="font-size:48px; display:block; margin-bottom:10px;">search_off</span>
+            Inga träffar hittades för "${term}"
+        </div>
+    `;
 }
 
-    resultsContainer.innerHTML = html || '<p class="search-no-results">Inga träffar hittades.</p>';
-}
-
-// Koppla lyssnarna till den nya funktionen
+// Koppla lyssnarna på nytt för att säkerställa funktion
 document.getElementById('mobileSearchInput')?.addEventListener('input', (e) => {
     handleSearch(e.target.value.trim(), true);
 });
