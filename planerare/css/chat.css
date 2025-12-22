@@ -887,3 +887,19 @@ AI RELATERAT UTSEENDE OCH ANIMATIONER ---
         background: transparent !important;
     }
 }
+
+body.ai-fullscreen-active #aiMessageContainer {
+    background: 
+        radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.05) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.05) 0px, transparent 50%),
+        #ffffff !important;
+}
+
+/* Snyggare scrollbar för den stora vyn */
+body.ai-fullscreen-active #aiMessageContainer::-webkit-scrollbar {
+    width: 8px;
+}
+body.ai-fullscreen-active #aiMessageContainer::-webkit-scrollbar-thumb {
+    background: #e2e8f0;
+    border-radius: 10px;
+}
