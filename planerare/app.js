@@ -76,6 +76,7 @@ let currentExpenses = [];
 let jobsUnsubscribe = null;   // Håller koll på jobb-lyssnaren
 let specsUnsubscribe = null;  // Håller koll på fordons-lyssnaren
 let currentLimit = 50; // Hur många vi visar just nu
+let activeSearchFilter = 'all'; // Global variabel för att hålla koll på valt filter i sökningen
 
 let currentBacklogTab = 'unplanned'; // Standardflik: 'unplanned' (Väntar) eller 'offered' (Offererad)
 
@@ -905,6 +906,26 @@ function updateStatsCounts(jobs) {
 // 7. EVENT LISTENERS
 function setupEventListeners() {
 
+	// Aktivera sökfiltrering för både dator och mobil
+	document.querySelectorAll('.filter-pill').forEach(btn => {
+	    btn.addEventListener('click', (e) => {
+	        const filter = e.target.dataset.filter;
+	        activeSearchFilter = filter;
+	        
+	        // Uppdatera utseendet på ALLA filterknappar så de matchar
+	        document.querySelectorAll('.filter-pill').forEach(pill => {
+	            pill.classList.toggle('active', pill.dataset.filter === filter);
+	        });
+	        
+	        // Kör sökningen igen med det nuvarande ordet för att uppdatera vyn
+	        const desktopTerm = document.getElementById('searchBar').value;
+	        const mobileTerm = document.getElementById('mobileSearchInput').value;
+	        const currentTerm = desktopTerm || mobileTerm;
+	        
+	        if (currentTerm) performCombinedSearch(currentTerm);
+	    });
+	});
+	
     /*Statistikvy*/
     const statsBtn = document.getElementById('menuBtnStatistics');
     if (statsBtn) {
@@ -3590,9 +3611,6 @@ async function searchLager(term) {
     }
 }
 
-// Global variabel för att hålla koll på valt filter i sökningen
-let activeSearchFilter = 'all';
-
 // Koppla klick-event till filterknapparna
 document.getElementById('searchFilterBar')?.addEventListener('click', (e) => {
     if (e.target.classList.contains('filter-pill')) {
@@ -3611,19 +3629,23 @@ document.getElementById('searchFilterBar')?.addEventListener('click', (e) => {
 // Uppdatera din befintliga sök-funktion
 async function performCombinedSearch(term) {
     const resultsContainer = document.getElementById('mobileSearchResults');
+    
+    // Hämta båda filter-barerna (dator och mobil)
     const filterBar = document.getElementById('searchFilterBar');
+    const mobileFilterBar = document.getElementById('mobileSearchFilterBar');
     
     // Sök data
     const filteredJobs = allJobs.filter(job => !job.deleted && jobMatchesSearch(job, term));
     const lagerResults = await searchLager(term);
 
-    // Visa filterbaren endast om vi har resultat från båda källorna
-    if (filteredJobs.length > 0 && lagerResults.length > 0) {
-        filterBar.style.display = 'flex';
-    } else {
-        filterBar.style.display = 'none';
-        activeSearchFilter = 'all'; // Återställ om bara en källa har träffar
-    }
+    // --- NY LOGIK: Visa filter-baren om det finns träffar i BÅDA källorna ---
+    const showFilter = filteredJobs.length > 0 && lagerResults.length > 0;
+    
+    if (filterBar) filterBar.style.display = showFilter ? 'flex' : 'none';
+    if (mobileFilterBar) mobileFilterBar.style.display = showFilter ? 'flex' : 'none';
+
+    // Om vi bara har träffar i en källa, tvinga filtret till 'all'
+    if (!showFilter) activeSearchFilter = 'all';
 
     let finalHtml = '';
 
