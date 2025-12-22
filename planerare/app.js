@@ -3726,3 +3726,4 @@ function createLagerMiniCard(item) {
     // Koppla sökfälten till den nya motorn
     document.getElementById('mobileSearchInput')?.addEventListener('input', (e) => handleSearch(e.target.value.trim(), true));
     document.getElementById('searchBar')?.addEventListener('input', (e) => handleSearch(e.target.value.trim(), false));
+}
