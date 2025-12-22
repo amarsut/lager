@@ -890,3 +890,21 @@ TEST TEST TEST
     background: #eff6ff;
     color: #2563eb;
 }
+
+/* --- SEPARATA BOXAR FÖR SÖKRESULTAT --- */
+.search-result-section-card {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 12px !important;
+    padding: 16px !important;
+    margin-bottom: 20px !important; /* Skapar mellanrummet (den röda linjen) */
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+    position: relative;
+}
+
+/* Justering för att rubrikerna ska se bra ut inuti boxarna */
+.search-result-section-card .search-section-divider {
+    margin-top: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
