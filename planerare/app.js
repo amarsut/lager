@@ -1346,31 +1346,6 @@ function setupEventListeners() {
             toggleChatWidget();
         });
     }
-
-    // Sökfältet
-    // Uppdaterad sökfunktion för dator (Desktop)
-	document.getElementById('searchBar').addEventListener('input', async (e) => {
-	    const term = e.target.value.trim();
-	    if (term.length > 0) {
-	        await performCombinedSearch(term);
-	    } else {
-	        const filterBar = document.getElementById('searchFilterBar');
-	        if (filterBar) filterBar.style.display = 'none';
-	        renderDashboard(); // Gå tillbaka till vanlig vy
-	    }
-	});
-	
-	// Mobilens sökfält
-	document.getElementById('mobileSearchInput')?.addEventListener('input', async (e) => {
-	    const term = e.target.value.trim();
-	    if (term.length === 0) {
-	        renderSearchZeroState();
-	        const mobileFilterBar = document.getElementById('mobileSearchFilterBar');
-	        if (mobileFilterBar) mobileFilterBar.style.display = 'none';
-	        return;
-	    }
-	    await performCombinedSearch(term);
-	});
 	
 	// Hjälpfunktion för att rita i huvudfönstret (Dator)
 	function renderCombinedResultsToContainer(container, jobs, lager) {
@@ -3670,3 +3645,85 @@ function createLagerMiniCard(item) {
         </div>
     `;
 }
+
+// --- GEMENSAM FUNKTION FÖR SÖKNING (FIXAR BÅDE MOBIL & DATOR) ---
+async function handleSearch(term, isMobile) {
+    const resultsContainer = isMobile ? 
+        document.getElementById('mobileSearchResults') : 
+        document.getElementById('jobListContainer');
+
+    if (!term) {
+        if (isMobile) renderSearchZeroState();
+        else renderDashboard();
+        return;
+    }
+
+    // Hämta data
+    const filteredJobs = allJobs.filter(job => !job.deleted && jobMatchesSearch(job, term));
+    const lagerResults = await searchLager(term);
+
+    let html = '';
+
+    // 1. LAGER-SEKTION (Om träffar finns)
+    if (lagerResults.length > 0) {
+        html += `
+            <div class="lager-header-divider">
+                <span class="material-icons" style="font-size:16px">inventory_2</span> LAGERARTIKLAR
+            </div>
+            <div class="lager-results-grid">
+                ${lagerResults.map(item => `
+                    <div class="lager-result-card-desktop">
+                        <div class="l-card-main">
+                            <span class="l-badge">LAGER</span>
+                            <div class="l-info">
+                                <strong class="l-artnr">${item.service_filter || '---'}</strong>
+                                <div class="l-name">${item.name || ''}</div>
+                            </div>
+                        </div>
+                        <div class="l-card-side">
+                            <div class="l-price">${item.price}:-</div>
+                            <div class="l-stock ${item.quantity > 0 ? 'in' : 'out'}">
+                                ${item.quantity > 0 ? 'Saldo: ' + item.quantity : 'Slut'}
+                            </div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+
+    // 2. JOBB-SEKTION
+    if (filteredJobs.length > 0) {
+        html += `<div class="lager-header-divider">
+            <span class="material-icons" style="font-size:16px">assignment</span> BOKADE JOBB
+        </div>`;
+        
+        if (!isMobile) {
+            // Skapa tabell för datorn
+            html += `
+                <table id="jobsTable">
+                    <thead>
+                        <tr>
+                            <th>Status</th><th>Datum</th><th>Kund</th><th>Reg.nr</th>
+                            <th style="text-align:right">Pris</th><th class="action-col">Åtgärder</th>
+                        </tr>
+                    </thead>
+                    <tbody>${filteredJobs.map(job => createJobRow(job)).join('')}</tbody>
+                </table>`;
+        } else {
+            // Skapa kort för mobilen
+            html += filteredJobs.map(job => createJobCard(job)).join('');
+        }
+    }
+
+    resultsContainer.innerHTML = html || '<p class="search-no-results">Inga träffar hittades.</p>';
+}
+
+// Koppla lyssnarna till den nya funktionen
+document.getElementById('mobileSearchInput')?.addEventListener('input', (e) => {
+    handleSearch(e.target.value.trim(), true);
+});
+
+document.getElementById('searchBar')?.addEventListener('input', (e) => {
+    handleSearch(e.target.value.trim(), false);
+});
