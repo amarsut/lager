@@ -142,3 +142,29 @@ window.fillAiPrompt = function(t) {
         input.focus();
     }
 };
+
+document.getElementById('sidebarAskAiBtn').addEventListener('click', function() {
+    const chatWidget = document.getElementById('chatWidget');
+    
+    // 1. Öppna chatten om den är stängd
+    chatWidget.style.display = 'flex';
+    
+    // 2. Aktivera helskärmsläget (stora vyn)
+    document.body.classList.add('ai-fullscreen-active');
+    
+    // 3. Aktivera AI-läget (Toggle AI)
+    if (typeof toggleAiMode === 'function') {
+        // Kontrollera om AI redan är aktivt, annars aktivera
+        if (!document.body.classList.contains('ai-mode-active')) {
+            toggleAiMode();
+        }
+    }
+    
+    // 4. Fokusera på textfältet direkt
+    setTimeout(() => document.getElementById('chatInput').focus(), 400);
+});
+
+// Lägg till en stäng-knapp logik som även tar bort helskärmen
+document.getElementById('closeChatWidget').addEventListener('click', function() {
+    document.body.classList.remove('ai-fullscreen-active');
+});
