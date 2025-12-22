@@ -548,6 +548,13 @@ tbody tr button { cursor: pointer; z-index: 2; position: relative; }
 
 /* --- CSS-LÖSNING: HELSKÄRMSVYER PÅ MOBIL --- */
 @media (max-width: 768px) {
+   /* --- DÖLJ STANDARD-HEADER PÅ DATOR --- */
+   /* Vi siktar specifikt på vyerna för Statistik, Kalender och Kunder */
+    #statisticsView .std-header,
+    #calendarView .std-header,
+    #customersView .std-header {
+        display: none !important;
+    }
     
     /* 1. Gör vyerna till helskärmslager som täcker allt */
     #customersView, #statisticsView, #calendarView {
@@ -595,6 +602,7 @@ tbody tr button { cursor: pointer; z-index: 2; position: relative; }
 /*
 TEST TEST TEST
 */
+
 
 
 
