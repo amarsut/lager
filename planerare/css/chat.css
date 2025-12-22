@@ -861,30 +861,53 @@ AI RELATERAT UTSEENDE OCH ANIMATIONER ---
 
 /* --- STORT AI-LÄGE (DESKTOP) --- */
 @media (min-width: 769px) {
-    /* När denna klass finns på body, expanderar vi chatten */
-    body.ai-fullscreen-active #chatWidget {
-        bottom: 2rem !important;
-        right: 2rem !important;
-        width: calc(100% - var(--sidebar-width) - 4rem) !important;
-        height: calc(100% - 4rem) !important;
-        max-height: none !important;
-        border-radius: 24px !important;
-        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.1) !important;
-        background: rgba(255, 255, 255, 0.95) !important;
-        z-index: 10000 !important;
-        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1) !important;
+    /* Centrera och begränsa bredden på meddelandena för läsbarhet */
+    body.ai-fullscreen-active .chat-messages,
+    body.ai-fullscreen-active #aiMessageContainer {
+        max-width: 900px !important;
+        margin: 0 auto !important;
+        padding-bottom: 120px !important; /* Plats för den fasta panelen */
     }
 
-    /* Gör meddelandeytan bredare och luftigare i stort läge */
-    body.ai-fullscreen-active #aiMessageContainer,
-    body.ai-fullscreen-active #chatMessages {
-        padding: 40px 10% !important; /* Centrerat innehåll för läsbarhet */
-    }
-
-    /* Förstora textrutan i AI-läge */
+    /* Gör input-ytan till en snygg "Flytande kontrollpanel" */
     body.ai-fullscreen-active .chat-input-area {
-        padding: 20px 10% !important;
+        position: absolute !important;
+        bottom: 30px !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        width: 700px !important; /* Fast bredd för desktop-proffskänsla */
+        background: rgba(255, 255, 255, 0.9) !important;
+        backdrop-filter: blur(10px) !important;
+        border: 1px solid rgba(0,0,0,0.1) !important;
+        border-radius: 20px !important;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1) !important;
+        padding: 12px 20px !important;
+        height: auto !important;
+        min-height: 60px !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 15px !important;
+    }
+
+    /* Fixa knapparnas storlek och position i den stora panelen */
+    body.ai-fullscreen-active .chat-actions-left {
+        position: static !important; /* Ta bort absolut positionering */
+        transform: none !important;
+        display: flex !important;
+        gap: 8px !important;
+    }
+
+    body.ai-fullscreen-active .chat-input-area textarea {
         background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding-right: 10px !important; /* Knapparna ligger inte längre inuti fältet */
+        font-size: 1.1rem !important;
+    }
+
+    body.ai-fullscreen-active #chatSendBtn {
+        width: 45px !important;
+        height: 45px !important;
     }
 }
 
