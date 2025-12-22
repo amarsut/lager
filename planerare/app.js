@@ -1369,16 +1369,50 @@ function setupEventListeners() {
     // Sökfältet
     // Uppdaterad sökfunktion för dator (Desktop)
 	document.getElementById('searchBar').addEventListener('input', async (e) => {
-	    const term = e.target.value.trim();
+	    currentSearchTerm = e.target.value;
+	    const term = currentSearchTerm.trim();
+	    const container = document.getElementById('jobListContainer');
+	    const filterBar = document.getElementById('searchFilterBar');
+	
 	    if (term.length > 0) {
-	        // Kör den nya funktionen som hanterar både lager och jobb
-	        await performCombinedSearch(term); 
+	        // Kör den avancerade sökningen som ritar direkt i containern
+	        const filteredJobs = allJobs.filter(job => !job.deleted && jobMatchesSearch(job, term));
+	        const lagerResults = await searchLager(term);
+	        
+	        // Visa filter-bar om vi har blandade resultat
+	        if (filterBar) filterBar.style.display = (filteredJobs.length > 0 && lagerResults.length > 0) ? 'flex' : 'none';
+	
+	        // Rita resultaten i huvudfönstret
+	        renderCombinedResultsToContainer(container, filteredJobs, lagerResults);
 	    } else {
-	        // Om sökfältet är tomt, gå tillbaka till vanlig vy och dölj filter
-	        document.getElementById('searchFilterBar').style.display = 'none';
+	        if (filterBar) filterBar.style.display = 'none';
 	        renderDashboard();
 	    }
 	});
+	
+	// Hjälpfunktion för att rita i huvudfönstret (Dator)
+	function renderCombinedResultsToContainer(container, jobs, lager) {
+	    let html = '';
+	    
+	    // Lager-sektion (om aktiv)
+	    if (lager.length > 0 && (activeSearchFilter === 'all' || activeSearchFilter === 'lager')) {
+	        html += `<div class="search-section-header">LAGERARTIKLAR</div><div class="lager-results-grid">${lager.map(i => createLagerMiniCard(i)).join('')}</div>`;
+	    }
+	    
+	    // Jobb-sektion (om aktiv)
+	    if (jobs.length > 0 && (activeSearchFilter === 'all' || activeSearchFilter === 'jobb')) {
+	        html += `<div class="search-section-header">BOKADE JOBB</div>`;
+	        const isMobile = window.innerWidth <= 768;
+	        if (!isMobile) {
+	            html += `<table id="jobsTable"><thead><tr><th>Status</th><th>Datum</th><th>Kund</th><th>Reg.nr</th><th style="text-align:right">Pris</th><th class="action-col">Åtgärder</th></tr></thead><tbody>`;
+	            jobs.forEach(job => html += createJobRow(job));
+	            html += `</tbody></table>`;
+	        } else {
+	            html += jobs.map(job => createJobCard(job)).join('');
+	        }
+	    }
+	    container.innerHTML = html || '<p class="search-no-results">Inga träffar.</p>';
+	}
 	
 	// Ny hjälpfunktion för att rita ut sökresultat på skrivbordet
 	async function renderDashboardWithLager(term, lagerResults) {
