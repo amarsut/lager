@@ -70,6 +70,7 @@ console.log("Firebase initierad.");
 
 // Globala variabler
 let allJobs = []; 
+let activeSearchFilter = 'all'; // Standardvärde: 'all', 'lager' eller 'jobb'
 let currentStatusFilter = 'kommande'; 
 let currentSearchTerm = '';
 let currentExpenses = [];
@@ -3646,82 +3647,128 @@ function createLagerMiniCard(item) {
     `;
 }
 
+window.toggleFilterMenu = function() {
+    const menu = document.getElementById('searchFilterMenu');
+    menu.classList.toggle('show');
+};
+
+window.setSearchFilter = function(filter) {
+    activeSearchFilter = filter;
+    
+    // Uppdatera UI på alternativen
+    document.querySelectorAll('.filter-option').forEach(opt => {
+        opt.classList.remove('active');
+        if(opt.dataset.filter === filter) opt.classList.add('active');
+    });
+    
+    // Stäng menyn
+    document.getElementById('searchFilterMenu').classList.remove('show');
+    
+    // Kör sökningen igen med det nya filtret
+    const term = document.getElementById('searchBar').value || document.getElementById('mobileSearchInput').value;
+    const isMobile = window.innerWidth <= 768;
+    handleSearch(term.trim(), isMobile);
+};
+
 // ==========================================
     // NY & STÄDAD SÖKMOTOR (Lager + Jobb)
     // ==========================================
     async function handleSearch(term, isMobile) {
-        const resultsContainer = isMobile ? 
-            document.getElementById('mobileSearchResults') : 
-            document.getElementById('jobListContainer');
+    const resultsContainer = isMobile ? 
+        document.getElementById('mobileSearchResults') : 
+        document.getElementById('jobListContainer');
 
-        if (!term) {
-            if (isMobile) renderSearchZeroState();
-            else renderDashboard();
-            return;
-        }
+    if (!term) {
+        if (isMobile) renderSearchZeroState();
+        else renderDashboard();
+        return;
+    }
 
-        const searchTerm = term.toLowerCase();
-        const filteredJobs = allJobs.filter(job => !job.deleted && jobMatchesSearch(job, searchTerm));
-        const lagerResults = await searchLager(searchTerm);
+    const searchTerm = term.toLowerCase();
+    const filteredJobs = allJobs.filter(job => !job.deleted && jobMatchesSearch(job, searchTerm));
+    const lagerResults = await searchLager(searchTerm);
 
-        let html = '';
+    // Filter-logik
+    const showLager = activeSearchFilter === 'all' || activeSearchFilter === 'lager';
+    const showJobs = activeSearchFilter === 'all' || activeSearchFilter === 'jobb';
 
-        // 1. LAGER-SEKTION (Kompakta kort)
-        if (lagerResults.length > 0) {
-            html += `
-                <div class="search-section-divider lager-header">
-                    <span class="material-icons">inventory_2</span>
-                    <span class="header-text">Lagerartiklar</span>
-                    <span class="header-count">${lagerResults.length}</span>
+    let html = '';
+
+    // LÄGG TILL FILTER-KNAPPEN (Där din rosa prick är)
+    html += `
+        <div class="search-results-header">
+            <button class="filter-toggle-btn" onclick="toggleFilterMenu()">
+                <span class="material-icons">filter_list</span>
+            </button>
+            <div class="filter-dropdown" id="searchFilterMenu">
+                <div class="filter-option ${activeSearchFilter === 'all' ? 'active' : ''}" data-filter="all" onclick="setSearchFilter('all')">
+                    <span class="material-icons" style="font-size:16px;">select_all</span> Alla
                 </div>
-                <div class="lager-results-grid">
-                    ${lagerResults.map(item => `
-                        <div class="lager-result-card-desktop">
-                            <div class="l-card-main">
-                                <span class="l-badge">LAGER</span>
-                                <div class="l-info">
-                                    <strong class="l-artnr">${item.service_filter || '---'}</strong>
-                                    <div class="l-name">${item.name || ''}</div>
-                                </div>
-                            </div>
-                            <div class="l-card-side">
-                                <div class="l-price">${item.price}:-</div>
-                                <div class="l-stock ${item.quantity > 0 ? 'in' : 'out'}">
-                                    ${item.quantity > 0 ? 'Saldo: ' + item.quantity : 'Slut'}
-                                </div>
+                <div class="filter-option ${activeSearchFilter === 'lager' ? 'active' : ''}" data-filter="lager" onclick="setSearchFilter('lager')">
+                    <span class="material-icons" style="font-size:16px; color:#ea580c;">inventory_2</span> Lager
+                </div>
+                <div class="filter-option ${activeSearchFilter === 'jobb' ? 'active' : ''}" data-filter="jobb" onclick="setSearchFilter('jobb')">
+                    <span class="material-icons" style="font-size:16px; color:#2563eb;">assignment</span> Jobb
+                </div>
+            </div>
+        </div>
+    `;
+
+    // 1. LAGER-SEKTION
+    if (showLager && lagerResults.length > 0) {
+        html += `
+            <div class="search-section-divider lager-header">
+                <span class="material-icons">inventory_2</span>
+                <span class="header-text">Lagerartiklar</span>
+                <span class="header-count">${lagerResults.length}</span>
+            </div>
+            <div class="lager-results-grid">
+                ${lagerResults.map(item => `
+                    <div class="lager-result-card-desktop">
+                        <div class="l-card-main">
+                            <span class="l-badge">LAGER</span>
+                            <div class="l-info">
+                                <strong class="l-artnr">${item.service_filter || '---'}</strong>
+                                <div class="l-name">${item.name || ''}</div>
                             </div>
                         </div>
-                    `).join('')}
-                </div>`;
-        }
-
-        // 2. JOBB-SEKTION (Tabell på dator, Kort på mobil)
-        if (filteredJobs.length > 0) {
-            html += `
-                <div class="search-section-divider jobb-header">
-                    <span class="material-icons">assignment</span>
-                    <span class="header-text">Bokade Jobb</span>
-                    <span class="header-count">${filteredJobs.length}</span>
-                </div>`;
-            
-            if (!isMobile) {
-                html += `
-                    <table id="jobsTable">
-                        <thead>
-                            <tr>
-                                <th>Status</th><th>Datum</th><th>Kund</th><th>Reg.nr</th>
-                                <th style="text-align:right">Pris</th><th class="action-col">Åtgärder</th>
-                            </tr>
-                        </thead>
-                        <tbody>${filteredJobs.map(job => createJobRow(job)).join('')}</tbody>
-                    </table>`;
-            } else {
-                html += filteredJobs.map(job => createJobCard(job)).join('');
-            }
-        }
-
-        resultsContainer.innerHTML = html || `<div style="text-align:center; padding:40px; color:#94a3b8;">Inga träffar hittades.</div>`;
+                        <div class="l-card-side">
+                            <div class="l-price">${item.price}:-</div>
+                            <div class="l-stock ${item.quantity > 0 ? 'in' : 'out'}">
+                                ${item.quantity > 0 ? 'Saldo: ' + item.quantity : 'Slut'}
+                            </div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>`;
     }
+
+    // 2. JOBB-SEKTION
+    if (showJobs && filteredJobs.length > 0) {
+        html += `
+            <div class="search-section-divider jobb-header">
+                <span class="material-icons">assignment</span>
+                <span class="header-text">Bokade Jobb</span>
+                <span class="header-count">${filteredJobs.length}</span>
+            </div>`;
+        
+        if (!isMobile) {
+            html += `
+                <table id="jobsTable">
+                    <thead>
+                        <tr>
+                            <th>Status</th><th>Datum</th><th>Kund</th><th>Reg.nr</th><th style="text-align:right">Pris</th><th class="action-col">Åtgärder</th>
+                        </tr>
+                    </thead>
+                    <tbody>${filteredJobs.map(job => createJobRow(job)).join('')}</tbody>
+                </table>`;
+        } else {
+            html += filteredJobs.map(job => createJobCard(job)).join('');
+        }
+    }
+
+    resultsContainer.innerHTML = html || `<div style="text-align:center; padding:40px; color:#94a3b8;">Inga träffar hittades.</div>`;
+}
 
     // Koppla sökfälten till den nya motorn
     document.getElementById('mobileSearchInput')?.addEventListener('input', (e) => handleSearch(e.target.value.trim(), true));
