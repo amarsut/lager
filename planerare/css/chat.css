@@ -633,6 +633,18 @@ AI RELATERAT UTSEENDE OCH ANIMATIONER ---
 
 /* --- AI MODE STYLES --- */
 
+/* --- AI CORE INTERFACE --- */
+#aiMessageContainer {
+    background: linear-gradient(135deg, #ffffff 0%, #eff7ff 40%, #ffffff 100%) !important;
+    display: flex;
+    flex-direction: column;
+    padding: 12px;
+    gap: 12px;
+    position: relative;
+    overflow-y: auto;
+    animation: none !important;
+}
+
 /* Bakgrundsfärg när AI är igång */
 .ai-mode-active .chat-widget {
     background: linear-gradient(to bottom, #f8faff, #f0f4ff);
@@ -640,11 +652,11 @@ AI RELATERAT UTSEENDE OCH ANIMATIONER ---
 
 /* Gemini Ikon Aktiv */
 #toggleAiBtn.active-ai {
-    background-color: transparent !important; /* Ingen cirkel */
-    color: #8b5cf6 !important;            /* Gemini-lila färg på loggan */
-    border-color: transparent !important;
-    transform: scale(1.1);                 /* Behåll en liten förstoring för feedback */
-    filter: drop-shadow(0 0 3px rgba(139, 92, 246, 0.3)); /* Valfritt: ett svagt lila sken */
+    background: transparent !important;
+    color: #8b5cf6 !important;
+    border: none !important;
+    transform: scale(1.1);
+    filter: drop-shadow(0 0 3px rgba(139, 92, 246, 0.3));
 }
 
 /* Input-fältet i AI-läge */
@@ -654,7 +666,7 @@ AI RELATERAT UTSEENDE OCH ANIMATIONER ---
     box-shadow: 0 0 15px rgba(99, 102, 241, 0.15);
 }
 
-/* CHIPS (Förslagen) */
+/* --- CHIPS (FÖRSLAGEN) --- */
 .ai-chips-scroll {
     display: flex;
     gap: 8px;
@@ -663,38 +675,172 @@ AI RELATERAT UTSEENDE OCH ANIMATIONER ---
     background: rgba(255,255,255,0.9);
     border-bottom: 1px solid #e2e8f0;
     white-space: nowrap;
-    /* Dölj scrollbar men behåll funktion */
-    -ms-overflow-style: none;  
-    scrollbar-width: none;  
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 .ai-chips-scroll::-webkit-scrollbar { display: none; }
 
 .ai-chip {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
     background: #eff6ff;
     color: #1e40af;
     border: 1px solid #dbeafe;
     border-radius: 20px;
-    padding: 6px 12px;
+    padding: 8px 14px;
     font-size: 0.85rem;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
-    flex-shrink: 0; /* Förhindra att de krymps */
 }
 .ai-chip:active { transform: scale(0.95); background: #dbeafe; }
 
-/* AI Meddelanden (Unik stil) */
-.chat-bubble.ai-response {
-    background: #ffffff;
-    border-left: 3px solid #6366f1; /* Lila kant */
-    color: #1e293b;
-    border-radius: 4px 12px 12px 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    font-family: 'Inter', sans-serif; /* Läsbar font */
-    max-width: 90%;
+/* --- AI CHATT-RADER & BUBBLOR --- */
+.ai-chat-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    align-items: flex-start;
+}
+.ai-chat-row.user { justify-content: flex-end; }
+
+.ai-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
-/* En liten disclaimer i botten av bubblan */
+.chat-bubble.ai-response {
+    background: rgba(255, 255, 255, 0.9) !important;
+    backdrop-filter: blur(4px);
+    color: #1e293b;
+    border-radius: 2px 15px 15px 15px;
+    border: 1px solid rgba(226, 232, 240, 0.6) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+    font-family: 'Inter', sans-serif;
+    max-width: 90%;
+    padding: 10px;
+}
+
+.ai-text-content { line-height: 1.5; }
+
+/* --- SPARADE MEDDELANDEN (ACCORDION) --- */
+.ai-saved-accordion {
+    margin: 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    background: #fff;
+    overflow: hidden;
+    z-index: 10;
+    flex-shrink: 0;
+}
+
+.saved-header {
+    padding: 12px 15px;
+    background: #f8fafc;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #475569;
+}
+
+.accordion-arrow { transition: transform 0.3s ease; }
+.ai-saved-accordion.open .accordion-arrow { transform: rotate(180deg); }
+
+.saved-content {
+    display: none !important; /* Denna rad ser till att menyn är stängd från början */
+    flex-direction: column !important;
+    max-height: 400px !important;
+    overflow-y: auto !important;
+    padding: 8px !important;
+    background: #fff;
+}
+.ai-saved-accordion.open .saved-content {
+    display: flex !important;
+}
+
+/* Sparade Kort */
+.saved-card {
+    background: #ffffff;
+    border: 1px solid #eef2f6;
+    border-radius: 10px; /* Något stramare hörn */
+    margin-bottom: 6px; /* Minska avståndet mellan korten */
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    width: 100% !important;
+}
+.saved-card:active { transform: scale(0.98); }
+
+.saved-card-header {
+    background: #fbfcfe;
+    padding: 6px 10px; /* Mycket mindre padding */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.saved-question-tag {
+    font-size: 0.7rem; /* Mindre text för rubriken */
+    font-weight: 700;
+    color: #6366f1;
+    text-transform: uppercase;
+    line-height: 1.2;
+    margin: 0; /* Ta bort alla marginaler */
+}
+
+.saved-card-body {
+    padding: 8px 10px; /* Minska avståndet mellan rubrik och svar */
+    font-size: 0.85rem;
+    color: #1e293b;
+    line-height: 1.4; /* Tajtare radavstånd */
+    background: #fff;
+}
+
+/* --- HJÄLP-ELEMENT & KNAPPAR --- */
+.ai-save-btn {
+    background: #f1f5f9;
+    border: none;
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 0.7rem;
+    color: #64748b;
+    margin-top: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.delete-saved-btn {
+    color: #94a3b8;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+}
+.delete-saved-btn:hover { color: #ef4444; }
+
+.ai-welcome-screen {
+    text-align: center;
+    padding: 40px 20px;
+    color: #64748b;
+}
+.ai-sparkle-bg { font-size: 3rem; margin-bottom: 10px; opacity: 0.8; }
+
 .ai-disclaimer {
     font-size: 0.65rem;
     color: #94a3b8;
@@ -704,10 +850,11 @@ AI RELATERAT UTSEENDE OCH ANIMATIONER ---
     padding-top: 4px;
 }
 
-/* Välkomstskärm */
-.ai-welcome-screen {
-    text-align: center;
-    padding: 40px 20px;
-    color: #64748b;
+/* Scrollbar inuti menyn */
+.saved-content::-webkit-scrollbar {
+    width: 6px; /* Synligare scrollbar på dator */
 }
-.ai-sparkle-bg { font-size: 3rem; margin-bottom: 10px; opacity: 0.8; }
+.saved-content::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
