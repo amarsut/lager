@@ -1424,36 +1424,36 @@ function setupEventListeners() {
 	    // 2. Skapa HTML för lager-sektionen om träffar finns
 	    let lagerHtml = '';
 	    if (lagerResults.length > 0) {
-	        lagerHtml = `
-	            <div class="lager-search-section-desktop">
-	                <div class="lager-header-divider">
-	                    <span class="icon-span">inventory_2</span> TRÄFFAR I LAGRET
-	                </div>
-	                <div class="lager-results-grid">
-	                    ${lagerResults.map(item => `
-	                        <div class="lager-result-card-desktop">
-	                            <div class="l-card-main">
-	                                <span class="l-badge">LAGER</span>
-	                                <div class="l-info">
-	                                    <strong class="l-artnr">${item.service_filter || '---'}</strong>
-	                                    <div class="l-name">${item.name || ''}</div>
-	                                </div>
-	                            </div>
-	                            <div class="l-card-side">
-	                                <div class="l-price">${item.price}:-</div>
-	                                <div class="l-stock ${item.quantity > 0 ? 'in' : 'out'}">
-	                                    ${item.quantity > 0 ? 'Saldo: ' + item.quantity : 'Slut'}
-	                                </div>
-	                            </div>
-	                        </div>
-	                    `).join('')}
-	                </div>
-	                <div class="lager-header-divider">
-	                    <span class="icon-span">assignment</span> TRÄFFAR I JOBBLISTAN
-	                </div>
-	            </div>
-	        `;
-	    }
+		    lagerHtml = `
+		        <div class="lager-search-section-desktop">
+		            <div class="lager-header-divider">
+		                <span class="material-icons" style="font-size: 16px;">inventory_2</span> TRÄFFAR I LAGRET
+		            </div>
+		            <div class="lager-results-grid">
+		                ${lagerResults.map(item => `
+		                    <div class="lager-result-card-desktop">
+		                        <div class="l-card-main">
+		                            <span class="l-badge">LAGER</span>
+		                            <div class="l-info">
+		                                <strong class="l-artnr">${item.service_filter || '---'}</strong>
+		                                <div class="l-name">${item.name || ''}</div>
+		                            </div>
+		                        </div>
+		                        <div class="l-card-side">
+		                            <div class="l-price">${item.price}:-</div>
+		                            <div class="l-stock ${item.quantity > 0 ? 'in' : 'out'}">
+		                                ${item.quantity > 0 ? 'Saldo: ' + item.quantity : 'Slut'}
+		                            </div>
+		                        </div>
+		                    </div>
+		                `).join('')}
+		            </div>
+		            <div class="lager-header-divider">
+		                <span class="material-icons" style="font-size: 16px;">assignment</span> TRÄFFAR I JOBBLISTAN
+		            </div>
+		        </div>
+		    `;
+		}
 	
 	    // 3. Rita ut tabellen eller korten (beroende på vy)
 	    const isMobile = window.innerWidth <= 768;
