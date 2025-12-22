@@ -771,5 +771,15 @@ TEST TEST TEST
     border-color: #cbd5e1;
 }
 
+/* Ge tabellen andrum när den visas efter lagerartiklar */
+.search-section-header + #jobsTable {
+    margin-top: 10px;
+}
+
+#jobsTable {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 8px; /* Ger luft mellan raderna */
+}
 
 
