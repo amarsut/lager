@@ -3589,3 +3589,61 @@ async function searchLager(term) {
         return [];
     }
 }
+
+// Global variabel för att hålla koll på valt filter i sökningen
+let activeSearchFilter = 'all';
+
+// Koppla klick-event till filterknapparna
+document.getElementById('searchFilterBar')?.addEventListener('click', (e) => {
+    if (e.target.classList.contains('filter-pill')) {
+        // Uppdatera aktiv knapp
+        document.querySelectorAll('.filter-pill').forEach(btn => btn.classList.remove('active'));
+        e.target.classList.add('active');
+        
+        activeSearchFilter = e.target.dataset.filter;
+        
+        // Kör sök-renderaren igen med det nya filtret
+        const term = document.getElementById('mobileSearchInput').value;
+        if (term) performCombinedSearch(term);
+    }
+});
+
+// Uppdatera din befintliga sök-funktion
+async function performCombinedSearch(term) {
+    const resultsContainer = document.getElementById('mobileSearchResults');
+    const filterBar = document.getElementById('searchFilterBar');
+    
+    // Sök data
+    const filteredJobs = allJobs.filter(job => !job.deleted && jobMatchesSearch(job, term));
+    const lagerResults = await searchLager(term);
+
+    // Visa filterbaren endast om vi har resultat från båda källorna
+    if (filteredJobs.length > 0 && lagerResults.length > 0) {
+        filterBar.style.display = 'flex';
+    } else {
+        filterBar.style.display = 'none';
+        activeSearchFilter = 'all'; // Återställ om bara en källa har träffar
+    }
+
+    let finalHtml = '';
+
+    // Rendera Lager (visa om filter är 'all' eller 'lager')
+    if (lagerResults.length > 0 && (activeSearchFilter === 'all' || activeSearchFilter === 'lager')) {
+        finalHtml += `
+            <div class="search-section-header">LAGERARTIKLAR</div>
+            <div class="lager-results-wrapper">
+                ${lagerResults.map(item => createLagerMiniCard(item)).join('')}
+            </div>
+        `;
+    }
+
+    // Rendera Jobb (visa om filter är 'all' eller 'jobb')
+    if (filteredJobs.length > 0 && (activeSearchFilter === 'all' || activeSearchFilter === 'jobb')) {
+        finalHtml += `
+            <div class="search-section-header">BOKADE JOBB</div>
+            ${filteredJobs.map(job => createJobCard(job)).join('')}
+        `;
+    }
+
+    resultsContainer.innerHTML = finalHtml || '<p class="search-no-results">Inga träffar hittades.</p>';
+}
