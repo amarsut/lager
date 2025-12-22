@@ -3727,11 +3727,10 @@ async function handleSearch(term, isMobile) {
             Inga träffar hittades för "${term}"
         </div>
     `;
-}
+} // <--- FIX 1: Denna måsvinge stänger handleSearch
 
-// ==========================================
-// 2. EVENT LISTENERS FÖR SÖK
-// ==========================================
+// --- EVENT LISTENERS FÖR SÖKNING ---
+// Dessa ligger kvar inuti din setupEventListeners
 document.getElementById('mobileSearchInput')?.addEventListener('input', (e) => {
     handleSearch(e.target.value.trim(), true);
 });
@@ -3739,3 +3738,5 @@ document.getElementById('mobileSearchInput')?.addEventListener('input', (e) => {
 document.getElementById('searchBar')?.addEventListener('input', (e) => {
     handleSearch(e.target.value.trim(), false);
 });
+
+}
