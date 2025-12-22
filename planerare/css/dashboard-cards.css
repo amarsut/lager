@@ -102,30 +102,30 @@
 }
 
 /* =========================================
-   FÄRGTEMAN (COLORS)
+   FÄRGTEMAN (SOFT & MUTED VERSIONS)
    ========================================= */
 
-/* Kommande (Blå) */
+/* Kommande (Mjuk Blå) */
 .stat-card[data-filter="kommande"] { 
-    background: linear-gradient(135deg, #ffffff 0%, #eff6ff 100%) !important;
-    border-color: #dbeafe !important;
+    background: linear-gradient(135deg, #ffffff 0%, #f0f7ff 100%) !important;
+    border-color: #e0eefe !important;
 }
 .stat-card[data-filter="kommande"] .stat-card-value,
 .stat-card[data-filter="kommande"] .stat-card-title svg,
-.stat-card[data-filter="kommande"] .stat-card-title span { color: #0066FF !important; }
-.stat-card[data-filter="kommande"].active { border-bottom-color: #0066FF !important; }
+.stat-card[data-filter="kommande"] .stat-card-title span { color: #3b82f6 !important; }
+.stat-card[data-filter="kommande"].active { border-bottom-color: #3b82f6 !important; }
 
-/* Faktureras (Lila) */
+/* Faktureras (Mjuk Lila) */
 .stat-card[data-filter="faktureras"] { 
-    background: linear-gradient(135deg, #ffffff 0%, #faf5ff 100%) !important;
-    border-color: #f3e8ff !important;
+    background: linear-gradient(135deg, #ffffff 0%, #f5f3ff 100%) !important;
+    border-color: #ede9fe !important;
 }
 .stat-card[data-filter="faktureras"] .stat-card-value,
 .stat-card[data-filter="faktureras"] .stat-card-title svg,
 .stat-card[data-filter="faktureras"] .stat-card-title span { color: #8b5cf6 !important; }
 .stat-card[data-filter="faktureras"].active { border-bottom-color: #8b5cf6 !important; }
 
-/* Klar (Grön) */
+/* Klar (Mjuk Grön) */
 .stat-card[data-filter="klar"] { 
     background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%) !important;
     border-color: #dcfce7 !important;
@@ -154,17 +154,6 @@
 .stat-card[data-filter="backlog"] .stat-card-title svg,
 .stat-card[data-filter="backlog"] .stat-card-title span { color: #f97316 !important; }
 .stat-card[data-filter="backlog"].active { border-bottom-color: #f97316 !important; }
-
-/* Ej Bokat (Orange) */
-.stat-card[data-filter="backlog"] {
-    background: linear-gradient(135deg, #ffffff 0%, #fff7ed 100%) !important;
-    border-color: #ffedd5 !important;
-}
-.stat-card[data-filter="backlog"] .stat-card-value,
-.stat-card[data-filter="backlog"] .stat-card-title svg,
-.stat-card[data-filter="backlog"] .stat-card-title span { color: #ea580c !important; }
-.stat-card[data-filter="backlog"].active { border-bottom-color: #ea580c !important; }
-
 
 /* =========================================
    MOBILANPASSNING & DESKTOP GRID
