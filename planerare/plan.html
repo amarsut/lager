@@ -783,13 +783,13 @@
 	
 	    <div id="chatMessages" class="chat-messages">
 	        </div>
-			<div id="aiMessageContainer" class="chat-messages ai-container" style="display: none;">
-				<div class="ai-welcome-screen">
-					<div class="ai-sparkle-bg">✨</div>
-					<h3>Gemini Verkstad</h3>
-					<p>Jag har koll på <span id="aiCarContext">bilen</span>. Vad undrar du?</p>
-				</div>
+			<div id="aiMessageContainer" class="chat-messages ai-container" style="display: none; flex-direction: column;">
+			<div class="ai-welcome-screen">
+				<div class="ai-sparkle-bg">✨</div>
+				<h3>Gemini AI</h3>
+				<p>Global assistent. Dina frågor visas här.</p>
 			</div>
+		</div>
 
 			<button id="chatScrollBtn" class="chat-scroll-btn" onclick="scrollToBottomSmooth()">
 				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -799,7 +799,7 @@
 	
 		<div id="aiSuggestionChips" class="ai-chips-scroll" style="display: none;">
 			<button class="ai-chip" onclick="fillAiPrompt('Vad är oljemängd och viskositet?')">🛢️ Oljemängd</button>
-			<button class="ai-chip" onclick="fillAiPrompt('Moment för hjulbultar & bromsok?')">🔧 Åtdragningsmoment</button>
+			<button class="ai-chip" onclick="fillAiPrompt('Moment för hjulbultar & bromsok?')">🔧 Moment</button>
 			<button class="ai-chip" onclick="fillAiPrompt('Tolka denna felkod: ')">⚠️ Felkod</button>
 			<button class="ai-chip" onclick="fillAiPrompt('Lista servicepunkter för miltalet')">📋 Servicepunkter</button>
 		</div>
