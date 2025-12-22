@@ -806,3 +806,41 @@ TEST TEST TEST
     margin-bottom: 20px;
 }
 
+/* Container som ligger under sökfältet */
+.search-filter-bar {
+    display: none; /* Visas via JS vid sökning */
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 15px 20px;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    width: 100%;
+    justify-content: center; /* Centrerat som på din bild */
+}
+
+/* De runda knapparna (Pills) */
+.filter-pill {
+    background: white;
+    border: 1px solid #e2e8f0;
+    padding: 8px 20px;
+    border-radius: 50px; /* Ger den perfekta runda formen */
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+/* Aktivt läge (Blå som i ditt system) */
+.filter-pill.active {
+    background: #3b82f6 !important;
+    color: white !important;
+    border-color: #3b82f6 !important;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3) !important;
+}
+
+.filter-pill:hover:not(.active) {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+}
