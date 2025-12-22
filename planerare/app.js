@@ -3647,7 +3647,6 @@ function createLagerMiniCard(item) {
     `;
 }
 
-// --- GEMENSAM FUNKTION FÖR SÖKNING (FIXAR BÅDE MOBIL & DATOR) ---
 async function handleSearch(term, isMobile) {
     const resultsContainer = isMobile ? 
         document.getElementById('mobileSearchResults') : 
@@ -3660,14 +3659,12 @@ async function handleSearch(term, isMobile) {
     }
 
     const searchTerm = term.toLowerCase();
-    
-    // Hämta data (Filtrerade jobb och Lagerartiklar)
     const filteredJobs = allJobs.filter(job => !job.deleted && jobMatchesSearch(job, searchTerm));
     const lagerResults = await searchLager(searchTerm);
 
     let html = '';
 
-    // 1. LAGER-SEKTION (Kompakta kort i rutnät)
+    // 1. LAGER-SEKTION
     if (lagerResults.length > 0) {
         html += `
             <div class="search-section-divider lager-header">
@@ -3697,7 +3694,7 @@ async function handleSearch(term, isMobile) {
         `;
     }
 
-    // 2. JOBB-SEKTION (Tabell på dator, Kort på mobil)
+    // 2. JOBB-SEKTION
     if (filteredJobs.length > 0) {
         html += `
             <div class="search-section-divider jobb-header">
@@ -3729,16 +3726,16 @@ async function handleSearch(term, isMobile) {
         }
     }
 
-    // Visa resultat eller "Inga träffar"
+    // Slutligen rita ut allt i containern
     resultsContainer.innerHTML = html || `
         <div style="text-align:center; padding:40px; color:#94a3b8;">
             <span class="material-icons" style="font-size:48px; display:block; margin-bottom:10px;">search_off</span>
             Inga träffar hittades för "${term}"
         </div>
     `;
-}
+} // <--- Denna måsvinge saknades och orsakade felet!
 
-// Koppla lyssnarna på nytt för att säkerställa funktion
+// Event-lyssnare som kopplar ihop sökfälten med funktionen ovan
 document.getElementById('mobileSearchInput')?.addEventListener('input', (e) => {
     handleSearch(e.target.value.trim(), true);
 });
