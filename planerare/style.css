@@ -811,3 +811,82 @@ TEST TEST TEST
     background: #eff6ff;
     color: #2563eb;
 }
+
+/* --- POSITIONERING AV FILTRERINGSKNAPP --- */
+#jobListContainer, #mobileSearchResults {
+    position: relative; /* Viktigt för att kunna placera knappen inuti */
+}
+
+.search-filter-wrapper {
+    position: absolute;
+    top: 25px;   /* Justera detta värde för att landa exakt på linjen */
+    right: 15px; /* Justera avståndet från högerkanten */
+    z-index: 100;
+}
+
+.filter-toggle-btn {
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #64748b;
+    transition: all 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.filter-toggle-btn:hover {
+    background: #e2e8f0;
+    color: #1e293b;
+    transform: scale(1.05);
+}
+
+.filter-toggle-btn .material-icons {
+    font-size: 18px !important;
+}
+
+/* Dropdown-menyn */
+.filter-dropdown {
+    position: absolute;
+    top: 40px;
+    right: 0;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+    min-width: 140px;
+    display: none;
+    flex-direction: column;
+    padding: 6px;
+    z-index: 1000;
+}
+
+.filter-dropdown.show {
+    display: flex;
+}
+
+.filter-option {
+    padding: 10px 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #475569;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.filter-option:hover {
+    background: #f8fafc;
+    color: #2563eb;
+}
+
+.filter-option.active {
+    background: #eff6ff;
+    color: #2563eb;
+}
