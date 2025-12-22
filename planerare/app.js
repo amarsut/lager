@@ -3688,33 +3688,32 @@ window.setSearchFilter = function(filter) {
     const filteredJobs = allJobs.filter(job => !job.deleted && jobMatchesSearch(job, searchTerm));
     const lagerResults = await searchLager(searchTerm);
 
-    // Filter-logik
     const showLager = activeSearchFilter === 'all' || activeSearchFilter === 'lager';
     const showJobs = activeSearchFilter === 'all' || activeSearchFilter === 'jobb';
 
     let html = '';
 
-    // LÄGG TILL FILTER-KNAPPEN (Där din rosa prick är)
+    // --- FILTRERINGSKNAPP (Placerad vid rosa pricken via CSS) ---
     html += `
-        <div class="search-results-header">
-            <button class="filter-toggle-btn" onclick="toggleFilterMenu()">
+        <div class="search-filter-wrapper">
+            <button class="filter-toggle-btn" onclick="toggleFilterMenu(event)">
                 <span class="material-icons">filter_list</span>
             </button>
             <div class="filter-dropdown" id="searchFilterMenu">
-                <div class="filter-option ${activeSearchFilter === 'all' ? 'active' : ''}" data-filter="all" onclick="setSearchFilter('all')">
-                    <span class="material-icons" style="font-size:16px;">select_all</span> Alla
+                <div class="filter-option ${activeSearchFilter === 'all' ? 'active' : ''}" onclick="setSearchFilter('all')">
+                    <span class="material-icons">select_all</span> Alla
                 </div>
-                <div class="filter-option ${activeSearchFilter === 'lager' ? 'active' : ''}" data-filter="lager" onclick="setSearchFilter('lager')">
-                    <span class="material-icons" style="font-size:16px; color:#ea580c;">inventory_2</span> Lager
+                <div class="filter-option ${activeSearchFilter === 'lager' ? 'active' : ''}" onclick="setSearchFilter('lager')">
+                    <span class="material-icons" style="color:#ea580c;">inventory_2</span> Lager
                 </div>
-                <div class="filter-option ${activeSearchFilter === 'jobb' ? 'active' : ''}" data-filter="jobb" onclick="setSearchFilter('jobb')">
-                    <span class="material-icons" style="font-size:16px; color:#2563eb;">assignment</span> Jobb
+                <div class="filter-option ${activeSearchFilter === 'jobb' ? 'active' : ''}" onclick="setSearchFilter('jobb')">
+                    <span class="material-icons" style="color:#2563eb;">assignment</span> Jobb
                 </div>
             </div>
         </div>
     `;
 
-    // 1. LAGER-SEKTION
+    // 1. LAGERARTIKLAR
     if (showLager && lagerResults.length > 0) {
         html += `
             <div class="search-section-divider lager-header">
@@ -3740,24 +3739,27 @@ window.setSearchFilter = function(filter) {
                         </div>
                     </div>
                 `).join('')}
-            </div>`;
+            </div>
+        `;
     }
 
-    // 2. JOBB-SEKTION
+    // 2. BOKADE JOBB
     if (showJobs && filteredJobs.length > 0) {
         html += `
             <div class="search-section-divider jobb-header">
                 <span class="material-icons">assignment</span>
                 <span class="header-text">Bokade Jobb</span>
                 <span class="header-count">${filteredJobs.length}</span>
-            </div>`;
+            </div>
+        `;
         
         if (!isMobile) {
             html += `
                 <table id="jobsTable">
                     <thead>
                         <tr>
-                            <th>Status</th><th>Datum</th><th>Kund</th><th>Reg.nr</th><th style="text-align:right">Pris</th><th class="action-col">Åtgärder</th>
+                            <th>Status</th><th>Datum</th><th>Kund</th><th>Reg.nr</th>
+                            <th style="text-align:right">Pris</th><th class="action-col">Åtgärder</th>
                         </tr>
                     </thead>
                     <tbody>${filteredJobs.map(job => createJobRow(job)).join('')}</tbody>
@@ -3769,6 +3771,25 @@ window.setSearchFilter = function(filter) {
 
     resultsContainer.innerHTML = html || `<div style="text-align:center; padding:40px; color:#94a3b8;">Inga träffar hittades.</div>`;
 }
+
+// Hjälpfunktioner för filtret
+window.toggleFilterMenu = function(e) {
+    if(e) e.stopPropagation();
+    const menu = document.getElementById('searchFilterMenu');
+    menu.classList.toggle('show');
+};
+
+window.setSearchFilter = function(filter) {
+    activeSearchFilter = filter;
+    const term = document.getElementById('searchBar').value || document.getElementById('mobileSearchInput').value;
+    const isMobile = window.innerWidth <= 768;
+    handleSearch(term.trim(), isMobile);
+};
+
+// Stäng menyn om man klickar utanför
+document.addEventListener('click', () => {
+    document.getElementById('searchFilterMenu')?.classList.remove('show');
+});
 
     // Koppla sökfälten till den nya motorn
     document.getElementById('mobileSearchInput')?.addEventListener('input', (e) => handleSearch(e.target.value.trim(), true));
