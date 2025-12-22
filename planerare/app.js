@@ -1348,10 +1348,73 @@ function setupEventListeners() {
     }
 
     // Sökfältet
-    document.getElementById('searchBar').addEventListener('input', (e) => {
-        currentSearchTerm = e.target.value;
-        renderDashboard();
-    });
+    // Uppdaterad sökfunktion för dator (Desktop)
+	document.getElementById('searchBar').addEventListener('input', async (e) => {
+	    currentSearchTerm = e.target.value;
+	    const term = currentSearchTerm.trim();
+	    
+	    // Om användaren söker, kör vi den kombinerade sökningen
+	    if (term.length > 0) {
+	        const lagerResults = await searchLager(term);
+	        renderDashboardWithLager(term, lagerResults);
+	    } else {
+	        renderDashboard();
+	    }
+	});
+	
+	// Ny hjälpfunktion för att rita ut sökresultat på skrivbordet
+	async function renderDashboardWithLager(term, lagerResults) {
+	    const container = document.getElementById('jobListContainer');
+	    
+	    // 1. Filtrera lokala jobb (befintlig logik)
+	    let jobsToDisplay = allJobs.filter(j => !j.deleted && jobMatchesSearch(j, term));
+	    
+	    // 2. Skapa HTML för lager-sektionen om träffar finns
+	    let lagerHtml = '';
+	    if (lagerResults.length > 0) {
+	        lagerHtml = `
+	            <div class="lager-search-section-desktop">
+	                <div class="lager-header-divider">
+	                    <span class="icon-span">inventory_2</span> TRÄFFAR I LAGRET
+	                </div>
+	                <div class="lager-results-grid">
+	                    ${lagerResults.map(item => `
+	                        <div class="lager-result-card-desktop">
+	                            <div class="l-card-main">
+	                                <span class="l-badge">LAGER</span>
+	                                <div class="l-info">
+	                                    <strong class="l-artnr">${item.service_filter || '---'}</strong>
+	                                    <div class="l-name">${item.name || ''}</div>
+	                                </div>
+	                            </div>
+	                            <div class="l-card-side">
+	                                <div class="l-price">${item.price}:-</div>
+	                                <div class="l-stock ${item.quantity > 0 ? 'in' : 'out'}">
+	                                    ${item.quantity > 0 ? 'Saldo: ' + item.quantity : 'Slut'}
+	                                </div>
+	                            </div>
+	                        </div>
+	                    `).join('')}
+	                </div>
+	                <div class="lager-header-divider">
+	                    <span class="icon-span">assignment</span> TRÄFFAR I JOBBLISTAN
+	                </div>
+	            </div>
+	        `;
+	    }
+	
+	    // 3. Rita ut tabellen eller korten (beroende på vy)
+	    const isMobile = window.innerWidth <= 768;
+	    if (!isMobile) {
+	        let tableHtml = `<table id="jobsTable"><thead><tr><th>Status</th><th>Datum</th><th>Kund</th><th>Reg.nr</th><th style="text-align:right">Pris</th><th class="action-col">Åtgärder</th></tr></thead><tbody>`;
+	        jobsToDisplay.forEach(job => tableHtml += createJobRow(job));
+	        tableHtml += `</tbody></table>`;
+	        container.innerHTML = lagerHtml + tableHtml;
+	    } else {
+	        // För mobil återanvänder vi createJobCard
+	        container.innerHTML = lagerHtml + jobsToDisplay.map(job => createJobCard(job)).join('');
+	    }
+	}
 
     // Modal: Nytt Jobb (FAB)
     document.getElementById('fabAddJob').addEventListener('click', () => {
