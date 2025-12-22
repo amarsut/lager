@@ -615,6 +615,76 @@ TEST TEST TEST
 
 
 
+/* --- DESIGN FÖR LAGER-SÖKRESULTAT --- */
+.lager-search-section-desktop {
+    margin-bottom: 2rem;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.lager-header-divider {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: #94a3b8;
+    margin: 1.5rem 0 1rem 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.lager-header-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, #e2e8f0, transparent);
+}
+
+.lager-results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 12px;
+}
+
+.lager-result-card-desktop {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.2s ease;
+}
+
+.lager-result-card-desktop:hover {
+    border-color: #f59e0b;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.08);
+    transform: translateY(-1px);
+}
+
+.l-badge {
+    background: #fef3c7;
+    color: #92400e;
+    font-size: 0.6rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 800;
+    margin-bottom: 4px;
+    display: inline-block;
+}
+
+.l-artnr { color: #1e293b; font-size: 0.95rem; display: block; }
+.l-name { color: #64748b; font-size: 0.8rem; }
+.l-price { font-weight: 800; color: #1e293b; text-align: right; }
+.l-stock { font-size: 0.75rem; font-weight: 600; text-align: right; }
+.l-stock.in { color: #16a34a; }
+.l-stock.out { color: #ef4444; }
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
 
 
 
