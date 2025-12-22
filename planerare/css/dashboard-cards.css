@@ -110,6 +110,7 @@
     background: linear-gradient(135deg, #ffffff 0%, #f0f7ff 100%) !important;
     border-color: #e0eefe !important;
 }
+/* Här ändras färgen på siffran, ikonen och texten */
 .stat-card[data-filter="kommande"] .stat-card-value,
 .stat-card[data-filter="kommande"] .stat-card-title svg,
 .stat-card[data-filter="kommande"] .stat-card-title span { color: #3b82f6 !important; }
