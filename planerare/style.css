@@ -844,3 +844,46 @@ TEST TEST TEST
     background: #f1f5f9;
     border-color: #cbd5e1;
 }
+
+/* 1. Tillåt top-bar att expandera på höjden */
+.top-bar {
+    display: flex;
+    flex-wrap: wrap; /* Gör att filterbaren kan hoppa ner på en egen rad */
+    align-items: center;
+    padding: 10px 20px;
+    height: auto !important; /* Ta bort eventuell fast höjd */
+}
+
+/* 2. Container för filter-pills (Dator & Mobil) */
+.search-filter-bar {
+    display: none; /* Styrs av JS: visas som flex vid sökning */
+    width: 100%;
+    justify-content: center; /* Centrerat som på din referensbild */
+    gap: 12px;
+    padding: 15px 0;
+    margin-top: 10px;
+    border-top: 1px solid rgba(0,0,0,0.05);
+    background: #f8fafc;
+}
+
+/* 3. De runda knapparna (Pills) */
+.filter-pill {
+    background: white;
+    border: 1px solid #e2e8f0;
+    padding: 8px 24px;
+    border-radius: 50px; /* Ger den perfekt runda formen */
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+/* 4. Aktivt läge (Blått) */
+.filter-pill.active {
+    background: #3b82f6 !important;
+    color: white !important;
+    border-color: #3b82f6 !important;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3) !important;
+}
