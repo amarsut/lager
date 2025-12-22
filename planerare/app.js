@@ -908,21 +908,19 @@ function setupEventListeners() {
 
 	// Aktivera sökfiltrering för både dator och mobil
 	document.querySelectorAll('.filter-pill').forEach(btn => {
-	    btn.addEventListener('click', (e) => {
-	        const filter = e.target.dataset.filter;
-	        activeSearchFilter = filter;
+	    btn.addEventListener('click', async (e) => {
+	        // 1. Markera vald knapp visuellt
+	        document.querySelectorAll('.filter-pill').forEach(pill => pill.classList.remove('active'));
+	        e.target.classList.add('active');
 	        
-	        // Uppdatera utseendet på ALLA filterknappar så de matchar
-	        document.querySelectorAll('.filter-pill').forEach(pill => {
-	            pill.classList.toggle('active', pill.dataset.filter === filter);
-	        });
+	        // 2. Uppdatera det globala filtret
+	        activeSearchFilter = e.target.dataset.filter;
 	        
-	        // Kör sökningen igen med det nuvarande ordet för att uppdatera vyn
-	        const desktopTerm = document.getElementById('searchBar').value;
-	        const mobileTerm = document.getElementById('mobileSearchInput').value;
-	        const currentTerm = desktopTerm || mobileTerm;
-	        
-	        if (currentTerm) performCombinedSearch(currentTerm);
+	        // 3. Uppdatera resultaten baserat på vad som står i sökfältet just nu
+	        const term = document.getElementById('searchBar').value || document.getElementById('mobileSearchInput').value;
+	        if (term) {
+	            await performCombinedSearch(term);
+	        }
 	    });
 	});
 	
@@ -1371,14 +1369,13 @@ function setupEventListeners() {
     // Sökfältet
     // Uppdaterad sökfunktion för dator (Desktop)
 	document.getElementById('searchBar').addEventListener('input', async (e) => {
-	    currentSearchTerm = e.target.value;
-	    const term = currentSearchTerm.trim();
-	    
-	    // Om användaren söker, kör vi den kombinerade sökningen
+	    const term = e.target.value.trim();
 	    if (term.length > 0) {
-	        const lagerResults = await searchLager(term);
-	        renderDashboardWithLager(term, lagerResults);
+	        // Kör den nya funktionen som hanterar både lager och jobb
+	        await performCombinedSearch(term); 
 	    } else {
+	        // Om sökfältet är tomt, gå tillbaka till vanlig vy och dölj filter
+	        document.getElementById('searchFilterBar').style.display = 'none';
 	        renderDashboard();
 	    }
 	});
