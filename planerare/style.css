@@ -782,4 +782,27 @@ TEST TEST TEST
     border-spacing: 0 8px; /* Ger luft mellan raderna */
 }
 
+/* Ger luft mellan lager-grid och jobbtabell */
+.search-section-header {
+    margin-top: 20px;
+    margin-bottom: 10px;
+    font-size: 0.75rem;
+    color: #94a3b8;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+#jobsTable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.lager-results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+}
 
