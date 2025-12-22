@@ -596,182 +596,101 @@ tbody tr button { cursor: pointer; z-index: 2; position: relative; }
 TEST TEST TEST
 */
 
-.status-card {
-    border: none !important;
-    background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-    position: relative;
-    overflow: hidden;
-    transition: transform 0.2s ease;
-}
-
-.status-card:hover {
-    transform: translateY(-3px);
-}
-
-/* Skapa en färgad accent högst upp istället för på sidan */
-.status-card.kommande { border-top: 4px solid #3b82f6 !important; }
-.status-card.ej-bokat { border-top: 4px solid #f97316 !important; }
-.status-card.faktura  { border-top: 4px solid #a855f7 !important; }
-.status-card.fardiga  { border-top: 4px solid #22c55e !important; }
-
-/* Gör reg-numret till en tydlig skylt */
-.reg-nr-badge {
-    background: #1e293b;
-    color: #ffffff;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-family: 'Roboto Mono', monospace;
-    font-weight: 700;
-    letter-spacing: 1px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-/* Rad-effekter */
-.job-table tr {
-    transition: background-color 0.2s ease;
-    border-bottom: 1px solid #f1f5f9;
-}
-
-.job-table tr:hover {
-    background-color: #f8faff !important;
-    cursor: pointer;
-}
-
-.sidebar {
-    background-color: #fcfdfe; /* En aning mörkare än vit bakgrund */
-    border-right: 1px solid #edf2f7;
-}
-
-.nav-item.active {
-    background-color: rgba(59, 130, 246, 0.08) !important;
-    color: #3b82f6 !important;
-    border-left: 4px solid #3b82f6;
-    font-weight: 600;
-}
-
-.search-container input {
-    background: #f1f5f9 !important;
-    border: 1px solid #e2e8f0 !important;
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.03);
-    padding: 10px 15px 10px 40px !important;
-    border-radius: 12px !important;
-}
-
-.top-actions-group {
-    background: #ffffff;
-    padding: 5px 12px;
-    border-radius: 12px;
-    border: 1px solid #e2e8f0;
-    display: flex;
-    gap: 15px;
-}
-
-.ai-fab-button {
-    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.ai-fab-button:hover {
-    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.5);
-    transform: scale(1.05) rotate(5deg);
-}
-
-/* Justera notis-rutan */
-.ai-notification-badge {
-    top: 0;
-    right: 0;
-    border: 2px solid #ffffff; /* Ram som separerar rött från blått */
-    transform: translate(25%, -25%);
-}
-
-/* Grundstilen för statiskortet - vi behöver position relative */
-.status-card {
-    position: relative;
-    overflow: hidden; /* Viktigt för att bakgrundsikonen inte ska sticka ut */
+/* --- 2. BAS-STIL FÖR KORTEN (UPPDATERAD) --- */
+.stat-card {
     background: rgba(255, 255, 255, 0.8) !important;
-    backdrop-filter: blur(10px); /* Själva glass-effekten */
+    backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.3) !important;
-    border-radius: 16px;
-    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05) !important;
+    border-radius: 16px !important; /* Rundare hörn för premiumkänsla */
+    
     display: flex;
     flex-direction: column;
-    z-index: 1;
+    padding: 16px 16px 42px 16px; 
+    position: relative;
+    overflow: hidden; /* För glass-ikonen */
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
 }
 
-/* Den stora bakgrundsikonen (Glass-effekt) */
-.status-card::after {
-    content: ''; 
+.stat-card:hover {
+    transform: translateY(-4px) !important;
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.08) !important;
+    background: #fff !important;
+}
+
+/* Glass-ikon i bakgrunden */
+.stat-card::after {
+    content: '';
     position: absolute;
     top: 10px;
-    right: -15px;
-    width: 80px;
-    height: 80px;
-    background-repeat: no-repeat;
-    background-size: contain;
-    opacity: 0.08; /* Väldigt svag så den inte stör texten */
+    right: -10px;
+    width: 70px;
+    height: 70px;
+    opacity: 0.06;
     transform: rotate(-15deg);
-    z-index: -1; /* Ligger bakom texten */
+    background-size: contain;
+    background-repeat: no-repeat;
+    z-index: 0;
 }
 
-/* Specifika ikoner för varje korttyp (exempelvis SVG-ikoner) */
-.status-card.kommande::after { background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="blue" viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/></svg>'); }
-.status-card.ej-bokat::after { background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="orange" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>'); }
+/* Koppla ikonerna till dina filter */
+.stat-card[data-filter="kommande"]::after { background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="blue" viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/></svg>'); }
+.stat-card[data-filter="backlog"]::after { background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="orange" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>'); }
 
-.search-wrapper {
-    position: relative;
-    width: 100%;
-    max-width: 450px;
+/* --- REG-NUMMER BADGE --- */
+.reg-plate {
+    background-color: #1e293b !important; /* Mörk "skylt"-bakgrund */
+    border: none !important;
+    border-radius: 6px !important;
+    padding: 2px 0 !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
+}
+.reg-plate .reg-number {
+    color: #ffffff !important; /* Vit text på mörk botten */
+    font-size: 0.8rem !important;
 }
 
-.search-wrapper input {
-    width: 100%;
-    padding: 12px 15px 12px 45px !important;
-    background: #f1f5f9 !important; /* Ljusgrå nedsänkt färg */
-    border: 2px solid transparent !important;
-    border-radius: 14px !important;
-    font-size: 0.95rem;
+/* --- TABELL HOVER --- */
+tbody tr:hover {
+    background-color: #f8faff !important;
+    border-left: 4px solid var(--primary-color) !important;
+}
+
+/* --- NEDSÄNKT SÖKFÄLT --- */
+.top-search-container input {
+    background-color: #f1f5f9 !important; /* Ljusgrå nedsänkt färg */
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.03) !important;
     transition: all 0.2s ease;
 }
-
-.search-wrapper input:focus {
-    background: #ffffff !important;
-    border-color: #3b82f6 !important;
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+.top-search-container input:focus {
+    background-color: #fff !important;
+    box-shadow: 0 4px 12px rgba(0, 102, 255, 0.1) !important;
 }
 
-/* Sök-ikonen inuti fältet */
-.search-wrapper::before {
-    content: '🔍';
-    position: absolute;
-    left: 15px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 1.1rem;
-    opacity: 0.4;
+/* --- SIDEBAR AKTIVT VAL --- */
+.nav-link.active {
+    background-color: rgba(0, 102, 255, 0.08) !important;
+    border-left: 4px solid var(--primary-color) !important;
+    border-radius: 0 8px 8px 0 !important; /* Mjukare avslut */
 }
 
-.ai-fab-container {
-    position: fixed;
-    bottom: 30px;
-    right: 30px;
-    z-index: 999;
+/* --- AI FAB GLOW --- */
+#fabChat {
+    box-shadow: 0 4px 15px rgba(0, 102, 255, 0.4) !important;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
 }
 
-.ai-notification-badge {
-    position: absolute;
-    top: -5px;
-    right: -5px;
-    background: #ef4444; /* Röd färg */
-    color: white;
-    border: 3px solid #ffffff; /* Ram som gör att den poppar */
-    border-radius: 50%;
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.75rem;
-    font-weight: 800;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+#fabChat:hover {
+    box-shadow: 0 8px 25px rgba(0, 102, 255, 0.5) !important;
+    transform: translateY(-5px) scale(1.08) !important;
 }
+
+/* Notis-siffran (Badge) */
+.chat-notification-badge {
+    border: 2px solid #ffffff !important;
+    top: -2px !important;
+    right: -2px !important;
+}
+
