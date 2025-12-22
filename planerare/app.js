@@ -32,6 +32,20 @@ const firebaseConfig = {
   measurementId: "G-L6516XLZ1Y"
 };
 
+// 1b. LAGER FIREBASE KONFIGURATION (Hämtad från lager/apps.js)
+const lagerFirebaseConfig = {
+  apiKey: "AIzaSyAC4SLwVEzP3CPO4lLfDeZ71iU0xdr49sw", 
+  authDomain: "lagerdata-a9b39.firebaseapp.com",
+  projectId: "lagerdata-a9b39",
+  storageBucket: "lagerdata-a9b39.firebasestorage.app",
+  messagingSenderId: "615646392577",
+  appId: "1:615646392577:web:fd816443728e88b218eb00"
+};
+
+// Initiera den andra appen för lagret
+const lagerApp = firebase.initializeApp(lagerFirebaseConfig, "lagerApp");
+const lagerDb = lagerApp.firestore();
+
 // 2. INITIERA FIREBASE DIREKT (Högst upp)
 if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
@@ -2301,28 +2315,46 @@ document.getElementById('closeMobileSearchBtn')?.addEventListener('click', () =>
 });
 
 // Live-sökning när man skriver
-document.getElementById('mobileSearchInput')?.addEventListener('input', (e) => {
+document.getElementById('mobileSearchInput')?.addEventListener('input', async (e) => {
     const term = e.target.value; 
     const resultsContainer = document.getElementById('mobileSearchResults');
     
-    // NYTT: Om fältet är tomt, visa Snabbval/Historik igen
     if (term.length === 0) {
         renderSearchZeroState();
         return;
     }
     
-    if (term.length < 2) {
-        resultsContainer.innerHTML = '<p style="text-align:center; color:#9ca3af; margin-top:20px;">Skriv minst 2 tecken för att söka.</p>';
-        return;
-    }
-    
-    // ... resten av din sök-kod är oförändrad ...
+    // 1. Sök i Jobb (befintlig kod)
     const filteredJobs = allJobs.filter(job => !job.deleted && jobMatchesSearch(job, term));
     
-    if (filteredJobs.length === 0) {
+    // 2. Sök i Lager (NYTT)
+    const lagerResults = await searchLager(term);
+
+    // 3. Visa resultat kombinerat
+    if (filteredJobs.length === 0 && lagerResults.length === 0) {
         resultsContainer.innerHTML = '<p style="text-align:center; color:#9ca3af; margin-top:20px;">Inga träffar.</p>';
     } else {
-        resultsContainer.innerHTML = filteredJobs.map(job => createJobCard(job)).join('');
+        // Skapa HTML för lager-träffar
+        const lagerHtml = lagerResults.map(item => `
+            <div class="search-result-item" style="border-left: 4px solid #f59e0b; background: #fffbeb;">
+                <div style="display:flex; justify-content:space-between; width:100%;">
+                    <div>
+                        <strong style="color:#92400e; font-size:0.7rem; display:block;">LAGERARTIKEL</strong>
+                        <div style="font-weight:700;">${item.service_filter}</div>
+                        <div style="font-size:0.85rem; color:#4b5563;">${item.name}</div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="font-weight:800;">${item.price} kr</div>
+                        <div style="font-size:0.75rem; color:${item.quantity > 0 ? '#16a34a' : '#ef4444'};">
+                            Saldo: ${item.quantity} st
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+
+        const jobsHtml = filteredJobs.map(job => createJobCard(job)).join('');
+        resultsContainer.innerHTML = lagerHtml + jobsHtml;
     }
 });
 
@@ -3465,3 +3497,18 @@ window.clearSearchHistory = function() {
     renderSearchZeroState(); // Rita om direkt
 };
 
+async function searchLager(term) {
+    const searchTerm = term.toUpperCase();
+    try {
+        const snapshot = await lagerDb.collection('lager').get();
+        return snapshot.docs
+            .map(doc => ({ id: doc.id, ...doc.data(), isLager: true }))
+            .filter(item => 
+                (item.name && item.name.toUpperCase().includes(searchTerm)) || 
+                (item.service_filter && item.service_filter.toUpperCase().includes(searchTerm))
+            );
+    } catch (err) {
+        console.error("Kunde inte söka i lagret:", err);
+        return [];
+    }
+}
