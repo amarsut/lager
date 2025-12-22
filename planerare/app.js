@@ -1371,11 +1371,12 @@ function setupEventListeners() {
     // Sökfältet
     // Uppdaterad sökfunktion för dator (Desktop)
 	document.getElementById('searchBar').addEventListener('input', async (e) => {
-	    const term = e.target.value.trim().toLowerCase();
-	    if (term.length > 0) {
-	        await performCombinedSearch(term);
+	    currentSearchTerm = e.target.value.trim();
+	    if (currentSearchTerm.length > 0) {
+	        await performCombinedSearch(currentTerm.toLowerCase());
 	    } else {
-	        if (document.getElementById('searchFilterBar')) document.getElementById('searchFilterBar').style.display = 'none';
+	        if (document.getElementById('searchFilterBar')) 
+	            document.getElementById('searchFilterBar').style.display = 'none';
 	        renderDashboard();
 	    }
 	});
@@ -3641,14 +3642,14 @@ async function performCombinedSearch(term) {
         document.getElementById('mobileSearchResults') : 
         document.getElementById('jobListContainer');
     
-    // Hämta båda filter-barerna
+    // Dubbelkolla att dessa IDn matchar din HTML exakt
     const filterBar = document.getElementById('searchFilterBar');
     const mobileFilterBar = document.getElementById('mobileSearchFilterBar');
     
     const filteredJobs = allJobs.filter(job => !job.deleted && jobMatchesSearch(job, term));
     const lagerResults = await searchLager(term);
 
-    // --- LOGIK: Visa filter-baren om det finns träffar i båda källorna ---
+    // LOGIK: Visa filter-baren om det finns träffar i båda källorna
     const showFilter = filteredJobs.length > 0 && lagerResults.length > 0;
     
     if (filterBar) filterBar.style.display = (showFilter && !isMobile) ? 'flex' : 'none';
