@@ -597,6 +597,25 @@ TEST TEST TEST
 */
 
 
+/* Ta bort hårda linjer och inför zebra-randning */
+table {
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+}
+
+td {
+    border-bottom: none !important; /* Tar bort hårda linjer */
+}
+
+/* Lägg till den extremt ljusa blå nyansen på varannan rad */
+tbody tr:nth-child(even) td {
+    background-color: rgba(0, 102, 255, 0.02) !important;
+}
+
+/* Behåll hover-effekten men gör den något tydligare nu när linjerna är borta */
+tbody tr:hover td {
+    background-color: rgba(0, 102, 255, 0.08) !important;
+}
 
 
 
