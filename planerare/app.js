@@ -3664,7 +3664,7 @@ async function handleSearch(term, isMobile) {
 
     let html = '';
 
-    // 1. LAGER-SEKTION
+    // LAGER-SEKTION
     if (lagerResults.length > 0) {
         html += `
             <div class="search-section-divider lager-header">
@@ -3694,7 +3694,7 @@ async function handleSearch(term, isMobile) {
         `;
     }
 
-    // 2. JOBB-SEKTION
+    // JOBB-SEKTION
     if (filteredJobs.length > 0) {
         html += `
             <div class="search-section-divider jobb-header">
@@ -3709,12 +3709,7 @@ async function handleSearch(term, isMobile) {
                 <table id="jobsTable">
                     <thead>
                         <tr>
-                            <th>Status</th>
-                            <th>Datum</th>
-                            <th>Kund</th>
-                            <th>Reg.nr</th>
-                            <th style="text-align:right">Pris</th>
-                            <th class="action-col">Åtgärder</th>
+                            <th>Status</th><th>Datum</th><th>Kund</th><th>Reg.nr</th><th style="text-align:right">Pris</th><th class="action-col">Åtgärder</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -3726,16 +3721,17 @@ async function handleSearch(term, isMobile) {
         }
     }
 
-    // Slutligen rita ut allt i containern
     resultsContainer.innerHTML = html || `
         <div style="text-align:center; padding:40px; color:#94a3b8;">
             <span class="material-icons" style="font-size:48px; display:block; margin-bottom:10px;">search_off</span>
             Inga träffar hittades för "${term}"
         </div>
     `;
-} // <--- Denna måsvinge saknades och orsakade felet!
+}
 
-// Event-lyssnare som kopplar ihop sökfälten med funktionen ovan
+// ==========================================
+// 2. EVENT LISTENERS FÖR SÖK
+// ==========================================
 document.getElementById('mobileSearchInput')?.addEventListener('input', (e) => {
     handleSearch(e.target.value.trim(), true);
 });
