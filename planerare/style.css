@@ -686,6 +686,56 @@ TEST TEST TEST
     to { opacity: 1; transform: translateY(0); }
 }
 
+/* Sektionsrubriker i sökningen */
+.search-section-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 20px 10px 10px 10px;
+    font-size: 0.65rem;
+    font-weight: 800;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.icon-xs { width: 14px; height: 14px; }
+
+/* Kompakta lagerkort */
+.lager-results-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 0 10px 10px 10px;
+}
+
+.lager-mini-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-left: 4px solid #f59e0b; /* Orange lager-indikator */
+    border-radius: 8px;
+    padding: 10px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.l-main { display: flex; flex-direction: column; gap: 2px; }
+.l-artnr { font-weight: 800; font-size: 0.9rem; color: #1e293b; }
+.l-name { font-size: 0.75rem; color: #64748b; }
+
+.l-side { text-align: right; display: flex; flex-direction: column; gap: 2px; }
+.l-price { font-weight: 800; color: #1e293b; font-size: 0.9rem; }
+.l-qty { font-size: 0.7rem; font-weight: 700; }
+.l-qty.in { color: #16a34a; }
+.l-qty.out { color: #ef4444; }
+
+.search-no-results {
+    text-align: center;
+    padding: 40px;
+    color: #94a3b8;
+    font-size: 0.9rem;
+}
 
 
 
