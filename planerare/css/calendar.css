@@ -295,26 +295,24 @@
 .fc-list-event:hover td { background-color: #f0f9ff !important; /* Sky-50 */ }
 
 /*RÖDA DAGAR*/
-/* --- FIXA KALENDER-KROCKAR --- */
-
-/* 3. Korrekt markering av Söndagar (Röda dagar) */
-/* Vi siktar på både siffran och bakgrunden */
+/* --- KORREKT MARKERING AV RÖDA DAGAR (SÖNDAGAR) --- */
+/* Vi siktar på klassen .fc-day-sun som FullCalendar sätter på alla söndagar */
 .fc-day-sun {
-    background-color: rgba(239, 68, 68, 0.08) !important; /* Mjuk röd */
+    background-color: rgba(239, 68, 68, 0.08) !important; /* Mjuk röd bakgrund */
 }
 
 .fc-day-sun .fc-daygrid-day-number, 
 .fc-day-sun .fc-col-header-cell-cushion {
-    color: #ef4444 !important; /* Röd siffra/text */
+    color: #ef4444 !important; /* Röd siffra */
     font-weight: 700 !important;
 }
 
-/* 4. Korrekt markering av Lördagar (Mjuk grå/blå) */
+/* --- KORREKT MARKERING AV LÖRDAGAR --- */
 .fc-day-sat {
-    background-color: rgba(0, 0, 0, 0.03) !important;
+    background-color: rgba(0, 0, 0, 0.03) !important; /* Mjuk grå bakgrund */
 }
 
-/* 5. Förhindra att "idag" försvinner i röd/grå färg */
+/* --- BEHÅLL IDAG-MARKERINGEN TYDLIG --- */
 .fc-day-today {
     background-color: rgba(59, 130, 246, 0.1) !important; /* Ljusblå för idag */
 }
