@@ -293,3 +293,21 @@
 
 /*BLÅ HOVER ÖVER RADERNA*/
 .fc-list-event:hover td { background-color: #f0f9ff !important; /* Sky-50 */ }
+
+/*RÖDA DAGAR*/
+/* Markera söndagar som röda dagar */
+.fc-day-sun {
+    background-color: rgba(239, 68, 68, 0.05) !important; /* Mycket mjuk röd */
+}
+
+/* Gör datum-siffran röd för söndagar */
+.fc-day-sun .fc-col-header-cell-cushion,
+.fc-day-sun .fc-daygrid-day-number {
+    color: #ef4444 !important;
+    font-weight: 700;
+}
+
+/* Valfritt: Markera även lördagar med en svag nyans */
+.fc-day-sat {
+    background-color: rgba(0, 0, 0, 0.02);
+}
