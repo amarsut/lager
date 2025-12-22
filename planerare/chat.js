@@ -868,3 +868,25 @@ window.sendMessage = async function() {
     input.value = ''; // Rensa rutan
 };
 
+document.addEventListener('input', function(e) {
+    if (e.target && e.target.id === 'chatInput') {
+        const input = e.target;
+        const parent = input.parentElement;
+        
+        // Hitta alla knappar i input-fältet
+        const actionButtons = parent.querySelectorAll('.icon-btn');
+        const hasText = input.value.trim().length > 0;
+
+        actionButtons.forEach(btn => {
+            // Dölj knappar som INTE är skicka-knappen
+            // Vi antar att skicka-knappen INTE har klassen 'icon-btn' eller har ett unikt ID
+            if (btn.id !== 'sendMessageBtn' && !btn.querySelector('.fa-paper-plane')) {
+                if (hasText) {
+                    btn.style.setProperty('display', 'none', 'important');
+                } else {
+                    btn.style.setProperty('display', 'flex', 'important');
+                }
+            }
+        });
+    }
+});
