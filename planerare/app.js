@@ -70,7 +70,6 @@ console.log("Firebase initierad.");
 
 // Globala variabler
 let allJobs = []; 
-let activeSearchFilter = 'all';
 let currentStatusFilter = 'kommande'; 
 let currentSearchTerm = '';
 let currentExpenses = [];
@@ -905,26 +904,6 @@ function updateStatsCounts(jobs) {
 
 // 7. EVENT LISTENERS
 function setupEventListeners() {
-
-	// Aktivera sökfiltrering för både dator och mobil
-	document.querySelectorAll('.filter-pill').forEach(btn => {
-    btn.addEventListener('click', async (e) => {
-        const filter = e.target.dataset.filter;
-        activeSearchFilter = filter;
-        
-        // Uppdatera ALLA filter-pills visuellt
-        document.querySelectorAll('.filter-pill').forEach(pill => {
-            pill.classList.toggle('active', pill.dataset.filter === filter);
-        });
-        
-        // Kör sökningen igen för att uppdatera vyn
-        const desktopTerm = document.getElementById('searchBar').value;
-        const mobileTerm = document.getElementById('mobileSearchInput').value;
-        const currentTerm = desktopTerm || mobileTerm;
-        
-        if (currentTerm) await performCombinedSearch(currentTerm);
-    });
-});
 	
     /*Statistikvy*/
     const statsBtn = document.getElementById('menuBtnStatistics');
@@ -3643,36 +3622,41 @@ async function performCombinedSearch(term) {
         document.getElementById('mobileSearchResults') : 
         document.getElementById('jobListContainer');
     
-    // Hitta båda filter-barerna
-    const filterBar = document.getElementById('searchFilterBar');
-    const mobileFilterBar = document.getElementById('mobileSearchFilterBar');
-    
+    // Hämta data från båda källorna
     const filteredJobs = allJobs.filter(job => !job.deleted && jobMatchesSearch(job, term));
     const lagerResults = await searchLager(term);
 
-    // LOGIK: Visa filter-baren om det finns träffar i båda källorna
-    const showFilter = filteredJobs.length > 0 && lagerResults.length > 0;
-    
-    if (filterBar) filterBar.style.display = (showFilter && !isMobile) ? 'flex' : 'none';
-    if (mobileFilterBar) mobileFilterBar.style.display = (showFilter && isMobile) ? 'flex' : 'none';
-
-    // Om vi bara har träffar i en källa, nollställ filtret
-    if (!showFilter) activeSearchFilter = 'all';
-
     let finalHtml = '';
 
-    // --- RENDERA LAGER ---
-    if (lagerResults.length > 0 && (activeSearchFilter === 'all' || activeSearchFilter === 'lager')) {
-        finalHtml += `<div class="search-section-header">LAGERARTIKLAR (${lagerResults.length})</div>`;
-        finalHtml += `<div class="lager-results-grid">${lagerResults.map(i => createLagerMiniCard(i)).join('')}</div>`;
+    // 1. Rendera alltid Lager om träffar finns
+    if (lagerResults.length > 0) {
+        finalHtml += `
+            <div class="search-section-header">LAGERARTIKLAR (${lagerResults.length})</div>
+            <div class="lager-results-grid">
+                ${lagerResults.map(item => createLagerMiniCard(item)).join('')}
+            </div>
+        `;
     }
 
-    // --- RENDERA JOBB ---
-    if (filteredJobs.length > 0 && (activeSearchFilter === 'all' || activeSearchFilter === 'jobb')) {
+    // 2. Rendera alltid Jobb om träffar finns
+    if (filteredJobs.length > 0) {
         finalHtml += `<div class="search-section-header">BOKADE JOBB (${filteredJobs.length})</div>`;
+        
         if (!isMobile) {
-            finalHtml += `<table id="jobsTable"><thead><tr><th>Status</th><th>Datum</th><th>Kund</th><th>Reg.nr</th><th style="text-align:right">Pris</th><th class="action-col">Åtgärder</th></tr></thead><tbody>${filteredJobs.map(job => createJobRow(job)).join('')}</tbody></table>`;
+            // Skapa tabellen för datorvyn
+            finalHtml += `
+                <table id="jobsTable">
+                    <thead>
+                        <tr>
+                            <th>Status</th><th>Datum</th><th>Kund</th><th>Reg.nr</th><th style="text-align:right">Pris</th><th class="action-col">Åtgärder</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${filteredJobs.map(job => createJobRow(job)).join('')}
+                    </tbody>
+                </table>`;
         } else {
+            // Skapa korten för mobilvyn
             finalHtml += filteredJobs.map(job => createJobCard(job)).join('');
         }
     }
