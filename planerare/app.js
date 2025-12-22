@@ -42,10 +42,6 @@ const lagerFirebaseConfig = {
   appId: "1:615646392577:web:fd816443728e88b218eb00"
 };
 
-// Initiera den andra appen för lagret
-const lagerApp = firebase.initializeApp(lagerFirebaseConfig, "lagerApp");
-const lagerDb = lagerApp.firestore();
-
 // 2. INITIERA FIREBASE DIREKT (Högst upp)
 if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
@@ -62,6 +58,10 @@ db.enablePersistence()
       }
   });
 const auth = firebase.auth(); // Nu är 'auth' definierad korrekt
+
+// Initiera den andra appen för lagret
+const lagerApp = firebase.initializeApp(lagerFirebaseConfig, "lagerApp");
+const lagerDb = lagerApp.firestore();
 
 window.db = db;
 window.auth = auth;
