@@ -908,23 +908,23 @@ function setupEventListeners() {
 
 	// Aktivera sökfiltrering för både dator och mobil
 	document.querySelectorAll('.filter-pill').forEach(btn => {
-	    btn.addEventListener('click', (e) => {
-	        const filter = e.target.dataset.filter;
-	        activeSearchFilter = filter;
-	        
-	        // Uppdatera utseendet på ALLA filterknappar så de matchar
-	        document.querySelectorAll('.filter-pill').forEach(pill => {
-	            pill.classList.toggle('active', pill.dataset.filter === filter);
-	        });
-	        
-	        // Kör sökningen igen med det nuvarande ordet
-	        const desktopTerm = document.getElementById('searchBar').value;
-	        const mobileTerm = document.getElementById('mobileSearchInput').value;
-	        const currentTerm = desktopTerm || mobileTerm;
-	        
-	        if (currentTerm) performCombinedSearch(currentTerm);
-	    });
-	});
+    btn.addEventListener('click', async (e) => {
+        const filter = e.target.dataset.filter;
+        activeSearchFilter = filter;
+        
+        // Uppdatera ALLA filter-pills visuellt
+        document.querySelectorAll('.filter-pill').forEach(pill => {
+            pill.classList.toggle('active', pill.dataset.filter === filter);
+        });
+        
+        // Kör sökningen igen för att uppdatera vyn
+        const desktopTerm = document.getElementById('searchBar').value;
+        const mobileTerm = document.getElementById('mobileSearchInput').value;
+        const currentTerm = desktopTerm || mobileTerm;
+        
+        if (currentTerm) await performCombinedSearch(currentTerm);
+    });
+});
 	
     /*Statistikvy*/
     const statsBtn = document.getElementById('menuBtnStatistics');
@@ -1371,22 +1371,23 @@ function setupEventListeners() {
     // Sökfältet
     // Uppdaterad sökfunktion för dator (Desktop)
 	document.getElementById('searchBar').addEventListener('input', async (e) => {
-	    currentSearchTerm = e.target.value.trim();
-	    if (currentSearchTerm.length > 0) {
-	        await performCombinedSearch(currentTerm.toLowerCase());
+	    const term = e.target.value.trim();
+	    if (term.length > 0) {
+	        await performCombinedSearch(term);
 	    } else {
-	        if (document.getElementById('searchFilterBar')) 
-	            document.getElementById('searchFilterBar').style.display = 'none';
-	        renderDashboard();
+	        const filterBar = document.getElementById('searchFilterBar');
+	        if (filterBar) filterBar.style.display = 'none';
+	        renderDashboard(); // Gå tillbaka till vanlig vy
 	    }
 	});
 	
-	// Mobilens sökfält (Rad ~870)
+	// Mobilens sökfält
 	document.getElementById('mobileSearchInput')?.addEventListener('input', async (e) => {
-	    const term = e.target.value.trim().toLowerCase();
+	    const term = e.target.value.trim();
 	    if (term.length === 0) {
 	        renderSearchZeroState();
-	        if (document.getElementById('mobileSearchFilterBar')) document.getElementById('mobileSearchFilterBar').style.display = 'none';
+	        const mobileFilterBar = document.getElementById('mobileSearchFilterBar');
+	        if (mobileFilterBar) mobileFilterBar.style.display = 'none';
 	        return;
 	    }
 	    await performCombinedSearch(term);
@@ -3642,7 +3643,7 @@ async function performCombinedSearch(term) {
         document.getElementById('mobileSearchResults') : 
         document.getElementById('jobListContainer');
     
-    // Dubbelkolla att dessa IDn matchar din HTML exakt
+    // Hitta båda filter-barerna
     const filterBar = document.getElementById('searchFilterBar');
     const mobileFilterBar = document.getElementById('mobileSearchFilterBar');
     
@@ -3655,40 +3656,23 @@ async function performCombinedSearch(term) {
     if (filterBar) filterBar.style.display = (showFilter && !isMobile) ? 'flex' : 'none';
     if (mobileFilterBar) mobileFilterBar.style.display = (showFilter && isMobile) ? 'flex' : 'none';
 
+    // Om vi bara har träffar i en källa, nollställ filtret
     if (!showFilter) activeSearchFilter = 'all';
 
     let finalHtml = '';
 
-    // 1. LAGER-SEKTION
+    // --- RENDERA LAGER ---
     if (lagerResults.length > 0 && (activeSearchFilter === 'all' || activeSearchFilter === 'lager')) {
         finalHtml += `<div class="search-section-header">LAGERARTIKLAR (${lagerResults.length})</div>`;
         finalHtml += `<div class="lager-results-grid">${lagerResults.map(i => createLagerMiniCard(i)).join('')}</div>`;
     }
 
-    // 2. JOBB-SEKTION
+    // --- RENDERA JOBB ---
     if (filteredJobs.length > 0 && (activeSearchFilter === 'all' || activeSearchFilter === 'jobb')) {
         finalHtml += `<div class="search-section-header">BOKADE JOBB (${filteredJobs.length})</div>`;
-        
         if (!isMobile) {
-            // VIKTIGT: Här skapas den riktiga tabellen för datorn
-            finalHtml += `
-                <table id="jobsTable">
-                    <thead>
-                        <tr>
-                            <th>Status</th>
-                            <th>Datum</th>
-                            <th>Kund</th>
-                            <th>Reg.nr</th>
-                            <th style="text-align:right">Pris</th>
-                            <th class="action-col">Åtgärder</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${filteredJobs.map(job => createJobRow(job)).join('')}
-                    </tbody>
-                </table>`;
+            finalHtml += `<table id="jobsTable"><thead><tr><th>Status</th><th>Datum</th><th>Kund</th><th>Reg.nr</th><th style="text-align:right">Pris</th><th class="action-col">Åtgärder</th></tr></thead><tbody>${filteredJobs.map(job => createJobRow(job)).join('')}</tbody></table>`;
         } else {
-            // Kort-vy för mobilen
             finalHtml += filteredJobs.map(job => createJobCard(job)).join('');
         }
     }
