@@ -612,52 +612,78 @@ tbody tr button { cursor: pointer; z-index: 2; position: relative; }
 TEST TEST TEST
 */
 
-/* --- FIXAT RUTNÄT FÖR LAGERARTIKLAR --- */
+/* --- EXTRA KOMPAKT LAGER-DESIGN --- */
 .lager-results-grid {
     display: grid !important;
-    /* Skapar 3 kolumner på stora skärmar, 1 på små */
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)) !important;
-    gap: 15px !important;
-    margin: 15px 0 30px 0 !important;
+    /* Mindre kort (min 200px) gör att fler får plats i bredd */
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)) !important;
+    gap: 8px !important;
+    padding: 0 15px 25px 15px !important; /* Padding på sidorna av hela listan */
     width: 100% !important;
     box-sizing: border-box;
 }
 
-/* Fix för korten så de ser ut som kort och inte block */
 .lager-result-card-desktop {
     background: #ffffff !important;
     border: 1px solid #e2e8f0 !important;
-    border-radius: 12px !important;
-    padding: 16px !important;
+    border-radius: 8px !important;
+    padding: 8px 12px !important; /* Mycket mindre padding inuti */
     display: flex !important;
     justify-content: space-between !important;
     align-items: center !important;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05) !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04) !important;
+    min-height: 50px !important; /* Tvingar ner höjden */
 }
 
-.l-card-main { display: flex; flex-direction: column; gap: 4px; }
-.l-badge { 
-    background: #fff7ed; color: #c2410c; 
-    font-size: 0.65rem; padding: 2px 8px; 
-    border-radius: 4px; font-weight: 800; width: fit-content;
-}
-
-.l-price { font-size: 1.1rem; font-weight: 800; color: #1e293b; }
-.l-stock.in { color: #16a34a; font-weight: 700; font-size: 0.75rem; }
-.l-stock.out { color: #ef4444; font-weight: 700; font-size: 0.75rem; }
-
-/* Snygg avskiljare */
-.lager-header-divider {
+.l-card-main {
     display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 0.75rem;
-    font-weight: 800;
-    color: #94a3b8;
-    margin: 25px 0 15px 0;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+    flex-direction: column;
+    gap: 1px; /* Minimalt gap */
+    max-width: 65%;
 }
-.lager-header-divider::after {
-    content: ''; flex: 1; height: 1px; background: #e2e8f0;
+
+.l-badge {
+    background: #fff7ed;
+    color: #c2410c;
+    font-size: 0.55rem; /* Mindre text */
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-weight: 800;
+    width: fit-content;
+    text-transform: uppercase;
+}
+
+.l-info .l-artnr {
+    font-size: 0.8rem !important; /* Mindre artnr */
+    font-weight: 700;
+    color: #1e293b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.l-info .l-name {
+    font-size: 0.7rem !important; /* Mindre namn */
+    color: #64748b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.l-card-side {
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.l-price {
+    font-size: 0.9rem !important; /* Mindre pris */
+    font-weight: 800;
+    color: #1e293b;
+}
+
+.l-stock {
+    font-size: 0.65rem !important; /* Mindre saldo-text */
+    font-weight: 700;
 }
