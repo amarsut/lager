@@ -908,19 +908,21 @@ function setupEventListeners() {
 
 	// Aktivera sökfiltrering för både dator och mobil
 	document.querySelectorAll('.filter-pill').forEach(btn => {
-	    btn.addEventListener('click', async (e) => {
-	        // 1. Markera vald knapp visuellt
-	        document.querySelectorAll('.filter-pill').forEach(pill => pill.classList.remove('active'));
-	        e.target.classList.add('active');
+	    btn.addEventListener('click', (e) => {
+	        const filter = e.target.dataset.filter;
+	        activeSearchFilter = filter;
 	        
-	        // 2. Uppdatera det globala filtret
-	        activeSearchFilter = e.target.dataset.filter;
+	        // Uppdatera utseendet på ALLA filterknappar så de matchar
+	        document.querySelectorAll('.filter-pill').forEach(pill => {
+	            pill.classList.toggle('active', pill.dataset.filter === filter);
+	        });
 	        
-	        // 3. Uppdatera resultaten baserat på vad som står i sökfältet just nu
-	        const term = document.getElementById('searchBar').value || document.getElementById('mobileSearchInput').value;
-	        if (term) {
-	            await performCombinedSearch(term);
-	        }
+	        // Kör sökningen igen med det nuvarande ordet
+	        const desktopTerm = document.getElementById('searchBar').value;
+	        const mobileTerm = document.getElementById('mobileSearchInput').value;
+	        const currentTerm = desktopTerm || mobileTerm;
+	        
+	        if (currentTerm) performCombinedSearch(currentTerm);
 	    });
 	});
 	
@@ -3639,14 +3641,16 @@ async function performCombinedSearch(term) {
         document.getElementById('mobileSearchResults') : 
         document.getElementById('jobListContainer');
     
+    // Hämta båda filter-barerna
     const filterBar = document.getElementById('searchFilterBar');
     const mobileFilterBar = document.getElementById('mobileSearchFilterBar');
     
     const filteredJobs = allJobs.filter(job => !job.deleted && jobMatchesSearch(job, term));
     const lagerResults = await searchLager(term);
 
-    // Visa filter-baren om det finns träffar i båda källorna
+    // --- LOGIK: Visa filter-baren om det finns träffar i båda källorna ---
     const showFilter = filteredJobs.length > 0 && lagerResults.length > 0;
+    
     if (filterBar) filterBar.style.display = (showFilter && !isMobile) ? 'flex' : 'none';
     if (mobileFilterBar) mobileFilterBar.style.display = (showFilter && isMobile) ? 'flex' : 'none';
 
