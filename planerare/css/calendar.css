@@ -295,19 +295,38 @@
 .fc-list-event:hover td { background-color: #f0f9ff !important; /* Sky-50 */ }
 
 /*RÖDA DAGAR*/
-/* Markera söndagar som röda dagar */
+/* --- FIXA KALENDER-KROCKAR --- */
+
+/* 1. Ta bort den blå hovringen som spiller över från style.css */
+#calendar-wrapper table tr:hover,
+#calendar-wrapper td:hover {
+    background-color: transparent !important;
+    border-left: none !important;
+}
+
+/* 2. Ta bort zebra-randningen inuti kalendern */
+#calendar-wrapper tbody tr:nth-child(even) td {
+    background-color: transparent !important;
+}
+
+/* 3. Korrekt markering av Söndagar (Röda dagar) */
+/* Vi siktar på både siffran och bakgrunden */
 .fc-day-sun {
-    background-color: rgba(239, 68, 68, 0.05) !important; /* Mycket mjuk röd */
+    background-color: rgba(239, 68, 68, 0.08) !important; /* Mjuk röd */
 }
 
-/* Gör datum-siffran röd för söndagar */
-.fc-day-sun .fc-col-header-cell-cushion,
-.fc-day-sun .fc-daygrid-day-number {
-    color: #ef4444 !important;
-    font-weight: 700;
+.fc-day-sun .fc-daygrid-day-number, 
+.fc-day-sun .fc-col-header-cell-cushion {
+    color: #ef4444 !important; /* Röd siffra/text */
+    font-weight: 700 !important;
 }
 
-/* Valfritt: Markera även lördagar med en svag nyans */
+/* 4. Korrekt markering av Lördagar (Mjuk grå/blå) */
 .fc-day-sat {
-    background-color: rgba(0, 0, 0, 0.02);
+    background-color: rgba(0, 0, 0, 0.03) !important;
+}
+
+/* 5. Förhindra att "idag" försvinner i röd/grå färg */
+.fc-day-today {
+    background-color: rgba(59, 130, 246, 0.1) !important; /* Ljusblå för idag */
 }
