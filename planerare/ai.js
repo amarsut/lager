@@ -1,145 +1,144 @@
-// ai.js - Hanterar Gemini Integrationen
-
-// Globalt state
+// ai.js - Clean & Optimized Version
 window.isAiMode = false;
 
-// 1. Toggle Funktion
-window.toggleAiMode = function() {
+// 1. TOGGLE & INIT
+window.toggleAiMode = async function() {
     window.isAiMode = !window.isAiMode;
-    
-    const widget = document.getElementById('chatWidget');
-    const headerBtn = document.getElementById('toggleAiBtn');
-    const inputArea = document.querySelector('.chat-input-area');
-    const chatInput = document.getElementById('chatInput');
-    
-    // Containrar
-    const regularChat = document.getElementById('chatMessages');
-    const aiChat = document.getElementById('aiMessageContainer');
-    const chips = document.getElementById('aiSuggestionChips');
+    const elements = {
+        btn: document.getElementById('toggleAiBtn'),
+        regChat: document.getElementById('chatMessages'),
+        aiChat: document.getElementById('aiMessageContainer'),
+        chips: document.getElementById('aiSuggestionChips'),
+        input: document.getElementById('chatInput')
+    };
+
+    elements.btn.classList.toggle('active-ai', window.isAiMode);
+    elements.regChat.style.display = window.isAiMode ? 'none' : 'flex';
+    elements.aiChat.style.display = window.isAiMode ? 'flex' : 'none';
+    if(elements.chips) elements.chips.style.display = window.isAiMode ? 'flex' : 'none';
 
     if (window.isAiMode) {
-        // --- AKTIVERA AI ---
-        headerBtn.classList.add('active-ai');
-        inputArea.classList.add('ai-input-active');
-        
-        // Byt vy: Dölj vanlig chatt, visa AI
-        regularChat.style.display = 'none';
-        aiChat.style.display = 'flex'; // Eller block
-        chips.style.display = 'flex';
-        
-        // Uppdatera Placeholder med bilmodell
-        const job = window.currentViewingJob || {};
-        const car = job.regnr || "bilen";
-        chatInput.placeholder = `Fråga Gemini om ${car}...`;
-        
-        // Uppdatera välkomsttexten
-        const contextSpan = document.getElementById('aiCarContext');
-        if(contextSpan) contextSpan.textContent = job.bilmodell || job.regnr || "bilen";
-
-        chatInput.focus();
-
+        await loadGlobalAiHistory();
+        elements.input.placeholder = "Fråga Gemini...";
+        elements.input.focus();
     } else {
-        // --- TILLBAKA TILL CHATT ---
-        headerBtn.classList.remove('active-ai');
-        inputArea.classList.remove('ai-input-active');
-        
-        // Byt vy: Visa vanlig chatt
-        regularChat.style.display = 'flex'; // Eller vad den hade innan
-        aiChat.style.display = 'none';
-        chips.style.display = 'none';
-        
-        chatInput.placeholder = "Skriv meddelande...";
+        elements.input.placeholder = "Meddelande";
     }
 };
 
-// 2. Chip-funktion (när man klickar på ett förslag)
-window.fillAiPrompt = function(text) {
-    const input = document.getElementById('chatInput');
-    input.value = text;
-    input.focus();
-    // Valfritt: Skicka direkt om du vill?
-    // sendMessage(); 
-};
-
-// 3. Den smarta "Send"-logiken
-// OBS: Denna funktion anropas av din vanliga sendMessage i app.js/chat.js
-// Vi måste se till att den kopplingen fungerar.
+// 2. CORE LOGIC: SEND & RECEIVE
 window.handleAiMessage = async function(text) {
+    if (!text?.trim()) return;
     const container = document.getElementById('aiMessageContainer');
     const input = document.getElementById('chatInput');
     
-    // 1. Visa din fråga
-    renderAiBubble(text, 'user');
-    input.value = ''; // Rensa
-    scrollToAiBottom();
+    // Vi renderar bubblan lokalt så du ser vad du skickat JUST NU
+    renderAiBubble(text, 'user', 'temp-user');
+    input.value = '';
 
-    // 2. Visa "Laddar..."
-    const loadingId = 'ai-loading-' + Date.now();
-    const loadingDiv = document.createElement('div');
-    loadingDiv.id = loadingId;
-    loadingDiv.className = 'chat-bubble ai-response';
-    loadingDiv.innerHTML = '<em>✨ Analyserar data...</em>';
-    container.appendChild(loadingDiv);
-    scrollToAiBottom();
+    const loadingId = 'ai-load-' + Date.now();
+    renderAiBubble('<em>✨ Tänker...</em>', 'ai', loadingId);
 
     try {
-        // 3. Hämta kontext (Viktigt!)
-        const job = window.currentViewingJob || {};
-        const systemPrompt = `
-            Du är en expert-mekaniker.
-            Fordon: ${job.bilmodell || 'Okänd'} (${job.regnr || '---'}).
-            Mätarställning: ${job.matarstallning || '-'} mil.
-            Din uppgift: Svara kort, tekniskt och praktiskt.
-            Använd fetstil för viktiga värden (t.ex. moment).
-            Fråga: ${text}
-        `;
-
-        // 4. Anropa Gemini (Kopiera din befintliga fetch-kod hit)
-        const apiKey = CONFIG.AI_API_KEY; 
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+        const apiKey = window.CONFIG?.AI_API_KEY || CONFIG?.AI_API_KEY;
+        const prompt = `Expert-mekaniker. Svara extremt kortfattat (fakta/siffror). Fråga: ${text}`;
         
-        const response = await fetch(url, {
+        const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ contents: [{ parts: [{ text: systemPrompt }] }] })
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({contents: [{parts: [{text: prompt}]}]})
         });
+
+        const data = await resp.json();
+        const aiReply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Inget svar.";
         
-        const data = await response.json();
-        const aiReply = data.candidates[0].content.parts[0].text;
+        document.getElementById(loadingId)?.remove();
+        // Vi tar bort din frågebubbla direkt när svaret kommer för att hålla chatten ren
+        document.getElementById('temp-user')?.remove();
 
-        // 5. Byt ut laddar-rutan mot svaret
-        document.getElementById(loadingId).remove();
-        renderAiBubble(aiReply, 'ai');
+        const shortQ = text.replace(/vad är|hur mycket|hjälp/gi, '').trim().toUpperCase();
+        
+        // Rendera svaret. Om användaren trycker "Spara" hamnar det i historiken.
+        renderAiBubble(aiReply, 'ai', Date.now(), false, shortQ);
 
-    } catch (error) {
-        console.error(error);
-        document.getElementById(loadingId).innerHTML = '⚠️ Något gick fel. Kontrollera nätverket.';
+    } catch (e) { 
+        console.error(e);
+        document.getElementById(loadingId).innerHTML = "⚠️ Fel vid kontakt med AI.";
     }
 };
 
-// 4. Renderings-hjälp
-function renderAiBubble(text, sender) {
+// 2. Ladda historik - Visar nu ENDAST sparade AI-svar
+async function loadGlobalAiHistory() {
+    const container = document.getElementById('aiMessageContainer');
+    container.innerHTML = `
+        <div class="ai-saved-accordion">
+            <div class="saved-header" onclick="this.parentElement.classList.toggle('open')">
+                <span>📌 Sparade meddelanden</span>
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" class="accordion-arrow"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </div>
+            <div class="saved-content" id="aiSavedList"></div>
+        </div>
+        <div class="ai-welcome-screen">
+            <div class="ai-sparkle-bg">✨</div>
+            <h3>Gemini AI</h3>
+            <p>Global assistent. Dina sparade svar visas i listan ovan.</p>
+        </div>`;
+
+    // Vi hämtar ENDAST de dokument som har isPermanent: true
+    const snapshot = await window.db.collection("ai_global_history")
+        .where("isPermanent", "==", true)
+        .orderBy("timestamp", "asc")
+        .get();
+        
+    const savedList = document.getElementById('aiSavedList');
+    snapshot.forEach(doc => {
+        renderSavedItem(doc.data(), doc.id);
+    });
+}
+
+window.saveGlobalAiResponse = async function(id, q) {
+    const el = document.getElementById(id);
+    const txt = el.querySelector('.ai-text-body').innerHTML;
+    await window.db.collection("ai_global_history").add({ text: txt, question: q, sender: 'ai', isPermanent: true, timestamp: Date.now() });
+    el.remove();
+    loadGlobalAiHistory();
+};
+
+window.deleteSavedAiResponse = async (id) => {
+    if(confirm("Radera?")) {
+        await window.db.collection("ai_global_history").doc(id).delete();
+        document.getElementById('saved-' + id)?.remove();
+    }
+};
+
+// 4. RENDERING HELPERS
+function renderAiBubble(text, sender, id = Date.now(), isSaved = false, q = "") {
     const container = document.getElementById('aiMessageContainer');
     const div = document.createElement('div');
+    div.id = id;
+    div.className = `ai-chat-row ${sender}`;
+    const formatted = text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>');
     
-    // Klasser
-    div.className = sender === 'ai' ? 'chat-bubble ai-response' : 'chat-bubble user-message';
+    div.innerHTML = sender === 'ai' 
+        ? `<div class="ai-avatar">✨</div><div class="chat-bubble ai-response"><div class="ai-text-body">${formatted}</div>${!isSaved ? `<button class="ai-save-btn" onclick="window.saveGlobalAiResponse('${id}', '${q}')">📌 Spara</button>` : ''}</div>`
+        : `<div class="chat-bubble user-message">${formatted}</div>`;
     
-    // Formattera text (Markdown-style fetstil till HTML bold)
-    let formatted = text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>') // Fetstil
-                        .replace(/\n/g, '<br>'); // Radbrytning
-    
-    // Lägg till disclaimer på AI-svar
-    if (sender === 'ai') {
-        formatted += `<span class="ai-disclaimer">AI-genererat svar. Dubbelkolla kritiska data.</span>`;
-    }
-
-    div.innerHTML = formatted;
     container.appendChild(div);
-    scrollToAiBottom();
-}
-
-function scrollToAiBottom() {
-    const container = document.getElementById('aiMessageContainer');
     container.scrollTop = container.scrollHeight;
 }
+
+function renderSavedItem(d, id) {
+    const div = document.createElement('div');
+    div.className = 'saved-card'; div.id = 'saved-' + id;
+    div.innerHTML = `<div class="saved-card-header"><span class="saved-question-tag">${d.question || 'SPARAT'}</span><button class="delete-saved-btn" onclick="deleteSavedAiResponse('${id}')">🗑️</button></div><div class="saved-card-body">${d.text}</div>`;
+    document.getElementById('aiSavedList').appendChild(div);
+}
+
+// ai.js - Fix för chips/knappar
+window.fillAiPrompt = function(t) { 
+    const input = document.getElementById('chatInput');
+    if(input) {
+        input.value = t;
+        input.focus();
+    }
+};
