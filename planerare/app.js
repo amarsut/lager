@@ -3667,55 +3667,35 @@ async function handleSearch(term, isMobile) {
 
     // 1. LAGER-SEKTION (Om träffar finns)
     if (lagerResults.length > 0) {
-        html += `
-            <div class="lager-header-divider">
-                <span class="material-icons" style="font-size:16px">inventory_2</span> LAGERARTIKLAR
-            </div>
-            <div class="lager-results-grid">
-                ${lagerResults.map(item => `
-                    <div class="lager-result-card-desktop">
-                        <div class="l-card-main">
-                            <span class="l-badge">LAGER</span>
-                            <div class="l-info">
-                                <strong class="l-artnr">${item.service_filter || '---'}</strong>
-                                <div class="l-name">${item.name || ''}</div>
-                            </div>
-                        </div>
-                        <div class="l-card-side">
-                            <div class="l-price">${item.price}:-</div>
-                            <div class="l-stock ${item.quantity > 0 ? 'in' : 'out'}">
-                                ${item.quantity > 0 ? 'Saldo: ' + item.quantity : 'Slut'}
-                            </div>
-                        </div>
-                    </div>
+    html += `
+        <div class="search-section-divider lager-header">
+            <span class="material-icons">inventory_2</span>
+            <span class="header-text">Lagerartiklar</span>
+            <span class="header-count">${lagerResults.length}</span>
+        </div>
+        <div class="lager-results-grid">
+            ${lagerResults.map(item => `
                 `).join('')}
-            </div>
-        `;
-    }
+        </div>
+    `;
+}
 
-    // 2. JOBB-SEKTION
-    if (filteredJobs.length > 0) {
-        html += `<div class="lager-header-divider">
-            <span class="material-icons" style="font-size:16px">assignment</span> BOKADE JOBB
-        </div>`;
-        
-        if (!isMobile) {
-            // Skapa tabell för datorn
-            html += `
-                <table id="jobsTable">
-                    <thead>
-                        <tr>
-                            <th>Status</th><th>Datum</th><th>Kund</th><th>Reg.nr</th>
-                            <th style="text-align:right">Pris</th><th class="action-col">Åtgärder</th>
-                        </tr>
-                    </thead>
-                    <tbody>${filteredJobs.map(job => createJobRow(job)).join('')}</tbody>
-                </table>`;
-        } else {
-            // Skapa kort för mobilen
-            html += filteredJobs.map(job => createJobCard(job)).join('');
-        }
+// 2. JOBB-RUBRIK
+if (filteredJobs.length > 0) {
+    html += `
+        <div class="search-section-divider jobb-header">
+            <span class="material-icons">assignment</span>
+            <span class="header-text">Bokade Jobb</span>
+            <span class="header-count">${filteredJobs.length}</span>
+        </div>
+    `;
+    
+    if (!isMobile) {
+        // Din tabell för datorn här...
+    } else {
+        // Dina jobb-kort för mobilen här...
     }
+}
 
     resultsContainer.innerHTML = html || '<p class="search-no-results">Inga träffar hittades.</p>';
 }
