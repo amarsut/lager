@@ -908,3 +908,23 @@ TEST TEST TEST
     margin-left: 0 !important;
     margin-right: 0 !important;
 }
+
+/* Ta bort bakgrund och ram från sökcontainrarna så korten flyter fritt */
+#jobListContainer, 
+#mobileSearchResults {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+}
+
+/* Säkerställ att det finns tillräckligt med luft mellan korten */
+.search-result-section-card {
+    margin-bottom: 24px !important;
+    /* Behåll vit bakgrund på själva korten */
+    background: #ffffff !important; 
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 12px !important;
+    padding: 20px !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+}
