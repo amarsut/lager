@@ -1936,19 +1936,31 @@ function renderExpenses() {
 
     // Loopa igenom utgifter och skapa HTML
     currentExpenses.forEach((item, index) => {
-        totalUtgifter += item.kostnad;
-        
-        const div = document.createElement('div');
-        div.className = 'expense-item';
-        div.innerHTML = `
-            <span>${item.namn}</span>
-            <div style="display:flex; gap:10px; align-items:center;">
-                <strong>-${item.kostnad} kr</strong>
-                <button type="button" class="btn-remove-expense" onclick="removeExpense(${index})">&times;</button>
-            </div>
-        `;
-        listContainer.appendChild(div);
-    });
+	    totalUtgifter += item.kostnad;
+	    
+	    // Vi försöker dela upp "ArtNr - Namn" om bindestreck finns
+	    const parts = item.namn.split(' - ');
+	    const displayHtml = parts.length > 1 
+	        ? `<div class="exp-text-wrapper">
+	             <strong class="exp-artnr">${parts[0]}</strong>
+	             <span class="exp-name">${parts[1]}</span>
+	           </div>`
+	        : `<span class="exp-name">${item.namn}</span>`;
+	
+	    const div = document.createElement('div');
+	    div.className = 'expense-item';
+	    // Title-attributet ger en inbyggd tooltip på dator när man vilar musen över
+	    div.setAttribute('title', item.namn); 
+	    
+	    div.innerHTML = `
+	        ${displayHtml}
+	        <div style="display:flex; gap:10px; align-items:center; flex-shrink:0;">
+	            <strong class="exp-price">-${item.kostnad} kr</strong>
+	            <button type="button" class="btn-remove-expense" onclick="removeExpense(${index})">&times;</button>
+	        </div>
+	    `;
+	    listContainer.appendChild(div);
+	});
 
     // Räkna ut vinst
     const kundpris = parseInt(document.getElementById('kundpris').value) || 0;
