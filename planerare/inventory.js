@@ -11,7 +11,10 @@ const lagerFirebaseConfig = {
 
 const lagerApp = firebase.initializeApp(lagerFirebaseConfig, "lagerApp");
 export const lagerDb = lagerApp.firestore();
-lagerDb.settings({ merge: true });
+// Om du vill ha inställningar här, gör det på lagerDb:
+try {
+    lagerDb.settings({ merge: true }); // För sekundära appar är merge:true ibland användbart
+} catch(e) {}
 
 // CACHE-LOGIK
 let cachedInventory = [];
