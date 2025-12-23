@@ -1,9 +1,7 @@
 // chat.js
 import { db, auth } from './firebase-config.js';
 
-/**
- * Komprimerar bilden till max 800px och 70% kvalitet för att hålla Firestore-dokumentet under 1MB.
- */
+// --- BILD-KOMPRIMERING (Gratis-metoden) ---
 const compressImage = (file) => new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
@@ -14,42 +12,40 @@ const compressImage = (file) => new Promise((resolve, reject) => {
             const canvas = document.createElement('canvas');
             let width = img.width;
             let height = img.height;
-            const MAX_SIZE = 800;
+            const MAX_SIZE = 800; // Krymper bilden för att spara plats
+
             if (width > height) {
                 if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; }
             } else {
                 if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; }
             }
-            canvas.width = width; canvas.height = height;
+            canvas.width = width;
+            canvas.height = height;
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0, width, height);
-            resolve(canvas.toDataURL('image/jpeg', 0.7));
+            resolve(canvas.toDataURL('image/jpeg', 0.7)); // 70% kvalitet räcker gott
         };
     };
     reader.onerror = (err) => reject(err);
 });
 
-// GÖR FUNKTIONERNA GLOBALA
+// --- GLOBALA FUNKTIONER FÖR HTML ---
 window.toggleChatWidget = function() {
     const chatWidget = document.getElementById('chatWidget');
     if (!chatWidget) return;
     const isOpen = chatWidget.style.display === 'flex';
     chatWidget.style.display = isOpen ? 'none' : 'flex';
     document.body.classList.toggle('chat-open', !isOpen);
-    if (!isOpen) {
-        setTimeout(() => {
-            const chatList = document.getElementById('chatMessages');
-            if (chatList) chatList.scrollTop = chatList.scrollHeight;
-        }, 100);
-    }
 };
 
+// FIX: Denna funktion ersätter den gamla som letade efter 'uploadChatImage'
 window.handleImageUpload = async function(file) {
     if (!file) return;
     try {
-        console.log("Komprimerar och sparar bild...");
+        console.log("Komprimerar och sparar bild till databasen...");
         const compressedBase64 = await compressImage(file);
         
+        // Sparar direkt i 'notes'-kollektionen
         await db.collection('notes').add({
             image: compressedBase64,
             text: "",
@@ -59,12 +55,27 @@ window.handleImageUpload = async function(file) {
             platform: window.innerWidth <= 768 ? 'mobil' : 'dator'
         });
         
-        // Rensa input
-        document.getElementById('chatFileInputGallery').value = '';
-        document.getElementById('chatFileInputCamera').value = '';
+        // Rensa fil-inputs
+        if(document.getElementById('chatFileInputGallery')) document.getElementById('chatFileInputGallery').value = '';
+        if(document.getElementById('chatFileInputCamera')) document.getElementById('chatFileInputCamera').value = '';
     } catch (err) {
-        console.error("Kunde inte spara bild:", err);
+        console.error("Kunde inte spara bilden:", err);
+        alert("Bilden kunde inte sparas. Den kan vara för stor.");
     }
+};
+
+window.sendMessage = async function() {
+    const input = document.getElementById('chatInput');
+    const text = input.value.trim();
+    if (!text) return;
+
+    await db.collection('notes').add({
+        text: text,
+        type: 'text',
+        sender: auth.currentUser ? auth.currentUser.email : 'System',
+        timestamp: new Date().toISOString()
+    });
+    input.value = '';
 };
 
 // Globala variabler för chatten
