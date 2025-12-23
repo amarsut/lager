@@ -3,17 +3,6 @@ import { searchLager, adjustPartStock, handleExpenseLagerSearch, selectLagerForE
 import { initCalendar, setCalendarTheme } from './calendar.js';
 import { openStatisticsView } from './statistics.js';
 
-// Skapa globala referenser direkt
-const db = firebase.firestore();
-db.enablePersistence()
-  .catch((err) => {
-      if (err.code == 'failed-precondition') {
-          console.log('Offline-läge: Kan bara köras i en flik åt gången.');
-      } else if (err.code == 'unimplemented') {
-          console.log('Webbläsaren stödjer inte offline-läge.');
-      }
-  });
-
 console.log("Firebase initierad.");
 
 // Globala variabler
