@@ -1,6 +1,38 @@
 // ==========================================
 // CHATT - SEPARAT FIL (chat.js)
 // ==========================================
+// chat.js
+import { storage, db, auth } from './firebase-config.js';
+
+window.uploadChatImage = async function(file) {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    // Skapa en unik sökväg för bilden
+    const filePath = `chat_images/${Date.now()}_${file.name}`;
+    const fileRef = storage.ref().child(filePath);
+
+    // Ladda upp
+    await fileRef.put(file);
+    
+    // Hämta den offentliga länken
+    return await fileRef.getDownloadURL();
+};
+
+// Uppdatera din funktion som sparar meddelandet
+window.saveMessageWithImage = async function(text, imageFile) {
+    let imageUrl = null;
+    if (imageFile) {
+        imageUrl = await window.uploadChatImage(imageFile);
+    }
+
+    await db.collection('messages').add({
+        text: text,
+        imageUrl: imageUrl, // Spara länken istället för Base64
+        sender: auth.currentUser.email,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    });
+};
 
 // Globala variabler för chatten
 let chatUnsubscribe = null;
