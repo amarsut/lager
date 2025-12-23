@@ -192,28 +192,8 @@ function getBrandIconUrl(text, regnr) {
 // --- HJÄLPFUNKTION: AVANCERAD SÖKNING ---
 function jobMatchesSearch(job, searchTerm) {
     if (!searchTerm) return true;
-    const term = searchTerm.toLowerCase();
-    
-    // Hämta data säkert (om fältet saknas blir det tom text)
-    const kund = (job.kundnamn || '').toLowerCase();
-    const reg = (job.regnr || '').toLowerCase();
-    const kommentar = (job.kommentar || '').toLowerCase(); // Anteckningar
-    const paket = (job.paket || '').toLowerCase();
-    const status = (job.status || '').toLowerCase();
-    
-    // Sök igenom utgiftslistan (delar)
-    let parts = "";
-    if (job.utgifter && Array.isArray(job.utgifter)) {
-        parts = job.utgifter.map(u => (u.namn || '').toLowerCase()).join(' ');
-    }
-
-    // Returnera SANT om sökordet finns i NÅGOT av fälten
-    return kund.includes(term) || 
-           reg.includes(term) || 
-           kommentar.includes(term) || 
-           paket.includes(term) || 
-           status.includes(term) ||
-           parts.includes(term);
+    // Nu använder vi den förberedda index-strängen för blixtsnabb sökning
+    return job._searchIndex && job._searchIndex.includes(searchTerm.toLowerCase());
 }
 
 // 3. STARTA APPENS UI (När sidan laddat klart)
@@ -297,7 +277,14 @@ function initRealtimeListener() {
     jobsUnsubscribe = db.collection("jobs").onSnapshot(snapshot => {
         allJobs = [];
         snapshot.forEach(doc => {
-            allJobs.push({ id: doc.id, ...doc.data() });
+            const data = doc.data();
+            // Indexing: Skapa en söksträng i förväg för att spara prestanda
+            const searchStr = `${data.kundnamn || ''} ${data.regnr || ''} ${data.kommentar || ''} ${data.paket || ''}`.toLowerCase();
+            allJobs.push({ 
+                id: doc.id, 
+                ...data, 
+                _searchIndex: searchStr // Spara den färdiga strängen här
+            });
         });
         renderDashboard();
     }, error => {
@@ -849,32 +836,35 @@ function updateStatsCounts(jobs) {
     const today = new Date(); 
     today.setHours(0,0,0,0);
 
-    // Hjälpfunktion: Uppdaterar bara om elementet faktiskt finns i HTML
     const safeUpdate = (id, val) => {
         const el = document.getElementById(id);
         if (el) el.textContent = val;
     };
 
-    // 1. Vanliga kort
     const upcomingCount = active.filter(j => j.status === 'bokad' && new Date(j.datum) >= today).length;
     const invoiceCount = active.filter(j => j.status === 'faktureras').length;
     const finishedCount = active.filter(j => j.status === 'klar').length;
     const allCount = active.length;
 
+    // Räkna ut väntande jobb (unplannedCount)
+    const unplannedCount = active.filter(j => !j.datum || j.datum === '').length;
+    const offeredCount = active.filter(j => j.status === 'offererad').length;
+
+    // --- APP BADGING (Punkt 20) ---
+    if ('setAppBadge' in navigator) {
+        if (unplannedCount > 0) {
+            navigator.setAppBadge(unplannedCount).catch(console.error);
+        } else {
+            navigator.clearAppBadge();
+        }
+    }
+
     safeUpdate('stat-upcoming', upcomingCount);
     safeUpdate('stat-invoice', invoiceCount);
     safeUpdate('stat-finished', finishedCount);
     safeUpdate('stat-all', allCount);
-
-    // 2. Hantera "Ej Bokat" (Backlog)
-    // Vi räknar ut dessa även om vi inte visar dem, för säkerhets skull
-    const unplannedCount = active.filter(j => !j.datum || j.datum === '').length;
-    const offeredCount = active.filter(j => j.status === 'offererad').length;
-
-    // Uppdatera "Ej Bokat"-kortet
     safeUpdate('stat-backlog', unplannedCount + offeredCount);
 
-    // Hitta raden och lägg in enkel, ren data
     const backlogRow = document.querySelector('.backlog-row');
     if (backlogRow) {
         backlogRow.innerHTML = `
@@ -883,9 +873,6 @@ function updateStatsCounts(jobs) {
             <span class="sub-stat"><b class="sub-val">${offeredCount}</b> offert</span>
         `;
     }
-
-    // Uppdatera det gamla kortet (om det råkar finnas kvar någonstans)
-    safeUpdate('stat-offered', offeredCount);
 }
 
 // 7. EVENT LISTENERS
@@ -1415,16 +1402,19 @@ function setupEventListeners() {
         setTimeout(() => {
             document.getElementById('nyUtgiftNamn').value = name;
             document.getElementById('nyUtgiftPris').value = price;
-            // Klicka på lägg till-knappen automatiskt
             document.getElementById('btnAddExpense').click();
         }, 200);
     };
 
-    // Uppdatera själva event-lyssnaren
+    // Debounca både jobb-listan och lagersökningen för att undvika "lagg"
+    const debouncedSearch = debounce((term) => {
+        currentSearchTerm = term;
+        renderDashboard();
+        performDesktopSearch(term);
+    }, 300);
+
     document.getElementById('searchBar').addEventListener('input', (e) => {
-        currentSearchTerm = e.target.value;
-        renderDashboard(); // Rendera jobb direkt för snabb respons
-        performDesktopSearch(currentSearchTerm); // Debounca lagersökningen
+        debouncedSearch(e.target.value);
     });
 
     // Modal: Nytt Jobb (FAB)
