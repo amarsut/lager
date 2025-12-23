@@ -11,6 +11,7 @@ const lagerFirebaseConfig = {
 
 const lagerApp = firebase.initializeApp(lagerFirebaseConfig, "lagerApp");
 export const lagerDb = lagerApp.firestore();
+lagerDb.settings({ merge: true });
 
 // CACHE-LOGIK
 let cachedInventory = [];
