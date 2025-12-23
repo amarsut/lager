@@ -73,39 +73,6 @@ let isEditingMsg = false;
 let currentEditMsgId = null;
 let chatMenuTimer = null; // Fix för "ReferenceError"
 
-// Gör funktionen global
-window.toggleChatWidget = function() {
-    const chatWidget = document.getElementById('chatWidget');
-    if (!chatWidget) return;
-
-    const isOpen = chatWidget.style.display === 'flex';
-
-    if (isOpen) {
-        // STÄNGER
-        chatWidget.style.display = 'none';
-        document.body.classList.remove('chat-open'); // Ta bort klassen
-        document.body.style.overflow = ''; 
-        
-        // Återställ eventuell historik
-        if (history.state && history.state.uiState === 'chat') {
-            history.back();
-        }
-    } else {
-        // ÖPPNAR
-        chatWidget.style.display = 'flex';
-        document.body.classList.add('chat-open'); // Lägg till klassen (döljer headern via CSS)
-        document.body.style.overflow = 'hidden'; 
-        
-        history.pushState({ uiState: 'chat' }, null, window.location.href);
-
-        // Scrolla till botten
-        setTimeout(() => {
-            const chatList = document.getElementById('chatMessages');
-            if (chatList) chatList.scrollTop = chatList.scrollHeight;
-        }, 100);
-    }
-};
-
 window.initChat = function() {
     const chatList = document.getElementById('chatMessages');
     if (!chatList) return;
@@ -607,30 +574,6 @@ async function handleImageUpload(file) {
         console.error("Storage-uppladdning misslyckades:", err);
         alert("Kunde inte ladda upp bilden.");
     }
-}
-
-function compressImage(file) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = (event) => {
-            const img = new Image();
-            img.src = event.target.result;
-            img.onload = () => {
-                const maxWidth = 800; 
-                const scaleSize = maxWidth / img.width;
-                const newWidth = (img.width > maxWidth) ? maxWidth : img.width;
-                const newHeight = (img.width > maxWidth) ? (img.height * scaleSize) : img.height;
-                const canvas = document.createElement('canvas');
-                canvas.width = newWidth; canvas.height = newHeight;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, newWidth, newHeight);
-                resolve(canvas.toDataURL('image/jpeg', 0.7));
-            };
-            img.onerror = (err) => reject(err);
-        };
-        reader.onerror = (err) => reject(err);
-    });
 }
 
 let currentGalleryImages = []; // Lista på alla bilder i chatten
