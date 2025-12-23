@@ -131,6 +131,12 @@
     align-items: center;
 }
 
+#expenseList {
+    margin-top: 10px;
+    border-top: 1px solid #f3f4f6; /* NYTT: En tunn linje som separerar */
+    padding-top: 15px;
+}
+
 .expense-list {
     margin-bottom: 12px;
 }
