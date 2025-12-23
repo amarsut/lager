@@ -1085,3 +1085,34 @@ TEST TEST TEST
     height: 42px !important;
     margin-bottom: 0 !important; /* Tar bort marginal som knuffar ner knappen */
 }
+
+/* --- SNYGG AVKORTNING AV UTGIFTSNAMN --- */
+.expense-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.expense-item span:first-child {
+    font-size: 0.9rem;
+    color: #334155;
+    font-weight: 500;
+    
+    /* Magin som skapar ".." */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    
+    /* Justera denna bredd efter behov */
+    max-width: 180px; 
+    display: inline-block;
+}
+
+/* För mobila enheter kan vi tillåta lite mer plats */
+@media (max-width: 768px) {
+    .expense-item span:first-child {
+        max-width: 150px;
+    }
+}
