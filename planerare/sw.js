@@ -17,10 +17,6 @@ const APP_SHELL_FILES = [
   './plan.html',
   './style.css',
   './manifest.json',
-  // IKONER (från din gamla fil)
-  './images/192x192.png',
-  './images/512x512.png',
-  './images/maskable.png',
   // Lokal bild från din HTML
   './images/oljemagasinet-favico.png'
   // OBS: Vi har tagit bort CDN-länkarna! De hanteras nu automatiskt av FETCH.
