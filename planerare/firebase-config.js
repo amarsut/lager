@@ -1,12 +1,13 @@
 // firebase-config.js
+// 1. FIREBASE KONFIGURATION
 const firebaseConfig = {
-    apiKey: "AIzaSyC2...", // Kopiera hela ditt firebaseConfig-objekt från app.js här
-    authDomain: "bilvards-pro.firebaseapp.com",
-    projectId: "bilvards-pro",
-    storageBucket: "bilvards-pro.appspot.com",
-    messagingSenderId: "365311050730",
-    appId: "1:365311050730:web:10c01a97d41a5f6e917631",
-    measurementId: "G-GVE09B3654"
+  apiKey: "AIzaSyDwCQkUl-je3L3kF7EuxRC6Dm6Gw2N0nJw",
+  authDomain: "planerare-f6006.firebaseapp.com",
+  projectId: "planerare-f6006",
+  storageBucket: "planerare-f6006.firebasestorage.app",
+  messagingSenderId: "360462069749",
+  appId: "1:360462069749:web:c754879f3f75d5ef3cbabc",
+  measurementId: "G-L6516XLZ1Y"
 };
 
 // Starta DEFAULT-appen omedelbart
