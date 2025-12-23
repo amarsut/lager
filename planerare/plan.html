@@ -645,13 +645,10 @@
 	
 	                <div id="expenseList" class="expense-list"></div>
 	
-	                <div class="expense-input-row">
-	                    <input type="text" id="nyUtgiftNamn" class="input-gray" placeholder="T.ex Oljefilter">
-	                    <input type="number" id="nyUtgiftPris" class="input-gray" placeholder="Pris (KR)">
-	                    <button type="button" id="btnAddExpense" class="button-outline-sm">
-	                        <svg class="icon-sm"><use href="#icon-plus"></use></svg> Lägg till
-	                    </button>
-	                </div>
+	                <div class="expense-autocomplete-wrapper">
+					    <input type="text" id="nyUtgiftNamn" placeholder="Namn på utgift (sök i lager...)" autocomplete="off">
+					    <div id="lagerExpenseSuggestions" class="lager-suggestions-dropdown"></div>
+					</div>
 	            </div>
 	
 	            <div class="form-group full-width">
