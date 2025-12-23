@@ -257,6 +257,7 @@ function initRealtimeListener() {
             allJobs.push({ id: doc.id, ...doc.data() });
         });
         renderDashboard();
+		loadCustomersCache();
     }, error => {
         console.error("Fel vid hämtning av jobb:", error);
         // Ignorera fel om det beror på att vi precis loggat ut
