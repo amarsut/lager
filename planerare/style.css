@@ -1067,7 +1067,7 @@ TEST TEST TEST
     color: white !important;
     border: none !important;
     font-size: 20px !important;
-    font-weight: 600 !important;
+    font-weight: 400 !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -1116,3 +1116,4 @@ TEST TEST TEST
         max-width: 150px;
     }
 }
+
