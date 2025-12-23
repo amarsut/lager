@@ -1,12 +1,8 @@
 // customers.js
 import { db } from './firebase-config.js';
 
-let cachedCustomers = [];
-let isCustomersLoaded = false;
+export let cachedCustomers = [];
 
-/**
- * Hämtar alla unika kunder från jobb-databasen en gång.
- */
 export async function loadCustomersCache() {
     try {
         const snapshot = await db.collection('jobs').get();
@@ -15,43 +11,37 @@ export async function loadCustomersCache() {
 
         snapshot.forEach(doc => {
             const data = doc.data();
-            if (data.customerName && !seenNames.has(data.customerName.trim().toLowerCase())) {
+            // ÄNDRAT: Använd 'kundnamn' och 'telefon' för att matcha app.js
+            const name = data.kundnamn ? data.kundnamn.trim() : "";
+            if (name && !seenNames.has(name.toLowerCase())) {
                 customers.push({
-                    name: data.customerName,
-                    phone: data.customerPhone || '',
-                    email: data.customerEmail || ''
+                    name: name,
+                    phone: data.telefon || data.phone || ''
                 });
-                seenNames.add(data.customerName.trim().toLowerCase());
+                seenNames.add(name.toLowerCase());
             }
         });
 
         cachedCustomers = customers;
-        isCustomersLoaded = true;
         console.log(`Kund-cache laddad: ${cachedCustomers.length} unika kunder.`);
     } catch (err) {
         console.error("Kunde inte ladda kund-cache:", err);
     }
 }
 
-/**
- * Söker blixtsnabbt i den lokala kundlistan.
- */
 export function searchCustomersLocal(term) {
     if (!term) return [];
     const searchTerm = term.toLowerCase();
-    
     return cachedCustomers.filter(c => 
         c.name.toLowerCase().includes(searchTerm) || 
         (c.phone && c.phone.includes(searchTerm))
     );
 }
 
-/**
- * Lägger till en ny kund i cachen manuellt (används när ett nytt jobb sparas)
- */
 export function addCustomerToCache(customer) {
+    if (!customer || !customer.name) return;
     const exists = cachedCustomers.some(c => c.name.toLowerCase() === customer.name.toLowerCase());
     if (!exists) {
-        cachedCustomers.push(customer);
+        cachedCustomers.push({ name: customer.name, phone: customer.phone || '' });
     }
 }
