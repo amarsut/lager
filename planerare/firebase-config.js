@@ -1,4 +1,5 @@
 // firebase-config.js
+
 // 1. FIREBASE KONFIGURATION
 const firebaseConfig = {
   apiKey: "AIzaSyDwCQkUl-je3L3kF7EuxRC6Dm6Gw2N0nJw",
@@ -10,25 +11,36 @@ const firebaseConfig = {
   measurementId: "G-L6516XLZ1Y"
 };
 
-// Starta DEFAULT-appen omedelbart
-const app = firebase.initializeApp(firebaseConfig);
-export const db = app.firestore();
+// Starta DEFAULT-appen bara om den inte redan är initierad
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
+
+export const db = firebase.firestore();
 export const auth = firebase.auth();
+
+// Gör db tillgänglig för äldre script (som chat.js)
 window.db = db;
 
-// Aktivera lokal lagring för huvud-databasen
-db.settings({ cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED }); // Tillåt stor cache
+// 2. INSTÄLLNINGAR (Använd try/catch för att undvika "overriding host"-varningen)
+try {
+    db.settings({ 
+        cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED 
+    });
+} catch (e) {
+    // Om inställningarna redan är satta (t.ex. vid en snabb omstart) loggas detta istället för att krascha
+    console.log("Firestore-inställningar är redan aktiva.");
+}
 
-db.enablePersistence({ synchronizeTabs: true }) // synchronizeTabs låter flera flikar dela cache
+// 3. OFFLINE-LAGRING
+db.enablePersistence({ synchronizeTabs: true })
     .then(() => {
         console.log("Offline-lagring aktiverad för Huvudappen");
     })
     .catch((err) => {
         if (err.code == 'failed-precondition') {
-            // Förekommer om du har för många flikar öppna samtidigt
             console.warn("Persistence misslyckades: Flera flikar öppna.");
         } else if (err.code == 'unimplemented') {
-            // Webbläsaren saknar stöd (ovanligt idag)
             console.warn("Webbläsaren stöder inte offline-lagring.");
         }
     });
