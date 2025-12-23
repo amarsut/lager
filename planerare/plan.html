@@ -645,9 +645,13 @@
 	
 	                <div id="expenseList" class="expense-list"></div>
 	
-	                <div class="expense-autocomplete-wrapper">
-					    <input type="text" id="nyUtgiftNamn" placeholder="Namn på utgift (sök i lager...)" autocomplete="off">
-					    <div id="lagerExpenseSuggestions" class="lager-suggestions-dropdown"></div>
+	                <div class="expense-input-row" style="display: flex; gap: 10px; margin-bottom: 15px; align-items: flex-start;">
+					    <div class="expense-autocomplete-wrapper" style="flex: 2; position: relative;">
+					        <input type="text" id="nyUtgiftNamn" placeholder="Namn (sök lager...)" class="input-gray" autocomplete="off">
+					        <div id="lagerExpenseSuggestions" class="lager-suggestions-dropdown"></div>
+					    </div>
+					    <input type="number" id="nyUtgiftPris" placeholder="Pris" class="input-gray" style="flex: 1;">
+					    <button type="button" id="btnAddExpense" class="btn-add-circle">+</button>
 					</div>
 	            </div>
 	
