@@ -19,28 +19,24 @@ if (!firebase.apps.length) {
 export const db = firebase.firestore();
 export const auth = firebase.auth();
 
-// Gör db tillgänglig för äldre script (som chat.js)
-window.db = db;
-
-// 2. INSTÄLLNINGAR (Använd try/catch för att undvika "overriding host"-varningen)
+// 2. INSTÄLLNINGAR (Löser "overriding host"-varningen)
 try {
     db.settings({ 
-        cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED 
+        cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED,
+        merge: true // <--- DENNA RAD SAKNAS I DIN NUVARANDE FIL
     });
 } catch (e) {
-    // Om inställningarna redan är satta (t.ex. vid en snabb omstart) loggas detta istället för att krascha
     console.log("Firestore-inställningar är redan aktiva.");
 }
 
+// Gör db tillgänglig för äldre script (som chat.js)
+window.db = db;
+window.auth = auth;
+
 // 3. OFFLINE-LAGRING
 db.enablePersistence({ synchronizeTabs: true })
-    .then(() => {
-        console.log("Offline-lagring aktiverad för Huvudappen");
-    })
     .catch((err) => {
-        if (err.code == 'failed-precondition') {
-            console.warn("Persistence misslyckades: Flera flikar öppna.");
-        } else if (err.code == 'unimplemented') {
-            console.warn("Webbläsaren stöder inte offline-lagring.");
+        if (err.code !== 'failed-precondition') {
+            console.warn("Persistence kunde inte aktiveras:", err.code);
         }
     });
