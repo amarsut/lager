@@ -612,551 +612,83 @@ tbody tr button { cursor: pointer; z-index: 2; position: relative; }
 TEST TEST TEST
 */
 
-/* --- EXTRA KOMPAKT LAGER-DESIGN --- */
+/* ==========================================
+   OPTIMERAD SÖK & LAGER DESIGN
+   ========================================== */
+
+/* 1. GRID & KORT (LAGER-RESULTAT) */
 .lager-results-grid {
     display: grid !important;
-    /* Mindre kort (min 200px) gör att fler får plats i bredd */
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)) !important;
     gap: 8px !important;
-    padding: 0 15px 25px 15px !important; /* Padding på sidorna av hela listan */
-    width: 100% !important;
+    padding: 0 15px 25px 15px !important;
+    width: 100%;
     box-sizing: border-box;
 }
 
 .lager-result-card-desktop {
-    background: #ffffff !important;
-    border: 1px solid #e2e8f0 !important;
-    border-radius: 8px !important;
-    padding: 8px 12px !important; /* Mycket mindre padding inuti */
-    display: flex !important;
-    justify-content: space-between !important;
-    align-items: center !important;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.04) !important;
-    min-height: 50px !important; /* Tvingar ner höjden */
-}
-
-.l-card-main {
-    display: flex;
-    flex-direction: column;
-    gap: 1px; /* Minimalt gap */
-    max-width: 65%;
-}
-
-.l-badge {
-    background: #fff7ed;
-    color: #c2410c;
-    font-size: 0.55rem; /* Mindre text */
-    padding: 1px 5px;
-    border-radius: 3px;
-    font-weight: 800;
-    width: fit-content;
-    text-transform: uppercase;
-}
-
-.l-info .l-artnr {
-    font-size: 0.8rem !important; /* Mindre artnr */
-    font-weight: 700;
-    color: #1e293b;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.l-info .l-name {
-    font-size: 0.7rem !important; /* Mindre namn */
-    color: #64748b;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.l-card-side {
-    text-align: right;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
-
-.l-price {
-    font-size: 0.9rem !important; /* Mindre pris */
-    font-weight: 800;
-    color: #1e293b;
-}
-
-.l-stock {
-    font-size: 0.65rem !important; /* Mindre saldo-text */
-    font-weight: 700;
-}
-
-/* --- SNYGGA SEKTIONSRUBRIKER --- */
-.search-section-divider {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin: 25px 15px 15px 15px; /* Matchar din önskade padding på sidorna */
-    user-select: none;
-}
-
-.search-section-divider .material-icons {
-    font-size: 18px;
-    padding: 6px;
-    border-radius: 6px;
-}
-
-/* Specifik färg för Lager-ikon */
-.search-section-divider.lager-header .material-icons {
-    background: #fff7ed;
-    color: #ea580c;
-}
-
-/* Specifik färg för Jobb-ikon */
-.search-section-divider.jobb-header .material-icons {
-    background: #eff6ff;
-    color: #2563eb;
-}
-
-.search-section-divider .header-text {
-    font-size: 0.7rem;
-    font-weight: 800;
-    color: #64748b;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    white-space: nowrap;
-}
-
-.search-section-divider .header-count {
-    font-size: 0.65rem;
-    background: #f1f5f9;
-    color: #475569;
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-weight: 700;
-}
-
-/* Den tunna linjen som fyller ut resten av bredden */
-.search-section-divider::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: linear-gradient(to right, #e2e8f0, transparent);
-}
-
-/* --- SÖK-FILTER-KNAPP & MENY --- */
-.search-results-header {
-    position: relative;
-    display: flex;
-    justify-content: flex-end;
-    padding: 10px 15px 0 0;
-    margin-bottom: -10px; /* Drar upp den så den ligger i linje med rubriken */
-    z-index: 10;
-}
-
-.filter-toggle-btn {
-    background: #f1f5f9;
-    border: none;
-    border-radius: 8px;
-    width: 36px;
-    height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    color: #64748b;
-    transition: all 0.2s;
-}
-
-.filter-toggle-btn:hover {
-    background: #e2e8f0;
-    color: #1e293b;
-}
-
-/* Den lilla dropdown-menyn */
-.filter-dropdown {
-    position: absolute;
-    top: 50px;
-    right: 15px;
-    background: white;
+    background: #fff;
     border: 1px solid #e2e8f0;
-    border-radius: 10px;
-    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
-    width: 150px;
-    display: none; /* Dold som standard */
-    flex-direction: column;
-    padding: 5px;
-    z-index: 100;
-}
-
-.filter-dropdown.show {
-    display: flex;
-}
-
-.filter-option {
+    border-radius: 8px;
     padding: 8px 12px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: #475569;
-    border-radius: 6px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.filter-option:hover {
-    background: #f8fafc;
-    color: #2563eb;
-}
-
-.filter-option.active {
-    background: #eff6ff;
-    color: #2563eb;
-}
-
-/* --- POSITIONERING AV FILTRERINGSKNAPP --- */
-#jobListContainer, #mobileSearchResults {
-    position: relative; /* Viktigt för att kunna placera knappen inuti */
-}
-
-.search-filter-wrapper {
-    position: absolute;
-    top: 25px;   /* Justera detta värde för att landa exakt på linjen */
-    right: 15px; /* Justera avståndet från högerkanten */
-    z-index: 100;
-}
-
-.filter-toggle-btn {
-    background: #f1f5f9;
-    border: 1px solid #e2e8f0;
-    border-radius: 50%;
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    color: #64748b;
-    transition: all 0.2s;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-}
-
-.filter-toggle-btn:hover {
-    background: #e2e8f0;
-    color: #1e293b;
-    transform: scale(1.05);
-}
-
-.filter-toggle-btn .material-icons {
-    font-size: 18px !important;
-}
-
-/* Dropdown-menyn */
-.filter-dropdown {
-    position: absolute;
-    top: 40px;
-    right: 0;
-    background: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
-    min-width: 140px;
-    display: none;
-    flex-direction: column;
-    padding: 6px;
-    z-index: 1000;
-}
-
-.filter-dropdown.show {
-    display: flex;
-}
-
-.filter-option {
-    padding: 10px 12px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: #475569;
-    border-radius: 8px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.filter-option:hover {
-    background: #f8fafc;
-    color: #2563eb;
-}
-
-.filter-option.active {
-    background: #eff6ff;
-    color: #2563eb;
-}
-
-/* --- SEPARATA BOXAR FÖR SÖKRESULTAT --- */
-.search-result-section-card {
-    background: #ffffff !important;
-    border: 1px solid #e2e8f0 !important;
-    border-radius: 12px !important;
-    padding: 16px !important;
-    margin-bottom: 20px !important; /* Skapar mellanrummet (den röda linjen) */
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
-    position: relative;
-}
-
-/* Justering för att rubrikerna ska se bra ut inuti boxarna */
-.search-result-section-card .search-section-divider {
-    margin-top: 0 !important;
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-}
-
-/* Ta bort bakgrund och ram från sökcontainrarna så korten flyter fritt */
-#jobListContainer, 
-#mobileSearchResults {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    padding: 0 !important;
-}
-
-/* Säkerställ att det finns tillräckligt med luft mellan korten */
-.search-result-section-card {
-    margin-bottom: 24px !important;
-    /* Behåll vit bakgrund på själva korten */
-    background: #ffffff !important; 
-    border: 1px solid #e2e8f0 !important;
-    border-radius: 12px !important;
-    padding: 20px !important;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
-}
-
-.table-container {
-    background: white !important;
-    border: 1px solid var(--border-color) !important; /* Denna ger de yttre linjerna */
-    border-radius: 12px !important; /* Matchar dina sökboxar */
-    overflow: hidden;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    margin-bottom: 20px;
-}
-
-/* Fix för att undvika dubbla ramar i sökresultatens vita boxar */
-.search-result-section-card .table-container {
-    box-shadow: none !important;
-    margin-top: 15px !important;
-}
-
-/* --- LAGER-FÖRSLAG I MODAL REDIGERA/NYTT JOBB --- */
-.expense-autocomplete-wrapper {
-    position: relative;
-    width: 100%;
-}
-
-.lager-suggestions-dropdown {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
-    z-index: 3000; /* Måste ligga över modalen */
-    max-height: 200px;
-    overflow-y: auto;
-    display: none; /* Dold som standard */
-}
-
-.lager-suggestions-dropdown.show {
-    display: block;
-}
-
-.suggestion-item {
-    padding: 10px 14px;
-    border-bottom: 1px solid #f1f5f9;
-    cursor: pointer;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    transition: background 0.2s;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    min-height: 50px;
 }
 
-.suggestion-item:hover {
-    background: #f8fafc;
-}
+.l-card-main { display: flex; flex-direction: column; gap: 1px; max-width: 65%; overflow: hidden; }
+.l-badge { background: #fff7ed; color: #c2410c; font-size: 0.55rem; padding: 1px 5px; border-radius: 3px; font-weight: 800; text-transform: uppercase; width: fit-content; }
+.l-info .l-artnr { font-size: 0.8rem; font-weight: 700; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.l-info .l-name { font-size: 0.7rem; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.l-card-side { text-align: right; display: flex; flex-direction: column; }
+.l-price { font-size: 0.9rem; font-weight: 800; color: #1e293b; }
+.l-stock { font-size: 0.65rem; font-weight: 700; }
 
-.suggestion-item .s-name {
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: #1e293b;
-}
+/* 2. SEKTIONSRUBRIKER */
+.search-section-divider { display: flex; align-items: center; gap: 12px; margin: 25px 15px 15px 15px; user-select: none; }
+.search-section-divider .material-icons { font-size: 18px; padding: 6px; border-radius: 6px; }
+.search-section-divider.lager-header .material-icons { background: #fff7ed; color: #ea580c; }
+.search-section-divider.jobb-header .material-icons { background: #eff6ff; color: #2563eb; }
+.search-section-divider .header-text { font-size: 0.7rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 1px; }
+.search-section-divider .header-count { font-size: 0.65rem; background: #f1f5f9; color: #475569; padding: 2px 8px; border-radius: 10px; font-weight: 700; }
+.search-section-divider::after { content: ''; flex: 1; height: 1px; background: linear-gradient(to right, #e2e8f0, transparent); }
 
-.suggestion-item .s-info {
-    font-size: 0.75rem;
-    color: #64748b;
-    text-align: right;
-}
+/* 3. FILTRERING & DROPDOWNS (GLOBAL STIL) */
+.search-filter-wrapper { position: absolute; top: 25px; right: 15px; z-index: 100; }
+.filter-toggle-btn { background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #64748b; transition: all 0.2s; }
+.filter-toggle-btn:hover { background: #e2e8f0; color: #1e293b; transform: scale(1.05); }
 
-.suggestion-item .s-stock {
-    font-weight: 700;
-    color: #16a34a;
+/* Gemensam stil för alla dropdown-menyer (Filter och Autocomplete) */
+.filter-dropdown, .lager-suggestions-dropdown {
+    position: absolute; background: white; border: 1px solid #e2e8f0; border-radius: 12px;
+    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); z-index: 9999; display: none; padding: 6px;
 }
-.suggestion-item .s-stock.out {
-    color: #ef4444;
-}
+.filter-dropdown.show, .lager-suggestions-dropdown.show { display: flex; flex-direction: column; }
+.filter-dropdown { top: 40px; right: 0; min-width: 140px; }
+.lager-suggestions-dropdown { top: calc(100% + 5px); left: 0; right: 0; max-height: 250px; overflow-y: auto; }
 
-/* Snyggare dropdown för utgifter */
-.lager-suggestions-dropdown {
-    position: absolute;
-    top: calc(100% + 5px);
-    left: 0;
-    right: 0;
-    background: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1);
-    z-index: 9999; /* Tvinga den att ligga över allt i modalen */
-    max-height: 250px;
-    overflow-y: auto;
-    display: none;
+.filter-option, .suggestion-item {
+    padding: 10px 12px; font-size: 0.85rem; font-weight: 600; color: #475569; border-radius: 8px;
+    cursor: pointer; display: flex; align-items: center; gap: 10px; transition: background 0.2s;
 }
+.filter-option:hover, .suggestion-item:hover { background: #f8fafc; color: #2563eb; }
+.filter-option.active { background: #eff6ff; color: #2563eb; }
 
-.lager-suggestions-dropdown.show {
-    display: block;
-}
+/* 4. MODAL UTGIFTER (TVÅ-RADIG LAYOUT) */
+.search-result-section-card { background: #fff !important; border: 1px solid #e2e8f0 !important; border-radius: 12px !important; padding: 20px !important; margin-bottom: 24px !important; box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important; position: relative; }
+.expense-input-row { display: flex !important; gap: 8px !important; align-items: center !important; margin-bottom: 15px !important; width: 100% !important; }
+.expense-autocomplete-wrapper { position: relative; flex: 2; }
+.btn-add-circle { width: 42px; height: 42px; min-width: 42px; background: #0066FF; border: none; border-radius: 10px; color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; }
 
-.suggestion-item {
-    padding: 12px 15px;
-    border-bottom: 1px solid #f1f5f9;
-    cursor: pointer;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    transition: background 0.2s;
-}
+.expense-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f1f5f9; gap: 12px; }
+.exp-text-wrapper { display: flex; flex-direction: column; overflow: hidden; flex-grow: 1; }
+.exp-artnr { font-size: 0.75rem; color: #64748b; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.exp-name { font-size: 0.9rem; color: #1e293b; font-weight: 600; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.2; }
+.exp-price { font-size: 0.9rem; color: #334155; white-space: nowrap; }
 
-.suggestion-item:hover {
-    background: #f8fafc;
-}
+/* 5. FIX FÖR CONTAINER */
+#jobListContainer, #mobileSearchResults { background: transparent !important; border: none !important; box-shadow: none !important; padding: 0 !important; }
 
-.suggestion-item .s-name {
-    font-weight: 700;
-    color: #1e293b;
-    font-size: 0.9rem;
-}
-
-.suggestion-item .s-stock {
-    font-size: 0.75rem;
-    font-weight: 600;
-}
-
-/* Container för utgiftsraden */
-.expense-input-row {
-    display: flex !important;
-    gap: 8px !important;
-    align-items: center !important; /* Centrerar knappen vertikalt med fälten */
-    margin-bottom: 15px !important;
-    width: 100% !important;
-}
-
-/* Fix för plus-knappen */
-.btn-add-circle {
-    width: 42px !important;
-    height: 42px !important;
-    min-width: 42px !important;
-    background-color: #0066FF !important; /* Din blåa färg */
-    border: none !important;
-    border-radius: 10px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    padding: 0 !important;
-    cursor: pointer !important;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
-}
-
-.btn-add-circle:hover {
-    background-color: var(--primary-hover) !important;
-}
-
-/* Säkerställ att inputs i raden har samma höjd */
-.expense-input-row input {
-    height: 42px !important;
-    margin-bottom: 0 !important; /* Tar bort marginal som knuffar ner knappen */
-}
-
-/* --- SNYGG AVKORTNING AV UTGIFTSNAMN --- */
-.expense-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 0;
-    border-bottom: 1px solid #f1f5f9;
-}
-
-.expense-item span:first-child {
-    font-size: 0.9rem;
-    color: #334155;
-    font-weight: 500;
-    
-    /* Magin som skapar ".." */
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    
-    /* Justera denna bredd efter behov */
-    max-width: 180px; 
-    display: inline-block;
-}
-
-/* För mobila enheter kan vi tillåta lite mer plats */
-@media (max-width: 768px) {
-    .expense-item span:first-child {
-        max-width: 150px;
-    }
-}
-
-/* --- MODERN TVÅ-RADIG UTGIFTSLISTA --- */
-.expense-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center; /* Centrerar innehållet vertikalt */
-    padding: 10px 0;
-    border-bottom: 1px solid #f1f5f9;
-    gap: 12px;
-}
-
-.exp-text-wrapper {
-    display: flex;
-    flex-direction: column; /* Lägger ArtNr över Namn */
-    overflow: hidden;
-    flex-grow: 1;
-}
-
-.exp-artnr {
-    font-size: 0.75rem;
-    color: #64748b;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.exp-name {
-    font-size: 0.9rem;
-    color: #1e293b;
-    font-weight: 600;
-    
-    /* Tillåter upp till 2 rader innan ".." visas */
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    line-height: 1.2;
-}
-
-.exp-price {
-    font-size: 0.9rem;
-    color: #334155;
-    white-space: nowrap;
-}
 
