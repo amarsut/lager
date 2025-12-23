@@ -1,23 +1,7 @@
-// Importera kalenderfunktionen
-import { initCalendar, setCalendarTheme } from './calendar.js';
-import { openStatisticsView } from './statistics.js'; // Bytte namn på funktionen'
+import { db, auth } from './firebase-config.js'; // Denna körs nu först!
 import { searchLager, adjustPartStock, handleExpenseLagerSearch, selectLagerForExpense } from './inventory.js';
-
-// 1. FIREBASE KONFIGURATION
-const firebaseConfig = {
-  apiKey: "AIzaSyDwCQkUl-je3L3kF7EuxRC6Dm6Gw2N0nJw",
-  authDomain: "planerare-f6006.firebaseapp.com",
-  projectId: "planerare-f6006",
-  storageBucket: "planerare-f6006.firebasestorage.app",
-  messagingSenderId: "360462069749",
-  appId: "1:360462069749:web:c754879f3f75d5ef3cbabc",
-  measurementId: "G-L6516XLZ1Y"
-};
-
-// 2. INITIERA FIREBASE DIREKT (Högst upp)
-if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
-}
+import { initCalendar, setCalendarTheme } from './calendar.js';
+import { openStatisticsView } from './statistics.js';
 
 // Skapa globala referenser direkt
 const db = firebase.firestore();
