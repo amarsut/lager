@@ -1,5 +1,6 @@
 import { db, auth } from './firebase-config.js'; // Denna körs nu först!
 import { searchLager, adjustPartStock, handleExpenseLagerSearch, selectLagerForExpense, loadInventoryCache } from './inventory.js';
+import { loadCustomersCache, searchCustomersLocal, addCustomerToCache } from './customers.js';
 import { initCalendar, setCalendarTheme } from './calendar.js';
 import { openStatisticsView } from './statistics.js';
 
@@ -861,6 +862,52 @@ function updateStatsCounts(jobs) {
 // 7. EVENT LISTENERS
 function setupEventListeners() {
 
+	// --- KUND-SÖK I MODAL (NYTT JOBB / REDIGERA) ---
+	const kundInput = document.getElementById('kundnamn');
+	const kundSuggest = document.getElementById('customerSuggestions');
+	
+	kundInput?.addEventListener('input', (e) => {
+	    const term = e.target.value.trim();
+	    if (term.length < 2) {
+	        kundSuggest.classList.remove('show');
+	        return;
+	    }
+	
+	    const results = searchCustomersLocal(term);
+	
+	    if (results.length > 0) {
+	        kundSuggest.innerHTML = results.map(c => `
+	            <div class="suggestion-item" onclick="selectCustomerForJob('${c.name.replace(/'/g, "\\'")}', '${c.phone || ''}')">
+	                <div class="s-main">
+	                    <div class="s-name">${c.name}</div>
+	                    <div style="font-size:0.7rem; color:#64748b;">${c.phone || 'Inget nummer'}</div>
+	                </div>
+	            </div>
+	        `).join('');
+	        kundSuggest.classList.add('show');
+	    } else {
+	        kundSuggest.classList.remove('show');
+	    }
+	});
+	
+	// Stäng dropdown om man klickar utanför
+	document.addEventListener('click', (e) => {
+	    if (!e.target.closest('.expense-autocomplete-wrapper')) {
+	        kundSuggest?.classList.remove('show');
+	    }
+	});
+	
+	// Hjälpfunktion för att välja kund (Måste vara global)
+	window.selectCustomerForJob = function(name, phone) {
+	    const nameInput = document.getElementById('kundnamn');
+	    if (nameInput) nameInput.value = name;
+	    
+	    // Om du vill lägga till telefonnummer i din modal kan du göra det här
+	    // document.getElementById('kundtelefon').value = phone;
+	
+	    kundSuggest.classList.remove('show');
+	};
+
 	window.selectLagerForExpense = selectLagerForExpense;
 	window.handleExpenseLagerSearch = handleExpenseLagerSearch;
 
@@ -1717,6 +1764,8 @@ async function handleSaveJob(e) {
         utgifter: currentExpenses || [],
         deleted: false
     };
+
+	addCustomerToCache({ name: kund });
 
     try {
         if (jobId && jobId.trim() !== "") {
