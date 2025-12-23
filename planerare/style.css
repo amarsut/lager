@@ -943,3 +943,62 @@ TEST TEST TEST
     box-shadow: none !important;
     margin-top: 15px !important;
 }
+
+/* --- LAGER-FÖRSLAG I MODAL REDIGERA/NYTT JOBB --- */
+.expense-autocomplete-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.lager-suggestions-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+    z-index: 3000; /* Måste ligga över modalen */
+    max-height: 200px;
+    overflow-y: auto;
+    display: none; /* Dold som standard */
+}
+
+.lager-suggestions-dropdown.show {
+    display: block;
+}
+
+.suggestion-item {
+    padding: 10px 14px;
+    border-bottom: 1px solid #f1f5f9;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.2s;
+}
+
+.suggestion-item:hover {
+    background: #f8fafc;
+}
+
+.suggestion-item .s-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.suggestion-item .s-info {
+    font-size: 0.75rem;
+    color: #64748b;
+    text-align: right;
+}
+
+.suggestion-item .s-stock {
+    font-weight: 700;
+    color: #16a34a;
+}
+.suggestion-item .s-stock.out {
+    color: #ef4444;
+}
