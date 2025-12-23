@@ -3836,20 +3836,27 @@ async function handleExpenseLagerSearch(e) {
     const results = await searchLager(term);
 
     if (results.length > 0) {
-        dropdown.innerHTML = results.map(item => `
-            <div class="suggestion-item" onclick="window.selectLagerForExpense('${item.id}', '${item.service_filter || item.name}', ${item.price})">
-                <div>
-                    <div class="s-name">${item.service_filter || '---'}</div>
-                    <div style="font-size:0.7rem; color:#64748b;">${item.name || ''}</div>
-                </div>
-                <div style="text-align:right;">
-                    <div style="font-weight:800; color:#1e293b;">${item.price}:-</div>
-                    <div class="s-stock" style="color:${item.quantity > 0 ? '#16a34a' : '#ef4444'}">
-                        Saldo: ${item.quantity}
-                    </div>
-                </div>
-            </div>
-        `).join('');
+        dropdown.innerHTML = results.map(item => {
+		    // Skapa det kombinerade namnet: "ArtNr - Produktnamn"
+		    const combinedName = `${item.service_filter || '---'} - ${item.name || ''}`;
+		    // Säkerställ att vi hanterar citationstecken för att undvika kodfel
+		    const safeName = combinedName.replace(/'/g, "\\'");
+		
+		    return `
+		        <div class="suggestion-item" onclick="window.selectLagerForExpense('${item.id}', '${safeName}', ${item.price})">
+		            <div>
+		                <div class="s-name">${item.service_filter || '---'}</div>
+		                <div style="font-size:0.7rem; color:#64748b;">${item.name || ''}</div>
+		            </div>
+		            <div style="text-align:right;">
+		                <div style="font-weight:800; color:#1e293b;">${item.price}:-</div>
+		                <div class="s-stock" style="color:${item.quantity > 0 ? '#16a34a' : '#ef4444'}">
+		                    Saldo: ${item.quantity}
+		                </div>
+		            </div>
+		        </div>
+		    `;
+		}).join('');
         dropdown.classList.add('show');
     } else {
         dropdown.classList.remove('show');
