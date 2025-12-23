@@ -1,13 +1,29 @@
-const STATIC_CACHE_NAME = 'jobbplanerare-static-v1.1.0';
-const DYNAMIC_CACHE_NAME = 'jobbplanerare-dynamic-v1.1.0';
+/*
+ * Service Worker för Jobbplanerare v15
+ * Uppgraderad strategi:
+ * 1. STATISK CACHE (App-skal): "Cache First" för lokala filer.
+ * 2. DYNAMISK CACHE (CDN/Fonts): "Stale-While-Revalidate" för externa resurser.
+ * 3. NÄTVERK (API): Ignorerar Firebase/Google API:er för att låta Firestore's offline-stöd fungera.
+ */
 
+// Använder din versionssättning, men uppdelad i två cacher
+const STATIC_CACHE_NAME = 'jobbplanerare-static-v1.0.9';
+const DYNAMIC_CACHE_NAME = 'jobbplanerare-dynamic-v1.0.9';
+
+// 1. App-skalet (Endast dina KÄRN-filer)
+// Dessa filer är kärnan i din app och cachas direkt vid installation.
 const APP_SHELL_FILES = [
-  './',
+  '/', // Viktigt för att kunna starta från roten
   './plan.html',
   './style.css',
   './manifest.json',
-  './images/oljemagasinet-favico.png',
-  './images/appicon.png'
+  // IKONER (från din gamla fil)
+  './images/192x192.png',
+  './images/512x512.png',
+  './images/maskable.png',
+  // Lokal bild från din HTML
+  './images/oljemagasinet-favico.png'
+  // OBS: Vi har tagit bort CDN-länkarna! De hanteras nu automatiskt av FETCH.
 ];
 
 // --- INSTALLATION ---
