@@ -920,6 +920,16 @@ function updateStatsCounts(jobs) {
 
 // 7. EVENT LISTENERS
 function setupEventListeners() {
+
+	// Inuti setupEventListeners:
+	document.getElementById('nyUtgiftNamn')?.addEventListener('input', handleExpenseLagerSearch);
+	
+	// Stäng dropdown om man klickar utanför
+	document.addEventListener('click', (e) => {
+	    if (!e.target.closest('.expense-autocomplete-wrapper')) {
+	        document.getElementById('lagerExpenseSuggestions')?.classList.remove('show');
+	    }
+	});
 	
     /*Statistikvy*/
     const statsBtn = document.getElementById('menuBtnStatistics');
@@ -3807,6 +3817,55 @@ document.addEventListener('click', () => {
     document.getElementById('searchFilterMenu')?.classList.remove('show');
 });
 
-    // Koppla sökfälten till den nya motorn
-    document.getElementById('mobileSearchInput')?.addEventListener('input', (e) => handleSearch(e.target.value.trim(), true));
-    document.getElementById('searchBar')?.addEventListener('input', (e) => handleSearch(e.target.value.trim(), false));
+// Koppla sökfälten till den nya motorn
+document.getElementById('mobileSearchInput')?.addEventListener('input', (e) => handleSearch(e.target.value.trim(), true));
+document.getElementById('searchBar')?.addEventListener('input', (e) => handleSearch(e.target.value.trim(), false));
+
+// --- FUNKTIONER FÖR LAGER-SÖK I UTGIFTER ---
+
+async function handleExpenseLagerSearch(e) {
+    const term = e.target.value.trim();
+    const dropdown = document.getElementById('lagerExpenseSuggestions');
+    
+    if (term.length < 2) {
+        dropdown.classList.remove('show');
+        return;
+    }
+
+    // Återanvänd din befintliga searchLager-funktion
+    const results = await searchLager(term);
+
+    if (results.length > 0) {
+        dropdown.innerHTML = results.map(item => `
+            <div class="suggestion-item" onclick="selectLagerForExpense('${item.id}', '${item.name.replace(/'/g, "\\'")}', ${item.price})">
+                <div class="s-main">
+                    <div class="s-name">${item.service_filter || '---'}</div>
+                    <div style="font-size:0.75rem; color:#64748b;">${item.name || ''}</div>
+                </div>
+                <div class="s-info">
+                    <div style="font-weight:700; color:#1e293b;">${item.price}:-</div>
+                    <div class="s-stock ${item.quantity > 0 ? '' : 'out'}">Saldo: ${item.quantity}</div>
+                </div>
+            </div>
+        `).join('');
+        dropdown.classList.add('show');
+    } else {
+        dropdown.classList.remove('show');
+    }
+}
+
+window.selectLagerForExpense = function(id, name, price) {
+    const nameInput = document.getElementById('nyUtgiftNamn');
+    const priceInput = document.getElementById('nyUtgiftPris');
+    const dropdown = document.getElementById('lagerExpenseSuggestions');
+
+    // Fyll i fälten automatiskt
+    nameInput.value = name;
+    priceInput.value = price;
+
+    // Stäng listan
+    dropdown.classList.remove('show');
+    
+    // Sätt fokus på priset ifall man vill justera det
+    priceInput.focus();
+};
