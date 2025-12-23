@@ -15,9 +15,6 @@ db.enablePersistence()
   });
 const auth = firebase.auth(); // Nu är 'auth' definierad korrekt
 
-window.db = db;
-window.auth = auth;
-
 console.log("Firebase initierad.");
 
 // Globala variabler
