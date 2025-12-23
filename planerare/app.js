@@ -1,14 +1,61 @@
-import { db, auth } from './firebase-config.js'; // Denna körs nu först!
-import { searchLager, adjustPartStock, handleExpenseLagerSearch, selectLagerForExpense, loadInventoryCache } from './inventory.js';
-import { loadCustomersCache, searchCustomersLocal, addCustomerToCache } from './customers.js';
+// Importera kalenderfunktionen
 import { initCalendar, setCalendarTheme } from './calendar.js';
-import { openStatisticsView } from './statistics.js';
+import { openStatisticsView } from './statistics.js'; // Bytte namn på funktionen'
+
+window.openNewJobModal = openNewJobModal;
+window.toggleChatWidget = toggleChatWidget;
+window.openSettingsModal = openSettingsModal;
+window.handleLogout = handleLogout;
+window.closeSettings = closeSettings;
+window.toggleOilForm = toggleOilForm;
+window.saveNewBarrel = saveNewBarrel;
+window.closeVehicleModal = closeVehicleModal;
+window.openVehicleModal = openVehicleModal;
+window.openCustomerByName = openCustomerByName;
+window.toggleCardActions = toggleCardActions;
+window.setStatus = setStatus;
+window.deleteJob = deleteJob;
+window.openBrandSelector = openBrandSelector;
+window.saveTechSpec = saveTechSpec;
+window.filterVehicleHistory = filterVehicleHistory;
+window.openEditModal = openEditModal; 
+// Slut på kalender
+
+// 1. FIREBASE KONFIGURATION
+const firebaseConfig = {
+  apiKey: "AIzaSyDwCQkUl-je3L3kF7EuxRC6Dm6Gw2N0nJw",
+  authDomain: "planerare-f6006.firebaseapp.com",
+  projectId: "planerare-f6006",
+  storageBucket: "planerare-f6006.firebasestorage.app",
+  messagingSenderId: "360462069749",
+  appId: "1:360462069749:web:c754879f3f75d5ef3cbabc",
+  measurementId: "G-L6516XLZ1Y"
+};
+
+// 2. INITIERA FIREBASE DIREKT (Högst upp)
+if (!firebase.apps.find(app => app.name === "[DEFAULT]")) {
+    firebase.initializeApp(firebaseConfig);
+}
+
+// Skapa globala referenser direkt
+const db = firebase.firestore();
+db.enablePersistence()
+  .catch((err) => {
+      if (err.code == 'failed-precondition') {
+          console.log('Offline-läge: Kan bara köras i en flik åt gången.');
+      } else if (err.code == 'unimplemented') {
+          console.log('Webbläsaren stödjer inte offline-läge.');
+      }
+  });
+const auth = firebase.auth(); // Nu är 'auth' definierad korrekt
+
+window.db = db;
+window.auth = auth;
 
 console.log("Firebase initierad.");
 
 // Globala variabler
 let allJobs = []; 
-let activeSearchFilter = 'all'; // Standardvärde: 'all', 'lager' eller 'jobb'
 let currentStatusFilter = 'kommande'; 
 let currentSearchTerm = '';
 let currentExpenses = [];
@@ -77,14 +124,10 @@ auth.onAuthStateChanged((user) => {
         // --- 4. STARTA APPENS FUNKTIONER ---
         startInactivityCheck();
         initRealtimeListener(); 
-		setTimeout(() => loadCustomersCache(allJobs), 2000);
         if (window.initChat) window.initChat();
         
         // NYTT: Starta lyssnaren för lagerstatus (Olja)
         initInventoryListener();
-
-		// LADDA LAGRET I BAKGRUNDEN
-        loadInventoryCache();
         
         // Initiera inställningar (Privacy/Mörkt läge)
         if (typeof initSettings === 'function') {
@@ -257,7 +300,6 @@ function initRealtimeListener() {
             allJobs.push({ id: doc.id, ...doc.data() });
         });
         renderDashboard();
-		loadCustomersCache();
     }, error => {
         console.error("Fel vid hämtning av jobb:", error);
         // Ignorera fel om det beror på att vi precis loggat ut
@@ -296,6 +338,7 @@ window.toggleUnplanned = function() {
 function renderDashboard() {
     updateHeaderDate();
     updateStatsCounts(allJobs);
+    updateCustomerDatalist();
 
     const container = document.getElementById('jobListContainer');
     const isMobile = window.innerWidth <= 768;
@@ -391,24 +434,9 @@ function renderDashboard() {
         });
     } else {
         // --- DESKTOPVY: TABELL ---
-        htmlContent = `
-            <div class="table-container" style="margin-top: 20px;">
-                <table id="jobsTable">
-                    <thead>
-                        <tr>
-                            <th>Status</th>
-                            <th>Datum</th>
-                            <th>Kund</th>
-                            <th>Reg.nr</th>
-                            <th style="text-align:right">Pris</th>
-                            <th class="action-col">Åtgärder</th>
-                        </tr>
-                    </thead>
-                    <tbody>`;
-        
+        htmlContent = `<table id="jobsTable"><thead><tr><th>Status</th><th>Datum</th><th>Kund</th><th>Reg.nr</th><th style="text-align:right">Pris</th><th class="action-col">Åtgärder</th></tr></thead><tbody>`;
         jobsToDisplay.forEach(job => htmlContent += createJobRow(job));
-        
-        htmlContent += `</tbody></table></div>`;
+        htmlContent += `</tbody></table>`;
     }
 
     // Lägg till listan i containern (efter eventuella flikar)
@@ -863,65 +891,47 @@ function updateStatsCounts(jobs) {
 // 7. EVENT LISTENERS
 function setupEventListeners() {
 
-	// --- KUND-SÖK I MODAL (NYTT JOBB / REDIGERA) ---
-	const kundInput = document.getElementById('kundnamn');
-	const kundSuggest = document.getElementById('customerSuggestions');
-	
-	kundInput?.addEventListener('input', (e) => {
-	    const term = e.target.value.trim();
-	    if (term.length < 2) {
-	        kundSuggest.classList.remove('show');
-	        return;
-	    }
-	
-	    const results = searchCustomersLocal(term);
-	
-	    if (results.length > 0) {
-	        kundSuggest.innerHTML = results.map(c => `
-	            <div class="suggestion-item" onclick="selectCustomerForJob('${c.name.replace(/'/g, "\\'")}', '${c.phone || ''}')">
-	                <div class="s-main">
-	                    <div class="s-name">${c.name}</div>
-	                    <div style="font-size:0.7rem; color:#64748b;">${c.phone || 'Inget nummer'}</div>
-	                </div>
-	            </div>
-	        `).join('');
-	        kundSuggest.classList.add('show');
-	    } else {
-	        kundSuggest.classList.remove('show');
-	    }
-	});
-	
-	// Stäng dropdown om man klickar utanför
-	document.addEventListener('click', (e) => {
-	    if (!e.target.closest('.expense-autocomplete-wrapper')) {
-	        kundSuggest?.classList.remove('show');
-	    }
-	});
-	
-	// Hjälpfunktion för att välja kund (Måste vara global)
-	window.selectCustomerForJob = function(name, phone) {
-	    const nameInput = document.getElementById('kundnamn');
-	    if (nameInput) nameInput.value = name;
-	    
-	    // Om du vill lägga till telefonnummer i din modal kan du göra det här
-	    // document.getElementById('kundtelefon').value = phone;
-	
-	    kundSuggest.classList.remove('show');
-	};
+    // Debouncad sökning för utgifter inuti modalen
+    const searchExpenseInventory = debounce(async (term) => {
+        const suggestionsContainer = document.getElementById('expenseSearchSuggestions');
+        if (!suggestionsContainer) return;
 
-	window.selectLagerForExpense = selectLagerForExpense;
-	window.handleExpenseLagerSearch = handleExpenseLagerSearch;
+        if (term.length < 2) {
+            suggestionsContainer.innerHTML = '';
+            suggestionsContainer.style.display = 'none';
+            return;
+        }
 
-	// Inuti setupEventListeners:
-	document.getElementById('nyUtgiftNamn')?.addEventListener('input', handleExpenseLagerSearch);
-	
-	// Stäng dropdown om man klickar utanför
-	document.addEventListener('click', (e) => {
-	    if (!e.target.closest('.expense-autocomplete-wrapper')) {
-	        document.getElementById('lagerExpenseSuggestions')?.classList.remove('show');
-	    }
-	});
-	
+        const results = await window.searchInInventory(term);
+
+        if (results.length > 0) {
+            let html = '<div class="suggestion-header">Träffar i lager</div>';
+            results.forEach(item => {
+                // Vi skickar med alla parametrar inklusive invId (item.id)
+                html += `
+                    <div class="suggestion-item" onclick="addInventoryToExpenseFields('${item.name.replace(/'/g, "\\'")}', ${item.price}, '${item.service_filter || ''}', '${item.id}')">
+                        <div class="suggestion-name">${item.name}</div>
+                        <div class="suggestion-meta">Ref: ${item.service_filter || '-'} • <b>${item.price} kr</b></div>
+                    </div>`;
+            });
+            suggestionsContainer.innerHTML = html;
+            
+            // TVINGA VISNING OCH POSITION
+            suggestionsContainer.style.display = 'block';
+            
+            // Fix för mobil: Se till att vi kan se dropdownen genom att scrolla ner
+            suggestionsContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        } else {
+            suggestionsContainer.innerHTML = '';
+            suggestionsContainer.style.display = 'none';
+        }
+    }, 300);
+
+    // Koppla lyssnaren till namnfältet för utgifter
+    document.getElementById('nyUtgiftNamn')?.addEventListener('input', (e) => {
+        searchExpenseInventory(e.target.value);
+    });
+
     /*Statistikvy*/
     const statsBtn = document.getElementById('menuBtnStatistics');
     if (statsBtn) {
@@ -1363,52 +1373,71 @@ function setupEventListeners() {
             toggleChatWidget();
         });
     }
-	
-	// Ny hjälpfunktion för att rita ut sökresultat på skrivbordet
-	async function renderDashboardWithLager(term, lagerResults) {
-	    const container = document.getElementById('jobListContainer');
-	    
-	    // 1. Filtrera lokala jobb (befintlig logik)
-	    let jobsToDisplay = allJobs.filter(j => !j.deleted && jobMatchesSearch(j, term));
-	    
-	    // 2. Skapa HTML för lager-sektionen om träffar finns
-	    let lagerHtml = '';
-		    if (lagerResults.length > 0) {
-	        lagerHtml = `
-	            <div class="lager-search-section-desktop">
-	                <div class="lager-header-divider">LAGER</div>
-	                <div class="lager-results-grid">
-	                    ${lagerResults.map(item => `
-	                        <div class="lager-result-card-desktop">
-	                            <div class="l-card-main">
-	                                <strong class="l-artnr">${item.service_filter || '---'}</strong>
-	                                <div class="l-name">${item.name || ''}</div>
-	                            </div>
-	                            <div class="l-card-side">
-	                                <div class="l-price">${item.price}:-</div>
-	                                <div style="font-size:0.7rem; color:${item.quantity > 0 ? '#16a34a' : '#ef4444'}">
-	                                    ${item.quantity > 0 ? 'Saldo: ' + item.quantity : 'Slut'}
-	                                </div>
-	                            </div>
-	                        </div>
-	                    `).join('')}
-	                </div>
-	                <div class="lager-header-divider">JOBBLISTA</div>
-	            </div>`;
-	    }
-	
-	    // 3. Rita ut tabellen eller korten (beroende på vy)
-	    const isMobile = window.innerWidth <= 768;
-	    if (!isMobile) {
-	        let tableHtml = `<table id="jobsTable"><thead><tr><th>Status</th><th>Datum</th><th>Kund</th><th>Reg.nr</th><th style="text-align:right">Pris</th><th class="action-col">Åtgärder</th></tr></thead><tbody>`;
-	        jobsToDisplay.forEach(job => tableHtml += createJobRow(job));
-	        tableHtml += `</tbody></table>`;
-	        container.innerHTML = lagerHtml + tableHtml;
-	    } else {
-	        // För mobil återanvänder vi createJobCard
-	        container.innerHTML = lagerHtml + jobsToDisplay.map(job => createJobCard(job)).join('');
-	    }
-	}
+
+    // Sökfältet
+    const performDesktopSearch = debounce(async (searchTerm) => {
+        const container = document.getElementById('jobListContainer');
+        if (!container) return;
+
+        const existingInv = document.getElementById('inventorySearchWrapper');
+        if (existingInv) existingInv.remove();
+
+        if (searchTerm.length >= 2) {
+            const invResults = await window.searchInInventory(searchTerm);
+            
+            if (invResults.length > 0) {
+                const invWrapper = document.createElement('div');
+                invWrapper.id = 'inventorySearchWrapper';
+                
+                let html = `
+                    <div class="inventory-search-header">
+                        <span>LAGERTRÄFFAR</span>
+                        <span class="inv-count-small">${invResults.length} st</span>
+                    </div>
+                    <div class="inventory-grid-compact">`;
+                
+                invResults.forEach(item => {
+                    const iconSvg = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 2l9 4.9V17.1L12 22l-9-4.9V6.9L12 2z"/></svg>`;
+                    const isOutOfStock = (item.quantity || 0) <= 0;
+
+                    html += `
+                        <div class="inv-card-mini ${isOutOfStock ? 'is-empty' : ''}" 
+                            onclick="openNewJobWithPart('${item.name.replace(/'/g, "\\'")}', ${item.price})">
+                            <div class="inv-card-top">
+                                <div class="inv-card-icon">${iconSvg}</div>
+                                <div class="inv-card-price">${item.price}:-</div>
+                            </div>
+                            <div class="inv-card-info">
+                                <div class="inv-card-name">${item.name}</div>
+                                <div class="inv-card-stock">${isOutOfStock ? 'SLUT' : 'Lager: ' + item.quantity}</div>
+                            </div>
+                        </div>`;
+                });
+                
+                html += `</div>`;
+                invWrapper.innerHTML = html;
+                container.prepend(invWrapper);
+            }
+        }
+    }, 300);
+
+    // Hjälpfunktion för att öppna modalen med vald del (Valfritt)
+    window.openNewJobWithPart = function(name, price) {
+        openNewJobModal();
+        setTimeout(() => {
+            document.getElementById('nyUtgiftNamn').value = name;
+            document.getElementById('nyUtgiftPris').value = price;
+            // Klicka på lägg till-knappen automatiskt
+            document.getElementById('btnAddExpense').click();
+        }, 200);
+    };
+
+    // Uppdatera själva event-lyssnaren
+    document.getElementById('searchBar').addEventListener('input', (e) => {
+        currentSearchTerm = e.target.value;
+        renderDashboard(); // Rendera jobb direkt för snabb respons
+        performDesktopSearch(currentSearchTerm); // Debounca lagersökningen
+    });
 
     // Modal: Nytt Jobb (FAB)
     document.getElementById('fabAddJob').addEventListener('click', () => {
@@ -1490,7 +1519,7 @@ function setupEventListeners() {
 async function handleCalendarDrop(jobId, newDateStr, revertFunc) {
     // 1. Visuell feedback (Toast)
     // Om du har en showToast-funktion, använd den. Annars console.log
-    //console.log(`Flyttar jobb ${jobId} till ${newDateStr}`);
+    console.log(`Flyttar jobb ${jobId} till ${newDateStr}`);
 
     try {
         // 2. Uppdatera Firebase
@@ -1724,8 +1753,6 @@ async function handleSaveJob(e) {
         deleted: false
     };
 
-	addCustomerToCache({ name: kund });
-
     try {
         if (jobId && jobId.trim() !== "") {
             // --- REDIGERA BEFINTLIGT JOBB ---
@@ -1754,6 +1781,21 @@ async function handleSaveJob(e) {
             
             jobData.created = new Date().toISOString();
             await db.collection("jobs").add(jobData);
+
+            if (currentExpenses && currentExpenses.length > 0) {
+                currentExpenses.forEach(async (expense) => {
+                    if (expense.inventoryId) {
+                        console.log("Drar av 1 st från lager för:", expense.namn);
+                        
+                        // Vi använder invDb (från inventory-search.js) för att nå lagret
+                        const itemRef = invDb.collection("lager").doc(expense.inventoryId);
+                        
+                        await itemRef.update({
+                            quantity: firebase.firestore.FieldValue.increment(-1)
+                        });
+                    }
+                });
+            }
             
             // Dra av hela mängden olja eftersom det är nytt
             if (newOilAmount > 0) {
@@ -1801,7 +1843,7 @@ async function deductOilFromInventory(expenses) {
     });
 
     if (totalOilToDeduct > 0) {
-        //console.log(`Drar av ${totalOilToDeduct} liter från lagret...`);
+        console.log(`Drar av ${totalOilToDeduct} liter från lagret...`);
         
         const inventoryRef = db.collection('settings').doc('inventory');
         
@@ -1845,7 +1887,7 @@ async function deleteJob(id) {
                 // 4. Lägg tillbaka oljan i lagret
                 if (oilToRefund > 0) {
                     await adjustInventoryBalance(-oilToRefund);
-                    //console.log(`Återförde ${oilToRefund} liter till lagret.`);
+                    console.log(`Återförde ${oilToRefund} liter till lagret.`);
                 }
             }
         } catch (err) { 
@@ -1887,31 +1929,19 @@ function renderExpenses() {
 
     // Loopa igenom utgifter och skapa HTML
     currentExpenses.forEach((item, index) => {
-	    totalUtgifter += item.kostnad;
-	    
-	    // Vi försöker dela upp "ArtNr - Namn" om bindestreck finns
-	    const parts = item.namn.split(' - ');
-	    const displayHtml = parts.length > 1 
-	        ? `<div class="exp-text-wrapper">
-	             <strong class="exp-artnr">${parts[0]}</strong>
-	             <span class="exp-name">${parts[1]}</span>
-	           </div>`
-	        : `<span class="exp-name">${item.namn}</span>`;
-	
-	    const div = document.createElement('div');
-	    div.className = 'expense-item';
-	    // Title-attributet ger en inbyggd tooltip på dator när man vilar musen över
-	    div.setAttribute('title', item.namn); 
-	    
-	    div.innerHTML = `
-	        ${displayHtml}
-	        <div style="display:flex; gap:10px; align-items:center; flex-shrink:0;">
-	            <strong class="exp-price">-${item.kostnad} kr</strong>
-	            <button type="button" class="btn-remove-expense" onclick="removeExpense(${index})">&times;</button>
-	        </div>
-	    `;
-	    listContainer.appendChild(div);
-	});
+        totalUtgifter += item.kostnad;
+        
+        const div = document.createElement('div');
+        div.className = 'expense-item';
+        div.innerHTML = `
+            <span>${item.namn}</span>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <strong>-${item.kostnad} kr</strong>
+                <button type="button" class="btn-remove-expense" onclick="removeExpense(${index})">&times;</button>
+            </div>
+        `;
+        listContainer.appendChild(div);
+    });
 
     // Räkna ut vinst
     const kundpris = parseInt(document.getElementById('kundpris').value) || 0;
@@ -2385,20 +2415,48 @@ document.getElementById('closeMobileSearchBtn')?.addEventListener('click', () =>
     document.getElementById('mobileHomeBtn').classList.add('active');
 });
 
-// Live-sökning när man skriver
-document.getElementById('mobileSearchInput')?.addEventListener('input', async (e) => {
-    const term = e.target.value.trim(); 
+// Skapa en debouncad sökfunktion för Mobil
+const performMobileSearch = debounce(async (term) => {
+    const resultsContainer = document.getElementById('mobileSearchResults');
+    if (!resultsContainer || term.length <= 2) return;
+
+    const invResults = await window.searchInInventory(term);
+
+    // Säkerställ att vi inte skriver över nyare sökningar
+    if (document.getElementById('mobileSearchInput').value !== term) return;
+
+    if (invResults.length > 0) {
+        // Ta bort gamla träffar specifikt
+        const oldInv = document.getElementById('mobileInventoryResults');
+        if (oldInv) oldInv.remove();
+
+        let invHtml = `<div id="mobileInventoryResults">
+            <div style="background: #fffbeb; padding: 10px 16px; border-left: 4px solid #f59e0b; font-weight: 700; font-size: 0.75rem; color: #b45309; margin: 10px 0;">LAGERTRÄFFAR</div>`;
+        
+        invResults.forEach(item => {
+            invHtml += window.createInventoryResultHTML(item);
+        });
+        invHtml += `</div>`;
+        
+        resultsContainer.insertAdjacentHTML('afterbegin', invHtml);
+    }
+}, 300);
+
+// Mobil-lyssnaren
+document.getElementById('mobileSearchInput')?.addEventListener('input', (e) => {
+    const term = e.target.value;
+    const resultsContainer = document.getElementById('mobileSearchResults');
     
     if (term.length === 0) {
         renderSearchZeroState();
-        if(document.getElementById('mobileSearchFilterBar')) {
-            document.getElementById('mobileSearchFilterBar').style.display = 'none';
-        }
         return;
     }
-    
-    // Kör den kombinerade sökningen
-    await performCombinedSearch(term);
+
+    // Rendera jobb direkt
+    const filteredJobs = allJobs.filter(job => !job.deleted && jobMatchesSearch(job, term));
+    resultsContainer.innerHTML = filteredJobs.map(job => createJobCard(job)).join('');
+
+    performMobileSearch(term);
 });
 
 function startInactivityCheck() {
@@ -2431,7 +2489,7 @@ function checkTime() {
 
     // Om skillnaden är större än gränsen (30 min)
     if (timeDiff > INACTIVITY_LIMIT_MS) {
-	    //console.log("Tiden ute. Loggar ut...");
+	    console.log("Tiden ute. Loggar ut...");
 	    
 	    localStorage.removeItem('lastActivity');
 	    
@@ -2564,7 +2622,7 @@ function initSettings() {
     const pToggle = document.getElementById('privacyToggle');
     
     // Debug: Se om vi hittar elementet
-    //console.log("Init Settings. Found toggle:", pToggle);
+    console.log("Init Settings. Found toggle:", pToggle);
 
     if(pToggle) {
         // Sätt visuellt läge
@@ -2572,7 +2630,7 @@ function initSettings() {
         
         // Lyssna på ÄNDRINGAR i checkboxen
         pToggle.addEventListener('change', (e) => {
-            //console.log("Privacy changed to:", e.target.checked);
+            console.log("Privacy changed to:", e.target.checked);
             setPrivacyMode(e.target.checked);
         });
     }
@@ -2791,7 +2849,7 @@ async function adjustInventoryBalance(litersToDeduct) {
         await inventoryRef.update({
             motorOil: firebase.firestore.FieldValue.increment(-litersToDeduct)
         });
-        //console.log(`Lager justerat med: ${-litersToDeduct} liter.`);
+        console.log(`Lager justerat med: ${-litersToDeduct} liter.`);
     } catch (err) {
         console.error("Kunde inte justera lagret:", err);
     }
@@ -3153,6 +3211,26 @@ function openCustomerByName(name) {
     }
 }
 
+// 2. Uppdatera listan med förslag (Autocomplete)
+function updateCustomerDatalist() {
+    const dataList = document.getElementById('customerListOptions');
+    if (!dataList) return;
+
+    dataList.innerHTML = '';
+    
+    // Hämta unika namn från alla jobb
+    const uniqueNames = [...new Set(allJobs.map(j => j.kundnamn ? j.kundnamn.trim().toUpperCase() : ""))];
+    
+    // Sortera och skapa options
+    uniqueNames.sort().forEach(name => {
+        if(name.length > 1) { // Skippa tomma/korta
+            const option = document.createElement('option');
+            option.value = name;
+            dataList.appendChild(option);
+        }
+    });
+}
+
 // Funktion för att tvinga uppdatering (Hard Reload)
 async function forceUpdateApp() {
     if (!confirm("Detta kommer att starta om appen och hämta den senaste versionen. Vill du fortsätta?")) {
@@ -3297,7 +3375,7 @@ function applyZoom(value) {
 // VIKTIGT: Vi definierar den direkt på window. 
 // Då behöver du INTE ha någon rad i toppen av filen.
 window.openViewModal = function(jobId) {
-    //console.log("Öppnar vy för jobb ID:", jobId);
+    console.log("Öppnar vy för jobb ID:", jobId);
 
     // 1. Hitta jobbet
     const job = allJobs.find(j => j.id === jobId);
@@ -3520,260 +3598,50 @@ window.clearSearchHistory = function() {
     renderSearchZeroState(); // Rita om direkt
 };
 
-// Koppla klick-event till filterknapparna
-document.getElementById('searchFilterBar')?.addEventListener('click', (e) => {
-    if (e.target.classList.contains('filter-pill')) {
-        // Uppdatera aktiv knapp
-        document.querySelectorAll('.filter-pill').forEach(btn => btn.classList.remove('active'));
-        e.target.classList.add('active');
+// Hjälpfunktion för att vänta på att användaren skrivit klart
+function debounce(func, timeout = 300) {
+    let timer;
+    return (...args) => {
+        clearTimeout(timer);
+        timer = setTimeout(() => { func.apply(this, args); }, timeout);
+    };
+}
+
+let pendingInventoryId = null; // Håller koll på om nästa utgift är från lagret
+
+window.addInventoryToExpenseFields = function(name, price, artNr, invId) {
+    document.getElementById('nyUtgiftNamn').value = name + (artNr ? ` (${artNr})` : "");
+    document.getElementById('nyUtgiftPris').value = price;
+    
+    // Spara ID:t tillfälligt
+    pendingInventoryId = invId; 
+
+    const suggestions = document.getElementById('expenseSearchSuggestions');
+    suggestions.style.display = 'none';
+};
+
+// Uppdatera knappen "Lägg till utgift" i setupEventListeners
+document.getElementById('btnAddExpense').addEventListener('click', () => {
+    const namn = document.getElementById('nyUtgiftNamn').value;
+    const pris = parseInt(document.getElementById('nyUtgiftPris').value);
+
+    if (namn && pris > 0) {
+        // Lägg till objektet i listan med ID om det finns
+        currentExpenses.push({ 
+            namn: namn, 
+            kostnad: pris, 
+            inventoryId: pendingInventoryId // Koppla lager-ID
+        });
         
-        activeSearchFilter = e.target.dataset.filter;
-        
-        // Kör sök-renderaren igen med det nya filtret
-        const term = document.getElementById('mobileSearchInput').value;
-        if (term) performCombinedSearch(term);
+        pendingInventoryId = null; // Nollställ efter tillägg
+        renderExpenses();
     }
 });
 
-// Uppdatera din befintliga sök-funktion
-async function performCombinedSearch(term) {
-    const isMobile = window.innerWidth <= 768;
-    const resultsContainer = isMobile ? 
-        document.getElementById('mobileSearchResults') : 
-        document.getElementById('jobListContainer');
-    
-    // Hämta data från båda källorna
-    const filteredJobs = allJobs.filter(job => !job.deleted && jobMatchesSearch(job, term));
-    const lagerResults = await searchLager(term);
-
-    let finalHtml = '';
-
-    // 1. Rendera alltid Lager om träffar finns
-    if (lagerResults.length > 0) {
-        finalHtml += `
-            <div class="search-section-header">LAGERARTIKLAR (${lagerResults.length})</div>
-            <div class="lager-results-grid">
-                ${lagerResults.map(item => createLagerMiniCard(item)).join('')}
-            </div>
-        `;
+// Säkerställ att förslagen döljs om man klickar utanför
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('.search-suggestions-dropdown') && !e.target.closest('#nyUtgiftNamn')) {
+        const suggestions = document.getElementById('expenseSearchSuggestions');
+        if (suggestions) suggestions.style.display = 'none';
     }
-
-    // 2. Rendera alltid Jobb om träffar finns
-    if (filteredJobs.length > 0) {
-        finalHtml += `<div class="search-section-header">BOKADE JOBB (${filteredJobs.length})</div>`;
-        
-        if (!isMobile) {
-            // Skapa tabellen för datorvyn
-            finalHtml += `
-                <table id="jobsTable">
-                    <thead>
-                        <tr>
-                            <th>Status</th><th>Datum</th><th>Kund</th><th>Reg.nr</th><th style="text-align:right">Pris</th><th class="action-col">Åtgärder</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${filteredJobs.map(job => createJobRow(job)).join('')}
-                    </tbody>
-                </table>`;
-        } else {
-            // Skapa korten för mobilvyn
-            finalHtml += filteredJobs.map(job => createJobCard(job)).join('');
-        }
-    }
-
-    resultsContainer.innerHTML = finalHtml || '<p class="search-no-results">Inga träffar hittades.</p>';
-}
-
-function createLagerMiniCard(item) {
-    return `
-        <div class="lager-mini-card">
-            <div class="l-main">
-                <span class="l-artnr">${item.service_filter || '---'}</span>
-                <span class="l-name">${item.name || ''}</span>
-            </div>
-            <div class="l-side">
-                <span class="l-price">${item.price}:-</span>
-                <span class="l-qty ${item.quantity > 0 ? 'in' : 'out'}">${item.quantity} st</span>
-            </div>
-        </div>
-    `;
-}
-
-window.toggleFilterMenu = function() {
-    const menu = document.getElementById('searchFilterMenu');
-    menu.classList.toggle('show');
-};
-
-window.setSearchFilter = function(filter) {
-    activeSearchFilter = filter;
-    
-    // Uppdatera UI på alternativen
-    document.querySelectorAll('.filter-option').forEach(opt => {
-        opt.classList.remove('active');
-        if(opt.dataset.filter === filter) opt.classList.add('active');
-    });
-    
-    // Stäng menyn
-    document.getElementById('searchFilterMenu').classList.remove('show');
-    
-    // Kör sökningen igen med det nya filtret
-    const term = document.getElementById('searchBar').value || document.getElementById('mobileSearchInput').value;
-    const isMobile = window.innerWidth <= 768;
-    handleSearch(term.trim(), isMobile);
-};
-
-// ==========================================
-    // NY & STÄDAD SÖKMOTOR (Lager + Jobb)
-    // ==========================================
-    async function handleSearch(term, isMobile) {
-    const resultsContainer = isMobile ? 
-        document.getElementById('mobileSearchResults') : 
-        document.getElementById('jobListContainer');
-
-    if (!term) {
-        if (isMobile) renderSearchZeroState();
-        else renderDashboard();
-        return;
-    }
-
-    const searchTerm = term.toLowerCase();
-    const filteredJobs = allJobs.filter(job => !job.deleted && jobMatchesSearch(job, searchTerm));
-    const lagerResults = await searchLager(searchTerm);
-
-    const showLager = activeSearchFilter === 'all' || activeSearchFilter === 'lager';
-    const showJobs = activeSearchFilter === 'all' || activeSearchFilter === 'jobb';
-
-    let html = '';
-
-    // --- 1. LAGER-BOX ---
-    if (showLager && lagerResults.length > 0) {
-        html += `
-            <div class="search-result-section-card">
-                <div class="search-filter-wrapper">
-                    <button class="filter-toggle-btn" onclick="toggleFilterMenu(event)">
-                        <span class="material-icons">filter_list</span>
-                    </button>
-                    <div class="filter-dropdown" id="searchFilterMenu">
-                        <div class="filter-option ${activeSearchFilter === 'all' ? 'active' : ''}" onclick="setSearchFilter('all')">
-                            <span class="material-icons">select_all</span> Alla
-                        </div>
-                        <div class="filter-option ${activeSearchFilter === 'lager' ? 'active' : ''}" onclick="setSearchFilter('lager')">
-                            <span class="material-icons" style="color:#ea580c;">inventory_2</span> Lager
-                        </div>
-                        <div class="filter-option ${activeSearchFilter === 'jobb' ? 'active' : ''}" onclick="setSearchFilter('jobb')">
-                            <span class="material-icons" style="color:#2563eb;">assignment</span> Jobb
-                        </div>
-                    </div>
-                </div>
-
-                <div class="search-section-divider lager-header">
-                    <span class="material-icons">inventory_2</span>
-                    <span class="header-text">Lagerartiklar</span>
-                    <span class="header-count">${lagerResults.length}</span>
-                </div>
-                <div class="lager-results-grid" style="padding-left: 0 !important; padding-right: 0 !important;">
-                    ${lagerResults.map(item => `
-                        <div class="lager-result-card-desktop">
-                            <div class="l-card-main">
-                                <span class="l-badge">LAGER</span>
-                                <div class="l-info">
-                                    <strong class="l-artnr">${item.service_filter || '---'}</strong>
-                                    <div class="l-name">${item.name || ''}</div>
-                                </div>
-                            </div>
-                            <div class="l-card-side">
-                                <div class="l-price">${item.price}:-</div>
-                                <div class="l-stock ${item.quantity > 0 ? 'in' : 'out'}">
-                                    ${item.quantity > 0 ? 'Saldo: ' + item.quantity : 'Slut'}
-                                </div>
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            </div>`;
-    }
-
-    // --- 2. JOBB-BOX ---
-    if (showJobs && filteredJobs.length > 0) {
-        html += `
-            <div class="search-result-section-card">
-                <div class="search-section-divider jobb-header">
-                    <span class="material-icons">assignment</span>
-                    <span class="header-text">Bokade Jobb</span>
-                    <span class="header-count">${filteredJobs.length}</span>
-                </div>`;
-        
-        if (!isMobile) {
-            // Vi lägger till div class="table-container" här för att få tillbaka linjerna
-            html += `
-                <div class="table-container" style="margin-top: 15px; box-shadow: none; border: 1px solid var(--border-color);">
-                    <table id="jobsTable">
-                        <thead>
-                            <tr>
-                                <th>Status</th><th>Datum</th><th>Kund</th><th>Reg.nr</th><th style="text-align:right">Pris</th><th class="action-col">Åtgärder</th>
-                            </tr>
-                        </thead>
-                        <tbody>${filteredJobs.map(job => createJobRow(job)).join('')}</tbody>
-                    </table>
-                </div>`;
-        } else {
-            html += filteredJobs.map(job => createJobCard(job)).join('');
-        }
-        html += `</div>`;
-    }
-
-    resultsContainer.innerHTML = html || `<div style="text-align:center; padding:40px; color:#94a3b8;">Inga träffar hittades.</div>`;
-}
-
-// Hjälpfunktioner för filtret
-window.toggleFilterMenu = function(e) {
-    if(e) e.stopPropagation();
-    const menu = document.getElementById('searchFilterMenu');
-    menu.classList.toggle('show');
-};
-
-window.setSearchFilter = function(filter) {
-    activeSearchFilter = filter;
-    const term = document.getElementById('searchBar').value || document.getElementById('mobileSearchInput').value;
-    const isMobile = window.innerWidth <= 768;
-    handleSearch(term.trim(), isMobile);
-};
-
-// Stäng menyn om man klickar utanför
-document.addEventListener('click', () => {
-    document.getElementById('searchFilterMenu')?.classList.remove('show');
 });
-
-// Koppla sökfälten till den nya motorn
-document.getElementById('mobileSearchInput')?.addEventListener('input', (e) => handleSearch(e.target.value.trim(), true));
-document.getElementById('searchBar')?.addEventListener('input', (e) => handleSearch(e.target.value.trim(), false));
-
-// 3. Koppla lyssnaren (Se till att denna körs i setupEventListeners)
-document.getElementById('nyUtgiftNamn')?.addEventListener('input', handleExpenseLagerSearch);
-
-window.openNewJobModal = openNewJobModal;
-window.toggleChatWidget = toggleChatWidget;
-window.openSettingsModal = openSettingsModal;
-window.handleLogout = handleLogout;
-window.closeSettings = closeSettings;
-window.toggleOilForm = toggleOilForm;
-window.saveNewBarrel = saveNewBarrel;
-window.closeVehicleModal = closeVehicleModal;
-window.openVehicleModal = openVehicleModal;
-window.openCustomerByName = openCustomerByName;
-window.toggleCardActions = toggleCardActions;
-window.setStatus = setStatus;
-window.deleteJob = deleteJob;
-window.openBrandSelector = openBrandSelector;
-window.saveTechSpec = saveTechSpec;
-window.filterVehicleHistory = filterVehicleHistory;
-window.openEditModal = openEditModal; 
-
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        // Vi lägger till ?v=4 för att tvinga webbläsaren att läsa in den nya sw.js
-        navigator.serviceWorker.register('./sw.js?v=4')
-            .then(reg => console.log('SW registrerad!', reg.scope))
-            .catch(err => console.error('SW misslyckades:', err));
-    });
-}
