@@ -1,32 +1,31 @@
 {
   "name": "Översikt Pro",
   "short_name": "Översikt",
-  "start_url": "./plan.html",
+  "start_url": "./plan.html?v=2",
   "scope": "./",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#3b82f6",
   "icons": [
-        {
-            "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAMAAABlApw1AAAAXVBMVEUiIiL///8iIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiKxWf8kAAAAHnRSTlMABxc2RVpne4efn6WnrrfF1tjj5e3x9ff5+vv8/f60hW4cAAAC9UlEQVR42u3d63KrMBCE4XGCk3Ca9P7v2GBSglDBVp8ylbX2j46iY30zI0F18/l8K/K3Vq7Xq0i5e614v5bXy1l676/1+3u3/u16G5+X8m18W59X023+Xn3bXW3769X09Hh7vN7t8+r58b7/c7X/fF1NLw9X+82+vj7e74d7/b2abg/X+9VeHw8P+7/7+no1Xb/79dG3/2x3x/t7Nd3fX93r+1+/8P73N99qurs7u3d9d/33P117/+uV32q6uTvb99v1x0/X/k8t396r6er6at/f7/9+uvbvP97eq+nyat9f15//dO3f174/q+ny+mrfr29/P137+8rfV9Pl3b1/3v137e9r//38+2q6vN33v93u393+119u1XR+X/+4P//t3h+/W9P59dGf13//797//G2/pvPj1R//u/bHv7t3xX/n9Gq6PN2P/9z77+l/399X09m9f/85+u/X438v93f9mk4H/+XyL5d/ufzL5V8u/3L5l8u/XP7l8i+Xf7n8y+VfLv9y+ZfLv1z+5fIvl3+5/MvlXy7/cvmXy79c/uXyL5d/ufzL5V8u/3L5l8u/XP7l8i+Xf7n8y+VfLv9y+ZfLv1z+5fIvl3+5/MvlXy7/cvmXy79c/uXyL5d/ufzL5V8u/3L5l8u/XP7l8i+Xf7n8y+VfLv9y+ZfLv1z+5fIvl3+5/MvlXy7/cvmXy79c/uXyL5d/ufzL5V8u/3L5l8u/XP7l8i+Xf7n8y+VfLv9y+ZfLv1z+5fIvl3+5/MvlXy7/cvmXy79c/uXyL5d/ufzL5V8u/3L5l8u/XP7l8i+Xf7n8y+VfLv9y+ZfLv1z+5fIvl3+5/MvlXy7/cvmXy79c/uXyL5d/ufzL5V8u/3L5l8u/XP7l8i+Xf7n8y+VfLv9y+ZfLv1z+5fIvl3+5/MvlXy7/cvmXy79c/uXyL5d/ufzL5V8u/3L5l8u/XP7l8i+Xf7n8y+VfLv9y+ZfLv1z+5fIvl3+5/MvlXy7/cvmXy79c/uXyL5d/ufzL5V8u/3L5l8u/XP7l8i+Xf7n8y+VfLv9y+ZfLv1z+5fIvl3+5/MvlXy7/cn29/r7/r9b3f/98z+X/B61WvV6uIqX/d/0P4g5qG0j21kAAAAAASUVORK5CYII=",
-            "sizes": "192x192",
-            "type": "image/png"
-        },
-    ],
+    {
+      "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAMAAABlApw1AAAAXVBMVEUiIiL///8iIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiKxWf8kAAAAHnRSTlMABxc2RVpne4efn6WnrrfF1tjj5e3x9ff5+vv8/f60hW4cAAAC9UlEQVR42u3d63KrMBCE4XGCk3Ca9P7v2GBSglDBVp8ylbX2j46iY30zI0F18/l8K/K3Vq7Xq0i5e614v5bXy1l676/1+3u3/u16G5+X8m18W59X023+Xn3bXW3769X09Hh7vN7t8+r58b7/c7X/fF1NLw9X+82+vj7e74d7/b2abg/X+9VeHw8P+7/7+no1Xb/79dG3/2x3x/t7Nd3fX93r+1+/8P73N99qurs7u3d9d/33P117/+uV32q6uTvb99v1x0/X/k8t396r6er6at/f7/9+uvbvP97eq+nyat9f15//dO3f174/q+ny+mrfr29/P137+8rfV9Pl3b1/3v137e9r//38+2q6vN33v93u393+119u1XR+X/+4P//t3h+/W9P59dGf13//797//G2/pvPj1R//u/bHv7t3xX/n9Gq6PN2P/9z77+l/399X09m9f/85+u/X438v93f9mk4H/+XyL5d/ufzL5V8u/3L5l8u/XP7l8i+Xf7n8y+VfLv9y+ZfLv1z+5fIvl3+5/MvlXy7/cvmXy79c/uXyL5d/ufzL5V8u/3L5l8u/XP7l8i+Xf7n8y+VfLv9y+ZfLv1z+5fIvl3+5/MvlXy7/cvmXy79c/uXyL5d/ufzL5V8u/3L5l8u/XP7l8i+Xf7n8y+VfLv9y+ZfLv1z+5fIvl3+5/MvlXy7/cvmXy79c/uXyL5d/ufzL5V8u/3L5l8u/XP7l8i+Xf7n8y+VfLv9y+ZfLv1z+5fIvl3+5/MvlXy7/cvmXy79c/uXyL5d/ufzL5V8u/3L5l8u/XP7l8i+Xf7n8y+VfLv9y+ZfLv1z+5fIvl3+5/MvlXy7/cvmXy79c/uXyL5d/ufzL5V8u/3L5l8u/XP7l8i+Xf7n8y+VfLv9y+ZfLv1z+5fIvl3+5/MvlXy7/cvmXy79c/uXyL5d/ufzL5V8u/3L5l8u/XP7l8i+Xf7n8y+VfLv9y+ZfLv1z+5fIvl3+5/MvlXy7/cvmXy79c/uXyL5d/ufzL5V8u/3L5l8u/XP7l8i+Xf7n8y+VfLv9y+ZfLv1z+5fIvl3+5/MvlXy7/cvmXy79c/uXyL5d/ufzL5V8u/3L5l8u/XP7l8i+Xf7n8y+VfLv9y+ZfLv1z+5fIvl3+5/MvlXy7/cvmXy79c/uXyL5d/ufzL5V8u/3L5l8u/XP7l8i+Xf7n8y+VfLv9y+ZfLv1z+5fIvl3+5/MvlXy7/cn29/r7/r9b3f/98z+X/B61WvV6uIqX/d/0P4g5qG0j21kAAAAAASUVORK5CYII=",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAMAAABlApw1AAAAXVBMVEUiIiL///8iIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiKxWf8kAAAAHnRSTlMABxc2RVpne4efn6WnrrfF1tjj5e3x9ff5+vv8/f60hW4cAAAC9UlEQVR42u3d63KrMBCE4XGCk3Ca9P7v2GBSglDBVp8ylbX2j46iY30zI0F18/l8K/K3Vq7Xq0i5e614v5bXy1l676/1+3u3/u16G5+X8m18W59X023+Xn3bXW3769X09Hh7vN7t8+r58b7/c7X/fF1NLw9X+82+vj7e74d7/b2abg/X+9VeHw8P+7/7+no1Xb/79dG3/2x3x/t7Nd3fX93r+1+/8P73N99qurs7u3d9d/33P117/+uV32q6uTvb99v1x0/X/k8t396r6er6at/f7/9+uvbvP97eq+nyat9f15//dO3f174/q+ny+mrfr29/P137+8rfV9Pl3b1/3v137e9r//38+2q6vN33v93u393+119u1XR+X/+4P//t3h+/W9P59dGf13//797//G2/pv5j1R//u/bHv7t3xX/n9Gq6PN2P/9z77+l/399X09m9f/85+u/X438v93f9mk4H/+XyL5d/ufzL5V8u/3L5l8u/XP7l8i+Xf7n8y+VfLv9y+ZfLv1z+5fIvl3+5/MvlXy7/cvmXy79c/uXyL5d/ufzL5V8u/3L5l8u/XP7l8i+Xf7n8y+VfLv9y+ZfLv1z+5fIvl3+5/MvlXy7/cvmXy79c/uXyL5d/ufzL5V8u/3L5l8u/XP7l8i+Xf7n8y+VfLv9y+ZfLv1z+5fIvl3+5/MvlXy7/cvmXy79c/uXyL5d/ufzL5V8u/3L5l8u/XP7l8i+Xf7n8y+VfLv9y+ZfLv1z+5fIvl3+5/MvlXy7/cvmXy79c/uXyL5d/ufzL5V8u/3L5l8u/XP7l8i+Xf7n8y+VfLv9y+ZfLv1z+5fIvl3+5/MvlXy7/cvmXy79c/uXyL5d/ufzL5V8u/3L5l8u/XP7l8i+Xf7n8y+VfLv9y+ZfLv1z+5fIvl3+5/MvlXy7/cvmXy79c/uXyL5d/ufzL5V8u/3L5l8u/XP7l8i+Xf7n8y+VfLv9y+ZfLv1z+5fIvl3+5/MvlXy7/cvmXy79c/uXyL5d/ufzL5V8u/3L5l8u/XP7l8i+Xf7n8y+VfLv9y+ZfLv1z+5fIvl3+5/MvlXy7/cvmXy79c/uXyL5d/ufzL5V8u/3L5l8u/XP7l8i+Xf7n8y+VfLv9y+ZfLv1z+5fIvl3+5/MvlXy7/cvmXy79c/uXyL5d/ufzL5V8u/3L5l8u/XP7l8i+Xf7n8y+VfLv9y+ZfLv1z+5fIvl3+5/MvlXy7/cn29/r7/r9b3f/98z+X/B61WvV6uIqX/d/0P4g5qG0j21kAAAAAASUVORK5CYII=",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
   "shortcuts": [
     {
       "name": "Lägg till nytt jobb",
       "short_name": "Nytt jobb",
-      "description": "Öppnar fönstret för att skapa ett nytt jobb",
-      "url": "/plan.html#jobModal",
-      "icons": [{ "src": "images/icon-plus.png", "sizes": "96x96" }]
-    },
-    {
-      "name": "Visa kalender",
-      "short_name": "Kalender",
-      "description": "Öppnar kalendervyn",
-      "url": "/plan.html#calendar",
-      "icons": [{ "src": "images/icon-calendar.png", "sizes": "96x96" }]
+      "url": "./plan.html#jobModal",
+      "icons": [{ "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAAACXBIWXMAAAsTAAALEwEAmpwYAAAByklEQVR4nO2YwY3CMBAF90MVaIAnpAJ0ABVoAArQACqghvXmYIdIsmNjO7F37f8kJ6DBeH6O7SRLAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAL6G67rLz+m+6X2vY1n6E66u69p7S+/X0p+AtE9+2pP79L6W9S87vW9/9XkG9On9pfcP6X0v679p9V5S63v7M+A90T7fU/1Y+hPwn7vC29KfgP/6XNZn6U+AX8A/v8AbfCrrX/X5F+AX8A8v8Aov8Nivv6T1WPr+pC28N70fS98fK77Aiz0X8Aov8GIPAn6i+AKv9lyA06/C29KfgLRPAn6ieALv9mTA6Vfhbemv7An8SvkEPvI7YOfv7On7k7bwvun9WPr+rPgCr/ZcwC6+wKs9F/ALL/Bqz4Vv8RfwSvoEPvI7YOfv7On7k7bwvun9WPr+rPgCr/ZcwC6+wKs9F/ALL/Bqz4Vv8RfwSvoEPvI7YOfv7On7k7bwvun9WPr+rPgCr/ZcwC6+wKs9F/ALL/Bqz4Vv8RfwSvoEPvI7YOfv7On7k7bwvun9WPr+rPgCr/ZcwC6+wKs9F/ALL/Bqz4Vv8RfwSvoEPvI7YOfv7On7k7bwvun9WPr+rPgCr/ZcwC6+wKs9F/ALL/Bqz4X+AAAAAL7ID7Uf3I+L+vXvAAAAAElFTkSuQmCC", "sizes": "96x96" }]
     }
   ]
 }
