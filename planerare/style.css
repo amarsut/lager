@@ -929,13 +929,17 @@ TEST TEST TEST
     box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
 }
 
-/* Justering för tabellen inuti sök-korten */
-.search-result-section-card .table-container {
-    background: transparent !important; /* Använd kortets bakgrund */
-    border-radius: 8px;
+.table-container {
+    background: white !important;
+    border: 1px solid var(--border-color) !important; /* Denna ger de yttre linjerna */
+    border-radius: 12px !important; /* Matchar dina sökboxar */
     overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    margin-bottom: 20px;
 }
 
-.search-result-section-card table {
-    margin-bottom: 0; /* Ta bort extra marginal i botten */
+/* Fix för att undvika dubbla ramar i sökresultatens vita boxar */
+.search-result-section-card .table-container {
+    box-shadow: none !important;
+    margin-top: 15px !important;
 }
