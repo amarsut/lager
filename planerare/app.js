@@ -3752,15 +3752,18 @@ window.setSearchFilter = function(filter) {
                 </div>`;
         
         if (!isMobile) {
+            // Vi lägger till div class="table-container" här för att få tillbaka linjerna
             html += `
-                <table id="jobsTable">
-                    <thead>
-                        <tr>
-                            <th>Status</th><th>Datum</th><th>Kund</th><th>Reg.nr</th><th style="text-align:right">Pris</th><th class="action-col">Åtgärder</th>
-                        </tr>
-                    </thead>
-                    <tbody>${filteredJobs.map(job => createJobRow(job)).join('')}</tbody>
-                </table>`;
+                <div class="table-container" style="margin-top: 15px; box-shadow: none; border: 1px solid var(--border-color);">
+                    <table id="jobsTable">
+                        <thead>
+                            <tr>
+                                <th>Status</th><th>Datum</th><th>Kund</th><th>Reg.nr</th><th style="text-align:right">Pris</th><th class="action-col">Åtgärder</th>
+                            </tr>
+                        </thead>
+                        <tbody>${filteredJobs.map(job => createJobRow(job)).join('')}</tbody>
+                    </table>
+                </div>`;
         } else {
             html += filteredJobs.map(job => createJobCard(job)).join('');
         }
