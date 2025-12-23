@@ -1061,19 +1061,16 @@ TEST TEST TEST
 .btn-add-circle {
     width: 42px !important;
     height: 42px !important;
-    min-width: 42px !important; /* Förhindrar att den kläms ihop på mobil */
-    border-radius: 10px !important; /* Matchar dina inputs */
-    background-color: var(--primary-color) !important;
-    color: white !important;
+    min-width: 42px !important;
+    background-color: #0066FF !important; /* Din blåa färg */
     border: none !important;
-    font-size: 20px !important;
-    font-weight: 400 !important;
+    border-radius: 10px !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
+    padding: 0 !important;
     cursor: pointer !important;
-    transition: background 0.2s !important;
-    box-shadow: var(--shadow-sm) !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
 }
 
 .btn-add-circle:hover {
@@ -1116,4 +1113,5 @@ TEST TEST TEST
         max-width: 150px;
     }
 }
+
 
