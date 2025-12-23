@@ -77,6 +77,7 @@ auth.onAuthStateChanged((user) => {
         // --- 4. STARTA APPENS FUNKTIONER ---
         startInactivityCheck();
         initRealtimeListener(); 
+		setTimeout(() => loadCustomersCache(allJobs), 2000);
         if (window.initChat) window.initChat();
         
         // NYTT: Starta lyssnaren för lagerstatus (Olja)
