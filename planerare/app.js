@@ -1,6 +1,7 @@
 // Importera kalenderfunktionen
 import { initCalendar, setCalendarTheme } from './calendar.js';
 import { openStatisticsView } from './statistics.js'; // Bytte namn på funktionen'
+import { searchLager, adjustPartStock, handleExpenseLagerSearch, selectLagerForExpense } from './inventory.js';
 
 window.openNewJobModal = openNewJobModal;
 window.toggleChatWidget = toggleChatWidget;
@@ -32,16 +33,6 @@ const firebaseConfig = {
   measurementId: "G-L6516XLZ1Y"
 };
 
-// 1b. LAGER FIREBASE KONFIGURATION (Hämtad från lager/apps.js)
-const lagerFirebaseConfig = {
-  apiKey: "AIzaSyAC4SLwVEzP3CPO4lLfDeZ71iU0xdr49sw", 
-  authDomain: "lagerdata-a9b39.firebaseapp.com",
-  projectId: "lagerdata-a9b39",
-  storageBucket: "lagerdata-a9b39.firebasestorage.app",
-  messagingSenderId: "615646392577",
-  appId: "1:615646392577:web:fd816443728e88b218eb00"
-};
-
 // 2. INITIERA FIREBASE DIREKT (Högst upp)
 if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
@@ -58,10 +49,6 @@ db.enablePersistence()
       }
   });
 const auth = firebase.auth(); // Nu är 'auth' definierad korrekt
-
-// Initiera den andra appen för lagret
-const lagerApp = firebase.initializeApp(lagerFirebaseConfig, "lagerApp");
-const lagerDb = lagerApp.firestore();
 
 window.db = db;
 window.auth = auth;
@@ -920,6 +907,9 @@ function updateStatsCounts(jobs) {
 
 // 7. EVENT LISTENERS
 function setupEventListeners() {
+
+	window.selectLagerForExpense = selectLagerForExpense;
+	window.handleExpenseLagerSearch = handleExpenseLagerSearch;
 
 	// Inuti setupEventListeners:
 	document.getElementById('nyUtgiftNamn')?.addEventListener('input', handleExpenseLagerSearch);
@@ -3588,22 +3578,6 @@ window.clearSearchHistory = function() {
     localStorage.removeItem('searchHistory');
     renderSearchZeroState(); // Rita om direkt
 };
-
-async function searchLager(term) {
-    const searchTerm = term.toUpperCase();
-    try {
-        const snapshot = await lagerDb.collection('lager').get();
-        return snapshot.docs
-            .map(doc => ({ id: doc.id, ...doc.data(), isLager: true }))
-            .filter(item => 
-                (item.name && item.name.toUpperCase().includes(searchTerm)) || 
-                (item.service_filter && item.service_filter.toUpperCase().includes(searchTerm))
-            );
-    } catch (err) {
-        console.error("Kunde inte söka i lagret:", err);
-        return [];
-    }
-}
 
 // Koppla klick-event till filterknapparna
 document.getElementById('searchFilterBar')?.addEventListener('click', (e) => {
