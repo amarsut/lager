@@ -1,5 +1,5 @@
 {
-  "id": "oversikt-pro-final",
+  "id": "oversikt-pro-v4",
   "name": "Översikt Pro",
   "short_name": "Översikt",
   "start_url": "./plan.html",
@@ -8,9 +8,9 @@
   "theme_color": "#3b82f6",
   "icons": [
     {
-      "src": "icon-512.png",
+      "src": "images/appicon.png",
       "sizes": "512x512",
-      "type": "images/appicon.png",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ]
