@@ -1,27 +1,60 @@
 // chat.js
 import { db, auth } from './firebase-config.js';
 
-// Funktion för att konvertera bild till Base64-text
-const fileToBase64 = (file) => new Promise((resolve, reject) => {
+/**
+ * Komprimerar en bildfil innan den konverteras till Base64.
+ * Justerar storlek till max 800px bredd/höjd och 70% kvalitet.
+ */
+const compressImage = (file) => new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = error => reject(error);
+    reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target.result;
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            let width = img.width;
+            let height = img.height;
+            const MAX_SIZE = 800; // Max bredd/höjd i pixlar
+
+            // Behåll proportioner men skala ner om bilden är för stor
+            if (width > height) {
+                if (width > MAX_SIZE) {
+                    height *= MAX_SIZE / width;
+                    width = MAX_SIZE;
+                }
+            } else {
+                if (height > MAX_SIZE) {
+                    width *= MAX_SIZE / height;
+                    height = MAX_SIZE;
+                }
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+
+            // Exportera som JPEG med 0.7 (70%) kvalitet för att spara massor av plats
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+            resolve(dataUrl);
+        };
+        img.onerror = (err) => reject(err);
+    };
+    reader.onerror = (err) => reject(err);
 });
 
-// Funktion som sparar meddelandet med Base64-bild
 window.saveMessageWithImage = async function(text, imageFile) {
     let imageData = null;
     
     if (imageFile) {
-        // Konvertera bilden till text innan vi sparar
-        imageData = await fileToBase64(imageFile);
+        console.log("Komprimerar bild...");
+        imageData = await compressImage(imageFile);
     }
 
-    // Vi sparar i 'notes' eftersom det är där din chatt lyssnar
     await db.collection('notes').add({
         text: text || "",
-        image: imageData, // Här sparas nu hela bilden som text
+        image: imageData, // Nu en komprimerad och lättare Base64-sträng
         sender: auth.currentUser.email,
         type: imageData ? 'image' : 'text',
         timestamp: new Date().toISOString(),
@@ -29,16 +62,15 @@ window.saveMessageWithImage = async function(text, imageFile) {
     });
 };
 
-// Uppdatera handleImageUpload så den använder den nya metoden
 window.handleImageUpload = async function(file) {
     if (!file) return;
     try {
         await window.saveMessageWithImage("", file);
-        // Rensa fälten
         if(document.getElementById('chatFileInputGallery')) document.getElementById('chatFileInputGallery').value = '';
         if(document.getElementById('chatFileInputCamera')) document.getElementById('chatFileInputCamera').value = '';
     } catch (err) {
-        console.error("Kunde inte spara bilden i databasen:", err);
+        console.error("Kunde inte spara bilden:", err);
+        alert("Bilden är för stor eller kunde inte sparas.");
     }
 };
 
