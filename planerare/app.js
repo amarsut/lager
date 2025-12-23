@@ -3768,3 +3768,11 @@ window.openBrandSelector = openBrandSelector;
 window.saveTechSpec = saveTechSpec;
 window.filterVehicleHistory = filterVehicleHistory;
 window.openEditModal = openEditModal; 
+
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+            .then(reg => console.log('Service Worker registrerad!', reg))
+            .catch(err => console.log('Service Worker misslyckades:', err));
+    });
+}
