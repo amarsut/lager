@@ -1389,29 +1389,17 @@ function setupEventListeners() {
                 const invWrapper = document.createElement('div');
                 invWrapper.id = 'inventorySearchWrapper';
                 
+                // Rubrik med ren design och siffer-badge
                 let html = `
                     <div class="inventory-search-header">
-                        <span>LAGERTRÄFFAR</span>
-                        <span class="inv-count-small">${invResults.length} st</span>
+                        <span>Lagerträffar</span>
+                        <span class="inv-count-badge">${invResults.length} st</span>
                     </div>
                     <div class="inventory-grid-compact">`;
                 
                 invResults.forEach(item => {
-                    const iconSvg = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 2l9 4.9V17.1L12 22l-9-4.9V6.9L12 2z"/></svg>`;
-                    const isOutOfStock = (item.quantity || 0) <= 0;
-
-                    html += `
-                        <div class="inv-card-mini ${isOutOfStock ? 'is-empty' : ''}" 
-                            onclick="openNewJobWithPart('${item.name.replace(/'/g, "\\'")}', ${item.price})">
-                            <div class="inv-card-top">
-                                <div class="inv-card-icon">${iconSvg}</div>
-                                <div class="inv-card-price">${item.price}:-</div>
-                            </div>
-                            <div class="inv-card-info">
-                                <div class="inv-card-name">${item.name}</div>
-                                <div class="inv-card-stock">${isOutOfStock ? 'SLUT' : 'Lager: ' + item.quantity}</div>
-                            </div>
-                        </div>`;
+                    // Använd din nyligen skapade createInventoryResultHTML för varje rad
+                    html += window.createInventoryResultHTML(item);
                 });
                 
                 html += `</div>`;
@@ -2430,8 +2418,12 @@ const performMobileSearch = debounce(async (term) => {
         const oldInv = document.getElementById('mobileInventoryResults');
         if (oldInv) oldInv.remove();
 
-        let invHtml = `<div id="mobileInventoryResults">
-            <div style="background: #fffbeb; padding: 10px 16px; border-left: 4px solid #f59e0b; font-weight: 700; font-size: 0.75rem; color: #b45309; margin: 10px 0;">LAGERTRÄFFAR</div>`;
+        let invHtml = `
+            <div class="inventory-search-header">
+                <span>Lagerträffar</span>
+                <span class="inv-count-badge">${invResults.length} st</span>
+            </div>
+        `;
         
         invResults.forEach(item => {
             invHtml += window.createInventoryResultHTML(item);
