@@ -3822,29 +3822,31 @@ document.getElementById('mobileSearchInput')?.addEventListener('input', (e) => h
 document.getElementById('searchBar')?.addEventListener('input', (e) => handleSearch(e.target.value.trim(), false));
 
 // --- FUNKTIONER FÖR LAGER-SÖK I UTGIFTER ---
-
+// 1. Funktionen som hanterar sökningen
 async function handleExpenseLagerSearch(e) {
     const term = e.target.value.trim();
     const dropdown = document.getElementById('lagerExpenseSuggestions');
     
+    // Om man raderar texten, dölj listan men låt användaren skriva fritt
     if (term.length < 2) {
         dropdown.classList.remove('show');
         return;
     }
 
-    // Återanvänd din befintliga searchLager-funktion
     const results = await searchLager(term);
 
     if (results.length > 0) {
         dropdown.innerHTML = results.map(item => `
-            <div class="suggestion-item" onclick="selectLagerForExpense('${item.id}', '${item.name.replace(/'/g, "\\'")}', ${item.price})">
-                <div class="s-main">
+            <div class="suggestion-item" onclick="window.selectLagerForExpense('${item.id}', '${item.service_filter || item.name}', ${item.price})">
+                <div>
                     <div class="s-name">${item.service_filter || '---'}</div>
-                    <div style="font-size:0.75rem; color:#64748b;">${item.name || ''}</div>
+                    <div style="font-size:0.7rem; color:#64748b;">${item.name || ''}</div>
                 </div>
-                <div class="s-info">
-                    <div style="font-weight:700; color:#1e293b;">${item.price}:-</div>
-                    <div class="s-stock ${item.quantity > 0 ? '' : 'out'}">Saldo: ${item.quantity}</div>
+                <div style="text-align:right;">
+                    <div style="font-weight:800; color:#1e293b;">${item.price}:-</div>
+                    <div class="s-stock" style="color:${item.quantity > 0 ? '#16a34a' : '#ef4444'}">
+                        Saldo: ${item.quantity}
+                    </div>
                 </div>
             </div>
         `).join('');
@@ -3854,18 +3856,18 @@ async function handleExpenseLagerSearch(e) {
     }
 }
 
+// 2. FUNKTIONEN SOM FIXAR DITT FELMEDDELANDE (Exporteras till window)
 window.selectLagerForExpense = function(id, name, price) {
     const nameInput = document.getElementById('nyUtgiftNamn');
     const priceInput = document.getElementById('nyUtgiftPris');
     const dropdown = document.getElementById('lagerExpenseSuggestions');
 
-    // Fyll i fälten automatiskt
-    nameInput.value = name;
-    priceInput.value = price;
+    if (nameInput) nameInput.value = name;
+    if (priceInput) priceInput.value = price;
 
-    // Stäng listan
     dropdown.classList.remove('show');
-    
-    // Sätt fokus på priset ifall man vill justera det
-    priceInput.focus();
+    priceInput?.focus();
 };
+
+// 3. Koppla lyssnaren (Se till att denna körs i setupEventListeners)
+document.getElementById('nyUtgiftNamn')?.addEventListener('input', handleExpenseLagerSearch);
