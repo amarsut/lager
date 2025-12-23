@@ -7,6 +7,7 @@ const APP_SHELL_FILES = [
   './style.css',
   './manifest.json',
   './images/oljemagasinet-favico.png'
+  './images/appicon.png'
 ];
 
 // --- INSTALLATION ---
