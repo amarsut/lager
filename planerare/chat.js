@@ -1,88 +1,45 @@
-// chat.js
-import { db, auth } from './firebase-config.js';
-
-// --- BILD-KOMPRIMERING (Gratis-metoden) ---
-const compressImage = (file) => new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = (event) => {
-        const img = new Image();
-        img.src = event.target.result;
-        img.onload = () => {
-            const canvas = document.createElement('canvas');
-            let width = img.width;
-            let height = img.height;
-            const MAX_SIZE = 800; // Krymper bilden för att spara plats
-
-            if (width > height) {
-                if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; }
-            } else {
-                if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; }
-            }
-            canvas.width = width;
-            canvas.height = height;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0, width, height);
-            resolve(canvas.toDataURL('image/jpeg', 0.7)); // 70% kvalitet räcker gott
-        };
-    };
-    reader.onerror = (err) => reject(err);
-});
-
-// --- GLOBALA FUNKTIONER FÖR HTML ---
-window.toggleChatWidget = function() {
-    const chatWidget = document.getElementById('chatWidget');
-    if (!chatWidget) return;
-    const isOpen = chatWidget.style.display === 'flex';
-    chatWidget.style.display = isOpen ? 'none' : 'flex';
-    document.body.classList.toggle('chat-open', !isOpen);
-};
-
-// FIX: Denna funktion ersätter den gamla som letade efter 'uploadChatImage'
-window.handleImageUpload = async function(file) {
-    if (!file) return;
-    try {
-        console.log("Komprimerar och sparar bild till databasen...");
-        const compressedBase64 = await compressImage(file);
-        
-        // Sparar direkt i 'notes'-kollektionen
-        await db.collection('notes').add({
-            image: compressedBase64,
-            text: "",
-            type: 'image',
-            sender: auth.currentUser ? auth.currentUser.email : 'System',
-            timestamp: new Date().toISOString(),
-            platform: window.innerWidth <= 768 ? 'mobil' : 'dator'
-        });
-        
-        // Rensa fil-inputs
-        if(document.getElementById('chatFileInputGallery')) document.getElementById('chatFileInputGallery').value = '';
-        if(document.getElementById('chatFileInputCamera')) document.getElementById('chatFileInputCamera').value = '';
-    } catch (err) {
-        console.error("Kunde inte spara bilden:", err);
-        alert("Bilden kunde inte sparas. Den kan vara för stor.");
-    }
-};
-
-window.sendMessage = async function() {
-    const input = document.getElementById('chatInput');
-    const text = input.value.trim();
-    if (!text) return;
-
-    await db.collection('notes').add({
-        text: text,
-        type: 'text',
-        sender: auth.currentUser ? auth.currentUser.email : 'System',
-        timestamp: new Date().toISOString()
-    });
-    input.value = '';
-};
+// ==========================================
+// CHATT - SEPARAT FIL (chat.js)
+// ==========================================
 
 // Globala variabler för chatten
 let chatUnsubscribe = null;
 let isEditingMsg = false;
 let currentEditMsgId = null;
 let chatMenuTimer = null; // Fix för "ReferenceError"
+
+// Gör funktionen global
+window.toggleChatWidget = function() {
+    const chatWidget = document.getElementById('chatWidget');
+    if (!chatWidget) return;
+
+    const isOpen = chatWidget.style.display === 'flex';
+
+    if (isOpen) {
+        // STÄNGER
+        chatWidget.style.display = 'none';
+        document.body.classList.remove('chat-open'); // Ta bort klassen
+        document.body.style.overflow = ''; 
+        
+        // Återställ eventuell historik
+        if (history.state && history.state.uiState === 'chat') {
+            history.back();
+        }
+    } else {
+        // ÖPPNAR
+        chatWidget.style.display = 'flex';
+        document.body.classList.add('chat-open'); // Lägg till klassen (döljer headern via CSS)
+        document.body.style.overflow = 'hidden'; 
+        
+        history.pushState({ uiState: 'chat' }, null, window.location.href);
+
+        // Scrolla till botten
+        setTimeout(() => {
+            const chatList = document.getElementById('chatMessages');
+            if (chatList) chatList.scrollTop = chatList.scrollHeight;
+        }, 100);
+    }
+};
 
 window.initChat = function() {
     const chatList = document.getElementById('chatMessages');
@@ -558,33 +515,41 @@ function exitEditMode() {
 // BILDHANTERING
 async function handleImageUpload(file) {
     if (!file) return;
-    
-    // Visa ett tecken på att det laddas (valfritt)
-    console.log("Laddar upp bild till Storage...");
-    
+    console.log("Bearbetar bild...");
     try {
-        // 1. Ladda upp till Firebase Storage (via din nya globala funktion)
-        const imageUrl = await window.uploadChatImage(file);
-        
-        if (imageUrl) {
-            // 2. Spara länken i 'notes'-kollektionen (så chatten ser den direkt)
-            await window.db.collection("notes").add({
-                image: imageUrl, // Nu sparas URL:en istället för 5MB text!
-                text: "",
-                type: 'image',
-                timestamp: new Date().toISOString(),
-                platform: window.innerWidth <= 768 ? 'mobil' : 'dator'
-            });
-        }
-        
-        // Rensa fälten
+        const base64Image = await compressImage(file);
+        await window.db.collection("notes").add({
+            image: base64Image, text: "", type: 'image',
+            timestamp: new Date().toISOString(),
+            platform: window.innerWidth <= 768 ? 'mobil' : 'dator'
+        });
         document.getElementById('chatFileInputGallery').value = '';
         document.getElementById('chatFileInputCamera').value = '';
-        
-    } catch (err) {
-        console.error("Storage-uppladdning misslyckades:", err);
-        alert("Kunde inte ladda upp bilden.");
-    }
+    } catch (err) { console.error(err); }
+}
+
+function compressImage(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target.result;
+            img.onload = () => {
+                const maxWidth = 800; 
+                const scaleSize = maxWidth / img.width;
+                const newWidth = (img.width > maxWidth) ? maxWidth : img.width;
+                const newHeight = (img.width > maxWidth) ? (img.height * scaleSize) : img.height;
+                const canvas = document.createElement('canvas');
+                canvas.width = newWidth; canvas.height = newHeight;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, newWidth, newHeight);
+                resolve(canvas.toDataURL('image/jpeg', 0.7));
+            };
+            img.onerror = (err) => reject(err);
+        };
+        reader.onerror = (err) => reject(err);
+    });
 }
 
 let currentGalleryImages = []; // Lista på alla bilder i chatten
