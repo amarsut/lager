@@ -13,6 +13,14 @@ const lagerFirebaseConfig = {
 // 2. INITIERA LAGER-APPEN
 const lagerApp = firebase.initializeApp(lagerFirebaseConfig, "lagerApp");
 export const lagerDb = lagerApp.firestore();
+// Aktivera lokal lagring för Lager-databasen
+lagerDb.enablePersistence()
+    .then(() => {
+        console.log("Offline-lagring aktiverad för Lagret");
+    })
+    .catch((err) => {
+        console.error("Lager-persistence kunde inte aktiveras:", err);
+    });
 
 // Lokalt minne för lagret
 let cachedInventory = [];
