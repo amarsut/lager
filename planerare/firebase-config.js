@@ -2,7 +2,7 @@
 
 // 1. FIREBASE KONFIGURATION
 const firebaseConfig = {
-  apiKey: "AIzaSyDwCQkUl-je3L3kF7EuxRC6Dm6Gw2N0nJw",
+  apiKey: "AIzaSyAC4SLwVEzP3CPO4lLfDeZ71iU0xdr49sw",
   authDomain: "planerare-f6006.firebaseapp.com",
   projectId: "planerare-f6006",
   storageBucket: "planerare-f6006.firebasestorage.app",
