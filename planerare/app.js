@@ -1,5 +1,5 @@
 import { db, auth } from './firebase-config.js'; // Denna körs nu först!
-import { searchLager, adjustPartStock, handleExpenseLagerSearch, selectLagerForExpense } from './inventory.js';
+import { searchLager, adjustPartStock, handleExpenseLagerSearch, selectLagerForExpense, loadInventoryCache } from './inventory.js';
 import { initCalendar, setCalendarTheme } from './calendar.js';
 import { openStatisticsView } from './statistics.js';
 
@@ -80,6 +80,9 @@ auth.onAuthStateChanged((user) => {
         
         // NYTT: Starta lyssnaren för lagerstatus (Olja)
         initInventoryListener();
+
+		// LADDA LAGRET I BAKGRUNDEN
+        loadInventoryCache();
         
         // Initiera inställningar (Privacy/Mörkt läge)
         if (typeof initSettings === 'function') {
