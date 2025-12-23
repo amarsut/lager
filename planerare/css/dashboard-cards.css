@@ -239,7 +239,7 @@
     content: '';
     position: absolute;
     top: 10px;
-    right: -10px;
+    right: 0px;
     width: 75px;
     height: 75px;
     opacity: 0.07; /* Svag och elegant */
