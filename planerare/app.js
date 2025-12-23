@@ -841,24 +841,30 @@ function updateStatsCounts(jobs) {
         if (el) el.textContent = val;
     };
 
-    const upcomingCount = active.filter(j => j.status === 'bokad' && new Date(j.datum) >= today).length;
+    // 1. Beräkna de olika kategorierna
+    const upcomingCount = active.filter(j => j.status === 'bokad' && j.datum && new Date(j.datum) >= today).length;
+    const unplannedCount = active.filter(j => !j.datum || j.datum === '').length;
+    const offeredCount = active.filter(j => j.status === 'offererad').length;
+    
     const invoiceCount = active.filter(j => j.status === 'faktureras').length;
     const finishedCount = active.filter(j => j.status === 'klar').length;
     const allCount = active.length;
 
-    // Räkna ut väntande jobb (unplannedCount)
-    const unplannedCount = active.filter(j => !j.datum || j.datum === '').length;
-    const offeredCount = active.filter(j => j.status === 'offererad').length;
+    // --- APP BADGING (Punkt 20 - Uppdaterad logik) ---
+    // Vi räknar nu summan av Kommande + Väntar + Offert
+    const totalBadgeCount = upcomingCount + unplannedCount + offeredCount;
 
-    // --- APP BADGING (Punkt 20) ---
     if ('setAppBadge' in navigator) {
-        if (unplannedCount > 0) {
-            navigator.setAppBadge(unplannedCount).catch(console.error);
+        if (totalBadgeCount > 0) {
+            navigator.setAppBadge(totalBadgeCount)
+                .then(() => console.log(`Badge satt till: ${totalBadgeCount}`))
+                .catch(err => console.error("Kunde inte sätta badge:", err));
         } else {
             navigator.clearAppBadge();
         }
     }
 
+    // Uppdatera UI-elementen i dashboarden
     safeUpdate('stat-upcoming', upcomingCount);
     safeUpdate('stat-invoice', invoiceCount);
     safeUpdate('stat-finished', finishedCount);
