@@ -1530,7 +1530,7 @@ function setupEventListeners() {
 async function handleCalendarDrop(jobId, newDateStr, revertFunc) {
     // 1. Visuell feedback (Toast)
     // Om du har en showToast-funktion, använd den. Annars console.log
-    console.log(`Flyttar jobb ${jobId} till ${newDateStr}`);
+    //console.log(`Flyttar jobb ${jobId} till ${newDateStr}`);
 
     try {
         // 2. Uppdatera Firebase
@@ -1841,7 +1841,7 @@ async function deductOilFromInventory(expenses) {
     });
 
     if (totalOilToDeduct > 0) {
-        console.log(`Drar av ${totalOilToDeduct} liter från lagret...`);
+        //console.log(`Drar av ${totalOilToDeduct} liter från lagret...`);
         
         const inventoryRef = db.collection('settings').doc('inventory');
         
@@ -1885,7 +1885,7 @@ async function deleteJob(id) {
                 // 4. Lägg tillbaka oljan i lagret
                 if (oilToRefund > 0) {
                     await adjustInventoryBalance(-oilToRefund);
-                    console.log(`Återförde ${oilToRefund} liter till lagret.`);
+                    //console.log(`Återförde ${oilToRefund} liter till lagret.`);
                 }
             }
         } catch (err) { 
@@ -2471,7 +2471,7 @@ function checkTime() {
 
     // Om skillnaden är större än gränsen (30 min)
     if (timeDiff > INACTIVITY_LIMIT_MS) {
-	    console.log("Tiden ute. Loggar ut...");
+	    //console.log("Tiden ute. Loggar ut...");
 	    
 	    localStorage.removeItem('lastActivity');
 	    
@@ -2604,7 +2604,7 @@ function initSettings() {
     const pToggle = document.getElementById('privacyToggle');
     
     // Debug: Se om vi hittar elementet
-    console.log("Init Settings. Found toggle:", pToggle);
+    //console.log("Init Settings. Found toggle:", pToggle);
 
     if(pToggle) {
         // Sätt visuellt läge
@@ -2612,7 +2612,7 @@ function initSettings() {
         
         // Lyssna på ÄNDRINGAR i checkboxen
         pToggle.addEventListener('change', (e) => {
-            console.log("Privacy changed to:", e.target.checked);
+            //console.log("Privacy changed to:", e.target.checked);
             setPrivacyMode(e.target.checked);
         });
     }
@@ -2831,7 +2831,7 @@ async function adjustInventoryBalance(litersToDeduct) {
         await inventoryRef.update({
             motorOil: firebase.firestore.FieldValue.increment(-litersToDeduct)
         });
-        console.log(`Lager justerat med: ${-litersToDeduct} liter.`);
+        //console.log(`Lager justerat med: ${-litersToDeduct} liter.`);
     } catch (err) {
         console.error("Kunde inte justera lagret:", err);
     }
@@ -3337,7 +3337,7 @@ function applyZoom(value) {
 // VIKTIGT: Vi definierar den direkt på window. 
 // Då behöver du INTE ha någon rad i toppen av filen.
 window.openViewModal = function(jobId) {
-    console.log("Öppnar vy för jobb ID:", jobId);
+    //console.log("Öppnar vy för jobb ID:", jobId);
 
     // 1. Hitta jobbet
     const job = allJobs.find(j => j.id === jobId);
