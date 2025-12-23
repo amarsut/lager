@@ -449,9 +449,24 @@ function renderDashboard() {
         });
     } else {
         // --- DESKTOPVY: TABELL ---
-        htmlContent = `<table id="jobsTable"><thead><tr><th>Status</th><th>Datum</th><th>Kund</th><th>Reg.nr</th><th style="text-align:right">Pris</th><th class="action-col">Åtgärder</th></tr></thead><tbody>`;
+        htmlContent = `
+            <div class="table-container" style="margin-top: 20px;">
+                <table id="jobsTable">
+                    <thead>
+                        <tr>
+                            <th>Status</th>
+                            <th>Datum</th>
+                            <th>Kund</th>
+                            <th>Reg.nr</th>
+                            <th style="text-align:right">Pris</th>
+                            <th class="action-col">Åtgärder</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+        
         jobsToDisplay.forEach(job => htmlContent += createJobRow(job));
-        htmlContent += `</tbody></table>`;
+        
+        htmlContent += `</tbody></table></div>`;
     }
 
     // Lägg till listan i containern (efter eventuella flikar)
