@@ -1,37 +1,45 @@
-// ==========================================
-// CHATT - SEPARAT FIL (chat.js)
-// ==========================================
 // chat.js
-import { storage, db, auth } from './firebase-config.js';
+import { db, auth } from './firebase-config.js';
 
-window.uploadChatImage = async function(file) {
-    const user = auth.currentUser;
-    if (!user) return;
+// Funktion för att konvertera bild till Base64-text
+const fileToBase64 = (file) => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = error => reject(error);
+});
 
-    // Skapa en unik sökväg för bilden
-    const filePath = `chat_images/${Date.now()}_${file.name}`;
-    const fileRef = storage.ref().child(filePath);
-
-    // Ladda upp
-    await fileRef.put(file);
-    
-    // Hämta den offentliga länken
-    return await fileRef.getDownloadURL();
-};
-
-// Uppdatera din funktion som sparar meddelandet
+// Funktion som sparar meddelandet med Base64-bild
 window.saveMessageWithImage = async function(text, imageFile) {
-    let imageUrl = null;
+    let imageData = null;
+    
     if (imageFile) {
-        imageUrl = await window.uploadChatImage(imageFile);
+        // Konvertera bilden till text innan vi sparar
+        imageData = await fileToBase64(imageFile);
     }
 
+    // Vi sparar i 'notes' eftersom det är där din chatt lyssnar
     await db.collection('notes').add({
-        text: text,
-        imageUrl: imageUrl, // Spara länken istället för Base64
+        text: text || "",
+        image: imageData, // Här sparas nu hela bilden som text
         sender: auth.currentUser.email,
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        type: imageData ? 'image' : 'text',
+        timestamp: new Date().toISOString(),
+        platform: window.innerWidth <= 768 ? 'mobil' : 'dator'
     });
+};
+
+// Uppdatera handleImageUpload så den använder den nya metoden
+window.handleImageUpload = async function(file) {
+    if (!file) return;
+    try {
+        await window.saveMessageWithImage("", file);
+        // Rensa fälten
+        if(document.getElementById('chatFileInputGallery')) document.getElementById('chatFileInputGallery').value = '';
+        if(document.getElementById('chatFileInputCamera')) document.getElementById('chatFileInputCamera').value = '';
+    } catch (err) {
+        console.error("Kunde inte spara bilden i databasen:", err);
+    }
 };
 
 // Globala variabler för chatten
