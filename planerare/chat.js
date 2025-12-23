@@ -26,7 +26,7 @@ window.saveMessageWithImage = async function(text, imageFile) {
         imageUrl = await window.uploadChatImage(imageFile);
     }
 
-    await db.collection('messages').add({
+    await db.collection('notes').add({
         text: text,
         imageUrl: imageUrl, // Spara länken istället för Base64
         sender: auth.currentUser.email,
@@ -547,17 +547,33 @@ function exitEditMode() {
 // BILDHANTERING
 async function handleImageUpload(file) {
     if (!file) return;
-    console.log("Bearbetar bild...");
+    
+    // Visa ett tecken på att det laddas (valfritt)
+    console.log("Laddar upp bild till Storage...");
+    
     try {
-        const base64Image = await compressImage(file);
-        await window.db.collection("notes").add({
-            image: base64Image, text: "", type: 'image',
-            timestamp: new Date().toISOString(),
-            platform: window.innerWidth <= 768 ? 'mobil' : 'dator'
-        });
+        // 1. Ladda upp till Firebase Storage (via din nya globala funktion)
+        const imageUrl = await window.uploadChatImage(file);
+        
+        if (imageUrl) {
+            // 2. Spara länken i 'notes'-kollektionen (så chatten ser den direkt)
+            await window.db.collection("notes").add({
+                image: imageUrl, // Nu sparas URL:en istället för 5MB text!
+                text: "",
+                type: 'image',
+                timestamp: new Date().toISOString(),
+                platform: window.innerWidth <= 768 ? 'mobil' : 'dator'
+            });
+        }
+        
+        // Rensa fälten
         document.getElementById('chatFileInputGallery').value = '';
         document.getElementById('chatFileInputCamera').value = '';
-    } catch (err) { console.error(err); }
+        
+    } catch (err) {
+        console.error("Storage-uppladdning misslyckades:", err);
+        alert("Kunde inte ladda upp bilden.");
+    }
 }
 
 function compressImage(file) {
