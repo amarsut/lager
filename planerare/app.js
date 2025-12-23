@@ -3771,8 +3771,9 @@ window.openEditModal = openEditModal;
 
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js')
-            .then(reg => console.log('Service Worker registrerad!', reg))
-            .catch(err => console.log('Service Worker misslyckades:', err));
+        // Vi lägger till ?v=4 för att tvinga webbläsaren att läsa in den nya sw.js
+        navigator.serviceWorker.register('./sw.js?v=4')
+            .then(reg => console.log('SW registrerad!', reg.scope))
+            .catch(err => console.error('SW misslyckades:', err));
     });
 }
