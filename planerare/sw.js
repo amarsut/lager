@@ -6,7 +6,7 @@ const APP_SHELL_FILES = [
   './plan.html',
   './style.css',
   './manifest.json',
-  './images/oljemagasinet-favico.png'
+  './images/oljemagasinet-favico.png',
   './images/appicon.png'
 ];
 
