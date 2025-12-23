@@ -1,4 +1,5 @@
 // firebase-config.js
+export const storage = firebase.storage(); // Lägg till denna rad
 
 // 1. FIREBASE KONFIGURATION
 const firebaseConfig = {
