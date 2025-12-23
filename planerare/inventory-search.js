@@ -74,23 +74,21 @@ async function searchInInventory(searchTerm) {
 }
 
 window.createInventoryResultHTML = function(item) {
+    const isOutOfStock = (item.quantity || 0) <= 0;
+    const iconSvg = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 2l9 4.9V17.1L12 22l-9-4.9V6.9L12 2z"/></svg>`;
+    
     return `
-        <div class="inventory-search-result" style="padding: 12px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background: #fffcf0; border-left: 4px solid #f59e0b;">
-            <div style="display: flex; align-items: center; gap: 12px;">
-                <div style="background: #f59e0b; color: white; padding: 6px; border-radius: 6px; display: flex;">
-                    <svg style="width: 16px; height: 16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+        <div class="inv-card-pro ${isOutOfStock ? 'is-empty' : ''}" 
+             onclick="openNewJobWithPart('${item.name.replace(/'/g, "\\'")}', ${item.price})">
+            <div class="inv-card-icon">${iconSvg}</div>
+            <div class="inv-card-content">
+                <div class="inv-card-top-row">
+                    <span class="inv-card-name">${item.name}</span>
+                    <span class="inv-card-price">${item.price}:-</span>
                 </div>
-                <div>
-                    <div style="font-weight: 700; font-size: 0.85rem; color: #111;">${item.name}</div>
-                    <div style="font-size: 0.7rem; color: #64748b;">Ref: ${item.service_filter || '-'} • Lager: ${item.quantity || 0} st</div>
+                <div class="inv-card-meta">
+                    Ref: ${item.service_filter || '-'} • ${isOutOfStock ? 'SLUT' : 'Lager: ' + item.quantity}
                 </div>
-            </div>
-            <div style="display: flex; align-items: center; gap: 8px;">
-                <div style="font-weight: 700; font-size: 0.85rem; color: #111;">${item.price} kr</div>
-                <button onclick="addInventoryItemToJob('${item.name.replace(/'/g, "\\'")}', ${item.price})" 
-                        style="background: #3b82f6; color: white; border: none; padding: 5px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 600; cursor: pointer;">
-                    Välj
-                </button>
             </div>
         </div>
     `;
