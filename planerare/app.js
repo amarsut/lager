@@ -13,7 +13,6 @@ db.enablePersistence()
           console.log('Webbläsaren stödjer inte offline-läge.');
       }
   });
-const auth = firebase.auth(); // Nu är 'auth' definierad korrekt
 
 console.log("Firebase initierad.");
 
