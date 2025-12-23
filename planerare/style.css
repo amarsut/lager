@@ -1047,3 +1047,41 @@ TEST TEST TEST
     font-size: 0.75rem;
     font-weight: 600;
 }
+
+/* Container för utgiftsraden */
+.expense-input-row {
+    display: flex !important;
+    gap: 8px !important;
+    align-items: center !important; /* Centrerar knappen vertikalt med fälten */
+    margin-bottom: 15px !important;
+    width: 100% !important;
+}
+
+/* Fix för plus-knappen */
+.btn-add-circle {
+    width: 42px !important;
+    height: 42px !important;
+    min-width: 42px !important; /* Förhindrar att den kläms ihop på mobil */
+    border-radius: 10px !important; /* Matchar dina inputs */
+    background-color: var(--primary-color) !important;
+    color: white !important;
+    border: none !important;
+    font-size: 20px !important;
+    font-weight: 600 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    transition: background 0.2s !important;
+    box-shadow: var(--shadow-sm) !important;
+}
+
+.btn-add-circle:hover {
+    background-color: var(--primary-hover) !important;
+}
+
+/* Säkerställ att inputs i raden har samma höjd */
+.expense-input-row input {
+    height: 42px !important;
+    margin-bottom: 0 !important; /* Tar bort marginal som knuffar ner knappen */
+}
