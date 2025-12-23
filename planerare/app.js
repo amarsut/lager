@@ -294,7 +294,6 @@ window.toggleUnplanned = function() {
 function renderDashboard() {
     updateHeaderDate();
     updateStatsCounts(allJobs);
-    updateCustomerDatalist();
 
     const container = document.getElementById('jobListContainer');
     const isMobile = window.innerWidth <= 768;
@@ -3192,26 +3191,6 @@ function openCustomerByName(name) {
         });
         openCustomerModal(tempCustomer);
     }
-}
-
-// 2. Uppdatera listan med förslag (Autocomplete)
-function updateCustomerDatalist() {
-    const dataList = document.getElementById('customerListOptions');
-    if (!dataList) return;
-
-    dataList.innerHTML = '';
-    
-    // Hämta unika namn från alla jobb
-    const uniqueNames = [...new Set(allJobs.map(j => j.kundnamn ? j.kundnamn.trim().toUpperCase() : ""))];
-    
-    // Sortera och skapa options
-    uniqueNames.sort().forEach(name => {
-        if(name.length > 1) { // Skippa tomma/korta
-            const option = document.createElement('option');
-            option.value = name;
-            dataList.appendChild(option);
-        }
-    });
 }
 
 // Funktion för att tvinga uppdatering (Hard Reload)
