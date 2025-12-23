@@ -14,35 +14,63 @@ const lagerFirebaseConfig = {
 const lagerApp = firebase.initializeApp(lagerFirebaseConfig, "lagerApp");
 export const lagerDb = lagerApp.firestore();
 
+// Lokalt minne för lagret
+let cachedInventory = [];
+let isCacheLoaded = false;
+
 /**
- * Söker i lagret baserat på en term
+ * Hämtar hela lagret en gång och sparar det lokalt.
+ * Körs när sidan laddas.
  */
-export async function searchLager(term) {
-    const searchTerm = term.toUpperCase();
+export async function loadInventoryCache() {
     try {
         const snapshot = await lagerDb.collection('lager').get();
-        return snapshot.docs
-            .map(doc => ({ id: doc.id, ...doc.data(), isLager: true }))
-            .filter(item => 
-                (item.name && item.name.toUpperCase().includes(searchTerm)) || 
-                (item.service_filter && item.service_filter.toUpperCase().includes(searchTerm))
-            );
+        cachedInventory = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data(),
+            isLager: true
+        }));
+        isCacheLoaded = true;
+        console.log(`Lager cache-lagrat: ${cachedInventory.length} artiklar.`);
     } catch (err) {
-        console.error("Kunde inte söka i lagret:", err);
-        return [];
+        console.error("Kunde inte ladda lager-cache:", err);
     }
 }
 
 /**
- * Justerar lagersaldo för en specifik artikel
+ * OPTIMERAD SÖKNING: Söker i den lokala listan istället för databasen
+ */
+export async function searchLager(term) {
+    const searchTerm = term.toUpperCase();
+    
+    // Om cachen inte laddats än, hämta den snabbt
+    if (!isCacheLoaded) {
+        await loadInventoryCache();
+    }
+
+    // Filtrera i det lokala minnet (blixtsnabbt)
+    return cachedInventory.filter(item => 
+        (item.name && item.name.toUpperCase().includes(searchTerm)) || 
+        (item.service_filter && item.service_filter.toUpperCase().includes(searchTerm))
+    );
+}
+
+/**
+ * Uppdaterar även den lokala cachen när saldot ändras
  */
 export async function adjustPartStock(lagerId, change) {
     if (!lagerId) return;
     try {
+        // 1. Uppdatera Firebase
         await lagerDb.collection('lager').doc(lagerId).update({
             quantity: firebase.firestore.FieldValue.increment(change)
         });
-        console.log(`Lagersaldo uppdaterat (${change > 0 ? '+' : ''}${change})`);
+
+        // 2. Uppdatera lokala cachen så UI stämmer direkt utan omladdning
+        const index = cachedInventory.findIndex(item => item.id === lagerId);
+        if (index !== -1) {
+            cachedInventory[index].quantity += change;
+        }
     } catch (err) {
         console.error("Kunde inte uppdatera lagersaldo:", err);
     }
