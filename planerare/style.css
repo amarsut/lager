@@ -928,3 +928,14 @@ TEST TEST TEST
     padding: 20px !important;
     box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
 }
+
+/* Justering för tabellen inuti sök-korten */
+.search-result-section-card .table-container {
+    background: transparent !important; /* Använd kortets bakgrund */
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.search-result-section-card table {
+    margin-bottom: 0; /* Ta bort extra marginal i botten */
+}
