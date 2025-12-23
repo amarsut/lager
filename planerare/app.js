@@ -3,25 +3,6 @@ import { initCalendar, setCalendarTheme } from './calendar.js';
 import { openStatisticsView } from './statistics.js'; // Bytte namn på funktionen'
 import { searchLager, adjustPartStock, handleExpenseLagerSearch, selectLagerForExpense } from './inventory.js';
 
-window.openNewJobModal = openNewJobModal;
-window.toggleChatWidget = toggleChatWidget;
-window.openSettingsModal = openSettingsModal;
-window.handleLogout = handleLogout;
-window.closeSettings = closeSettings;
-window.toggleOilForm = toggleOilForm;
-window.saveNewBarrel = saveNewBarrel;
-window.closeVehicleModal = closeVehicleModal;
-window.openVehicleModal = openVehicleModal;
-window.openCustomerByName = openCustomerByName;
-window.toggleCardActions = toggleCardActions;
-window.setStatus = setStatus;
-window.deleteJob = deleteJob;
-window.openBrandSelector = openBrandSelector;
-window.saveTechSpec = saveTechSpec;
-window.filterVehicleHistory = filterVehicleHistory;
-window.openEditModal = openEditModal; 
-// Slut på kalender
-
 // 1. FIREBASE KONFIGURATION
 const firebaseConfig = {
   apiKey: "AIzaSyDwCQkUl-je3L3kF7EuxRC6Dm6Gw2N0nJw",
@@ -3809,3 +3790,21 @@ document.getElementById('searchBar')?.addEventListener('input', (e) => handleSea
 
 // 3. Koppla lyssnaren (Se till att denna körs i setupEventListeners)
 document.getElementById('nyUtgiftNamn')?.addEventListener('input', handleExpenseLagerSearch);
+
+window.openNewJobModal = openNewJobModal;
+window.toggleChatWidget = toggleChatWidget;
+window.openSettingsModal = openSettingsModal;
+window.handleLogout = handleLogout;
+window.closeSettings = closeSettings;
+window.toggleOilForm = toggleOilForm;
+window.saveNewBarrel = saveNewBarrel;
+window.closeVehicleModal = closeVehicleModal;
+window.openVehicleModal = openVehicleModal;
+window.openCustomerByName = openCustomerByName;
+window.toggleCardActions = toggleCardActions;
+window.setStatus = setStatus;
+window.deleteJob = deleteJob;
+window.openBrandSelector = openBrandSelector;
+window.saveTechSpec = saveTechSpec;
+window.filterVehicleHistory = filterVehicleHistory;
+window.openEditModal = openEditModal; 
