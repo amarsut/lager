@@ -1,6 +1,4 @@
 // firebase-config.js
-export const storage = firebase.storage(); // Lägg till denna rad
-
 // 1. FIREBASE KONFIGURATION
 const firebaseConfig = {
   apiKey: "AIzaSyAC4SLwVEzP3CPO4lLfDeZ71iU0xdr49sw",
@@ -19,6 +17,7 @@ if (!firebase.apps.length) {
 
 export const db = firebase.firestore();
 export const auth = firebase.auth();
+export const storage = firebase.storage(); // Lägg till denna rad
 
 // 2. INSTÄLLNINGAR (Löser "overriding host"-varningen)
 try {
