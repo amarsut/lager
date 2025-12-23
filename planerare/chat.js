@@ -2,8 +2,7 @@
 import { db, auth } from './firebase-config.js';
 
 /**
- * Komprimerar en bildfil innan den konverteras till Base64.
- * Justerar storlek till max 800px bredd/höjd och 70% kvalitet.
+ * Komprimerar bilden till max 800px och 70% kvalitet för att hålla Firestore-dokumentet under 1MB.
  */
 const compressImage = (file) => new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -15,62 +14,56 @@ const compressImage = (file) => new Promise((resolve, reject) => {
             const canvas = document.createElement('canvas');
             let width = img.width;
             let height = img.height;
-            const MAX_SIZE = 800; // Max bredd/höjd i pixlar
-
-            // Behåll proportioner men skala ner om bilden är för stor
+            const MAX_SIZE = 800;
             if (width > height) {
-                if (width > MAX_SIZE) {
-                    height *= MAX_SIZE / width;
-                    width = MAX_SIZE;
-                }
+                if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; }
             } else {
-                if (height > MAX_SIZE) {
-                    width *= MAX_SIZE / height;
-                    height = MAX_SIZE;
-                }
+                if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; }
             }
-
-            canvas.width = width;
-            canvas.height = height;
+            canvas.width = width; canvas.height = height;
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0, width, height);
-
-            // Exportera som JPEG med 0.7 (70%) kvalitet för att spara massor av plats
-            const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-            resolve(dataUrl);
+            resolve(canvas.toDataURL('image/jpeg', 0.7));
         };
-        img.onerror = (err) => reject(err);
     };
     reader.onerror = (err) => reject(err);
 });
 
-window.saveMessageWithImage = async function(text, imageFile) {
-    let imageData = null;
-    
-    if (imageFile) {
-        console.log("Komprimerar bild...");
-        imageData = await compressImage(imageFile);
+// GÖR FUNKTIONERNA GLOBALA
+window.toggleChatWidget = function() {
+    const chatWidget = document.getElementById('chatWidget');
+    if (!chatWidget) return;
+    const isOpen = chatWidget.style.display === 'flex';
+    chatWidget.style.display = isOpen ? 'none' : 'flex';
+    document.body.classList.toggle('chat-open', !isOpen);
+    if (!isOpen) {
+        setTimeout(() => {
+            const chatList = document.getElementById('chatMessages');
+            if (chatList) chatList.scrollTop = chatList.scrollHeight;
+        }, 100);
     }
-
-    await db.collection('notes').add({
-        text: text || "",
-        image: imageData, // Nu en komprimerad och lättare Base64-sträng
-        sender: auth.currentUser.email,
-        type: imageData ? 'image' : 'text',
-        timestamp: new Date().toISOString(),
-        platform: window.innerWidth <= 768 ? 'mobil' : 'dator'
-    });
 };
 
 window.handleImageUpload = async function(file) {
     if (!file) return;
     try {
-        await window.saveMessageWithImage("", file);
-        if(document.getElementById('chatFileInputGallery')) document.getElementById('chatFileInputGallery').value = '';
-        if(document.getElementById('chatFileInputCamera')) document.getElementById('chatFileInputCamera').value = '';
+        console.log("Komprimerar och sparar bild...");
+        const compressedBase64 = await compressImage(file);
+        
+        await db.collection('notes').add({
+            image: compressedBase64,
+            text: "",
+            type: 'image',
+            sender: auth.currentUser ? auth.currentUser.email : 'System',
+            timestamp: new Date().toISOString(),
+            platform: window.innerWidth <= 768 ? 'mobil' : 'dator'
+        });
+        
+        // Rensa input
+        document.getElementById('chatFileInputGallery').value = '';
+        document.getElementById('chatFileInputCamera').value = '';
     } catch (err) {
-        console.error("Kunde inte spara bilden:", err);
-        alert("Bilden är för stor eller kunde inte sparas.");
+        console.error("Kunde inte spara bild:", err);
     }
 };
 
