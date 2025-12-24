@@ -1264,67 +1264,53 @@ function setupEventListeners() {
 
 	// 1. Lyssna på när användaren trycker bakåt (eller swipar)
 	window.addEventListener('popstate', function(event) {
-	    // 1. Stäng modaler (Högst prioritet) - Ingen ändring här
-	    const modals = [
-	        document.getElementById('imageZoomModal'),
-	        document.getElementById('vehicleModal'),
-            document.getElementById('lagerDrawer'),
-	        document.getElementById('chatWidget'),
-	        document.getElementById('mobileSearchModal'),
-	        document.querySelector('.modal-backdrop.show')
-	    ];
-	    
-	    for (let m of modals) {
-	        if (m && (m.style.display === 'flex' || m.classList.contains('show'))) {
-	            if(m.classList.contains('show')) m.classList.remove('show');
-	            else m.style.display = 'none';
-	            document.body.style.overflow = '';
-	            return; // Stanna här, vi har hanterat back-trycket
-	        }
-	    }
-	
-	    // 2. Hantera Vyer baserat på historik-state
-	    const state = event.state;
-	
-	    // Om vi har ett aktivt dag-läge i kalendern (Swipe 1 i Kalender)
-	    if (state && state.dayListOpen) {
-	        // Gör inget här, calendar.js hanterar stängningen av listan visuellt
-	        return; 
-	    }
-
-        if (state && state.uiState === 'statistics') {
-            // Om vi backar från statistikvyn -> Gå till översikt
-            document.getElementById('statisticsView').style.display = 'none';
-            document.getElementById('statBar').style.display = '';
-            document.getElementById('timelineView').style.display = 'block';
-            return;
+        // 1. Kontrollera modaler och drawern
+        const lagerDrawer = document.getElementById('lagerDrawer');
+        if (lagerDrawer && lagerDrawer.classList.contains('open')) {
+            // Om lagermenyn är öppen, stäng den och stanna där
+            window.closeLagerDrawer(true); 
+            return; 
         }
-	
-	    // Om vi är tillbaka på Kalender-vyn (efter att ha stängt daglistan)
-	    if (state && state.uiState === 'calendar') {
-	        // Se till att kalendern syns och daglistan är borta
-	        document.getElementById('selectedDayView').classList.remove('show');
-	        return;
-	    }
-	
-	    // 3. Om vi är tillbaka på "Basen" (Inget state eller tomt state)
-	    // Detta händer vid sista swipen
-	    if (!state || !state.uiState) {
-	        // Återställ till Översikt
-	        document.getElementById('customersView').style.display = 'none';
-	        document.getElementById('calendarView').style.display = 'none';
-            document.getElementById('lagerView').style.display = 'none';
-	        document.getElementById('selectedDayView').classList.remove('show'); // Säkerställ att den är borta
-	        
-	        document.getElementById('statBar').style.display = ''; // Visa grid/flex
-	        document.getElementById('timelineView').style.display = 'block';
-	        
-	        // Återställ menyn
-	        document.querySelectorAll('.mobile-nav-item').forEach(n => n.classList.remove('active'));
-	        document.getElementById('mobileHomeBtn').classList.add('active');
+
+        const modals = [
+            document.getElementById('imageZoomModal'),
+            document.getElementById('vehicleModal'),
+            document.getElementById('chatWidget'),
+            document.getElementById('mobileSearchModal')
+        ];
+        
+        for (let m of modals) {
+            if (m && (m.style.display === 'flex' || m.classList.contains('show'))) {
+                if(m.classList.contains('show')) m.classList.remove('show');
+                else m.style.display = 'none';
+                document.body.style.overflow = '';
+                return;
+            }
+        }
+
+        const state = event.state;
+
+        // 2. Hantera återgång till startsidan
+        if (!state || !state.uiState) {
+            // Dölj ALLA specialvyer
+            document.getElementById('customersView').style.display = 'none';
+            document.getElementById('calendarView').style.display = 'none';
+            document.getElementById('lagerView').style.display = 'none'; // VIKTIG: Dölj lagret
+            const statsView = document.getElementById('statisticsView');
+            if (statsView) statsView.style.display = 'none';
+            
+            // Visa startsidan
+            document.getElementById('statBar').style.display = ''; 
+            document.getElementById('timelineView').style.display = 'block';
+            
+            // Återställ nav-ikoner
+            document.querySelectorAll('.mobile-nav-item').forEach(n => n.classList.remove('active'));
+            const homeBtn = document.getElementById('mobileHomeBtn');
+            if (homeBtn) homeBtn.classList.add('active');
+            
             window.scrollTo(0, 0);
         }
-	});
+    });
 
     // Om vi swipar tillbaka och statisticsView är öppen -> Stäng den
     const statsView = document.getElementById('statisticsView');
@@ -2542,6 +2528,10 @@ function closeVehicleModal() {
 
 // Hjälpfunktion för att lägga till ett "steg" i historiken
 window.addHistoryState = function(viewName = 'modal') {
+    // Om vi redan är i detta state, lägg inte till ett till
+    if (history.state && history.state.uiState === viewName) {
+        return;
+    }
     history.pushState({ uiState: viewName }, null, window.location.href);
 };
 
