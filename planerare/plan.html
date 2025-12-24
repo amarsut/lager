@@ -392,16 +392,7 @@
 						<div id="selectedDayView" style="display:none;"></div>
 					</div>
 
-										<div id="lagerView" style="display: none; flex-direction: column;">
-						<header class="lager-mobile-top-bar mobile-only">
-							<button class="m-back-btn" onclick="document.getElementById('btnBackLager').click()">
-								<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
-							</button>
-							<div class="m-search-box">
-								<svg class="m-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-								<input type="text" id="lagerSearchInputMobile" placeholder="Sök i lagret..." oninput="syncSearch(this.value)">
-							</div>
-						</header>
+						<div id="lagerView" style="display: none; flex-direction: column;">
 
 						<div class="mobile-filter-row mobile-only">
 							<select id="mobileFilterMain" onchange="window.setLagerFilter(this.value)">
@@ -434,34 +425,43 @@
 									<div class="status-chips-container">
 										<label class="filter-chip">
 											<input type="checkbox" id="filterInStock" checked onchange="window.triggerLagerRender()">
-											<span>I LAGER</span>
+											<span>Lager</span>
 										</label>
 										<label class="filter-chip">
 											<input type="checkbox" id="filterOutOfStock" onchange="window.triggerLagerRender()">
-											<span>SLUT I LAGER</span>
+											<span>Slut i Lager</span>
 										</label>
 									</div>
 								</div>
 							</aside>
 
 							<main style="flex: 1; min-width: 0;">
-								<div class="lager-toolbar-pro desktop-only">
+								<div class="lager-toolbar-pro"> 
 									<div class="toolbar-left">
 										<button class="std-back-btn" id="btnBackLager">
 											<svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none"><polyline points="15 18 9 12 15 6"></polyline></svg>
 										</button>
-										<div class="sort-box-pro">
+									</div>
+									
+									<div class="toolbar-right">
+										<div class="search-wrapper-pro">
+											<svg class="search-icon-pro" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+											<input type="text" id="lagerSearchInput" placeholder="Sök artikel...">
+										</div>
+
+										<div class="filter-icon-wrapper">
+											<svg class="filter-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+												<line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line>
+												<line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line>
+												<line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line>
+												<line x1="2" y1="14" x2="6" y2="14"></line><line x1="10" y1="8" x2="14" y2="8"></line>
+												<line x1="18" y1="16" x2="22" y2="16"></line>
+											</svg>
 											<select id="sortSelect" onchange="window.triggerLagerRender()">
 												<option value="name">Namn A-Ö</option>
 												<option value="price-low">Lägsta Pris</option>
 												<option value="price-high">Högsta Pris</option>
 											</select>
-										</div>
-									</div>
-									<div class="toolbar-right">
-										<div class="search-wrapper-pro">
-											<svg class="search-icon-pro" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-											<input type="text" id="lagerSearchInput" placeholder="Sök artikel...">
 										</div>
 									</div>
 								</div>
