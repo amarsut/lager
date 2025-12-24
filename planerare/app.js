@@ -2541,10 +2541,9 @@ function closeVehicleModal() {
 }
 
 // Hjälpfunktion för att lägga till ett "steg" i historiken
-function addHistoryState(viewName = 'modal') {
-    // Vi sparar vilket "läge" vi är i (t.ex. 'customers', 'calendar' eller 'modal')
+window.addHistoryState = function(viewName = 'modal') {
     history.pushState({ uiState: viewName }, null, window.location.href);
-}
+};
 
 // Funktion för att visa/dölja åtgärdsmenyn inuti kortet
 function toggleCardActions(jobId, event) {
