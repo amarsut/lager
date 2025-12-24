@@ -1,5 +1,5 @@
 /* ==========================================================================
-   LAGER.CSS - Optimerad Unified Version 2025
+   LAGER.CSS - Unified & Optimized Version 2025
    ========================================================================== */
 
 /* --- GRUNDLAYOUT --- */
@@ -14,20 +14,12 @@
 }
 
 /* --- SIDEBAR (Desktop) --- */
-.lager-sidebar-pro { 
-    width: 220px; 
-    flex-shrink: 0; 
-}
-
+.lager-sidebar-pro { width: 220px; flex-shrink: 0; }
 .sidebar-card { 
-    background: #fff; 
-    border-radius: 12px; 
-    padding: 18px; 
-    border: 1px solid #e2e8f0; 
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    background: #fff; border-radius: 12px; padding: 18px; 
+    border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
-
-.sidebar-title { font-size: 13px; font-weight: 800; color: #1e293b; text-transform: uppercase; margin-bottom: 15px; }
+.sidebar-title { font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; }
 .sidebar-divider { height: 1px; background: #f1f5f9; margin: 15px 0; }
 .sidebar-sub-label { font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 10px; }
 
@@ -35,62 +27,38 @@
     display: flex; justify-content: space-between; align-items: center;
     padding: 10px 12px; border-radius: 8px; font-size: 14px; color: #64748b; cursor: pointer; transition: 0.2s;
 }
-
 .sidebar-cat-link:hover { background: #f8fafc; color: #2563eb; }
 .sidebar-cat-link.active { background: #eff6ff; color: #2563eb; font-weight: 700; }
 .cat-badge { background: #f1f5f9; padding: 2px 6px; border-radius: 10px; font-size: 10px; }
 
-/* --- UNIFIED TOOLBAR (Dator & Mobil) --- */
+.status-chips-container { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; padding-left: 4px; }
+.filter-chip { display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 13px; color: #64748b; font-weight: 500; transition: 0.2s; user-select: none; }
+.filter-chip:hover { color: #1e293b; }
+.filter-chip input[type="checkbox"] { width: 16px; height: 16px; accent-color: #3b82f6; cursor: pointer; }
+
+/* --- TOOLBAR (Desktop & Mobil Grund) --- */
 .lager-toolbar-pro {
-    background: #fff;
-    border-radius: 12px;
-    padding: 0 15px;
-    display: flex !important;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 24px;
-    border: 1px solid #e2e8f0;
-    height: 64px;
-    gap: 15px;
-    box-sizing: border-box;
+    background: #fff; border-radius: 12px; padding: 0 15px;
+    display: flex !important; align-items: center; justify-content: space-between;
+    margin-bottom: 24px; border: 1px solid #e2e8f0; height: 64px; gap: 15px; box-sizing: border-box;
 }
+.toolbar-right { display: flex; align-items: center; gap: 12px; flex: 1; }
 
-.toolbar-left { flex-shrink: 0; }
-.toolbar-right { 
-    display: flex; 
-    align-items: center; 
-    gap: 12px; 
-    flex: 1; 
-}
-
-/* Sökfältet */
 .search-wrapper-pro { position: relative; flex: 1; }
-.search-icon-pro { 
-    position: absolute; left: 14px; top: 50%; transform: translateY(-50%); 
-    width: 16px !important; height: 16px !important; color: #94a3b8; 
-}
-
+.search-icon-pro { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: #94a3b8; }
 #lagerSearchInput { 
-    width: 100% !important; 
-    padding: 12px 15px 12px 42px !important; 
-    border-radius: 12px !important; 
-    border: 1px solid #f1f5f9 !important; 
-    font-size: 14px; 
-    background: #f8fafc; 
-    transition: all 0.2s;
-    outline: none;
+    width: 100%; padding: 12px 15px 12px 42px; border-radius: 12px; 
+    border: 1px solid #f1f5f9; font-size: 14px; background: #f8fafc; outline: none; transition: 0.2s;
 }
+#lagerSearchInput:focus { border-color: #3b82f6; background: #fff; }
 
-#lagerSearchInput:focus { border-color: #3b82f6 !important; background: #fff; }
-
-/* Filter/Sorteringsikon */
 .filter-icon-wrapper {
     position: relative;
-    width: 44px;
-    height: 44px;
+    width: 38px; /* Minskad från 44px */
+    height: 38px; /* Minskad från 44px */
     background: #f8fafc;
     border: 1px solid #e2e8f0;
-    border-radius: 12px;
+    border-radius: 10px; /* Något mindre radie */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -99,173 +67,267 @@
     flex-shrink: 0;
 }
 
-.filter-icon-wrapper:hover { background: #f1f5f9; border-color: #cbd5e1; }
-.filter-nav-icon { width: 20px; height: 20px; color: #475569; }
-
-.filter-icon-wrapper select {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    opacity: 0; cursor: pointer; appearance: none;
+.filter-nav-icon { 
+    width: 18px; /* Något mindre ikon */
+    height: 18px; 
+    color: #475569; 
 }
+.filter-icon-wrapper select { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
 
-/* --- ARTIKELKORT --- */
+/* --- ARTIKELKORT (Optimerad Desktop-höjd) --- */
 .article-card-pro {
-    background: #fff; border-radius: 16px; padding: 20px; margin-bottom: 12px;
-    display: flex; gap: 20px; border: 1px solid #e2e8f0; align-items: center;
+    background: #fff; border-radius: 12px; padding: 12px 16px; /* Kompakt padding */
+    margin-bottom: 8px; display: flex; gap: 16px; border: 1px solid #e2e8f0; align-items: center;
 }
-
 .card-img-box-pro { 
-    width: 110px; height: 90px; background: #f8fafc; border-radius: 12px; 
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0; 
+    width: 80px; height: 65px; /* Mindre bild sparar höjd */
+    background: #f8fafc; border-radius: 8px; display: flex; 
+    align-items: center; justify-content: center; flex-shrink: 0; 
 }
-
 .card-info-pro { flex: 1; min-width: 0; }
-.card-info-pro h3 { font-size: 17px; font-weight: 700; color: #1e293b; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.card-id-label { font-size: 10px; font-weight: 800; color: #cbd5e1; margin-bottom: 4px; }
-.card-ref-pro { font-size: 13px; color: #64748b; margin-top: 4px; }
+.card-info-pro h3 { font-size: 15px; font-weight: 700; color: #1e293b; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card-id-label { font-size: 9px; font-weight: 800; color: #cbd5e1; text-transform: uppercase; }
+.card-ref-pro { font-size: 12px; color: #64748b; font-weight: 500; white-space: nowrap; }
 
-.card-notes-pro {
-    font-size: 12px; color: #94a3b8; margin-top: 8px; padding-top: 4px;
+.card-notes-pro { 
+    font-size: 11px; color: #94a3b8; margin-top: 4px; padding-top: 2px; 
     border-top: 1px dashed #f1f5f9; font-style: italic;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 
 .card-actions-pro {
-    width: 180px; display: flex; flex-direction: column; align-items: flex-end; text-align: right; gap: 8px;
-    border-left: 1px solid #f1f5f9; padding-left: 20px; flex-shrink: 0;
+    width: 150px; display: flex; flex-direction: column; align-items: flex-end; 
+    text-align: right; gap: 4px; border-left: 1px solid #f1f5f9; padding-left: 16px; flex-shrink: 0;
 }
-
-.card-price-pro { font-size: 24px; font-weight: 800; color: #0f172a; }
-.stock-pill { padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; }
+.card-price-pro { font-size: 18px; font-weight: 800; color: #0f172a; line-height: 1; }
+.stock-pill { padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; }
 .stock-in { background: #ecfdf5; color: #10b981; }
 .stock-out { background: #fef2f2; color: #ef4444; }
-.btn-redigera-pro { background: #2563eb; color: #fff; border: none; padding: 10px 16px; border-radius: 10px; font-weight: 700; width: 100%; cursor: pointer; }
+.btn-redigera-pro { background: #2563eb; color: #fff; border: none; padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 700; width: 100%; cursor: pointer; }
 
 /* --- PRO EDIT DRAWER --- */
+/* --- BULLETPROOF DRAWER --- */
 .lager-drawer {
-    position: fixed; top: 0; right: -450px; width: 420px; height: 100%;
-    background: #fff; z-index: 2005; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: -10px 0 40px rgba(0,0,0,0.1); display: flex; flex-direction: column;
+    position: fixed;
+    top: 0;
+    right: 0 !important; /* Tvinga fästpunkt till höger */
+    left: auto !important;
+    width: 450px;
+    height: 100%;
+    background: #fff;
+    z-index: 30005;
+    display: flex;
+    flex-direction: column;
+    /* Startläge: Dold */
+    transform: translateX(100%);
+    visibility: hidden; 
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.4s;
+    box-shadow: -10px 0 50px rgba(0, 0, 0, 0.15);
 }
-.lager-drawer.open { right: 0; }
-.drawer-header { padding: 24px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
-.drawer-body { padding: 24px; flex: 1; overflow-y: auto; }
-.drawer-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(2px); display: none; z-index: 2004; }
+
+/* Öppet läge */
+.lager-drawer.open {
+    transform: translateX(0);
+    visibility: visible;
+}
+
+.drawer-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.5);
+    backdrop-filter: blur(4px);
+    display: none;
+    z-index: 30004;
+}
+
 .drawer-overlay.show { display: block; }
 
+/* Innehållsstyrning */
+.drawer-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.drawer-header h3 { font-size: 1.25rem; font-weight: 800; color: #0f172a; margin: 0; }
+
+.drawer-body {
+    padding: 24px;
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Form-element */
+.drawer-body .form-group label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+
+.drawer-body .input-gray {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 12px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    font-size: 1rem;
+    transition: all 0.2s;
+    box-sizing: border-box;
+}
+
+.drawer-body .input-gray:focus {
+    background: #fff;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+    outline: none;
+}
+
+/* Spara-knapp */
+#btnSaveLagerItem {
+    margin-top: auto;
+    background: #2563eb;
+    color: #fff;
+    padding: 16px;
+    border-radius: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    border: none;
+    cursor: pointer;
+}
+
+/* Mobilanpassning - täck hela skärmen på enheter under 768px */
+@media (max-width: 768px) {
+    .lager-drawer { 
+        width: 100% !important; 
+        box-shadow: none; 
+    }
+    .drawer-body { padding: 20px; padding-bottom: 100px; } /* Extra space för mobil-nav */
+}
+
+/* --- EXTRA KOMPAKT & SYMMETRISK LAYOUT --- */
+.drawer-body.compact-form {
+    padding: 16px 20px !important;
+    gap: 14px !important;
+}
+
+/* Tvinga flex-1 att vara exakt lika breda */
+.form-row {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+}
+.flex-1 { 
+    flex: 1 1 0; /* Tvingar elementen att dela utrymmet 50/50 */
+    min-width: 0;
+}
+
+/* Footer-knappar */
+.action-footer {
+    margin-top: auto; /* Trycker ner knapparna till botten */
+    padding-top: 10px;
+}
+
+.btn-action {
+    flex: 1;
+    padding: 14px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.btn-save {
+    background: #2563eb; /* Blå */
+    color: white;
+}
+
+.btn-delete {
+    background: #fee2e2; /* Ljusröd bakgrund */
+    color: #ef4444; /* Starkare röd text */
+}
+
+.btn-action:active { transform: scale(0.98); }
+
 /* ==========================================================================
-   MOBILANPASSNING (768px och nedåt)
+   MOBILANPASSNING (Under 768px) - KONSOLIDERAD
    ========================================================================== */
 @media (max-width: 768px) {
-    /* Dölj systemheadern */
     body:has(#lagerView[style*="display: flex"]) .mobile-header { display: none !important; }
-
     .lager-pro-wrapper { padding: 0; flex-direction: column; }
     .lager-sidebar-pro { display: none !important; }
 
-    /* Fixerad Header (Toolbar) */
+    /* Fixerad Toolbar & Filter */
     .lager-toolbar-pro {
         position: fixed; top: 0; left: 0; width: 100%; height: 64px;
-        z-index: 2000; margin-bottom: 0; border-radius: 0;
-        border-left: none; border-right: none; border-top: none;
+        z-index: 2000; margin-bottom: 0; border-radius: 0; border: none;
         padding: 0 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
-
-    /* Filterraden under headern */
     .mobile-filter-row {
-        display: flex !important;
-        position: fixed;
-        top: 65px; /* Måste matcha headerns höjd exakt */
-        left: 0;
-        width: 100%;
-        height: 50px; /* Fast höjd för raden */
-        background: #fff;
-        padding: 6px 10px !important;
-        z-index: 1000;
-        border-bottom: 1px solid #e2e8f0;
-        box-sizing: border-box;
-        gap: 6px;
+        display: flex !important; position: fixed; top: 64px; left: 0; width: 100%;
+        height: 50px; background: #fff; padding: 6px 10px; z-index: 1000;
+        border-bottom: 1px solid #e2e8f0; box-sizing: border-box; gap: 6px;
     }
-
     .mobile-filter-row select {
         flex: 1;
         min-width: 0;
-        height: 100% !important; /* Låt den fylla ut containern */
-        padding: 0 10px !important;
-        font-size: 13px !important;
-        font-weight: 700;
+        height: 36px !important; /* Fast höjd istället för 100% */
+        padding: 0 8px !important;
+        font-size: 12px !important; /* Något mindre font för att garantera plats */
+        font-weight: 600;
         border-radius: 8px;
         background-color: #f1f5f9;
         border: 1px solid #e2e8f0;
         color: #1e293b;
-        /* Dessa rader fixar klippt text: */
-        line-height: normal !important;
-        vertical-align: middle;
-        appearance: auto; /* Använd mobilens standardpil för att undvika klippning */
+        line-height: 1 !important; /* Fixar vertikal centrering */
+        appearance: auto; 
     }
 
-    /* Innehållslista */
     #lagerListElite {
-        /* 60px (header) + 50px (filterrad) + lite marginal = 115px */
+        /* 64px header + 50px filter + 4px marginal = 118px */
         padding-top: 50px !important; 
         padding-left: 15px;
         padding-right: 15px;
         padding-bottom: 100px;
     }
 
-    /* Artikelkort i mobil */
-    .article-card-pro { flex-direction: column; align-items: flex-start; padding: 15px; }
-    .card-img-box-pro { width: 100%; height: 120px; }
-    .card-actions-pro { 
-        width: 100%; border-left: none; padding-left: 0; border-top: 1px solid #f1f5f9; 
-        padding-top: 15px; flex-direction: row; justify-content: space-between; align-items: center; 
+    /* Kompakt Artikelkort Mobil */
+    .article-card-pro { flex-direction: row; padding: 10px; gap: 10px; align-items: center; border-radius: 12px; }
+    .card-img-box-pro { width: 60px; height: 60px; }
+    
+    .card-info-pro { flex: 1; min-width: 0; }
+    .card-info-pro h3 { font-size: 14px; margin-bottom: 2px; }
+    
+    /* Ref-nummer på en rad */
+    .card-ref-pro { 
+        font-size: 11px; white-space: nowrap !important; overflow: hidden; 
+        text-overflow: ellipsis; display: block; margin-top: 0; 
     }
-    .btn-redigera-pro { width: auto; min-width: 130px; }
+    
+    /* Kommentarer på en rad med ellipsis */
+    .card-notes-pro { 
+        display: block !important; font-size: 10px; white-space: nowrap; 
+        overflow: hidden; text-overflow: ellipsis; margin-top: 2px; opacity: 0.8; 
+    }
 
-    /* Drawer i mobil */
+    /* Actions-kolumn Mobil */
+    .card-actions-pro { 
+        flex-shrink: 0; width: 90px; border-left: 1px solid #f1f5f9; 
+        padding-left: 10px; text-align: right; justify-content: center;
+    }
+    .card-price-pro { font-size: 16px; margin-bottom: 2px; line-height: 1; }
+    .stock-pill { font-size: 9px; padding: 2px 6px; }
+    .btn-redigera-pro { padding: 6px 4px; font-size: 10px; border-radius: 6px; width: 100%; }
+
     .lager-drawer { width: 100%; right: -100%; }
-}
-
-/* --- LAGERSTATUS SIDEBAR (Desktop) --- */
-
-/* Behållare för checkboxarna */
-.status-chips-container {
-    display: flex;
-    flex-direction: column; /* Lägger dem under varandra */
-    gap: 12px;              /* Avstånd mellan raderna */
-    margin-top: 10px;
-    padding-left: 4px;
-}
-
-/* Själva etiketten (raden) */
-.filter-chip {
-    display: flex;
-    align-items: center;    /* Centrerar checkbox och text vertikalt */
-    gap: 10px;              /* Avstånd mellan checkbox och text */
-    cursor: pointer;
-    font-size: 13px;        /* Mindre och mer tilltalande text */
-    color: #64748b;        /* En mjukare gråblå färg */
-    font-weight: 500;
-    transition: color 0.2s ease;
-    user-select: none;
-}
-
-/* Ändra färg vid hovring för en pro-känsla */
-.filter-chip:hover { color: #1e293b; }
-
-/* Gör själva checkboxen lite snyggare (valfritt men rekommenderas) */
-.filter-chip input[type="checkbox"] {
-    width: 16px;
-    height: 16px;
-    cursor: pointer;
-    accent-color: #3b82f6; /* Matchar din blåa primärfärg */
-    border: 1.5px solid #cbd5e1;
-    border-radius: 4px;
-}
-
-.sidebar-title {
-    font-size: 11px;         /* Något mindre rubrik */
-    font-weight: 700;
-    color: #94a3b8;         /* Ljusare grå för sekundär info */
-    text-transform: uppercase;
-    letter-spacing: 0.05em;  /* Lite luft mellan bokstäverna */
-    margin-bottom: 12px;
 }
