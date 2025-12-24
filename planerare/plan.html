@@ -396,22 +396,22 @@
 
 						<div class="mobile-filter-row mobile-only">
 							<select id="mobileFilterMain" onchange="window.setLagerFilter(this.value)">
-								<option value="all">Kategori</option>
-								<option value="Service">Service</option>
-								<option value="Motor/Chassi">Motor</option>
+								<option value="all">Alla kategorier</option>
+								<option value="Service" selected>Service</option> <option value="Motor/Chassi">Motor</option>
 								<option value="Bromsar">Bromsar</option>
 							</select>
+							
 							<select id="mobileFilterSmart" onchange="window.setLagerFilter(this.value)">
-								<option value="all">Filtertyp</option>
+								<option value="all">Alla</option>
 								<option value="OLJEFILTER">Oljefilter</option>
 								<option value="LUFTFILTER">Luftfilter</option>
 								<option value="KUPEFILTER">Kupéfilter</option>
 								<option value="BROMSBELÄGG">Bromsbelägg</option>
 							</select>
+
 							<select id="mobileFilterStock" onchange="window.triggerLagerRender()">
-								<option value="both">Status</option>
-								<option value="in">I lager</option>
-								<option value="out">Slut</option>
+								<option value="both">Alla</option>
+								<option value="in" selected>I lager</option> <option value="out">Slut i lager</option>
 							</select>
 						</div>
 
