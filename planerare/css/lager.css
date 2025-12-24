@@ -173,7 +173,7 @@
     .mobile-filter-row {
         display: flex !important;
         position: fixed;
-        top: 60px; /* Måste matcha headerns höjd exakt */
+        top: 65px; /* Måste matcha headerns höjd exakt */
         left: 0;
         width: 100%;
         height: 50px; /* Fast höjd för raden */
