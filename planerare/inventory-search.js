@@ -18,6 +18,7 @@ if (!firebase.apps.find(app => app.name === "inventoryApp")) {
     inventoryApp = firebase.app("inventoryApp");
 }
 const invDb = inventoryApp.firestore();
+window.invDb = invDb;
 
 async function searchInInventory(searchTerm) {
     if (!searchTerm || searchTerm.length < 2) return [];
