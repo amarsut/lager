@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
     <title>Översikt Pro</title>
+	<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'%3E%3Cdefs%3E%3ClinearGradient id='a' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%233b82f6'/%3E%3Cstop offset='100%25' stop-color='%232563eb'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='36' height='36' rx='8' fill='url(%23a)'/%3E%3Cg fill='white' transform='translate(4 4)'%3E%3Cpath d='M23.6 8.4c.2.4.4.9.4 1.4 0 2.2-1.8 4-4 4-1.8 0-3.4-1.3-3.9-3L10 16.9l-1.4-1.4 6.1-6.1c-.1-.5-.2-.9-.2-1.4 0-2.2 1.8-4 4-4 1.4 0 2.6.7 3.3 1.8l-3.7 3.7 1.4 1.4 4.1-2.5z'/%3E%3Cpath d='M4 15h20c.5 0 1 .1 1.5.3l.5-.8c.5-.8.4-1.9-.3-2.5l-2.2-1.8c-.7-.6-1.7-.8-2.6-.4l-2.3 1-3-1.3c-.8-.4-1.7-.3-2.5.1L10 11H6c-1.1 0-2 .9-2 2v2zM2 17v4c0 1.1.9 2 2 2h1c1.1 0 2-.9 2-2v-1h14v1c0 1.1.9 2 2 2h1c1.1 0 2-.9 2-2v-4H2z'/%3E%3C/g%3E%3C/svg%3E">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11,6 +12,7 @@
 
     <link rel="stylesheet" href="style.css">
 
+	<link rel="stylesheet" href="css/lager.css">
 	<link rel="stylesheet" href="css/modals.css">
 	<link rel="stylesheet" href="css/job-cards.css">
 	<link rel="stylesheet" href="css/calendar.css"> 
@@ -236,10 +238,10 @@
                     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                     <span>Kunder</span>
                 </button>
-                <button class="nav-link">
-                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
-                    <span>Lager</span>
-                </button>
+                <button class="nav-link" id="navLager">
+					<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+					<span>Lager</span>
+				</button>
                 <button class="nav-link" onclick="openSettingsModal()">
 				    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
 				    <span>Inställningar</span>
@@ -389,6 +391,75 @@
 						
 						<div id="selectedDayView" style="display:none;"></div>
 					</div>
+
+					<div id="lagerView" style="display: none; flex-direction: column;">
+						<header class="lager-mobile-top-bar mobile-only">
+							<button class="m-back-btn" onclick="document.getElementById('btnBackLager').click()">
+								<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+							</button>
+							<div class="m-search-box">
+								<svg class="m-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+								<input type="text" id="lagerSearchInputMobile" placeholder="Sök i lagret..." oninput="syncSearch(this.value)">
+							</div>
+							<button class="m-filter-btn" onclick="toggleSortMenu()">
+								<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M6 12h12m-9 6h6"></path></svg>
+							</button>
+							
+							<div id="mobileSortDropdown" class="mobile-sort-popover" style="display:none;">
+								<button onclick="setMobileSort('name')">Namn A-Ö</button>
+								<button onclick="setMobileSort('price-low')">Pris Lägst</button>
+								<button onclick="setMobileSort('price-high')">Pris Högst</button>
+							</div>
+						</header>
+
+						<div class="lager-pro-wrapper">
+							<aside class="lager-sidebar-pro">
+								<div class="sidebar-card">
+									<h3 class="sidebar-title desktop-only">Kategorier</h3>
+									<nav id="sidebarCatList" class="cat-nav-container"></nav>
+									
+									<div class="sidebar-divider desktop-only"></div>
+									<h3 class="sidebar-title desktop-only">Lagerstatus</h3>
+									<div class="status-filter-container">
+										<label class="pro-filter-chip">
+											<input type="checkbox" id="filterInStock" checked onchange="window.triggerLagerRender()">
+											<span>I LAGER</span>
+										</label>
+										<label class="pro-filter-chip">
+											<input type="checkbox" id="filterOutOfStock" onchange="window.triggerLagerRender()">
+											<span>SLUT</span>
+										</label>
+									</div>
+								</div>
+							</aside>
+
+							<main style="flex: 1; min-width: 0;">
+								<div class="lager-toolbar-pro desktop-only">
+									<div class="toolbar-left">
+										<button class="std-back-btn" id="btnBackLager">
+											<svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none"><polyline points="15 18 9 12 15 6"></polyline></svg>
+										</button>
+										<div class="sort-box-pro">
+											<select id="sortSelect" onchange="window.triggerLagerRender()">
+												<option value="name">Namn A-Ö</option>
+												<option value="price-low">Lägsta Pris</option>
+												<option value="price-high">Högsta Pris</option>
+											</select>
+										</div>
+									</div>
+									<div class="toolbar-right">
+										<div class="search-wrapper-pro">
+											<svg class="search-icon-pro" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+											<input type="text" id="lagerSearchInput" placeholder="Sök artikel eller ref...">
+										</div>
+										<span id="paginationStats" class="results-stats">Laddar...</span>
+									</div>
+								</div>
+
+								<div id="lagerListElite"></div>
+							</main>
+						</div>
+						</div>
 
 					<div id="customersView" style="display: none;">
 						<div class="std-header">
@@ -1025,7 +1096,7 @@
 						<div class="menu-icon-box blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></div>
 						<span>Kunder</span>
 					</div>
-					<div class="menu-card">
+					<div class="menu-card" id="menuBtnLager">
 						<div class="menu-icon-box orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg></div>
 						<span>Lager</span>
 					</div>
