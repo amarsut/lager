@@ -354,3 +354,24 @@
     .lager-drawer { width: 100%; right: -100%; }
 }
 
+/* --- STYLING FÖR PRISJÄMFÖRELSE-LÄNK --- */
+.card-price-container-pro {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.price-compare-link {
+    color: #64748b;
+    padding: 4px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    display: flex;
+}
+
+.price-compare-link:hover {
+    color: #2563eb;
+    background: rgba(37, 99, 235, 0.1);
+}
+
