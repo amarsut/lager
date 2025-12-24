@@ -259,6 +259,28 @@
 
 .btn-action:active { transform: scale(0.98); }
 
+/* --- MATCHAD IKON-KNAPP FÖR NY ARTIKEL --- */
+.btn-add-article-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #2563eb; /* Din blå signaturfärg */
+    color: white;
+    border: none;
+    width: 38px;  /* Matchar höjden på sökfältet */
+    height: 38px;
+    border-radius: 8px; /* Rundade hörn enligt bild */
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35); /* Blåaktig skugga */
+    flex-shrink: 0;
+}
+
+.btn-add-article-icon svg {
+    width: 18px;
+    height: 18px;
+}
+
 /* ==========================================================================
    MOBILANPASSNING (Under 768px) - KONSOLIDERAD
    ========================================================================== */
