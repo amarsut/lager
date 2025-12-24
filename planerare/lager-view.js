@@ -14,6 +14,13 @@ export function initLagerView() {
 
     lagerUnsubscribe = database.collection("lager").onSnapshot(snapshot => {
         window.allItemsCache = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        
+        // Vid första laddning, se till att rätt kategori visas i mobilmenyn
+        const mobileCat = document.getElementById('mobileFilterMain');
+        if (mobileCat && window.innerWidth <= 768) {
+            mobileCat.value = window.currentFilter; 
+        }
+
         renderEliteTable(window.allItemsCache);
     }, err => console.error("Firebase Error:", err));
 
