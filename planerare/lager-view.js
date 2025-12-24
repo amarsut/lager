@@ -156,7 +156,7 @@ window.setLagerFilter = (c) => {
 function renderSidebar(items, sidebar) {
     if (!sidebar) return;
     const subFilters = getDynamicSubFilters(items);
-    const mainCats = ['Service', 'Motor/Chassi', 'Bromsar', 'Andra märken'];
+    const mainCats = ['Service', 'Motor/Chassi', 'Bromsar', 'Andra Märken'];
     
     let html = `<div class="sidebar-cat-link ${window.currentFilter === 'all' ? 'active' : ''}" onclick="window.setLagerFilter('all')">
                     <span>Alla</span><span class="cat-badge">${items.length}</span>
@@ -288,6 +288,13 @@ window.editLagerItemById = (id) => {
         
         document.getElementById('lagerDrawer').classList.add('open');
         document.getElementById('lagerDrawerOverlay').classList.add('show');
+
+        // Uppdatera titeln
+        const titleEl = document.querySelector('#lagerDrawer .std-title');
+        if (titleEl) titleEl.textContent = "Redigera Artikel";
+        
+        document.getElementById('lagerDrawer').classList.add('open');
+        document.getElementById('lagerDrawerOverlay').classList.add('show');
     }
 };
 
@@ -296,6 +303,27 @@ window.closeLagerDrawer = () => {
     document.getElementById('lagerDrawerOverlay').classList.remove('show');
 };
 
+// --- FUNKTION FÖR ATT ÖPPNA FÖR NY ARTIKEL ---
+window.openNewLagerItemDrawer = () => {
+    // 1. Rensa alla fält
+    document.getElementById('editItemId').value = ""; 
+    document.getElementById('editItemName').value = "";
+    document.getElementById('editItemPrice').value = "";
+    document.getElementById('editItemCategory').value = "Service";
+    document.getElementById('editItemQty').value = "";
+    document.getElementById('editItemRefNum').value = "";
+    document.getElementById('editItemNotes').value = "";
+    
+    // 2. Ändra titeln i drawern så man ser att det är en ny artikel
+    const titleEl = document.querySelector('#lagerDrawer .std-title');
+    if (titleEl) titleEl.textContent = "Ny Artikel";
+
+    // 3. Öppna drawern
+    document.getElementById('lagerDrawer').classList.add('open');
+    document.getElementById('lagerDrawerOverlay').classList.add('show');
+};
+
+// --- UPPDATERAD SPARA-FUNKTION ---
 window.saveLagerItemChanges = async () => {
     const id = document.getElementById('editItemId').value;
     const database = window.invDb || window.db || firebase.firestore();
@@ -304,19 +332,23 @@ window.saveLagerItemChanges = async () => {
         name: document.getElementById('editItemName').value,
         price: parseInt(document.getElementById('editItemPrice').value) || 0,
         category: document.getElementById('editItemCategory').value,
-        
-        // NYTT: Spara det nya antalet som en siffra
         quantity: parseInt(document.getElementById('editItemQty').value) || 0,
-        
         service_filter: document.getElementById('editItemRefNum').value,
         notes: document.getElementById('editItemNotes').value
     };
 
     try {
-        await database.collection("lager").doc(id).update(data);
+        if (id) {
+            // Om ID finns -> Uppdatera befintlig
+            await database.collection("lager").doc(id).update(data);
+        } else {
+            // Om ID saknas -> Skapa ny artikel
+            await database.collection("lager").add(data);
+        }
         window.closeLagerDrawer();
     } catch (e) { 
-        console.error("Update Error:", e);
+        console.error("Fel vid sparande:", e);
+        alert("Kunde inte spara artikeln.");
     }
 };
 
