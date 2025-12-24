@@ -27,17 +27,73 @@ function getCategoryIconHtml(category, name) {
                 <path d="M18 19c-2 3-8 3-11-1" stroke="#fca5a5" stroke-width="2"/>
                 <path d="M9 18.5l-2.5-.5L7 20.5" stroke="#fca5a5" stroke-width="2"/>
                 <rect x="6" y="9" width="4" height="6"/><path d="M10 9l3-2v10l-3-2z"/><rect x="13" y="8" width="7" height="8"/>
-            </g>`,
+            </g>
+        `,
+
+        injector: `
+            <g stroke="#1e293b" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 19l2 2 15-15-2-2-15 15z" fill="#94a3b8" />
+                <path d="M16 4l4 4M7 17l4 4" stroke="#1e293b" />
+                <rect x="14" y="3" width="6" height="4" transform="rotate(-45 17 5)" fill="#ef4444" stroke="none" />
+                <rect x="6" y="15" width="5" height="4" transform="rotate(-45 8.5 17)" fill="#ef4444" stroke="none" />
+                <path d="M4 20l-2 2" stroke-width="2" />
+                <rect x="11" y="9" width="4" height="4" transform="rotate(-45 13 11)" fill="#475569" stroke="none" />
+            </g>
+        `,
+
+        spring: `
+            <g fill="#1e293b">
+                <rect x="4" y="2" width="16" height="2.5" rx="1.2" />
+                <path d="M6 4.5l12 3v2.5l-12-3z" />
+                <rect x="4" y="7" width="16" height="2.5" rx="1.2" />
+                <path d="M6 9.5l12 3v2.5l-12-3z" />
+                <rect x="4" y="12" width="16" height="2.5" rx="1.2" />
+                <path d="M6 14.5l12 3v2.5l-12-3z" />
+                <rect x="4" y="17" width="16" height="2.5" rx="1.2" />
+                <rect x="4" y="21" width="16" height="2.5" rx="1.2" />
+            </g>
+        `,
+
+        belt: `
+            <g stroke="#1e293b" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 5L20 16H4L12 5" fill="none" stroke="#ef4444" stroke-width="2.5" />
+                <circle cx="12" cy="6" r="4" fill="#cbd5e1" />
+                <circle cx="12" cy="6" r="2" fill="#334155" />
+                <circle cx="18" cy="16" r="3.5" fill="#94a3b8" />
+                <circle cx="18" cy="16" r="1.5" fill="#334155" />
+                <circle cx="6" cy="16" r="5" fill="#475569" />
+                <circle cx="6" cy="16" r="2.5" fill="#94a3b8" />
+                <circle cx="6" cy="16" r="0.8" fill="#1e293b" stroke="none" />
+            </g>
+        `,
+
+        glowPlug: `
+            <g stroke="#1e293b" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="11.5" y="2" width="1" height="3" fill="#64748b" />
+                <rect x="10" y="5" width="4" height="8" fill="#94a3b8" />
+                <path d="M10 7h4M10 9h4M10 11h4" stroke="#475569" stroke-width="0.5" />
+                <path d="M11.5 13v7" stroke-width="2" stroke="#475569" />
+                <path d="M11.5 18v3" stroke="#f97316" stroke-width="2.5" />
+                <path d="M11.5 20v1.5" stroke="#fbbf24" stroke-width="1.5" />
+            </g>
+        `,
 
         brakePad: `
-            <g stroke="#1e293b" stroke-width="0.5" stroke-linejoin="round">
-                <path d="M3 13c0-2 4-4 9-4s9 2 9 4l-1 2c0-2-3-3-8-3s-8 1-8 3l-1-2z" fill="#cbd5e1" />
-                <path d="M2 12.5c0-1 1-1.5 2-1.5h1c0-1 3-2 7-2s7 1 7 2h1c1 0 2 .5 2 1.5v1c0 1-1 1.5-2 1.5h-16c-1 0-2-.5-2-1.5v-1z" fill="#94a3b8" />
-                
-                <path d="M4.5 11.5c1.5-1 3.5-1.5 5.5-1.5v3.5c-2 0-4 .5-5.5 1.5v-3.5z" fill="#1e293b" />
-                <path d="M14 10c2 0 4 .5 5.5 1.5v3.5c-1.5-1-3.5-1.5-5.5-1.5v-3.5z" fill="#1e293b" />
-                
-                <path d="M5 11c1.5-.5 3-.8 4.5-.8" stroke="#fff" stroke-width="0.3" opacity="0.4" fill="none" />
+            <g fill="none" stroke="#1e293b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M7 10h10v6H7z" />
+                <path d="M7 10l-2 2v2l2 2M17 10l2 2v2l-2 2" />
+                <path d="M12 10v6" stroke-width="1" />
+                <path d="M5 11v-2h2M19 11v-2h-2" />
+            </g>
+        `,
+
+        brakeCaliper: `
+            <g fill="none" stroke="#1e293b" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 4v16M18 4h-2c-4 0-8 4-8 8s4 8 8 8h2" stroke-width="1.8" />
+                <circle cx="12" cy="7" r="1.5" fill="#94a3b8" />
+                <circle cx="10" cy="12" r="1.5" fill="#94a3b8" />
+                <circle cx="12" cy="17" r="1.5" fill="#94a3b8" />
+                <path d="M15 8v8" opacity="0.5" />
             </g>
         `,
 
@@ -69,12 +125,11 @@ function getCategoryIconHtml(category, name) {
 
         // Oljefilter: Orange/Gul med detaljer (likt Flaticon-stil)
         oilFilter: `
-            <rect x="8" y="2" width="8" height="3" rx="1" fill="#cbd5e1" />
-            <rect x="5" y="5" width="14" height="4" rx="1" fill="#475569" />
-            <rect x="6" y="9" width="12" height="10" fill="#f59e0b" />
-            <path d="M8 9v10M10 9v10M12 9v10M14 9v10M16 9v10" stroke="#b45309" stroke-width="0.5" />
-            <rect x="5" y="19" width="14" height="4" rx="1" fill="#475569" />
-            <rect x="10" y="21" width="4" height="2" fill="#cbd5e1" />
+            <g stroke="#000" stroke-width="1.2">
+                <rect x="11" y="2" width="2" height="20" fill="#334155" /> <ellipse cx="12" cy="6" rx="6" ry="2" fill="#fff" />
+                <rect x="7" y="6" width="10" height="13" fill="#facc15" /> <path d="M9 6 v13 M12 8 v11 M15 6 v13" stroke-width="0.8" opacity="0.4" />
+                <ellipse cx="12" cy="19" rx="6" ry="2" fill="none" />
+            </g>
         `,
         
         // Luftfilter/Kupé: Blå/Vit ram
@@ -100,12 +155,43 @@ function getCategoryIconHtml(category, name) {
                 <circle cx="5.2" cy="6.8" r="0.7" fill="#fff" stroke="none" />
                 <circle cx="8" cy="9" r="0.7" fill="#fff" stroke="none" />
             </g>
+        `,
+
+        exhaustClamp: `
+            <g stroke="#1e293b" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="10" width="18" height="6" fill="#cbd5e1" />
+                <rect x="6" y="8" width="4" height="10" fill="#94a3b8" />
+                <rect x="14" y="8" width="4" height="10" fill="#94a3b8" />
+                <circle cx="8" cy="7" r="1.5" fill="#475569" />
+                <circle cx="16" cy="7" r="1.5" fill="#475569" />
+            </g>
+        `,
+
+        oilBarrel: `
+            <g stroke="#1e293b" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="6" y="4" width="12" height="16" rx="1.5" fill="#facc15" />
+                
+                <rect x="5" y="3.5" width="14" height="1.5" rx="0.7" fill="#eab308" />
+                <rect x="5" y="11.2" width="14" height="1.5" rx="0.7" fill="#eab308" />
+                <rect x="5" y="19" width="14" height="1.5" rx="0.7" fill="#eab308" />
+                
+                <rect x="8" y="2" width="3" height="1.5" fill="#334155" />
+                
+                <path d="M12 6.5 c-1.2 1.8 -1.5 3 -1.5 4 a1.5 1.5 0 0 0 3 0 c0 -1 -0.3 -2.2 -1.5 -4z" fill="#1e3a8a" stroke="none" />
+                
+                <path d="M9 15h6M10 17h4" stroke-width="0.8" opacity="0.6" />
+            </g>
         `
     };
 
-    if (cat.includes('kupefilter') || itemName.includes('kupefilter') || cat.includes('kupé')) {
-        return icons.cabinFilter;
-    }
+    if (itemName.includes('klämma') || itemName.includes('avgasklämma') || cat.includes('skarvmuff')) { return icons.exhaustClamp; }
+    if (itemName.includes('bromsok') || itemName.includes('caliper') || cat.includes('bromsok')) { return icons.brakeCaliper; }
+    if (itemName.includes('fat') || itemName.includes('olja') || cat.includes('motorolja')) { return icons.oilBarrel; }
+    if (itemName.includes('insprut') || itemName.includes('spridare') || cat.includes('insprut')) { return icons.injector;}
+    if (itemName.includes('fjäder') || itemName.includes('fjädrar') || cat.includes('fjäder')) { return icons.spring; }
+    if (itemName.includes('rem') || cat.includes('rem')) { return icons.belt; }
+    if (itemName.includes('glödstift') || cat.includes('glödstift')) { return icons.glowPlug; }
+    if (cat.includes('kupefilter') || itemName.includes('kupefilter') || cat.includes('kupé')) {return icons.cabinFilter; }
     if (itemName.includes('tändstift') || cat.includes('tändstift')) return icons.sparkPlug;
     if (itemName.includes('bränslefilter') || cat.includes('bränslefilter')) return icons.fuelFilter;
     if (cat.includes('oljefilter') || itemName.includes('oljefilter')) return icons.oilFilter;
@@ -231,15 +317,17 @@ export function renderEliteTable(items) {
                          (i.category || "").toLowerCase() === window.currentFilter.toLowerCase() ||
                          (i.name || "").toUpperCase().includes(window.currentFilter.toUpperCase());
 
+        // UTÖKAD SÖKNING: Inkluderar nu även i.notes
         const matchSearch = 
             (i.name || "").toLowerCase().replace(/\s+/g, '').includes(normalizedTerm) ||
             String(i.id || "").toLowerCase().replace(/\s+/g, '').includes(normalizedTerm) ||
-            (i.service_filter || "").toLowerCase().replace(/\s+/g, '').includes(normalizedTerm);
+            (i.service_filter || "").toLowerCase().replace(/\s+/g, '').includes(normalizedTerm) ||
+            (i.notes || "").toLowerCase().replace(/\s+/g, '').includes(normalizedTerm); // <-- Tillagd sökning i kommentarer
 
         return matchStock && matchCat && matchSearch;
     });
 
-    // --- 4. KONTROLL FÖR TOMT RESULTAT (Placeras EFTER filtrering) ---
+    // --- 4. KONTROLL FÖR TOMT RESULTAT ---
     if (filtered.length === 0 && term !== "") {
         const trodo = generateTrodoLink(term);
         const aero = generateAeroMLink(term);
@@ -250,7 +338,6 @@ export function renderEliteTable(items) {
                 <div style="font-size: 48px; margin-bottom: 20px;">🔍</div>
                 <h3 style="margin: 0 0 10px 0; color: #1e293b; font-size: 20px;">Ingen träff i ditt lager</h3>
                 <p style="color: #64748b; margin-bottom: 30px;">Vi hittade inget som matchar "<strong>${term}</strong>".</p>
-                
                 <div style="display: flex; flex-direction: column; align-items: center; gap: 24px;">
                     <div style="background: white; padding: 15px 25px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 15px;">
                         <span style="font-size: 12px; color: #94a3b8; font-weight: 700; letter-spacing: 0.5px;">KOLLA EXTERNT:</span>
@@ -260,7 +347,6 @@ export function renderEliteTable(items) {
                             <a href="${thansen}" target="_blank" class="supplier-link-circle" style="background-color: #ed1c24; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; text-decoration: none; font-weight: 800; font-size: 14px;">T</a>
                         </div>
                     </div>
-
                     <button onclick="window.openNewLagerItemDrawer('${term}')" 
                             style="background: #2563eb; color: white; border: none; padding: 14px 28px; border-radius: 14px; font-weight: 700; cursor: pointer; transition: transform 0.2s; box-shadow: 0 4px 15px rgba(37,99,235,0.3);">
                         + Skapa artikeln "${term}"
@@ -278,9 +364,29 @@ export function renderEliteTable(items) {
         return 0;
     });
 
+    filtered = filtered.filter(item => item.name.toLowerCase() !== 'motorolja');
+
+    // 2. Skapa den fasta Motorolja-artikeln
+    const motorOilItem = {
+        id: 'OIL-SYSTEM',
+        name: 'Motorolja',
+        category: 'Service',
+        quantity: window.currentOilQuantity || 0, // Läser från den globala variabeln
+        price: '',
+        service_filter: 'Fat / Lösvikt (liter)',
+        notes: 'Synkad med oljefat i inställningar'
+    };
+
+    // 3. Om vi inte söker efter något specifikt som exkluderar olja, 
+    // lägg till den högst upp i den filtrerade listan
+    if (window.currentFilter === 'all' || window.currentFilter.toLowerCase() === 'service') {
+        filtered.unshift(motorOilItem); // Lägg den först
+    }
+
     // 6. RENDERING AV LISTA
     container.innerHTML = filtered.map(item => {
         const qty = parseInt(item.quantity) || 0;
+        const notes = item.notes || ""; // Hämta kommentarer
         const iconContent = getCategoryIconHtml(item.category, item.name);
         const supplierLinks = getAllSupplierLinks(item.service_filter || item.name);
 
@@ -293,6 +399,12 @@ export function renderEliteTable(items) {
                     <div class="card-id-label">ARTIKELNR: ${String(item.id || "").toUpperCase()}</div>
                     <h3>${item.name || 'Namnlös'}</h3>
                     <div class="card-ref-pro">Ref: ${item.service_filter || '-'}</div>
+                    
+                    ${notes ? `
+                        <div class="card-notes-pro" style="margin-top: 8px; font-size: 0.85rem; color: #64748b; font-style: italic; border-top: 1px solid #f1f5f9; padding-top: 4px;">
+                            "${notes.length > 80 ? notes.substring(0, 80) + '...' : notes}"
+                        </div>
+                    ` : ''}
                 </div>
                 <div class="card-actions-pro">
                     <div class="card-price-container-pro" style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px;">
