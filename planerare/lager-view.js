@@ -317,6 +317,8 @@ export function renderEliteTable(items) {
 window.editLagerItemById = (id) => {
     const item = window.allItemsCache.find(i => String(i.id) === String(id));
     if (item) {
+        window.addHistoryState('lagerDrawer');
+
         document.getElementById('editItemId').value = item.id;
         document.getElementById('editItemName').value = item.name || '';
         document.getElementById('editItemPrice').value = item.price || 0;
@@ -354,6 +356,8 @@ window.closeLagerDrawer = (isPopState = false) => {
 
 // --- FUNKTION FÖR ATT ÖPPNA FÖR NY ARTIKEL ---
 window.openNewLagerItemDrawer = (prefillRef = "") => {
+    window.addHistoryState('lagerDrawer');
+    
     // Rensa alla fält
     document.getElementById('editItemId').value = ""; 
     document.getElementById('editItemName').value = "";
