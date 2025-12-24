@@ -5,6 +5,105 @@ window.allItemsCache = [];
 // 1. MODIFIERAD: Sätter standardfilter till 'Service' för bättre prestanda och fokus
 window.currentFilter = 'Service'; 
 
+// --- HJÄLPFUNKTION FÖR ATT VÄLJA RÄTT IKON ---
+function getCategoryIconHtml(category, name) {
+    const cat = (category || "").toLowerCase();
+    const itemName = (name || "").toLowerCase();
+
+    // Vi definierar ikoner som fullständiga SVG-innehåll med färger
+    const icons = {
+        // Standard: Grå låda
+        default: '<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" fill="#94a3b8"></path>',
+        
+        fuelFilter: `
+            <g stroke="#1e293b" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" fill="none">
+                <path d="M3 12h3M20 12h2" stroke-width="1.5"/>
+                <rect x="6" y="9" width="4" height="6" fill="#94a3b8" stroke="none"/>
+                <path d="M10 9l3-2v10l-3-2z" fill="#cbd5e1" stroke="none"/>
+                <rect x="13" y="8" width="7" height="8" fill="#475569" stroke="none"/>
+                <path d="M13 18.5c0 1.2-1 2-1.5 2s-1.5-.8-1.5-2 1.5-3 1.5-3 1.5 1.8 1.5 3z" fill="#fbbf24" stroke="none" />
+                <path d="M7 5c2-3 8-3 11 1" stroke="#86efac" stroke-width="2"/>
+                <path d="M16 6.5l2.5.5L18 4.5" stroke="#86efac" stroke-width="2"/>
+                <path d="M18 19c-2 3-8 3-11-1" stroke="#fca5a5" stroke-width="2"/>
+                <path d="M9 18.5l-2.5-.5L7 20.5" stroke="#fca5a5" stroke-width="2"/>
+                <rect x="6" y="9" width="4" height="6"/><path d="M10 9l3-2v10l-3-2z"/><rect x="13" y="8" width="7" height="8"/>
+            </g>`,
+
+        brakePad: `
+            <g stroke="#1e293b" stroke-width="0.5" stroke-linejoin="round">
+                <path d="M3 13c0-2 4-4 9-4s9 2 9 4l-1 2c0-2-3-3-8-3s-8 1-8 3l-1-2z" fill="#cbd5e1" />
+                <path d="M2 12.5c0-1 1-1.5 2-1.5h1c0-1 3-2 7-2s7 1 7 2h1c1 0 2 .5 2 1.5v1c0 1-1 1.5-2 1.5h-16c-1 0-2-.5-2-1.5v-1z" fill="#94a3b8" />
+                
+                <path d="M4.5 11.5c1.5-1 3.5-1.5 5.5-1.5v3.5c-2 0-4 .5-5.5 1.5v-3.5z" fill="#1e293b" />
+                <path d="M14 10c2 0 4 .5 5.5 1.5v3.5c-1.5-1-3.5-1.5-5.5-1.5v-3.5z" fill="#1e293b" />
+                
+                <path d="M5 11c1.5-.5 3-.8 4.5-.8" stroke="#fff" stroke-width="0.3" opacity="0.4" fill="none" />
+            </g>
+        `,
+
+        sparkPlug: `
+            <g stroke="#475569" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2v2" stroke-width="2" stroke="#64748b"/>
+                
+                <rect x="10" y="4" width="4" height="7" rx="0.5" fill="#f8fafc" stroke="#94a3b8" stroke-width="0.8"/>
+                <path d="M10 6h4M10 8h4" stroke="#e2e8f0" stroke-width="0.5"/>
+                
+                <rect x="9" y="11" width="6" height="3" rx="0.5" fill="#cbd5e1"/>
+                
+                <rect x="10.5" y="14" width="3" height="6" fill="#94a3b8" stroke="none"/>
+                <path d="M10.5 15l3 1M10.5 17l3 1M10.5 19l3 1" stroke="#cbd5e1" stroke-width="0.5"/>
+                <rect x="10.5" y="14" width="3" height="6" fill="none"/>
+                
+                <path d="M11 22v1c0 .6.4 1 1 1h2" fill="none" stroke-width="1.2" stroke="#475569"/>
+            </g>
+        `,
+
+        // Oljefilter: Orange/Gul med detaljer (likt Flaticon-stil)
+        oilFilter: `
+            <rect x="8" y="2" width="8" height="3" rx="1" fill="#cbd5e1" />
+            <rect x="5" y="5" width="14" height="4" rx="1" fill="#475569" />
+            <rect x="6" y="9" width="12" height="10" fill="#f59e0b" />
+            <path d="M8 9v10M10 9v10M12 9v10M14 9v10M16 9v10" stroke="#b45309" stroke-width="0.5" />
+            <rect x="5" y="19" width="14" height="4" rx="1" fill="#475569" />
+            <rect x="10" y="21" width="4" height="2" fill="#cbd5e1" />
+        `,
+        
+        // Luftfilter/Kupé: Blå/Vit ram
+        airFilter: `
+            <path d="M2 10l16-4l4 2l-16 4z" fill="#f97316" /> 
+            <path d="M2 10l4 8l16-4l-4-8z" fill="#fbbf24" /> 
+            <path d="M2 10l4 8l0 3l-4-8z" fill="#ea580c" />
+            <path d="M6 18l16-4l0 3l-16 4z" fill="#ea580c" />
+            <path d="M5 9.2l3 6M8 8.4l3 6M11 7.6l3 6M14 6.8l3 6M17 6l3 6" stroke="#fff" stroke-width="1.2" opacity="0.5" />
+        `,
+        
+        // Bromsskiva: Silver/Metallisk med rött bromsok
+        brakeDisc: `
+            <g fill="none" stroke="#1e293b" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="13" cy="13" r="8.5" />
+                <circle cx="13" cy="13" r="3.2" />
+                <circle cx="13" cy="11.5" r="0.5" fill="#1e293b" stroke="none" />
+                <circle cx="14.5" cy="13" r="0.5" fill="#1e293b" stroke="none" />
+                <circle cx="13" cy="14.5" r="0.5" fill="#1e293b" stroke="none" />
+                <circle cx="11.5" cy="13" r="0.5" fill="#1e293b" stroke="none" />
+                <path d="M13 6v2M18 8l-1.5 1.5M20 13h-2M18 18l-1.5-1.5M13 20v-2M8 18l1.5-1.5M6 13h2M8 8l1.5 1.5" stroke-width="0.8" opacity="0.5" />
+                <path d="M9.5 3.2C6.5 3.8 4.2 6.2 3.5 9.2l1.8 1.8 4.2-2.5 1.5-4.5-1.5-.8z" fill="#ef4444" stroke="#b91c1c" stroke-width="0.6" />
+                <circle cx="5.2" cy="6.8" r="0.7" fill="#fff" stroke="none" />
+                <circle cx="8" cy="9" r="0.7" fill="#fff" stroke="none" />
+            </g>
+        `
+    };
+
+    if (itemName.includes('tändstift') || cat.includes('tändstift')) return icons.sparkPlug;
+    if (itemName.includes('bränslefilter') || cat.includes('bränslefilter')) return icons.fuelFilter;
+    if (cat.includes('oljefilter') || itemName.includes('oljefilter')) return icons.oilFilter;
+    if (cat.includes('filter') || itemName.includes('filter')) return icons.airFilter;
+    if (cat.includes('bromsskivor') || itemName.includes('bromsskivor')) return icons.brakeDisc;
+    if (itemName.includes('bromsbelägg') || cat.includes('bromsbelägg')) return icons.brakePad;
+
+    return icons.default;
+}
+
 /**
  * Initierar lagervyn och sätter upp realtidslyssnare mot Firebase.
  */
@@ -138,15 +237,21 @@ export function renderEliteTable(items) {
     });
 
     // RENDERING (Kompakt layout)
+    // 5. RENDERING
     container.innerHTML = filtered.map(item => {
         const qty = parseInt(item.quantity) || 0;
         const notes = item.notes || "";
         const truncatedNotes = notes.length > 65 ? notes.substring(0, 65) + "..." : notes;
         
+        // NYTT: Hämta rätt ikon-väg baserat på kategori och namn
+        const iconContent = getCategoryIconHtml(item.category, item.name);
+
         return `
             <div class="article-card-pro">
                 <div class="card-img-box-pro">
-                    <svg viewBox="0 0 24 24" width="40" height="40" fill="#e2e8f0"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+                    <svg viewBox="0 0 24 24" width="36" height="36">
+                        ${iconContent}
+                    </svg>
                 </div>
                 <div class="card-info-pro">
                     <div class="card-id-label">ARTIKELNR: ${String(item.id || "").toUpperCase()}</div>
