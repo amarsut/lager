@@ -164,27 +164,57 @@
     #lagerListElite { padding: 10px 15px 100px 15px; }
 }
 
-/* Sorteringsmeny mobil */
-.mobile-sort-popover {
-    position: fixed; top: 60px; right: 15px; background: white; border: 1px solid #e2e8f0;
-    border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); display: flex; flex-direction: column; padding: 6px; z-index: 2100;
+/* Snyggare kommentarer i kortet */
+.card-notes-pro {
+    font-size: 12px;
+    color: #94a3b8;
+    margin-top: 8px;
+    padding-top: 4px;
+    border-top: 1px dashed #f1f5f9;
+    font-style: italic;
 }
-.mobile-sort-popover button { padding: 10px 18px; border: none; background: none; text-align: left; font-size: 14px; font-weight: 600; border-radius: 6px; }
 
+
+/* --- FIX FÖR MOBIL (Bild 1) --- */
 @media (max-width: 768px) {
-    /* 1. Dölj bottenmenyn och huvudheadern när lagret visas */
-    /* Detta känner av om lagret är inställt på display: flex eller block */
-    body:has(#lagerView[style*="display: flex"]) #mobileNav,
-    body:has(#lagerView[style*="display: block"]) #mobileNav,
-    body:has(#lagerView[style*="display: flex"]) .mobile-header,
-    body:has(#lagerView[style*="display: block"]) .mobile-header {
-        display: none !important;
+    /* Ta bort luftrummet under filtren */
+    #lagerListElite {
+        padding: 50px 15px 30px 15px !important; /* Minskat från 100px+ */
     }
 
-    /* 2. Justera ytan för artikellistan så den fyller hela skärmen nu när menyn är borta */
-    #lagerListElite { 
-        padding: 10px 15px 30px 15px !important; /* Minskat botten-padding eftersom menyn är borta */
+    /* Filterraden */
+    .mobile-filter-row {
+        display: flex !important;
+        gap: 8px;
+        padding: 8px 12px !important;
+        background: #fff;
+        border-bottom: 1px solid #e2e8f0;
+        position: fixed;
+        top: 60px;
+        left: 0;
+        width: 100%;
+        z-index: 1000;
+        box-sizing: border-box;
     }
 
-    /* ... behåll dina övriga mobilregler för kort och chips här ... */
+    /* FIX: Dropdowns text-position och klippning */
+    .mobile-filter-row select {
+        flex: 1;
+        min-width: 0;
+        height: 38px !important; /* Fast höjd */
+        padding: 0 8px !important;
+        font-size: 13px !important;
+        font-weight: 700;
+        border-radius: 10px;
+        background-color: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        color: #1e293b;
+        /* Tar bort tvingande line-height som klippte texten */
+        line-height: normal !important; 
+        display: block !important;
+        overflow: visible !important;
+    }
+
+    .lager-sidebar-pro { display: none !important; }
 }
+
