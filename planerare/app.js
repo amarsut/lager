@@ -2741,6 +2741,7 @@ function setupSwipeGestures() {
 }
 
 // Lägg denna funktion någonstans i app.js
+// Uppdaterad i app.js
 function initInventoryListener() {
     db.collection('settings').doc('inventory').onSnapshot(doc => {
         if (doc.exists) {
@@ -2749,41 +2750,28 @@ function initInventoryListener() {
             const max = data.oilStartAmount || 208; 
             const date = data.oilStartDate || "";
 
-            // UI Element
+            // 1. Spara värdet globalt så lagervyn kan nå det
+            window.currentOilQuantity = current;
+
+            // 2. Uppdatera UI i inställningar (din befintliga kod)
             const textEl = document.getElementById('oilLevelText');
             const percentEl = document.getElementById('oilPercent');
             const barEl = document.getElementById('oilProgressBar');
-            const dateEl = document.getElementById('oilDateBadge');
-
-            // --- HÄR ÄR ÄNDRINGEN ---
-            // Vi använder toFixed(1) för att alltid visa en decimal (t.ex. "150.5")
-            // Om du vill ta bort .0 på heltal kan du använda parseFloat(current.toFixed(1))
-            let displayCurrent = parseFloat(current.toFixed(1)); 
             
-            if (textEl) textEl.textContent = `${displayCurrent} / ${max} liter`;
-            // ------------------------
+            if (textEl) textEl.textContent = `${parseFloat(current.toFixed(1))} / ${max} liter`;
             
-            // Uppdatera procent & bar
             let percent = (current / max) * 100;
-            if (percent > 100) percent = 100;
-            if (percent < 0) percent = 0;
-
-            if (percentEl) percentEl.textContent = Math.round(percent) + '%';
+            if (percentEl) percentEl.textContent = Math.round(Math.min(100, Math.max(0, percent))) + '%';
             if (barEl) {
-                barEl.style.width = `${percent}%`;
-                // Röd färg om mindre än 10% kvar
+                barEl.style.width = `${Math.min(100, Math.max(0, percent))}%`;
                 if(percent < 10) barEl.classList.add('critical');
                 else barEl.classList.remove('critical');
             }
 
-            // Uppdatera Datum-badge
-            if (dateEl) {
-                if (date) {
-                    dateEl.textContent = `Inköpt: ${date}`; 
-                    dateEl.style.display = 'inline-block';
-                } else {
-                    dateEl.style.display = 'none';
-                }
+            // 3. Om lagret är öppet, tvinga en omritning för att visa nya saldot direkt
+            if (document.getElementById('lagerView')?.style.display !== 'none') {
+                // Vi anropar initLagerView (eller den funktion som ritar tabellen)
+                if (typeof window.refreshLagerTable === 'function') window.refreshLagerTable();
             }
         }
     });
@@ -2809,31 +2797,27 @@ function toggleOilForm() {
 async function saveNewBarrel() {
     const volInput = document.getElementById('newBarrelVol');
     const dateInput = document.getElementById('newBarrelDate');
-    
     const newVolume = parseFloat(volInput.value);
-    const newDate = dateInput.value;
 
-    if (!newVolume || !newDate) {
-        alert("Fyll i både volym och datum.");
-        return;
-    }
-
-    if (confirm(`Bekräfta nytt fat: \nVolym: ${newVolume} liter\nDatum: ${newDate}\n\nDetta återställer lagersaldot.`)) {
+    if (confirm(`Bekräfta nytt fat: ${newVolume} liter?`)) {
         try {
+            // Spara i inställningar
             await db.collection('settings').doc('inventory').set({
-                motorOil: newVolume,        // Nuvarande mängd (fullt)
-                oilStartAmount: newVolume,  // Maxkapacitet
-                oilStartDate: newDate       // Datum
-            }, { merge: true }); // Merge behåller ev. andra fält
+                motorOil: newVolume,
+                oilStartAmount: newVolume,
+                oilStartDate: dateInput.value
+            }, { merge: true });
 
-            // Dölj formuläret och ge feedback
+            // Uppdatera i Lagret
+            const lagerSnapshot = await window.invDb.collection("lager").where("name", "==", "Motorolja").get();
+            if (!lagerSnapshot.empty) {
+                await window.invDb.collection("lager").doc(lagerSnapshot.docs[0].id).update({
+                    quantity: newVolume
+                });
+            }
+            alert("Saldot uppdaterat i både inställningar och lager!");
             toggleOilForm();
-            alert("Nytt fat registrerat!"); 
-
-        } catch (error) {
-            console.error("Fel vid uppdatering:", error);
-            alert("Kunde inte spara.");
-        }
+        } catch (error) { console.error(error); }
     }
 }
 
@@ -2859,18 +2843,15 @@ function calculateOilFromExpenses(expenses) {
 
 // 2. Funktion som justerar saldot (Kan både dra av och lägga till)
 async function adjustInventoryBalance(litersToDeduct) {
-    // Om litersToDeduct är positivt (t.ex. 4) -> Dras 4 liter av.
-    // Om litersToDeduct är negativt (t.ex. -4) -> Läggs 4 liter till (minus minus blir plus).
-    
     if (litersToDeduct === 0) return;
 
     const inventoryRef = db.collection('settings').doc('inventory');
     
     try {
+        // Vi drar av från "huvudmätaren" - initInventoryListener sköter resten!
         await inventoryRef.update({
             motorOil: firebase.firestore.FieldValue.increment(-litersToDeduct)
         });
-        console.log(`Lager justerat med: ${-litersToDeduct} liter.`);
     } catch (err) {
         console.error("Kunde inte justera lagret:", err);
     }
