@@ -318,9 +318,9 @@
     #lagerListElite {
         /* 64px header + 50px filter + 4px marginal = 118px */
         padding-top: 50px !important; 
-        padding-left: 15px;
-        padding-right: 15px;
-        padding-bottom: 100px;
+        padding-left: 0px;
+        padding-right: 0px;
+        padding-bottom: 0px;
     }
 
     /* Kompakt Artikelkort Mobil */
@@ -353,3 +353,4 @@
 
     .lager-drawer { width: 100%; right: -100%; }
 }
+
