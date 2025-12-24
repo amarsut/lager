@@ -20,9 +20,13 @@ export function initLagerView() {
     const pcSearch = document.getElementById('lagerSearchInput');
     if (pcSearch) pcSearch.oninput = () => renderEliteTable(window.allItemsCache);
     
-    const mobileSearch = document.getElementById('lagerSearchInputMobile');
-    if (mobileSearch) mobileSearch.oninput = () => renderEliteTable(window.allItemsCache);
-
+    const mainSearch = document.getElementById('lagerSearchInput');
+    if (mainSearch) {
+        mainSearch.oninput = () => {
+            renderEliteTable(window.allItemsCache);
+        };
+    }
+    
     const saveBtn = document.getElementById('btnSaveLagerItem');
     if (saveBtn) saveBtn.onclick = window.saveLagerItemChanges;
 }
