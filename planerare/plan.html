@@ -471,6 +471,64 @@
 						</div>
 					</div>
 
+					<div id="lagerDrawerOverlay" class="drawer-overlay" onclick="window.closeLagerDrawer()"></div>
+
+					<div id="lagerDrawer" class="lager-drawer">
+						<div class="std-header">
+							<button class="std-back-btn" onclick="window.closeLagerDrawer()">
+								<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+									<polyline points="15 18 9 12 15 6"></polyline>
+								</svg>
+							</button>
+							<h2 class="std-title">Redigera Artikel</h2>
+						</div>
+
+						<div class="drawer-body compact-form">
+							<input type="hidden" id="editItemId">
+							
+							<div class="form-group">
+								<label>Namn</label>
+								<input type="text" id="editItemName" class="input-gray">
+							</div>
+
+							<div class="form-group">
+								<label>Kategori</label>
+								<select id="editItemCategory" class="input-gray">
+									<option value="Service">Service</option>
+									<option value="Motor/Chassi">Motor/Chassi</option>
+									<option value="Bromsar">Bromsar</option>
+									<option value="Andra märken">Andra märken</option>
+								</select>
+							</div>
+
+							<div class="form-row">
+								<div class="form-group flex-1">
+									<label>Pris (kr)</label>
+									<input type="number" id="editItemPrice" class="input-gray">
+								</div>
+								<div class="form-group flex-1">
+									<label>Lagersaldo</label>
+									<input type="number" id="editItemQty" class="input-gray">
+								</div>
+							</div>
+
+							<div class="form-group">
+								<label>Artikelnr / Referens</label>
+								<input type="text" id="editItemRefNum" class="input-gray">
+							</div>
+
+							<div class="form-group">
+								<label>Kommentar</label>
+								<textarea id="editItemNotes" class="input-gray" rows="3"></textarea>
+							</div>
+
+							<div class="form-row action-footer">
+								<button class="btn-action btn-delete" onclick="window.deleteLagerItem()">Radera</button>
+								<button class="btn-action btn-save" id="btnSaveLagerItem">Spara</button>
+							</div>
+						</div>
+					</div>
+
 					<div id="customersView" style="display: none;">
 						<div class="std-header">
 							<button class="std-back-btn" id="btnBackCustomers"> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
