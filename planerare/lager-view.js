@@ -109,6 +109,7 @@ function getCategoryIconHtml(category, name) {
     if (itemName.includes('tändstift') || cat.includes('tändstift')) return icons.sparkPlug;
     if (itemName.includes('bränslefilter') || cat.includes('bränslefilter')) return icons.fuelFilter;
     if (cat.includes('oljefilter') || itemName.includes('oljefilter')) return icons.oilFilter;
+    if (cat.includes('dsg') || itemName.includes('dsg')) return icons.oilFilter;
     if (cat.includes('filter') || itemName.includes('filter')) return icons.airFilter;
     if (cat.includes('bromsskivor') || itemName.includes('bromsskivor')) return icons.brakeDisc;
     if (itemName.includes('bromsbelägg') || cat.includes('bromsbelägg')) return icons.brakePad;
@@ -146,6 +147,14 @@ export function initLagerView() {
     // Koppla spara-knappen i drawern
     const saveBtn = document.getElementById('btnSaveLagerItem');
     if (saveBtn) saveBtn.onclick = () => window.saveLagerItemChanges();
+
+    // NYTT: Hantera bakåt-gest/knapp
+    window.addEventListener('popstate', (event) => {
+        // Om drawern är öppen, stäng den
+        if (document.getElementById('lagerDrawer').classList.contains('open')) {
+            window.closeLagerDrawer(true); // 'true' betyder att vi inte ska trigga history.back() igen
+        }
+    });
 }
 
 // Globala hjälpfunktioner
@@ -203,25 +212,17 @@ export function renderEliteTable(items) {
         renderSidebar(items, sidebar);
     }
 
-    // 1. Hämta sökterm och sortering
-    const term = (document.getElementById('lagerSearchInput')?.value || "").toLowerCase();
+    // 1. Hämta sökterm och inställningar
+    const searchInput = document.getElementById('lagerSearchInput');
+    const term = (searchInput?.value || "").trim();
+    const normalizedTerm = term.toLowerCase().replace(/\s+/g, ''); 
     const sortVal = document.getElementById('sortSelect')?.value || 'name';
-    
-    // NYTT: Normalisera söktermen (ta bort alla mellanslag)
-    const normalizedTerm = term.replace(/\s+/g, ''); 
 
-    // 2. Hantera lagerstatus-filter
-    let showInStock, showOutOfStock;
-    if (window.innerWidth <= 768) {
-        const stockVal = document.getElementById('mobileFilterStock')?.value || 'both';
-        showInStock = (stockVal === 'in' || stockVal === 'both');
-        showOutOfStock = (stockVal === 'out' || stockVal === 'both');
-    } else {
-        showInStock = document.getElementById('filterInStock')?.checked;
-        showOutOfStock = document.getElementById('filterOutOfStock')?.checked;
-    }
+    // 2. Filter-inställningar
+    let showInStock = document.getElementById('filterInStock')?.checked;
+    let showOutOfStock = document.getElementById('filterOutOfStock')?.checked;
 
-    // 3. FILTRERING (Här deklareras 'filtered' endast EN gång)
+    // 3. FILTRERING
     let filtered = items.filter(i => {
         const qty = parseInt(i.quantity) || 0;
         const matchStock = (showInStock && qty > 0) || (showOutOfStock && qty <= 0);
@@ -230,17 +231,46 @@ export function renderEliteTable(items) {
                          (i.category || "").toLowerCase() === window.currentFilter.toLowerCase() ||
                          (i.name || "").toUpperCase().includes(window.currentFilter.toUpperCase());
 
-        // Normaliserad sökning på namn, artikelnr och kommentarer
         const matchSearch = 
             (i.name || "").toLowerCase().replace(/\s+/g, '').includes(normalizedTerm) ||
             String(i.id || "").toLowerCase().replace(/\s+/g, '').includes(normalizedTerm) ||
-            (i.service_filter || "").toLowerCase().replace(/\s+/g, '').includes(normalizedTerm) ||
-            (i.notes || "").toLowerCase().replace(/\s+/g, '').includes(normalizedTerm);
+            (i.service_filter || "").toLowerCase().replace(/\s+/g, '').includes(normalizedTerm);
 
         return matchStock && matchCat && matchSearch;
     });
 
-    // 4. SORTERING
+    // --- 4. KONTROLL FÖR TOMT RESULTAT (Placeras EFTER filtrering) ---
+    if (filtered.length === 0 && term !== "") {
+        const trodo = generateTrodoLink(term);
+        const aero = generateAeroMLink(term);
+        const thansen = generateThansenLink(term);
+
+        container.innerHTML = `
+            <div class="empty-search-card" style="padding: 40px 20px; background: #f8fafc; border-radius: 20px; border: 2px dashed #cbd5e1; text-align: center; grid-column: 1 / -1;">
+                <div style="font-size: 48px; margin-bottom: 20px;">🔍</div>
+                <h3 style="margin: 0 0 10px 0; color: #1e293b; font-size: 20px;">Ingen träff i ditt lager</h3>
+                <p style="color: #64748b; margin-bottom: 30px;">Vi hittade inget som matchar "<strong>${term}</strong>".</p>
+                
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 24px;">
+                    <div style="background: white; padding: 15px 25px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 15px;">
+                        <span style="font-size: 12px; color: #94a3b8; font-weight: 700; letter-spacing: 0.5px;">KOLLA EXTERNT:</span>
+                        <div style="display: flex; gap: 10px;">
+                            <a href="${trodo}" target="_blank" class="supplier-link-circle" style="background-color: #2563eb; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; text-decoration: none; font-weight: 800; font-size: 14px;">T</a>
+                            <a href="${aero}" target="_blank" class="supplier-link-circle" style="background-color: #0056b3; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; text-decoration: none; font-weight: 800; font-size: 14px;">A</a>
+                            <a href="${thansen}" target="_blank" class="supplier-link-circle" style="background-color: #ed1c24; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; text-decoration: none; font-weight: 800; font-size: 14px;">T</a>
+                        </div>
+                    </div>
+
+                    <button onclick="window.openNewLagerItemDrawer('${term}')" 
+                            style="background: #2563eb; color: white; border: none; padding: 14px 28px; border-radius: 14px; font-weight: 700; cursor: pointer; transition: transform 0.2s; box-shadow: 0 4px 15px rgba(37,99,235,0.3);">
+                        + Skapa artikeln "${term}"
+                    </button>
+                </div>
+            </div>`;
+        return; 
+    }
+
+    // 5. SORTERING
     filtered.sort((a, b) => {
         if (sortVal === 'name') return (a.name || "").localeCompare(b.name || "");
         if (sortVal === 'price-low') return (parseFloat(a.price) || 0) - (parseFloat(b.price) || 0);
@@ -248,53 +278,36 @@ export function renderEliteTable(items) {
         return 0;
     });
 
-    // RENDERING (Kompakt layout)
-    // 5. RENDERING
+    // 6. RENDERING AV LISTA
     container.innerHTML = filtered.map(item => {
-    const qty = parseInt(item.quantity) || 0;
-    const notes = item.notes || "";
-    const truncatedNotes = notes.length > 65 ? notes.substring(0, 65) + "..." : notes;
-    
-    // Hämta ikon
-    const iconContent = getCategoryIconHtml(item.category, item.name);
+        const qty = parseInt(item.quantity) || 0;
+        const iconContent = getCategoryIconHtml(item.category, item.name);
+        const supplierLinks = getAllSupplierLinks(item.service_filter || item.name);
 
-    // Generera alla jämförelselänkar baserat på ref eller namn
-    const supplierLinks = getAllSupplierLinks(item.service_filter || item.name);
-
-    return `
-        <div class="article-card-pro">
-            <div class="card-img-box-pro">
-                <svg viewBox="0 0 24 24" width="36" height="36">
-                    ${iconContent}
-                </svg>
-            </div>
-            <div class="card-info-pro">
-                <div class="card-id-label">ARTIKELNR: ${String(item.id || "").toUpperCase()}</div>
-                <h3>${item.name || 'Namnlös'}</h3>
-                <div class="card-ref-pro">Ref: ${item.service_filter || '-'}</div>
-                ${notes ? `<div class="card-notes-pro">${truncatedNotes}</div>` : ''}
-            </div>
-            <div class="card-actions-pro">
-                <div class="card-price-container-pro" style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
-                    <div class="card-price-pro">${item.price || 0}:-</div>
-                    
-                    <div class="supplier-compare-row" style="display: flex; gap: 5px;">
-                        ${supplierLinks.map(s => `
-                            <a href="${s.url}" 
-                               target="_blank" 
-                               class="supplier-link-circle" 
-                               title="Sök hos ${s.name}"
-                               style="background-color: ${s.color}; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: ${s.name === 'Mekonomen' ? '#000' : '#fff'}; font-size: 10px; font-weight: bold; text-decoration: none;">
-                                ${s.name.charAt(0)}
-                            </a>
-                        `).join('')}
-                    </div>
+        return `
+            <div class="article-card-pro">
+                <div class="card-img-box-pro">
+                    <svg viewBox="0 0 24 24" width="36" height="36">${iconContent}</svg>
                 </div>
-                <div class="stock-pill ${qty > 0 ? 'stock-in' : 'stock-out'}">${qty} st i lager</div>
-                <button class="btn-redigera-pro" onclick='window.editLagerItemById("${item.id}")'>REDIGERA</button>
-            </div>
-        </div>`;
-}).join('');
+                <div class="card-info-pro">
+                    <div class="card-id-label">ARTIKELNR: ${String(item.id || "").toUpperCase()}</div>
+                    <h3>${item.name || 'Namnlös'}</h3>
+                    <div class="card-ref-pro">Ref: ${item.service_filter || '-'}</div>
+                </div>
+                <div class="card-actions-pro">
+                    <div class="card-price-container-pro" style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px;">
+                        <div class="card-price-pro">${item.price || 0}:-</div>
+                        <div class="supplier-compare-row" style="display: flex; gap: 6px;">
+                            ${supplierLinks.map(s => `
+                                <a href="${s.url}" target="_blank" class="supplier-link-circle" title="${s.name}" style="background-color: ${s.color}; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 10px; font-weight: 800; text-decoration: none;">${s.name.charAt(0)}</a>
+                            `).join('')}
+                        </div>
+                    </div>
+                    <div class="stock-pill ${qty > 0 ? 'stock-in' : 'stock-out'}">${qty} st i lager</div>
+                    <button class="btn-redigera-pro" onclick='window.editLagerItemById("${item.id}")'>REDIGERA</button>
+                </div>
+            </div>`;
+    }).join('');
 
     const statsEl = document.getElementById('paginationStats');
     if (statsEl) statsEl.textContent = `Visar ${filtered.length} av ${items.length}`;
@@ -321,33 +334,40 @@ window.editLagerItemById = (id) => {
         // Uppdatera titeln
         const titleEl = document.querySelector('#lagerDrawer .std-title');
         if (titleEl) titleEl.textContent = "Redigera Artikel";
+
+        history.pushState({ drawerOpen: true }, "");
         
         document.getElementById('lagerDrawer').classList.add('open');
         document.getElementById('lagerDrawerOverlay').classList.add('show');
     }
 };
 
-window.closeLagerDrawer = () => {
+window.closeLagerDrawer = (isPopState = false) => {
     document.getElementById('lagerDrawer').classList.remove('open');
     document.getElementById('lagerDrawerOverlay').classList.remove('show');
+
+    // Om vi stängde via krysset (inte swipe), ta bort steget från historiken
+    if (!isPopState && history.state && history.state.drawerOpen) {
+        history.back();
+    }
 };
 
 // --- FUNKTION FÖR ATT ÖPPNA FÖR NY ARTIKEL ---
-window.openNewLagerItemDrawer = () => {
-    // 1. Rensa alla fält
+window.openNewLagerItemDrawer = (prefillRef = "") => {
+    // Rensa alla fält
     document.getElementById('editItemId').value = ""; 
     document.getElementById('editItemName').value = "";
     document.getElementById('editItemPrice').value = "";
     document.getElementById('editItemCategory').value = "Service";
     document.getElementById('editItemQty').value = "";
-    document.getElementById('editItemRefNum').value = "";
+    document.getElementById('editItemRefNum').value = prefillRef.toUpperCase(); // Förifyll sökordet
     document.getElementById('editItemNotes').value = "";
     
-    // 2. Ändra titeln i drawern så man ser att det är en ny artikel
     const titleEl = document.querySelector('#lagerDrawer .std-title');
     if (titleEl) titleEl.textContent = "Ny Artikel";
 
-    // 3. Öppna drawern
+    history.pushState({ drawerOpen: true }, "");
+
     document.getElementById('lagerDrawer').classList.add('open');
     document.getElementById('lagerDrawerOverlay').classList.add('show');
 };
