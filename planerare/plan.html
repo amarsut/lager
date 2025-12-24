@@ -392,7 +392,7 @@
 						<div id="selectedDayView" style="display:none;"></div>
 					</div>
 
-					<div id="lagerView" style="display: none; flex-direction: column;">
+										<div id="lagerView" style="display: none; flex-direction: column;">
 						<header class="lager-mobile-top-bar mobile-only">
 							<button class="m-back-btn" onclick="document.getElementById('btnBackLager').click()">
 								<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
@@ -401,33 +401,44 @@
 								<svg class="m-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
 								<input type="text" id="lagerSearchInputMobile" placeholder="Sök i lagret..." oninput="syncSearch(this.value)">
 							</div>
-							<button class="m-filter-btn" onclick="toggleSortMenu()">
-								<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M6 12h12m-9 6h6"></path></svg>
-							</button>
-							
-							<div id="mobileSortDropdown" class="mobile-sort-popover" style="display:none;">
-								<button onclick="setMobileSort('name')">Namn A-Ö</button>
-								<button onclick="setMobileSort('price-low')">Pris Lägst</button>
-								<button onclick="setMobileSort('price-high')">Pris Högst</button>
-							</div>
 						</header>
 
+						<div class="mobile-filter-row mobile-only">
+							<select id="mobileFilterMain" onchange="window.setLagerFilter(this.value)">
+								<option value="all">Kategori</option>
+								<option value="Service">Service</option>
+								<option value="Motor/Chassi">Motor</option>
+								<option value="Bromsar">Bromsar</option>
+							</select>
+							<select id="mobileFilterSmart" onchange="window.setLagerFilter(this.value)">
+								<option value="all">Filtertyp</option>
+								<option value="OLJEFILTER">Oljefilter</option>
+								<option value="LUFTFILTER">Luftfilter</option>
+								<option value="KUPEFILTER">Kupéfilter</option>
+								<option value="BROMSBELÄGG">Bromsbelägg</option>
+							</select>
+							<select id="mobileFilterStock" onchange="window.triggerLagerRender()">
+								<option value="both">Status</option>
+								<option value="in">I lager</option>
+								<option value="out">Slut</option>
+							</select>
+						</div>
+
 						<div class="lager-pro-wrapper">
-							<aside class="lager-sidebar-pro">
+							<aside class="lager-sidebar-pro desktop-only">
 								<div class="sidebar-card">
-									<h3 class="sidebar-title desktop-only">Kategorier</h3>
+									<h3 class="sidebar-title">Kategorier</h3>
 									<nav id="sidebarCatList" class="cat-nav-container"></nav>
-									
-									<div class="sidebar-divider desktop-only"></div>
-									<h3 class="sidebar-title desktop-only">Lagerstatus</h3>
-									<div class="status-filter-container">
-										<label class="pro-filter-chip">
+									<div class="sidebar-divider"></div>
+									<h3 class="sidebar-title">Lagerstatus</h3>
+									<div class="status-chips-container">
+										<label class="filter-chip">
 											<input type="checkbox" id="filterInStock" checked onchange="window.triggerLagerRender()">
 											<span>I LAGER</span>
 										</label>
-										<label class="pro-filter-chip">
+										<label class="filter-chip">
 											<input type="checkbox" id="filterOutOfStock" onchange="window.triggerLagerRender()">
-											<span>SLUT</span>
+											<span>SLUT I LAGER</span>
 										</label>
 									</div>
 								</div>
@@ -450,16 +461,15 @@
 									<div class="toolbar-right">
 										<div class="search-wrapper-pro">
 											<svg class="search-icon-pro" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-											<input type="text" id="lagerSearchInput" placeholder="Sök artikel eller ref...">
+											<input type="text" id="lagerSearchInput" placeholder="Sök artikel...">
 										</div>
-										<span id="paginationStats" class="results-stats">Laddar...</span>
 									</div>
 								</div>
 
 								<div id="lagerListElite"></div>
 							</main>
 						</div>
-						</div>
+					</div>
 
 					<div id="customersView" style="display: none;">
 						<div class="std-header">
