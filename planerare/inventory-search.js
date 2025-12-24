@@ -79,8 +79,8 @@ window.createInventoryResultHTML = function(item) {
     const iconSvg = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 2l9 4.9V17.1L12 22l-9-4.9V6.9L12 2z"/></svg>`;
     
     return `
-        <div class="inv-card-pro ${isOutOfStock ? 'is-empty' : ''}" 
-             onclick="openNewJobWithPart('${item.name.replace(/'/g, "\\'")}', ${item.price})">
+    <div class="inv-card-pro ${isOutOfStock ? 'is-empty' : ''}" 
+         onclick="openNewJobWithPart('${item.name.replace(/'/g, "\\'")}', ${item.price}, '${item.id}')"> <div class="inv-card-icon">${iconSvg}</div>
             <div class="inv-card-icon">${iconSvg}</div>
             <div class="inv-card-content">
                 <div class="inv-card-top-row">
