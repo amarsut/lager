@@ -1268,6 +1268,7 @@ function setupEventListeners() {
 	    const modals = [
 	        document.getElementById('imageZoomModal'),
 	        document.getElementById('vehicleModal'),
+            document.getElementById('lagerDrawer'),
 	        document.getElementById('chatWidget'),
 	        document.getElementById('mobileSearchModal'),
 	        document.querySelector('.modal-backdrop.show')
@@ -1312,6 +1313,7 @@ function setupEventListeners() {
 	        // Återställ till Översikt
 	        document.getElementById('customersView').style.display = 'none';
 	        document.getElementById('calendarView').style.display = 'none';
+            document.getElementById('lagerView').style.display = 'none';
 	        document.getElementById('selectedDayView').classList.remove('show'); // Säkerställ att den är borta
 	        
 	        document.getElementById('statBar').style.display = ''; // Visa grid/flex
