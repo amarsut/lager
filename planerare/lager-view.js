@@ -82,25 +82,33 @@ export function renderEliteTable(items) {
     const sidebar = document.getElementById('sidebarCatList');
     if (!container) return;
 
+    // 1. Rendera Sidebar (Görs först, det är därför siffrorna syns)
     renderSidebar(items, sidebar);
 
-    const term = (window.innerWidth < 768 
-        ? document.getElementById('lagerSearchInputMobile')?.value 
-        : document.getElementById('lagerSearchInput')?.value || "").toLowerCase();
+    // 2. Filter-logik - SÄKRAD VERSION
+    // Vi kollar först efter mobilens sökfält, annars datorns, annars tomt.
+    const searchEl = document.getElementById('lagerSearchInputMobile') || document.getElementById('lagerSearchInput');
+    const term = searchEl ? searchEl.value.toLowerCase() : "";
 
     const showInStock = document.getElementById('filterInStock')?.checked;
     const showOutOfStock = document.getElementById('filterOutOfStock')?.checked;
 
     let filtered = items.filter(i => {
-        const qty = parseInt(i.quantity) || 0;
+        // Kontrollera att fältet heter 'quantity' i din databas
+        const qty = parseInt(i.quantity) || 0; 
+        
+        // Om inga boxar är i-bockade visas inget. 
+        // Om bara "I LAGER" är vald och alla artiklar har 0 i lager visas inget.
         const matchStock = (showInStock && qty > 0) || (showOutOfStock && qty <= 0);
         
-        // ÄNDRING HÄR: Vi lägger till en check som kollar om namnet innehåller ordet (för snabbval)
         const matchCat = window.currentFilter === 'all' || 
-                        (i.category || "").toLowerCase() === window.currentFilter.toLowerCase() ||
-                        (i.name || "").toUpperCase().includes(window.currentFilter.toUpperCase());
+                         (i.category || "").toLowerCase() === window.currentFilter.toLowerCase() || 
+                         (i.name || "").toUpperCase().includes(window.currentFilter.toUpperCase());
         
-        return matchStock && matchCat && (i.name || "").toLowerCase().includes(term);
+        const matchSearch = (i.name || "").toLowerCase().includes(term) || 
+                           (i.service_filter || "").toLowerCase().includes(term);
+                           
+        return matchStock && matchCat && matchSearch;
     });
 
     // Sortering
