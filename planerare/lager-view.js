@@ -2,7 +2,8 @@
 
 let lagerUnsubscribe = null;
 window.allItemsCache = [];
-window.currentFilter = 'all';
+// 1. MODIFIERAD: Sätter standardfilter till 'Service' för bättre prestanda och fokus
+window.currentFilter = 'Service'; 
 
 /**
  * Initierar lagervyn och sätter upp realtidslyssnare mot Firebase.
@@ -16,40 +17,34 @@ export function initLagerView() {
         renderEliteTable(window.allItemsCache);
     }, err => console.error("Firebase Error:", err));
 
-    // FIX: Koppla sökning för BÅDE dator och mobil ordentligt
-    const pcSearch = document.getElementById('lagerSearchInput');
-    if (pcSearch) pcSearch.oninput = () => renderEliteTable(window.allItemsCache);
+    // Koppla sökning
+    const searchInput = document.getElementById('lagerSearchInput');
+    if (searchInput) searchInput.oninput = () => renderEliteTable(window.allItemsCache);
     
-    const mainSearch = document.getElementById('lagerSearchInput');
-    if (mainSearch) {
-        mainSearch.oninput = () => {
-            renderEliteTable(window.allItemsCache);
-        };
-    }
-    
+    // Koppla sortering (A-Ö, Pris etc)
+    const sortSelect = document.getElementById('sortSelect');
+    if (sortSelect) sortSelect.onchange = () => renderEliteTable(window.allItemsCache);
+
+    // Koppla spara-knappen i drawern
     const saveBtn = document.getElementById('btnSaveLagerItem');
-    if (saveBtn) saveBtn.onclick = window.saveLagerItemChanges;
+    if (saveBtn) saveBtn.onclick = () => window.saveLagerItemChanges();
 }
 
-// Globala hjälpfunktioner för mobil-headern
+// Globala hjälpfunktioner
 window.syncSearch = (val) => {
     const desktopInput = document.getElementById('lagerSearchInput');
     if (desktopInput) desktopInput.value = val;
     renderEliteTable(window.allItemsCache);
 };
 
-window.toggleSortMenu = () => {
-    const menu = document.getElementById('mobileSortDropdown');
-    if (menu) menu.style.display = menu.style.display === 'none' ? 'flex' : 'none';
-};
+window.triggerLagerRender = () => renderEliteTable(window.allItemsCache);
 
-window.setMobileSort = (val) => {
-    const sortSelect = document.getElementById('sortSelect');
-    if (sortSelect) {
-        sortSelect.value = val;
-        window.toggleSortMenu();
-        window.triggerLagerRender();
-    }
+window.setLagerFilter = (c) => { 
+    window.currentFilter = c; 
+    // Uppdatera även mobila dropdowns om de finns så de visar rätt kategori
+    const mobileCat = document.getElementById('mobileFilterMain');
+    if (mobileCat) mobileCat.value = c;
+    renderEliteTable(window.allItemsCache); 
 };
 
 function renderSidebar(items, sidebar) {
@@ -57,7 +52,6 @@ function renderSidebar(items, sidebar) {
     const subFilters = getDynamicSubFilters(items);
     const mainCats = ['Service', 'Motor/Chassi', 'Bromsar', 'Andra märken'];
     
-    // 1. Grundkategorier
     let html = `<div class="sidebar-cat-link ${window.currentFilter === 'all' ? 'active' : ''}" onclick="window.setLagerFilter('all')">
                     <span>Alla</span><span class="cat-badge">${items.length}</span>
                 </div>`;
@@ -69,22 +63,16 @@ function renderSidebar(items, sidebar) {
                 </div>`;
     }).join('');
 
-    // 2. Dynamiska Snabbval (Smartfilter)
     if (subFilters.length > 0) {
-        // Divider och etikett visas bara på dator (desktop-only klassen sköter detta)
         html += `<div class="sidebar-divider desktop-only"></div><div class="sidebar-sub-label desktop-only">Snabbval</div>`;
-        
         html += subFilters.map(kw => {
             const count = items.filter(i => (i.name || "").toUpperCase().includes(kw)).length;
-            // Snygga till etiketten (t.ex. "OLJEFILTER" -> "Oljefilter")
             const label = kw.charAt(0) + kw.slice(1).toLowerCase();
-            
             return `<div class="sidebar-cat-link sub-link ${window.currentFilter === kw ? 'active' : ''}" onclick="window.setLagerFilter('${kw}')">
                         <span>${label}</span><span class="cat-badge">${count}</span>
                     </div>`;
         }).join('');
     }
-    
     sidebar.innerHTML = html;
 }
 
@@ -93,19 +81,17 @@ export function renderEliteTable(items) {
     const sidebar = document.getElementById('sidebarCatList');
     if (!container) return;
 
-    // Återställ sidebar för desktop
     if (sidebar && window.innerWidth > 768) {
         renderSidebar(items, sidebar);
     }
 
-    const pcInput = document.getElementById('lagerSearchInput');
-    const mobileInput = document.getElementById('lagerSearchInputMobile');
-    const term = (pcInput?.value || mobileInput?.value || "").toLowerCase();
+    const term = (document.getElementById('lagerSearchInput')?.value || "").toLowerCase();
+    const sortVal = document.getElementById('sortSelect')?.value || 'name';
 
     // Hantera lagerstatus-filter
     let showInStock, showOutOfStock;
     if (window.innerWidth <= 768) {
-        const stockVal = document.getElementById('mobileFilterStock').value;
+        const stockVal = document.getElementById('mobileFilterStock')?.value || 'both';
         showInStock = (stockVal === 'in' || stockVal === 'both');
         showOutOfStock = (stockVal === 'out' || stockVal === 'both');
     } else {
@@ -113,6 +99,7 @@ export function renderEliteTable(items) {
         showOutOfStock = document.getElementById('filterOutOfStock')?.checked;
     }
 
+    // FILTRERING
     let filtered = items.filter(i => {
         const qty = parseInt(i.quantity) || 0;
         const matchStock = (showInStock && qty > 0) || (showOutOfStock && qty <= 0);
@@ -121,7 +108,6 @@ export function renderEliteTable(items) {
                          (i.category || "").toLowerCase() === window.currentFilter.toLowerCase() ||
                          (i.name || "").toUpperCase().includes(window.currentFilter.toUpperCase());
 
-        // UTÖKAD SÖKNING (Namn, ID, Ref och Kommentarer)
         const matchSearch = 
             (i.name || "").toLowerCase().includes(term) ||
             (String(i.id || "")).toLowerCase().includes(term) ||
@@ -131,7 +117,15 @@ export function renderEliteTable(items) {
         return matchStock && matchCat && matchSearch;
     });
 
-    // Rendering av korten
+    // 2. NYTT: SORTERINGSLOGIK
+    filtered.sort((a, b) => {
+        if (sortVal === 'name') return (a.name || "").localeCompare(b.name || "");
+        if (sortVal === 'price-low') return (parseFloat(a.price) || 0) - (parseFloat(b.price) || 0);
+        if (sortVal === 'price-high') return (parseFloat(b.price) || 0) - (parseFloat(a.price) || 0);
+        return 0;
+    });
+
+    // RENDERING (Kompakt layout)
     container.innerHTML = filtered.map(item => {
         const qty = parseInt(item.quantity) || 0;
         const notes = item.notes || "";
@@ -160,36 +154,24 @@ export function renderEliteTable(items) {
     if (statsEl) statsEl.textContent = `Visar ${filtered.length} av ${items.length}`;
 }
 
-// Säkrare redigeringsfunktion
+// 3. FIX: Kopplar funktionen korrekt till det globala fönstret
 window.editLagerItemById = (id) => {
-    const item = window.allItemsCache.find(i => i.id === id);
-    if (item) window.openLagerDrawer(item);
-};
-
-function getDynamicSubFilters(items) {
-    // Definiera de specifika ord vi letar efter
-    const keywords = ["OLJEFILTER", "LUFTFILTER", "KUPEFILTER", "BROMSBELÄGG"];
-    const found = {};
-    
-    items.forEach(i => {
-        const n = (i.name || "").toUpperCase();
-        keywords.forEach(kw => { 
-            if (n.includes(kw)) found[kw] = (found[kw] || 0) + 1; 
-        });
-    });
-
-    // Returnera de ord som finns på minst 2 artiklar
-    return Object.keys(found).filter(kw => found[kw] >= 2); 
-}
-
-window.openLagerDrawer = (item) => {
-    document.getElementById('editItemId').value = item.id;
-    document.getElementById('editItemName').value = item.name || '';
-    document.getElementById('editItemPrice').value = item.price || 0;
-    document.getElementById('editItemRef').value = item.category || '';
-    document.getElementById('editItemNotes').value = item.notes || '';
-    document.getElementById('lagerDrawer').classList.add('open');
-    document.getElementById('lagerDrawerOverlay').classList.add('show');
+    const item = window.allItemsCache.find(i => String(i.id) === String(id));
+    if (item) {
+        document.getElementById('editItemId').value = item.id;
+        document.getElementById('editItemName').value = item.name || '';
+        document.getElementById('editItemPrice').value = item.price || 0;
+        document.getElementById('editItemCategory').value = item.category || 'Service';
+        
+        // NYTT: Hämta antal från cachen
+        document.getElementById('editItemQty').value = item.quantity || 0; 
+        
+        document.getElementById('editItemRefNum').value = item.service_filter || '';
+        document.getElementById('editItemNotes').value = item.notes || '';
+        
+        document.getElementById('lagerDrawer').classList.add('open');
+        document.getElementById('lagerDrawerOverlay').classList.add('show');
+    }
 };
 
 window.closeLagerDrawer = () => {
@@ -199,18 +181,51 @@ window.closeLagerDrawer = () => {
 
 window.saveLagerItemChanges = async () => {
     const id = document.getElementById('editItemId').value;
-    const database = window.invDb || window.db;
+    const database = window.invDb || window.db || firebase.firestore();
+    
     const data = {
         name: document.getElementById('editItemName').value,
         price: parseInt(document.getElementById('editItemPrice').value) || 0,
-        category: document.getElementById('editItemRef').value,
+        category: document.getElementById('editItemCategory').value,
+        
+        // NYTT: Spara det nya antalet som en siffra
+        quantity: parseInt(document.getElementById('editItemQty').value) || 0,
+        
+        service_filter: document.getElementById('editItemRefNum').value,
         notes: document.getElementById('editItemNotes').value
     };
+
     try {
         await database.collection("lager").doc(id).update(data);
         window.closeLagerDrawer();
-    } catch (e) { console.error(e); }
+    } catch (e) { 
+        console.error("Update Error:", e);
+    }
 };
 
-window.setLagerFilter = (c) => { window.currentFilter = c; renderEliteTable(window.allItemsCache); };
-window.triggerLagerRender = () => renderEliteTable(window.allItemsCache);
+window.deleteLagerItem = async () => {
+    const id = document.getElementById('editItemId').value;
+    if (!id) return;
+
+    if (confirm("Är du säker på att du vill radera denna artikel permanent?")) {
+        const database = window.invDb || window.db || firebase.firestore();
+        try {
+            await database.collection("lager").doc(id).delete();
+            window.closeLagerDrawer();
+            console.log("Artikel raderad.");
+        } catch (e) {
+            console.error("Fel vid radering:", e);
+            alert("Kunde inte radera artikeln.");
+        }
+    }
+};
+
+function getDynamicSubFilters(items) {
+    const keywords = ["OLJEFILTER", "LUFTFILTER", "KUPEFILTER", "BROMSBELÄGG"];
+    const found = {};
+    items.forEach(i => {
+        const n = (i.name || "").toUpperCase();
+        keywords.forEach(kw => { if (n.includes(kw)) found[kw] = (found[kw] || 0) + 1; });
+    });
+    return Object.keys(found).filter(kw => found[kw] >= 2); 
+}
