@@ -10,26 +10,28 @@ window.currentFilter = 'all';
 export function initLagerView() {
     if (lagerUnsubscribe) lagerUnsubscribe();
     
-    // Säkerställ att vi hittar Firebase-instansen
+    // Vi provar att hämta den primära databasinstansen direkt från Firebase
     const database = window.invDb || window.db || firebase.firestore(); 
 
-    console.log("Försöker hämta artiklar från samlingen 'lager'...");
+    // LOGG 1: Kolla vilket projekt-ID som används live
+    console.log("Ansluten till projekt:", database.app.options.projectId);
+    
+    // LOGG 2: Kolla om vi använder en specifik databas-instans (default är vanligtvis rätt)
+    console.log("Databas-sökväg:", database._databaseId ? database._databaseId.database : "(default)");
 
     lagerUnsubscribe = database.collection("lager").onSnapshot(snapshot => {
-        // Denna logg visas i webbläsarens konsol (F12)
-        console.log("Antal dokument hittade i Firebase:", snapshot.size);
+        console.log("Antal dokument i samlingen 'lager':", snapshot.size);
         
         window.allItemsCache = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        
-        // Om listan fortfarande är tom här, kontrollera att dina dokument 
-        // i Firebase verkligen ligger direkt under samlingen "lager"
         renderEliteTable(window.allItemsCache);
     }, err => {
-        console.error("Firebase Snapshot Error:", err);
+        console.error("Firebase Error:", err);
     });
 
     const searchInput = document.getElementById('lagerSearchInput');
-    if (searchInput) searchInput.oninput = () => renderEliteTable(window.allItemsCache);
+    if (searchInput) {
+        searchInput.oninput = () => renderEliteTable(window.allItemsCache);
+    }
 }
 
 // Globala hjälpfunktioner för mobil-headern
