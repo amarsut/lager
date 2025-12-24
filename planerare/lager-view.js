@@ -92,10 +92,14 @@ export function renderEliteTable(items) {
         renderSidebar(items, sidebar);
     }
 
+    // 1. Hämta sökterm och sortering
     const term = (document.getElementById('lagerSearchInput')?.value || "").toLowerCase();
     const sortVal = document.getElementById('sortSelect')?.value || 'name';
+    
+    // NYTT: Normalisera söktermen (ta bort alla mellanslag)
+    const normalizedTerm = term.replace(/\s+/g, ''); 
 
-    // Hantera lagerstatus-filter
+    // 2. Hantera lagerstatus-filter
     let showInStock, showOutOfStock;
     if (window.innerWidth <= 768) {
         const stockVal = document.getElementById('mobileFilterStock')?.value || 'both';
@@ -106,7 +110,7 @@ export function renderEliteTable(items) {
         showOutOfStock = document.getElementById('filterOutOfStock')?.checked;
     }
 
-    // FILTRERING
+    // 3. FILTRERING (Här deklareras 'filtered' endast EN gång)
     let filtered = items.filter(i => {
         const qty = parseInt(i.quantity) || 0;
         const matchStock = (showInStock && qty > 0) || (showOutOfStock && qty <= 0);
@@ -115,16 +119,17 @@ export function renderEliteTable(items) {
                          (i.category || "").toLowerCase() === window.currentFilter.toLowerCase() ||
                          (i.name || "").toUpperCase().includes(window.currentFilter.toUpperCase());
 
+        // Normaliserad sökning på namn, artikelnr och kommentarer
         const matchSearch = 
-            (i.name || "").toLowerCase().includes(term) ||
-            (String(i.id || "")).toLowerCase().includes(term) ||
-            (i.service_filter || "").toLowerCase().includes(term) ||
-            (i.notes || "").toLowerCase().includes(term);
+            (i.name || "").toLowerCase().replace(/\s+/g, '').includes(normalizedTerm) ||
+            String(i.id || "").toLowerCase().replace(/\s+/g, '').includes(normalizedTerm) ||
+            (i.service_filter || "").toLowerCase().replace(/\s+/g, '').includes(normalizedTerm) ||
+            (i.notes || "").toLowerCase().replace(/\s+/g, '').includes(normalizedTerm);
 
         return matchStock && matchCat && matchSearch;
     });
 
-    // 2. NYTT: SORTERINGSLOGIK
+    // 4. SORTERING
     filtered.sort((a, b) => {
         if (sortVal === 'name') return (a.name || "").localeCompare(b.name || "");
         if (sortVal === 'price-low') return (parseFloat(a.price) || 0) - (parseFloat(b.price) || 0);
