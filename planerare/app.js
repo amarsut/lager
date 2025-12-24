@@ -1436,11 +1436,15 @@ function setupEventListeners() {
     }, 300);
 
     // Hjälpfunktion för att öppna modalen med vald del (Valfritt)
-    window.openNewJobWithPart = function(name, price) {
+    window.openNewJobWithPart = function(name, price, invId) {
         openNewJobModal();
         setTimeout(() => {
             document.getElementById('nyUtgiftNamn').value = name;
             document.getElementById('nyUtgiftPris').value = price;
+            
+            // Spara ID:t så att nästa steg vet vilken artikel det är
+            pendingInventoryId = invId; 
+            
             document.getElementById('btnAddExpense').click();
         }, 200);
     };
@@ -1774,25 +1778,45 @@ async function handleSaveJob(e) {
         if (jobId && jobId.trim() !== "") {
             // --- REDIGERA BEFINTLIGT JOBB ---
             
-            // 1. Hämta det GAMLA jobbet först för att se vad vi hade förut
+            // 1. Hämta det GAMLA jobbet för att se vad som fanns där innan
             const oldDoc = await db.collection("jobs").doc(jobId).get();
             const oldData = oldDoc.data();
-            
-            // 2. Räkna ut hur mycket olja det gamla jobbet hade
-            const oldOilAmount = calculateOilFromExpenses(oldData.utgifter);
-            
-            // 3. Räkna ut skillnaden (Nytt - Gammalt)
-            // Exempel: Ändra från 4L till 5L. Diff = 1L. Vi ska dra 1L till.
-            const diff = newOilAmount - oldOilAmount;
-            
-            // 4. Uppdatera jobbet
-            await db.collection("jobs").doc(jobId).update(jobData);
-            
-            // 5. Justera lagret om det blev någon skillnad
-            if (diff !== 0) {
-                await adjustInventoryBalance(diff);
+            const oldExpenses = oldData.utgifter || [];
+
+            // 2. Synka lagerartiklar (Filter etc)
+            // Vi skapar listor på alla inventory-ID:n för att jämföra dem
+            const oldInvIds = oldExpenses.filter(e => e.inventoryId).map(e => e.inventoryId);
+            const newInvIds = currentExpenses.filter(e => e.inventoryId).map(e => e.inventoryId);
+
+            // Hitta tillagda (finns i nya men inte i gamla)
+            for (const id of newInvIds) {
+                if (!oldInvIds.includes(id)) {
+                    await window.invDb.collection("lager").doc(id).update({
+                        quantity: firebase.firestore.FieldValue.increment(-1)
+                    });
+                }
             }
 
+            // Hitta borttagna (fanns i gamla men inte i nya)
+            for (const id of oldInvIds) {
+                if (!newInvIds.includes(id)) {
+                    await window.invDb.collection("lager").doc(id).update({
+                        quantity: firebase.firestore.FieldValue.increment(1)
+                    });
+                }
+            }
+
+            // 3. Hantera olja (din befintliga logik)
+            const oldOilAmount = calculateOilFromExpenses(oldExpenses);
+            const newOilAmount = calculateOilFromExpenses(currentExpenses);
+            const oilDiff = newOilAmount - oldOilAmount;
+            
+            if (oilDiff !== 0) {
+                await adjustInventoryBalance(oilDiff);
+            }
+
+            // 4. Uppdatera själva jobbet i databasen
+            await db.collection("jobs").doc(jobId).update(jobData);
         } else {
             // --- SKAPA NYTT JOBB ---
             
@@ -1883,52 +1907,37 @@ async function setStatus(id, status) {
 async function deleteJob(id) {
     if(confirm("Vill du ta bort detta jobb?")) {
         try {
-            // 1. Hämta jobbet först
             const doc = await db.collection("jobs").doc(id).get();
             
             if (doc.exists) {
                 const data = doc.data();
-                
-                // SÄKERHETSSPÄRR: Om jobbet redan är raderat, gör ingenting!
-                if (data.deleted) {
-                    console.warn("Jobbet är redan raderat. Avbryter.");
-                    return; 
+                if (data.deleted) return; 
+
+                const utgifter = data.utgifter || [];
+
+                // 1. Återför alla lagerartiklar (ID-baserade)
+                for (const expense of utgifter) {
+                    if (expense.inventoryId) {
+                        await window.invDb.collection("lager").doc(expense.inventoryId).update({
+                            quantity: firebase.firestore.FieldValue.increment(1)
+                        });
+                    }
                 }
                 
-                // 2. Räkna ut oljemängden som ska återföras
-                const oilToRefund = calculateOilFromExpenses(data.utgifter);
+                // 2. Återför motorolja
+                const oilToRefund = calculateOilFromExpenses(utgifter);
+                if (oilToRefund > 0) {
+                    await adjustInventoryBalance(-oilToRefund);
+                }
                 
                 // 3. Markera som raderat
                 await db.collection("jobs").doc(id).update({ deleted: true });
-                
-                // 4. Lägg tillbaka oljan i lagret
-                if (oilToRefund > 0) {
-                    await adjustInventoryBalance(-oilToRefund);
-                    console.log(`Återförde ${oilToRefund} liter till lagret.`);
-                }
             }
         } catch (err) { 
-            console.error(err); 
-            alert("Kunde inte radera jobbet.");
+            console.error("Fel vid radering:", err); 
         }
     }
 }
-
-// Lägg till utgift-knapp
-document.getElementById('btnAddExpense').addEventListener('click', () => {
-    const namnInput = document.getElementById('nyUtgiftNamn');
-    const prisInput = document.getElementById('nyUtgiftPris');
-    
-    const namn = namnInput.value.trim();
-    const kostnad = parseInt(prisInput.value);
-
-    if (namn && kostnad > 0) {
-        currentExpenses.push({ namn: namn, kostnad: kostnad });
-        namnInput.value = '';
-        prisInput.value = '';
-        renderExpenses(); // Rita om listan och räkna vinst
-    }
-});
 
 // Uppdatera vinst när kundpris ändras
 document.getElementById('kundpris').addEventListener('input', renderExpenses);
