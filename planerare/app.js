@@ -1,6 +1,7 @@
 // Importera kalenderfunktionen
 import { initCalendar, setCalendarTheme } from './calendar.js';
 import { openStatisticsView } from './statistics.js'; // Bytte namn på funktionen'
+import { initLagerView } from './lager-view.js';
 
 window.openNewJobModal = openNewJobModal;
 window.toggleChatWidget = toggleChatWidget;
@@ -883,6 +884,38 @@ function updateStatsCounts(jobs) {
 
 // 7. EVENT LISTENERS
 function setupEventListeners() {
+
+    /* LAGER-VIEW */
+    const navLager = document.getElementById('navLager');
+    const btnBackLager = document.getElementById('btnBackLager');
+
+    if (navLager) {
+        navLager.addEventListener('click', () => {
+            addHistoryState('lager');
+            
+            // Dölj sektioner på ett säkert sätt
+            const sectionsToHide = ['statBar', 'timelineView', 'customersView', 'calendarView', 'statisticsView'];
+            sectionsToHide.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.style.display = 'none';
+            });
+            
+            // Visa lager
+            const lagerView = document.getElementById('lagerView');
+            if (lagerView) {
+                lagerView.style.display = 'flex'; // Viktigt: Flex för den nya layouten
+                initLagerView();
+            }
+        });
+    }
+
+    if (btnBackLager) {
+        btnBackLager.addEventListener('click', () => {
+            document.getElementById('lagerView').style.display = 'none';
+            document.getElementById('statBar').style.display = '';
+            document.getElementById('timelineView').style.display = 'block';
+        });
+    }
 
     // Debouncad sökning för utgifter inuti modalen
     const searchExpenseInventory = debounce(async (term) => {
@@ -3633,3 +3666,18 @@ document.addEventListener('click', (e) => {
         if (suggestions) suggestions.style.display = 'none';
     }
 });
+
+// Aktivera Lager-knappen i mobilens "Mer"-meny
+const menuBtnLager = document.getElementById('menuBtnLager');
+if (menuBtnLager) {
+    menuBtnLager.addEventListener('click', () => {
+        // 1. Stäng inställningsmenyn först
+        closeSettings(); 
+        
+        // 2. Använd den logik du redan har för datorn genom att simulera ett klick
+        const navLager = document.getElementById('navLager');
+        if (navLager) {
+            navLager.click();
+        }
+    });
+}
