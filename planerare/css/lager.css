@@ -1,0 +1,190 @@
+/* planerare/css/lager.css - Pro & Mobile Final Edition */
+
+/* --- GRUNDLAYOUT --- */
+.lager-pro-wrapper {
+    display: flex;
+    gap: 24px;
+    padding: 24px;
+    background: #f4f7f9;
+    min-height: 100vh;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* --- SIDEBAR: STABIL & SMAL --- */
+.lager-sidebar-pro { 
+    width: 220px; 
+    flex-shrink: 0; 
+}
+.sidebar-card { 
+    background: #fff; 
+    border-radius: 12px; 
+    padding: 18px; 
+    border: 1px solid #e2e8f0; 
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.sidebar-title { font-size: 13px; font-weight: 800; color: #1e293b; text-transform: uppercase; margin-bottom: 15px; }
+.sidebar-divider { height: 1px; background: #f1f5f9; margin: 15px 0; }
+.sidebar-sub-label { font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 10px; }
+
+.sidebar-cat-link {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 12px; border-radius: 8px; font-size: 14px; color: #64748b; cursor: pointer; transition: 0.2s;
+}
+.sidebar-cat-link:hover { background: #f8fafc; color: #2563eb; }
+.sidebar-cat-link.active { background: #eff6ff; color: #2563eb; font-weight: 700; }
+.cat-badge { background: #f1f5f9; padding: 2px 6px; border-radius: 10px; font-size: 10px; }
+
+/* --- TOOLBAR: FIXAR 2-RADERS PROBLEMET --- */
+.lager-toolbar-pro {
+    background: #fff; border-radius: 12px; padding: 0 20px;
+    display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important;
+    justify-content: space-between; align-items: center;
+    margin-bottom: 24px; border: 1px solid #e2e8f0; height: 64px;
+}
+.toolbar-left { display: flex; gap: 12px; align-items: center; flex-shrink: 0; }
+.toolbar-right { display: flex; align-items: center; gap: 15px; flex: 1; justify-content: flex-end; min-width: 0; }
+
+.sort-box-pro {
+    display: flex; align-items: center; gap: 8px; background: #f8fafc; padding: 6px 12px; border-radius: 8px; border: 1px solid #e2e8f0;
+}
+.sort-box-pro label { font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase; }
+.sort-box-pro select { border: none; background: transparent; font-weight: 700; font-size: 13px; outline: none; cursor: pointer; }
+
+.search-wrapper-pro { position: relative; width: 280px; flex-shrink: 1; }
+.search-icon-pro { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 16px !important; height: 16px !important; color: #94a3b8; }
+#lagerSearchInput { width: 100% !important; padding: 10px 15px 10px 42px !important; border-radius: 12px !important; border: 1px solid #e2e8f0 !important; font-size: 14px; background: #f8fafc; }
+
+/* --- ARTIKELKORT: STABIL BREDD --- */
+.article-card-pro {
+    background: #fff; border-radius: 16px; padding: 20px; margin-bottom: 12px;
+    display: flex; gap: 20px; border: 1px solid #e2e8f0; align-items: center;
+}
+.card-img-box-pro { width: 110px; height: 90px; background: #f8fafc; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.card-info-pro { flex: 1; min-width: 0; }
+.card-info-pro h3 { font-size: 17px; font-weight: 700; color: #1e293b; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card-id-label { font-size: 10px; font-weight: 800; color: #cbd5e1; margin-bottom: 4px; }
+.card-ref-pro { font-size: 13px; color: #64748b; margin-top: 4px; }
+
+.card-actions-pro {
+    width: 180px; display: flex; flex-direction: column; align-items: flex-end; text-align: right; gap: 8px;
+    border-left: 1px solid #f1f5f9; padding-left: 20px; flex-shrink: 0;
+}
+.card-price-pro { font-size: 24px; font-weight: 800; color: #0f172a; }
+.stock-pill { padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; }
+.stock-in { background: #ecfdf5; color: #10b981; }
+.stock-out { background: #fef2f2; color: #ef4444; }
+.btn-redigera-pro { background: #2563eb; color: #fff; border: none; padding: 10px 16px; border-radius: 10px; font-weight: 700; width: 100%; cursor: pointer; }
+
+/* --- PRO EDIT DRAWER --- */
+.lager-drawer {
+    position: fixed; top: 0; right: -450px; width: 420px; height: 100%;
+    background: #fff; z-index: 2005; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: -10px 0 40px rgba(0,0,0,0.1); display: flex; flex-direction: column;
+}
+.lager-drawer.open { right: 0; }
+.drawer-header { padding: 24px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
+.drawer-header h3 { font-size: 1.1rem; font-weight: 800; color: #0f172a; margin: 0; }
+.drawer-body { padding: 24px; flex: 1; overflow-y: auto; }
+.drawer-footer { padding: 20px 24px; border-top: 1px solid #f1f5f9; }
+.drawer-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(2px); display: none; z-index: 2004; }
+.drawer-overlay.show { display: block; }
+
+/* ==========================================================================
+   MOBILANPASSNING (Final)
+   ========================================================================== */
+@media (max-width: 768px) {
+    .lager-pro-wrapper { flex-direction: column; padding: 12px; gap: 15px; }
+    .lager-sidebar-pro { width: 100%; }
+    
+    #sidebarCatList { display: flex; overflow-x: auto; gap: 8px; padding-bottom: 10px; -webkit-overflow-scrolling: touch; }
+    .sidebar-cat-link { flex-shrink: 0; background: #fff; border: 1px solid #e2e8f0; padding: 8px 15px; }
+    .sidebar-title, .sidebar-divider, .sidebar-sub-label { display: none; }
+
+    .lager-toolbar-pro { flex-direction: column; height: auto; padding: 15px; gap: 12px; align-items: flex-start; }
+    .toolbar-right { width: 100%; justify-content: space-between; }
+    .search-wrapper-pro { width: 100%; }
+
+    .article-card-pro { flex-direction: column; align-items: flex-start; padding: 15px; gap: 12px; }
+    .card-img-box-pro { width: 100%; height: 120px; }
+    .card-actions-pro { width: 100%; border-left: none; padding-left: 0; border-top: 1px solid #f1f5f9; padding-top: 15px; flex-direction: row; justify-content: space-between; align-items: center; }
+    .btn-redigera-pro { width: auto; min-width: 130px; }
+    .lager-drawer { width: 100%; right: -100%; }
+}
+
+/* ==========================================================================
+   MOBILANPASSNING (Under 768px) - HEADER FIX
+   ========================================================================== */
+@media (max-width: 768px) {
+    /* Döljer appens huvudheader när lagret visas för att sökbaren ska nå toppen */
+    body:has(#lagerView[style*="display: flex"]) .mobile-header {
+        display: none !important;
+    }
+
+    .lager-pro-wrapper { flex-direction: column; padding: 0; gap: 0; }
+    .desktop-only { display: none !important; }
+
+    /* Mobil Top Bar - Fixerad absolut högst upp */
+    .lager-mobile-top-bar {
+        display: flex !important; align-items: center; gap: 10px; padding: 0 15px;
+        background: #fff; border-bottom: 1px solid #e2e8f0; position: fixed; top: 0; left: 0; width: 100%;
+        z-index: 2000; height: 60px; box-sizing: border-box;
+    }
+    
+    /* Minskat padding-top för att ta bort mellanrummet */
+    .lager-sidebar-pro { 
+        width: 100%; background: #fff; 
+        padding: 0px 0 8px 0; /* 60px matchar headerns höjd exakt */
+        border-bottom: 1px solid #e2e8f0; 
+    }
+    .sidebar-card { border: none; box-shadow: none; padding: 0; border-radius: 0; }
+    
+    /* Mobil Chips - Horisontell scroll */
+    .cat-nav-container, .status-filter-container { 
+        flex-direction: row !important; overflow-x: auto; padding: 0 15px 5px 15px; gap: 8px; 
+        scrollbar-width: none; -webkit-overflow-scrolling: touch;
+    }
+    .cat-nav-container::-webkit-scrollbar, .status-filter-container::-webkit-scrollbar { display: none; }
+    
+    /* Enhetlig Chip Styling */
+    .sidebar-cat-link, .pro-filter-chip { 
+        flex-shrink: 0; height: 38px !important; padding: 0 16px !important; border-radius: 19px !important; 
+        border: 1px solid #e2e8f0 !important; background: #f8fafc !important; font-size: 13px !important;
+    }
+
+    /* Sökfältet högst upp */
+    .m-back-btn, .m-filter-btn { 
+        background: #f1f5f9; border: none; width: 38px; height: 38px; border-radius: 10px; 
+        display: flex; align-items: center; justify-content: center; color: #475569;
+    }
+    .m-search-box { flex: 1; position: relative; }
+    #lagerSearchInputMobile { width: 100%; padding: 10px 10px 10px 38px; border-radius: 10px; border: 1px solid #e2e8f0; background: #f8fafc; font-size: 15px; outline: none; }
+    .m-search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: #94a3b8; }
+
+    #lagerListElite { padding: 10px 15px 100px 15px; }
+}
+
+/* Sorteringsmeny mobil */
+.mobile-sort-popover {
+    position: fixed; top: 60px; right: 15px; background: white; border: 1px solid #e2e8f0;
+    border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); display: flex; flex-direction: column; padding: 6px; z-index: 2100;
+}
+.mobile-sort-popover button { padding: 10px 18px; border: none; background: none; text-align: left; font-size: 14px; font-weight: 600; border-radius: 6px; }
+
+@media (max-width: 768px) {
+    /* 1. Dölj bottenmenyn och huvudheadern när lagret visas */
+    /* Detta känner av om lagret är inställt på display: flex eller block */
+    body:has(#lagerView[style*="display: flex"]) #mobileNav,
+    body:has(#lagerView[style*="display: block"]) #mobileNav,
+    body:has(#lagerView[style*="display: flex"]) .mobile-header,
+    body:has(#lagerView[style*="display: block"]) .mobile-header {
+        display: none !important;
+    }
+
+    /* 2. Justera ytan för artikellistan så den fyller hela skärmen nu när menyn är borta */
+    #lagerListElite { 
+        padding: 10px 15px 30px 15px !important; /* Minskat botten-padding eftersom menyn är borta */
+    }
+
+    /* ... behåll dina övriga mobilregler för kort och chips här ... */
+}
