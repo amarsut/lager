@@ -58,6 +58,15 @@ function getCategoryIconHtml(category, name) {
             </g>
         `,
 
+        cabinFilter: `
+            <g stroke="none">
+                <rect x="2" y="5" width="20" height="14" rx="1.5" fill="#334155" />
+                <rect x="4" y="7" width="16" height="10" rx="0.5" fill="#f8fafc" />
+                <path d="M4 9h16M4 11h16M4 13h16M4 15h16" stroke="#cbd5e1" stroke-width="0.6" />
+                <rect x="4" y="7" width="16" height="10" rx="0.5" fill="none" stroke="#e2e8f0" stroke-width="0.5"/>
+            </g>
+        `,
+
         // Oljefilter: Orange/Gul med detaljer (likt Flaticon-stil)
         oilFilter: `
             <rect x="8" y="2" width="8" height="3" rx="1" fill="#cbd5e1" />
@@ -94,6 +103,9 @@ function getCategoryIconHtml(category, name) {
         `
     };
 
+    if (cat.includes('kupefilter') || itemName.includes('kupefilter') || cat.includes('kupé')) {
+        return icons.cabinFilter;
+    }
     if (itemName.includes('tändstift') || cat.includes('tändstift')) return icons.sparkPlug;
     if (itemName.includes('bränslefilter') || cat.includes('bränslefilter')) return icons.fuelFilter;
     if (cat.includes('oljefilter') || itemName.includes('oljefilter')) return icons.oilFilter;
