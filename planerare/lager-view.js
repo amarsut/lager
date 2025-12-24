@@ -9,29 +9,22 @@ window.currentFilter = 'all';
  */
 export function initLagerView() {
     if (lagerUnsubscribe) lagerUnsubscribe();
-    
-    // Vi provar att hämta den primära databasinstansen direkt från Firebase
     const database = window.invDb || window.db || firebase.firestore(); 
 
-    // LOGG 1: Kolla vilket projekt-ID som används live
-    console.log("Ansluten till projekt:", database.app.options.projectId);
-    
-    // LOGG 2: Kolla om vi använder en specifik databas-instans (default är vanligtvis rätt)
-    console.log("Databas-sökväg:", database._databaseId ? database._databaseId.database : "(default)");
-
     lagerUnsubscribe = database.collection("lager").onSnapshot(snapshot => {
-        console.log("Antal dokument i samlingen 'lager':", snapshot.size);
-        
         window.allItemsCache = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         renderEliteTable(window.allItemsCache);
-    }, err => {
-        console.error("Firebase Error:", err);
-    });
+    }, err => console.error("Firebase Error:", err));
 
-    const searchInput = document.getElementById('lagerSearchInput');
-    if (searchInput) {
-        searchInput.oninput = () => renderEliteTable(window.allItemsCache);
-    }
+    // FIX: Koppla sökning för BÅDE dator och mobil ordentligt
+    const pcSearch = document.getElementById('lagerSearchInput');
+    if (pcSearch) pcSearch.oninput = () => renderEliteTable(window.allItemsCache);
+    
+    const mobileSearch = document.getElementById('lagerSearchInputMobile');
+    if (mobileSearch) mobileSearch.oninput = () => renderEliteTable(window.allItemsCache);
+
+    const saveBtn = document.getElementById('btnSaveLagerItem');
+    if (saveBtn) saveBtn.onclick = window.saveLagerItemChanges;
 }
 
 // Globala hjälpfunktioner för mobil-headern
@@ -96,58 +89,65 @@ export function renderEliteTable(items) {
     const sidebar = document.getElementById('sidebarCatList');
     if (!container) return;
 
-    // 1. Rendera Sidebar (Görs först, det är därför siffrorna syns)
-    renderSidebar(items, sidebar);
+    // Återställ sidebar för desktop
+    if (sidebar && window.innerWidth > 768) {
+        renderSidebar(items, sidebar);
+    }
 
-    // 2. Filter-logik - SÄKRAD VERSION
-    // Vi kollar först efter mobilens sökfält, annars datorns, annars tomt.
-    const searchEl = document.getElementById('lagerSearchInputMobile') || document.getElementById('lagerSearchInput');
-    const term = searchEl ? searchEl.value.toLowerCase() : "";
+    const pcInput = document.getElementById('lagerSearchInput');
+    const mobileInput = document.getElementById('lagerSearchInputMobile');
+    const term = (pcInput?.value || mobileInput?.value || "").toLowerCase();
 
-    const showInStock = document.getElementById('filterInStock')?.checked;
-    const showOutOfStock = document.getElementById('filterOutOfStock')?.checked;
+    // Hantera lagerstatus-filter
+    let showInStock, showOutOfStock;
+    if (window.innerWidth <= 768) {
+        const stockVal = document.getElementById('mobileFilterStock').value;
+        showInStock = (stockVal === 'in' || stockVal === 'both');
+        showOutOfStock = (stockVal === 'out' || stockVal === 'both');
+    } else {
+        showInStock = document.getElementById('filterInStock')?.checked;
+        showOutOfStock = document.getElementById('filterOutOfStock')?.checked;
+    }
 
     let filtered = items.filter(i => {
-        // Kontrollera att fältet heter 'quantity' i din databas
-        const qty = parseInt(i.quantity) || 0; 
-        
-        // Om inga boxar är i-bockade visas inget. 
-        // Om bara "I LAGER" är vald och alla artiklar har 0 i lager visas inget.
+        const qty = parseInt(i.quantity) || 0;
         const matchStock = (showInStock && qty > 0) || (showOutOfStock && qty <= 0);
         
         const matchCat = window.currentFilter === 'all' || 
-                         (i.category || "").toLowerCase() === window.currentFilter.toLowerCase() || 
+                         (i.category || "").toLowerCase() === window.currentFilter.toLowerCase() ||
                          (i.name || "").toUpperCase().includes(window.currentFilter.toUpperCase());
-        
-        const matchSearch = (i.name || "").toLowerCase().includes(term) || 
-                           (i.service_filter || "").toLowerCase().includes(term);
-                           
+
+        // UTÖKAD SÖKNING (Namn, ID, Ref och Kommentarer)
+        const matchSearch = 
+            (i.name || "").toLowerCase().includes(term) ||
+            (String(i.id || "")).toLowerCase().includes(term) ||
+            (i.service_filter || "").toLowerCase().includes(term) ||
+            (i.notes || "").toLowerCase().includes(term);
+
         return matchStock && matchCat && matchSearch;
     });
 
-    // Sortering
-    const sortVal = document.getElementById('sortSelect')?.value;
-    if (sortVal === 'price-low') filtered.sort((a,b) => (a.price || 0) - (b.price || 0));
-    else if (sortVal === 'price-high') filtered.sort((a,b) => (b.price || 0) - (a.price || 0));
-    else filtered.sort((a,b) => (a.name || "").localeCompare(b.name || ""));
-
+    // Rendering av korten
     container.innerHTML = filtered.map(item => {
         const qty = parseInt(item.quantity) || 0;
-        const artId = String(item.id || "").substring(0, 10).toUpperCase();
+        const notes = item.notes || "";
+        const truncatedNotes = notes.length > 65 ? notes.substring(0, 65) + "..." : notes;
+        
         return `
             <div class="article-card-pro">
                 <div class="card-img-box-pro">
-                    <svg viewBox="0 0 24 24" width="36" height="36" fill="#e2e8f0"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+                    <svg viewBox="0 0 24 24" width="40" height="40" fill="#e2e8f0"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
                 </div>
                 <div class="card-info-pro">
-                    <div class="card-id-label">ARTIKELNR: ${artId}</div>
+                    <div class="card-id-label">ARTIKELNR: ${String(item.id || "").toUpperCase()}</div>
                     <h3>${item.name || 'Namnlös'}</h3>
                     <div class="card-ref-pro">Ref: ${item.service_filter || '-'}</div>
+                    ${notes ? `<div class="card-notes-pro" title="${notes}">${truncatedNotes}</div>` : ''}
                 </div>
                 <div class="card-actions-pro">
                     <div class="card-price-pro">${item.price || 0}:-</div>
                     <div class="stock-pill ${qty > 0 ? 'stock-in' : 'stock-out'}">${qty} st i lager</div>
-                    <button class="btn-redigera-pro" onclick='window.openLagerDrawer(${JSON.stringify(item).replace(/'/g, "&apos;")})'>REDIGERA</button>
+                    <button class="btn-redigera-pro" onclick='window.editLagerItemById("${item.id}")'>REDIGERA</button>
                 </div>
             </div>`;
     }).join('');
@@ -155,6 +155,12 @@ export function renderEliteTable(items) {
     const statsEl = document.getElementById('paginationStats');
     if (statsEl) statsEl.textContent = `Visar ${filtered.length} av ${items.length}`;
 }
+
+// Säkrare redigeringsfunktion
+window.editLagerItemById = (id) => {
+    const item = window.allItemsCache.find(i => i.id === id);
+    if (item) window.openLagerDrawer(item);
+};
 
 function getDynamicSubFilters(items) {
     // Definiera de specifika ord vi letar efter
