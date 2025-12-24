@@ -448,19 +448,25 @@
 											<svg class="search-icon-pro" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
 											<input type="text" id="lagerSearchInput" placeholder="Sök artikel...">
 										</div>
+										<button class="btn-add-article-icon" onclick="window.openNewLagerItemDrawer()" title="Ny Artikel">
+											<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+												<line x1="12" y1="5" x2="12" y2="19"></line>
+												<line x1="5" y1="12" x2="19" y2="12"></line>
+											</svg>
+										</button>
 
 										<div class="filter-icon-wrapper">
-											<svg class="filter-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+											<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#64748b" stroke-width="2">
 												<line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line>
 												<line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line>
 												<line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line>
-												<line x1="2" y1="14" x2="6" y2="14"></line><line x1="10" y1="8" x2="14" y2="8"></line>
-												<line x1="18" y1="16" x2="22" y2="16"></line>
+												<line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line>
+												<line x1="17" y1="16" x2="23" y2="16"></line>
 											</svg>
 											<select id="sortSelect" onchange="window.triggerLagerRender()">
 												<option value="name">Namn A-Ö</option>
-												<option value="price-low">Lägsta Pris</option>
-												<option value="price-high">Högsta Pris</option>
+												<option value="price-low">Pris Lägsta Först </option>
+												<option value="price-high">Pris Högsta Först </option>
 											</select>
 										</div>
 									</div>
