@@ -251,33 +251,50 @@ export function renderEliteTable(items) {
     // RENDERING (Kompakt layout)
     // 5. RENDERING
     container.innerHTML = filtered.map(item => {
-        const qty = parseInt(item.quantity) || 0;
-        const notes = item.notes || "";
-        const truncatedNotes = notes.length > 65 ? notes.substring(0, 65) + "..." : notes;
-        
-        // NYTT: Hämta rätt ikon-väg baserat på kategori och namn
-        const iconContent = getCategoryIconHtml(item.category, item.name);
+    const qty = parseInt(item.quantity) || 0;
+    const notes = item.notes || "";
+    const truncatedNotes = notes.length > 65 ? notes.substring(0, 65) + "..." : notes;
+    
+    // Hämta ikon
+    const iconContent = getCategoryIconHtml(item.category, item.name);
 
-        return `
-            <div class="article-card-pro">
-                <div class="card-img-box-pro">
-                    <svg viewBox="0 0 24 24" width="36" height="36">
-                        ${iconContent}
-                    </svg>
-                </div>
-                <div class="card-info-pro">
-                    <div class="card-id-label">ARTIKELNR: ${String(item.id || "").toUpperCase()}</div>
-                    <h3>${item.name || 'Namnlös'}</h3>
-                    <div class="card-ref-pro">Ref: ${item.service_filter || '-'}</div>
-                    ${notes ? `<div class="card-notes-pro" title="${notes}">${truncatedNotes}</div>` : ''}
-                </div>
-                <div class="card-actions-pro">
+    // Generera alla jämförelselänkar baserat på ref eller namn
+    const supplierLinks = getAllSupplierLinks(item.service_filter || item.name);
+
+    return `
+        <div class="article-card-pro">
+            <div class="card-img-box-pro">
+                <svg viewBox="0 0 24 24" width="36" height="36">
+                    ${iconContent}
+                </svg>
+            </div>
+            <div class="card-info-pro">
+                <div class="card-id-label">ARTIKELNR: ${String(item.id || "").toUpperCase()}</div>
+                <h3>${item.name || 'Namnlös'}</h3>
+                <div class="card-ref-pro">Ref: ${item.service_filter || '-'}</div>
+                ${notes ? `<div class="card-notes-pro">${truncatedNotes}</div>` : ''}
+            </div>
+            <div class="card-actions-pro">
+                <div class="card-price-container-pro" style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
                     <div class="card-price-pro">${item.price || 0}:-</div>
-                    <div class="stock-pill ${qty > 0 ? 'stock-in' : 'stock-out'}">${qty} st i lager</div>
-                    <button class="btn-redigera-pro" onclick='window.editLagerItemById("${item.id}")'>REDIGERA</button>
+                    
+                    <div class="supplier-compare-row" style="display: flex; gap: 5px;">
+                        ${supplierLinks.map(s => `
+                            <a href="${s.url}" 
+                               target="_blank" 
+                               class="supplier-link-circle" 
+                               title="Sök hos ${s.name}"
+                               style="background-color: ${s.color}; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: ${s.name === 'Mekonomen' ? '#000' : '#fff'}; font-size: 10px; font-weight: bold; text-decoration: none;">
+                                ${s.name.charAt(0)}
+                            </a>
+                        `).join('')}
+                    </div>
                 </div>
-            </div>`;
-    }).join('');
+                <div class="stock-pill ${qty > 0 ? 'stock-in' : 'stock-out'}">${qty} st i lager</div>
+                <button class="btn-redigera-pro" onclick='window.editLagerItemById("${item.id}")'>REDIGERA</button>
+            </div>
+        </div>`;
+}).join('');
 
     const statsEl = document.getElementById('paginationStats');
     if (statsEl) statsEl.textContent = `Visar ${filtered.length} av ${items.length}`;
@@ -389,4 +406,35 @@ function getDynamicSubFilters(items) {
         keywords.forEach(kw => { if (n.includes(kw)) found[kw] = (found[kw] || 0) + 1; });
     });
     return Object.keys(found).filter(kw => found[kw] >= 2); 
+}
+
+// --- LEVERANTÖRSFUNKTIONER ---
+function generateTrodoLink(f) { 
+    if (!f) return null; 
+    const s = f.replace(/[\s-]/g, ''); 
+    const q = encodeURIComponent(s); 
+    return `https://www.trodo.se/catalogsearch/result/premium?filter[quality_group]=2&product_list_dir=asc&product_list_order=price&q=${q}`; 
+}
+
+function generateThansenLink(f) { 
+    if (!f) return null; 
+    const s = f.replace(/[\s-]/g, ''); 
+    const q = encodeURIComponent(s); 
+    return `https://www.thansen.se/search/?query=${q}`; 
+}
+
+function generateAeroMLink(f) { 
+    if (!f) return null; 
+    const s = f.replace(/[\s-]/g, ''); 
+    return `https://aeromotors.se/sok?s=${s}&layered_id_feature_1586%5B%5D=3&sort_by=price.asc`; 
+}
+
+// Samlingsfunktion för att hämta alla länkar till kortet
+function getAllSupplierLinks(ref) {
+    if (!ref) return [];
+    return [
+        { name: 'Trodo', color: '#2563eb', url: generateTrodoLink(ref) },
+        { name: 'Thansen', color: '#ed1c24', url: generateThansenLink(ref) },
+        { name: 'AeroM', color: '#0056b3', url: generateAeroMLink(ref) },
+    ];
 }
