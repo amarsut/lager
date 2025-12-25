@@ -51,15 +51,6 @@ body {
 .main-content { max-width: 1110px; margin: 0 auto; padding: 2rem; }
 
 /* --- SIDEBAR --- */
-.sidebar {
-    width: var(--sidebar-width);
-    min-width: var(--sidebar-width);
-    flex-shrink: 0;
-    background-color: var(--content-bg);
-    border-right: 1px solid var(--border-color);
-    display: flex; flex-direction: column; padding: 24px 16px;
-}
-
 .sidebar-header { padding-bottom: 24px; margin-bottom: 8px; }
 .app-logo-modern { display: flex; align-items: center; gap: 12px; font-weight: 700; font-size: 1.1rem; color: #111; }
 .logo-icon-box {
@@ -91,6 +82,96 @@ body {
 .user-name { font-size: 0.85rem; font-weight: 600; color: #1f2937; }
 .user-role { font-size: 0.7rem; color: #9ca3af; }
 .logout-icon-btn { background: none; border: none; color: #9ca3af; cursor: pointer; }
+
+/* --- COLLAPSIBLE SIDEBAR --- */
+/* 1. Grundinställning för sidebaren */
+.sidebar {
+    width: var(--side-width-open) !important;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow-x: hidden !important;
+    padding: 0 !important; /* Ingen padding på själva sidebaren */
+    background: #fff;
+    border-right: 1px solid #e2e8f0;
+}
+
+/* 2. Den ihopfällda staten */
+.sidebar.collapsed {
+    width: 70px !important;
+    min-width: 70px !important;
+}
+
+/* --- HEADER & LOGGA --- */
+.sidebar-header {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important; /* Ändrat till start för att linjera ikonen */
+    padding: 24px 24px !important; /* Samma 24px padding som nav-länkar */
+    gap: 15px !important;
+}
+
+/* Centrera headern när den är ihopfälld */
+.sidebar.collapsed .sidebar-header {
+    align-items: center !important;
+    padding: 24px 0 !important;
+}
+
+/* --- TOGGLE-KNAPPEN --- */
+#toggleSidebarBtn {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    margin-left: 0 !important; /* Linjerad med ikonerna i öppet läge */
+    transition: margin 0.3s ease;
+}
+
+/* --- NAV-LÄNKAR (Säkerställ 24px) --- */
+.nav-link {
+    padding: 12px 24px !important;
+    gap: 12px !important;
+}
+
+/* --- AVATAR & PROFIL (FOOTER) --- */
+
+.user-profile-card {
+    display: flex !important;
+    align-items: center !important;
+    padding: 20px 24px !important; /* 24px här också för linjering */
+    gap: 12px;
+    margin-top: auto;
+}
+
+.sidebar.collapsed .user-profile-card {
+    justify-content: center !important;
+    padding: 20px 0 !important;
+}
+
+/* Dölj text och extra knappar vid collapsed */
+.sidebar.collapsed .app-logo-modern span,
+.sidebar.collapsed .nav-link span,
+.sidebar.collapsed .user-info,
+.sidebar.collapsed .logout-icon-btn {
+    display: none !important;
+}
+
+/* --- JUSTERING ENDAST FÖR UTFÄLLT LÄGE --- */
+
+/* 1. Kontrollera header-ikon yttre ram */
+.sidebar:not(.collapsed) .sidebar-header {
+    padding: 24px 17px 20px 17px !important; /* Topp, Höger, Botten, Vänster */
+}
+
+/* 2. Justera toggle-knappens position */
+.sidebar:not(.collapsed) #toggleSidebarBtn {
+    margin-left: -2px !important; /* Placerar knappen precis under loggans start */
+}
 
 /* --- HEADER / TOP BAR --- */
 .top-bar {
