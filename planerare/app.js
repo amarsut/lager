@@ -926,10 +926,7 @@ function setupEventListeners() {
 
     if (btnBackLager) {
         btnBackLager.addEventListener('click', () => {
-            document.getElementById('lagerView').style.display = 'none';
-            document.getElementById('statBar').style.display = '';
-            document.getElementById('timelineView').style.display = 'block'; // ÄNDRAT från 'none'
-            renderDashboard(); // Lägg till detta för att säkerställa att listan ritas
+            history.back(); 
         });
     }
 
@@ -1204,26 +1201,26 @@ function setupEventListeners() {
 
 	// 1. Lyssna på när användaren trycker bakåt (eller swipar)
 	window.addEventListener('popstate', function(event) {
+        // 1. Stäng alla öppna modaler och drawers
         window.closeAllModals(true); 
+        if (window.closeLagerDrawer) window.closeLagerDrawer(true);
         
-        const state = event.state;
+        hideAllMainViews();
 
-        // Om vi går bakåt från en artikel-drawer, se till att vi stannar i lager-vyn
-        if (state && (state.uiState === 'lager' || state.uiState === 'lagerDrawer')) {
-            hideAllMainViews();
-            document.getElementById('lagerView').style.display = 'flex';
-            initLagerView();
-        } else if (state && state.uiState === 'customers') {
-            hideAllMainViews();
+        const state = event.state;
+        // 2. Kontrollera vilket tillstånd vi landat i
+        if (state && state.uiState === 'customers') {
             document.getElementById('customersView').style.display = 'block';
             renderCustomerView();
+        } else if (state && (state.uiState === 'lager' || state.uiState === 'lagerDrawer')) {
+            // Om vi är i lagret eller i en artikel-redigering
+            document.getElementById('lagerView').style.display = 'flex';
+            initLagerView();
         } else if (state && state.uiState === 'calendar') {
-            hideAllMainViews();
             document.getElementById('calendarView').style.display = 'block';
         } else {
-            // Standardläge (Startsidan)
-            hideAllMainViews();
-            document.getElementById('statBar').style.display = ''; 
+            // Standardläge / Startsidan (om state är null eller 'home')
+            document.getElementById('statBar').style.display = '';
             document.getElementById('timelineView').style.display = 'block';
             renderDashboard();
         }
@@ -1418,8 +1415,7 @@ function setupEventListeners() {
     if (btnBackCust) {
         const newBtn = btnBackCust.cloneNode(true);
         btnBackCust.parentNode.replaceChild(newBtn, btnBackCust);
-        
-        newBtn.addEventListener('click', goToOverview);
+        newBtn.addEventListener('click', () => history.back()); 
     }
 
     // Koppla "Tillbaka"-knappen i STATISTIK
