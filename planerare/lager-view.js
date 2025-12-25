@@ -304,39 +304,36 @@ export function renderEliteTable(items) {
     const sidebar = document.getElementById('sidebarCatList');
     if (!container) return;
 
-    // 1. SMART FILTER-HÄMTNING (Fixar mobil-buggen)
+    // 1. Hantera filter för lagerstatus
     let showInStock = true;
     let showOutOfStock = false;
-
     const mobileStockSelect = document.getElementById('mobileFilterStock');
+
     if (window.innerWidth <= 768 && mobileStockSelect) {
-        // Om vi är i mobilen, läs från rullistan
         const val = mobileStockSelect.value;
         showInStock = (val === 'in' || val === 'both');
         showOutOfStock = (val === 'out' || val === 'both');
     } else {
-        // Om vi är på datorn, läs från kryssrutorna i sidomenyn
         showInStock = document.getElementById('filterInStock')?.checked;
         showOutOfStock = document.getElementById('filterOutOfStock')?.checked;
     }
 
-    // 2. Beräkna artiklar som matchar LAGERSTATUS (för sidebar-statistik)
     const filteredByStock = items.filter(i => {
         const qty = parseInt(i.quantity) || 0;
         return (showInStock && qty > 0) || (showOutOfStock && qty <= 0);
     });
 
-    // Uppdatera sidobaren med de nya siffrorna
     if (sidebar && window.innerWidth > 768) {
         renderSidebar(filteredByStock, sidebar);
     }
 
-    // 3. Filtrera på kategori och sökord
+    // 2. Hämta sökterm
     const searchInput = document.getElementById('lagerSearchInput');
     const term = (searchInput?.value || "").trim();
     const normalizedTerm = term.toLowerCase().replace(/\s+/g, ''); 
     const sortVal = document.getElementById('sortSelect')?.value || 'name';
 
+    // 3. Filtrera listan
     let filtered = filteredByStock.filter(i => {
         const itemCat = (i.category || "").trim().toLowerCase(); 
         const matchCat = window.currentFilter === 'all' || 
@@ -382,67 +379,96 @@ export function renderEliteTable(items) {
         }
     }
 
-    // 6. Rendering av listan
-    container.innerHTML = filtered.map(item => {
-    const qty = parseInt(item.quantity) || 0;
-    const notes = item.notes || ""; 
-    const iconContent = getCategoryIconHtml(item.category, item.name);
-    const supplierLinks = getAllSupplierLinks(item.service_filter || item.name);
+    // 6. RENDERING LOGIK
+    if (filtered.length === 0 && term.length > 0) {
+        // --- VISAR EMPTY STATE MED LÄNKAR ---
+        const trodoUrl = generateTrodoLink(term);
+        const thansenUrl = generateThansenLink(term);
+        const aeroUrl = generateAeroMLink(term);
 
-    // --- NYTT: Logik för att hitta senaste försäljning ---
-    let lastSoldInfo = "";
-    if (qty <= 0 && window.allJobs) {
-        const lastJob = window.allJobs
-            .filter(j => !j.deleted && Array.isArray(j.utgifter) && j.utgifter.some(e => String(e.inventoryId) === String(item.id)))
-            .sort((a, b) => new Date(b.datum) - new Date(a.datum))[0];
-        
-        if (lastJob) {
-            const date = lastJob.datum ? lastJob.datum.split('T')[0] : 'Inget datum';
-            lastSoldInfo = `
-                <div style="margin-top: 4px; display: flex; align-items: flex-start; gap: 5px; color: #e11d48; font-size: 0.68rem; font-weight: 600; letter-spacing: -0.1px; line-height: 1.3;">
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; margin-top: 1px;">
-                        <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-                    </svg>
-                    <div style="word-break: break-word; flex: 1;">
-                        SIST: ${date} • ${lastJob.kundnamn}
+        container.innerHTML = `
+            <div class="lager-empty-search" style="padding: 40px 20px; text-align: center; background: white; border-radius: 16px; border: 2px dashed #e2e8f0; margin: 20px 0;">
+                <div style="font-size: 3rem; margin-bottom: 15px;">📦</div>
+                <h3 style="margin-bottom: 10px; color: #1e293b;">Ingen träff i lagret för "${term}"</h3>
+                <p style="color: #64748b; margin-bottom: 25px;">Artikeln saknas i ditt lokala saldo. Sök externt eller lägg till den:</p>
+                
+                <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 25px;">
+                    <a href="${trodoUrl}" target="_blank" style="background: #2563eb; color: white; padding: 12px 20px; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 0.85rem;">Sök på Trodo</a>
+                    <a href="${thansenUrl}" target="_blank" style="background: #ed1c24; color: white; padding: 12px 20px; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 0.85rem;">Sök på Thansen</a>
+                    <a href="${aeroUrl}" target="_blank" style="background: #0056b3; color: white; padding: 12px 20px; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 0.85rem;">Sök på AeroMotors</a>
+                </div>
+
+                <button onclick="window.openNewLagerItemDrawer('${term}')" style="background: #10b981; color: white; border: none; padding: 15px 30px; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 10px; margin: 0 auto;">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></svg>
+                    LÄGG TILL "${term.toUpperCase()}" I LAGER
+                </button>
+            </div>
+        `;
+    } else if (filtered.length === 0) {
+        container.innerHTML = `<p style="text-align:center; padding: 2rem; color: #888;">Inga artiklar matchar filtret.</p>`;
+    } else {
+        // --- RENDERA ARTIKLAR SOM VANLIGT ---
+        container.innerHTML = filtered.map(item => {
+            const qty = parseInt(item.quantity) || 0;
+            const notes = item.notes || ""; 
+            const iconContent = getCategoryIconHtml(item.category, item.name);
+            const supplierLinks = getAllSupplierLinks(item.service_filter || item.name);
+
+            // --- NYTT: Logik för att hitta senaste försäljning ---
+            let lastSoldInfo = "";
+            if (qty <= 0 && window.allJobs) {
+                const lastJob = window.allJobs
+                    .filter(j => !j.deleted && Array.isArray(j.utgifter) && j.utgifter.some(e => String(e.inventoryId) === String(item.id)))
+                    .sort((a, b) => new Date(b.datum) - new Date(a.datum))[0];
+                
+                if (lastJob) {
+                    const date = lastJob.datum ? lastJob.datum.split('T')[0] : 'Inget datum';
+                    lastSoldInfo = `
+                        <div style="margin-top: 4px; display: flex; align-items: flex-start; gap: 5px; color: #e11d48; font-size: 0.68rem; font-weight: 600; letter-spacing: -0.1px; line-height: 1.3;">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; margin-top: 1px;">
+                                <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                            <div style="word-break: break-word; flex: 1;">
+                                SIST: ${date} • ${lastJob.kundnamn}
+                            </div>
+                        </div>`;
+                }
+            }
+
+            return `
+                <div class="article-card-pro">
+                    <div class="card-img-box-pro">
+                        <svg viewBox="0 0 24 24" width="36" height="36">${iconContent}</svg>
+                    </div>
+                    <div class="card-info-pro">
+                        <div class="card-id-label">ARTIKELNR: ${String(item.id || "").toUpperCase()}</div>
+                        <h3>${item.name || 'Namnlös'}</h3>
+                        <div class="card-ref-pro">Ref: ${item.service_filter || '-'}</div>
+                        
+                        ${lastSoldInfo}
+                        
+                        ${notes ? `
+                            <div class="card-notes-pro" style="margin-top: 8px; font-size: 0.85rem; color: #64748b; font-style: italic; border-top: 1px solid #f1f5f9; padding-top: 4px;">
+                                "${notes.length > 80 ? notes.substring(0, 80) + '...' : notes}"
+                            </div>
+                        ` : ''}
+                    </div>
+                    <div class="card-actions-pro">
+                        <div class="card-price-container-pro" style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px;">
+                            <div class="card-price-pro">${item.price || 0}:-</div>
+                            
+                            <div class="supplier-compare-row" style="display: flex; gap: 6px;">
+                                ${supplierLinks.map(s => `
+                                    <a href="${s.url}" target="_blank" class="supplier-link-circle" title="${s.name}" style="background-color: ${s.color}; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 10px; font-weight: 800; text-decoration: none;">${s.name.charAt(0)}</a>
+                                `).join('')}
+                            </div>
+                        </div>
+                        <div class="stock-pill ${qty > 0 ? 'stock-in' : 'stock-out'}">${qty} st i lager</div>
+                        <button class="btn-redigera-pro" onclick='window.editLagerItemById("${item.id}")'>REDIGERA</button>
                     </div>
                 </div>`;
-        }
+        }).join('');
     }
-
-    return `
-        <div class="article-card-pro">
-            <div class="card-img-box-pro">
-                <svg viewBox="0 0 24 24" width="36" height="36">${iconContent}</svg>
-            </div>
-            <div class="card-info-pro">
-                <div class="card-id-label">ARTIKELNR: ${String(item.id || "").toUpperCase()}</div>
-                <h3>${item.name || 'Namnlös'}</h3>
-                <div class="card-ref-pro">Ref: ${item.service_filter || '-'}</div>
-                
-                ${lastSoldInfo}
-                
-                ${notes ? `
-                    <div class="card-notes-pro" style="margin-top: 8px; font-size: 0.85rem; color: #64748b; font-style: italic; border-top: 1px solid #f1f5f9; padding-top: 4px;">
-                        "${notes.length > 80 ? notes.substring(0, 80) + '...' : notes}"
-                    </div>
-                ` : ''}
-            </div>
-            <div class="card-actions-pro">
-                <div class="card-price-container-pro" style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px;">
-                    <div class="card-price-pro">${item.price || 0}:-</div>
-                    
-                    <div class="supplier-compare-row" style="display: flex; gap: 6px;">
-                        ${supplierLinks.map(s => `
-                            <a href="${s.url}" target="_blank" class="supplier-link-circle" title="${s.name}" style="background-color: ${s.color}; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 10px; font-weight: 800; text-decoration: none;">${s.name.charAt(0)}</a>
-                        `).join('')}
-                    </div>
-                </div>
-                <div class="stock-pill ${qty > 0 ? 'stock-in' : 'stock-out'}">${qty} st i lager</div>
-                <button class="btn-redigera-pro" onclick='window.editLagerItemById("${item.id}")'>REDIGERA</button>
-            </div>
-        </div>`;
-}).join('');
 
     const statsEl = document.getElementById('paginationStats');
     if (statsEl) statsEl.textContent = `Visar ${filtered.length} av ${items.length}`;
