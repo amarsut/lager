@@ -218,6 +218,13 @@
                     </div>
                     <span>Översikt Pro</span>
                 </div>
+				<button id="toggleSidebarBtn" style="background:none; border:none; color:inherit; cursor:pointer; padding:10px; margin-left:10px;">
+				<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<line x1="3" y1="12" x2="21" y2="12"></line>
+					<line x1="3" y1="6" x2="21" y2="6"></line>
+					<line x1="3" y1="18" x2="21" y2="18"></line>
+				</svg>
+			</button>
             </div>
 
             <nav class="sidebar-nav">
@@ -1230,44 +1237,65 @@
 				<div class="settings-section-label">LAGERHANTERING</div>
 				<div class="settings-card-group">
 					<div class="settings-item inventory-card">
-						<div class="drop-card-layout">
-							<div class="drop-icon-container">
-								<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-									<path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" class="drop-outline"></path>
-									<path d="M12 18a2 2 0 1 0 0-4 2 2 0 0 0 0 4z" fill="currentColor" class="drop-inner"></path>
-								</svg>
-							</div>
-							<div class="drop-info">
-								<div class="drop-header">
-									<span class="settings-title">Motorolja 5W-30</span>
-									<span class="oil-badge compact" id="oilDateBadge" style="display:none;">---</span>
-								</div>
-								<div class="drop-stats">
-									<span id="oilLevelText">Laddar...</span>
-								</div>
-							</div>
-							<div class="drop-percent">
-								<span id="oilPercent">0%</span>
-							</div>
-						</div>
-						<div class="oil-progress-bg compact-bar">
-							<div id="oilProgressBar" class="oil-progress-fill" style="width: 0%;"></div>
-						</div>
-						<button class="refill-text-btn" onclick="toggleOilForm()">+ Registrera nytt fat</button>
-						<div id="oilRefillForm" class="oil-refill-container" style="display:none;">
-							<div class="refill-box">
-								<p class="refill-title">Registrera inköp</p>
-								<div class="refill-inputs">
-									<div class="input-group-small">
-										<label>Volym (Liter)</label>
-										<input type="number" id="newBarrelVol" value="208" placeholder="208">
+						<div class="settings-item inventory-card">
+							<div class="oil-card-main">
+								<div class="drop-card-layout">
+									<div class="drop-icon-container">
+										<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+											<path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" class="drop-outline"></path>
+											<path d="M12 18a2 2 0 1 0 0-4 2 2 0 0 0 0 4z" fill="currentColor" class="drop-inner"></path>
+										</svg>
 									</div>
-									<div class="input-group-small">
-										<label>Inköpsdatum</label>
-										<input type="date" id="newBarrelDate">
+									<div class="drop-info">
+										<span class="settings-title">Motorolja 5W-30</span>
+										<span id="oilLevelText" class="drop-stats">Laddar...</span>
+									</div>
+									<div class="drop-percent" id="oilPercent">0%</div>
+								</div>
+								
+								<div class="oil-progress-bg">
+									<div id="oilProgressBar" class="oil-progress-fill" style="width: 0%;"></div>
+								</div>
+								
+								<button class="refill-toggle-btn" onclick="toggleOilForm()">
+									<span id="refillBtnText">Inställningar & Påfyllning</span>
+									<svg id="refillChevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+								</button>
+							</div>
+
+							<div id="oilRefillForm" class="oil-refill-expansion" style="display:none;">
+								
+								<div class="expansion-section">
+									<div class="section-header">
+										<div class="section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg></div>
+										<span>KUNDPRIS</span>
+									</div>
+									<div class="price-input-container">
+										<input type="number" id="settingsOilPrice" placeholder="200" onchange="updateOilPrice(this.value)">
+										<span class="unit-label">kr / L</span>
 									</div>
 								</div>
-								<button class="save-barrel-btn" onclick="saveNewBarrel()">Spara & Nollställ</button>
+
+								<div class="expansion-section">
+									<div class="section-header">
+										<div class="section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg></div>
+										<span>NYTT FAT</span>
+									</div>
+									<div class="refill-grid-modern">
+										<div class="grid-input-group">
+											<label>Volym (L)</label>
+											<input type="number" id="newBarrelVol" value="208">
+										</div>
+										<div class="grid-input-group">
+											<label>Datum</label>
+											<input type="date" id="newBarrelDate">
+										</div>
+									</div>
+								</div>
+
+								<button class="save-barrel-btn-final" onclick="saveNewBarrel()">
+									Uppdatera saldo & Spara
+								</button>
 							</div>
 						</div>
 					</div>
