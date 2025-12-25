@@ -374,3 +374,21 @@
     color: #2563eb;
     background: rgba(37, 99, 235, 0.1);
 }
+
+/* lager.css */
+
+/* Behållaren för sökfältet måste vara relativ */
+.search-wrapper-pro {
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex: 1;
+}
+
+/* Det anpassade krysset i lagersökrutan (#clearLagerSearch) */
+#clearLagerSearch {
+    position: absolute;
+    right: 0px !important; /* Avstånd från högerkanten */
+    top: 55%;
+    transform: translateY(-50%); /* Tvingar perfekt vertikal centrering */
+}
