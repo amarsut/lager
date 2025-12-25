@@ -224,8 +224,23 @@ export function initLagerView() {
 
     // Koppla sökning
     const searchInput = document.getElementById('lagerSearchInput');
-    if (searchInput) searchInput.oninput = () => renderEliteTable(window.allItemsCache);
-    
+    const clearBtn = document.getElementById('clearLagerSearch');
+
+    if (searchInput && clearBtn) {
+        searchInput.oninput = () => {
+            // Visa X om det finns text, annars dölj
+            clearBtn.style.display = searchInput.value ? 'block' : 'none';
+            renderEliteTable(window.allItemsCache);
+        };
+
+        clearBtn.onclick = () => {
+            searchInput.value = '';
+            clearBtn.style.display = 'none';
+            searchInput.focus();
+            renderEliteTable(window.allItemsCache);
+        };
+    }
+
     // Koppla sortering (A-Ö, Pris etc)
     const sortSelect = document.getElementById('sortSelect');
     if (sortSelect) sortSelect.onchange = () => renderEliteTable(window.allItemsCache);
@@ -369,60 +384,65 @@ export function renderEliteTable(items) {
 
     // 6. Rendering av listan
     container.innerHTML = filtered.map(item => {
-        const qty = parseInt(item.quantity) || 0;
-        const notes = item.notes || "";
-        const iconContent = getCategoryIconHtml(item.category, item.name);
-        const supplierLinks = getAllSupplierLinks(item.service_filter || item.name);
+    const qty = parseInt(item.quantity) || 0;
+    const notes = item.notes || ""; 
+    const iconContent = getCategoryIconHtml(item.category, item.name);
+    const supplierLinks = getAllSupplierLinks(item.service_filter || item.name);
 
-        // --- Senaste försäljning ---
-        let lastSoldInfo = "";
-        if (qty <= 0 && window.allJobs) {
-            const lastJob = window.allJobs
-                .filter(j => !j.deleted && Array.isArray(j.utgifter) && j.utgifter.some(e => String(e.inventoryId) === String(item.id)))
-                .sort((a, b) => new Date(b.datum) - new Date(a.datum))[0];
-            
-            if (lastJob) {
-                const date = lastJob.datum ? lastJob.datum.split('T')[0] : 'Inget datum';
-                
-                lastSoldInfo = `
-                    <div style="margin-top: 4px; display: flex; align-items: flex-start; gap: 5px; color: #e11d48; font-size: 0.68rem; font-weight: 600; letter-spacing: -0.1px; line-height: 1.3;">
-                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; margin-top: 1px;">
-                            <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-                        </svg>
-                        <div style="word-break: break-word; flex: 1;">
-                            SIST: ${date} • ${lastJob.kundnamn}
-                        </div>
-                    </div>`;
-            }
-        }
-
-        return `
-            <div class="article-card-pro">
-                <div class="card-img-box-pro">
-                    <svg viewBox="0 0 24 24" width="36" height="36">${iconContent}</svg>
-                </div>
-                <div class="card-info-pro">
-                    <div class="card-id-label">ARTIKELNR: ${String(item.id || "").toUpperCase()}</div>
-                    <h3>${item.name || 'Namnlös'}</h3>
-                    <div class="card-ref-pro">Ref: ${item.service_filter || '-'}</div>
-                    
-                    ${lastSoldInfo}
-
-                    ${notes ? `
-                        <div class="card-notes-pro" style="margin-top: 8px; font-size: 0.85rem; color: #64748b; font-style: italic; border-top: 1px solid #f1f5f9; padding-top: 4px;">
-                            "${notes.length > 80 ? notes.substring(0, 80) + '...' : notes}"
-                        </div>
-                    ` : ''}
-                </div>
-                <div class="card-actions-pro">
-                    <div class="card-price-container-pro" style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px;">
-                        <div class="card-price-pro">${item.price || 0}:-</div>
+    // --- NYTT: Logik för att hitta senaste försäljning ---
+    let lastSoldInfo = "";
+    if (qty <= 0 && window.allJobs) {
+        const lastJob = window.allJobs
+            .filter(j => !j.deleted && Array.isArray(j.utgifter) && j.utgifter.some(e => String(e.inventoryId) === String(item.id)))
+            .sort((a, b) => new Date(b.datum) - new Date(a.datum))[0];
+        
+        if (lastJob) {
+            const date = lastJob.datum ? lastJob.datum.split('T')[0] : 'Inget datum';
+            lastSoldInfo = `
+                <div style="margin-top: 4px; display: flex; align-items: flex-start; gap: 5px; color: #e11d48; font-size: 0.68rem; font-weight: 600; letter-spacing: -0.1px; line-height: 1.3;">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; margin-top: 1px;">
+                        <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                    <div style="word-break: break-word; flex: 1;">
+                        SIST: ${date} • ${lastJob.kundnamn}
                     </div>
-                    <div class="stock-pill ${qty > 0 ? 'stock-in' : 'stock-out'}">${qty} st i lager</div>
-                    <button class="btn-redigera-pro" onclick='window.editLagerItemById("${item.id}")'>REDIGERA</button>
+                </div>`;
+        }
+    }
+
+    return `
+        <div class="article-card-pro">
+            <div class="card-img-box-pro">
+                <svg viewBox="0 0 24 24" width="36" height="36">${iconContent}</svg>
+            </div>
+            <div class="card-info-pro">
+                <div class="card-id-label">ARTIKELNR: ${String(item.id || "").toUpperCase()}</div>
+                <h3>${item.name || 'Namnlös'}</h3>
+                <div class="card-ref-pro">Ref: ${item.service_filter || '-'}</div>
+                
+                ${lastSoldInfo}
+                
+                ${notes ? `
+                    <div class="card-notes-pro" style="margin-top: 8px; font-size: 0.85rem; color: #64748b; font-style: italic; border-top: 1px solid #f1f5f9; padding-top: 4px;">
+                        "${notes.length > 80 ? notes.substring(0, 80) + '...' : notes}"
+                    </div>
+                ` : ''}
+            </div>
+            <div class="card-actions-pro">
+                <div class="card-price-container-pro" style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px;">
+                    <div class="card-price-pro">${item.price || 0}:-</div>
+                    
+                    <div class="supplier-compare-row" style="display: flex; gap: 6px;">
+                        ${supplierLinks.map(s => `
+                            <a href="${s.url}" target="_blank" class="supplier-link-circle" title="${s.name}" style="background-color: ${s.color}; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 10px; font-weight: 800; text-decoration: none;">${s.name.charAt(0)}</a>
+                        `).join('')}
+                    </div>
                 </div>
-            </div>`;
-    }).join('');
+                <div class="stock-pill ${qty > 0 ? 'stock-in' : 'stock-out'}">${qty} st i lager</div>
+                <button class="btn-redigera-pro" onclick='window.editLagerItemById("${item.id}")'>REDIGERA</button>
+            </div>
+        </div>`;
+}).join('');
 
     const statsEl = document.getElementById('paginationStats');
     if (statsEl) statsEl.textContent = `Visar ${filtered.length} av ${items.length}`;
@@ -571,3 +591,6 @@ function getAllSupplierLinks(ref) {
         { name: 'AeroM', color: '#0056b3', url: generateAeroMLink(ref) },
     ];
 }
+
+window.getCategoryIconHtml = getCategoryIconHtml;
+window.getAllSupplierLinks = getAllSupplierLinks;
