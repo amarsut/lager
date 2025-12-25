@@ -7,7 +7,8 @@ window.openNewJobModal = openNewJobModal;
 window.toggleChatWidget = toggleChatWidget;
 window.openSettingsModal = openSettingsModal;
 window.handleLogout = handleLogout;
-window.closeSettings = closeSettings;
+window.closeModals = () => window.closeAllModals();
+window.closeSettings = () => window.closeAllModals();
 window.toggleOilForm = toggleOilForm;
 window.saveNewBarrel = saveNewBarrel;
 window.closeVehicleModal = closeVehicleModal;
@@ -882,6 +883,27 @@ function updateStatsCounts(jobs) {
     }
 }
 
+function hideAllMainViews() {
+    const views = [
+        'statBar', 
+        'timelineView', 
+        'customersView', 
+        'calendarView', 
+        'statisticsView', 
+        'lagerView'
+    ];
+    
+    views.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none'; // Döljer alla vyer
+    });
+
+    // Återställ även aktiva klasser i navigeringen
+    document.querySelectorAll('.nav-link, .mobile-nav-item').forEach(btn => {
+        btn.classList.remove('active');
+    });
+}
+
 // 7. EVENT LISTENERS
 function setupEventListeners() {
 
@@ -892,20 +914,14 @@ function setupEventListeners() {
     if (navLager) {
         navLager.addEventListener('click', () => {
             addHistoryState('lager');
+            hideAllMainViews(); // Steg 1: Rensa allt
             
-            // Dölj sektioner på ett säkert sätt
-            const sectionsToHide = ['statBar', 'timelineView', 'customersView', 'calendarView', 'statisticsView'];
-            sectionsToHide.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.style.display = 'none';
-            });
-            
-            // Visa lager
             const lagerView = document.getElementById('lagerView');
             if (lagerView) {
-                lagerView.style.display = 'flex'; // Viktigt: Flex för den nya layouten
+                lagerView.style.display = 'flex'; // Steg 2: Visa bara lagret
                 initLagerView();
             }
+            navLager.classList.add('active');
         });
     }
 
@@ -913,7 +929,7 @@ function setupEventListeners() {
         btnBackLager.addEventListener('click', () => {
             document.getElementById('lagerView').style.display = 'none';
             document.getElementById('statBar').style.display = '';
-            document.getElementById('timelineView').style.display = 'block';
+            document.getElementById('timelineView').style.display = 'none';
         });
     }
 
@@ -994,26 +1010,14 @@ function setupEventListeners() {
 	if (navCalendar) {
 	    navCalendar.addEventListener('click', () => {
             addHistoryState('calendar');
+            hideAllMainViews(); // Rensa skärmen
+            
+            document.getElementById('calendarView').style.display = 'block';
+            navCalendar.classList.add('active');
 
-	        // 1. Markera knappen som aktiv
-	        document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
-	        navCalendar.classList.add('active');
-	
-	        // 2. Dölj andra vyer
-	        document.getElementById('statBar').style.display = 'none';
-	        document.getElementById('timelineView').style.display = 'none';
-	        document.getElementById('customersView').style.display = 'none';
-	        
-	        // 3. Visa kalendern
-	        document.getElementById('calendarView').style.display = 'block';
-            const statsView = document.getElementById('statisticsView');
-            if (statsView) statsView.style.display = 'none';
-	
-	        // 4. Starta kalendern (med dina jobb och redigera-funktionen)
-	        // Vi använder setTimeout för att säkerställa att diven är synlig innan kalendern ritas
-	        setTimeout(() => {
-			    initCalendar('calendar-wrapper', allJobs, openEditModal, handleCalendarDrop);
-		}, 50);
+            setTimeout(() => {
+                initCalendar('calendar-wrapper', allJobs, openEditModal, handleCalendarDrop);
+            }, 50);
         window.scrollTo(0, 0);
 	    });
 	}
@@ -1021,92 +1025,53 @@ function setupEventListeners() {
 	// --- KOPPLA KALENDER FRÅN MENY/INSTÄLLNINGAR ---
     const menuBtnCalendar = document.getElementById('menuBtnCalendar');
 	if (menuBtnCalendar) {
-	    menuBtnCalendar.addEventListener('click', () => {
-	        // 1. Dölj menyn manuellt
-	        document.getElementById('settingsModal').classList.remove('show');
-	
-	        // 2. Ersätt "Meny"-steg med "Kalender"-steg
-	        addHistoryState('customers');
-	
-	        // 3. RENSA UI (Dölj allt som inte är kalender)
-	        document.getElementById('statBar').style.display = 'none';          // <--- Döljer statistikkorten
-	        document.getElementById('unplannedContainer').style.display = 'none'; // <--- Döljer gula rutan direkt
-	        document.getElementById('timelineView').style.display = 'none';
-	        document.getElementById('customersView').style.display = 'none';
-	        
-            // 4. Visa kalendern
-	        document.getElementById('calendarView').style.display = 'block';
-	
-	        // 5. Starta kalendern
-	        setTimeout(() => {
-	            import('./calendar.js').then(module => {
-	                 module.initCalendar('calendar-wrapper', allJobs, openEditModal, handleCalendarDrop);
-	            });
-	        }, 50);
+        menuBtnCalendar.addEventListener('click', () => {
+            document.getElementById('settingsModal').classList.remove('show');
+            hideAllMainViews(); // FIX
+            addHistoryState('calendar');
+            document.getElementById('calendarView').style.display = 'block';
+            setTimeout(() => {
+                initCalendar('calendar-wrapper', allJobs, openEditModal, handleCalendarDrop);
+            }, 50);
             window.scrollTo(0, 0);
-	    });
-	}
+        });
+    }
 
 	/*MER MENY I INSTÄLLNINGAR _ MOBIL*/
 	document.getElementById('menuBtnCustomers').addEventListener('click', () => {
-	    // 1. Dölj menyn manuellt utan att backa historiken än
-	    document.getElementById('settingsModal').classList.remove('show');
-	    
-	    // 2. Ersätt nuvarande "Meny"-steg med "Kunder"-steg
-	    addHistoryState('customers');
-	
-	    // 3. Uppdatera UI
-	    document.getElementById('statBar').style.display = 'none';
-	    document.getElementById('timelineView').style.display = 'none';
-	    document.getElementById('calendarView').style.display = 'none';
-	    document.getElementById('customersView').style.display = 'block';
-        const statsView = document.getElementById('statisticsView');
-        if (statsView) statsView.style.display = 'none';
-	    
-	    renderCustomerView();
-	    
-	    document.querySelectorAll('.mobile-nav-item').forEach(btn => btn.classList.remove('active'));
+        document.getElementById('settingsModal').classList.remove('show');
+        hideAllMainViews(); // FIX
+        addHistoryState('customers');
+        document.getElementById('customersView').style.display = 'block';
+        renderCustomerView();
         window.scrollTo(0, 0);
     });
 
 	// --- KOPPLA MOBIL-KNAPPEN "KUNDER" ---
 	const mobileCustBtn = document.getElementById('mobileCustomersBtn');
 	if (mobileCustBtn) {
-	    mobileCustBtn.addEventListener('click', () => {
-	        // 1. Byt aktiv knapp i menyn
-	        document.querySelectorAll('.mobile-nav-item').forEach(btn => btn.classList.remove('active'));
-	        mobileCustBtn.classList.add('active');
-	
-	        // 2. Hantera historik (för back-knappen)
-	        addHistoryState('customers');
-	
-	        // 3. Visa Kundvyn, dölj andra
-	        document.getElementById('statBar').style.display = 'none';
-	        document.getsElementById('timelineView').style.display = 'none';
-	        document.getElementById('customersView').style.display = 'block';
-	        
-	        // 4. Ladda listan
-	        renderCustomerView();
+        mobileCustBtn.addEventListener('click', () => {
+            // 1. Rensa ALLA vyer och nollställ knappar
+            hideAllMainViews(); 
+
+            // 2. Hantera historik (för back-knappen)
+            addHistoryState('customers');
+
+            // 3. Visa bara Kundvyn och markera knappen
+            document.getElementById('customersView').style.display = 'block';
+            mobileCustBtn.classList.add('active'); // hideAllMainViews tog bort den, så vi lägger till den igen
+            
+            // 4. Ladda listan och scrolla upp
+            renderCustomerView();
             window.scrollTo(0, 0);
-	    });
-	}
+        });
+    }
 
     const mobileHomeBtn = document.getElementById('mobileHomeBtn');
     if (mobileHomeBtn) {
         mobileHomeBtn.addEventListener('click', () => {
-            // 1. Dölj Statistikvyn (FIXEN)
-            document.getElementById('statisticsView').style.display = 'none';
-            
-            // 2. Visa översikten
-            document.getElementById('timelineView').style.display = 'block';
-            document.getElementById('statBar').style.display = ''; // Återställ flex/grid
-            
-            // 3. Dölj annat
-            document.getElementById('calendarView').style.display = 'none';
-            document.getElementById('customersView').style.display = 'none';
-            
-            // 4. Scrolla upp (din befintliga kod)
-            window.scrollTo({top:0, behavior:'smooth'});
+            addHistoryState('home');
+            goToOverview(); // Mycket säkrare anrop
         });
     }
 	
@@ -1134,26 +1099,8 @@ function setupEventListeners() {
     
     if (btnOverview) {
         btnOverview.addEventListener('click', () => {
-            // 1. Uppdatera UI (Markera knappen som aktiv)
-            document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
-            btnOverview.classList.add('active');
-            
-            // 2. Visa översikts-vyerna
-            const statBar = document.getElementById('statBar');
-            if(statBar) statBar.style.display = ''; 
-            
-            const timelineView = document.getElementById('timelineView');
-            if(timelineView) timelineView.style.display = 'block';
-            
-            // 3. Dölj andra vyer
-            document.getElementById('customersView').style.display = 'none';
-            const statsView = document.getElementById('statisticsView');
-            if (statsView) statsView.style.display = 'none';
-            
-            // --- HÄR ÄR FIXEN: DÖLJ KALENDERN EXPLICIT ---
-            document.getElementById('calendarView').style.display = 'none';
-            document.getElementById('selectedDayView').classList.remove('show'); // Stäng även dagvyn om den är öppen
-            window.scrollTo(0, 0);
+            addHistoryState('home'); // Lägg till historik för startläge
+            goToOverview(); // Använd den centrala funktionen ovan
         });
     }
 
@@ -1161,26 +1108,19 @@ function setupEventListeners() {
 	const navCustomers = document.getElementById('navCustomers');
 
 	if (navCustomers) {
-	    navCustomers.addEventListener('click', () => {
+        navCustomers.addEventListener('click', () => {
             addHistoryState('customers');
-
-	        // 1. UI Uppdatering
-	        document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
-	        navCustomers.classList.add('active');
-	        
-	        // 2. Dölj ALLA andra vyer (inklusive kalendern!)
-	        document.getElementById('statBar').style.display = 'none';
-	        document.getElementById('timelineView').style.display = 'none';
-	        document.getElementById('calendarView').style.display = 'none'; 
-	        
-	        // 3. Visa Kundvyn
-	        document.getElementById('customersView').style.display = 'block';
-	        
-	        // 4. Ladda data
-	        renderCustomerView();
+            
+            // FIX: Rensa skärmen först!
+            hideAllMainViews(); 
+            
+            navCustomers.classList.add('active');
+            document.getElementById('customersView').style.display = 'block';
+            
+            renderCustomerView();
             window.scrollTo(0, 0);
-	    });
-	}
+        });
+    }
 	
 	// Sökfunktion för kunder
 	document.getElementById('customerSearchInput')?.addEventListener('input', (e) => {
@@ -1264,51 +1204,33 @@ function setupEventListeners() {
 
 	// 1. Lyssna på när användaren trycker bakåt (eller swipar)
 	window.addEventListener('popstate', function(event) {
-        // 1. Kontrollera modaler och drawern
-        const lagerDrawer = document.getElementById('lagerDrawer');
-        if (lagerDrawer && lagerDrawer.classList.contains('open')) {
-            // Om lagermenyn är öppen, stäng den och stanna där
-            window.closeLagerDrawer(true); 
-            return; 
-        }
-
-        const modals = [
-            document.getElementById('imageZoomModal'),
-            document.getElementById('vehicleModal'),
-            document.getElementById('chatWidget'),
-            document.getElementById('mobileSearchModal')
-        ];
-        
-        for (let m of modals) {
-            if (m && (m.style.display === 'flex' || m.classList.contains('show'))) {
-                if(m.classList.contains('show')) m.classList.remove('show');
-                else m.style.display = 'none';
-                document.body.style.overflow = '';
-                return;
-            }
-        }
+        // Stäng alla fönster men berätta att vi INTE ska köra history.back() igen
+        window.closeAllModals(true); 
 
         const state = event.state;
+        hideAllMainViews();
 
-        // 2. Hantera återgång till startsidan
-        if (!state || !state.uiState) {
-            // Dölj ALLA specialvyer
-            document.getElementById('customersView').style.display = 'none';
-            document.getElementById('calendarView').style.display = 'none';
-            document.getElementById('lagerView').style.display = 'none'; // VIKTIG: Dölj lagret
-            const statsView = document.getElementById('statisticsView');
-            if (statsView) statsView.style.display = 'none';
-            
-            // Visa startsidan
+        if (state && state.uiState) {
+            switch(state.uiState) {
+                case 'customers':
+                    document.getElementById('customersView').style.display = 'block';
+                    renderCustomerView();
+                    break;
+                case 'calendar':
+                    document.getElementById('calendarView').style.display = 'block';
+                    break;
+                case 'lager':
+                    document.getElementById('lagerView').style.display = 'flex';
+                    if (typeof initLagerView === 'function') initLagerView();
+                    break;
+                default:
+                    document.getElementById('statBar').style.display = ''; 
+                    document.getElementById('timelineView').style.display = 'block';
+                    break;
+            }
+        } else {
             document.getElementById('statBar').style.display = ''; 
             document.getElementById('timelineView').style.display = 'block';
-            
-            // Återställ nav-ikoner
-            document.querySelectorAll('.mobile-nav-item').forEach(n => n.classList.remove('active'));
-            const homeBtn = document.getElementById('mobileHomeBtn');
-            if (homeBtn) homeBtn.classList.add('active');
-            
-            window.scrollTo(0, 0);
         }
     });
 
@@ -1372,11 +1294,20 @@ function setupEventListeners() {
 
     // Hantera klick på rader i tabellen (Redigera jobb)
     document.getElementById('jobListContainer').addEventListener('click', (e) => {
-        // Hitta närmaste tr-element (rad)
-        const row = e.target.closest('tr');
-        // Om vi klickade på en rad och den har ett ID
+        // Om man klickar på en knapp, länk eller regplåt ska vi INTE öppna redigering
+        if (e.target.closest('button') || e.target.closest('a') || e.target.closest('.reg-plate')) {
+            return; 
+        }
+
+        const row = e.target.closest('.job-row');
         if (row && row.dataset.id) {
-            openEditModal(row.dataset.id);
+            // Förhindra dubbelklick-problem
+            e.preventDefault();
+            e.stopPropagation();
+            
+            if (typeof openEditModal === 'function') {
+                openEditModal(row.dataset.id);
+            }
         }
     });
 
@@ -1454,13 +1385,7 @@ function setupEventListeners() {
     });
 
     // Stäng-knappar
-    const backBtn = document.getElementById('modalBackBtn');
-	if (backBtn) {
-	    backBtn.addEventListener('click', (e) => {
-	        e.preventDefault(); // Förhindra standardbeteende
-	        closeModals();
-	    });
-	}
+    document.getElementById('modalBackBtn')?.addEventListener('click', window.closeAllModals);
     document.getElementById('modalCancelBtn').addEventListener('click', closeModals);
     
     // Spara jobb (Både nytt och redigerat)
@@ -1470,27 +1395,20 @@ function setupEventListeners() {
     
     // Funktion för att gå till översikten (Samma som "Vy"-knappen)
     function goToOverview() {
-        // 1. Dölj alla undersidor
-        document.getElementById('customersView').style.display = 'none';
-        document.getElementById('calendarView').style.display = 'none';
-        const statsView = document.getElementById('statisticsView');
-        if (statsView) statsView.style.display = 'none';
+        // 1. Rensa ALLA vyer först (inklusive lagret)
+        hideAllMainViews(); 
 
         // 2. Visa översikten
+        document.getElementById('statBar').style.display = ''; 
         document.getElementById('timelineView').style.display = 'block';
-        document.getElementById('statBar').style.display = ''; // Återställs till flex/grid
         
-        // 3. Hantera meny-knappar (Markera "Vy" som aktiv)
-        document.querySelectorAll('.mobile-nav-item').forEach(btn => btn.classList.remove('active'));
+        // 3. Hantera meny-knappar
         const homeBtn = document.getElementById('mobileHomeBtn');
         if (homeBtn) homeBtn.classList.add('active');
         
-        // Desktop-meny
-        document.querySelectorAll('.nav-link').forEach(btn => btn.classList.remove('active'));
         const overviewBtn = document.getElementById('btnOverview');
         if (overviewBtn) overviewBtn.classList.add('active');
 
-        // 4. Scrolla upp
         window.scrollTo(0, 0);
     }
 
@@ -1548,7 +1466,7 @@ async function handleCalendarDrop(jobId, newDateStr, revertFunc) {
 // --- MODAL FUNKTIONER ---
 
 function openNewJobModal() {
-	addHistoryState();
+	window.addHistoryState('modal');
     const form = document.getElementById('jobModalForm');
     form.reset();
     document.getElementById('jobId').value = "";
@@ -1680,42 +1598,68 @@ window.closeViewModal = function() {
 };
 
 function openEditModal(id) {
-	addHistoryState();
     const job = allJobs.find(j => j.id === id);
     if (!job) return;
 
-    // Sätt ID och Titel
-    document.getElementById('jobId').value = job.id;
-    document.getElementById('modalTitle').textContent = "Redigera jobb";
+    window.addHistoryState('modal');
 
-    // Fyll i standardfält
-    document.getElementById('kundnamn').value = job.kundnamn || '';
-    document.getElementById('regnr').value = job.regnr || '';
-    document.getElementById('kundpris').value = job.kundpris || 0;
-    document.getElementById('statusSelect').value = job.status || 'bokad';
-    document.getElementById('paketSelect').value = job.paket || '';     // NYTT
-    document.getElementById('kommentar').value = job.kommentar || '';   // NYTT
+    // Hjälpfunktion för att fylla fält säkert
+    const setVal = (fieldId, val) => {
+        const el = document.getElementById(fieldId);
+        if (el) el.value = val || '';
+    };
 
-    // Datum och Tid
+    setVal('jobId', job.id);
+    const title = document.getElementById('modalTitle');
+    if (title) title.textContent = "Redigera jobb";
+
+    setVal('kundnamn', job.kundnamn);
+    setVal('regnr', job.regnr);
+    setVal('kundpris', job.kundpris);
+    setVal('statusSelect', job.status || 'bokad');
+    setVal('paketSelect', job.paket);
+    setVal('kommentar', job.kommentar);
+
     if (job.datum && job.datum.includes('T')) {
         const parts = job.datum.split('T');
-        document.getElementById('datum').value = parts[0];
-        document.getElementById('tid').value = parts[1];
+        setVal('datum', parts[0]);
+        setVal('tid', parts[1]);
     }
 
-    // UTGIFTER: Ladda in och rendera
-	currentExpenses = Array.isArray(job.utgifter) ? job.utgifter : []; 
-	renderExpenses();
+    currentExpenses = Array.isArray(job.utgifter) ? [...job.utgifter] : []; 
+    if (typeof renderExpenses === 'function') renderExpenses();
 
-    document.getElementById('jobModal').classList.add('show');
+    const modal = document.getElementById('jobModal');
+    if (modal) modal.classList.add('show');
 }
 
-function closeModals() {
-    document.querySelectorAll('.modal-backdrop').forEach(m => m.classList.remove('show'));
-	if (history.state && history.state.modalOpen) {
+// Central funktion för att stänga alla fönster
+window.closeAllModals = function(suppressBack = false) {
+    const modalIds = [
+        'jobModal', 'viewJobModal', 'customerModal', 
+        'vehicleModal', 'settingsModal', 'mobileSearchModal', 
+        'brandSelectModal', 'imageZoomModal', 'chatWidget'
+    ];
+
+    let wasAnyModalOpen = false;
+
+    modalIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el && (el.classList.contains('show') || el.style.display === 'flex' || el.style.display === 'block')) {
+            wasAnyModalOpen = true;
+            el.classList.remove('show');
+            el.style.display = 'none';
+        }
+    });
+
+    document.body.style.overflow = '';
+
+    // Om vi stänger manuellt (via knapp), synka historiken
+    // Vi kollar nu på rätt variabel: uiState
+    if (!suppressBack && wasAnyModalOpen && history.state && history.state.uiState === 'modal') {
         history.back();
     }
-}
+};
 
 // 8. DATABAS-FUNKTIONER
 
@@ -2528,10 +2472,6 @@ function closeVehicleModal() {
 
 // Hjälpfunktion för att lägga till ett "steg" i historiken
 window.addHistoryState = function(viewName = 'modal') {
-    // Om vi redan är i detta state, lägg inte till ett till
-    if (history.state && history.state.uiState === viewName) {
-        return;
-    }
     history.pushState({ uiState: viewName }, null, window.location.href);
 };
 
@@ -2692,13 +2632,9 @@ function openSettingsModal() {
 }
 
 // Stänger modalen och backar historiken (vilket triggar stängning)
-function closeSettings() {
-    if (history.state && history.state.modalOpen) {
-        history.back();
-    } else {
-        document.getElementById('settingsModal').classList.remove('show');
-    }
-}
+window.closeSettings = function() {
+    window.closeAllModals();
+};
 
 // Initiera direkt
 initSettings();
