@@ -715,13 +715,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Öppna galleriet
 function openChatGallery() {
+    // 1. REGISTREARA ETT STEG I HISTORIKEN (VIKTIGT FÖR SWIPE)
+    if (window.addHistoryState) {
+        window.addHistoryState('modal');
+    }
+
     const galleryModal = document.getElementById('chatGalleryModal');
     const galleryContent = document.getElementById('chatGalleryContent');
     if (!galleryModal || !galleryContent) return;
 
-    galleryContent.innerHTML = ''; // Rensa gamla bilder
+    galleryContent.innerHTML = ''; 
     
-    // Hitta alla bild-rader som just nu finns i DOM:en
     const imageElements = document.querySelectorAll('.chat-bubble-image img');
     
     if (imageElements.length === 0) {
@@ -730,13 +734,18 @@ function openChatGallery() {
         imageElements.forEach(img => {
             const div = document.createElement('div');
             div.className = 'gallery-item';
-            // Vi klonar bilden för att behålla src och docId
             const clone = document.createElement('img');
             clone.src = img.src;
             
             div.onclick = () => {
-                closeChatGallery(); // Stäng galleriet först
-                // Använd din befintliga zoom-funktion
+                // Stäng galleriet (utan att trigga history.back här, 
+                // då openImageZoom lägger till sitt eget historiksteg)
+                if (window.closeAllModals) {
+                    window.closeAllModals(true);
+                } else {
+                    galleryModal.style.display = 'none';
+                }
+                
                 window.openImageZoom(img.src, img.closest('.chat-row')?.dataset.messageId);
             };
             
