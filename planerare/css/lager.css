@@ -6,11 +6,11 @@
 .lager-pro-wrapper {
     display: flex;
     gap: 24px;
-    padding: 24px;
+    /*padding: 24px;*/ /*Sätter avstånd från sidans header*/
     background: #f4f7f9;
     min-height: 100vh;
     width: 100%;
-    box-sizing: border-box;
+    /*box-sizing: border-box;*/ /*Gör innehållet smalare*/
 }
 
 /* --- SIDEBAR (Desktop) --- */
