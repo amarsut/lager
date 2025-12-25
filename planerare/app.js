@@ -277,24 +277,24 @@ function initRealtimeListener() {
     
     // VIKTIGT: Spara lyssnaren i variabeln 'jobsUnsubscribe'
     jobsUnsubscribe = db.collection("jobs").onSnapshot(snapshot => {
-        allJobs = [];
+        const tempJobs = [];
         snapshot.forEach(doc => {
             const data = doc.data();
-            // Indexing: Skapa en söksträng i förväg för att spara prestanda
             const searchStr = `${data.kundnamn || ''} ${data.regnr || ''} ${data.kommentar || ''} ${data.paket || ''}`.toLowerCase();
-            allJobs.push({ 
+            tempJobs.push({ 
                 id: doc.id, 
                 ...data, 
-                _searchIndex: searchStr // Spara den färdiga strängen här
+                _searchIndex: searchStr 
             });
         });
+
+        // Gem til både den lokale og den globale variabel
+        allJobs = tempJobs;
+        window.allJobs = tempJobs;
+        
         renderDashboard();
     }, error => {
-        console.error("Fel vid hämtning av jobb:", error);
-        // Ignorera fel om det beror på att vi precis loggat ut
-        if (error.code === 'permission-denied') {
-            // Gör inget, vi har troligen loggat ut
-        }
+        console.error("Fejl ved hentning af job:", error);
     });
 	
 	// VIKTIGT: Spara lyssnaren i variabeln 'specsUnsubscribe'
