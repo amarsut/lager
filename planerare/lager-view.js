@@ -289,9 +289,21 @@ export function renderEliteTable(items) {
     const sidebar = document.getElementById('sidebarCatList');
     if (!container) return;
 
-    // 1. Hämta filter-inställningar
-    let showInStock = document.getElementById('filterInStock')?.checked;
-    let showOutOfStock = document.getElementById('filterOutOfStock')?.checked;
+    // 1. SMART FILTER-HÄMTNING (Fixar mobil-buggen)
+    let showInStock = true;
+    let showOutOfStock = false;
+
+    const mobileStockSelect = document.getElementById('mobileFilterStock');
+    if (window.innerWidth <= 768 && mobileStockSelect) {
+        // Om vi är i mobilen, läs från rullistan
+        const val = mobileStockSelect.value;
+        showInStock = (val === 'in' || val === 'both');
+        showOutOfStock = (val === 'out' || val === 'both');
+    } else {
+        // Om vi är på datorn, läs från kryssrutorna i sidomenyn
+        showInStock = document.getElementById('filterInStock')?.checked;
+        showOutOfStock = document.getElementById('filterOutOfStock')?.checked;
+    }
 
     // 2. Beräkna artiklar som matchar LAGERSTATUS (för sidebar-statistik)
     const filteredByStock = items.filter(i => {
@@ -307,11 +319,11 @@ export function renderEliteTable(items) {
     // 3. Filtrera på kategori och sökord
     const searchInput = document.getElementById('lagerSearchInput');
     const term = (searchInput?.value || "").trim();
-    const normalizedTerm = term.toLowerCase().replace(/\s+/g, '');
+    const normalizedTerm = term.toLowerCase().replace(/\s+/g, ''); 
     const sortVal = document.getElementById('sortSelect')?.value || 'name';
 
     let filtered = filteredByStock.filter(i => {
-        const itemCat = (i.category || "").trim().toLowerCase();
+        const itemCat = (i.category || "").trim().toLowerCase(); 
         const matchCat = window.currentFilter === 'all' || 
                          itemCat === window.currentFilter.toLowerCase() ||
                          (i.name || "").toUpperCase().includes(window.currentFilter.toUpperCase());
@@ -351,7 +363,7 @@ export function renderEliteTable(items) {
         };
         
         if (!term || motorOilItem.name.toLowerCase().includes(normalizedTerm)) {
-            filtered.unshift(motorOilItem);
+            filtered.unshift(motorOilItem); 
         }
     }
 
@@ -371,9 +383,15 @@ export function renderEliteTable(items) {
             
             if (lastJob) {
                 const date = lastJob.datum ? lastJob.datum.split('T')[0] : 'Inget datum';
+                
                 lastSoldInfo = `
-                    <div style="margin-top: 8px; font-size: 0.75rem; background: #fff1f2; color: #e11d48; padding: 6px 10px; border-radius: 8px; border: 1px solid #ffe4e6; display: flex; align-items: center; gap: 6px;">
-                        <b>Senast såld:</b> ${date} till ${lastJob.kundnamn}
+                    <div style="margin-top: 4px; display: flex; align-items: flex-start; gap: 5px; color: #e11d48; font-size: 0.68rem; font-weight: 600; letter-spacing: -0.1px; line-height: 1.3;">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; margin-top: 1px;">
+                            <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                        <div style="word-break: break-word; flex: 1;">
+                            SIST: ${date} • ${lastJob.kundnamn}
+                        </div>
                     </div>`;
             }
         }
