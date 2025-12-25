@@ -233,14 +233,6 @@ export function initLagerView() {
     // Koppla spara-knappen i drawern
     const saveBtn = document.getElementById('btnSaveLagerItem');
     if (saveBtn) saveBtn.onclick = () => window.saveLagerItemChanges();
-
-    // NYTT: Hantera bakåt-gest/knapp
-    window.addEventListener('popstate', (event) => {
-        // Om drawern är öppen, stäng den
-        if (document.getElementById('lagerDrawer').classList.contains('open')) {
-            window.closeLagerDrawer(true); // 'true' betyder att vi inte ska trigga history.back() igen
-        }
-    });
 }
 
 // Globala hjälpfunktioner
@@ -429,30 +421,24 @@ export function renderEliteTable(items) {
 window.editLagerItemById = (id) => {
     const item = window.allItemsCache.find(i => String(i.id) === String(id));
     if (item) {
+        // Lägg till ett (1) steg i historiken för att hantera bakåt-gesten korrekt
         window.addHistoryState('lagerDrawer');
 
         document.getElementById('editItemId').value = item.id;
         document.getElementById('editItemName').value = item.name || '';
         document.getElementById('editItemPrice').value = item.price || 0;
         document.getElementById('editItemCategory').value = item.category || 'Service';
-        
-        // NYTT: Hämta antal från cachen
-        document.getElementById('editItemQty').value = item.quantity || 0; 
-        
+        document.getElementById('editItemQty').value = item.quantity || 0;
         document.getElementById('editItemRefNum').value = item.service_filter || '';
         document.getElementById('editItemNotes').value = item.notes || '';
         
+        // Öppna drawern visuellt
         document.getElementById('lagerDrawer').classList.add('open');
         document.getElementById('lagerDrawerOverlay').classList.add('show');
 
-        // Uppdatera titeln
+        // Uppdatera titeln i drawern
         const titleEl = document.querySelector('#lagerDrawer .std-title');
         if (titleEl) titleEl.textContent = "Redigera Artikel";
-
-        history.pushState({ drawerOpen: true }, "");
-        
-        document.getElementById('lagerDrawer').classList.add('open');
-        document.getElementById('lagerDrawerOverlay').classList.add('show');
     }
 };
 
@@ -468,22 +454,22 @@ window.closeLagerDrawer = (isPopState = false) => {
 
 // --- FUNKTION FÖR ATT ÖPPNA FÖR NY ARTIKEL ---
 window.openNewLagerItemDrawer = (prefillRef = "") => {
+    // Registrera tillståndet i historiken
     window.addHistoryState('lagerDrawer');
     
-    // Rensa alla fält
-    document.getElementById('editItemId').value = ""; 
+    // Rensa alla fält för en ny artikel
+    document.getElementById('editItemId').value = "";
     document.getElementById('editItemName').value = "";
     document.getElementById('editItemPrice').value = "";
     document.getElementById('editItemCategory').value = "Service";
     document.getElementById('editItemQty').value = "";
-    document.getElementById('editItemRefNum').value = prefillRef.toUpperCase(); // Förifyll sökordet
+    document.getElementById('editItemRefNum').value = prefillRef.toUpperCase();
     document.getElementById('editItemNotes').value = "";
     
     const titleEl = document.querySelector('#lagerDrawer .std-title');
     if (titleEl) titleEl.textContent = "Ny Artikel";
 
-    history.pushState({ drawerOpen: true }, "");
-
+    // Öppna drawern visuellt
     document.getElementById('lagerDrawer').classList.add('open');
     document.getElementById('lagerDrawerOverlay').classList.add('show');
 };
