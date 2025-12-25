@@ -782,11 +782,10 @@ function createJobRow(job) {
             <td><span class="status-badge status-${job.status}">${statusText[job.status] || job.status}</span></td>
             <td>${fullDate}</td>
             <td>
-                <div class="customer-link">
-			    <div class="customer-link" onclick="event.stopPropagation(); openCustomerByName('${job.kundnamn}')" style="cursor:pointer;">
-				    <svg class="icon-sm" style="color: ${iconColor}"><use href="${iconType}"></use></svg>
-				    <span style="text-decoration:underline; text-decoration-color:#e2e8f0; text-underline-offset:3px;">${job.kundnamn}</span>
-				</div>
+                <div class="customer-link" onclick="event.stopPropagation(); openCustomerByName('${job.kundnamn}')" style="cursor:pointer;">
+                    <svg class="icon-sm" style="color: ${iconColor}"><use href="${iconType}"></use></svg>
+                    <span style="text-decoration:underline; text-decoration-color:#e2e8f0; text-underline-offset:3px;">${job.kundnamn}</span>
+                </div>
             </td>
             <td>${regPlate}</td>
             <td style="text-align:right" class="money-related">${job.kundpris || 0} kr</td>
@@ -929,7 +928,8 @@ function setupEventListeners() {
         btnBackLager.addEventListener('click', () => {
             document.getElementById('lagerView').style.display = 'none';
             document.getElementById('statBar').style.display = '';
-            document.getElementById('timelineView').style.display = 'none';
+            document.getElementById('timelineView').style.display = 'block'; // ÄNDRAT från 'none'
+            renderDashboard(); // Lägg till detta för att säkerställa att listan ritas
         });
     }
 
@@ -1204,33 +1204,21 @@ function setupEventListeners() {
 
 	// 1. Lyssna på när användaren trycker bakåt (eller swipar)
 	window.addEventListener('popstate', function(event) {
-        // Stäng alla fönster men berätta att vi INTE ska köra history.back() igen
         window.closeAllModals(true); 
-
-        const state = event.state;
         hideAllMainViews();
 
-        if (state && state.uiState) {
-            switch(state.uiState) {
-                case 'customers':
-                    document.getElementById('customersView').style.display = 'block';
-                    renderCustomerView();
-                    break;
-                case 'calendar':
-                    document.getElementById('calendarView').style.display = 'block';
-                    break;
-                case 'lager':
-                    document.getElementById('lagerView').style.display = 'flex';
-                    if (typeof initLagerView === 'function') initLagerView();
-                    break;
-                default:
-                    document.getElementById('statBar').style.display = ''; 
-                    document.getElementById('timelineView').style.display = 'block';
-                    break;
-            }
+        const state = event.state;
+        if (state && state.uiState === 'customers') {
+            document.getElementById('customersView').style.display = 'block';
+            renderCustomerView();
+        } else if (state && state.uiState === 'lager') {
+            document.getElementById('lagerView').style.display = 'flex';
+            initLagerView();
         } else {
+            // Standardläge (Översikt)
             document.getElementById('statBar').style.display = ''; 
             document.getElementById('timelineView').style.display = 'block';
+            renderDashboard(); // VIKTIGT: Lägg till denna rad
         }
     });
 
@@ -1294,20 +1282,16 @@ function setupEventListeners() {
 
     // Hantera klick på rader i tabellen (Redigera jobb)
     document.getElementById('jobListContainer').addEventListener('click', (e) => {
-        // Om man klickar på en knapp, länk eller regplåt ska vi INTE öppna redigering
+        // Om man klickar på en knapp eller länk ska vi INTE köra rad-klicket
         if (e.target.closest('button') || e.target.closest('a') || e.target.closest('.reg-plate')) {
             return; 
         }
 
         const row = e.target.closest('.job-row');
         if (row && row.dataset.id) {
-            // Förhindra dubbelklick-problem
             e.preventDefault();
             e.stopPropagation();
-            
-            if (typeof openEditModal === 'function') {
-                openEditModal(row.dataset.id);
-            }
+            openEditModal(row.dataset.id);
         }
     });
 
@@ -1479,7 +1463,11 @@ function openNewJobModal() {
     currentExpenses = [];
     renderExpenses();
 
-    document.getElementById('jobModal').classList.add('show');
+    const modal = document.getElementById('jobModal');
+    if (modal) {
+        modal.style.display = 'flex'; // Tvinga fram visning
+        modal.classList.add('show');
+    }
 }
 
 // Global variabel för att hålla reda på vilket jobb vi tittar på
@@ -1601,9 +1589,10 @@ function openEditModal(id) {
     const job = allJobs.find(j => j.id === id);
     if (!job) return;
 
+    // Spara historik-steg först
     window.addHistoryState('modal');
 
-    // Hjälpfunktion för att fylla fält säkert
+    // Hjälpfunktion för att fylla fält utan att krascha om ID saknas
     const setVal = (fieldId, val) => {
         const el = document.getElementById(fieldId);
         if (el) el.value = val || '';
@@ -1626,21 +1615,21 @@ function openEditModal(id) {
         setVal('tid', parts[1]);
     }
 
-    currentExpenses = Array.isArray(job.utgifter) ? [...job.utgifter] : []; 
+    // Ladda utgifter säkert
+    currentExpenses = Array.isArray(job.utgifter) ? JSON.parse(JSON.stringify(job.utgifter)) : []; 
     if (typeof renderExpenses === 'function') renderExpenses();
 
+    // Visa modalen sist av allt
     const modal = document.getElementById('jobModal');
-    if (modal) modal.classList.add('show');
+    if (modal) {
+        modal.style.display = 'flex'; // Tvinga fram visning (eftersom close satte den till 'none')
+        modal.classList.add('show');
+    }
 }
 
 // Central funktion för att stänga alla fönster
 window.closeAllModals = function(suppressBack = false) {
-    const modalIds = [
-        'jobModal', 'viewJobModal', 'customerModal', 
-        'vehicleModal', 'settingsModal', 'mobileSearchModal', 
-        'brandSelectModal', 'imageZoomModal', 'chatWidget'
-    ];
-
+    const modalIds = ['jobModal', 'viewJobModal', 'customerModal', 'vehicleModal', 'settingsModal', 'mobileSearchModal', 'brandSelectModal', 'imageZoomModal', 'chatWidget'];
     let wasAnyModalOpen = false;
 
     modalIds.forEach(id => {
@@ -1654,8 +1643,8 @@ window.closeAllModals = function(suppressBack = false) {
 
     document.body.style.overflow = '';
 
-    // Om vi stänger manuellt (via knapp), synka historiken
-    // Vi kollar nu på rätt variabel: uiState
+    // VIKTIGT: Om vi stänger manuellt via knapp, backa historiken
+    // Om vi stänger via popstate (dvs suppressBack är true), gör ingenting!
     if (!suppressBack && wasAnyModalOpen && history.state && history.state.uiState === 'modal') {
         history.back();
     }
@@ -3588,13 +3577,19 @@ document.addEventListener('click', (e) => {
 const menuBtnLager = document.getElementById('menuBtnLager');
 if (menuBtnLager) {
     menuBtnLager.addEventListener('click', () => {
-        // 1. Stäng inställningsmenyn först
-        closeSettings(); 
+        // 1. Stäng fönstret visuellt utan att trigga history.back()
+        window.closeAllModals(true); 
         
-        // 2. Använd den logik du redan har för datorn genom att simulera ett klick
-        const navLager = document.getElementById('navLager');
-        if (navLager) {
-            navLager.click();
+        // 2. Byt ut historik-staten direkt till 'lager'
+        history.replaceState({ uiState: 'lager' }, null, window.location.href);
+        
+        // 3. Visa lagret direkt
+        hideAllMainViews();
+        const lagerView = document.getElementById('lagerView');
+        if (lagerView) {
+            lagerView.style.display = 'flex';
+            initLagerView();
         }
+        document.getElementById('navLager')?.classList.add('active');
     });
 }
