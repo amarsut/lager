@@ -1205,20 +1205,27 @@ function setupEventListeners() {
 	// 1. Lyssna på när användaren trycker bakåt (eller swipar)
 	window.addEventListener('popstate', function(event) {
         window.closeAllModals(true); 
-        hideAllMainViews();
-
+        
         const state = event.state;
-        if (state && state.uiState === 'customers') {
-            document.getElementById('customersView').style.display = 'block';
-            renderCustomerView();
-        } else if (state && state.uiState === 'lager') {
+
+        // Om vi går bakåt från en artikel-drawer, se till att vi stannar i lager-vyn
+        if (state && (state.uiState === 'lager' || state.uiState === 'lagerDrawer')) {
+            hideAllMainViews();
             document.getElementById('lagerView').style.display = 'flex';
             initLagerView();
+        } else if (state && state.uiState === 'customers') {
+            hideAllMainViews();
+            document.getElementById('customersView').style.display = 'block';
+            renderCustomerView();
+        } else if (state && state.uiState === 'calendar') {
+            hideAllMainViews();
+            document.getElementById('calendarView').style.display = 'block';
         } else {
-            // Standardläge (Översikt)
+            // Standardläge (Startsidan)
+            hideAllMainViews();
             document.getElementById('statBar').style.display = ''; 
             document.getElementById('timelineView').style.display = 'block';
-            renderDashboard(); // VIKTIGT: Lägg till denna rad
+            renderDashboard();
         }
     });
 
@@ -1629,7 +1636,7 @@ function openEditModal(id) {
 
 // Central funktion för att stänga alla fönster
 window.closeAllModals = function(suppressBack = false) {
-    const modalIds = ['jobModal', 'viewJobModal', 'customerModal', 'vehicleModal', 'settingsModal', 'mobileSearchModal', 'brandSelectModal', 'imageZoomModal', 'chatWidget'];
+    const modalIds = ['jobModal', 'viewJobModal', 'customerModal', 'vehicleModal', 'settingsModal', 'mobileSearchModal', 'brandSelectModal', 'imageZoomModal', 'chatWidget', 'chatGalleryModal'];
     let wasAnyModalOpen = false;
 
     modalIds.forEach(id => {
@@ -1643,8 +1650,6 @@ window.closeAllModals = function(suppressBack = false) {
 
     document.body.style.overflow = '';
 
-    // VIKTIGT: Om vi stänger manuellt via knapp, backa historiken
-    // Om vi stänger via popstate (dvs suppressBack är true), gör ingenting!
     if (!suppressBack && wasAnyModalOpen && history.state && history.state.uiState === 'modal') {
         history.back();
     }
@@ -3017,7 +3022,15 @@ function openCustomerModal(customer) {
             const btn = document.createElement('div');
             btn.className = 'v-chip';
             btn.innerHTML = `${iconHtml} ${reg}`;
-            btn.onclick = () => openVehicleModal(reg); // Återanvänd din befintliga funktion!
+
+            // UPPDATERAD RAD NEDAN:
+            btn.onclick = () => {
+                // 1. Stäng kundmodalen först så den inte täcker vehicleModal
+                document.getElementById('customerModal').classList.remove('show');
+                // 2. Öppna fordonsmodalen
+                openVehicleModal(reg);
+            };
+            
             vehicleContainer.appendChild(btn);
         });
     }
