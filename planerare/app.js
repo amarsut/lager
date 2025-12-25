@@ -275,27 +275,33 @@ function handleLogout() {
 function initRealtimeListener() {
     const container = document.getElementById('jobListContainer');
     
-    // VIKTIGT: Spara lyssnaren i variabeln 'jobsUnsubscribe'
-    jobsUnsubscribe = db.collection("jobs").onSnapshot(snapshot => {
-        const tempJobs = [];
-        snapshot.forEach(doc => {
-            const data = doc.data();
-            const searchStr = `${data.kundnamn || ''} ${data.regnr || ''} ${data.kommentar || ''} ${data.paket || ''}`.toLowerCase();
-            tempJobs.push({ 
-                id: doc.id, 
-                ...data, 
-                _searchIndex: searchStr 
+    // Vi lägger till .orderBy() och .limit(500) för att hantera prestanda
+    jobsUnsubscribe = db.collection("jobs")
+        .orderBy("datum", "desc") 
+        .limit(500) 
+        .onSnapshot(snapshot => {
+            const tempJobs = [];
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                
+                // OPTIMERAT SÖKINDEX: Inkluderar nu även år från datumet
+                const year = data.datum ? data.datum.substring(0,4) : '';
+                const searchStr = `${data.kundnamn || ''} ${data.regnr || ''} ${data.kommentar || ''} ${data.paket || ''} ${year}`.toLowerCase();
+                
+                tempJobs.push({ 
+                    id: doc.id, 
+                    ...data, 
+                    _searchIndex: searchStr 
+                });
             });
-        });
 
-        // Gem til både den lokale og den globale variabel
-        allJobs = tempJobs;
-        window.allJobs = tempJobs;
-        
-        renderDashboard();
-    }, error => {
-        console.error("Fejl ved hentning af job:", error);
-    });
+            allJobs = tempJobs;
+            window.allJobs = tempJobs;
+            
+            renderDashboard();
+        }, error => {
+            console.error("Fel vid hämtning av jobb:", error);
+        });
 	
 	// VIKTIGT: Spara lyssnaren i variabeln 'specsUnsubscribe'
     specsUnsubscribe = db.collection("vehicleSpecs").onSnapshot(snapshot => {
@@ -444,6 +450,52 @@ function renderDashboard() {
         container.innerHTML += btnHtml;
     }
 }
+
+// GEMENSAM SÖKFUNKTION FÖR ARTIKLAR
+window.handleArticleSearch = debounce(async (term) => {
+    const isMobile = window.innerWidth <= 768;
+    const container = isMobile 
+        ? document.getElementById('mobileSearchResults') 
+        : document.getElementById('jobListContainer');
+
+    if (!container) return;
+
+    // Ta bort gamla träffar (söker på ID för att vara säker)
+    const existing = document.getElementById('unifiedInventoryResults');
+    if (existing) existing.remove();
+
+    if (term.length >= 2) {
+        const results = await window.searchInInventory(term);
+        
+        if (results.length > 0) {
+            const wrapper = document.createElement('div');
+            wrapper.id = 'unifiedInventoryResults';
+            
+            let html = `
+                <div class="inventory-search-header" style="display:flex; justify-content:space-between; margin-bottom:12px; padding:0 5px;">
+                    <span style="font-size:0.7rem; font-weight:800; color:#64748b; text-transform:uppercase;">Lagerträffar</span>
+                    <span style="background:#e2e8f0; color:#475569; font-size:0.65rem; padding:2px 6px; border-radius:10px;">${results.length} st</span>
+                </div>
+                <div class="inventory-grid-compact" style="display:grid; gap:8px; margin-bottom:20px;">`;
+            
+            results.forEach(item => {
+                html += window.createInventoryResultHTML(item);
+            });
+            html += `</div>`;
+            
+            wrapper.innerHTML = html;
+            
+            // Desktop: Lägg överst i listan. Mobil: Lägg till i sökresultaten.
+            if (isMobile) {
+                container.insertAdjacentElement('afterbegin', wrapper);
+            } else {
+                // Om desktop-listan är tom (visar "Inga jobb"), rensa texten först
+                if (container.innerText.includes('Inga jobb att visa')) container.innerHTML = '';
+                container.prepend(wrapper);
+            }
+        }
+    }
+}, 300);
 
 // --- NYTT: Funktionen som körs när man klickar på knappen ---
 window.loadMoreJobs = function() {
@@ -1307,41 +1359,6 @@ function setupEventListeners() {
         });
     }
 
-    // Sökfältet
-    const performDesktopSearch = debounce(async (searchTerm) => {
-        const container = document.getElementById('jobListContainer');
-        if (!container) return;
-
-        const existingInv = document.getElementById('inventorySearchWrapper');
-        if (existingInv) existingInv.remove();
-
-        if (searchTerm.length >= 2) {
-            const invResults = await window.searchInInventory(searchTerm);
-            
-            if (invResults.length > 0) {
-                const invWrapper = document.createElement('div');
-                invWrapper.id = 'inventorySearchWrapper';
-                
-                // Rubrik med ren design och siffer-badge
-                let html = `
-                    <div class="inventory-search-header">
-                        <span>Lagerträffar</span>
-                        <span class="inv-count-badge">${invResults.length} st</span>
-                    </div>
-                    <div class="inventory-grid-compact">`;
-                
-                invResults.forEach(item => {
-                    // Använd din nyligen skapade createInventoryResultHTML för varje rad
-                    html += window.createInventoryResultHTML(item);
-                });
-                
-                html += `</div>`;
-                invWrapper.innerHTML = html;
-                container.prepend(invWrapper);
-            }
-        }
-    }, 300);
-
     // Hjälpfunktion för att öppna modalen med vald del (Valfritt)
     window.openNewJobWithPart = function(name, price, invId) {
         openNewJobModal();
@@ -1360,7 +1377,7 @@ function setupEventListeners() {
     const debouncedSearch = debounce((term) => {
         currentSearchTerm = term;
         renderDashboard();
-        performDesktopSearch(term);
+        window.handleArticleSearch(term); // Använd den nya gemensamma funktionen
     }, 300);
 
     document.getElementById('searchBar').addEventListener('input', (e) => {
@@ -2362,37 +2379,6 @@ document.getElementById('closeMobileSearchBtn')?.addEventListener('click', () =>
     document.querySelectorAll('.mobile-nav-btn').forEach(btn => btn.classList.remove('active'));
     document.getElementById('mobileHomeBtn').classList.add('active');
 });
-
-// Skapa en debouncad sökfunktion för Mobil
-const performMobileSearch = debounce(async (term) => {
-    const resultsContainer = document.getElementById('mobileSearchResults');
-    if (!resultsContainer || term.length <= 2) return;
-
-    const invResults = await window.searchInInventory(term);
-
-    // Säkerställ att vi inte skriver över nyare sökningar
-    if (document.getElementById('mobileSearchInput').value !== term) return;
-
-    if (invResults.length > 0) {
-        // Ta bort gamla träffar specifikt
-        const oldInv = document.getElementById('mobileInventoryResults');
-        if (oldInv) oldInv.remove();
-
-        let invHtml = `
-            <div class="inventory-search-header">
-                <span>Lagerträffar</span>
-                <span class="inv-count-badge">${invResults.length} st</span>
-            </div>
-        `;
-        
-        invResults.forEach(item => {
-            invHtml += window.createInventoryResultHTML(item);
-        });
-        invHtml += `</div>`;
-        
-        resultsContainer.insertAdjacentHTML('afterbegin', invHtml);
-    }
-}, 300);
 
 // Mobil-lyssnaren
 document.getElementById('mobileSearchInput')?.addEventListener('input', (e) => {
