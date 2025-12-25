@@ -200,6 +200,23 @@ function jobMatchesSearch(job, searchTerm) {
 
 // 3. STARTA APPENS UI (När sidan laddat klart)
 document.addEventListener('DOMContentLoaded', function() {
+    const sidebar = document.querySelector('.sidebar'); 
+    const toggleBtn = document.getElementById('toggleSidebarBtn');
+
+    if (toggleBtn && sidebar) {
+        toggleBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+            
+            // Spara valet så det komms ihåg vid omladdning
+            const isCollapsed = sidebar.classList.contains('collapsed');
+            localStorage.setItem('sidebarCollapsed', isCollapsed);
+        });
+
+        // Ladda tidigare sparat läge
+        if (localStorage.getItem('sidebarCollapsed') === 'true') {
+            sidebar.classList.add('collapsed');
+        }
+    }
     try {
         console.log("Sidan laddad, kopplar event listeners...");
         setupEventListeners();
@@ -993,27 +1010,38 @@ function setupEventListeners() {
             return;
         }
 
-        const results = await window.searchInInventory(term);
+        let results = await window.searchInInventory(term);
+
+        // --- NYTT: Lägg till virtuell Motorolja om sökordet matchar ---
+        if ("motorolja".includes(term.toLowerCase()) || "olja".includes(term.toLowerCase())) {
+            const oilQty = window.currentOilQuantity || 0;
+            // Vi lägger den överst i sökresultaten
+            results.unshift({
+                id: 'OIL-SYSTEM', // Samma ID som i lager-view
+                name: 'Motorolja (Lösvikt)',
+                price: 200, // Ditt standardpris per liter till kund
+                service_filter: 'Liter',
+                isVirtualOil: true
+            });
+        }
 
         if (results.length > 0) {
             let html = '<div class="suggestion-header">Träffar i lager</div>';
             results.forEach(item => {
-                // Vi skickar med alla parametrar inklusive invId (item.id)
+                // Vi kollar om det är den virtuella oljan för att sätta rätt onclick
+                const clickAction = item.isVirtualOil 
+                    ? `addVirtualOilToExpense('${item.name}', ${item.price})`
+                    : `addInventoryToExpenseFields('${item.name.replace(/'/g, "\\'")}', ${item.price}, '${item.service_filter || ''}', '${item.id}')`;
+
                 html += `
-                    <div class="suggestion-item" onclick="addInventoryToExpenseFields('${item.name.replace(/'/g, "\\'")}', ${item.price}, '${item.service_filter || ''}', '${item.id}')">
+                    <div class="suggestion-item" onclick="${clickAction}">
                         <div class="suggestion-name">${item.name}</div>
-                        <div class="suggestion-meta">Ref: ${item.service_filter || '-'} • <b>${item.price} kr</b></div>
+                        <div class="suggestion-meta">${item.isVirtualOil ? 'Systemartikel' : 'Ref: ' + (item.service_filter || '-')} • <b>${item.price} kr/st</b></div>
                     </div>`;
             });
             suggestionsContainer.innerHTML = html;
-            
-            // TVINGA VISNING OCH POSITION
             suggestionsContainer.style.display = 'block';
-            
-            // Fix för mobil: Se till att vi kan se dropdownen genom att scrolla ner
-            suggestionsContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         } else {
-            suggestionsContainer.innerHTML = '';
             suggestionsContainer.style.display = 'none';
         }
     }, 300);
@@ -1724,8 +1752,8 @@ async function handleSaveJob(e) {
 
             // 2. Synka lagerartiklar (Filter etc)
             // Vi skapar listor på alla inventory-ID:n för att jämföra dem
-            const oldInvIds = oldExpenses.filter(e => e.inventoryId).map(e => e.inventoryId);
-            const newInvIds = currentExpenses.filter(e => e.inventoryId).map(e => e.inventoryId);
+            const oldInvIds = oldExpenses.filter(e => e.inventoryId && e.inventoryId !== 'OIL-SYSTEM').map(e => e.inventoryId);
+            const newInvIds = currentExpenses.filter(e => e.inventoryId && e.inventoryId !== 'OIL-SYSTEM').map(e => e.inventoryId);
 
             // Hitta tillagda (finns i nya men inte i gamla)
             for (const id of newInvIds) {
@@ -1763,18 +1791,18 @@ async function handleSaveJob(e) {
             await db.collection("jobs").add(jobData);
 
             if (currentExpenses && currentExpenses.length > 0) {
-                currentExpenses.forEach(async (expense) => {
-                    if (expense.inventoryId) {
+                // Vi använder en for-of loop för att kunna hantera async/await korrekt
+                for (const expense of currentExpenses) {
+                    // Kontrollera att det är en lagerartikel men INTE den virtuella oljan
+                    if (expense.inventoryId && expense.inventoryId !== 'OIL-SYSTEM') {
                         console.log("Drar av 1 st från lager för:", expense.namn);
                         
-                        // Vi använder invDb (från inventory-search.js) för att nå lagret
-                        const itemRef = invDb.collection("lager").doc(expense.inventoryId);
-                        
+                        const itemRef = window.invDb.collection("lager").doc(expense.inventoryId);
                         await itemRef.update({
                             quantity: firebase.firestore.FieldValue.increment(-1)
                         });
                     }
-                });
+                }
             }
             
             // Dra av hela mängden olja eftersom det är nytt
@@ -2664,6 +2692,12 @@ function initInventoryListener() {
 
             // 1. Spara värdet globalt så lagervyn kan nå det
             window.currentOilQuantity = current;
+            window.oilPricePerLiter = data.oilPricePerLiter || 200;
+
+            const priceInput = document.getElementById('settingsOilPrice');
+            if (priceInput && !priceInput.matches(':focus')) {
+                priceInput.value = window.oilPricePerLiter;
+            }
 
             // 2. Uppdatera UI i inställningar (din befintliga kod)
             const textEl = document.getElementById('oilLevelText');
@@ -3540,6 +3574,46 @@ window.addInventoryToExpenseFields = function(name, price, artNr, invId) {
 
     const suggestions = document.getElementById('expenseSearchSuggestions');
     suggestions.style.display = 'none';
+};
+
+window.addVirtualOilToExpense = function(name) { // Vi tog bort pricePerLiter härifrån
+    // Hämta det centrala priset som vi sparat globalt
+    const pricePerLiter = window.oilPricePerLiter || 0; 
+
+    // 1. Fråga efter antal liter
+    let input = prompt(`Hur många liter motorolja?`, "5");
+    let liter = input ? parseFloat(input.replace(',', '.')) : 0;
+
+    if (!isNaN(liter) && liter > 0) {
+        const totalPris = Math.round(liter * pricePerLiter);
+        
+        document.getElementById('nyUtgiftNamn').value = `Motorolja (${liter} liter)`;
+        document.getElementById('nyUtgiftPris').value = totalPris;
+        
+        // Sätt ID till OIL-SYSTEM för att trigga den virtuella logiken vid sparning
+        pendingInventoryId = "OIL-SYSTEM";
+
+        // Stäng dropdownen
+        const suggestions = document.getElementById('expenseSearchSuggestions');
+        if (suggestions) suggestions.style.display = 'none';
+        
+        // Fokusera på "Lägg till"-knappen
+        document.getElementById('btnAddExpense').focus();
+    }
+};
+
+window.updateOilPrice = async (newPrice) => {
+    const price = parseInt(newPrice);
+    if (isNaN(price)) return;
+
+    try {
+        await db.collection('settings').doc('inventory').update({
+            oilPricePerLiter: price
+        });
+        console.log("Kundpris för olja uppdaterat!");
+    } catch (err) {
+        console.error("Kunde inte spara priset:", err);
+    }
 };
 
 // Uppdatera knappen "Lägg till utgift" i setupEventListeners
