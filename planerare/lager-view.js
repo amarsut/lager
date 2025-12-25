@@ -372,7 +372,7 @@ export function renderEliteTable(items) {
             name: 'Motorolja',
             category: 'Service',
             quantity: oilQty,
-            price: '',
+            price: window.oilPricePerLiter || 0,
             service_filter: 'Lösvikt (liter)',
             notes: 'Synkad med oljefat'
         };
