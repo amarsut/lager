@@ -254,7 +254,9 @@ window.setLagerFilter = (c) => {
 
 function renderSidebar(items, sidebar) {
     if (!sidebar) return;
-    const subFilters = getDynamicSubFilters(items);
+    
+    // Snabbval (Oljefilter osv) baseres på HELE lageret så menuen ikke forsvinder
+    const subFilters = getDynamicSubFilters(window.allItemsCache);
     const mainCats = ['Service', 'Motor/Chassi', 'Bromsar', 'Andra Märken'];
     
     let html = `<div class="sidebar-cat-link ${window.currentFilter === 'all' ? 'active' : ''}" onclick="window.setLagerFilter('all')">
@@ -262,6 +264,7 @@ function renderSidebar(items, sidebar) {
                 </div>`;
                 
     html += mainCats.map(cat => {
+        // Tæl kun de varer der matcher det nuværende lagerfilter (f.eks. Slut i lager)
         const count = items.filter(i => (i.category || "").trim().toLowerCase() === cat.toLowerCase()).length;
         return `<div class="sidebar-cat-link ${window.currentFilter === cat ? 'active' : ''}" onclick="window.setLagerFilter('${cat}')">
                     <span>${cat}</span><span class="cat-badge">${count}</span>
@@ -286,69 +289,43 @@ export function renderEliteTable(items) {
     const sidebar = document.getElementById('sidebarCatList');
     if (!container) return;
 
-    if (sidebar && window.innerWidth > 768) {
-        renderSidebar(items, sidebar);
-    }
-
-    // 1. Hämta sökterm och inställningar
-    const searchInput = document.getElementById('lagerSearchInput');
-    const term = (searchInput?.value || "").trim();
-    const normalizedTerm = term.toLowerCase().replace(/\s+/g, ''); 
-    const sortVal = document.getElementById('sortSelect')?.value || 'name';
-
-    // 2. Filter-inställningar
+    // 1. Hämta filter-inställningar
     let showInStock = document.getElementById('filterInStock')?.checked;
     let showOutOfStock = document.getElementById('filterOutOfStock')?.checked;
 
-    // 3. FILTRERING
-    let filtered = items.filter(i => {
+    // 2. Beräkna artiklar som matchar LAGERSTATUS (för sidebar-statistik)
+    const filteredByStock = items.filter(i => {
         const qty = parseInt(i.quantity) || 0;
-        const matchStock = (showInStock && qty > 0) || (showOutOfStock && qty <= 0);
-        
+        return (showInStock && qty > 0) || (showOutOfStock && qty <= 0);
+    });
+
+    // Uppdatera sidobaren med de nya siffrorna
+    if (sidebar && window.innerWidth > 768) {
+        renderSidebar(filteredByStock, sidebar);
+    }
+
+    // 3. Filtrera på kategori och sökord
+    const searchInput = document.getElementById('lagerSearchInput');
+    const term = (searchInput?.value || "").trim();
+    const normalizedTerm = term.toLowerCase().replace(/\s+/g, '');
+    const sortVal = document.getElementById('sortSelect')?.value || 'name';
+
+    let filtered = filteredByStock.filter(i => {
+        const itemCat = (i.category || "").trim().toLowerCase();
         const matchCat = window.currentFilter === 'all' || 
-                         (i.category || "").toLowerCase() === window.currentFilter.toLowerCase() ||
+                         itemCat === window.currentFilter.toLowerCase() ||
                          (i.name || "").toUpperCase().includes(window.currentFilter.toUpperCase());
 
-        // UTÖKAD SÖKNING: Inkluderar nu även i.notes
         const matchSearch = 
             (i.name || "").toLowerCase().replace(/\s+/g, '').includes(normalizedTerm) ||
             String(i.id || "").toLowerCase().replace(/\s+/g, '').includes(normalizedTerm) ||
             (i.service_filter || "").toLowerCase().replace(/\s+/g, '').includes(normalizedTerm) ||
-            (i.notes || "").toLowerCase().replace(/\s+/g, '').includes(normalizedTerm); // <-- Tillagd sökning i kommentarer
+            (i.notes || "").toLowerCase().replace(/\s+/g, '').includes(normalizedTerm);
 
-        return matchStock && matchCat && matchSearch;
+        return matchCat && matchSearch;
     });
 
-    // --- 4. KONTROLL FÖR TOMT RESULTAT ---
-    if (filtered.length === 0 && term !== "") {
-        const trodo = generateTrodoLink(term);
-        const aero = generateAeroMLink(term);
-        const thansen = generateThansenLink(term);
-
-        container.innerHTML = `
-            <div class="empty-search-card" style="padding: 40px 20px; background: #f8fafc; border-radius: 20px; border: 2px dashed #cbd5e1; text-align: center; grid-column: 1 / -1;">
-                <div style="font-size: 48px; margin-bottom: 20px;">🔍</div>
-                <h3 style="margin: 0 0 10px 0; color: #1e293b; font-size: 20px;">Ingen träff i ditt lager</h3>
-                <p style="color: #64748b; margin-bottom: 30px;">Vi hittade inget som matchar "<strong>${term}</strong>".</p>
-                <div style="display: flex; flex-direction: column; align-items: center; gap: 24px;">
-                    <div style="background: white; padding: 15px 25px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 15px;">
-                        <span style="font-size: 12px; color: #94a3b8; font-weight: 700; letter-spacing: 0.5px;">KOLLA EXTERNT:</span>
-                        <div style="display: flex; gap: 10px;">
-                            <a href="${trodo}" target="_blank" class="supplier-link-circle" style="background-color: #2563eb; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; text-decoration: none; font-weight: 800; font-size: 14px;">T</a>
-                            <a href="${aero}" target="_blank" class="supplier-link-circle" style="background-color: #0056b3; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; text-decoration: none; font-weight: 800; font-size: 14px;">A</a>
-                            <a href="${thansen}" target="_blank" class="supplier-link-circle" style="background-color: #ed1c24; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; text-decoration: none; font-weight: 800; font-size: 14px;">T</a>
-                        </div>
-                    </div>
-                    <button onclick="window.openNewLagerItemDrawer('${term}')" 
-                            style="background: #2563eb; color: white; border: none; padding: 14px 28px; border-radius: 14px; font-weight: 700; cursor: pointer; transition: transform 0.2s; box-shadow: 0 4px 15px rgba(37,99,235,0.3);">
-                        + Skapa artikeln "${term}"
-                    </button>
-                </div>
-            </div>`;
-        return; 
-    }
-
-    // 5. SORTERING
+    // 4. Sortering
     filtered.sort((a, b) => {
         if (sortVal === 'name') return (a.name || "").localeCompare(b.name || "");
         if (sortVal === 'price-low') return (parseFloat(a.price) || 0) - (parseFloat(b.price) || 0);
@@ -356,31 +333,50 @@ export function renderEliteTable(items) {
         return 0;
     });
 
-    filtered = filtered.filter(item => item.name.toLowerCase() !== 'motorolja');
+    // 5. Hantera Motorolja (Virtuell artikel) - TVINGA ÖVERST
+    const oilQty = window.currentOilQuantity || 0;
+    const oilMatchStock = (showInStock && oilQty > 0) || (showOutOfStock && oilQty <= 0);
+    
+    filtered = filtered.filter(item => (item.name || "").toLowerCase() !== 'motorolja');
 
-    // 2. Skapa den fasta Motorolja-artikeln
-    const motorOilItem = {
-        id: 'OIL-SYSTEM',
-        name: 'Motorolja',
-        category: 'Service',
-        quantity: window.currentOilQuantity || 0, // Läser från den globala variabeln
-        price: '',
-        service_filter: 'Fat / Lösvikt (liter)',
-        notes: 'Synkad med oljefat i inställningar'
-    };
-
-    // 3. Om vi inte söker efter något specifikt som exkluderar olja, 
-    // lägg till den högst upp i den filtrerade listan
-    if (window.currentFilter === 'all' || window.currentFilter.toLowerCase() === 'service') {
-        filtered.unshift(motorOilItem); // Lägg den först
+    if (oilMatchStock && (window.currentFilter === 'all' || window.currentFilter.toLowerCase() === 'service')) {
+        const motorOilItem = {
+            id: 'OIL-SYSTEM',
+            name: 'Motorolja',
+            category: 'Service',
+            quantity: oilQty,
+            price: '',
+            service_filter: 'Lösvikt (liter)',
+            notes: 'Synkad med oljefat'
+        };
+        
+        if (!term || motorOilItem.name.toLowerCase().includes(normalizedTerm)) {
+            filtered.unshift(motorOilItem);
+        }
     }
 
-    // 6. RENDERING AV LISTA
+    // 6. Rendering av listan
     container.innerHTML = filtered.map(item => {
         const qty = parseInt(item.quantity) || 0;
-        const notes = item.notes || ""; // Hämta kommentarer
+        const notes = item.notes || "";
         const iconContent = getCategoryIconHtml(item.category, item.name);
         const supplierLinks = getAllSupplierLinks(item.service_filter || item.name);
+
+        // --- Senaste försäljning ---
+        let lastSoldInfo = "";
+        if (qty <= 0 && window.allJobs) {
+            const lastJob = window.allJobs
+                .filter(j => !j.deleted && Array.isArray(j.utgifter) && j.utgifter.some(e => String(e.inventoryId) === String(item.id)))
+                .sort((a, b) => new Date(b.datum) - new Date(a.datum))[0];
+            
+            if (lastJob) {
+                const date = lastJob.datum ? lastJob.datum.split('T')[0] : 'Inget datum';
+                lastSoldInfo = `
+                    <div style="margin-top: 8px; font-size: 0.75rem; background: #fff1f2; color: #e11d48; padding: 6px 10px; border-radius: 8px; border: 1px solid #ffe4e6; display: flex; align-items: center; gap: 6px;">
+                        <b>Senast såld:</b> ${date} till ${lastJob.kundnamn}
+                    </div>`;
+            }
+        }
 
         return `
             <div class="article-card-pro">
@@ -392,6 +388,8 @@ export function renderEliteTable(items) {
                     <h3>${item.name || 'Namnlös'}</h3>
                     <div class="card-ref-pro">Ref: ${item.service_filter || '-'}</div>
                     
+                    ${lastSoldInfo}
+
                     ${notes ? `
                         <div class="card-notes-pro" style="margin-top: 8px; font-size: 0.85rem; color: #64748b; font-style: italic; border-top: 1px solid #f1f5f9; padding-top: 4px;">
                             "${notes.length > 80 ? notes.substring(0, 80) + '...' : notes}"
@@ -401,11 +399,6 @@ export function renderEliteTable(items) {
                 <div class="card-actions-pro">
                     <div class="card-price-container-pro" style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px;">
                         <div class="card-price-pro">${item.price || 0}:-</div>
-                        <div class="supplier-compare-row" style="display: flex; gap: 6px;">
-                            ${supplierLinks.map(s => `
-                                <a href="${s.url}" target="_blank" class="supplier-link-circle" title="${s.name}" style="background-color: ${s.color}; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 10px; font-weight: 800; text-decoration: none;">${s.name.charAt(0)}</a>
-                            `).join('')}
-                        </div>
                     </div>
                     <div class="stock-pill ${qty > 0 ? 'stock-in' : 'stock-out'}">${qty} st i lager</div>
                     <button class="btn-redigera-pro" onclick='window.editLagerItemById("${item.id}")'>REDIGERA</button>
