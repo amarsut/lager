@@ -724,6 +724,8 @@ function openChatGallery() {
     const galleryContent = document.getElementById('chatGalleryContent');
     if (!galleryModal || !galleryContent) return;
 
+    if (window.addHistoryState) window.addHistoryState('modal');
+
     galleryContent.innerHTML = ''; 
     
     const imageElements = document.querySelectorAll('.chat-bubble-image img');
