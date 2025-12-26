@@ -467,3 +467,139 @@ Expanderat kort
     -webkit-line-clamp: unset !important;
     display: block !important;
 }
+
+/* ==========================================================================
+   OPTIMERAD LAGER.CSS (DESKTOP ELITE + MOBIL FIX)
+   ========================================================================== */
+
+/* --- GRUNDKORTET --- */
+.article-card-pro {
+    background: #fff;
+    border-radius: 12px;
+    margin-bottom: 12px;
+    display: flex;
+    flex-direction: column !important;
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* --- HUVUDINNEHÅLL (Mobil-först: kompakt som standard) --- */
+.card-main-content {
+    display: flex;
+    padding: 12px; /* Kompakt padding för mobilen */
+    gap: 12px;
+    width: 100%;
+    box-sizing: border-box;
+    align-items: flex-start;
+}
+
+/* Bilden: Mindre på mobilen så texten får plats */
+.card-img-box-pro {
+    width: 65px; 
+    height: 65px;
+    background: #f8fafc;
+    border-radius: 8px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Info-delen: Här fixar vi så texten inte blir "M..." */
+.card-info-pro {
+    flex: 1;
+    min-width: 0; /* Kritisk för att text-overflow ska fungera */
+}
+
+.card-info-pro h3 {
+    font-size: 14px;
+    font-weight: 700;
+    margin: 0 0 2px 0;
+    line-height: 1.2;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Högerkolumnen på mobilen */
+.card-actions-pro {
+    width: 85px; /* Smalare för att ge plats åt namnet i mitten */
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.card-price-pro {
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.btn-redigera-pro {
+    padding: 6px 10px;
+    font-size: 10px;
+    width: 100%;
+}
+
+/* --- KNAPPRADEN (Mobilanpassad) --- */
+.supplier-button-row {
+    display: none; /* Dölj som standard */
+    padding: 8px 12px 12px 12px;
+    background: #fafbfc;
+    border-top: 1px solid #f1f5f9;
+    gap: 6px;
+    margin-top: -10px !important; /* Behåller din fix för att stänga glipan */
+}
+
+.article-card-pro.expanded .supplier-button-row {
+    display: flex;
+}
+
+.supplier-pill-btn {
+    flex: 1;
+    height: 38px;
+    border-radius: 8px;
+    font-size: 10px;
+    gap: 4px;
+}
+
+/* ==========================================================================
+   DESKTOP ENBART (Här lägger vi på "luftigheten")
+   ========================================================================== */
+@media (min-width: 769px) {
+    .article-card-pro {
+        margin-bottom: 20px;
+        border-radius: 16px;
+    }
+
+    .card-main-content {
+        padding: 24px !important; /* Luftigt på desktop */
+        gap: 24px;
+    }
+
+    .card-img-box-pro {
+        width: 100px; 
+        height: 100px;
+    }
+
+    .card-info-pro h3 {
+        font-size: 18px;
+    }
+
+    .card-actions-pro {
+        width: 140px;
+        gap: 12px;
+    }
+
+    .card-price-pro {
+        font-size: 24px;
+    }
+
+    .supplier-button-row {
+        padding: 16px 24px 20px 24px;
+    }
+}
