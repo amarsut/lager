@@ -352,6 +352,17 @@
     transform: translateY(-50%); /* Tvingar perfekt vertikal centrering */
 }
 
+@media (max-width: 768px) {
+    .card-info-pro h3 { /*Göra artikelnamnet /titeln mindre på mobilen*/
+        font-size: 12px; /* Ännu mindre på mobilen för att maximera utrymmet */
+        line-height: 1.1;
+    }
+    
+    .card-img-box-pro { /*Göra artikelbilden mindre på mobilen*/
+        width: 60px;  /* Gör bilden mindre på mobilen för att ge h3 mer plats */
+        height: 60px;
+    }
+}
 
 /*
 Expanderat kort
