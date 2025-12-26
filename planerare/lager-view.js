@@ -452,7 +452,7 @@ export function renderEliteTable(items) {
 
                         <div class="card-actions-pro" style="min-width: 90px; flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-end;">
                             <div class="card-price-pro">${item.price || 0}:-</div>
-                            <div class="stock-pill ${qty > 0 ? 'stock-in' : 'stock-out'}">${qty} st</div>
+                            <div class="stock-pill ${qty > 0 ? 'stock-in' : 'stock-out'}">${qty} st i lager</div>
                             <button class="btn-redigera-pro" onclick='window.editLagerItemById("${item.id}"); event.stopPropagation();'>REDIGERA</button>
                         </div>
                     </div>
