@@ -1,19 +1,17 @@
 /* ==========================================================================
-   LAGER.CSS - Unified & Optimized Version 2025
+   LAGER.CSS - Konsoliderad & Optimerad Version 2025
    ========================================================================== */
 
-/* --- GRUNDLAYOUT --- */
+/* --- 1. GRUNDLAYOUT & WRAPPERS --- */
 .lager-pro-wrapper {
     display: flex;
     gap: 24px;
-    /*padding: 24px;*/ /*Sätter avstånd från sidans header*/
     background: #f4f7f9;
     min-height: 100vh;
     width: 100%;
-    /*box-sizing: border-box;*/ /*Gör innehållet smalare*/
 }
 
-/* --- SIDEBAR (Desktop) --- */
+/* --- 2. SIDEBAR (Desktop) --- */
 .lager-sidebar-pro { width: 220px; flex-shrink: 0; }
 .sidebar-card { 
     background: #fff; border-radius: 12px; padding: 18px; 
@@ -31,12 +29,7 @@
 .sidebar-cat-link.active { background: #eff6ff; color: #2563eb; font-weight: 700; }
 .cat-badge { background: #f1f5f9; padding: 2px 6px; border-radius: 10px; font-size: 10px; }
 
-.status-chips-container { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; padding-left: 4px; }
-.filter-chip { display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 13px; color: #64748b; font-weight: 500; transition: 0.2s; user-select: none; }
-.filter-chip:hover { color: #1e293b; }
-.filter-chip input[type="checkbox"] { width: 16px; height: 16px; accent-color: #3b82f6; cursor: pointer; }
-
-/* --- TOOLBAR (Desktop & Mobil Grund) --- */
+/* --- 3. TOOLBAR & SÖK --- */
 .lager-toolbar-pro {
     background: #fff; border-radius: 12px; padding: 0 15px;
     display: flex !important; align-items: center; justify-content: space-between;
@@ -44,265 +37,153 @@
 }
 .toolbar-right { display: flex; align-items: center; gap: 12px; flex: 1; }
 
-.search-wrapper-pro { position: relative; flex: 1; }
+.search-wrapper-pro { position: relative; flex: 1; display: flex; align-items: center; }
 .search-icon-pro { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: #94a3b8; }
+
 #lagerSearchInput { 
     width: 100%; padding: 12px 15px 12px 42px; border-radius: 12px; 
     border: 1px solid #f1f5f9; font-size: 14px; background: #f8fafc; outline: none; transition: 0.2s;
 }
 #lagerSearchInput:focus { border-color: #3b82f6; background: #fff; }
 
-.filter-icon-wrapper {
-    position: relative;
-    width: 38px; /* Minskad från 44px */
-    height: 38px; /* Minskad från 44px */
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 10px; /* Något mindre radie */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s;
-    flex-shrink: 0;
+#clearLagerSearch {
+    position: absolute; right: 0; top: 55%; transform: translateY(-50%);
 }
 
-.filter-nav-icon { 
-    width: 18px; /* Något mindre ikon */
-    height: 18px; 
-    color: #475569; 
+.filter-icon-wrapper {
+    position: relative; width: 38px; height: 38px; background: #f8fafc;
+    border: 1px solid #e2e8f0; border-radius: 10px; display: flex;
+    align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; flex-shrink: 0;
 }
 .filter-icon-wrapper select { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+.filter-nav-icon { width: 18px; height: 18px; color: #475569; }
 
-/* --- ARTIKELKORT (Optimerad Desktop-höjd) --- */
+/* --- 4. ARTIKELKORT (Core) --- */
 .article-card-pro {
-    background: #fff; border-radius: 12px; padding: 6px 15px 6px 15px !important; /* Kompakt padding */
-    margin-bottom: 8px; display: flex; gap: 16px; border: 1px solid #e2e8f0; align-items: center;
+    background: #fff; border-radius: 12px; margin-bottom: 12px;
+    display: flex; flex-direction: column !important;
+    border: 1px solid #e2e8f0; overflow: hidden; width: 100%; transition: all 0.2s ease;
 }
+
+.card-main-content {
+    display: flex; padding: 12px; gap: 12px; width: 100%; box-sizing: border-box; align-items: flex-start;
+}
+
 .card-img-box-pro { 
-    width: 80px; height: 80px; /* Mindre bild sparar höjd */
-    background: #f8fafc; border-radius: 8px; display: flex; 
-    align-items: center; justify-content: center; flex-shrink: 0; 
+    width: 65px; height: 65px; background: #f8fafc; border-radius: 8px; 
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0; 
 }
+
 .card-info-pro { flex: 1; min-width: 0; }
-.card-info-pro h3 { font-size: 15px; font-weight: 700; color: #1e293b; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card-info-pro h3 { 
+    font-size: 14px; font-weight: 700; color: #1e293b; margin: 0 0 2px 0;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+
 .card-id-label { font-size: 9px; font-weight: 800; color: #cbd5e1; text-transform: uppercase; }
-.card-ref-pro { font-size: 12px; color: #64748b; font-weight: 500; white-space: nowrap; }
+.card-ref-pro { font-size: 12px; color: #64748b; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .card-notes-pro { 
-    font-size: 11px; color: #94a3b8; margin-top: 4px; padding-top: 2px; 
-    border-top: 1px dashed #f1f5f9; font-style: italic;
-    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    font-size: 11px; color: #475569; margin-top: 6px !important; padding: 4px 8px !important;
+    background: #f8fafc; border-radius: 6px; display: block !important; 
+    overflow: hidden; text-overflow: ellipsis; font-style: italic;
+}
+.card-notes-pro {
+    display: inline-block !important; /* Gör att den bara är så bred som texten */
+    width: auto;
+    max-width: 95%; 
+    line-height: 1.4;
+    padding: 4px 10px !important;
 }
 
 .card-actions-pro {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between; /* Trycker priset uppåt och knappen nedåt */
-    align-items: flex-end;
-    height: 100%; /* Viktigt för att justify-between ska fungera */
-    min-height: 80px; /* Säkerställer att kortet inte kollapsar för mycket */
+    display: flex; flex-direction: column; justify-content: space-between;
+    align-items: flex-end; flex-shrink: 0; width: 85px; min-height: 80px;
 }
+
 .card-price-pro { font-size: 18px; font-weight: 800; color: #0f172a; line-height: 1; }
 .stock-pill { padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; }
 .stock-in { background: #ecfdf5; color: #10b981; }
 .stock-out { background: #fef2f2; color: #ef4444; }
-.btn-redigera-pro { background: #2563eb; color: #fff; border: none; padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 700; width: 100%; cursor: pointer; }
-.btn-redigera-pro {
-    background: transparent !important;
-    color: #2563eb !important;
-    border: 1.5px solid #2563eb !important;
-    margin-top: 20px;
-}
-.btn-redigera-pro:hover {
-    background: #2563eb !important;
-    color: #fff !important;
-}
 
-/* --- PRO EDIT DRAWER --- */
+/* Ghost-button design */
+.btn-redigera-pro { 
+    background: transparent !important; color: #2563eb !important;
+    border: 1.5px solid #2563eb !important; padding: 6px 10px;
+    border-radius: 8px; font-size: 10px; font-weight: 700; 
+    width: 100%; cursor: pointer; margin-top: 10px;
+}
+.btn-redigera-pro:hover { background: #2563eb !important; color: #fff !important; }
+
+/* --- 5. EXPANSION & LEVERANTÖRER --- */
+.supplier-button-row {
+    display: none; gap: 8px; padding: 8px 12px 12px 12px;
+    background: #fafbfc; border-top: 1px solid #f1f5f9;
+    width: 100%; box-sizing: border-box; margin-top: -10px !important;
+}
+.article-card-pro.expanded .supplier-button-row { display: flex; }
+
+.supplier-pill-btn {
+    flex: 1; height: 38px; border-radius: 8px; display: flex;
+    align-items: center; justify-content: center; transition: all 0.2s; text-decoration: none;
+}
+.supplier-pill-btn img { width: 20px; height: 20px; object-fit: contain; }
+.supplier-name-text { margin-left: 2px; font-size: 10px; font-weight: 700; color: #1e293b; text-transform: uppercase; letter-spacing: 0.02em; }
+
+/* --- 6. PRO EDIT DRAWER --- */
 .lager-drawer {
-    position: fixed;
-    top: 0;
-    right: 0 !important; /* Tvinga fästpunkt till höger */
-    left: auto !important;
-    width: 450px;
-    height: 100%;
-    background: #fff;
-    z-index: 30005;
-    display: flex;
-    flex-direction: column;
-    /* Startläge: Dold */
-    transform: translateX(100%);
-    visibility: hidden; 
-    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.4s;
+    position: fixed; top: 0; right: 0 !important; left: auto !important;
+    width: 450px; height: 100%; background: #fff; z-index: 30005;
+    display: flex; flex-direction: column; transform: translateX(100%);
+    visibility: hidden; transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.4s;
     box-shadow: -10px 0 50px rgba(0, 0, 0, 0.15);
 }
-
-/* Öppet läge */
-.lager-drawer.open {
-    transform: translateX(0);
-    visibility: visible;
-}
+.lager-drawer.open { transform: translateX(0); visibility: visible; }
 
 .drawer-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(15, 23, 42, 0.5);
-    backdrop-filter: blur(4px);
-    display: none;
-    z-index: 30004;
+    position: fixed; inset: 0; background: rgba(15, 23, 42, 0.5);
+    backdrop-filter: blur(4px); display: none; z-index: 30004;
 }
-
 .drawer-overlay.show { display: block; }
 
-/* Innehållsstyrning */
-.drawer-header {
-    padding: 20px 24px;
-    border-bottom: 1px solid #f1f5f9;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
+.drawer-header { padding: 20px 24px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; }
 .drawer-header h3 { font-size: 1.25rem; font-weight: 800; color: #0f172a; margin: 0; }
 
-.drawer-body {
-    padding: 24px;
-    flex: 1;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
+.drawer-body { padding: 24px; flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; }
+.drawer-body .form-group label { display: block; font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 8px; }
+.drawer-body .input-gray { width: 100%; padding: 12px 16px; border-radius: 12px; background: #f8fafc; border: 1px solid #e2e8f0; font-size: 1rem; transition: all 0.2s; box-sizing: border-box; }
+.drawer-body .input-gray:focus { background: #fff; border-color: #3b82f6; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); outline: none; }
 
-/* Form-element */
-.drawer-body .form-group label {
-    display: block;
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: #64748b;
-    text-transform: uppercase;
-    margin-bottom: 8px;
-}
+.form-row { display: flex; gap: 12px; width: 100%; }
+.flex-1 { flex: 1 1 0; min-width: 0; }
 
-.drawer-body .input-gray {
-    width: 100%;
-    padding: 12px 16px;
-    border-radius: 12px;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    font-size: 1rem;
-    transition: all 0.2s;
-    box-sizing: border-box;
-}
+.action-footer { margin-top: auto; padding-top: 10px; display: flex; gap: 12px; }
+.btn-action { flex: 1; padding: 14px; border-radius: 12px; font-weight: 700; font-size: 0.9rem; text-transform: uppercase; border: none; cursor: pointer; transition: opacity 0.2s; }
+.btn-save { background: #2563eb; color: white; }
+.btn-delete { background: #fee2e2; color: #ef4444; }
 
-.drawer-body .input-gray:focus {
-    background: #fff;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
-    outline: none;
-}
-
-/* Spara-knapp */
-#btnSaveLagerItem {
-    margin-top: auto;
-    background: #2563eb;
-    color: #fff;
-    padding: 16px;
-    border-radius: 14px;
-    font-weight: 700;
-    text-transform: uppercase;
-    border: none;
-    cursor: pointer;
-}
-
-/* Mobilanpassning - täck hela skärmen på enheter under 768px */
-@media (max-width: 768px) {
-    .lager-drawer { 
-        width: 100% !important; 
-        box-shadow: none; 
-    }
-    .drawer-body { padding: 20px; padding-bottom: 100px; } /* Extra space för mobil-nav */
-}
-
-/* --- EXTRA KOMPAKT & SYMMETRISK LAYOUT --- */
-.drawer-body.compact-form {
-    padding: 16px 20px !important;
-    gap: 14px !important;
-}
-
-/* Tvinga flex-1 att vara exakt lika breda */
-.form-row {
-    display: flex;
-    gap: 12px;
-    width: 100%;
-}
-.flex-1 { 
-    flex: 1 1 0; /* Tvingar elementen att dela utrymmet 50/50 */
-    min-width: 0;
-}
-
-/* Footer-knappar */
-.action-footer {
-    margin-top: auto; /* Trycker ner knapparna till botten */
-    padding-top: 10px;
-}
-
-.btn-action {
-    flex: 1;
-    padding: 14px;
-    border-radius: 12px;
-    font-weight: 700;
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    border: none;
-    cursor: pointer;
-    transition: opacity 0.2s;
-}
-
-.btn-save {
-    background: #2563eb; /* Blå */
-    color: white;
-}
-
-.btn-delete {
-    background: #fee2e2; /* Ljusröd bakgrund */
-    color: #ef4444; /* Starkare röd text */
-}
-
-.btn-action:active { transform: scale(0.98); }
-
-/* --- MATCHAD IKON-KNAPP FÖR NY ARTIKEL --- */
 .btn-add-article-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #2563eb; /* Din blå signaturfärg */
-    color: white;
-    border: none;
-    width: 38px;  /* Matchar höjden på sökfältet */
-    height: 38px;
-    border-radius: 8px; /* Rundade hörn enligt bild */
-    cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35); /* Blåaktig skugga */
-    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; background: #2563eb; color: white; border: none;
+    width: 38px; height: 38px; border-radius: 8px; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35); flex-shrink: 0;
 }
 
-.btn-add-article-icon svg {
-    width: 18px;
-    height: 18px;
+/* --- 7. DESKTOP SPECIFIKT (Over 768px) --- */
+@media (min-width: 769px) {
+    .article-card-pro { margin-bottom: 20px; border-radius: 16px; }
+    .card-main-content { padding: 24px !important; gap: 24px; }
+    .card-img-box-pro { width: 100px; height: 100px; }
+    .card-info-pro h3 { font-size: 18px; }
+    .card-actions-pro { width: 140px; gap: 12px; }
+    .card-price-pro { font-size: 24px; }
+    .supplier-button-row { padding: 16px 24px 20px 24px; }
 }
 
-/* ==========================================================================
-   MOBILANPASSNING (Under 768px) - KONSOLIDERAD
-   ========================================================================== */
+/* --- 8. MOBILANPASSNING (Under 768px) --- */
 @media (max-width: 768px) {
     body:has(#lagerView[style*="display: flex"]) .mobile-header { display: none !important; }
     .lager-pro-wrapper { padding: 0; flex-direction: column; }
     .lager-sidebar-pro { display: none !important; }
 
-    /* Fixerad Toolbar & Filter */
     .lager-toolbar-pro {
         position: fixed; top: 0; left: 0; width: 100%; height: 64px;
         z-index: 2000; margin-bottom: 0; border-radius: 0; border: none;
@@ -314,292 +195,38 @@
         border-bottom: 1px solid #e2e8f0; box-sizing: border-box; gap: 6px;
     }
     .mobile-filter-row select {
-        flex: 1;
-        min-width: 0;
-        height: 36px !important; /* Fast höjd istället för 100% */
-        padding: 0 8px !important;
-        font-size: 12px !important; /* Något mindre font för att garantera plats */
-        font-weight: 600;
-        border-radius: 8px;
-        background-color: #f1f5f9;
-        border: 1px solid #e2e8f0;
-        color: #1e293b;
-        line-height: 1 !important; /* Fixar vertikal centrering */
-        appearance: auto; 
+        flex: 1; height: 36px !important; padding: 0 8px !important; font-size: 12px !important;
+        font-weight: 600; border-radius: 8px; background-color: #f1f5f9; border: 1px solid #e2e8f0;
+        color: #1e293b; line-height: 1 !important; appearance: auto; 
     }
 
-    #lagerListElite {
-        /* 64px header + 50px filter + 4px marginal = 118px */
-        padding-top: 50px !important; 
-        padding-left: 0px;
-        padding-right: 0px;
-        padding-bottom: 0px;
-    }
-
-    /* Ref-nummer på en rad */
-    .card-ref-pro { 
-        font-size: 11px; white-space: nowrap !important; overflow: hidden; 
-        text-overflow: ellipsis; display: block; margin-top: 0; 
-    }
-
-    /* Actions-kolumn Mobil */
-    .card-actions-pro { 
-        flex-shrink: 0; width: 90px; border-left: 1px solid #f1f5f9; 
-        padding-left: 10px; text-align: right; justify-content: center;
-    }
+    #lagerListElite { padding-top: 50px !important; padding-left: 0; padding-right: 0; padding-bottom: 0; }
     .lager-drawer { width: 100%; right: -100%; }
-}
-
-/* Behållaren för sökfältet måste vara relativ */
-.search-wrapper-pro {
-    position: relative;
-    display: flex;
-    align-items: center;
-    flex: 1;
-}
-
-/* Det anpassade krysset i lagersökrutan (#clearLagerSearch) */
-#clearLagerSearch {
-    position: absolute;
-    right: 0px !important; /* Avstånd från högerkanten */
-    top: 55%;
-    transform: translateY(-50%); /* Tvingar perfekt vertikal centrering */
-}
-
-@media (max-width: 768px) {
-    .card-info-pro h3 { /*Göra artikelnamnet /titeln mindre på mobilen*/
-        font-size: 12px; /* Ännu mindre på mobilen för att maximera utrymmet */
-        line-height: 1.1;
-        -webkit-line-clamp: 2; /* Behåll 2 rader även på mobil */
-        max-height: 2.2em;      /* Matcha nya line-height (1.1 * 2) */
-    }
     
-    .card-img-box-pro { /*Göra artikelbilden mindre på mobilen*/
-        width: 60px;  /* Gör bilden mindre på mobilen för att ge h3 mer plats */
-        height: 80px;
-    }
-
-    .card-notes-pro {
-        /* Visa 2 rader som standard */
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-        white-space: normal !important;
-    }
+    .card-info-pro h3 { font-size: 12px; line-height: 1.1; max-height: 2.2em; }
+    .card-img-box-pro { width: 60px; height: 80px; }
+    .card-notes-pro { display: -webkit-box !important; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 }
 
-/*
-Expanderat kort
-*/
-/* Grundinställning för kortet */
-.article-card-pro {
-    display: flex;
-    flex-direction: column !important; /* Stapla innehåll och knappar */
-    padding: 0 !important;
-    overflow: hidden;
-    transition: all 0.2s ease;
-}
+/* Checkbox */
+.status-chips-container { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; padding-left: 4px; }
+.filter-chip { display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 13px; color: #64748b; font-weight: 500; transition: 0.2s; user-select: none; }
+.filter-chip input[type="checkbox"] { width: 16px; height: 16px; accent-color: #3b82f6; cursor: pointer; }
 
-.card-main-content {
-    display: flex;
-    padding: 4px 15px 4px 15px; /* Minskat från 12px till 4px i botten */
-    gap: 2px;
-    width: 100%;
-    box-sizing: border-box;
-}
-
-/* --- KNAPPRADEN (Dold som standard) --- */
-.supplier-button-row {
-    display: none;
-    gap: 8px;
-    padding: 6px 15px 6px 15px; /* Minskat padding-top till 6px */
-    background: #fafbfc;
-    border-top: 1px solid #f1f5f9;
-    width: 100%;
-    box-sizing: border-box;
-}
-
-/* Visa raden när kortet har klassen .expanded */
-.article-card-pro.expanded .supplier-button-row { display: flex; }
-
-/* --- KNAPP-STYLING (Piller-form enligt din bild) --- */
-.supplier-pill-btn {
-    flex: 1;
-    height: 25px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform 0.1s, filter 0.2s;
-    text-decoration: none;
-}
-
-.supplier-pill-btn:hover { filter: brightness(0.95); }
-
-.supplier-pill-btn img {
-    width: 20px;
-    height: 20px; object-fit: contain;
-}
-
-/* Skapar mindre mellanrum ovanför knapparna */
-.supplier-button-row { margin-top: -10px !important; }
-
-.supplier-name-text {
-    margin-left: 2px;
-    font-size: 10px; /* Kompakt textstorlek */
-    font-weight: 700;
-    color: #1e293b; /* Mörkgrå färg för läsbarhet */
-    text-transform: uppercase;
-    letter-spacing: 0.02em;
-}
-
+/* Grå bakgrund på kommentar - sträcka sig så långt kommentaren går och inte mer */
 .card-notes-pro {
-    border-top: none !important; /* Bort med den streckade linjen */
-    background: #f8fafc; /* En extremt ljusgrå yta */
-    padding: 4px 8px !important;
-    border-radius: 6px;
-    display: inline-block; /* Gör att den inte tar upp hela bredden */
-    margin-top: 6px !important;
-
-    white-space: normal !important;
-    overflow: visible !important;
-    -webkit-line-clamp: unset !important;
-    display: block !important;
+    display: inline-block !important; /* Gör att den bara är så bred som texten */
+    width: auto;
+    max-width: 95%; 
+    line-height: 1.4;
+    padding: 4px 10px !important;
 }
 
-/* ==========================================================================
-   OPTIMERAD LAGER.CSS (DESKTOP ELITE + MOBIL FIX)
-   ========================================================================== */
-
-/* --- GRUNDKORTET --- */
-.article-card-pro {
-    background: #fff;
-    border-radius: 12px;
-    margin-bottom: 12px;
-    display: flex;
-    flex-direction: column !important;
-    border: 1px solid #e2e8f0;
-    overflow: hidden;
-    width: 100%;
-    box-sizing: border-box;
-}
-
-/* --- HUVUDINNEHÅLL (Mobil-först: kompakt som standard) --- */
-.card-main-content {
-    display: flex;
-    padding: 12px; /* Kompakt padding för mobilen */
-    gap: 12px;
-    width: 100%;
-    box-sizing: border-box;
-    align-items: flex-start;
-}
-
-/* Bilden: Mindre på mobilen så texten får plats */
-.card-img-box-pro {
-    width: 65px; 
-    height: 65px;
-    background: #f8fafc;
-    border-radius: 8px;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* Info-delen: Här fixar vi så texten inte blir "M..." */
-.card-info-pro {
-    flex: 1;
-    min-width: 0; /* Kritisk för att text-overflow ska fungera */
-}
-
-.card-info-pro h3 {
-    font-size: 14px;
-    font-weight: 700;
-    margin: 0 0 2px 0;
-    line-height: 1.2;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-
-/* Högerkolumnen på mobilen */
-.card-actions-pro {
-    width: 85px; /* Smalare för att ge plats åt namnet i mitten */
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 4px;
-    flex-shrink: 0;
-}
-
-.card-price-pro {
-    font-size: 18px;
-    font-weight: 800;
-}
-
-.btn-redigera-pro {
-    padding: 6px 10px;
-    font-size: 10px;
-    width: 100%;
-}
-
-/* --- KNAPPRADEN (Mobilanpassad) --- */
-.supplier-button-row {
-    display: none; /* Dölj som standard */
-    padding: 8px 12px 12px 12px;
-    background: #fafbfc;
-    border-top: 1px solid #f1f5f9;
-    gap: 6px;
-    margin-top: -10px !important; /* Behåller din fix för att stänga glipan */
-}
-
-.article-card-pro.expanded .supplier-button-row {
-    display: flex;
-}
-
-.supplier-pill-btn {
-    flex: 1;
-    height: 38px;
-    border-radius: 8px;
-    font-size: 10px;
-    gap: 4px;
-}
-
-/* ==========================================================================
-   DESKTOP ENBART (Här lägger vi på "luftigheten")
-   ========================================================================== */
-@media (min-width: 769px) {
-    .article-card-pro {
-        margin-bottom: 20px;
-        border-radius: 16px;
-    }
-
-    .card-main-content {
-        padding: 24px !important; /* Luftigt på desktop */
-        gap: 24px;
-    }
-
-    .card-img-box-pro {
-        width: 100px; 
-        height: 100px;
-    }
-
-    .card-info-pro h3 {
-        font-size: 18px;
-    }
-
-    .card-actions-pro {
-        width: 140px;
-        gap: 12px;
-    }
-
-    .card-price-pro {
-        font-size: 24px;
-    }
-
-    .supplier-button-row {
-        padding: 16px 24px 20px 24px;
-    }
-}
+/* Mer kompakt redigera meny */
+.drawer-body { padding: 16px 20px !important; /* Mindre luft runt om */ gap: 12px !important; /* Tätare mellan fältgrupper */ }
+.drawer-body .form-group label { margin-bottom: 4px !important; /* Tätare etiketter */ font-size: 0.7rem !important; }
+.drawer-body .input-gray { padding: 10px 14px !important; /* Lägre höjd på inmatningsfälten */ font-size: 0.95rem !important; }
+.drawer-header { padding: 14px 20px !important; /* Lägre header */ }
+/* Spara/Radera knappar längst ner i redigera meny */
+.action-footer { padding-top: 5px !important; }
+.btn-action { padding: 12px !important; }
