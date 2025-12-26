@@ -360,8 +360,11 @@
     
     .card-img-box-pro { /*Göra artikelbilden mindre på mobilen*/
         width: 60px;  /* Gör bilden mindre på mobilen för att ge h3 mer plats */
-        height: 60px;
+        height: 80px;
     }
+
+    .btn-redigera-pro { margin-top: 10px; }
+
 }
 
 /*
