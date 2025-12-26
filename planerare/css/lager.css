@@ -257,7 +257,7 @@
         top: 56px; 
         left: 0; 
         width: 100%;
-        height: 42px !important; /* Något lägre för att minska "luft" */
+        height: 50px !important; /* Något lägre för att minska "luft" */
         background: #fff;
         z-index: 2050;
         display: flex !important;
@@ -305,7 +305,7 @@
     #lagerListElite {
         /* Toolbar (56px) + Filter-rad (42px) = 98px. 
         Vi sätter 102px för att få en perfekt liten glipa till första kortet. */
-        padding-top: 35px !important; 
+        padding-top: 50px !important; 
     }
 
     /* Tvinga bort eventuell marginal på första kortet */
