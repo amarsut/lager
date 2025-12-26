@@ -455,12 +455,6 @@ export function renderEliteTable(items) {
                     <div class="card-actions-pro">
                         <div class="card-price-container-pro" style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px;">
                             <div class="card-price-pro">${item.price || 0}:-</div>
-                            
-                            <div class="supplier-compare-row" style="display: flex; gap: 6px;">
-                                ${supplierLinks.map(s => `
-                                    <a href="${s.url}" target="_blank" class="supplier-link-circle" title="${s.name}" style="background-color: ${s.color}; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 10px; font-weight: 800; text-decoration: none;">${s.name.charAt(0)}</a>
-                                `).join('')}
-                            </div>
                         </div>
                         <div class="stock-pill ${qty > 0 ? 'stock-in' : 'stock-out'}">${qty} st i lager</div>
                         <button class="btn-redigera-pro" onclick='window.editLagerItemById("${item.id}")'>REDIGERA</button>
