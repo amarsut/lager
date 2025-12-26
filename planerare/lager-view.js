@@ -436,28 +436,32 @@ export function renderEliteTable(items) {
             }
 
             return `
-                    <div class="article-card-pro" onclick="window.toggleArticleExpand(event, this)">                    <div class="card-img-box-pro">
-                        <svg viewBox="0 0 24 24" width="46" height="46">${iconContent}</svg>
-                    </div>
-                    <div class="card-info-pro">
-                        <div class="card-id-label">ARTIKELNR: ${String(item.id || "").toUpperCase()}</div>
-                        <h3>${item.name || 'Namnlös'}</h3>
-                        <div class="card-ref-pro">Ref: ${item.service_filter || '-'}</div>
-                        
-                        ${lastSoldInfo}
-                        
-                        ${notes ? `
-                            <div class="card-notes-pro" style="margin-top: 8px; font-size: 0.70rem; color: #64748b; font-style: italic; border-top: 1px solid #f1f5f9; padding-top: 4px;">
-                                "${notes.length > 80 ? notes.substring(0, 80) + '...' : notes}"
-                            </div>
-                        ` : ''}
-                    </div>
-                    <div class="card-actions-pro">
-                        <div class="card-price-container-pro" style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px;">
-                            <div class="card-price-pro">${item.price || 0}:-</div>
+                <div class="article-card-pro" onclick="window.toggleArticleExpand(event, this)">
+                    <div class="card-main-content">
+                        <div class="card-img-box-pro">
+                            <svg viewBox="0 0 24 24" width="46" height="46">${iconContent}</svg>
                         </div>
-                        <div class="stock-pill ${qty > 0 ? 'stock-in' : 'stock-out'}">${qty} st i lager</div>
-                        <button class="btn-redigera-pro" onclick='window.editLagerItemById("${item.id}")'>REDIGERA</button>
+                        <div class="card-info-pro">
+                            <div class="card-id-label">ARTIKELNR: ${String(item.id || "").toUpperCase()}</div>
+                            <h3>${item.name || 'Namnlös'}</h3>
+                            <div class="card-ref-pro">Ref: ${item.service_filter || '-'}</div>
+                            ${lastSoldInfo}
+                            ${notes ? `<div class="card-notes-pro">"${notes}"</div>` : ''}
+                        </div>
+                        <div class="card-actions-pro">
+                            <div class="card-price-pro">${item.price || 0}:-</div>
+                            <div class="stock-pill ${qty > 0 ? 'stock-in' : 'stock-out'}">${qty} st</div>
+                            <button class="btn-redigera-pro" onclick='window.editLagerItemById("${item.id}")'>REDIGERA</button>
+                        </div>
+                    </div>
+
+                    <div class="supplier-button-row">
+                        ${supplierLinks.map(s => `
+                            <a href="${s.url}" target="_blank" class="supplier-pill-btn" title="${s.name}" style="background-color: ${s.bg}; border: 1px solid ${s.border};">
+                                <img src="${s.icon}" alt="${s.name}" onerror="this.style.display='none'">
+                                <span class="supplier-name-text">${s.name}</span>
+                            </a>
+                        `).join('')}
                     </div>
                 </div>`;
         }).join('');
@@ -468,11 +472,12 @@ export function renderEliteTable(items) {
 }
 
 window.toggleArticleExpand = (event, cardElement) => {
-    // Förhindra expandering om man klickar på knappar eller länkar
-    if (event.target.closest('button') || event.target.closest('a')) {
-        return;
-    }
+    if (event.target.closest('button') || event.target.closest('a')) return;
     
+    // Växlar klassen 'expanded' på hela kortet
+    cardElement.classList.toggle('expanded');
+    
+    // Hanterar även din befintliga notes-logik om den behövs för CSS
     const notesElement = cardElement.querySelector('.card-notes-pro');
     if (notesElement) {
         notesElement.classList.toggle('full-text');
@@ -617,9 +622,27 @@ function generateAeroMLink(f) {
 function getAllSupplierLinks(ref) {
     if (!ref) return [];
     return [
-        { name: 'Trodo', color: '#2563eb', url: generateTrodoLink(ref) },
-        { name: 'Thansen', color: '#ed1c24', url: generateThansenLink(ref) },
-        { name: 'AeroM', color: '#0056b3', url: generateAeroMLink(ref) },
+        { 
+            name: 'Trodo', 
+            icon: 'https://www.trodo.se/media/favicon/default/favicon-96x96.png',
+            bg: '#eff6ff', 
+            border: '#dbeafe',
+            url: generateTrodoLink(ref) 
+        },
+        { 
+            name: 'Thansen', 
+            icon: 'https://cdn.thg.dk/DAT/dom/img/logo-thg.ico',
+            bg: '#f0f9ff', 
+            border: '#e0f2fe',
+            url: generateThansenLink(ref) 
+        },
+        { 
+            name: 'AeroM', 
+            icon: 'https://aeromotors.se/img/favicon.ico?1678367017',
+            bg: '#f0f9ff', 
+            border: '#e0f2fe',
+            url: generateAeroMLink(ref) 
+        },
     ];
 }
 
