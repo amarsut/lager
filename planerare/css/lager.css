@@ -313,3 +313,34 @@
         margin-top: 0 !important;
     }
 }
+
+/* --- EXPANDERINGS-PIL (CENTRERAD BOTTEN) --- */
+
+.article-card-pro { position: relative; /* Krävs för att pilen ska kunna sitta fast i botten */ }
+
+.expand-chevron-container {
+    position: absolute;
+    bottom: 2px; /* Placerar den precis vid underkanten */
+    left: 50%;
+    transform: translateX(-50%); /* Centrerar horisontellt */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #cbd5e1; /* Diskret grå färg */
+    transition: all 0.3s ease;
+    z-index: 10;
+    pointer-events: none; /* Gör att klick går igenom till kortet */
+}
+
+.expand-chevron-container svg { width: 14px; /* Lite mindre för att matcha jobbkorten */ height: 14px; }
+
+/* Rotation vid expansion - behåller centreringen */
+.article-card-pro.expanded .expand-chevron-container {
+    transform: translateX(-50%) rotate(180deg); color: #94a3b8;
+    bottom: 0px; /* Justerar positionen något vid expansion om det behövs */
+}
+
+/* Mobil-fix: Säkerställ att den syns bra ovanpå ev. ränder */
+@media (max-width: 768px) {
+    .expand-chevron-container { bottom: 1px; }
+}
