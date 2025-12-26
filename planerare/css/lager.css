@@ -163,8 +163,24 @@
 .btn-delete { background: #fee2e2; color: #ef4444; }
 
 .btn-add-article-icon {
-    display: flex; align-items: center; justify-content: center; background: #2563eb; color: white; border: none;
-    width: 38px; height: 38px; border-radius: 8px; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35); flex-shrink: 0;
+    width: 36px !important;
+    height: 36px !important;
+    background: #2563eb !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 10px !important;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2) !important;
+    flex-shrink: 0;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.9;
+}
+    
+.btn-add-article-icon svg {
+    width: 20px !important;
+    height: 20px !important;
+    stroke-width: 3;
 }
 
 /* --- 7. DESKTOP SPECIFIKT (Over 768px) --- */
@@ -230,3 +246,70 @@
 /* Spara/Radera knappar längst ner i redigera meny */
 .action-footer { padding-top: 5px !important; }
 .btn-action { padding: 12px !important; }
+
+@media (max-width: 768px) {
+    /* Ta bort gammal sorteringsknapp i headern */
+    .lager-toolbar-pro .filter-icon-wrapper { display: none !important; }
+
+    /* 3. Filter-raden (Chips) - Optimerad */
+    .mobile-filter-row {
+        position: fixed !important;
+        top: 56px; 
+        left: 0; 
+        width: 100%;
+        height: 42px !important; /* Något lägre för att minska "luft" */
+        background: #fff;
+        z-index: 2050;
+        display: flex !important;
+        align-items: center;
+        padding: 0 10px !important;
+        gap: 6px !important; /* Tätare mellan knapparna */
+        border-bottom: 1px solid #e2e8f0;
+        overflow-x: auto;
+        
+        /* Döljer scrollbar för Firefox och IE */
+        scrollbar-width: none; 
+        -ms-overflow-style: none; 
+    }
+
+    /* Döljer scrollbar för Chrome, Safari och Edge */
+    .mobile-filter-row::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* Styla Chips/Selects för att vara smalare och snyggare */
+    .mobile-filter-row select, 
+    #sortSelect {
+        flex: 0 0 auto !important;
+        height: 30px !important; /* Lägre höjd */
+        padding: 0 10px 0 5px !important; /* Mer padding höger för pil, mindre vänster */
+        background: #f8fafc !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 10px !important; /* Något mindre rundat för modernare look */
+        font-size: 12px !important; /* Mindre text sparar bredd */
+        font-weight: 600;
+        color: #1e293b;
+        
+        /* appearance: none gör att vi kan styra bredden exakt */
+        appearance: none !important; 
+        -webkit-appearance: none !important;
+        
+        /* Lägg till en egen, mindre pil för att spara plats */
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E") !important;
+        background-repeat: no-repeat !important;
+        background-position: right 6px center !important;
+        background-size: 12px !important;
+    }
+
+    /* 4. Fix för luften under knapparna */
+    #lagerListElite {
+        /* Toolbar (56px) + Filter-rad (42px) = 98px. 
+        Vi sätter 102px för att få en perfekt liten glipa till första kortet. */
+        padding-top: 35px !important; 
+    }
+
+    /* Tvinga bort eventuell marginal på första kortet */
+    .article-card-pro:first-child {
+        margin-top: 0 !important;
+    }
+}
