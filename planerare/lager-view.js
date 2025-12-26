@@ -442,15 +442,15 @@ export function renderEliteTable(items) {
                             <svg viewBox="0 0 24 24" width="46" height="46">${iconContent}</svg>
                         </div>
                         <div class="card-info-pro">
-                            <div class="card-id-label">ARTIKELNR: ${String(item.id || "").toUpperCase()}</div>
+                            <div class="card-id-label">Ref: ${String(item.id || "").toUpperCase()}</div>
                             <h3>${item.name || 'Namnlös'}</h3>
-                            <div class="card-ref-pro">Ref: ${item.service_filter || '-'}</div>
+                            <div class="card-ref-pro">Art.nr: ${item.service_filter || '-'}</div>
                             ${lastSoldInfo}
                             ${notes ? `<div class="card-notes-pro">"${notes}"</div>` : ''}
                         </div>
                         <div class="card-actions-pro">
                             <div class="card-price-pro">${item.price || 0}:-</div>
-                            <div class="stock-pill ${qty > 0 ? 'stock-in' : 'stock-out'}">${qty} st</div>
+                            <div class="stock-pill ${qty > 0 ? 'stock-in' : 'stock-out'}">${qty} st i lager</div>
                             <button class="btn-redigera-pro" onclick='window.editLagerItemById("${item.id}")'>REDIGERA</button>
                         </div>
                     </div>
