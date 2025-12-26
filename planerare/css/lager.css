@@ -96,14 +96,27 @@
 }
 
 .card-actions-pro {
-    width: 150px; display: flex; flex-direction: column; align-items: flex-end; 
-    text-align: right; gap: 4px; border-left: 1px solid #f1f5f9; padding-left: 16px; flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Trycker priset uppåt och knappen nedåt */
+    align-items: flex-end;
+    height: 100%; /* Viktigt för att justify-between ska fungera */
+    min-height: 80px; /* Säkerställer att kortet inte kollapsar för mycket */
 }
 .card-price-pro { font-size: 18px; font-weight: 800; color: #0f172a; line-height: 1; }
 .stock-pill { padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; }
 .stock-in { background: #ecfdf5; color: #10b981; }
 .stock-out { background: #fef2f2; color: #ef4444; }
 .btn-redigera-pro { background: #2563eb; color: #fff; border: none; padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 700; width: 100%; cursor: pointer; margin-bottom: 0px; }
+.btn-redigera-pro {
+    background: transparent !important;
+    color: #2563eb !important;
+    border: 1.5px solid #2563eb !important;
+}
+.btn-redigera-pro:hover {
+    background: #2563eb !important;
+    color: #fff !important;
+}
 
 /* --- PRO EDIT DRAWER --- */
 .lager-drawer {
@@ -356,6 +369,8 @@
     .card-info-pro h3 { /*Göra artikelnamnet /titeln mindre på mobilen*/
         font-size: 12px; /* Ännu mindre på mobilen för att maximera utrymmet */
         line-height: 1.1;
+        -webkit-line-clamp: 2; /* Behåll 2 rader även på mobil */
+        max-height: 2.2em;      /* Matcha nya line-height (1.1 * 2) */
     }
     
     .card-img-box-pro { /*Göra artikelbilden mindre på mobilen*/
@@ -363,32 +378,91 @@
         height: 80px;
     }
 
-    .btn-redigera-pro { margin-top: 10px; }
-
+    .card-notes-pro {
+        /* Visa 2 rader som standard */
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        white-space: normal !important;
+    }
 }
 
 /*
 Expanderat kort
 */
-/* --- FIXERAD POSITION VID EXPANDERING --- */
+/* Grundinställning för kortet */
 .article-card-pro {
     display: flex;
-    gap: 16px;
-    border: 1px solid #e2e8f0;
-    background: #fff;
-    border-radius: 12px;
-    padding: 12px 15px !important; /* Något mer padding för balans */
-    margin-bottom: 8px;
-    cursor: pointer;
-    /* Ändra från center till flex-start för att fixera toppen */
-    align-items: flex-start !important; 
-    transition: background-color 0.2s;
+    flex-direction: column !important; /* Stapla innehåll och knappar */
+    padding: 0 !important;
+    overflow: hidden;
+    transition: all 0.2s ease;
 }
 
-/* Klass som läggs på via JS vid klick */
-.card-notes-pro.full-text {
+.card-main-content {
+    display: flex;
+    padding: 4px 15px 4px 15px; /* Minskat från 12px till 4px i botten */
+    gap: 2px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* --- KNAPPRADEN (Dold som standard) --- */
+.supplier-button-row {
+    display: none;
+    gap: 8px;
+    padding: 6px 15px 6px 15px; /* Minskat padding-top till 6px */
+    background: #fafbfc;
+    border-top: 1px solid #f1f5f9;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Visa raden när kortet har klassen .expanded */
+.article-card-pro.expanded .supplier-button-row { display: flex; }
+
+/* --- KNAPP-STYLING (Piller-form enligt din bild) --- */
+.supplier-pill-btn {
+    flex: 1;
+    height: 25px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.1s, filter 0.2s;
+    text-decoration: none;
+}
+
+.supplier-pill-btn:hover { filter: brightness(0.95); }
+
+.supplier-pill-btn img {
+    width: 20px;
+    height: 20px; object-fit: contain;
+}
+
+/* Skapar mindre mellanrum ovanför knapparna */
+.supplier-button-row { margin-top: -10px !important; }
+
+.supplier-name-text {
+    margin-left: 2px;
+    font-size: 10px; /* Kompakt textstorlek */
+    font-weight: 700;
+    color: #1e293b; /* Mörkgrå färg för läsbarhet */
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.card-notes-pro {
+    border-top: none !important; /* Bort med den streckade linjen */
+    background: #f8fafc; /* En extremt ljusgrå yta */
+    padding: 4px 8px !important;
+    border-radius: 6px;
+    display: inline-block; /* Gör att den inte tar upp hela bredden */
+    margin-top: 6px !important;
+
     white-space: normal !important;
     overflow: visible !important;
-    text-overflow: clip !important;
-    word-break: break-word;
+    -webkit-line-clamp: unset !important;
+    display: block !important;
 }
