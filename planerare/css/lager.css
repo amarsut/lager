@@ -281,7 +281,7 @@
     .mobile-filter-row select, 
     #sortSelect {
         flex: 0 0 auto !important;
-        height: 30px !important; /* Lägre höjd */
+        height: 35px !important; /* Lägre höjd */
         padding: 0 10px 0 5px !important; /* Mer padding höger för pil, mindre vänster */
         background: #f8fafc !important;
         border: 1px solid #e2e8f0 !important;
