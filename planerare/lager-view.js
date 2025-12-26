@@ -379,7 +379,7 @@ export function renderEliteTable(items) {
         }
     }
 
-    // 6. RENDERING LOGIK
+    // . RENDERING LOGIK
     if (filtered.length === 0 && term.length > 0) {
         // --- VISAR EMPTY STATE MED LÄNKAR ---
         const trodoUrl = generateTrodoLink(term);
@@ -436,35 +436,49 @@ export function renderEliteTable(items) {
             }
 
             return `
-                <div class="article-card-pro">
-                    <div class="card-img-box-pro">
-                        <svg viewBox="0 0 24 24" width="36" height="36">${iconContent}</svg>
-                    </div>
-                    <div class="card-info-pro">
-                        <div class="card-id-label">ARTIKELNR: ${String(item.id || "").toUpperCase()}</div>
-                        <h3>${item.name || 'Namnlös'}</h3>
-                        <div class="card-ref-pro">Ref: ${item.service_filter || '-'}</div>
-                        
-                        ${lastSoldInfo}
-                        
-                        ${notes ? `
-                            <div class="card-notes-pro" style="margin-top: 8px; font-size: 0.85rem; color: #64748b; font-style: italic; border-top: 1px solid #f1f5f9; padding-top: 4px;">
-                                "${notes.length > 80 ? notes.substring(0, 80) + '...' : notes}"
-                            </div>
-                        ` : ''}
-                    </div>
-                    <div class="card-actions-pro">
-                        <div class="card-price-container-pro" style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px;">
-                            <div class="card-price-pro">${item.price || 0}:-</div>
-                            
-                            <div class="supplier-compare-row" style="display: flex; gap: 6px;">
-                                ${supplierLinks.map(s => `
-                                    <a href="${s.url}" target="_blank" class="supplier-link-circle" title="${s.name}" style="background-color: ${s.color}; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 10px; font-weight: 800; text-decoration: none;">${s.name.charAt(0)}</a>
-                                `).join('')}
-                            </div>
+                <div class="article-card-pro" id="lager-card-${item.id}" onclick="window.toggleLagerCardExpand('${item.id}', event)">
+                    
+                    <div class="card-main-row" style="display: flex; width: 100%; gap: 8px; align-items: flex-start;">
+                        <div class="card-img-box-pro">
+                            <svg viewBox="0 0 24 24" width="40" height="40">${iconContent}</svg>
                         </div>
-                        <div class="stock-pill ${qty > 0 ? 'stock-in' : 'stock-out'}">${qty} st i lager</div>
-                        <button class="btn-redigera-pro" onclick='window.editLagerItemById("${item.id}")'>REDIGERA</button>
+                        
+                        <div class="card-info-pro" style="flex: 1; min-width: 0; padding-left: 0;">
+                            <div class="card-id-label">#${item.id} ${String(item.category || "").toUpperCase()}</div>
+                            <h3>${item.name || 'Namnlös'}</h3>
+                            <div class="card-ref-pro">Ref: ${item.service_filter || '-'}</div>
+                            ${notes ? `<div class="card-notes-pro">"${notes}"</div>` : ''}
+                        </div>
+
+                        <div class="card-actions-pro" style="min-width: 90px; flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-end;">
+                            <div class="card-price-pro">${item.price || 0}:-</div>
+                            <div class="stock-pill ${qty > 0 ? 'stock-in' : 'stock-out'}">${qty} st</div>
+                            <button class="btn-redigera-pro" onclick='window.editLagerItemById("${item.id}"); event.stopPropagation();'>REDIGERA</button>
+                        </div>
+                    </div>
+
+                    <div id="expand-section-${item.id}" style="display: none; width: 100%;" onclick="event.stopPropagation()">
+                        <div class="supplier-btn-row">
+                            ${supplierLinks.map(s => {
+                                // Förkorta namnet AeroMotors till AeroM för att spara plats på mobil
+                                const displayName = s.name === 'AeroMotors' ? 'AeroM' : s.name;
+                                
+                                return `
+                                    <a href="${s.url}" target="_blank" class="supplier-link-btn" 
+                                    style="border-color: ${s.color}; color: ${s.color};">
+                                        <span>${displayName}</span>
+                                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                                            <polyline points="15 3 21 3 21 9"></polyline>
+                                            <line x1="10" y1="14" x2="21" y2="3"></line>
+                                        </svg>
+                                    </a>`;
+                            }).join('')}
+                        </div>
+                    </div>
+
+                    <div class="expand-arrow-container">
+                        <div class="expand-arrow" id="arrow-${item.id}">▼</div>
                     </div>
                 </div>`;
         }).join('');
@@ -473,6 +487,28 @@ export function renderEliteTable(items) {
     const statsEl = document.getElementById('paginationStats');
     if (statsEl) statsEl.textContent = `Visar ${filtered.length} av ${items.length}`;
 }
+
+window.toggleLagerCardExpand = function(itemId, event) {
+    if (event.target.closest('button') || event.target.closest('a')) return;
+
+    const card = document.getElementById(`lager-card-${itemId}`);
+    const expandSection = document.getElementById(`expand-section-${itemId}`);
+    const arrow = document.getElementById(`arrow-${itemId}`);
+    
+    if (expandSection && card) {
+        const isHidden = expandSection.style.display === 'none';
+        
+        expandSection.style.display = isHidden ? 'block' : 'none';
+        
+        if (isHidden) {
+            card.classList.add('is-expanded');
+            if (arrow) arrow.style.transform = 'rotate(180deg)';
+        } else {
+            card.classList.remove('is-expanded');
+            if (arrow) arrow.style.transform = 'rotate(0deg)';
+        }
+    }
+};
 
 // 3. FIX: Kopplar funktionen korrekt till det globala fönstret
 window.editLagerItemById = (id) => {
