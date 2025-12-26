@@ -447,7 +447,7 @@ export function renderEliteTable(items) {
                         ${lastSoldInfo}
                         
                         ${notes ? `
-                            <div class="card-notes-pro" style="margin-top: 8px; font-size: 0.75rem; color: #64748b; font-style: italic; border-top: 1px solid #f1f5f9; padding-top: 4px;">
+                            <div class="card-notes-pro" style="margin-top: 8px; font-size: 0.70rem; color: #64748b; font-style: italic; border-top: 1px solid #f1f5f9; padding-top: 4px;">
                                 "${notes.length > 80 ? notes.substring(0, 80) + '...' : notes}"
                             </div>
                         ` : ''}
