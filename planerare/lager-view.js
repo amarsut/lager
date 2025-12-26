@@ -648,3 +648,12 @@ function getAllSupplierLinks(ref) {
 
 window.getCategoryIconHtml = getCategoryIconHtml;
 window.getAllSupplierLinks = getAllSupplierLinks;
+
+// Flytta sorterings-dropdownen till mobil-raden om vi är på mobil
+const sortSelect = document.getElementById('sortSelect');
+const mobileFilterRow = document.querySelector('.mobile-filter-row');
+
+if (sortSelect && mobileFilterRow && window.innerWidth <= 768) {
+    // Vi använder append() för att lägga den efter de andra filter-chipsen
+    mobileFilterRow.append(sortSelect);
+}
