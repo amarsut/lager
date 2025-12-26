@@ -76,7 +76,7 @@
 
 /* --- ARTIKELKORT (Optimerad Desktop-höjd) --- */
 .article-card-pro {
-    background: #fff; border-radius: 12px; padding: 12px 16px; /* Kompakt padding */
+    background: #fff; border-radius: 12px; padding: 12px 15px 0px 15px !important; /* Kompakt padding */
     margin-bottom: 8px; display: flex; gap: 16px; border: 1px solid #e2e8f0; align-items: center;
 }
 .card-img-box-pro { 
@@ -390,4 +390,124 @@
     right: 0px !important; /* Avstånd från högerkanten */
     top: 55%;
     transform: translateY(-50%); /* Tvingar perfekt vertikal centrering */
+}
+
+.article-card-pro {
+    transition: all 0.2s ease;
+}
+
+/* Förhindra att knappar påverkas av kortets klick */
+.btn-redigera-pro, .supplier-link-circle {
+    position: relative;
+    z-index: 2;
+}
+
+/* --- HUVUDKORT --- */
+.article-card-pro {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 12px 15px 0px 15px;
+    margin-bottom: 8px;
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+/* --- ARTIKELBILD (Något mindre, 65px) --- */
+.card-img-box-pro {
+    background: #f8fafc;
+    border: 1px solid #f1f5f9;
+    border-radius: 10px;
+    width: 75px;
+    height: 75px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+/* --- KOMMENTARSLOGIK (ÅTERSTÄLLD) --- */
+.card-notes-pro {
+    display: -webkit-box !important;
+    -webkit-box-orient: vertical !important;
+    -webkit-line-clamp: 1; /* Begränsa till 1 rad i stängt läge */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.75rem;
+    color: #64748b;
+    font-style: italic;
+    margin-top: 5px;
+    border-top: 1px dashed #f1f5f9;
+    padding-top: 4px;
+    white-space: normal !important; /* Tillåt radbrytning inuti boxen */
+}
+
+/* Expanderar texten när kortet har klassen .is-expanded */
+.article-card-pro.is-expanded .card-notes-pro {
+    -webkit-line-clamp: unset !important;
+    display: block !important;
+}
+
+/* --- HÖGERKOLUMN --- */
+
+.card-price-pro {
+    font-size: 1.2rem;
+    font-weight: 900;
+    color: #0f172a;
+    line-height: 1;
+}
+
+/* --- EXTERNA LÄNKAR (LOGIK FÖR RADBRYTNING) --- */
+.supplier-btn-row {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important; /* Tvingar dem på en rad */
+    gap: 10px !important;
+    justify-content: center !important; /* Centrerar knapparna under kortet */
+    width: 100% !important;
+    padding-bottom: 0px;
+    padding-top: 10px;
+}
+
+.supplier-link-btn {
+    display: inline-flex !important;
+    width: auto !important;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px !important; /* Nu kan vi ha lite mer luftig padding */
+    border: 1px solid;
+    border-radius: 4px;
+    background: #ffffff !important;
+    text-decoration: none;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+.supplier-link-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+/* Fix för pil-behållaren så den inte krockar med knapparna */
+.expand-arrow-container {
+    height: 14px !important;
+    margin-top: 4px !important;
+}
+
+/* --- CENTRERAD PIL --- */
+.expand-arrow-container {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    height: 12px;
+}
+
+.expand-arrow {
+    font-size: 9px;
+    color: #cbd5e1;
+    transition: transform 0.2s;
 }
