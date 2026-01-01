@@ -1,0 +1,58 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap');
+
+body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #fcfcfc; color: #111827; }
+.font-mono { font-family: 'JetBrains Mono', monospace; }
+
+/* SIDEBAR & NAVIGATION */
+.sidebar-item:hover {
+    background: linear-gradient(90deg, rgba(249, 115, 22, 0.15) 0%, transparent 100%);
+    border-left: 4px solid #f97316 !important;
+    color: white !important;
+}
+.sidebar-item.active {
+    background: linear-gradient(90deg, rgba(249, 115, 22, 0.2) 0%, transparent 100%);
+    border-left: 4px solid #f97316 !important;
+    color: white !important;
+}
+
+/* DASHBOARD HUD PANEL */
+.hud-panel {
+    position: relative;
+    border: 1px solid #e5e7eb;
+    background: white;
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%);
+}
+
+/* TABELL & DATA */
+.compact-row { height: 52px; }
+.price-display {
+    font-weight: 800;
+    letter-spacing: -0.05em;
+    font-size: 1.1rem;
+    color: #111827;
+}
+
+/* TERMINAL EFFEKTER */
+.scanline {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.01) 50%);
+    background-size: 100% 4px; pointer-events: none; z-index: 100;
+}
+
+/* LOGIN SKÄRM */
+.login-bg { background-color: #000; }
+
+/* Animationer för Quick View */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-in {
+    animation: fadeIn 0.25s ease-out forwards;
+}
+
+/* Förstärk radmarkering vid hovring */
+tr.compact-row:hover {
+    box-shadow: inset 0 0 10px rgba(249, 115, 22, 0.05);
+}
