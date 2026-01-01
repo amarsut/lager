@@ -1,0 +1,40 @@
+/* calendar.css */
+#calendarView {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+}
+
+.fc-toolbar-title {
+    font-size: 14px !important;
+    text-transform: uppercase !important;
+    font-weight: 900 !important;
+    letter-spacing: 2px;
+}
+
+.fc-button {
+    background: #000 !important;
+    border: none !important;
+    font-size: 10px !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+}
+
+.fc-day-sun { background: rgba(239, 68, 68, 0.05) !important; }
+.fc-day-sun .fc-daygrid-day-number { color: #ef4444 !important; font-weight: 800; }
+
+.fc-day-today { background: rgba(249, 115, 22, 0.05) !important; }
+
+/* Mobilanpassning */
+@media (max-width: 768px) {
+    .fc-premium-event { font-size: 8px !important; padding: 2px !important; }
+    #selectedDayView {
+        position: fixed; bottom: 0; left: 0; right: 0;
+        background: white; z-index: 1000;
+        border-radius: 20px 20px 0 0;
+        box-shadow: 0 -10px 30px rgba(0,0,0,0.2);
+        padding: 20px; transform: translateY(100%); transition: 0.3s;
+    }
+    #selectedDayView.show { transform: translateY(0); }
+}
