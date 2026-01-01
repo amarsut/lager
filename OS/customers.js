@@ -1,9 +1,19 @@
 // customers.js
 
-const HUDStat = ({ label, value }) => (
-    <div className="theme-sidebar border-l-4 theme-border p-4 flex-1 shadow-lg min-w-[120px]">
-        <span className="text-[8px] font-black opacity-50 uppercase tracking-widest block mb-1">{label}</span>
-        <span className="text-lg font-mono font-black theme-text">{value}</span>
+// Behåller SafeIcon för att undvika krascher
+const SafeIcon = ({ name, size = 16, className = "" }) => (
+    <span className="inline-flex items-center justify-center shrink-0">
+        <window.Icon name={name} size={size} className={className} />
+    </span>
+);
+
+const HUDStat = ({ label, value, icon }) => (
+    <div className="bg-zinc-950 border-l-4 border-orange-600 p-3 flex-1 shadow-lg relative overflow-hidden group">
+        <div className="absolute right-[-5px] top-[-5px] opacity-10">
+            <SafeIcon name={icon} size={40} />
+        </div>
+        <span className="text-[7px] font-black text-orange-500 uppercase tracking-widest block mb-0.5">{label}</span>
+        <span className="text-xl font-mono font-black text-white leading-none">{value}</span>
     </div>
 );
 
@@ -11,127 +21,150 @@ window.CustomersView = ({ allJobs = [], setView }) => {
     const [search, setSearch] = React.useState('');
     const [viewing, setViewing] = React.useState(null);
 
-    // Mappa kunder och samla historik
     const customers = React.useMemo(() => {
+        if (!allJobs || allJobs.length === 0) return [];
         const map = {};
         allJobs.forEach(j => {
-            if (!j.kundnamn) return;
+            if (!j || !j.kundnamn) return;
             const key = j.kundnamn.toLowerCase().trim();
-            if (!map[key]) map[key] = { name: j.kundnamn, jobs: [], regs: new Set(), last: j.datum };
+            if (!map[key]) {
+                map[key] = { name: j.kundnamn, jobs: [], regs: new Set(), last: j.datum || '' };
+            }
             map[key].jobs.push(j);
             if (j.regnr) map[key].regs.add(j.regnr.toUpperCase());
-            if (j.datum > map[key].last) map[key].last = j.datum;
+            if (j.datum && j.datum > map[key].last) map[key].last = j.datum;
         });
         return Object.values(map).sort((a,b) => b.jobs.length - a.jobs.length);
     }, [allJobs]);
 
     const filtered = customers.filter(c => 
-        (c.name || '').toLowerCase().includes(search.toLowerCase()) ||
-        Array.from(c.regs).some(r => r.toLowerCase().includes(search.toLowerCase()))
+        (c.name || '').toLowerCase().includes(search.toLowerCase())
     );
 
-    // --- KUNDPROFIL: DETALJVY (Fix för radbrytning av bilar) ---
     if (viewing) {
         return (
-            <div className="space-y-6 animate-in fade-in">
-                <button onClick={() => setViewing(null)} className="text-[10px] font-black uppercase theme-text flex items-center gap-2">
-                    <window.Icon name="arrow-left" size={14} /> Tillbaka till registret
+            <div key="profile-view" className="space-y-4 animate-in fade-in duration-200">
+                <button onClick={() => setViewing(null)} className="text-[9px] font-black uppercase theme-text flex items-center gap-2 hover:opacity-70">
+                    <SafeIcon name="arrow-left" size={12} /> TILLBAKA
                 </button>
                 
-                <div className="theme-sidebar p-6 lg:p-8 border-l-4 theme-border">
-                    <span className="text-[9px] font-black theme-text uppercase tracking-[0.3em]">Client_Identity</span>
-                    <h2 className="text-3xl font-black uppercase text-white leading-tight">{viewing.name}</h2>
-                    
-                    {/* FIX: flex-wrap gör att bilarna stannar inom vyn */}
-                    <div className="flex flex-wrap gap-2 mt-4 max-w-full">
+                <div className="bg-zinc-950 p-6 border-l-4 border-orange-600 shadow-xl">
+                    <span className="text-[8px] font-black text-orange-500 uppercase tracking-widest block mb-1">DATA_IDENTITY</span>
+                    <h2 className="text-xl font-black uppercase text-white">{viewing.name}</h2>
+                    <div className="flex flex-wrap gap-1.5 mt-3">
                         {Array.from(viewing.regs).map(r => (
-                            <span key={r} className="bg-white/10 px-3 py-1 text-[10px] font-mono font-bold text-white border border-white/20 uppercase rounded-sm whitespace-nowrap">
+                            <span key={r} className="bg-zinc-800 px-2 py-1 text-[10px] font-mono font-black text-white border border-zinc-700 uppercase">
                                 {r}
                             </span>
                         ))}
                     </div>
                 </div>
 
-                <div className="bg-white border shadow-2xl rounded-sm overflow-hidden">
-                    <div className="p-4 bg-zinc-900 text-white text-[10px] font-black uppercase tracking-widest">Missions_History</div>
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left text-[11px] min-w-[500px]">
-                            <thead className="bg-zinc-50 border-b text-[9px] font-black text-zinc-400 uppercase">
-                                <tr><th className="p-4">Regnr</th><th className="p-4">Tjänst</th><th className="p-4">Datum</th><th className="p-4 text-right">Pris</th></tr>
-                            </thead>
-                            <tbody className="divide-y">
-                                {viewing.jobs.sort((a,b) => b.datum.localeCompare(a.datum)).map(j => (
-                                    <tr key={j.id} className="hover:bg-zinc-50">
-                                        <td className="p-4 font-mono font-black theme-text uppercase">{j.regnr}</td>
-                                        <td className="p-4 font-bold uppercase">{j.paket || 'Service'}</td>
-                                        <td className="p-4 text-zinc-500 font-mono whitespace-nowrap">{j.datum?.replace('T', ' ')}</td>
-                                        <td className="p-4 text-right font-black">{(parseInt(j.kundpris) || 0).toLocaleString()} kr</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                <div className="bg-white border border-zinc-200 shadow-lg rounded-sm overflow-hidden">
+                    <div className="p-3 bg-zinc-900 text-white text-[9px] font-black uppercase tracking-widest flex items-center gap-2">
+                        <SafeIcon name="database" size={14} className="text-orange-500" /> LOG_HISTORY
                     </div>
+                    <table className="w-full text-left text-[11px]">
+                        <thead className="bg-zinc-50 border-b border-zinc-100 text-[8px] font-black text-zinc-400 uppercase">
+                            <tr><th className="p-3">UNIT</th><th className="p-3">SERVICE</th><th className="p-3">DATE</th><th className="p-3 text-right">FEE</th></tr>
+                        </thead>
+                        <tbody className="divide-y divide-zinc-100">
+                            {viewing.jobs.sort((a,b) => (b.datum || '').localeCompare(a.datum || '')).map(j => (
+                                <tr key={j.id} className="hover:bg-zinc-50">
+                                    <td className="p-3 font-mono font-black text-orange-600 uppercase">{j.regnr || 'N/A'}</td>
+                                    <td className="p-3 font-black uppercase text-zinc-800">{j.paket || 'SERVICE'}</td>
+                                    <td className="p-3 text-zinc-500 font-mono text-[10px]">{j.datum?.replace('T', ' // ')}</td>
+                                    <td className="p-3 text-right font-black text-zinc-900">{(parseInt(j.kundpris) || 0).toLocaleString()} kr</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         );
     }
 
-    // --- HUVUDLISTA: KUNDREGISTRET ---
     return (
-        <div className="space-y-6">
-            <div className="bg-white border shadow-2xl rounded-sm overflow-hidden">
-                <div className="p-4 border-b theme-sidebar">
-                    <input value={search} onChange={e => setSearch(e.target.value)} placeholder="SÖK IDENTITET..." className="w-full bg-zinc-800/50 text-white p-3 border border-zinc-700 text-[11px] font-bold outline-none font-mono uppercase focus:theme-border" />
-                </div>
+        <div key="grid-view" className="space-y-4 animate-in fade-in duration-300">
+            {/* HUD: Mindre padding */}
+            <div className="flex flex-col lg:flex-row gap-3">
+                <HUDStat label="REGISTERED_CLIENTS" value={customers.length} icon="users" />
+                <HUDStat label="TOTAL_ACTIVE_UNITS" value={customers.reduce((a,b) => a + b.regs.size, 0)} icon="truck" />
+            </div>
 
-                {/* DATORVY: Med Besök och Senast Sedd */}
-                <table className="hidden lg:table w-full text-left">
-                    <thead className="bg-zinc-900 text-zinc-400 text-[9px] uppercase tracking-widest font-black">
-                        <tr>
-                            <th className="px-6 py-4">Identity // Operator</th>
-                            <th className="px-6 py-4">Fleet</th>
-                            <th className="px-6 py-4 text-center">Besök</th>
-                            <th className="px-6 py-4">Senast Sedd</th>
-                            <th className="px-6 py-4 text-right">Profil</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-zinc-100">
-                        {filtered.map(c => (
-                            <tr key={c.name} onClick={() => setViewing(c)} className="hover:bg-zinc-50 cursor-pointer border-l-4 border-transparent hover:theme-border group">
-                                <td className="px-6 py-4">
-                                    <div className="font-black uppercase text-[12px] text-zinc-900">{c.name}</div>
-                                    <div className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest mt-0.5">Verified_Profile</div>
-                                </td>
-                                <td className="px-6 py-4 font-mono text-[10px] theme-text">
-                                    <div className="flex gap-1 flex-wrap">
-                                        {Array.from(c.regs).map(r => <span key={r} className="bg-orange-50 px-1 border border-orange-100">{r}</span>)}
+            {/* SEARCH: Kompaktare */}
+            <div className="relative shadow-md">
+                <SafeIcon name="search" size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-orange-500" />
+                <input 
+                    value={search} 
+                    onChange={e => setSearch(e.target.value)} 
+                    placeholder="SÖK IDENTITET..." 
+                    className="w-full bg-zinc-900 text-white p-3.5 pl-12 border-b-2 border-zinc-800 font-mono text-xs focus:border-orange-600 outline-none uppercase tracking-widest" 
+                />
+            </div>
+
+            {/* GRID: Tätare gap för 14" skärm */}
+            <div className="hidden lg:grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                {filtered.map(c => (
+                    <div 
+                        key={c.name} 
+                        className="bg-white border border-zinc-200 shadow-sm hover:border-orange-600/30 transition-all rounded-sm flex flex-col"
+                    >
+                        <div className="p-4 flex-1">
+                            <div className="flex justify-between items-start mb-4">
+                                <div>
+                                    <h3 className="font-black uppercase text-sm text-zinc-950 leading-none mb-1">{c.name}</h3>
+                                    <div className="flex items-center gap-1">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_5px_rgba(34,197,94,0.5)]"></div>
+                                        <span className="text-[8px] text-zinc-400 font-black uppercase tracking-tighter">VERIFIED</span>
                                     </div>
-                                </td>
-                                <td className="px-6 py-4 text-center font-black text-zinc-900">{c.jobs.length} st</td>
-                                <td className="px-6 py-4 font-mono text-[10px] text-zinc-400 italic">
-                                    {c.last ? c.last.split('T')[0] : '---'}
-                                </td>
-                                <td className="px-6 py-4 text-right text-[10px] font-black uppercase theme-text">Öppna →</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                                </div>
+                                <div className="bg-zinc-900 text-white p-1.5 rounded-sm">
+                                    <SafeIcon name="user" size={14} />
+                                </div>
+                            </div>
 
-                {/* MOBILVY: Kort */}
-                <div className="lg:hidden divide-y divide-zinc-100">
-                    {filtered.map(c => (
-                        <div key={c.name} onClick={() => setViewing(c)} className="p-4 active:bg-zinc-50 flex justify-between items-center transition-all">
-                            <div className="space-y-1">
-                                <div className="text-[13px] font-black uppercase text-zinc-900 leading-tight">{c.name}</div>
-                                <div className="text-[11px] font-mono theme-text font-black">{Array.from(c.regs).slice(0, 1)} (+{c.regs.size - 1})</div>
+                            {/* Data Matrix: Tätare padding */}
+                            <div className="grid grid-cols-3 gap-0 border border-zinc-100 rounded-sm overflow-hidden mb-4">
+                                <div className="p-2 border-r border-zinc-100 bg-zinc-50/50 text-center">
+                                    <span className="block text-[7px] font-black text-zinc-400 uppercase mb-1">FORDON</span>
+                                    <span className="font-black text-base text-zinc-900 font-mono">{c.regs.size}</span>
+                                </div>
+                                <div className="p-2 border-r border-zinc-100 bg-zinc-50/50 text-center">
+                                    <span className="block text-[7px] font-black text-zinc-400 uppercase mb-1">BESÖK</span>
+                                    <span className="font-black text-base text-zinc-900 font-mono">{c.jobs.length}</span>
+                                </div>
+                                {/* SENASTE BESÖK: Stor och Tydlig */}
+                                <div className="p-2 bg-white text-center">
+                                    <span className="block text-[7px] font-black text-orange-600/50 uppercase mb-1 tracking-tighter">SENAST</span>
+                                    <span className="font-mono text-[11px] font-black text-orange-600 block leading-none">
+                                        {c.last ? c.last.split('T')[0] : 'N/A'}
+                                    </span>
+                                </div>
                             </div>
-                            <div className="flex items-center gap-4">
-                                <div className="w-10 h-10 rounded-full bg-zinc-900 text-white font-black flex items-center justify-center font-mono">{c.regs.size}</div>
-                                <window.Icon name="chevron-right" className="theme-text" size={16} />
-                            </div>
+
+                            <button 
+                                onClick={() => setViewing(c)}
+                                className="w-full bg-zinc-950 text-white font-black py-2.5 text-[10px] uppercase tracking-widest hover:bg-orange-600 transition-all flex items-center justify-center gap-2"
+                            >
+                                ACCESS_PROFILE <SafeIcon name="chevron-right" size={14} />
+                            </button>
                         </div>
-                    ))}
-                </div>
+                    </div>
+                ))}
+            </div>
+
+            {/* MOBILVY */}
+            <div className="lg:hidden space-y-3">
+                {filtered.map(c => (
+                    <div key={c.name} onClick={() => setViewing(c)} className="bg-white border-l-4 border-orange-600 p-4 shadow-md flex justify-between items-center active:scale-95 transition-all">
+                        <div>
+                            <div className="text-sm font-black uppercase text-zinc-950">{c.name}</div>
+                            <div className="text-[9px] font-mono text-orange-600 font-black mt-1">{c.regs.size} UNITS // {c.jobs.length} LOGS</div>
+                        </div>
+                        <SafeIcon name="chevron-right" className="text-zinc-300" size={18} />
+                    </div>
+                ))}
             </div>
         </div>
     );
