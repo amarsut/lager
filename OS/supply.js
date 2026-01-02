@@ -15,6 +15,7 @@ const InputWrapper = ({ label, icon, children }) => (
 );
 
 window.SupplyView = ({ jobs = [] }) => {
+    // STARTINSTÄLLNINGAR
     const PURCHASE_DATE = '2025-11-22';
     const INITIAL_VOLUME = 20.0;
 
@@ -22,20 +23,24 @@ window.SupplyView = ({ jobs = [] }) => {
         const usageHistory = [];
         let totalUsed = 0;
 
-        // Vi loopar igenom jobs och matchar exakt mot strukturen i newJob.js
+        // Loopa igenom alla jobb i systemet
         (jobs || []).forEach(job => {
-            // 1. Datum-matchning (newJob använder fältet 'datum')
-            if (!job.datum || job.datum < PURCHASE_DATE) return;
+            // Säkerställ att vi har ett datum och att det är efter inköpet
+            // Vi kollar både 'datum' (från newJob.js) och 'createdAt'
+            const jobDateRaw = job.datum || job.createdAt;
+            if (!jobDateRaw || jobDateRaw < PURCHASE_DATE) return;
 
-            // 2. Utgifts-matchning (newJob sparar som 'utgifter' array med 'namn' och 'kostnad')
             const jobUtgifter = Array.isArray(job.utgifter) ? job.utgifter : [];
             let oilInThisJob = 0;
 
             jobUtgifter.forEach(u => {
-                // Vi kollar om namnet innehåller "olja"
-                if (u.namn && u.namn.toLowerCase().includes('olja')) {
-                    const amount = parseFloat(String(u.kostnad).replace(',', '.')) || 0;
-                    oilInThisJob += amount;
+                // FÖRBÄTTRAD LOGIK: Kolla om texten innehåller "olja" (oavsett vad mer som står där)
+                const desc = (u.namn || "").toLowerCase();
+                if (desc.includes('olja')) {
+                    // Ta värdet från rutan (kostnad) och tolka som liter (t.ex. 4.3)
+                    const val = String(u.kostnad || "").replace(',', '.');
+                    const parsedAmount = parseFloat(val) || 0;
+                    oilInThisJob += parsedAmount;
                 }
             });
 
@@ -43,10 +48,10 @@ window.SupplyView = ({ jobs = [] }) => {
                 totalUsed += oilInThisJob;
                 usageHistory.push({
                     id: job.id || Math.random(),
-                    kund: job.kundnamn || 'Oidentifierad_Mission',
-                    reg: job.regnr || 'N/A',
-                    datum: job.datum.split('T')[0],
-                    mangd: oilInThisJob
+                    kund: job.kundnamn || 'INTERNAL_MISSION',
+                    reg: job.regnr || '---',
+                    date: jobDateRaw.split('T')[0],
+                    amount: oilInThisJob
                 });
             }
         });
@@ -54,15 +59,15 @@ window.SupplyView = ({ jobs = [] }) => {
         return {
             current: INITIAL_VOLUME - totalUsed,
             used: totalUsed,
-            history: usageHistory.sort((a, b) => b.datum.localeCompare(a.datum))
+            history: usageHistory.sort((a, b) => b.date.localeCompare(a.date))
         };
     }, [jobs]);
 
     return (
-        <div className="max-w-3xl ml-0 animate-in fade-in slide-in-from-left-4 duration-500 pb-10">
+        <div className="max-w-3xl ml-0 animate-in fade-in slide-in-from-left-4 duration-500 pb-20">
             <div className="bg-white border border-zinc-200 shadow-2xl rounded-sm overflow-hidden">
                 
-                {/* HEADER - EXAKT SOM NEWJOB.JS */}
+                {/* HEADER - MATCHAR NEWJOB.JS 1:1 */}
                 <div className="bg-zinc-950 p-4 flex items-center justify-between border-b-2 theme-border">
                     <div className="flex items-center gap-4">
                         <div className="w-10 h-10 theme-bg flex items-center justify-center rounded-sm">
@@ -70,96 +75,77 @@ window.SupplyView = ({ jobs = [] }) => {
                         </div>
                         <div>
                             <h2 className="text-sm font-black text-white uppercase tracking-widest">
-                                Resource_Logistics // Motor_Oil_Control
+                                Resource_Logistics // Oil_Supply
                             </h2>
                         </div>
                     </div>
                 </div>
 
-                <div className="p-6 lg:p-8 space-y-8 bg-zinc-50/20">
+                <div className="p-6 lg:p-8 space-y-6 bg-zinc-50/20">
                     
-                    {/* ÖVRE SEKTION: LAGERSTATUS (Industriell Grå Box) */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6 bg-zinc-100/50 rounded-sm border border-zinc-200/50">
-                        <InputWrapper label="Current_Stock" icon="activity">
-                            <div className="bg-white p-3 border border-zinc-300 shadow-sm">
-                                <span className="text-2xl font-black font-mono theme-text tracking-tighter">
+                    {/* STATUS-RAD (Samma grå box-stil som i din image_cf6e4f.png) */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-zinc-100/50 rounded-sm border border-zinc-200/50">
+                        <InputWrapper label="Current_Stock_SEK_L" icon="activity">
+                            <div className="bg-white p-3 rounded-sm border border-zinc-300 shadow-sm flex items-center justify-between">
+                                <div className="text-2xl font-black font-mono theme-text">
                                     {oilStatus.current.toFixed(1)}
-                                </span>
-                                <span className="ml-2 text-[9px] font-bold text-zinc-400">LITRES</span>
-                                <div className="w-full bg-zinc-100 h-1.5 mt-2 rounded-full overflow-hidden">
-                                    <div 
-                                        className="theme-bg h-full transition-all duration-1000" 
-                                        style={{ width: `${Math.max(0, (oilStatus.current / INITIAL_VOLUME) * 100)}%` }}
-                                    />
                                 </div>
+                                <span className="text-[8px] font-black text-zinc-400 uppercase">Litres_Remaining</span>
+                            </div>
+                            {/* Progress bar under siffran */}
+                            <div className="w-full bg-zinc-200 h-1 mt-1 rounded-full overflow-hidden">
+                                <div 
+                                    className="theme-bg h-full transition-all duration-700" 
+                                    style={{ width: `${Math.max(0, (oilStatus.current / INITIAL_VOLUME) * 100)}%` }}
+                                />
                             </div>
                         </InputWrapper>
 
-                        <InputWrapper label="Total_Burned" icon="trending-down">
-                            <div className="bg-white p-3 border border-zinc-300 shadow-sm">
-                                <span className="text-2xl font-black font-mono text-zinc-800 tracking-tighter">
-                                    {oilStatus.used.toFixed(1)}
-                                </span>
-                                <span className="ml-2 text-[9px] font-bold text-zinc-400">USED</span>
-                            </div>
-                        </InputWrapper>
-
-                        <InputWrapper label="Inbound_Reference" icon="calendar">
-                            <div className="bg-white p-3 border border-zinc-200 shadow-sm flex flex-col justify-center h-[58px]">
-                                <div className="text-[11px] font-black">{PURCHASE_DATE}</div>
-                                <div className="text-[8px] font-bold text-zinc-400 uppercase tracking-tighter">Batch_Size: {INITIAL_VOLUME}L</div>
+                        <InputWrapper label="Deployment_Reference" icon="calendar">
+                            <div className="bg-white p-3 rounded-sm border border-zinc-300 shadow-sm flex flex-col justify-center">
+                                <div className="text-xs font-black uppercase tracking-tight">{PURCHASE_DATE}</div>
+                                <div className="text-[8px] font-black text-zinc-400 uppercase">Batch_Size: {INITIAL_VOLUME}L</div>
                             </div>
                         </InputWrapper>
                     </div>
 
-                    {/* NEDRE SEKTION: INTERNAL MISSION LOGS */}
-                    <div className="space-y-3">
-                        <label className="text-[9px] font-black text-zinc-400 uppercase tracking-widest flex items-center gap-2 ml-1">
-                            <SafeIcon name="file-text" size={10} className="theme-text" />
-                            Consumption_History_Logs
-                        </label>
-                        
+                    {/* LOGG - MATCHAR INTERNAL_MISSION_LOGS */}
+                    <InputWrapper label="Internal_Consumption_Logs" icon="file-text">
                         <div className="bg-white border border-zinc-200 rounded-sm overflow-hidden">
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-left border-collapse">
-                                    <thead>
-                                        <tr className="bg-zinc-950 text-white text-[9px] font-black uppercase tracking-[0.2em]">
-                                            <th className="p-3 border-r border-zinc-800">Mission_Client</th>
-                                            <th className="p-3 border-r border-zinc-800">Reg_Unit</th>
-                                            <th className="p-3 border-r border-zinc-800">Timestamp</th>
-                                            <th className="p-3 text-right">Debit_Vol</th>
+                            <table className="w-full border-collapse">
+                                <thead>
+                                    <tr className="bg-zinc-950 text-white text-[8px] font-black uppercase tracking-widest">
+                                        <th className="p-3 text-left border-r border-zinc-800">Mission_Client</th>
+                                        <th className="p-3 text-left border-r border-zinc-800">Date</th>
+                                        <th className="p-3 text-right">Debit_Vol</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="text-[10px] font-bold uppercase tracking-tight">
+                                    {oilStatus.history.map((log, i) => (
+                                        <tr key={i} className="border-b border-zinc-100 hover:bg-zinc-50 transition-colors">
+                                            <td className="p-3 border-r border-zinc-50">{log.kund}</td>
+                                            <td className="p-3 border-r border-zinc-50 text-zinc-400 font-mono">{log.date}</td>
+                                            <td className="p-3 text-right theme-text font-black">-{log.amount.toFixed(1)} L</td>
                                         </tr>
-                                    </thead>
-                                    <tbody className="text-[10px] font-bold uppercase tracking-tight">
-                                        {oilStatus.history.map((log, i) => (
-                                            <tr key={i} className="border-b border-zinc-100 hover:bg-zinc-50 transition-colors">
-                                                <td className="p-3 border-r border-zinc-50">{log.kund}</td>
-                                                <td className="p-3 border-r border-zinc-50 font-mono text-zinc-500">{log.reg}</td>
-                                                <td className="p-3 border-r border-zinc-50 text-zinc-400">{log.datum}</td>
-                                                <td className="p-3 text-right font-mono theme-text font-black">-{log.mangd.toFixed(1)} L</td>
-                                            </tr>
-                                        ))}
-                                        {oilStatus.history.length === 0 && (
-                                            <tr>
-                                                <td colSpan="4" className="p-10 text-center text-zinc-300 font-black italic tracking-widest text-[9px]">
-                                                    DATA_QUERY_EMPTY // NO_CONSUMPTION_DETECTED_AFTER_{PURCHASE_DATE.replace(/-/g, '_')}
-                                                </td>
-                                            </tr>
-                                        )}
-                                    </tbody>
-                                </table>
-                            </div>
+                                    ))}
+                                    {oilStatus.history.length === 0 && (
+                                        <tr>
+                                            <td colSpan="3" className="p-10 text-center text-zinc-300 font-black italic tracking-widest text-[9px]">
+                                                NO_ACTIVE_LOGS_FOUND_FOR_PERIOD
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
                         </div>
-                    </div>
+                    </InputWrapper>
 
                     {/* FOOTER */}
-                    <div className="pt-6 border-t border-zinc-100 flex justify-between items-center">
-                        <div className="text-[8px] font-black text-zinc-300 uppercase tracking-[0.3em]">
-                            Oil_Logistic_Core_V6.2
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 rounded-full theme-bg animate-pulse"></div>
-                            <span className="text-[8px] font-black text-zinc-400 uppercase tracking-widest">System_Stable</span>
+                    <div className="pt-4 border-t border-zinc-100 flex justify-between">
+                        <div className="text-[8px] font-black text-zinc-300 uppercase tracking-[0.2em]">Oil_Tracker_OS_v7</div>
+                        <div className="text-[8px] font-black theme-text uppercase tracking-widest flex items-center gap-2">
+                            <div className="w-1 h-1 rounded-full theme-bg animate-pulse" />
+                            Encrypted_Connection_Stable
                         </div>
                     </div>
                 </div>
