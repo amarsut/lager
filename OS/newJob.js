@@ -25,12 +25,11 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
         datum: today, tid: '08:00', kundpris: '100', kommentar: ''
     });
     
-    // Startar med 2 rader som standard
     const [expenses, setExpenses] = React.useState([{ desc: '', amount: '' }, { desc: '', amount: '' }]);
     const [suggestions, setSuggestions] = React.useState([]);
+    const [regnrSuggestions, setRegnrSuggestions] = React.useState([]); // Ny state för regnr-förslag
     const [oilLiters, setOilLiters] = React.useState(5);
 
-    // Återställning av data vid redigering
     React.useEffect(() => {
         if (editingJob) {
             setFormData({ 
@@ -44,23 +43,10 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
         }
     }, [editingJob]);
 
-    // Beräkning för Oljebyte
-    const updateOilLogic = (liters) => {
-        const l = parseFloat(liters) || 0;
-        const purchasePrice = l * 65;
-        const customerPrice = (l * 200) + 200 + 500;
-        
-        const newExpenses = [
-            { desc: `Motorolja (${l}l á 65kr)`, amount: purchasePrice.toString() },
-            { desc: 'Oljefilter', amount: '200' },
-            ...expenses.slice(2).filter(e => e.desc || e.amount) // Behåll manuella rader
-        ];
-        
-        // Se till att vi har minst 2 rader totalt
-        while (newExpenses.length < 2) newExpenses.push({ desc: '', amount: '' });
-
-        setFormData(p => ({ ...p, kundpris: customerPrice.toString() }));
-        setExpenses(newExpenses);
+    const calculateOil = (liters) => {
+        const purchasePrice = liters * 65;
+        const customerPrice = (liters * 200) + 200 + 500;
+        return { purchasePrice, customerPrice };
     };
 
     const handlePackageChange = (val) => {
@@ -71,9 +57,10 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
         if (val === "Felsökning") price = "500";
         if (val === "Oljebyte") {
             const l = oilLiters;
-            price = (l * 200 + 700).toString();
+            const { purchasePrice, customerPrice } = calculateOil(l);
+            price = customerPrice.toString();
             newExpenses = [
-                { desc: `Motorolja (${l}l á 65kr)`, amount: (l * 65).toString() },
+                { desc: `Motorolja (${l}l á 65kr)`, amount: purchasePrice.toString() },
                 { desc: 'Oljefilter', amount: '200' }
             ];
         }
@@ -83,8 +70,19 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
     };
 
     const handleOilVolumeChange = (val) => {
-        setOilLiters(val);
-        updateOilLogic(val);
+        const l = parseFloat(val) || 0;
+        setOilLiters(l);
+        if (formData.paket === "Oljebyte") {
+            const { purchasePrice, customerPrice } = calculateOil(l);
+            const newExpenses = [
+                { desc: `Motorolja (${l}l á 65kr)`, amount: purchasePrice.toString() },
+                { desc: 'Oljefilter', amount: '200' },
+                ...expenses.slice(2).filter(e => e.desc || e.amount)
+            ];
+            while (newExpenses.length < 2) newExpenses.push({ desc: '', amount: '' });
+            setFormData(p => ({ ...p, kundpris: customerPrice.toString() }));
+            setExpenses(newExpenses);
+        }
     };
 
     const addExpenseRow = () => setExpenses([...expenses, { desc: '', amount: '' }]);
@@ -97,11 +95,25 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
         setFormData(p => ({ ...p, kundnamn: val }));
         if (val.length > 1) {
             const matches = allJobs
-                .filter(j => j.kundnamn.toLowerCase().includes(val.toLowerCase()))
+                .filter(j => j.kundnamn?.toLowerCase().includes(val.toLowerCase()))
                 .map(j => j.kundnamn);
             setSuggestions([...new Set(matches)].slice(0, 5));
         } else {
             setSuggestions([]);
+        }
+    };
+
+    // Ny funktion för att hantera sökförslag på regnr
+    const handleRegnrChange = (val) => {
+        const upperVal = val.toUpperCase();
+        setFormData(p => ({ ...p, regnr: upperVal }));
+        if (val.length > 0) {
+            const matches = allJobs
+                .filter(j => j.regnr?.toUpperCase().includes(upperVal))
+                .map(j => j.regnr.toUpperCase());
+            setRegnrSuggestions([...new Set(matches)].slice(0, 5));
+        } else {
+            setRegnrSuggestions([]);
         }
     };
 
@@ -121,20 +133,18 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
     return (
         <div className="max-w-3xl ml-0 animate-in fade-in slide-in-from-left-4 duration-500">
             <div className="bg-white border border-zinc-200 shadow-2xl rounded-sm overflow-hidden">
-                <div className="bg-zinc-950 p-4 flex items-center justify-between border-b-2 theme-border">
+                <div className="bg-zinc-950 p-4 border-b-2 theme-border">
                     <div className="flex items-center gap-4">
                         <div className="w-10 h-10 theme-bg flex items-center justify-center rounded-sm">
                             <SafeIcon name={editingJob ? "edit-3" : "plus"} size={20} className="text-black" />
                         </div>
-                        <div>
-                            <h2 className="text-sm font-black text-white uppercase tracking-widest">
-                                {editingJob ? 'Update_Sequence' : 'Create_New_Mission'}
-                            </h2>
-                        </div>
+                        <h2 className="text-sm font-black text-white uppercase tracking-widest">
+                            {editingJob ? 'Update_Sequence' : 'Create_New_Mission'}
+                        </h2>
                     </div>
                 </div>
 
-                <form onSubmit={handleSave} className="p-6 lg:p-8 space-y-6 bg-zinc-50/20">
+                <form onSubmit={handleSave} className="p-6 lg:p-8 space-y-0 bg-zinc-50/20">
                     <FormRow>
                         <InputWrapper label="Client_Name" icon="user">
                             <div className="relative">
@@ -155,7 +165,22 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                             </div>
                         </InputWrapper>
                         <InputWrapper label="Registry_Number" icon="truck">
-                            <input type="text" value={formData.regnr} onChange={e => setFormData(p => ({ ...p, regnr: e.target.value.toUpperCase() }))} className="w-full bg-white border border-zinc-200 p-2.5 text-sm font-black theme-text font-mono outline-none focus:theme-border uppercase tracking-widest" placeholder="XXX 000" />
+                            <div className="relative">
+                                <input 
+                                    type="text" 
+                                    value={formData.regnr} 
+                                    onChange={e => handleRegnrChange(e.target.value)} 
+                                    className="w-full bg-white border border-zinc-200 p-2.5 text-sm font-black theme-text font-mono outline-none focus:theme-border uppercase tracking-widest" 
+                                    placeholder="ABC123" 
+                                />
+                                {regnrSuggestions.length > 0 && (
+                                    <div className="absolute z-10 w-full bg-white border border-zinc-200 shadow-xl mt-1 rounded-sm">
+                                        {regnrSuggestions.map((s, i) => (
+                                            <div key={i} onClick={() => { setFormData(p => ({ ...p, regnr: s })); setRegnrSuggestions([]); }} className="p-2 text-xs hover:bg-zinc-100 cursor-pointer font-bold font-mono">{s}</div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
                         </InputWrapper>
                     </FormRow>
 
@@ -168,7 +193,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                 <option value="FAKTURERAS">Faktureras</option>
                             </select>
                         </InputWrapper>
-                        <div>
+                        <div className="space-y-2">
                             <InputWrapper label="Service_Type" icon="layers">
                                 <select value={formData.paket} onChange={e => handlePackageChange(e.target.value)} className="w-full bg-white border border-zinc-200 p-2.5 text-xs font-bold outline-none focus:theme-border">
                                     <option value="Standard">Standard</option>
@@ -178,15 +203,9 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                 </select>
                             </InputWrapper>
                             {formData.paket === "Oljebyte" && (
-                                <div className="mt-2 p-3 bg-zinc-100 border border-zinc-200 rounded-sm animate-in slide-in-from-top-1">
-                                    <label className="text-[8px] font-black text-zinc-500 uppercase tracking-tighter mb-1 block">Antal liter motorolja</label>
-                                    <input 
-                                        type="number" 
-                                        step="0.1" 
-                                        value={oilLiters} 
-                                        onChange={e => handleOilVolumeChange(e.target.value)} 
-                                        className="w-full bg-white border border-zinc-300 p-1.5 text-xs font-black font-mono outline-none focus:border-orange-500" 
-                                    />
+                                <div className="p-2 bg-zinc-100 border border-zinc-200 rounded-sm animate-in slide-in-from-top-1">
+                                    <label className="text-[8px] font-black text-zinc-500 uppercase mb-1 block">Antal liter motorolja</label>
+                                    <input type="number" step="0.1" value={oilLiters} onChange={e => handleOilVolumeChange(e.target.value)} className="w-full bg-white border border-zinc-300 p-1 text-xs font-black font-mono outline-none focus:border-orange-500" />
                                 </div>
                             )}
                         </div>
@@ -201,35 +220,42 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                         </InputWrapper>
                     </FormRow>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-zinc-100/50 rounded-sm border border-zinc-200/50">
+                    <div className="my-8 py-6 border-y border-zinc-200 space-y-6">
                         <InputWrapper label="Final_Price_SEK" icon="credit-card">
-                            <div className="bg-white p-2 rounded-sm border border-zinc-300 shadow-sm flex items-center">
+                            <div className="bg-white p-3 border border-zinc-300 shadow-sm flex items-center max-w-md">
                                 <input type="number" value={formData.kundpris} onChange={e => setFormData(p => ({ ...p, kundpris: e.target.value }))} className="w-full bg-transparent text-zinc-900 text-lg font-black font-mono outline-none text-right" placeholder="0" />
                                 <span className="ml-2 text-[8px] font-black text-zinc-400">SEK</span>
                             </div>
                         </InputWrapper>
-                        <div className="space-y-2">
+
+                        <div className="space-y-4">
                             <div className="flex items-center justify-between">
                                 <label className="text-[9px] font-black text-zinc-400 uppercase tracking-widest flex items-center gap-2 ml-1">
                                     <SafeIcon name="shopping-cart" size={10} className="theme-text" />Resource_Expenses
                                 </label>
-                                <button type="button" onClick={addExpenseRow} className="text-[8px] font-black theme-text uppercase px-2 hover:bg-zinc-200 transition-colors">+ Lägg till</button>
+                                <button type="button" onClick={addExpenseRow} className="text-[8px] font-black theme-text uppercase border border-orange-500/20 px-2 py-1 hover:bg-orange-500 hover:text-white transition-all">
+                                    <SafeIcon name="plus" size={8} className="mr-1" /> Add_Line
+                                </button>
                             </div>
-                            {expenses.map((ex, i) => (
-                                <div key={i} className="flex gap-2 items-center">
-                                    <input placeholder="Del" value={ex.desc} onChange={e => { const n = [...expenses]; n[i].desc = e.target.value; setExpenses(n); }} className="flex-1 bg-white border border-zinc-200 p-2 text-[10px] font-bold outline-none" />
-                                    <input placeholder="Kr" type="number" value={ex.amount} onChange={e => { const n = [...expenses]; n[i].amount = e.target.value; setExpenses(n); }} className="w-20 bg-white border border-zinc-200 p-2 text-[10px] font-bold font-mono outline-none text-right" />
-                                    <button type="button" onClick={() => removeExpenseRow(i)} className="text-zinc-400 hover:text-red-500 transition-colors">
-                                        <SafeIcon name="trash-2" size={12} />
-                                    </button>
-                                </div>
-                            ))}
+                            <div className="space-y-2">
+                                {expenses.map((ex, i) => (
+                                    <div key={i} className="flex gap-2 items-center animate-in fade-in duration-300">
+                                        <input placeholder="Beskrivning" value={ex.desc} onChange={e => { const n = [...expenses]; n[i].desc = e.target.value; setExpenses(n); }} className="flex-1 bg-white border border-zinc-200 p-2 text-[10px] font-bold outline-none focus:theme-border" />
+                                        <input placeholder="Kr" type="number" value={ex.amount} onChange={e => { const n = [...expenses]; n[i].amount = e.target.value; setExpenses(n); }} className="w-20 md:w-28 bg-white border border-zinc-200 p-2 text-[10px] font-bold font-mono outline-none focus:theme-border text-right" />
+                                        <button type="button" onClick={() => removeExpenseRow(i)} className="p-2 text-zinc-400 hover:text-red-500 transition-colors shrink-0">
+                                            <SafeIcon name="trash-2" size={14} />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     </div>
 
-                    <InputWrapper label="Internal_Mission_Logs" icon="file-text">
-                        <textarea value={formData.kommentar} onChange={e => setFormData(p => ({ ...p, kommentar: e.target.value }))} className="w-full border border-zinc-200 p-3 font-mono text-[10px] min-h-[80px] outline-none focus:theme-border bg-white resize-none" placeholder="Skriv anteckningar här..." />
-                    </InputWrapper>
+                    <div className="mb-6">
+                        <InputWrapper label="Internal_Mission_Logs" icon="file-text">
+                            <textarea value={formData.kommentar} onChange={e => setFormData(p => ({ ...p, kommentar: e.target.value }))} className="w-full border border-zinc-200 p-3 font-mono text-[10px] min-h-[80px] outline-none focus:theme-border bg-white resize-none" placeholder="Skriv anteckningar här..." />
+                        </InputWrapper>
+                    </div>
 
                     <div className="pt-6 border-t border-zinc-100 flex gap-3">
                         <button type="submit" className="flex-1 theme-bg text-black font-black py-4 text-[11px] uppercase tracking-[0.3em] shadow-lg hover:brightness-110 active:scale-95 transition-all">Confirm_Push</button>
