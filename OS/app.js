@@ -65,6 +65,35 @@ const App = () => {
         }
     };
 
+    // --- UPPDATERAD APP-BADGE LOGIK MED FELSÖKNING ---
+    useEffect(() => {
+        const updateBadge = async () => {
+            if ('setAppBadge' in navigator) {
+                // Trimma och gör till versaler för att undvika matchningsfel
+                const bookCount = allJobs.filter(job => {
+                    const status = (job.status || "").trim().toUpperCase();
+                    return !job.deleted && status === 'BOKAD';
+                }).length;
+
+                console.log("Badge_Debug: Hittade " + bookCount + " bokade jobb.");
+
+                try {
+                    if (bookCount > 0) {
+                        await navigator.setAppBadge(bookCount);
+                    } else {
+                        await navigator.clearAppBadge();
+                    }
+                } catch (error) {
+                    console.error("Badge_Error:", error);
+                }
+            } else {
+                console.log("Badge_API: Stöds inte av denna enhet/webbläsare.");
+            }
+        };
+
+        updateBadge();
+    }, [allJobs]);
+
     useEffect(() => {
         window.openEditModal = (jobId) => {
             const job = allJobs.find(j => j.id === jobId);
