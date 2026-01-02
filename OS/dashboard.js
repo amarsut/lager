@@ -83,37 +83,29 @@ window.DashboardView = React.memo(({
                             </div>
                         </div>
 
-                        {/* EXPANDERBAR SÖK - Fixad positionering och storlek */}
-                        <div className="flex items-center">
+                        {/* SEARCH MODUL - RENODLAD */}
+                <div className="flex items-center">
                             <div className={`relative flex items-center h-8 transition-all duration-500 ${searchOpen ? 'w-64 md:w-80' : 'w-9'}`}>
-                                {searchOpen && (
-                                    <input 
-                                        autoFocus
-                                        type="text" 
-                                        value={globalSearch}
-                                        onChange={e => setGlobalSearch(e.target.value)}
-                                        onBlur={() => !globalSearch && setSearchOpen(false)}
-                                        placeholder="SEARCH_DATABASE..." 
-                                        className="w-full h-full bg-zinc-950 border border-zinc-800 px-3 pr-10 text-[10px] font-bold text-white outline-none animate-in fade-in slide-in-from-right-4 uppercase tracking-widest rounded-sm"
-                                    />
-                                )}
-                                <button 
-                                    onClick={() => setSearchOpen(!searchOpen)}
-                                    className={`h-8 w-8 transition-all flex items-center justify-center rounded-sm z-10 ${searchOpen ? 'absolute right-0 text-zinc-500 hover:text-white' : 'bg-zinc-900 border border-zinc-800 text-zinc-500 hover:theme-text'}`}
-                                >
-                                    <SafeIcon name={searchOpen ? "x" : "search"} size={14} />
-                                </button>
-                            </div>
-
-                            {/* QUEUE - Visas bara när sök är stängd */}
-                            {!searchOpen && (
-                                <div className="hidden md:flex flex-col text-right border-l border-zinc-800 pl-4 ml-4">
-                                    <span className="text-[7px] font-black text-zinc-500 uppercase tracking-widest leading-none mb-1">Queue</span>
-                                    <span className="text-xs font-mono font-black text-white leading-none">{filteredJobs.length}</span>
-                                </div>
-                            )}
-                        </div>
+                        {searchOpen && (
+                            <input 
+                                autoFocus
+                                type="text" 
+                                value={globalSearch}
+                                onChange={e => setGlobalSearch(e.target.value)}
+                                onBlur={() => !globalSearch && setSearchOpen(false)}
+                                placeholder="SÖK..." 
+                                className="w-full h-full bg-zinc-950 border border-orange-500/50 px-5 pr-14 text-[12px] font-black text-white outline-none animate-in slide-in-from-right-8 uppercase tracking-[0.2em] rounded-sm shadow-xl"
+                            />
+                        )}
+                        <button 
+                            onClick={() => setSearchOpen(!searchOpen)}
+                            className={`h-11 w-11 transition-all flex items-center justify-center rounded-sm shadow-xl ${searchOpen ? 'absolute right-0 text-orange-500' : 'bg-zinc-900 border border-zinc-800 text-zinc-500 hover:theme-text'}`}
+                        >
+                            <SafeIcon name={searchOpen ? "x" : "search"} size={20} />
+                        </button>
                     </div>
+                </div>
+            </div>
             </div>
 
             <div className="hidden lg:block bg-white border border-zinc-200 shadow-2xl rounded-sm overflow-hidden">
