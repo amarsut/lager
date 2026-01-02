@@ -1,3 +1,5 @@
+// app.js
+
 const { useState, useEffect, useMemo, memo } = React;
 
 // --- 1. THEMES ---
@@ -40,6 +42,13 @@ const App = () => {
     const [allJobs, setAllJobs] = useState([]);
     const [editingJob, setEditingJob] = useState(null);
     const [theme, setTheme] = useState(localStorage.getItem('sys_theme') || 'MATRIX');
+    const [time, setTime] = useState(new Date());
+
+    // Klocka för systemstatus
+    useEffect(() => {
+        const timer = setInterval(() => setTime(new Date()), 1000);
+        return () => clearInterval(timer);
+    }, []);
 
     useEffect(() => { if (window.lucide) window.lucide.createIcons(); }, [view, allJobs, sidebarOpen, activeFilter]);
 
@@ -57,14 +66,16 @@ const App = () => {
             styleTag.id = 'dynamic-theme-style';
             document.head.appendChild(styleTag);
         }
+
         styleTag.innerHTML = `
             input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
             input[type=number] { -moz-appearance: textfield; }
             .theme-bg { background-color: var(--brand-primary) !important; }
             .theme-text { color: var(--brand-primary) !important; }
             .theme-border { border-color: var(--brand-primary) !important; }
-            .theme-sidebar { background-color: var(--brand-secondary) !important; color: var(--sidebar-text) !important; }
-            .theme-sidebar-active { background-color: var(--brand-primary) !important; color: #000 !important; }
+            .theme-sidebar { background-color: #0f0f10 !important; color: var(--sidebar-text) !important; }
+            .theme-sidebar-active { background-color: rgba(249, 115, 22, 0.15) !important; color: var(--brand-primary) !important; border-right: 3px solid var(--brand-primary) !important; }
+            .sidebar-footer-divider { border-top: 1px solid rgba(255, 255, 255, 0.08) !important; margin: 0 16px !important; }
         `;
     }, [theme]);
 
@@ -111,12 +122,12 @@ const App = () => {
 
     return (
         <div className="flex h-screen overflow-hidden bg-[#f8f9fa] relative">
-            {/* --- SIDEBAR --- */}
             <aside className={`fixed lg:relative h-full z-[100] transition-transform duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0 w-[260px]' : '-translate-x-full lg:translate-x-0 lg:w-20'} theme-sidebar border-r border-zinc-200/10 flex flex-col`}>
                 <div className="h-20 flex items-center px-6 gap-3 border-b border-zinc-200/10 overflow-hidden">
                     <div className="min-w-[32px] w-8 h-8 theme-bg flex items-center justify-center font-black rounded-sm text-black shadow-lg">P</div>
                     {sidebarOpen && <span className="font-black tracking-widest text-[10px] uppercase whitespace-nowrap">Planerare // OS</span>}
                 </div>
+                
                 <nav className="flex-1 py-6 space-y-1">
                     {[
                         { id: 'DASHBOARD', icon: 'grid', label: 'Dashboard' },
@@ -130,79 +141,83 @@ const App = () => {
                         </div>
                     ))}
                 </nav>
+
+                <div className="mt-auto border-t border-zinc-200/10 p-4">
+                    <div className={`flex items-center ${sidebarOpen ? 'justify-between' : 'justify-center'} px-2 gap-3`}>
+                        <div className="flex items-center gap-3 min-w-0">
+                            {user.photoURL ? (
+                                <img src={user.photoURL} className="w-8 h-8 rounded-sm border theme-border object-cover" alt="Profil" />
+                            ) : (
+                                <div className="min-w-[32px] w-8 h-8 theme-bg flex items-center justify-center font-black rounded-sm text-black shadow-lg uppercase text-[10px]">
+                                    {user.email ? user.email[0] : 'U'}
+                                </div>
+                            )}
+                            {sidebarOpen && (
+                                <div className="flex flex-col min-w-0">
+                                    <span className="text-[9px] font-black uppercase tracking-widest text-white truncate">{user.displayName || 'Inloggad'}</span>
+                                    <span className="text-[7px] text-zinc-500 truncate font-mono uppercase">{user.email}</span>
+                                </div>
+                            )}
+                        </div>
+                        {sidebarOpen && (
+                            <button onClick={() => auth.signOut()} className="p-2 text-red-400 hover:bg-red-500/10 rounded-sm transition-all group shrink-0">
+                                <window.Icon name="log-out" size={16} className="group-hover:translate-x-0.5 transition-transform" />
+                            </button>
+                        )}
+                    </div>
+                </div>
             </aside>
 
-            {/* Overlay för mobil-sidebar */}
             {sidebarOpen && window.innerWidth < 1024 && <div onClick={() => setSidebarOpen(false)} className="fixed inset-0 bg-black/60 z-[90] backdrop-blur-sm lg:hidden"></div>}
 
-            {/* --- HUVUDINNEHÅLL --- */}
             <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
                 <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 lg:px-8 z-50">
-                    <div className="flex items-center gap-3 flex-1">
+                    <div className="flex items-center gap-3">
                         <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 text-zinc-900 bg-zinc-100 rounded-sm hover:bg-zinc-200 transition-colors">
                             <window.Icon name="menu" />
                         </button>
-                        <div className="relative w-full max-w-[140px] lg:max-w-md">
-                            <window.Icon name="search" size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-400" />
-                            <input type="text" value={globalSearch} onChange={e => setGlobalSearch(e.target.value)} placeholder="SÖK..." className="w-full bg-zinc-100 p-2 pl-8 text-[10px] font-bold outline-none font-mono focus:bg-white border-transparent focus:theme-border border transition-all uppercase" />
+                        
+                        {/* SYSTEM STATUS ISTÄLLET FÖR SÖK */}
+                        <div className="hidden sm:flex items-center gap-6 px-4 border-l border-zinc-200 ml-2">
+                            <div className="flex flex-col">
+                                <span className="text-[8px] font-black text-zinc-400 uppercase tracking-widest">System_Time</span>
+                                <span className="text-[10px] font-black font-mono uppercase italic">
+                                    {time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                                </span>
+                            </div>
+                            <div className="flex flex-col border-l border-zinc-200 pl-4">
+                                <span className="text-[8px] font-black text-zinc-400 uppercase tracking-widest">Signal_Status</span>
+                                <span className="text-[10px] font-black text-green-600 uppercase flex items-center gap-1.5">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span> Encrypted_Link
+                                </span>
+                            </div>
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
                         <select value={theme} onChange={(e) => setTheme(e.target.value)} className="bg-zinc-100 text-[8px] font-black uppercase p-2 rounded-sm outline-none">
                             {Object.keys(THEMES).map(t => <option key={t} value={t}>{THEMES[t].label}</option>)}
                         </select>
-                        <div className="w-9 h-9 theme-sidebar text-white flex items-center justify-center font-black border theme-border shadow-md uppercase text-xs">{user.email[0]}</div>
                     </div>
                 </header>
 
                 <div className="flex-1 overflow-auto p-4 lg:p-8 space-y-6 pb-24 lg:pb-8">
                     {view === 'DASHBOARD' && (
-                        <>
-                            <div className="flex overflow-x-auto gap-2 no-scrollbar pb-2">
-                                {['ALLA', 'BOKAD', 'OFFERERAD', 'EJ BOKAD', 'KLAR', 'FAKTURERAS'].map(s => (
-                                    <button key={s} onClick={() => setActiveFilter(s)} className={`px-4 py-2 text-[10px] font-black border flex-shrink-0 transition-all flex items-center gap-2 ${activeFilter === s ? 'theme-bg text-black theme-border shadow-md' : 'bg-white text-zinc-400 border-zinc-100'}`}>
-                                        {s} <span className={`px-1 rounded-xs text-[8px] ${activeFilter === s ? 'bg-black text-white' : 'bg-zinc-100'}`}>{statusCounts[s]}</span>
-                                    </button>
-                                ))}
-                            </div>
-                            <window.DashboardView 
-                                filteredJobs={filteredJobs} 
-                                setEditingJob={setEditingJob} 
-                                setView={setView} 
-                            />
-                        </>
+                        <window.DashboardView 
+                            filteredJobs={filteredJobs} 
+                            setEditingJob={setEditingJob} 
+                            setView={setView} 
+                            activeFilter={activeFilter}
+                            setActiveFilter={setActiveFilter}
+                            statusCounts={statusCounts}
+                            globalSearch={globalSearch}
+                            setGlobalSearch={setGlobalSearch}
+                        />
                     )}
                     {view === 'NEW_JOB' && <window.NewJobView editingJob={editingJob} setView={setView} allJobs={allJobs} />}
                     {view === 'CUSTOMERS' && <window.CustomersView allJobs={allJobs} setView={setView} />}
                     {view === 'CALENDAR' && <window.CalendarView allJobs={allJobs} setEditingJob={setEditingJob} setView={setView} />}
                 </div>
             </main>
-
-            {/* --- BOTTOM APP MENU (MOBIL) --- */}
-            <nav className="fixed bottom-0 left-0 right-0 h-20 bg-white border-t border-zinc-100 flex items-center justify-around z-[150] lg:hidden px-4 pb-safe">
-                <div onClick={() => setView('DASHBOARD')} 
-                    className={`mobile-nav-item ${view === 'DASHBOARD' ? 'active' : ''}`}>
-                    <window.Icon name="layout-grid" size={24} />
-                    <span>Hem</span>
-                </div>
-                
-                <div onClick={() => { setEditingJob(null); setView('NEW_JOB'); }} 
-                    className={`mobile-nav-item ${view === 'NEW_JOB' ? 'active' : ''}`}>
-                    <window.Icon name="plus-square" size={24} />
-                    <span>Nytt jobb</span>
-                </div>
-
-                <div onClick={() => setView('CALENDAR')} 
-                    className={`mobile-nav-item ${view === 'CALENDAR' ? 'active' : ''}`}>
-                    <window.Icon name="calendar" size={24} />
-                    <span>Kalender</span>
-                </div>
-
-                <div onClick={() => setSidebarOpen(true)} className="mobile-nav-item">
-                    <window.Icon name="menu" size={24} />
-                    <span>Mer</span>
-                </div>
-            </nav>
         </div>
     );
 };
