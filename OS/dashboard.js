@@ -28,6 +28,36 @@ window.Badge = React.memo(({ status }) => {
     );
 });
 
+// dashboard.js
+
+const formatDate = (dateStr) => {
+    if (!dateStr) return null;
+    const d = new Date(dateStr);
+    const months = ['jan', 'feb', 'mar', 'apr', 'maj', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'];
+    return `${d.getDate()} ${months[d.getMonth()]}`;
+};
+
+const SafeIcon = ({ name, size = 14, className = "" }) => (
+    <span className="inline-flex items-center justify-center shrink-0">
+        <window.Icon name={name} size={size} className={className} />
+    </span>
+);
+
+window.Badge = React.memo(({ status }) => {
+    const s = (status || 'BOKAD').toUpperCase();
+    const styles = {
+        'BOKAD': 'theme-bg text-black font-black',
+        'OFFERERAD': 'bg-blue-500 text-white font-bold',
+        'KLAR': 'bg-black text-white font-bold',
+        'FAKTURERAS': 'bg-zinc-100 text-zinc-500 border border-zinc-200',
+    };
+    return (
+        <span className={`px-2 py-0.5 text-[8px] uppercase tracking-[0.1em] inline-block w-20 text-center rounded-[4px] ${styles[s] || styles['BOKAD']}`}>
+            {s}
+        </span>
+    );
+});
+
 window.DashboardView = React.memo(({ 
     filteredJobs, setEditingJob, setView, 
     activeFilter, setActiveFilter, statusCounts,
@@ -35,25 +65,25 @@ window.DashboardView = React.memo(({
 }) => {
     const [searchOpen, setSearchOpen] = React.useState(false);
 
-    // Filter-knappar som återanvänds för både Desktop och Mobil
+    // Gemensam filter-komponent för Desktop & Mobil med hög kontrast
     const FilterButtons = () => (
         ['ALLA', 'BOKAD', 'OFFERERAD', 'EJ BOKAD', 'KLAR', 'FAKTURERAS'].map(s => (
             <button 
                 key={s} 
                 onClick={() => setActiveFilter(s)} 
                 className={`
-                    px-2.5 py-1 text-[9px] font-bold uppercase transition-all flex items-center gap-2 rounded-sm shrink-0
+                    px-4 py-2 text-[10px] font-black uppercase transition-all flex items-center gap-2 rounded-sm shrink-0 border
                     ${activeFilter === s 
-                        ? 'theme-bg text-black shadow-sm' 
-                        : 'text-zinc-500 hover:bg-zinc-800/50 hover:text-zinc-300'}
+                        ? 'theme-bg text-black border-transparent shadow-[0_0_15px_rgba(249,115,22,0.3)]' 
+                        : 'bg-zinc-900 text-zinc-500 border-zinc-800 hover:text-white hover:border-zinc-700'}
                 `}
             >
                 {s} 
                 <span className={`
-                    text-[8px] px-1 rounded-[1px] font-mono
-                    ${activeFilter === s ? 'bg-black/10' : 'bg-zinc-800 text-zinc-600'}
+                    text-[9px] px-1.5 py-0.5 rounded-[2px] font-mono leading-none
+                    ${activeFilter === s ? 'bg-black/20 text-black' : 'bg-zinc-800 text-zinc-400'}
                 `}>
-                    {statusCounts[s]}
+                    {statusCounts[s] || 0}
                 </span>
             </button>
         ))
@@ -81,7 +111,7 @@ window.DashboardView = React.memo(({
                 <div className="flex items-center gap-4">
                     {/* DESKTOP FILTRERING */}
                     <div className={`hidden lg:flex transition-all duration-300 ${searchOpen ? 'opacity-0 scale-95 pointer-events-none' : 'opacity-100'}`}>
-                        <div className="flex bg-zinc-900/30 p-0.5 border border-zinc-800/50 rounded-sm gap-0.5">
+                        <div className="flex bg-zinc-900/30 p-1 border border-zinc-800/50 rounded-sm gap-1">
                             <FilterButtons />
                         </div>
                     </div>
@@ -111,17 +141,17 @@ window.DashboardView = React.memo(({
                 </div>
             </div>
 
-            {/* MOBIL FILTRERING - Horisontell scrollbar som syns på mobil */}
+            {/* MOBIL FILTRERING - Horisontell scrollbar utan fula lister */}
             {!searchOpen && (
-                <div className="lg:hidden px-4 -mb-2 overflow-x-auto no-scrollbar animate-in slide-in-from-top-2 duration-300">
-                    <div className="flex bg-zinc-900/50 p-1 border border-zinc-800/50 rounded-sm gap-1 w-max">
+                <div className="lg:hidden px-4 py-2 overflow-x-auto no-scrollbar active:cursor-grabbing select-none animate-in slide-in-from-top-2 duration-300">
+                    <div className="flex gap-2 w-max pb-2">
                         <FilterButtons />
                     </div>
                 </div>
             )}
 
             {/* TABELL-VY (DESKTOP) */}
-            <div className="hidden lg:block bg-white border border-zinc-200 shadow-2xl rounded-sm overflow-hidden">
+            <div className="hidden lg:block bg-white border border-zinc-200 shadow-2xl rounded-sm overflow-hidden mx-4 lg:mx-0">
                 <table className="w-full text-left border-collapse">
                     <thead className="bg-[#1e1e1e] text-[#94a3b8] text-[9px] uppercase tracking-widest font-black">
                         <tr>
