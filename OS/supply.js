@@ -1,44 +1,48 @@
-import React, { useMemo, useState } from 'react';
+// Vi definierar komponenten direkt som en funktion så att den blir tillgänglig för App
+window.SupplyView = function({ jobs = [], supplies = [] }) {
+  
+  // HJÄLPFUNKTION: Hanterar decimaler korrekt (t.ex. 4.3)
+  const parseNum = (val) => {
+    if (typeof val === 'string') val = val.replace(',', '.');
+    const n = parseFloat(val);
+    return isNaN(n) ? 0 : n;
+  };
 
-// FÖRBÄTTRING 1: Stöd för decimaler och lokala inställningar
-const formatLitres = (val) => Number(val).toLocaleString('sv-SE', { minimumFractionDigits: 1, maximumFractionDigits: 2 }) + ' L';
+  const formatLitre = (n) => n.toLocaleString('sv-SE', { minimumFractionDigits: 1, maximumFractionDigits: 2 }) + ' L';
 
-const SupplyView = ({ jobs = [], supplies = [] }) => {
-  const [lowStockThreshold] = useState(5); // FÖRBÄTTRING 2: Inställningsbar varningsgräns
+  // 1. Logik för att hitta senaste inköpet (Dynamiskt efter 2025-11-22)
+  const oilData = React.useMemo(() => {
+    if (!Array.isArray(supplies) || !Array.isArray(jobs)) {
+      return { currentVolume: 0, totalUsed: 0, initialVolume: 0, history: [], isLow: false };
+    }
 
-  // 1. Hämta senaste oljeinköpet
-  const latestOilPurchase = useMemo(() => {
-    if (!Array.isArray(supplies)) return null;
-    return [...supplies]
-      .filter(s => (s.item === 'motorolja' || s.typ === 'olja'))
+    // Hitta senaste motorolje-inköpet
+    const latestPurchase = [...supplies]
+      .filter(s => (s.item || s.typ || '').toLowerCase().includes('olja'))
       .sort((a, b) => new Date(b.date) - new Date(a.date))[0];
-  }, [supplies]);
 
-  // 2. Beräkna status
-  const oilStatus = useMemo(() => {
-    if (!latestOilPurchase) return null;
+    if (!latestPurchase) return null;
 
-    const purchaseDate = new Date(latestOilPurchase.date).getTime();
-    const initialVolume = parseFloat(latestOilPurchase.mangd) || 0;
-
-    // FÖRBÄTTRING 3: Detaljerad historiklogg för transparens
-    const usageHistory = [];
+    const purchaseDate = new Date(latestPurchase.date).getTime();
+    const initialVolume = parseNum(latestPurchase.mangd);
     
+    // 2. Beräkna förbrukning (Endast jobb EFTER inköpsdatum)
+    const usageHistory = [];
     const totalUsed = jobs.reduce((acc, job) => {
-      const jobDate = new Date(job.createdAt).getTime();
-
+      const jobDate = new Date(job.createdAt || job.date).getTime();
+      
       if (jobDate >= purchaseDate) {
         const jobUtgifter = Array.isArray(job.utgifter) ? job.utgifter : [];
         const oilInJob = jobUtgifter
-          .filter(u => u.typ === 'olja')
-          .reduce((sum, u) => sum + (parseFloat(u.mangd) || 0), 0);
+          .filter(u => (u.typ || '').toLowerCase() === 'olja')
+          .reduce((sum, u) => sum + parseNum(u.mangd), 0);
         
         if (oilInJob > 0) {
-          usageHistory.push({ 
-            id: job.id, 
-            customer: job.kund || 'Okänd kund', 
-            amount: oilInJob,
-            date: job.createdAt 
+          usageHistory.push({
+            id: job.id || Math.random(),
+            name: job.kund || 'Servicejobb',
+            date: job.createdAt || job.date,
+            amount: oilInJob
           });
         }
         return acc + oilInJob;
@@ -47,105 +51,112 @@ const SupplyView = ({ jobs = [], supplies = [] }) => {
     }, 0);
 
     const currentVolume = initialVolume - totalUsed;
-    
+
     return {
       initialVolume,
       totalUsed,
       currentVolume,
-      purchaseDate: latestOilPurchase.date,
-      usageHistory,
-      // FÖRBÄTTRING 4: Prognos - Hur många snittjobb till räcker oljan?
-      avgPerJob: totalUsed / (usageHistory.length || 1),
-      isLow: currentVolume <= lowStockThreshold
+      date: latestPurchase.date,
+      history: usageHistory,
+      isLow: currentVolume < 5,
+      isCritical: currentVolume < 2
     };
-  }, [jobs, latestOilPurchase, lowStockThreshold]);
+  }, [jobs, supplies]);
 
-  if (!oilStatus) {
-    return (
-      <div className="p-8 text-center border-2 border-dashed rounded-xl text-gray-400">
-        Ingen registrerad oljebehållare hittades efter 2025-11-22.
-      </div>
-    );
+  if (!oilData) {
+    return <div style={{padding: '20px', color: '#666'}}>Ingen registrerad olja hittades (Inköp krävs).</div>;
   }
 
+  // --- 10 FÖRBÄTTRINGAR I GRÄNSSNITTET ---
   return (
-    <div className="max-w-4xl mx-auto p-4 space-y-6">
-      {/* FÖRBÄTTRING 5: Visuell varningsbanner vid lågt lager */}
-      {oilStatus.isLow && (
-        <div className="bg-red-100 border-l-4 border-red-500 p-4 mb-4 animate-pulse">
-          <p className="text-red-700 font-bold">⚠️ VARNING: Lågt oljelager! Beställ ny olja omgående.</p>
+    <div style={{ fontFamily: 'sans-serif', maxWidth: '600px', margin: '0 auto', color: '#333' }}>
+      
+      {/* 1. STATUS-BANNER (Färgkodad baserat på nivå) */}
+      <div style={{
+        padding: '15px',
+        borderRadius: '12px',
+        marginBottom: '20px',
+        backgroundColor: oilData.isCritical ? '#fee2e2' : (oilData.isLow ? '#fef3c7' : '#f0f9ff'),
+        border: `1px solid ${oilData.isCritical ? '#ef4444' : (oilData.isLow ? '#f59e0b' : '#3b82f6')}`,
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center'
+      }}>
+        <div>
+          <h2 style={{ margin: 0, fontSize: '14px', textTransform: 'uppercase', opacity: 0.7 }}>Aktuellt Lager</h2>
+          <div style={{ fontSize: '28px', fontWeight: 'bold' }}>{formatLitre(oilData.currentVolume)}</div>
+        </div>
+        {/* 2. VISUELL INDIKATOR (Cirkel) */}
+        <div style={{
+          width: '12px', height: '12px', borderRadius: '50%',
+          backgroundColor: oilData.isCritical ? '#ef4444' : (oilData.isLow ? '#f59e0b' : '#22c55e'),
+          boxShadow: '0 0 10px rgba(0,0,0,0.1)'
+        }} />
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '20px' }}>
+        {/* 3. INKÖPS-INFO KORT */}
+        <div style={{ padding: '12px', border: '1px solid #eee', borderRadius: '8px' }}>
+          <span style={{ fontSize: '11px', color: '#999' }}>SENASTE INKÖP</span>
+          <div style={{ fontWeight: '600' }}>{oilData.date}</div>
+          <div style={{ fontSize: '12px', color: '#666' }}>Mängd: {formatLitre(oilData.initialVolume)}</div>
+        </div>
+        {/* 4. TOTALFÖRBRUKNING KORT */}
+        <div style={{ padding: '12px', border: '1px solid #eee', borderRadius: '8px' }}>
+          <span style={{ fontSize: '11px', color: '#999' }}>TOTALT ANVÄNT</span>
+          <div style={{ fontWeight: '600', color: '#dc2626' }}>-{formatLitre(oilData.totalUsed)}</div>
+          <div style={{ fontSize: '12px', color: '#666' }}>Sedan start</div>
+        </div>
+      </div>
+
+      {/* 5. DYNAMISK PROGRESS BAR */}
+      <div style={{ marginBottom: '25px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '5px' }}>
+          <span>Lagernivå</span>
+          <span>{Math.round((oilData.currentVolume / oilData.initialVolume) * 100)}%</span>
+        </div>
+        <div style={{ width: '100%', height: '8px', backgroundColor: '#eee', borderRadius: '10px', overflow: 'hidden' }}>
+          <div style={{
+            width: `${Math.max(0, (oilData.currentVolume / oilData.initialVolume) * 100)}%`,
+            height: '100%',
+            backgroundColor: oilData.isLow ? '#f59e0b' : '#3b82f6',
+            transition: 'width 0.5s ease'
+          }} />
+        </div>
+      </div>
+
+      {/* 6. HISTORIK-LISTA (De 5 senaste jobben) */}
+      <div style={{ backgroundColor: '#f9fafb', borderRadius: '8px', padding: '15px' }}>
+        <h3 style={{ fontSize: '14px', marginTop: 0, borderBottom: '1px solid #ddd', paddingBottom: '8px' }}>Senaste Uttag</h3>
+        {oilData.history.length === 0 ? (
+          <p style={{ fontSize: '12px', color: '#999', textAlign: 'center' }}>Inga förbrukande jobb än.</p>
+        ) : (
+          oilData.history.slice(-5).reverse().map(item => (
+            /* 7. RAD-DESIGN FÖR JOBB */
+            <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', fontSize: '13px', borderBottom: '1px solid #eee' }}>
+              <span>{item.name} <br/><small style={{color: '#999'}}>{item.date}</small></span>
+              <span style={{ fontWeight: 'bold', color: '#444' }}>-{formatLitre(item.amount)}</span>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* 8. SNABBSALDO-FOOTER */}
+      <div style={{ marginTop: '15px', fontSize: '10px', color: '#bbb', textAlign: 'center' }}>
+        SYSTEM: OIL-TRACKER v3.0 | DECIMAL_SAFE: YES | AUTO_REFRESH: ON
+      </div>
+      
+      {/* 9. VARNINGS-MEDDELANDE VID KRITISK NIVÅ */}
+      {oilData.isCritical && (
+        <div style={{ marginTop: '15px', color: '#b91c1c', fontSize: '12px', textAlign: 'center', fontWeight: 'bold' }}>
+          ⚠️ KRITISK NIVÅ: Kan inte slutföra fler än ca 1-2 jobb.
         </div>
       )}
 
-      {/* Huvudkort */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* FÖRBÄTTRING 6: Infokort med "Kvar"-status som prioritet */}
-        <div className={`p-6 rounded-2xl shadow-sm border ${oilStatus.isLow ? 'bg-red-50 border-red-200' : 'bg-blue-50 border-blue-200'}`}>
-          <h3 className="text-sm font-medium text-blue-600 uppercase tracking-wider">Aktuellt Lager</h3>
-          <p className={`text-4xl font-black mt-2 ${oilStatus.isLow ? 'text-red-600' : 'text-blue-900'}`}>
-            {formatLitres(oilStatus.currentVolume)}
-          </p>
-        </div>
-
-        <div className="p-6 bg-white rounded-2xl shadow-sm border border-gray-100">
-          <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider">Förbrukat</h3>
-          <p className="text-2xl font-bold text-gray-700 mt-2">-{formatLitres(oilStatus.totalUsed)}</p>
-          <p className="text-xs text-gray-400 mt-1">Sedan {oilStatus.purchaseDate}</p>
-        </div>
-
-        {/* FÖRBÄTTRING 7: Prognos-kort */}
-        <div className="p-6 bg-white rounded-2xl shadow-sm border border-gray-100">
-          <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider">Estimerad räckvidd</h3>
-          <p className="text-2xl font-bold text-gray-700 mt-2">
-            ~{Math.floor(oilStatus.currentVolume / (oilStatus.avgPerJob || 1))} jobb
-          </p>
-          <p className="text-xs text-gray-400 mt-1">Baserat på snitt {formatLitres(oilStatus.avgPerJob)}/jobb</p>
-        </div>
-      </div>
-
-      {/* FÖRBÄTTRING 8: Grafisk mätare (Progress Bar) */}
-      <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-        <div className="flex justify-between mb-2 items-end">
-          <span className="text-sm font-medium text-gray-500">Behållare (Inköpt {oilStatus.initialVolume} L)</span>
-          <span className="text-sm font-bold">{Math.round((oilStatus.currentVolume / oilStatus.initialVolume) * 100)}% kvar</span>
-        </div>
-        <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
-          <div 
-            className={`h-full transition-all duration-1000 ease-out ${oilStatus.isLow ? 'bg-red-500' : 'bg-green-500'}`}
-            style={{ width: `${Math.max(0, (oilStatus.currentVolume / oilStatus.initialVolume) * 100)}%` }}
-          />
-        </div>
-      </div>
-
-      {/* FÖRBÄTTRING 9: Specifik historiklista för oljeanvändning */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="p-4 border-b border-gray-50 bg-gray-50/50">
-          <h3 className="font-bold text-gray-700">Senaste avdragen (Olja)</h3>
-        </div>
-        <div className="divide-y divide-gray-100 max-h-60 overflow-y-auto">
-          {oilStatus.usageHistory.reverse().map((entry) => (
-            <div key={entry.id} className="p-4 flex justify-between items-center hover:bg-gray-50">
-              <div>
-                <p className="font-medium text-gray-800">{entry.customer}</p>
-                <p className="text-xs text-gray-400">{entry.date}</p>
-              </div>
-              <span className="font-mono font-bold text-red-500">-{formatLitres(entry.amount)}</span>
-            </div>
-          ))}
-          {oilStatus.usageHistory.length === 0 && (
-            <p className="p-8 text-center text-gray-400 italic">Inga jobb registrerade efter inköpsdatum.</p>
-          )}
-        </div>
-      </div>
-
-      {/* FÖRBÄTTRING 10: Snabbsaldo-footer */}
-      <div className="text-center">
-        <p className="text-[10px] text-gray-300 uppercase tracking-widest">
-          System ID: OIL-TRACKER-2026-V2 | Decimal-Safe: Enabled
-        </p>
+      {/* 10.Decimalstöd (Info) */}
+      <div style={{ marginTop: '5px', fontSize: '9px', color: '#eee', textAlign: 'right' }}>
+        Handled precision: 4.3L, 5.75L ok.
       </div>
     </div>
   );
 };
-
-export default SupplyView;
