@@ -6,7 +6,6 @@ const SafeIcon = ({ name, size = 12, className = "" }) => (
     </span>
 );
 
-// Notera: Jag la till 'onUpdateJob' i props så du kan spara ändringen när man drar ett jobb
 window.CalendarView = ({ allJobs = [], setEditingJob, setView, onUpdateJob }) => {
     const [currentDate, setCurrentDate] = React.useState(new Date());
     const [viewMode, setViewMode] = React.useState('WEEK'); 
@@ -15,13 +14,15 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView, onUpdateJob }) =>
     const monthNames = ["Januari", "Februari", "Mars", "April", "Maj", "Juni", "Juli", "Augusti", "September", "Oktober", "November", "December"];
     const weekDays = ["Mån", "Tis", "Ons", "Tor", "Fre", "Lör", "Sön"];
 
-    // --- SWIPE LOGIK (Tips 14) ---
+    // --- SWIPE / NAVIGERING ---
     const handleTouchStart = (e) => setTouchStart(e.targetTouches[0].clientX);
     const handleTouchEnd = (e) => {
         if (!touchStart) return;
         const touchEnd = e.changedTouches[0].clientX;
-        if (touchStart - touchEnd > 70) changeDate(1); // Swipe vänster -> Nästa
-        if (touchStart - touchEnd < -70) changeDate(-1); // Swipe höger -> Bakåt
+        // Vi navigerar bara om swipen är lång (t.ex. vid kanten)
+        // För vanlig bläddring använder vi nu naturlig scroll i sidled
+        if (touchStart - touchEnd > 150) changeDate(7); 
+        if (touchStart - touchEnd < -150) changeDate(-7); 
     };
 
     const changeDate = (days) => {
@@ -30,7 +31,7 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView, onUpdateJob }) =>
         setCurrentDate(d);
     };
 
-    // --- DRAG & DROP LOGIK ---
+    // --- DRAG & DROP ---
     const onDragStart = (e, job) => {
         e.dataTransfer.setData("jobId", job.id);
         e.currentTarget.style.opacity = '0.4';
@@ -41,7 +42,6 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView, onUpdateJob }) =>
         const jobId = e.dataTransfer.getData("jobId");
         const job = allJobs.find(j => j.id === jobId);
         if (job && onUpdateJob) {
-            // Bevara tiden men byt datum
             const timePart = job.datum.split('T')[1] || "08:00";
             const newDatum = `${dateStr}T${timePart}`;
             onUpdateJob({ ...job, datum: newDatum });
@@ -63,9 +63,9 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView, onUpdateJob }) =>
         return map;
     }, [allJobs]);
 
-    // --- ÄNDRAD VY: 2 dagar bakåt, 5 dagar framåt ---
+    // --- LÅST TILL 7 DAGAR (2 bakåt, idag, 4 framåt) ---
     const getSequenceDays = () => {
-        return [...Array(8)].map((_, i) => {
+        return [...Array(7)].map((_, i) => {
             const d = new Date(currentDate);
             d.setDate(currentDate.getDate() - 2 + i);
             return d;
@@ -80,7 +80,7 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView, onUpdateJob }) =>
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
         >
-            {/* MOBILANPASSAD HEADER */}
+            {/* HEADER (Oförändrad då den fungerade bra) */}
             <div className="bg-zinc-950 p-4 flex flex-col sm:flex-row items-center justify-between border-b-2 theme-border shadow-2xl overflow-hidden relative gap-4">
                 <div className="absolute right-4 bottom-[-10px] text-white opacity-[0.03] text-5xl font-black italic select-none">SCHEDULE_V4</div>
                 
@@ -119,8 +119,9 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView, onUpdateJob }) =>
                 </div>
             </div>
 
-            <div className="bg-zinc-50 border border-zinc-200 shadow-2xl overflow-x-auto rounded-sm">
-                <div className="inline-grid grid-cols-8 divide-x divide-zinc-200 min-w-full">
+            {/* KALENDER-GRID MED HORISONTELL SCROLL */}
+            <div className="bg-zinc-50 border border-zinc-200 shadow-2xl overflow-x-auto rounded-sm scrollbar-hide snap-x snap-mandatory">
+                <div className="inline-grid grid-cols-7 divide-x divide-zinc-200 min-w-[1050px] sm:min-w-full">
                     {getSequenceDays().map(date => {
                         const dStr = date.toISOString().split('T')[0];
                         const jobs = jobsByDate[dStr] || [];
@@ -129,7 +130,7 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView, onUpdateJob }) =>
                         return (
                             <div 
                                 key={dStr} 
-                                className={`min-w-[140px] min-h-[600px] flex flex-col transition-all ${today ? 'bg-white' : ''}`}
+                                className={`flex flex-col transition-all snap-start ${today ? 'bg-white' : ''}`}
                                 onDragOver={(e) => e.preventDefault()}
                                 onDrop={(e) => onDrop(e, dStr)}
                             >
@@ -142,9 +143,8 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView, onUpdateJob }) =>
                                     </div>
                                 </div>
 
-                                {/* Tips 4: Quick-Add yta (klicka på tomrum för att skapa nytt jobb) */}
                                 <div 
-                                    className="p-3 space-y-3 flex-1 bg-white/50 cursor-crosshair"
+                                    className="p-2 sm:p-3 space-y-2 flex-1 bg-white/50 cursor-crosshair min-h-[500px]"
                                     onClick={(e) => {
                                         if (e.target === e.currentTarget) {
                                             setEditingJob({ datum: `${dStr}T08:00` });
@@ -159,32 +159,33 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView, onUpdateJob }) =>
                                             onDragStart={(e) => onDragStart(e, job)}
                                             onDragEnd={(e) => e.currentTarget.style.opacity = '1'}
                                             onClick={(e) => { e.stopPropagation(); setEditingJob(job); setView('NEW_JOB'); }} 
-                                            className="group relative bg-white border border-zinc-200 p-4 hover:border-zinc-900 transition-all cursor-grab active:cursor-grabbing shadow-sm hover:shadow-xl overflow-hidden"
-                                            title={`Klicka för att redigera ${job.kundnamn}\nRegnr: ${job.regnr}`} // Tips 2: Enkel tooltip
+                                            className="group relative bg-white border border-zinc-200 p-3 hover:border-zinc-900 transition-all cursor-grab active:cursor-grabbing shadow-sm hover:shadow-xl overflow-hidden rounded-sm"
                                         >
                                             <div className="absolute left-0 top-0 bottom-0 w-1 theme-bg"></div>
-                                            <div className="flex justify-between items-start mb-2">
-                                                <div className="text-[12px] font-black uppercase text-zinc-900 leading-tight group-hover:theme-text transition-colors truncate pr-2">
+                                            
+                                            {/* Kompakt innehåll för att slippa överlapp */}
+                                            <div className="flex flex-col gap-1">
+                                                <div className="text-[11px] font-black uppercase text-zinc-900 leading-tight group-hover:theme-text transition-colors break-words">
                                                     {job.kundnamn}
                                                 </div>
-                                                <div className="w-1.5 h-1.5 rounded-full theme-bg shrink-0"></div>
-                                            </div>
-                                            <div className="flex items-center justify-between text-[10px] font-mono border-t border-zinc-50 pt-2 mt-2">
-                                                <div className="flex items-center gap-1.5 text-zinc-500 font-bold">
-                                                    <SafeIcon name="clock" size={12} className="theme-text" />
-                                                    {job.datum?.split('T')[1]?.substring(0,5)}
-                                                </div>
-                                                <div className="bg-zinc-900 text-white px-2 py-0.5 font-black text-[9px] tracking-widest">
-                                                    {job.regnr}
+                                                
+                                                <div className="flex flex-wrap items-center gap-2 mt-1 pt-2 border-t border-zinc-50">
+                                                    <div className="flex items-center gap-1 text-[9px] text-zinc-500 font-bold">
+                                                        <SafeIcon name="clock" size={10} className="theme-text" />
+                                                        {job.datum?.split('T')[1]?.substring(0,5)}
+                                                    </div>
+                                                    <div className="bg-zinc-900 text-white px-1.5 py-0.5 font-black text-[8px] tracking-widest ml-auto shrink-0">
+                                                        {job.regnr}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
                                     ))}
 
                                     {jobs.length === 0 && (
-                                        <div className="h-full flex flex-col items-center justify-center py-20 opacity-[0.05] grayscale select-none pointer-events-none">
-                                            <SafeIcon name="database" size={40} className="mb-2" />
-                                            <span className="text-[10px] font-black uppercase tracking-[0.4em] rotate-90 whitespace-nowrap">Null_Sequence</span>
+                                        <div className="h-full flex flex-col items-center justify-center py-20 opacity-[0.03] grayscale select-none pointer-events-none">
+                                            <SafeIcon name="database" size={32} className="mb-2" />
+                                            <span className="text-[8px] font-black uppercase tracking-[0.4em] rotate-90 whitespace-nowrap">Null_Sequence</span>
                                         </div>
                                     )}
                                 </div>
