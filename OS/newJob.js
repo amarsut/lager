@@ -25,7 +25,6 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
         datum: today, tid: '08:00', kundpris: '100', kommentar: ''
     });
     
-    // Startar med 2 rader som standard
     const [expenses, setExpenses] = React.useState([{ desc: '', amount: '' }, { desc: '', amount: '' }]);
     const [suggestions, setSuggestions] = React.useState([]);
     const [oilLiters, setOilLiters] = React.useState(5);
@@ -43,10 +42,9 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
         }
     }, [editingJob]);
 
-    // Beräkning av inköpspris och kundpris för olja
     const calculateOil = (liters) => {
-        const purchasePrice = liters * 65; // 65kr/l inköp
-        const customerPrice = (liters * 200) + 200 + 500; // 200kr/l + filter + arbete
+        const purchasePrice = liters * 65;
+        const customerPrice = (liters * 200) + 200 + 500;
         return { purchasePrice, customerPrice };
     };
 
@@ -79,7 +77,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
             const newExpenses = [
                 { desc: `Motorolja (${l}L) [Inköp: ${purchasePrice} kr]`, amount: purchasePrice.toString() },
                 { desc: 'Oljefilter', amount: '200' },
-                ...expenses.slice(2) // Behåll eventuella manuellt tillagda rader
+                ...expenses.slice(2)
             ];
             setFormData(p => ({ ...p, kundpris: customerPrice.toString() }));
             setExpenses(newExpenses);
@@ -108,7 +106,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
     return (
         <div className="max-w-3xl ml-0 animate-in fade-in slide-in-from-left-4 duration-500">
             <div className="bg-white border border-zinc-200 shadow-2xl rounded-sm overflow-hidden">
-                <div className="bg-zinc-950 p-4 flex items-center justify-between border-b-2 theme-border">
+                <div className="bg-zinc-950 p-4 border-b-2 theme-border">
                     <div className="flex items-center gap-4">
                         <div className="w-10 h-10 theme-bg flex items-center justify-center rounded-sm">
                             <SafeIcon name={editingJob ? "edit-3" : "plus"} size={20} className="text-black" />
@@ -119,7 +117,8 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                     </div>
                 </div>
 
-                <form onSubmit={handleSave} className="p-6 lg:p-8 space-y-6 bg-zinc-50/20">
+                <form onSubmit={handleSave} className="p-6 lg:p-8 space-y-0 bg-zinc-50/20">
+                    {/* Övre sektion - Bibehållen struktur */}
                     <FormRow>
                         <InputWrapper label="Client_Name" icon="user">
                             <input type="text" value={formData.kundnamn} onChange={e => setFormData(p => ({...p, kundnamn: e.target.value}))} className="w-full bg-white border border-zinc-200 p-2.5 text-xs font-bold outline-none focus:theme-border" />
@@ -138,7 +137,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                 <option value="FAKTURERAS">Faktureras</option>
                             </select>
                         </InputWrapper>
-                        <div className="space-y-0">
+                        <div className="space-y-2">
                             <InputWrapper label="Service_Type" icon="layers">
                                 <select value={formData.paket} onChange={e => handlePackageChange(e.target.value)} className="w-full bg-white border border-zinc-200 p-2.5 text-xs font-bold outline-none focus:theme-border">
                                     <option value="Standard">Standard</option>
@@ -147,12 +146,10 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                     <option value="Felsökning">Felsökning</option>
                                 </select>
                             </InputWrapper>
-                            
-                            {/* Oljevolym tätt under paketet utan extra luft */}
                             {formData.paket === "Oljebyte" && (
-                                <div className="mt-2 p-3 bg-zinc-100 border border-zinc-200 rounded-sm animate-in slide-in-from-top-1">
-                                    <label className="text-[8px] font-black text-zinc-500 uppercase tracking-tighter mb-1 block">Volym (L)</label>
-                                    <input type="number" step="0.1" value={oilLiters} onChange={e => handleOilVolumeChange(e.target.value)} className="w-full bg-white border border-zinc-300 p-1.5 text-xs font-black font-mono outline-none focus:border-orange-500" />
+                                <div className="p-2 bg-zinc-100 border border-zinc-200 rounded-sm animate-in slide-in-from-top-1">
+                                    <label className="text-[8px] font-black text-zinc-500 uppercase mb-1 block">Volym (L)</label>
+                                    <input type="number" step="0.1" value={oilLiters} onChange={e => handleOilVolumeChange(e.target.value)} className="w-full bg-white border border-zinc-300 p-1 text-xs font-black font-mono outline-none focus:border-orange-500" />
                                 </div>
                             )}
                         </div>
@@ -167,42 +164,45 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                         </InputWrapper>
                     </FormRow>
 
-                    {/* Prisbox utan extra luft invändigt på mobil */}
-                    <div className="p-0 md:p-4 bg-zinc-100/50 rounded-sm border-0 md:border border-zinc-200/50">
+                    {/* EKONOMIBLOCK: Pris och Utgifter grupperade tillsammans */}
+                    <div className="my-8 py-6 border-y border-zinc-200 space-y-6">
                         <InputWrapper label="Final_Price_SEK" icon="credit-card">
-                            <div className="bg-white p-3 border border-zinc-300 shadow-sm flex items-center">
+                            <div className="bg-white p-3 border border-zinc-300 shadow-sm flex items-center max-w-md">
                                 <input type="number" value={formData.kundpris} onChange={e => setFormData(p => ({ ...p, kundpris: e.target.value }))} className="w-full bg-transparent text-zinc-900 text-lg font-black font-mono outline-none text-right" />
                                 <span className="ml-2 text-[8px] font-black text-zinc-400">SEK</span>
                             </div>
                         </InputWrapper>
-                    </div>
 
-                    {/* Utgifter separerade med tydlig avdelning */}
-                    <div className="pt-6 border-t border-zinc-200 space-y-3">
-                        <div className="flex items-center justify-between mb-2">
-                            <label className="text-[9px] font-black text-zinc-400 uppercase tracking-widest flex items-center gap-2">
-                                <SafeIcon name="shopping-cart" size={10} className="theme-text" />Resource_Expenses
-                            </label>
-                            <button type="button" onClick={addExpenseRow} className="text-[8px] font-black theme-text uppercase border border-orange-500/20 px-2 py-1 hover:bg-orange-500 hover:text-white transition-all">
-                                <SafeIcon name="plus" size={8} className="mr-1" /> Add_Line
-                            </button>
-                        </div>
-                        {expenses.map((ex, i) => (
-                            <div key={i} className="flex gap-2 group animate-in fade-in duration-300">
-                                <input placeholder="Beskrivning" value={ex.desc} onChange={e => { const n = [...expenses]; n[i].desc = e.target.value; setExpenses(n); }} className="flex-1 bg-white border border-zinc-200 p-2 text-[10px] font-bold outline-none focus:theme-border" />
-                                <input placeholder="Kr" type="number" value={ex.amount} onChange={e => { const n = [...expenses]; n[i].amount = e.target.value; setExpenses(n); }} className="w-20 md:w-28 bg-white border border-zinc-200 p-2 text-[10px] font-bold font-mono outline-none focus:theme-border text-right" />
-                                <button type="button" onClick={() => removeExpenseRow(i)} className="p-2 text-zinc-300 hover:text-red-500 transition-colors">
-                                    <SafeIcon name="trash-2" size={12} />
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                                <label className="text-[9px] font-black text-zinc-400 uppercase tracking-widest flex items-center gap-2">
+                                    <SafeIcon name="shopping-cart" size={10} className="theme-text" />Resource_Expenses
+                                </label>
+                                <button type="button" onClick={addExpenseRow} className="text-[8px] font-black theme-text uppercase border border-orange-500/20 px-2 py-1 hover:bg-orange-500 hover:text-white transition-all">
+                                    <SafeIcon name="plus" size={8} className="mr-1" /> Add_Line
                                 </button>
                             </div>
-                        ))}
+                            <div className="space-y-2">
+                                {expenses.map((ex, i) => (
+                                    <div key={i} className="flex gap-2 items-center animate-in fade-in duration-300">
+                                        <input placeholder="Beskrivning" value={ex.desc} onChange={e => { const n = [...expenses]; n[i].desc = e.target.value; setExpenses(n); }} className="flex-1 bg-white border border-zinc-200 p-2 text-[10px] font-bold outline-none focus:theme-border" />
+                                        <input placeholder="Kr" type="number" value={ex.amount} onChange={e => { const n = [...expenses]; n[i].amount = e.target.value; setExpenses(n); }} className="w-20 md:w-28 bg-white border border-zinc-200 p-2 text-[10px] font-bold font-mono outline-none focus:theme-border text-right" />
+                                        <button type="button" onClick={() => removeExpenseRow(i)} className="p-2 text-zinc-400 hover:text-red-500 transition-colors shrink-0">
+                                            <SafeIcon name="trash-2" size={14} />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                     </div>
 
-                    <InputWrapper label="Internal_Mission_Logs" icon="file-text">
-                        <textarea value={formData.kommentar} onChange={e => setFormData(p => ({ ...p, kommentar: e.target.value }))} className="w-full border border-zinc-200 p-3 font-mono text-[10px] min-h-[80px] outline-none focus:theme-border bg-white resize-none" placeholder="Skriv anteckningar här..." />
-                    </InputWrapper>
+                    <div className="mb-6">
+                        <InputWrapper label="Internal_Mission_Logs" icon="file-text">
+                            <textarea value={formData.kommentar} onChange={e => setFormData(p => ({ ...p, kommentar: e.target.value }))} className="w-full border border-zinc-200 p-3 font-mono text-[10px] min-h-[80px] outline-none focus:theme-border bg-white resize-none" placeholder="Skriv anteckningar här..." />
+                        </InputWrapper>
+                    </div>
 
-                    <div className="pt-6 border-t border-zinc-200 flex gap-3">
+                    <div className="pt-6 border-t border-zinc-100 flex gap-3">
                         <button type="submit" className="flex-1 theme-bg text-black font-black py-4 text-[11px] uppercase tracking-[0.3em] shadow-lg hover:brightness-110 active:scale-95 transition-all">Confirm_Push</button>
                         <button type="button" onClick={() => setView('DASHBOARD')} className="px-10 border border-zinc-200 text-zinc-400 font-black py-4 text-[11px] uppercase tracking-widest hover:bg-zinc-50 transition-all">Abort</button>
                     </div>
