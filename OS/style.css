@@ -119,3 +119,14 @@ tr.compact-row:hover {
 .mobile-nav-item.active i {
     transform: scale(1.1);
 }
+
+/* Dölj scrollbar för Chrome, Safari och Opera */
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+/* Dölj scrollbar för IE, Edge och Firefox */
+.no-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
