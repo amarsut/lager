@@ -15,9 +15,7 @@ const SectionHeader = ({ title, sub }) => (
 );
 
 window.SupplyView = ({ jobs = [], allJobs = [] }) => {
-    // Vi kollar både 'jobs' och 'allJobs' utifall prop-namnet varierar
-    const sourceJobs = jobs.length > 0 ? jobs : allJobs;
-    
+    const sourceJobs = jobs?.length > 0 ? jobs : allJobs;
     const PURCHASE_DATE = '2025-11-22';
     const INITIAL_VOLUME = 20.0;
 
@@ -26,31 +24,35 @@ window.SupplyView = ({ jobs = [], allJobs = [] }) => {
         let totalUsed = 0;
 
         (sourceJobs || []).forEach(job => {
-            // 1. Datum-detektion (Vi kollar alla möjliga fält för att inte missa något)
             const jobDateRaw = job.datum || job.deploymentDate || job.createdAt;
-            if (!jobDateRaw) return;
-            
-            // Jämförelse: Vi vill bara ha jobb EFTER inköpsdatumet
-            if (jobDateRaw < PURCHASE_DATE) return;
-            
-            // Skippa raderade jobb
-            if (job.deleted === true) return;
+            if (!jobDateRaw || jobDateRaw < PURCHASE_DATE || job.deleted) return;
 
             const jobUtgifter = Array.isArray(job.utgifter) ? job.utgifter : [];
             let oilInThisJob = 0;
 
             jobUtgifter.forEach(u => {
-                // 2. Namn-detektion: Kolla om raden rör olja
                 const desc = (u.namn || "").toLowerCase();
                 if (desc.includes('olja')) {
-                    // 3. Mängd-detektion: Ta värdet från 'kostnad' (där du skriver 4.3)
-                    const val = String(u.kostnad || "").replace(',', '.');
-                    const amount = parseFloat(val) || 0;
-                    oilInThisJob += amount;
+                    // --- SMART VOLYM-DETEKTOR ---
+                    // 1. Försök hitta ett tal i texten (t.ex. "4.3" i "Olja 4.3L")
+                    const match = u.namn.match(/(\d+[.,]\d+|\d+)/);
+                    let detectedVolume = 0;
+
+                    if (match) {
+                        detectedVolume = parseFloat(match[0].replace(',', '.'));
+                    } 
+                    
+                    // 2. Fallback: Om inget tal fanns i texten, men priset (kostnad) är lågt (< 15)
+                    // då antar vi att användaren skrev litermängden i "Kr"-rutan.
+                    const costVal = parseFloat(String(u.kostnad || "0").replace(',', '.'));
+                    if (detectedVolume === 0 && costVal < 15) {
+                        detectedVolume = costVal;
+                    }
+
+                    oilInThisJob += detectedVolume;
                 }
             });
 
-            // Om vi hittade olja på detta jobb, lägg till i historiken
             if (oilInThisJob > 0) {
                 totalUsed += oilInThisJob;
                 usageHistory.push({
@@ -66,7 +68,7 @@ window.SupplyView = ({ jobs = [], allJobs = [] }) => {
         return {
             current: INITIAL_VOLUME - totalUsed,
             used: totalUsed,
-            history: usageHistory.sort((a, b) => b.datum.localeCompare(a.datum)) // Nyast först
+            history: usageHistory.sort((a, b) => b.datum.localeCompare(a.datum))
         };
     }, [sourceJobs]);
 
@@ -74,22 +76,22 @@ window.SupplyView = ({ jobs = [], allJobs = [] }) => {
         <div className="max-w-3xl ml-0 animate-in fade-in slide-in-from-left-4 duration-700 pb-20">
             <div className="bg-zinc-50 border border-zinc-200 rounded-sm overflow-hidden shadow-2xl">
                 
-                {/* BLACK HEADER (Identisk med din Dashboard & Kalender) */}
+                {/* HEADER */}
                 <div className="bg-zinc-950 p-5 flex items-center justify-between border-b-2 theme-border relative overflow-hidden">
                     <div className="flex items-center gap-5 relative z-10">
-                        <div className="w-12 h-12 theme-bg flex items-center justify-center rounded-sm shadow-[0_0_20px_rgba(255,102,0,0.3)]">
+                        <div className="w-12 h-12 theme-bg flex items-center justify-center rounded-sm">
                             <SafeIcon name="droplet" size={24} className="text-black" />
                         </div>
                         <div>
                             <h2 className="text-sm font-black text-white uppercase tracking-[0.4em]">Resource_Nexus // Oil_Control</h2>
-                            <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest mt-1 italic italic">Active_Monitoring_Sequence</p>
+                            <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest mt-1 italic">V.9.0 // Volume_Extraction_Active</p>
                         </div>
                     </div>
                 </div>
 
                 <div className="p-8 space-y-10">
                     
-                    {/* RAD 1: LAGERSTATUS (Inspiration från din Kund-vy) */}
+                    {/* LAGERSTATUS */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div className="relative p-6 bg-white border border-zinc-200 rounded-sm shadow-sm">
                             <SectionHeader title="Current_Storage" sub="Litre_Metric_System" />
@@ -101,33 +103,29 @@ window.SupplyView = ({ jobs = [], allJobs = [] }) => {
                             </div>
                             <div className="mt-6 flex gap-1 h-2">
                                 {[...Array(20)].map((_, i) => (
-                                    <div 
-                                        key={i} 
-                                        className={`flex-1 ${i / 20 < (oilStatus.current / INITIAL_VOLUME) ? 'theme-bg shadow-[0_0_5px_rgba(255,102,0,0.5)]' : 'bg-zinc-100'}`} 
-                                    />
+                                    <div key={i} className={`flex-1 ${i / 20 < (oilStatus.current / INITIAL_VOLUME) ? 'theme-bg' : 'bg-zinc-100'}`} />
                                 ))}
                             </div>
                         </div>
 
                         <div className="p-6 bg-zinc-950 text-white rounded-sm border border-zinc-800 flex flex-col justify-between">
                             <SectionHeader title="Deployment_Info" sub="Base_Register" />
-                            <div className="space-y-4">
+                            <div className="space-y-4 text-[10px] font-bold uppercase tracking-tight">
                                 <div className="flex justify-between border-b border-zinc-800 pb-2">
-                                    <span className="text-[9px] text-zinc-500 font-bold uppercase">Initial_Base</span>
-                                    <span className="text-xs font-black font-mono">{INITIAL_VOLUME.toFixed(1)} L</span>
+                                    <span className="text-zinc-500">Initial_Base</span>
+                                    <span className="font-mono">{INITIAL_VOLUME.toFixed(1)} L</span>
                                 </div>
                                 <div className="flex justify-between border-b border-zinc-800 pb-2">
-                                    <span className="text-[9px] text-zinc-500 font-bold uppercase">Purchase_Date</span>
-                                    <span className="text-xs font-black font-mono theme-text">{PURCHASE_DATE}</span>
+                                    <span className="text-zinc-500">Purchase_Date</span>
+                                    <span className="font-mono theme-text">{PURCHASE_DATE}</span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* RAD 2: HISTORIK (Identisk tabellstil som din Mission Control Dashboard) */}
+                    {/* HISTORIK */}
                     <div className="space-y-4">
-                        <SectionHeader title="Operational_Usage_Logs" sub="Mission_Specific_Deductions" />
-                        
+                        <SectionHeader title="Operational_Usage_Logs" sub="Auto_Extracted_Volume" />
                         <div className="bg-white border border-zinc-200 rounded-sm overflow-hidden shadow-sm">
                             <table className="w-full text-left border-collapse">
                                 <thead>
@@ -146,43 +144,14 @@ window.SupplyView = ({ jobs = [], allJobs = [] }) => {
                                                     <span className="text-[8px] text-zinc-400 font-mono italic">{log.datum}</span>
                                                 </div>
                                             </td>
-                                            <td className="p-4 border-r border-zinc-100 text-center font-mono text-zinc-400 italic">
-                                                {log.reg}
-                                            </td>
+                                            <td className="p-4 border-r border-zinc-100 text-center font-mono text-zinc-400">{log.reg}</td>
                                             <td className="p-4 text-right">
                                                 <div className="theme-text font-black text-xs">-{log.mangd.toFixed(1)} L</div>
                                             </td>
                                         </tr>
                                     ))}
-                                    {oilStatus.history.length === 0 && (
-                                        <tr>
-                                            <td colSpan="3" className="p-16 text-center">
-                                                <div className="flex flex-col items-center gap-3 opacity-20">
-                                                    <SafeIcon name="slash" size={32} />
-                                                    <span className="text-[10px] font-black uppercase tracking-[0.4em]">No_Active_Logs_Detected</span>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    )}
                                 </tbody>
                             </table>
-                        </div>
-                    </div>
-
-                    {/* FOOTER */}
-                    <div className="pt-8 border-t border-zinc-200 flex justify-between items-center opacity-50">
-                        <div className="flex gap-10">
-                            <div>
-                                <p className="text-[7px] font-black text-zinc-400 uppercase tracking-widest">System_Status</p>
-                                <div className="flex items-center gap-2 mt-1">
-                                    <div className="w-1.5 h-1.5 rounded-full theme-bg animate-pulse" />
-                                    <span className="text-[9px] font-black text-zinc-900 uppercase tracking-widest">Synchronized</span>
-                                </div>
-                            </div>
-                            <div>
-                                <p className="text-[7px] font-black text-zinc-400 uppercase tracking-widest">Protocol</p>
-                                <p className="text-[9px] font-black text-zinc-900 uppercase mt-1">Oil_Track_OS_v8</p>
-                            </div>
                         </div>
                     </div>
                 </div>
