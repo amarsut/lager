@@ -331,6 +331,15 @@ const App = () => {
     );
 };
 
+const requestNotificationPermission = async () => {
+    if ('Notification' in window) {
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+            console.log("Badge_Auth: Behörighet beviljad.");
+        }
+    }
+};
+
 const LoginScreen = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
