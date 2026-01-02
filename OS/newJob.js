@@ -21,12 +21,13 @@ const InputWrapper = ({ label, icon, children }) => (
 window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
     const today = new Date().toISOString().split('T')[0];
     const [formData, setFormData] = React.useState({
-        kundnamn: '', regnr: '', paket: 'Standard Service', status: 'BOKAD',
-        datum: today, tid: '08:00', kundpris: '', kommentar: ''
+        kundnamn: '', regnr: '', paket: 'Standard', status: 'BOKAD',
+        datum: today, tid: '08:00', kundpris: '100', kommentar: ''
     });
     
     const [expenses, setExpenses] = React.useState([{ desc: '', amount: '' }, { desc: '', amount: '' }]);
     const [suggestions, setSuggestions] = React.useState([]);
+    const [oilLiters, setOilLiters] = React.useState(5); // Standard 5 liter
 
     // Återställning av data vid redigering
     React.useEffect(() => {
@@ -42,7 +43,42 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
         }
     }, [editingJob]);
 
-    // 1. Automatisk sökning av kundnamn (återinförd)
+    // Logik för att uppdatera priser och utgifter baserat på paketval
+    const handlePackageChange = (val) => {
+        let price = "0";
+        let newExpenses = [{ desc: '', amount: '' }, { desc: '', amount: '' }];
+
+        if (val === "Standard") price = "100";
+        if (val === "Hjulskifte") price = "200";
+        if (val === "Felsökning") price = "500";
+        
+        if (val === "Oljebyte") {
+            // Beräkning: (Liters * 200) + 200 (filter) + 500 (arbete)
+            price = (oilLiters * 200 + 200 + 500).toString();
+            newExpenses = [
+                { desc: `Motorolja (${oilLiters}L)`, amount: (oilLiters * 65).toString() },
+                { desc: 'Oljefilter', amount: '200' }
+            ];
+        }
+
+        setFormData(p => ({ ...p, paket: val, kundpris: price }));
+        setExpenses(newExpenses);
+    };
+
+    // Uppdatera oljevolym och räkna om priset
+    const handleOilVolumeChange = (liters) => {
+        setOilLiters(liters);
+        if (formData.paket === "Oljebyte") {
+            const price = (liters * 200 + 200 + 500).toString();
+            const newExpenses = [
+                { desc: `Motorolja (${liters}L)`, amount: (liters * 65).toString() },
+                { desc: 'Oljefilter', amount: '200' }
+            ];
+            setFormData(p => ({ ...p, kundpris: price }));
+            setExpenses(newExpenses);
+        }
+    };
+
     const handleNameChange = (val) => {
         setFormData(p => ({ ...p, kundnamn: val }));
         if (val.length > 1) {
@@ -85,7 +121,6 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                 </div>
 
                 <form onSubmit={handleSave} className="p-6 lg:p-8 space-y-6 bg-zinc-50/20">
-                    {/* Rad 1: Namn - Reg.nr */}
                     <FormRow>
                         <InputWrapper label="Client_Name" icon="user">
                             <div className="relative">
@@ -110,7 +145,6 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                         </InputWrapper>
                     </FormRow>
 
-                    {/* Rad 2: Status - Service Type (Återinförda val) */}
                     <FormRow>
                         <InputWrapper label="Mission_Status" icon="activity">
                             <select value={formData.status} onChange={e => setFormData(p => ({ ...p, status: e.target.value }))} className="w-full bg-white border border-zinc-200 p-2.5 text-xs font-black uppercase outline-none focus:theme-border">
@@ -121,16 +155,32 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                             </select>
                         </InputWrapper>
                         <InputWrapper label="Service_Type" icon="layers">
-                            <select value={formData.paket} onChange={e => setFormData(p => ({ ...p, paket: e.target.value }))} className="w-full bg-white border border-zinc-200 p-2.5 text-xs font-bold outline-none focus:theme-border">
-                                <option>Standard Service</option>
-                                <option>Oljebyte</option>
-                                <option>Bromsservice</option>
-                                <option>Felsökning</option>
+                            <select value={formData.paket} onChange={e => handlePackageChange(e.target.value)} className="w-full bg-white border border-zinc-200 p-2.5 text-xs font-bold outline-none focus:theme-border">
+                                <option value="Standard">Standard</option>
+                                <option value="Oljebyte">Oljebyte</option>
+                                <option value="Hjulskifte">Hjulskifte</option>
+                                <option value="Felsökning">Felsökning</option>
                             </select>
                         </InputWrapper>
                     </FormRow>
 
-                    {/* Rad 3: Datum - Klockslag */}
+                    {/* Specifik inmatning för motorolja om Oljebyte är valt */}
+                    {formData.paket === "Oljebyte" && (
+                        <div className="animate-in zoom-in-95 duration-300 bg-orange-50 p-4 border border-orange-200 rounded-sm">
+                            <InputWrapper label="Antal Liter Motorolja" icon="droplet">
+                                <div className="flex items-center gap-4">
+                                    <input 
+                                        type="number" 
+                                        value={oilLiters} 
+                                        onChange={e => handleOilVolumeChange(e.target.value)} 
+                                        className="w-24 bg-white border border-orange-300 p-2 text-sm font-black font-mono outline-none focus:theme-border" 
+                                    />
+                                    <span className="text-[10px] font-bold text-orange-700 uppercase">Litervolym för uträkning</span>
+                                </div>
+                            </InputWrapper>
+                        </div>
+                    )}
+
                     <FormRow>
                         <InputWrapper label="Deployment_Date" icon="calendar">
                             <input type="date" value={formData.datum} onChange={e => setFormData(p => ({ ...p, datum: e.target.value }))} className="w-full bg-white border border-zinc-200 p-2.5 text-xs font-mono font-bold outline-none focus:theme-border" />
@@ -140,7 +190,6 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                         </InputWrapper>
                     </FormRow>
 
-                    {/* Rad 4: Pris - Utgifter (Justerat utseende) */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-zinc-100/50 rounded-sm border border-zinc-200/50">
                         <InputWrapper label="Final_Price_SEK" icon="credit-card">
                             <div className="bg-white p-2 rounded-sm border border-zinc-300 shadow-sm flex items-center">
@@ -159,7 +208,6 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                         </div>
                     </div>
 
-                    {/* Rad 5: Kommentar */}
                     <InputWrapper label="Internal_Mission_Logs" icon="file-text">
                         <textarea value={formData.kommentar} onChange={e => setFormData(p => ({ ...p, kommentar: e.target.value }))} className="w-full border border-zinc-200 p-3 font-mono text-[10px] min-h-[80px] outline-none focus:theme-border bg-white resize-none" placeholder="Skriv anteckningar här..." />
                     </InputWrapper>
