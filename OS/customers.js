@@ -7,13 +7,12 @@ const SafeIcon = ({ name, size = 14, className = "" }) => (
 );
 
 window.CustomersView = ({ allJobs, setView, setEditingJob }) => {
-    // --- 1. ALLA HOOKS HÖGST UPP ---
+    // --- 1. ALLA HOOKS ---
     const [searchQuery, setSearchQuery] = React.useState('');
     const [selectedCustomer, setSelectedCustomer] = React.useState(null);
     const [sortMode, setSortMode] = React.useState('revenue'); 
     const [logSearch, setLogSearch] = React.useState('');
 
-    // FIX: Skapar ikonerna varje gång vi byter vy inuti komponenten
     React.useEffect(() => {
         if (window.lucide) {
             window.lucide.createIcons();
@@ -103,8 +102,7 @@ window.CustomersView = ({ allJobs, setView, setEditingJob }) => {
 
         return (
             <div className="animate-in fade-in slide-in-from-right-8 duration-500 pb-20">
-                {/* ÅTGÄRDAD HEADER: flex-col på mobil, flex-row på desktop, tillagd gap */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 bg-zinc-950 p-4 border-l-4 theme-border shadow-2xl relative overflow-hidden gap-6">
+                <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 bg-zinc-950 p-4 border-l-4 theme-border shadow-2xl relative overflow-hidden gap-4">
                     <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
                         <SafeIcon name="shield-check" size={100} />
                     </div>
@@ -223,41 +221,45 @@ window.CustomersView = ({ allJobs, setView, setEditingJob }) => {
                                     <div 
                                         key={i} 
                                         onClick={() => { setEditingJob(j); setView('NEW_JOB'); }}
-                                        className="p-5 hover:bg-zinc-50 transition-all flex flex-col md:flex-row md:items-center justify-between group cursor-pointer border-l-4 border-transparent hover:border-orange-500"
+                                        className="p-4 md:p-5 hover:bg-zinc-50 transition-all flex flex-col md:flex-row items-start md:items-center justify-between group cursor-pointer border-l-4 border-transparent hover:border-orange-500 gap-2 md:gap-4"
                                     >
-                                        <div className="flex items-center gap-8 flex-1">
-                                            <div className="text-center w-14 border-r border-zinc-100 pr-6 shrink-0">
-                                                <div className="text-base font-black text-zinc-950 leading-none">{j.datum?.split('-')[2]?.split('T')[0]}</div>
-                                                <div className="text-[9px] font-black text-zinc-400 uppercase">{j.datum?.split('-')[1]}</div>
+                                        <div className="flex items-center gap-4 md:gap-8 flex-1 min-w-0">
+                                            <div className="text-center w-12 md:w-14 border-r border-zinc-100 pr-4 md:pr-6 shrink-0">
+                                                <div className="text-sm md:text-base font-black text-zinc-950 leading-none">{j.datum?.split('-')[2]?.split('T')[0]}</div>
+                                                <div className="text-[8px] md:text-[9px] font-black text-zinc-400 uppercase">{j.datum?.split('-')[1]}</div>
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                                <div className="flex flex-wrap items-center gap-3 mb-1">
-                                                    <div className="text-[13px] font-black uppercase text-zinc-900 truncate group-hover:theme-text transition-colors">
+                                                <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-1">
+                                                    <div className="text-[12px] md:text-[13px] font-black uppercase text-zinc-900 truncate max-w-full group-hover:theme-text transition-colors">
                                                         {j.paket || 'Standard_Deployment'}
                                                     </div>
-                                                    <span className="text-[10px] font-mono font-bold bg-zinc-950 text-white px-2 py-0.5 rounded-sm tracking-widest shrink-0 border border-zinc-800 shadow-sm">
+                                                    <span className="text-[9px] font-mono font-bold bg-zinc-950 text-white px-2 py-0.5 rounded-sm tracking-widest shrink-0 border border-zinc-800 shadow-sm">
                                                         {j.regnr}
                                                     </span>
                                                 </div>
                                                 {j.kommentar ? (
-                                                    <div className="text-[10px] text-zinc-500 italic truncate max-w-lg flex items-center gap-2">
+                                                    <div className="text-[10px] text-zinc-500 italic truncate block w-full flex items-center gap-2">
                                                         <SafeIcon name="message-square" size={10} className="text-zinc-300" />
-                                                        "{j.kommentar}"
+                                                        <span className="truncate">"{j.kommentar}"</span>
                                                     </div>
                                                 ) : (
                                                     <div className="text-[9px] text-zinc-300 uppercase tracking-tighter italic">No_System_Notes_Stored</div>
                                                 )}
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-8 mt-4 md:mt-0 ml-auto md:ml-0 shrink-0">
-                                            <div className="text-right">
-                                                <div className="text-lg font-mono font-black text-zinc-950">{(parseInt(j.kundpris) || 0).toLocaleString()} <span className="text-[10px] opacity-30">kr</span></div>
+                                        
+                                        {/* FAST BREDD PÅ PRIS-SEKTION FÖR LINJERING */}
+                                        <div className="flex items-center justify-between md:justify-end gap-4 w-full md:w-40 shrink-0 mt-2 md:mt-0">
+                                            <div className="text-right flex-1 md:flex-none">
+                                                <div className="text-base md:text-lg font-mono font-black text-zinc-950 whitespace-nowrap">
+                                                    {(parseInt(j.kundpris) || 0).toLocaleString()} <span className="text-[10px] opacity-30">kr</span>
+                                                </div>
                                                 <div className={`text-[8px] font-black uppercase px-2 py-0.5 rounded-full inline-block ${j.status === 'KLAR' ? 'bg-emerald-50 text-emerald-600' : 'bg-orange-50 theme-text'}`}>
                                                     ● {j.status}
                                                 </div>
                                             </div>
-                                            <div className="bg-zinc-100 p-2.5 opacity-0 group-hover:opacity-100 hover:bg-zinc-950 hover:text-white transition-all rounded-sm shadow-sm border border-zinc-200">
-                                                <SafeIcon name="external-link" size={16} />
+                                            <div className="bg-zinc-100 p-2 md:opacity-0 group-hover:opacity-100 hover:bg-zinc-950 hover:text-white transition-all rounded-sm shadow-sm border border-zinc-200 shrink-0">
+                                                <SafeIcon name="external-link" size={14} />
                                             </div>
                                         </div>
                                     </div>
@@ -305,11 +307,10 @@ window.CustomersView = ({ allJobs, setView, setEditingJob }) => {
         );
     }
 
-    // --- 4. VY: HUVUDGRID (MATRIX INTERFACE) ---
+    // --- 4. VY: HUVUDGRID ---
     return (
         <div className="space-y-6 animate-in fade-in duration-500 pb-20">
-            {/* ÅTGÄRDAD HEADER: lagt till gap och flex-col på mobil för sök/sortering */}
-            <div className="bg-zinc-950 p-6 flex flex-col md:flex-row md:items-center justify-between border-b-2 theme-border shadow-2xl gap-6">
+            <div className="bg-zinc-950 p-6 flex flex-col md:flex-row md:items-center justify-between border-b-2 theme-border shadow-2xl gap-4">
                 <div className="flex items-center gap-5">
                     <div className="w-12 h-12 theme-bg flex items-center justify-center rounded-sm shadow-lg rotate-3 group-hover:rotate-0 transition-transform shrink-0">
                         <SafeIcon name="users" size={24} className="text-black" />
