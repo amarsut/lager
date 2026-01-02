@@ -7,12 +7,13 @@ const SafeIcon = ({ name, size = 14, className = "" }) => (
 );
 
 window.CustomersView = ({ allJobs, setView, setEditingJob }) => {
-    // --- 1. ALLA HOOKS ---
+    // --- 1. ALLA HOOKS HÖGST UPP ---
     const [searchQuery, setSearchQuery] = React.useState('');
     const [selectedCustomer, setSelectedCustomer] = React.useState(null);
     const [sortMode, setSortMode] = React.useState('revenue'); 
     const [logSearch, setLogSearch] = React.useState('');
 
+    // FIX: Skapar ikonerna varje gång vi byter vy inuti komponenten
     React.useEffect(() => {
         if (window.lucide) {
             window.lucide.createIcons();
@@ -102,35 +103,35 @@ window.CustomersView = ({ allJobs, setView, setEditingJob }) => {
 
         return (
             <div className="animate-in fade-in slide-in-from-right-8 duration-500 pb-20">
-                <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 bg-zinc-950 p-4 border-l-4 theme-border shadow-2xl relative overflow-hidden gap-4">
+                <div className="flex items-center justify-between mb-8 bg-zinc-950 p-4 border-l-4 theme-border shadow-2xl relative overflow-hidden">
                     <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
                         <SafeIcon name="shield-check" size={100} />
                     </div>
 
-                    <div className="flex items-center gap-4 md:gap-6 relative z-10">
-                        <button onClick={() => setSelectedCustomer(null)} className="group bg-zinc-900 border border-zinc-800 text-zinc-400 p-4 hover:theme-bg hover:text-black transition-all shrink-0">
+                    <div className="flex items-center gap-6 relative z-10">
+                        <button onClick={() => setSelectedCustomer(null)} className="group bg-zinc-900 border border-zinc-800 text-zinc-400 p-4 hover:theme-bg hover:text-black transition-all">
                             <SafeIcon name="arrow-left" size={20} className="group-hover:-translate-x-1 transition-transform" />
                             <span className="text-[10px] font-black uppercase tracking-[0.3em] ml-3 hidden md:inline">Return_to_Nexus</span>
                         </button>
-                        <div className="min-w-0">
-                            <div className="flex flex-wrap items-center gap-3 mb-1">
-                                <h2 className="text-xl md:text-2xl font-black text-white uppercase tracking-tighter leading-none truncate">{selectedCustomer.name}</h2>
+                        <div>
+                            <div className="flex items-center gap-4 mb-1">
+                                <h2 className="text-2xl font-black text-white uppercase tracking-tighter leading-none">{selectedCustomer.name}</h2>
                                 <RankBadge rank={selectedCustomer.rank} />
-                                <span className="text-[8px] font-bold bg-zinc-800 text-zinc-500 px-1.5 py-0.5 rounded-sm border border-zinc-700 whitespace-nowrap">UID: {selectedCustomer.name.substring(0,6).toUpperCase()}</span>
+                                <span className="text-[8px] font-bold bg-zinc-800 text-zinc-500 px-1.5 py-0.5 rounded-sm border border-zinc-700">UID: {selectedCustomer.name.substring(0,6).toUpperCase()}</span>
                             </div>
-                            <div className="flex flex-wrap items-center gap-x-6 gap-y-1 text-[9px] font-mono font-black text-zinc-500 uppercase tracking-widest">
-                                <span className="flex items-center gap-2 whitespace-nowrap">
+                            <div className="flex items-center gap-6 text-[9px] font-mono font-black text-zinc-500 uppercase tracking-widest">
+                                <span className="flex items-center gap-2">
                                     <div className={`w-1.5 h-1.5 rounded-full ${daysSinceLast < 45 ? 'bg-emerald-500 shadow-[0_0_8px_#10b981]' : 'bg-red-500'}`}></div>
                                     {daysSinceLast < 45 ? 'SIGNAL_ACTIVE' : 'SIGNAL_LOST'}
                                 </span>
-                                <span className="whitespace-nowrap">TOTAL_OPS: {selectedCustomer.missionCount}</span>
+                                <span>TOTAL_OPS: {selectedCustomer.missionCount}</span>
                             </div>
                         </div>
                     </div>
                     
                     <button 
                         onClick={() => { setEditingJob(null); window.prefillName = selectedCustomer.name; setView('NEW_JOB'); }}
-                        className="w-full md:w-auto theme-bg text-black px-6 py-3 text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-white transition-all shadow-lg relative z-10"
+                        className="theme-bg text-black px-6 py-3 text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-white transition-all shadow-lg"
                     >
                         <SafeIcon name="plus-circle" size={14} /> Start_New_Deployment
                     </button>
@@ -198,6 +199,7 @@ window.CustomersView = ({ allJobs, setView, setEditingJob }) => {
                             ))}
                         </div>
 
+                        {/* MISSION_LOG_BUFFER - Uppdaterad för responsivitet och linjering */}
                         <div className="bg-white border border-zinc-200 shadow-2xl rounded-sm overflow-hidden flex flex-col">
                             <div className="bg-zinc-950 p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-800">
                                 <div className="text-[10px] font-black text-white uppercase tracking-[0.3em] flex items-center gap-3">
@@ -216,14 +218,15 @@ window.CustomersView = ({ allJobs, setView, setEditingJob }) => {
                                 </div>
                             </div>
 
-                            <div className="divide-y divide-zinc-100 max-h-[450px] overflow-auto custom-scrollbar bg-white">
+                            <div className="divide-y divide-zinc-100 max-h-[450px] overflow-x-hidden overflow-y-auto custom-scrollbar bg-white">
                                 {filteredLogs.length > 0 ? filteredLogs.map((j, i) => (
                                     <div 
                                         key={i} 
                                         onClick={() => { setEditingJob(j); setView('NEW_JOB'); }}
-                                        className="p-4 md:p-5 hover:bg-zinc-50 transition-all flex flex-col md:flex-row items-start md:items-center justify-between group cursor-pointer border-l-4 border-transparent hover:border-orange-500 gap-2 md:gap-4"
+                                        className="p-4 md:p-5 hover:bg-zinc-50 transition-all flex flex-col md:flex-row items-start md:items-center justify-between group cursor-pointer border-l-4 border-transparent hover:border-orange-500 gap-4"
                                     >
-                                        <div className="flex items-center gap-4 md:gap-8 flex-1 min-w-0">
+                                        {/* Vänster del: Datum och Textinnehåll */}
+                                        <div className="flex items-center gap-4 md:gap-8 flex-1 min-w-0 w-full">
                                             <div className="text-center w-12 md:w-14 border-r border-zinc-100 pr-4 md:pr-6 shrink-0">
                                                 <div className="text-sm md:text-base font-black text-zinc-950 leading-none">{j.datum?.split('-')[2]?.split('T')[0]}</div>
                                                 <div className="text-[8px] md:text-[9px] font-black text-zinc-400 uppercase">{j.datum?.split('-')[1]}</div>
@@ -238,8 +241,8 @@ window.CustomersView = ({ allJobs, setView, setEditingJob }) => {
                                                     </span>
                                                 </div>
                                                 {j.kommentar ? (
-                                                    <div className="text-[10px] text-zinc-500 italic truncate block w-full flex items-center gap-2">
-                                                        <SafeIcon name="message-square" size={10} className="text-zinc-300" />
+                                                    <div className="text-[10px] text-zinc-500 italic flex items-center gap-2 min-w-0">
+                                                        <SafeIcon name="message-square" size={10} className="text-zinc-300 shrink-0" />
                                                         <span className="truncate">"{j.kommentar}"</span>
                                                     </div>
                                                 ) : (
@@ -247,9 +250,9 @@ window.CustomersView = ({ allJobs, setView, setEditingJob }) => {
                                                 )}
                                             </div>
                                         </div>
-                                        
-                                        {/* FAST BREDD PÅ PRIS-SEKTION FÖR LINJERING */}
-                                        <div className="flex items-center justify-between md:justify-end gap-4 w-full md:w-40 shrink-0 mt-2 md:mt-0">
+
+                                        {/* Höger del: Pris och Status (Fast bredd på desktop för linjering) */}
+                                        <div className="flex items-center justify-between md:justify-end gap-6 w-full md:w-44 shrink-0 mt-2 md:mt-0">
                                             <div className="text-right flex-1 md:flex-none">
                                                 <div className="text-base md:text-lg font-mono font-black text-zinc-950 whitespace-nowrap">
                                                     {(parseInt(j.kundpris) || 0).toLocaleString()} <span className="text-[10px] opacity-30">kr</span>
@@ -307,7 +310,7 @@ window.CustomersView = ({ allJobs, setView, setEditingJob }) => {
         );
     }
 
-    // --- 4. VY: HUVUDGRID ---
+    // --- 4. VY: HUVUDGRID (MATRIX INTERFACE) ---
     return (
         <div className="space-y-6 animate-in fade-in duration-500 pb-20">
             <div className="bg-zinc-950 p-6 flex flex-col md:flex-row md:items-center justify-between border-b-2 theme-border shadow-2xl gap-4">
