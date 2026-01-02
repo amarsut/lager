@@ -17,6 +17,21 @@
 
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
 
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Planerare OS">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/5632/5632230.png">
+
+    <script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+        // Skapa en tom fil som heter sw.js i din mapp om den saknas
+        navigator.serviceWorker.register('./sw.js').catch(err => console.log('PWA error', err));
+        });
+    }
+    </script>
+
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="calendar.css">
 </head>
