@@ -1,6 +1,6 @@
 {
-  "name": "OS Terminal",
-  "short_name": "Planerare",
+  "name": "OS Översikt",
+  "short_name": "OS Översikt",
   "description": "Industrial Logistics Matrix OS",
   "start_url": "index.html",
   "display": "standalone",
