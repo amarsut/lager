@@ -4,7 +4,6 @@ const SafeIcon = ({ name, size = 14, className = "" }) => (
     </span>
 );
 
-// Ikonen från bild d1a5a5 (Box med pil utåt)
 const ExternalLinkIcon = () => (
     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
@@ -31,11 +30,8 @@ window.SupplyView = () => {
     React.useEffect(() => {
         const db = window.db;
         
-        // Hämta inställningar direkt från Firebase
         const unsubSettings = db.collection('settings').doc('inventory').onSnapshot(doc => {
-            if (doc.exists) {
-                setSettings(doc.data());
-            }
+            if (doc.exists) setSettings(doc.data());
         });
 
         const unsubJobs = db.collection('jobs')
@@ -84,28 +80,30 @@ window.SupplyView = () => {
             }
         });
 
+        const currentVolume = startAmount - totalUsed;
+        const avgUsage = usageHistory.length > 0 ? totalUsed / usageHistory.length : 0;
+        const estimatedMissions = avgUsage > 0 ? Math.floor(currentVolume / avgUsage) : 0;
+
         return {
-            current: startAmount - totalUsed,
+            current: currentVolume,
             initial: startAmount,
-            history: usageHistory.sort((a, b) => b.datum.localeCompare(a.datum))
+            history: usageHistory.sort((a, b) => b.datum.localeCompare(a.datum)),
+            estimatedMissions,
+            isLow: currentVolume < 10
         };
     }, [jobs, settings]);
 
-    // Förbättrad klick-hantering med loggning
     const handleJobClick = (id) => {
-        console.log("Triggering edit for Mission_ID:", id); 
         if (window.openEditModal) {
             window.openEditModal(id);
-        } else {
-            console.warn("System_Error: window.openEditModal not found. Check app.js initialization.");
         }
     };
 
-    if (loading) return <div className="p-8 text-zinc-400 font-black uppercase text-[10px] tracking-widest animate-pulse">Establishing_Nexus_Link...</div>;
+    if (loading) return <div className="p-8 text-zinc-400 font-black uppercase text-[10px] tracking-widest animate-pulse">Initializing_Link...</div>;
 
     return (
         <div className="max-w-3xl ml-0 animate-in fade-in slide-in-from-left-4 duration-500 pb-10">
-            <div className="bg-zinc-50 border border-zinc-200 rounded-sm overflow-hidden shadow-2xl">
+            <div className="bg-zinc-50 border border-zinc-200 shadow-2xl rounded-sm overflow-hidden text-zinc-900">
                 
                 {/* HEADER */}
                 <div className="bg-zinc-950 p-4 flex items-center justify-between border-b-2 theme-border">
@@ -117,18 +115,27 @@ window.SupplyView = () => {
                     </div>
                 </div>
 
-                <div className="p-4 lg:p-8 space-y-6 lg:space-y-10">
+                <div className="p-4 lg:p-8 space-y-6">
                     
                     {/* STATUS-PANEL */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-8 p-3 bg-zinc-100/50 rounded-sm border border-zinc-200/50">
-                        <div className="p-4 lg:p-6 bg-white border border-zinc-200 rounded-sm shadow-sm">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6 p-3 bg-zinc-100/50 rounded-sm border border-zinc-200/50">
+                        <div className="p-4 lg:p-6 bg-white border border-zinc-200 rounded-sm shadow-sm relative overflow-hidden">
                             <SectionHeader title="Current_Storage" sub="Litre_Metric" />
                             <div className="flex items-baseline justify-end gap-2 mt-4">
-                                <span className="text-3xl lg:text-5xl font-black font-mono tracking-tighter theme-text">
+                                <span className={`text-4xl lg:text-5xl font-black font-mono tracking-tighter theme-text ${oilStatus.isLow ? 'animate-pulse' : ''}`}>
                                     {oilStatus.current.toFixed(1)}
                                 </span>
                                 <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Litres</span>
                             </div>
+                            
+                            {/* PROGNOS: Hur många missions kvar */}
+                            <div className="mt-4 pt-3 border-t border-zinc-100 flex justify-between items-center">
+                                <span className="text-[8px] font-black text-zinc-400 uppercase tracking-widest">Estimated_Reach</span>
+                                <span className="text-[10px] font-black theme-text uppercase tracking-tighter">
+                                    ~{oilStatus.estimatedMissions} MISSIONS
+                                </span>
+                            </div>
+
                             <div className="mt-4 flex gap-1 h-1.5 lg:h-2">
                                 {[...Array(20)].map((_, i) => (
                                     <div key={i} className={`flex-1 ${i / 20 < (oilStatus.current / oilStatus.initial) ? 'theme-bg shadow-[0_0_5px_rgba(255,102,0,0.5)]' : 'bg-zinc-100'}`} />
@@ -136,36 +143,38 @@ window.SupplyView = () => {
                             </div>
                         </div>
 
-                        {/* DEPLOYMENT INFO - Startvolym återställd */}
                         <div className="p-4 lg:p-6 bg-zinc-950 text-white rounded-sm border border-zinc-800 flex flex-col justify-between shadow-inner">
                             <SectionHeader title="Deployment_Info" sub="Database_Reference" light={true} />
-                            <div className="space-y-4 mt-2">
-                                <div className="flex justify-between border-b border-zinc-800 pb-2">
-                                    <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest">Start_Date</span>
-                                    <span className="text-xs font-black font-mono text-white tracking-tighter">{settings.oilStartDate}</span>
+                            <div className="space-y-3 mt-2">
+                                <div className="flex justify-between border-b border-zinc-800 pb-1">
+                                    <span className="text-[8px] text-zinc-500 font-bold uppercase tracking-widest">Start_Date</span>
+                                    <span className="text-[11px] font-black font-mono text-white tracking-tighter">{settings.oilStartDate}</span>
                                 </div>
-                                <div className="flex justify-between border-b border-zinc-800 pb-2">
-                                    <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest">Base_Volume</span>
-                                    <span className="text-xs font-black font-mono theme-text tracking-tighter">{oilStatus.initial.toFixed(1)} L</span>
+                                <div className="flex justify-between border-b border-zinc-800 pb-1">
+                                    <span className="text-[8px] text-zinc-500 font-bold uppercase tracking-widest">Base_Volume</span>
+                                    <span className="text-[11px] font-black font-mono theme-text tracking-tighter">{oilStatus.initial.toFixed(1)} L</span>
                                 </div>
+                                {oilStatus.isLow && (
+                                    <div className="text-[8px] font-black text-red-500 uppercase tracking-widest animate-pulse mt-1">
+                                        ⚠️ WARNING: CRITICAL_STORAGE_LEVEL
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
 
-                    {/* USAGE LOGS - Kompakt & Klickbar */}
-                    <div className="space-y-4">
+                    {/* USAGE LOGS */}
+                    <div className="space-y-3">
                         <SectionHeader title="Operational_Usage_Logs" sub="Mission_Specific_Deductions" />
-                        
                         <div className="bg-white border border-zinc-200 rounded-sm overflow-hidden shadow-sm">
-                            {/* DESKTOP TABELL */}
                             <table className="hidden md:table w-full text-left border-collapse">
                                 <thead>
                                     <tr className="bg-zinc-100/80 text-zinc-500 text-[8px] font-black uppercase tracking-[0.2em] border-b border-zinc-200">
-                                        <th className="p-4 border-r border-zinc-200">Mission_Entity</th>
-                                        <th className="p-4 border-r border-zinc-200 text-center">Timestamp</th>
-                                        <th className="p-4 border-r border-zinc-200 text-center">Unit_ID</th>
-                                        <th className="p-4 text-right">Debit_Vol</th>
-                                        <th className="p-4 text-center w-10"></th>
+                                        <th className="px-4 py-2 border-r border-zinc-200">Mission_Entity</th>
+                                        <th className="px-4 py-2 border-r border-zinc-200 text-center">Timestamp</th>
+                                        <th className="px-4 py-2 border-r border-zinc-200 text-center">Unit_ID</th>
+                                        <th className="px-4 py-2 text-right">Debit_Vol</th>
+                                        <th className="px-4 py-2 text-center w-10"></th>
                                     </tr>
                                 </thead>
                                 <tbody className="text-[10px] font-bold uppercase">
@@ -175,11 +184,11 @@ window.SupplyView = () => {
                                             className="border-b border-zinc-100 hover:bg-zinc-50 cursor-pointer transition-all group"
                                             onClick={() => handleJobClick(log.id)}
                                         >
-                                            <td className="px-4 py-1.5 border-r border-zinc-50 text-zinc-900">{log.kund}</td>
-                                            <td className="px-4 py-1.5 border-r border-zinc-50 text-center text-zinc-900 font-mono font-black">{log.datum}</td>
+                                            <td className="px-4 py-1.5 border-r border-zinc-50">{log.kund}</td>
+                                            <td className="px-4 py-1.5 border-r border-zinc-50 text-center font-mono font-black">{log.datum}</td>
                                             <td className="px-4 py-1.5 border-r border-zinc-50 text-center font-mono text-zinc-400 italic tracking-widest">{log.reg}</td>
                                             <td className="px-4 py-1.5 text-right theme-text font-black">-{log.mangd.toFixed(1)} L</td>
-                                            <td className="px-4 py-1.5 text-center text-zinc-300 group-hover:theme-text transition-colors">
+                                            <td className="px-4 py-1.5 text-center text-zinc-300 group-hover:theme-text transition-all">
                                                 <ExternalLinkIcon />
                                             </td>
                                         </tr>
@@ -187,44 +196,21 @@ window.SupplyView = () => {
                                 </tbody>
                             </table>
 
-                            {/* MOBIL LIST-VY - Optimerad för fingrar */}
+                            {/* MOBILE LIST VIEW */}
                             <div className="md:hidden divide-y divide-zinc-100 bg-white">
                                 {oilStatus.history.map((log, i) => (
-                                    <div 
-                                        key={i} 
-                                        className="p-4 active:bg-zinc-50 flex justify-between items-center group cursor-pointer"
-                                        onClick={() => handleJobClick(log.id)}
-                                    >
-                                        <div className="space-y-1.5">
+                                    <div key={i} className="p-4 active:bg-zinc-50 flex justify-between items-center" onClick={() => handleJobClick(log.id)}>
+                                        <div className="space-y-1">
                                             <div className="text-[11px] font-black text-zinc-900 uppercase tracking-tight">{log.kund}</div>
-                                            <div className="flex items-center gap-3 text-[9px] font-bold">
+                                            <div className="flex gap-3 text-[9px] font-bold items-center">
                                                 <span className="theme-text font-mono font-black">{log.datum}</span>
                                                 <span className="text-zinc-400 font-mono italic tracking-widest">{log.reg}</span>
-                                                <span className="text-zinc-300 opacity-50"><ExternalLinkIcon /></span>
+                                                <span className="text-zinc-300"><ExternalLinkIcon /></span>
                                             </div>
                                         </div>
-                                        <div className="text-[13px] font-black theme-text font-mono">-{log.mangd.toFixed(1)} L</div>
+                                        <div className="text-sm font-black theme-text font-mono">-{log.mangd.toFixed(1)} L</div>
                                     </div>
                                 ))}
-                            </div>
-
-                            {oilStatus.history.length === 0 && (
-                                <div className="p-16 text-center text-[9px] font-black text-zinc-300 italic tracking-[0.4em]">
-                                    NO_MISSION_DATA_DETECTED
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* FOOTER */}
-                    <div className="pt-8 border-t border-zinc-200 flex flex-col md:flex-row justify-between items-center gap-4 opacity-40">
-                        <div className="flex gap-10">
-                            <div>
-                                <p className="text-[7px] font-black text-zinc-400 uppercase tracking-widest">System_Protocol</p>
-                                <div className="flex items-center gap-2 mt-1 text-zinc-900">
-                                    <div className="w-1.5 h-1.5 rounded-full theme-bg animate-pulse" />
-                                    <span className="text-[9px] font-black uppercase tracking-widest">Active_Link_V15</span>
-                                </div>
                             </div>
                         </div>
                     </div>
