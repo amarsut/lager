@@ -25,11 +25,11 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
         datum: today, tid: '08:00', kundpris: '100', kommentar: ''
     });
     
+    // Startar med 2 rader som standard
     const [expenses, setExpenses] = React.useState([{ desc: '', amount: '' }, { desc: '', amount: '' }]);
     const [suggestions, setSuggestions] = React.useState([]);
-    const [oilLiters, setOilLiters] = React.useState(5); // Standard 5 liter
+    const [oilLiters, setOilLiters] = React.useState(5);
 
-    // Återställning av data vid redigering
     React.useEffect(() => {
         if (editingJob) {
             setFormData({ 
@@ -43,7 +43,13 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
         }
     }, [editingJob]);
 
-    // Logik för att uppdatera priser och utgifter baserat på paketval
+    // Beräkning av inköpspris och kundpris för olja
+    const calculateOil = (liters) => {
+        const purchasePrice = liters * 65; // 65kr/l inköp
+        const customerPrice = (liters * 200) + 200 + 500; // 200kr/l + filter + arbete
+        return { purchasePrice, customerPrice };
+    };
+
     const handlePackageChange = (val) => {
         let price = "0";
         let newExpenses = [{ desc: '', amount: '' }, { desc: '', amount: '' }];
@@ -53,10 +59,10 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
         if (val === "Felsökning") price = "500";
         
         if (val === "Oljebyte") {
-            // Beräkning: (Liters * 200) + 200 (filter) + 500 (arbete)
-            price = (oilLiters * 200 + 200 + 500).toString();
+            const { purchasePrice, customerPrice } = calculateOil(oilLiters);
+            price = customerPrice.toString();
             newExpenses = [
-                { desc: `Motorolja (${oilLiters}L)`, amount: (oilLiters * 65).toString() },
+                { desc: `Motorolja (${oilLiters}L) [Inköp: ${purchasePrice} kr]`, amount: purchasePrice.toString() },
                 { desc: 'Oljefilter', amount: '200' }
             ];
         }
@@ -65,30 +71,25 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
         setExpenses(newExpenses);
     };
 
-    // Uppdatera oljevolym och räkna om priset
     const handleOilVolumeChange = (liters) => {
-        setOilLiters(liters);
+        const l = parseFloat(liters) || 0;
+        setOilLiters(l);
         if (formData.paket === "Oljebyte") {
-            const price = (liters * 200 + 200 + 500).toString();
+            const { purchasePrice, customerPrice } = calculateOil(l);
             const newExpenses = [
-                { desc: `Motorolja (${liters}L)`, amount: (liters * 65).toString() },
-                { desc: 'Oljefilter', amount: '200' }
+                { desc: `Motorolja (${l}L) [Inköp: ${purchasePrice} kr]`, amount: purchasePrice.toString() },
+                { desc: 'Oljefilter', amount: '200' },
+                ...expenses.slice(2) // Behåll eventuella manuellt tillagda rader
             ];
-            setFormData(p => ({ ...p, kundpris: price }));
+            setFormData(p => ({ ...p, kundpris: customerPrice.toString() }));
             setExpenses(newExpenses);
         }
     };
 
-    const handleNameChange = (val) => {
-        setFormData(p => ({ ...p, kundnamn: val }));
-        if (val.length > 1) {
-            const matches = allJobs
-                .filter(j => j.kundnamn.toLowerCase().includes(val.toLowerCase()))
-                .map(j => j.kundnamn);
-            setSuggestions([...new Set(matches)].slice(0, 5));
-        } else {
-            setSuggestions([]);
-        }
+    const addExpenseRow = () => setExpenses([...expenses, { desc: '', amount: '' }]);
+    const removeExpenseRow = (index) => {
+        const newExpenses = expenses.filter((_, i) => i !== index);
+        setExpenses(newExpenses.length ? newExpenses : [{ desc: '', amount: '' }]);
     };
 
     const handleSave = async (e) => {
@@ -112,36 +113,19 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                         <div className="w-10 h-10 theme-bg flex items-center justify-center rounded-sm">
                             <SafeIcon name={editingJob ? "edit-3" : "plus"} size={20} className="text-black" />
                         </div>
-                        <div>
-                            <h2 className="text-sm font-black text-white uppercase tracking-widest">
-                                {editingJob ? 'Update_Sequence' : 'Create_New_Mission'}
-                            </h2>
-                        </div>
+                        <h2 className="text-sm font-black text-white uppercase tracking-widest">
+                            {editingJob ? 'Update_Sequence' : 'Create_New_Mission'}
+                        </h2>
                     </div>
                 </div>
 
                 <form onSubmit={handleSave} className="p-6 lg:p-8 space-y-6 bg-zinc-50/20">
                     <FormRow>
                         <InputWrapper label="Client_Name" icon="user">
-                            <div className="relative">
-                                <input 
-                                    type="text" 
-                                    value={formData.kundnamn} 
-                                    onChange={e => handleNameChange(e.target.value)} 
-                                    className="w-full bg-white border border-zinc-200 p-2.5 text-xs font-bold outline-none focus:theme-border" 
-                                    placeholder="Sök eller skriv namn..." 
-                                />
-                                {suggestions.length > 0 && (
-                                    <div className="absolute z-10 w-full bg-white border border-zinc-200 shadow-xl mt-1 rounded-sm">
-                                        {suggestions.map((s, i) => (
-                                            <div key={i} onClick={() => { setFormData(p => ({ ...p, kundnamn: s })); setSuggestions([]); }} className="p-2 text-xs hover:bg-zinc-100 cursor-pointer font-bold uppercase">{s}</div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
+                            <input type="text" value={formData.kundnamn} onChange={e => setFormData(p => ({...p, kundnamn: e.target.value}))} className="w-full bg-white border border-zinc-200 p-2.5 text-xs font-bold outline-none focus:theme-border" />
                         </InputWrapper>
                         <InputWrapper label="Registry_Number" icon="truck">
-                            <input type="text" value={formData.regnr} onChange={e => setFormData(p => ({ ...p, regnr: e.target.value.toUpperCase() }))} className="w-full bg-white border border-zinc-200 p-2.5 text-sm font-black theme-text font-mono outline-none focus:theme-border uppercase tracking-widest" placeholder="XXX 000" />
+                            <input type="text" value={formData.regnr} onChange={e => setFormData(p => ({ ...p, regnr: e.target.value.toUpperCase() }))} className="w-full bg-white border border-zinc-200 p-2.5 text-sm font-black theme-text font-mono outline-none focus:theme-border uppercase tracking-widest" />
                         </InputWrapper>
                     </FormRow>
 
@@ -154,32 +138,25 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                 <option value="FAKTURERAS">Faktureras</option>
                             </select>
                         </InputWrapper>
-                        <InputWrapper label="Service_Type" icon="layers">
-                            <select value={formData.paket} onChange={e => handlePackageChange(e.target.value)} className="w-full bg-white border border-zinc-200 p-2.5 text-xs font-bold outline-none focus:theme-border">
-                                <option value="Standard">Standard</option>
-                                <option value="Oljebyte">Oljebyte</option>
-                                <option value="Hjulskifte">Hjulskifte</option>
-                                <option value="Felsökning">Felsökning</option>
-                            </select>
-                        </InputWrapper>
-                    </FormRow>
-
-                    {/* Specifik inmatning för motorolja om Oljebyte är valt */}
-                    {formData.paket === "Oljebyte" && (
-                        <div className="animate-in zoom-in-95 duration-300 bg-orange-50 p-4 border border-orange-200 rounded-sm">
-                            <InputWrapper label="Antal Liter Motorolja" icon="droplet">
-                                <div className="flex items-center gap-4">
-                                    <input 
-                                        type="number" 
-                                        value={oilLiters} 
-                                        onChange={e => handleOilVolumeChange(e.target.value)} 
-                                        className="w-24 bg-white border border-orange-300 p-2 text-sm font-black font-mono outline-none focus:theme-border" 
-                                    />
-                                    <span className="text-[10px] font-bold text-orange-700 uppercase">Litervolym för uträkning</span>
-                                </div>
+                        <div className="space-y-0">
+                            <InputWrapper label="Service_Type" icon="layers">
+                                <select value={formData.paket} onChange={e => handlePackageChange(e.target.value)} className="w-full bg-white border border-zinc-200 p-2.5 text-xs font-bold outline-none focus:theme-border">
+                                    <option value="Standard">Standard</option>
+                                    <option value="Oljebyte">Oljebyte</option>
+                                    <option value="Hjulskifte">Hjulskifte</option>
+                                    <option value="Felsökning">Felsökning</option>
+                                </select>
                             </InputWrapper>
+                            
+                            {/* Oljevolym tätt under paketet utan extra luft */}
+                            {formData.paket === "Oljebyte" && (
+                                <div className="mt-2 p-3 bg-zinc-100 border border-zinc-200 rounded-sm animate-in slide-in-from-top-1">
+                                    <label className="text-[8px] font-black text-zinc-500 uppercase tracking-tighter mb-1 block">Volym (L)</label>
+                                    <input type="number" step="0.1" value={oilLiters} onChange={e => handleOilVolumeChange(e.target.value)} className="w-full bg-white border border-zinc-300 p-1.5 text-xs font-black font-mono outline-none focus:border-orange-500" />
+                                </div>
+                            )}
                         </div>
-                    )}
+                    </FormRow>
 
                     <FormRow>
                         <InputWrapper label="Deployment_Date" icon="calendar">
@@ -190,29 +167,42 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                         </InputWrapper>
                     </FormRow>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-zinc-100/50 rounded-sm border border-zinc-200/50">
+                    {/* Prisbox utan extra luft invändigt på mobil */}
+                    <div className="p-0 md:p-4 bg-zinc-100/50 rounded-sm border-0 md:border border-zinc-200/50">
                         <InputWrapper label="Final_Price_SEK" icon="credit-card">
-                            <div className="bg-white p-2 rounded-sm border border-zinc-300 shadow-sm flex items-center">
-                                <input type="number" value={formData.kundpris} onChange={e => setFormData(p => ({ ...p, kundpris: e.target.value }))} className="w-full bg-transparent text-zinc-900 text-lg font-black font-mono outline-none text-right" placeholder="0" />
+                            <div className="bg-white p-3 border border-zinc-300 shadow-sm flex items-center">
+                                <input type="number" value={formData.kundpris} onChange={e => setFormData(p => ({ ...p, kundpris: e.target.value }))} className="w-full bg-transparent text-zinc-900 text-lg font-black font-mono outline-none text-right" />
                                 <span className="ml-2 text-[8px] font-black text-zinc-400">SEK</span>
                             </div>
                         </InputWrapper>
-                        <div className="space-y-2">
-                            <label className="text-[9px] font-black text-zinc-400 uppercase tracking-widest flex items-center gap-2 ml-1"><SafeIcon name="shopping-cart" size={10} className="theme-text" />Resource_Expenses</label>
-                            {expenses.map((ex, i) => (
-                                <div key={i} className="flex gap-2">
-                                    <input placeholder="Del" value={ex.desc} onChange={e => { const n = [...expenses]; n[i].desc = e.target.value; setExpenses(n); }} className="flex-1 bg-white border border-zinc-200 p-2 text-[10px] font-bold outline-none" />
-                                    <input placeholder="Kr" type="number" value={ex.amount} onChange={e => { const n = [...expenses]; n[i].amount = e.target.value; setExpenses(n); }} className="w-20 bg-white border border-zinc-200 p-2 text-[10px] font-bold font-mono outline-none text-right" />
-                                </div>
-                            ))}
+                    </div>
+
+                    {/* Utgifter separerade med tydlig avdelning */}
+                    <div className="pt-6 border-t border-zinc-200 space-y-3">
+                        <div className="flex items-center justify-between mb-2">
+                            <label className="text-[9px] font-black text-zinc-400 uppercase tracking-widest flex items-center gap-2">
+                                <SafeIcon name="shopping-cart" size={10} className="theme-text" />Resource_Expenses
+                            </label>
+                            <button type="button" onClick={addExpenseRow} className="text-[8px] font-black theme-text uppercase border border-orange-500/20 px-2 py-1 hover:bg-orange-500 hover:text-white transition-all">
+                                <SafeIcon name="plus" size={8} className="mr-1" /> Add_Line
+                            </button>
                         </div>
+                        {expenses.map((ex, i) => (
+                            <div key={i} className="flex gap-2 group animate-in fade-in duration-300">
+                                <input placeholder="Beskrivning" value={ex.desc} onChange={e => { const n = [...expenses]; n[i].desc = e.target.value; setExpenses(n); }} className="flex-1 bg-white border border-zinc-200 p-2 text-[10px] font-bold outline-none focus:theme-border" />
+                                <input placeholder="Kr" type="number" value={ex.amount} onChange={e => { const n = [...expenses]; n[i].amount = e.target.value; setExpenses(n); }} className="w-20 md:w-28 bg-white border border-zinc-200 p-2 text-[10px] font-bold font-mono outline-none focus:theme-border text-right" />
+                                <button type="button" onClick={() => removeExpenseRow(i)} className="p-2 text-zinc-300 hover:text-red-500 transition-colors">
+                                    <SafeIcon name="trash-2" size={12} />
+                                </button>
+                            </div>
+                        ))}
                     </div>
 
                     <InputWrapper label="Internal_Mission_Logs" icon="file-text">
                         <textarea value={formData.kommentar} onChange={e => setFormData(p => ({ ...p, kommentar: e.target.value }))} className="w-full border border-zinc-200 p-3 font-mono text-[10px] min-h-[80px] outline-none focus:theme-border bg-white resize-none" placeholder="Skriv anteckningar här..." />
                     </InputWrapper>
 
-                    <div className="pt-6 border-t border-zinc-100 flex gap-3">
+                    <div className="pt-6 border-t border-zinc-200 flex gap-3">
                         <button type="submit" className="flex-1 theme-bg text-black font-black py-4 text-[11px] uppercase tracking-[0.3em] shadow-lg hover:brightness-110 active:scale-95 transition-all">Confirm_Push</button>
                         <button type="button" onClick={() => setView('DASHBOARD')} className="px-10 border border-zinc-200 text-zinc-400 font-black py-4 text-[11px] uppercase tracking-widest hover:bg-zinc-50 transition-all">Abort</button>
                     </div>
