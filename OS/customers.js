@@ -297,7 +297,7 @@ window.CustomersView = ({ allJobs, setView, setEditingJob }) => {
                             <div className="absolute top-0 left-0 w-1.5 h-full theme-bg shadow-[0_0_15px_rgba(249,115,22,0.5)]"></div>
                             <div className="relative z-10">
                                 <div className="text-[8px] font-black theme-text uppercase mb-4 tracking-[0.4em] flex items-center gap-2">
-                                    <SafeIcon name="info" size={10} /> Intelligence_Briefing
+                                    <SafeIcon name="info" size={10} /> Customers_View
                                 </div>
                                 <p className="text-white text-[10px] font-medium leading-relaxed italic opacity-90 border-l border-zinc-800 pl-4">
                                     "Kunden uppvisar ett lojalt beteendemönster med fokus på {selectedCustomer.topVehicle}. {selectedCustomer.isChurned ? 'Varning: Signalstyrkan har minskat då enheten inte besökt basen på länge.' : 'Signalstyrkan är optimal.'} Rekommenderar riktad service-optimering."
