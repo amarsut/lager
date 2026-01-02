@@ -90,7 +90,7 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView, onUpdateJob }) =>
                     </div>
                     <div>
                         <h2 className="text-lg font-black text-white uppercase tracking-tighter italic">
-                            {viewMode === 'WEEK' ? `Sequence_Range` : monthNames[currentDate.getMonth()].toUpperCase()}
+                            {viewMode === 'WEEK' ? `Schedule_View` : monthNames[currentDate.getMonth()].toUpperCase()}
                         </h2>
                         <div className="flex items-center gap-2">
                             <span className="w-2 h-2 rounded-full theme-bg animate-pulse"></span>
