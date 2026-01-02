@@ -1,4 +1,4 @@
-// customers.js
+// customers.js - VERSION: TACTICAL_FIX_ICONS
 
 const SafeIcon = ({ name, size = 14, className = "" }) => (
     <span className="inline-flex items-center justify-center shrink-0">
@@ -7,10 +7,18 @@ const SafeIcon = ({ name, size = 14, className = "" }) => (
 );
 
 window.CustomersView = ({ allJobs, setView, setEditingJob }) => {
+    // --- 1. ALLA HOOKS HÖGST UPP ---
     const [searchQuery, setSearchQuery] = React.useState('');
     const [selectedCustomer, setSelectedCustomer] = React.useState(null);
     const [sortMode, setSortMode] = React.useState('revenue'); 
-    const [logSearch, setLogSearch] = React.useState(''); // Flyttad hit för att följa Reacts regler
+    const [logSearch, setLogSearch] = React.useState('');
+
+    // FIX: Skapar ikonerna varje gång vi byter vy inuti komponenten
+    React.useEffect(() => {
+        if (window.lucide) {
+            window.lucide.createIcons();
+        }
+    }, [selectedCustomer, logSearch, searchQuery]);
 
     // --- 2. DATABEREDNING ---
     const customerData = React.useMemo(() => {
@@ -80,12 +88,11 @@ window.CustomersView = ({ allJobs, setView, setEditingJob }) => {
         );
     };
 
-    // --- 3. VY: PROFIL (FÖRÄNDRAD & FÖRBÄTTRAD) ---
+    // --- 3. VY: PROFIL ---
     if (selectedCustomer) {
         const loyaltyScore = Math.min(100, (selectedCustomer.missionCount * 5));
         const daysSinceLast = Math.floor((new Date() - new Date(selectedCustomer.lastSeen)) / (1000 * 60 * 60 * 24));
         
-        // Lokal filtrering av historikloggen
         const filteredLogs = selectedCustomer.jobs
             .filter(j => 
                 (j.regnr || '').toLowerCase().includes(logSearch.toLowerCase()) || 
@@ -96,7 +103,6 @@ window.CustomersView = ({ allJobs, setView, setEditingJob }) => {
 
         return (
             <div className="animate-in fade-in slide-in-from-right-8 duration-500 pb-20">
-                {/* Tactical Header HUD */}
                 <div className="flex items-center justify-between mb-8 bg-zinc-950 p-4 border-l-4 theme-border shadow-2xl relative overflow-hidden">
                     <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
                         <SafeIcon name="shield-check" size={100} />
@@ -124,7 +130,7 @@ window.CustomersView = ({ allJobs, setView, setEditingJob }) => {
                     </div>
                     
                     <button 
-                        onClick={() => { setView('NEW_JOB'); window.prefillName = selectedCustomer.name; }}
+                        onClick={() => { setEditingJob(null); window.prefillName = selectedCustomer.name; setView('NEW_JOB'); }}
                         className="theme-bg text-black px-6 py-3 text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-white transition-all shadow-lg"
                     >
                         <SafeIcon name="plus-circle" size={14} /> Start_New_Deployment
@@ -132,13 +138,14 @@ window.CustomersView = ({ allJobs, setView, setEditingJob }) => {
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                    {/* Intelligence Stats Column */}
                     <div className="space-y-6">
                         <div className="bg-zinc-900 p-6 rounded-sm relative overflow-hidden border border-zinc-800">
-                            <div className="text-[8px] font-black text-zinc-500 uppercase tracking-widest mb-1">Loyalty_Pulse_Score</div>
-                            <div className="text-3xl font-mono font-black text-white mb-4">{loyaltyScore}%</div>
-                            <div className="w-full bg-zinc-800 h-1.5 rounded-full overflow-hidden shadow-inner">
-                                <div className="theme-bg h-full shadow-[0_0_10px_#f97316]" style={{ width: `${loyaltyScore}%` }}></div>
+                            <div className="relative z-10">
+                                <div className="text-[8px] font-black text-zinc-500 uppercase tracking-widest mb-1">Loyalty_Pulse_Score</div>
+                                <div className="text-3xl font-mono font-black text-white mb-4">{loyaltyScore}%</div>
+                                <div className="w-full bg-zinc-800 h-1.5 rounded-full overflow-hidden shadow-inner">
+                                    <div className="theme-bg h-full shadow-[0_0_10px_#f97316]" style={{ width: `${loyaltyScore}%` }}></div>
+                                </div>
                             </div>
                             <SafeIcon name="activity" size={80} className="absolute -right-4 -bottom-4 text-white opacity-5" />
                         </div>
@@ -175,7 +182,6 @@ window.CustomersView = ({ allJobs, setView, setEditingJob }) => {
                         </div>
                     </div>
 
-                    {/* Mission Log & Assets Column */}
                     <div className="lg:col-span-3 space-y-6">
                         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                             {[
@@ -193,7 +199,6 @@ window.CustomersView = ({ allJobs, setView, setEditingJob }) => {
                             ))}
                         </div>
 
-                        {/* FÖRBÄTTRAD MISSION LOG HISTORY */}
                         <div className="bg-white border border-zinc-200 shadow-2xl rounded-sm overflow-hidden flex flex-col">
                             <div className="bg-zinc-950 p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-800">
                                 <div className="text-[10px] font-black text-white uppercase tracking-[0.3em] flex items-center gap-3">
@@ -216,10 +221,7 @@ window.CustomersView = ({ allJobs, setView, setEditingJob }) => {
                                 {filteredLogs.length > 0 ? filteredLogs.map((j, i) => (
                                     <div 
                                         key={i} 
-                                        onClick={() => { 
-                                            setEditingJob(j); // FIX: Använder statet istället för window.editingJob
-                                            setView('NEW_JOB'); 
-                                        }}
+                                        onClick={() => { setEditingJob(j); setView('NEW_JOB'); }}
                                         className="p-5 hover:bg-zinc-50 transition-all flex flex-col md:flex-row md:items-center justify-between group cursor-pointer border-l-4 border-transparent hover:border-orange-500"
                                     >
                                         <div className="flex items-center gap-8 flex-1">
@@ -249,6 +251,9 @@ window.CustomersView = ({ allJobs, setView, setEditingJob }) => {
                                         <div className="flex items-center gap-8 mt-4 md:mt-0 ml-auto md:ml-0 shrink-0">
                                             <div className="text-right">
                                                 <div className="text-lg font-mono font-black text-zinc-950">{(parseInt(j.kundpris) || 0).toLocaleString()} <span className="text-[10px] opacity-30">kr</span></div>
+                                                <div className={`text-[8px] font-black uppercase px-2 py-0.5 rounded-full inline-block ${j.status === 'KLAR' ? 'bg-emerald-50 text-emerald-600' : 'bg-orange-50 theme-text'}`}>
+                                                    ● {j.status}
+                                                </div>
                                             </div>
                                             <div className="bg-zinc-100 p-2.5 opacity-0 group-hover:opacity-100 hover:bg-zinc-950 hover:text-white transition-all rounded-sm shadow-sm border border-zinc-200">
                                                 <SafeIcon name="external-link" size={16} />
@@ -264,7 +269,6 @@ window.CustomersView = ({ allJobs, setView, setEditingJob }) => {
                             </div>
                         </div>
 
-                        {/* Asset registry module */}
                         <div className="bg-white border border-zinc-200 p-6 shadow-xl relative overflow-hidden">
                             <div className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-6 flex items-center justify-between relative z-10">
                                 <div className="flex items-center gap-2"><SafeIcon name="cpu" size={14} /> Asset_Inventory_Registry</div>
@@ -283,7 +287,6 @@ window.CustomersView = ({ allJobs, setView, setEditingJob }) => {
                             </div>
                         </div>
 
-                        {/* AI Intelligence Briefing */}
                         <div className="bg-zinc-950 p-6 shadow-inner relative overflow-hidden group">
                             <div className="absolute top-0 left-0 w-1.5 h-full theme-bg shadow-[0_0_15px_rgba(249,115,22,0.5)]"></div>
                             <div className="relative z-10">
@@ -291,7 +294,7 @@ window.CustomersView = ({ allJobs, setView, setEditingJob }) => {
                                     <SafeIcon name="info" size={10} /> Intelligence_Briefing
                                 </div>
                                 <p className="text-white text-[10px] font-medium leading-relaxed italic opacity-90 border-l border-zinc-800 pl-4">
-                                    "Kunden {selectedCustomer.name} uppvisar ett lojalt beteendemönster med fokus på {selectedCustomer.topVehicle}. {selectedCustomer.isChurned ? 'Varning: Signalstyrkan har minskat då enheten inte besökt basen på länge.' : 'Signalstyrkan är optimal.'} Rekommenderar riktad service-optimering för att maximera Net_Worth."
+                                    "Kunden uppvisar ett lojalt beteendemönster med fokus på {selectedCustomer.topVehicle}. {selectedCustomer.isChurned ? 'Varning: Signalstyrkan har minskat då enheten inte besökt basen på länge.' : 'Signalstyrkan är optimal.'} Rekommenderar riktad service-optimering."
                                 </p>
                             </div>
                         </div>
@@ -301,10 +304,9 @@ window.CustomersView = ({ allJobs, setView, setEditingJob }) => {
         );
     }
 
-    // --- 4. VY: HUVUDGRID (OFÖRÄNDRAD ENLIGT DINA ÖNSKEMÅL) ---
+    // --- 4. VY: HUVUDGRID (MATRIX INTERFACE) ---
     return (
         <div className="space-y-6 animate-in fade-in duration-500 pb-20">
-            {/* Intel Header */}
             <div className="bg-zinc-950 p-6 flex flex-col md:flex-row md:items-center justify-between border-b-2 theme-border shadow-2xl gap-4">
                 <div className="flex items-center gap-5">
                     <div className="w-12 h-12 theme-bg flex items-center justify-center rounded-sm shadow-lg rotate-3 group-hover:rotate-0 transition-transform">
@@ -350,7 +352,6 @@ window.CustomersView = ({ allJobs, setView, setEditingJob }) => {
                 </div>
             </div>
 
-            {/* Matrix View Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-4">
                 {customerData.map((customer, i) => (
                     <div 
@@ -358,7 +359,7 @@ window.CustomersView = ({ allJobs, setView, setEditingJob }) => {
                         onClick={() => setSelectedCustomer(customer)}
                         className="group bg-white border border-zinc-200 hover:border-zinc-950 hover:shadow-[0_20px_50px_rgba(0,0,0,0.1)] transition-all cursor-pointer relative overflow-hidden flex flex-col h-[180px] hover:-translate-y-1 shadow-sm"
                     >
-                        <div className="absolute -bottom-6 -right-4 text-[80px] font-black text-zinc-50 group-hover:text-orange-50 transition-colors pointer-events-none italic select-none">
+                        <div className="absolute -bottom-6 -right-4 text-[80px] font-black text-zinc-50 group-hover:theme-text/5 transition-colors pointer-events-none italic select-none">
                             {customer.rank[0]}
                         </div>
 
