@@ -164,7 +164,7 @@ window.DashboardView = React.memo(({
             </div>
 
             {/* KORT-VY (MOBIL) */}
-            <div className="lg:hidden space-y-3 px-4 md:px-0">
+            <div className="lg:hidden space-y-3">
                 {filteredJobs.map(job => (
                     <div key={job.id} onClick={() => { setEditingJob(job); setView('NEW_JOB'); }} className="bg-white border-l-4 theme-border p-4 shadow-md rounded-sm active:scale-[0.98]">
                         <div className="flex justify-between items-start mb-2">
