@@ -133,6 +133,7 @@ const App = () => {
                         { id: 'DASHBOARD', icon: 'grid', label: 'Dashboard' },
                         { id: 'NEW_JOB', icon: 'plus-square', label: 'Nytt Jobb' },
                         { id: 'CUSTOMERS', icon: 'users', label: 'Kund-Bas' },
+                        { id: 'OIL_SUPPLY', icon: 'droplet', label: 'Olje-Logistik' }, // Ny flik
                         { id: 'CALENDAR', icon: 'calendar', label: 'Kalender' }
                     ].map(item => (
                         <div key={item.id} 
@@ -223,6 +224,7 @@ const App = () => {
                     {/* FIX: Nu skickas setEditingJob till CustomersView */}
                     {view === 'CUSTOMERS' && <window.CustomersView allJobs={allJobs} setView={setView} setEditingJob={setEditingJob} />}
                     {view === 'CALENDAR' && <window.CalendarView allJobs={allJobs} setEditingJob={setEditingJob} setView={setView} />}
+                    {view === 'OIL_SUPPLY' && <window.SupplyView allJobs={allJobs} />}
                 </div>
             </main>
         </div>
