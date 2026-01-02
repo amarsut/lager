@@ -1,43 +1,15 @@
 // dashboard.js
 
-const formatDate = (dateStr) => {
+// Vi ändrar namnet till dashFormatDate för att inte krocka med calendar.js
+const dashFormatDate = (dateStr) => {
     if (!dateStr) return null;
     const d = new Date(dateStr);
     const months = ['jan', 'feb', 'mar', 'apr', 'maj', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'];
     return `${d.getDate()} ${months[d.getMonth()]}`;
 };
 
-const SafeIcon = ({ name, size = 14, className = "" }) => (
-    <span className="inline-flex items-center justify-center shrink-0">
-        <window.Icon name={name} size={size} className={className} />
-    </span>
-);
-
-window.Badge = React.memo(({ status }) => {
-    const s = (status || 'BOKAD').toUpperCase();
-    const styles = {
-        'BOKAD': 'theme-bg text-black font-black',
-        'OFFERERAD': 'bg-blue-500 text-white font-bold',
-        'KLAR': 'bg-black text-white font-bold',
-        'FAKTURERAS': 'bg-zinc-100 text-zinc-500 border border-zinc-200',
-    };
-    return (
-        <span className={`px-2 py-0.5 text-[8px] uppercase tracking-[0.1em] inline-block w-20 text-center rounded-[4px] ${styles[s] || styles['BOKAD']}`}>
-            {s}
-        </span>
-    );
-});
-
-// dashboard.js
-
-const formatDate = (dateStr) => {
-    if (!dateStr) return null;
-    const d = new Date(dateStr);
-    const months = ['jan', 'feb', 'mar', 'apr', 'maj', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'];
-    return `${d.getDate()} ${months[d.getMonth()]}`;
-};
-
-const SafeIcon = ({ name, size = 14, className = "" }) => (
+// Vi ändrar namnet till DashSafeIcon för att inte krocka med calendar.js
+const DashSafeIcon = ({ name, size = 14, className = "" }) => (
     <span className="inline-flex items-center justify-center shrink-0">
         <window.Icon name={name} size={size} className={className} />
     </span>
@@ -65,7 +37,6 @@ window.DashboardView = React.memo(({
 }) => {
     const [searchOpen, setSearchOpen] = React.useState(false);
 
-    // Gemensam filter-komponent för Desktop & Mobil med hög kontrast
     const FilterButtons = () => (
         ['ALLA', 'BOKAD', 'OFFERERAD', 'EJ BOKAD', 'KLAR', 'FAKTURERAS'].map(s => (
             <button 
@@ -92,11 +63,10 @@ window.DashboardView = React.memo(({
     return (
         <div className="space-y-4 pb-20 lg:pb-0 animate-in fade-in duration-500">
             
-            {/* COMMAND HEADER */}
             <div className="bg-zinc-950 p-4 flex items-center justify-between border-b-2 theme-border shadow-2xl relative">
                 <div className="flex items-center gap-4 shrink-0">
                     <div className="w-10 h-10 theme-bg flex items-center justify-center rounded-sm shadow-lg">
-                        <SafeIcon name="grid" size={20} className="text-black" />
+                        <DashSafeIcon name="grid" size={20} className="text-black" />
                     </div>
                     <div className={searchOpen ? 'hidden md:block' : ''}>
                         <span className="text-[9px] font-black theme-text uppercase tracking-[0.3em] block leading-none mb-1">
@@ -109,14 +79,12 @@ window.DashboardView = React.memo(({
                 </div>
 
                 <div className="flex items-center gap-4">
-                    {/* DESKTOP FILTRERING */}
                     <div className={`hidden lg:flex transition-all duration-300 ${searchOpen ? 'opacity-0 scale-95 pointer-events-none' : 'opacity-100'}`}>
                         <div className="flex bg-zinc-900/30 p-1 border border-zinc-800/50 rounded-sm gap-1">
                             <FilterButtons />
                         </div>
                     </div>
 
-                    {/* SEARCH MODUL */}
                     <div className="flex items-center">
                         <div className={`relative flex items-center h-8 transition-all duration-500 ${searchOpen ? 'w-64 md:w-80' : 'w-9'}`}>
                             {searchOpen && (
@@ -134,14 +102,13 @@ window.DashboardView = React.memo(({
                                 onClick={() => setSearchOpen(!searchOpen)}
                                 className={`h-11 w-11 transition-all flex items-center justify-center rounded-sm shadow-xl ${searchOpen ? 'absolute right-0 text-orange-500' : 'bg-zinc-900 border border-zinc-800 text-zinc-500 hover:theme-text'}`}
                             >
-                                <SafeIcon name={searchOpen ? "x" : "search"} size={20} />
+                                <DashSafeIcon name={searchOpen ? "x" : "search"} size={20} />
                             </button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* MOBIL FILTRERING - Horisontell scrollbar utan fula lister */}
             {!searchOpen && (
                 <div className="lg:hidden px-4 py-2 overflow-x-auto no-scrollbar active:cursor-grabbing select-none animate-in slide-in-from-top-2 duration-300">
                     <div className="flex gap-2 w-max pb-2">
@@ -150,8 +117,7 @@ window.DashboardView = React.memo(({
                 </div>
             )}
 
-            {/* TABELL-VY (DESKTOP) */}
-            <div className="hidden lg:block bg-white border border-zinc-200 shadow-2xl rounded-sm overflow-hidden mx-4 lg:mx-0">
+            <div className="hidden lg:block bg-white border border-zinc-200 shadow-2xl rounded-sm overflow-hidden">
                 <table className="w-full text-left border-collapse">
                     <thead className="bg-[#1e1e1e] text-[#94a3b8] text-[9px] uppercase tracking-widest font-black">
                         <tr>
@@ -174,12 +140,12 @@ window.DashboardView = React.memo(({
                                 <td className="px-6 py-3">
                                     {job.datum ? (
                                         <>
-                                            <div className="text-[13px] font-bold text-zinc-700">{formatDate(job.datum)}</div>
+                                            <div className="text-[13px] font-bold text-zinc-700">{dashFormatDate(job.datum)}</div>
                                             <div className="text-[11px] text-[#64748b] font-bold">kl. {job.datum.split('T')[1] || '--:--'}</div>
                                         </>
                                     ) : (
                                         <div className="text-[10px] font-black text-zinc-300 uppercase tracking-tighter flex items-center gap-1">
-                                            <SafeIcon name="calendar-off" size={12} /> Ej Bokad
+                                            <DashSafeIcon name="calendar-off" size={12} /> Ej Bokad
                                         </div>
                                     )}
                                 </td>
@@ -187,8 +153,8 @@ window.DashboardView = React.memo(({
                                 <td className="px-6 py-3 text-right font-black text-zinc-900">{(parseInt(job.kundpris) || 0).toLocaleString()} kr</td>
                                 <td className="px-6 py-3 text-right">
                                     <div className="flex justify-end gap-2">
-                                        <button onClick={() => { setEditingJob(job); setView('NEW_JOB'); }} className="p-1.5 text-zinc-400 hover:theme-text"><SafeIcon name="edit-3" size={16} /></button>
-                                        <button onClick={() => { if(confirm("Radera?")) window.db.collection("jobs").doc(job.id).update({deleted:true}); }} className="p-1.5 text-zinc-400 hover:text-red-500 mt-[-2px]"><SafeIcon name="trash-2" size={16} /></button>
+                                        <button onClick={() => { setEditingJob(job); setView('NEW_JOB'); }} className="p-1.5 text-zinc-400 hover:theme-text"><DashSafeIcon name="edit-3" size={16} /></button>
+                                        <button onClick={() => { if(confirm("Radera?")) window.db.collection("jobs").doc(job.id).update({deleted:true}); }} className="p-1.5 text-zinc-400 hover:text-red-500 mt-[-2px]"><DashSafeIcon name="trash-2" size={16} /></button>
                                     </div>
                                 </td>
                             </tr>
@@ -197,7 +163,6 @@ window.DashboardView = React.memo(({
                 </table>
             </div>
 
-            {/* KORT-VY (MOBIL) */}
             <div className="lg:hidden space-y-3 px-4">
                 {filteredJobs.map(job => (
                     <div key={job.id} onClick={() => { setEditingJob(job); setView('NEW_JOB'); }} className="bg-white border-l-4 theme-border p-4 shadow-md rounded-sm active:scale-[0.98]">
@@ -212,12 +177,12 @@ window.DashboardView = React.memo(({
                             <div className="text-[10px] font-mono flex flex-col">
                                 {job.datum ? (
                                     <>
-                                        <span className="text-zinc-400">{formatDate(job.datum)}</span>
+                                        <span className="text-zinc-400">{dashFormatDate(job.datum)}</span>
                                         <span className="theme-text font-black">kl. {job.datum.split('T')[1] || '--:--'}</span>
                                     </>
                                 ) : (
                                     <span className="text-zinc-300 font-black uppercase tracking-tighter flex items-center gap-1">
-                                        <SafeIcon name="calendar-off" size={10} /> Ej Bokad
+                                        <DashSafeIcon name="calendar-off" size={10} /> Ej Bokad
                                     </span>
                                 )}
                             </div>
