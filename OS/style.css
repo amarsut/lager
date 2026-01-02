@@ -3,24 +3,40 @@
 body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #fcfcfc; color: #111827; }
 .font-mono { font-family: 'JetBrains Mono', monospace; }
 
-/* SIDEBAR & NAVIGATION */
-.sidebar-item:hover {
-    background: linear-gradient(90deg, rgba(249, 115, 22, 0.15) 0%, transparent 100%);
-    border-left: 4px solid #f97316 !important;
-    color: white !important;
-}
-.sidebar-item.active {
-    background: linear-gradient(90deg, rgba(249, 115, 22, 0.2) 0%, transparent 100%);
-    border-left: 4px solid #f97316 !important;
-    color: white !important;
+/* --- SIDEBAR (Tip 21, 26, 27) --- */
+.theme-sidebar {
+    background-color: var(--sidebar-bg) !important;
+    transition: background-color 0.3s ease;
 }
 
-/* DASHBOARD HUD PANEL */
-.hud-panel {
-    position: relative;
-    border: 1px solid #e5e7eb;
-    background: white;
-    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%);
+.theme-sidebar-active {
+    background-color: var(--sidebar-active-bg) !important;
+    color: var(--brand-primary) !important;
+    border-right: 3px solid var(--brand-primary) !important;
+}
+
+.sidebar-footer-divider {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    margin: 12px 16px;
+}
+
+/* --- TABELL-OPTIMERING (Tip 8, 34, 46) --- */
+.table-header-row {
+    background-color: #1e1e1e !important; /* Lättare än kolsvart (Bild 3) */
+    color: #94a3b8 !important;
+}
+
+.table-row {
+    border-bottom: 1px solid #edf2f7; /* Tydligare rader på 14" (Tip 46) */
+}
+
+/* --- HEADER & SÖK (Tip 1, 11, 39) --- */
+.search-container {
+    max-width: 600px !important; /* Bredare för Laptop (Tip 11) */
+}
+
+.search-input {
+    font-size: 13px !important; /* Bättre läsbarhet (Tip 1) */
 }
 
 /* TABELL & DATA */
