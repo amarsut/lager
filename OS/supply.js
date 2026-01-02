@@ -109,7 +109,7 @@ window.SupplyView = () => {
                         <div className="w-10 h-10 theme-bg flex items-center justify-center rounded-sm">
                             <SafeIcon name="droplet" size={18} className="text-black" />
                         </div>
-                        <h2 className="text-xs font-black text-white uppercase tracking-[0.3em]">Resource_Nexus // Oil_Control</h2>
+                        <h2 className="text-xs font-black text-white uppercase tracking-[0.3em]">Supply_View // Oil_Control</h2>
                     </div>
                 </div>
 
