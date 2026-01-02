@@ -135,7 +135,13 @@ const App = () => {
                         { id: 'CUSTOMERS', icon: 'users', label: 'Kund-Bas' },
                         { id: 'CALENDAR', icon: 'calendar', label: 'Kalender' }
                     ].map(item => (
-                        <div key={item.id} onClick={() => { setView(item.id); if(window.innerWidth < 1024) setSidebarOpen(false); }} className={`flex items-center px-6 py-4 cursor-pointer transition-all ${view === item.id ? 'theme-sidebar-active' : 'hover:opacity-80'}`}>
+                        <div key={item.id} 
+                             onClick={() => { 
+                                 if(item.id === 'NEW_JOB') setEditingJob(null); // SURPRISE: Rensar formuläret för nytt jobb
+                                 setView(item.id); 
+                                 if(window.innerWidth < 1024) setSidebarOpen(false); 
+                             }} 
+                             className={`flex items-center px-6 py-4 cursor-pointer transition-all ${view === item.id ? 'theme-sidebar-active' : 'hover:opacity-80'}`}>
                             <window.Icon name={item.icon} size={20} />
                             {sidebarOpen && <span className="ml-4 text-[11px] font-black uppercase tracking-widest">{item.label}</span>}
                         </div>
@@ -214,7 +220,8 @@ const App = () => {
                         />
                     )}
                     {view === 'NEW_JOB' && <window.NewJobView editingJob={editingJob} setView={setView} allJobs={allJobs} />}
-                    {view === 'CUSTOMERS' && <window.CustomersView allJobs={allJobs} setView={setView} />}
+                    {/* FIX: Nu skickas setEditingJob till CustomersView */}
+                    {view === 'CUSTOMERS' && <window.CustomersView allJobs={allJobs} setView={setView} setEditingJob={setEditingJob} />}
                     {view === 'CALENDAR' && <window.CalendarView allJobs={allJobs} setEditingJob={setEditingJob} setView={setView} />}
                 </div>
             </main>
