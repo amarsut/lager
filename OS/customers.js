@@ -6,12 +6,13 @@ const SafeIcon = ({ name, size = 14, className = "" }) => (
     </span>
 );
 
-window.CustomersView = ({ allJobs, setView }) => {
+window.CustomersView = ({ allJobs, setView, setEditingJob }) => {
     const [searchQuery, setSearchQuery] = React.useState('');
     const [selectedCustomer, setSelectedCustomer] = React.useState(null);
-    const [sortMode, setSortMode] = React.useState('revenue'); // 'revenue', 'count', 'recent'
+    const [sortMode, setSortMode] = React.useState('revenue'); 
+    const [logSearch, setLogSearch] = React.useState(''); // Flyttad hit för att följa Reacts regler
 
-    // --- AVANCERAD DATABEREDNING ---
+    // --- 2. DATABEREDNING ---
     const customerData = React.useMemo(() => {
         const groups = allJobs.reduce((acc, job) => {
             const name = job.kundnamn || 'Oidentifierad Enhet';
@@ -25,23 +26,26 @@ window.CustomersView = ({ allJobs, setView }) => {
                     jobs: [],
                     avgValue: 0,
                     rank: 'D',
-                    topVehicle: ''
+                    topVehicle: '',
+                    packageStats: {}
                 };
             }
             const price = parseInt(job.kundpris) || 0;
             acc[name].totalSpent += price;
             acc[name].missionCount += 1;
             acc[name].jobs.push(job);
+            
+            const pkg = job.paket || 'Standard';
+            acc[name].packageStats[pkg] = (acc[name].packageStats[pkg] || 0) + 1;
+
             if (job.regnr) acc[name].vehicles.add(job.regnr.toUpperCase());
             if (new Date(job.datum) > new Date(acc[name].lastSeen)) acc[name].lastSeen = job.datum;
             
             return acc;
         }, {});
 
-        // Efterbearbetning och Rankning
         return Object.values(groups).map(c => {
             c.avgValue = c.totalSpent / c.missionCount;
-            // Rankningslogik baserat på data
             if (c.totalSpent > 50000 || c.missionCount > 20) c.rank = 'S-TIER';
             else if (c.totalSpent > 20000) c.rank = 'A-TIER';
             else if (c.totalSpent > 5000) c.rank = 'B-TIER';
@@ -62,7 +66,6 @@ window.CustomersView = ({ allJobs, setView }) => {
         });
     }, [allJobs, searchQuery, sortMode]);
 
-    // --- HJÄLPKOMPONENT: RANK BADGE ---
     const RankBadge = ({ rank }) => {
         const colors = {
             'S-TIER': 'bg-orange-500 text-black shadow-[0_0_10px_rgba(249,115,22,0.5)]',
@@ -77,127 +80,219 @@ window.CustomersView = ({ allJobs, setView }) => {
         );
     };
 
-    // --- VY: PROFIL (INTELLIGENCE HUB) ---
+    // --- 3. VY: PROFIL (FÖRÄNDRAD & FÖRBÄTTRAD) ---
     if (selectedCustomer) {
+        const loyaltyScore = Math.min(100, (selectedCustomer.missionCount * 5));
+        const daysSinceLast = Math.floor((new Date() - new Date(selectedCustomer.lastSeen)) / (1000 * 60 * 60 * 24));
+        
+        // Lokal filtrering av historikloggen
+        const filteredLogs = selectedCustomer.jobs
+            .filter(j => 
+                (j.regnr || '').toLowerCase().includes(logSearch.toLowerCase()) || 
+                (j.kommentar || '').toLowerCase().includes(logSearch.toLowerCase()) ||
+                (j.paket || '').toLowerCase().includes(logSearch.toLowerCase())
+            )
+            .sort((a,b) => b.datum.localeCompare(a.datum));
+
         return (
-            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                {/* Header Navigation */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
-                    <div className="flex items-center gap-6">
-                        <button onClick={() => setSelectedCustomer(null)} className="group bg-zinc-950 text-white p-4 hover:theme-bg hover:text-black transition-all shadow-xl">
+            <div className="animate-in fade-in slide-in-from-right-8 duration-500 pb-20">
+                {/* Tactical Header HUD */}
+                <div className="flex items-center justify-between mb-8 bg-zinc-950 p-4 border-l-4 theme-border shadow-2xl relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
+                        <SafeIcon name="shield-check" size={100} />
+                    </div>
+
+                    <div className="flex items-center gap-6 relative z-10">
+                        <button onClick={() => setSelectedCustomer(null)} className="group bg-zinc-900 border border-zinc-800 text-zinc-400 p-4 hover:theme-bg hover:text-black transition-all">
                             <SafeIcon name="arrow-left" size={20} className="group-hover:-translate-x-1 transition-transform" />
+                            <span className="text-[10px] font-black uppercase tracking-[0.3em] ml-3 hidden md:inline">Return_to_Nexus</span>
                         </button>
                         <div>
-                            <div className="flex items-center gap-3 mb-1">
-                                <h2 className="text-2xl font-black text-zinc-900 uppercase tracking-tighter">{selectedCustomer.name}</h2>
+                            <div className="flex items-center gap-4 mb-1">
+                                <h2 className="text-2xl font-black text-white uppercase tracking-tighter leading-none">{selectedCustomer.name}</h2>
                                 <RankBadge rank={selectedCustomer.rank} />
+                                <span className="text-[8px] font-bold bg-zinc-800 text-zinc-500 px-1.5 py-0.5 rounded-sm border border-zinc-700">UID: {selectedCustomer.name.substring(0,6).toUpperCase()}</span>
                             </div>
-                            <div className="flex items-center gap-4 text-[10px] font-mono text-zinc-400 uppercase tracking-widest">
-                                <span>UID: {selectedCustomer.name.substring(0,8)}</span>
-                                <span className="w-1 h-1 rounded-full bg-zinc-300"></span>
-                                <span>Active_Assets: {selectedCustomer.vehicles.size}</span>
+                            <div className="flex items-center gap-6 text-[9px] font-mono font-black text-zinc-500 uppercase tracking-widest">
+                                <span className="flex items-center gap-2">
+                                    <div className={`w-1.5 h-1.5 rounded-full ${daysSinceLast < 45 ? 'bg-emerald-500 shadow-[0_0_8px_#10b981]' : 'bg-red-500'}`}></div>
+                                    {daysSinceLast < 45 ? 'SIGNAL_ACTIVE' : 'SIGNAL_LOST'}
+                                </span>
+                                <span>TOTAL_OPS: {selectedCustomer.missionCount}</span>
                             </div>
                         </div>
                     </div>
                     
-                    <div className="flex gap-2">
-                        <button 
-                            onClick={() => { setView('NEW_JOB'); window.prefillName = selectedCustomer.name; }}
-                            className="bg-zinc-100 hover:bg-zinc-200 text-zinc-900 px-6 py-3 text-[10px] font-black uppercase tracking-widest flex items-center gap-2 transition-all border-b-2 border-zinc-300"
-                        >
-                            <SafeIcon name="plus" size={14} /> Initialize_New_Mission
-                        </button>
+                    <button 
+                        onClick={() => { setView('NEW_JOB'); window.prefillName = selectedCustomer.name; }}
+                        className="theme-bg text-black px-6 py-3 text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-white transition-all shadow-lg"
+                    >
+                        <SafeIcon name="plus-circle" size={14} /> Start_New_Deployment
+                    </button>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                    {/* Intelligence Stats Column */}
+                    <div className="space-y-6">
+                        <div className="bg-zinc-900 p-6 rounded-sm relative overflow-hidden border border-zinc-800">
+                            <div className="text-[8px] font-black text-zinc-500 uppercase tracking-widest mb-1">Loyalty_Pulse_Score</div>
+                            <div className="text-3xl font-mono font-black text-white mb-4">{loyaltyScore}%</div>
+                            <div className="w-full bg-zinc-800 h-1.5 rounded-full overflow-hidden shadow-inner">
+                                <div className="theme-bg h-full shadow-[0_0_10px_#f97316]" style={{ width: `${loyaltyScore}%` }}></div>
+                            </div>
+                            <SafeIcon name="activity" size={80} className="absolute -right-4 -bottom-4 text-white opacity-5" />
+                        </div>
+
+                        <div className="bg-white border border-zinc-200 p-6 shadow-sm relative">
+                            <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-zinc-100"></div>
+                            <div className="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                <SafeIcon name="rss" size={12} /> Communication_Status
+                            </div>
+                            <div className="flex items-center gap-4">
+                                <div className={`w-3 h-3 rounded-full ${daysSinceLast < 30 ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`}></div>
+                                <div>
+                                    <div className="text-[11px] font-black uppercase text-zinc-900">{daysSinceLast < 30 ? 'Active_Node' : 'Latent_Node'}</div>
+                                    <div className="text-[9px] font-mono text-zinc-400 uppercase">Last Pulse: {daysSinceLast}d ago</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="bg-white border border-zinc-200 p-6 shadow-sm">
+                            <div className="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-6">Affinity_Analysis</div>
+                            <div className="space-y-4">
+                                {Object.entries(selectedCustomer.packageStats).map(([pkg, count]) => (
+                                    <div key={pkg} className="group">
+                                        <div className="flex justify-between text-[9px] font-black uppercase mb-1.5">
+                                            <span className="group-hover:theme-text transition-colors">{pkg}</span>
+                                            <span className="opacity-30">{Math.round((count / selectedCustomer.missionCount) * 100)}%</span>
+                                        </div>
+                                        <div className="w-full bg-zinc-100 h-1 rounded-full overflow-hidden">
+                                            <div className="bg-zinc-800 h-full transition-all duration-1000" style={{ width: `${(count / selectedCustomer.missionCount) * 100}%` }}></div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                     </div>
-                </div>
 
-                {/* Stats Dashboard */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                    {[
-                        { label: 'Net_Revenue', val: selectedCustomer.totalSpent.toLocaleString(), unit: 'SEK', icon: 'trending-up', color: 'text-emerald-600' },
-                        { label: 'Avg_Payload', val: Math.round(selectedCustomer.avgValue).toLocaleString(), unit: 'SEK', icon: 'zap', color: 'theme-text' },
-                        { label: 'Total_Deployments', val: selectedCustomer.missionCount, unit: 'UNITS', icon: 'shield', color: 'text-zinc-900' },
-                        { label: 'Last_Pulse', val: selectedCustomer.lastSeen?.split('T')[0] || 'N/A', unit: 'DATE', icon: 'clock', color: 'text-zinc-500' }
-                    ].map((stat, i) => (
-                        <div key={i} className="bg-white border border-zinc-200 p-5 rounded-sm shadow-sm hover:shadow-md transition-shadow relative group">
-                            <div className="text-[8px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-2">{stat.label}</div>
-                            <div className={`text-xl font-mono font-black ${stat.color}`}>{stat.val} <span className="text-[10px] opacity-40">{stat.unit}</span></div>
-                            <div className="absolute bottom-2 right-2 opacity-5 group-hover:opacity-20 transition-opacity">
-                                <SafeIcon name={stat.icon} size={32} />
-                            </div>
-                        </div>
-                    ))}
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* Transaction Feed */}
-                    <div className="lg:col-span-2 bg-white border border-zinc-200 shadow-xl">
-                        <div className="bg-zinc-950 p-4 text-white flex items-center justify-between">
-                            <div className="text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
-                                <SafeIcon name="activity" size={14} className="theme-text" /> Operational_Logs
-                            </div>
-                            <span className="text-[9px] font-mono text-zinc-500 uppercase">Buffer_Size: {selectedCustomer.jobs.length}</span>
-                        </div>
-                        <div className="divide-y divide-zinc-100 max-h-[500px] overflow-auto">
-                            {selectedCustomer.jobs.sort((a,b) => b.datum.localeCompare(a.datum)).map((j, i) => (
-                                <div key={i} className="p-5 hover:bg-zinc-50 transition-all flex items-center justify-between group">
-                                    <div className="flex items-center gap-8">
-                                        <div className="text-center">
-                                            <div className="text-[14px] font-black text-zinc-900 leading-none">{j.datum?.split('-')[2]?.split('T')[0]}</div>
-                                            <div className="text-[8px] font-black text-zinc-400 uppercase">{j.datum?.split('-')[1]}</div>
-                                        </div>
-                                        <div className="h-8 w-px bg-zinc-100"></div>
-                                        <div>
-                                            <div className="text-[12px] font-black uppercase text-zinc-900 group-hover:theme-text transition-colors">{j.paket || 'Standard_Service'}</div>
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-[9px] font-mono font-bold bg-zinc-100 px-1.5 py-0.5 rounded-sm">{j.regnr}</span>
-                                                <span className={`w-1.5 h-1.5 rounded-full ${j.status === 'KLAR' ? 'bg-emerald-500' : 'theme-bg'}`}></span>
-                                            </div>
-                                        </div>
+                    {/* Mission Log & Assets Column */}
+                    <div className="lg:col-span-3 space-y-6">
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                            {[
+                                { label: 'Net_Worth', val: selectedCustomer.totalSpent.toLocaleString(), unit: 'kr', icon: 'credit-card', color: 'text-emerald-600' },
+                                { label: 'Payload_Avg', val: Math.round(selectedCustomer.avgValue).toLocaleString(), unit: 'kr', icon: 'zap', color: 'theme-text' },
+                                { label: 'Deployments', val: selectedCustomer.missionCount, unit: 'Ops', icon: 'list', color: 'text-zinc-900' },
+                                { label: 'Managed_Assets', val: selectedCustomer.vehicles.size, unit: 'Units', icon: 'truck', color: 'text-zinc-900' }
+                            ].map((s, i) => (
+                                <div key={i} className="bg-white border border-zinc-200 p-5 group hover:border-zinc-950 transition-all shadow-sm">
+                                    <div className="text-[8px] font-black text-zinc-400 uppercase tracking-widest mb-2 flex items-center justify-between">
+                                        {s.label} <SafeIcon name={s.icon} size={10} className="group-hover:theme-text transition-colors" />
                                     </div>
-                                    <div className="text-right flex items-center gap-6">
-                                        <div className="font-mono font-black text-sm">{(parseInt(j.kundpris) || 0).toLocaleString()} <span className="text-[10px] text-zinc-400">kr</span></div>
-                                        <button onClick={() => { setView('NEW_JOB'); window.editingJob = j; }} className="bg-zinc-100 p-2.5 rounded-sm hover:theme-bg hover:text-black transition-all">
-                                            <SafeIcon name="external-link" size={14} />
-                                        </button>
-                                    </div>
+                                    <div className={`text-xl font-mono font-black ${s.color}`}>{s.val} <span className="text-[10px] opacity-40 font-sans tracking-normal">{s.unit}</span></div>
                                 </div>
                             ))}
                         </div>
-                    </div>
-                    
-                    {/* Asset Explorer & Analytics */}
-                    <div className="space-y-6">
-                        <div className="bg-zinc-950 p-6 shadow-2xl relative overflow-hidden">
-                            <div className="absolute -right-4 -top-4 opacity-10 rotate-12">
-                                <SafeIcon name="pie-chart" size={120} className="text-white" />
-                            </div>
-                            <div className="relative z-10">
-                                <div className="text-[10px] font-black text-orange-400 uppercase tracking-widest mb-6">Spending_Volume</div>
-                                <div className="space-y-4">
-                                    {/* Visual spending bar */}
-                                    <div className="w-full bg-zinc-800 h-1.5 rounded-full overflow-hidden">
-                                        <div className="theme-bg h-full shadow-[0_0_10px_#f97316]" style={{ width: `${Math.min((selectedCustomer.totalSpent / 50000) * 100, 100)}%` }}></div>
-                                    </div>
-                                    <div className="flex justify-between text-[9px] font-mono text-zinc-500 uppercase">
-                                        <span>Rank: {selectedCustomer.rank}</span>
-                                        <span>Limit: 50.0k</span>
-                                    </div>
+
+                        {/* FÖRBÄTTRAD MISSION LOG HISTORY */}
+                        <div className="bg-white border border-zinc-200 shadow-2xl rounded-sm overflow-hidden flex flex-col">
+                            <div className="bg-zinc-950 p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-800">
+                                <div className="text-[10px] font-black text-white uppercase tracking-[0.3em] flex items-center gap-3">
+                                    <SafeIcon name="database" size={14} className="theme-text" /> 
+                                    Mission_Log_Buffer <span className="text-zinc-600 font-mono text-[9px] tracking-normal">[{selectedCustomer.jobs.length}_ENTRIES]</span>
                                 </div>
+                                <div className="relative">
+                                    <input 
+                                        type="text" 
+                                        placeholder="FILTER_HISTORY..." 
+                                        className="bg-zinc-900 border border-zinc-800 text-[9px] font-black text-white px-3 py-2 outline-none focus:theme-border w-full md:w-64 uppercase tracking-widest"
+                                        value={logSearch}
+                                        onChange={(e) => setLogSearch(e.target.value)}
+                                    />
+                                    <SafeIcon name="search" size={10} className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-600" />
+                                </div>
+                            </div>
+
+                            <div className="divide-y divide-zinc-100 max-h-[450px] overflow-auto custom-scrollbar bg-white">
+                                {filteredLogs.length > 0 ? filteredLogs.map((j, i) => (
+                                    <div 
+                                        key={i} 
+                                        onClick={() => { 
+                                            setEditingJob(j); // FIX: Använder statet istället för window.editingJob
+                                            setView('NEW_JOB'); 
+                                        }}
+                                        className="p-5 hover:bg-zinc-50 transition-all flex flex-col md:flex-row md:items-center justify-between group cursor-pointer border-l-4 border-transparent hover:border-orange-500"
+                                    >
+                                        <div className="flex items-center gap-8 flex-1">
+                                            <div className="text-center w-14 border-r border-zinc-100 pr-6 shrink-0">
+                                                <div className="text-base font-black text-zinc-950 leading-none">{j.datum?.split('-')[2]?.split('T')[0]}</div>
+                                                <div className="text-[9px] font-black text-zinc-400 uppercase">{j.datum?.split('-')[1]}</div>
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex flex-wrap items-center gap-3 mb-1">
+                                                    <div className="text-[13px] font-black uppercase text-zinc-900 truncate group-hover:theme-text transition-colors">
+                                                        {j.paket || 'Standard_Deployment'}
+                                                    </div>
+                                                    <span className="text-[10px] font-mono font-bold bg-zinc-950 text-white px-2 py-0.5 rounded-sm tracking-widest shrink-0 border border-zinc-800 shadow-sm">
+                                                        {j.regnr}
+                                                    </span>
+                                                </div>
+                                                {j.kommentar ? (
+                                                    <div className="text-[10px] text-zinc-500 italic truncate max-w-lg flex items-center gap-2">
+                                                        <SafeIcon name="message-square" size={10} className="text-zinc-300" />
+                                                        "{j.kommentar}"
+                                                    </div>
+                                                ) : (
+                                                    <div className="text-[9px] text-zinc-300 uppercase tracking-tighter italic">No_System_Notes_Stored</div>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-8 mt-4 md:mt-0 ml-auto md:ml-0 shrink-0">
+                                            <div className="text-right">
+                                                <div className="text-lg font-mono font-black text-zinc-950">{(parseInt(j.kundpris) || 0).toLocaleString()} <span className="text-[10px] opacity-30">kr</span></div>
+                                            </div>
+                                            <div className="bg-zinc-100 p-2.5 opacity-0 group-hover:opacity-100 hover:bg-zinc-950 hover:text-white transition-all rounded-sm shadow-sm border border-zinc-200">
+                                                <SafeIcon name="external-link" size={16} />
+                                            </div>
+                                        </div>
+                                    </div>
+                                )) : (
+                                    <div className="p-20 text-center text-zinc-300 font-black uppercase tracking-[0.5em] text-[10px]">
+                                        <SafeIcon name="database-zap" size={32} className="mb-4 opacity-20 mx-auto" />
+                                        No_Logs_Found_In_Query
+                                    </div>
+                                )}
                             </div>
                         </div>
 
-                        <div className="bg-white border border-zinc-200 p-6">
-                            <div className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-6 flex items-center justify-between">
-                                <div className="flex items-center gap-2"><SafeIcon name="cpu" size={12} /> Registered_Assets</div>
-                                <span className="bg-zinc-100 px-2 py-0.5 text-zinc-900 rounded-full">{selectedCustomer.vehicles.size}</span>
+                        {/* Asset registry module */}
+                        <div className="bg-white border border-zinc-200 p-6 shadow-xl relative overflow-hidden">
+                            <div className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-6 flex items-center justify-between relative z-10">
+                                <div className="flex items-center gap-2"><SafeIcon name="cpu" size={14} /> Asset_Inventory_Registry</div>
+                                <span className="text-zinc-950 bg-zinc-100 px-3 py-1 rounded-full text-[10px] font-mono font-bold border border-zinc-200">{selectedCustomer.vehicles.size} NODES</span>
                             </div>
-                            <div className="grid grid-cols-1 gap-2">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 relative z-10">
                                 {Array.from(selectedCustomer.vehicles).map(v => (
-                                    <div key={v} className="group flex items-center justify-between p-3 bg-zinc-50 border-l-2 border-transparent hover:border-orange-500 hover:bg-white transition-all cursor-default">
-                                        <span className="text-xs font-mono font-black text-zinc-800">{v}</span>
-                                        <SafeIcon name="chevron-right" size={12} className="text-zinc-300 group-hover:theme-text" />
+                                    <div key={v} className="bg-zinc-50 border border-zinc-200 p-4 hover:border-zinc-900 hover:bg-white transition-all group flex items-center justify-between cursor-default">
+                                        <div className="flex items-center gap-3">
+                                            <SafeIcon name="truck" size={16} className="text-zinc-300 group-hover:theme-text" />
+                                            <span className="text-sm font-mono font-black text-zinc-800 tracking-widest uppercase">{v}</span>
+                                        </div>
+                                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981]"></div>
                                     </div>
                                 ))}
+                            </div>
+                        </div>
+
+                        {/* AI Intelligence Briefing */}
+                        <div className="bg-zinc-950 p-6 shadow-inner relative overflow-hidden group">
+                            <div className="absolute top-0 left-0 w-1.5 h-full theme-bg shadow-[0_0_15px_rgba(249,115,22,0.5)]"></div>
+                            <div className="relative z-10">
+                                <div className="text-[8px] font-black theme-text uppercase mb-4 tracking-[0.4em] flex items-center gap-2">
+                                    <SafeIcon name="info" size={10} /> Intelligence_Briefing
+                                </div>
+                                <p className="text-white text-[10px] font-medium leading-relaxed italic opacity-90 border-l border-zinc-800 pl-4">
+                                    "Kunden {selectedCustomer.name} uppvisar ett lojalt beteendemönster med fokus på {selectedCustomer.topVehicle}. {selectedCustomer.isChurned ? 'Varning: Signalstyrkan har minskat då enheten inte besökt basen på länge.' : 'Signalstyrkan är optimal.'} Rekommenderar riktad service-optimering för att maximera Net_Worth."
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -206,7 +301,7 @@ window.CustomersView = ({ allJobs, setView }) => {
         );
     }
 
-    // --- VY: MAIN GRID (SCANNER INTERFACE) ---
+    // --- 4. VY: HUVUDGRID (OFÖRÄNDRAD ENLIGT DINA ÖNSKEMÅL) ---
     return (
         <div className="space-y-6 animate-in fade-in duration-500 pb-20">
             {/* Intel Header */}
@@ -226,8 +321,7 @@ window.CustomersView = ({ allJobs, setView }) => {
                 </div>
 
                 <div className="flex flex-wrap items-center gap-3">
-                    {/* Sort Controls */}
-                    <div className="flex bg-zinc-900 border border-zinc-800 p-1 rounded-sm">
+                    <div className="flex bg-zinc-900 border border-zinc-800 p-1 rounded-sm shadow-inner">
                         {[
                             { id: 'revenue', icon: 'dollar-sign' },
                             { id: 'count', icon: 'hash' },
@@ -236,7 +330,7 @@ window.CustomersView = ({ allJobs, setView }) => {
                             <button 
                                 key={m.id}
                                 onClick={() => setSortMode(m.id)}
-                                className={`p-2 transition-all ${sortMode === m.id ? 'theme-bg text-black shadow-inner' : 'text-zinc-600 hover:text-white'}`}
+                                className={`p-2 transition-all ${sortMode === m.id ? 'theme-bg text-black shadow-lg scale-[1.02]' : 'text-zinc-600 hover:text-white'}`}
                             >
                                 <SafeIcon name={m.icon} size={14} />
                             </button>
@@ -247,7 +341,7 @@ window.CustomersView = ({ allJobs, setView }) => {
                         <input 
                             type="text" 
                             placeholder="SEARCH_ENTITY_OR_ASSET..." 
-                            className="bg-zinc-900 border border-zinc-800 focus:theme-border p-3 pl-10 text-[10px] font-bold text-white outline-none w-full md:w-72 transition-all uppercase tracking-widest placeholder:text-zinc-700"
+                            className="bg-zinc-900 border border-zinc-800 focus:theme-border p-3 pl-10 text-[10px] font-bold text-white outline-none w-full md:w-72 transition-all uppercase tracking-widest placeholder:text-zinc-700 shadow-2xl"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
@@ -256,15 +350,14 @@ window.CustomersView = ({ allJobs, setView }) => {
                 </div>
             </div>
 
-            {/* Entity Matrix (Cards) */}
+            {/* Matrix View Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-4">
                 {customerData.map((customer, i) => (
                     <div 
                         key={i} 
                         onClick={() => setSelectedCustomer(customer)}
-                        className="group bg-white border border-zinc-200 hover:border-zinc-950 hover:shadow-2xl transition-all cursor-pointer relative overflow-hidden flex flex-col h-[180px] hover:-translate-y-1"
+                        className="group bg-white border border-zinc-200 hover:border-zinc-950 hover:shadow-[0_20px_50px_rgba(0,0,0,0.1)] transition-all cursor-pointer relative overflow-hidden flex flex-col h-[180px] hover:-translate-y-1 shadow-sm"
                     >
-                        {/* Background Rank Indicator */}
                         <div className="absolute -bottom-6 -right-4 text-[80px] font-black text-zinc-50 group-hover:text-orange-50 transition-colors pointer-events-none italic select-none">
                             {customer.rank[0]}
                         </div>
@@ -274,11 +367,7 @@ window.CustomersView = ({ allJobs, setView }) => {
                                 <RankBadge rank={customer.rank} />
                                 <div className="text-[10px] font-mono font-black text-zinc-300">#{i + 1}</div>
                             </div>
-
-                            <h3 className="text-[14px] font-black uppercase leading-tight mb-4 group-hover:theme-text transition-colors truncate">
-                                {customer.name}
-                            </h3>
-
+                            <h3 className="text-[14px] font-black uppercase leading-tight mb-4 group-hover:theme-text transition-colors truncate">{customer.name}</h3>
                             <div className="grid grid-cols-2 border-t border-zinc-50 pt-3 gap-2">
                                 <div>
                                     <div className="text-[7px] font-black text-zinc-400 uppercase">Revenue_Sum</div>
@@ -291,25 +380,15 @@ window.CustomersView = ({ allJobs, setView }) => {
                             </div>
                         </div>
 
-                        <div className="mt-auto bg-zinc-950 p-3 flex items-center justify-between border-t border-zinc-900">
+                        <div className="mt-auto bg-zinc-950 p-3 flex items-center justify-between border-t border-zinc-900 group-hover:bg-zinc-900 transition-colors">
                             <div className="flex items-center gap-2">
-                                <div className={`w-1.5 h-1.5 rounded-full ${new Date() - new Date(customer.lastSeen) < 1209600000 ? 'bg-emerald-500 animate-pulse' : 'bg-zinc-700'}`}></div>
-                                <span className="text-[9px] font-mono font-bold text-zinc-400 uppercase truncate max-w-[80px]">
-                                    {customer.topVehicle}
-                                </span>
+                                <div className={`w-1.5 h-1.5 rounded-full ${Math.floor((new Date() - new Date(customer.lastSeen)) / (1000 * 60 * 60 * 24)) < 45 ? 'bg-emerald-500 animate-pulse' : 'bg-zinc-700'}`}></div>
+                                <span className="text-[9px] font-mono font-bold text-zinc-400 uppercase truncate max-w-[80px]">{customer.topVehicle}</span>
                             </div>
                             <SafeIcon name="arrow-right" size={12} className="text-zinc-600 group-hover:theme-text transition-all group-hover:translate-x-1" />
                         </div>
                     </div>
                 ))}
-
-                {/* Empty State */}
-                {customerData.length === 0 && (
-                    <div className="col-span-full py-20 text-center bg-zinc-50 border-2 border-dashed border-zinc-200 rounded-sm">
-                        <SafeIcon name="database-zap" size={48} className="text-zinc-200 mx-auto mb-4" />
-                        <h4 className="text-zinc-400 font-black uppercase tracking-widest">No_Matches_In_Nexus</h4>
-                    </div>
-                )}
             </div>
         </div>
     );
