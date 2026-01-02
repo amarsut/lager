@@ -178,7 +178,9 @@ const App = () => {
                                 onClick={() => { 
                                     if(item.id === 'NEW_JOB') setEditingJob(null);
                                     setView(item.id); 
-                                    setSidebarOpen(false); 
+                                    if(window.innerWidth < 1024) {
+                                        setSidebarOpen(false); 
+                                    }
                                 }} 
                                 className={`flex items-center px-6 py-4 cursor-pointer transition-all ${view === item.id ? 'theme-sidebar-active' : 'hover:opacity-80'}`}>
                                 <window.Icon name={item.icon} size={18} />
