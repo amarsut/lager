@@ -323,7 +323,7 @@ window.CustomersView = ({ allJobs, setView, setEditingJob }) => {
                             Entity_Database_Nexus
                         </span>
                         <h2 className="text-xl font-black text-white uppercase tracking-widest flex items-center gap-3">
-                            Intelligence_Briefing <span className="text-[10px] bg-zinc-800 px-2 py-1 text-zinc-500 font-mono hidden sm:inline">COUNT:{customerData.length}</span>
+                            Customers_View <span className="text-[10px] bg-zinc-800 px-2 py-1 text-zinc-500 font-mono hidden sm:inline">COUNT:{customerData.length}</span>
                         </h2>
                     </div>
                 </div>
