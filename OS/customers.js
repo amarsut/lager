@@ -1,168 +1,211 @@
 // customers.js
 
-// Behåller SafeIcon för att undvika krascher
-const SafeIcon = ({ name, size = 16, className = "" }) => (
+const SafeIcon = ({ name, size = 14, className = "" }) => (
     <span className="inline-flex items-center justify-center shrink-0">
         <window.Icon name={name} size={size} className={className} />
     </span>
 );
 
-const HUDStat = ({ label, value, icon }) => (
-    <div className="bg-zinc-950 border-l-4 border-orange-600 p-3 flex-1 shadow-lg relative overflow-hidden group">
-        <div className="absolute right-[-5px] top-[-5px] opacity-10">
-            <SafeIcon name={icon} size={40} />
-        </div>
-        <span className="text-[7px] font-black text-orange-500 uppercase tracking-widest block mb-0.5">{label}</span>
-        <span className="text-xl font-mono font-black text-white leading-none">{value}</span>
-    </div>
-);
+window.CustomersView = ({ allJobs, setView }) => {
+    const [searchQuery, setSearchQuery] = React.useState('');
+    const [selectedCustomer, setSelectedCustomer] = React.useState(null);
 
-window.CustomersView = ({ allJobs = [], setView }) => {
-    const [search, setSearch] = React.useState('');
-    const [viewing, setViewing] = React.useState(null);
-
-    const customers = React.useMemo(() => {
-        if (!allJobs || allJobs.length === 0) return [];
-        const map = {};
-        allJobs.forEach(j => {
-            if (!j || !j.kundnamn) return;
-            const key = j.kundnamn.toLowerCase().trim();
-            if (!map[key]) {
-                map[key] = { name: j.kundnamn, jobs: [], regs: new Set(), last: j.datum || '' };
+    const customerData = React.useMemo(() => {
+        const groups = allJobs.reduce((acc, job) => {
+            const name = job.kundnamn || 'N/A';
+            if (!acc[name]) {
+                acc[name] = {
+                    name: name,
+                    totalSpent: 0,
+                    missionCount: 0,
+                    vehicles: new Set(),
+                    lastSeen: job.datum,
+                    jobs: [],
+                    avgValue: 0
+                };
             }
-            map[key].jobs.push(j);
-            if (j.regnr) map[key].regs.add(j.regnr.toUpperCase());
-            if (j.datum && j.datum > map[key].last) map[key].last = j.datum;
-        });
-        return Object.values(map).sort((a,b) => b.jobs.length - a.jobs.length);
-    }, [allJobs]);
+            const price = parseInt(job.kundpris) || 0;
+            acc[name].totalSpent += price;
+            acc[name].missionCount += 1;
+            acc[name].jobs.push(job);
+            if (job.regnr) acc[name].vehicles.add(job.regnr.toUpperCase());
+            if (new Date(job.datum) > new Date(acc[name].lastSeen)) acc[name].lastSeen = job.datum;
+            acc[name].avgValue = acc[name].totalSpent / acc[name].missionCount;
+            return acc;
+        }, {});
 
-    const filtered = customers.filter(c => 
-        (c.name || '').toLowerCase().includes(search.toLowerCase())
-    );
+        return Object.values(groups)
+            .filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                    Array.from(c.vehicles).some(v => v.toLowerCase().includes(searchQuery.toLowerCase())))
+            .sort((a, b) => b.totalSpent - a.totalSpent);
+    }, [allJobs, searchQuery]);
 
-    if (viewing) {
+    // --- VY: PROFIL (COMMAND CENTER) ---
+    if (selectedCustomer) {
         return (
-            <div key="profile-view" className="space-y-4 animate-in fade-in duration-200">
-                <button onClick={() => setViewing(null)} className="text-[9px] font-black uppercase theme-text flex items-center gap-2 hover:opacity-70">
-                    <SafeIcon name="arrow-left" size={12} /> TILLBAKA
-                </button>
-                
-                <div className="bg-zinc-950 p-6 border-l-4 border-orange-600 shadow-xl">
-                    <span className="text-[8px] font-black text-orange-500 uppercase tracking-widest block mb-1">DATA_IDENTITY</span>
-                    <h2 className="text-xl font-black uppercase text-white">{viewing.name}</h2>
-                    <div className="flex flex-wrap gap-1.5 mt-3">
-                        {Array.from(viewing.regs).map(r => (
-                            <span key={r} className="bg-zinc-800 px-2 py-1 text-[10px] font-mono font-black text-white border border-zinc-700 uppercase">
-                                {r}
-                            </span>
-                        ))}
+            <div className="animate-in fade-in zoom-in-95 duration-300">
+                <div className="flex items-center justify-between mb-8">
+                    <button onClick={() => setSelectedCustomer(null)} className="group flex items-center gap-3 bg-zinc-100 hover:bg-zinc-950 hover:text-white px-4 py-2 transition-all">
+                        <SafeIcon name="arrow-left" size={16} className="group-hover:-translate-x-1 transition-transform" />
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em]">Exit_Profile</span>
+                    </button>
+                    <div className="flex gap-2">
+                        <div className="bg-zinc-950 text-white px-4 py-2 text-right border-r-4 theme-border">
+                            <div className="text-[11px] font-black uppercase tracking-tighter">{selectedCustomer.name}</div>
+                            <div className="text-[8px] font-mono text-zinc-500 italic">SYSTEM_UID: {selectedCustomer.name.substring(0,8).toUpperCase()}</div>
+                        </div>
                     </div>
                 </div>
 
-                <div className="bg-white border border-zinc-200 shadow-lg rounded-sm overflow-hidden">
-                    <div className="p-3 bg-zinc-900 text-white text-[9px] font-black uppercase tracking-widest flex items-center gap-2">
-                        <SafeIcon name="database" size={14} className="text-orange-500" /> LOG_HISTORY
-                    </div>
-                    <table className="w-full text-left text-[11px]">
-                        <thead className="bg-zinc-50 border-b border-zinc-100 text-[8px] font-black text-zinc-400 uppercase">
-                            <tr><th className="p-3">UNIT</th><th className="p-3">SERVICE</th><th className="p-3">DATE</th><th className="p-3 text-right">FEE</th></tr>
-                        </thead>
-                        <tbody className="divide-y divide-zinc-100">
-                            {viewing.jobs.sort((a,b) => (b.datum || '').localeCompare(a.datum || '')).map(j => (
-                                <tr key={j.id} className="hover:bg-zinc-50">
-                                    <td className="p-3 font-mono font-black text-orange-600 uppercase">{j.regnr || 'N/A'}</td>
-                                    <td className="p-3 font-black uppercase text-zinc-800">{j.paket || 'SERVICE'}</td>
-                                    <td className="p-3 text-zinc-500 font-mono text-[10px]">{j.datum?.replace('T', ' // ')}</td>
-                                    <td className="p-3 text-right font-black text-zinc-900">{(parseInt(j.kundpris) || 0).toLocaleString()} kr</td>
-                                </tr>
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-8">
+                    {[
+                        { label: 'Revenue_Total', val: selectedCustomer.totalSpent.toLocaleString() + ' SEK', icon: 'credit-card' },
+                        { label: 'Avg_Ticket', val: Math.round(selectedCustomer.avgValue).toLocaleString() + ' SEK', icon: 'bar-chart' },
+                        { label: 'Deployment_Count', val: selectedCustomer.missionCount + ' Units', icon: 'database' },
+                        { label: 'Last_Pulse', val: selectedCustomer.lastSeen?.split('T')[0] || 'N/A', icon: 'activity' }
+                    ].map((stat, i) => (
+                        <div key={i} className="bg-white border border-zinc-200 p-4 relative overflow-hidden group">
+                            <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:theme-text transition-colors">
+                                <SafeIcon name={stat.icon} size={24} />
+                            </div>
+                            <div className="text-[8px] font-black text-zinc-400 uppercase tracking-widest mb-1">{stat.label}</div>
+                            <div className="text-lg font-black font-mono text-zinc-900">{stat.val}</div>
+                        </div>
+                    ))}
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div className="lg:col-span-2 bg-white border border-zinc-200 rounded-sm overflow-hidden">
+                        <div className="bg-zinc-950 p-3 text-white text-[9px] font-black uppercase tracking-[0.3em] flex items-center gap-2">
+                            <SafeIcon name="list" size={12} className="theme-text" /> Transaction_History
+                        </div>
+                        <div className="divide-y divide-zinc-100 max-h-[400px] overflow-auto">
+                            {selectedCustomer.jobs.map((j, i) => (
+                                <div key={i} className="p-4 hover:bg-zinc-50 transition-colors flex items-center justify-between group">
+                                    <div className="flex items-center gap-6">
+                                        <div className="text-[10px] font-mono font-bold text-zinc-400">{j.datum?.split('T')[0]}</div>
+                                        <div>
+                                            <div className="text-[11px] font-black uppercase text-zinc-900">{j.paket}</div>
+                                            <div className="text-[9px] font-mono theme-text font-bold">{j.regnr}</div>
+                                        </div>
+                                    </div>
+                                    <div className="text-right flex items-center gap-4">
+                                        <div className="text-[12px] font-black font-mono">{(parseInt(j.kundpris) || 0).toLocaleString()} kr</div>
+                                        <button onClick={() => { setView('NEW_JOB'); window.editingJob = j; }} className="opacity-0 group-hover:opacity-100 p-2 hover:theme-bg hover:text-black transition-all">
+                                            <SafeIcon name="edit-2" size={14} />
+                                        </button>
+                                    </div>
+                                </div>
                             ))}
-                        </tbody>
-                    </table>
+                        </div>
+                    </div>
+                    
+                    <div className="bg-zinc-50 border border-zinc-200 p-6">
+                        <div className="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                            <SafeIcon name="truck" size={12} /> Asset_Inventory
+                        </div>
+                        <div className="space-y-2">
+                            {Array.from(selectedCustomer.vehicles).map(v => (
+                                <div key={v} className="bg-white border border-zinc-200 p-3 flex items-center justify-between group hover:border-orange-500/50 transition-all">
+                                    <span className="text-xs font-mono font-black text-zinc-800">{v}</span>
+                                    <div className="flex gap-1">
+                                        <div className="w-1.5 h-1.5 rounded-full theme-bg animate-pulse"></div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
                 </div>
             </div>
         );
     }
 
+    // --- VY: GRID (COMPACT SCANNER) ---
     return (
-        <div key="grid-view" className="space-y-4 animate-in fade-in duration-300">
-            {/* HUD: Mindre padding */}
-            <div className="flex flex-col lg:flex-row gap-3">
-                <HUDStat label="REGISTERED_CLIENTS" value={customers.length} icon="users" />
-                <HUDStat label="TOTAL_ACTIVE_UNITS" value={customers.reduce((a,b) => a + b.regs.size, 0)} icon="truck" />
+        <div className="space-y-6 animate-in fade-in duration-500 pb-20">
+            {/* TITEL-MODUL SOM MATCHAR "NYTT JOBB" */}
+            <div className="bg-zinc-950 p-4 flex items-center justify-between border-b-2 theme-border shadow-2xl">
+                <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 theme-bg flex items-center justify-center rounded-sm shadow-lg">
+                        <SafeIcon name="users" size={20} className="text-black" />
+                    </div>
+                    <div>
+                        <span className="text-[9px] font-black theme-text uppercase tracking-[0.3em] block leading-none mb-1">
+                            Database_Nexus
+                        </span>
+                        <h2 className="text-sm font-black text-white uppercase tracking-widest">
+                            Intelligence_Briefing
+                        </h2>
+                    </div>
+                </div>
+
+                <div className="relative group hidden md:block">
+                    <input 
+                        type="text" 
+                        placeholder="FILTER_RECORDS..." 
+                        className="bg-zinc-900 border border-zinc-800 focus:theme-border p-2.5 pl-9 text-[10px] font-bold text-white outline-none w-64 transition-all uppercase tracking-widest"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                    <SafeIcon name="search" size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:theme-text" />
+                </div>
             </div>
 
-            {/* SEARCH: Kompaktare */}
-            <div className="relative shadow-md">
-                <SafeIcon name="search" size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-orange-500" />
+            {/* MOBIL-SÖK */}
+            <div className="md:hidden relative">
                 <input 
-                    value={search} 
-                    onChange={e => setSearch(e.target.value)} 
-                    placeholder="SÖK IDENTITET..." 
-                    className="w-full bg-zinc-900 text-white p-3.5 pl-12 border-b-2 border-zinc-800 font-mono text-xs focus:border-orange-600 outline-none uppercase tracking-widest" 
+                    type="text" 
+                    placeholder="FILTER_RECORDS..." 
+                    className="w-full bg-white border border-zinc-200 p-3 pl-10 text-[10px] font-black uppercase tracking-widest outline-none focus:theme-border"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
                 />
+                <SafeIcon name="search" size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
             </div>
 
-            {/* GRID: Tätare gap för 14" skärm */}
-            <div className="hidden lg:grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {filtered.map(c => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+                {customerData.map((customer, i) => (
                     <div 
-                        key={c.name} 
-                        className="bg-white border border-zinc-200 shadow-sm hover:border-orange-600/30 transition-all rounded-sm flex flex-col"
+                        key={i} 
+                        onClick={() => setSelectedCustomer(customer)}
+                        className="group bg-white border border-zinc-200 hover:border-zinc-950 transition-all cursor-pointer relative overflow-hidden flex flex-col h-[160px]"
                     >
+                        <div className="absolute -bottom-4 -right-2 text-[60px] font-black text-zinc-50 group-hover:text-orange-50 transition-colors pointer-events-none italic">
+                            #{i + 1}
+                        </div>
+
                         <div className="p-4 flex-1">
                             <div className="flex justify-between items-start mb-4">
+                                <div className="max-w-[80%]">
+                                    <div className="text-[8px] font-black text-zinc-400 uppercase tracking-widest mb-0.5">Entity_Name</div>
+                                    <h3 className="text-[13px] font-black uppercase leading-none truncate group-hover:theme-text transition-colors">{customer.name}</h3>
+                                </div>
+                                <div className="bg-zinc-100 p-1.5 group-hover:bg-zinc-950 group-hover:text-white transition-all">
+                                    <SafeIcon name="maximize-2" size={12} />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <h3 className="font-black uppercase text-sm text-zinc-950 leading-none mb-1">{c.name}</h3>
-                                    <div className="flex items-center gap-1">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_5px_rgba(34,197,94,0.5)]"></div>
-                                        <span className="text-[8px] text-zinc-400 font-black uppercase tracking-tighter">VERIFIED</span>
-                                    </div>
+                                    <div className="text-[8px] font-black text-zinc-400 uppercase mb-0.5">Revenue</div>
+                                    <div className="text-xs font-mono font-black italic">{(customer.totalSpent / 1000).toFixed(1)}k</div>
                                 </div>
-                                <div className="bg-zinc-900 text-white p-1.5 rounded-sm">
-                                    <SafeIcon name="user" size={14} />
+                                <div className="text-right">
+                                    <div className="text-[8px] font-black text-zinc-400 uppercase mb-0.5">Deployments</div>
+                                    <div className="text-xs font-mono font-black">{customer.missionCount}x</div>
                                 </div>
                             </div>
+                        </div>
 
-                            {/* Data Matrix: Tätare padding */}
-                            <div className="grid grid-cols-3 gap-0 border border-zinc-100 rounded-sm overflow-hidden mb-4">
-                                <div className="p-2 border-r border-zinc-100 bg-zinc-50/50 text-center">
-                                    <span className="block text-[7px] font-black text-zinc-400 uppercase mb-1">FORDON</span>
-                                    <span className="font-black text-base text-zinc-900 font-mono">{c.regs.size}</span>
-                                </div>
-                                <div className="p-2 border-r border-zinc-100 bg-zinc-50/50 text-center">
-                                    <span className="block text-[7px] font-black text-zinc-400 uppercase mb-1">BESÖK</span>
-                                    <span className="font-black text-base text-zinc-900 font-mono">{c.jobs.length}</span>
-                                </div>
-                                {/* SENASTE BESÖK: Stor och Tydlig */}
-                                <div className="p-2 bg-white text-center">
-                                    <span className="block text-[7px] font-black text-orange-600/50 uppercase mb-1 tracking-tighter">SENAST</span>
-                                    <span className="font-mono text-[11px] font-black text-orange-600 block leading-none">
-                                        {c.last ? c.last.split('T')[0] : 'N/A'}
-                                    </span>
-                                </div>
+                        <div className="mt-auto bg-zinc-50 p-3 border-t border-zinc-100 flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <div className={`w-2 h-2 rounded-full ${new Date() - new Date(customer.lastSeen) < 2592000000 ? 'theme-bg' : 'bg-zinc-300'}`}></div>
+                                <span className="text-[9px] font-mono font-bold text-zinc-500 uppercase">
+                                    {Array.from(customer.vehicles)[0] || '---'}
+                                </span>
                             </div>
-
-                            <button 
-                                onClick={() => setViewing(c)}
-                                className="w-full bg-zinc-950 text-white font-black py-2.5 text-[10px] uppercase tracking-widest hover:bg-orange-600 transition-all flex items-center justify-center gap-2"
-                            >
-                                ACCESS_PROFILE <SafeIcon name="chevron-right" size={14} />
-                            </button>
+                            <span className="text-[8px] font-black text-zinc-300 uppercase italic">Status: Valid</span>
                         </div>
-                    </div>
-                ))}
-            </div>
-
-            {/* MOBILVY */}
-            <div className="lg:hidden space-y-3">
-                {filtered.map(c => (
-                    <div key={c.name} onClick={() => setViewing(c)} className="bg-white border-l-4 border-orange-600 p-4 shadow-md flex justify-between items-center active:scale-95 transition-all">
-                        <div>
-                            <div className="text-sm font-black uppercase text-zinc-950">{c.name}</div>
-                            <div className="text-[9px] font-mono text-orange-600 font-black mt-1">{c.regs.size} UNITS // {c.jobs.length} LOGS</div>
-                        </div>
-                        <SafeIcon name="chevron-right" className="text-zinc-300" size={18} />
                     </div>
                 ))}
             </div>
