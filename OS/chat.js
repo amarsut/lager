@@ -45,20 +45,13 @@ const ChatView = ({ user, setView }) => {
     // --- 2. FIREBASE & REAKTIONER ---
     const handleFile = async (e) => {
         const file = e.target.files[0];
-        // VIKTIGT: Se till att du fixat CORS i Firebase Console enligt instruktionerna ovan!
         if (!file || !window.firebase.storage) return;
         setIsUploading(true);
         try {
-            // Skapa ett unikt filnamn för att undvika överskrivning
             const uniqueFileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
             const storageRef = window.firebase.storage().ref(`chat_files/${uniqueFileName}`);
-            
-            // Ladda upp
             await storageRef.put(file);
-            // Hämta URL
             const url = await storageRef.getDownloadURL();
-            
-            // Spara i Firestore
             await window.db.collection("notes").add({
                 text: file.name, 
                 fileUrl: url,
@@ -66,12 +59,8 @@ const ChatView = ({ user, setView }) => {
                 timestamp: new Date().toISOString(), 
                 sender: user.email
             });
-        } catch (err) { 
-            console.error("Upload Error Detaljer:", err); 
-            alert("Kunde inte ladda upp filen. Kolla konsolen för detaljer (ofta CORS-fel).");
-        }
+        } catch (err) { console.error("Upload Error:", err); }
         setIsUploading(false);
-        // Återställ input-värdet så man kan välja samma fil igen om man vill
         e.target.value = null;
     };
 
@@ -101,37 +90,29 @@ const ChatView = ({ user, setView }) => {
             const msg = messages.find(m => m.id === id);
             if (!msg) return;
             const reactions = { ...(msg.reactions || {}) };
-            
             if (reactions[emoji] > 0) {
                 reactions[emoji] -= 1;
                 if (reactions[emoji] <= 0) delete reactions[emoji];
             } else {
                 reactions[emoji] = (reactions[emoji] || 0) + 1;
             }
-            
             await window.db.collection("notes").doc(id).update({ reactions });
             setActiveMenu(null);
-        } catch (err) {
-            console.error("Reaction error:", err);
-        }
+        } catch (err) { console.error("Reaction error:", err); }
     };
 
     useEffect(() => {
         const unsubscribe = window.db.collection("notes").orderBy("timestamp", "asc").onSnapshot(snap => {
             const docs = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             setMessages(docs);
-            // Scrolla ner vid första laddning eller nya meddelanden
             setTimeout(() => { if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight; }, 100);
         });
         return () => unsubscribe();
     }, []);
 
-    // --- NY FIX: Scrolla ner när man går tillbaka från galleriet ---
     useEffect(() => {
         if (filter === 'all' && scrollRef.current) {
-            setTimeout(() => {
-                scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-            }, 50); // En kort fördröjning för att säkerställa att vyn hunnit renderas
+            setTimeout(() => { scrollRef.current.scrollTop = scrollRef.current.scrollHeight; }, 50);
         }
     }, [filter]);
 
@@ -143,7 +124,6 @@ const ChatView = ({ user, setView }) => {
         </svg>
     );
     
-    // NY: Kamera-ikon
     const CameraIcon = () => (
         <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
@@ -186,32 +166,36 @@ const ChatView = ({ user, setView }) => {
             <div className={`w-full h-full flex flex-col ${isDarkMode ? 'bg-black border-zinc-800' : 'bg-white border-zinc-200'} lg:w-[750px] lg:h-[calc(100vh-115px)] lg:rounded-md lg:border lg:shadow-2xl overflow-hidden`}>
                 
                 {/* HEADER */}
-                <div className="h-14 bg-zinc-950 flex items-center justify-between px-4 border-b border-zinc-900 shrink-0">
+                <div className="h-16 bg-zinc-950 flex items-center justify-between px-4 border-b border-zinc-900 shrink-0">
                     <div className="flex items-center gap-4">
-                        <button onClick={() => setView('DASHBOARD')} className="w-9 h-9 theme-bg flex items-center justify-center rounded-sm"><Icon name="arrow-left" size={18} className="text-black pointer-events-none" /></button>
+                        <button onClick={() => setView('DASHBOARD')} className="w-11 h-11 theme-bg flex items-center justify-center rounded-md shadow-lg active:scale-95 transition-transform">
+                            <Icon name="arrow-left" size={24} className="text-black pointer-events-none" />
+                        </button>
                         <div>
                             <span className="text-[8px] font-black theme-text uppercase tracking-[0.3em] block leading-none mb-1">System_Log // OS</span>
                             <h2 className="text-xs font-black uppercase tracking-widest text-white">Mission_Log</h2>
                         </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <button onClick={() => setIsDarkMode(!isDarkMode)} className="p-2 text-zinc-500 hover:text-white"><Icon name={isDarkMode ? "sun" : "moon"} size={16} className="pointer-events-none" /></button>
-                        <div className="flex bg-zinc-900/50 border-zinc-800 p-1 rounded-full border">
+                    <div className="flex items-center gap-1.5">
+                        <button onClick={() => setIsDarkMode(!isDarkMode)} className="w-10 h-10 flex items-center justify-center text-zinc-500 hover:text-white transition-colors">
+                            <Icon name={isDarkMode ? "sun" : "moon"} size={22} className="pointer-events-none" />
+                        </button>
+                        <div className="flex bg-zinc-900/50 border-zinc-800 p-1 rounded-full border ml-1">
                             {['all', 'image'].map(f => (
-                                <button key={f} onClick={() => setFilter(f)} className={`w-7 h-7 flex items-center justify-center rounded-full ${filter === f ? 'bg-zinc-700 text-white shadow-lg' : 'text-zinc-500 hover:text-zinc-300'}`}>
-                                    <Icon name={f === 'all' ? 'list' : 'image'} size={14} className="pointer-events-none" />
+                                <button key={f} onClick={() => setFilter(f)} className={`w-10 h-10 flex items-center justify-center rounded-full transition-all ${filter === f ? 'bg-zinc-700 text-white shadow-xl' : 'text-zinc-500 hover:text-zinc-300'}`}>
+                                    <Icon name={f === 'all' ? 'list' : 'image'} size={20} className="pointer-events-none" />
                                 </button>
                             ))}
                         </div>
                     </div>
                 </div>
 
-                {/* FLOW / GALLERI */}
+                {/* FLOW */}
                 <div ref={scrollRef} className={`flex-1 overflow-y-auto p-4 custom-scrollbar ${isDarkMode ? 'bg-black' : 'bg-white'}`}>
                     {filter === 'image' ? (
                         <div className="grid grid-cols-3 lg:grid-cols-4 gap-1 animate-in zoom-in duration-300">
                             {messages.filter(m => m.type === 'image' || m.image).map(msg => (
-                                <img key={msg.id} src={msg.fileUrl || msg.image} className="w-full aspect-square object-cover rounded-sm border border-zinc-800 cursor-pointer hover:opacity-90 transition-opacity" alt="Gallery" onClick={() => window.open(msg.fileUrl || msg.image, '_blank')} />
+                                <img key={msg.id} src={msg.fileUrl || msg.image} className="w-full aspect-square object-cover rounded-sm border border-zinc-800 cursor-pointer" alt="Gallery" onClick={() => window.open(msg.fileUrl || msg.image, '_blank')} />
                             ))}
                         </div>
                     ) : (
@@ -222,7 +206,6 @@ const ChatView = ({ user, setView }) => {
                                 const currentLabel = getDateLabel(msg.timestamp);
                                 const showSeparator = currentLabel !== lastDateLabel;
                                 lastDateLabel = currentLabel;
-                                
                                 return (
                                     <React.Fragment key={msg.id}>
                                         {showSeparator && (
@@ -256,20 +239,15 @@ const ChatView = ({ user, setView }) => {
                                                         </div>
                                                     )}
                                                 </div>
-
-                                                {/* VISNING AV REAKTIONER (Större storlek här) */}
                                                 {msg.reactions && Object.keys(msg.reactions).length > 0 && (
                                                     <div className={`flex gap-1 mt-1 ${isMe ? 'justify-end' : 'justify-start'}`}>
                                                         {Object.entries(msg.reactions).map(([emoji, count]) => (
-                                                            // ÄNDRAD STORLEK: text-sm istället för text-[10px], mer padding
                                                             <div key={emoji} onClick={(e) => { e.stopPropagation(); toggleReaction(msg.id, emoji); }} className={`px-2 py-1 rounded-full text-sm flex items-center gap-1 border cursor-pointer ${isDarkMode ? 'bg-zinc-900 border-zinc-800 text-zinc-300' : 'bg-white border-zinc-200 text-zinc-700 shadow-sm'}`}>
                                                                 <span>{emoji}</span><span className="font-bold text-xs">{count}</span>
                                                             </div>
                                                         ))}
                                                     </div>
                                                 )}
-
-                                                {/* TIDSSTÄMPEL (Större storlek här) */}
                                                 <span className={`text-[11px] font-bold mt-1 px-1 uppercase tracking-tighter ${isDarkMode ? 'text-zinc-500' : 'text-zinc-400'}`}>
                                                     {!isMe && `${getSenderName(msg)} • `}{formatTime(msg.timestamp)}
                                                 </span>
@@ -282,7 +260,7 @@ const ChatView = ({ user, setView }) => {
                     )}
                 </div>
 
-                {/* FOOTER (MESSENGER-STIL) */}
+                {/* FOOTER */}
                 <div className={`p-2 border-t shrink-0 ${isDarkMode ? 'bg-zinc-950 border-zinc-900' : 'bg-zinc-50 border-zinc-200'}`}>
                     {editingId && (
                         <div className="flex items-center justify-between mb-1.5 px-2 animate-in slide-in-from-bottom-1">
@@ -291,29 +269,30 @@ const ChatView = ({ user, setView }) => {
                         </div>
                     )}
                     <form onSubmit={handleAction} className="flex items-center gap-2 max-w-4xl mx-auto">
-                        
-                        {/* KNAPPAR TILL VÄNSTER (Plus & Kamera) */}
                         <div className="flex items-center shrink-0 gap-1">
                              {!editingId && (
                                 <>
-                                    {/* Befintlig Plus-knapp (för filer) */}
                                     <label className={`p-1.5 rounded-full cursor-pointer flex items-center justify-center transition-all ${isDarkMode ? 'text-blue-500 hover:bg-zinc-900' : 'text-blue-600 hover:bg-zinc-200'}`}>
                                         <PlusIcon />
                                         <input type="file" className="hidden" onChange={handleFile} />
                                     </label>
-
-                                    {/* NY: Kamera-knapp (för direktfoto på mobil) */}
                                     <label className={`p-1.5 rounded-full cursor-pointer flex items-center justify-center transition-all ${isDarkMode ? 'text-blue-500 hover:bg-zinc-900' : 'text-blue-600 hover:bg-zinc-200'}`}>
                                         <CameraIcon />
-                                        {/* accept="image/*" och capture="environment" öppnar kameran direkt på mobilen */}
                                         <input type="file" className="hidden" accept="image/*" capture="environment" onChange={handleFile} />
                                     </label>
                                 </>
                              )}
                         </div>
-
                         <div className={`flex-1 px-3 py-1 rounded-full border transition-all ${editingId ? 'border-blue-500 bg-blue-500/5' : (isDarkMode ? 'bg-zinc-900 border-transparent focus-within:border-zinc-700' : 'bg-white border-zinc-300')}`}>
-                            <input autoFocus={!!editingId} value={inputText} onChange={(e) => setInputText(e.target.value)} placeholder={editingId ? "Redigera..." : "Meddelande"} className={`w-full bg-transparent border-none outline-none text-[14px] focus:ring-0 shadow-none h-7 ${isDarkMode ? 'text-zinc-100 placeholder:text-zinc-700' : 'text-zinc-900 placeholder:text-zinc-400'}`} />
+                            <input 
+                                autoFocus={!!editingId} 
+                                value={inputText} 
+                                onChange={(e) => setInputText(e.target.value)} 
+                                placeholder={editingId ? "Redigera..." : "Meddelande"} 
+                                // INLINE STIL HÄR FÖR ATT TRUMFA WEBBLÄSAREN
+                                style={{ outline: 'none', boxShadow: 'none' }}
+                                className={`w-full bg-transparent border-none appearance-none outline-none focus:outline-none text-[14px] focus:ring-0 shadow-none h-7 ${isDarkMode ? 'text-zinc-100 placeholder:text-zinc-700' : 'text-zinc-900 placeholder:text-zinc-400'}`} 
+                            />
                         </div>
                         <button type="submit" disabled={!inputText.trim()} className={`flex items-center justify-center min-w-[36px] min-h-[36px] transition-all shrink-0`}>
                             {editingId ? (
