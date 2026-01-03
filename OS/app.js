@@ -378,7 +378,7 @@ const App = () => {
                         
                         {view === 'CALENDAR' && <window.CalendarView allJobs={allJobs} setEditingJob={setEditingJob} setView={navigateTo} />}
                         {view === 'OIL_SUPPLY' && <window.SupplyView allJobs={allJobs} setView={navigateTo} />}
-                        {view === 'CHAT' && <window.ChatView user={user} setView={navigateTo} />}
+                        {view === 'CHAT' && <window.ChatView user={user} setView={navigateTo} viewParams={viewParams} />}
                     </div>
 
                     <div className="lg:hidden fixed bottom-0 left-0 right-0 h-16 bg-zinc-950 border-t border-zinc-900 flex items-center justify-around z-[210] px-1 pb-safe backdrop-blur-xl">
