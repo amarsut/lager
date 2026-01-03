@@ -42,9 +42,14 @@ const ChatView = ({ user, setView, viewParams }) => {
     const [activeImage, setActiveImage] = useState(null); // 4. NYTT state för Lightbox
     const [isUploading, setIsUploading] = useState(false);
     const [activeMenu, setActiveMenu] = useState(null);
-    const [isDarkMode, setIsDarkMode] = useState(true);
+    const [isDarkMode, setIsDarkMode] = useState(localStorage.getItem('chat_theme_dark') !== 'false');
     const scrollRef = useRef(null);
     const menuRef = useRef(null);
+
+    // Sparar valet i localStorage varje gång isDarkMode ändras
+    useEffect(() => {
+        localStorage.setItem('chat_theme_dark', isDarkMode);
+    }, [isDarkMode]);
 
     // --- NYA NAVIGERINGSFUNKTIONER ---
     const handleFilterChange = (newFilter) => {
@@ -418,61 +423,61 @@ const ChatView = ({ user, setView, viewParams }) => {
             </div>
             {/* LIGHTBOX / FULLSCREEN VIEW */}
             {activeImage && (
-                <div className="fixed inset-0 z-[10001] bg-black/95 backdrop-blur-md flex flex-col animate-in fade-in duration-200"
+                <div className="fixed inset-0 z-[10001] bg-black/95 backdrop-blur-md flex flex-col animate-in fade-in duration-200 overflow-hidden" 
                     onClick={() => setActiveImage(null)}>
-
-                    {/* HEADER BAR */}
-                    <div className="h-16 lg:h-20 flex items-center justify-between px-4 lg:px-10 pt-safe shrink-0 relative z-[10002] bg-zinc-950/50 border-b border-white/5"
+                    
+                    {/* HEADER BAR: Ligger kvar i toppen */}
+                    <div className="h-16 lg:h-20 flex items-center justify-between px-4 lg:px-12 shrink-0 relative z-[10002] bg-zinc-950/80 border-b border-white/5" 
                         onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center gap-4">
-                            {/* STÄNG-KNAPP - Nu med direkt-respons */}
-                            <button
-                                onClick={(e) => { e.stopPropagation(); setActiveImage(null); }}
+                            <button 
+                                onClick={(e) => { e.stopPropagation(); setActiveImage(null); }} 
                                 className="p-2 rounded-full hover:bg-white/10 transition-all active:scale-90 cursor-pointer">
                                 <ModalCloseIcon />
                             </button>
                             <div className="flex flex-col">
-                                <span className="text-white font-bold text-sm lg:text-base tracking-tight">{getSenderName(activeImage)}</span>
-                                <span className="text-zinc-500 text-[10px] lg:text-xs uppercase tracking-widest font-mono">
-                                    {getDateLabel(activeImage.timestamp)} // {formatTime(activeImage.timestamp)}
+                                <span className="text-white font-bold text-sm lg:text-base tracking-tight">
+                                    {getSenderName(activeImage)}
+                                </span>
+                                <span className="text-zinc-500 text-[10px] uppercase tracking-widest font-mono mt-0.5">
+                                    {getDateLabel(activeImage.timestamp)} <span className="mx-1 opacity-30">|</span> {formatTime(activeImage.timestamp)}
                                 </span>
                             </div>
                         </div>
-
+                        
                         <div className="flex items-center gap-2 lg:gap-4">
-                            {/* LADDA NER - Nu med direkt-respons */}
-                            <a
-                                href={activeImage.fileUrl || activeImage.image}
-                                download={`IMG_${activeImage.timestamp}.webp`}
-                                className="p-3 rounded-full hover:bg-white/10 transition-colors cursor-pointer"
+                            <a 
+                                href={activeImage.fileUrl || activeImage.image} 
+                                download={`IMG_${activeImage.timestamp}.webp`} 
+                                className="p-3 rounded-full hover:bg-white/10 transition-all cursor-pointer" 
                                 onClick={(e) => e.stopPropagation()}>
                                 <DownloadIcon />
                             </a>
-                            {/* RADERA - Nu med direkt-respons */}
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    if (window.confirm("Radera bild permanent?")) {
-                                        window.db.collection("notes").doc(activeImage.id).delete();
-                                        setActiveImage(null);
+                            <button 
+                                onClick={(e) => { 
+                                    e.stopPropagation(); 
+                                    if(window.confirm("Radera bild permanent?")) { 
+                                        window.db.collection("notes").doc(activeImage.id).delete(); 
+                                        setActiveImage(null); 
                                     }
-                                }}
-                                className="p-3 rounded-full hover:bg-red-500/20 transition-colors group cursor-pointer">
-                                <div className="group-hover:brightness-125 transition-all">
-                                    <TrashLargeIcon />
-                                </div>
+                                }} 
+                                className="p-3 rounded-full hover:bg-red-500/20 transition-all group cursor-pointer">
+                                <TrashLargeIcon />
                             </button>
                         </div>
                     </div>
 
-                    {/* BILD-CONTAINER */}
-                    <div className="flex-1 flex items-center justify-center p-4 lg:p-12 pb-24 relative z-[10002]">
-                        <img
-                            src={activeImage.fileUrl || activeImage.image}
-                            className="max-w-full max-h-[75vh] lg:max-h-[80vh] object-contain rounded-xl lg:rounded-2xl shadow-[0_0_100px_rgba(0,0,0,0.8)] border border-white/10 animate-in zoom-in duration-300"
-                            alt="Full size preview"
-                            onClick={(e) => e.stopPropagation()}
-                        />
+                    {/* BILD-CONTAINER: Nu med perfekt centrering utan "push" i botten */}
+                    <div className="flex-1 relative flex items-center justify-center p-4 lg:p-8 overflow-hidden">
+                        <div className="w-full h-full flex items-center justify-center">
+                            <img 
+                                src={activeImage.fileUrl || activeImage.image} 
+                                // max-h-full ser till att den aldrig blir högre än det tillgängliga utrymmet
+                                className="max-w-full max-h-full object-contain rounded-lg lg:rounded-2xl shadow-2xl border border-white/5 animate-in zoom-in duration-300 select-none" 
+                                alt="Full size preview"
+                                onClick={(e) => e.stopPropagation()} 
+                            />
+                        </div>
                     </div>
                 </div>
             )}
