@@ -67,7 +67,7 @@ const ChatView = ({ user, setView, viewParams }) => {
             window.history.back(); // Annars gå ur chatten helt
         }
     };
-    
+
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     let lastDateLabel = null;
 
@@ -78,8 +78,8 @@ const ChatView = ({ user, setView, viewParams }) => {
         return text.split(urlRegex).map((part, i) => {
             if (part.match(urlRegex)) {
                 return (
-                    <a key={i} href={part} target="_blank" rel="noopener noreferrer" 
-                    className="underline decoration-1 hover:opacity-70 break-all text-blue-500 transition-opacity">
+                    <a key={i} href={part} target="_blank" rel="noopener noreferrer"
+                        className="underline decoration-1 hover:opacity-70 break-all text-blue-500 transition-opacity">
                         {part}
                     </a>
                 );
@@ -129,15 +129,15 @@ const ChatView = ({ user, setView, viewParams }) => {
             }
 
             await window.db.collection("notes").add({
-                text: file.name, 
+                text: file.name,
                 fileUrl: fileData, // Här sparar vi nu Base64-strängen direkt istället för Storage-URL
                 type: type,
-                timestamp: new Date().toISOString(), 
+                timestamp: new Date().toISOString(),
                 sender: user.email
             });
 
-        } catch (err) { 
-            console.error("Upload Error:", err); 
+        } catch (err) {
+            console.error("Upload Error:", err);
             alert("Kunde inte ladda upp bilden.");
         }
         setIsUploading(false);
@@ -203,7 +203,7 @@ const ChatView = ({ user, setView, viewParams }) => {
             <line x1="5" y1="12" x2="19" y2="12"></line>
         </svg>
     );
-    
+
     const CameraIcon = () => (
         <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
@@ -215,6 +215,28 @@ const ChatView = ({ user, setView, viewParams }) => {
         <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={active ? "text-blue-500" : "text-zinc-600"}>
             <line x1="5" y1="12" x2="19" y2="12"></line>
             <polyline points="12 5 19 12 12 19"></polyline>
+        </svg>
+    );
+
+    const ModalCloseIcon = () => (
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+    );
+
+    const DownloadIcon = () => (
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+    );
+
+    const TrashLargeIcon = () => (
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
         </svg>
     );
 
@@ -244,7 +266,7 @@ const ChatView = ({ user, setView, viewParams }) => {
     return (
         <div className={`fixed inset-0 z-[1000] lg:relative lg:inset-auto lg:flex lg:items-start lg:justify-start lg:-mt-4 max-lg:bg-black animate-in fade-in duration-300 font-sans`}>
             <div className={`w-full h-full flex flex-col ${isDarkMode ? 'bg-black border-zinc-800' : 'bg-white border-zinc-200'} lg:w-[750px] lg:h-[calc(100vh-115px)] lg:rounded-md lg:border lg:shadow-2xl overflow-hidden`}>
-                
+
                 {/* HEADER */}
                 <div className="h-16 bg-zinc-950 flex items-center justify-between px-4 border-b border-zinc-900 shrink-0">
                     <div className="flex items-center gap-4">
@@ -275,7 +297,17 @@ const ChatView = ({ user, setView, viewParams }) => {
                     {filter === 'image' ? (
                         <div className="grid grid-cols-3 lg:grid-cols-4 gap-1 animate-in zoom-in duration-300">
                             {messages.filter(m => m.type === 'image' || m.image).map(msg => (
-                                <img key={msg.id} src={msg.fileUrl || msg.image} className="w-full aspect-square object-cover rounded-sm border border-zinc-800 cursor-pointer" alt="Gallery" onClick={() => setActiveImage(msg.fileUrl || msg.image)} />
+                                <img
+                                    key={msg.id}
+                                    src={msg.fileUrl || msg.image}
+                                    className="w-full aspect-square object-cover rounded-sm border border-zinc-800 cursor-pointer"
+                                    alt="Gallery"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setActiveMenu(null);
+                                        setActiveImage(msg);
+                                    }}
+                                />
                             ))}
                         </div>
                     ) : (
@@ -295,12 +327,12 @@ const ChatView = ({ user, setView, viewParams }) => {
                                         )}
                                         <div className={`flex ${isMe ? 'justify-end' : 'justify-start'} w-full`}>
                                             <div className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-[85%] group relative`}
-                                                 onMouseEnter={() => !isMobile && setActiveMenu(msg.id)}
-                                                 onMouseLeave={() => !isMobile && setActiveMenu(null)}
-                                                 onClick={() => isMobile && setActiveMenu(activeMenu === msg.id ? null : msg.id)}>
+                                                onMouseEnter={() => !isMobile && setActiveMenu(msg.id)}
+                                                onMouseLeave={() => !isMobile && setActiveMenu(null)}
+                                                onClick={() => isMobile && setActiveMenu(activeMenu === msg.id ? null : msg.id)}>
                                                 <div className="relative max-w-max">
                                                     {isImage ? (
-                                                        <img src={msg.fileUrl || msg.image} className="max-w-[250px] rounded-lg block shadow-md cursor-pointer" alt="Attachment" onClick={() => setActiveImage(msg.fileUrl || msg.image)} />
+                                                        <img src={msg.fileUrl || msg.image} className="max-w-[250px] rounded-lg block shadow-md cursor-pointer" alt="Attachment" onClick={(e) => { e.stopPropagation(); setActiveMenu(null); setActiveImage(msg); }} />
                                                     ) : (
                                                         <div className={`px-3 py-1.5 rounded-[18px] shadow-sm text-[14px] ${isMe ? 'bg-blue-600 text-white rounded-br-none' : (isDarkMode ? 'bg-zinc-800 text-zinc-100 rounded-bl-none' : 'bg-zinc-100 text-zinc-800 rounded-bl-none')}`}>
                                                             <p className="leading-snug">{renderMessageText(msg.text)}</p>
@@ -350,7 +382,7 @@ const ChatView = ({ user, setView, viewParams }) => {
                     )}
                     <form onSubmit={handleAction} className="flex items-center gap-2 max-w-4xl mx-auto">
                         <div className="flex items-center shrink-0 gap-1">
-                             {!editingId && (
+                            {!editingId && (
                                 <>
                                     <label className={`p-1.5 rounded-full cursor-pointer flex items-center justify-center transition-all ${isDarkMode ? 'text-blue-500 hover:bg-zinc-900' : 'text-blue-600 hover:bg-zinc-200'}`}>
                                         <PlusIcon />
@@ -361,17 +393,17 @@ const ChatView = ({ user, setView, viewParams }) => {
                                         <input type="file" className="hidden" accept="image/*" capture="environment" onChange={handleFile} />
                                     </label>
                                 </>
-                             )}
+                            )}
                         </div>
                         <div className={`flex-1 px-3 py-1 rounded-full border transition-all ${editingId ? 'border-blue-500 bg-blue-500/5' : (isDarkMode ? 'bg-zinc-900 border-transparent focus-within:border-zinc-700' : 'bg-white border-zinc-300')}`}>
-                            <input 
-                                autoFocus={!!editingId} 
-                                value={inputText} 
-                                onChange={(e) => setInputText(e.target.value)} 
-                                placeholder={editingId ? "Redigera..." : "Meddelande"} 
+                            <input
+                                autoFocus={!!editingId}
+                                value={inputText}
+                                onChange={(e) => setInputText(e.target.value)}
+                                placeholder={editingId ? "Redigera..." : "Meddelande"}
                                 // INLINE STIL HÄR FÖR ATT TRUMFA WEBBLÄSAREN
                                 style={{ outline: 'none', boxShadow: 'none' }}
-                                className={`w-full bg-transparent border-none appearance-none outline-none focus:outline-none text-[14px] focus:ring-0 shadow-none h-7 ${isDarkMode ? 'text-zinc-100 placeholder:text-zinc-700' : 'text-zinc-900 placeholder:text-zinc-400'}`} 
+                                className={`w-full bg-transparent border-none appearance-none outline-none focus:outline-none text-[14px] focus:ring-0 shadow-none h-7 ${isDarkMode ? 'text-zinc-100 placeholder:text-zinc-700' : 'text-zinc-900 placeholder:text-zinc-400'}`}
                             />
                         </div>
                         <button type="submit" disabled={!inputText.trim()} className={`flex items-center justify-center min-w-[36px] min-h-[36px] transition-all shrink-0`}>
@@ -385,18 +417,65 @@ const ChatView = ({ user, setView, viewParams }) => {
                 </div>
             </div>
             {/* LIGHTBOX / FULLSCREEN VIEW */}
-                {activeImage && (
-                    <div className="fixed inset-0 z-[10001] bg-black/95 flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setActiveImage(null)}>
-                        <button className="absolute top-6 right-6 text-white bg-white/10 p-3 rounded-full hover:bg-white/20 transition-colors">
-                            <Icon name="x" size={24} />
-                        </button>
-                        <img 
-                            src={activeImage} 
-                            className="max-w-full max-h-full object-contain shadow-2xl animate-in zoom-in duration-300" 
+            {activeImage && (
+                <div className="fixed inset-0 z-[10001] bg-black/95 backdrop-blur-md flex flex-col animate-in fade-in duration-200"
+                    onClick={() => setActiveImage(null)}>
+
+                    {/* HEADER BAR */}
+                    <div className="h-16 lg:h-20 flex items-center justify-between px-4 lg:px-10 pt-safe shrink-0 relative z-[10002] bg-zinc-950/50 border-b border-white/5"
+                        onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center gap-4">
+                            {/* STÄNG-KNAPP - Nu med direkt-respons */}
+                            <button
+                                onClick={(e) => { e.stopPropagation(); setActiveImage(null); }}
+                                className="p-2 rounded-full hover:bg-white/10 transition-all active:scale-90 cursor-pointer">
+                                <ModalCloseIcon />
+                            </button>
+                            <div className="flex flex-col">
+                                <span className="text-white font-bold text-sm lg:text-base tracking-tight">{getSenderName(activeImage)}</span>
+                                <span className="text-zinc-500 text-[10px] lg:text-xs uppercase tracking-widest font-mono">
+                                    {getDateLabel(activeImage.timestamp)} // {formatTime(activeImage.timestamp)}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 lg:gap-4">
+                            {/* LADDA NER - Nu med direkt-respons */}
+                            <a
+                                href={activeImage.fileUrl || activeImage.image}
+                                download={`IMG_${activeImage.timestamp}.webp`}
+                                className="p-3 rounded-full hover:bg-white/10 transition-colors cursor-pointer"
+                                onClick={(e) => e.stopPropagation()}>
+                                <DownloadIcon />
+                            </a>
+                            {/* RADERA - Nu med direkt-respons */}
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (window.confirm("Radera bild permanent?")) {
+                                        window.db.collection("notes").doc(activeImage.id).delete();
+                                        setActiveImage(null);
+                                    }
+                                }}
+                                className="p-3 rounded-full hover:bg-red-500/20 transition-colors group cursor-pointer">
+                                <div className="group-hover:brightness-125 transition-all">
+                                    <TrashLargeIcon />
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* BILD-CONTAINER */}
+                    <div className="flex-1 flex items-center justify-center p-4 lg:p-12 pb-24 relative z-[10002]">
+                        <img
+                            src={activeImage.fileUrl || activeImage.image}
+                            className="max-w-full max-h-[75vh] lg:max-h-[80vh] object-contain rounded-xl lg:rounded-2xl shadow-[0_0_100px_rgba(0,0,0,0.8)] border border-white/10 animate-in zoom-in duration-300"
                             alt="Full size preview"
+                            onClick={(e) => e.stopPropagation()}
                         />
                     </div>
-                )}
+                </div>
+            )}
         </div>
     );
 };
