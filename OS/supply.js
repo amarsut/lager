@@ -22,7 +22,7 @@ const SectionHeader = ({ title, sub, light = false }) => (
     </div>
 );
 
-window.SupplyView = () => {
+window.SupplyView = ({ allJobs, setView }) => {
     const [jobs, setJobs] = React.useState([]);
     const [settings, setSettings] = React.useState({ oilStartDate: '2025-11-22', oilStartAmount: 0 });
     const [loading, setLoading] = React.useState(true);
@@ -94,8 +94,10 @@ window.SupplyView = () => {
     }, [jobs, settings]);
 
     const handleJobClick = (id) => {
-        if (window.openEditModal) {
-            window.openEditModal(id);
+        const job = allJobs.find(j => j.id === id);
+        if (job) {
+            // Använder vår nya navigerings-logik
+            setView('NEW_JOB', { job: job });
         }
     };
 
