@@ -384,27 +384,32 @@ const App = () => {
                     <div className="lg:hidden fixed bottom-0 left-0 right-0 h-16 bg-zinc-950 border-t border-zinc-900 flex items-center justify-around z-[210] px-1 pb-safe backdrop-blur-xl">
                         {/* 1. STATUS */}
                         <button onClick={() => navigateTo('DASHBOARD')} className={`mobile-nav-btn ${view === 'DASHBOARD' && !sidebarOpen ? 'active' : ''}`}>
-                            <window.Icon name="grid" size={18} />
+                            <div className="relative inline-flex items-center justify-center p-1">
+                                <window.Icon name="grid" size={20} />
+                            </div>
                             <span className="mobile-nav-label">Status</span>
                         </button>
                         
                         {/* 2. PLAN */}
                         <button onClick={() => navigateTo('CALENDAR')} className={`mobile-nav-btn ${view === 'CALENDAR' && !sidebarOpen ? 'active' : ''}`}>
-                            <window.Icon name="calendar" size={18} />
+                            <div className="relative inline-flex items-center justify-center p-1">
+                                <window.Icon name="calendar" size={20} />
+                            </div>
                             <span className="mobile-nav-label">Plan</span>
                         </button>
 
                         {/* 3. NYTT */}
                         <button onClick={() => navigateTo('NEW_JOB', { job: null })} className={`mobile-nav-btn ${view === 'NEW_JOB' && !sidebarOpen ? 'active' : ''}`}>
-                            <window.Icon name="plus-square" size={18} />
+                            <div className="relative inline-flex items-center justify-center p-1">
+                                <window.Icon name="plus-square" size={20} />
+                            </div>
                             <span className="mobile-nav-label">Nytt</span>
                         </button>
 
                         {/* 4. CHATT (Med Badge-logik) */}
                         <button onClick={() => navigateTo('CHAT')} className={`mobile-nav-btn ${view === 'CHAT' ? 'active' : ''}`}>
-                            <div className="relative inline-flex items-center justify-center p-1"> {/* Extra padding för att ge plats */}
+                            <div className="relative inline-flex items-center justify-center p-1">
                                 <window.Icon name="message-square" size={20} />
-                                
                                 {hasUnread && (
                                     <span className="absolute -top-1 -right-1 flex h-3 w-3 z-[999]">
                                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
@@ -417,7 +422,9 @@ const App = () => {
 
                         {/* 5. MER (Sidebaren) */}
                         <button onClick={() => setSidebarOpen(!sidebarOpen)} className={`mobile-nav-btn ${sidebarOpen ? 'active' : ''}`}>
-                            <window.Icon name={sidebarOpen ? "x" : "more-horizontal"} size={18} />
+                            <div className="relative inline-flex items-center justify-center p-1">
+                                <window.Icon name={sidebarOpen ? "x" : "more-horizontal"} size={20} />
+                            </div>
                             <span className="mobile-nav-label">{sidebarOpen ? "Stäng" : "Mer"}</span>
                         </button>
                     </div>
