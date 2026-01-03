@@ -302,7 +302,7 @@ const App = () => {
                         )}
                         
                         {view === 'CALENDAR' && <window.CalendarView allJobs={allJobs} setEditingJob={setEditingJob} setView={navigateTo} />}
-                        {view === 'OIL_SUPPLY' && <window.SupplyView allJobs={allJobs} />}
+                        {view === 'OIL_SUPPLY' && <window.SupplyView allJobs={allJobs} setView={navigateTo} />}
                         {view === 'CHAT' && <window.ChatView user={user} setView={navigateTo} />}
                     </div>
 
