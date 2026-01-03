@@ -1,4 +1,4 @@
-// app.js - Full uppdaterad version
+// app.js - Full uppdaterad version med Native Navigation (History API)
 
 const { useState, useEffect, useMemo, memo } = React;
 
@@ -31,7 +31,6 @@ window.Icon = ({ name, size = 18, className = "" }) => (
     <i data-lucide={name} className={className} style={{ width: size, height: size }}></i>
 );
 
-// NY: SPLASH SCREEN KOMPONENT (Matrix Style)
 const SplashScreen = () => (
     <div className="fixed inset-0 bg-zinc-950 flex items-center justify-center z-[9999] animate-out fade-out duration-500 delay-1000 fill-mode-forwards pointer-events-none">
         <div className="flex flex-col items-center">
@@ -51,6 +50,7 @@ const App = () => {
     const [loading, setLoading] = useState(true);
     const [appReady, setAppReady] = useState(false);
     const [view, setView] = useState('DASHBOARD');
+    const [viewParams, setViewParams] = useState(null); // För sub-vyer (t.ex. kundprofiler)
     const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth > 1024);
     const [activeFilter, setActiveFilter] = useState('BOKAD');
     const [globalSearch, setGlobalSearch] = useState('');
@@ -65,19 +65,54 @@ const App = () => {
         }
     };
 
+    // --- SMART NAVIGERING (History API) ---
+    const navigateTo = (newView, params = null) => {
+        triggerHaptic();
+        
+        // Pusha till webbläsarens historikstack
+        window.history.pushState({ view: newView, params: params }, "");
+        
+        // Uppdatera state
+        setView(newView);
+        setViewParams(params);
+        
+        // Stäng sidebar på mobil
+        if (window.innerWidth < 1024) setSidebarOpen(false);
+    };
+
+    // Lyssna på bakåt-navigering (Swipe bakåt eller bakåtknapp)
+    useEffect(() => {
+        if (!window.history.state) {
+            window.history.replaceState({ view: 'DASHBOARD', params: null }, "");
+        }
+
+        const handlePopState = (event) => {
+            if (event.state) {
+                setView(event.state.view);
+                setViewParams(event.state.params);
+                
+                // Om vi backar till ett jobb-edit läge
+                if (event.state.params && event.state.params.job) {
+                    setEditingJob(event.state.params.job);
+                }
+            }
+        };
+
+        window.addEventListener('popstate', handlePopState);
+        return () => window.removeEventListener('popstate', handlePopState);
+    }, []);
+
     useEffect(() => {
         window.openEditModal = (jobId) => {
             const job = allJobs.find(j => j.id === jobId);
             if (job) {
-                setEditingJob(job);
-                setView('NEW_JOB');
+                navigateTo('NEW_JOB', { job: job });
             }
         };
     }, [allJobs]);
 
     useEffect(() => {
         const timer = setInterval(() => setTime(new Date()), 1000);
-        // Visa splash screen i minst 1.5 sekunder
         setTimeout(() => setAppReady(true), 1500);
         return () => clearInterval(timer);
     }, []);
@@ -153,12 +188,12 @@ const App = () => {
         return result;
     }, [globalSearch, activeFilter, allJobs]);
 
-    if (loading) return <SplashScreen />; // Visa splash screen under initiering
+    if (loading) return <SplashScreen />;
     if (!user) return <LoginScreen />;
 
     return (
         <>
-            {!appReady && <SplashScreen />} {/* Visa splash screen tills appen är redo */}
+            {!appReady && <SplashScreen />}
             <div className="flex h-screen overflow-hidden bg-[#f8f9fa] relative">
                 <aside className={`fixed lg:relative h-full z-[200] transition-all duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0 w-[280px]' : '-translate-x-full lg:translate-x-0 lg:w-20'} theme-sidebar border-r border-zinc-200/5 flex flex-col shadow-2xl lg:shadow-none`}>
                     <div className="h-20 flex items-center px-6 gap-3 border-b border-zinc-200/5 overflow-hidden">
@@ -176,13 +211,7 @@ const App = () => {
                             { id: 'CHAT', icon: 'message-square', label: 'System_Chat' }
                         ].map(item => (
                             <div key={item.id} 
-                                onClick={() => { 
-                                    if(item.id === 'NEW_JOB') setEditingJob(null);
-                                    setView(item.id); 
-                                    if(window.innerWidth < 1024) {
-                                        setSidebarOpen(false); 
-                                    }
-                                }} 
+                                onClick={() => navigateTo(item.id, item.id === 'NEW_JOB' ? { job: null } : null)} 
                                 className={`flex items-center px-6 py-4 cursor-pointer transition-all ${view === item.id ? 'theme-sidebar-active' : 'hover:opacity-80'}`}>
                                 <window.Icon name={item.icon} size={18} />
                                 {sidebarOpen && <span className="ml-4 text-[10px] font-black uppercase tracking-widest">{item.label}</span>}
@@ -253,7 +282,7 @@ const App = () => {
                             <window.DashboardView 
                                 filteredJobs={filteredJobs} 
                                 setEditingJob={setEditingJob} 
-                                setView={setView} 
+                                setView={navigateTo} 
                                 activeFilter={activeFilter}
                                 setActiveFilter={setActiveFilter}
                                 statusCounts={statusCounts}
@@ -261,39 +290,44 @@ const App = () => {
                                 setGlobalSearch={setGlobalSearch}
                             />
                         )}
-                        {view === 'NEW_JOB' && <window.NewJobView editingJob={editingJob} setView={setView} allJobs={allJobs} />}
-                        {view === 'CUSTOMERS' && <window.CustomersView allJobs={allJobs} setView={setView} setEditingJob={setEditingJob} />}
-                        {view === 'CALENDAR' && <window.CalendarView allJobs={allJobs} setEditingJob={setEditingJob} setView={setView} />}
+                        {view === 'NEW_JOB' && <window.NewJobView editingJob={editingJob} setView={navigateTo} allJobs={allJobs} />}
+                        
+                        {view === 'CUSTOMERS' && (
+                            <window.CustomersView 
+                                allJobs={allJobs} 
+                                setView={navigateTo} 
+                                viewParams={viewParams} 
+                                setEditingJob={setEditingJob} 
+                            />
+                        )}
+                        
+                        {view === 'CALENDAR' && <window.CalendarView allJobs={allJobs} setEditingJob={setEditingJob} setView={navigateTo} />}
                         {view === 'OIL_SUPPLY' && <window.SupplyView allJobs={allJobs} />}
-                        {view === 'CHAT' && <window.ChatView user={user} setView={setView} />}
+                        {view === 'CHAT' && <window.ChatView user={user} setView={navigateTo} />}
                     </div>
 
-                    {/* BOTTOM NAV - Återställd till standardhöjd H-16 */}
                     <div className="lg:hidden fixed bottom-0 left-0 right-0 h-16 bg-zinc-950 border-t border-zinc-900 flex items-center justify-around z-[210] px-1 pb-safe backdrop-blur-xl">
-                        <button onClick={() => { triggerHaptic(); setView('DASHBOARD'); setSidebarOpen(false); }} className={`mobile-nav-btn ${view === 'DASHBOARD' && !sidebarOpen ? 'active' : ''}`}>
+                        <button onClick={() => navigateTo('DASHBOARD')} className={`mobile-nav-btn ${view === 'DASHBOARD' && !sidebarOpen ? 'active' : ''}`}>
                             <window.Icon name="grid" size={18} />
                             <span className="mobile-nav-label">Status</span>
                         </button>
                         
-                        <button onClick={() => { triggerHaptic(); setView('CALENDAR'); setSidebarOpen(false); }} className={`mobile-nav-btn ${view === 'CALENDAR' && !sidebarOpen ? 'active' : ''}`}>
+                        <button onClick={() => navigateTo('CALENDAR')} className={`mobile-nav-btn ${view === 'CALENDAR' && !sidebarOpen ? 'active' : ''}`}>
                             <window.Icon name="calendar" size={18} />
                             <span className="mobile-nav-label">Plan</span>
                         </button>
 
-                        <button onClick={() => { triggerHaptic(); setEditingJob(null); setView('NEW_JOB'); setSidebarOpen(false); }} className={`mobile-nav-btn ${view === 'NEW_JOB' && !sidebarOpen ? 'active' : ''}`}>
+                        <button onClick={() => navigateTo('NEW_JOB', { job: null })} className={`mobile-nav-btn ${view === 'NEW_JOB' && !sidebarOpen ? 'active' : ''}`}>
                             <window.Icon name="plus-square" size={18} />
                             <span className="mobile-nav-label">Nytt</span>
                         </button>
 
-                        <button onClick={() => { triggerHaptic(); setView('CUSTOMERS'); setSidebarOpen(false); }} className={`mobile-nav-btn ${view === 'CUSTOMERS' && !sidebarOpen ? 'active' : ''}`}>
+                        <button onClick={() => navigateTo('CUSTOMERS')} className={`mobile-nav-btn ${view === 'CUSTOMERS' && !sidebarOpen ? 'active' : ''}`}>
                             <window.Icon name="users" size={18} />
                             <span className="mobile-nav-label">Kunder</span>
                         </button>
 
-                        <button 
-                            onClick={() => { triggerHaptic(); setSidebarOpen(!sidebarOpen); }} 
-                            className={`mobile-nav-btn ${sidebarOpen ? 'active' : ''}`}
-                        >
+                        <button onClick={() => setSidebarOpen(!sidebarOpen)} className={`mobile-nav-btn ${sidebarOpen ? 'active' : ''}`}>
                             <window.Icon name={sidebarOpen ? "x" : "more-horizontal"} size={18} />
                             <span className="mobile-nav-label">{sidebarOpen ? "Stäng" : "Mer"}</span>
                         </button>
