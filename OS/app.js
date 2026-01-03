@@ -69,13 +69,10 @@ const App = () => {
     const navigateTo = (newView, params = null) => {
         triggerHaptic();
         
-        // 1. Uppdatera URL-hash (t.ex. #chat eller #customers)
-        window.location.hash = newView.toLowerCase();
+        const hashPath = `#${newView.toLowerCase()}`;
+
+        window.history.pushState({ view: newView, params: params }, "", hashPath);
         
-        // 2. Pusha till historiken (precis som innan)
-        window.history.pushState({ view: newView, params: params }, "");
-        
-        // 3. Uppdatera state
         setView(newView);
         setViewParams(params);
         
