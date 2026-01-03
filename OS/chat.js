@@ -1,6 +1,6 @@
 const { useState, useEffect, useRef } = React;
 
-const ChatView = ({ user, setView }) => {
+const ChatView = ({ user, setView, viewParams }) => {
     // --- NY HJÄLPFUNKTION FÖR KOMPRIMERING ---
     const compressImage = async (file, maxWidth = 1000, quality = 0.7) => {
         return new Promise((resolve, reject) => {
@@ -37,12 +37,36 @@ const ChatView = ({ user, setView }) => {
     const [messages, setMessages] = useState([]);
     const [inputText, setInputText] = useState("");
     const [editingId, setEditingId] = useState(null);
-    const [filter, setFilter] = useState('all');
+    //const [filter, setFilter] = useState('all');
+    const filter = viewParams?.filter || 'all'; // 3. Filtret styrs nu av URL/Historik
+    const [activeImage, setActiveImage] = useState(null); // 4. NYTT state för Lightbox
     const [isUploading, setIsUploading] = useState(false);
     const [activeMenu, setActiveMenu] = useState(null);
     const [isDarkMode, setIsDarkMode] = useState(true);
     const scrollRef = useRef(null);
     const menuRef = useRef(null);
+
+    // --- NYA NAVIGERINGSFUNKTIONER ---
+    const handleFilterChange = (newFilter) => {
+        if (newFilter === filter) return; // Gör inget om vi redan är i den vyn
+
+        if (newFilter === 'all' && filter === 'image') {
+            // Om vi står i galleriet och trycker på "lista", backar vi bara 
+            // i historiken istället för att skapa en ny punkt.
+            window.history.back();
+        } else {
+            // Om vi går från loggen till galleriet, skapar vi en historikpunkt
+            setView('CHAT', { filter: newFilter });
+        }
+    };
+
+    const handleBack = () => {
+        if (filter === 'image') {
+            handleFilterChange('all'); // Om i galleri, gå till loggen
+        } else {
+            window.history.back(); // Annars gå ur chatten helt
+        }
+    };
     
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     let lastDateLabel = null;
@@ -224,8 +248,8 @@ const ChatView = ({ user, setView }) => {
                 {/* HEADER */}
                 <div className="h-16 bg-zinc-950 flex items-center justify-between px-4 border-b border-zinc-900 shrink-0">
                     <div className="flex items-center gap-4">
-                        <button onClick={() => window.history.back()} className="w-11 h-11 theme-bg flex items-center justify-center rounded-md shadow-lg active:scale-95 transition-transform">
-                            <Icon name="arrow-left" size={24} className="text-black pointer-events-none" />
+                        <button onClick={handleBack} className="w-11 h-11 theme-bg flex items-center justify-center rounded-md shadow-lg active:scale-95 transition-transform">
+                            <Icon name={filter === 'image' ? "list" : "arrow-left"} size={24} className="text-black pointer-events-none" />
                         </button>
                         <div>
                             <span className="text-[8px] font-black theme-text uppercase tracking-[0.3em] block leading-none mb-1">System_Log // OS</span>
@@ -238,7 +262,7 @@ const ChatView = ({ user, setView }) => {
                         </button>
                         <div className="flex bg-zinc-900/50 border-zinc-800 p-1 rounded-full border ml-1">
                             {['all', 'image'].map(f => (
-                                <button key={f} onClick={() => setFilter(f)} className={`w-10 h-10 flex items-center justify-center rounded-full transition-all ${filter === f ? 'bg-zinc-700 text-white shadow-xl' : 'text-zinc-500 hover:text-zinc-300'}`}>
+                                <button key={f} onClick={() => handleFilterChange(f)} className={`w-10 h-10 flex items-center justify-center rounded-full transition-all ${filter === f ? 'bg-zinc-700 text-white shadow-xl' : 'text-zinc-500 hover:text-zinc-300'}`}>
                                     <Icon name={f === 'all' ? 'list' : 'image'} size={20} className="pointer-events-none" />
                                 </button>
                             ))}
@@ -251,7 +275,7 @@ const ChatView = ({ user, setView }) => {
                     {filter === 'image' ? (
                         <div className="grid grid-cols-3 lg:grid-cols-4 gap-1 animate-in zoom-in duration-300">
                             {messages.filter(m => m.type === 'image' || m.image).map(msg => (
-                                <img key={msg.id} src={msg.fileUrl || msg.image} className="w-full aspect-square object-cover rounded-sm border border-zinc-800 cursor-pointer" alt="Gallery" onClick={() => window.open(msg.fileUrl || msg.image, '_blank')} />
+                                <img key={msg.id} src={msg.fileUrl || msg.image} className="w-full aspect-square object-cover rounded-sm border border-zinc-800 cursor-pointer" alt="Gallery" onClick={() => setActiveImage(msg.fileUrl || msg.image)} />
                             ))}
                         </div>
                     ) : (
@@ -276,7 +300,7 @@ const ChatView = ({ user, setView }) => {
                                                  onClick={() => isMobile && setActiveMenu(activeMenu === msg.id ? null : msg.id)}>
                                                 <div className="relative max-w-max">
                                                     {isImage ? (
-                                                        <img src={msg.fileUrl || msg.image} className="max-w-[250px] rounded-lg block shadow-md cursor-pointer" alt="Attachment" onClick={() => window.open(msg.fileUrl || msg.image, '_blank')} />
+                                                        <img src={msg.fileUrl || msg.image} className="max-w-[250px] rounded-lg block shadow-md cursor-pointer" alt="Attachment" onClick={() => setActiveImage(msg.fileUrl || msg.image)} />
                                                     ) : (
                                                         <div className={`px-3 py-1.5 rounded-[18px] shadow-sm text-[14px] ${isMe ? 'bg-blue-600 text-white rounded-br-none' : (isDarkMode ? 'bg-zinc-800 text-zinc-100 rounded-bl-none' : 'bg-zinc-100 text-zinc-800 rounded-bl-none')}`}>
                                                             <p className="leading-snug">{renderMessageText(msg.text)}</p>
@@ -360,6 +384,19 @@ const ChatView = ({ user, setView }) => {
                     </form>
                 </div>
             </div>
+            {/* LIGHTBOX / FULLSCREEN VIEW */}
+                {activeImage && (
+                    <div className="fixed inset-0 z-[10001] bg-black/95 flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setActiveImage(null)}>
+                        <button className="absolute top-6 right-6 text-white bg-white/10 p-3 rounded-full hover:bg-white/20 transition-colors">
+                            <Icon name="x" size={24} />
+                        </button>
+                        <img 
+                            src={activeImage} 
+                            className="max-w-full max-h-full object-contain shadow-2xl animate-in zoom-in duration-300" 
+                            alt="Full size preview"
+                        />
+                    </div>
+                )}
         </div>
     );
 };
