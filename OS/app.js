@@ -69,14 +69,17 @@ const App = () => {
     const navigateTo = (newView, params = null) => {
         triggerHaptic();
         
-        // Pusha till webbläsarens historikstack
+        // 1. Uppdatera URL-hash (t.ex. #chat eller #customers)
+        window.location.hash = newView.toLowerCase();
+        
+        // 2. Pusha till historiken (precis som innan)
         window.history.pushState({ view: newView, params: params }, "");
         
-        // Uppdatera state
+        // 3. Uppdatera state
         setView(newView);
         setViewParams(params);
         
-        // Stäng sidebar på mobil
+        if (params && params.job) setEditingJob(params.job);
         if (window.innerWidth < 1024) setSidebarOpen(false);
     };
 
@@ -100,6 +103,28 @@ const App = () => {
 
         window.addEventListener('popstate', handlePopState);
         return () => window.removeEventListener('popstate', handlePopState);
+    }, []);
+
+    // --- NY: SYNKRONISERA VY MED URL-HASH VID START & REFRESH ---
+    useEffect(() => {
+        const syncWithUrl = () => {
+            // Hämtar t.ex. "chat" från #chat
+            const hash = window.location.hash.replace('#', '').toUpperCase();
+            const validViews = ['DASHBOARD', 'CALENDAR', 'NEW_JOB', 'CUSTOMERS', 'OIL_SUPPLY', 'CHAT'];
+            
+            if (hash && validViews.includes(hash)) {
+                setView(hash);
+                // Stäng menyn om vi laddar om på mobil
+                if (window.innerWidth < 1024) setSidebarOpen(false);
+            }
+        };
+
+        // 1. Körs direkt vid sidladdning (F5)
+        syncWithUrl();
+
+        // 2. Lyssnar om användaren ändrar URL:en manuellt
+        window.addEventListener('hashchange', syncWithUrl);
+        return () => window.removeEventListener('hashchange', syncWithUrl);
     }, []);
 
     useEffect(() => {
