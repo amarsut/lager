@@ -130,7 +130,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
             deleted: false 
         };
         await window.db.collection("jobs").doc(editingJob?.id || undefined).set(data, { merge: true });
-        setView('DASHBOARD');
+        setView('DASHBOARD', null);
     };
 
     return (
@@ -263,7 +263,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
 
                     <div className="pt-6 border-t border-zinc-100 flex gap-3">
                         <button type="submit" className="flex-1 theme-bg text-black font-black py-4 text-[11px] uppercase tracking-[0.3em] shadow-lg hover:brightness-110 active:scale-95 transition-all">Confirm_Push</button>
-                        <button type="button" onClick={() => setView('DASHBOARD')} className="px-10 border border-zinc-200 text-zinc-400 font-black py-4 text-[11px] uppercase tracking-widest hover:bg-zinc-50 transition-all">Abort</button>
+                        <button type="button" onClick={() => window.history.back()} className="px-10 border border-zinc-200 text-zinc-400 font-black py-4 text-[11px] uppercase tracking-widest hover:bg-zinc-50 transition-all">Abort</button>
                     </div>
                 </form>
             </div>
