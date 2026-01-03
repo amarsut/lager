@@ -224,7 +224,7 @@ const ChatView = ({ user, setView }) => {
                 {/* HEADER */}
                 <div className="h-16 bg-zinc-950 flex items-center justify-between px-4 border-b border-zinc-900 shrink-0">
                     <div className="flex items-center gap-4">
-                        <button onClick={() => setView('DASHBOARD')} className="w-11 h-11 theme-bg flex items-center justify-center rounded-md shadow-lg active:scale-95 transition-transform">
+                        <button onClick={() => window.history.back()} className="w-11 h-11 theme-bg flex items-center justify-center rounded-md shadow-lg active:scale-95 transition-transform">
                             <Icon name="arrow-left" size={24} className="text-black pointer-events-none" />
                         </button>
                         <div>
