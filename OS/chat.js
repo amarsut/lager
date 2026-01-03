@@ -46,6 +46,21 @@ const ChatView = ({ user, setView, viewParams }) => {
     const scrollRef = useRef(null);
     const menuRef = useRef(null);
 
+    useEffect(() => {
+        const openImageId = viewParams?.openImage;
+        
+        if (openImageId) {
+            // Hitta meddelandet som matchar ID:t i historiken
+            const msg = messages.find(m => m.id === openImageId);
+            if (msg) {
+                setActiveImage(msg);
+            }
+        } else {
+            // Om parametern försvinner (t.ex. vid backåt-swajp), stäng bilden
+            setActiveImage(null);
+        }
+    }, [viewParams, messages]);
+
     // Sparar valet i localStorage varje gång isDarkMode ändras
     useEffect(() => {
         localStorage.setItem('chat_theme_dark', isDarkMode);
@@ -311,6 +326,7 @@ const ChatView = ({ user, setView, viewParams }) => {
                                         e.stopPropagation();
                                         setActiveMenu(null);
                                         setActiveImage(msg);
+                                        setView('CHAT', { ...viewParams, openImage: msg.id });
                                     }}
                                 />
                             ))}
@@ -337,7 +353,7 @@ const ChatView = ({ user, setView, viewParams }) => {
                                                 onClick={() => isMobile && setActiveMenu(activeMenu === msg.id ? null : msg.id)}>
                                                 <div className="relative max-w-max">
                                                     {isImage ? (
-                                                        <img src={msg.fileUrl || msg.image} className="max-w-[250px] rounded-lg block shadow-md cursor-pointer" alt="Attachment" onClick={(e) => { e.stopPropagation(); setActiveMenu(null); setActiveImage(msg); }} />
+                                                        <img src={msg.fileUrl || msg.image} className="max-w-[250px] rounded-lg block shadow-md cursor-pointer" alt="Attachment" onClick={(e) => { e.stopPropagation(); setActiveMenu(null); setActiveImage(msg); setView('CHAT', { ...viewParams, openImage: msg.id }); }} />
                                                     ) : (
                                                         <div className={`px-3 py-1.5 rounded-[18px] shadow-sm text-[14px] ${isMe ? 'bg-blue-600 text-white rounded-br-none' : (isDarkMode ? 'bg-zinc-800 text-zinc-100 rounded-bl-none' : 'bg-zinc-100 text-zinc-800 rounded-bl-none')}`}>
                                                             <p className="leading-snug">{renderMessageText(msg.text)}</p>
