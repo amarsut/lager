@@ -1,903 +1,332 @@
-// ==========================================
-// CHATT - SEPARAT FIL (chat.js)
-// ==========================================
+const { useState, useEffect, useRef } = React;
 
-// Globala variabler för chatten
-let chatUnsubscribe = null;
-let isEditingMsg = false;
-let currentEditMsgId = null;
-let chatMenuTimer = null; // Fix för "ReferenceError"
+const ChatView = ({ user, setView }) => {
+    const Icon = window.Icon;
+    const [messages, setMessages] = useState([]);
+    const [inputText, setInputText] = useState("");
+    const [editingId, setEditingId] = useState(null);
+    const [filter, setFilter] = useState('all');
+    const [isUploading, setIsUploading] = useState(false);
+    const [activeMenu, setActiveMenu] = useState(null);
+    const [isDarkMode, setIsDarkMode] = useState(true);
+    const scrollRef = useRef(null);
+    const menuRef = useRef(null);
+    
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    let lastDateLabel = null;
 
-// Gör funktionen global
-window.toggleChatWidget = function() {
-    const chatWidget = document.getElementById('chatWidget');
-    if (!chatWidget) return;
+    // --- 1. HJÄLPFUNKTIONER ---
+    const renderMessageText = (text) => {
+        if (!text) return "";
+        const urlRegex = /(https?:\/\/[^\s]+)/g;
+        return text.split(urlRegex).map((part, i) => {
+            if (part.match(urlRegex)) {
+                return (
+                    <a key={i} href={part} target="_blank" rel="noopener noreferrer" 
+                    className="underline decoration-1 hover:opacity-70 break-all text-blue-500 transition-opacity">
+                        {part}
+                    </a>
+                );
+            }
+            return part;
+        });
+    };
 
-    const isOpen = chatWidget.style.display === 'flex';
-
-    if (isOpen) {
-        // STÄNGER
-        chatWidget.style.display = 'none';
-        document.body.classList.remove('chat-open'); // Ta bort klassen
-        document.body.style.overflow = ''; 
-        
-        // Återställ eventuell historik
-        if (history.state && history.state.uiState === 'chat') {
-            history.back();
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (activeMenu && menuRef.current && !menuRef.current.contains(event.target)) {
+                setActiveMenu(null);
+            }
         }
-    } else {
-        // ÖPPNAR
-        chatWidget.style.display = 'flex';
-        document.body.classList.add('chat-open'); // Lägg till klassen (döljer headern via CSS)
-        document.body.style.overflow = 'hidden'; 
-        
-        history.pushState({ uiState: 'chat' }, null, window.location.href);
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, [activeMenu]);
 
-        // Scrolla till botten
-        setTimeout(() => {
-            const chatList = document.getElementById('chatMessages');
-            if (chatList) chatList.scrollTop = chatList.scrollHeight;
-        }, 100);
-    }
-};
-
-window.initChat = function() {
-    const chatList = document.getElementById('chatMessages');
-    if (!chatList) return;
-
-    const chatInput = document.getElementById('chatInput');
-    const sendBtn = document.getElementById('chatSendBtn');
-    const closeBtn = document.getElementById('closeChatWidget');
-    const closeEditBtn = document.getElementById('closeEditBtn');
-    const plusBtn = document.getElementById('chatPlusBtn');      
-    const cameraBtn = document.getElementById('chatCameraBtn'); 
-    const fileInputGallery = document.getElementById('chatFileInputGallery');
-    const fileInputCamera = document.getElementById('chatFileInputCamera');
-    const galleryBtn = document.getElementById('toggleGalleryBtn');
-    if (galleryBtn) {
-        galleryBtn.onclick = (e) => {
-            e.preventDefault();
-            e.stopPropagation(); // Hindrar klicket från att "bubbla" och stänga chatten
-            openChatGallery();
-        };
-    }
-    const closeGalleryBtn = document.getElementById('closeGalleryBtn');
-
-    if (galleryBtn) galleryBtn.onclick = openChatGallery;
-    if (closeGalleryBtn) closeGalleryBtn.onclick = closeChatGallery;
-
-    if (closeBtn) closeBtn.onclick = window.toggleChatWidget;
-    if (closeEditBtn) closeEditBtn.onclick = exitEditMode;
-
-    // Scroll-lyssnare för knappen
-    if (chatList) {
-        chatList.addEventListener('scroll', () => {
-            const btn = document.getElementById('chatScrollBtn');
-            if (!btn) return;
+    // --- 2. FIREBASE & REAKTIONER ---
+    const handleFile = async (e) => {
+        const file = e.target.files[0];
+        // VIKTIGT: Se till att du fixat CORS i Firebase Console enligt instruktionerna ovan!
+        if (!file || !window.firebase.storage) return;
+        setIsUploading(true);
+        try {
+            // Skapa ett unikt filnamn för att undvika överskrivning
+            const uniqueFileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+            const storageRef = window.firebase.storage().ref(`chat_files/${uniqueFileName}`);
             
-            // Om vi är mer än 300px från botten -> Visa knapp
-            const distanceToBottom = chatList.scrollHeight - chatList.scrollTop - chatList.clientHeight;
+            // Ladda upp
+            await storageRef.put(file);
+            // Hämta URL
+            const url = await storageRef.getDownloadURL();
             
-            if (distanceToBottom > 300) {
-                btn.classList.add('visible');
+            // Spara i Firestore
+            await window.db.collection("notes").add({
+                text: file.name, 
+                fileUrl: url,
+                type: file.type.startsWith('image/') ? 'image' : 'file',
+                timestamp: new Date().toISOString(), 
+                sender: user.email
+            });
+        } catch (err) { 
+            console.error("Upload Error Detaljer:", err); 
+            alert("Kunde inte ladda upp filen. Kolla konsolen för detaljer (ofta CORS-fel).");
+        }
+        setIsUploading(false);
+        // Återställ input-värdet så man kan välja samma fil igen om man vill
+        e.target.value = null;
+    };
+
+    const handleAction = async (e) => {
+        if (e) e.preventDefault();
+        const textToSend = inputText.trim();
+        if (!textToSend) {
+            if (editingId) { setEditingId(null); setInputText(""); }
+            return;
+        }
+        const currentEditId = editingId;
+        setInputText("");
+        setEditingId(null);
+        try {
+            if (currentEditId) {
+                await window.db.collection("notes").doc(currentEditId).update({ text: textToSend, isEdited: true });
             } else {
-                btn.classList.remove('visible');
+                await window.db.collection("notes").add({
+                    text: textToSend, sender: user.email, timestamp: new Date().toISOString(), type: 'text'
+                });
             }
-        });
-    }
+        } catch (error) { console.error("Action Error:", error); }
+    };
 
-    // --- SÖK-TOGGLE LOGIK ---
-    const btnOpenSearch = document.getElementById('btnOpenSearch');
-    const btnCloseSearch = document.getElementById('btnCloseSearch');
-    const chatHeader = document.getElementById('chatHeader');
-    const searchInput = document.getElementById('chatSearchInput');
-
-    // Öppna sök
-    if (btnOpenSearch) {
-        btnOpenSearch.onclick = () => {
-            chatHeader.classList.add('search-active');
-            // Vänta pyttelite så animationen hinner starta innan fokus
-            setTimeout(() => searchInput.focus(), 100);
-        };
-    }
-
-    // Stäng sök (X-knappen)
-    if (btnCloseSearch) {
-        btnCloseSearch.onclick = () => {
-            chatHeader.classList.remove('search-active');
-            searchInput.value = ''; // Rensa söktext
-            // Trigga en "input"-händelse så att sök-filtreringen nollställs (visar alla meddelanden igen)
-            searchInput.dispatchEvent(new Event('input'));
-        };
-    }
-
-    // Stäng sök om man trycker ESC
-    if (searchInput) {
-        searchInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                btnCloseSearch.click();
-            }
-        });
-    }
-
-    // --- SÖKFUNKTIONALITET MED HIGHLIGHT ---
-    const chatSearchInput = document.getElementById('chatSearchInput');
-    const clearSearchBtn = document.getElementById('clearChatSearch');
-
-    if (chatSearchInput) {
-        chatSearchInput.addEventListener('input', (e) => {
-            const searchTerm = e.target.value.trim();
-            const lowerSearchTerm = searchTerm.toLowerCase();
-            const messages = document.querySelectorAll('#chatMessages .chat-row');
+    const toggleReaction = async (id, emoji) => {
+        try {
+            const msg = messages.find(m => m.id === id);
+            if (!msg) return;
+            const reactions = { ...(msg.reactions || {}) };
             
-            if (clearSearchBtn) {
-                clearSearchBtn.style.display = searchTerm ? 'block' : 'none';
+            if (reactions[emoji] > 0) {
+                reactions[emoji] -= 1;
+                if (reactions[emoji] <= 0) delete reactions[emoji];
+            } else {
+                reactions[emoji] = (reactions[emoji] || 0) + 1;
             }
-
-            messages.forEach(row => {
-                const textElement = row.querySelector('.bubble-text-content');
-                if (!textElement) {
-                    // Hantera bildmeddelanden: dölj om vi söker
-                    row.style.display = searchTerm ? 'none' : 'flex';
-                    return;
-                }
-
-                // Hämta den råa texten (utan gammal highlight-HTML)
-                // Vi använder dataset för att lagra originaltexten så vi inte tappar data
-                if (!textElement.dataset.originalText) {
-                    textElement.dataset.originalText = textElement.innerText;
-                }
-                const originalText = textElement.dataset.originalText;
-
-                if (searchTerm === "") {
-                    row.style.display = 'flex';
-                    textElement.innerHTML = originalText; // Återställ original
-                } else if (originalText.toLowerCase().includes(lowerSearchTerm)) {
-                    row.style.display = 'flex';
-                    
-                    // Skapa en regex för att hitta sökordet (case-insensitive)
-                    const regex = new RegExp(`(${searchTerm})`, 'gi');
-                    
-                    // Ersätt texten med highlight-versionen
-                    textElement.innerHTML = originalText.replace(regex, '<span class="search-highlight">$1</span>');
-                } else {
-                    row.style.display = 'none';
-                }
-            });
             
-            // Dölj datumavskiljare vid sökning
-            document.querySelectorAll('.chat-date-separator').forEach(sep => {
-                sep.style.display = searchTerm ? 'none' : 'flex';
-            });
-        });
-    }
-
-    if (chatInput) {
-        chatInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                window.sendMessage(); // Anropa den nya globala funktionen
-            }
-        });
-    }
-
-    if (plusBtn && fileInputGallery) {
-        plusBtn.onclick = () => fileInputGallery.click();
-        fileInputGallery.onchange = (e) => handleImageUpload(e.target.files[0]);
-    }
-    if (cameraBtn && fileInputCamera) {
-        cameraBtn.onclick = () => fileInputCamera.click();
-        fileInputCamera.onchange = (e) => handleImageUpload(e.target.files[0]);
-    }
-
-    setupChatListener(50);
-};
-
-window.stopChatListener = function() {
-    if (chatUnsubscribe) chatUnsubscribe();
-};
-
-function setupChatListener(limit) {
-    if (chatUnsubscribe) chatUnsubscribe();
-    const chatList = document.getElementById('chatMessages');
-
-    chatUnsubscribe = window.db.collection("notes")
-        .orderBy("timestamp", "desc")
-        .limit(limit)
-        .onSnapshot(snapshot => {
-            const docs = [];
-            snapshot.forEach(doc => docs.push({ id: doc.id, ...doc.data() }));
-            docs.reverse();
-
-            // Notis-badge
-            const clockCount = docs.filter(msg => msg.reaction === '🕒').length;
-            updateChatBadge(clockCount);
-
-            chatList.innerHTML = '<div style="flex-grow: 1;"></div>';
-            if (docs.length === 0) {
-                chatList.innerHTML = '<div style="text-align:center; padding:30px; color:#9ca3af; font-size:0.9rem;">Inga meddelanden än.</div>';
-                return;
-            }
-
-            const pinnedMsg = docs.find(d => d.isPinned === true);
-            const pinContainer = document.getElementById('pinnedMessageContainer');
-            const pinText = document.getElementById('pinnedTextPreview');
-
-            if (pinnedMsg && pinContainer) {
-                currentPinnedId = pinnedMsg.id;
-                pinContainer.style.display = 'flex';
-                
-                // Visa text (eller "Bild" om det är en bild)
-                let content = pinnedMsg.text || '';
-                if (pinnedMsg.type === 'image') content = '📷 Bild';
-                pinText.textContent = content;
-            } else if (pinContainer) {
-                currentPinnedId = null;
-                pinContainer.style.display = 'none';
-            }
-
-            let lastDateKey = null;
-            docs.forEach(data => {
-                if (data.timestamp) {
-                    const msgDateObj = new Date(data.timestamp);
-                    const currentDateKey = msgDateObj.toDateString();
-                    if (currentDateKey !== lastDateKey) {
-                        renderDateSeparator(chatList, msgDateObj);
-                        lastDateKey = currentDateKey;
-                    }
-                }
-                renderChatBubble(data, chatList);
-            });
-
-            if (limit === 50) {
-                // Vänta en millisekund på att bilderna ska börja renderas
-                setTimeout(() => {
-                    chatList.scrollTo({
-                        top: chatList.scrollHeight,
-                        behavior: 'instant' // 'instant' är bättre vid första laddning
-                    });
-                }, 50);
-            }
-        });
-}
-
-// --- TIMER LOGIK ---
-function stopMenuTimer() {
-    if (chatMenuTimer) {
-        clearTimeout(chatMenuTimer);
-        chatMenuTimer = null;
-    }
-}
-
-function startMenuTimer() {
-    stopMenuTimer();
-    chatMenuTimer = setTimeout(() => {
-        document.querySelectorAll('.chat-row.show-menu').forEach(el => {
-            el.classList.remove('show-menu');
-        });
-    }, 4000); 
-}
-
-// --- GLOBALA KNAPP-FUNKTIONER (Fixade) ---
-
-window.toggleMessageMenu = function(msgId, event) {
-    // NYTT: Om vi klickade på en länk (A-tagg), gör inget (låt länken öppnas)
-    if (event && event.target.tagName === 'A') return;
-
-    if(event) { event.stopPropagation(); event.preventDefault(); }
-
-    const row = document.querySelector(`.chat-row[data-message-id="${msgId}"]`);
-    if (!row) return;
-
-    document.querySelectorAll('.chat-row.show-menu').forEach(el => {
-        if(el !== row) el.classList.remove('show-menu');
-    });
-
-    const isOpening = !row.classList.contains('show-menu');
-    if (isOpening) {
-        row.classList.add('show-menu');
-        startMenuTimer();
-    } else {
-        row.classList.remove('show-menu');
-        stopMenuTimer();
-    }
-};
-
-window.setReaction = async function(msgId, emoji, event) {
-    if(event) event.stopPropagation();
-    const row = document.querySelector(`.chat-row[data-message-id="${msgId}"]`);
-    if(row) row.classList.remove('show-menu'); 
-
-    try {
-        const docRef = window.db.collection('notes').doc(msgId);
-        const doc = await docRef.get();
-        if (doc.exists) {
-            const data = doc.data();
-            const newReaction = (data.reaction === emoji) ? null : emoji;
-            await docRef.update({ reaction: newReaction });
-        }
-    } catch (error) { console.error(error); }
-};
-
-window.handleEditClick = function(msgId, event) {
-    if(event) { 
-        event.stopPropagation(); 
-        event.preventDefault(); 
-    }
-    
-    const row = document.querySelector(`.chat-row[data-message-id="${msgId}"]`);
-    
-    if(row) {
-        row.classList.remove('show-menu');
-        const textElement = row.querySelector('.bubble-text-content');
-        const text = textElement ? textElement.innerText : "";
-        
-        enterEditMode(row, text);
-    }
-};
-
-window.deleteChatMessage = async function(messageId) {
-    if (!confirm("Ta bort meddelandet?")) return;
-    try {
-        await window.db.collection('notes').doc(messageId).delete();
-    } catch (error) { console.error(error); }
-};
-
-// --- RENDER CHAT BUBBLE (Fixad version) ---
-function renderChatBubble(data, container) {
-    const messageId = data.id; 
-    const row = document.createElement('div');
-    
-    let senderType = 'other';
-    if (data.platform === 'system') senderType = 'system';
-    else senderType = (data.platform === 'mobil' || data.platform === 'dator') ? 'me' : 'other';
-
-    row.className = `chat-row ${senderType}`;
-    row.dataset.messageId = messageId;
-    
-    // Timer events
-    row.onmouseenter = stopMenuTimer;
-    row.onmouseleave = startMenuTimer;
-    row.onclick = (e) => window.toggleMessageMenu(messageId, e);
-
-    const menu = document.createElement('div');
-    menu.className = 'chat-action-menu';
-    menu.onmouseenter = stopMenuTimer;
-    menu.onmouseleave = startMenuTimer;
-
-    const pinFill = data.isPinned ? "#007aff" : "none";
-        const pinStroke = data.isPinned ? "#007aff" : "currentColor";
-    // Notera: Vi använder onclick med window.funktioner
-    menu.innerHTML = `
-        <button class="action-emoji-btn" onclick="window.setReaction('${messageId}', '🕒', event)">🕒</button>
-        <button class="action-emoji-btn" onclick="window.setReaction('${messageId}', '✅', event)">✅</button>
-        <button class="action-emoji-btn" onclick="window.setReaction('${messageId}', '❌', event)">❌</button>
-        <button class="action-emoji-btn" onclick="window.setReaction('${messageId}', '⚠️', event)">⚠️</button>
-        <div class="action-separator"></div>
-        <button class="action-icon-btn" title="Redigera" onclick="window.handleEditClick('${messageId}', event)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-        </button>
-        <button class="action-icon-btn danger" title="Ta bort" onclick="window.deleteChatMessage('${messageId}'); event.stopPropagation();">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-        </button>
-        <button class="action-icon-btn" title="${data.isPinned ? 'Lossa' : 'Fäst'}" onclick="window.togglePinMessage('${messageId}', event)">
-               <svg viewBox="0 0 24 24" fill="${pinFill}" stroke="${pinStroke}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:20px; height:20px;">
-                    <line x1="12" y1="17" x2="12" y2="22"></line>
-                    <path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"></path>
-                </svg>
-            </button>
-    `;
-    row.appendChild(menu);
-
-    const bubble = document.createElement('div');
-    bubble.className = 'chat-bubble';
-    if (data.type === 'image' || data.image) bubble.classList.add('is-image');
-
-    if (data.text) {
-        const textDiv = document.createElement('div');
-        textDiv.className = 'bubble-text-content';
-        textDiv.innerHTML = data.text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');
-        bubble.appendChild(textDiv);
-    }
-
-    if (data.image) {
-        const imgContainer = document.createElement('div');
-        imgContainer.className = 'chat-bubble-image';
-        const img = document.createElement('img');
-        img.src = data.image;
-        img.loading = "lazy";
-        img.onclick = (e) => { e.stopPropagation(); window.openImageZoom(data.image, messageId); };
-        imgContainer.appendChild(img);
-        bubble.appendChild(imgContainer);
-    }
-
-    if (data.reaction) {
-        const reactionBadge = document.createElement('div');
-        reactionBadge.className = 'reaction-badge-display';
-        reactionBadge.textContent = data.reaction;
-        reactionBadge.onclick = (e) => window.setReaction(messageId, data.reaction, e); 
-        bubble.appendChild(reactionBadge);
-    }
-
-    row.appendChild(bubble);
-
-    if (data.timestamp) {
-        const timeDiv = document.createElement('div');
-        timeDiv.className = 'chat-time';
-        let t = new Date(data.timestamp);
-        timeDiv.textContent = t.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        row.appendChild(timeDiv);
-    }
-
-    container.appendChild(row);
-}
-
-// --- HJÄLPFUNKTIONER (Datum, Badge, EditMode, Bilder) ---
-
-function renderDateSeparator(container, dateObj) {
-    const sep = document.createElement('div');
-    sep.className = 'chat-date-separator'; 
-    const today = new Date();
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    
-    let displayText = '';
-    if (dateObj.toDateString() === today.toDateString()) displayText = 'Idag';
-    else if (dateObj.toDateString() === yesterday.toDateString()) displayText = 'Igår';
-    else displayText = dateObj.toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' });
-
-    sep.innerHTML = `<span>${displayText}</span>`;
-    container.appendChild(sep);
-}
-
-function updateChatBadge(count) {
-    const setBadge = (btn) => {
-        if (!btn) return;
-        let badge = btn.querySelector('.chat-notification-badge');
-        if (count > 0) {
-            if (!badge) {
-                badge = document.createElement('div');
-                badge.className = 'chat-notification-badge';
-                btn.appendChild(badge);
-            }
-            badge.textContent = count > 99 ? '99+' : count;
-        } else {
-            if (badge) badge.remove();
+            await window.db.collection("notes").doc(id).update({ reactions });
+            setActiveMenu(null);
+        } catch (err) {
+            console.error("Reaction error:", err);
         }
     };
-    setBadge(document.getElementById('fabChat'));
-    setBadge(document.getElementById('mobileChatBtn'));
-}
 
-function enterEditMode(rowElement, currentText) {
-    const messageId = rowElement.dataset.messageId;
-    if (!messageId) return;
-    isEditingMsg = true;
-    currentEditMsgId = messageId;
-
-    const chatWidget = document.getElementById('chatWidget');
-    const inputField = document.getElementById('chatInput');
-    const editHeader = document.getElementById('chatEditHeader');
-    const sendBtn = document.getElementById('chatSendBtn');
-
-    inputField.value = currentText;
-    inputField.focus();
-    chatWidget.classList.add('edit-mode');
-    if(editHeader) editHeader.style.display = 'flex';
-    if(sendBtn) {
-        sendBtn.innerHTML = `
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="20 6 9 17 4 12"></polyline>
-            </svg>`;
-    }
-}
-
-function exitEditMode() {
-    isEditingMsg = false;
-    currentEditMsgId = null;
-    const chatWidget = document.getElementById('chatWidget');
-    const inputField = document.getElementById('chatInput');
-    const editHeader = document.getElementById('chatEditHeader');
-    const sendBtn = document.getElementById('chatSendBtn');
-
-    inputField.value = '';
-    chatWidget.classList.remove('edit-mode');
-    if(editHeader) editHeader.style.display = 'none';
-    if(sendBtn) {
-        sendBtn.innerHTML = `
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="5" y1="12" x2="19" y2="12"></line>
-                <polyline points="12 5 19 12 12 19"></polyline>
-            </svg>`;
-    }
-}
-
-// BILDHANTERING
-async function handleImageUpload(file) {
-    if (!file) return;
-    console.log("Bearbetar bild...");
-    try {
-        const base64Image = await compressImage(file);
-        await window.db.collection("notes").add({
-            image: base64Image, text: "", type: 'image',
-            timestamp: new Date().toISOString(),
-            platform: window.innerWidth <= 768 ? 'mobil' : 'dator'
+    useEffect(() => {
+        const unsubscribe = window.db.collection("notes").orderBy("timestamp", "asc").onSnapshot(snap => {
+            const docs = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            setMessages(docs);
+            // Scrolla ner vid första laddning eller nya meddelanden
+            setTimeout(() => { if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight; }, 100);
         });
-        document.getElementById('chatFileInputGallery').value = '';
-        document.getElementById('chatFileInputCamera').value = '';
-    } catch (err) { console.error(err); }
-}
+        return () => unsubscribe();
+    }, []);
 
-function compressImage(file) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = (event) => {
-            const img = new Image();
-            img.src = event.target.result;
-            img.onload = () => {
-                const maxWidth = 800; 
-                const scaleSize = maxWidth / img.width;
-                const newWidth = (img.width > maxWidth) ? maxWidth : img.width;
-                const newHeight = (img.width > maxWidth) ? (img.height * scaleSize) : img.height;
-                const canvas = document.createElement('canvas');
-                canvas.width = newWidth; canvas.height = newHeight;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, newWidth, newHeight);
-                resolve(canvas.toDataURL('image/jpeg', 0.7));
-            };
-            img.onerror = (err) => reject(err);
-        };
-        reader.onerror = (err) => reject(err);
-    });
-}
-
-let currentGalleryImages = []; // Lista på alla bilder i chatten
-let currentImageIndex = 0;
-
-window.openImageZoom = function(src, docId) {
-    // 1. Samla in alla bilder som finns i chatten just nu
-    const imgElements = Array.from(document.querySelectorAll('.chat-bubble-image img'));
-    
-    // 2. Skapa en lista med objekt { src, id }
-    currentGalleryImages = imgElements.map(img => ({
-        src: img.src,
-        id: img.closest('.chat-row')?.dataset.messageId || ''
-    }));
-
-    // 3. Hitta index för bilden vi klickade på
-    currentImageIndex = currentGalleryImages.findIndex(img => img.src === src);
-    if (currentImageIndex === -1) currentImageIndex = 0;
-
-    // 4. Uppdatera UI
-    updateGalleryUI();
-    
-    // 5. Visa modalen
-    const modal = document.getElementById('imageZoomModal');
-    modal.style.display = 'flex';
-    
-    // Historik-hantering (så man kan backa ur bilden)
-    if (typeof addHistoryState === 'function') addHistoryState();
-};
-
-function updateGalleryUI() {
-    const imgObj = currentGalleryImages[currentImageIndex];
-    const imgMain = document.getElementById('mmImgMain');
-    const counter = document.getElementById('galleryCounter');
-    
-    // Byt bild och data
-    imgMain.src = imgObj.src;
-    imgMain.dataset.id = imgObj.id;
-    
-    // Uppdatera räknare (t.ex. "3 / 10")
-    counter.textContent = `${currentImageIndex + 1} / ${currentGalleryImages.length}`;
-
-    // Hantera pilar (inaktivera om första/sista)
-    const btnPrev = document.getElementById('btnPrevImg');
-    const btnNext = document.getElementById('btnNextImg');
-    if(btnPrev) btnPrev.style.opacity = currentImageIndex === 0 ? '0.3' : '1';
-    if(btnNext) btnNext.style.opacity = currentImageIndex === currentGalleryImages.length - 1 ? '0.3' : '1';
-}
-
-// --- NAVIGATION ---
-function prevImage() {
-    if (currentImageIndex > 0) {
-        currentImageIndex--;
-        updateGalleryUI();
-    }
-}
-
-function nextImage() {
-    if (currentImageIndex < currentGalleryImages.length - 1) {
-        currentImageIndex++;
-        updateGalleryUI();
-    }
-}
-
-// Koppla knappar (Körs när scriptet laddas eller initieras)
-document.addEventListener('DOMContentLoaded', () => {
-    // Navigering
-    document.getElementById('btnPrevImg')?.addEventListener('click', (e) => { e.stopPropagation(); prevImage(); });
-    document.getElementById('btnNextImg')?.addEventListener('click', (e) => { e.stopPropagation(); nextImage(); });
-    
-    // Stäng
-    document.getElementById('mmCloseBtn')?.addEventListener('click', () => {
-        document.getElementById('imageZoomModal').style.display = 'none';
-    });
-
-    // Ladda ner
-    document.getElementById('mmDownloadBtn')?.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const src = document.getElementById('mmImgMain').src;
-        const link = document.createElement('a');
-        link.href = src;
-        link.download = `bild-${Date.now()}.jpg`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    });
-
-    // Dela (Vidarebefordra)
-    document.getElementById('mmShareBtn')?.addEventListener('click', async (e) => {
-        e.stopPropagation();
-        const src = document.getElementById('mmImgMain').src;
-        if (navigator.share) {
-            try {
-                // Försök dela som fil om möjligt, annars URL
-                const blob = await (await fetch(src)).blob();
-                const file = new File([blob], "bild.jpg", { type: blob.type });
-                await navigator.share({
-                    files: [file],
-                    title: 'Bild från chatten'
-                });
-            } catch (err) {
-                console.log("Dela avbröts eller stöds ej fullt ut, delar länk...", err);
-                 // Fallback: Dela länk
-                 navigator.share({ url: src });
-            }
-        } else {
-            alert("Din webbläsare stödjer inte delning.");
+    // --- NY FIX: Scrolla ner när man går tillbaka från galleriet ---
+    useEffect(() => {
+        if (filter === 'all' && scrollRef.current) {
+            setTimeout(() => {
+                scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+            }, 50); // En kort fördröjning för att säkerställa att vyn hunnit renderas
         }
-    });
+    }, [filter]);
 
-    // Radera
-    document.getElementById('mmDeleteBtn')?.addEventListener('click', async (e) => {
-        e.stopPropagation();
-        const id = document.getElementById('mmImgMain').dataset.id;
-        if (id && confirm('Radera bilden permanent?')) {
-            try {
-                await window.db.collection("notes").doc(id).delete();
-                // Ta bort från listan och stäng/uppdatera
-                currentGalleryImages.splice(currentImageIndex, 1);
-                if (currentGalleryImages.length === 0) {
-                    document.getElementById('imageZoomModal').style.display = 'none';
-                } else {
-                    if (currentImageIndex >= currentGalleryImages.length) currentImageIndex--;
-                    updateGalleryUI();
-                }
-            } catch (error) { console.error(error); }
-        }
-    });
-
-    // --- SWIPE LOGIK (Touch) ---
-    const modal = document.getElementById('imageZoomModal');
-    let touchStartX = 0;
-    let touchEndX = 0;
-
-    modal.addEventListener('touchstart', (e) => {
-        touchStartX = e.changedTouches[0].screenX;
-    }, {passive: true});
-
-    modal.addEventListener('touchend', (e) => {
-        touchEndX = e.changedTouches[0].screenX;
-        handleSwipe();
-    }, {passive: true});
-
-    function handleSwipe() {
-        const threshold = 50; // Hur långt man måste dra
-        if (touchEndX < touchStartX - threshold) {
-            nextImage(); // Swipe Vänster -> Nästa
-        }
-        if (touchEndX > touchStartX + threshold) {
-            prevImage(); // Swipe Höger -> Föregående
-        }
-    }
+    // --- 3. SVG-IKONER ---
+    const PlusIcon = () => (
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+    );
     
-    // Tangentbordsstyrning (Pilarna)
-    document.addEventListener('keydown', (e) => {
-        if (document.getElementById('imageZoomModal').style.display === 'flex') {
-            if (e.key === 'ArrowLeft') prevImage();
-            if (e.key === 'ArrowRight') nextImage();
-            if (e.key === 'Escape') document.getElementById('mmCloseBtn').click();
-        }
-    });
-});
+    // NY: Kamera-ikon
+    const CameraIcon = () => (
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+            <circle cx="12" cy="13" r="4"></circle>
+        </svg>
+    );
 
-// Öppna galleriet
-function openChatGallery() {
-    // 1. REGISTREARA ETT STEG I HISTORIKEN (VIKTIGT FÖR SWIPE)
-    if (window.addHistoryState) {
-        window.addHistoryState('modal');
-    }
+    const SendIcon = ({ active }) => (
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={active ? "text-blue-500" : "text-zinc-600"}>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+        </svg>
+    );
 
-    const galleryModal = document.getElementById('chatGalleryModal');
-    const galleryContent = document.getElementById('chatGalleryContent');
-    if (!galleryModal || !galleryContent) return;
+    const EditIcon = () => <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2.5" fill="none"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>;
+    const TrashIcon = () => <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2.5" fill="none"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>;
+    const CheckIcon = () => <svg viewBox="0 0 24 24" width="20" height="20" stroke="white" strokeWidth="3" fill="none"><polyline points="20 6 9 17 4 12"></polyline></svg>;
+    const CloseIcon = () => <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2.5" fill="none"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>;
 
-    if (window.addHistoryState) window.addHistoryState('modal');
+    const getSenderName = (msg) => msg?.sender?.split('@')[0].toUpperCase() || "SYSTEM";
+    const formatTime = (ts) => {
+        if (!ts) return "";
+        const date = (typeof ts.toDate === 'function') ? ts.toDate() : new Date(ts);
+        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    };
 
-    galleryContent.innerHTML = ''; 
-    
-    const imageElements = document.querySelectorAll('.chat-bubble-image img');
-    
-    if (imageElements.length === 0) {
-        galleryContent.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:40px; color:#8e8e93;">Inga bilder i chatten.</div>';
-    } else {
-        imageElements.forEach(img => {
-            const div = document.createElement('div');
-            div.className = 'gallery-item';
-            const clone = document.createElement('img');
-            clone.src = img.src;
-            
-            div.onclick = () => {
-                // Stäng galleriet (utan att trigga history.back här, 
-                // då openImageZoom lägger till sitt eget historiksteg)
-                if (window.closeAllModals) {
-                    window.closeAllModals(true);
-                } else {
-                    galleryModal.style.display = 'none';
-                }
+    const getDateLabel = (ts) => {
+        if (!ts) return "";
+        const date = (typeof ts.toDate === 'function') ? ts.toDate() : new Date(ts);
+        const today = new Date();
+        const yesterday = new Date();
+        yesterday.setDate(today.getDate() - 1);
+        if (date.toDateString() === today.toDateString()) return "IDAG";
+        if (date.toDateString() === yesterday.toDateString()) return "IGÅR";
+        return date.toLocaleDateString([], { day: 'numeric', month: 'short' }).toUpperCase();
+    };
+
+    return (
+        <div className={`fixed inset-0 z-[1000] lg:relative lg:inset-auto lg:flex lg:items-start lg:justify-start lg:-mt-4 max-lg:bg-black animate-in fade-in duration-300 font-sans`}>
+            <div className={`w-full h-full flex flex-col ${isDarkMode ? 'bg-black border-zinc-800' : 'bg-white border-zinc-200'} lg:w-[750px] lg:h-[calc(100vh-115px)] lg:rounded-md lg:border lg:shadow-2xl overflow-hidden`}>
                 
-                window.openImageZoom(img.src, img.closest('.chat-row')?.dataset.messageId);
-            };
-            
-            div.appendChild(clone);
-            galleryContent.appendChild(div);
-        });
-    }
+                {/* HEADER */}
+                <div className="h-14 bg-zinc-950 flex items-center justify-between px-4 border-b border-zinc-900 shrink-0">
+                    <div className="flex items-center gap-4">
+                        <button onClick={() => setView('DASHBOARD')} className="w-9 h-9 theme-bg flex items-center justify-center rounded-sm"><Icon name="arrow-left" size={18} className="text-black pointer-events-none" /></button>
+                        <div>
+                            <span className="text-[8px] font-black theme-text uppercase tracking-[0.3em] block leading-none mb-1">System_Log // OS</span>
+                            <h2 className="text-xs font-black uppercase tracking-widest text-white">Mission_Log</h2>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <button onClick={() => setIsDarkMode(!isDarkMode)} className="p-2 text-zinc-500 hover:text-white"><Icon name={isDarkMode ? "sun" : "moon"} size={16} className="pointer-events-none" /></button>
+                        <div className="flex bg-zinc-900/50 border-zinc-800 p-1 rounded-full border">
+                            {['all', 'image'].map(f => (
+                                <button key={f} onClick={() => setFilter(f)} className={`w-7 h-7 flex items-center justify-center rounded-full ${filter === f ? 'bg-zinc-700 text-white shadow-lg' : 'text-zinc-500 hover:text-zinc-300'}`}>
+                                    <Icon name={f === 'all' ? 'list' : 'image'} size={14} className="pointer-events-none" />
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
 
-    galleryModal.style.display = 'flex';
-}
+                {/* FLOW / GALLERI */}
+                <div ref={scrollRef} className={`flex-1 overflow-y-auto p-4 custom-scrollbar ${isDarkMode ? 'bg-black' : 'bg-white'}`}>
+                    {filter === 'image' ? (
+                        <div className="grid grid-cols-3 lg:grid-cols-4 gap-1 animate-in zoom-in duration-300">
+                            {messages.filter(m => m.type === 'image' || m.image).map(msg => (
+                                <img key={msg.id} src={msg.fileUrl || msg.image} className="w-full aspect-square object-cover rounded-sm border border-zinc-800 cursor-pointer hover:opacity-90 transition-opacity" alt="Gallery" onClick={() => window.open(msg.fileUrl || msg.image, '_blank')} />
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="space-y-4 pb-1">
+                            {messages.map((msg) => {
+                                const isMe = msg.sender === user.email;
+                                const isImage = msg.type === 'image' || msg.image;
+                                const currentLabel = getDateLabel(msg.timestamp);
+                                const showSeparator = currentLabel !== lastDateLabel;
+                                lastDateLabel = currentLabel;
+                                
+                                return (
+                                    <React.Fragment key={msg.id}>
+                                        {showSeparator && (
+                                            <div className="flex items-center justify-center my-6">
+                                                <span className={`px-4 text-[10px] font-bold tracking-widest ${isDarkMode ? 'text-zinc-600' : 'text-zinc-400'}`}>{currentLabel}</span>
+                                            </div>
+                                        )}
+                                        <div className={`flex ${isMe ? 'justify-end' : 'justify-start'} w-full`}>
+                                            <div className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-[85%] group relative`}
+                                                 onMouseEnter={() => !isMobile && setActiveMenu(msg.id)}
+                                                 onMouseLeave={() => !isMobile && setActiveMenu(null)}
+                                                 onClick={() => isMobile && setActiveMenu(activeMenu === msg.id ? null : msg.id)}>
+                                                <div className="relative max-w-max">
+                                                    {isImage ? (
+                                                        <img src={msg.fileUrl || msg.image} className="max-w-[250px] rounded-lg block shadow-md cursor-pointer" alt="Attachment" onClick={() => window.open(msg.fileUrl || msg.image, '_blank')} />
+                                                    ) : (
+                                                        <div className={`px-3 py-1.5 rounded-[18px] shadow-sm text-[14px] ${isMe ? 'bg-blue-600 text-white rounded-br-none' : (isDarkMode ? 'bg-zinc-800 text-zinc-100 rounded-bl-none' : 'bg-zinc-100 text-zinc-800 rounded-bl-none')}`}>
+                                                            <p className="leading-snug">{renderMessageText(msg.text)}</p>
+                                                        </div>
+                                                    )}
+                                                    {activeMenu === msg.id && (
+                                                        <div ref={menuRef} className={`absolute -top-12 ${isMe ? 'right-0' : 'left-0'} pb-2 z-[9999] animate-in zoom-in duration-150`}>
+                                                            <div className={`${isDarkMode ? 'bg-zinc-900 border-zinc-700 shadow-black' : 'bg-white border-zinc-200 shadow-lg'} border p-1 rounded-2xl flex items-center gap-1 shadow-2xl`}>
+                                                                {['🕒', '✅', '❌', '⚠️'].map(emoji => (
+                                                                    <button key={emoji} onClick={(e) => { e.stopPropagation(); toggleReaction(msg.id, emoji); }} className={`w-8 h-8 flex items-center justify-center rounded-full text-lg hover:scale-110 transition-transform ${isDarkMode ? 'hover:bg-zinc-800' : 'bg-zinc-100 hover:bg-zinc-200'}`}>{emoji}</button>
+                                                                ))}
+                                                                <div className={`w-[1px] h-4 ${isDarkMode ? 'bg-zinc-700' : 'bg-zinc-200'} mx-1`}></div>
+                                                                <button onClick={(e) => { e.stopPropagation(); setEditingId(msg.id); setInputText(msg.text); setActiveMenu(null); }} className={`w-8 h-8 flex items-center justify-center rounded-full ${isDarkMode ? 'bg-zinc-800 text-white hover:bg-blue-600' : 'bg-zinc-100 text-zinc-600 hover:bg-blue-500 hover:text-white'}`}><EditIcon /></button>
+                                                                <button onClick={(e) => { e.stopPropagation(); window.db.collection("notes").doc(msg.id).delete(); }} className={`w-8 h-8 flex items-center justify-center rounded-full ${isDarkMode ? 'bg-zinc-800 text-red-500 hover:bg-red-600' : 'bg-zinc-100 text-red-500 hover:bg-red-600'} hover:text-white`}><TrashIcon /></button>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
 
-// Stäng galleriet
-function closeChatGallery() {
-    const galleryModal = document.getElementById('chatGalleryModal');
-    if (galleryModal) galleryModal.style.display = 'none';
-}
+                                                {/* VISNING AV REAKTIONER (Större storlek här) */}
+                                                {msg.reactions && Object.keys(msg.reactions).length > 0 && (
+                                                    <div className={`flex gap-1 mt-1 ${isMe ? 'justify-end' : 'justify-start'}`}>
+                                                        {Object.entries(msg.reactions).map(([emoji, count]) => (
+                                                            // ÄNDRAD STORLEK: text-sm istället för text-[10px], mer padding
+                                                            <div key={emoji} onClick={(e) => { e.stopPropagation(); toggleReaction(msg.id, emoji); }} className={`px-2 py-1 rounded-full text-sm flex items-center gap-1 border cursor-pointer ${isDarkMode ? 'bg-zinc-900 border-zinc-800 text-zinc-300' : 'bg-white border-zinc-200 text-zinc-700 shadow-sm'}`}>
+                                                                <span>{emoji}</span><span className="font-bold text-xs">{count}</span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
 
-window.scrollToBottomSmooth = function() {
-    const chatList = document.getElementById('chatMessages');
-    if (chatList) {
-        chatList.scrollTo({ top: chatList.scrollHeight, behavior: 'smooth' });
-    }
+                                                {/* TIDSSTÄMPEL (Större storlek här) */}
+                                                <span className={`text-[11px] font-bold mt-1 px-1 uppercase tracking-tighter ${isDarkMode ? 'text-zinc-500' : 'text-zinc-400'}`}>
+                                                    {!isMe && `${getSenderName(msg)} • `}{formatTime(msg.timestamp)}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </React.Fragment>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
+
+                {/* FOOTER (MESSENGER-STIL) */}
+                <div className={`p-2 border-t shrink-0 ${isDarkMode ? 'bg-zinc-950 border-zinc-900' : 'bg-zinc-50 border-zinc-200'}`}>
+                    {editingId && (
+                        <div className="flex items-center justify-between mb-1.5 px-2 animate-in slide-in-from-bottom-1">
+                            <span className="text-[9px] font-black theme-text tracking-widest uppercase">Redigerar meddelande</span>
+                            <button onClick={() => { setEditingId(null); setInputText(""); }} className="text-zinc-500 hover:text-red-500"><CloseIcon /></button>
+                        </div>
+                    )}
+                    <form onSubmit={handleAction} className="flex items-center gap-2 max-w-4xl mx-auto">
+                        
+                        {/* KNAPPAR TILL VÄNSTER (Plus & Kamera) */}
+                        <div className="flex items-center shrink-0 gap-1">
+                             {!editingId && (
+                                <>
+                                    {/* Befintlig Plus-knapp (för filer) */}
+                                    <label className={`p-1.5 rounded-full cursor-pointer flex items-center justify-center transition-all ${isDarkMode ? 'text-blue-500 hover:bg-zinc-900' : 'text-blue-600 hover:bg-zinc-200'}`}>
+                                        <PlusIcon />
+                                        <input type="file" className="hidden" onChange={handleFile} />
+                                    </label>
+
+                                    {/* NY: Kamera-knapp (för direktfoto på mobil) */}
+                                    <label className={`p-1.5 rounded-full cursor-pointer flex items-center justify-center transition-all ${isDarkMode ? 'text-blue-500 hover:bg-zinc-900' : 'text-blue-600 hover:bg-zinc-200'}`}>
+                                        <CameraIcon />
+                                        {/* accept="image/*" och capture="environment" öppnar kameran direkt på mobilen */}
+                                        <input type="file" className="hidden" accept="image/*" capture="environment" onChange={handleFile} />
+                                    </label>
+                                </>
+                             )}
+                        </div>
+
+                        <div className={`flex-1 px-3 py-1 rounded-full border transition-all ${editingId ? 'border-blue-500 bg-blue-500/5' : (isDarkMode ? 'bg-zinc-900 border-transparent focus-within:border-zinc-700' : 'bg-white border-zinc-300')}`}>
+                            <input autoFocus={!!editingId} value={inputText} onChange={(e) => setInputText(e.target.value)} placeholder={editingId ? "Redigera..." : "Meddelande"} className={`w-full bg-transparent border-none outline-none text-[14px] focus:ring-0 shadow-none h-7 ${isDarkMode ? 'text-zinc-100 placeholder:text-zinc-700' : 'text-zinc-900 placeholder:text-zinc-400'}`} />
+                        </div>
+                        <button type="submit" disabled={!inputText.trim()} className={`flex items-center justify-center min-w-[36px] min-h-[36px] transition-all shrink-0`}>
+                            {editingId ? (
+                                <div className="bg-blue-600 p-1.5 rounded-full shadow-lg"><CheckIcon /></div>
+                            ) : (
+                                <SendIcon active={inputText.trim().length > 0} />
+                            )}
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    );
 };
 
-// Global variabel för att veta vilket meddelande som är fäst just nu
-let currentPinnedId = null;
-
-// Spara/Ta bort Pin i databasen
-window.togglePinMessage = async function(msgId, event) {
-    if(event) { event.stopPropagation(); window.toggleMessageMenu(msgId); } // Stäng menyn
-
-    // 1. Om vi redan har ett annat fäst meddelande, "av-fäst" det först (om du bara vill ha 1 åt gången)
-    if (currentPinnedId && currentPinnedId !== msgId) {
-        await window.db.collection('notes').doc(currentPinnedId).update({ isPinned: false });
-    }
-
-    // 2. Hämta status för det valda meddelandet
-    const docRef = window.db.collection('notes').doc(msgId);
-    const doc = await docRef.get();
-    
-    if (doc.exists) {
-        const isPinned = doc.data().isPinned || false;
-        // Byt status (true <-> false)
-        await docRef.update({ isPinned: !isPinned });
-    }
-};
-
-window.unpinCurrentMessage = async function() {
-    if (currentPinnedId) {
-        await window.db.collection('notes').doc(currentPinnedId).update({ isPinned: false });
-    }
-};
-
-// Scrolla till det fästa meddelandet
-window.scrollToPinned = function() {
-    if (!currentPinnedId) return;
-    const el = document.querySelector(`.chat-row[data-message-id="${currentPinnedId}"]`);
-    if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        // Highlighta det lite
-        el.style.transition = 'transform 0.3s';
-        el.style.transform = 'scale(1.05)';
-        setTimeout(() => el.style.transform = 'scale(1)', 300);
-    } else {
-        alert("Meddelandet är för gammalt för att visas i listan.");
-    }
-};
-
-// ==========================================
-// NYA FUNKTIONER FÖR AI-INTEGRATION
-// ==========================================
-
-// 1. Separerad funktion för att spara till vanliga chatten
-window.saveMessageToFirebase = async function(text) {
-    const chatList = document.getElementById('chatMessages');
-    const chatInput = document.getElementById('chatInput');
-
-    // Hantera redigering (Din gamla logik)
-    if (isEditingMsg && currentEditMsgId) {
-        try {
-            await window.db.collection('notes').doc(currentEditMsgId).update({
-                text: text,
-                isEdited: true
-            });
-            // Vi antar att exitEditMode är global eller flyttas ut, 
-            // annars får du kopiera exit-logiken hit.
-            if(window.exitEditMode) window.exitEditMode(); 
-        } catch (err) {
-            console.error("Fel vid uppdatering:", err);
-        }
-    } else {
-        // Skicka nytt meddelande
-        try {
-            await window.db.collection("notes").add({
-                text: text,
-                timestamp: new Date().toISOString(),
-                platform: window.innerWidth <= 768 ? 'mobil' : 'dator',
-                type: 'text'
-            });
-            
-            // Scrolla ner
-            if(chatList) {
-                setTimeout(() => {
-                    chatList.scrollTo({ top: chatList.scrollHeight, behavior: 'smooth' });
-                }, 100);
-            }
-        } catch (err) {
-            console.error("Fel vid sändning:", err);
-        }
-    }
-};
-
-// 2. Den nya "Huvudväxeln"
-window.sendMessage = async function() {
-    const input = document.getElementById('chatInput');
-    const text = input.value.trim();
-    if (!text) return;
-
-    // --- AI VÄXEL ---
-    // Om AI-läget är på (variabeln ligger i ai.js), skicka dit
-    if (window.isAiMode && window.handleAiMessage) {
-        window.handleAiMessage(text);
-        return; // VIKTIGT: Stoppa här så det inte hamnar i Firebase
-    }
-    // ----------------
-
-    // Annars, spara som vanligt
-    await window.saveMessageToFirebase(text);
-    input.value = ''; // Rensa rutan
-};
-
-document.addEventListener('input', function(e) {
-    if (e.target && e.target.id === 'chatInput') {
-        const input = e.target;
-        const parent = input.parentElement;
-        
-        // Hitta alla knappar i input-fältet
-        const actionButtons = parent.querySelectorAll('.icon-btn');
-        const hasText = input.value.trim().length > 0;
-
-        actionButtons.forEach(btn => {
-            // Dölj knappar som INTE är skicka-knappen
-            // Vi antar att skicka-knappen INTE har klassen 'icon-btn' eller har ett unikt ID
-            if (btn.id !== 'sendMessageBtn' && !btn.querySelector('.fa-paper-plane')) {
-                if (hasText) {
-                    btn.style.setProperty('display', 'none', 'important');
-                } else {
-                    btn.style.setProperty('display', 'flex', 'important');
-                }
-            }
-        });
-    }
-});
+window.ChatView = ChatView;
