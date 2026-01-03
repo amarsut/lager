@@ -173,7 +173,7 @@ const App = () => {
                             { id: 'NEW_JOB', icon: 'plus-square', label: 'Nytt_Jobb' },
                             { id: 'CUSTOMERS', icon: 'users', label: 'Kund_Databas' },
                             { id: 'OIL_SUPPLY', icon: 'droplet', label: 'Oil_Status' },
-                            { id: 'CHAT', icon: 'message-square', label: 'System_Log' }
+                            { id: 'CHAT', icon: 'message-square', label: 'System_Chat' }
                         ].map(item => (
                             <div key={item.id} 
                                 onClick={() => { 
