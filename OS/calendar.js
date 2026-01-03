@@ -96,7 +96,7 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
         }
     }, [currentDate, viewMode]);
 
-    const isToday = (date) => new Date().toISOString().split('T')[0] === date.toISOString().split('T')[0];
+    const isToday = (date) => date.toDateString() === new Date().toDateString();
 
     return (
         <div 
@@ -173,10 +173,7 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
 
                                 <div 
                                     className="p-1 md:p-3 space-y-1.5 md:space-y-3 flex-1 bg-white/50 relative cursor-crosshair"
-                                    onClick={() => {
-                                        setEditingJob({ datum: `${dStr}T08:00` });
-                                        setView('NEW_JOB');
-                                    }}
+                                    onClick={() => setView('NEW_JOB', { job: { datum: `${dStr}T08:00` } })}
                                 >
                                     {jobs.map(job => (
                                         <div 
@@ -184,7 +181,7 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
                                             draggable="true"
                                             onDragStart={(e) => onDragStart(e, job)}
                                             onDragEnd={(e) => e.currentTarget.style.opacity = '1'}
-                                            onClick={(e) => { e.stopPropagation(); setEditingJob(job); setView('NEW_JOB'); }} 
+                                            onClick={(e) => { e.stopPropagation(); setView('NEW_JOB', { job: job }); }}
                                             className="group relative bg-white border border-zinc-200 p-1.5 md:p-4 hover:border-zinc-900 transition-all cursor-grab active:cursor-grabbing shadow-sm hover:shadow-xl overflow-hidden rounded-sm"
                                         >
                                             <div className="absolute left-0 top-0 bottom-0 w-0.5 md:w-1 theme-bg"></div>
