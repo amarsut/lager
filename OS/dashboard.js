@@ -132,7 +132,7 @@ window.DashboardView = React.memo(({
                     <tbody className="bg-white">
                         {filteredJobs.map(job => (
                             <tr key={job.id} className="hover:bg-zinc-50 transition-all border-b border-[#edf2f7] border-l-4 border-l-transparent hover:border-l-orange-500 group">
-                                <td className="px-6 py-3 cursor-pointer" onClick={() => { setEditingJob(job); setView('NEW_JOB'); }}>
+                                <td className="px-6 py-3 cursor-pointer" onClick={() => setView('NEW_JOB', { job: job })}>
                                     <div className="text-[11px] font-black uppercase text-zinc-900">{job.kundnamn}</div>
                                     <div className="text-[10px] text-[#94a3b8] font-bold uppercase tracking-tight">{job.id.substring(0,8)}</div>
                                 </td>
@@ -153,7 +153,7 @@ window.DashboardView = React.memo(({
                                 <td className="px-6 py-3 text-right font-black text-zinc-900">{(parseInt(job.kundpris) || 0).toLocaleString()} kr</td>
                                 <td className="px-6 py-3 text-right">
                                     <div className="flex justify-end gap-2">
-                                        <button onClick={() => { setEditingJob(job); setView('NEW_JOB'); }} className="p-1.5 text-zinc-400 hover:theme-text"><SafeIcon name="edit-3" size={16} /></button>
+                                        <button onClick={() => setView('NEW_JOB', { job: job })} className="p-1.5 text-zinc-400 hover:theme-text"><SafeIcon name="edit-3" size={16} /></button>
                                         <button onClick={() => { if(confirm("Radera?")) window.db.collection("jobs").doc(job.id).update({deleted:true}); }} className="p-1.5 text-zinc-400 hover:text-red-500 mt-[-2px]"><SafeIcon name="trash-2" size={16} /></button>
                                     </div>
                                 </td>
@@ -166,7 +166,7 @@ window.DashboardView = React.memo(({
             {/* KORT-VY (MOBIL) */}
             <div className="lg:hidden space-y-3">
                 {filteredJobs.map(job => (
-                    <div key={job.id} onClick={() => { setEditingJob(job); setView('NEW_JOB'); }} className="bg-white border-l-4 theme-border p-4 shadow-md rounded-sm active:scale-[0.98]">
+                    <div key={job.id} onClick={() => setView('NEW_JOB', { job: job })} className="bg-white border-l-4 theme-border p-4 shadow-md rounded-sm active:scale-[0.98]">
                         <div className="flex justify-between items-start mb-2">
                             <div>
                                 <div className="text-[13px] font-black uppercase text-zinc-900 leading-tight">{job.kundnamn}</div>
