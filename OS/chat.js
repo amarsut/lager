@@ -1,6 +1,38 @@
 const { useState, useEffect, useRef } = React;
 
 const ChatView = ({ user, setView }) => {
+    // --- NY HJÄLPFUNKTION FÖR KOMPRIMERING ---
+    const compressImage = async (file, maxWidth = 1000, quality = 0.7) => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > maxWidth) {
+                        height = (maxWidth / width) * height;
+                        width = maxWidth;
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    // Skapar en optimerad WebP Base64-sträng
+                    const dataUrl = canvas.toDataURL('image/webp', quality);
+                    resolve(dataUrl);
+                };
+            };
+            reader.onerror = (error) => reject(error);
+        });
+    };
+
     const Icon = window.Icon;
     const [messages, setMessages] = useState([]);
     const [inputText, setInputText] = useState("");
@@ -45,21 +77,45 @@ const ChatView = ({ user, setView }) => {
     // --- 2. FIREBASE & REAKTIONER ---
     const handleFile = async (e) => {
         const file = e.target.files[0];
-        if (!file || !window.firebase.storage) return;
+        if (!file) return;
+
         setIsUploading(true);
         try {
-            const uniqueFileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
-            const storageRef = window.firebase.storage().ref(`chat_files/${uniqueFileName}`);
-            await storageRef.put(file);
-            const url = await storageRef.getDownloadURL();
+            let fileData;
+            let type = 'file';
+
+            if (file.type.startsWith('image/')) {
+                // Använd vår nya komprimeringsmetod för bilder
+                fileData = await compressImage(file);
+                type = 'image';
+            } else {
+                // För vanliga filer, läs in som standard Base64 (om de är små nog)
+                fileData = await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target.result);
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            // Kontrollera att filen inte överskrider Firestores gräns (ca 1MB)
+            if (fileData.length > 1048487) {
+                alert("Filen är för stor även efter komprimering. Försök med en mindre bild.");
+                setIsUploading(false);
+                return;
+            }
+
             await window.db.collection("notes").add({
                 text: file.name, 
-                fileUrl: url,
-                type: file.type.startsWith('image/') ? 'image' : 'file',
+                fileUrl: fileData, // Här sparar vi nu Base64-strängen direkt istället för Storage-URL
+                type: type,
                 timestamp: new Date().toISOString(), 
                 sender: user.email
             });
-        } catch (err) { console.error("Upload Error:", err); }
+
+        } catch (err) { 
+            console.error("Upload Error:", err); 
+            alert("Kunde inte ladda upp bilden.");
+        }
         setIsUploading(false);
         e.target.value = null;
     };
