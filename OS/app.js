@@ -65,35 +65,6 @@ const App = () => {
         }
     };
 
-    // --- UPPDATERAD APP-BADGE LOGIK MED FELSÖKNING ---
-    useEffect(() => {
-        const updateBadge = async () => {
-            if ('setAppBadge' in navigator) {
-                // Trimma och gör till versaler för att undvika matchningsfel
-                const bookCount = allJobs.filter(job => {
-                    const status = (job.status || "").trim().toUpperCase();
-                    return !job.deleted && status === 'BOKAD';
-                }).length;
-
-                console.log("Badge_Debug: Hittade " + bookCount + " bokade jobb.");
-
-                try {
-                    if (bookCount > 0) {
-                        await navigator.setAppBadge(bookCount);
-                    } else {
-                        await navigator.clearAppBadge();
-                    }
-                } catch (error) {
-                    console.error("Badge_Error:", error);
-                }
-            } else {
-                console.log("Badge_API: Stöds inte av denna enhet/webbläsare.");
-            }
-        };
-
-        updateBadge();
-    }, [allJobs]);
-
     useEffect(() => {
         window.openEditModal = (jobId) => {
             const job = allJobs.find(j => j.id === jobId);
@@ -198,10 +169,11 @@ const App = () => {
                     <nav className="flex-1 py-6 space-y-1 overflow-y-auto">
                         {[
                             { id: 'DASHBOARD', icon: 'grid', label: 'Dashboard' },
-                            { id: 'NEW_JOB', icon: 'plus-square', label: 'Nytt Jobb' },
-                            { id: 'CUSTOMERS', icon: 'users', label: 'Kund-Bas' },
-                            { id: 'OIL_SUPPLY', icon: 'droplet', label: 'Olje-Logistik' },
-                            { id: 'CALENDAR', icon: 'calendar', label: 'Kalender' }
+                            { id: 'CALENDAR', icon: 'calendar', label: 'Kalender' },
+                            { id: 'NEW_JOB', icon: 'plus-square', label: 'Nytt_Jobb' },
+                            { id: 'CUSTOMERS', icon: 'users', label: 'Kund_Databas' },
+                            { id: 'OIL_SUPPLY', icon: 'droplet', label: 'Oil_Status' },
+                            { id: 'CHAT', icon: 'message-square', label: 'System_Log' }
                         ].map(item => (
                             <div key={item.id} 
                                 onClick={() => { 
@@ -293,6 +265,7 @@ const App = () => {
                         {view === 'CUSTOMERS' && <window.CustomersView allJobs={allJobs} setView={setView} setEditingJob={setEditingJob} />}
                         {view === 'CALENDAR' && <window.CalendarView allJobs={allJobs} setEditingJob={setEditingJob} setView={setView} />}
                         {view === 'OIL_SUPPLY' && <window.SupplyView allJobs={allJobs} />}
+                        {view === 'CHAT' && <window.ChatView user={user} setView={setView} />}
                     </div>
 
                     {/* BOTTOM NAV - Återställd till standardhöjd H-16 */}
@@ -329,15 +302,6 @@ const App = () => {
             </div>
         </>
     );
-};
-
-const requestNotificationPermission = async () => {
-    if ('Notification' in window) {
-        const permission = await Notification.requestPermission();
-        if (permission === 'granted') {
-            console.log("Badge_Auth: Behörighet beviljad.");
-        }
-    }
 };
 
 const LoginScreen = () => {
