@@ -22,6 +22,13 @@ const firebaseConfig = {
 
 if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
+
+// AKTIVERA OFFLINE-STÖD HÄR (Utanför komponenten är korrekt)
+db.settings({ cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED });
+db.enablePersistence({ synchronizeTabs: true }).catch(err => {
+    console.warn("Offline persistence failed:", err.code);
+});
+
 const auth = firebase.auth();
 window.db = db;
 window.firebase = firebase;
@@ -59,6 +66,7 @@ const App = () => {
     const [theme, setTheme] = useState(localStorage.getItem('sys_theme') || 'MATRIX');
     const [time, setTime] = useState(new Date());
     const [hasUnread, setHasUnread] = useState(false);
+    const [isOnline, setIsOnline] = useState(navigator.onLine);
 
     const triggerHaptic = () => {
         if (window.navigator && window.navigator.vibrate) {
@@ -67,42 +75,42 @@ const App = () => {
     };
 
     useEffect(() => {
-    if (!user) return;
+        if (!user) return;
 
-    // Regex för alla klock-symboler (🕒, 🕓, ⏰, etc.)
-    const clockRegex = /[🕒🕓🕔🕕🕖🕗🕘🕙🕚🕛⏰⌚⌛⏳]/u;
+        // Regex för alla klock-symboler (🕒, 🕓, ⏰, etc.)
+        const clockRegex = /[🕒🕓🕔🕕🕖🕗🕘🕙🕚🕛⏰⌚⌛⏳]/u;
 
-    const unsubscribe = db.collection("notes")
-        .orderBy("timestamp", "desc")
-        .limit(30) 
-        .onSnapshot(snap => {
-            if (snap.empty) {
-                setHasUnread(false);
-                return;
-            }
-            
-            // Vi mappar dokumenten till objekt
-            const allMsgs = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            
-            // ROBUST SÖKNING: Vi letar i ALLA värden i hela dokumentet
-            const clockFound = allMsgs.some(msg => 
-                Object.values(msg).some(val => 
-                    typeof val === 'string' && clockRegex.test(val)
-                )
-            );
+        const unsubscribe = db.collection("notes")
+            .orderBy("timestamp", "desc")
+            .limit(30) 
+            .onSnapshot(snap => {
+                if (snap.empty) {
+                    setHasUnread(false);
+                    return;
+                }
+                
+                // Vi mappar dokumenten till objekt
+                const allMsgs = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                
+                // ROBUST SÖKNING: Vi letar i ALLA värden i hela dokumentet
+                const clockFound = allMsgs.some(msg => 
+                    Object.values(msg).some(val => 
+                        typeof val === 'string' && clockRegex.test(val)
+                    )
+                );
 
-            // Logik för visning:
-            // Om vi är i chatten = ingen prick.
-            // Annars = visa prick om klocka hittades.
-            if (view === 'CHAT') {
-                setHasUnread(false);
-            } else {
-                setHasUnread(clockFound);
-            }
-        });
+                // Logik för visning:
+                // Om vi är i chatten = ingen prick.
+                // Annars = visa prick om klocka hittades.
+                if (view === 'CHAT') {
+                    setHasUnread(false);
+                } else {
+                    setHasUnread(clockFound);
+                }
+            });
 
-    return () => unsubscribe();
-}, [user, view]);
+        return () => unsubscribe();
+    }, [user, view]);
 
     // --- SMART NAVIGERING (History API) ---
     const navigateTo = (newView, params = null) => {
@@ -118,6 +126,16 @@ const App = () => {
         if (params && params.job) setEditingJob(params.job);
         if (window.innerWidth < 1024) setSidebarOpen(false);
     };
+
+    useEffect(() => {
+        const handleStatus = () => setIsOnline(navigator.onLine);
+        window.addEventListener('online', handleStatus);
+        window.addEventListener('offline', handleStatus);
+        return () => {
+            window.removeEventListener('online', handleStatus);
+            window.removeEventListener('offline', handleStatus);
+        };
+    }, []);
 
     // Lyssna på bakåt-navigering (Swipe bakåt eller bakåtknapp)
     useEffect(() => {
@@ -338,9 +356,10 @@ const App = () => {
                                     </span>
                                 </div>
                                 <div className="flex flex-col border-l border-zinc-100 pl-4 hidden xs:flex">
-                                    <span className="text-[7px] font-black text-zinc-400 uppercase tracking-widest">Link</span>
-                                    <span className="text-[9px] font-black text-green-600 uppercase flex items-center gap-1.5">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span> Secure
+                                    <span className="text-[7px] font-black text-zinc-400 uppercase tracking-widest">Connection</span>
+                                    <span className={`text-[9px] font-black uppercase flex items-center gap-1.5 ${isOnline ? 'text-green-600' : 'text-orange-500'}`}>
+                                        <span className={`w-1.5 h-1.5 rounded-full ${isOnline ? 'bg-green-500 animate-pulse' : 'bg-orange-500 animate-ping'}`}></span> 
+                                        {isOnline ? 'Secure_Link' : 'Syncing_Offline'}
                                     </span>
                                 </div>
                             </div>
