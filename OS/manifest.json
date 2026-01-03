@@ -1,6 +1,6 @@
 {
-  "name": "OS Översikt",
-  "short_name": "OS Översikt",
+  "name": "Mission_Log",
+  "short_name": "Misson_Log",
   "description": "Industrial Logistics Matrix OS",
   "start_url": "/lager/OS/index.html",
   "scope": "/lager/OS/",
