@@ -58,12 +58,51 @@ const App = () => {
     const [editingJob, setEditingJob] = useState(null);
     const [theme, setTheme] = useState(localStorage.getItem('sys_theme') || 'MATRIX');
     const [time, setTime] = useState(new Date());
+    const [hasUnread, setHasUnread] = useState(false);
 
     const triggerHaptic = () => {
         if (window.navigator && window.navigator.vibrate) {
             window.navigator.vibrate(12);
         }
     };
+
+    useEffect(() => {
+    if (!user) return;
+
+    // Regex för alla klock-symboler (🕒, 🕓, ⏰, etc.)
+    const clockRegex = /[🕒🕓🕔🕕🕖🕗🕘🕙🕚🕛⏰⌚⌛⏳]/u;
+
+    const unsubscribe = db.collection("notes")
+        .orderBy("timestamp", "desc")
+        .limit(30) 
+        .onSnapshot(snap => {
+            if (snap.empty) {
+                setHasUnread(false);
+                return;
+            }
+            
+            // Vi mappar dokumenten till objekt
+            const allMsgs = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            
+            // ROBUST SÖKNING: Vi letar i ALLA värden i hela dokumentet
+            const clockFound = allMsgs.some(msg => 
+                Object.values(msg).some(val => 
+                    typeof val === 'string' && clockRegex.test(val)
+                )
+            );
+
+            // Logik för visning:
+            // Om vi är i chatten = ingen prick.
+            // Annars = visa prick om klocka hittades.
+            if (view === 'CHAT') {
+                setHasUnread(false);
+            } else {
+                setHasUnread(clockFound);
+            }
+        });
+
+    return () => unsubscribe();
+}, [user, view]);
 
     // --- SMART NAVIGERING (History API) ---
     const navigateTo = (newView, params = null) => {
@@ -235,7 +274,21 @@ const App = () => {
                             <div key={item.id} 
                                 onClick={() => navigateTo(item.id, item.id === 'NEW_JOB' ? { job: null } : null)} 
                                 className={`flex items-center px-6 py-4 cursor-pointer transition-all ${view === item.id ? 'theme-sidebar-active' : 'hover:opacity-80'}`}>
-                                <window.Icon name={item.icon} size={18} />
+                                
+                                <div className="relative flex items-center justify-center">
+                                    <window.Icon name={item.icon} size={18} />
+                                    
+                                    {/* PULSERANDE PRICK FÖR DATORN */}
+                                    {item.id === 'CHAT' && hasUnread && (
+                                        <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5 z-[999]">
+                                            {/* Ringen som pulserar utåt */}
+                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                                            {/* Den fasta pricken i mitten */}
+                                            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-orange-500 border border-[#0d0d0e]"></span>
+                                        </span>
+                                    )}
+                                </div>
+
                                 {sidebarOpen && <span className="ml-4 text-[10px] font-black uppercase tracking-widest">{item.label}</span>}
                             </div>
                         ))}
@@ -329,26 +382,40 @@ const App = () => {
                     </div>
 
                     <div className="lg:hidden fixed bottom-0 left-0 right-0 h-16 bg-zinc-950 border-t border-zinc-900 flex items-center justify-around z-[210] px-1 pb-safe backdrop-blur-xl">
+                        {/* 1. STATUS */}
                         <button onClick={() => navigateTo('DASHBOARD')} className={`mobile-nav-btn ${view === 'DASHBOARD' && !sidebarOpen ? 'active' : ''}`}>
                             <window.Icon name="grid" size={18} />
                             <span className="mobile-nav-label">Status</span>
                         </button>
                         
+                        {/* 2. PLAN */}
                         <button onClick={() => navigateTo('CALENDAR')} className={`mobile-nav-btn ${view === 'CALENDAR' && !sidebarOpen ? 'active' : ''}`}>
                             <window.Icon name="calendar" size={18} />
                             <span className="mobile-nav-label">Plan</span>
                         </button>
 
+                        {/* 3. NYTT */}
                         <button onClick={() => navigateTo('NEW_JOB', { job: null })} className={`mobile-nav-btn ${view === 'NEW_JOB' && !sidebarOpen ? 'active' : ''}`}>
                             <window.Icon name="plus-square" size={18} />
                             <span className="mobile-nav-label">Nytt</span>
                         </button>
 
-                        <button onClick={() => navigateTo('CUSTOMERS')} className={`mobile-nav-btn ${view === 'CUSTOMERS' && !sidebarOpen ? 'active' : ''}`}>
-                            <window.Icon name="users" size={18} />
-                            <span className="mobile-nav-label">Kunder</span>
+                        {/* 4. CHATT (Med Badge-logik) */}
+                        <button onClick={() => navigateTo('CHAT')} className={`mobile-nav-btn ${view === 'CHAT' ? 'active' : ''}`}>
+                            <div className="relative inline-flex items-center justify-center p-1"> {/* Extra padding för att ge plats */}
+                                <window.Icon name="message-square" size={20} />
+                                
+                                {hasUnread && (
+                                    <span className="absolute -top-1 -right-1 flex h-3 w-3 z-[999]">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-3 w-3 bg-orange-500 border-2 border-black shadow-[0_0_10px_rgba(249,115,22,1)]"></span>
+                                    </span>
+                                )}
+                            </div>
+                            <span className="mobile-nav-label">Chatt</span>
                         </button>
 
+                        {/* 5. MER (Sidebaren) */}
                         <button onClick={() => setSidebarOpen(!sidebarOpen)} className={`mobile-nav-btn ${sidebarOpen ? 'active' : ''}`}>
                             <window.Icon name={sidebarOpen ? "x" : "more-horizontal"} size={18} />
                             <span className="mobile-nav-label">{sidebarOpen ? "Stäng" : "Mer"}</span>
