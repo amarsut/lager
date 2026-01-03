@@ -6,12 +6,20 @@ const SafeIcon = ({ name, size = 14, className = "" }) => (
     </span>
 );
 
-window.CustomersView = ({ allJobs, setView, setEditingJob }) => {
+window.CustomersView = ({ allJobs, setView, setEditingJob, viewParams }) => {
     // --- 1. ALLA HOOKS HÖGST UPP ---
     const [searchQuery, setSearchQuery] = React.useState('');
     const [selectedCustomer, setSelectedCustomer] = React.useState(null);
     const [sortMode, setSortMode] = React.useState('revenue'); 
     const [logSearch, setLogSearch] = React.useState('');
+    // SYNKRONISERA MED HISTORIK (viktigt för swipe bakåt)
+    React.useEffect(() => {
+        if (viewParams && viewParams.selectedCustomer) {
+            setSelectedCustomer(viewParams.selectedCustomer);
+        } else {
+            setSelectedCustomer(null);
+        }
+    }, [viewParams]);
 
     // FIX: Skapar ikonerna varje gång vi byter vy inuti komponenten
     React.useEffect(() => {
@@ -109,7 +117,7 @@ window.CustomersView = ({ allJobs, setView, setEditingJob }) => {
                     </div>
 
                     <div className="flex items-center gap-6 relative z-10">
-                        <button onClick={() => setSelectedCustomer(null)} className="group bg-zinc-900 border border-zinc-800 text-zinc-400 p-4 hover:theme-bg hover:text-black transition-all">
+                        <button onClick={() => window.history.back()} className="group bg-zinc-900 border border-zinc-800 text-zinc-400 p-4 hover:theme-bg hover:text-black transition-all">
                             <SafeIcon name="arrow-left" size={20} className="group-hover:-translate-x-1 transition-transform" />
                             <span className="text-[10px] font-black uppercase tracking-[0.3em] ml-3 hidden md:inline">Return_to_Nexus</span>
                         </button>
@@ -362,7 +370,7 @@ window.CustomersView = ({ allJobs, setView, setEditingJob }) => {
                 {customerData.map((customer, i) => (
                     <div 
                         key={i} 
-                        onClick={() => setSelectedCustomer(customer)}
+                        onClick={() => setView('CUSTOMERS', { selectedCustomer: customer })}
                         className="group bg-white border border-zinc-200 hover:border-zinc-950 hover:shadow-[0_20px_50px_rgba(0,0,0,0.1)] transition-all cursor-pointer relative overflow-hidden flex flex-col h-[180px] hover:-translate-y-1 shadow-sm"
                     >
                         <div className="absolute -bottom-6 -right-4 text-[80px] font-black text-zinc-50 group-hover:theme-text/5 transition-colors pointer-events-none italic select-none">
