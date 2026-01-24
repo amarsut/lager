@@ -149,7 +149,7 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
             <div className="bg-zinc-50 border border-zinc-200 shadow-2xl overflow-hidden rounded-sm">
                 <div className="grid grid-cols-7 divide-x divide-zinc-200">
                     {calendarDays.map(({ date, isCurrentMonth }, i) => {
-                        const dStr = date.toISOString().split('T')[0];
+                        const dStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
                         const jobs = jobsByDate[dStr] || [];
                         const today = isToday(date);
                         
@@ -204,9 +204,8 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
 
                                     {/* NULL_SEQUENCE WATERMARK */}
                                     {jobs.length === 0 && (
-                                        <div className="absolute inset-0 flex flex-col items-center justify-center opacity-[0.03] grayscale select-none pointer-events-none">
-                                            <SafeIcon name="database" size={24} className="mb-1 md:size-10" />
-                                            <span className="text-[6px] md:text-[10px] font-black uppercase tracking-[0.4em] rotate-90 whitespace-nowrap">Null_Sequence</span>
+                                        <div className="text-[10px] font-black text-zinc-300 uppercase tracking-tighter flex items-center justify-center">
+                                            <SafeIcon name="calendar-off" size={12} /> 
                                         </div>
                                     )}
                                 </div>
