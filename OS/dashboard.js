@@ -18,38 +18,37 @@ window.Badge = React.memo(({ status }) => {
     const styles = {
         'BOKAD': 'theme-bg text-black font-black',
         'OFFERERAD': 'bg-blue-500 text-white font-bold',
-        'KLAR': 'bg-black text-white font-bold',
+        'KLAR': 'bg-zinc-900 text-white font-bold',
         'FAKTURERAS': 'bg-zinc-100 text-zinc-500 border border-zinc-200',
     };
     return (
-        <span className={`px-2 py-0.5 text-[8px] uppercase tracking-[0.1em] inline-block w-20 text-center rounded-[4px] ${styles[s] || styles['BOKAD']}`}>
+        <span className={`px-2 py-0.5 text-[9px] uppercase tracking-[0.05em] inline-block w-20 text-center rounded-[2px] ${styles[s] || styles['BOKAD']}`}>
             {s}
         </span>
     );
 });
 
 window.DashboardView = React.memo(({ 
-    filteredJobs, setEditingJob, setView, 
+    filteredJobs, setView, 
     activeFilter, setActiveFilter, statusCounts,
     globalSearch, setGlobalSearch 
 }) => {
     const [searchOpen, setSearchOpen] = React.useState(false);
 
-    // Filter-knapp komponent för att undvika duplicerad kod
     const FilterButton = ({ label }) => (
         <button 
             onClick={() => setActiveFilter(label)} 
             className={`
-                px-3 py-1.5 text-[9px] font-black uppercase transition-all flex items-center gap-2 rounded-sm shrink-0
+                px-3 py-2 text-[10px] font-black uppercase transition-all flex items-center gap-2 rounded-sm shrink-0
                 ${activeFilter === label 
-                    ? 'theme-bg text-black shadow-lg scale-105 z-10' 
-                    : 'bg-zinc-900/50 text-zinc-500 border border-zinc-800/50 hover:text-zinc-300'}
+                    ? 'theme-bg text-black shadow-md' 
+                    : 'bg-zinc-800 text-zinc-500 border border-zinc-700 hover:text-zinc-300'}
             `}
         >
             {label} 
             <span className={`
                 text-[8px] px-1 rounded-[1px] font-mono
-                ${activeFilter === label ? 'bg-black/20 text-black' : 'bg-zinc-800 text-zinc-600'}
+                ${activeFilter === label ? 'bg-black/20 text-black' : 'bg-zinc-700 text-zinc-500'}
             `}>
                 {statusCounts[label] || 0}
             </span>
@@ -57,17 +56,16 @@ window.DashboardView = React.memo(({
     );
 
     return (
-        <div className="space-y-6 pb-20 lg:pb-0 animate-in fade-in duration-500">
+        <div className="min-h-screen bg-zinc-100 pb-20 lg:pb-0 animate-in fade-in duration-500">
             
-            {/* COMMAND HEADER MED INTEGRERAD FILTER & SÖK */}
-            <div className="bg-zinc-950 border-b-2 theme-border shadow-2xl relative overflow-hidden">
-                {/* RAD 1: TITEL & SÖK */}
-                <div className="p-4 flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-4 shrink-0">
+            {/* HEADER - INTE STICKY */}
+            <div className="bg-[#111] border-b-2 theme-border shadow-xl">
+                <div className="p-5 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
                         <div className="w-10 h-10 theme-bg flex items-center justify-center rounded-sm shadow-lg">
                             <SafeIcon name="grid" size={20} className="text-black" />
                         </div>
-                        <div className={searchOpen ? 'hidden xs:block' : ''}>
+                        <div>
                             <span className="text-[8px] font-black theme-text uppercase tracking-[0.3em] block leading-none mb-1 opacity-70">
                                 Operational_Overview
                             </span>
@@ -77,120 +75,141 @@ window.DashboardView = React.memo(({
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-2 flex-1 justify-end">
-                        {/* DESKTOP FILTER - GÖMD PÅ MOBIL */}
-                        <div className={`hidden lg:flex items-center gap-1 transition-all duration-300 ${searchOpen ? 'opacity-0 scale-95 pointer-events-none' : 'opacity-100'}`}>
-                            {['ALLA', 'BOKAD', 'OFFERERAD', 'EJ BOKAD', 'KLAR', 'FAKTURERAS'].map(s => (
-                                <FilterButton key={s} label={s} />
-                            ))}
-                        </div>
-
-                        {/* SÖK MODUL */}
-                        <div className={`relative flex items-center h-9 transition-all duration-500 ${searchOpen ? 'flex-1 max-w-md' : 'w-9'}`}>
-                            {searchOpen && (
-                                <input 
-                                    autoFocus
-                                    type="text" 
-                                    value={globalSearch}
-                                    onChange={e => setGlobalSearch(e.target.value)}
-                                    onBlur={() => !globalSearch && setSearchOpen(false)}
-                                    placeholder="SEARCH_LOGS..." 
-                                    className="w-full h-full bg-zinc-900 border border-orange-500/30 px-4 pr-10 text-[10px] font-black text-white outline-none uppercase tracking-widest rounded-sm"
-                                />
-                            )}
-                            <button 
-                                onClick={() => setSearchOpen(!searchOpen)}
-                                className={`h-9 w-9 transition-all flex items-center justify-center rounded-sm shrink-0 ${searchOpen ? 'absolute right-0 text-orange-500' : 'bg-zinc-900 border border-zinc-800 text-zinc-500 hover:theme-text'}`}
-                            >
-                                <SafeIcon name={searchOpen ? "x" : "search"} size={18} />
-                            </button>
-                        </div>
+                    <div className="flex items-center gap-2">
+                        {searchOpen && (
+                            <input 
+                                autoFocus
+                                type="text" 
+                                value={globalSearch}
+                                onChange={e => setGlobalSearch(e.target.value)}
+                                placeholder="SÖK..." 
+                                className="w-32 bg-zinc-900 border border-zinc-800 px-3 py-2 text-[10px] font-bold text-white outline-none uppercase rounded-sm"
+                            />
+                        )}
+                        <button 
+                            onClick={() => setSearchOpen(!searchOpen)}
+                            className="h-10 w-10 flex items-center justify-center rounded-sm bg-zinc-900 border border-zinc-800 text-zinc-500"
+                        >
+                            <SafeIcon name={searchOpen ? "x" : "search"} size={18} />
+                        </button>
                     </div>
                 </div>
 
-                {/* RAD 2: MOBIL FILTER - HORISONTELL SCROLL */}
-                <div className="lg:hidden px-4 pb-4 overflow-x-auto no-scrollbar flex items-center gap-2 mask-fade-right">
+                {/* FILTERBAR */}
+                <div className="px-5 pb-5 overflow-x-auto no-scrollbar flex items-center gap-2">
                     {['ALLA', 'BOKAD', 'OFFERERAD', 'EJ BOKAD', 'KLAR', 'FAKTURERAS'].map(s => (
                         <FilterButton key={s} label={s} />
                     ))}
                 </div>
             </div>
 
-            {/* TABELL-VY (DESKTOP) */}
-            <div className="hidden lg:block bg-white border border-zinc-200 shadow-2xl rounded-sm overflow-hidden">
-                <table className="w-full text-left border-collapse">
-                    <thead className="bg-[#1e1e1e] text-[#94a3b8] text-[9px] uppercase tracking-widest font-black">
-                        <tr>
-                            <th className="px-6 py-4">Kund / Order</th>
-                            <th className="px-6 py-4">Regnr</th>
-                            <th className="px-6 py-4">Datum & Tid</th> 
-                            <th className="px-6 py-4">Status</th>
-                            <th className="px-6 py-4 w-[120px] text-right">Belopp</th>
-                            <th className="px-6 py-4 w-28 text-right">Åtgärd</th>
-                        </tr>
-                    </thead>
-                    <tbody className="bg-white">
-                        {filteredJobs.map(job => (
-                            <tr key={job.id} className="hover:bg-zinc-50 transition-all border-b border-[#edf2f7] border-l-4 border-l-transparent hover:border-l-orange-500 group">
-                                <td className="px-6 py-3 cursor-pointer" onClick={() => setView('NEW_JOB', { job: job })}>
-                                    <div className="text-[11px] font-black uppercase text-zinc-900">{job.kundnamn}</div>
-                                    <div className="text-[10px] text-[#94a3b8] font-bold uppercase tracking-tight">{job.id.substring(0,8)}</div>
-                                </td>
-                                <td className="px-6 py-3 font-mono font-black text-[#1e293b] text-[11px] uppercase">{job.regnr}</td>
-                                <td className="px-6 py-3">
-                                    {job.datum ? (
-                                        <>
-                                            <div className="text-[13px] font-bold text-zinc-700">{formatDate(job.datum)}</div>
-                                            <div className="text-[11px] text-[#64748b] font-bold">kl. {job.datum.split('T')[1] || '--:--'}</div>
-                                        </>
-                                    ) : (
-                                        <div className="text-[10px] font-black text-zinc-300 uppercase tracking-tighter flex items-center gap-1">
-                                            <SafeIcon name="calendar-off" size={12} /> Ej Bokad
-                                        </div>
-                                    )}
-                                </td>
-                                <td className="px-6 py-3"><window.Badge status={job.status} /></td>
-                                <td className="px-6 py-3 text-right font-black text-zinc-900">{(parseInt(job.kundpris) || 0).toLocaleString()} kr</td>
-                                <td className="px-6 py-3 text-right">
-                                    <div className="flex justify-end gap-2">
-                                        <button onClick={() => setView('NEW_JOB', { job: job })} className="p-1.5 text-zinc-400 hover:theme-text"><SafeIcon name="edit-3" size={16} /></button>
-                                        <button onClick={() => { if(confirm("Radera?")) window.db.collection("jobs").doc(job.id).update({deleted:true}); }} className="p-1.5 text-zinc-400 hover:text-red-500 mt-[-2px]"><SafeIcon name="trash-2" size={16} /></button>
-                                    </div>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-
-            {/* KORT-VY (MOBIL) */}
-            <div className="lg:hidden space-y-3">
-                {filteredJobs.map(job => (
-                    <div key={job.id} onClick={() => setView('NEW_JOB', { job: job })} className="bg-white border-l-4 theme-border p-4 shadow-md rounded-sm active:scale-[0.98]">
-                        <div className="flex justify-between items-start mb-2">
-                            <div>
-                                <div className="text-[13px] font-black uppercase text-zinc-900 leading-tight">{job.kundnamn}</div>
-                                <div className="text-[11px] font-mono theme-text font-black tracking-tight">{job.regnr}</div>
+            {/* MOBIL LISTVY - EDGE TO EDGE */}
+            <div className="lg:hidden">
+                {filteredJobs.map((job, index) => (
+                    <div 
+                        key={job.id} 
+                        onClick={() => setView('NEW_JOB', { job: job })} 
+                        className={`bg-white p-5 active:bg-zinc-50 border-b border-zinc-200 flex flex-col gap-4`}
+                    >
+                        {/* Övre raden: Regnr och Status */}
+                        <div className="flex justify-between items-center">
+                            <div className="flex items-center gap-2">
+                                <div className="w-1.5 h-1.5 rounded-full theme-bg"></div>
+                                <span className="text-[11px] font-mono font-black text-zinc-400 tracking-tighter uppercase">
+                                    {job.regnr || 'SAKNAS'}
+                                </span>
                             </div>
                             <window.Badge status={job.status} />
                         </div>
-                        <div className="flex justify-between items-end border-t border-zinc-50 pt-2 mt-2">
-                            <div className="text-[10px] font-mono flex flex-col">
-                                {job.datum ? (
-                                    <>
-                                        <span className="text-zinc-400">{formatDate(job.datum)}</span>
-                                        <span className="theme-text font-black">kl. {job.datum.split('T')[1] || '--:--'}</span>
-                                    </>
-                                ) : (
-                                    <span className="text-zinc-300 font-black uppercase tracking-tighter flex items-center gap-1">
-                                        <SafeIcon name="calendar-off" size={10} /> Ej Bokad
-                                    </span>
-                                )}
+
+                        {/* Mitten: Kundnamn och Pris */}
+                        <div className="flex justify-between items-start">
+                            <div className="flex-1">
+                                <h3 className="text-[16px] font-black text-zinc-900 leading-tight uppercase tracking-tight">
+                                    {job.kundnamn}
+                                </h3>
+                                <p className="text-[9px] text-zinc-400 font-bold mt-0.5 tracking-widest">
+                                    ID: {job.id.substring(0, 8)}
+                                </p>
                             </div>
-                            <div className="font-black text-zinc-900 text-sm">{(parseInt(job.kundpris) || 0).toLocaleString()} kr</div>
+                            <div className="text-right ml-4">
+                                <div className="text-xl font-black text-zinc-900 leading-none">
+                                    {(parseInt(job.kundpris) || 0).toLocaleString()}
+                                    <span className="text-[10px] ml-1 text-zinc-400 uppercase">kr</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Nedre raden: Datum och Tid */}
+                        <div className="flex items-center gap-4 pt-3 border-t border-zinc-50">
+                            {job.datum ? (
+                                <>
+                                    <div className="flex items-center gap-1.5 text-zinc-600">
+                                        <SafeIcon name="calendar" size={12} className="text-zinc-400" />
+                                        <span className="text-[11px] font-bold">{formatDate(job.datum)}</span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5">
+                                        <SafeIcon name="clock" size={12} className="theme-text" />
+                                        <span className="text-[11px] font-black text-zinc-800">{job.datum.split('T')[1] || '--:--'}</span>
+                                    </div>
+                                </>
+                            ) : (
+                                <div className="flex items-center gap-1.5 text-zinc-300">
+                                    <SafeIcon name="calendar-off" size={12} />
+                                    <span className="text-[10px] font-black uppercase tracking-tighter">Ej schemalagd</span>
+                                </div>
+                            )}
                         </div>
                     </div>
                 ))}
+            </div>
+
+            {/* DESKTOP TABELL (Oförändrad struktur) */}
+            <div className="hidden lg:block p-8">
+                <div className="bg-white border border-zinc-200 shadow-2xl rounded-sm overflow-hidden">
+                    <table className="w-full text-left border-collapse">
+                        <thead className="bg-[#1e1e1e] text-[#94a3b8] text-[9px] uppercase tracking-widest font-black">
+                            <tr>
+                                <th className="px-6 py-4">Kund / Order</th>
+                                <th className="px-6 py-4">Regnr</th>
+                                <th className="px-6 py-4">Datum & Tid</th> 
+                                <th className="px-6 py-4">Status</th>
+                                <th className="px-6 py-4 w-[120px] text-right">Belopp</th>
+                                <th className="px-6 py-4 w-28 text-right">Åtgärd</th>
+                            </tr>
+                        </thead>
+                        <tbody className="bg-white">
+                            {filteredJobs.map(job => (
+                                <tr key={job.id} className="hover:bg-zinc-50 transition-all border-b border-[#edf2f7] cursor-pointer" onClick={() => setView('NEW_JOB', { job: job })}>
+                                    <td className="px-6 py-3">
+                                        <div className="text-[11px] font-black uppercase text-zinc-900">{job.kundnamn}</div>
+                                        <div className="text-[10px] text-[#94a3b8] font-bold uppercase tracking-tight">{job.id.substring(0,8)}</div>
+                                    </td>
+                                    <td className="px-6 py-3 font-mono font-black text-[#1e293b] text-[11px] uppercase">{job.regnr}</td>
+                                    <td className="px-6 py-3">
+                                        {job.datum ? (
+                                            <>
+                                                <div className="text-[13px] font-bold text-zinc-700">{formatDate(job.datum)}</div>
+                                                <div className="text-[11px] text-[#64748b] font-bold">kl. {job.datum.split('T')[1] || '--:--'}</div>
+                                            </>
+                                        ) : (
+                                            <div className="text-[10px] font-black text-zinc-300 uppercase tracking-tighter flex items-center gap-1">
+                                                <SafeIcon name="calendar-off" size={12} /> Ej Bokad
+                                            </div>
+                                        )}
+                                    </td>
+                                    <td className="px-6 py-3"><window.Badge status={job.status} /></td>
+                                    <td className="px-6 py-3 text-right font-black text-zinc-900">{(parseInt(job.kundpris) || 0).toLocaleString()} kr</td>
+                                    <td className="px-6 py-3 text-right">
+                                        <button className="p-1.5 text-zinc-400 hover:theme-text transition-colors">
+                                            <SafeIcon name="edit-3" size={16} />
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     );
