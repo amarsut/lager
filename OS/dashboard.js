@@ -8,14 +8,17 @@ const formatDate = (dateStr) => {
     return `${d.getDate()} ${months[d.getMonth()]}`;
 };
 
-// --- VIKTIGT: INBYGGDA IKONER SÅ DE INTE FÖRSVINNER ---
+// --- HÅRDKODADE IKONER (SVG) ---
 const SafeIcon = ({ name, size = 16, className = "" }) => {
     const style = { width: size, height: size, display: 'inline-block', strokeWidth: 2 };
+    
     if (name === 'search') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className={className} style={style}><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>;
     if (name === 'x') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className={className} style={style}><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>;
     if (name === 'edit-3') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className={className} style={style}><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>;
     if (name === 'trash-2') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className={className} style={style}><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>;
     if (name === 'inbox') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className={className} style={style}><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg>;
+    if (name === 'message-square') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className={className} style={style}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>;
+    
     return null;
 };
 
@@ -43,7 +46,6 @@ window.DashboardView = React.memo(({
 }) => {
     const [searchOpen, setSearchOpen] = React.useState(false);
 
-    // --- FILTRERING ---
     const FilterChip = ({ label }) => {
         const isActive = activeFilter === label;
         return (
@@ -66,29 +68,26 @@ window.DashboardView = React.memo(({
         );
     };
 
-    // --- MOBILKORTET (Kompakt "Mission Control") ---
-    // Ändringar gjorda: py-5 -> py-3, mb-4 -> mb-2, p-3 -> p-2
+    // --- MOBILKORTET ---
     const MobileJobCard = ({ job }) => (
         <div 
             onClick={() => setView('NEW_JOB', { job: job })}
-            className="w-full bg-white relative active:bg-zinc-50 transition-colors border-b border-zinc-200 last:border-0 shadow-sm"
+            className="w-full bg-white relative active:bg-zinc-50 transition-colors border-b border-zinc-200 last:border-0 shadow-sm group"
         >
             {/* Orange Accent Line */}
             <div className="absolute left-0 top-0 bottom-0 w-[4px] bg-orange-500"></div>
 
-            {/* Minskat padding från py-5 till py-3 */}
             <div className="pl-6 pr-4 py-3">
                 
-                {/* RAD 1: Header (Minskat margin mb-4 -> mb-2) */}
+                {/* RAD 1: Namn & Status & ID */}
                 <div className="flex justify-between items-start mb-2">
-                    <div className="flex flex-col">
-                        {/* Kundnamn */}
-                        <div className="text-[15px] font-black uppercase text-zinc-900 tracking-tight leading-none mb-0.5">
+                    <div className="flex flex-col min-w-0 pr-2">
+                         <div className="text-[15px] font-black uppercase text-zinc-900 tracking-tight truncate leading-none mb-1">
                             {job.kundnamn}
                         </div>
-                        {/* ID Badge */}
-                        <div className="flex items-center gap-2">
-                             <span className="text-[9px] font-mono text-zinc-400">
+                        {/* ID som "Code Tag" */}
+                        <div className="inline-flex">
+                            <span className="text-[9px] font-mono text-zinc-500 bg-zinc-100 px-1 rounded-[2px] border border-zinc-200/50">
                                 #{job.id.substring(0,6)}
                             </span>
                         </div>
@@ -96,28 +95,26 @@ window.DashboardView = React.memo(({
                     <window.Badge status={job.status} />
                 </div>
 
-                {/* RAD 2: Tech Box (Minskat padding p-3 -> p-1.5 och margin mb-4 -> mb-2) */}
-                <div className="bg-[#f4f4f5] border border-zinc-200 rounded-[2px] p-1.5 flex items-center gap-4 mb-2">
-                    
+                {/* RAD 2: Tech Box */}
+                <div className="bg-[#f8fafc] border border-zinc-200 rounded-[2px] p-2 flex items-center gap-4 mb-2">
                     {/* RegNr */}
-                    <div className="flex flex-col border-r border-zinc-300 pr-4">
-                        <span className="text-[7px] text-zinc-400 font-bold uppercase tracking-widest mb-0.5">Fordon</span>
+                    <div className="flex flex-col border-r border-zinc-200 pr-4">
+                        <span className="text-[7px] text-zinc-500 font-bold uppercase tracking-widest mb-0.5">Fordon</span>
                         <div className="flex items-center gap-1.5">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-zinc-500"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
-                            <span className="text-[11px] font-mono font-bold text-zinc-800 uppercase tracking-tight">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-zinc-400"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+                            <span className="text-[11px] font-mono font-bold text-zinc-900 uppercase tracking-tight bg-white px-1 border border-zinc-200 rounded-[2px]">
                                 {job.regnr || '-'}
                             </span>
                         </div>
                     </div>
-
                     {/* Tid */}
                     <div className="flex flex-col">
-                        <span className="text-[7px] text-zinc-400 font-bold uppercase tracking-widest mb-0.5">Tidpunkt</span>
+                        <span className="text-[7px] text-zinc-500 font-bold uppercase tracking-widest mb-0.5">Tidpunkt</span>
                         <div className="flex items-center gap-1.5">
                             {job.datum ? (
                                 <>
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-zinc-500"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                                    <span className="text-[11px] font-mono font-bold text-zinc-800 uppercase">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-zinc-400"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                                    <span className="text-[11px] font-mono font-bold text-zinc-900 uppercase">
                                         {formatDate(job.datum)}
                                     </span>
                                     <span className="text-[11px] font-mono text-zinc-500 border-l border-zinc-300 pl-2">
@@ -134,12 +131,31 @@ window.DashboardView = React.memo(({
                     </div>
                 </div>
 
-                {/* RAD 3: Pris (Tajtare mot boxen) */}
-                <div className="flex justify-between items-end">
-                    <span className="text-[8px] font-black text-zinc-300 uppercase tracking-widest">Estimerad Kostnad</span>
-                    <div className="text-[20px] font-mono font-bold text-zinc-900 leading-none tracking-tight flex items-start">
-                        {(parseInt(job.kundpris) || 0).toLocaleString()} 
-                        <span className="text-[9px] text-zinc-400 font-bold ml-1 mt-0.5 font-sans">SEK</span>
+                {/* RAD 3: Kommentar & Pris */}
+                <div className="flex items-end pt-1 min-h-[24px]">
+                    
+                    {/* VÄNSTER: KOMMENTAR (Maximerad bredd) */}
+                    <div className="flex-1 min-w-0 mr-2"> 
+                        {job.kommentar && (
+                            <div className="flex items-start gap-1.5 text-zinc-500">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-zinc-400 shrink-0 mt-[2px]">
+                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                                </svg>
+                                <span className="text-[10px] italic font-medium leading-tight line-clamp-2 text-zinc-600">
+                                    {job.kommentar}
+                                </span>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* HÖGER: PRIS (Helt högerställt, ingen pil) */}
+                    <div className="ml-auto flex flex-col items-end shrink-0 text-right">
+                        <div className="flex items-baseline justify-end w-full">
+                            <div className="text-[20px] font-mono font-bold text-zinc-900 leading-none tracking-tight">
+                                {(parseInt(job.kundpris) || 0).toLocaleString()} 
+                            </div>
+                            <span className="text-[9px] text-zinc-400 font-bold ml-1 font-sans">SEK</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -250,7 +266,7 @@ window.DashboardView = React.memo(({
                     
                     {filteredJobs.length === 0 && (
                         <div className="flex flex-col items-center justify-center py-24 opacity-40">
-                             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" className="text-zinc-400 mb-2"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg>
+                             <SafeIcon name="inbox" size={40} className="text-zinc-400 mb-2" />
                             <p className="text-[10px] font-black uppercase text-zinc-500">Inga order hittades</p>
                         </div>
                     )}
