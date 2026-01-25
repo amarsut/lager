@@ -8,7 +8,7 @@ const formatDate = (dateStr) => {
     return `${d.getDate()} ${months[d.getMonth()]}`;
 };
 
-// --- HÅRDKODADE IKONER (SVG) ---
+// --- HÅRDKODADE IKONER ---
 const SafeIcon = ({ name, size = 16, className = "" }) => {
     const style = { width: size, height: size, display: 'inline-block', strokeWidth: 2 };
     
@@ -18,7 +18,6 @@ const SafeIcon = ({ name, size = 16, className = "" }) => {
     if (name === 'trash-2') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className={className} style={style}><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>;
     if (name === 'inbox') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className={className} style={style}><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg>;
     if (name === 'message-square') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className={className} style={style}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>;
-    if (name === 'chevron-right') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className={className} style={style}><polyline points="9 18 15 12 9 6"></polyline></svg>;
     
     return null;
 };
@@ -48,42 +47,53 @@ window.DashboardView = React.memo(({
     const [searchOpen, setSearchOpen] = React.useState(false);
     
     // --- SWIPE LOGIC ---
-    const [touchStart, setTouchStart] = React.useState(null);
-    const [touchEnd, setTouchEnd] = React.useState(null);
     const filters = ['ALLA', 'BOKAD', 'OFFERERAD', 'EJ BOKAD', 'KLAR', 'FAKTURERAS'];
-    const minSwipeDistance = 50; // Känslighet
+    
+    // Refs för att hålla koll på touch utan att trigga omrenderingar
+    const touchStart = React.useRef(null);
+    const touchStartY = React.useRef(null);
 
     const onTouchStart = (e) => {
-        setTouchEnd(null);
-        setTouchStart(e.targetTouches[0].clientX);
+        touchStart.current = e.targetTouches[0].clientX;
+        touchStartY.current = e.targetTouches[0].clientY;
     };
 
-    const onTouchMove = (e) => {
-        setTouchEnd(e.targetTouches[0].clientX);
-    };
+    const onTouchEnd = (e) => {
+        if (touchStart.current === null || touchStartY.current === null) return;
 
-    const onTouchEnd = () => {
-        if (!touchStart || !touchEnd) return;
-        const distance = touchStart - touchEnd;
-        const isLeftSwipe = distance > minSwipeDistance;
-        const isRightSwipe = distance < -minSwipeDistance;
-        
-        if (isLeftSwipe || isRightSwipe) {
-            const currentIndex = filters.indexOf(activeFilter);
-            let nextIndex = currentIndex;
+        const touchEnd = e.changedTouches[0].clientX;
+        const touchEndY = e.changedTouches[0].clientY;
 
-            if (isLeftSwipe && currentIndex < filters.length - 1) {
-                nextIndex = currentIndex + 1; // Gå till höger i listan
-            } else if (isRightSwipe && currentIndex > 0) {
-                nextIndex = currentIndex - 1; // Gå till vänster i listan
-            }
+        const xDistance = touchStart.current - touchEnd;
+        const yDistance = touchStartY.current - touchEndY;
 
-            if (nextIndex !== currentIndex) {
-                setActiveFilter(filters[nextIndex]);
-                // Scrolla filtermenyn till rätt knapp
-                const btn = document.getElementById(`filter-btn-${filters[nextIndex]}`);
-                if (btn) btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-            }
+        // Återställ
+        touchStart.current = null;
+        touchStartY.current = null;
+
+        // Om man scrollar vertikalt mer än horisontellt, gör inget (låt användaren scrolla)
+        if (Math.abs(yDistance) >= Math.abs(xDistance)) return;
+
+        // Känslighet för swipe (minst 40px)
+        if (Math.abs(xDistance) < 40) return;
+
+        const isLeftSwipe = xDistance > 0;
+        const currentIndex = filters.indexOf(activeFilter);
+        let nextIndex = currentIndex;
+
+        if (isLeftSwipe) {
+            // Swipe åt vänster -> Gå framåt i listan (t.ex. ALLA -> BOKAD)
+            if (currentIndex < filters.length - 1) nextIndex = currentIndex + 1;
+        } else {
+            // Swipe åt höger -> Gå bakåt i listan
+            if (currentIndex > 0) nextIndex = currentIndex - 1;
+        }
+
+        if (nextIndex !== currentIndex) {
+            setActiveFilter(filters[nextIndex]);
+            // Auto-scrolla menyn
+            const btn = document.getElementById(`filter-btn-${filters[nextIndex]}`);
+            if (btn) btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
         }
     };
 
@@ -110,11 +120,11 @@ window.DashboardView = React.memo(({
         );
     };
 
-    // --- MOBILKORTET (Gold Master Design) ---
+    // --- MOBILKORTET ---
     const MobileJobCard = ({ job }) => (
         <div 
             onClick={() => setView('NEW_JOB', { job: job })}
-            className="w-full bg-white relative active:bg-zinc-50 transition-colors border-b border-zinc-200 last:border-0 shadow-sm group"
+            className="w-full bg-white relative active:bg-zinc-50 transition-colors border-b border-zinc-200 last:border-0 shadow-sm group select-none"
         >
             <div className="absolute left-0 top-0 bottom-0 w-[4px] bg-orange-500"></div>
 
@@ -227,16 +237,16 @@ window.DashboardView = React.memo(({
                 </div>
             </div>
 
-            {/* CONTENT AREA (With Swipe Support) */}
+            {/* CONTENT AREA (Swipe Enabled) */}
             <div 
-                className="flex-1 w-full bg-zinc-100"
+                className="flex-1 w-full bg-zinc-100 min-h-[85vh] touch-pan-y" 
+                style={{ touchAction: 'pan-y' }}
                 onTouchStart={onTouchStart}
-                onTouchMove={onTouchMove}
                 onTouchEnd={onTouchEnd}
             >
                 {/* DESKTOP TABELL */}
                 <div className="hidden lg:block bg-white border-b border-zinc-200 shadow-sm">
-                    {/* ... (Samma Desktop Tabell som förut, dold på mobil) ... */}
+                    {/* (Oförändrad tabell) */}
                     <table className="w-full text-left border-collapse">
                         <thead className="bg-[#1e1e1e] text-zinc-400 text-[9px] uppercase tracking-widest font-black">
                             <tr>
@@ -272,7 +282,7 @@ window.DashboardView = React.memo(({
                 </div>
 
                 {/* MOBIL LISTA */}
-                <div className="lg:hidden w-full pb-24 px-0 flex flex-col gap-2 bg-zinc-100 min-h-[50vh]">
+                <div className="lg:hidden w-full pb-24 px-0 flex flex-col gap-2">
                     {filteredJobs.map(job => (
                         <MobileJobCard key={job.id} job={job} />
                     ))}
