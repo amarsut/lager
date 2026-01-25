@@ -1,11 +1,27 @@
 // dashboard.js
 
-// 1. Datumformaterare
+// 1. SMART DATUMFORMATERARE (Striktare: Idag/Imorgon/Igår eller Datum)
 const formatDate = (dateStr) => {
     if (!dateStr) return null;
-    const d = new Date(dateStr);
+    
+    const targetDate = new Date(dateStr);
+    const today = new Date();
+    
+    // Nollställ klockslag för att jämföra rena datum
+    targetDate.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+    
+    const diffTime = targetDate - today;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    // Relativa datum (Endast dessa tre)
+    if (diffDays === 0) return "IDAG";
+    if (diffDays === 1) return "IMORGON";
+    if (diffDays === -1) return "IGÅR";
+    
+    // Annars: Vanligt datum (t.ex. 2 FEB)
     const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAJ', 'JUN', 'JUL', 'AUG', 'SEP', 'OKT', 'NOV', 'DEC'];
-    return `${d.getDate()} ${months[d.getMonth()]}`;
+    return `${targetDate.getDate()} ${months[targetDate.getMonth()]}`;
 };
 
 // 2. Status Badge
@@ -32,8 +48,7 @@ window.DashboardView = React.memo(({
 }) => {
     const [searchOpen, setSearchOpen] = React.useState(false);
     
-    // --- NY LISTORDNING ---
-    // "Ej Bokad" borttagen. "Faktureras" flyttad.
+    // --- LISTORDNING ---
     const filters = ['BOKAD', 'OFFERERAD', 'FAKTURERAS', 'KLAR', 'ALLA'];
     
     // --- SWIPE LOGIC ---
@@ -99,18 +114,18 @@ window.DashboardView = React.memo(({
         );
     };
 
-    // --- MOBILKORTET (Med Stripes för jobb utan datum) ---
+    // --- MOBILKORTET (Nu med CSS Grid för perfekt alignment) ---
     const MobileJobCard = ({ job }) => {
-        // Kontrollera om datum saknas
-        const isWaiting = !job.datum; 
+        const isWaiting = !job.datum;
+        const dateString = formatDate(job.datum);
+        const isUrgentDate = ['IDAG', 'IMORGON', 'IGÅR'].includes(dateString);
 
         return (
             <div 
                 onClick={() => setView('NEW_JOB', { job: job })}
                 className="w-full relative active:bg-zinc-50 transition-colors border-b border-zinc-200 last:border-0 shadow-sm group select-none"
-                // Inline style för stripes om datum saknas
                 style={isWaiting ? { 
-                    backgroundImage: 'repeating-linear-gradient(45deg, #ffffff, #ffffff 10px, #f4f4f5 10px, #f4f4f5 20px)' 
+                    backgroundImage: 'repeating-linear-gradient(45deg, #ffffff, #ffffff 10px, #f8fafc 10px, #f8fafc 20px)' 
                 } : { backgroundColor: 'white' }}
             >
                 <div className="absolute left-0 top-0 bottom-0 w-[4px] bg-orange-500"></div>
@@ -145,38 +160,48 @@ window.DashboardView = React.memo(({
                         </div>
                     </div>
 
-                    {/* RAD 2: Tech Box */}
-                    {/* Gör boxen lite genomskinlig om vi har stripes bakom */}
-                    <div className={`border border-zinc-200 rounded-[2px] p-2 flex items-center gap-4 mb-2 ${isWaiting ? 'bg-white/80' : 'bg-[#f8fafc]'}`}>
-                        <div className="flex flex-col border-r border-zinc-200 pr-4">
-                            <span className="text-[7px] text-zinc-500 font-bold uppercase tracking-widest mb-0.5">Fordon</span>
-                            <div className="flex items-center gap-1.5">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-zinc-400"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
-                                <span className="text-[11px] font-mono font-bold text-zinc-900 uppercase tracking-tight bg-white px-1 border border-zinc-200 rounded-[2px]">
-                                    {job.regnr || '-'}
-                                </span>
+                    {/* RAD 2: Tech Box (GRID LAYOUT - HÄR ÄR ÄNDRINGEN) */}
+                    <div className={`border border-zinc-200 rounded-[2px] p-2 mb-2 ${isWaiting ? 'bg-white/90 shadow-sm' : 'bg-[#f8fafc]'}`}>
+                        {/* Grid med två kolumner: 40% (Fordon) och resten (Tid) */}
+                        <div className="grid grid-cols-[100px_1fr] gap-4">
+                            
+                            {/* KOLUMN 1: FORDON */}
+                            <div className="flex flex-col border-r border-zinc-200 pr-4">
+                                <span className="text-[7px] text-zinc-500 font-bold uppercase tracking-widest mb-0.5">Fordon</span>
+                                <div className="flex items-center gap-1.5 h-5"> {/* Fast höjd h-5 */}
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-zinc-400 shrink-0"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+                                    <span className="text-[11px] font-mono font-bold text-zinc-900 uppercase tracking-tight bg-white px-1 border border-zinc-200 rounded-[2px] truncate w-full">
+                                        {job.regnr || '-'}
+                                    </span>
+                                </div>
                             </div>
-                        </div>
-                        <div className="flex flex-col">
-                            <span className="text-[7px] text-zinc-500 font-bold uppercase tracking-widest mb-0.5">Tidpunkt</span>
-                            <div className="flex items-center gap-1.5">
-                                {job.datum ? (
-                                    <>
-                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-zinc-400"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                                        <span className="text-[11px] font-mono font-bold text-zinc-900 uppercase">
-                                            {formatDate(job.datum)}
-                                        </span>
-                                        <span className="text-[11px] font-mono text-zinc-500 border-l border-zinc-300 pl-2">
-                                            {job.datum.split('T')[1]}
-                                        </span>
-                                    </>
-                                ) : (
-                                    <div className="flex items-center gap-1">
-                                        {/* Varningstriangel eller klocka för "Väntar" */}
-                                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-red-500"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-                                        <span className="text-[9px] font-bold text-red-500 uppercase">Inväntar datum</span>
-                                    </div>
-                                )}
+
+                            {/* KOLUMN 2: TIDPUNKT */}
+                            <div className="flex flex-col">
+                                <span className="text-[7px] text-zinc-500 font-bold uppercase tracking-widest mb-0.5">Tidpunkt</span>
+                                <div className="flex items-center h-5"> {/* Fast höjd h-5 */}
+                                    {job.datum ? (
+                                        <div className="flex items-center w-full">
+                                            {/* Ikon */}
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={`text-zinc-400 shrink-0 mr-1.5 ${isUrgentDate ? 'text-orange-500' : ''}`}><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                                            
+                                            {/* Datum (Fast bredd ca 60px) */}
+                                            <span className={`text-[11px] font-mono font-bold uppercase w-[70px] ${isUrgentDate ? 'text-orange-600' : 'text-zinc-900'}`}>
+                                                {dateString}
+                                            </span>
+                                            
+                                            {/* Klockslag (Separerad linje) */}
+                                            <span className="text-[11px] font-mono text-zinc-500 border-l border-zinc-300 pl-2 ml-1">
+                                                {job.datum.split('T')[1]}
+                                            </span>
+                                        </div>
+                                    ) : (
+                                        <div className="flex items-center gap-1">
+                                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-red-500"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                                            <span className="text-[9px] font-bold text-red-500 uppercase">Inväntar datum</span>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     </div>
