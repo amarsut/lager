@@ -18,6 +18,7 @@ const SafeIcon = ({ name, size = 16, className = "" }) => {
     if (name === 'trash-2') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className={className} style={style}><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>;
     if (name === 'inbox') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className={className} style={style}><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg>;
     if (name === 'message-square') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className={className} style={style}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>;
+    if (name === 'chevron-right') return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className={className} style={style}><polyline points="9 18 15 12 9 6"></polyline></svg>;
     
     return null;
 };
@@ -45,14 +46,55 @@ window.DashboardView = React.memo(({
     globalSearch, setGlobalSearch 
 }) => {
     const [searchOpen, setSearchOpen] = React.useState(false);
+    
+    // --- SWIPE LOGIC ---
+    const [touchStart, setTouchStart] = React.useState(null);
+    const [touchEnd, setTouchEnd] = React.useState(null);
+    const filters = ['ALLA', 'BOKAD', 'OFFERERAD', 'EJ BOKAD', 'KLAR', 'FAKTURERAS'];
+    const minSwipeDistance = 50; // Känslighet
+
+    const onTouchStart = (e) => {
+        setTouchEnd(null);
+        setTouchStart(e.targetTouches[0].clientX);
+    };
+
+    const onTouchMove = (e) => {
+        setTouchEnd(e.targetTouches[0].clientX);
+    };
+
+    const onTouchEnd = () => {
+        if (!touchStart || !touchEnd) return;
+        const distance = touchStart - touchEnd;
+        const isLeftSwipe = distance > minSwipeDistance;
+        const isRightSwipe = distance < -minSwipeDistance;
+        
+        if (isLeftSwipe || isRightSwipe) {
+            const currentIndex = filters.indexOf(activeFilter);
+            let nextIndex = currentIndex;
+
+            if (isLeftSwipe && currentIndex < filters.length - 1) {
+                nextIndex = currentIndex + 1; // Gå till höger i listan
+            } else if (isRightSwipe && currentIndex > 0) {
+                nextIndex = currentIndex - 1; // Gå till vänster i listan
+            }
+
+            if (nextIndex !== currentIndex) {
+                setActiveFilter(filters[nextIndex]);
+                // Scrolla filtermenyn till rätt knapp
+                const btn = document.getElementById(`filter-btn-${filters[nextIndex]}`);
+                if (btn) btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            }
+        }
+    };
 
     const FilterChip = ({ label }) => {
         const isActive = activeFilter === label;
         return (
             <button 
+                id={`filter-btn-${label}`}
                 onClick={() => setActiveFilter(label)} 
                 className={`
-                    flex items-center gap-2 px-3 py-1.5 text-[9px] font-black uppercase tracking-wider shrink-0 transition-all rounded-[2px] border
+                    flex items-center gap-2 px-3 py-1.5 text-[9px] font-black uppercase tracking-wider shrink-0 transition-all rounded-[2px] border snap-start scroll-ml-4
                     ${isActive 
                         ? 'bg-zinc-900 text-white border-zinc-900 shadow-sm' 
                         : 'bg-white text-zinc-500 border-zinc-200 hover:border-zinc-300'}
@@ -68,24 +110,21 @@ window.DashboardView = React.memo(({
         );
     };
 
-    // --- MOBILKORTET ---
+    // --- MOBILKORTET (Gold Master Design) ---
     const MobileJobCard = ({ job }) => (
         <div 
             onClick={() => setView('NEW_JOB', { job: job })}
             className="w-full bg-white relative active:bg-zinc-50 transition-colors border-b border-zinc-200 last:border-0 shadow-sm group"
         >
-            {/* Orange Accent Line */}
             <div className="absolute left-0 top-0 bottom-0 w-[4px] bg-orange-500"></div>
 
             <div className="pl-6 pr-4 py-3">
-                
-                {/* RAD 1: Namn & Status & ID */}
+                {/* RAD 1 */}
                 <div className="flex justify-between items-start mb-2">
                     <div className="flex flex-col min-w-0 pr-2">
                          <div className="text-[15px] font-black uppercase text-zinc-900 tracking-tight truncate leading-none mb-1">
                             {job.kundnamn}
                         </div>
-                        {/* ID som "Code Tag" */}
                         <div className="inline-flex">
                             <span className="text-[9px] font-mono text-zinc-500 bg-zinc-100 px-1 rounded-[2px] border border-zinc-200/50">
                                 #{job.id.substring(0,6)}
@@ -97,7 +136,6 @@ window.DashboardView = React.memo(({
 
                 {/* RAD 2: Tech Box */}
                 <div className="bg-[#f8fafc] border border-zinc-200 rounded-[2px] p-2 flex items-center gap-4 mb-2">
-                    {/* RegNr */}
                     <div className="flex flex-col border-r border-zinc-200 pr-4">
                         <span className="text-[7px] text-zinc-500 font-bold uppercase tracking-widest mb-0.5">Fordon</span>
                         <div className="flex items-center gap-1.5">
@@ -107,7 +145,6 @@ window.DashboardView = React.memo(({
                             </span>
                         </div>
                     </div>
-                    {/* Tid */}
                     <div className="flex flex-col">
                         <span className="text-[7px] text-zinc-500 font-bold uppercase tracking-widest mb-0.5">Tidpunkt</span>
                         <div className="flex items-center gap-1.5">
@@ -131,10 +168,8 @@ window.DashboardView = React.memo(({
                     </div>
                 </div>
 
-                {/* RAD 3: Kommentar & Pris */}
+                {/* RAD 3 */}
                 <div className="flex items-end pt-1 min-h-[24px]">
-                    
-                    {/* VÄNSTER: KOMMENTAR (Maximerad bredd) */}
                     <div className="flex-1 min-w-0 mr-2"> 
                         {job.kommentar && (
                             <div className="flex items-start gap-1.5 text-zinc-500">
@@ -147,8 +182,6 @@ window.DashboardView = React.memo(({
                             </div>
                         )}
                     </div>
-
-                    {/* HÖGER: PRIS (Helt högerställt, ingen pil) */}
                     <div className="ml-auto flex flex-col items-end shrink-0 text-right">
                         <div className="flex items-baseline justify-end w-full">
                             <div className="text-[20px] font-mono font-bold text-zinc-900 leading-none tracking-tight">
@@ -164,7 +197,6 @@ window.DashboardView = React.memo(({
 
     return (
         <div className="flex flex-col min-h-screen bg-zinc-100">
-            
             {/* HEADER */}
             <div className="bg-[#0f0f11] text-white pt-safe-top pb-0 z-20 shadow-lg relative">
                 <div className="px-4 py-4 flex items-center justify-between">
@@ -177,47 +209,34 @@ window.DashboardView = React.memo(({
                             <div className="text-[15px] font-black text-white uppercase tracking-wider leading-none">Mission Control</div>
                         </div>
                     </div>
-
-                    {/* Sökfält */}
                     <div className={`transition-all duration-300 ${searchOpen ? 'flex-1 ml-4' : 'w-auto'}`}>
                         {searchOpen ? (
                             <div className="relative flex items-center h-10">
-                                <input 
-                                    autoFocus
-                                    type="text" 
-                                    value={globalSearch}
-                                    onChange={e => setGlobalSearch(e.target.value)}
-                                    placeholder="SÖK..."
-                                    className="w-full h-full bg-zinc-900 text-white text-[11px] font-bold rounded-[2px] px-3 pl-9 uppercase focus:outline-none border border-zinc-800 focus:border-orange-500 placeholder:text-zinc-700"
-                                />
-                                <span className="absolute left-3 top-3 text-zinc-500">
-                                    <SafeIcon name="search" size={14} />
-                                </span>
-                                <button onClick={() => {setSearchOpen(false); setGlobalSearch('')}} className="absolute right-0 top-0 h-10 w-10 flex items-center justify-center text-zinc-500 hover:text-white">
-                                    <SafeIcon name="x" size={14} />
-                                </button>
+                                <input autoFocus type="text" value={globalSearch} onChange={e => setGlobalSearch(e.target.value)} placeholder="SÖK..." className="w-full h-full bg-zinc-900 text-white text-[11px] font-bold rounded-[2px] px-3 pl-9 uppercase focus:outline-none border border-zinc-800 focus:border-orange-500 placeholder:text-zinc-700" />
+                                <span className="absolute left-3 top-3 text-zinc-500"><SafeIcon name="search" size={14} /></span>
+                                <button onClick={() => {setSearchOpen(false); setGlobalSearch('')}} className="absolute right-0 top-0 h-10 w-10 flex items-center justify-center text-zinc-500 hover:text-white"><SafeIcon name="x" size={14} /></button>
                             </div>
                         ) : (
-                            <button onClick={() => setSearchOpen(true)} className="w-10 h-10 flex items-center justify-center text-zinc-400 bg-zinc-900 border border-zinc-800 rounded-[2px] hover:text-white hover:border-zinc-700 transition-colors">
-                                <SafeIcon name="search" size={18} />
-                            </button>
+                            <button onClick={() => setSearchOpen(true)} className="w-10 h-10 flex items-center justify-center text-zinc-400 bg-zinc-900 border border-zinc-800 rounded-[2px] hover:text-white hover:border-zinc-700 transition-colors"><SafeIcon name="search" size={18} /></button>
                         )}
                     </div>
                 </div>
-
-                {/* Filter Bar */}
-                <div className="bg-white border-b border-zinc-200 p-3 flex overflow-x-auto no-scrollbar gap-2">
-                    {['ALLA', 'BOKAD', 'OFFERERAD', 'EJ BOKAD', 'KLAR', 'FAKTURERAS'].map(s => (
-                        <FilterChip key={s} label={s} />
-                    ))}
+                <div className="bg-white border-b border-zinc-200 p-3 flex overflow-x-auto gap-2 whitespace-nowrap" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                    <style>{`div::-webkit-scrollbar { display: none; }`}</style>
+                    {filters.map(s => <FilterChip key={s} label={s} />)}
                 </div>
             </div>
 
-            {/* CONTENT AREA */}
-            <div className="flex-1 w-full bg-zinc-100">
-                
+            {/* CONTENT AREA (With Swipe Support) */}
+            <div 
+                className="flex-1 w-full bg-zinc-100"
+                onTouchStart={onTouchStart}
+                onTouchMove={onTouchMove}
+                onTouchEnd={onTouchEnd}
+            >
                 {/* DESKTOP TABELL */}
                 <div className="hidden lg:block bg-white border-b border-zinc-200 shadow-sm">
+                    {/* ... (Samma Desktop Tabell som förut, dold på mobil) ... */}
                     <table className="w-full text-left border-collapse">
                         <thead className="bg-[#1e1e1e] text-zinc-400 text-[9px] uppercase tracking-widest font-black">
                             <tr>
@@ -237,19 +256,13 @@ window.DashboardView = React.memo(({
                                         <div className="text-[10px] text-[#94a3b8] font-bold uppercase tracking-tight">{job.id.substring(0,8)}</div>
                                     </td>
                                     <td className="px-6 py-4 font-mono font-bold text-[12px] uppercase text-zinc-700">{job.regnr}</td>
-                                    <td className="px-6 py-4 text-[12px] font-bold text-zinc-600">
-                                        {job.datum ? `${formatDate(job.datum)} ${job.datum.split('T')[1]}` : '-'}
-                                    </td>
+                                    <td className="px-6 py-4 text-[12px] font-bold text-zinc-600">{job.datum ? `${formatDate(job.datum)} ${job.datum.split('T')[1]}` : '-'}</td>
                                     <td className="px-6 py-4"><window.Badge status={job.status} /></td>
                                     <td className="px-6 py-4 text-right text-[13px] font-mono font-bold text-zinc-900">{(parseInt(job.kundpris) || 0).toLocaleString()} kr</td>
                                     <td className="px-6 py-4 text-right">
                                         <div className="flex justify-end gap-3 opacity-50 group-hover:opacity-100">
-                                            <button onClick={() => setView('NEW_JOB', { job: job })} className="text-zinc-400 hover:text-black">
-                                                <SafeIcon name="edit-3" size={16} />
-                                            </button>
-                                            <button onClick={() => { if(confirm("Radera?")) window.db.collection("jobs").doc(job.id).update({deleted:true}); }} className="text-zinc-400 hover:text-red-600">
-                                                <SafeIcon name="trash-2" size={16} />
-                                            </button>
+                                            <button onClick={() => setView('NEW_JOB', { job: job })} className="text-zinc-400 hover:text-black"><SafeIcon name="edit-3" size={16} /></button>
+                                            <button onClick={() => { if(confirm("Radera?")) window.db.collection("jobs").doc(job.id).update({deleted:true}); }} className="text-zinc-400 hover:text-red-600"><SafeIcon name="trash-2" size={16} /></button>
                                         </div>
                                     </td>
                                 </tr>
@@ -259,7 +272,7 @@ window.DashboardView = React.memo(({
                 </div>
 
                 {/* MOBIL LISTA */}
-                <div className="lg:hidden w-full pb-24 px-0 flex flex-col gap-2 bg-zinc-100">
+                <div className="lg:hidden w-full pb-24 px-0 flex flex-col gap-2 bg-zinc-100 min-h-[50vh]">
                     {filteredJobs.map(job => (
                         <MobileJobCard key={job.id} job={job} />
                     ))}
