@@ -213,89 +213,104 @@ window.CustomersView = ({ allJobs, setView, setEditingJob, viewParams }) => {
 
                         {/* MISSION_LOG_BUFFER - Ny kompakt lista */}
                         <div className="bg-white border border-zinc-200 shadow-2xl rounded-sm overflow-hidden flex flex-col">
-                            {/* Header för boxen */}
-                            <div className="bg-zinc-950 p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-800">
-                                <div className="text-[10px] font-black text-white uppercase tracking-[0.3em] flex items-center gap-3">
-                                    <SafeIcon name="database" size={14} className="theme-text" /> 
-                                    Mission_Log_Buffer <span className="text-zinc-600 font-mono text-[9px] tracking-normal">[{selectedCustomer.jobs.length}]</span>
-                                </div>
-                                <div className="relative">
-                                    <input 
-                                        type="text" 
-                                        placeholder="FILTER..." 
-                                        className="bg-zinc-900 border border-zinc-800 text-[9px] font-black text-white px-3 py-2 outline-none focus:theme-border w-full md:w-48 uppercase tracking-widest rounded-sm"
-                                        value={logSearch}
-                                        onChange={(e) => setLogSearch(e.target.value)}
-                                    />
-                                </div>
+                        <div className="bg-zinc-950 p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-800">
+                            <div className="text-[10px] font-black text-white uppercase tracking-[0.3em] flex items-center gap-3">
+                                <SafeIcon name="database" size={14} className="theme-text" /> 
+                                Mission_Log_Buffer <span className="text-zinc-600 font-mono text-[9px] tracking-normal">[{selectedCustomer.jobs.length}]</span>
                             </div>
+                            <div className="relative">
+                                <input 
+                                    type="text" 
+                                    placeholder="FILTER..." 
+                                    className="bg-zinc-900 border border-zinc-800 text-[9px] font-black text-white px-3 py-2 outline-none focus:theme-border w-full md:w-48 uppercase tracking-widest rounded-sm"
+                                    value={logSearch}
+                                    onChange={(e) => setLogSearch(e.target.value)}
+                                />
+                            </div>
+                        </div>
 
-                            {/* LISTAN - Uppdaterad design */}
-                            <div className="divide-y divide-zinc-100 max-h-[450px] overflow-x-hidden overflow-y-auto custom-scrollbar bg-white">
-                                {filteredLogs.length > 0 ? filteredLogs.map((j, i) => (
-                                    <div 
-                                        key={i} 
-                                        onClick={() => { setEditingJob(j); setView('NEW_JOB'); }}
-                                        className="group p-4 hover:bg-zinc-50 transition-all cursor-pointer border-l-2 border-transparent hover:border-orange-500"
-                                    >
-                                        <div className="flex gap-3 md:gap-5 items-start">
-                                            
-                                            {/* 1. DATUM (Vänster kolumn, minimalistisk) */}
-                                            <div className="flex flex-col items-center w-10 shrink-0 pt-0.5">
-                                                <div className="text-[14px] font-black text-zinc-900 leading-none">{j.datum?.split('-')[2]?.split('T')[0]}</div>
-                                                <div className="text-[8px] font-black text-zinc-400 uppercase tracking-wider">{j.datum?.split('-')[1]}</div>
-                                            </div>
+                        <div className="divide-y divide-zinc-100 max-h-[450px] overflow-x-hidden overflow-y-auto custom-scrollbar bg-white">
+                            {filteredLogs.length > 0 ? filteredLogs
+                                // SÄKER SORTERING: Nyast datum alltid högst upp
+                                .sort((a, b) => {
+                                    if (!a.datum) return 1;
+                                    if (!b.datum) return -1;
+                                    return b.datum.localeCompare(a.datum);
+                                })
+                                .map((j, i) => {
+                                    // LOGIK FÖR DATUMVISNING
+                                    const jobDate = new Date(j.datum);
+                                    const today = new Date();
+                                    const isCurrentYear = jobDate.getFullYear() === today.getFullYear();
+                                    
+                                    // Månadsnamn för innevarande år
+                                    const monthNames = ["JAN", "FEB", "MAR", "APR", "MAJ", "JUN", "JUL", "AUG", "SEP", "OKT", "NOV", "DEC"];
+                                    
+                                    // Om det är i år: Visa Månad (t.ex. JAN). Om gammalt år: Visa Årtal (t.ex. 2025).
+                                    const subDateDisplay = isCurrentYear ? monthNames[jobDate.getMonth()] : jobDate.getFullYear();
 
-                                            {/* 2. INNEHÅLL (Mitten) */}
-                                            <div className="flex-1 min-w-0">
-                                                {/* Rad 1: Titel + Pris */}
-                                                <div className="flex justify-between items-start mb-1">
-                                                    <div className="flex flex-col min-w-0 pr-2">
-                                                        <span className="text-[11px] font-black uppercase text-zinc-900 leading-tight group-hover:theme-text transition-colors truncate">
-                                                            {j.paket || 'Standard_Deployment'}
-                                                        </span>
-                                                        {/* Rad 2: Regnr + Status */}
-                                                        <div className="flex items-center gap-2 mt-1">
-                                                            <span className="text-[9px] font-mono font-bold bg-zinc-100 text-zinc-600 px-1.5 rounded-[2px] border border-zinc-200">
-                                                                {j.regnr}
-                                                            </span>
-                                                            <span className={`text-[8px] font-black uppercase tracking-tight ${j.status === 'KLAR' ? 'text-emerald-600' : 'theme-text'}`}>
-                                                                {j.status}
-                                                            </span>
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Pris (alltid uppe till höger) */}
-                                                    <div className="text-right shrink-0">
-                                                            <div className="text-[13px] font-mono font-black text-zinc-900 leading-none">
-                                                            {(parseInt(j.kundpris) || 0).toLocaleString()} <span className="text-[9px] text-zinc-400 font-sans">kr</span>
-                                                        </div>
+                                    return (
+                                        <div 
+                                            key={i} 
+                                            onClick={() => { setEditingJob(j); setView('NEW_JOB'); }}
+                                            className="group p-4 hover:bg-zinc-50 transition-all cursor-pointer border-l-2 border-transparent hover:border-orange-500"
+                                        >
+                                            <div className="flex gap-3 md:gap-5 items-start">
+                                                
+                                                {/* 1. DATUM - Nu med Årtals-logik */}
+                                                <div className="flex flex-col items-center w-10 shrink-0 pt-0.5">
+                                                    <div className="text-[14px] font-black text-zinc-900 leading-none">{jobDate.getDate()}</div>
+                                                    <div className={`text-[8px] font-black uppercase tracking-wider ${!isCurrentYear ? 'text-orange-600' : 'text-zinc-400'}`}>
+                                                        {subDateDisplay}
                                                     </div>
                                                 </div>
 
-                                                {/* KOMMENTAR (Snyggare integrerad) */}
-                                                {j.kommentar && (
-                                                    <div className="mt-2 flex items-start gap-1.5 text-[10px] text-zinc-500 italic bg-zinc-50/50 p-2 rounded-sm border-l-2 border-zinc-200">
-                                                            <SafeIcon name="message-square" size={10} className="text-zinc-300 shrink-0 mt-[2px]" />
-                                                        <span className="line-clamp-2 leading-relaxed">{j.kommentar}</span>
-                                                    </div>
-                                                )}
-                                            </div>
+                                                {/* 2. INNEHÅLL */}
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex justify-between items-start mb-1">
+                                                        <div className="flex flex-col min-w-0 pr-2">
+                                                            <span className="text-[11px] font-black uppercase text-zinc-900 leading-tight group-hover:theme-text transition-colors truncate">
+                                                                {j.paket || 'Standard_Deployment'}
+                                                            </span>
+                                                            <div className="flex items-center gap-2 mt-1">
+                                                                <span className="text-[9px] font-mono font-bold bg-zinc-100 text-zinc-600 px-1.5 rounded-[2px] border border-zinc-200">
+                                                                    {j.regnr}
+                                                                </span>
+                                                                <span className={`text-[8px] font-black uppercase tracking-tight ${j.status === 'KLAR' ? 'text-emerald-600' : 'theme-text'}`}>
+                                                                    {j.status}
+                                                                </span>
+                                                            </div>
+                                                        </div>
 
-                                            {/* 3. PIL (Diskret navigering) */}
-                                            <div className="self-center pl-1 opacity-20 group-hover:opacity-100 transition-opacity">
-                                                <SafeIcon name="chevron-right" size={16} />
+                                                        <div className="text-right shrink-0">
+                                                                <div className="text-[13px] font-mono font-black text-zinc-900 leading-none">
+                                                                {(parseInt(j.kundpris) || 0).toLocaleString()} <span className="text-[9px] text-zinc-400 font-sans">kr</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    {j.kommentar && (
+                                                        <div className="mt-2 flex items-start gap-1.5 text-[10px] text-zinc-500 italic bg-zinc-50/50 p-2 rounded-sm border-l-2 border-zinc-200">
+                                                                <SafeIcon name="message-square" size={10} className="text-zinc-300 shrink-0 mt-[2px]" />
+                                                            <span className="line-clamp-2 leading-relaxed">{j.kommentar}</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                <div className="self-center pl-1 opacity-20 group-hover:opacity-100 transition-opacity">
+                                                    <SafeIcon name="chevron-right" size={16} />
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                )) : (
-                                    <div className="p-12 text-center text-zinc-300 font-black uppercase tracking-[0.2em] text-[9px]">
-                                        <SafeIcon name="database-zap" size={24} className="mb-2 opacity-50 mx-auto" />
-                                        No_Logs_Found
-                                    </div>
-                                )}
-                            </div>
+                                    );
+                            }) : (
+                                <div className="p-12 text-center text-zinc-300 font-black uppercase tracking-[0.2em] text-[9px]">
+                                    <SafeIcon name="database-zap" size={24} className="mb-2 opacity-50 mx-auto" />
+                                    No_Logs_Found
+                                </div>
+                            )}
                         </div>
+                    </div>
 
                         <div className="bg-white border border-zinc-200 p-6 shadow-xl relative overflow-hidden">
                             <div className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-6 flex items-center justify-between relative z-10">
