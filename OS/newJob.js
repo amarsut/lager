@@ -34,6 +34,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
     // Återställning av data vid redigering
     React.useEffect(() => {
         if (editingJob) {
+            // FALL 1: REDIGERA (Fyll i befintlig data)
             setFormData({ 
                 ...editingJob, 
                 datum: editingJob.datum?.split('T')[0] || today, 
@@ -42,6 +43,25 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
             if (editingJob.utgifter) {
                 setExpenses(editingJob.utgifter.map(ex => ({ desc: ex.namn, amount: ex.kostnad })));
             }
+        } else {
+            // FALL 2: NYTT JOBB (Återställ till standardvärden)
+            const prefill = window.prefillName || ''; 
+            window.prefillName = null; // Rensa så det inte ligger kvar nästa gång
+
+            setFormData({
+                kundnamn: prefill, // Använd namn från kundprofilen om det finns
+                regnr: '', 
+                paket: 'Standard', 
+                status: 'BOKAD',
+                datum: today, 
+                tid: '08:00', 
+                kundpris: '100', 
+                kommentar: ''
+            });
+            setExpenses([{ desc: '', amount: '' }, { desc: '', amount: '' }]);
+            setOilLiters(5);
+            setSuggestions([]);
+            setRegnrSuggestions([]);
         }
     }, [editingJob]);
 
@@ -106,17 +126,37 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
         }
     };
 
+    // NYTT: Hitta bilar kopplade till det aktuella kundnamnet
+    const relatedVehicles = React.useMemo(() => {
+        if (!formData.kundnamn || formData.kundnamn.length < 2) return [];
+        
+        // Hitta alla jobb med exakt detta kundnamn (case-insensitive)
+        const matches = allJobs
+            .filter(j => j.kundnamn && j.kundnamn.toLowerCase() === formData.kundnamn.trim().toLowerCase())
+            .map(j => j.regnr ? j.regnr.toUpperCase() : null)
+            .filter(r => r); // Ta bort tomma
+            
+        return [...new Set(matches)]; // Returnera unika regnr
+    }, [formData.kundnamn, allJobs]);
+
     // Ny funktion för att hantera sökförslag på regnr
     const handleRegnrChange = (val) => {
-        const upperVal = val.toUpperCase();
+        const upperVal = val ? val.toUpperCase() : '';
         setFormData(p => ({ ...p, regnr: upperVal }));
-        if (val.length > 0) {
+        
+        if (upperVal.length > 0) {
+            // Om man skriver: Sök globalt bland alla jobb
             const matches = allJobs
                 .filter(j => j.regnr?.toUpperCase().includes(upperVal))
                 .map(j => j.regnr.toUpperCase());
             setRegnrSuggestions([...new Set(matches)].slice(0, 5));
         } else {
-            setRegnrSuggestions([]);
+            // Om fältet är tomt: Visa kundens bilar om de finns
+            if (relatedVehicles.length > 0) {
+                setRegnrSuggestions(relatedVehicles);
+            } else {
+                setRegnrSuggestions([]);
+            }
         }
     };
 
@@ -174,9 +214,11 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                 <input 
                                     type="text" 
                                     value={formData.regnr} 
-                                    onChange={e => handleRegnrChange(e.target.value)} 
+                                    onChange={e => handleRegnrChange(e.target.value)}
+                                    onFocus={() => handleRegnrChange(formData.regnr)} // NYTT: Visar förslag direkt vid klick
                                     className="w-full bg-white border border-zinc-200 p-2.5 text-sm font-black theme-text font-mono outline-none focus:theme-border uppercase tracking-widest" 
                                     placeholder="ABC123" 
+                                    autoComplete="off" // Bra att ha för att slippa webbläsarens egna förslag
                                 />
                                 {regnrSuggestions.length > 0 && (
                                     <div className="absolute z-10 w-full bg-white border border-zinc-200 shadow-xl mt-1 rounded-sm">
