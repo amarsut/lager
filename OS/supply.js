@@ -105,7 +105,7 @@ window.SupplyView = ({ allJobs, setView }) => {
 
     return (
         <div className="max-w-3xl ml-0 animate-in fade-in slide-in-from-left-4 duration-500 pb-10">
-            <div className="bg-zinc-50 border border-zinc-200 shadow-2xl rounded-sm overflow-hidden text-zinc-900">
+            <div className="bg-zinc-50 lg:border lg:border-zinc-200 lg:shadow-2xl lg:rounded-sm overflow-hidden text-zinc-900 min-h-screen lg:min-h-0">
                 
                 {/* HEADER */}
                 <div className="bg-zinc-950 p-4 flex items-center justify-between border-b-2 theme-border">
