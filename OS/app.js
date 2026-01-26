@@ -342,7 +342,7 @@ const App = () => {
                 )}
 
                 <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
-                    <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 lg:px-8 z-50">
+                    <header className="hidden lg:flex h-16 bg-white border-b border-gray-200 items-center justify-between px-4 lg:px-8 z-50">
                         <div className="flex items-center gap-3">
                             <button onClick={() => { triggerHaptic(); setSidebarOpen(!sidebarOpen); }} className="hidden lg:block p-2 text-zinc-900 bg-zinc-100 rounded-sm hover:bg-zinc-200 transition-colors">
                                 <window.Icon name="menu" />
@@ -371,7 +371,7 @@ const App = () => {
                         </div>
                     </header>
 
-                    <div className="flex-1 overflow-auto p-4 lg:p-8 space-y-6 pb-24 lg:pb-8">
+                    <div className={`flex-1 overflow-auto lg:p-8 space-y-6 pb-24 lg:pb-8 ${view === 'DASHBOARD' ? 'p-0' : 'p-4'}`}>
                         {view === 'DASHBOARD' && (
                             <window.DashboardView 
                                 filteredJobs={filteredJobs} 
