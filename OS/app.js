@@ -118,12 +118,22 @@ const App = () => {
         
         const hashPath = `#${newView.toLowerCase()}`;
 
-        window.history.pushState({ view: newView, params: params }, "", hashPath);
+        // FIX: Om vi redan är i samma vy (t.ex. byter från Redigera -> Nytt jobb), 
+        // ersätt historiken istället för att lägga på hög.
+        if (view === newView) {
+             window.history.replaceState({ view: newView, params: params }, "", hashPath);
+        } else {
+             window.history.pushState({ view: newView, params: params }, "", hashPath);
+        }
         
         setView(newView);
         setViewParams(params);
         
-        if (params && params.job) setEditingJob(params.job);
+        // Hantera editering/rensning
+        if (params && Object.prototype.hasOwnProperty.call(params, 'job')) {
+            setEditingJob(params.job);
+        }
+        
         if (window.innerWidth < 1024) setSidebarOpen(false);
     };
 
@@ -148,8 +158,8 @@ const App = () => {
                 setView(event.state.view);
                 setViewParams(event.state.params);
                 
-                // Om vi backar till ett jobb-edit läge
-                if (event.state.params && event.state.params.job) {
+                // FIX: Samma här - uppdatera även om jobbet är null
+                if (event.state.params && Object.prototype.hasOwnProperty.call(event.state.params, 'job')) {
                     setEditingJob(event.state.params.job);
                 }
             }
