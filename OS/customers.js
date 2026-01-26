@@ -111,41 +111,45 @@ window.CustomersView = ({ allJobs, setView, setEditingJob, viewParams }) => {
 
         return (
             <div className="animate-in fade-in slide-in-from-right-8 duration-500 pb-20">
-                <div className="flex items-center justify-between mb-8 bg-zinc-950 p-4 border-l-4 theme-border shadow-2xl relative overflow-hidden">
+                {/* HEADER: Nu responsiv (Flex-col på mobil) och utan orange linje */}
+                <div className="bg-zinc-950 shadow-2xl relative overflow-hidden mb-6">
                     <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
                         <SafeIcon name="shield-check" size={100} />
                     </div>
 
-                    <div className="flex items-center gap-6 relative z-10">
-                        <button onClick={() => window.history.back()} className="group bg-zinc-900 border border-zinc-800 text-zinc-400 p-4 hover:theme-bg hover:text-black transition-all">
-                            <SafeIcon name="arrow-left" size={20} className="group-hover:-translate-x-1 transition-transform" />
-                            <span className="text-[10px] font-black uppercase tracking-[0.3em] ml-3 hidden md:inline">Return_to_Nexus</span>
-                        </button>
-                        <div>
-                            <div className="flex items-center gap-4 mb-1">
-                                <h2 className="text-2xl font-black text-white uppercase tracking-tighter leading-none">{selectedCustomer.name}</h2>
-                                <RankBadge rank={selectedCustomer.rank} />
-                                <span className="text-[8px] font-bold bg-zinc-800 text-zinc-500 px-1.5 py-0.5 rounded-sm border border-zinc-700">UID: {selectedCustomer.name.substring(0,6).toUpperCase()}</span>
-                            </div>
-                            <div className="flex items-center gap-6 text-[9px] font-mono font-black text-zinc-500 uppercase tracking-widest">
-                                <span className="flex items-center gap-2">
-                                    <div className={`w-1.5 h-1.5 rounded-full ${daysSinceLast < 45 ? 'bg-emerald-500 shadow-[0_0_8px_#10b981]' : 'bg-red-500'}`}></div>
-                                    {daysSinceLast < 45 ? 'SIGNAL_ACTIVE' : 'SIGNAL_LOST'}
-                                </span>
-                                <span>TOTAL_OPS: {selectedCustomer.missionCount}</span>
+                    <div className="relative z-10 p-4 lg:p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                        {/* TOPP: Tillbaka-knapp + Titel */}
+                        <div className="flex items-start gap-4">
+                            <button onClick={() => window.history.back()} className="group bg-zinc-900 border border-zinc-800 text-zinc-400 p-3 hover:theme-bg hover:text-black transition-all shrink-0 rounded-sm">
+                                <SafeIcon name="arrow-left" size={20} className="group-hover:-translate-x-1 transition-transform" />
+                            </button>
+                            <div className="flex-1 min-w-0">
+                                <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mb-2">
+                                    <h2 className="text-xl md:text-2xl font-black text-white uppercase tracking-tighter leading-none truncate">{selectedCustomer.name}</h2>
+                                    <RankBadge rank={selectedCustomer.rank} />
+                                </div>
+                                <div className="flex flex-wrap items-center gap-4 text-[9px] font-mono font-black text-zinc-500 uppercase tracking-widest">
+                                    <span className="bg-zinc-900 px-1.5 py-0.5 rounded-sm border border-zinc-800">UID: {selectedCustomer.name.substring(0,6).toUpperCase()}</span>
+                                    <span className="flex items-center gap-2">
+                                        <div className={`w-1.5 h-1.5 rounded-full ${daysSinceLast < 45 ? 'bg-emerald-500 shadow-[0_0_8px_#10b981]' : 'bg-red-500'}`}></div>
+                                        {daysSinceLast < 45 ? 'SIGNAL_ACTIVE' : 'SIGNAL_LOST'}
+                                    </span>
+                                </div>
                             </div>
                         </div>
+                        
+                        {/* KNAPP: Ligger nu under på mobil (fullbredd), till höger på dator */}
+                        <button 
+                            onClick={() => { setEditingJob(null); window.prefillName = selectedCustomer.name; setView('NEW_JOB'); }}
+                            className="w-full lg:w-auto theme-bg text-black px-6 py-3 text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-white transition-all shadow-lg rounded-sm"
+                        >
+                            <SafeIcon name="plus-circle" size={14} /> Start_New_Deployment
+                        </button>
                     </div>
-                    
-                    <button 
-                        onClick={() => { setEditingJob(null); window.prefillName = selectedCustomer.name; setView('NEW_JOB'); }}
-                        className="theme-bg text-black px-6 py-3 text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-white transition-all shadow-lg"
-                    >
-                        <SafeIcon name="plus-circle" size={14} /> Start_New_Deployment
-                    </button>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                {/* GRID: Med px-4 för att ge luft på mobilen */}
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 px-4 lg:px-0">
                     <div className="space-y-6">
                         <div className="bg-zinc-900 p-6 rounded-sm relative overflow-hidden border border-zinc-800">
                             <div className="relative z-10">
@@ -207,7 +211,7 @@ window.CustomersView = ({ allJobs, setView, setEditingJob, viewParams }) => {
                             ))}
                         </div>
 
-                        {/* MISSION_LOG_BUFFER - Uppdaterad för responsivitet och linjering */}
+                        {/* MISSION_LOG_BUFFER */}
                         <div className="bg-white border border-zinc-200 shadow-2xl rounded-sm overflow-hidden flex flex-col">
                             <div className="bg-zinc-950 p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-800">
                                 <div className="text-[10px] font-black text-white uppercase tracking-[0.3em] flex items-center gap-3">
@@ -233,7 +237,6 @@ window.CustomersView = ({ allJobs, setView, setEditingJob, viewParams }) => {
                                         onClick={() => { setEditingJob(j); setView('NEW_JOB'); }}
                                         className="p-4 md:p-5 hover:bg-zinc-50 transition-all flex flex-col md:flex-row items-start md:items-center justify-between group cursor-pointer border-l-4 border-transparent hover:border-orange-500 gap-4"
                                     >
-                                        {/* Vänster del: Datum och Textinnehåll */}
                                         <div className="flex items-center gap-4 md:gap-8 flex-1 min-w-0 w-full">
                                             <div className="text-center w-12 md:w-14 border-r border-zinc-100 pr-4 md:pr-6 shrink-0">
                                                 <div className="text-sm md:text-base font-black text-zinc-950 leading-none">{j.datum?.split('-')[2]?.split('T')[0]}</div>
@@ -259,7 +262,6 @@ window.CustomersView = ({ allJobs, setView, setEditingJob, viewParams }) => {
                                             </div>
                                         </div>
 
-                                        {/* Höger del: Pris och Status (Fast bredd på desktop för linjering) */}
                                         <div className="flex items-center justify-between md:justify-end gap-6 w-full md:w-44 shrink-0 mt-2 md:mt-0">
                                             <div className="text-right flex-1 md:flex-none">
                                                 <div className="text-base md:text-lg font-mono font-black text-zinc-950 whitespace-nowrap">
@@ -366,7 +368,7 @@ window.CustomersView = ({ allJobs, setView, setEditingJob, viewParams }) => {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-4 px-0 md:px-0">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-4 px-4 md:px-0">
                 {customerData.map((customer, i) => (
                     <div 
                         key={i} 
