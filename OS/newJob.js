@@ -135,7 +135,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
 
     return (
         <div className="max-w-3xl ml-0 animate-in fade-in slide-in-from-left-4 duration-500">
-            <div className="bg-white border border-zinc-200 shadow-2xl rounded-sm overflow-hidden">
+            <div className="bg-white lg:border lg:border-zinc-200 lg:shadow-2xl lg:rounded-sm overflow-hidden min-h-screen lg:min-h-0">
                 <div className="bg-zinc-950 p-4 flex items-center justify-between border-b-2 theme-border">
                     <div className="flex items-center gap-4">
                         <div className="w-10 h-10 theme-bg flex items-center justify-center rounded-sm">
