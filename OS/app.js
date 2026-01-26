@@ -371,7 +371,7 @@ const App = () => {
                         </div>
                     </header>
 
-                    <div className={`flex-1 overflow-auto lg:p-8 space-y-6 pb-24 lg:pb-8 ${view === 'DASHBOARD' ? 'p-0' : 'p-4'}`}>
+                    <div className={`flex-1 overflow-auto lg:p-8 space-y-6 pb-24 lg:pb-8 ${['DASHBOARD', 'CALENDAR', 'NEW_JOB', 'CUSTOMERS', 'OIL_SUPPLY'].includes(view) ? 'p-0' : 'p-4'}`}>
                         {view === 'DASHBOARD' && (
                             <window.DashboardView 
                                 filteredJobs={filteredJobs} 
