@@ -14,10 +14,16 @@ const formatDate = (dateStr) => {
     const diffTime = targetDate - today;
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-    // Relativa datum (Endast dessa tre)
+    // Relativa datum (Prioritet 1)
     if (diffDays === 0) return "IDAG";
     if (diffDays === 1) return "IMORGON";
     if (diffDays === -1) return "IGÅR";
+    
+    // Om det är inom nästa vecka (2-7 dagar framåt) -> Visa Veckodag
+    if (diffDays >= 2 && diffDays <= 7) {
+        const weekDays = ['SÖNDAG', 'MÅNDAG', 'TISDAG', 'ONSDAG', 'TORSDAG', 'FREDAG', 'LÖRDAG'];
+        return weekDays[targetDate.getDay()];
+    }
     
     // Annars: Vanligt datum (t.ex. 2 FEB)
     const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAJ', 'JUN', 'JUL', 'AUG', 'SEP', 'OKT', 'NOV', 'DEC'];
