@@ -8,7 +8,7 @@ const SafeIcon = ({ name, size = 12, className = "" }) => (
 
 window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
     const [currentDate, setCurrentDate] = React.useState(new Date());
-    const [viewMode, setViewMode] = React.useState('MONTH');
+    const [viewMode, setViewMode] = React.useState('WEEK');
     const [touchStart, setTouchStart] = React.useState(null); // För Swipe
 
     const monthNames = ["Januari", "Februari", "Mars", "April", "Maj", "Juni", "Juli", "Augusti", "September", "Oktober", "November", "December"];
@@ -70,16 +70,17 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
 
     const calendarDays = React.useMemo(() => {
         if (viewMode === 'WEEK') {
+            // NY LOGIK: "Rullande vecka" (Igår + 6 dagar framåt)
             const start = new Date(currentDate);
-            const day = start.getDay();
-            const diff = start.getDate() - day + (day === 0 ? -6 : 1);
-            start.setDate(diff);
+            start.setDate(start.getDate() - 1); // Backa 1 dag
+
             return [...Array(7)].map((_, i) => {
                 const d = new Date(start);
                 d.setDate(start.getDate() + i);
                 return { date: d, isCurrentMonth: true };
             });
         } else {
+            // MÅNADSVY (Oförändrad)
             const year = currentDate.getFullYear();
             const month = currentDate.getMonth();
             const firstDay = new Date(year, month, 1);
