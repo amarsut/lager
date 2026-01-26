@@ -236,10 +236,11 @@ window.DashboardView = React.memo(({
 
     return (
         <div className="flex flex-col min-h-screen bg-zinc-100">
-            {/* HEADER */}
-            <div className="bg-[#0f0f11] text-white pt-safe-top pb-0 z-20 shadow-lg relative">
-                <div className="px-4 py-4 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
+            {/* HEADER: Fullbredd (px-0) */}
+            <div className="bg-[#0f0f11] text-white pt-safe-top pb-0 z-20 shadow-lg sticky top-0">
+                <div className="px-0 py-4 flex items-center justify-between lg:px-4">
+                    {/* Vänster sida: Logga & Titel (med padding pl-4) */}
+                    <div className="flex items-center gap-3 pl-4 lg:pl-0">
                         <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-[2px] flex items-center justify-center text-black shadow-[0_0_15px_rgba(249,115,22,0.3)]">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
                         </div>
@@ -248,7 +249,8 @@ window.DashboardView = React.memo(({
                             <div className="text-[15px] font-black text-white uppercase tracking-wider leading-none">Mission Control</div>
                         </div>
                     </div>
-                    <div className={`transition-all duration-300 ${searchOpen ? 'flex-1 ml-4' : 'w-auto'}`}>
+                    {/* Höger sida: Sök (med padding pr-4) */}
+                    <div className={`transition-all duration-300 pr-4 lg:pr-0 ${searchOpen ? 'flex-1 ml-4' : 'w-auto'}`}>
                         {searchOpen ? (
                             <div className="relative flex items-center h-10">
                                 <input autoFocus type="text" value={globalSearch} onChange={e => setGlobalSearch(e.target.value)} placeholder="SÖK..." className="w-full h-full bg-zinc-900 text-white text-[11px] font-bold rounded-[2px] px-3 pl-9 uppercase focus:outline-none border border-zinc-800 focus:border-orange-500 placeholder:text-zinc-700" />
@@ -260,13 +262,15 @@ window.DashboardView = React.memo(({
                         )}
                     </div>
                 </div>
+                
+                {/* Filter Chip Container */}
                 <div className="bg-white border-b border-zinc-200 p-3 flex overflow-x-auto gap-2 whitespace-nowrap" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                     <style>{`div::-webkit-scrollbar { display: none; }`}</style>
                     {filters.map(s => <FilterChip key={s} label={s} />)}
                 </div>
             </div>
 
-            {/* CONTENT AREA (Swipe Enabled) */}
+            {/* CONTENT AREA */}
             <div 
                 className="flex-1 w-full bg-zinc-100 min-h-[85vh] touch-pan-y" 
                 style={{ touchAction: 'pan-y' }}
@@ -309,8 +313,8 @@ window.DashboardView = React.memo(({
                     </table>
                 </div>
 
-                {/* MOBIL LISTA */}
-                <div className="lg:hidden w-full pb-24 px-0 flex flex-col gap-2">
+                {/* MOBIL LISTA: Här lägger vi till px-4 så att korten får luft, trots att app.js är p-0 */}
+                <div className="lg:hidden w-full pb-24 px-4 flex flex-col gap-2 mt-4">
                     {filteredJobs.map(job => (
                         <MobileJobCard key={job.id} job={job} />
                     ))}
