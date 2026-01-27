@@ -1,3 +1,4 @@
+console.log("DASHBOARD VERSION 2.0 - FFFFordon");
 // dashboard.js
 
 // 1. SMART DATUMFORMATERARE
