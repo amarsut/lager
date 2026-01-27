@@ -395,7 +395,7 @@ window.DashboardView = React.memo(({
                                     </div>
                                 )}
                                 {/* Nu använder vi den externa komponenten och skickar med setView */}
-                                <MobileJobCard job={job} setView={setView} />
+                                <window.MobileJobCard job={job} setView={setView} />
                             </React.Fragment>
                         );
                     })}
