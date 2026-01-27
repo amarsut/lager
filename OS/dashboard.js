@@ -121,36 +121,65 @@ window.DashboardView = React.memo(({
     };
 
     // --- MOBILKORTET (Nu med CSS Grid för perfekt alignment) ---
-    const MobileJobCard = ({ job }) => {
-        const isWaiting = !job.datum;
-        const dateString = formatDate(job.datum);
-        const isUrgentDate = ['IDAG', 'IMORGON', 'IGÅR'].includes(dateString);
+    // --- MOBILKORTET (Uppdaterad: Subtilare "Tech"-stil) ---
+const MobileJobCard = ({ job }) => {
+    const isWaiting = !job.datum;
+    const dateString = formatDate(job.datum);
+    const isUrgentDate = ['IDAG', 'IMORGON', 'IGÅR'].includes(dateString);
+    const initial = job.kundnamn ? job.kundnamn.charAt(0).toUpperCase() : '?';
 
-        return (
-            <div 
-                onClick={() => setView('NEW_JOB', { job: job })}
-                className="w-full relative active:bg-zinc-50 transition-colors border-b border-zinc-200 last:border-0 shadow-sm group select-none"
-                style={isWaiting ? { 
-                    backgroundImage: 'repeating-linear-gradient(45deg, #ffffff, #ffffff 10px, #f8fafc 10px, #f8fafc 20px)' 
-                } : { backgroundColor: 'white' }}
-            >
-                <div className="absolute left-0 top-0 bottom-0 w-[4px] bg-orange-500"></div>
+    return (
+        <div 
+            onClick={() => setView('NEW_JOB', { job: job })}
+            className="w-full relative active:bg-zinc-50 transition-colors border-b border-zinc-200 last:border-0 shadow-sm group select-none"
+            style={isWaiting ? { 
+                backgroundImage: 'repeating-linear-gradient(45deg, #ffffff, #ffffff 10px, #f8fafc 10px, #f8fafc 20px)' 
+            } : { backgroundColor: 'white' }}
+        >
+            {/* Vänster kantfärg */}
+            <div className={`absolute left-0 top-0 bottom-0 w-[4px] ${job.status === 'KLAR' ? 'bg-emerald-500' : 'bg-orange-500'}`}></div>
 
-                <div className="pl-6 pr-4 py-3">
-                    {/* RAD 1 */}
-                    <div className="flex justify-between items-start mb-2">
-                        <div className="flex flex-col min-w-0 pr-2">
-                             <div className="text-[15px] font-black uppercase text-zinc-900 tracking-tight truncate leading-none mb-1">
+            <div className="pl-5 pr-4 py-3"> {/* Justerade padding lite */}
+                
+                {/* RAD 1: Header */}
+                <div className="flex justify-between items-start mb-3">
+                    
+                    {/* VÄNSTER: Subtil "Tech" Monogram + Namn */}
+                    <div className="flex items-center gap-3 min-w-0 pr-2">
+                        {/* ÄNDRING HÄR: Mindre, fyrkantig och ljusare */}
+                        <div className="w-9 h-9 rounded-[4px] bg-zinc-100 border border-zinc-200 flex items-center justify-center text-zinc-500 font-black text-[14px] shadow-sm shrink-0">
+                            {initial}
+                        </div>
+
+                        <div className="flex flex-col min-w-0">
+                            <div className="text-[15px] font-black uppercase text-zinc-900 tracking-tight truncate leading-none mb-1">
                                 {job.kundnamn}
                             </div>
-                            <div className="inline-flex">
-                                <span className="text-[9px] font-mono text-zinc-500 bg-zinc-100 px-1 rounded-[2px] border border-zinc-200/50">
-                                    #{job.id.substring(0,6)}
-                                </span>
+                            <div className="flex items-center text-[10px] text-zinc-400 font-mono leading-none">
+                                <span className="opacity-50 mr-0.5">ID:</span>
+                                <span className="font-bold">{job.id.substring(0,6)}</span>
                             </div>
                         </div>
+                    </div>
+                    
+                    {/* HÖGER: Status Badge & Action Knappar */}
+                    <div className="flex flex-col items-end gap-1.5">
+                        <window.Badge status={job.status} />
                         
-                        <div className="flex items-center gap-3">
+                        {/* Knappraden - lite mer kompakt nu */}
+                        <div className="flex items-center gap-1">
+                            {job.status !== 'KLAR' && (
+                                <button 
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        window.db.collection("jobs").doc(job.id).update({status: 'KLAR'});
+                                    }}
+                                    className="w-8 h-8 flex items-center justify-center rounded-[4px] bg-emerald-50 text-emerald-600 border border-emerald-100 active:bg-emerald-500 active:text-white transition-all"
+                                >
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                </button>
+                            )}
+                            
                             <button 
                                 onClick={(e) => {
                                     e.stopPropagation();
@@ -158,92 +187,85 @@ window.DashboardView = React.memo(({
                                         window.db.collection("jobs").doc(job.id).update({deleted:true});
                                     }
                                 }}
-                                className="w-6 h-6 flex items-center justify-center rounded-full bg-zinc-50 hover:bg-red-50 text-zinc-300 hover:text-red-500 transition-colors active:scale-90"
+                                className="w-8 h-8 flex items-center justify-center rounded-[4px] bg-zinc-50 text-zinc-400 border border-zinc-100 active:bg-red-500 active:text-white transition-all hover:border-zinc-300"
                             >
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                             </button>
-                            <window.Badge status={job.status} />
                         </div>
                     </div>
+                </div>
 
-                    {/* RAD 2: Tech Box (GRID LAYOUT - HÄR ÄR ÄNDRINGEN) */}
-                    <div className={`border border-zinc-200 rounded-[2px] p-2 mb-2 ${isWaiting ? 'bg-white/90 shadow-sm' : 'bg-[#f8fafc]'}`}>
-                        {/* Grid med två kolumner: 40% (Fordon) och resten (Tid) */}
-                        <div className="grid grid-cols-[100px_1fr] gap-4">
-                            
-                            {/* KOLUMN 1: FORDON */}
-                            <div className="flex flex-col border-r border-zinc-200 pr-4">
-                                <span className="text-[7px] text-zinc-500 font-bold uppercase tracking-widest mb-0.5">Fordon</span>
-                                <div className="flex items-center gap-1.5 h-5"> {/* Fast höjd h-5 */}
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-zinc-400 shrink-0"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
-                                    <span className="text-[11px] font-mono font-bold text-zinc-900 uppercase tracking-tight bg-white px-1 border border-zinc-200 rounded-[2px] truncate w-full">
-                                        {job.regnr || '-'}
-                                    </span>
-                                </div>
-                            </div>
-
-                            {/* KOLUMN 2: TIDPUNKT */}
-                            <div className="flex flex-col">
-                                <span className="text-[7px] text-zinc-500 font-bold uppercase tracking-widest mb-0.5">Tidpunkt</span>
-                                <div className="flex items-center h-5"> {/* Fast höjd h-5 */}
-                                    {job.datum ? (
-                                        <div className="flex items-center w-full">
-                                            {/* Ikon */}
-                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={`text-zinc-400 shrink-0 mr-1.5 ${isUrgentDate ? 'text-orange-500' : ''}`}><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                                            
-                                            {/* Datum (Fast bredd ca 60px) */}
-                                            <span className={`text-[11px] font-mono font-bold uppercase w-[70px] ${isUrgentDate ? 'text-orange-600' : 'text-zinc-900'}`}>
-                                                {dateString}
-                                            </span>
-                                            
-                                            {/* Klockslag (Separerad linje) */}
-                                            <span className="text-[11px] font-mono text-zinc-500 border-l border-zinc-300 pl-2 ml-1">
-                                                {job.datum.split('T')[1]}
-                                            </span>
-                                        </div>
-                                    ) : (
-                                        <div className="flex items-center gap-1">
-                                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-red-500"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-                                            <span className="text-[9px] font-bold text-red-500 uppercase">Inväntar datum</span>
-                                        </div>
-                                    )}
-                                </div>
+                {/* RAD 2: Tech Box (Oförändrad) */}
+                <div className={`border border-zinc-200 rounded-[2px] p-2 mb-2 ${isWaiting ? 'bg-white/90 shadow-sm' : 'bg-[#f8fafc]'}`}>
+                    <div className="grid grid-cols-[100px_1fr] gap-4">
+                        {/* KOLUMN 1: FORDON */}
+                        <div className="flex flex-col border-r border-zinc-200 pr-4">
+                            <span className="text-[7px] text-zinc-500 font-bold uppercase tracking-widest mb-0.5">Fordon</span>
+                            <div className="flex items-center gap-1.5 h-5"> 
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-zinc-400 shrink-0"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+                                <span className="text-[11px] font-mono font-bold text-zinc-900 uppercase tracking-tight bg-white px-1 border border-zinc-200 rounded-[2px] truncate w-full">
+                                    {job.regnr || '-'}
+                                </span>
                             </div>
                         </div>
-                    </div>
 
-                    {/* RAD 3 */}
-                    <div className="flex items-end pt-1 min-h-[24px]">
-                        <div className="flex-1 min-w-0 mr-2"> 
-                            {job.kommentar && (
-                                <div className="flex items-start gap-1.5 text-zinc-500">
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-zinc-400 shrink-0 mt-[2px]">
-                                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                                    </svg>
-                                    <span className="text-[10px] italic font-medium leading-tight line-clamp-2 text-zinc-600">
-                                        {job.kommentar}
-                                    </span>
-                                </div>
-                            )}
-                        </div>
-                        <div className="ml-auto flex flex-col items-end shrink-0 text-right">
-                            <div className="flex items-baseline justify-end w-full">
-                                <div className="text-[20px] font-mono font-bold text-zinc-900 leading-none tracking-tight">
-                                    {(parseInt(job.kundpris) || 0).toLocaleString()} 
-                                </div>
-                                <span className="text-[9px] text-zinc-400 font-bold ml-1 font-sans">SEK</span>
+                        {/* KOLUMN 2: TIDPUNKT */}
+                        <div className="flex flex-col">
+                            <span className="text-[7px] text-zinc-500 font-bold uppercase tracking-widest mb-0.5">Tidpunkt</span>
+                            <div className="flex items-center h-5"> 
+                                {job.datum ? (
+                                    <div className="flex items-center w-full">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={`text-zinc-400 shrink-0 mr-1.5 ${isUrgentDate ? 'text-orange-500' : ''}`}><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                                        <span className={`text-[11px] font-mono font-bold uppercase w-[70px] ${isUrgentDate ? 'text-orange-600' : 'text-zinc-900'}`}>
+                                            {dateString}
+                                        </span>
+                                        <span className="text-[11px] font-mono text-zinc-500 border-l border-zinc-300 pl-2 ml-1">
+                                            {job.datum.split('T')[1]}
+                                        </span>
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center gap-1">
+                                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-red-500"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                                        <span className="text-[9px] font-bold text-red-500 uppercase">Inväntar datum</span>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
                 </div>
+
+                {/* RAD 3: Kommentar & Pris (Oförändrad) */}
+                <div className="flex items-end pt-1 min-h-[24px]">
+                    <div className="flex-1 min-w-0 mr-2"> 
+                        {job.kommentar && (
+                            <div className="flex items-start gap-1.5 text-zinc-500">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-zinc-400 shrink-0 mt-[2px]">
+                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                                </svg>
+                                <span className="text-[10px] italic font-medium leading-tight line-clamp-2 text-zinc-600">
+                                    {job.kommentar}
+                                </span>
+                            </div>
+                        )}
+                    </div>
+                    <div className="ml-auto flex flex-col items-end shrink-0 text-right">
+                        <div className="flex items-baseline justify-end w-full">
+                            <div className="text-[20px] font-mono font-bold text-zinc-900 leading-none tracking-tight">
+                                {(parseInt(job.kundpris) || 0).toLocaleString()} 
+                            </div>
+                            <span className="text-[9px] text-zinc-400 font-bold ml-1 font-sans">SEK</span>
+                        </div>
+                    </div>
+                </div>
             </div>
-        );
-    };
+        </div>
+    );
+};
 
     return (
         <div className="flex flex-col min-h-screen bg-zinc-100">
             {/* HEADER: Fullbredd (px-0) */}
-            <div className="bg-[#0f0f11] text-white pt-safe-top pb-0 z-20 shadow-lg sticky top-0">
+            <div className="bg-[#0f0f11] text-white pt-safe-top pb-0 z-20 shadow-lg relative">
                 <div className="px-0 py-4 flex items-center justify-between lg:px-4">
                     {/* Vänster sida: Logga & Titel (med padding pl-4) */}
                     <div className="flex items-center gap-3 pl-4 lg:pl-0">
@@ -304,7 +326,20 @@ window.DashboardView = React.memo(({
                                         <div className="text-[10px] text-[#94a3b8] font-bold uppercase tracking-tight">{job.id.substring(0,8)}</div>
                                     </td>
                                     <td className="px-6 py-4 font-mono font-bold text-[12px] uppercase text-zinc-700">{job.regnr}</td>
-                                    <td className="px-6 py-4 text-[12px] font-bold text-zinc-600">{job.datum ? `${formatDate(job.datum)} ${job.datum.split('T')[1]}` : '-'}</td>
+                                    <td className="px-6 py-4">
+                                        {job.datum ? (
+                                            <div className="flex flex-col">
+                                                <span className="text-[12px] font-bold text-zinc-700">
+                                                    {formatDate(job.datum)}
+                                                </span>
+                                                <span className="text-[10px] font-mono text-zinc-400">
+                                                    {job.datum.split('T')[1]}
+                                                </span>
+                                            </div>
+                                        ) : (
+                                            <span className="text-zinc-400">-</span>
+                                        )}
+                                    </td>
                                     <td className="px-6 py-4"><window.Badge status={job.status} /></td>
                                     <td className="px-6 py-4 text-right text-[13px] font-mono font-bold text-zinc-900">{(parseInt(job.kundpris) || 0).toLocaleString()} kr</td>
                                     <td className="px-6 py-4 text-right">
@@ -319,15 +354,34 @@ window.DashboardView = React.memo(({
                     </table>
                 </div>
 
-                {/* MOBIL LISTA: Här lägger vi till px-4 så att korten får luft, trots att app.js är p-0 */}
-                <div className="lg:hidden w-full pb-24 px-4 flex flex-col gap-2 mt-4">
-                    {filteredJobs.map(job => (
-                        <MobileJobCard key={job.id} job={job} />
-                    ))}
+                {/* MOBIL LISTA: Compact Timeline (Mer plats för korten) */}
+                <div className="lg:hidden w-full pb-24 px-4 flex flex-col gap-2 mt-2">
+                    {filteredJobs.map((job, index) => {
+                        const prevJob = filteredJobs[index - 1];
+                        const currentDay = job.datum ? job.datum.split('T')[0] : 'NODATE';
+                        const prevDay = prevJob && prevJob.datum ? prevJob.datum.split('T')[0] : 'NODATE';
+                        const showHeader = index === 0 || currentDay !== prevDay;
+
+                        return (
+                            <React.Fragment key={job.id}>
+                                {showHeader && (
+                                    // Mindre marginal (mt-3 istället för mt-6) och tajtare layout
+                                    <div className={`flex items-end gap-2 mb-1 ${index !== 0 ? 'mt-3' : 'mt-1'}`}>
+                                        <div className="text-[9px] font-black text-zinc-400 uppercase tracking-widest leading-none">
+                                            {job.datum ? formatDate(job.datum) : 'Datum ej satt'}
+                                        </div>
+                                        <div className="h-[1px] bg-zinc-200 flex-1 mb-[2px]"></div>
+                                    </div>
+                                )}
+                                
+                                <MobileJobCard job={job} />
+                            </React.Fragment>
+                        );
+                    })}
                     
                     {filteredJobs.length === 0 && (
                         <div className="flex flex-col items-center justify-center py-24 opacity-40">
-                             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" className="text-zinc-400 mb-2"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg>
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" className="text-zinc-400 mb-2"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg>
                             <p className="text-[10px] font-black uppercase text-zinc-500">Inga order hittades</p>
                         </div>
                     )}
