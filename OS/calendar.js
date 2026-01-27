@@ -174,7 +174,7 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
 
                                 <div 
                                     className="p-1 md:p-3 space-y-1.5 md:space-y-3 flex-1 bg-white/50 relative cursor-crosshair"
-                                    onClick={() => setView('NEW_JOB', { job: { datum: `${dStr}T08:00` } })}
+                                    onClick={() => setView('NEW_JOB', { job: { datum: `${dStr}T08:00`, status: 'BOKAD' } })}
                                 >
                                     {jobs.map(job => (
                                         <div 
