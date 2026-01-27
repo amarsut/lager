@@ -1,4 +1,3 @@
-console.log("DASHBOARD VERSION 2.0 - FFFFordon");
 // dashboard.js
 
 // 1. SMART DATUMFORMATERARE
@@ -50,7 +49,7 @@ window.Badge = React.memo(({ status }) => {
 });
 
 // 3. MOBILKORTET (Flyttad UTANFÖR DashboardView för att fixa menubuggen)
-const MobileJobCard = React.memo(({ job, setView }) => {
+window.MobileJobCard = React.memo(({ job, setView }) => {
     const [menuOpen, setMenuOpen] = React.useState(false);
 
     const isWaiting = !job.datum;
@@ -158,7 +157,7 @@ const MobileJobCard = React.memo(({ job, setView }) => {
                 <div className="border border-zinc-200 rounded-[4px] bg-zinc-50/60 py-2 px-3 mb-2">
                     <div className="grid grid-cols-2 gap-4 divide-x divide-zinc-200 relative">
                         <div className="flex flex-col pr-2">
-                            <span className="text-[9px] text-zinc-400 font-bold uppercase tracking-widest mb-0.5">FFFFFordon</span>
+                            <span className="text-[9px] text-zinc-400 font-bold uppercase tracking-widest mb-0.5">Fordon</span>
                             <div className="flex items-center gap-2">
                                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-zinc-400 shrink-0">
                                     <path d="M14 16H9m10 0h3v-3.15a1 1 0 00-.84-.99L16 11l-2.7-3.6a1 1 0 00-.8-.4H5.24a2 2 0 00-1.8 1.1l-.8 1.63A6 6 0 002 12.42V16h2"></path>
