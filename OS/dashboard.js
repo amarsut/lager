@@ -56,10 +56,6 @@ window.MobileJobCard = React.memo(({ job, setView }) => {
     const dateString = formatDate(job.datum);
     const isUrgentDate = ['IDAG', 'IMORGON', 'IGÅR'].includes(dateString);
     const vehicleDisplay = job.regnr || job.bilmodell || '-';
-
-    return (
-        
-    );
 });
 
 // 4. HUVUDVY
