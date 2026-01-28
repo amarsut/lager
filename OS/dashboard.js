@@ -56,39 +56,48 @@ const statusColors = {
 };
 
 // 3. MOBILKORTET (Flyttad UTANFÖR DashboardView för att fixa menubuggen)
-const MobileJobCard = React.memo(({ job, setView }) => {
+const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
     const [menuOpen, setMenuOpen] = React.useState(false);
 
-    // --- LOGIK FÖR KONTEXT ---
+    // --- LOGIK ---
     const isWaiting = !job.datum;
     const dateString = formatDate(job.datum);
     const isUrgentDate = ['IDAG', 'IMORGON', 'IGÅR'].includes(dateString);
     
-    // Avgör om jobbet är "historia" (dvs. klart/fakturerat ELLER ett datum långt bort)
+    // Avgör om jobbet är "historia" (klart eller långt fram i tiden)
     const isDone = ['KLAR', 'FAKTURERAS'].includes(job.status);
     const showAsHistory = isDone || (!isWaiting && !isUrgentDate);
 
+    // Formattera fordon & Pris
     const vehicleDisplay = job.regnr || job.bilmodell || '-';
+    // Koll: Ser det ut som ett regnr? (Kort + innehåller siffra)
+    const isReg = vehicleDisplay.length <= 8 && /\d/.test(vehicleDisplay);
     const price = parseInt(job.kundpris) || 0;
+
+    // Färger för vänsterkanten
+    const statusColors = {
+        'BOKAD': 'bg-orange-500',
+        'OFFERERAD': 'bg-blue-500',
+        'KLAR': 'bg-emerald-500',
+        'FAKTURERAS': 'bg-zinc-400',
+    };
     const sidebarColor = statusColors[job.status] || 'bg-orange-500';
 
     return (
         <div 
             onClick={() => setView('NEW_JOB', { job: job })}
-            // Tillsatt: Opacity/Grayscale om jobbet är klart (Micro-UX tips B)
+            // Dämpa kortet om det är klart
             className={`w-full relative active:bg-zinc-50 transition-all border-b border-zinc-200 last:border-0 shadow-sm bg-white group select-none 
                 ${isDone ? 'opacity-70 grayscale-[0.3]' : ''}`}
             style={isWaiting ? { backgroundImage: 'repeating-linear-gradient(45deg, #ffffff, #ffffff 10px, #f8fafc 10px, #f8fafc 20px)' } : {}}
         >
-            {/* Statuslinje vänster - Grå om klar, annars orange */}
+            {/* Vänsterlinje (Statusfärg) */}
             <div className={`absolute left-0 top-0 bottom-0 w-[4px] ${isDone ? 'bg-zinc-300' : sidebarColor}`}></div>
 
             <div className="pl-6 pr-4 py-3">
                 
                 {/* --- RAD 1: NAMN & MENY --- */}
                 <div className="flex justify-between items-start mb-2">
-                    
-                    {/* Vänster: Namn & ID */}
                     <div className="flex flex-col min-w-0 pr-2">
                         <div className={`text-[16px] font-black uppercase tracking-tight truncate leading-none mb-1.5 ${isDone ? 'text-zinc-600' : 'text-zinc-900'}`}>
                             {job.kundnamn}
@@ -100,18 +109,16 @@ const MobileJobCard = React.memo(({ job, setView }) => {
                         </div>
                     </div>
                     
-                    {/* Höger: Badge + Meny-knapp */}
                     <div className="flex items-center gap-1.5 relative z-30">
                         <window.Badge status={job.status} />
 
-                        {/* MENY-KNAPP - (Micro-UX tips A: Större träffyta) */}
+                        {/* Meny-knapp med stor träffyta */}
                         <div className="relative">
                             <button 
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     setMenuOpen(!menuOpen);
                                 }}
-                                // Här gör vi knappen 40x40px (osynligt) men behåller ikonen centrerad
                                 className="w-10 h-10 -mr-2 flex items-center justify-center focus:outline-none"
                             >
                                 <div className={`w-[26px] h-[26px] flex items-center justify-center rounded-md border transition-all duration-200 pointer-events-none
@@ -120,24 +127,13 @@ const MobileJobCard = React.memo(({ job, setView }) => {
                                         : 'bg-white text-zinc-400 border-zinc-200 group-hover:border-zinc-300'
                                     }`}
                                 >
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                        <circle cx="12" cy="12" r="1"></circle>
-                                        <circle cx="12" cy="5" r="1"></circle>
-                                        <circle cx="12" cy="19" r="1"></circle>
-                                    </svg>
+                                    <window.Icon name="more-horizontal" size={16} />
                                 </div>
                             </button>
 
-                            {/* --- POPUP MENY (Oförändrad logik) --- */}
                             {menuOpen && (
                                 <>
-                                    <div 
-                                        className="fixed inset-0 z-40 cursor-default" 
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            setMenuOpen(false);
-                                        }}
-                                    ></div>
+                                    <div className="fixed inset-0 z-40 cursor-default" onClick={(e) => { e.stopPropagation(); setMenuOpen(false); }}></div>
                                     <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-xl border border-zinc-200 z-50 py-1 overflow-hidden animate-in fade-in zoom-in-95 duration-100 origin-top-right">
                                         {job.status !== 'KLAR' && (
                                             <button 
@@ -148,8 +144,7 @@ const MobileJobCard = React.memo(({ job, setView }) => {
                                                 }}
                                                 className="w-full text-left px-4 py-3 text-[13px] font-bold uppercase tracking-wide text-zinc-600 hover:bg-emerald-50 hover:text-emerald-700 flex items-center gap-3 border-b border-zinc-50"
                                             >
-                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-500"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                                Markera klar
+                                                <window.Icon name="check" size={16} className="text-emerald-500" /> Markera klar
                                             </button>
                                         )}
                                         <button 
@@ -162,8 +157,7 @@ const MobileJobCard = React.memo(({ job, setView }) => {
                                             }}
                                             className="w-full text-left px-4 py-3 text-[13px] font-bold uppercase tracking-wide text-red-600 hover:bg-red-50 flex items-center gap-3"
                                         >
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-red-500"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                                            Radera order
+                                            <window.Icon name="trash-2" size={16} className="text-red-500" /> Radera order
                                         </button>
                                     </div>
                                 </>
@@ -175,34 +169,47 @@ const MobileJobCard = React.memo(({ job, setView }) => {
                 {/* --- RAD 2: TECH BOX --- */}
                 <div className="border border-zinc-200 rounded-[4px] bg-zinc-50/60 py-2 px-3 mb-2">
                     <div className="grid grid-cols-2 gap-4 divide-x divide-zinc-200 relative">
-                        {/* FORDON */}
+                        
+                        {/* FORDON & HISTORIK */}
                         <div className="flex flex-col pr-2">
                             <span className="text-[9px] text-zinc-400 font-bold uppercase tracking-widest mb-0.5">Fordon</span>
-                            <div className="flex items-center gap-2">
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-zinc-400 shrink-0">
-                                    <path d="M14 16H9m10 0h3v-3.15a1 1 0 00-.84-.99L16 11l-2.7-3.6a1 1 0 00-.8-.4H5.24a2 2 0 00-1.8 1.1l-.8 1.63A6 6 0 002 12.42V16h2"></path>
-                                    <circle cx="6.5" cy="16.5" r="2.5"></circle>
-                                    <circle cx="16.5" cy="16.5" r="2.5"></circle>
-                                </svg>
-                                <span className="text-[13px] font-bold text-zinc-800 truncate leading-tight mt-0.5">
-                                    {vehicleDisplay}
-                                </span>
+                            <div className="flex items-start gap-2">
+                                <window.Icon name="car" size={15} className="text-zinc-400 shrink-0 mt-0.5" />
+                                <div className="flex flex-col min-w-0">
+                                    {/* Regnummer med "Skylt-look" om det är ett regnr */}
+                                    <span className={`truncate leading-tight mt-0.5 ${isReg 
+                                        ? 'font-mono text-[11px] bg-white border border-zinc-300 px-1.5 py-0.5 rounded-[3px] text-black tracking-widest shadow-sm w-fit' 
+                                        : 'text-[13px] font-bold text-zinc-800'
+                                    }`}>
+                                        {vehicleDisplay}
+                                    </span>
+                                    
+                                    {/* KNAPP: SE HISTORIK */}
+                                    {(job.regnr && onOpenHistory) && (
+                                        <button 
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onOpenHistory(job.regnr);
+                                            }}
+                                            className="text-[9px] font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1 mt-1.5 active:opacity-50 transition-opacity w-fit"
+                                        >
+                                            <window.Icon name="history" size={10} />
+                                            Se historik
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                         </div>
 
-                        {/* TID/DATUM - (Micro-UX tips 1: Dynamisk visning) */}
+                        {/* TID/DATUM */}
                         <div className="flex flex-col pl-4">
                             <span className="text-[9px] text-zinc-400 font-bold uppercase tracking-widest mb-0.5">
                                 {showAsHistory ? 'Datum' : 'Tidpunkt'}
                             </span>
                             <div className="flex items-center gap-2">
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className={`shrink-0 ${!isDone && isUrgentDate ? 'text-orange-500' : 'text-zinc-400'}`}>
-                                    <circle cx="12" cy="12" r="10"></circle>
-                                    <polyline points="12 6 12 12 16 14"></polyline>
-                                </svg>
+                                <window.Icon name="clock" size={15} className={`shrink-0 ${!isDone && isUrgentDate ? 'text-orange-500' : 'text-zinc-400'}`} />
                                 {job.datum ? (
                                     <div className="flex flex-col">
-                                        {/* HÄR ÄR LOGIKEN FÖR VAD SOM ÄR STORT/LITET */}
                                         <span className={`text-[13px] font-bold leading-tight ${showAsHistory ? 'text-zinc-700' : 'text-zinc-900'}`}>
                                             {showAsHistory ? dateString : job.datum.split('T')[1]}
                                         </span>
@@ -223,9 +230,7 @@ const MobileJobCard = React.memo(({ job, setView }) => {
                     <div className="flex-1 min-w-0 mr-2"> 
                         {job.kommentar && (
                             <div className="flex items-start gap-1.5 text-zinc-500">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-zinc-400 shrink-0 mt-[2px]">
-                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                                </svg>
+                                <window.Icon name="message-square" size={12} className="text-zinc-400 shrink-0 mt-[2px]" />
                                 <span className="text-[10px] italic font-medium leading-tight line-clamp-2 text-zinc-600">
                                     {job.kommentar}
                                 </span>
@@ -233,7 +238,6 @@ const MobileJobCard = React.memo(({ job, setView }) => {
                         )}
                     </div>
                     
-                    {/* PRISVISNING - (Micro-UX tips C: Snyggare hantering av 0 och SEK) */}
                     <div className="ml-auto flex flex-col items-end shrink-0 text-right">
                         {price > 0 ? (
                             <div className="flex items-baseline justify-end w-full">
@@ -252,13 +256,17 @@ const MobileJobCard = React.memo(({ job, setView }) => {
     );
 });
 
-// 4. HUVUDVY
+// --- 4. HUVUDVY (Komplett med Historik-Modal State) ---
 window.DashboardView = React.memo(({ 
     filteredJobs, setEditingJob, setView, 
     activeFilter, setActiveFilter, statusCounts,
     globalSearch, setGlobalSearch 
 }) => {
     const [searchOpen, setSearchOpen] = React.useState(false);
+    
+    // NYTT: State för historik-modalen
+    const [historyRegnr, setHistoryRegnr] = React.useState(null);
+
     const filters = ['BOKAD', 'OFFERERAD', 'FAKTURERAS', 'KLAR', 'ALLA'];
     
     // --- SWIPE LOGIC ---
@@ -272,12 +280,10 @@ window.DashboardView = React.memo(({
 
     const onTouchEnd = (e) => {
         if (touchStart.current === null || touchStartY.current === null) return;
-
         const touchEnd = e.changedTouches[0].clientX;
         const touchEndY = e.changedTouches[0].clientY;
         const xDistance = touchStart.current - touchEnd;
         const yDistance = touchStartY.current - touchEndY;
-
         touchStart.current = null;
         touchStartY.current = null;
 
@@ -287,12 +293,8 @@ window.DashboardView = React.memo(({
         const isLeftSwipe = xDistance > 0;
         const currentIndex = filters.indexOf(activeFilter);
         let nextIndex = currentIndex;
-
-        if (isLeftSwipe) {
-            if (currentIndex < filters.length - 1) nextIndex = currentIndex + 1;
-        } else {
-            if (currentIndex > 0) nextIndex = currentIndex - 1;
-        }
+        if (isLeftSwipe) { if (currentIndex < filters.length - 1) nextIndex = currentIndex + 1; } 
+        else { if (currentIndex > 0) nextIndex = currentIndex - 1; }
 
         if (nextIndex !== currentIndex) {
             setActiveFilter(filters[nextIndex]);
@@ -307,12 +309,8 @@ window.DashboardView = React.memo(({
             <button 
                 id={`filter-btn-${label}`}
                 onClick={() => setActiveFilter(label)} 
-                className={`
-                    flex items-center gap-2 px-3 py-1.5 text-[9px] font-black uppercase tracking-wider shrink-0 transition-all rounded-[2px] border snap-start scroll-ml-4
-                    ${isActive 
-                        ? 'bg-zinc-900 text-white border-zinc-900 shadow-sm' 
-                        : 'bg-white text-zinc-500 border-zinc-200 hover:border-zinc-300'}
-                `}
+                className={`flex items-center gap-2 px-3 py-1.5 text-[9px] font-black uppercase tracking-wider shrink-0 transition-all rounded-[2px] border snap-start scroll-ml-4
+                    ${isActive ? 'bg-zinc-900 text-white border-zinc-900 shadow-sm' : 'bg-white text-zinc-500 border-zinc-200 hover:border-zinc-300'}`}
             >
                 {label} 
                 {statusCounts[label] > 0 && (
@@ -331,7 +329,7 @@ window.DashboardView = React.memo(({
                 <div className="px-0 py-4 flex items-center justify-between lg:px-4">
                     <div className="flex items-center gap-3 pl-4 lg:pl-0">
                         <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-[2px] flex items-center justify-center text-black shadow-[0_0_15px_rgba(249,115,22,0.3)]">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                            <window.Icon name="grid" size={20} />
                         </div>
                         <div className={searchOpen ? 'hidden xs:block' : 'block'}>
                             <div className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest leading-none mb-1">System</div>
@@ -342,11 +340,11 @@ window.DashboardView = React.memo(({
                         {searchOpen ? (
                             <div className="relative flex items-center h-10">
                                 <input autoFocus type="text" value={globalSearch} onChange={e => setGlobalSearch(e.target.value)} placeholder="SÖK..." className="w-full h-full bg-zinc-900 text-white text-[11px] font-bold rounded-[2px] px-3 pl-9 uppercase focus:outline-none border border-zinc-800 focus:border-orange-500 placeholder:text-zinc-700" />
-                                <span className="absolute left-3 top-3 text-zinc-500"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></span>
-                                <button onClick={() => {setSearchOpen(false); setGlobalSearch('')}} className="absolute right-0 top-0 h-10 w-10 flex items-center justify-center text-zinc-500 hover:text-white"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+                                <span className="absolute left-3 top-3 text-zinc-500"><window.Icon name="search" size={14} /></span>
+                                <button onClick={() => {setSearchOpen(false); setGlobalSearch('')}} className="absolute right-0 top-0 h-10 w-10 flex items-center justify-center text-zinc-500 hover:text-white"><window.Icon name="x" size={14} /></button>
                             </div>
                         ) : (
-                            <button onClick={() => setSearchOpen(true)} className="w-10 h-10 flex items-center justify-center text-zinc-400 bg-zinc-900 border border-zinc-800 rounded-[2px] hover:text-white hover:border-zinc-700 transition-colors"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></button>
+                            <button onClick={() => setSearchOpen(true)} className="w-10 h-10 flex items-center justify-center text-zinc-400 bg-zinc-900 border border-zinc-800 rounded-[2px] hover:text-white hover:border-zinc-700 transition-colors"><window.Icon name="search" size={18} /></button>
                         )}
                     </div>
                 </div>
@@ -364,7 +362,7 @@ window.DashboardView = React.memo(({
                 onTouchStart={onTouchStart}
                 onTouchEnd={onTouchEnd}
             >
-                {/* DESKTOP TABELL - OFÖRÄNDRAD MEN REFERERAR NYA BADGEN */}
+                {/* DESKTOP TABELL */}
                 <div className="hidden lg:block bg-white border-b border-zinc-200 shadow-sm">
                     <table className="w-full text-left border-collapse">
                         <thead className="bg-[#1e1e1e] text-zinc-400 text-[9px] uppercase tracking-widest font-black">
@@ -384,7 +382,24 @@ window.DashboardView = React.memo(({
                                         <div className="text-[12px] font-black uppercase text-zinc-900">{job.kundnamn}</div>
                                         <div className="text-[10px] text-[#94a3b8] font-bold uppercase tracking-tight">{job.id.substring(0,8)}</div>
                                     </td>
-                                    <td className="px-6 py-4 font-mono font-bold text-[12px] uppercase text-zinc-700">{job.regnr}</td>
+                                    
+                                    {/* HÄR ÄR ÄNDRINGEN FÖR REGNR */}
+                                    <td 
+                                        className="px-6 py-4 cursor-pointer group/reg" 
+                                        onClick={(e) => { e.stopPropagation(); if(job.regnr) setHistoryRegnr(job.regnr); }}
+                                        title="Klicka för att se historik"
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <span className="font-mono font-bold text-[12px] uppercase text-zinc-700 group-hover/reg:text-blue-600 group-hover/reg:underline transition-colors">
+                                                {job.regnr}
+                                            </span>
+                                            {/* Ikon som syns vid hover */}
+                                            {job.regnr && (
+                                                <window.Icon name="history" size={14} className="text-zinc-300 opacity-0 group-hover/reg:opacity-100 group-hover/reg:text-blue-500 transition-all transform group-hover/reg:translate-x-0 -translate-x-2" />
+                                            )}
+                                        </div>
+                                    </td>
+
                                     <td className="px-6 py-4">
                                         {job.datum ? (
                                             <div className="flex flex-col">
@@ -397,8 +412,8 @@ window.DashboardView = React.memo(({
                                     <td className="px-6 py-4 text-right text-[13px] font-mono font-bold text-zinc-900">{(parseInt(job.kundpris) || 0).toLocaleString()} kr</td>
                                     <td className="px-6 py-4 text-right">
                                         <div className="flex justify-end gap-3 opacity-50 group-hover:opacity-100">
-                                            <button onClick={() => setView('NEW_JOB', { job: job })} className="text-zinc-400 hover:text-black"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>
-                                            <button onClick={() => { if(confirm("Radera?")) window.db.collection("jobs").doc(job.id).update({deleted:true}); }} className="text-zinc-400 hover:text-red-600"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button>
+                                            <button onClick={() => setView('NEW_JOB', { job: job })} className="text-zinc-400 hover:text-black"><window.Icon name="edit-2" size={16} /></button>
+                                            <button onClick={() => { if(confirm("Radera?")) window.db.collection("jobs").doc(job.id).update({deleted:true}); }} className="text-zinc-400 hover:text-red-600"><window.Icon name="trash" size={16} /></button>
                                         </div>
                                     </td>
                                 </tr>
@@ -425,8 +440,12 @@ window.DashboardView = React.memo(({
                                         <div className="h-[1px] bg-zinc-200 flex-1 mb-[2px]"></div>
                                     </div>
                                 )}
-                                {/* Nu använder vi den externa komponenten och skickar med setView */}
-                                <MobileJobCard job={job} setView={setView} />
+                                
+                                <MobileJobCard 
+                                    job={job} 
+                                    setView={setView} 
+                                    onOpenHistory={(reg) => setHistoryRegnr(reg)} 
+                                />
                             </React.Fragment>
                         );
                     })}
@@ -438,6 +457,14 @@ window.DashboardView = React.memo(({
                     )}
                 </div>
             </div>
+
+            {/* MODUL: Fordonsjournal (Laddas från history.js via window) */}
+            {historyRegnr && window.VehicleHistoryModal && (
+                <window.VehicleHistoryModal 
+                    regnr={historyRegnr} 
+                    onClose={() => setHistoryRegnr(null)} 
+                />
+            )}
         </div>
     );
 });
