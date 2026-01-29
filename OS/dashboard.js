@@ -459,10 +459,11 @@ window.DashboardView = React.memo(({
             </div>
 
             {/* MODUL: Fordonsjournal (Laddas från history.js via window) */}
-            {historyRegnr && window.VehicleHistoryModal && (
-                <window.VehicleHistoryModal 
+            {historyRegnr && window.VehicleProfileLoader && (
+                <window.VehicleProfileLoader 
                     regnr={historyRegnr} 
-                    onClose={() => setHistoryRegnr(null)} 
+                    onClose={() => setHistoryRegnr(null)}
+                    setView={setView} 
                 />
             )}
         </div>
