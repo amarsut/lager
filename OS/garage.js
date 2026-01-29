@@ -1,4 +1,4 @@
-// garage.js - "Precision & Density" V16 (Fix: Invisible Dropdown Text)
+// garage.js - "Precision & Density" V18 (Restored UI + Swipe & Nav Fixes)
 
 // --- 0. KONFIGURATION & HJÄLPFUNKTIONER ---
 const AVAILABLE_BRANDS = {
@@ -24,7 +24,7 @@ const guessBrandSlug = (text) => {
     return null;
 };
 
-// SÄKRA IKONER
+// SÄKRA IKONER (Original + history support)
 const SafeIcon = ({ name, size = 16, className = "" }) => {
     const common = { xmlns: "http://www.w3.org/2000/svg", width: size, height: size, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", className };
     switch (name) {
@@ -39,6 +39,7 @@ const SafeIcon = ({ name, size = 16, className = "" }) => {
         case 'droplet': return <svg {...common}><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z" /></svg>;
         case 'car': return <svg {...common}><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H7.7c-.7 0-1.3.3-1.8.7C5 8.6 3.7 10 3.7 10s-2.7.6-4.5 1.1C-.3 11.3 0 12.1 0 13v3c0 .6.4 1 1 1h2" /><circle cx="7" cy="17" r="2" /><circle cx="17" cy="17" r="2" /></svg>;
         case 'edit': return <svg {...common}><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>;
+        case 'history': return <svg {...common}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>;
         default: return <svg {...common}><circle cx="12" cy="12" r="2" /></svg>;
     }
 };
@@ -55,6 +56,16 @@ const StatusBadge = ({ status }) => {
 const VehicleProfile = ({ v, onClose, setView }) => {
     const [activeTab, setActiveTab] = React.useState('HISTORY'); 
     const [brandSlug, setBrandSlug] = React.useState(v.brand_manual || guessBrandSlug(v.model));
+    
+    // NYTT: Swipe Logic
+    const touchStart = React.useRef(null);
+    const handleTouchStart = (e) => { touchStart.current = e.targetTouches[0].clientX; };
+    const handleTouchEnd = (e) => {
+        const touchEnd = e.changedTouches[0].clientX;
+        if (touchStart.current && touchEnd - touchStart.current > 100) {
+            onClose(); 
+        }
+    };
 
     React.useEffect(() => {
         if (!v.regnr || !window.db) return;
@@ -81,7 +92,7 @@ const VehicleProfile = ({ v, onClose, setView }) => {
         }
     };
 
-    // --- TEKNISKA IKONER ---
+    // --- TEKNISKA IKONER (Original SVG:er återställda) ---
     const techIcons = {
         car: (
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18">
@@ -141,9 +152,12 @@ const VehicleProfile = ({ v, onClose, setView }) => {
         <div className="fixed inset-0 z-[400] flex justify-end animate-in fade-in duration-200">
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose}></div>
 
-            <div className="relative w-full sm:w-[500px] h-full bg-[#f8f8f8] sm:bg-white shadow-2xl flex flex-col animate-in slide-in-from-right duration-300 border-l border-zinc-800">
-                
-                {/* HEADER - Märkesväljare i fokus */}
+            <div 
+                onTouchStart={handleTouchStart}
+                onTouchEnd={handleTouchEnd}
+                className="relative w-full sm:w-[500px] h-full bg-[#f8f8f8] sm:bg-white shadow-2xl flex flex-col animate-in slide-in-from-right duration-300 border-l border-zinc-800"
+            >
+                {/* HEADER (Återställd design med blur) */}
                 <div className="bg-[#111113] text-white shrink-0 relative overflow-hidden shadow-md z-20">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/10 rounded-full blur-[80px] pointer-events-none"></div>
 
@@ -209,7 +223,7 @@ const VehicleProfile = ({ v, onClose, setView }) => {
                 </div>
 
                 {/* CONTENT */}
-                <div className="flex-1 overflow-y-auto bg-[#f8f8f8] p-4 sm:p-6">
+                <div className="flex-1 overflow-y-auto bg-[#f8f8f8] p-4 sm:p-6 pb-24">
                     {/* HISTORIK */}
                     {activeTab === 'HISTORY' && (
                         <div className="space-y-6 animate-in fade-in duration-300 pb-20">
@@ -278,12 +292,35 @@ const VehicleProfile = ({ v, onClose, setView }) => {
     );
 };
 
-// --- 4. HUVUDVY: GARAGE DASHBOARD ---
+// --- 4. HUVUDVY: GARAGE DASHBOARD (Återställd design + Nav Logic) ---
 window.GarageView = ({ allJobs, setView }) => {
     const [searchTerm, setSearchTerm] = React.useState("");
     const [activeFilter, setActiveFilter] = React.useState('ALL');
     const [selectedVehicle, setSelectedVehicle] = React.useState(null);
     const [brandMap, setBrandMap] = React.useState({});
+
+    // NYTT: History/Nav Logic
+    const openVehicle = (v) => {
+        const hashPath = `#garage/${v.regnr}`;
+        window.history.pushState({ view: 'GARAGE', subView: 'PROFILE', regnr: v.regnr }, "", hashPath);
+        setSelectedVehicle(v);
+    };
+
+    const closeVehicle = () => {
+        if (selectedVehicle) {
+            window.history.back(); // Låter popstate-lyssnaren hantera nullställning
+        }
+    };
+
+    React.useEffect(() => {
+        const handlePop = (e) => {
+            if (selectedVehicle && (!e.state || e.state.subView !== 'PROFILE')) {
+                setSelectedVehicle(null);
+            }
+        };
+        window.addEventListener('popstate', handlePop);
+        return () => window.removeEventListener('popstate', handlePop);
+    }, [selectedVehicle]);
 
     React.useEffect(() => {
         if (!window.db) return;
@@ -387,7 +424,7 @@ window.GarageView = ({ allJobs, setView }) => {
                         {displayedVehicles.map(v => {
                             const listBrandSlug = brandMap[v.regnr] || guessBrandSlug(v.model);
                             return (
-                                <div key={v.regnr} onClick={() => setSelectedVehicle(v)} className="bg-white lg:rounded-md border-b lg:border border-zinc-200 cursor-pointer hover:border-orange-300 hover:shadow-md transition-all active:bg-zinc-50 group">
+                                <div key={v.regnr} onClick={() => openVehicle(v)} className="bg-white lg:rounded-md border-b lg:border border-zinc-200 cursor-pointer hover:border-orange-300 hover:shadow-md transition-all active:bg-zinc-50 group">
                                     <div className="lg:hidden p-4 flex justify-between items-center">
                                         <div className="flex items-center gap-4">
                                             {listBrandSlug ? <img src={`https://cdn.simpleicons.org/${listBrandSlug}`} className="w-8 h-8 object-contain opacity-80" alt="" /> : <div className={`w-1.5 h-10 rounded-full ${v.totalRevenue > 15000 ? 'bg-orange-500' : 'bg-zinc-200'}`}></div>}
@@ -415,7 +452,7 @@ window.GarageView = ({ allJobs, setView }) => {
             {selectedVehicle && (
                 <VehicleProfile 
                     v={selectedVehicle} 
-                    onClose={() => setSelectedVehicle(null)} 
+                    onClose={closeVehicle} 
                     setView={setView} 
                 />
             )}
