@@ -295,6 +295,7 @@ const App = () => {
                             { id: 'DASHBOARD', icon: 'grid', label: 'Dashboard' },
                             { id: 'CALENDAR', icon: 'calendar', label: 'Kalender' },
                             { id: 'NEW_JOB', icon: 'plus-square', label: 'Nytt_Jobb' },
+                            { id: 'GARAGE', icon: 'car', label: 'Garage' },
                             { id: 'CUSTOMERS', icon: 'users', label: 'Kund_Databas' },
                             { id: 'OIL_SUPPLY', icon: 'droplet', label: 'Oil_Status' },
                             { id: 'CHAT', icon: 'message-square', label: 'System_Chat' }
@@ -396,6 +397,8 @@ const App = () => {
                         )}
                         {view === 'NEW_JOB' && <window.NewJobView editingJob={editingJob} setView={navigateTo} allJobs={allJobs} />}
                         
+                        {view === 'GARAGE' && <window.GarageView allJobs={allJobs} setView={navigateTo} />}
+
                         {view === 'CUSTOMERS' && (
                             <window.CustomersView 
                                 allJobs={allJobs} 
