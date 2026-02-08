@@ -28,10 +28,8 @@
         }
 
         * { box-sizing: border-box; }
-
         html { scroll-behavior: smooth; }
 
-        /* PUNKT 3: ANPASSAD SCROLLBAR */
         ::-webkit-scrollbar { width: 10px; }
         ::-webkit-scrollbar-track { background: #f1f5f9; }
         ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 5px; }
@@ -40,37 +38,28 @@
         ::selection { background: var(--accent); color: white; }
 
         body {
-            margin: 0;
-            font-family: 'Inter', sans-serif;
-            color: var(--text);
-            line-height: 1.6;
-            background-color: var(--white);
-            overflow-x: hidden;
-            /* Viktigt för Parallax Footer: */
-            position: relative; 
-            z-index: 1;
+            margin: 0; font-family: 'Inter', sans-serif; color: var(--text);
+            line-height: 1.6; background-color: var(--white); overflow-x: hidden;
+            position: relative; z-index: 1;
         }
 
-        /* Detta "wrapper" div behövs för att footern ska ligga bakom */
         .main-content {
-            background-color: var(--white);
-            position: relative;
-            z-index: 2; /* Ligger ovanför footern */
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1); /* Skugga ner över footern */
+            background-color: var(--white); position: relative; z-index: 2;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); min-height: 100vh;
         }
 
-        /* --- NAVIGATION (PUNKT 9: GLASSMORPHISM) --- */
+        /* --- NAVIGATION --- */
         header {
             position: fixed; top: 0; width: 100%; height: var(--nav-height);
-            background: transparent; 
-            transition: all 0.4s ease;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
+            transition: background 0.3s ease, box-shadow 0.3s ease;
             z-index: 1000; display: flex; align-items: center;
         }
 
         header.scrolled {
-            background: rgba(255, 255, 255, 0.85); /* Mer genomskinlig */
-            backdrop-filter: blur(15px);           /* Kraftigare blur */
-            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
         }
 
@@ -80,20 +69,30 @@
         }
 
         .logo {
-            font-weight: 800; font-size: 1.1rem; color: var(--white);
+            font-weight: 800; font-size: 1.1rem; 
+            color: var(--white); 
             text-transform: uppercase; text-decoration: none; letter-spacing: -0.5px;
             display: flex; align-items: center; gap: 8px; transition: color 0.3s;
+            z-index: 1002;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
         }
         
-        header.scrolled .logo { color: var(--primary); }
+        header.scrolled .logo { 
+            color: var(--primary); 
+            text-shadow: none; 
+        }
 
         .nav-links { display: flex; gap: 25px; align-items: center; }
         .nav-links a {
-            text-decoration: none; color: rgba(255,255,255,0.9);
+            text-decoration: none; color: rgba(255,255,255,0.95);
             font-weight: 600; font-size: 0.9rem; transition: all 0.3s; position: relative;
+            text-shadow: 0 1px 5px rgba(0,0,0,0.5);
         }
         
-        header.scrolled .nav-links a { color: var(--text); }
+        header.scrolled .nav-links a { 
+            color: var(--text); 
+            text-shadow: none;
+        }
         header.scrolled .nav-links a:hover, header.scrolled .nav-links a.active { color: var(--accent); }
 
         .nav-links a.active::after {
@@ -101,8 +100,25 @@
             background: var(--accent); position: absolute; bottom: -5px; left: 0; border-radius: 2px;
         }
 
-        .hamburger { display: none; font-size: 1.8rem; background: none; border: none; cursor: pointer; color: var(--white); padding: 0; }
-        header.scrolled .hamburger { color: var(--primary); }
+        .hamburger { 
+            display: none; 
+            font-size: 2.2rem; 
+            background: none; 
+            border: none; 
+            cursor: pointer; 
+            color: var(--white); 
+            padding: 10px; 
+            margin-right: -10px; 
+            z-index: 2001; 
+            transition: color 0.3s;
+            /* FIX: Lagt till kraftigare skugga för synlighet mot vit himmel direkt vid start */
+            filter: drop-shadow(0 0 5px rgba(0,0,0,0.5)) drop-shadow(0 2px 4px rgba(0,0,0,0.8));
+        }
+        
+        header.scrolled .hamburger { 
+            color: var(--primary); 
+            filter: none;
+        }
 
         /* --- SEKTIONER --- */
         section {
@@ -120,13 +136,14 @@
 
         /* --- HERO --- */
         #hem {
-            background: linear-gradient(rgba(15, 23, 42, 0.6), rgba(15, 23, 42, 0.7)), 
+            background: linear-gradient(rgba(15, 23, 42, 0.5), rgba(15, 23, 42, 0.6)), 
                         url('https://privat.bahnhof.se/wb776828/byggnad1.jpg');
             background-size: cover; background-position: center;
             background-attachment: fixed;
             color: white; text-align: center; padding-top: 0; margin-top: 0; position: relative;
             clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%);
             padding-bottom: 100px;
+            background-color: #1e293b; 
         }
 
         .hero-content h1 {
@@ -200,7 +217,7 @@
         .gallery-card:hover .gallery-link::after { opacity: 1; }
         .gallery-caption { margin-top: 10px; text-align: center; font-weight: 600; color: #64748b; font-size: 0.9rem; }
 
-        /* --- KONTAKT (Kompakt) --- */
+        /* --- KONTAKT --- */
         #kontakt { 
             background-color: var(--primary); color: white; 
             padding: 60px 20px;
@@ -232,7 +249,6 @@
             overflow: hidden; margin-top: 25px; border: 1px solid rgba(255,255,255,0.1);
         }
 
-        /* PUNKT 7: FLYTANDE ETIKETTER */
         .contact-form {
             background: white; padding: 30px; border-radius: var(--radius);
             color: var(--text); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
@@ -263,33 +279,23 @@
             top: -10px; left: 10px; font-size: 0.8rem; color: var(--accent); font-weight: 700;
         }
         
-        @keyframes pulse-glow {
-            0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
-        }
-        
         .submit-btn {
             width: 100%; padding: 14px; background: var(--accent); color: white;
             border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 1rem;
             transition: background 0.3s; margin-top: 5px;
-            animation: pulse-glow 2s infinite; 
         }
-        .submit-btn:hover { background: var(--accent-hover); animation: none; }
+        .submit-btn:hover { background: var(--accent-hover); }
 
-        /* PUNKT 5: PARALLAX FOOTER */
         .parallax-footer {
             position: fixed; bottom: 0; left: 0; width: 100%;
             background: #020617; color: #94a3b8;
             padding: 30px 20px; text-align: center;
-            z-index: 1; /* Längst bak */
+            z-index: 1; 
             display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
 
-        /* HÄR ÄR ÄNDRINGEN FÖR BILDSTORLEKEN I FOOTERN */
         .signature-img {
-            width: 80px; /* Mycket mindre bredd */
-            height: auto; 
+            width: 80px; height: auto; 
             margin-bottom: 15px;
             opacity: 0.9; transition: opacity 0.3s;
         }
@@ -297,12 +303,6 @@
 
         .footer-text { font-size: 0.85rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px; width: 100%; max-width: 600px; }
 
-        /* MOBIL STICKY BUTTON */
-        .sticky-call-btn {
-            display: none; /* Dold på desktop */
-        }
-
-        /* Cookie Banner */
         #cookieBanner {
             position: fixed; bottom: -100%; left: 0; right: 0; 
             background: #0f172a; color: white; padding: 15px 20px; z-index: 9999; 
@@ -310,17 +310,54 @@
             box-shadow: 0 -5px 20px rgba(0,0,0,0.2); transition: bottom 0.5s ease-out; border-top: 1px solid #1e293b;
         }
 
-        /* Mobil */
+        /* --- MOBIL ANPASSNING --- */
         @media (max-width: 900px) {
             .hamburger { display: block; }
-            .nav-links {
-                position: fixed; top: 0; right: 0; width: 75%; height: 100vh;
-                background: white; flex-direction: column; align-items: center; justify-content: center;
-                gap: 30px; box-shadow: -10px 0 30px rgba(0,0,0,0.1);
-                transform: translateX(100%); transition: transform 0.3s ease-in-out;
+            
+            /* FIX: Säkerställ att headern stannar i toppen på mobil */
+            header {
+                position: fixed;
+                top: 0;
             }
+
+            .nav-links {
+                position: fixed; 
+                top: 0; 
+                right: 0; 
+                width: 100%; 
+                height: 100vh; 
+                background: white;
+                flex-direction: column; 
+                align-items: center; 
+                justify-content: center;
+                gap: 40px; 
+                transform: translateX(100%); 
+                transition: transform 0.4s cubic-bezier(0.77, 0, 0.175, 1);
+                z-index: 2000; 
+            }
+            
             .nav-links.active { transform: translateX(0); }
-            .nav-links a { color: var(--text) !important; font-size: 1.2rem; }
+            
+            .nav-links a { 
+                color: var(--primary) !important; 
+                font-size: 2.2rem; 
+                font-weight: 800;
+                letter-spacing: -1px;
+                text-shadow: none;
+            }
+
+            .close-btn {
+                position: absolute;
+                top: 20px;
+                right: 20px;
+                background: none;
+                border: none;
+                font-size: 3rem;
+                cursor: pointer;
+                color: var(--primary);
+                display: block;
+                padding: 10px;
+            }
             
             .hero-content h1 { font-size: 2.5rem; }
             .facts-container, .contact-layout { grid-template-columns: 1fr; gap: 40px; }
@@ -328,14 +365,20 @@
             #fakta { padding-top: 60px; }
             #kontakt { padding: 50px 20px; }
             
-            /* Visa Sticky Button på mobil */
-            .sticky-call-btn {
-                display: flex; justify-content: center; align-items: center;
-                position: fixed; bottom: 20px; right: 20px;
-                width: 60px; height: 60px; background-color: #22c55e; color: white;
-                border-radius: 50%; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 999;
-                text-decoration: none; font-size: 24px; animation: pulse-glow 2s infinite;
+            .main-content {
+                box-shadow: none; 
+                margin-bottom: 0 !important; 
             }
+            
+            .parallax-footer {
+                position: relative; 
+                z-index: 2; 
+                padding: 50px 20px;
+            }
+        }
+
+        @media (min-width: 901px) {
+            .close-btn { display: none; }
         }
     </style>
 </head>
@@ -352,11 +395,12 @@
                 <button class="hamburger" id="hamburgerBtn">☰</button>
                 
                 <nav class="nav-links" id="navLinks">
+                    <button class="close-btn" id="closeBtn">✕</button>
+                    
                     <a href="#hem" class="nav-item">Hem</a>
                     <a href="#fakta" class="nav-item">Fakta</a>
                     <a href="#bilder" class="nav-item">Bilder</a>
                     <a href="#kontakt" class="nav-item">Kontakt</a>
-                    <button class="nav-item" style="background:none; border:none; font-size:2rem; position:absolute; top:20px; right:20px; cursor:pointer; display:none;" onclick="document.getElementById('navLinks').classList.remove('active')">✕</button>
                 </nav>
             </div>
         </header>
@@ -440,80 +484,80 @@
         </section>
 
         <section id="kontakt">
-        <div class="container">
-            <h2 data-aos="fade-up">Kontakta oss</h2>
-            <div class="contact-layout">
-                
-                <div class="contact-details" data-aos="fade-right">
-                    <h3>Hitta hit</h3>
+            <div class="container">
+                <h2 data-aos="fade-up">Kontakta oss</h2>
+                <div class="contact-layout">
                     
-                    <div class="contact-item">
-                        <strong>Adress</strong>
-                        <div class="contact-row">
-                            <a href="https://www.google.com/maps/search/?api=1&query=Gustavslundsvägen+11,+Eslöv" target="_blank">Gustavslundsvägen 11, Eslöv</a>
-                            <button class="copy-btn" onclick="copyToClipboard('Gustavslundsvägen 11, Eslöv')" title="Kopiera adress"><i class="fas fa-copy"></i></button>
+                    <div class="contact-details" data-aos="fade-right">
+                        <h3>Hitta hit</h3>
+                        
+                        <div class="contact-item">
+                            <strong>Adress</strong>
+                            <div class="contact-row">
+                                <a href="https://www.google.com/maps/search/?api=1&query=Gustavslundsvägen+11,+Eslöv" target="_blank">Gustavslundsvägen 11, Eslöv</a>
+                                <button class="copy-btn" onclick="copyToClipboard('Gustavslundsvägen 11, Eslöv')" title="Kopiera adress"><i class="fas fa-copy"></i></button>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <div class="contact-item">
-                        <strong>Telefon</strong>
-                        <div class="contact-row">
-                            <a href="tel:0706419742">0706-419 742</a>
-                            <button class="copy-btn" onclick="copyToClipboard('0706419742')" title="Kopiera nummer"><i class="fas fa-copy"></i></button>
+                        
+                        <div class="contact-item">
+                            <strong>Telefon</strong>
+                            <div class="contact-row">
+                                <a href="tel:0706419742">0706-419 742</a>
+                                <button class="copy-btn" onclick="copyToClipboard('0706419742')" title="Kopiera nummer"><i class="fas fa-copy"></i></button>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <div class="contact-item">
-                        <strong>E-post</strong>
-                        <div class="contact-row">
-                            <a href="mailto:magnus.svensson1024@gmail.com" style="font-size:1rem;">magnus.svensson1024@gmail.com</a>
-                            <button class="copy-btn" onclick="copyToClipboard('magnus.svensson1024@gmail.com')" title="Kopiera mejl"><i class="fas fa-copy"></i></button>
+                        
+                        <div class="contact-item">
+                            <strong>E-post</strong>
+                            <div class="contact-row">
+                                <a href="mailto:magnus.svensson1024@gmail.com" style="font-size:1rem;">magnus.svensson1024@gmail.com</a>
+                                <button class="copy-btn" onclick="copyToClipboard('magnus.svensson1024@gmail.com')" title="Kopiera mejl"><i class="fas fa-copy"></i></button>
+                            </div>
+                        </div>
+
+                        <div class="map-wrapper" style="position: relative;">
+                            <iframe 
+                                width="100%" 
+                                height="100%" 
+                                frameborder="0" 
+                                style="border:0; min-height: 250px;" 
+                                src="https://maps.google.com/maps?q=Gustavslundsvägen+11,+Eslöv&t=&z=15&ie=UTF8&iwloc=&output=embed" 
+                                allowfullscreen>
+                            </iframe>
+                            <a href="https://www.google.com/maps/dir//Gustavslundsvägen+11,+241+39+Eslöv/" target="_blank" 
+                               style="position: absolute; bottom: 10px; right: 10px; background: white; color: #333; padding: 5px 10px; border-radius: 4px; font-size: 0.8rem; text-decoration: none; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+                               📍 Vägbeskrivning
+                            </a>
                         </div>
                     </div>
 
-                    <div class="map-wrapper" style="position: relative; overflow: hidden;">
-                        <iframe 
-                            width="100%" 
-                            height="100%" 
-                            frameborder="0" 
-                            style="border:0; min-height: 250px;" 
-                            src="https://maps.google.com/maps?q=Gustavslundsvägen+11,+Eslöv&t=&z=15&ie=UTF8&iwloc=&output=embed" 
-                            allowfullscreen>
-                        </iframe>
-                        <a href="https://www.google.com/maps/dir//Gustavslundsvägen+11,+241+39+Eslöv/" target="_blank" 
-                           style="position: absolute; bottom: 10px; right: 10px; background: white; color: #333; padding: 5px 10px; border-radius: 4px; font-size: 0.8rem; text-decoration: none; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
-                           📍 Vägbeskrivning
-                        </a>
-                    </div>
+                    <form class="contact-form" action="mailto:magnus.svensson1024@gmail.com" method="POST" enctype="text/plain" data-aos="fade-left">
+                        <h3 style="margin-top:0; color:var(--primary); margin-bottom: 25px;">Skicka förfrågan</h3>
+                        
+                        <div class="floating-group">
+                            <input type="text" name="namn" id="namn" class="floating-input" placeholder=" " required>
+                            <label for="namn" class="floating-label">Ditt Namn</label>
+                        </div>
+
+                        <div class="floating-group">
+                            <input type="tel" name="telefon" id="telefon" class="floating-input" placeholder=" " required>
+                            <label for="telefon" class="floating-label">Telefonnummer</label>
+                        </div>
+
+                        <div class="floating-group">
+                            <textarea name="meddelande" id="meddelande" class="floating-input" rows="3" placeholder=" " required></textarea>
+                            <label for="meddelande" class="floating-label">Meddelande</label>
+                        </div>
+                        
+                        <button type="submit" class="submit-btn">Skicka meddelande</button>
+                    </form>
+
                 </div>
-
-                <form class="contact-form" action="mailto:magnus.svensson1024@gmail.com" method="POST" enctype="text/plain" data-aos="fade-left">
-                    <h3 style="margin-top:0; color:var(--primary); margin-bottom: 25px;">Skicka förfrågan</h3>
-                    
-                    <div class="floating-group">
-                        <input type="text" name="namn" id="namn" class="floating-input" placeholder=" " required>
-                        <label for="namn" class="floating-label">Ditt Namn</label>
-                    </div>
-
-                    <div class="floating-group">
-                        <input type="tel" name="telefon" id="telefon" class="floating-input" placeholder=" " required>
-                        <label for="telefon" class="floating-label">Telefonnummer</label>
-                    </div>
-
-                    <div class="floating-group">
-                        <textarea name="meddelande" id="meddelande" class="floating-input" rows="3" placeholder=" " required></textarea>
-                        <label for="meddelande" class="floating-label">Meddelande</label>
-                    </div>
-                    
-                    <button type="submit" class="submit-btn">Skicka meddelande</button>
-                </form>
-
             </div>
-        </div>
-    </section>
+        </section>
+        
+        <div id="copyTooltip" class="copy-tooltip">Kopierad!</div>
     
-    <div id="copyTooltip" class="copy-tooltip">Kopierad!</div>
-
     </div> <footer class="parallax-footer" id="mainFooter">
         <img src="https://files.builder.misssite.com/81/ab/81ab524c-07f3-4bb1-80e8-0166327d3b7c.jpg" alt="Signatur MS Fastighet" class="signature-img">
         <div class="footer-text">
@@ -521,13 +565,11 @@
         </div>
     </footer>
 
-    <a href="tel:0706419742" class="sticky-call-btn" aria-label="Ring oss">📞</a>
-
     <div id="cookieBanner">
         <p style="margin: 0; font-size: 0.85rem; max-width: 600px;">
-            🍪 <strong>Vi använder cookies</strong> för att förbättra din upplevelse. Genom att fortsätta godkänner du detta.
+            🍪 <strong>Vi använder cookies</strong> för att förbättra din upplevelse.
         </p>
-        <button id="acceptCookies" style="background: #3b82f6; color: white; border: none; padding: 8px 20px; border-radius: 50px; font-weight: 600; cursor: pointer;">Jag förstår</button>
+        <button id="acceptCookies" style="background: #3b82f6; color: white; border: none; padding: 8px 20px; border-radius: 50px; font-weight: 600; cursor: pointer;">OK</button>
     </div>
 
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
@@ -536,15 +578,19 @@
         AOS.init({ once: true });
         new SimpleLightbox('.gallery-grid a', { /* options */ });
 
-        // Footer Parallax Logic: Sätt margin-bottom på main-content så footern syns
+        // Footer Parallax Logic
         function adjustFooter() {
-            const footerHeight = document.getElementById('mainFooter').offsetHeight;
-            document.getElementById('mainContent').style.marginBottom = footerHeight + 'px';
+            if (window.innerWidth > 900) {
+                const footerHeight = document.getElementById('mainFooter').offsetHeight;
+                document.getElementById('mainContent').style.marginBottom = footerHeight + 'px';
+            } else {
+                document.getElementById('mainContent').style.marginBottom = '0px';
+            }
         }
         window.addEventListener('load', adjustFooter);
         window.addEventListener('resize', adjustFooter);
 
-        // Copy Functionality
+        // Copy Function
         function copyToClipboard(text) {
             navigator.clipboard.writeText(text).then(() => {
                 const tooltip = document.getElementById('copyTooltip');
@@ -553,43 +599,42 @@
             });
         }
 
-        // Header Scroll Logic
+        // Header Scroll
         const header = document.getElementById('mainHeader');
-        const navLinks = document.querySelectorAll('.nav-links a');
-        const sections = document.querySelectorAll('section');
+        
+        function checkScroll() {
+            if (window.scrollY > 10) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        }
 
-        window.addEventListener('scroll', () => {
-            header.classList.toggle('scrolled', window.scrollY > 50);
-
-            let current = '';
-            sections.forEach(section => {
-                if (pageYOffset >= (section.offsetTop - section.clientHeight / 3)) {
-                    current = section.getAttribute('id');
-                }
-            });
-
-            navLinks.forEach(a => {
-                a.classList.remove('active');
-                if (a.getAttribute('href').includes(current)) {
-                    a.classList.add('active');
-                }
-            });
+        // FIX: Kör direkt vid laddning och vid scroll för att undvika "osynliga" knappar vid refresh
+        window.addEventListener('scroll', checkScroll);
+        window.addEventListener('load', () => {
+            checkScroll();
+            // Liten fördröjning för att vara helt säker på att webbläsaren hunnit räkna rätt
+            setTimeout(checkScroll, 100);
         });
 
-        // Mobil Meny Logic
+        // MOBIL MENY LOGIK
         const hamburger = document.getElementById('hamburgerBtn');
         const navMenu = document.getElementById('navLinks');
+        const closeBtn = document.getElementById('closeBtn');
         const navItems = document.querySelectorAll('.nav-item');
 
         hamburger.addEventListener('click', () => {
-            navMenu.classList.toggle('active');
-            hamburger.innerText = navMenu.classList.contains('active') ? '✕' : '☰';
+            navMenu.classList.add('active');
+        });
+
+        closeBtn.addEventListener('click', () => {
+            navMenu.classList.remove('active');
         });
 
         navItems.forEach(item => {
             item.addEventListener('click', () => {
                 navMenu.classList.remove('active');
-                hamburger.innerText = '☰';
             });
         });
 
