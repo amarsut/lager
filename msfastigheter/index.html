@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Hyr garage, lager och förråd i Eslöv. Säker förvaring på Gustavslundsvägen 11.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏢</text></svg>">
+    
+    <title>MS Fastighet & Teknik | Garage Eslöv</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/simplelightbox/2.10.3/simple-lightbox.min.css" rel="stylesheet">
+
+    <style>
+        /* --- GRUNDINSTÄLLNINGAR --- */
+        :root {
+            --primary: #0f172a;
+            --accent: #2563eb;
+            --accent-hover: #1d4ed8;
+            --white: #ffffff;
+            --light-bg: #f8fafc;
+            --text: #334155;
+            --nav-height: 80px;
+            --radius: 12px;
+        }
+
+        * { box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; scroll-padding-top: var(--nav-height); }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            color: var(--text);
+            line-height: 1.6;
+            background-color: var(--white);
+            overflow-x: hidden; /* Förhindrar sidscroll vid animationer */
+        }
+
+        /* --- NAVIGATION --- */
+        header {
+            position: fixed;
+            top: 0; width: 100%; height: var(--nav-height);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 1px 10px rgba(0,0,0,0.05);
+            z-index: 1000;
+            display: flex; align-items: center;
+        }
+
+        .nav-container {
+            width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 25px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        .logo {
+            font-weight: 800; font-size: 1.2rem; color: var(--primary);
+            text-transform: uppercase; text-decoration: none; letter-spacing: -0.5px;
+        }
+
+        .nav-links { display: flex; gap: 30px; align-items: center; }
+        .nav-links a {
+            text-decoration: none; color: var(--text); font-weight: 600;
+            font-size: 0.95rem; transition: color 0.2s; position: relative;
+        }
+        .nav-links a:hover { color: var(--accent); }
+        .nav-links a::after {
+            content: ''; display: block; width: 0; height: 2px;
+            background: var(--accent); transition: width 0.3s;
+            position: absolute; bottom: -5px; left: 0;
+        }
+        .nav-links a:hover::after { width: 100%; }
+
+        .hamburger { display: none; font-size: 1.8rem; background: none; border: none; cursor: pointer; color: var(--primary); }
+
+        /* --- SEKTIONER --- */
+        section {
+            padding: 60px 20px; min-height: 100vh;
+            display: flex; flex-direction: column; justify-content: center;
+        }
+
+        .container { max-width: 1100px; width: 100%; margin: 0 auto; }
+
+        h2 {
+            font-size: 2.2rem; color: var(--primary); margin-bottom: 50px;
+            text-align: center; font-weight: 800; letter-spacing: -0.02em;
+        }
+
+        /* --- HERO --- */
+        #hem {
+            background: linear-gradient(rgba(15, 23, 42, 0.5), rgba(15, 23, 42, 0.7)), 
+                        url('https://privat.bahnhof.se/wb776828/byggnad1.jpg');
+            background-size: cover; background-position: center;
+            background-attachment: fixed;
+            color: white; text-align: center; padding-top: 0; margin-top: 0;
+        }
+
+        .hero-content h1 {
+            font-size: 3.5rem; margin: 0 0 20px 0; font-weight: 800;
+            text-shadow: 0 4px 15px rgba(0,0,0,0.6);
+        }
+
+        .hero-content p {
+            font-size: 1.25rem; max-width: 600px; margin: 0 auto 40px;
+            opacity: 0.95; text-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }
+
+        .btn-main {
+            background: var(--accent); color: white; padding: 16px 40px;
+            border-radius: 50px; text-decoration: none; font-weight: 700;
+            font-size: 1.1rem; transition: all 0.3s; display: inline-block;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
+        }
+        .btn-main:hover { transform: translateY(-3px); background: var(--accent-hover); }
+
+        /* --- FAKTA --- */
+        #fakta { background-color: var(--white); }
+        .facts-container { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: start; }
+        .info-box { background: var(--light-bg); padding: 40px; border-radius: var(--radius); border: 1px solid #e2e8f0; }
+        .spec-list { list-style: none; padding: 0; }
+        .spec-list li {
+            display: flex; justify-content: space-between; padding: 15px 0;
+            border-bottom: 1px solid #cbd5e1; font-size: 1.05rem;
+        }
+        .spec-list li:last-child { border-bottom: none; }
+        .spec-value { font-weight: 700; color: var(--primary); }
+        .check-list li { margin-bottom: 15px; display: flex; align-items: center; font-weight: 500; font-size: 1.1rem; }
+        .icon-check { color: var(--accent); margin-right: 15px; font-weight: bold; }
+
+        /* --- BILDER (Med Lightbox) --- */
+        #bilder { background-color: var(--light-bg); }
+        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px; }
+        
+        .gallery-card {
+            background: white; padding: 10px; border-radius: var(--radius);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+        .gallery-card:hover { transform: translateY(-5px); }
+        
+        /* Stylar länken så den inte syns men täcker bilden */
+        .gallery-link { display: block; overflow: hidden; border-radius: 8px; height: 250px; }
+        .gallery-link img {
+            width: 100%; height: 100%; object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        .gallery-card:hover img { transform: scale(1.05); }
+        .gallery-caption { margin-top: 10px; text-align: center; font-weight: 600; font-size: 0.9rem; color: #64748b; }
+
+        /* --- KONTAKT & KARTA --- */
+        #kontakt { background-color: var(--primary); color: white; }
+        #kontakt h2 { color: white; }
+        .contact-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; }
+        
+        .contact-form {
+            background: white; padding: 40px; border-radius: var(--radius);
+            color: var(--text); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+        .input-group { margin-bottom: 20px; }
+        .input-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.9rem; }
+        .input-field {
+            width: 100%; padding: 12px 15px; border: 2px solid #e2e8f0;
+            border-radius: 8px; font-size: 1rem; font-family: inherit;
+        }
+        .submit-btn {
+            width: 100%; padding: 15px; background: var(--accent); color: white;
+            border: none; border-radius: 8px; font-weight: 700; cursor: pointer;
+        }
+        
+        /* Google Maps */
+        .map-wrapper {
+            width: 100%; height: 350px; border-radius: var(--radius);
+            overflow: hidden; margin-top: 30px; border: 3px solid rgba(255,255,255,0.1);
+        }
+        .map-wrapper iframe { width: 100%; height: 100%; border: 0; }
+
+        /* --- BACK TO TOP BUTTON --- */
+        #backToTop {
+            position: fixed; bottom: 20px; right: 20px;
+            background: var(--accent); color: white;
+            width: 50px; height: 50px; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 1.5rem; cursor: pointer; border: none;
+            opacity: 0; pointer-events: none; transition: all 0.3s;
+            z-index: 999; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        #backToTop.show { opacity: 1; pointer-events: auto; }
+        #backToTop:hover { background: var(--accent-hover); transform: translateY(-3px); }
+
+        /* --- MOBIL --- */
+        @media (max-width: 900px) {
+            .hamburger { display: block; }
+            .nav-links {
+                position: absolute; top: var(--nav-height); left: 0; right: 0;
+                background: white; flex-direction: column; align-items: center;
+                padding: 30px 0; border-bottom: 1px solid #eee;
+                box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+                transform: translateY(-150%); transition: transform 0.3s ease-in-out;
+                z-index: -1; opacity: 0;
+            }
+            .nav-links.active { transform: translateY(0); opacity: 1; }
+            .hero-content h1 { font-size: 2.5rem; }
+            .facts-container, .contact-layout { grid-template-columns: 1fr; gap: 40px; }
+            #hem { background-attachment: scroll; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="nav-container">
+            <a href="#hem" class="logo">MS Fastighet</a>
+            <button class="hamburger" id="hamburgerBtn">☰</button>
+            <nav class="nav-links" id="navLinks">
+                <a href="#hem" class="nav-item">Hem</a>
+                <a href="#fakta" class="nav-item">Fakta</a>
+                <a href="#bilder" class="nav-item">Bilder</a>
+                <a href="#kontakt" class="nav-item">Kontakt</a>
+            </nav>
+        </div>
+    </header>
+
+    <section id="hem">
+        <div class="container hero-content" data-aos="fade-up" data-aos-duration="1000">
+            <h1>Garage & Lager i Eslöv</h1>
+            <p>Säker förvaring på Gustavslundsvägen 11. Skräddarsydda lokaler för privatpersoner och företag.</p>
+            <a href="#kontakt" class="btn-main">Gör en intresseanmälan</a>
+        </div>
+    </section>
+
+    <section id="fakta">
+        <div class="container">
+            <h2 data-aos="fade-up">Fakta & Säkerhet</h2>
+            <div class="facts-container">
+                <div class="info-box" data-aos="fade-right">
+                    <h3 style="margin-top:0; color:var(--primary);">Specifikationer</h3>
+                    <ul class="spec-list">
+                        <li><span>Storlek</span> <span class="spec-value">21 m²</span></li>
+                        <li><span>Mått (L x B)</span> <span class="spec-value">6,25 x 3,4 m</span></li>
+                        <li><span>Portbredd</span> <span class="spec-value">2,5 m</span></li>
+                        <li><span>Inkörningshöjd</span> <span class="spec-value">ca 2,1 m</span></li>
+                        <li><span>Porttyp</span> <span class="spec-value">Isolerad takskjut</span></li>
+                    </ul>
+                </div>
+                <div data-aos="fade-left">
+                    <h3 style="margin-top:0;">Trygghet i fokus</h3>
+                    <p style="color:#64748b;">Vi erbjuder moderna lokaler där säkerheten kommer i första hand.</p>
+                    <ul class="check-list">
+                        <li><span class="icon-check">✓</span> Kameraövervakning dygnet runt</li>
+                        <li><span class="icon-check">✓</span> Ronderande bevakningsfirma</li>
+                        <li><span class="icon-check">✓</span> Inhägnat område med stängsel</li>
+                        <li><span class="icon-check">✓</span> LED-belysning & Brandsläckare</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="bilder">
+        <div class="container">
+            <h2 data-aos="fade-up">Bildgalleri</h2>
+            <div class="gallery-grid">
+                
+                <div class="gallery-card" data-aos="zoom-in" data-aos-delay="100">
+                    <a href="https://privat.bahnhof.se/wb776828/garage1.jpg" class="gallery-link">
+                        <img src="https://privat.bahnhof.se/wb776828/garage1.jpg" alt="Interiör garage 21kvm">
+                    </a>
+                    <div class="gallery-caption">Rymlig interiör</div>
+                </div>
+
+                <div class="gallery-card" data-aos="zoom-in" data-aos-delay="200">
+                    <a href="https://privat.bahnhof.se/wb776828/garage2.jpg" class="gallery-link">
+                        <img src="https://privat.bahnhof.se/wb776828/garage2.jpg" alt="Isolerad port">
+                    </a>
+                    <div class="gallery-caption">Isolerad port</div>
+                </div>
+
+                <div class="gallery-card" data-aos="zoom-in" data-aos-delay="300">
+                    <a href="https://privat.bahnhof.se/wb776828/byggnad1.jpg" class="gallery-link">
+                        <img src="https://privat.bahnhof.se/wb776828/byggnad1.jpg" alt="Exteriör dagtid">
+                    </a>
+                    <div class="gallery-caption">Exteriör vy</div>
+                </div>
+
+            </div>
+            <p style="text-align: center; margin-top: 20px; color: #64748b; font-size: 0.9rem;">Klicka på bilderna för att förstora dem.</p>
+        </div>
+    </section>
+
+    <section id="kontakt">
+        <div class="container">
+            <h2 data-aos="fade-up">Kontakta oss</h2>
+            <div class="contact-layout">
+                <div data-aos="fade-right">
+                    <h3>Hitta hit</h3>
+                    <p style="opacity:0.9;">Gustavslundsvägen 11, Eslöv.</p>
+                    <div style="font-size:1.1rem; margin-top:20px;">
+                        <strong>📞 Telefon:</strong> <a href="tel:0706419742" style="color:white;">0706-419 742</a>
+                    </div>
+                    <div style="font-size:1.1rem; margin-top:10px;">
+                        <strong>✉️ E-post:</strong> <a href="mailto:Mala@msfastighet.se" style="color:white;">Mala@msfastighet.se</a>
+                    </div>
+                    
+                    <div class="map-wrapper">
+                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2242.040180496155!2d13.315518376483108!3d55.82823697311186!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4653e6dd372074ad%3A0xe54261899146199a!2sGustavslundsv%C3%A4gen%2011%2C%20241%2039%20Esl%C3%B6v!5e0!3m2!1ssv!2sse!4v1715000000000!5m2!1ssv!2sse" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                    </div>
+                </div>
+
+                <form class="contact-form" action="mailto:Mala@msfastighet.se" method="POST" enctype="text/plain" data-aos="fade-left">
+                    <h3 style="margin-top:0; color:var(--primary);">Skicka förfrågan</h3>
+                    <div class="input-group">
+                        <label>Namn</label>
+                        <input type="text" name="namn" class="input-field" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Telefon</label>
+                        <input type="tel" name="telefon" class="input-field" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Meddelande</label>
+                        <textarea name="meddelande" class="input-field" rows="4" required></textarea>
+                    </div>
+                    <button type="submit" class="submit-btn">Skicka meddelande</button>
+                </form>
+            </div>
+            
+            <footer style="text-align: center; margin-top: 60px; opacity: 0.7; font-size: 0.9rem;">
+                MS Fastighet och Teknik | Bankgiro: 5520-6890
+            </footer>
+        </div>
+    </section>
+
+    <button id="backToTop" title="Till toppen">↑</button>
+
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/simplelightbox/2.10.3/simple-lightbox.min.js"></script>
+    <script>
+        // Starta Animationer (AOS)
+        AOS.init();
+
+        // Starta Lightbox (Galleriet)
+        new SimpleLightbox('.gallery-grid a', { /* options */ });
+
+        // Meny Logik
+        const hamburger = document.getElementById('hamburgerBtn');
+        const navLinks = document.getElementById('navLinks');
+        const navItems = document.querySelectorAll('.nav-item');
+
+        hamburger.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+            hamburger.innerHTML = navLinks.classList.contains('active') ? '✕' : '☰';
+        });
+
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                navLinks.classList.remove('active');
+                hamburger.innerHTML = '☰';
+            });
+        });
+
+        // Back to Top Logik
+        const backToTopBtn = document.getElementById('backToTop');
+        
+        window.onscroll = function() {
+            if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
+                backToTopBtn.classList.add('show');
+            } else {
+                backToTopBtn.classList.remove('show');
+            }
+        };
+
+        backToTopBtn.addEventListener('click', () => {
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        });
+    </script>
+</body>
+</html>
