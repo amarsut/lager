@@ -12,464 +12,254 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/simplelightbox/2.10.3/simple-lightbox.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
     <style>
-        /* --- GRUNDINSTÄLLNINGAR --- */
+        /* --- GRUND & VARIABLER --- */
         :root {
-            --primary: #0f172a;      
-            --accent: #2563eb;       
-            --accent-hover: #1d4ed8;
-            --white: #ffffff;
-            --light-bg: #f8fafc;     
-            --text: #334155;
-            --nav-height: 70px;      
-            --radius: 12px;
+            --primary: #0f172a; --accent: #2563eb; --accent-hover: #1d4ed8;
+            --white: #ffffff; --light-bg: #f8fafc; --text: #334155;
+            --nav-height: 70px; --radius: 12px;
+        }
+        *, *::before, *::after { box-sizing: border-box; }
+        html { overflow-x: hidden; width: 100%; height: 100%; -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+        
+        body {
+            margin: 0; font-family: 'Inter', sans-serif; color: var(--text);
+            line-height: 1.6; background: var(--white); overflow-x: hidden;
         }
 
-        * { box-sizing: border-box; }
-        html {
-            overflow-x: hidden; /* Förhindra scroll i sidled */
-            width: 100%;
-            height: 100%;
-            -webkit-text-size-adjust: 100%; /* Förhindra zoom på iPhone vid rotation */
-        }
-
+        /* Scrollbar */
         ::-webkit-scrollbar { width: 10px; }
         ::-webkit-scrollbar-track { background: #f1f5f9; }
         ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 5px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
-
         ::selection { background: var(--accent); color: white; }
 
-        body {
-            margin: 0; 
-            padding: 0;
-            font-family: 'Inter', sans-serif; 
-            color: var(--text);
-            line-height: 1.6; 
-            background-color: var(--white);
-            width: 100%;
-            position: relative;
-            overflow-x: hidden; /* Dubbel säkerhet */
-        }
-
-        .main-content {
-            background-color: var(--white); position: relative; z-index: 2;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1); min-height: 100vh;
-        }
-
-        /* --- NAVIGATION --- */
-        /* FIXAD HEADER: Alltid sticky och överst */
+        /* --- HEADER (GLASS) --- */
         header {
             position: fixed; top: 0; left: 0; width: 100%; height: var(--nav-height);
-            background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
-            transition: background 0.3s ease, box-shadow 0.3s ease;
-            z-index: 9999; /* Mycket högt z-index */
-            display: flex; align-items: center;
-            /* Tvinga hårdvaruacceleration för att undvika flimmer */
+            /* Frostat glas effekt */
+            background: rgba(15, 23, 42, 0.2); 
+            backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            transition: background 0.3s, box-shadow 0.3s;
+            z-index: 1000; display: flex; align-items: center;
             transform: translate3d(0,0,0);
-            -webkit-transform: translate3d(0,0,0);
         }
-
         header.scrolled {
-            background: rgba(255, 255, 255, 0.98);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+            background: rgba(255,255,255,0.95); 
+            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(0,0,0,0.05); 
+            box-shadow: 0 4px 30px rgba(0,0,0,0.05);
         }
 
-        .nav-container {
-            width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 25px;
-            display: flex; justify-content: space-between; align-items: center;
-        }
-
-        .logo {
-            font-weight: 800; font-size: 1.1rem; 
-            color: var(--white); 
-            text-transform: uppercase; text-decoration: none; letter-spacing: -0.5px;
-            display: flex; align-items: center; gap: 8px; transition: color 0.3s;
-            z-index: 1002;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
-        }
+        .nav-container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 25px; display: flex; justify-content: space-between; align-items: center; }
         
-        header.scrolled .logo { 
-            color: var(--primary); 
-            text-shadow: none; 
-        }
+        .logo { font-weight: 800; font-size: 1.1rem; color: var(--white); text-decoration: none; text-transform: uppercase; letter-spacing: -0.5px; z-index: 1002; text-shadow: 0 2px 10px rgba(0,0,0,0.5); display: flex; gap: 8px; align-items: center; }
+        header.scrolled .logo { color: var(--primary); text-shadow: none; }
 
         .nav-links { display: flex; gap: 25px; align-items: center; }
-        .nav-links a {
-            text-decoration: none; color: rgba(255,255,255,0.95);
-            font-weight: 600; font-size: 0.9rem; transition: all 0.3s; position: relative;
-            text-shadow: 0 1px 5px rgba(0,0,0,0.5);
-        }
         
-        header.scrolled .nav-links a { 
-            color: var(--text); 
-            text-shadow: none;
-        }
-        header.scrolled .nav-links a:hover, header.scrolled .nav-links a.active { color: var(--accent); }
-
-        .nav-links a.active::after {
-            content: ''; display: block; width: 100%; height: 3px;
-            background: var(--accent); position: absolute; bottom: -5px; left: 0; border-radius: 2px;
-        }
-
-        /* FIXAD HAMBURGARE: Nu med bakgrundsplatta */
-        .hamburger { 
-            display: none; 
-            font-size: 1.8rem; 
-            background: rgba(15, 23, 42, 0.6); /* Mörk bakgrund så den syns */
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 8px;
-            width: 45px;
-            height: 45px;
-            cursor: pointer; 
-            color: var(--white); 
-            padding: 0;
-            align-items: center;
-            justify-content: center;
-            z-index: 10000; /* Extremt högt */
-            transition: all 0.3s;
-            backdrop-filter: blur(5px);
-            -webkit-appearance: none; /* Stäng av mobilstyling */
-        }
-        
-        header.scrolled .hamburger { 
-            color: var(--primary); 
-            background: transparent;
-            border: none;
-            font-size: 2.2rem;
+        .nav-links a { 
+            text-decoration: none; 
+            color: rgba(255,255,255,0.95); 
+            font-weight: 600; 
+            font-size: 0.9rem; 
+            transition: 0.3s; 
+            position: relative; 
+            text-shadow: 0 1px 5px rgba(0,0,0,0.5); 
         }
 
-        /* Göm hamburgaren när den har klassen 'hidden' */
-        .hamburger.hidden {
-            opacity: 0;
-            pointer-events: none; /* Gör att man inte kan klicka på den av misstag */
+        /* --- HÄR ÄR DEN NYA KODEN FÖR LINJEN --- */
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0; /* Startar med 0 bredd */
+            height: 2px;
+            background: var(--accent);
+            transition: width 0.3s ease; /* Animerar bredden */
         }
+
+        .nav-links a:hover::after {
+            width: 100%; /* Full bredd vid hover */
+        }
+        /* --------------------------------------- */
+
+        header.scrolled .nav-links a { color: var(--text); text-shadow: none; }
+        header.scrolled .nav-links a:hover { color: var(--accent); }
+
+        .hamburger {
+            display: none; width: 45px; height: 45px; font-size: 1.8rem;
+            background: rgba(15,23,42,0.6); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px;
+            color: var(--white); cursor: pointer; align-items: center; justify-content: center;
+            z-index: 2000; transition: 0.3s; backdrop-filter: blur(5px);
+            -webkit-appearance: none;
+        }
+        .hamburger.hidden { opacity: 0; pointer-events: none; }
+        header.scrolled .hamburger { color: var(--primary); background: transparent; border: none; font-size: 2.2rem; }
 
         /* --- SEKTIONER --- */
-        section {
-            padding: 80px 20px; 
-            min-height: 100vh;
-            display: flex; flex-direction: column; justify-content: center;
-        }
-
+        .main-content { background: var(--white); position: relative; z-index: 2; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        section { padding: 80px 20px; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; }
         .container { max-width: 1100px; width: 100%; margin: 0 auto; }
+        h2 { font-size: 2.5rem; color: var(--primary); margin-bottom: 40px; text-align: center; font-weight: 800; }
+        h3 { margin-top: 0; }
 
-        h2 {
-            font-size: 2.5rem; color: var(--primary); margin-bottom: 40px;
-            text-align: center; font-weight: 800; letter-spacing: -0.03em;
-        }
-
-        /* --- HERO - FIXAD FÖR MOBIL --- */
+        /* --- HERO (KEN BURNS) --- */
         #hem {
-            /* Mörkare overlay för bättre textläsbarhet */
-            background: linear-gradient(rgba(15, 23, 42, 0.4), rgba(15, 23, 42, 0.7)), 
+            position: relative; overflow: hidden;
+            color: white; text-align: center; padding-top: 0; padding-bottom: 100px; background-color: #1e293b;
+            clip-path: none;
+        }
+        
+        #hem::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(15,23,42,0.4), rgba(15,23,42,0.7)), 
                         url('https://privat.bahnhof.se/wb776828/byggnad1.jpg');
-            background-size: cover; 
-            background-position: center;
-            
-            /* VIKTIGT FIX: 'scroll' och ingen 'clip-path' på mobil */
-            background-attachment: scroll; 
-            clip-path: none; 
-
-            color: white; text-align: center; padding-top: 0; margin-top: 0; position: relative;
-            padding-bottom: 100px;
-            background-color: #1e293b; 
+            background-size: cover; background-position: center;
+            z-index: 0; 
+            animation: kenBurns 25s ease-out infinite alternate;
+        }
+        
+        @keyframes kenBurns {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.15); }
         }
 
+        .hero-content { position: relative; z-index: 1; }
         .hero-content h1 {
             font-size: 3.5rem; margin: 0 0 15px 0; font-weight: 800;
-            background: linear-gradient(to right, #ffffff, #93c5fd);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            text-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            /* Fallback för text om gradient inte funkar */
-            color: white;
+            background: linear-gradient(to right, #ffffff, #93c5fd); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            text-shadow: 0 10px 30px rgba(0,0,0,0.3); color: white;
         }
-
         .hero-content p { font-size: 1.2rem; max-width: 600px; margin: 0 auto 30px; opacity: 0.95; color: #e2e8f0; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
-
-        .btn-main {
-            background: var(--accent); color: white; padding: 15px 40px;
-            border-radius: 50px; text-decoration: none; font-weight: 700;
-            font-size: 1rem; transition: all 0.3s; display: inline-block;
-            box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.5);
-        }
+        .btn-main { background: var(--accent); color: white; padding: 15px 40px; border-radius: 50px; text-decoration: none; font-weight: 700; display: inline-block; box-shadow: 0 10px 25px -5px rgba(59,130,246,0.5); transition: 0.3s; }
         .btn-main:hover { transform: translateY(-3px); background: var(--accent-hover); }
+        .scroll-down { position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); color: rgba(255,255,255,0.7); font-size: 2rem; animation: bounce 2s infinite; z-index: 2; }
+        @keyframes bounce { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(-10px)} }
 
-        .scroll-down {
-            position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%);
-            color: rgba(255,255,255,0.7); font-size: 2rem; animation: bounce 2s infinite;
-        }
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% {transform: translateX(-50%) translateY(0);}
-            40% {transform: translateX(-50%) translateY(-10px);}
-            60% {transform: translateX(-50%) translateY(-5px);}
-        }
-
-        /* --- FAKTA --- */
-        #fakta { background-color: var(--white); padding-top: 40px; }
+        /* --- FAKTA (NY DESIGN) --- */
         .facts-container { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; align-items: start; }
-        
-        .info-box { 
-            background: rgba(248, 250, 252, 0.8);
-            backdrop-filter: blur(12px);
-            padding: 35px; border-radius: var(--radius); 
-            border: 1px solid rgba(226, 232, 240, 0.8);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
-        }
-        
+        .info-box { background: rgba(248,250,252,0.8); backdrop-filter: blur(12px); padding: 35px; border-radius: var(--radius); border: 1px solid rgba(226,232,240,0.8); }
         .spec-list { list-style: none; padding: 0; margin: 0; }
-        .spec-list li {
-            display: flex; justify-content: space-between; padding: 15px 0;
-            border-bottom: 1px solid #cbd5e1; font-size: 1rem;
-        }
+        .spec-list li { display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid #cbd5e1; }
         .spec-list li:last-child { border-bottom: none; }
         .spec-value { font-weight: 700; color: var(--primary); }
+        
         .check-list li { margin-bottom: 12px; display: flex; align-items: center; font-weight: 500; font-size: 1.05rem; }
-        .icon-check { color: var(--accent); margin-right: 12px; font-size: 1.2rem; }
+        .icon-check { 
+            display: flex; align-items: center; justify-content: center;
+            width: 24px; height: 24px; background: #dbeafe; color: var(--accent);
+            border-radius: 50%; margin-right: 15px; font-size: 0.8rem; flex-shrink: 0;
+        }
+        
+        /* FAQ Design */
+        details { 
+            background: white; border: 1px solid #e2e8f0; border-radius: 8px;
+            margin-bottom: 10px; cursor: pointer; overflow: hidden; transition: 0.3s;
+        }
+        details[open] { border-color: var(--accent); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+        details summary { 
+            padding: 15px; font-weight: 600; color: var(--primary);
+            list-style: none; display: flex; justify-content: space-between; align-items: center;
+        }
+        details summary::after { content: '+'; font-size: 1.3rem; color: var(--accent); transition: 0.3s; font-weight: 300; }
+        details[open] summary::after { transform: rotate(45deg); }
+        details p { padding: 0 15px 15px; margin: 0; color: #64748b; font-size: 0.9rem; border-top: 1px solid #f1f5f9; padding-top: 10px; }
 
-        /* --- BILDER --- */
+        /* --- BILDER (SÖKIKON) --- */
         #bilder { background-color: var(--light-bg); }
         .gallery-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; }
-        
-        .gallery-card {
-            background: white; padding: 10px; border-radius: var(--radius);
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); 
-            transition: transform 0.3s ease; cursor: pointer;
-        }
+        .gallery-card { background: white; padding: 10px; border-radius: var(--radius); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); transition: 0.3s; cursor: pointer; }
         .gallery-card:hover { transform: translateY(-8px); }
         
         .gallery-link { display: block; overflow: hidden; border-radius: 8px; height: 240px; position: relative; }
-        .gallery-link img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
+        .gallery-link img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
         .gallery-card:hover img { transform: scale(1.1); }
-        .gallery-link::after {
-            content: '🔍'; font-size: 2rem; display: flex; align-items: center; justify-content: center;
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(15, 23, 42, 0.4); opacity: 0; transition: opacity 0.3s;
+        
+        /* Sökikon */
+        .overlay-icon {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.8);
+            width: 50px; height: 50px; background: rgba(255,255,255,0.95); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; transition: 0.3s; color: var(--primary); font-size: 1.2rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
-        .gallery-card:hover .gallery-link::after { opacity: 1; }
-        .gallery-caption { margin-top: 10px; text-align: center; font-weight: 600; color: #64748b; font-size: 0.9rem; }
+        .gallery-card:hover .overlay-icon { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 
-        /* --- KONTAKT --- */
-        #kontakt { 
-            background-color: var(--primary); color: white; 
-            padding: 60px 20px;
-            min-height: auto;
-        }
-        #kontakt h2 { color: white; margin-bottom: 30px; font-size: 2.2rem; }
-        
-        .contact-layout { 
-            display: grid; grid-template-columns: 1fr 1.2fr; 
-            gap: 40px; align-items: center; 
-        }
-        
+        /* Kontakt */
+        #kontakt { background: var(--primary); color: white; padding: 60px 20px; min-height: auto; }
+        #kontakt h2 { color: white; }
+        .contact-layout { display: grid; grid-template-columns: 1fr 1.2fr; gap: 40px; align-items: center; }
         .contact-item { margin-bottom: 25px; }
-        .contact-item strong { display: block; font-size: 0.8rem; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+        .contact-item strong { display: block; font-size: 0.8rem; opacity: 0.6; text-transform: uppercase; margin-bottom: 5px; }
         .contact-row { display: flex; align-items: center; gap: 10px; }
-        .contact-row a { color: white; text-decoration: none; font-size: 1.2rem; font-weight: 600; transition: color 0.2s; }
+        .contact-row a { color: white; text-decoration: none; font-size: 1.2rem; font-weight: 600; }
         .contact-row a:hover { color: var(--accent); }
-        
-        .copy-btn {
-            background: rgba(255,255,255,0.1); border: none; color: rgba(255,255,255,0.7);
-            width: 30px; height: 30px; border-radius: 50%; cursor: pointer;
-            display: flex; align-items: center; justify-content: center; transition: all 0.2s;
-        }
+        .copy-btn { background: rgba(255,255,255,0.1); border: none; color: rgba(255,255,255,0.7); width: 30px; height: 30px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
         .copy-btn:hover { background: var(--accent); color: white; transform: scale(1.1); }
-        .copy-tooltip { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.8); color: white; padding: 10px 20px; border-radius: 5px; opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 2000; }
-
-        .map-wrapper {
-            width: 100%; height: 200px; border-radius: var(--radius);
-            overflow: hidden; margin-top: 25px; border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .contact-form {
-            background: white; padding: 30px; border-radius: var(--radius);
-            color: var(--text); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-        }
+        .copy-tooltip { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.8); color: white; padding: 10px 20px; border-radius: 5px; opacity: 0; pointer-events: none; transition: 0.3s; z-index: 3000; }
         
+        .map-wrapper { width: 100%; height: 200px; border-radius: var(--radius); overflow: hidden; margin-top: 25px; border: 1px solid rgba(255,255,255,0.1); position: relative; }
+        .map-btn { position: absolute; bottom: 10px; right: 10px; background: white; color: #333; padding: 5px 10px; border-radius: 4px; font-size: 0.8rem; text-decoration: none; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+
+        /* Formulär */
+        .contact-form { background: white; padding: 30px; border-radius: var(--radius); color: var(--text); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
         .floating-group { position: relative; margin-bottom: 20px; }
-        
-        .floating-input {
-            width: 100%; padding: 14px; border: 2px solid #e2e8f0;
-            border-radius: 8px; font-size: 1rem; font-family: inherit; 
-            outline: none; background: transparent; transition: all 0.2s;
-        }
-        
-        .floating-label {
-            position: absolute; top: 14px; left: 14px; color: #94a3b8;
-            font-size: 1rem; font-weight: 500; pointer-events: none;
-            transition: all 0.2s ease; background: white; padding: 0 4px;
-        }
-
-        .floating-input:focus,
-        .floating-input:not(:placeholder-shown) {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
-        }
-
-        .floating-input:focus ~ .floating-label,
-        .floating-input:not(:placeholder-shown) ~ .floating-label {
-            top: -10px; left: 10px; font-size: 0.8rem; color: var(--accent); font-weight: 700;
-        }
-        
-        .submit-btn {
-            width: 100%; padding: 14px; background: var(--accent); color: white;
-            border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 1rem;
-            transition: background 0.3s; margin-top: 5px;
-        }
+        .floating-input { width: 100%; padding: 14px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 1rem; outline: none; background: transparent; transition: 0.2s; }
+        .floating-label { position: absolute; top: 14px; left: 14px; color: #94a3b8; font-size: 1rem; font-weight: 500; pointer-events: none; transition: 0.2s; background: white; padding: 0 4px; }
+        .floating-input:focus, .floating-input:not(:placeholder-shown) { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(59,130,246,0.15); }
+        .floating-input:focus ~ .floating-label, .floating-input:not(:placeholder-shown) ~ .floating-label { top: -10px; left: 10px; font-size: 0.8rem; color: var(--accent); font-weight: 700; }
+        .submit-btn { width: 100%; padding: 14px; background: var(--accent); color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 1rem; transition: 0.3s; margin-top: 5px; }
         .submit-btn:hover { background: var(--accent-hover); }
 
-        .parallax-footer {
-            position: fixed; bottom: 0; left: 0; width: 100%;
-            background: #020617; color: #94a3b8;
-            padding: 30px 20px; text-align: center;
-            z-index: 1; 
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-        }
-
-        .signature-img {
-            width: 80px; height: auto; 
-            margin-bottom: 15px;
-            opacity: 0.9; transition: opacity 0.3s;
-        }
+        /* Footer & Extra */
+        .parallax-footer { position: fixed; bottom: 0; left: 0; width: 100%; background: #020617; color: #94a3b8; padding: 30px 20px; text-align: center; z-index: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .signature-img { width: 80px; margin-bottom: 15px; opacity: 0.9; transition: 0.3s; }
         .signature-img:hover { opacity: 1; }
-
         .footer-text { font-size: 0.85rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px; width: 100%; max-width: 600px; }
-
-        #cookieBanner {
-            position: fixed; bottom: -100%; left: 0; right: 0; 
-            background: #0f172a; color: white; padding: 15px 20px; z-index: 9999; 
-            display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 15px; 
-            box-shadow: 0 -5px 20px rgba(0,0,0,0.2); transition: bottom 0.5s ease-out; border-top: 1px solid #1e293b;
-        }
         
-        /* NY: Action Bar för Mobil */
-        .mobile-action-bar {
-            display: flex; /* Vi använder flex, inte none */
-            position: fixed; 
-            bottom: 0; 
-            left: 0; 
-            right: 0;
-            background: white; 
-            padding: 10px 15px;
-            box-shadow: 0 -2px 15px rgba(0,0,0,0.1);
-            z-index: 9995; 
-            gap: 10px;
-            padding-bottom: max(10px, env(safe-area-inset-bottom)); /* Fix för iPhone X+ */
-            
-            /* Göm den som standard genom att flytta den neråt */
-            transform: translateY(100%);
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        /* Klass för att visa den */
-        .mobile-action-bar.visible {
-            transform: translateY(0);
-        }
-        /* Dölj på desktop precis som innan */
-        @media (min-width: 901px) { .mobile-action-bar { display: none; } }
-        .action-btn {
-            flex: 1; display: flex; align-items: center; justify-content: center;
-            gap: 8px; text-decoration: none; padding: 12px;
-            border-radius: 8px; font-weight: 700; font-size: 1rem;
-        }
+        #cookieBanner { position: fixed; bottom: -100%; left: 0; right: 0; background: #0f172a; color: white; padding: 15px 20px; z-index: 9999; display: flex; justify-content: center; align-items: center; gap: 15px; transition: bottom 0.5s; box-shadow: 0 -5px 20px rgba(0,0,0,0.2); }
+
+        /* Mobile Action Bar */
+        .mobile-action-bar { display: flex; position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 10px 15px; box-shadow: 0 -2px 15px rgba(0,0,0,0.1); z-index: 9995; gap: 10px; padding-bottom: max(10px, env(safe-area-inset-bottom)); transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .mobile-action-bar.visible { transform: translateY(0); }
+        .action-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; padding: 12px; border-radius: 8px; font-weight: 700; font-size: 1rem; }
         .call-btn { background: #f1f5f9; color: var(--primary); }
         .book-btn { background: var(--accent); color: white; }
 
-        /* --- MOBIL ANPASSNING --- */
-        @media (max-width: 900px) {
-            .hamburger { display: flex; } /* Tvinga display flex */
-            .mobile-action-bar { display: flex; }
-            .parallax-footer { padding-bottom: 90px; } /* Plats för action bar */
-            
-            /* Snyggare meny med frosted glass */
-            .nav-links {
-                position: fixed; 
-                top: 0; 
-                left: 0; 
-                width: 100%; 
-                height: 100vh; 
-                
-                /* Heltäckande mörk bakgrund (samma färg som din profil) */
-                background-color: #0f172a; 
-                
-                display: flex; 
-                flex-direction: column; 
-                align-items: center; 
-                justify-content: center;
-                gap: 50px; /* Rejält med luft mellan länkarna */
-                
-                /* Enkel fade-effekt */
-                opacity: 0; 
-                pointer-events: none;
-                transition: opacity 0.3s ease;
-                z-index: 9998;
-            }
-            
-            .nav-links.active { 
-                opacity: 1; 
-                pointer-events: all; 
-            }
-
-            .nav-links a { 
-                color: #ffffff !important; 
-                font-size: 2rem; /* Stor, tydlig text */
-                font-weight: 600;
-                text-decoration: none;
-                letter-spacing: -1px; /* Gör fonten lite tightare/modernare */
-                transition: color 0.3s;
-                position: relative;
-            }
-            
-            /* En snygg detalj: Länken blir din accent-färg (blå) när man trycker */
-            .nav-links a:active, .nav-links a:hover {
-                color: #3b82f6 !important;
-            }
-
-            /* Stäng-knappen (Krysset) */
-            .close-btn {
-                position: absolute; 
-                top: 30px; 
-                right: 30px;
-                background: none; 
-                border: none; 
-                font-size: 2.5rem; /* Stort kryss */
-                font-weight: 300; /* Tunt och elegant */
-                cursor: pointer; 
-                color: white; 
-                padding: 10px;
-                transition: transform 0.3s;
-            }
-            
-            .close-btn:hover {
-                transform: rotate(90deg); /* Liten snurr-effekt vid klick */
-                color: #3b82f6;
-            }
-            
-            .hero-content h1 { font-size: 2.5rem; }
-            .facts-container, .contact-layout { grid-template-columns: 1fr; gap: 40px; }
-            
-            /* Säkerställ scroll */
-            #hem { padding-bottom: 60px; }
-            #fakta { padding-top: 60px; }
-            #kontakt { padding: 50px 20px 100px 20px; }
-            
-            .main-content { box-shadow: none; margin-bottom: 0 !important; }
-            .parallax-footer { position: relative; z-index: 2; }
+        /* --- MEDIA QUERIES (Mobil/Desktop) --- */
+        @media (min-width: 901px) {
+            .mobile-action-bar, .close-btn { display: none !important; }
+            #hem { clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%); }
         }
 
-        /* --- DESKTOP SPECIFIKT --- */
-        @media (min-width: 901px) {
-            .close-btn { display: none; }
+        @media (max-width: 900px) {
+            .hamburger { display: flex; }
+            .parallax-footer { padding-bottom: 90px; position: relative; z-index: 2; }
+            .main-content { box-shadow: none; margin-bottom: 0 !important; }
+            .hero-content h1 { font-size: 2.5rem; }
+            .facts-container, .contact-layout { grid-template-columns: 1fr; gap: 40px; }
+            #hem { padding-bottom: 60px; } #fakta { padding-top: 60px; } #kontakt { padding: 50px 20px 100px 20px; }
             
-            /* Här lägger vi in clip-path och fixed bakgrund BARA för desktop */
-            #hem {
-                clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%);
-                background-attachment: fixed;
+            /* Mobilmeny Design */
+            .nav-links {
+                position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
+                background-color: #0f172a; flex-direction: column; align-items: center; justify-content: center;
+                gap: 50px; opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 1500;
             }
+            .nav-links.active { opacity: 1; pointer-events: all; }
+            .nav-links a { color: #fff !important; font-size: 2rem; letter-spacing: -1px; }
+            .nav-links a:hover, .nav-links a:active { color: #3b82f6 !important; }
+            
+            .close-btn {
+                position: absolute; top: 30px; right: 30px; background: none; border: none;
+                font-size: 2.5rem; color: white; cursor: pointer; transition: 0.3s;
+            }
+            .close-btn:hover { transform: rotate(90deg); color: #3b82f6; }
         }
     </style>
 </head>
@@ -477,15 +267,10 @@
 
     <header id="mainHeader">
         <div class="nav-container">
-            <a href="#hem" class="logo">
-                <span style="font-size: 1.4rem;">🏢</span> MS Fastighet & Teknik
-            </a>
-            
+            <a href="#hem" class="logo"><span style="font-size: 1.4rem;">🏢</span> MS Fastighet & Teknik</a>
             <button class="hamburger" id="hamburgerBtn">☰</button>
-            
             <nav class="nav-links" id="navLinks">
                 <button class="close-btn" id="closeBtn">✕</button>
-                
                 <a href="#hem" class="nav-item">Hem</a>
                 <a href="#fakta" class="nav-item">Fakta</a>
                 <a href="#bilder" class="nav-item">Bilder</a>
@@ -495,7 +280,6 @@
     </header>
 
     <div class="main-content" id="mainContent">
-        
         <section id="hem">
             <div class="container hero-content" data-aos="fade-up" data-aos-duration="1000">
                 <h1>Garage & Lager i Eslöv</h1>
@@ -510,7 +294,7 @@
                 <h2 data-aos="fade-up">Fakta & Säkerhet</h2>
                 <div class="facts-container">
                     <div class="info-box" data-aos="fade-right">
-                        <h3 style="margin-top:0; color:var(--primary); font-size: 1.3rem;">Specifikationer</h3>
+                        <h3 style="color:var(--primary); font-size: 1.3rem;">Specifikationer</h3>
                         <ul class="spec-list">
                             <li><span>Storlek</span> <span class="spec-value">21 m²</span></li>
                             <li><span>Mått (L x B)</span> <span class="spec-value">6,25 x 3,4 m</span></li>
@@ -520,23 +304,22 @@
                         </ul>
                     </div>
                     <div data-aos="fade-left" style="padding: 10px;">
-                        <h3 style="margin-top:0; font-size: 1.3rem;">Trygghet i fokus</h3>
+                        <h3 style="font-size: 1.3rem;">Trygghet i fokus</h3>
                         <p style="color:#64748b; margin-bottom: 20px;">Vi erbjuder moderna lokaler där säkerheten kommer i första hand.</p>
                         <ul class="check-list">
-                            <li><span class="icon-check">✓</span> Kameraövervakning dygnet runt</li>
-                            <li><span class="icon-check">✓</span> Ronderande bevakningsfirma</li>
-                            <li><span class="icon-check">✓</span> Inhägnat område med stängsel</li>
-                            <li><span class="icon-check">✓</span> LED-belysning & Brandsläckare</li>
+                            <li><span class="icon-check"><i class="fas fa-check"></i></span> Kameraövervakning dygnet runt</li>
+                            <li><span class="icon-check"><i class="fas fa-check"></i></span> Ronderande bevakningsfirma</li>
+                            <li><span class="icon-check"><i class="fas fa-check"></i></span> Inhägnat område med stängsel</li>
+                            <li><span class="icon-check"><i class="fas fa-check"></i></span> LED-belysning & Brandsläckare</li>
                         </ul>
-                        
                         <div style="margin-top: 30px;">
-                             <details style="margin-bottom: 10px; cursor: pointer;">
-                                <summary style="font-weight: 600; color:var(--primary);">Ingår el i hyran?</summary>
-                                <p style="margin-top: 5px; color: #64748b; font-size:0.9rem;">Ja, el för enklare belysning och underhållsladdning ingår.</p>
+                             <details>
+                                <summary>Ingår el i hyran?</summary>
+                                <p>Ja, el för enklare belysning och underhållsladdning ingår.</p>
                             </details>
-                            <details style="cursor: pointer;">
-                                <summary style="font-weight: 600; color:var(--primary);">Uppsägningstid?</summary>
-                                <p style="margin-top: 5px; color: #64748b; font-size:0.9rem;">Vanligtvis 3 månaders uppsägningstid.</p>
+                            <details>
+                                <summary>Uppsägningstid?</summary>
+                                <p>Vanligtvis 3 månaders uppsägningstid.</p>
                             </details>
                         </div>
                     </div>
@@ -548,28 +331,27 @@
             <div class="container">
                 <h2 data-aos="fade-up">Bildgalleri</h2>
                 <div class="gallery-grid">
-                    
                     <div class="gallery-card" data-aos="zoom-in" data-aos-delay="100">
                         <a href="https://privat.bahnhof.se/wb776828/garage1.jpg" class="gallery-link">
                             <img src="https://privat.bahnhof.se/wb776828/garage1.jpg" alt="Interiör garage" loading="lazy">
+                            <div class="overlay-icon"><i class="fas fa-search-plus"></i></div>
                         </a>
                         <div class="gallery-caption">Rymlig interiör</div>
                     </div>
-
                     <div class="gallery-card" data-aos="zoom-in" data-aos-delay="200">
                         <a href="https://privat.bahnhof.se/wb776828/garage2.jpg" class="gallery-link">
                             <img src="https://privat.bahnhof.se/wb776828/garage2.jpg" alt="Isolerad port" loading="lazy">
+                            <div class="overlay-icon"><i class="fas fa-search-plus"></i></div>
                         </a>
                         <div class="gallery-caption">Isolerad port</div>
                     </div>
-
                     <div class="gallery-card" data-aos="zoom-in" data-aos-delay="300">
                         <a href="https://privat.bahnhof.se/wb776828/byggnad1.jpg" class="gallery-link">
                             <img src="https://privat.bahnhof.se/wb776828/byggnad1.jpg" alt="Exteriör" loading="lazy">
+                            <div class="overlay-icon"><i class="fas fa-search-plus"></i></div>
                         </a>
                         <div class="gallery-caption">Exteriör vy</div>
                     </div>
-
                 </div>
             </div>
         </section>
@@ -578,201 +360,143 @@
             <div class="container">
                 <h2 data-aos="fade-up">Kontakta oss</h2>
                 <div class="contact-layout">
-                    
                     <div class="contact-details" data-aos="fade-right">
                         <h3>Hitta hit</h3>
-                        
                         <div class="contact-item">
                             <strong>Adress</strong>
                             <div class="contact-row">
                                 <a href="https://maps.google.com/?q=Gustavslundsvägen+11+Eslöv" target="_blank">Gustavslundsvägen 11, Eslöv</a>
-                                <button class="copy-btn" onclick="copyToClipboard('Gustavslundsvägen 11, Eslöv')" title="Kopiera adress"><i class="fas fa-copy"></i></button>
+                                <button class="copy-btn" onclick="copyToClipboard('Gustavslundsvägen 11, Eslöv')" title="Kopiera"><i class="fas fa-copy"></i></button>
                             </div>
                         </div>
-                        
                         <div class="contact-item">
                             <strong>Telefon</strong>
                             <div class="contact-row">
                                 <a href="tel:0706419742">0706-419 742</a>
-                                <button class="copy-btn" onclick="copyToClipboard('0706419742')" title="Kopiera nummer"><i class="fas fa-copy"></i></button>
+                                <button class="copy-btn" onclick="copyToClipboard('0706419742')" title="Kopiera"><i class="fas fa-copy"></i></button>
                             </div>
                         </div>
-                        
                         <div class="contact-item">
                             <strong>E-post</strong>
                             <div class="contact-row">
                                 <a href="mailto:magnus.svensson1024@gmail.com" style="font-size:1rem;">magnus.svensson1024@gmail.com</a>
-                                <button class="copy-btn" onclick="copyToClipboard('magnus.svensson1024@gmail.com')" title="Kopiera mejl"><i class="fas fa-copy"></i></button>
+                                <button class="copy-btn" onclick="copyToClipboard('magnus.svensson1024@gmail.com')" title="Kopiera"><i class="fas fa-copy"></i></button>
                             </div>
                         </div>
-
-                        <div class="map-wrapper" style="position: relative;">
-                            <iframe 
-                                width="100%" 
-                                height="100%" 
-                                frameborder="0" 
-                                style="border:0; min-height: 250px;" 
-                                src="https://maps.google.com/maps?q=Gustavslundsv%C3%A4gen%2011%2C%20Esl%C3%B6v&t=&z=15&ie=UTF8&iwloc=&output=embed" 
-                                allowfullscreen>
-                            </iframe>
-                            <a href="https://maps.google.com/?q=Gustavslundsvägen+11+Eslöv" target="_blank" 
-                               style="position: absolute; bottom: 10px; right: 10px; background: white; color: #333; padding: 5px 10px; border-radius: 4px; font-size: 0.8rem; text-decoration: none; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
-                               📍 Vägbeskrivning
-                            </a>
+                        <div class="map-wrapper">
+                            <iframe width="100%" height="100%" frameborder="0" style="border:0; min-height: 250px;" src="https://maps.google.com/maps?q=Gustavslundsv%C3%A4gen%2011%2C%20Esl%C3%B6v&t=&z=15&ie=UTF8&iwloc=&output=embed" allowfullscreen></iframe>
+                            <a href="https://maps.google.com/?q=Gustavslundsvägen+11+Eslöv" target="_blank" class="map-btn">📍 Vägbeskrivning</a>
                         </div>
                     </div>
 
                     <form class="contact-form" action="mailto:magnus.svensson1024@gmail.com" method="POST" enctype="text/plain" data-aos="fade-left">
                         <h3 style="margin-top:0; color:var(--primary); margin-bottom: 25px;">Skicka förfrågan</h3>
-                        
                         <div class="floating-group">
                             <input type="text" name="namn" id="namn" class="floating-input" placeholder=" " required>
                             <label for="namn" class="floating-label">Ditt Namn</label>
                         </div>
-
                         <div class="floating-group">
                             <input type="tel" name="telefon" id="telefon" class="floating-input" placeholder=" " required>
                             <label for="telefon" class="floating-label">Telefonnummer</label>
                         </div>
-
                         <div class="floating-group">
                             <textarea name="meddelande" id="meddelande" class="floating-input" rows="3" placeholder=" " required></textarea>
                             <label for="meddelande" class="floating-label">Meddelande</label>
                         </div>
                         
                         <button type="submit" class="submit-btn">Skicka meddelande</button>
-                    </form>
 
+                        <div style="text-align:center; margin-top:15px; font-size:0.8rem; color:#94a3b8;">
+                            <i class="fas fa-lock"></i> Dina uppgifter behandlas säkert.
+                        </div>
+                    </form>
                 </div>
             </div>
         </section>
         
         <div id="copyTooltip" class="copy-tooltip">Kopierad!</div>
-    
     </div> 
 
     <div class="mobile-action-bar">
-        <a href="tel:0706419742" class="action-btn call-btn">
-            <i class="fas fa-phone"></i> Ring oss
-        </a>
-        <a href="#kontakt" class="action-btn book-btn">
-            <i class="fas fa-calendar-check"></i> Intresse
-        </a>
+        <a href="tel:0706419742" class="action-btn call-btn"><i class="fas fa-phone"></i> Ring oss</a>
+        <a href="#kontakt" class="action-btn book-btn"><i class="fas fa-calendar-check"></i> Intresse</a>
     </div>
 
     <footer class="parallax-footer" id="mainFooter">
         <img src="https://files.builder.misssite.com/81/ab/81ab524c-07f3-4bb1-80e8-0166327d3b7c.jpg" alt="Signatur MS Fastighet" class="signature-img">
-        <div class="footer-text">
-            © 2026 MS Fastighet och Teknik i Eslöv | Bankgiro: 5520-6890
-        </div>
+        <div class="footer-text">© 2026 MS Fastighet och Teknik i Eslöv | Bankgiro: 5520-6890</div>
     </footer>
 
     <div id="cookieBanner">
-        <p style="margin: 0; font-size: 0.85rem; max-width: 600px;">
-            🍪 <strong>Vi använder cookies</strong> för att förbättra din upplevelse.
-        </p>
-        <button id="acceptCookies" style="background: #3b82f6; color: white; border: none; padding: 8px 20px; border-radius: 50px; font-weight: 600; cursor: pointer;">OK</button>
+        <p style="margin:0; font-size:0.85rem; max-width:600px;">🍪 <strong>Vi använder cookies</strong> för att förbättra din upplevelse.</p>
+        <button id="acceptCookies" style="background:#3b82f6; color:white; border:none; padding:8px 20px; border-radius:50px; font-weight:600; cursor:pointer;">OK</button>
     </div>
 
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/simplelightbox/2.10.3/simple-lightbox.min.js"></script>
     <script>
         AOS.init({ once: true });
-        new SimpleLightbox('.gallery-grid a', { /* options */ });
+        new SimpleLightbox('.gallery-grid a', {});
 
-        // Footer Parallax Logic
-        function adjustFooter() {
-            if (window.innerWidth > 900) {
-                const footerHeight = document.getElementById('mainFooter').offsetHeight;
-                document.getElementById('mainContent').style.marginBottom = footerHeight + 'px';
-            } else {
-                document.getElementById('mainContent').style.marginBottom = '0px';
+        // --- ALL LOAD LOGIC ---
+        window.addEventListener('load', () => {
+            // Footer parallax
+            const adjustFooter = () => {
+                document.getElementById('mainContent').style.marginBottom = 
+                    (window.innerWidth > 900) ? document.getElementById('mainFooter').offsetHeight + 'px' : '0px';
+            };
+            adjustFooter();
+            window.addEventListener('resize', adjustFooter);
+
+            // Cookies
+            if (!localStorage.getItem('cookiesAccepted')) {
+                setTimeout(() => document.getElementById('cookieBanner').style.bottom = '0', 1000);
             }
-        }
-        window.addEventListener('load', adjustFooter);
-        window.addEventListener('resize', adjustFooter);
 
-        // Copy Function
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(() => {
-                const tooltip = document.getElementById('copyTooltip');
-                tooltip.style.opacity = '1';
-                setTimeout(() => { tooltip.style.opacity = '0'; }, 2000);
-            });
-        }
+            // Ghost button fix (force repaint)
+            checkScroll();
+            setTimeout(() => { window.scrollTo(0, 1); setTimeout(() => window.scrollTo(0, 0), 20); }, 100);
+        });
 
-        // Header Scroll Logic
+        // --- ALL SCROLL LOGIC ---
         const header = document.getElementById('mainHeader');
+        const actionBar = document.querySelector('.mobile-action-bar');
         
         function checkScroll() {
-            if (window.scrollY > 10) {
-                header.classList.add('scrolled');
-            } else {
-                header.classList.remove('scrolled');
-            }
+            const scrollY = window.scrollY;
+            // Header
+            scrollY > 10 ? header.classList.add('scrolled') : header.classList.remove('scrolled');
+            // Action Bar
+            scrollY > 300 ? actionBar.classList.add('visible') : actionBar.classList.remove('visible');
         }
-
-        // --- SMART ACTION BAR LOGIK ---
-        const actionBar = document.querySelector('.mobile-action-bar');
-        let lastScrollY = window.scrollY;
-
-        window.addEventListener('scroll', () => {
-            // Visa listen om vi scrollat mer än 300px (förbi toppen)
-            if (window.scrollY > 300) {
-                actionBar.classList.add('visible');
-            } else {
-                actionBar.classList.remove('visible');
-            }
-        });
-
         window.addEventListener('scroll', checkScroll);
-        
-        // --- VIKTIGT SCRIPT FÖR ATT FIXA "GHOST BUTTON" BUGGEN ---
-        window.addEventListener('load', () => {
-            checkScroll();
-            // Detta tvingar webbläsaren att "vakna" och rita om sidan
-            setTimeout(() => {
-                window.scrollTo(0, 1);
-                setTimeout(() => window.scrollTo(0, 0), 20);
-            }, 100);
-        });
 
-        // MOBIL MENY LOGIK
-        const hamburger = document.getElementById('hamburgerBtn');
-        const navMenu = document.getElementById('navLinks');
-        const closeBtn = document.getElementById('closeBtn');
-        const navItems = document.querySelectorAll('.nav-item');
-
-        // När man öppnar menyn
-        hamburger.addEventListener('click', () => {
-            navMenu.classList.add('active');    // Visa menyn
-            hamburger.classList.add('hidden');  // Göm knapp med tre streck
-        });
-
-        // När man stänger med krysset
-        closeBtn.addEventListener('click', () => {
-            navMenu.classList.remove('active');   // Dölj menyn
-            hamburger.classList.remove('hidden'); // Visa knapp med tre streck igen
-        });
-
-        // När man klickar på en länk i menyn
-        navItems.forEach(item => {
-            item.addEventListener('click', () => {
-                navMenu.classList.remove('active');
-                hamburger.classList.remove('hidden'); // Visa knapp med tre streck igen
+        // --- UI ACTIONS ---
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                const t = document.getElementById('copyTooltip');
+                t.style.opacity = '1'; setTimeout(() => t.style.opacity = '0', 2000);
             });
-        });
-
-        // Cookie Logic
-        window.addEventListener('load', () => {
-            if (!localStorage.getItem('cookiesAccepted')) {
-                setTimeout(() => { document.getElementById('cookieBanner').style.bottom = '0'; }, 1000);
-            }
-        });
+        }
         document.getElementById('acceptCookies').addEventListener('click', () => {
             document.getElementById('cookieBanner').style.bottom = '-100%';
             localStorage.setItem('cookiesAccepted', 'true');
         });
+
+        // Menu Toggle
+        const menu = {
+            btn: document.getElementById('hamburgerBtn'),
+            nav: document.getElementById('navLinks'),
+            close: document.getElementById('closeBtn'),
+            items: document.querySelectorAll('.nav-item'),
+            toggle(active) {
+                active ? this.nav.classList.add('active') : this.nav.classList.remove('active');
+                active ? this.btn.classList.add('hidden') : this.btn.classList.remove('hidden');
+            }
+        };
+        menu.btn.onclick = () => menu.toggle(true);
+        menu.close.onclick = () => menu.toggle(false);
+        menu.items.forEach(i => i.onclick = () => menu.toggle(false));
     </script>
 </body>
 </html>
