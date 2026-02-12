@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Hyr garage, lager och förråd i Eslöv. Säker förvaring hos MS Fastighet och Teknik på Gustavslundsvägen 11.">
+    <meta name="description" content="Hyr garage, lager och förråd i Eslöv. Säker förvaring hos MS Fastighet och Teknik.">
     
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏢</text></svg>">
     
@@ -19,7 +19,8 @@
         :root {
             --primary: #0f172a; --accent: #2563eb; --accent-hover: #1d4ed8;
             --white: #ffffff; --light-bg: #f8fafc; --text: #334155;
-            --nav-height: 70px; --radius: 12px;
+            --nav-height: 80px; --radius: 12px;
+            --hero-bg: url('Exteriör1.jpg'); 
         }
         *, *::before, *::after { box-sizing: border-box; }
         html { overflow-x: hidden; width: 100%; height: 100%; -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
@@ -29,6 +30,9 @@
             line-height: 1.6; background: var(--white); overflow-x: hidden;
         }
 
+        /* Utility classes */
+        .hidden { display: none !important; }
+
         /* Scrollbar */
         ::-webkit-scrollbar { width: 10px; }
         ::-webkit-scrollbar-track { background: #f1f5f9; }
@@ -36,70 +40,99 @@
         ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
         ::selection { background: var(--accent); color: white; }
 
-        /* --- HEADER (GLASS) --- */
+        /* --- HEADER (HÖGERJUSTERAD) --- */
         header {
             position: fixed; top: 0; left: 0; width: 100%; height: var(--nav-height);
-            /* Frostat glas effekt */
-            background: rgba(15, 23, 42, 0.2); 
-            backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);
+            background: rgba(15, 23, 42, 0.3); 
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
             border-bottom: 1px solid rgba(255,255,255,0.05);
-            transition: background 0.3s, box-shadow 0.3s;
-            z-index: 1000; display: flex; align-items: center;
-            transform: translate3d(0,0,0);
+            transition: all 0.3s ease;
+            z-index: 1000;
         }
         header.scrolled {
-            background: rgba(255,255,255,0.95); 
-            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            background: rgba(255,255,255,0.98); 
             border-bottom: 1px solid rgba(0,0,0,0.05); 
             box-shadow: 0 4px 30px rgba(0,0,0,0.05);
+            height: 70px;
         }
 
-        .nav-container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 25px; display: flex; justify-content: space-between; align-items: center; }
+        .nav-container { 
+            width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 25px; height: 100%;
+            display: flex; justify-content: space-between; align-items: center; 
+        }
         
-        .logo { font-weight: 800; font-size: 1.1rem; color: var(--white); text-decoration: none; text-transform: uppercase; letter-spacing: -0.5px; z-index: 1002; text-shadow: 0 2px 10px rgba(0,0,0,0.5); display: flex; gap: 8px; align-items: center; }
+        /* LOGO (VÄNSTER) */
+        .logo { 
+            font-weight: 800; font-size: 1.2rem; color: var(--white); text-decoration: none; 
+            text-transform: uppercase; letter-spacing: -0.5px; z-index: 1002; 
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5); display: flex; gap: 8px; align-items: center; 
+        }
         header.scrolled .logo { color: var(--primary); text-shadow: none; }
 
+        /* NAV GROUP (HÖGER) - Håller ihop länkar och knappar */
+        .nav-right-group {
+            display: flex; align-items: center; gap: 30px;
+        }
+
+        /* NAV LINKS */
         .nav-links { display: flex; gap: 25px; align-items: center; }
-        
         .nav-links a { 
-            text-decoration: none; 
-            color: rgba(255,255,255,0.95); 
-            font-weight: 600; 
-            font-size: 0.9rem; 
-            transition: 0.3s; 
-            position: relative; 
-            text-shadow: 0 1px 5px rgba(0,0,0,0.5); 
+            text-decoration: none; color: rgba(255,255,255,0.9); font-weight: 600; font-size: 0.95rem; 
+            transition: 0.3s; position: relative; text-shadow: 0 1px 4px rgba(0,0,0,0.3);
         }
-
-        /* --- HÄR ÄR DEN NYA KODEN FÖR LINJEN --- */
         .nav-links a::after {
-            content: '';
-            position: absolute;
-            bottom: -5px;
-            left: 0;
-            width: 0; /* Startar med 0 bredd */
-            height: 2px;
-            background: var(--accent);
-            transition: width 0.3s ease; /* Animerar bredden */
+            content: ''; position: absolute; bottom: -5px; left: 0; width: 0; height: 2px;
+            background: var(--accent); transition: width 0.3s ease;
         }
-
-        .nav-links a:hover::after {
-            width: 100%; /* Full bredd vid hover */
-        }
-        /* --------------------------------------- */
-
+        .nav-links a:hover::after { width: 100%; }
         header.scrolled .nav-links a { color: var(--text); text-shadow: none; }
         header.scrolled .nav-links a:hover { color: var(--accent); }
 
+        /* HEADER ACTIONS */
+        .header-actions { display: flex; align-items: center; gap: 15px; margin-left: 10px; padding-left: 20px; border-left: 1px solid rgba(255,255,255,0.2); }
+        header.scrolled .header-actions { border-left-color: #e2e8f0; }
+
+        /* SWITCH MODE BUTTON (Pill Shape) */
+        .mode-switch-pill {
+            display: flex; align-items: center; gap: 8px;
+            padding: 8px 16px; border-radius: 50px;
+            background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2);
+            color: white; font-weight: 600; font-size: 0.85rem; text-decoration: none;
+            cursor: pointer; transition: 0.3s; backdrop-filter: blur(4px);
+        }
+        .mode-switch-pill:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .mode-switch-pill i { font-size: 0.9rem; transition: transform 0.5s; }
+        .mode-switch-pill:hover i { transform: rotate(180deg); }
+        
+        /* Tema-specifika färger för knappen */
+        .mode-garage .mode-switch-pill:hover { background: #2563eb; border-color: #2563eb; }
+        .mode-consultant .mode-switch-pill:hover { background: #0f172a; border-color: #0f172a; }
+        header.scrolled .mode-switch-pill { background: var(--primary); color: white; border-color: transparent; }
+
+        /* FLAGGA BUTTON (LÄNGST TILL HÖGER) */
+        .lang-btn {
+            background: transparent; border: 2px solid rgba(255,255,255,0.3);
+            width: 38px; height: 38px; border-radius: 50%; padding: 0;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: 0.3s; overflow: hidden;
+        }
+        .lang-btn img {
+            width: 100%; height: 100%; object-fit: cover;
+        }
+        .lang-btn:hover { transform: scale(1.1); border-color: var(--white); box-shadow: 0 0 10px rgba(255,255,255,0.3); }
+        header.scrolled .lang-btn { border-color: #cbd5e1; }
+        header.scrolled .lang-btn:hover { border-color: var(--accent); }
+
+        
+        /* HAMBURGER */
         .hamburger {
-            display: none; width: 45px; height: 45px; font-size: 1.8rem;
-            background: rgba(15,23,42,0.6); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px;
+            display: none; width: 45px; height: 45px; font-size: 1.5rem;
+            background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px;
             color: var(--white); cursor: pointer; align-items: center; justify-content: center;
             z-index: 2000; transition: 0.3s; backdrop-filter: blur(5px);
-            -webkit-appearance: none;
         }
-        .hamburger.hidden { opacity: 0; pointer-events: none; }
-        header.scrolled .hamburger { color: var(--primary); background: transparent; border: none; font-size: 2.2rem; }
+        header.scrolled .hamburger { color: var(--primary); background: transparent; border: none; font-size: 1.8rem; }
+
 
         /* --- SEKTIONER --- */
         .main-content { background: var(--white); position: relative; z-index: 2; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
@@ -108,26 +141,20 @@
         h2 { font-size: 2.5rem; color: var(--primary); margin-bottom: 40px; text-align: center; font-weight: 800; }
         h3 { margin-top: 0; }
 
-        /* --- HERO (KEN BURNS) --- */
+        /* --- HERO --- */
         #hem {
             position: relative; overflow: hidden;
             color: white; text-align: center; padding-top: 0; padding-bottom: 100px; background-color: #1e293b;
             clip-path: none;
         }
-        
         #hem::before {
             content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(rgba(15,23,42,0.4), rgba(15,23,42,0.7)), 
-                        url('https://privat.bahnhof.se/wb776828/byggnad1.jpg');
-            background-size: cover; background-position: center;
-            z-index: 0; 
+            background: linear-gradient(rgba(15,23,42,0.4), rgba(15,23,42,0.7)), var(--hero-bg);
+            background-size: cover; background-position: center; z-index: 0; 
             animation: kenBurns 25s ease-out infinite alternate;
+            transition: background-image 0.5s ease-in-out;
         }
-        
-        @keyframes kenBurns {
-            0% { transform: scale(1); }
-            100% { transform: scale(1.15); }
-        }
+        @keyframes kenBurns { 0% { transform: scale(1); } 100% { transform: scale(1.15); } }
 
         .hero-content { position: relative; z-index: 1; }
         .hero-content h1 {
@@ -141,7 +168,7 @@
         .scroll-down { position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); color: rgba(255,255,255,0.7); font-size: 2rem; animation: bounce 2s infinite; z-index: 2; }
         @keyframes bounce { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(-10px)} }
 
-        /* --- FAKTA (NY DESIGN) --- */
+        /* --- FAKTA --- */
         .facts-container { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; align-items: start; }
         .info-box { background: rgba(248,250,252,0.8); backdrop-filter: blur(12px); padding: 35px; border-radius: var(--radius); border: 1px solid rgba(226,232,240,0.8); }
         .spec-list { list-style: none; padding: 0; margin: 0; }
@@ -149,48 +176,32 @@
         .spec-list li:last-child { border-bottom: none; }
         .spec-value { font-weight: 700; color: var(--primary); }
         
+        .garage-toggles { display: flex; gap: 10px; margin-bottom: 20px; background: #e2e8f0; padding: 5px; border-radius: 8px; }
+        .toggle-btn { flex: 1; padding: 10px; border: none; background: transparent; cursor: pointer; font-weight: 600; color: #64748b; border-radius: 6px; transition: 0.3s; }
+        .toggle-btn.active { background: white; color: var(--accent); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+
         .check-list li { margin-bottom: 12px; display: flex; align-items: center; font-weight: 500; font-size: 1.05rem; }
-        .icon-check { 
-            display: flex; align-items: center; justify-content: center;
-            width: 24px; height: 24px; background: #dbeafe; color: var(--accent);
-            border-radius: 50%; margin-right: 15px; font-size: 0.8rem; flex-shrink: 0;
-        }
+        .icon-check { display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; background: #dbeafe; color: var(--accent); border-radius: 50%; margin-right: 15px; font-size: 0.8rem; flex-shrink: 0; }
         
-        /* FAQ Design */
-        details { 
-            background: white; border: 1px solid #e2e8f0; border-radius: 8px;
-            margin-bottom: 10px; cursor: pointer; overflow: hidden; transition: 0.3s;
-        }
+        details { background: white; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 10px; cursor: pointer; overflow: hidden; transition: 0.3s; }
         details[open] { border-color: var(--accent); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
-        details summary { 
-            padding: 15px; font-weight: 600; color: var(--primary);
-            list-style: none; display: flex; justify-content: space-between; align-items: center;
-        }
+        details summary { padding: 15px; font-weight: 600; color: var(--primary); list-style: none; display: flex; justify-content: space-between; align-items: center; }
         details summary::after { content: '+'; font-size: 1.3rem; color: var(--accent); transition: 0.3s; font-weight: 300; }
         details[open] summary::after { transform: rotate(45deg); }
         details p { padding: 0 15px 15px; margin: 0; color: #64748b; font-size: 0.9rem; border-top: 1px solid #f1f5f9; padding-top: 10px; }
 
-        /* --- BILDER (SÖKIKON) --- */
+        /* --- BILDER --- */
         #bilder { background-color: var(--light-bg); }
         .gallery-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; }
         .gallery-card { background: white; padding: 10px; border-radius: var(--radius); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); transition: 0.3s; cursor: pointer; }
         .gallery-card:hover { transform: translateY(-8px); }
-        
         .gallery-link { display: block; overflow: hidden; border-radius: 8px; height: 240px; position: relative; }
         .gallery-link img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
         .gallery-card:hover img { transform: scale(1.1); }
-        
-        /* Sökikon */
-        .overlay-icon {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.8);
-            width: 50px; height: 50px; background: rgba(255,255,255,0.95); border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            opacity: 0; transition: 0.3s; color: var(--primary); font-size: 1.2rem;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
+        .overlay-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.8); width: 50px; height: 50px; background: rgba(255,255,255,0.95); border-radius: 50%; display: flex; align-items: center; justify-content: center; opacity: 0; transition: 0.3s; color: var(--primary); font-size: 1.2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
         .gallery-card:hover .overlay-icon { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 
-        /* Kontakt */
+        /* --- KONTAKT --- */
         #kontakt { background: var(--primary); color: white; padding: 60px 20px; min-height: auto; }
         #kontakt h2 { color: white; }
         .contact-layout { display: grid; grid-template-columns: 1fr 1.2fr; gap: 40px; align-items: center; }
@@ -202,11 +213,9 @@
         .copy-btn { background: rgba(255,255,255,0.1); border: none; color: rgba(255,255,255,0.7); width: 30px; height: 30px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
         .copy-btn:hover { background: var(--accent); color: white; transform: scale(1.1); }
         .copy-tooltip { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.8); color: white; padding: 10px 20px; border-radius: 5px; opacity: 0; pointer-events: none; transition: 0.3s; z-index: 3000; }
-        
         .map-wrapper { width: 100%; height: 200px; border-radius: var(--radius); overflow: hidden; margin-top: 25px; border: 1px solid rgba(255,255,255,0.1); position: relative; }
         .map-btn { position: absolute; bottom: 10px; right: 10px; background: white; color: #333; padding: 5px 10px; border-radius: 4px; font-size: 0.8rem; text-decoration: none; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
 
-        /* Formulär */
         .contact-form { background: white; padding: 30px; border-radius: var(--radius); color: var(--text); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
         .floating-group { position: relative; margin-bottom: 20px; }
         .floating-input { width: 100%; padding: 14px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 1rem; outline: none; background: transparent; transition: 0.2s; }
@@ -216,15 +225,12 @@
         .submit-btn { width: 100%; padding: 14px; background: var(--accent); color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 1rem; transition: 0.3s; margin-top: 5px; }
         .submit-btn:hover { background: var(--accent-hover); }
 
-        /* Footer & Extra */
         .parallax-footer { position: fixed; bottom: 0; left: 0; width: 100%; background: #020617; color: #94a3b8; padding: 30px 20px; text-align: center; z-index: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .signature-img { width: 80px; margin-bottom: 15px; opacity: 0.9; transition: 0.3s; }
         .signature-img:hover { opacity: 1; }
         .footer-text { font-size: 0.85rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px; width: 100%; max-width: 600px; }
-        
         #cookieBanner { position: fixed; bottom: -100%; left: 0; right: 0; background: #0f172a; color: white; padding: 15px 20px; z-index: 9999; display: flex; justify-content: center; align-items: center; gap: 15px; transition: bottom 0.5s; box-shadow: 0 -5px 20px rgba(0,0,0,0.2); }
 
-        /* Mobile Action Bar */
         .mobile-action-bar { display: flex; position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 10px 15px; box-shadow: 0 -2px 15px rgba(0,0,0,0.1); z-index: 9995; gap: 10px; padding-bottom: max(10px, env(safe-area-inset-bottom)); transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .mobile-action-bar.visible { transform: translateY(0); }
         .action-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; padding: 12px; border-radius: 8px; font-weight: 700; font-size: 1rem; }
@@ -233,12 +239,16 @@
 
         /* --- MEDIA QUERIES (Mobil/Desktop) --- */
         @media (min-width: 901px) {
-            .mobile-action-bar, .close-btn { display: none !important; }
+            /* VIKTIGT: HÄR DÖLJER VI MOBILMENYN PÅ DESKTOP */
+            .mobile-action-bar, .close-btn, #navLinksMobile { display: none !important; }
             #hem { clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%); }
+            .mobile-only { display: none; }
         }
 
         @media (max-width: 900px) {
             .hamburger { display: flex; }
+            .nav-right-group { display: none; } /* Göm desktop-menyn */
+            
             .parallax-footer { padding-bottom: 90px; position: relative; z-index: 2; }
             .main-content { box-shadow: none; margin-bottom: 0 !important; }
             .hero-content h1 { font-size: 2.5rem; }
@@ -247,13 +257,20 @@
             
             /* Mobilmeny Design */
             .nav-links {
-                position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
+                display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
                 background-color: #0f172a; flex-direction: column; align-items: center; justify-content: center;
-                gap: 50px; opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 1500;
+                gap: 30px; opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 1500;
             }
             .nav-links.active { opacity: 1; pointer-events: all; }
-            .nav-links a { color: #fff !important; font-size: 2rem; letter-spacing: -1px; }
-            .nav-links a:hover, .nav-links a:active { color: #3b82f6 !important; }
+            .nav-links a { color: #fff !important; font-size: 1.8rem; letter-spacing: -1px; }
+            .nav-links a:hover { color: #3b82f6 !important; }
+
+            /* Mobila knappar inuti menyn */
+            .mobile-utils {
+                display: flex; flex-direction: column; gap: 20px; align-items: center; margin-top: 20px; width: 100%;
+            }
+            .mobile-utils .mode-switch-pill { width: 80%; justify-content: center; padding: 15px; font-size: 1rem; background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.1); }
+            .mobile-utils .lang-btn { width: 60px; height: 60px; background: transparent; border: 2px solid rgba(255,255,255,0.2); border-radius: 50%; padding:0; overflow:hidden;}
             
             .close-btn {
                 position: absolute; top: 30px; right: 30px; background: none; border: none;
@@ -263,65 +280,84 @@
         }
     </style>
 </head>
-<body>
+<body class="mode-garage">
 
     <header id="mainHeader">
         <div class="nav-container">
-            <a href="#hem" class="logo"><span style="font-size: 1.4rem;">🏢</span> MS Fastighet & Teknik</a>
+            <a href="#hem" class="logo" onclick="app.setMode('garage')">
+                <span style="font-size: 1.4rem;">🏢</span> MS Fastighet & Teknik
+            </a>
+            
             <button class="hamburger" id="hamburgerBtn">☰</button>
-            <nav class="nav-links" id="navLinks">
+            
+            <div class="nav-right-group">
+                <nav class="nav-links">
+                    <a href="#hem" class="nav-item" data-key="nav_home">Hem</a>
+                    <a href="#fakta" class="nav-item" data-key="nav_facts">Fakta</a>
+                    <a href="#bilder" class="nav-item" data-key="nav_gallery">Bilder</a>
+                    <a href="#kontakt" class="nav-item" data-key="nav_contact">Kontakt</a>
+                </nav>
+
+                <div class="header-actions">
+                    <button class="mode-switch-pill desktop-mode-btn" onclick="app.toggleMode()">
+                        <i class="fas fa-sync-alt"></i> <span class="btn-text">Till TeknikKonsult</span>
+                    </button>
+                    <button class="lang-btn desktop-lang-btn" onclick="app.toggleLang()" title="Byt språk">
+                        <img id="flagImgDesktop" src="https://flagcdn.com/w80/gb.png" alt="Switch Language">
+                    </button>
+                </div>
+            </div>
+
+            <div class="nav-links" id="navLinksMobile">
                 <button class="close-btn" id="closeBtn">✕</button>
                 <a href="#hem" class="nav-item">Hem</a>
                 <a href="#fakta" class="nav-item">Fakta</a>
                 <a href="#bilder" class="nav-item">Bilder</a>
                 <a href="#kontakt" class="nav-item">Kontakt</a>
-            </nav>
+
+                <div class="mobile-utils mobile-only">
+                    <button class="mode-switch-pill mobile-mode-btn" onclick="app.toggleMode()">
+                        <i class="fas fa-sync-alt"></i> <span class="btn-text">Till TeknikKonsult</span>
+                    </button>
+                    <button class="lang-btn mobile-lang-btn" onclick="app.toggleLang()">
+                        <img id="flagImgMobile" src="https://flagcdn.com/w80/gb.png" alt="Switch Language">
+                    </button>
+                </div>
+            </div>
         </div>
     </header>
 
     <div class="main-content" id="mainContent">
         <section id="hem">
             <div class="container hero-content" data-aos="fade-up" data-aos-duration="1000">
-                <h1>Garage & Lager i Eslöv</h1>
-                <p>Säker förvaring på Gustavslundsvägen 11. Skräddarsydda lokaler för privatpersoner och företag.</p>
-                <a href="#kontakt" class="btn-main">Gör en intresseanmälan</a>
+                <h1 id="heroTitle">Garage & Lager i Eslöv</h1>
+                <p id="heroDesc">Säker förvaring på Gustavslundsvägen 11. Skräddarsydda lokaler för privatpersoner och företag.</p>
+                <a href="#kontakt" class="btn-main" id="heroBtn">Gör en intresseanmälan</a>
             </div>
             <div class="scroll-down">↓</div>
         </section>
 
         <section id="fakta">
             <div class="container">
-                <h2 data-aos="fade-up">Fakta & Säkerhet</h2>
+                <h2 id="factsTitle" data-aos="fade-up">Fakta & Säkerhet</h2>
                 <div class="facts-container">
                     <div class="info-box" data-aos="fade-right">
-                        <h3 style="color:var(--primary); font-size: 1.3rem;">Specifikationer</h3>
-                        <ul class="spec-list">
-                            <li><span>Storlek</span> <span class="spec-value">21 m²</span></li>
-                            <li><span>Mått (L x B)</span> <span class="spec-value">6,25 x 3,4 m</span></li>
-                            <li><span>Portbredd</span> <span class="spec-value">2,5 m</span></li>
-                            <li><span>Inkörningshöjd</span> <span class="spec-value">ca 2,1 m</span></li>
-                            <li><span>Porttyp</span> <span class="spec-value">Isolerad takskjut</span></li>
-                        </ul>
+                        <h3 id="specTitle" style="color:var(--primary); font-size: 1.3rem;">Specifikationer</h3>
+                        
+                        <div id="garageToggles" class="garage-toggles">
+                            <button class="toggle-btn active" onclick="app.setGarageType('single')" id="btnSingle">Enkelgarage</button>
+                            <button class="toggle-btn" onclick="app.setGarageType('double')" id="btnDouble">Dubbelgarage</button>
+                        </div>
+
+                        <ul class="spec-list" id="specList"></ul>
                     </div>
                     <div data-aos="fade-left" style="padding: 10px;">
-                        <h3 style="font-size: 1.3rem;">Trygghet i fokus</h3>
-                        <p style="color:#64748b; margin-bottom: 20px;">Vi erbjuder moderna lokaler där säkerheten kommer i första hand.</p>
-                        <ul class="check-list">
-                            <li><span class="icon-check"><i class="fas fa-check"></i></span> Kameraövervakning dygnet runt</li>
-                            <li><span class="icon-check"><i class="fas fa-check"></i></span> Ronderande bevakningsfirma</li>
-                            <li><span class="icon-check"><i class="fas fa-check"></i></span> Inhägnat område med stängsel</li>
-                            <li><span class="icon-check"><i class="fas fa-check"></i></span> LED-belysning & Brandsläckare</li>
-                        </ul>
-                        <div style="margin-top: 30px;">
-                             <details>
-                                <summary>Ingår el i hyran?</summary>
-                                <p>Ja, el för enklare belysning och underhållsladdning ingår.</p>
-                            </details>
-                            <details>
-                                <summary>Uppsägningstid?</summary>
-                                <p>Vanligtvis 3 månaders uppsägningstid.</p>
-                            </details>
-                        </div>
+                        <h3 id="featuresTitle" style="font-size: 1.3rem;">Trygghet i fokus</h3>
+                        <p id="featuresDesc" style="color:#64748b; margin-bottom: 20px;">Vi erbjuder moderna lokaler där säkerheten kommer i första hand.</p>
+                        
+                        <ul class="check-list" id="featureList"></ul>
+                        
+                        <div id="faqSection" style="margin-top: 30px;"></div>
                     </div>
                 </div>
             </div>
@@ -329,68 +365,50 @@
 
         <section id="bilder">
             <div class="container">
-                <h2 data-aos="fade-up">Bildgalleri</h2>
-                <div class="gallery-grid">
-                    <div class="gallery-card" data-aos="zoom-in" data-aos-delay="100">
-                        <a href="https://privat.bahnhof.se/wb776828/garage1.jpg" class="gallery-link">
-                            <img src="https://privat.bahnhof.se/wb776828/garage1.jpg" alt="Interiör garage" loading="lazy">
-                            <div class="overlay-icon"><i class="fas fa-search-plus"></i></div>
-                        </a>
-                        <div class="gallery-caption">Rymlig interiör</div>
-                    </div>
-                    <div class="gallery-card" data-aos="zoom-in" data-aos-delay="200">
-                        <a href="https://privat.bahnhof.se/wb776828/garage2.jpg" class="gallery-link">
-                            <img src="https://privat.bahnhof.se/wb776828/garage2.jpg" alt="Isolerad port" loading="lazy">
-                            <div class="overlay-icon"><i class="fas fa-search-plus"></i></div>
-                        </a>
-                        <div class="gallery-caption">Isolerad port</div>
-                    </div>
-                    <div class="gallery-card" data-aos="zoom-in" data-aos-delay="300">
-                        <a href="https://privat.bahnhof.se/wb776828/byggnad1.jpg" class="gallery-link">
-                            <img src="https://privat.bahnhof.se/wb776828/byggnad1.jpg" alt="Exteriör" loading="lazy">
-                            <div class="overlay-icon"><i class="fas fa-search-plus"></i></div>
-                        </a>
-                        <div class="gallery-caption">Exteriör vy</div>
-                    </div>
-                </div>
+                <h2 id="galleryTitle" data-aos="fade-up">Bildgalleri</h2>
+                <div class="gallery-grid" id="galleryGrid"></div>
             </div>
         </section>
 
         <section id="kontakt">
             <div class="container">
-                <h2 data-aos="fade-up">Kontakta oss</h2>
+                <h2 id="contactTitle" data-aos="fade-up">Kontakta oss</h2>
                 <div class="contact-layout">
                     <div class="contact-details" data-aos="fade-right">
-                        <h3>Hitta hit</h3>
-                        <div class="contact-item">
-                            <strong>Adress</strong>
-                            <div class="contact-row">
-                                <a href="https://maps.google.com/?q=Gustavslundsvägen+11+Eslöv" target="_blank">Gustavslundsvägen 11, Eslöv</a>
-                                <button class="copy-btn" onclick="copyToClipboard('Gustavslundsvägen 11, Eslöv')" title="Kopiera"><i class="fas fa-copy"></i></button>
+                        <h3 id="contactSubTitle">Hitta hit</h3>
+                        
+                        <div id="addressContainer">
+                            <div class="contact-item">
+                                <strong data-key="lbl_address">Adress</strong>
+                                <div class="contact-row">
+                                    <a href="https://maps.google.com/?q=Gustavslundsvägen+11+Eslöv" target="_blank">Gustavslundsvägen 11, Eslöv</a>
+                                    <button class="copy-btn" onclick="copyToClipboard('Gustavslundsvägen 11, Eslöv')" title="Kopiera"><i class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+                            <div class="map-wrapper">
+                                <iframe width="100%" height="100%" frameborder="0" style="border:0; min-height: 250px;" src="https://maps.google.com/maps?q=Gustavslundsv%C3%A4gen%2011%2C%20Esl%C3%B6v&t=&z=15&ie=UTF8&iwloc=&output=embed" allowfullscreen></iframe>
+                                <a href="https://maps.google.com/?q=Gustavslundsvägen+11+Eslöv" target="_blank" class="map-btn">📍 Vägbeskrivning</a>
                             </div>
                         </div>
-                        <div class="contact-item">
-                            <strong>Telefon</strong>
+                        <div class="contact-item" style="margin-top: 25px;">
+                            <strong data-key="lbl_phone">Telefon</strong>
                             <div class="contact-row">
                                 <a href="tel:0706419742">0706-419 742</a>
                                 <button class="copy-btn" onclick="copyToClipboard('0706419742')" title="Kopiera"><i class="fas fa-copy"></i></button>
                             </div>
                         </div>
                         <div class="contact-item">
-                            <strong>E-post</strong>
+                            <strong data-key="lbl_email">E-post</strong>
                             <div class="contact-row">
                                 <a href="mailto:magnus.svensson1024@gmail.com" style="font-size:1rem;">magnus.svensson1024@gmail.com</a>
                                 <button class="copy-btn" onclick="copyToClipboard('magnus.svensson1024@gmail.com')" title="Kopiera"><i class="fas fa-copy"></i></button>
                             </div>
                         </div>
-                        <div class="map-wrapper">
-                            <iframe width="100%" height="100%" frameborder="0" style="border:0; min-height: 250px;" src="https://maps.google.com/maps?q=Gustavslundsv%C3%A4gen%2011%2C%20Esl%C3%B6v&t=&z=15&ie=UTF8&iwloc=&output=embed" allowfullscreen></iframe>
-                            <a href="https://maps.google.com/?q=Gustavslundsvägen+11+Eslöv" target="_blank" class="map-btn">📍 Vägbeskrivning</a>
-                        </div>
+
                     </div>
 
                     <form class="contact-form" action="mailto:magnus.svensson1024@gmail.com" method="POST" enctype="text/plain" data-aos="fade-left">
-                        <h3 style="margin-top:0; color:var(--primary); margin-bottom: 25px;">Skicka förfrågan</h3>
+                        <h3 id="formTitle" style="margin-top:0; color:var(--primary); margin-bottom: 25px;">Skicka förfrågan</h3>
                         <div class="floating-group">
                             <input type="text" name="namn" id="namn" class="floating-input" placeholder=" " required>
                             <label for="namn" class="floating-label">Ditt Namn</label>
@@ -404,7 +422,7 @@
                             <label for="meddelande" class="floating-label">Meddelande</label>
                         </div>
                         
-                        <button type="submit" class="submit-btn">Skicka meddelande</button>
+                        <button type="submit" class="submit-btn" id="formBtn">Skicka meddelande</button>
 
                         <div style="text-align:center; margin-top:15px; font-size:0.8rem; color:#94a3b8;">
                             <i class="fas fa-lock"></i> Dina uppgifter behandlas säkert.
@@ -423,8 +441,10 @@
     </div>
 
     <footer class="parallax-footer" id="mainFooter">
-        <img src="https://files.builder.misssite.com/81/ab/81ab524c-07f3-4bb1-80e8-0166327d3b7c.jpg" alt="Signatur MS Fastighet" class="signature-img">
-        <div class="footer-text">© 2026 MS Fastighet och Teknik i Eslöv | Bankgiro: 5520-6890</div>
+        <a href="https://amarsut.github.io/lager/AS/">
+            <img src="https://files.builder.misssite.com/81/ab/81ab524c-07f3-4bb1-80e8-0166327d3b7c.jpg" alt="Signatur MS Fastighet" class="signature-img">
+        </a>
+        <div class="footer-text" id="footerText">© 2026 MS Fastighet och Teknik i Eslöv | Bankgiro: 5520-6890</div>
     </footer>
 
     <div id="cookieBanner">
@@ -435,68 +455,207 @@
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/simplelightbox/2.10.3/simple-lightbox.min.js"></script>
     <script>
-        AOS.init({ once: true });
-        new SimpleLightbox('.gallery-grid a', {});
-
-        // --- ALL LOAD LOGIC ---
-        window.addEventListener('load', () => {
-            // Footer parallax
-            const adjustFooter = () => {
-                document.getElementById('mainContent').style.marginBottom = 
-                    (window.innerWidth > 900) ? document.getElementById('mainFooter').offsetHeight + 'px' : '0px';
-            };
-            adjustFooter();
-            window.addEventListener('resize', adjustFooter);
-
-            // Cookies
-            if (!localStorage.getItem('cookiesAccepted')) {
-                setTimeout(() => document.getElementById('cookieBanner').style.bottom = '0', 1000);
-            }
-
-            // Ghost button fix (force repaint)
-            checkScroll();
-            setTimeout(() => { window.scrollTo(0, 1); setTimeout(() => window.scrollTo(0, 0), 20); }, 100);
-        });
-
-        // --- ALL SCROLL LOGIC ---
-        const header = document.getElementById('mainHeader');
-        const actionBar = document.querySelector('.mobile-action-bar');
-        
-        function checkScroll() {
-            const scrollY = window.scrollY;
-            // Header
-            scrollY > 10 ? header.classList.add('scrolled') : header.classList.remove('scrolled');
-            // Action Bar
-            scrollY > 300 ? actionBar.classList.add('visible') : actionBar.classList.remove('visible');
-        }
-        window.addEventListener('scroll', checkScroll);
-
-        // --- UI ACTIONS ---
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(() => {
-                const t = document.getElementById('copyTooltip');
-                t.style.opacity = '1'; setTimeout(() => t.style.opacity = '0', 2000);
-            });
-        }
-        document.getElementById('acceptCookies').addEventListener('click', () => {
-            document.getElementById('cookieBanner').style.bottom = '-100%';
-            localStorage.setItem('cookiesAccepted', 'true');
-        });
-
-        // Menu Toggle
-        const menu = {
-            btn: document.getElementById('hamburgerBtn'),
-            nav: document.getElementById('navLinks'),
-            close: document.getElementById('closeBtn'),
-            items: document.querySelectorAll('.nav-item'),
-            toggle(active) {
-                active ? this.nav.classList.add('active') : this.nav.classList.remove('active');
-                active ? this.btn.classList.add('hidden') : this.btn.classList.remove('hidden');
+        const data = {
+            garage: {
+                bgImage: 'Exteriör1.jpg',
+                sv: {
+                    nav: { home: "Hem", facts: "Fakta", gallery: "Bilder", contact: "Kontakt", switch: "Till TeknikKonsult", 
+                           // Använder riktig bildlänk för flagga istället för emoji
+                           flagUrl: "https://flagcdn.com/w80/gb.png" }, // Visar brittisk flagga för att byta till engelska
+                    hero: { title: "Garage & Lager i Eslöv", desc: "Säker förvaring på Gustavslundsvägen 11. Skräddarsydda lokaler för privatpersoner och företag.", btn: "Gör en intresseanmälan" },
+                    facts: { title: "Fakta & Säkerhet", specTitle: "Specifikationer", featTitle: "Trygghet i fokus", featDesc: "Vi erbjuder moderna lokaler där säkerheten kommer i första hand." },
+                    specsSingle: [{label:"Storlek",val:"~ 21 m²"},{label:"Mått (L x B)",val:"~ 6,25 x 3,4 m"},{label:"Portbredd",val:"2,5 m"},{label:"Inkörningshöjd",val:"ca 2,1 m"},{label:"Innerhöjd",val:"2,5 eller 3,2 m"},{label:"Porttyp",val:"Isolerad takskjut"}],
+                    specsDouble: [{label:"Storlek",val:"~ 42 m²"},{label:"Mått (L x B)",val:"~ 6,25 x 6,8 m"},{label:"Portbredd",val:"2,5 m"},{label:"Inkörningshöjd",val:"ca 2,1 m"},{label:"Innerhöjd",val:"2,5 eller 3,2 m"},{label:"Porttyp",val:"2 x Isolerad takskjut"}],
+                    features: ["Kameraövervakning dygnet runt", "Ronderande bevakningsfirma", "Inhägnat område med stängsel", "Tagg för in och utpassage", "LED-belysning & Brandsläckare"],
+                    faq: [{q:"Ingår el i hyran?",a:"Ja, el finns för verktyg, laddning och extra belysning under vistelsen."},{q:"Tillgång till lokalen?",a:"Du har tillgång dygnet runt med egen tagg."},{q:"Uppsägningstid?",a:"Vanligtvis 3 månaders uppsägningstid."}],
+                    images: [{src:"Enkelgarage.jpg",txt:"Enkelgarage Interiör"},{src:"Dubbelgarage1.jpg",txt:"Dubbelgarage Interiör"},{src:"Dubbelgarage2.jpg",txt:"Stor yta"},{src:"Exteriör1.jpg",txt:"Exteriör vy"}],
+                    contact: { title: "Kontakta oss", subTitle: "Hitta hit", addressLbl: "Adress", phoneLbl: "Telefon", emailLbl: "E-post", formTitle: "Skicka förfrågan", formBtn: "Skicka meddelande", footer: "© 2026 MS Fastighet och Teknik i Eslöv | Bankgiro: 5520-6890" }
+                },
+                en: {
+                    nav: { home: "Home", facts: "Specs", gallery: "Gallery", contact: "Contact", switch: "To Technical Consultant", 
+                           flagUrl: "https://flagcdn.com/w80/se.png" }, // Visar svensk flagga för att byta till svenska
+                    hero: { title: "Garage & Storage in Eslöv", desc: "Secure storage at Gustavslundsvägen 11. Tailored units for individuals and companies.", btn: "Send Inquiry" },
+                    facts: { title: "Specs & Security", specTitle: "Specifications", featTitle: "Safety First", featDesc: "Modern facilities where security is our priority." },
+                    specsSingle: [{label:"Size",val:"21 m²"},{label:"Dim (L x W)",val:"6.25 x 3.4 m"},{label:"Door Width",val:"2.5 m"},{label:"Drive-in Height",val:"approx 2.1 m"},{label:"Inner Height",val:"2.5 or 3.2 m"},{label:"Door Type",val:"Insulated"}],
+                    specsDouble: [{label:"Size",val:"approx 42 m²"},{label:"Dim (L x W)",val:"6.25 x 6.8 m"},{label:"Door Width",val:"2.5 m"},{label:"Drive-in Height",val:"approx 2.1 m"},{label:"Inner Height",val:"2.5 or 3.2 m"},{label:"Door Type",val:"2 x Insulated"}],
+                    features: ["24/7 CCTV Surveillance", "Security Patrols", "Fenced Area", "Key tag entry", "LED Lighting & Fire Extinguishers"],
+                    faq: [{q:"Is electricity included?",a:"Yes, for lighting and maintenance charging."},{q:"Access hours?",a:"24/7 access with your personal tag."},{q:"Notice period?",a:"Usually 3 months notice."}],
+                    images: [{src:"Enkelgarage.jpg",txt:"Single Garage Interior"},{src:"Dubbelgarage1.jpg",txt:"Double Garage Interior"},{src:"Dubbelgarage2.jpg",txt:"Spacious Area"},{src:"Exteriör1.jpg",txt:"Exterior View"}],
+                    contact: { title: "Contact Us", subTitle: "Find Us", addressLbl: "Address", phoneLbl: "Phone", emailLbl: "Email", formTitle: "Send Inquiry", formBtn: "Send Message", footer: "© 2026 MS Fastighet och Teknik | Bankgiro: 5520-6890" }
+                }
+            },
+            consultant: {
+                bgImage: 'Bakgrundsbild1.jpg',
+                sv: {
+                    nav: { home: "Hem", facts: "Tjänster", gallery: "Exempel", contact: "Kontakt", switch: "Till Garageuthyrning", flagUrl: "https://flagcdn.com/w80/gb.png" },
+                    hero: { title: "Teknikkonsult", desc: "Elektronik, konstruktion och service. Nätverksinstallationer och programmering.", btn: "Kontakta mig" },
+                    facts: { title: "Tjänster & Kompetens", specTitle: "Vad jag erbjuder", featTitle: "Mer info", featDesc: "Flexibla lösningar anpassade efter dina behov." },
+                    specsSingle: [{label:"Elektronik",val:"Konstruktion & Service"},{label:"Nätverk",val:"Installation & Programmering"},{label:"Webb",val:"Hemsidor & Hosting"},{label:"Plats",val:"På plats hos kund"}],
+                    specsDouble: [], 
+                    features: ["Lång erfarenhet", "Skräddarsydda lösningar", "Personlig service", "Hårdvara & Mjukvara"],
+                    faq: [], 
+                    images: [{src:"Kretskort1.jpg",txt:"Elektronikarbete"},{src:"Switchar_1.png",txt:"Nätverksinstallation"},{src:"AP1.png",txt:"Accesspunkter"}],
+                    contact: { title: "Kontakt", subTitle: "Hör av dig", addressLbl: "", phoneLbl: "Telefon", emailLbl: "E-post", formTitle: "Skicka förfrågan", formBtn: "Skicka", footer: "© 2026 MS Teknikkonsult" }
+                },
+                en: {
+                    nav: { home: "Home", facts: "Services", gallery: "Examples", contact: "Contact", switch: "To Garage Rental", flagUrl: "https://flagcdn.com/w80/se.png" },
+                    hero: { title: "Technical Consultant", desc: "Electronics, construction and service. Network installations. Any size, at customer site.", btn: "Contact Me" },
+                    facts: { title: "Services & Skills", specTitle: "What I offer", featTitle: "More Info", featDesc: "Flexible solutions tailored to your needs." },
+                    specsSingle: [{label:"Electronics",val:"Construction & Service"},{label:"Network",val:"Installation & Programming"},{label:"Web",val:"Webpages & Hosting"},{label:"Location",val:"On-site service available"}],
+                    specsDouble: [],
+                    features: ["Extensive Experience", "Tailored Solutions", "Personal Service", "Hardware & Software"],
+                    faq: [],
+                    images: [{src:"Kretskort1.jpg",txt:"Electronics"},{src:"Switchar_1.png",txt:"Network Switch"},{src:"AP1.png",txt:"Access Point"}],
+                    contact: { title: "Contact", subTitle: "Get in touch", addressLbl: "", phoneLbl: "Phone", emailLbl: "Email", formTitle: "Send Inquiry", formBtn: "Send", footer: "© 2026 MS Technical Consultant" }
+                }
             }
         };
-        menu.btn.onclick = () => menu.toggle(true);
-        menu.close.onclick = () => menu.toggle(false);
-        menu.items.forEach(i => i.onclick = () => menu.toggle(false));
+
+        const app = {
+            mode: 'garage',
+            lang: 'sv',
+            garageType: 'single',
+
+            init() {
+                AOS.init({ once: true });
+                new SimpleLightbox('.gallery-grid a', {});
+                this.render();
+                this.setupFooter();
+                this.setupCookies();
+                this.setupScroll();
+                this.setupMenu();
+            },
+
+            toggleMode() {
+                this.mode = this.mode === 'garage' ? 'consultant' : 'garage';
+                // Uppdatera body class för styling
+                document.body.className = this.mode === 'garage' ? 'mode-garage' : 'mode-consultant';
+                this.render();
+                window.scrollTo(0,0);
+            },
+
+            toggleLang() {
+                this.lang = this.lang === 'sv' ? 'en' : 'sv';
+                this.render();
+            },
+
+            setGarageType(type) {
+                this.garageType = type;
+                document.getElementById('btnSingle').className = type === 'single' ? 'toggle-btn active' : 'toggle-btn';
+                document.getElementById('btnDouble').className = type === 'double' ? 'toggle-btn active' : 'toggle-btn';
+                this.renderSpecs();
+            },
+
+            setMode(mode) {
+                this.mode = mode;
+                this.render();
+            },
+
+            render() {
+                const d = data[this.mode][this.lang];
+                document.documentElement.style.setProperty('--hero-bg', `url('${data[this.mode].bgImage}')`);
+
+                // Navbar Text
+                document.querySelector('[data-key="nav_home"]').textContent = d.nav.home;
+                document.querySelector('[data-key="nav_facts"]').textContent = d.nav.facts;
+                document.querySelector('[data-key="nav_gallery"]').textContent = d.nav.gallery;
+                document.querySelector('[data-key="nav_contact"]').textContent = d.nav.contact;
+
+                // Buttons Text (Desktop + Mobile)
+                document.querySelectorAll('.mode-switch-pill .btn-text').forEach(el => el.textContent = d.nav.switch);
+                
+                // FLAGGOR: Uppdatera src attributet på img-taggarna
+                document.getElementById('flagImgDesktop').src = d.nav.flagUrl;
+                document.getElementById('flagImgMobile').src = d.nav.flagUrl;
+
+                // Hero
+                document.getElementById('heroTitle').textContent = d.hero.title;
+                document.getElementById('heroDesc').textContent = d.hero.desc;
+                document.getElementById('heroBtn').textContent = d.hero.btn;
+
+                // Facts
+                document.getElementById('factsTitle').textContent = d.facts.title;
+                document.getElementById('specTitle').textContent = d.facts.specTitle;
+                document.getElementById('featuresTitle').textContent = d.facts.featTitle;
+                document.getElementById('featuresDesc').textContent = d.facts.featDesc;
+
+                // Garage Toggles & Logic
+                const toggleDiv = document.getElementById('garageToggles');
+                if(this.mode === 'consultant') {
+                    toggleDiv.classList.add('hidden');
+                    this.renderSpecs(d.specsSingle); 
+                } else {
+                    toggleDiv.classList.remove('hidden');
+                    this.setGarageType(this.garageType); 
+                }
+
+                // Features & FAQ
+                document.getElementById('featureList').innerHTML = d.features.map(i => `<li><span class="icon-check"><i class="fas fa-check"></i></span> ${i}</li>`).join('');
+                document.getElementById('faqSection').innerHTML = d.faq.length ? d.faq.map(i => `<details><summary>${i.q}</summary><p>${i.a}</p></details>`).join('') : '';
+
+                // Gallery
+                document.getElementById('galleryTitle').textContent = this.mode === 'garage' ? (this.lang === 'sv' ? 'Bildgalleri' : 'Gallery') : (this.lang === 'sv' ? 'Exempel' : 'Examples');
+                document.getElementById('galleryGrid').innerHTML = d.images.map((img, i) => `
+                    <div class="gallery-card" data-aos="zoom-in" data-aos-delay="${i*100}">
+                        <a href="${img.src}" class="gallery-link">
+                            <img src="${img.src}" alt="${img.txt}" loading="lazy">
+                            <div class="overlay-icon"><i class="fas fa-search-plus"></i></div>
+                        </a>
+                        <div class="gallery-caption" style="text-align:center; padding:5px; font-weight:500;">${img.txt}</div>
+                    </div>
+                `).join('');
+                new SimpleLightbox('.gallery-grid a', {uniqueImages: false});
+
+                // Contact
+                document.getElementById('contactTitle').textContent = d.contact.title;
+                document.getElementById('contactSubTitle').textContent = d.contact.subTitle;
+                document.querySelector('[data-key="lbl_phone"]').textContent = d.contact.phoneLbl;
+                document.querySelector('[data-key="lbl_email"]').textContent = d.contact.emailLbl;
+                document.getElementById('formTitle').textContent = d.contact.formTitle;
+                document.getElementById('formBtn').textContent = d.contact.formBtn;
+                document.getElementById('footerText').textContent = d.contact.footer;
+
+                const addrContainer = document.getElementById('addressContainer');
+                if(this.mode === 'consultant') {
+                    addrContainer.classList.add('hidden');
+                } else {
+                    addrContainer.classList.remove('hidden');
+                    document.querySelector('[data-key="lbl_address"]').textContent = d.contact.addressLbl;
+                }
+            },
+
+            renderSpecs(overrideList = null) {
+                const listData = overrideList || (this.mode === 'garage' ? (this.garageType === 'single' ? data.garage[this.lang].specsSingle : data.garage[this.lang].specsDouble) : data.consultant[this.lang].specsSingle);
+                document.getElementById('specList').innerHTML = listData.map(i => `<li><span>${i.label}</span> <span class="spec-value">${i.val}</span></li>`).join('');
+            },
+
+            setupFooter() {
+                const adjustFooter = () => { document.getElementById('mainContent').style.marginBottom = (window.innerWidth > 900) ? document.getElementById('mainFooter').offsetHeight + 'px' : '0px'; };
+                window.addEventListener('load', adjustFooter); window.addEventListener('resize', adjustFooter);
+            },
+            setupCookies() {
+                if (!localStorage.getItem('cookiesAccepted')) setTimeout(() => document.getElementById('cookieBanner').style.bottom = '0', 1000);
+                document.getElementById('acceptCookies').onclick = () => { document.getElementById('cookieBanner').style.bottom = '-100%'; localStorage.setItem('cookiesAccepted', 'true'); };
+            },
+            setupScroll() {
+                const header = document.getElementById('mainHeader');
+                const actionBar = document.querySelector('.mobile-action-bar');
+                window.addEventListener('scroll', () => {
+                    const scrollY = window.scrollY;
+                    scrollY > 10 ? header.classList.add('scrolled') : header.classList.remove('scrolled');
+                    if(actionBar) scrollY > 300 ? actionBar.classList.add('visible') : actionBar.classList.remove('visible');
+                });
+                setTimeout(() => { window.scrollTo(0, 1); setTimeout(() => window.scrollTo(0, 0), 20); }, 100);
+            },
+            setupMenu() {
+                const btn = document.getElementById('hamburgerBtn'), nav = document.getElementById('navLinksMobile'), close = document.getElementById('closeBtn'), items = document.querySelectorAll('.nav-item');
+                const toggle = (active) => { active ? nav.classList.add('active') : nav.classList.remove('active'); active ? btn.classList.add('hidden') : btn.classList.remove('hidden'); };
+                btn.onclick = () => toggle(true); close.onclick = () => toggle(false); items.forEach(i => i.onclick = () => toggle(false));
+            }
+        };
+
+        function copyToClipboard(text) { navigator.clipboard.writeText(text).then(() => { const t = document.getElementById('copyTooltip'); t.style.opacity = '1'; setTimeout(() => t.style.opacity = '0', 2000); }); }
+        app.init();
     </script>
 </body>
 </html>
