@@ -1,4 +1,3 @@
-// reference.js
 const { useState, useEffect } = React;
 
 // --- 1. SÄKRA IKONER ---
@@ -49,20 +48,20 @@ window.ReferenceView = ({ setView }) => {
     const [showUpload, setShowUpload] = useState(false);
     
     // State för formulär
-    const [editingId, setEditingId] = useState(null); // Om vi redigerar ett ID
+    const [editingId, setEditingId] = useState(null); 
     const [newTitle, setNewTitle] = useState('');
     const [newCategory, setNewCategory] = useState('OLJA');
-    const [newText, setNewText] = useState(''); // NYTT: Textfält
+    const [newText, setNewText] = useState(''); 
     const [file, setFile] = useState(null);
-    const [existingImage, setExistingImage] = useState(null); // För att visa bild vid redigering
+    const [existingImage, setExistingImage] = useState(null); 
 
     const categories = ['OLJA', 'DÄCK', 'MANUALER', 'ÖVRIGT'];
 
-    // --- HÄMTA DATA (Med limit för prestanda) ---
+    // --- HÄMTA DATA ---
     useEffect(() => {
         const unsubscribe = window.db.collection("reference_docs")
             .orderBy("timestamp", "desc")
-            .limit(50) // PRESTANDA: Hämta max 50 senaste för att spara data/minne
+            .limit(50) 
             .onSnapshot(snap => {
                 const data = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 setDocs(data);
@@ -80,24 +79,20 @@ window.ReferenceView = ({ setView }) => {
         setExistingImage(doc.image || null);
         setFile(null);
         setShowUpload(true);
-        // Scrolla upp till formuläret
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     // --- SPARA / UPPDATERA ---
     const handleSave = async (e) => {
         e.preventDefault();
-        
-        // Validering: Måste ha titel OCH (fil ELLER text ELLER befintlig bild)
         const hasContent = file || newText.trim().length > 0 || existingImage;
         if (!newTitle || !hasContent) return alert("Ange titel och minst en bild eller text.");
 
         setUploading(true);
 
         try {
-            let imageBase64 = existingImage; // Behåll gammal bild om ingen ny väljs
+            let imageBase64 = existingImage; 
 
-            // Om ny fil valts, komprimera den
             if (file) {
                 imageBase64 = await compressReferenceImage(file);
                 if (imageBase64.length > 1048487) {
@@ -112,15 +107,13 @@ window.ReferenceView = ({ setView }) => {
                 category: newCategory,
                 text: newText,
                 image: imageBase64,
-                timestamp: new Date().toISOString(), // Uppdaterar tidsstämpel så den hamnar överst
+                timestamp: new Date().toISOString(), 
                 createdBy: window.firebase.auth().currentUser.email
             };
 
             if (editingId) {
-                // UPPDATERA befintlig
                 await window.db.collection("reference_docs").doc(editingId).update(docData);
             } else {
-                // SKAPA ny
                 await window.db.collection("reference_docs").add(docData);
             }
 
@@ -180,7 +173,7 @@ window.ReferenceView = ({ setView }) => {
                     </button>
                 </div>
 
-                {/* FORMULÄR (Ladda upp / Redigera) */}
+                {/* FORMULÄR */}
                 {showUpload && (
                     <div className="bg-zinc-50 border border-zinc-200 p-4 rounded-md shadow-inner animate-in slide-in-from-top-2 duration-300">
                         <div className="flex items-center justify-between mb-4">
@@ -205,7 +198,7 @@ window.ReferenceView = ({ setView }) => {
                                 />
                             </div>
 
-                            {/* TEXT / ANTECKNINGAR (Nytt) */}
+                            {/* TEXT / ANTECKNINGAR */}
                             <div className="space-y-1">
                                 <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider">Anteckningar / Textinfo</label>
                                 <textarea 
@@ -284,7 +277,7 @@ window.ReferenceView = ({ setView }) => {
                             return (
                                 <div key={doc.id} className="group bg-white border border-zinc-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all relative flex flex-col h-full">
                                     
-                                    {/* Action Buttons (Edit & Delete) */}
+                                    {/* Action Buttons */}
                                     <div className="absolute top-2 right-2 flex gap-1 z-10 opacity-0 group-hover:opacity-100 transition-all">
                                         <button 
                                             onClick={(e) => { e.stopPropagation(); handleEdit(doc); }}
@@ -300,10 +293,10 @@ window.ReferenceView = ({ setView }) => {
                                         </button>
                                     </div>
 
-                                    {/* Content Area */}
+                                    {/* Content Area - NU ALLTID ASPECT-3/4 FÖR ATT UNDVIKA ATT TEXT KLIPPS */}
                                     <div 
                                         onClick={() => setSelectedDoc(doc)}
-                                        className={`overflow-hidden cursor-pointer relative bg-zinc-50 ${hasImage ? 'aspect-[3/4]' : 'aspect-video flex items-center justify-center p-4'}`}
+                                        className="aspect-[3/4] overflow-hidden cursor-pointer relative bg-zinc-50"
                                     >
                                         {hasImage ? (
                                             <>
@@ -318,16 +311,24 @@ window.ReferenceView = ({ setView }) => {
                                                 </div>
                                             </>
                                         ) : (
-                                            <div className="text-center w-full h-full flex flex-col justify-between">
-                                                <div className="flex justify-end">
-                                                    <span className="text-[8px] font-black text-zinc-400 uppercase bg-zinc-200/50 px-1.5 py-0.5 rounded-[2px]">
+                                            /* TEXT ONLY LAYOUT - FIXAD FÖR MOBIL */
+                                            <div className="w-full h-full flex flex-col relative p-4">
+                                                {/* Kategori Badge Top Right */}
+                                                <div className="absolute top-3 right-3">
+                                                    <span className="text-[8px] font-black text-zinc-400 uppercase bg-zinc-200/50 px-2 py-1 rounded-[2px]">
                                                         {doc.category}
                                                     </span>
                                                 </div>
-                                                <div className="line-clamp-4 text-[10px] font-medium text-zinc-600 italic">
-                                                    "{doc.text}"
+
+                                                {/* Centrerad Text - Med mer plats och bättre brytning */}
+                                                <div className="flex-1 flex items-center justify-center pt-6 pb-6 overflow-hidden">
+                                                    <p className="text-xs font-bold text-zinc-700 text-center leading-relaxed break-words line-clamp-[8]">
+                                                        "{doc.text}"
+                                                    </p>
                                                 </div>
-                                                <div className="flex justify-center text-zinc-300 mt-2">
+
+                                                {/* Ikon botten */}
+                                                <div className="flex justify-center text-zinc-300 pb-1">
                                                     <IconFileText />
                                                 </div>
                                             </div>
