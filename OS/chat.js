@@ -1,6 +1,6 @@
 const { useState, useEffect, useRef } = React;
 
-// --- 1. HJÄLPFUNKTIONER (Definierade utanför för snabbare laddning) ---
+// --- 1. HJÄLPFUNKTIONER ---
 
 const compressImage = async (file, maxWidth = 1000, quality = 0.7) => {
     return new Promise((resolve, reject) => {
@@ -47,7 +47,7 @@ const getDateLabel = (ts) => {
     return date.toLocaleDateString([], { day: 'numeric', month: 'short' }).toUpperCase();
 };
 
-// --- 2. SVG IKONER (Definierade högst upp så de alltid hittas) ---
+// --- 2. SVG IKONER ---
 
 const PlusIcon = () => (
     <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
@@ -88,35 +88,69 @@ const ChatView = ({ user, setView, viewParams }) => {
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     const scrollRef = useRef(null);
     const menuRef = useRef(null);
+    
+    // Används för att "minnas" state inuti event-lyssnare
+    const stateRef = useRef({ activeImage, filter, viewParams });
+    useEffect(() => { stateRef.current = { activeImage, filter, viewParams }; }, [activeImage, filter, viewParams]);
+
     let lastDateLabel = null;
 
-    // --- FIX: STÄNG MENY VID KLICK UTANFÖR (STÖD FÖR MOBIL) ---
+    // --- SCROLL FUNKTION ---
+    const scrollToBottom = () => {
+        if (scrollRef.current) {
+            scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+        }
+    };
+
+    // --- FIX: Scrolla ner när vi byter tillbaka till 'all' ---
     useEffect(() => {
-        const handleOutside = (event) => {
-            // Om menyn är öppen och det man trycker på INTE är menyn...
-            if (activeMenu && menuRef.current && !menuRef.current.contains(event.target)) {
-                setActiveMenu(null); // ...stäng menyn
+        if (filter === 'all') {
+            setTimeout(scrollToBottom, 50); // Liten delay för att säkerställa att renderingen är klar
+        }
+    }, [filter]);
+
+    // --- FIX: Hantera bakåt-knappen (Stabil version med ref) ---
+    useEffect(() => {
+        const handlePopState = () => {
+            const { activeImage, filter, viewParams } = stateRef.current;
+            
+            // 1. Om en bild är öppen -> Stäng den
+            if (activeImage) {
+                setActiveImage(null);
+                return;
+            }
+            
+            // 2. Om vi är i galleriet och trycker bakåt -> Gå till chatten ('all')
+            if (filter === 'image') {
+                setView('CHAT', { ...viewParams, filter: 'all' });
             }
         };
 
-        // Vi lyssnar på både mus (mousedown) och touch (touchstart)
+        window.addEventListener('popstate', handlePopState);
+        return () => window.removeEventListener('popstate', handlePopState);
+    }, []); // Körs bara en gång, men läser via stateRef
+
+    // --- STÄNG MENY VID KLICK UTANFÖR ---
+    useEffect(() => {
+        const handleOutside = (event) => {
+            if (activeMenu && menuRef.current && !menuRef.current.contains(event.target)) {
+                setActiveMenu(null);
+            }
+        };
         document.addEventListener("mousedown", handleOutside);
         document.addEventListener("touchstart", handleOutside);
-
         return () => {
             document.removeEventListener("mousedown", handleOutside);
             document.removeEventListener("touchstart", handleOutside);
         };
     }, [activeMenu]);
 
-    // --- NAVIGATION & HISTORIK ---
+    // --- HÄMTA MEDDELANDEN ---
     useEffect(() => {
         const openImageId = viewParams?.openImage;
         if (openImageId) {
             const msg = messages.find(m => m.id === openImageId);
             if (msg) setActiveImage(msg);
-        } else {
-            setActiveImage(null);
         }
     }, [viewParams, messages]);
 
@@ -124,35 +158,50 @@ const ChatView = ({ user, setView, viewParams }) => {
         localStorage.setItem('chat_theme_dark', isDarkMode);
     }, [isDarkMode]);
 
+    // --- FILTER & NAVIGATION ---
     const handleFilterChange = (newFilter) => {
         if (newFilter === filter) return;
-        if (newFilter === 'all' && filter === 'image') {
+        
+        // Till Galleriet: Lägg till historik
+        if (newFilter === 'image') {
+             window.history.pushState({ gallery: true }, "", window.location.href);
+             setView('CHAT', { filter: newFilter });
+        }
+        // Från Galleriet till Chatt: Backa historik (trigger popstate)
+        else if (newFilter === 'all' && filter === 'image') {
             window.history.back();
-        } else {
+        } 
+        else {
             setView('CHAT', { filter: newFilter });
         }
     };
 
     const handleBack = () => {
+        // Trigger history.back() som fångas av handlePopState
         filter === 'image' ? handleFilterChange('all') : window.history.back();
     };
 
     const handleOpenImage = (e, msg) => {
         e.stopPropagation();
         setActiveMenu(null);
+        // Lägg till historik för bildvisning
+        window.history.pushState({ imageOpen: true }, "", window.location.href);
         setActiveImage(msg);
         setView('CHAT', { ...viewParams, openImage: msg.id });
     };
 
-    // --- FIREBASE LOGIK ---
+    // --- FIREBASE SUBSCRIPTION ---
     useEffect(() => {
         const unsubscribe = window.db.collection("notes").orderBy("timestamp", "asc").onSnapshot(snap => {
             const docs = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             setMessages(docs);
-            setTimeout(() => { if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight; }, 100);
+            // Scrolla bara ner om vi redan är längst ner eller vid första laddning (här förenklat till alltid vid nytt meddelande i 'all'-läget)
+            if (filter === 'all') {
+                setTimeout(scrollToBottom, 100);
+            }
         });
         return () => unsubscribe();
-    }, []);
+    }, [filter]); // Uppdaterad dependency för att hantera scroll vid filterbyte korrekt
 
     const handleAction = async (e) => {
         if (e) e.preventDefault();
@@ -172,6 +221,7 @@ const ChatView = ({ user, setView, viewParams }) => {
                     text: textToSend, sender: user.email, timestamp: new Date().toISOString(), type: 'text'
                 });
             }
+            scrollToBottom();
         } catch (error) { console.error("Action Error:", error); }
     };
 
@@ -191,6 +241,7 @@ const ChatView = ({ user, setView, viewParams }) => {
                 text: file.name, fileUrl: fileData, type: file.type.startsWith('image/') ? 'image' : 'file',
                 timestamp: new Date().toISOString(), sender: user.email
             });
+            scrollToBottom();
         } catch (err) { console.error(err); }
         setIsUploading(false);
         e.target.value = null;
