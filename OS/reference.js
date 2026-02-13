@@ -11,6 +11,8 @@ const IconEdit = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="non
 const IconLoader = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="animate-spin"><path d="M21 12a9 9 0 1 1-6.219-8.56"></path></svg>;
 const IconFolder = () => <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>;
 const IconCloseLarge = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>;
+const IconLink = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>;
+const IconExternalLink = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>;
 
 // --- 2. KOMPRIMERING ---
 const compressReferenceImage = async (file, maxWidth = 1000, quality = 0.7) => {
@@ -52,6 +54,7 @@ window.ReferenceView = ({ setView }) => {
     const [newTitle, setNewTitle] = useState('');
     const [newCategory, setNewCategory] = useState('OLJA');
     const [newText, setNewText] = useState(''); 
+    const [newLink, setNewLink] = useState(''); // NYTT: Länk-state
     const [file, setFile] = useState(null);
     const [existingImage, setExistingImage] = useState(null); 
 
@@ -76,6 +79,7 @@ window.ReferenceView = ({ setView }) => {
         setNewTitle(doc.title);
         setNewCategory(doc.category);
         setNewText(doc.text || '');
+        setNewLink(doc.link || ''); // Hämta länk om det finns
         setExistingImage(doc.image || null);
         setFile(null);
         setShowUpload(true);
@@ -85,8 +89,9 @@ window.ReferenceView = ({ setView }) => {
     // --- SPARA / UPPDATERA ---
     const handleSave = async (e) => {
         e.preventDefault();
-        const hasContent = file || newText.trim().length > 0 || existingImage;
-        if (!newTitle || !hasContent) return alert("Ange titel och minst en bild eller text.");
+        // Validering: Måste ha innehåll av något slag
+        const hasContent = file || newText.trim().length > 0 || existingImage || newLink.trim().length > 0;
+        if (!newTitle || !hasContent) return alert("Ange titel och minst en bild, text eller länk.");
 
         setUploading(true);
 
@@ -106,6 +111,7 @@ window.ReferenceView = ({ setView }) => {
                 title: newTitle.toUpperCase(),
                 category: newCategory,
                 text: newText,
+                link: newLink, // Sparar länken
                 image: imageBase64,
                 timestamp: new Date().toISOString(), 
                 createdBy: window.firebase.auth().currentUser.email
@@ -133,6 +139,7 @@ window.ReferenceView = ({ setView }) => {
         setFile(null);
         setNewTitle('');
         setNewText('');
+        setNewLink('');
         setExistingImage(null);
     };
 
@@ -200,14 +207,29 @@ window.ReferenceView = ({ setView }) => {
 
                             {/* TEXT / ANTECKNINGAR */}
                             <div className="space-y-1">
-                                <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider">Anteckningar / Textinfo</label>
+                                <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider">Anteckningar</label>
                                 <textarea 
-                                    placeholder="Skriv information, specifikationer eller noteringar här..." 
+                                    placeholder="Specifikationer eller noteringar..." 
                                     value={newText}
                                     onChange={e => setNewText(e.target.value)}
                                     rows={3}
                                     className="w-full p-3 text-xs border border-zinc-300 rounded-[2px] focus:border-black focus:ring-0 outline-none transition-all resize-none"
                                 />
+                            </div>
+
+                            {/* EXTERN LÄNK (NYTT) */}
+                            <div className="space-y-1">
+                                <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider">Extern Länk / URL</label>
+                                <div className="flex items-center bg-white border border-zinc-300 rounded-[2px] px-3 transition-all focus-within:border-black">
+                                    <span className="text-zinc-400 shrink-0 mr-2"><IconLink /></span>
+                                    <input 
+                                        type="url" 
+                                        placeholder="https://..." 
+                                        value={newLink}
+                                        onChange={e => setNewLink(e.target.value)}
+                                        className="w-full py-3 text-xs font-mono border-none outline-none bg-transparent"
+                                    />
+                                </div>
                             </div>
 
                             {/* KATEGORI & BILD */}
@@ -273,6 +295,7 @@ window.ReferenceView = ({ setView }) => {
                         {filteredDocs.map(doc => {
                             const hasImage = !!doc.image;
                             const hasText = !!doc.text;
+                            const hasLink = !!doc.link; // Check om länk finns
 
                             return (
                                 <div key={doc.id} className="group bg-white border border-zinc-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all relative flex flex-col h-full">
@@ -293,7 +316,7 @@ window.ReferenceView = ({ setView }) => {
                                         </button>
                                     </div>
 
-                                    {/* Content Area - NU ALLTID ASPECT-3/4 FÖR ATT UNDVIKA ATT TEXT KLIPPS */}
+                                    {/* Content Area */}
                                     <div 
                                         onClick={() => setSelectedDoc(doc)}
                                         className="aspect-[3/4] overflow-hidden cursor-pointer relative bg-zinc-50"
@@ -307,29 +330,28 @@ window.ReferenceView = ({ setView }) => {
                                                             {doc.category}
                                                         </span>
                                                         {hasText && <div className="bg-white/20 text-white p-1 rounded-sm"><IconFileText /></div>}
+                                                        {hasLink && <div className="bg-blue-500/80 text-white p-1 rounded-sm"><IconLink /></div>}
                                                     </div>
                                                 </div>
                                             </>
                                         ) : (
-                                            /* TEXT ONLY LAYOUT - FIXAD FÖR MOBIL */
+                                            /* TEXT ONLY LAYOUT */
                                             <div className="w-full h-full flex flex-col relative p-4">
-                                                {/* Kategori Badge Top Right */}
                                                 <div className="absolute top-3 right-3">
                                                     <span className="text-[8px] font-black text-zinc-400 uppercase bg-zinc-200/50 px-2 py-1 rounded-[2px]">
                                                         {doc.category}
                                                     </span>
                                                 </div>
 
-                                                {/* Centrerad Text - Med mer plats och bättre brytning */}
                                                 <div className="flex-1 flex items-center justify-center pt-6 pb-6 overflow-hidden">
                                                     <p className="text-xs font-bold text-zinc-700 text-center leading-relaxed break-words line-clamp-[8]">
                                                         "{doc.text}"
                                                     </p>
                                                 </div>
 
-                                                {/* Ikon botten */}
-                                                <div className="flex justify-center text-zinc-300 pb-1">
+                                                <div className="flex justify-center items-center gap-2 text-zinc-300 pb-1">
                                                     <IconFileText />
+                                                    {hasLink && <span className="text-blue-400"><IconLink /></span>}
                                                 </div>
                                             </div>
                                         )}
@@ -385,6 +407,21 @@ window.ReferenceView = ({ setView }) => {
                                     | {new Date(selectedDoc.timestamp).toLocaleString()}
                                 </span>
                             </div>
+
+                            {/* LÄNK-KNAPP (NYTT) */}
+                            {selectedDoc.link && (
+                                <div className="mb-4">
+                                    <a 
+                                        href={selectedDoc.link} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-4 py-3 rounded-[2px] text-xs font-black uppercase tracking-wider w-full justify-center transition-colors"
+                                    >
+                                        <IconExternalLink />
+                                        Öppna extern länk
+                                    </a>
+                                </div>
+                            )}
 
                             {selectedDoc.text && (
                                 <div className="text-zinc-300 text-sm whitespace-pre-wrap leading-relaxed border-t border-zinc-800 pt-4 font-mono">
