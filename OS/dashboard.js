@@ -26,11 +26,10 @@ const formatDate = (dateStr) => {
     return `${targetDate.getDate()} ${months[targetDate.getMonth()]}`;
 };
 
-// 2. STATUS BADGE (Uppfräschad design)
+// 2. STATUS BADGE
 window.Badge = React.memo(({ status }) => {
     const s = (status || 'BOKAD').toUpperCase();
     
-    // Färger och "dot"-färger
     const config = {
         'BOKAD':      { bg: 'bg-orange-50', text: 'text-orange-700', border: 'border-orange-200/60', dot: 'bg-orange-500' },
         'OFFERERAD':  { bg: 'bg-blue-50',   text: 'text-blue-700',   border: 'border-blue-200/60',   dot: 'bg-blue-500' },
@@ -48,14 +47,16 @@ window.Badge = React.memo(({ status }) => {
     );
 });
 
-const statusColors = {
-    'BOKAD': 'bg-orange-500',
-    'OFFERERAD': 'bg-blue-500',
-    'KLAR': 'bg-emerald-500',
-    'FAKTURERAS': 'bg-zinc-400',
+// 3. MOBILKORTET
+// Custom compare function: Ignorera om 'setView' eller 'onOpenHistory' ändras (pga klockan i app.js)
+const mobileCardPropsAreEqual = (prev, next) => {
+    return (
+        prev.job === next.job && // Om jobb-objektet är samma referens (oförändrat)
+        prev.job.status === next.job.status &&
+        prev.job.datum === next.job.datum
+    );
 };
 
-// 3. MOBILKORTET (Flyttad UTANFÖR DashboardView för att fixa menubuggen)
 const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
     const [menuOpen, setMenuOpen] = React.useState(false);
 
@@ -64,17 +65,14 @@ const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
     const dateString = formatDate(job.datum);
     const isUrgentDate = ['IDAG', 'IMORGON', 'IGÅR'].includes(dateString);
     
-    // Avgör om jobbet är "historia" (klart eller långt fram i tiden)
     const isDone = ['KLAR', 'FAKTURERAS'].includes(job.status);
     const showAsHistory = isDone || (!isWaiting && !isUrgentDate);
 
-    // Formattera fordon & Pris
     const vehicleDisplay = job.regnr || job.bilmodell || '-';
     // Koll: Ser det ut som ett regnr? (Kort + innehåller siffra)
     const isReg = vehicleDisplay.length <= 8 && /\d/.test(vehicleDisplay);
     const price = parseInt(job.kundpris) || 0;
 
-    // Färger för vänsterkanten
     const statusColors = {
         'BOKAD': 'bg-orange-500',
         'OFFERERAD': 'bg-blue-500',
@@ -86,12 +84,11 @@ const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
     return (
         <div 
             onClick={() => setView('NEW_JOB', { job: job })}
-            // Dämpa kortet om det är klart
             className={`w-full relative active:bg-zinc-50 transition-all border-b border-zinc-200 last:border-0 shadow-sm bg-white group select-none 
                 ${isDone ? 'opacity-70 grayscale-[0.3]' : ''}`}
             style={isWaiting ? { backgroundImage: 'repeating-linear-gradient(45deg, #ffffff, #ffffff 10px, #f8fafc 10px, #f8fafc 20px)' } : {}}
         >
-            {/* Vänsterlinje (Statusfärg) */}
+            {/* Vänsterlinje */}
             <div className={`absolute left-0 top-0 bottom-0 w-[4px] ${isDone ? 'bg-zinc-300' : sidebarColor}`}></div>
 
             <div className="pl-6 pr-4 py-3">
@@ -112,16 +109,16 @@ const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
                     <div className="flex items-center gap-1.5 relative z-30">
                         <window.Badge status={job.status} />
 
-                        {/* Meny-knapp med stor träffyta */}
+                        {/* Meny-knapp */}
                         <div className="relative">
                             <button 
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     setMenuOpen(!menuOpen);
                                 }}
-                                className="w-10 h-10 -mr-2 flex items-center justify-center focus:outline-none"
+                                className="w-10 h-10 -mr-2 flex items-center justify-center focus:outline-none active:scale-90 transition-transform"
                             >
-                                <div className={`w-[26px] h-[26px] flex items-center justify-center rounded-md border transition-all duration-200 pointer-events-none
+                                <div className={`w-[26px] h-[26px] flex items-center justify-center rounded-md border transition-colors duration-200
                                     ${menuOpen 
                                         ? 'bg-zinc-800 text-white border-zinc-800' 
                                         : 'bg-white text-zinc-400 border-zinc-200 group-hover:border-zinc-300'
@@ -176,7 +173,6 @@ const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
                             <div className="flex items-start gap-2">
                                 <window.Icon name="car" size={15} className="text-zinc-400 shrink-0 mt-0.5" />
                                 <div className="flex flex-col min-w-0">
-                                    {/* Regnummer med "Skylt-look" om det är ett regnr */}
                                     <span className={`truncate leading-tight mt-0.5 ${isReg 
                                         ? 'font-mono text-[11px] bg-white border border-zinc-300 px-1.5 py-0.5 rounded-[3px] text-black tracking-widest shadow-sm w-fit' 
                                         : 'text-[13px] font-bold text-zinc-800'
@@ -184,7 +180,6 @@ const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
                                         {vehicleDisplay}
                                     </span>
                                     
-                                    {/* KNAPP: SE HISTORIK */}
                                     {(job.regnr && onOpenHistory) && (
                                         <button 
                                             onClick={(e) => {
@@ -254,22 +249,30 @@ const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
             </div>
         </div>
     );
-});
+}, mobileCardPropsAreEqual); // STABILISERA FLIMMER
 
-// --- 4. HUVUDVY (Komplett med Historik-Modal State) ---
-// --- 4. HUVUDVY (STRUCTURED & CONTAINED) ---
+// --- 4. HUVUDVY ---
+const dashboardPropsAreEqual = (prev, next) => {
+    return (
+        prev.filteredJobs === next.filteredJobs &&
+        prev.activeFilter === next.activeFilter &&
+        prev.globalSearch === next.globalSearch &&
+        prev.statusCounts === next.statusCounts
+    );
+};
+
 window.DashboardView = React.memo(({ 
     filteredJobs, setEditingJob, setView, 
     activeFilter, setActiveFilter, statusCounts,
     globalSearch, setGlobalSearch 
 }) => {
-    // --- STATE ---
-    const [searchOpen, setSearchOpen] = React.useState(false);
+    // BUGGFIX: Initiera searchOpen till true om det redan finns text
+    const [searchOpen, setSearchOpen] = React.useState(!!globalSearch);
     const [historyRegnr, setHistoryRegnr] = React.useState(null);
+    const tabsRef = React.useRef(null); // Ref för menyn
 
     const filters = ['ALLA', 'BOKAD', 'OFFERERAD', 'FAKTURERAS', 'KLAR'];
 
-    // --- KPI LOGIK ---
     const totalValue = React.useMemo(() => {
         return filteredJobs.reduce((acc, job) => acc + (parseInt(job.kundpris) || 0), 0);
     }, [filteredJobs]);
@@ -282,23 +285,56 @@ window.DashboardView = React.memo(({
         }).length;
     }, [filteredJobs]);
 
-    // --- SWIPE (Mobile) ---
+    // --- FUNKTION: AUTO-SCROLL AV MENY ---
+    React.useEffect(() => {
+        if (tabsRef.current) {
+            // Hitta den aktiva knappen via data-tab attributet
+            const activeBtn = tabsRef.current.querySelector(`[data-tab="${activeFilter}"]`);
+            if (activeBtn) {
+                // Scrolla knappen till mitten av vyn
+                activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            }
+        }
+        // Haptisk feedback vid byte
+        if (navigator.vibrate) navigator.vibrate(5);
+    }, [activeFilter]);
+
+    // Håll sökrutan öppen om det finns text
+    React.useEffect(() => {
+        if (globalSearch && !searchOpen) setSearchOpen(true);
+    }, [globalSearch]);
+
+    // --- SVEP LOGIK ---
     const touchStart = React.useRef(null);
     const touchStartY = React.useRef(null);
-    const onTouchStart = (e) => { touchStart.current = e.targetTouches[0].clientX; touchStartY.current = e.targetTouches[0].clientY; };
-    const onTouchEnd = (e) => {
+    
+    const onTouchStart = React.useCallback((e) => { 
+        touchStart.current = e.targetTouches[0].clientX; 
+        touchStartY.current = e.targetTouches[0].clientY; 
+    }, []);
+    
+    const onTouchEnd = React.useCallback((e) => {
         if (touchStart.current === null || touchStartY.current === null) return;
+        
         const xDiff = touchStart.current - e.changedTouches[0].clientX;
         const yDiff = touchStartY.current - e.changedTouches[0].clientY;
-        touchStart.current = null; touchStartY.current = null;
-        if (Math.abs(yDiff) >= Math.abs(xDiff) || Math.abs(xDiff) < 40) return;
+        
+        touchStart.current = null; 
+        touchStartY.current = null;
+        
+        // Ignorera om man scrollar vertikalt mer än horisontellt, eller om svepet är litet
+        if (Math.abs(yDiff) >= Math.abs(xDiff) || Math.abs(xDiff) < 50) return;
+        
         const currIdx = filters.indexOf(activeFilter);
-        let nextIdx = currIdx + (xDiff > 0 ? 1 : -1);
-        if (nextIdx >= 0 && nextIdx < filters.length) setActiveFilter(filters[nextIdx]);
-    };
+        if (currIdx === -1) return;
 
-    // --- KOMPONENTER ---
-    
+        let nextIdx = currIdx + (xDiff > 0 ? 1 : -1);
+        
+        if (nextIdx >= 0 && nextIdx < filters.length) {
+            setActiveFilter(filters[nextIdx]);
+        }
+    }, [activeFilter, filters, setActiveFilter]);
+
     const TabButton = ({ label }) => {
         const isActive = activeFilter === label;
         const count = statusCounts[label] || 0;
@@ -318,13 +354,12 @@ window.DashboardView = React.memo(({
     };
 
     return (
-        // VIKTIGT: Mörkare bakgrund (zinc-100) för att skapa kontrast mot de vita boxarna
         <div className="flex flex-col min-h-screen bg-[#f4f4f5] font-sans text-zinc-900">
             
             {/* --- DESKTOP VY --- */}
             <div className="hidden lg:flex flex-col h-full px-8 py-8">
                 
-                {/* 1. HEADER (High Contrast) */}
+                {/* 1. HEADER */}
                 <div className="flex justify-between items-end mb-8">
                     <div>
                         <div className="flex items-center gap-2 mb-2">
@@ -337,7 +372,6 @@ window.DashboardView = React.memo(({
                     </div>
 
                     <div className="flex items-center gap-4">
-                        {/* Search Box (White on Gray) */}
                         <div className="relative group shadow-sm">
                             <input 
                                 type="text" 
@@ -359,7 +393,7 @@ window.DashboardView = React.memo(({
                     </div>
                 </div>
 
-                {/* 2. STATS BAR (Separat vit box) */}
+                {/* 2. STATS BAR */}
                 <div className="bg-white rounded-[4px] border-l-4 border-l-orange-500 shadow-sm border-y border-r border-zinc-200 p-5 mb-6 flex items-center gap-12">
                     <div>
                         <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1">Estimerat Värde</div>
@@ -379,14 +413,12 @@ window.DashboardView = React.memo(({
                     </div>
                 </div>
 
-                {/* 3. TABELL-CONTAINER (Detta fixar "allt smälter ihop") */}
+                {/* 3. TABELL */}
                 <div className="flex flex-col flex-1">
-                    {/* Tabs sitter ihop med boxen */}
                     <div className="flex px-2 space-x-1">
                         {filters.map(f => <TabButton key={f} label={f} />)}
                     </div>
 
-                    {/* Själva vita boxen */}
                     <div className="bg-white rounded-lg rounded-tl-none shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] border border-zinc-200 overflow-hidden flex flex-col flex-1 min-h-[500px]">
                         <div className="flex-1 overflow-auto">
                             <table className="w-full text-left border-collapse">
@@ -400,9 +432,8 @@ window.DashboardView = React.memo(({
                                         <th className="pl-4 pr-6 py-4 w-[15%] text-right"></th>
                                     </tr>
                                 </thead>
-                                {/* Divide-y skapar linjer mellan varje rad */}
                                 <tbody className="divide-y divide-zinc-100">
-                                    {filteredJobs.map((job, idx) => {
+                                    {filteredJobs.map((job) => {
                                         const dateText = formatDate(job.datum);
                                         const isUrgent = ['IDAG', 'IMORGON'].includes(dateText) && job.status !== 'KLAR';
                                         const regDisplay = job.regnr || job.bilmodell || '-';
@@ -414,7 +445,6 @@ window.DashboardView = React.memo(({
                                                 onClick={() => setView('NEW_JOB', { job: job })}
                                                 className="group hover:bg-orange-50/30 transition-colors cursor-pointer"
                                             >
-                                                {/* KUND */}
                                                 <td className="pl-6 pr-4 py-4 align-top">
                                                     <div className="flex items-start gap-3">
                                                         <div className={`mt-1.5 w-2 h-2 rounded-sm shrink-0 ${isUrgent ? 'bg-orange-500' : 'bg-zinc-300'}`}></div>
@@ -429,8 +459,6 @@ window.DashboardView = React.memo(({
                                                         </div>
                                                     </div>
                                                 </td>
-
-                                                {/* FORDON */}
                                                 <td className="px-4 py-4 align-top">
                                                     <div 
                                                         onClick={(e) => { e.stopPropagation(); if(job.regnr) setHistoryRegnr(job.regnr); }}
@@ -443,8 +471,6 @@ window.DashboardView = React.memo(({
                                                         {regDisplay}
                                                     </div>
                                                 </td>
-
-                                                {/* DATUM */}
                                                 <td className="px-4 py-4 align-top">
                                                     {job.datum ? (
                                                         <div>
@@ -457,20 +483,14 @@ window.DashboardView = React.memo(({
                                                         </div>
                                                     ) : <span className="text-[10px] font-bold text-zinc-300 uppercase">Inväntar</span>}
                                                 </td>
-
-                                                {/* STATUS */}
                                                 <td className="px-4 py-4 align-top">
                                                     <window.Badge status={job.status} />
                                                 </td>
-
-                                                {/* BELOPP */}
                                                 <td className="px-4 py-4 align-top text-right">
                                                     <div className="font-mono font-bold text-[14px] text-zinc-900">
                                                         {(parseInt(job.kundpris) || 0).toLocaleString()} <span className="text-[10px] text-zinc-400">kr</span>
                                                     </div>
                                                 </td>
-
-                                                {/* ACTIONS */}
                                                 <td className="pl-4 pr-6 py-4 align-middle text-right">
                                                     <div className="opacity-0 group-hover:opacity-100 transition-opacity flex justify-end gap-2">
                                                         <button 
@@ -500,11 +520,12 @@ window.DashboardView = React.memo(({
                 </div>
             </div>
 
-            {/* --- MOBILE VIEW (Standard) --- */}
+            {/* --- MOBILE VIEW --- */}
             <div 
-                className="lg:hidden flex flex-col min-h-screen bg-[#f4f4f5]"
+                className="lg:hidden flex flex-col min-h-screen bg-[#f4f4f5] touch-pan-y"
                 onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}
             >
+                {/* Z-40 Header för att ligga överst */}
                 <div className="bg-[#0f0f11] text-white pt-safe-top sticky top-0 z-40 shadow-md pb-0">
                      <div className="px-4 py-3 flex items-center justify-between">
                         <div className="flex items-center gap-3">
@@ -517,15 +538,17 @@ window.DashboardView = React.memo(({
                      </div>
                      {searchOpen && (
                          <div className="px-4 pb-3">
-                             <input autoFocus type="text" value={globalSearch} onChange={e => setGlobalSearch(e.target.value)} placeholder="SÖK..." className="w-full h-10 bg-zinc-800 text-white rounded-[2px] px-3 text-sm focus:outline-none" />
+                             <input autoFocus type="text" value={globalSearch} onChange={e => setGlobalSearch(e.target.value)} placeholder="SÖK..." className="w-full h-10 bg-zinc-800 text-white rounded-[2px] px-3 text-sm focus:outline-none focus:ring-1 focus:ring-orange-500" />
                          </div>
                      )}
-                     <div className="flex overflow-x-auto gap-2 px-4 pb-3" style={{scrollbarWidth:'none'}}>
+                     
+                     {/* FIX: MENY MED REF OCH DATA-ATTRIBUT FÖR AUTO-SCROLL */}
+                     <div ref={tabsRef} className="flex overflow-x-auto gap-2 px-4 pb-3" style={{scrollbarWidth:'none'}}>
                          {filters.map(s => {
                              const isActive = activeFilter === s;
                              return (
-                                 <button key={s} onClick={() => setActiveFilter(s)} 
-                                    className={`px-3 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-[2px] border whitespace-nowrap flex items-center gap-2
+                                 <button key={s} data-tab={s} onClick={() => setActiveFilter(s)} 
+                                    className={`px-3 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-[2px] border whitespace-nowrap flex items-center gap-2 transition-colors
                                     ${isActive ? 'bg-white text-black border-white' : 'bg-zinc-800 text-zinc-500 border-zinc-700'}`}>
                                     {s} 
                                     {statusCounts[s] > 0 && <span className={`px-1 rounded-[2px] ${isActive ? 'bg-black text-white' : 'bg-zinc-700 text-zinc-400'}`}>{statusCounts[s]}</span>}
@@ -536,9 +559,17 @@ window.DashboardView = React.memo(({
                 </div>
 
                 <div className="px-3 py-2 pb-24 flex flex-col gap-2">
-                    {filteredJobs.map((job) => (
-                        <MobileJobCard key={job.id} job={job} setView={setView} onOpenHistory={setHistoryRegnr} />
-                    ))}
+                    {filteredJobs.length > 0 ? (
+                        filteredJobs.map((job) => (
+                            <MobileJobCard key={job.id} job={job} setView={setView} onOpenHistory={setHistoryRegnr} />
+                        ))
+                    ) : (
+                        // FIX: TOM LISTA-VY I MOBIL
+                        <div className="flex flex-col items-center justify-center py-20 text-zinc-400">
+                            <window.Icon name="inbox" size={32} className="mb-2 opacity-50" />
+                            <span className="text-[10px] font-black uppercase tracking-widest">Inga jobb här</span>
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -548,4 +579,4 @@ window.DashboardView = React.memo(({
             )}
         </div>
     );
-});
+}, dashboardPropsAreEqual);
