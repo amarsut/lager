@@ -47,11 +47,10 @@ window.Badge = React.memo(({ status }) => {
     );
 });
 
-// 3. MOBILKORTET
-// Custom compare function: Ignorera om 'setView' eller 'onOpenHistory' ändras (pga klockan i app.js)
+// 3. MOBILKORTET (ÅTERSTÄLLD TILL ORIGINALDESIGN MED RAM)
 const mobileCardPropsAreEqual = (prev, next) => {
     return (
-        prev.job === next.job && // Om jobb-objektet är samma referens (oförändrat)
+        prev.job === next.job && 
         prev.job.status === next.job.status &&
         prev.job.datum === next.job.datum
     );
@@ -69,7 +68,6 @@ const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
     const showAsHistory = isDone || (!isWaiting && !isUrgentDate);
 
     const vehicleDisplay = job.regnr || job.bilmodell || '-';
-    // Koll: Ser det ut som ett regnr? (Kort + innehåller siffra)
     const isReg = vehicleDisplay.length <= 8 && /\d/.test(vehicleDisplay);
     const price = parseInt(job.kundpris) || 0;
 
@@ -163,11 +161,11 @@ const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
                     </div>
                 </div>
 
-                {/* --- RAD 2: TECH BOX --- */}
+                {/* --- RAD 2: TECH BOX (DIN ORIGINALDESIGN) --- */}
                 <div className="border border-zinc-200 rounded-[4px] bg-zinc-50/60 py-2 px-3 mb-2">
                     <div className="grid grid-cols-2 gap-4 divide-x divide-zinc-200 relative">
                         
-                        {/* FORDON & HISTORIK */}
+                        {/* FORDON */}
                         <div className="flex flex-col pr-2">
                             <span className="text-[9px] text-zinc-400 font-bold uppercase tracking-widest mb-0.5">Fordon</span>
                             <div className="flex items-start gap-2">
@@ -249,7 +247,7 @@ const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
             </div>
         </div>
     );
-}, mobileCardPropsAreEqual); // STABILISERA FLIMMER
+}, mobileCardPropsAreEqual);
 
 // --- 4. HUVUDVY ---
 const dashboardPropsAreEqual = (prev, next) => {
@@ -266,87 +264,131 @@ window.DashboardView = React.memo(({
     activeFilter, setActiveFilter, statusCounts,
     globalSearch, setGlobalSearch 
 }) => {
-    // BUGGFIX: Initiera searchOpen till true om det redan finns text
     const [searchOpen, setSearchOpen] = React.useState(!!globalSearch);
     const [historyRegnr, setHistoryRegnr] = React.useState(null);
-    const tabsRef = React.useRef(null); // Ref för menyn
+    
+    // Globala jobb för statistik
+    const [statsJobs, setStatsJobs] = React.useState([]); 
 
+    // Timer State
+    const [timerActive, setTimerActive] = React.useState(false);
+    const [timerSeconds, setTimerSeconds] = React.useState(0);
+    const timerInterval = React.useRef(null);
+
+    const tabsRef = React.useRef(null);
     const filters = ['ALLA', 'BOKAD', 'OFFERERAD', 'FAKTURERAS', 'KLAR'];
 
-    const totalValue = React.useMemo(() => {
-        return filteredJobs.reduce((acc, job) => acc + (parseInt(job.kundpris) || 0), 0);
-    }, [filteredJobs]);
+    // --- 1. HÄMTA ALL DATA FÖR STATISTIK ---
+    React.useEffect(() => {
+        const unsubscribe = window.db.collection("jobs").onSnapshot(snapshot => {
+            const allJobs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            setStatsJobs(allJobs);
+        });
+        return () => unsubscribe();
+    }, []);
 
-    const urgentCount = React.useMemo(() => {
-        return filteredJobs.filter(j => {
-             if(!j.datum) return false;
-             const d = formatDate(j.datum);
-             return ['IDAG', 'IMORGON'].includes(d) && j.status !== 'KLAR';
+    // --- 2. STATISTIK (ALLTID FRÅN HELA DATABASEN) ---
+    const stats30Days = React.useMemo(() => {
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        return statsJobs.filter(j => 
+            j.status === 'KLAR' && j.datum && new Date(j.datum) >= thirtyDaysAgo && !j.deleted
+        ).length;
+    }, [statsJobs]);
+
+    const statsNext7Days = React.useMemo(() => {
+        const today = new Date();
+        today.setHours(0,0,0,0);
+        const nextWeek = new Date(today);
+        nextWeek.setDate(nextWeek.getDate() + 7);
+        
+        return statsJobs.filter(j => {
+            if(!j.datum || j.status === 'KLAR' || j.deleted) return false;
+            const d = new Date(j.datum);
+            return d >= today && d <= nextWeek;
         }).length;
-    }, [filteredJobs]);
+    }, [statsJobs]);
 
-    // --- FUNKTION: AUTO-SCROLL AV MENY ---
+    // --- TIMER FUNKTIONER ---
+    React.useEffect(() => {
+        if (timerActive) {
+            timerInterval.current = setInterval(() => setTimerSeconds(s => s + 1), 1000);
+        } else {
+            clearInterval(timerInterval.current);
+        }
+        return () => clearInterval(timerInterval.current);
+    }, [timerActive]);
+
+    const formatTimer = (totalSeconds) => {
+        const m = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
+        const s = (totalSeconds % 60).toString().padStart(2, '0');
+        return `${m}:${s}`;
+    };
+
+    // --- DATUM FORMATERING (Header) ---
+    const getHeaderDate = () => {
+        const d = new Date();
+        const days = ['Söndag', 'Måndag', 'Tisdag', 'Onsdag', 'Torsdag', 'Fredag', 'Lördag'];
+        const months = ['Januari', 'Februari', 'Mars', 'April', 'Maj', 'Juni', 'Juli', 'Augusti', 'September', 'Oktober', 'November', 'December'];
+        return `${days[d.getDay()]}, ${d.getDate()} ${months[d.getMonth()]}`;
+    };
+
+    // --- NAVIGERING ---
+    const handleOpenHistory = React.useCallback((regnr) => {
+        window.history.pushState({ view: 'DASHBOARD', modal: 'HISTORY' }, "", window.location.href);
+        setHistoryRegnr(regnr);
+    }, []);
+
+    React.useEffect(() => {
+        const handlePopState = () => {
+            if (historyRegnr) setHistoryRegnr(null);
+        };
+        window.addEventListener('popstate', handlePopState);
+        return () => window.removeEventListener('popstate', handlePopState);
+    }, [historyRegnr]);
+
     React.useEffect(() => {
         if (tabsRef.current) {
-            // Hitta den aktiva knappen via data-tab attributet
             const activeBtn = tabsRef.current.querySelector(`[data-tab="${activeFilter}"]`);
-            if (activeBtn) {
-                // Scrolla knappen till mitten av vyn
-                activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-            }
+            if (activeBtn) activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
         }
-        // Haptisk feedback vid byte
         if (navigator.vibrate) navigator.vibrate(5);
     }, [activeFilter]);
 
-    // Håll sökrutan öppen om det finns text
+    // --- SÖK LOGIK (FIX: Inget autotvång) ---
     React.useEffect(() => {
-        if (globalSearch && !searchOpen) setSearchOpen(true);
+        // Om användaren söker, öppna boxen. Men tvinga den inte öppen om man stänger den.
+        if (globalSearch && !searchOpen && document.activeElement.tagName !== 'INPUT') {
+             // Valfritt: Ta bort denna rad om du aldrig vill att den ska auto-öppnas. 
+             // Men behåll om du vill att den öppnas när man börjar skriva från t.ex. ett hårdvarutangentbord.
+             setSearchOpen(true);
+        }
     }, [globalSearch]);
 
-    // --- SVEP LOGIK ---
+    // Swipe logic
     const touchStart = React.useRef(null);
     const touchStartY = React.useRef(null);
-    
     const onTouchStart = React.useCallback((e) => { 
         touchStart.current = e.targetTouches[0].clientX; 
         touchStartY.current = e.targetTouches[0].clientY; 
     }, []);
-    
     const onTouchEnd = React.useCallback((e) => {
         if (touchStart.current === null || touchStartY.current === null) return;
-        
         const xDiff = touchStart.current - e.changedTouches[0].clientX;
         const yDiff = touchStartY.current - e.changedTouches[0].clientY;
-        
-        touchStart.current = null; 
-        touchStartY.current = null;
-        
-        // Ignorera om man scrollar vertikalt mer än horisontellt, eller om svepet är litet
+        touchStart.current = null; touchStartY.current = null;
         if (Math.abs(yDiff) >= Math.abs(xDiff) || Math.abs(xDiff) < 50) return;
-        
         const currIdx = filters.indexOf(activeFilter);
         if (currIdx === -1) return;
-
         let nextIdx = currIdx + (xDiff > 0 ? 1 : -1);
-        
-        if (nextIdx >= 0 && nextIdx < filters.length) {
-            setActiveFilter(filters[nextIdx]);
-        }
+        if (nextIdx >= 0 && nextIdx < filters.length) setActiveFilter(filters[nextIdx]);
     }, [activeFilter, filters, setActiveFilter]);
 
     const TabButton = ({ label }) => {
         const isActive = activeFilter === label;
         const count = statusCounts[label] || 0;
         return (
-            <button 
-                onClick={() => setActiveFilter(label)}
-                className={`px-4 py-2 text-[11px] font-bold uppercase tracking-wider transition-all rounded-t-lg border-t-2 
-                    ${isActive 
-                        ? 'bg-white text-black border-orange-500 shadow-[0_-5px_10px_rgba(0,0,0,0.02)]' 
-                        : 'bg-transparent text-zinc-400 border-transparent hover:text-zinc-600 hover:bg-zinc-200/50'}
-                `}
-            >
+            <button onClick={() => setActiveFilter(label)} className={`px-4 py-2 text-[11px] font-bold uppercase tracking-wider transition-all rounded-t-lg border-t-2 ${isActive ? 'bg-white text-black border-orange-500 shadow-[0_-5px_10px_rgba(0,0,0,0.02)]' : 'bg-transparent text-zinc-400 border-transparent hover:text-zinc-600 hover:bg-zinc-200/50'}`}>
                 {label}
                 {count > 0 && <span className={`ml-2 text-[9px] ${isActive ? 'text-orange-600' : 'text-zinc-400'}`}>({count})</span>}
             </button>
@@ -356,163 +398,48 @@ window.DashboardView = React.memo(({
     return (
         <div className="flex flex-col min-h-screen bg-[#f4f4f5] font-sans text-zinc-900">
             
-            {/* --- DESKTOP VY --- */}
+            {/* --- DESKTOP VY (Behållen) --- */}
             <div className="hidden lg:flex flex-col h-full px-8 py-8">
-                
-                {/* 1. HEADER */}
                 <div className="flex justify-between items-end mb-8">
                     <div>
                         <div className="flex items-center gap-2 mb-2">
                             <span className="w-2 h-2 rounded-full bg-orange-500 shadow-[0_0_10px_orange]"></span>
                             <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">System Online</span>
                         </div>
-                        <h1 className="text-4xl font-black text-black uppercase tracking-tighter leading-none drop-shadow-sm">
-                            Mission <span className="text-zinc-400">Control</span>
-                        </h1>
+                        <h1 className="text-4xl font-black text-black uppercase tracking-tighter leading-none drop-shadow-sm">Mission <span className="text-zinc-400">Control</span></h1>
                     </div>
-
                     <div className="flex items-center gap-4">
                         <div className="relative group shadow-sm">
-                            <input 
-                                type="text" 
-                                value={globalSearch} 
-                                onChange={e => setGlobalSearch(e.target.value)}
-                                placeholder="SÖK..." 
-                                className="w-64 bg-white border border-zinc-200 text-black text-[12px] font-bold py-3 pl-4 pr-10 uppercase rounded-[4px] focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all placeholder:text-zinc-300"
-                            />
+                            <input type="text" value={globalSearch} onChange={e => setGlobalSearch(e.target.value)} placeholder="SÖK..." className="w-64 bg-white border border-zinc-200 text-black text-[12px] font-bold py-3 pl-4 pr-10 uppercase rounded-[4px] focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500" />
                             <window.Icon name="search" size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-300" />
                         </div>
-                        
-                        <button 
-                            onClick={() => setView('NEW_JOB')}
-                            className="bg-black hover:bg-zinc-800 text-white h-[42px] px-6 rounded-[4px] flex items-center gap-3 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all group border border-black"
-                        >
-                            <span className="text-[11px] font-black uppercase tracking-widest">Nytt Jobb</span>
-                            <window.Icon name="plus" size={16} className="text-orange-500" />
-                        </button>
+                        <button onClick={() => setView('NEW_JOB')} className="bg-black hover:bg-zinc-800 text-white h-[42px] px-6 rounded-[4px] flex items-center gap-3 shadow-lg group border border-black"><span className="text-[11px] font-black uppercase tracking-widest">Nytt Jobb</span><window.Icon name="plus" size={16} className="text-orange-500" /></button>
                     </div>
                 </div>
-
-                {/* 2. STATS BAR */}
+                
+                {/* Desktop Stats (Använder GLOBAL STATS) */}
                 <div className="bg-white rounded-[4px] border-l-4 border-l-orange-500 shadow-sm border-y border-r border-zinc-200 p-5 mb-6 flex items-center gap-12">
                     <div>
-                        <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1">Estimerat Värde</div>
-                        <div className="text-[22px] font-black tracking-tight text-zinc-900 leading-none">{totalValue.toLocaleString()} <span className="text-[14px] text-zinc-400 font-medium">kr</span></div>
+                        <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1">Utförda (30d)</div>
+                        <div className="text-[22px] font-black tracking-tight text-zinc-900 leading-none">{stats30Days} <span className="text-[14px] text-zinc-400 font-medium">st</span></div>
                     </div>
                     <div className="w-[1px] h-8 bg-zinc-100"></div>
                     <div>
-                        <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1">Antal Order</div>
-                        <div className="text-[22px] font-black tracking-tight text-zinc-900 leading-none">{filteredJobs.length} <span className="text-[14px] text-zinc-400 font-medium">st</span></div>
-                    </div>
-                    <div className="w-[1px] h-8 bg-zinc-100"></div>
-                    <div>
-                        <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1">Prioritet</div>
-                        <div className={`text-[22px] font-black tracking-tight leading-none ${urgentCount > 0 ? 'text-orange-500' : 'text-zinc-900'}`}>
-                            {urgentCount} <span className="text-[14px] text-zinc-400 font-medium text-black">st</span>
-                        </div>
+                        <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1">Kommande (7d)</div>
+                        <div className="text-[22px] font-black tracking-tight text-zinc-900 leading-none">{statsNext7Days} <span className="text-[14px] text-zinc-400 font-medium">st</span></div>
                     </div>
                 </div>
 
-                {/* 3. TABELL */}
                 <div className="flex flex-col flex-1">
-                    <div className="flex px-2 space-x-1">
-                        {filters.map(f => <TabButton key={f} label={f} />)}
-                    </div>
-
-                    <div className="bg-white rounded-lg rounded-tl-none shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] border border-zinc-200 overflow-hidden flex flex-col flex-1 min-h-[500px]">
+                    <div className="flex px-2 space-x-1">{filters.map(f => <TabButton key={f} label={f} />)}</div>
+                    <div className="bg-white rounded-lg rounded-tl-none shadow border border-zinc-200 overflow-hidden flex flex-col flex-1 min-h-[500px]">
                         <div className="flex-1 overflow-auto">
                             <table className="w-full text-left border-collapse">
                                 <thead className="bg-zinc-50 border-b border-zinc-200 text-zinc-500 text-[10px] uppercase tracking-widest font-bold">
-                                    <tr>
-                                        <th className="pl-6 pr-4 py-4 w-[25%]">Kund</th>
-                                        <th className="px-4 py-4 w-[15%]">Fordon</th>
-                                        <th className="px-4 py-4 w-[15%]">Datum</th>
-                                        <th className="px-4 py-4 w-[15%]">Status</th>
-                                        <th className="px-4 py-4 w-[15%] text-right">Belopp</th>
-                                        <th className="pl-4 pr-6 py-4 w-[15%] text-right"></th>
-                                    </tr>
+                                    <tr><th className="pl-6 pr-4 py-4 w-[25%]">Kund</th><th className="px-4 py-4 w-[15%]">Fordon</th><th className="px-4 py-4 w-[15%]">Datum</th><th className="px-4 py-4 w-[15%]">Status</th><th className="px-4 py-4 w-[15%] text-right">Belopp</th><th className="pl-4 pr-6 py-4 w-[15%] text-right"></th></tr>
                                 </thead>
                                 <tbody className="divide-y divide-zinc-100">
-                                    {filteredJobs.map((job) => {
-                                        const dateText = formatDate(job.datum);
-                                        const isUrgent = ['IDAG', 'IMORGON'].includes(dateText) && job.status !== 'KLAR';
-                                        const regDisplay = job.regnr || job.bilmodell || '-';
-                                        const isReg = regDisplay.length <= 8 && /\d/.test(regDisplay);
-
-                                        return (
-                                            <tr 
-                                                key={job.id} 
-                                                onClick={() => setView('NEW_JOB', { job: job })}
-                                                className="group hover:bg-orange-50/30 transition-colors cursor-pointer"
-                                            >
-                                                <td className="pl-6 pr-4 py-4 align-top">
-                                                    <div className="flex items-start gap-3">
-                                                        <div className={`mt-1.5 w-2 h-2 rounded-sm shrink-0 ${isUrgent ? 'bg-orange-500' : 'bg-zinc-300'}`}></div>
-                                                        <div>
-                                                            <div className="text-[14px] font-bold text-zinc-900 leading-none mb-1">
-                                                                {job.kundnamn}
-                                                            </div>
-                                                            <div className="flex items-center gap-2">
-                                                                <span className="text-[10px] font-mono text-zinc-400 bg-zinc-50 px-1 rounded border border-zinc-100">#{job.id.substring(0,6)}</span>
-                                                                {job.kommentar && <window.Icon name="message-circle" size={12} className="text-zinc-400" />}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td className="px-4 py-4 align-top">
-                                                    <div 
-                                                        onClick={(e) => { e.stopPropagation(); if(job.regnr) setHistoryRegnr(job.regnr); }}
-                                                        className={`inline-block font-mono font-bold text-[11px] px-2 py-1 rounded-[3px] border transition-transform hover:-translate-y-0.5
-                                                            ${isReg 
-                                                                ? 'bg-white border-zinc-300 text-black shadow-sm group-hover:border-orange-300' 
-                                                                : 'bg-transparent border-transparent text-zinc-400'
-                                                            }`}
-                                                    >
-                                                        {regDisplay}
-                                                    </div>
-                                                </td>
-                                                <td className="px-4 py-4 align-top">
-                                                    {job.datum ? (
-                                                        <div>
-                                                            <div className={`text-[11px] font-black uppercase ${isUrgent ? 'text-orange-600' : 'text-zinc-800'}`}>
-                                                                {dateText}
-                                                            </div>
-                                                            <div className="text-[10px] font-mono text-zinc-400">
-                                                                {job.datum.split('T')[1]}
-                                                            </div>
-                                                        </div>
-                                                    ) : <span className="text-[10px] font-bold text-zinc-300 uppercase">Inväntar</span>}
-                                                </td>
-                                                <td className="px-4 py-4 align-top">
-                                                    <window.Badge status={job.status} />
-                                                </td>
-                                                <td className="px-4 py-4 align-top text-right">
-                                                    <div className="font-mono font-bold text-[14px] text-zinc-900">
-                                                        {(parseInt(job.kundpris) || 0).toLocaleString()} <span className="text-[10px] text-zinc-400">kr</span>
-                                                    </div>
-                                                </td>
-                                                <td className="pl-4 pr-6 py-4 align-middle text-right">
-                                                    <div className="opacity-0 group-hover:opacity-100 transition-opacity flex justify-end gap-2">
-                                                        <button 
-                                                            onClick={(e) => { e.stopPropagation(); setView('NEW_JOB', { job: job }); }} 
-                                                            className="w-8 h-8 flex items-center justify-center rounded bg-white border border-zinc-200 text-zinc-400 hover:text-blue-600 hover:border-blue-300 hover:shadow-sm transition-all"
-                                                        >
-                                                            <window.Icon name="edit-2" size={14} />
-                                                        </button>
-                                                        <button 
-                                                            onClick={(e) => { e.stopPropagation(); if(confirm("Radera?")) window.db.collection("jobs").doc(job.id).update({deleted:true}); }} 
-                                                            className="w-8 h-8 flex items-center justify-center rounded bg-white border border-zinc-200 text-zinc-400 hover:text-red-600 hover:border-red-300 hover:shadow-sm transition-all"
-                                                        >
-                                                            <window.Icon name="trash" size={14} />
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
-                                    {filteredJobs.length === 0 && (
-                                        <tr><td colSpan="6" className="py-20 text-center text-zinc-400 text-[10px] font-bold uppercase">Listan är tom</td></tr>
-                                    )}
+                                    {filteredJobs.map((job) => (<tr key={job.id} onClick={() => setView('NEW_JOB', { job: job })} className="group hover:bg-orange-50/30 transition-colors cursor-pointer"><td className="pl-6 pr-4 py-4 align-top"><div className="text-[14px] font-bold text-zinc-900 leading-none mb-1">{job.kundnamn}</div></td><td className="px-4 py-4 align-top"><div className="font-mono text-[11px] font-bold">{job.regnr || job.bilmodell}</div></td><td className="px-4 py-4 align-top">{formatDate(job.datum) || '-'}</td><td className="px-4 py-4 align-top"><window.Badge status={job.status} /></td><td className="px-4 py-4 align-top text-right"><div className="font-mono font-bold text-[14px]">{(parseInt(job.kundpris) || 0).toLocaleString()} kr</div></td><td className="pl-4 pr-6 py-4 align-middle text-right">...</td></tr>))}
                                 </tbody>
                             </table>
                         </div>
@@ -520,35 +447,82 @@ window.DashboardView = React.memo(({
                 </div>
             </div>
 
-            {/* --- MOBILE VIEW --- */}
+            {/* --- MOBILE VY --- */}
             <div 
                 className="lg:hidden flex flex-col min-h-screen bg-[#f4f4f5] touch-pan-y"
                 onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}
             >
-                {/* Z-40 Header för att ligga överst */}
+                {/* --- HEADER --- */}
                 <div className="bg-[#0f0f11] text-white pt-safe-top sticky top-0 z-40 shadow-md pb-0">
-                     <div className="px-4 py-3 flex items-center justify-between">
+                     
+                     {/* RAD 1: Titel, Datum & Sök */}
+                     <div className="px-4 py-4 flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                             <div className="w-8 h-8 bg-orange-500 rounded-[2px] flex items-center justify-center text-black font-bold">
-                                <window.Icon name="grid" size={16} />
+                             <div className="w-10 h-10 bg-orange-500 rounded-[3px] flex items-center justify-center text-black font-bold shadow-[0_0_15px_rgba(249,115,22,0.4)]">
+                                <window.Icon name="grid" size={20} />
                             </div>
-                            <span className="text-[14px] font-black uppercase tracking-wider">Mission Control</span>
+                            <div className="flex flex-col">
+                                <span className="text-2xl font-black uppercase tracking-tighter leading-none mb-1">Mission Control</span>
+                                <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{getHeaderDate()}</span>
+                            </div>
                         </div>
-                        <button onClick={() => setSearchOpen(!searchOpen)} className="text-zinc-400"><window.Icon name={searchOpen ? "x" : "search"} size={20} /></button>
+                        <button onClick={() => setSearchOpen(!searchOpen)} className="w-10 h-10 flex items-center justify-center bg-zinc-800/50 rounded-full text-zinc-400 hover:text-white transition-colors border border-zinc-700/50">
+                            <window.Icon name={searchOpen ? "x" : "search"} size={20} />
+                        </button>
                      </div>
+
+                     {/* RAD 2: WIDGETS (Utan scroll - flex wrap) */}
+                     {!searchOpen && (
+                         <div className="px-4 pb-4 flex flex-wrap items-center gap-3">
+                             
+                             {/* WIDGET 1: VÄDER */}
+                             <div className="flex items-center gap-2 bg-zinc-900 border border-zinc-800 rounded-[4px] px-3 py-2 h-[38px]">
+                                 <window.Icon name="cloud" size={14} className="text-zinc-400" />
+                                 <span className="text-[12px] font-bold text-white">16°C</span>
+                             </div>
+
+                             {/* WIDGET 2: TIMER */}
+                             <div className="flex items-center gap-2 bg-zinc-900 border border-zinc-800 rounded-[4px] px-2 py-1 h-[38px]">
+                                 <button onClick={() => setTimerActive(!timerActive)} className={`w-6 h-6 flex items-center justify-center rounded-[3px] transition-colors ${timerActive ? 'bg-red-500/20 text-red-500' : 'bg-green-500/20 text-green-500'}`}>
+                                     <window.Icon name={timerActive ? "square" : "play"} size={10} fill="currentColor" />
+                                 </button>
+                                 <span className="text-[14px] font-mono font-bold text-white w-[40px] text-center">{formatTimer(timerSeconds)}</span>
+                                 <button onClick={() => {setTimerActive(false); setTimerSeconds(0);}} className="text-zinc-500 hover:text-white px-1"><window.Icon name="rotate-ccw" size={12} /></button>
+                             </div>
+
+                             {/* WIDGET 3: STATS (Utförda / Kommande - GLOBAL) */}
+                             <div className="flex items-center gap-3 bg-zinc-900 border border-zinc-800 rounded-[4px] px-3 py-1 h-[38px] flex-grow justify-between sm:flex-grow-0">
+                                 <div className="flex flex-col justify-center">
+                                     <span className="text-[7px] font-bold text-zinc-500 uppercase tracking-widest leading-none mb-0.5">30d</span>
+                                     <span className="text-[12px] font-mono font-bold text-emerald-500 leading-none">
+                                         {stats30Days} <span className="text-[8px] text-zinc-600">st</span>
+                                     </span>
+                                 </div>
+                                 <div className="w-[1px] h-4 bg-zinc-800"></div>
+                                 <div className="flex flex-col justify-center text-right">
+                                     <span className="text-[7px] font-bold text-zinc-500 uppercase tracking-widest leading-none mb-0.5">7d</span>
+                                     <span className="text-[12px] font-mono font-bold text-blue-500 leading-none">
+                                         {statsNext7Days} <span className="text-[8px] text-zinc-600">st</span>
+                                     </span>
+                                 </div>
+                             </div>
+                         </div>
+                     )}
+
+                     {/* RAD 3: SÖK-INPUT */}
                      {searchOpen && (
-                         <div className="px-4 pb-3">
-                             <input autoFocus type="text" value={globalSearch} onChange={e => setGlobalSearch(e.target.value)} placeholder="SÖK..." className="w-full h-10 bg-zinc-800 text-white rounded-[2px] px-3 text-sm focus:outline-none focus:ring-1 focus:ring-orange-500" />
+                         <div className="px-4 pb-3 animate-in slide-in-from-top-2">
+                             <input autoFocus type="text" value={globalSearch} onChange={e => setGlobalSearch(e.target.value)} placeholder="SÖK..." className="w-full h-10 bg-zinc-800 text-white rounded-[2px] px-3 text-sm focus:outline-none focus:ring-1 focus:ring-orange-500 border border-zinc-700" />
                          </div>
                      )}
                      
-                     {/* FIX: MENY MED REF OCH DATA-ATTRIBUT FÖR AUTO-SCROLL */}
+                     {/* RAD 4: FILTER MENY */}
                      <div ref={tabsRef} className="flex overflow-x-auto gap-2 px-4 pb-3" style={{scrollbarWidth:'none'}}>
                          {filters.map(s => {
                              const isActive = activeFilter === s;
                              return (
                                  <button key={s} data-tab={s} onClick={() => setActiveFilter(s)} 
-                                    className={`px-3 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-[2px] border whitespace-nowrap flex items-center gap-2 transition-colors
+                                    className={`px-3 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-[2px] border whitespace-nowrap flex items-center gap-2 transition-all
                                     ${isActive ? 'bg-white text-black border-white' : 'bg-zinc-800 text-zinc-500 border-zinc-700'}`}>
                                     {s} 
                                     {statusCounts[s] > 0 && <span className={`px-1 rounded-[2px] ${isActive ? 'bg-black text-white' : 'bg-zinc-700 text-zinc-400'}`}>{statusCounts[s]}</span>}
@@ -561,10 +535,9 @@ window.DashboardView = React.memo(({
                 <div className="px-3 py-2 pb-24 flex flex-col gap-2">
                     {filteredJobs.length > 0 ? (
                         filteredJobs.map((job) => (
-                            <MobileJobCard key={job.id} job={job} setView={setView} onOpenHistory={setHistoryRegnr} />
+                            <MobileJobCard key={job.id} job={job} setView={setView} onOpenHistory={handleOpenHistory} />
                         ))
                     ) : (
-                        // FIX: TOM LISTA-VY I MOBIL
                         <div className="flex flex-col items-center justify-center py-20 text-zinc-400">
                             <window.Icon name="inbox" size={32} className="mb-2 opacity-50" />
                             <span className="text-[10px] font-black uppercase tracking-widest">Inga jobb här</span>
@@ -575,7 +548,11 @@ window.DashboardView = React.memo(({
 
             {/* MODUL: History */}
             {historyRegnr && window.VehicleProfileLoader && (
-                <window.VehicleProfileLoader regnr={historyRegnr} onClose={() => setHistoryRegnr(null)} setView={setView} />
+                <window.VehicleProfileLoader 
+                    regnr={historyRegnr} 
+                    onClose={() => window.history.back()} 
+                    setView={setView} 
+                />
             )}
         </div>
     );
