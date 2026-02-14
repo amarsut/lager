@@ -74,6 +74,26 @@ const App = () => {
         }
     };
 
+    // --- SYSTEM BAR & THEME COLOR (Gör mobil-listen sömlös) ---
+    useEffect(() => {
+        // Sätt body-bakgrunden till samma färg som bottenmenyn (zinc-950)
+        // Detta gör att "overscroll" och ytan bakom swipe-strecket blir mörk
+        document.body.style.backgroundColor = '#09090b';
+
+        // Uppdatera eller skapa meta-taggen för theme-color
+        let meta = document.querySelector('meta[name="theme-color"]');
+        if (!meta) {
+            meta = document.createElement('meta');
+            meta.name = 'theme-color';
+            document.head.appendChild(meta);
+        }
+        // Sätt färgen till #09090b (Zinc-950)
+        meta.content = '#09090b';
+
+        // (Valfritt) Återställ vid unmount om du skulle lämna appen, 
+        // men för en SPA (Single Page App) behövs det sällan.
+    }, []);
+
     useEffect(() => {
         if (!user) return;
 
