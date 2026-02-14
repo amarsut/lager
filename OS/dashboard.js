@@ -47,7 +47,7 @@ window.Badge = React.memo(({ status }) => {
     );
 });
 
-// 3. MOBILKORTET (ÅTERSTÄLLD TILL ORIGINALDESIGN MED RAM)
+// 3. MOBILKORTET
 const mobileCardPropsAreEqual = (prev, next) => {
     return (
         prev.job === next.job && 
@@ -161,11 +161,11 @@ const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
                     </div>
                 </div>
 
-                {/* --- RAD 2: TECH BOX (DIN ORIGINALDESIGN) --- */}
+                {/* --- RAD 2: TECH BOX --- */}
                 <div className="border border-zinc-200 rounded-[4px] bg-zinc-50/60 py-2 px-3 mb-2">
                     <div className="grid grid-cols-2 gap-4 divide-x divide-zinc-200 relative">
                         
-                        {/* FORDON */}
+                        {/* FORDON & HISTORIK */}
                         <div className="flex flex-col pr-2">
                             <span className="text-[9px] text-zinc-400 font-bold uppercase tracking-widest mb-0.5">Fordon</span>
                             <div className="flex items-start gap-2">
@@ -287,7 +287,7 @@ window.DashboardView = React.memo(({
         return () => unsubscribe();
     }, []);
 
-    // --- 2. STATISTIK (ALLTID FRÅN HELA DATABASEN) ---
+    // --- 2. STATISTIK ---
     const stats30Days = React.useMemo(() => {
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -301,7 +301,6 @@ window.DashboardView = React.memo(({
         today.setHours(0,0,0,0);
         const nextWeek = new Date(today);
         nextWeek.setDate(nextWeek.getDate() + 7);
-        
         return statsJobs.filter(j => {
             if(!j.datum || j.status === 'KLAR' || j.deleted) return false;
             const d = new Date(j.datum);
@@ -309,7 +308,15 @@ window.DashboardView = React.memo(({
         }).length;
     }, [statsJobs]);
 
-    // --- TIMER FUNKTIONER ---
+    const urgentCount = React.useMemo(() => {
+        return filteredJobs.filter(j => {
+             if(!j.datum) return false;
+             const d = formatDate(j.datum);
+             return ['IDAG', 'IMORGON'].includes(d) && j.status !== 'KLAR';
+        }).length;
+    }, [filteredJobs]);
+
+    // --- TIMER ---
     React.useEffect(() => {
         if (timerActive) {
             timerInterval.current = setInterval(() => setTimerSeconds(s => s + 1), 1000);
@@ -325,7 +332,6 @@ window.DashboardView = React.memo(({
         return `${m}:${s}`;
     };
 
-    // --- DATUM FORMATERING (Header) ---
     const getHeaderDate = () => {
         const d = new Date();
         const days = ['Söndag', 'Måndag', 'Tisdag', 'Onsdag', 'Torsdag', 'Fredag', 'Lördag'];
@@ -355,17 +361,12 @@ window.DashboardView = React.memo(({
         if (navigator.vibrate) navigator.vibrate(5);
     }, [activeFilter]);
 
-    // --- SÖK LOGIK (FIX: Inget autotvång) ---
     React.useEffect(() => {
-        // Om användaren söker, öppna boxen. Men tvinga den inte öppen om man stänger den.
         if (globalSearch && !searchOpen && document.activeElement.tagName !== 'INPUT') {
-             // Valfritt: Ta bort denna rad om du aldrig vill att den ska auto-öppnas. 
-             // Men behåll om du vill att den öppnas när man börjar skriva från t.ex. ett hårdvarutangentbord.
              setSearchOpen(true);
         }
     }, [globalSearch]);
 
-    // Swipe logic
     const touchStart = React.useRef(null);
     const touchStartY = React.useRef(null);
     const onTouchStart = React.useCallback((e) => { 
@@ -398,26 +399,62 @@ window.DashboardView = React.memo(({
     return (
         <div className="flex flex-col min-h-screen bg-[#f4f4f5] font-sans text-zinc-900">
             
-            {/* --- DESKTOP VY (Behållen) --- */}
+            {/* --- DESKTOP VY (REPARERAD) --- */}
             <div className="hidden lg:flex flex-col h-full px-8 py-8">
+                
+                {/* Header (Med nya widgets) */}
                 <div className="flex justify-between items-end mb-8">
                     <div>
-                        <div className="flex items-center gap-2 mb-2">
-                            <span className="w-2 h-2 rounded-full bg-orange-500 shadow-[0_0_10px_orange]"></span>
-                            <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">System Online</span>
+                        {/* System Online + Widgets */}
+                        <div className="flex items-center gap-6 mb-2">
+                            <div className="flex items-center gap-2">
+                                <span className="w-2 h-2 rounded-full bg-orange-500 shadow-[0_0_10px_orange]"></span>
+                                <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">System Online</span>
+                            </div>
+                            
+                            {/* Desktop Widgets */}
+                            <div className="flex items-center gap-3">
+                                 {/* Väder */}
+                                 <div className="flex items-center gap-1.5 text-zinc-400">
+                                     <window.Icon name="cloud" size={12} />
+                                     <span className="text-[10px] font-bold">16°C</span>
+                                 </div>
+                                 <div className="w-[1px] h-3 bg-zinc-300"></div>
+                                 {/* Timer */}
+                                 <div className="flex items-center gap-2">
+                                     <button onClick={() => setTimerActive(!timerActive)} className={`w-4 h-4 flex items-center justify-center rounded-[2px] ${timerActive ? 'bg-red-500 text-white' : 'bg-green-500 text-white'}`}>
+                                         <window.Icon name={timerActive ? "square" : "play"} size={8} fill="currentColor" />
+                                     </button>
+                                     <span className="text-[11px] font-mono font-bold text-zinc-600 w-[32px]">{formatTimer(timerSeconds)}</span>
+                                     <button onClick={() => {setTimerActive(false); setTimerSeconds(0);}} className="text-zinc-400 hover:text-black"><window.Icon name="rotate-ccw" size={10} /></button>
+                                 </div>
+                            </div>
                         </div>
-                        <h1 className="text-4xl font-black text-black uppercase tracking-tighter leading-none drop-shadow-sm">Mission <span className="text-zinc-400">Control</span></h1>
+
+                        {/* Title & Icon */}
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 bg-orange-500 rounded-[4px] flex items-center justify-center text-black font-bold shadow-[0_0_20px_rgba(249,115,22,0.3)]">
+                                <window.Icon name="grid" size={24} />
+                            </div>
+                            <h1 className="text-5xl font-black text-black uppercase tracking-tighter leading-none drop-shadow-sm">
+                                Mission <span className="text-zinc-400">Control</span>
+                            </h1>
+                        </div>
                     </div>
+
                     <div className="flex items-center gap-4">
                         <div className="relative group shadow-sm">
                             <input type="text" value={globalSearch} onChange={e => setGlobalSearch(e.target.value)} placeholder="SÖK..." className="w-64 bg-white border border-zinc-200 text-black text-[12px] font-bold py-3 pl-4 pr-10 uppercase rounded-[4px] focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500" />
                             <window.Icon name="search" size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-300" />
                         </div>
-                        <button onClick={() => setView('NEW_JOB')} className="bg-black hover:bg-zinc-800 text-white h-[42px] px-6 rounded-[4px] flex items-center gap-3 shadow-lg group border border-black"><span className="text-[11px] font-black uppercase tracking-widest">Nytt Jobb</span><window.Icon name="plus" size={16} className="text-orange-500" /></button>
+                        <button onClick={() => setView('NEW_JOB')} className="bg-black hover:bg-zinc-800 text-white h-[42px] px-6 rounded-[4px] flex items-center gap-3 shadow-lg group border border-black">
+                            <span className="text-[11px] font-black uppercase tracking-widest">Nytt Jobb</span>
+                            <window.Icon name="plus" size={16} className="text-orange-500" />
+                        </button>
                     </div>
                 </div>
                 
-                {/* Desktop Stats (Använder GLOBAL STATS) */}
+                {/* Desktop Stats (Uppdaterad med 30d/7d) */}
                 <div className="bg-white rounded-[4px] border-l-4 border-l-orange-500 shadow-sm border-y border-r border-zinc-200 p-5 mb-6 flex items-center gap-12">
                     <div>
                         <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1">Utförda (30d)</div>
@@ -428,18 +465,96 @@ window.DashboardView = React.memo(({
                         <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1">Kommande (7d)</div>
                         <div className="text-[22px] font-black tracking-tight text-zinc-900 leading-none">{statsNext7Days} <span className="text-[14px] text-zinc-400 font-medium">st</span></div>
                     </div>
+                    <div className="w-[1px] h-8 bg-zinc-100"></div>
+                    <div>
+                        <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1">Prioritet</div>
+                        <div className={`text-[22px] font-black tracking-tight leading-none ${urgentCount > 0 ? 'text-orange-500' : 'text-zinc-900'}`}>
+                            {urgentCount} <span className="text-[14px] text-zinc-400 font-medium text-black">st</span>
+                        </div>
+                    </div>
                 </div>
 
                 <div className="flex flex-col flex-1">
                     <div className="flex px-2 space-x-1">{filters.map(f => <TabButton key={f} label={f} />)}</div>
-                    <div className="bg-white rounded-lg rounded-tl-none shadow border border-zinc-200 overflow-hidden flex flex-col flex-1 min-h-[500px]">
+                    
+                    {/* TABELLEN - ÅTERSTÄLLD TILL BILD 1 DESIGN */}
+                    <div className="bg-white rounded-lg rounded-tl-none shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] border border-zinc-200 overflow-hidden flex flex-col flex-1 min-h-[500px]">
                         <div className="flex-1 overflow-auto">
                             <table className="w-full text-left border-collapse">
                                 <thead className="bg-zinc-50 border-b border-zinc-200 text-zinc-500 text-[10px] uppercase tracking-widest font-bold">
-                                    <tr><th className="pl-6 pr-4 py-4 w-[25%]">Kund</th><th className="px-4 py-4 w-[15%]">Fordon</th><th className="px-4 py-4 w-[15%]">Datum</th><th className="px-4 py-4 w-[15%]">Status</th><th className="px-4 py-4 w-[15%] text-right">Belopp</th><th className="pl-4 pr-6 py-4 w-[15%] text-right"></th></tr>
+                                    <tr>
+                                        <th className="pl-6 pr-4 py-4 w-[25%]">Kund</th>
+                                        <th className="px-4 py-4 w-[15%]">Fordon</th>
+                                        <th className="px-4 py-4 w-[15%]">Datum</th>
+                                        <th className="px-4 py-4 w-[15%]">Status</th>
+                                        <th className="px-4 py-4 w-[15%] text-right">Belopp</th>
+                                        <th className="pl-4 pr-6 py-4 w-[15%] text-right"></th>
+                                    </tr>
                                 </thead>
                                 <tbody className="divide-y divide-zinc-100">
-                                    {filteredJobs.map((job) => (<tr key={job.id} onClick={() => setView('NEW_JOB', { job: job })} className="group hover:bg-orange-50/30 transition-colors cursor-pointer"><td className="pl-6 pr-4 py-4 align-top"><div className="text-[14px] font-bold text-zinc-900 leading-none mb-1">{job.kundnamn}</div></td><td className="px-4 py-4 align-top"><div className="font-mono text-[11px] font-bold">{job.regnr || job.bilmodell}</div></td><td className="px-4 py-4 align-top">{formatDate(job.datum) || '-'}</td><td className="px-4 py-4 align-top"><window.Badge status={job.status} /></td><td className="px-4 py-4 align-top text-right"><div className="font-mono font-bold text-[14px]">{(parseInt(job.kundpris) || 0).toLocaleString()} kr</div></td><td className="pl-4 pr-6 py-4 align-middle text-right">...</td></tr>))}
+                                    {filteredJobs.map((job) => {
+                                        const dateText = formatDate(job.datum);
+                                        const isUrgent = ['IDAG', 'IMORGON'].includes(dateText) && job.status !== 'KLAR';
+                                        const regDisplay = job.regnr || job.bilmodell || '-';
+                                        const isReg = regDisplay.length <= 8 && /\d/.test(regDisplay);
+
+                                        return (
+                                            <tr key={job.id} onClick={() => setView('NEW_JOB', { job: job })} className="group hover:bg-orange-50/30 transition-colors cursor-pointer">
+                                                
+                                                {/* KUND (Samma som bild 1) */}
+                                                <td className="pl-6 pr-4 py-4 align-top">
+                                                    <div className="flex items-start gap-3">
+                                                        <div className={`mt-1.5 w-2 h-2 rounded-sm shrink-0 ${isUrgent ? 'bg-orange-500' : 'bg-zinc-300'}`}></div>
+                                                        <div>
+                                                            <div className="text-[14px] font-bold text-zinc-900 leading-none mb-1">{job.kundnamn}</div>
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-[10px] font-mono text-zinc-400 bg-zinc-50 px-1 rounded border border-zinc-100">#{job.id.substring(0,6)}</span>
+                                                                {job.kommentar && <window.Icon name="message-circle" size={12} className="text-zinc-400" />}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+
+                                                {/* FORDON (Badge-design från bild 1) */}
+                                                <td className="px-4 py-4 align-top">
+                                                    <div onClick={(e) => { e.stopPropagation(); if(job.regnr) setHistoryRegnr(job.regnr); }} className={`inline-block font-mono font-bold text-[11px] px-2 py-1 rounded-[3px] border transition-transform hover:-translate-y-0.5 ${isReg ? 'bg-white border-zinc-300 text-black shadow-sm group-hover:border-orange-300' : 'bg-transparent border-transparent text-zinc-400'}`}>
+                                                        {regDisplay}
+                                                    </div>
+                                                </td>
+
+                                                {/* DATUM (Split view från bild 1) */}
+                                                <td className="px-4 py-4 align-top">
+                                                    {job.datum ? (
+                                                        <div>
+                                                            <div className={`text-[11px] font-black uppercase ${isUrgent ? 'text-orange-600' : 'text-zinc-800'}`}>{dateText}</div>
+                                                            <div className="text-[10px] font-mono text-zinc-400">{job.datum.split('T')[1]}</div>
+                                                        </div>
+                                                    ) : <span className="text-[10px] font-bold text-zinc-300 uppercase">Inväntar</span>}
+                                                </td>
+
+                                                {/* STATUS */}
+                                                <td className="px-4 py-4 align-top">
+                                                    <window.Badge status={job.status} />
+                                                </td>
+
+                                                {/* BELOPP */}
+                                                <td className="px-4 py-4 align-top text-right">
+                                                    <div className="font-mono font-bold text-[14px] text-zinc-900">
+                                                        {(parseInt(job.kundpris) || 0).toLocaleString()} <span className="text-[10px] text-zinc-400">kr</span>
+                                                    </div>
+                                                </td>
+
+                                                {/* ACTIONS */}
+                                                <td className="pl-4 pr-6 py-4 align-middle text-right">
+                                                    <div className="opacity-0 group-hover:opacity-100 transition-opacity flex justify-end gap-2">
+                                                        <button onClick={(e) => { e.stopPropagation(); setView('NEW_JOB', { job: job }); }} className="w-8 h-8 flex items-center justify-center rounded bg-white border border-zinc-200 text-zinc-400 hover:text-blue-600 hover:border-blue-300 hover:shadow-sm transition-all"><window.Icon name="edit-2" size={14} /></button>
+                                                        <button onClick={(e) => { e.stopPropagation(); if(confirm("Radera?")) window.db.collection("jobs").doc(job.id).update({deleted:true}); }} className="w-8 h-8 flex items-center justify-center rounded bg-white border border-zinc-200 text-zinc-400 hover:text-red-600 hover:border-red-300 hover:shadow-sm transition-all"><window.Icon name="trash" size={14} /></button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                    {filteredJobs.length === 0 && (<tr><td colSpan="6" className="py-20 text-center text-zinc-400 text-[10px] font-bold uppercase">Listan är tom</td></tr>)}
                                 </tbody>
                             </table>
                         </div>
@@ -447,7 +562,7 @@ window.DashboardView = React.memo(({
                 </div>
             </div>
 
-            {/* --- MOBILE VY --- */}
+            {/* --- MOBILE VY (Orörd från tidigare förutom Icon Grid fix) --- */}
             <div 
                 className="lg:hidden flex flex-col min-h-screen bg-[#f4f4f5] touch-pan-y"
                 onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}
@@ -471,7 +586,7 @@ window.DashboardView = React.memo(({
                         </button>
                      </div>
 
-                     {/* RAD 2: WIDGETS (Utan scroll - flex wrap) */}
+                     {/* RAD 2: WIDGETS (Fixad: Ingen scroll, flex-wrap) */}
                      {!searchOpen && (
                          <div className="px-4 pb-4 flex flex-wrap items-center gap-3">
                              
@@ -490,7 +605,7 @@ window.DashboardView = React.memo(({
                                  <button onClick={() => {setTimerActive(false); setTimerSeconds(0);}} className="text-zinc-500 hover:text-white px-1"><window.Icon name="rotate-ccw" size={12} /></button>
                              </div>
 
-                             {/* WIDGET 3: STATS (Utförda / Kommande - GLOBAL) */}
+                             {/* WIDGET 3: STATS (Global data) */}
                              <div className="flex items-center gap-3 bg-zinc-900 border border-zinc-800 rounded-[4px] px-3 py-1 h-[38px] flex-grow justify-between sm:flex-grow-0">
                                  <div className="flex flex-col justify-center">
                                      <span className="text-[7px] font-bold text-zinc-500 uppercase tracking-widest leading-none mb-0.5">30d</span>
