@@ -4,19 +4,21 @@ const { useState, useEffect } = React;
 window.Icon = ({ name, size = 24, className = "" }) => {
     useEffect(() => {
         if (window.lucide) window.lucide.createIcons();
-    }, [name, size, className]); // Fixad prestandabugg
+    }, [name, size, className]); 
     return <i data-lucide={name} className={className} style={{ width: size, height: size }}></i>;
 };
 
 const App = () => {
     const [scrolled, setScrolled] = useState(false);
     const [showScrollTop, setShowScrollTop] = useState(false);
-    const [cookieAccepted, setCookieAccepted] = useState(true); // Satt till true som default, ändras i useEffect
+    const [cookieAccepted, setCookieAccepted] = useState(true);
     const [openFaq, setOpenFaq] = useState(null);
+    
+    // NYTT: State för mobilmenyn
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-    // Hantera scroll-effekter
+    // Hantera scroll-effekter och kex (cookies)
     useEffect(() => {
-        // Kolla om kakan är accepterad i LocalStorage
         const consent = localStorage.getItem('bmg_cookie_consent');
         if (!consent) setCookieAccepted(false);
 
@@ -26,6 +28,14 @@ const App = () => {
         };
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    // NYTT: Ladda in Elfsight (Instagram) på ett React-säkert sätt
+    useEffect(() => {
+        const script = document.createElement("script");
+        script.src = "https://elfsightcdn.com/platform.js";
+        script.async = true;
+        document.body.appendChild(script);
     }, []);
 
     const acceptCookies = () => {
@@ -45,21 +55,43 @@ const App = () => {
     ];
 
     return (
-        <div className="min-h-screen flex flex-col font-sans relative">
+        <div className="min-h-screen flex flex-col font-sans relative overflow-x-hidden">
             
-            {/* --- NAVBAR --- */}
-            <nav className={`fixed w-full z-50 transition-all duration-300 ${scrolled ? 'bg-brand-950/95 backdrop-blur-md shadow-lg py-4 border-b border-white/5' : 'bg-transparent py-6'}`}>
-                <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
+            {/* --- UPPDATERAD NAVBAR MED MOBILMENY --- */}
+            <nav className={`fixed w-full z-50 transition-all duration-300 ${scrolled || mobileMenuOpen ? 'bg-brand-950/95 backdrop-blur-md shadow-lg py-4 border-b border-white/5' : 'bg-transparent py-6'}`}>
+                <div className="max-w-7xl mx-auto px-6 flex justify-between items-center relative z-20">
                     <div className="text-2xl font-black tracking-tighter text-white uppercase flex items-center gap-2 cursor-pointer" onClick={scrollToTop}>
                         <window.Icon name="gauge" className="text-brand-500" size={28} />
                         BMG <span className="text-brand-500 font-light">Motorgrupp</span>
                     </div>
-                    <div className="hidden md:flex gap-8 text-sm font-semibold tracking-wide">
+                    
+                    {/* Desktop Meny */}
+                    <div className="hidden md:flex gap-8 text-sm font-semibold tracking-wide items-center">
                         <a href="#tjanster" className="hover:text-brand-500 transition-colors">Tjänster</a>
                         <a href="#om-oss" className="hover:text-brand-500 transition-colors">Om oss</a>
                         <a href="#recensioner" className="hover:text-brand-500 transition-colors">Omdömen</a>
                         <a href="#kontakt" className="hover:text-brand-500 transition-colors">Kontakt</a>
-                        <a href="#lager" className="text-brand-500 hover:text-white transition-colors">Bilar i lager</a>
+                        <a href="#lager" className="bg-brand-500 text-white px-5 py-2 rounded-lg hover:bg-brand-600 transition-colors shadow-lg shadow-brand-500/20">Bilar i lager</a>
+                    </div>
+
+                    {/* Mobil Meny Knapp (Hamburger) */}
+                    <button 
+                        className="md:hidden text-white p-2 hover:text-brand-500 transition-colors" 
+                        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                        aria-label="Öppna meny"
+                    >
+                        <window.Icon name={mobileMenuOpen ? "x" : "menu"} size={28} />
+                    </button>
+                </div>
+
+                {/* Mobil Meny Dropdown */}
+                <div className={`md:hidden absolute top-full left-0 w-full bg-brand-950/95 backdrop-blur-md border-b border-white/5 transition-all duration-300 overflow-hidden ${mobileMenuOpen ? 'max-h-[400px] opacity-100' : 'max-h-0 opacity-0'}`}>
+                    <div className="flex flex-col px-6 py-6 gap-6 font-semibold text-lg">
+                        <a href="#tjanster" onClick={() => setMobileMenuOpen(false)} className="text-slate-300 hover:text-brand-500 flex items-center gap-3"><window.Icon name="settings" size={20}/> Tjänster</a>
+                        <a href="#om-oss" onClick={() => setMobileMenuOpen(false)} className="text-slate-300 hover:text-brand-500 flex items-center gap-3"><window.Icon name="info" size={20}/> Om oss</a>
+                        <a href="#recensioner" onClick={() => setMobileMenuOpen(false)} className="text-slate-300 hover:text-brand-500 flex items-center gap-3"><window.Icon name="star" size={20}/> Omdömen</a>
+                        <a href="#kontakt" onClick={() => setMobileMenuOpen(false)} className="text-slate-300 hover:text-brand-500 flex items-center gap-3"><window.Icon name="phone" size={20}/> Kontakt</a>
+                        <a href="#lager" onClick={() => setMobileMenuOpen(false)} className="text-brand-500 flex items-center gap-3"><window.Icon name="car" size={20}/> Bilar i lager</a>
                     </div>
                 </div>
             </nav>
@@ -95,7 +127,7 @@ const App = () => {
                 </div>
             </header>
 
-            {/* --- TRYGGHET BANNER (FINANS & GARANTI) --- */}
+            {/* --- TRYGGHET BANNER --- */}
             <div className="bg-brand-900 border-y border-white/5 py-8">
                 <div className="max-w-7xl mx-auto px-6 flex flex-wrap justify-center md:justify-around items-center gap-8 opacity-80">
                     <div className="flex items-center gap-3 text-slate-300 font-semibold">
@@ -113,7 +145,7 @@ const App = () => {
                 </div>
             </div>
 
-            {/* --- OM OSS / BESKRIVNING --- */}
+            {/* --- OM OSS --- */}
             <section id="om-oss" className="py-24 bg-brand-900">
                 <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-16 items-center">
                     <div>
@@ -131,7 +163,6 @@ const App = () => {
                         </div>
                     </div>
                     
-                    {/* BLOCKET PORTAL KORT */}
                     <div id="lager" className="bg-brand-950 p-8 rounded-2xl border border-white/10 shadow-2xl relative overflow-hidden group">
                         <div className="absolute top-0 right-0 w-64 h-64 bg-brand-500/10 blur-3xl rounded-full group-hover:bg-brand-500/20 transition-all"></div>
                         <div className="relative z-10">
@@ -210,7 +241,6 @@ const App = () => {
             <section id="kontakt" className="py-24 bg-brand-950 border-t border-white/5">
                 <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16">
                     
-                    {/* Vänster kolumn: Info, FAQ & Karta */}
                     <div>
                         <h2 className="text-3xl font-black text-white mb-6">Kontakta & Hitta oss</h2>
                         <p className="text-slate-400 mb-8 text-lg">
@@ -249,7 +279,6 @@ const App = () => {
                             </div>
                         </div>
 
-                        {/* Google Maps iframe */}
                         <div className="w-full h-64 bg-slate-800 rounded-xl overflow-hidden mb-12 border border-white/10">
                             <iframe 
                                 width="100%" 
@@ -262,7 +291,6 @@ const App = () => {
                             </iframe>
                         </div>
 
-                        {/* FAQ */}
                         <div>
                             <h3 className="text-2xl font-bold text-white mb-6">Vanliga frågor</h3>
                             <div className="space-y-4">
@@ -286,10 +314,7 @@ const App = () => {
                         </div>
                     </div>
 
-                    {/* Höger kolumn: Formulär & Öppettider */}
                     <div className="space-y-8">
-                        
-                        {/* Kontaktformulär */}
                         <div className="bg-brand-900 p-8 rounded-2xl border border-white/5">
                             <h3 className="text-2xl font-bold text-white mb-6">Skicka ett meddelande</h3>
                             <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); alert('Tack för ditt meddelande! Vi återkopplar så snart vi kan.'); }}>
@@ -317,7 +342,6 @@ const App = () => {
                             </form>
                         </div>
 
-                        {/* Öppettider */}
                         <div className="bg-brand-900 p-8 rounded-2xl border border-white/5">
                             <div className="flex items-center gap-3 mb-6 border-b border-white/10 pb-6">
                                 <window.Icon name="clock" className="text-brand-500" size={24} />
@@ -342,8 +366,29 @@ const App = () => {
                                 </p>
                             </div>
                         </div>
-
                     </div>
+                </div>
+            </section>
+
+            {/* --- NYA ELFSIGHT INSTAGRAM-FLÖDET --- */}
+            <section className="py-24 bg-brand-950 border-t border-white/5">
+                <div className="max-w-7xl mx-auto px-6">
+                    <div className="flex flex-col md:flex-row justify-between items-center mb-12 gap-6">
+                        <div>
+                            <h2 className="text-3xl font-black text-white mb-2 flex items-center gap-3">
+                                <window.Icon name="instagram" className="text-brand-500" size={32} />
+                                Följ vår vardag
+                            </h2>
+                            <p className="text-slate-400">Följ @bmg.motorgrupp på Instagram för de senaste bilarna och en titt bakom kulisserna.</p>
+                        </div>
+                        <a href="https://instagram.com/bmg.motorgrupp" target="_blank" rel="noopener noreferrer" className="bg-brand-500 hover:bg-brand-600 text-white px-6 py-3 rounded-lg font-bold transition-colors whitespace-nowrap">
+                            Följ oss
+                        </a>
+                    </div>
+                    
+                    {/* HÄR LADDAS DITT RIKTIGA FLÖDE IN */}
+                    <div className="elfsight-app-bd475f3d-0848-4f19-a61c-394708e42db4" data-elfsight-app-lazy="true"></div>
+                    
                 </div>
             </section>
 
@@ -352,22 +397,20 @@ const App = () => {
                 <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
                     <div>
                         <div className="text-xl font-black text-white uppercase tracking-tighter mb-2">BMG Motorgrupp</div>
-                        <p>&copy; {new Date().getFullYear()} Alla rättigheter förbehållna.</p>
+                        <p>© {new Date().getFullYear()} Alla rättigheter förbehållna.</p>
                     </div>
                     
-                    {/* Sociala Medier */}
                     <div className="flex gap-4">
                         <a href="#" aria-label="Facebook" className="w-10 h-10 bg-white/5 hover:bg-brand-500 rounded-full flex items-center justify-center text-white transition-colors">
                             <window.Icon name="facebook" size={20} />
                         </a>
-                        <a href="#" aria-label="Instagram" className="w-10 h-10 bg-white/5 hover:bg-brand-500 rounded-full flex items-center justify-center text-white transition-colors">
+                        <a href="https://instagram.com/bmg.motorgrupp" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="w-10 h-10 bg-white/5 hover:bg-brand-500 rounded-full flex items-center justify-center text-white transition-colors">
                             <window.Icon name="instagram" size={20} />
                         </a>
                     </div>
                 </div>
             </footer>
 
-            {/* --- SCROLL TO TOP KNAPP --- */}
             <button 
                 onClick={scrollToTop}
                 className={`fixed bottom-8 right-8 w-12 h-12 bg-brand-500 text-white rounded-full shadow-xl shadow-brand-500/30 flex items-center justify-center transition-all duration-300 z-40 ${showScrollTop ? 'translate-y-0 opacity-100' : 'translate-y-16 opacity-0'}`}
@@ -376,7 +419,6 @@ const App = () => {
                 <window.Icon name="arrow-up" size={24} />
             </button>
 
-            {/* --- GDPR / COOKIE BANNER --- */}
             {!cookieAccepted && (
                 <div className="fixed bottom-0 left-0 w-full bg-brand-950/95 backdrop-blur-md border-t border-white/10 z-50 p-4 md:p-6 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] flex flex-col md:flex-row justify-between items-center gap-4 animate-in slide-in-from-bottom-full duration-500">
                     <div className="text-slate-300 text-sm md:text-base max-w-4xl">
