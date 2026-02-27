@@ -69,7 +69,6 @@ const App = () => {
 
     const faqs = [
         { q: "Tar ni min nuvarande bil i inbyte?", a: "Självklart! Vi värderar din nuvarande bil och drar av beloppet på ditt nya bilköp. Kontakta oss för en kostnadsfri värdering." },
-        { q: "Erbjuder ni hemleverans?", a: "Ja, vi kan erbjuda hemleverans över hela Sverige. Kontakta oss för en offert baserat på var du bor." },
         { q: "Hur fungerar motoroptimering?", a: "Vi uppdaterar mjukvaran i bilens motorstyrenhet för att frigöra mer effekt och ofta sänka bränsleförbrukningen. Helt säkert och beprövat." },
         { q: "Kan jag reservera en bil?", a: "Ja, mot en handpenning kan vi reservera en bil åt dig under en överenskommen tid." }
     ];
