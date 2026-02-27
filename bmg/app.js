@@ -14,11 +14,6 @@ const App = () => {
     const [cookieAccepted, setCookieAccepted] = useState(true);
     const [openFaq, setOpenFaq] = useState(null);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-    
-    // State för finansieringskalkylatorn (Kontant vs Månad)
-    const [showMonthly, setShowMonthly] = useState(false);
-    
-    const [latestCars, setLatestCars] = useState([]);
 
     // Hantera scroll-effekter och kex (cookies)
     useEffect(() => {
@@ -30,16 +25,6 @@ const App = () => {
             setShowScrollTop(window.scrollY > 500);
         };
         window.addEventListener('scroll', handleScroll);
-        
-        // Simulerad data för bilarna
-        setTimeout(() => {
-            setLatestCars([
-                { id: 1, brand: 'Volvo', model: 'XC60 T8 AWD Recharge', year: 2021, mil: '4 500 mil', gear: 'Automat', price: '489 900 kr', fuel: 'Laddhybrid', img: 'https://images.unsplash.com/photo-1619355745428-2c70034639f7?w=800&q=80' },
-                { id: 2, brand: 'Volkswagen', model: 'Golf R 2.0 TSI 4Motion', year: 2019, mil: '7 200 mil', gear: 'Automat', price: '349 500 kr', fuel: 'Bensin', img: 'https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?w=800&q=80' },
-                { id: 3, brand: 'BMW', model: '520d xDrive Touring M-Sport', year: 2020, mil: '8 900 mil', gear: 'Automat', price: '379 900 kr', fuel: 'Diesel', img: 'https://images.unsplash.com/photo-1555353540-64fd8b01a757?w=800&q=80' }
-            ]);
-        }, 800);
-
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
@@ -60,15 +45,9 @@ const App = () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    // Funktion för att räkna ut månadskostnad (Standard: 20% kontant, ca 36 mån)
-    const calculateMonthly = (priceString) => {
-        const price = parseInt(priceString.replace(/\D/g, ''));
-        const monthly = Math.round((price * 0.8) * 0.0125); 
-        return `${monthly.toLocaleString('sv-SE')} kr/mån`;
-    };
-
     const faqs = [
         { q: "Tar ni min nuvarande bil i inbyte?", a: "Självklart! Vi värderar din nuvarande bil och drar av beloppet på ditt nya bilköp. Kontakta oss för en kostnadsfri värdering." },
+        { q: "Erbjuder ni hemleverans?", a: "Ja, vi kan erbjuda hemleverans över hela Sverige. Kontakta oss för en offert baserat på var du bor." },
         { q: "Hur fungerar motoroptimering?", a: "Vi uppdaterar mjukvaran i bilens motorstyrenhet för att frigöra mer effekt och ofta sänka bränsleförbrukningen. Helt säkert och beprövat." },
         { q: "Kan jag reservera en bil?", a: "Ja, mot en handpenning kan vi reservera en bil åt dig under en överenskommen tid." }
     ];
@@ -80,7 +59,7 @@ const App = () => {
             <nav className={`fixed w-full z-50 transition-all duration-300 ${scrolled || mobileMenuOpen ? 'bg-brand-950/95 backdrop-blur-md shadow-lg py-4 border-b border-white/5' : 'bg-transparent py-6'}`}>
                 <div className="max-w-7xl mx-auto px-6 flex justify-between items-center relative z-20">
                     
-                    {/* Logotyp och Företagsnamn (Nu svävande och perfekt integrerad!) */}
+                    {/* Logotyp och Företagsnamn */}
                     <div className="flex items-center gap-3 cursor-pointer group" onClick={scrollToTop}>
                         <img 
                             src="bmglogo.png" 
@@ -98,7 +77,6 @@ const App = () => {
                         <a href="#om-oss" className="hover:text-brand-500 transition-colors">Om oss</a>
                         <a href="#recensioner" className="hover:text-brand-500 transition-colors">Omdömen</a>
                         <a href="#kontakt" className="hover:text-brand-500 transition-colors">Kontakt</a>
-                        <a href="#lager" className="bg-brand-500 text-white px-5 py-2 rounded-lg hover:bg-brand-600 transition-colors shadow-lg shadow-brand-500/20">Bilar i lager</a>
                     </div>
 
                     {/* Mobil Meny Knapp (Hamburger) */}
@@ -118,7 +96,6 @@ const App = () => {
                         <a href="#om-oss" onClick={() => setMobileMenuOpen(false)} className="text-slate-300 hover:text-brand-500 flex items-center gap-3"><window.Icon name="info" size={20}/> Om oss</a>
                         <a href="#recensioner" onClick={() => setMobileMenuOpen(false)} className="text-slate-300 hover:text-brand-500 flex items-center gap-3"><window.Icon name="star" size={20}/> Omdömen</a>
                         <a href="#kontakt" onClick={() => setMobileMenuOpen(false)} className="text-slate-300 hover:text-brand-500 flex items-center gap-3"><window.Icon name="phone" size={20}/> Kontakt</a>
-                        <a href="#lager" onClick={() => setMobileMenuOpen(false)} className="text-brand-500 flex items-center gap-3"><window.Icon name="car" size={20}/> Bilar i lager</a>
                     </div>
                 </div>
             </nav>
@@ -418,18 +395,25 @@ const App = () => {
                 </div>
             </section>
 
-            {/* --- UPPDATERAD FOOTER MED LOGGA --- */}
+            {/* --- UPPDATERAD FOOTER MED BMG & AS LOGGA --- */}
             <footer className="bg-brand-900 py-12 border-t border-white/10 text-center md:text-left text-slate-500 text-sm">
                 <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
                     
-                    <div className="flex flex-col md:flex-row items-center gap-4">
+                    {/* Footerns vänstra sida: BMG info + AS länk */}
+                    <div className="flex flex-col md:flex-row items-center md:items-start gap-4">
                         <img src="bmglogo.png" alt="BMG Motorgrupp Logotyp" className="h-12 w-12 object-contain" />
-                        <div>
+                        <div className="flex flex-col items-center md:items-start">
                             <div className="text-xl font-black text-white uppercase tracking-tighter mb-1">BMG Motorgrupp</div>
-                            <p>© {new Date().getFullYear()} Alla rättigheter förbehållna.</p>
+                            <p className="mb-4">© {new Date().getFullYear()} Alla rättigheter förbehållna.</p>
+                            
+                            {/* Din byrå-länk / signatur */}
+                            <a href="https://amarsut.github.io/lager/AS/" target="_blank" rel="noopener noreferrer" className="opacity-70 hover:opacity-100 transition-opacity flex items-center gap-2">
+                                <img src="as.jpg" alt="Byggd av AS" className="h-8 object-contain rounded-sm" />
+                            </a>
                         </div>
                     </div>
                     
+                    {/* Footerns högra sida: Sociala medier */}
                     <div className="flex gap-4">
                         <a href="#" aria-label="Facebook" className="w-10 h-10 bg-white/5 hover:bg-brand-500 rounded-full flex items-center justify-center text-white transition-colors">
                             <window.Icon name="facebook" size={20} />
