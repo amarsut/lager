@@ -13,9 +13,12 @@ const App = () => {
     const [showScrollTop, setShowScrollTop] = useState(false);
     const [cookieAccepted, setCookieAccepted] = useState(true);
     const [openFaq, setOpenFaq] = useState(null);
-    
-    // NYTT: State för mobilmenyn
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    
+    // State för finansieringskalkylatorn (Kontant vs Månad)
+    const [showMonthly, setShowMonthly] = useState(false);
+    
+    const [latestCars, setLatestCars] = useState([]);
 
     // Hantera scroll-effekter och kex (cookies)
     useEffect(() => {
@@ -27,10 +30,20 @@ const App = () => {
             setShowScrollTop(window.scrollY > 500);
         };
         window.addEventListener('scroll', handleScroll);
+        
+        // Simulerad data för bilarna
+        setTimeout(() => {
+            setLatestCars([
+                { id: 1, brand: 'Volvo', model: 'XC60 T8 AWD Recharge', year: 2021, mil: '4 500 mil', gear: 'Automat', price: '489 900 kr', fuel: 'Laddhybrid', img: 'https://images.unsplash.com/photo-1619355745428-2c70034639f7?w=800&q=80' },
+                { id: 2, brand: 'Volkswagen', model: 'Golf R 2.0 TSI 4Motion', year: 2019, mil: '7 200 mil', gear: 'Automat', price: '349 500 kr', fuel: 'Bensin', img: 'https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?w=800&q=80' },
+                { id: 3, brand: 'BMW', model: '520d xDrive Touring M-Sport', year: 2020, mil: '8 900 mil', gear: 'Automat', price: '379 900 kr', fuel: 'Diesel', img: 'https://images.unsplash.com/photo-1555353540-64fd8b01a757?w=800&q=80' }
+            ]);
+        }, 800);
+
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
-    // NYTT: Ladda in Elfsight (Instagram) på ett React-säkert sätt
+    // Ladda in Elfsight (Instagram) på ett React-säkert sätt
     useEffect(() => {
         const script = document.createElement("script");
         script.src = "https://elfsightcdn.com/platform.js";
@@ -47,6 +60,13 @@ const App = () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
+    // Funktion för att räkna ut månadskostnad (Standard: 20% kontant, ca 36 mån)
+    const calculateMonthly = (priceString) => {
+        const price = parseInt(priceString.replace(/\D/g, ''));
+        const monthly = Math.round((price * 0.8) * 0.0125); 
+        return `${monthly.toLocaleString('sv-SE')} kr/mån`;
+    };
+
     const faqs = [
         { q: "Tar ni min nuvarande bil i inbyte?", a: "Självklart! Vi värderar din nuvarande bil och drar av beloppet på ditt nya bilköp. Kontakta oss för en kostnadsfri värdering." },
         { q: "Erbjuder ni hemleverans?", a: "Ja, vi kan erbjuda hemleverans över hela Sverige. Kontakta oss för en offert baserat på var du bor." },
@@ -57,12 +77,20 @@ const App = () => {
     return (
         <div className="min-h-screen flex flex-col font-sans relative overflow-x-hidden">
             
-            {/* --- UPPDATERAD NAVBAR MED MOBILMENY --- */}
+            {/* --- UPPDATERAD NAVBAR MED LOGGA --- */}
             <nav className={`fixed w-full z-50 transition-all duration-300 ${scrolled || mobileMenuOpen ? 'bg-brand-950/95 backdrop-blur-md shadow-lg py-4 border-b border-white/5' : 'bg-transparent py-6'}`}>
                 <div className="max-w-7xl mx-auto px-6 flex justify-between items-center relative z-20">
-                    <div className="text-2xl font-black tracking-tighter text-white uppercase flex items-center gap-2 cursor-pointer" onClick={scrollToTop}>
-                        <window.Icon name="gauge" className="text-brand-500" size={28} />
-                        BMG <span className="text-brand-500 font-light">Motorgrupp</span>
+                    
+                    {/* Logotyp och Företagsnamn (Nu svävande och perfekt integrerad!) */}
+                    <div className="flex items-center gap-3 cursor-pointer group" onClick={scrollToTop}>
+                        <img 
+                            src="bmglogo.png" 
+                            alt="BMG Motorgrupp Logotyp" 
+                            className="h-12 w-12 md:h-14 md:w-14 object-contain drop-shadow-[0_0_12px_rgba(249,115,22,0.15)] transition-transform duration-300 group-hover:scale-105" 
+                        />
+                        <div className="text-xl md:text-2xl font-black tracking-tighter text-white uppercase hidden sm:block">
+                            BMG <span className="text-brand-500 font-light">Motorgrupp</span>
+                        </div>
                     </div>
                     
                     {/* Desktop Meny */}
@@ -163,7 +191,7 @@ const App = () => {
                         </div>
                     </div>
                     
-                    <div id="lager" className="bg-brand-950 p-8 rounded-2xl border border-white/10 shadow-2xl relative overflow-hidden group">
+                    <div className="bg-brand-950 p-8 rounded-2xl border border-white/10 shadow-2xl relative overflow-hidden group">
                         <div className="absolute top-0 right-0 w-64 h-64 bg-brand-500/10 blur-3xl rounded-full group-hover:bg-brand-500/20 transition-all"></div>
                         <div className="relative z-10">
                             <div className="w-16 h-16 bg-white/5 rounded-xl flex items-center justify-center mb-6 border border-white/10">
@@ -370,7 +398,7 @@ const App = () => {
                 </div>
             </section>
 
-            {/* --- NYA ELFSIGHT INSTAGRAM-FLÖDET --- */}
+            {/* --- ELFSIGHT INSTAGRAM-FLÖDET --- */}
             <section className="py-24 bg-brand-950 border-t border-white/5">
                 <div className="max-w-7xl mx-auto px-6">
                     <div className="flex flex-col md:flex-row justify-between items-center mb-12 gap-6">
@@ -386,18 +414,21 @@ const App = () => {
                         </a>
                     </div>
                     
-                    {/* HÄR LADDAS DITT RIKTIGA FLÖDE IN */}
                     <div className="elfsight-app-bd475f3d-0848-4f19-a61c-394708e42db4" data-elfsight-app-lazy="true"></div>
                     
                 </div>
             </section>
 
-            {/* --- FOOTER --- */}
+            {/* --- UPPDATERAD FOOTER MED LOGGA --- */}
             <footer className="bg-brand-900 py-12 border-t border-white/10 text-center md:text-left text-slate-500 text-sm">
                 <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
-                    <div>
-                        <div className="text-xl font-black text-white uppercase tracking-tighter mb-2">BMG Motorgrupp</div>
-                        <p>© {new Date().getFullYear()} Alla rättigheter förbehållna.</p>
+                    
+                    <div className="flex flex-col md:flex-row items-center gap-4">
+                        <img src="bmglogo.png" alt="BMG Motorgrupp Logotyp" className="h-12 w-12 object-contain" />
+                        <div>
+                            <div className="text-xl font-black text-white uppercase tracking-tighter mb-1">BMG Motorgrupp</div>
+                            <p>© {new Date().getFullYear()} Alla rättigheter förbehållna.</p>
+                        </div>
                     </div>
                     
                     <div className="flex gap-4">
