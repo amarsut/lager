@@ -652,19 +652,19 @@ const App = () => {
                         aria-label="Stäng fönster"
                     ></div>
                     
-                    {/* Själva popup-fönstret */}
-                    <div className="relative bg-brand-900 border border-white/10 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300">
+                    {/* Själva popup-fönstret. Lade till max-h-[90vh] och flex flex-col för att hantera höjden */}
+                    <div className="relative bg-brand-900 border border-white/10 rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300">
                         
                         {/* Stäng-knapp */}
                         <button 
                             onClick={() => setShowOptimizationModal(false)}
-                            className="absolute top-4 right-4 z-10 w-8 h-8 bg-black/40 hover:bg-brand-500 text-white rounded-full flex items-center justify-center transition-colors outline-none focus-visible:ring-2 focus-visible:ring-white"
+                            className="absolute top-4 right-4 z-20 w-8 h-8 bg-black/40 hover:bg-brand-500 text-white rounded-full flex items-center justify-center transition-colors outline-none focus-visible:ring-2 focus-visible:ring-white"
                         >
                             <window.Icon name="x" size={18} />
                         </button>
 
-                        {/* Snygg header/banner */}
-                        <div className="bg-gradient-to-br from-brand-950 to-brand-900 border-b border-white/5 p-8 relative overflow-hidden">
+                        {/* Snygg header/banner. Lade till shrink-0 så den inte krymper */}
+                        <div className="shrink-0 bg-gradient-to-br from-brand-950 to-brand-900 border-b border-white/5 p-6 sm:p-8 relative overflow-hidden">
                             <div className="absolute top-0 right-0 w-48 h-48 bg-brand-500/10 blur-3xl rounded-full"></div>
                             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-500/10 border border-brand-500/20 text-brand-500 text-xs font-bold tracking-widest uppercase mb-4 relative z-10">
                                 Dynex Performance
@@ -674,8 +674,8 @@ const App = () => {
                             </h3>
                         </div>
 
-                        {/* Innehåll och lista på fördelar */}
-                        <div className="p-6 sm:p-8 space-y-6">
+                        {/* Innehåll och lista på fördelar. Lade till overflow-y-auto för att göra mitten scrollbar */}
+                        <div className="p-6 sm:p-8 space-y-6 overflow-y-auto no-scrollbar">
                             <p className="text-slate-300 text-sm md:text-base leading-relaxed">
                                 Vi är stolta installatörer av mjukvara från branschledande <strong>Dynex Performance</strong>. Genom att optimera bilens motorstyrenhet (ECU) frigör vi den kraft som tillverkaren ofta har strypt från fabrik, helt utan mekaniska ingrepp.
                             </p>
@@ -721,10 +721,10 @@ const App = () => {
                             </div>
                         </div>
 
-                        {/* Botten / Call to Action */}
-                        <div className="p-6 bg-brand-950 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4">
+                        {/* Botten / Call to Action. Lade till shrink-0 så knappen alltid är fäst i botten */}
+                        <div className="shrink-0 p-5 sm:p-6 bg-brand-950 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4">
                             <p className="text-sm font-semibold text-slate-300 text-center sm:text-left">
-                                Skicka in ditt registreringsnummer för prisförslag.
+                                Skicka in reg-nr för prisförslag.
                             </p>
                             <a 
                                 href="#kontakt" 
