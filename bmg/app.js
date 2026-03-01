@@ -19,7 +19,8 @@ const services = [
     { title: 'Försäljning', icon: 'tag', desc: 'Vi säljer noggrant utvalda och testade fordon med full transparens.' },
     { title: 'Förmedling', icon: 'handshake', desc: 'Låt oss sälja din bil åt dig. Vi hanterar hela affären tryggt och smidigt.' },
     { title: 'Inbyten', icon: 'refresh-cw', desc: 'Vi tar självklart emot inbyten! Uppgradera din bil enkelt hos oss.' },
-    { title: 'Motoroptimering', icon: 'zap', desc: 'Maximera prestandan och sänk bränsleförbrukningen med mjukvaruoptimering.' }
+    // Notera att vi lagt till action: 'optimization' för att veta när vi ska öppna fönstret
+    { title: 'Motoroptimering', icon: 'zap', desc: 'Maximera prestandan och sänk bränsleförbrukningen med mjukvaruoptimering.', action: 'optimization' }
 ];
 
 const reviews = [
@@ -57,6 +58,9 @@ const App = () => {
     const [loadingCars, setLoadingCars] = useState(true);
     const [apiError, setApiError] = useState(false);
 
+    // NYTT: State för att hantera pop-up fönstret för motoroptimering
+    const [showOptimizationModal, setShowOptimizationModal] = useState(false);
+
     useEffect(() => {
         const consent = localStorage.getItem('bmg_cookie_consent');
         if (!consent) setCookieAccepted(false);
@@ -74,6 +78,15 @@ const App = () => {
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
+
+    // Lås scrollningen på hemsidan när popup-fönstret är öppet
+    useEffect(() => {
+        if (showOptimizationModal) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+    }, [showOptimizationModal]);
 
     useEffect(() => {
         const script = document.createElement("script");
@@ -148,7 +161,6 @@ const App = () => {
                             alt="BMG Motorgrupp Logotyp" 
                             className="h-10 w-10 md:h-14 md:w-14 object-contain drop-shadow-[0_0_12px_rgba(249,115,22,0.15)] transition-transform duration-300 group-hover:scale-105" 
                         />
-                        {/* Tog bort "hidden" så texten syns på mobil, anpassade storleken för att passa */}
                         <div className="text-lg md:text-2xl font-black tracking-tighter text-white uppercase">
                             BMG <span className="text-brand-500 font-light">Motorgrupp</span>
                         </div>
@@ -217,7 +229,6 @@ const App = () => {
 
                 {/* --- TRYGGHET BANNER --- */}
                 <div className="bg-brand-900 border-y border-white/5 py-6 md:py-8">
-                    {/* Justerat layouten så ikonerna hamnar i en perfekt vertikal linje på mobil, men gruppen är centrerad */}
                     <div className="max-w-7xl mx-auto px-4 md:px-6 flex justify-center">
                         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-10 md:gap-16 opacity-80">
                             <div className="flex items-center gap-3 text-slate-300 font-semibold text-sm md:text-base">
@@ -249,7 +260,6 @@ const App = () => {
                                 {[1, 2, 3].map(i => <CarSkeleton key={i} />)}
                             </div>
                         ) : apiError ? (
-                            /* Snyggt meddelande istället för vit iframe vid fel/ingen API-nyckel */
                             <div className="text-center py-16 md:py-24 bg-brand-900/50 rounded-2xl border border-white/5 shadow-inner flex flex-col items-center">
                                 <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-6 border border-white/10 shadow-lg">
                                     <window.Icon name="car" className="text-brand-500" size={32} />
@@ -342,7 +352,7 @@ const App = () => {
                 </section>
 
                 {/* --- TJÄNSTER --- */}
-                <section id="tjanster" className="py-16 md:py-24 bg-brand-950 border-t border-white/5">
+                <section id="tjanster" className="py-16 md:py-24 bg-brand-950 border-t border-white/5 relative">
                     <div className="max-w-7xl mx-auto px-4 md:px-6">
                         <div className="text-center mb-10 md:mb-16">
                             <h2 className="text-3xl md:text-5xl font-black text-white tracking-tight mb-3 md:mb-4">Våra Tjänster</h2>
@@ -350,15 +360,38 @@ const App = () => {
                         </div>
                         
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 md:gap-6">
-                            {services.map((service, idx) => (
-                                <article key={idx} className="bg-brand-900 border border-white/5 p-5 md:p-6 rounded-2xl hover:border-brand-500/50 transition-colors group">
-                                    <div className="w-10 h-10 md:w-12 md:h-12 bg-brand-950 rounded-lg flex items-center justify-center mb-4 md:mb-6 group-hover:scale-110 transition-transform">
-                                        <window.Icon name={service.icon} className="text-brand-500" size={20} />
-                                    </div>
-                                    <h3 className="text-lg md:text-xl font-bold text-white mb-2 md:mb-3">{service.title}</h3>
-                                    <p className="text-slate-300 leading-relaxed text-sm">{service.desc}</p>
-                                </article>
-                            ))}
+                            {services.map((service, idx) => {
+                                // Kolla om just denna tjänst har en "action" (i detta fall motoroptimering)
+                                const isClickable = service.action === 'optimization';
+                                
+                                return (
+                                    <article 
+                                        key={idx} 
+                                        // Om kortet är klickbart, öppna modalen
+                                        onClick={isClickable ? () => setShowOptimizationModal(true) : undefined}
+                                        // Om klickbart, lägg till extra styling (orange ring och pekare)
+                                        className={`bg-brand-900 border p-5 md:p-6 rounded-2xl transition-all group relative overflow-hidden
+                                            ${isClickable 
+                                                ? 'border-brand-500/30 cursor-pointer hover:border-brand-500 hover:shadow-[0_0_30px_rgba(249,115,22,0.15)] ring-1 ring-brand-500/10 hover:ring-brand-500/50 hover:-translate-y-1' 
+                                                : 'border-white/5 hover:border-brand-500/50'
+                                            }`}
+                                    >
+                                        {/* Badge för att visa att den är klickbar */}
+                                        {isClickable && (
+                                            <div className="absolute top-4 right-4 bg-brand-500/10 text-brand-500 text-[10px] uppercase tracking-widest px-2.5 py-1 rounded-full font-bold flex items-center gap-1 border border-brand-500/20 group-hover:bg-brand-500 group-hover:text-white transition-colors">
+                                                Läs mer <window.Icon name="arrow-right" size={12} />
+                                            </div>
+                                        )}
+
+                                        <div className={`w-10 h-10 md:w-12 md:h-12 rounded-lg flex items-center justify-center mb-4 md:mb-6 transition-transform group-hover:scale-110 
+                                            ${isClickable ? 'bg-brand-500/20 text-brand-500' : 'bg-brand-950 text-brand-500'}`}>
+                                            <window.Icon name={service.icon} size={20} />
+                                        </div>
+                                        <h3 className="text-lg md:text-xl font-bold text-white mb-2 md:mb-3">{service.title}</h3>
+                                        <p className="text-slate-300 leading-relaxed text-sm">{service.desc}</p>
+                                    </article>
+                                );
+                            })}
                         </div>
                     </div>
                 </section>
@@ -497,7 +530,7 @@ const App = () => {
                                         </div>
                                     </div>
                                     <div>
-                                        <label htmlFor="message" className="block text-xs md:text-sm font-semibold text-slate-400 mb-2 cursor-pointer">Meddelande / Regnr</label>
+                                        <label htmlFor="message" id="message-label" className="block text-xs md:text-sm font-semibold text-slate-400 mb-2 cursor-pointer">Meddelande / Regnr</label>
                                         <textarea id="message" rows="4" required className="w-full bg-brand-950 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all resize-y text-sm md:text-base" placeholder="Vad kan vi hjälpa dig med? Ange gärna registreringsnummer vid inbyte."></textarea>
                                     </div>
                                     <button type="submit" className="w-full bg-brand-500 hover:bg-brand-600 text-white font-bold py-4 rounded-lg transition-all hover:scale-[1.02] flex justify-center items-center gap-2 outline-none focus-visible:ring-2 focus-visible:ring-white">
@@ -600,7 +633,6 @@ const App = () => {
                     <window.Icon name="arrow-up" size={24} />
                 </button>
                 
-                {/* Dölj/Visa mobil-telefonen baserat på scroll */}
                 <a 
                     href="tel:0733447449"
                     className={`md:hidden w-12 h-12 bg-brand-500 text-white rounded-full shadow-xl shadow-brand-500/30 flex items-center justify-center transition-all duration-300 active:scale-95 ${scrolled ? 'translate-y-0 opacity-100' : 'translate-y-16 opacity-0 pointer-events-none'}`}
@@ -610,6 +642,109 @@ const App = () => {
                 </a>
             </div>
 
+            {/* --- NY MODAL FÖR MOTOROPTIMERING (DYNEX PERFORMANCE) --- */}
+            {showOptimizationModal && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center px-4 sm:px-6 animate-in fade-in duration-300">
+                    {/* Mörk, suddig bakgrund som man kan klicka på för att stänga */}
+                    <div 
+                        className="absolute inset-0 bg-brand-950/80 backdrop-blur-sm cursor-pointer"
+                        onClick={() => setShowOptimizationModal(false)}
+                        aria-label="Stäng fönster"
+                    ></div>
+                    
+                    {/* Själva popup-fönstret */}
+                    <div className="relative bg-brand-900 border border-white/10 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300">
+                        
+                        {/* Stäng-knapp */}
+                        <button 
+                            onClick={() => setShowOptimizationModal(false)}
+                            className="absolute top-4 right-4 z-10 w-8 h-8 bg-black/40 hover:bg-brand-500 text-white rounded-full flex items-center justify-center transition-colors outline-none focus-visible:ring-2 focus-visible:ring-white"
+                        >
+                            <window.Icon name="x" size={18} />
+                        </button>
+
+                        {/* Snygg header/banner */}
+                        <div className="bg-gradient-to-br from-brand-950 to-brand-900 border-b border-white/5 p-8 relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-48 h-48 bg-brand-500/10 blur-3xl rounded-full"></div>
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-500/10 border border-brand-500/20 text-brand-500 text-xs font-bold tracking-widest uppercase mb-4 relative z-10">
+                                Dynex Performance
+                            </div>
+                            <h3 className="text-2xl sm:text-3xl font-black text-white tracking-tight relative z-10">
+                                Maximera din bils <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-500 to-orange-300">potential</span>
+                            </h3>
+                        </div>
+
+                        {/* Innehåll och lista på fördelar */}
+                        <div className="p-6 sm:p-8 space-y-6">
+                            <p className="text-slate-300 text-sm md:text-base leading-relaxed">
+                                Vi är stolta installatörer av mjukvara från branschledande <strong>Dynex Performance</strong>. Genom att optimera bilens motorstyrenhet (ECU) frigör vi den kraft som tillverkaren ofta har strypt från fabrik, helt utan mekaniska ingrepp.
+                            </p>
+                            
+                            <ul className="space-y-4">
+                                <li className="flex items-start gap-4">
+                                    <div className="w-10 h-10 rounded-lg bg-brand-500/10 flex items-center justify-center shrink-0 border border-brand-500/20">
+                                        <window.Icon name="zap" className="text-brand-500" size={20} />
+                                    </div>
+                                    <div>
+                                        <h4 className="text-white font-bold text-base md:text-lg mb-1">Ökad effekt (Hästkrafter)</h4>
+                                        <p className="text-sm text-slate-400">Bilen blir betydligt piggare, mer responsiv och roligare att köra.</p>
+                                    </div>
+                                </li>
+                                <li className="flex items-start gap-4">
+                                    <div className="w-10 h-10 rounded-lg bg-brand-500/10 flex items-center justify-center shrink-0 border border-brand-500/20">
+                                        <window.Icon name="gauge" className="text-brand-500" size={20} />
+                                    </div>
+                                    <div>
+                                        <h4 className="text-white font-bold text-base md:text-lg mb-1">Mer vridmoment (Nm)</h4>
+                                        <p className="text-sm text-slate-400">Ger en starkare och jämnare acceleration, vilket även bidrar till mycket säkrare omkörningar.</p>
+                                    </div>
+                                </li>
+                                <li className="flex items-start gap-4">
+                                    <div className="w-10 h-10 rounded-lg bg-brand-500/10 flex items-center justify-center shrink-0 border border-brand-500/20">
+                                        <window.Icon name="fuel" className="text-brand-500" size={20} />
+                                    </div>
+                                    <div>
+                                        <h4 className="text-white font-bold text-base md:text-lg mb-1">Sänkt bränsleförbrukning</h4>
+                                        <p className="text-sm text-slate-400">Vid normal körning drar bilen ofta mellan 5-10% mindre bränsle (effekten är störst på dieselmotorer).</p>
+                                    </div>
+                                </li>
+                            </ul>
+
+                            <div className="bg-white/5 border border-white/10 rounded-lg p-5 mt-6">
+                                <h4 className="text-white font-bold mb-2 flex items-center gap-2">
+                                    <window.Icon name="shield-check" className="text-brand-500" size={18} />
+                                    100% Säkert & Beprövat
+                                </h4>
+                                <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
+                                    Mjukvaran från Dynex Performance är alltid skräddarsydd och anpassad specifikt för just din motor och växellåda, med alla tillverkarens säkerhetsmarginaler intakta.
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Botten / Call to Action */}
+                        <div className="p-6 bg-brand-950 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4">
+                            <p className="text-sm font-semibold text-slate-300 text-center sm:text-left">
+                                Skicka in ditt registreringsnummer för prisförslag.
+                            </p>
+                            <a 
+                                href="#kontakt" 
+                                onClick={() => {
+                                    setShowOptimizationModal(false);
+                                    setTimeout(() => {
+                                        const msgBox = document.getElementById('message');
+                                        if(msgBox) msgBox.focus();
+                                    }, 500);
+                                }}
+                                className="w-full sm:w-auto bg-brand-500 hover:bg-brand-600 text-white px-6 py-3 rounded-lg font-bold transition-all text-sm flex items-center justify-center gap-2"
+                            >
+                                Till kontaktformuläret <window.Icon name="arrow-right" size={16} />
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* --- COOKIE BANNER --- */}
             {!cookieAccepted && (
                 <div className="fixed bottom-0 left-0 w-full bg-brand-950/95 backdrop-blur-md border-t border-white/10 z-50 p-4 md:p-6 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] flex flex-col md:flex-row justify-between items-center gap-4 animate-in slide-in-from-bottom-full duration-500">
                     <div className="text-slate-300 text-sm md:text-base max-w-4xl">
