@@ -1,10 +1,29 @@
 const { useState, useEffect, useMemo } = React;
 
 window.Icon = ({ name, size = 24, className = "" }) => {
+    const iconRef = React.useRef(null);
+
     useEffect(() => {
-        if (window.lucide) window.lucide.createIcons();
-    }, [name, size, className]); 
-    return <i data-lucide={name} className={className} style={{ width: size, height: size }}></i>;
+        if (window.lucide && iconRef.current) {
+            // Rensa gammalt innehåll för att undvika removeChild-fel
+            iconRef.current.innerHTML = ''; 
+            const i = document.createElement('i');
+            i.setAttribute('data-lucide', name);
+            i.style.width = `${size}px`;
+            i.style.height = `${size}px`;
+            if (className) i.className = className;
+            iconRef.current.appendChild(i);
+            
+            try {
+                window.lucide.createIcons({ nodes: [i] });
+            } catch (e) {
+                console.error("Ikonfel:", e);
+            }
+        }
+    }, [name, size, className]);
+
+    // Vi mappar name till key för att React ska rendera om korrekt vid sökning
+    return <span ref={iconRef} key={name} className="inline-flex"></span>;
 };
 
 // --- STATISK DATA ---
@@ -28,17 +47,27 @@ const reviews = [
     { name: 'Mirnel H.', text: 'Gjorde en motoroptimering på min skåpbil och märker en enorm skillnad både i styrka och bränsleförbrukning. Proffsigt rakt igenom.' }
 ];
 
-// Enkel formel för att uppskatta månadskostnad (20% kontant, 72 månader, ca 7.95% ränta)
-const calculateMonthlyCost = (priceStr) => {
-    const price = parseInt(priceStr.replace(/\D/g, ''));
-    if (isNaN(price)) return "0";
+// --- KRASCHSÄKRA HJÄLPFUNKTIONER ---
+const parseNumber = (val) => {
+    try {
+        if (val === null || val === undefined) return 0;
+        const match = String(val).replace(/\D/g, '');
+        const num = parseInt(match, 10);
+        return isNaN(num) ? 0 : num;
+    } catch (e) {
+        return 0;
+    }
+};
+
+const calculateMonthlyCost = (priceStr, downPaymentPercent = 0.2, interest = 0.0795, years = 6) => {
+    const price = parseNumber(priceStr);
+    if (price <= 0) return "0";
     
-    const loanAmount = price * 0.8; // 80% av beloppet
-    const monthlyInterestRate = 0.0795 / 12;
-    const months = 72;
+    const loanAmount = price * (1 - downPaymentPercent);
+    const monthlyInterest = interest / 12;
+    const numberOfPayments = years * 12;
     
-    // Annuitetsformel
-    const monthlyPayment = loanAmount * (monthlyInterestRate * Math.pow(1 + monthlyInterestRate, months)) / (Math.pow(1 + monthlyInterestRate, months) - 1);
+    const monthlyPayment = (loanAmount * monthlyInterest) / (1 - Math.pow(1 + monthlyInterest, -numberOfPayments));
     
     return Math.round(monthlyPayment).toLocaleString('sv-SE');
 };
@@ -66,17 +95,28 @@ const App = () => {
     const [cookieAccepted, setCookieAccepted] = useState(true);
     const [openFaq, setOpenFaq] = useState(null);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    
+    // MODAL STATE
     const [showOptimizationModal, setShowOptimizationModal] = useState(false);
     
     const [cars, setCars] = useState([]);
     const [loadingCars, setLoadingCars] = useState(true);
     const [apiError, setApiError] = useState(false);
 
-    // Filter states
+    // Filter & Slider States
     const [filterBrand, setFilterBrand] = useState("Alla");
     const [filterFuel, setFilterFuel] = useState("Alla");
-    const [filterGear, setFilterGear] = useState("Alla");
-    const [sortOrder, setSortOrder] = useState("Nyast inkommet");
+    const [maxPrice, setMaxPrice] = useState(1000000); 
+    const [maxMil, setMaxMil] = useState(30000);
+    
+    const [searchTerm, setSearchTerm] = useState("");
+    const [financeCar, setFinanceCar] = useState(null); // Sparar vilken bil som räknas på
+    const [calcDownPayment, setCalcDownPayment] = useState(20); // %
+    const [calcMonths, setCalcMonths] = useState(72);
+
+    // Räkna ut det absolut lägsta miltalet och priset som finns i ditt lager just nu
+    const minMilInStock = cars.length > 0 ? Math.min(...cars.map(c => parseNumber(c.mil))) : 0;
+    const minPriceInStock = cars.length > 0 ? Math.min(...cars.map(c => parseNumber(c.price))) : 50000;
 
     useEffect(() => {
         const consent = localStorage.getItem('bmg_cookie_consent');
@@ -109,16 +149,12 @@ const App = () => {
         script.src = "https://elfsightcdn.com/platform.js";
         script.async = true;
         document.body.appendChild(script);
-        
-        return () => {
-            document.body.removeChild(script);
-        };
+        return () => document.body.removeChild(script);
     }, []);
 
-    // Hämta bilar (TILLFÄLLIG MOCK-DATA INKLUSIVE DINA EGNA + 3 EXTRA FÖR FILTRERING)
+    // HÄMTA BILAR (Mock-data)
     useEffect(() => {
         setLoadingCars(true);
-        
         setTimeout(() => {
             const mockCars = [
                 {
@@ -154,39 +190,38 @@ const App = () => {
                     fuel: "Diesel",
                     img: "https://images.blocketcdn.se/dynamic/1600w/item/20276848/ccf8523b-4120-4cce-9e63-31ef45b905a6"
                 },
-                // Tre extra bilar så filtret blir tydligt
                 {
                     id: 4,
-                    brand: "Volvo",
-                    model: "V60 T6 Recharge Inscription",
-                    year: "2021",
-                    mil: "5 400 mil",
+                    brand: "Seat",
+                    model: "Leon ST 1.4 TSI Excellence/DRAG/Backkamera/SoV",
+                    year: "2017",
+                    mil: "15 600 mil",
                     gear: "Automatisk",
-                    price: "399 900 kr",
-                    fuel: "Laddhybrid",
-                    img: "https://kvdbil-images.imgix.net/7267223/67ba228b.jpg"
+                    price: "139 900 kr",
+                    fuel: "Bensin",
+                    img: "https://images.blocketcdn.se/dynamic/1600w/item/18118080/c7dd1444-1882-4b2d-a6d7-4324a576fc18"
                 },
                 {
                     id: 5,
                     brand: "Volkswagen",
-                    model: "Golf R-Line 1.5 TSI",
-                    year: "2020",
-                    mil: "4 200 mil",
+                    model: "Polo 5-dörrar 1.4 Comfortline Euro 4",
+                    year: "2008",
+                    mil: "14 000 mil",
                     gear: "Manuell",
-                    price: "249 000 kr",
+                    price: "44 500 kr",
                     fuel: "Bensin",
-                    img: "https://carup.se/wp-content/uploads/2023/05/golf_r_1-jpeg.webp"
+                    img: "https://images.blocketcdn.se/dynamic/1600w/item/20140411/e7d7e42a-69a9-44ca-9318-a54c1fa0270c"
                 },
                 {
                     id: 6,
-                    brand: "Audi",
-                    model: "e-tron 50 Quattro Proline",
-                    year: "2021",
-                    mil: "3 800 mil",
+                    brand: "Mercedes-Benz",
+                    model: "B 180 CDI BlueEFFICIENCY 7G-DCT Euro 5",
+                    year: "2012",
+                    mil: "9 200 mil",
                     gear: "Automatisk",
-                    price: "459 000 kr",
-                    fuel: "El",
-                    img: "https://images.unsplash.com/photo-1606152421802-db97b9c7a11b?w=800&q=80"
+                    price: "119 900 kr",
+                    fuel: "Diesel",
+                    img: "https://images.blocketcdn.se/dynamic/1600w/item/19977993/51c91093-4aba-496b-bbc6-f8eb9a23e08f"
                 }
             ];
             
@@ -194,33 +229,56 @@ const App = () => {
             setApiError(false); 
             setLoadingCars(false);
         }, 800); 
-        
     }, []);
 
-    // Filter Logic
-    const filteredAndSortedCars = useMemo(() => {
-        let result = [...cars];
+    // Dela-funktion (Web Share API)
+    const handleShare = (car) => {
+        const shareData = {
+            title: `Kolla in denna ${car.brand} ${car.model}!`,
+            text: `Jag hittade denna snygga ${car.brand} ${car.model} (${car.year}, ${car.mil}) för ${car.price} hos BMG Motorgrupp.`,
+            url: "https://www.blocket.se/mobility/dealer/5854854/bmg-motorgrupp" 
+        };
 
-        // 1. Filtrera
-        if (filterBrand !== "Alla") result = result.filter(c => c.brand === filterBrand);
-        if (filterFuel !== "Alla") result = result.filter(c => c.fuel === filterFuel);
-        if (filterGear !== "Alla") result = result.filter(c => c.gear === filterGear);
-
-        // 2. Sortera
-        if (sortOrder === "Pris (Lägst först)") {
-            result.sort((a, b) => parseInt(a.price.replace(/\D/g, '')) - parseInt(b.price.replace(/\D/g, '')));
-        } else if (sortOrder === "Pris (Högst först)") {
-            result.sort((a, b) => parseInt(b.price.replace(/\D/g, '')) - parseInt(a.price.replace(/\D/g, '')));
+        if (navigator.share) {
+            navigator.share(shareData).catch((error) => console.log('Delning avbruten', error));
+        } else {
+            navigator.clipboard.writeText(`${shareData.text} Länk: ${shareData.url}`);
+            alert("Länk och info har kopierats till urklipp. Klistra in för att skicka till en vän!");
         }
-        
-        // Returnerar resultatet ("Nyast inkommet" behåller den ursprungliga ordningen)
-        return result;
-    }, [cars, filterBrand, filterFuel, filterGear, sortOrder]);
+    };
 
-    // Extrahera unika val för dropdowns
-    const uniqueBrands = ["Alla", ...new Set(cars.map(c => c.brand))];
-    const uniqueFuels = ["Alla", ...new Set(cars.map(c => c.fuel))];
-    const uniqueGears = ["Alla", ...new Set(cars.map(c => c.gear))];
+    // KRASCHSÄKER FILTER LOGIK
+    const filteredCars = useMemo(() => {
+        try {
+            let result = [...cars];
+            
+            // Fritextsökning på märke och modell
+            if (searchTerm) {
+                result = result.filter(c => 
+                    c.brand.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                    c.model.toLowerCase().includes(searchTerm.toLowerCase())
+                );
+            }
+
+            if (filterBrand !== "Alla") result = result.filter(c => c.brand === filterBrand);
+            if (filterFuel !== "Alla") result = result.filter(c => c.fuel === filterFuel);
+            
+            const safeMaxPrice = Number(maxPrice) || 0;
+            const safeMaxMil = Number(maxMil) || 0;
+
+            result = result.filter(c => parseNumber(c.price) <= safeMaxPrice);
+            result = result.filter(c => parseNumber(c.mil) <= safeMaxMil);
+            
+            return result;
+        } catch (error) {
+            console.error("Filtreringsfel:", error);
+            return [];
+        }
+    }, [cars, searchTerm, filterBrand, filterFuel, maxPrice, maxMil]);
+
+    // Extrahera unika val säkert
+    const uniqueBrands = ["Alla", ...new Set(cars.map(c => c.brand).filter(Boolean))];
+    const uniqueFuels = ["Alla", ...new Set(cars.map(c => c.fuel).filter(Boolean))];
 
     const acceptCookies = () => {
         localStorage.setItem('bmg_cookie_consent', 'true');
@@ -235,15 +293,15 @@ const App = () => {
         <div className="min-h-screen flex flex-col font-sans relative overflow-x-hidden">
             
             {/* --- NAVBAR --- */}
-            <nav className={`fixed w-full z-50 transition-all duration-300 ${scrolled || mobileMenuOpen ? 'bg-brand-950/95 backdrop-blur-md shadow-lg py-3 md:py-4 border-b border-white/5' : 'bg-transparent py-4 md:py-6'}`} aria-label="Huvudmeny">
-                <div className="max-w-7xl mx-auto px-4 md:px-6 flex justify-between items-center relative z-20">
+            <nav className={`fixed w-full z-50 transition-all duration-300 ${scrolled || mobileMenuOpen ? 'bg-brand-950/95 backdrop-blur-md shadow-lg py-4 border-b border-white/5' : 'bg-transparent py-6'}`} aria-label="Huvudmeny">
+                <div className="max-w-7xl mx-auto px-6 flex justify-between items-center relative z-20">
                     <div className="flex items-center gap-3 cursor-pointer group focus-visible:ring-2 focus-visible:ring-brand-500 rounded-lg outline-none" onClick={scrollToTop} tabIndex="0" role="button" aria-label="Gå till toppen">
                         <img 
                             src="bmglogo.png" 
                             alt="BMG Motorgrupp Logotyp" 
-                            className="h-10 w-10 md:h-14 md:w-14 object-contain drop-shadow-[0_0_12px_rgba(249,115,22,0.15)] transition-transform duration-300 group-hover:scale-105" 
+                            className="h-12 w-12 md:h-14 md:w-14 object-contain drop-shadow-[0_0_12px_rgba(249,115,22,0.15)] transition-transform duration-300 group-hover:scale-105" 
                         />
-                        <div className="text-lg md:text-2xl font-black tracking-tighter text-white uppercase">
+                        <div className="text-xl md:text-2xl font-black tracking-tighter text-white uppercase hidden sm:block">
                             BMG <span className="text-brand-500 font-light">Motorgrupp</span>
                         </div>
                     </div>
@@ -266,8 +324,8 @@ const App = () => {
                     </button>
                 </div>
 
-                <div className={`md:hidden absolute top-full left-0 w-full bg-brand-950/95 backdrop-blur-md border-b border-white/5 transition-all duration-300 overflow-hidden ${mobileMenuOpen ? 'max-h-[400px] opacity-100 pb-4' : 'max-h-0 opacity-0'}`}>
-                    <div className="flex flex-col px-6 py-4 gap-6 font-semibold text-lg">
+                <div className={`md:hidden absolute top-full left-0 w-full bg-brand-950/95 backdrop-blur-md border-b border-white/5 transition-all duration-300 overflow-hidden ${mobileMenuOpen ? 'max-h-[400px] opacity-100' : 'max-h-0 opacity-0'}`}>
+                    <div className="flex flex-col px-6 py-6 gap-6 font-semibold text-lg">
                         <a href="#tjanster" onClick={() => setMobileMenuOpen(false)} className="text-slate-300 hover:text-brand-500 flex items-center gap-3"><window.Icon name="settings" size={20}/> Tjänster</a>
                         <a href="#om-oss" onClick={() => setMobileMenuOpen(false)} className="text-slate-300 hover:text-brand-500 flex items-center gap-3"><window.Icon name="info" size={20}/> Om oss</a>
                         <a href="#recensioner" onClick={() => setMobileMenuOpen(false)} className="text-slate-300 hover:text-brand-500 flex items-center gap-3"><window.Icon name="star" size={20}/> Omdömen</a>
@@ -280,28 +338,28 @@ const App = () => {
             <main>
                 {/* --- HERO --- */}
                 <header className="hero-bg min-h-screen flex items-center pt-20">
-                    <div className="max-w-7xl mx-auto px-4 md:px-6 w-full mt-10 md:mt-0">
+                    <div className="max-w-7xl mx-auto px-6 w-full">
                         <div className="max-w-2xl animate-in fade-in slide-in-from-bottom-8 duration-1000">
-                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-500/10 border border-brand-500/20 text-brand-500 text-[10px] md:text-sm font-bold tracking-widest uppercase mb-4 md:mb-6">
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-500/10 border border-brand-500/20 text-brand-500 text-sm font-bold tracking-widest uppercase mb-6">
                                 <span className="w-2 h-2 rounded-full bg-brand-500 animate-pulse"></span>
                                 Kvalitet & Transparens
                             </div>
-                            <h1 className="text-4xl sm:text-5xl md:text-7xl font-black text-white leading-[1.1] mb-4 md:mb-6 tracking-tight">
+                            <h1 className="text-5xl md:text-7xl font-black text-white leading-[1.1] mb-6 tracking-tight">
                                 Din partner för <br />
                                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-500 to-orange-300">
                                     Rätt Fordon
                                 </span>
                             </h1>
-                            <p className="text-base md:text-lg text-slate-300 mb-8 md:mb-10 leading-relaxed max-w-xl pr-4 md:pr-0">
+                            <p className="text-lg text-slate-300 mb-10 leading-relaxed max-w-xl">
                                 Specialister på begagnade personbilar, lätta motorfordon och fordonsoptimering. Hög kvalitet till konkurrenskraftiga priser i Eslöv.
                             </p>
                             <div className="flex flex-col sm:flex-row gap-4">
                                 <a href="#lager" 
-                                   className="w-full sm:w-auto bg-brand-500 hover:bg-brand-600 text-white px-8 py-4 rounded-lg font-bold flex items-center justify-center gap-3 transition-all hover:scale-105 shadow-lg shadow-brand-500/25 focus-visible:ring-2 focus-visible:ring-white outline-none">
+                                   className="bg-brand-500 hover:bg-brand-600 text-white px-8 py-4 rounded-lg font-bold flex items-center justify-center gap-3 transition-all hover:scale-105 shadow-lg shadow-brand-500/25 focus-visible:ring-2 focus-visible:ring-white outline-none">
                                     <window.Icon name="car" size={20} />
                                     Se bilar i lager
                                 </a>
-                                <a href="#kontakt" className="w-full sm:w-auto bg-white/5 hover:bg-white/10 border border-white/10 text-white px-8 py-4 rounded-lg font-bold flex items-center justify-center gap-3 transition-all backdrop-blur-sm focus-visible:ring-2 focus-visible:ring-brand-500 outline-none">
+                                <a href="#kontakt" className="bg-white/5 hover:bg-white/10 border border-white/10 text-white px-8 py-4 rounded-lg font-bold flex items-center justify-center gap-3 transition-all backdrop-blur-sm focus-visible:ring-2 focus-visible:ring-brand-500 outline-none">
                                     Kontakta oss
                                 </a>
                             </div>
@@ -310,184 +368,223 @@ const App = () => {
                 </header>
 
                 {/* --- TRYGGHET BANNER --- */}
-                <div className="bg-brand-900 border-y border-white/5 py-6 md:py-8">
-                    <div className="max-w-7xl mx-auto px-4 md:px-6 flex justify-center">
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-10 md:gap-16 opacity-80">
-                            <div className="flex items-center gap-3 text-slate-300 font-semibold text-sm md:text-base">
-                                <window.Icon name="shield-check" className="text-brand-500 shrink-0" size={24} />
-                                <span>Trygga garantier</span>
-                            </div>
-                            <div className="flex items-center gap-3 text-slate-300 font-semibold text-sm md:text-base">
-                                <window.Icon name="credit-card" className="text-brand-500 shrink-0" size={24} />
-                                <span>Smidig finansiering</span>
-                            </div>
-                            <div className="flex items-center gap-3 text-slate-300 font-semibold text-sm md:text-base">
-                                <window.Icon name="check-circle" className="text-brand-500 shrink-0" size={24} />
-                                <span>Noggrant testade fordon</span>
-                            </div>
+                <div className="bg-brand-900 border-y border-white/5 py-8">
+                    <div className="max-w-7xl mx-auto px-6 flex flex-wrap justify-center md:justify-around items-center gap-8 opacity-80">
+                        <div className="flex items-center gap-3 text-slate-300 font-semibold">
+                            <window.Icon name="shield-check" className="text-brand-500" size={32} />
+                            <span>Trygga garantier</span>
+                        </div>
+                        <div className="flex items-center gap-3 text-slate-300 font-semibold">
+                            <window.Icon name="credit-card" className="text-brand-500" size={32} />
+                            <span>Smidig finansiering</span>
+                        </div>
+                        <div className="flex items-center gap-3 text-slate-300 font-semibold">
+                            <window.Icon name="check-circle" className="text-brand-500" size={32} />
+                            <span>Noggrant testade fordon</span>
                         </div>
                     </div>
                 </div>
 
-                {/* --- LAGER INKLUSIVE FILTER --- */}
-                <section id="lager" className="py-16 md:py-24 bg-brand-950 border-b border-white/5">
-                    <div className="max-w-7xl mx-auto px-4 md:px-6">
+                {/* --- LAGER --- */}
+                <section id="lager" className="py-24 bg-brand-950 border-b border-white/5 relative z-10">
+                    <div className="max-w-7xl mx-auto px-6">
                         
-                        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 md:mb-12 gap-6">
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-6">
                             <div>
-                                <h2 className="text-3xl md:text-5xl font-black text-white tracking-tight mb-3 md:mb-4">Vårt utbud just nu</h2>
-                                <p className="text-slate-400 text-base md:text-lg">Här ser du alla fordon vi har i lager, redo för leverans.</p>
+                                <h2 className="text-3xl md:text-5xl font-black text-white tracking-tight mb-4">Vårt utbud just nu</h2>
+                                <p className="text-slate-400 text-lg">Här ser du alla fordon vi har i lager, uppdaterat i realtid.</p>
                             </div>
                             <div className="text-brand-500 font-bold bg-brand-500/10 px-4 py-2 rounded-lg border border-brand-500/20">
-                                {filteredAndSortedCars.length} bilar i lager
+                                {filteredCars.length} fordon hittades
                             </div>
                         </div>
 
-                        {/* --- FILTER & SORTERING PANEL --- */}
+                        {/* FILTER PANEL */}
                         {cars.length > 0 && !loadingCars && !apiError && (
-                            <div className="bg-brand-900 border border-white/5 rounded-2xl p-5 md:p-6 mb-8 shadow-lg">
-                                <div className="flex items-center gap-2 text-white font-bold mb-4">
+                            <div className="bg-brand-900 border border-white/5 rounded-2xl p-6 mb-10 shadow-xl relative overflow-hidden">
+                                <div className="absolute top-0 right-0 w-64 h-64 bg-brand-500/5 blur-[80px] rounded-full pointer-events-none"></div>
+                                <div className="flex items-center gap-2 text-white font-bold mb-6 relative z-10">
                                     <window.Icon name="sliders-horizontal" className="text-brand-500" size={20} />
-                                    Sök & Filtrera
+                                    Avancerad filtrering
                                 </div>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                                    
+
+                                {/* SÖKFÄLT */}
+                                <div className="relative mb-6">
+                                    <window.Icon name="search" className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={20} />
+                                    <input 
+                                        type="text" 
+                                        placeholder="Sök modell, märke eller t.ex. 'TDI'..." 
+                                        className="w-full bg-brand-950 border border-white/10 rounded-xl py-4 pl-12 pr-4 text-white focus:ring-2 focus:ring-brand-500 outline-none transition-all"
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                    />
+                                </div>
+                                
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 relative z-10">
                                     {/* Märke */}
-                                    <div className="flex flex-col gap-1.5">
+                                    <div className="flex flex-col gap-2">
                                         <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Bilmärke</label>
-                                        <select 
-                                            value={filterBrand} 
-                                            onChange={(e) => setFilterBrand(e.target.value)}
-                                            className="bg-brand-950 border border-white/10 text-white rounded-lg px-3 py-2.5 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 appearance-none"
-                                        >
-                                            {uniqueBrands.map(brand => <option key={brand} value={brand}>{brand}</option>)}
-                                        </select>
+                                        <div className="relative">
+                                            <select 
+                                                value={filterBrand} 
+                                                onChange={(e) => setFilterBrand(e.target.value)}
+                                                className="w-full bg-brand-950 border border-white/10 text-white rounded-lg px-4 py-3 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 appearance-none cursor-pointer"
+                                            >
+                                                {uniqueBrands.map(brand => <option key={brand} value={brand}>{brand}</option>)}
+                                            </select>
+                                            <window.Icon name="chevron-down" size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                                        </div>
                                     </div>
 
                                     {/* Bränsle */}
-                                    <div className="flex flex-col gap-1.5">
+                                    <div className="flex flex-col gap-2">
                                         <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Bränsle</label>
-                                        <select 
-                                            value={filterFuel} 
-                                            onChange={(e) => setFilterFuel(e.target.value)}
-                                            className="bg-brand-950 border border-white/10 text-white rounded-lg px-3 py-2.5 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 appearance-none"
-                                        >
-                                            {uniqueFuels.map(fuel => <option key={fuel} value={fuel}>{fuel}</option>)}
-                                        </select>
+                                        <div className="relative">
+                                            <select 
+                                                value={filterFuel} 
+                                                onChange={(e) => setFilterFuel(e.target.value)}
+                                                className="w-full bg-brand-950 border border-white/10 text-white rounded-lg px-4 py-3 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 appearance-none cursor-pointer"
+                                            >
+                                                {uniqueFuels.map(fuel => <option key={fuel} value={fuel}>{fuel}</option>)}
+                                            </select>
+                                            <window.Icon name="chevron-down" size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                                        </div>
                                     </div>
 
-                                    {/* Växellåda */}
-                                    <div className="flex flex-col gap-1.5">
-                                        <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Växellåda</label>
-                                        <select 
-                                            value={filterGear} 
-                                            onChange={(e) => setFilterGear(e.target.value)}
-                                            className="bg-brand-950 border border-white/10 text-white rounded-lg px-3 py-2.5 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 appearance-none"
-                                        >
-                                            {uniqueGears.map(gear => <option key={gear} value={gear}>{gear}</option>)}
-                                        </select>
+                                    {/* Maxpris */}
+                                    <div className="flex flex-col gap-2 justify-center">
+                                        <div className="flex justify-between items-center text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                                            <label>Maxpris</label>
+                                            <span className="text-brand-500 font-bold bg-brand-500/10 px-2 py-0.5 rounded border border-brand-500/20">{maxPrice === 1000000 ? "Inget max" : `${maxPrice.toLocaleString('sv-SE')} kr`}</span>
+                                        </div>
+                                        <input 
+                                            type="range" 
+                                            min={minPriceInStock} 
+                                            max="1000000" 
+                                            step="10000" 
+                                            value={maxPrice} 
+                                            onChange={(e) => setMaxPrice(parseInt(e.target.value, 10) || 0)}
+                                            className="w-full h-2 bg-brand-950 rounded-lg appearance-none cursor-pointer mt-2"
+                                            style={{ accentColor: '#f97316' }}
+                                        />
                                     </div>
 
-                                    {/* Sortering */}
-                                    <div className="flex flex-col gap-1.5">
-                                        <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Sortera efter</label>
-                                        <select 
-                                            value={sortOrder} 
-                                            onChange={(e) => setSortOrder(e.target.value)}
-                                            className="bg-brand-950 border border-brand-500/30 text-white rounded-lg px-3 py-2.5 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 appearance-none"
-                                        >
-                                            <option>Nyast inkommet</option>
-                                            <option>Pris (Lägst först)</option>
-                                            <option>Pris (Högst först)</option>
-                                        </select>
+                                    {/* Max Miltal */}
+                                    <div className="flex flex-col gap-2 justify-center">
+                                        <div className="flex justify-between items-center text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                                            <label>Max Miltal</label>
+                                            <span className="text-brand-500 font-bold bg-brand-500/10 px-2 py-0.5 rounded border border-brand-500/20">{maxMil === 30000 ? "Inget max" : `${maxMil.toLocaleString('sv-SE')} mil`}</span>
+                                        </div>
+                                        <input 
+                                            type="range" 
+                                            min={minMilInStock} 
+                                            max="30000" 
+                                            step="500" 
+                                            value={maxMil} 
+                                            onChange={(e) => setMaxMil(parseInt(e.target.value, 10) || 0)}
+                                            className="w-full h-2 bg-brand-950 rounded-lg appearance-none cursor-pointer mt-2"
+                                            style={{ accentColor: '#f97316' }}
+                                        />
                                     </div>
-
                                 </div>
                             </div>
                         )}
 
                         {loadingCars ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                                 {[1, 2, 3].map(i => <CarSkeleton key={i} />)}
                             </div>
                         ) : apiError ? (
-                            <div className="text-center py-16 md:py-24 bg-brand-900/50 rounded-2xl border border-white/5 shadow-inner flex flex-col items-center">
-                                <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-6 border border-white/10 shadow-lg">
-                                    <window.Icon name="car" className="text-brand-500" size={32} />
-                                </div>
-                                <h3 className="text-xl md:text-3xl font-bold text-white mb-4">Vårt digitala showroom</h3>
-                                <p className="text-slate-400 mb-8 max-w-lg px-4 leading-relaxed text-sm md:text-base">
-                                    Vårt lager uppdateras hela tiden. Tryck på knappen nedan för att se samtliga bilar som är tillgängliga för försäljning just nu.
-                                </p>
-                                <a href="https://www.blocket.se/mobility/dealer/5854854/bmg-motorgrupp" target="_blank" rel="noopener noreferrer" 
-                                   className="bg-brand-500 hover:bg-brand-600 text-white px-8 py-4 rounded-lg font-bold flex items-center gap-3 transition-all hover:scale-105 shadow-lg shadow-brand-500/25 focus-visible:ring-2 focus-visible:ring-white outline-none">
-                                    Se alla bilar på Blocket <window.Icon name="external-link" size={18} />
+                            <div className="text-center py-12 bg-brand-900/50 rounded-xl border border-white/5">
+                                <window.Icon name="alert-circle" className="text-brand-500 mx-auto mb-4" size={48} />
+                                <h3 className="text-xl font-bold text-white mb-2">Vi uppdaterar lagret!</h3>
+                                <p className="text-slate-400 mb-6">Just nu kan vi inte hämta bilarna hit till hemsidan, men du hittar hela vårt utbud direkt på Blocket.</p>
+                                <a href="https://www.blocket.se/mobility/dealer/5854854/bmg-motorgrupp" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 bg-brand-500 text-white px-6 py-3 rounded-lg font-bold hover:bg-brand-600 transition-colors">
+                                    Gå till Blocket-butiken <window.Icon name="external-link" size={18} />
                                 </a>
                             </div>
-                        ) : filteredAndSortedCars.length === 0 ? (
-                            // Meddelande om ingen bil matchar filtret
+                        ) : filteredCars.length === 0 ? (
                             <div className="text-center py-16 bg-brand-900/50 rounded-2xl border border-white/5">
-                                <window.Icon name="search-x" className="text-slate-500 mx-auto mb-4" size={48} />
+                                {/* Använd en fast sträng som key för ikonen här så den inte renderas om i onödan */}
+                                <window.Icon key="no-search-results" name="search" className="text-slate-500 mx-auto mb-4" size={48} />
                                 <h3 className="text-xl font-bold text-white mb-2">Inga fordon hittades</h3>
-                                <p className="text-slate-400 mb-6">Vi hittade tyvärr inga bilar som matchar din sökning.</p>
+                                <p className="text-slate-400 mb-6">Vi hittade tyvärr inga bilar som matchar dina sökval.</p>
                                 <button 
-                                    onClick={() => { setFilterBrand("Alla"); setFilterFuel("Alla"); setFilterGear("Alla"); }}
-                                    className="text-brand-500 font-bold hover:text-white transition-colors"
+                                    onClick={() => { setSearchTerm(""); setFilterBrand("Alla"); setFilterFuel("Alla"); setMaxPrice(1000000); setMaxMil(30000); }}
+                                    className="text-brand-500 font-bold hover:text-white transition-colors underline underline-offset-4"
                                 >
                                     Återställ alla filter
                                 </button>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-                                {filteredAndSortedCars.map(car => (
-                                    <article key={car.id} className="bg-brand-900 rounded-2xl overflow-hidden border border-white/5 hover:border-brand-500/50 transition-all group shadow-xl flex flex-col">
-                                        <div className="h-48 md:h-56 overflow-hidden relative bg-brand-950 flex items-center justify-center shrink-0">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                {filteredCars.map(car => (
+                                    <article key={car.id} className="bg-brand-900 rounded-2xl overflow-hidden border border-white/5 hover:border-brand-500/50 transition-all group shadow-xl flex flex-col relative">
+                                        
+                                        <div className="h-56 overflow-hidden relative bg-brand-950 flex items-center justify-center shrink-0">
                                             <img src={car.img} alt={`Begagnad ${car.brand} ${car.model} till salu`} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onError={(e) => {e.target.src = "https://images.unsplash.com/photo-1555353540-64fd8b01a757?w=800&q=80"}} />
-                                            {/* Snygg nyinkommen-badge för första bilen */}
-                                            {car.id === 1 && (
-                                                <div className="absolute top-4 left-4 bg-brand-500 text-white text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded shadow-lg">
-                                                    Nyinkommen
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div className="p-5 md:p-6 flex flex-col flex-grow">
-                                            <div className="text-brand-500 text-xs md:text-sm font-bold uppercase tracking-wider mb-1">{car.brand}</div>
-                                            <h3 className="text-lg md:text-xl font-bold text-white mb-4 line-clamp-1" title={car.model}>{car.model}</h3>
                                             
-                                            <div className="grid grid-cols-2 gap-y-2 md:gap-y-3 gap-x-4 mb-6 text-xs md:text-sm text-slate-400 flex-grow">
+                                            {/* DELA-KNAPPEN */}
+                                            <button 
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    handleShare(car);
+                                                }}
+                                                className="absolute top-4 right-4 z-10 w-10 h-10 bg-brand-950/80 backdrop-blur hover:bg-brand-500 text-white rounded-full flex items-center justify-center transition-all duration-300 shadow-lg group/share border border-white/10"
+                                                aria-label="Tipsa en vän"
+                                                title="Tipsa en vän"
+                                            >
+                                                <window.Icon name="share-2" size={18} className="group-hover/share:scale-110 transition-transform" />
+                                            </button>
+                                        </div>
+
+                                        <div className="p-6 flex flex-col flex-grow">
+                                            <div className="text-brand-500 text-sm font-bold uppercase tracking-wider mb-1">{car.brand}</div>
+                                            <h3 className="text-xl font-bold text-white mb-4 line-clamp-1" title={car.model}>{car.model}</h3>
+                                            
+                                            <div className="grid grid-cols-2 gap-y-3 gap-x-4 mb-6 text-sm text-slate-400 flex-grow">
                                                 <div className="flex items-center gap-2"><window.Icon name="calendar" size={16} /> {car.year}</div>
-                                                <div className="flex items-center gap-2"><window.Icon name="gauge" size={16} /> {car.mil}</div>
+                                                <div className="flex items-center gap-2"><window.Icon name="gauge" size={16} /> {car.mil || "0 mil"}</div>
                                                 <div className="flex items-center gap-2"><window.Icon name="settings-2" size={16} /> {car.gear}</div>
                                                 <div className="flex items-center gap-2"><window.Icon name="fuel" size={16} /> {car.fuel}</div>
                                             </div>
                                             
-                                            {/* PRIS OCH FINANSIERING */}
                                             <div className="border-t border-white/10 pt-4 mt-auto">
                                                 <div className="flex justify-between items-end mb-4">
                                                     <div>
                                                         <div className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1">Kontantpris</div>
-                                                        <div className="text-xl md:text-2xl font-black text-white">{car.price}</div>
+                                                        <div className="text-2xl font-black text-white">{car.price}</div>
                                                     </div>
-                                                    <div className="text-right">
-                                                        <div className="text-[11px] font-bold text-brand-500 uppercase tracking-widest mb-1">Finansiering</div>
-                                                        <div className="text-sm md:text-base font-bold text-white">Från {calculateMonthlyCost(car.price)} kr/mån</div>
-                                                    </div>
+                                                    <button 
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            setFinanceCar(car);
+                                                        }}
+                                                        className="text-right hover:opacity-80 transition-opacity group/calc"
+                                                    >
+                                                        <div className="text-[11px] font-bold text-brand-500 uppercase tracking-widest mb-1 flex items-center justify-end gap-1">
+                                                            Finansiering <window.Icon name="calculator" size={10} />
+                                                        </div>
+                                                        <div className="text-base font-bold text-white">
+                                                            Från {calculateMonthlyCost(car.price)} kr/mån
+                                                        </div>
+                                                    </button>
                                                 </div>
-                                                <a href="https://www.blocket.se/mobility/dealer/5854854/bmg-motorgrupp" target="_blank" rel="noopener noreferrer" className="w-full bg-white/5 hover:bg-brand-500 text-white py-3 rounded-lg font-bold transition-colors flex items-center justify-center gap-2 outline-none focus-visible:ring-2 focus-visible:ring-brand-500">
-                                                    Läs mer & Boka <window.Icon name="arrow-right" size={18} />
+                                                <a href="https://www.blocket.se/mobility/dealer/5854854/bmg-motorgrupp" target="_blank" rel="noopener noreferrer" aria-label={`Se mer om ${car.brand} ${car.model}`} className="w-full bg-white/5 hover:bg-brand-500 text-white py-3 rounded-lg font-bold transition-colors flex items-center justify-center gap-2 outline-none focus-visible:ring-2 focus-visible:ring-brand-500">
+                                                    Läs mer på Blocket <window.Icon name="arrow-right" size={18} />
                                                 </a>
                                             </div>
-
                                         </div>
                                     </article>
                                 ))}
                             </div>
                         )}
                         
-                        {(cars.length > 0 && !apiError && !loadingCars) && (
-                            <div className="mt-10 md:mt-12 flex justify-center">
+                        {(cars.length > 0 || loadingCars) && (
+                            <div className="mt-12 flex justify-center">
                                 <a href="https://www.blocket.se/mobility/dealer/5854854/bmg-motorgrupp" target="_blank" rel="noopener noreferrer" 
-                                   className="w-full sm:w-auto bg-white/5 border border-white/10 text-white px-6 py-4 md:py-3 rounded-lg font-bold flex items-center justify-center gap-2 hover:bg-white/10 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 outline-none">
+                                   className="bg-white/5 border border-white/10 text-white px-6 py-3 rounded-lg font-bold flex items-center gap-2 hover:bg-white/10 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 outline-none">
                                     Se hela butiken på Blocket <window.Icon name="external-link" size={18} />
                                 </a>
                             </div>
@@ -496,31 +593,31 @@ const App = () => {
                 </section>
 
                 {/* --- OM OSS --- */}
-                <section id="om-oss" className="py-16 md:py-24 bg-brand-900">
-                    <div className="max-w-7xl mx-auto px-4 md:px-6 grid md:grid-cols-2 gap-10 md:gap-16 items-center">
+                <section id="om-oss" className="py-24 bg-brand-900">
+                    <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-16 items-center">
                         <div>
-                            <h2 className="text-3xl md:text-5xl font-black mb-4 md:mb-6 text-white tracking-tight">Vår Affärsidé</h2>
-                            <div className="w-16 md:w-20 h-1 bg-brand-500 mb-6 md:mb-8 rounded-full"></div>
-                            <p className="text-slate-300 text-base md:text-lg leading-relaxed mb-6">
+                            <h2 className="text-3xl md:text-5xl font-black mb-6 text-white tracking-tight">Vår Affärsidé</h2>
+                            <div className="w-20 h-1 bg-brand-500 mb-8 rounded-full"></div>
+                            <p className="text-slate-300 text-lg leading-relaxed mb-6">
                                 Vi är en bilhandlare som är specialiserade på försäljning av begagnade personbilar och lätta motorfordon. Vår affärsidé bygger på att erbjuda fordon av hög kvalitet till konkurrenskraftiga priser.
                             </p>
-                            <p className="text-slate-300 text-base md:text-lg leading-relaxed mb-6 md:mb-8">
+                            <p className="text-slate-300 text-lg leading-relaxed mb-8">
                                 Vi prioriterar transparens och strävar efter att alltid leverera en förstklassig kundupplevelse från första kontakt till nycklarna i handen.
                             </p>
-                            <div className="text-lg md:text-xl font-bold text-white flex items-start md:items-center gap-3">
-                                <window.Icon name="map-pin" className="text-brand-500 shrink-0 mt-1 md:mt-0" />
+                            <div className="text-xl font-bold text-white flex items-center gap-3">
+                                <window.Icon name="map-pin" className="text-brand-500" />
                                 Varmt välkomna in till oss i Eslöv!
                             </div>
                         </div>
                         
-                        <div className="bg-brand-950 p-6 md:p-8 rounded-2xl border border-white/10 shadow-2xl relative overflow-hidden group">
+                        <div className="bg-brand-950 p-8 rounded-2xl border border-white/10 shadow-2xl relative overflow-hidden group">
                             <div className="absolute top-0 right-0 w-64 h-64 bg-brand-500/10 blur-3xl rounded-full group-hover:bg-brand-500/20 transition-all"></div>
                             <div className="relative z-10">
-                                <div className="w-12 h-12 md:w-16 md:h-16 bg-white/5 rounded-xl flex items-center justify-center mb-6 border border-white/10">
-                                    <window.Icon name="external-link" className="text-brand-500" size={28} />
+                                <div className="w-16 h-16 bg-white/5 rounded-xl flex items-center justify-center mb-6 border border-white/10">
+                                    <window.Icon name="external-link" className="text-brand-500" size={32} />
                                 </div>
-                                <h3 className="text-xl md:text-2xl font-bold text-white mb-3">Vårt digitala showroom</h3>
-                                <p className="text-sm md:text-base text-slate-400 mb-6 md:mb-8">
+                                <h3 className="text-2xl font-bold text-white mb-3">Vårt digitala showroom</h3>
+                                <p className="text-slate-400 mb-8">
                                     För att alltid ge dig den mest aktuella informationen uppdateras vårt fordonslager i realtid på Blocket. Klicka nedan för att se vad vi har inne just nu.
                                 </p>
                                 <a href="https://www.blocket.se/mobility/dealer/5854854/bmg-motorgrupp" target="_blank" rel="noopener noreferrer" 
@@ -533,21 +630,21 @@ const App = () => {
                 </section>
 
                 {/* --- TJÄNSTER --- */}
-                <section id="tjanster" className="py-16 md:py-24 bg-brand-950 border-t border-white/5 relative">
-                    <div className="max-w-7xl mx-auto px-4 md:px-6">
-                        <div className="text-center mb-10 md:mb-16">
-                            <h2 className="text-3xl md:text-5xl font-black text-white tracking-tight mb-3 md:mb-4">Våra Tjänster</h2>
-                            <p className="text-slate-400 text-base md:text-lg">Heltäckande lösningar för din nästa bilaffär.</p>
+                <section id="tjanster" className="py-24 bg-brand-950 border-t border-white/5">
+                    <div className="max-w-7xl mx-auto px-6">
+                        <div className="text-center mb-16">
+                            <h2 className="text-3xl md:text-5xl font-black text-white tracking-tight mb-4">Våra Tjänster</h2>
+                            <p className="text-slate-400 text-lg">Heltäckande lösningar för din nästa bilaffär.</p>
                         </div>
                         
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 md:gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
                             {services.map((service, idx) => {
                                 const isClickable = service.action === 'optimization';
                                 return (
                                     <article 
                                         key={idx} 
                                         onClick={isClickable ? () => setShowOptimizationModal(true) : undefined}
-                                        className={`bg-brand-900 border p-5 md:p-6 rounded-2xl transition-all group relative overflow-hidden
+                                        className={`bg-brand-900 border p-6 rounded-2xl transition-all group relative overflow-hidden
                                             ${isClickable 
                                                 ? 'border-brand-500/30 cursor-pointer hover:border-brand-500 hover:shadow-[0_0_30px_rgba(249,115,22,0.15)] ring-1 ring-brand-500/10 hover:ring-brand-500/50 hover:-translate-y-1' 
                                                 : 'border-white/5 hover:border-brand-500/50'
@@ -559,11 +656,11 @@ const App = () => {
                                             </div>
                                         )}
 
-                                        <div className={`w-10 h-10 md:w-12 md:h-12 rounded-lg flex items-center justify-center mb-4 md:mb-6 transition-transform group-hover:scale-110 
+                                        <div className={`w-12 h-12 rounded-lg flex items-center justify-center mb-6 transition-transform group-hover:scale-110 
                                             ${isClickable ? 'bg-brand-500/20 text-brand-500' : 'bg-brand-950 text-brand-500'}`}>
-                                            <window.Icon name={service.icon} size={20} />
+                                            <window.Icon name={service.icon} size={24} />
                                         </div>
-                                        <h3 className="text-lg md:text-xl font-bold text-white mb-2 md:mb-3">{service.title}</h3>
+                                        <h3 className="text-xl font-bold text-white mb-3">{service.title}</h3>
                                         <p className="text-slate-300 leading-relaxed text-sm">{service.desc}</p>
                                     </article>
                                 );
@@ -573,22 +670,22 @@ const App = () => {
                 </section>
 
                 {/* --- KUNDRECENSIONER --- */}
-                <section id="recensioner" className="py-16 md:py-24 bg-brand-900 border-t border-white/5">
-                    <div className="max-w-7xl mx-auto px-4 md:px-6">
-                        <div className="text-center mb-10 md:mb-16">
-                            <h2 className="text-3xl md:text-5xl font-black text-white tracking-tight mb-3 md:mb-4">Vad våra kunder säger</h2>
-                            <p className="text-slate-400 text-base md:text-lg">Kundnöjdhet är vår högsta prioritet.</p>
+                <section id="recensioner" className="py-24 bg-brand-900 border-t border-white/5">
+                    <div className="max-w-7xl mx-auto px-6">
+                        <div className="text-center mb-16">
+                            <h2 className="text-3xl md:text-5xl font-black text-white tracking-tight mb-4">Vad våra kunder säger</h2>
+                            <p className="text-slate-400 text-lg">Kundnöjdhet är vår högsta prioritet.</p>
                         </div>
                         
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                             {reviews.map((review, idx) => (
-                                <blockquote key={idx} className="bg-brand-950 p-6 md:p-8 rounded-2xl border border-white/5 relative">
-                                    <window.Icon name="quote" className="text-brand-500/20 absolute top-4 right-4 md:top-6 md:right-6" size={40} />
+                                <blockquote key={idx} className="bg-brand-950 p-8 rounded-2xl border border-white/5 relative">
+                                    <window.Icon name="quote" className="text-brand-500/20 absolute top-6 right-6" size={48} />
                                     <div className="flex text-brand-500 mb-4" aria-label="5 av 5 stjärnor">
                                         {[...Array(5)].map((_, i) => <window.Icon key={i} name="star" className="fill-brand-500" size={16} />)}
                                     </div>
-                                    <p className="text-sm md:text-base text-slate-300 italic mb-6">"{review.text}"</p>
-                                    <footer className="font-bold text-white text-sm md:text-base">- {review.name}</footer>
+                                    <p className="text-slate-300 italic mb-6">"{review.text}"</p>
+                                    <footer className="font-bold text-white">- {review.name}</footer>
                                 </blockquote>
                             ))}
                         </div>
@@ -596,50 +693,50 @@ const App = () => {
                 </section>
 
                 {/* --- FAQ OCH KONTAKT --- */}
-                <section id="kontakt" className="py-16 md:py-24 bg-brand-950 border-t border-white/5">
-                    <div className="max-w-7xl mx-auto px-4 md:px-6 grid lg:grid-cols-2 gap-12 md:gap-16">
+                <section id="kontakt" className="py-24 bg-brand-950 border-t border-white/5">
+                    <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16">
                         
                         <div>
-                            <h2 className="text-3xl md:text-4xl font-black text-white mb-4 md:mb-6">Kontakta & Hitta oss</h2>
-                            <p className="text-slate-400 mb-8 text-base md:text-lg">
+                            <h2 className="text-3xl font-black text-white mb-6">Kontakta & Hitta oss</h2>
+                            <p className="text-slate-400 mb-8 text-lg">
                                 Boka gärna tid innan ditt besök för att säkerställa att det fordon du är intresserad utav finns kvar i lager.
                             </p>
                             
-                            <address className="space-y-6 mb-10 md:mb-12 not-italic">
+                            <address className="space-y-6 mb-12 not-italic">
                                 <div className="flex items-start gap-4">
-                                    <div className="w-10 h-10 md:w-12 md:h-12 bg-white/5 rounded-full flex items-center justify-center shrink-0">
-                                        <window.Icon name="phone" className="text-brand-500" size={18} />
+                                    <div className="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center shrink-0">
+                                        <window.Icon name="phone" className="text-brand-500" size={20} />
                                     </div>
                                     <div>
-                                        <div className="text-xs md:text-sm text-slate-500 font-bold uppercase tracking-wider mb-1">Telefon / SMS</div>
-                                        <a href="tel:0733447449" className="text-lg md:text-xl text-white font-bold hover:text-brand-500 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded outline-none inline-block">073-34 47 449</a>
+                                        <div className="text-sm text-slate-500 font-bold uppercase tracking-wider mb-1">Telefon / SMS</div>
+                                        <a href="tel:0733447449" className="text-xl text-white font-bold hover:text-brand-500 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded outline-none inline-block">073-34 47 449</a>
                                     </div>
                                 </div>
                                 
                                 <div className="flex items-start gap-4">
-                                    <div className="w-10 h-10 md:w-12 md:h-12 bg-white/5 rounded-full flex items-center justify-center shrink-0">
-                                        <window.Icon name="mail" className="text-brand-500" size={18} />
+                                    <div className="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center shrink-0">
+                                        <window.Icon name="mail" className="text-brand-500" size={20} />
                                     </div>
                                     <div>
-                                        <div className="text-xs md:text-sm text-slate-500 font-bold uppercase tracking-wider mb-1">E-postadress</div>
-                                        <a href="mailto:info@bmotorgrupp.se" className="text-lg md:text-xl text-white font-bold hover:text-brand-500 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded outline-none inline-block">info@bmotorgrupp.se</a>
+                                        <div className="text-sm text-slate-500 font-bold uppercase tracking-wider mb-1">E-postadress</div>
+                                        <a href="mailto:info@bmotorgrupp.se" className="text-xl text-white font-bold hover:text-brand-500 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded outline-none inline-block">info@bmotorgrupp.se</a>
                                     </div>
                                 </div>
 
                                 <div className="flex items-start gap-4">
-                                    <div className="w-10 h-10 md:w-12 md:h-12 bg-white/5 rounded-full flex items-center justify-center shrink-0">
-                                        <window.Icon name="map-pin" className="text-brand-500" size={18} />
+                                    <div className="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center shrink-0">
+                                        <window.Icon name="map-pin" className="text-brand-500" size={20} />
                                     </div>
                                     <div>
-                                        <div className="text-xs md:text-sm text-slate-500 font-bold uppercase tracking-wider mb-1">Besöksadress</div>
-                                        <a href="https://maps.google.com/?q=Grävmaskinsvägen+5,24138+Eslöv" target="_blank" rel="noopener noreferrer" className="text-base md:text-lg text-white font-semibold hover:text-brand-500 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded outline-none inline-block">
+                                        <div className="text-sm text-slate-500 font-bold uppercase tracking-wider mb-1">Besöksadress</div>
+                                        <a href="https://maps.google.com/?q=Grävmaskinsvägen+5,24138+Eslöv" target="_blank" rel="noopener noreferrer" className="text-lg text-white font-semibold hover:text-brand-500 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded outline-none inline-block">
                                             Grävmaskinsvägen 5<br/>241 38 Eslöv
                                         </a>
                                     </div>
                                 </div>
                             </address>
 
-                            <div className="w-full h-56 md:h-64 bg-slate-800 rounded-xl overflow-hidden mb-10 md:mb-12 border border-white/10">
+                            <div className="w-full h-64 bg-slate-800 rounded-xl overflow-hidden mb-12 border border-white/10">
                                 <iframe 
                                     title="Karta över BMG Motorgrupp"
                                     src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2240.767635749234!2d13.325103476624808!3d55.83199237311359!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x465394ce6c2b9e21%3A0x65cbd9f60f6e7072!2zR3LDpHZtYXNraW5zdsOkZ2VuIDUsIDI0MSAzOCBFc2zDtnY!5e0!3m2!1ssv!2sse!4v1772320405490!5m2!1ssv!2sse" 
@@ -653,20 +750,20 @@ const App = () => {
                             </div>
 
                             <div>
-                                <h3 className="text-xl md:text-2xl font-bold text-white mb-4 md:mb-6">Vanliga frågor</h3>
-                                <div className="space-y-3 md:space-y-4">
+                                <h3 className="text-2xl font-bold text-white mb-6">Vanliga frågor</h3>
+                                <div className="space-y-4">
                                     {faqs.map((faq, idx) => (
                                         <div key={idx} className="border border-white/10 rounded-lg bg-brand-900 overflow-hidden">
                                             <button 
                                                 onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
                                                 aria-expanded={openFaq === idx}
-                                                className="w-full text-left px-5 py-4 font-semibold text-white flex justify-between items-center focus-visible:bg-white/5 outline-none transition-colors text-sm md:text-base"
+                                                className="w-full text-left px-6 py-4 font-semibold text-white flex justify-between items-center focus-visible:bg-white/5 outline-none transition-colors"
                                             >
                                                 {faq.q}
                                                 <window.Icon name={openFaq === idx ? "chevron-up" : "chevron-down"} className="text-brand-500 shrink-0 ml-4" size={20} />
                                             </button>
-                                            <div className={`overflow-hidden transition-all duration-300 ${openFaq === idx ? 'max-h-56 opacity-100' : 'max-h-0 opacity-0'}`}>
-                                                <div className="px-5 pb-4 text-slate-400 leading-relaxed border-t border-white/5 pt-3 md:pt-4 text-sm md:text-base">
+                                            <div className={`overflow-hidden transition-all duration-300 ${openFaq === idx ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'}`}>
+                                                <div className="px-6 pb-4 text-slate-400 leading-relaxed border-t border-white/5 pt-4">
                                                     {faq.a}
                                                 </div>
                                             </div>
@@ -676,9 +773,9 @@ const App = () => {
                             </div>
                         </div>
 
-                        <div className="space-y-6 md:space-y-8">
-                            <div className="bg-brand-900 p-6 md:p-8 rounded-2xl border border-white/5 shadow-xl">
-                                <h3 className="text-xl md:text-2xl font-bold text-white mb-6">Skicka ett meddelande</h3>
+                        <div className="space-y-8">
+                            <div className="bg-brand-900 p-8 rounded-2xl border border-white/5 shadow-xl">
+                                <h3 className="text-2xl font-bold text-white mb-6">Skicka ett meddelande</h3>
                                 <form className="space-y-4" onSubmit={(e) => { 
                                     e.preventDefault(); 
                                     const btn = e.target.querySelector('button');
@@ -692,22 +789,22 @@ const App = () => {
                                     }, 4000);
                                 }}>
                                     <div>
-                                        <label htmlFor="name" className="block text-xs md:text-sm font-semibold text-slate-400 mb-2 cursor-pointer">Namn</label>
-                                        <input type="text" id="name" required className="w-full bg-brand-950 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all text-sm md:text-base" placeholder="Ditt namn" />
+                                        <label htmlFor="name" className="block text-sm font-semibold text-slate-400 mb-2 cursor-pointer">Namn</label>
+                                        <input type="text" id="name" required className="w-full bg-brand-950 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all" placeholder="Ditt namn" />
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div>
-                                            <label htmlFor="phone" className="block text-xs md:text-sm font-semibold text-slate-400 mb-2 cursor-pointer">Telefon</label>
-                                            <input type="tel" id="phone" required className="w-full bg-brand-950 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all text-sm md:text-base" placeholder="Ditt telefonnummer" />
+                                            <label htmlFor="phone" className="block text-sm font-semibold text-slate-400 mb-2 cursor-pointer">Telefon</label>
+                                            <input type="tel" id="phone" required className="w-full bg-brand-950 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all" placeholder="Ditt telefonnummer" />
                                         </div>
                                         <div>
-                                            <label htmlFor="email" className="block text-xs md:text-sm font-semibold text-slate-400 mb-2 cursor-pointer">E-post</label>
-                                            <input type="email" id="email" required className="w-full bg-brand-950 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all text-sm md:text-base" placeholder="Din e-post" />
+                                            <label htmlFor="email" className="block text-sm font-semibold text-slate-400 mb-2 cursor-pointer">E-post</label>
+                                            <input type="email" id="email" required className="w-full bg-brand-950 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all" placeholder="Din e-post" />
                                         </div>
                                     </div>
                                     <div>
-                                        <label htmlFor="message" id="message-label" className="block text-xs md:text-sm font-semibold text-slate-400 mb-2 cursor-pointer">Meddelande / Regnr</label>
-                                        <textarea id="message" rows="4" required className="w-full bg-brand-950 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all resize-y text-sm md:text-base" placeholder="Vad kan vi hjälpa dig med? Ange gärna registreringsnummer vid inbyte."></textarea>
+                                        <label htmlFor="message" className="block text-sm font-semibold text-slate-400 mb-2 cursor-pointer">Meddelande / Regnr</label>
+                                        <textarea id="message" rows="4" required className="w-full bg-brand-950 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all resize-y" placeholder="Vad kan vi hjälpa dig med? Ange gärna registreringsnummer vid inbyte."></textarea>
                                     </div>
                                     <button type="submit" className="w-full bg-brand-500 hover:bg-brand-600 text-white font-bold py-4 rounded-lg transition-all hover:scale-[1.02] flex justify-center items-center gap-2 outline-none focus-visible:ring-2 focus-visible:ring-white">
                                         <window.Icon name="send" size={18} /> Skicka förfrågan
@@ -715,33 +812,33 @@ const App = () => {
                                 </form>
                             </div>
 
-                            <div className="bg-brand-900 p-6 md:p-8 rounded-2xl border border-white/5 shadow-xl">
-                                <div className="flex items-center gap-3 mb-5 md:mb-6 border-b border-white/10 pb-5 md:pb-6">
+                            <div className="bg-brand-900 p-8 rounded-2xl border border-white/5 shadow-xl">
+                                <div className="flex items-center gap-3 mb-6 border-b border-white/10 pb-6">
                                     <window.Icon name="clock" className="text-brand-500" size={24} />
-                                    <h3 className="text-xl md:text-2xl font-bold text-white">Öppettider</h3>
+                                    <h3 className="text-2xl font-bold text-white">Öppettider</h3>
                                 </div>
                                 
-                                <ul className="space-y-4 md:space-y-5 text-base md:text-lg">
-                                    <li className="flex justify-between items-center text-slate-300">
+                                <ul className="space-y-5 text-lg">
+                                    <li className="flex flex-col sm:flex-row sm:justify-between sm:items-center text-slate-300 gap-2">
                                         <span>Måndag – Fredag</span>
-                                        <span className="font-bold text-white text-lg md:text-xl">11:00 – 18:00</span>
+                                        <span className="font-bold text-white text-xl">11:00 – 18:00</span>
                                     </li>
                                     
-                                    <li className="flex justify-between items-start sm:items-center text-slate-300 border-t border-white/5 pt-4 md:pt-5">
-                                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 mt-0.5 sm:mt-0">
+                                    <li className="flex flex-col sm:flex-row sm:justify-between sm:items-center text-slate-300 gap-3 border-t border-white/5 pt-5">
+                                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
                                             <span>Lördag – Söndag</span>
-                                            <span className="inline-flex items-center gap-1.5 text-[10px] md:text-[11px] font-bold text-brand-400 uppercase tracking-widest bg-brand-500/10 px-2 md:px-2.5 py-1 rounded-md border border-brand-500/20 w-fit">
-                                                <window.Icon name="clock" size={12} className="md:w-3.5 md:h-3.5" />
+                                            <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-brand-400 uppercase tracking-widest bg-brand-500/10 px-2.5 py-1 rounded-md border border-brand-500/20 w-fit">
+                                                <window.Icon name="clock" size={14} />
                                                 Endast tidsbokning
                                             </span>
                                         </div>
-                                        <span className="font-bold text-white text-lg md:text-xl shrink-0 mt-0">11:00 – 15:00</span>
+                                        <span className="font-bold text-white text-xl">11:00 – 15:00</span>
                                     </li>
                                 </ul>
                                 
-                                <div className="mt-6 md:mt-8 bg-brand-500/10 border border-brand-500/20 p-4 rounded-lg flex items-start gap-3">
+                                <div className="mt-8 bg-brand-500/10 border border-brand-500/20 p-4 rounded-lg flex items-start gap-3">
                                     <window.Icon name="info" className="text-brand-500 shrink-0 mt-0.5" size={18} />
-                                    <p className="text-xs md:text-sm text-brand-100/80 leading-relaxed">
+                                    <p className="text-sm text-brand-100/80 leading-relaxed">
                                         För tidsbokning under helger, vänligen kontakta oss via telefon eller mail i god tid.
                                     </p>
                                 </div>
@@ -751,17 +848,17 @@ const App = () => {
                 </section>
 
                 {/* --- ELFSIGHT INSTAGRAM-FLÖDET --- */}
-                <section className="py-16 md:py-24 bg-brand-950 border-t border-white/5 overflow-hidden">
-                    <div className="max-w-7xl mx-auto px-4 md:px-6">
-                        <div className="flex flex-col md:flex-row justify-between items-center mb-8 md:mb-12 gap-6 text-center md:text-left">
+                <section className="py-24 bg-brand-950 border-t border-white/5 overflow-hidden">
+                    <div className="max-w-7xl mx-auto px-6">
+                        <div className="flex flex-col md:flex-row justify-between items-center mb-12 gap-6">
                             <div>
-                                <h2 className="text-2xl md:text-3xl font-black text-white mb-2 flex items-center justify-center md:justify-start gap-3">
-                                    <window.Icon name="instagram" className="text-brand-500" size={28} />
+                                <h2 className="text-3xl font-black text-white mb-2 flex items-center gap-3">
+                                    <window.Icon name="instagram" className="text-brand-500" size={32} />
                                     Följ vår vardag
                                 </h2>
-                                <p className="text-sm md:text-base text-slate-400 max-w-lg">Följ @bmg.motorgrupp på Instagram för de senaste bilarna och en titt bakom kulisserna.</p>
+                                <p className="text-slate-400">Följ @bmg.motorgrupp på Instagram för de senaste bilarna och en titt bakom kulisserna.</p>
                             </div>
-                            <a href="https://instagram.com/bmg.motorgrupp" target="_blank" rel="noopener noreferrer" className="w-full md:w-auto bg-brand-500 hover:bg-brand-600 text-white px-8 py-4 md:py-3 rounded-lg font-bold flex justify-center items-center transition-all hover:scale-105 whitespace-nowrap focus-visible:ring-2 focus-visible:ring-white outline-none">
+                            <a href="https://instagram.com/bmg.motorgrupp" target="_blank" rel="noopener noreferrer" className="bg-brand-500 hover:bg-brand-600 text-white px-6 py-3 rounded-lg font-bold transition-all hover:scale-105 whitespace-nowrap focus-visible:ring-2 focus-visible:ring-white outline-none">
                                 Följ oss
                             </a>
                         </div>
@@ -773,22 +870,22 @@ const App = () => {
             </main>
 
             {/* --- FOOTER --- */}
-            <footer className="bg-brand-900 py-10 md:py-12 border-t border-white/10 text-center md:text-left text-slate-500 text-xs md:text-sm">
+            <footer className="bg-brand-900 py-12 border-t border-white/10 text-center md:text-left text-slate-500 text-sm">
                 <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
                     
                     <div className="flex flex-col md:flex-row items-center md:items-start gap-4">
-                        <img src="bmglogo.png" alt="BMG Motorgrupp Logotyp" className="h-10 w-10 md:h-12 md:w-12 object-contain" loading="lazy" />
+                        <img src="bmglogo.png" alt="BMG Motorgrupp Logotyp" className="h-12 w-12 object-contain" loading="lazy" />
                         <div className="flex flex-col items-center md:items-start">
-                            <div className="text-lg md:text-xl font-black text-white uppercase tracking-tighter mb-1">BMG Motorgrupp</div>
+                            <div className="text-xl font-black text-white uppercase tracking-tighter mb-1">BMG Motorgrupp</div>
                             <p className="mb-4">© {new Date().getFullYear()} Alla rättigheter förbehållna.</p>
                             
                             <a href="https://amarsut.github.io/lager/AS/" target="_blank" rel="noopener noreferrer" className="opacity-70 hover:opacity-100 transition-opacity flex items-center gap-2 focus-visible:ring-2 focus-visible:ring-brand-500 rounded outline-none">
-                                <img src="as.jpg" alt="Byggd av AS" className="h-7 md:h-8 object-contain rounded-sm" loading="lazy" />
+                                <img src="as.jpg" alt="Byggd av AS" className="h-8 object-contain rounded-sm" loading="lazy" />
                             </a>
                         </div>
                     </div>
                     
-                    <div className="flex gap-4 mt-4 md:mt-0">
+                    <div className="flex gap-4">
                         <a href="#" aria-label="Besök vår Facebook-sida" className="w-10 h-10 bg-white/5 hover:bg-brand-500 rounded-full flex items-center justify-center text-white transition-colors focus-visible:ring-2 focus-visible:ring-white outline-none">
                             <window.Icon name="facebook" size={20} />
                         </a>
@@ -800,10 +897,10 @@ const App = () => {
             </footer>
 
             {/* Fasta knappar */}
-            <div className="fixed bottom-6 right-4 md:bottom-8 md:right-8 flex flex-col gap-3 z-40">
+            <div className="fixed bottom-8 right-6 md:right-8 flex flex-col gap-3 z-40">
                 <button 
                     onClick={scrollToTop}
-                    className={`w-12 h-12 md:w-12 md:h-12 bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 text-white rounded-full shadow-xl flex items-center justify-center transition-all duration-300 focus-visible:ring-2 focus-visible:ring-brand-500 outline-none ${showScrollTop ? 'translate-y-0 opacity-100' : 'translate-y-16 opacity-0 pointer-events-none'}`}
+                    className={`w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 text-white rounded-full shadow-xl flex items-center justify-center transition-all duration-300 focus-visible:ring-2 focus-visible:ring-brand-500 outline-none ${showScrollTop ? 'translate-y-0 opacity-100' : 'translate-y-16 opacity-0 pointer-events-none'}`}
                     aria-label="Skrolla till toppen"
                 >
                     <window.Icon name="arrow-up" size={24} />
@@ -811,14 +908,14 @@ const App = () => {
                 
                 <a 
                     href="tel:0733447449"
-                    className={`md:hidden w-12 h-12 bg-brand-500 text-white rounded-full shadow-xl shadow-brand-500/30 flex items-center justify-center transition-all duration-300 active:scale-95 ${scrolled ? 'translate-y-0 opacity-100' : 'translate-y-16 opacity-0 pointer-events-none'}`}
+                    className="md:hidden w-12 h-12 bg-brand-500 text-white rounded-full shadow-xl shadow-brand-500/30 flex items-center justify-center transition-transform active:scale-95"
                     aria-label="Ring oss"
                 >
                     <window.Icon name="phone" size={20} />
                 </a>
             </div>
 
-            {/* --- MODAL FÖR MOTOROPTIMERING (DYNEX PERFORMANCE) --- */}
+            {/* --- MODAL FÖR MOTOROPTIMERING V3 (MOBILOPTIMERAD) --- */}
             {showOptimizationModal && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center px-4 sm:px-6 animate-in fade-in duration-300">
                     <div 
@@ -830,84 +927,154 @@ const App = () => {
                     <div className="relative bg-brand-900 border border-white/10 rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300">
                         <button 
                             onClick={() => setShowOptimizationModal(false)}
-                            className="absolute top-4 right-4 z-20 w-8 h-8 bg-black/40 hover:bg-brand-500 text-white rounded-full flex items-center justify-center transition-colors outline-none focus-visible:ring-2 focus-visible:ring-white"
+                            className="absolute top-4 right-4 z-50 w-8 h-8 bg-black/40 backdrop-blur-md hover:bg-brand-500 text-white rounded-full flex items-center justify-center transition-colors outline-none focus-visible:ring-2 focus-visible:ring-white shadow-lg"
                         >
                             <window.Icon name="x" size={18} />
                         </button>
 
-                        <div className="shrink-0 bg-gradient-to-br from-brand-950 to-brand-900 border-b border-white/5 p-6 sm:p-8 relative overflow-hidden">
-                            <div className="absolute top-0 right-0 w-48 h-48 bg-brand-500/10 blur-3xl rounded-full"></div>
-                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-500/10 border border-brand-500/20 text-brand-500 text-xs font-bold tracking-widest uppercase mb-4 relative z-10">
-                                Dynex Performance
-                            </div>
-                            <h3 className="text-2xl sm:text-3xl font-black text-white tracking-tight relative z-10">
-                                Maximera din bils <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-500 to-orange-300">potential</span>
-                            </h3>
-                        </div>
-
-                        <div className="p-6 sm:p-8 space-y-6 overflow-y-auto no-scrollbar">
-                            <p className="text-slate-300 text-sm md:text-base leading-relaxed">
-                                Vi är stolta installatörer av mjukvara från branschledande <strong>Dynex Performance</strong>. Genom att optimera bilens motorstyrenhet (ECU) frigör vi den kraft som tillverkaren ofta har strypt från fabrik, helt utan mekaniska ingrepp.
-                            </p>
-                            
-                            <ul className="space-y-4">
-                                <li className="flex items-start gap-4">
-                                    <div className="w-10 h-10 rounded-lg bg-brand-500/10 flex items-center justify-center shrink-0 border border-brand-500/20">
-                                        <window.Icon name="zap" className="text-brand-500" size={20} />
-                                    </div>
-                                    <div>
-                                        <h4 className="text-white font-bold text-base md:text-lg mb-1">Ökad effekt (Hästkrafter)</h4>
-                                        <p className="text-sm text-slate-400">Bilen blir betydligt piggare, mer responsiv och roligare att köra.</p>
-                                    </div>
-                                </li>
-                                <li className="flex items-start gap-4">
-                                    <div className="w-10 h-10 rounded-lg bg-brand-500/10 flex items-center justify-center shrink-0 border border-brand-500/20">
-                                        <window.Icon name="gauge" className="text-brand-500" size={20} />
-                                    </div>
-                                    <div>
-                                        <h4 className="text-white font-bold text-base md:text-lg mb-1">Mer vridmoment (Nm)</h4>
-                                        <p className="text-sm text-slate-400">Ger en starkare och jämnare acceleration, vilket även bidrar till mycket säkrare omkörningar.</p>
-                                    </div>
-                                </li>
-                                <li className="flex items-start gap-4">
-                                    <div className="w-10 h-10 rounded-lg bg-brand-500/10 flex items-center justify-center shrink-0 border border-brand-500/20">
-                                        <window.Icon name="fuel" className="text-brand-500" size={20} />
-                                    </div>
-                                    <div>
-                                        <h4 className="text-white font-bold text-base md:text-lg mb-1">Sänkt bränsleförbrukning</h4>
-                                        <p className="text-sm text-slate-400">Vid normal körning drar bilen ofta mellan 5-10% mindre bränsle (effekten är störst på dieselmotorer).</p>
-                                    </div>
-                                </li>
-                            </ul>
-
-                            <div className="bg-white/5 border border-white/10 rounded-lg p-5 mt-6">
-                                <h4 className="text-white font-bold mb-2 flex items-center gap-2">
-                                    <window.Icon name="shield-check" className="text-brand-500" size={18} />
-                                    100% Säkert & Beprövat
-                                </h4>
-                                <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
-                                    Mjukvaran från Dynex Performance är alltid skräddarsydd och anpassad specifikt för just din motor och växellåda, med alla tillverkarens säkerhetsmarginaler intakta.
+                        <div className="overflow-y-auto no-scrollbar flex-1 w-full">
+                            <div className="bg-gradient-to-br from-brand-950 to-brand-900 border-b border-white/5 p-6 sm:p-8 pr-14 relative overflow-hidden">
+                                <div className="absolute top-0 right-0 w-48 h-48 bg-brand-500/10 blur-3xl rounded-full"></div>
+                                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-500/10 border border-brand-500/20 text-brand-500 text-[10px] md:text-xs font-bold tracking-widest uppercase mb-3 relative z-10">
+                                    Dynex Performance
+                                </div>
+                                <h3 className="text-2xl sm:text-3xl font-black text-white tracking-tight relative z-10 mb-2">
+                                    Frigör bilens <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-500 to-orange-300">dolda kraft</span>
+                                </h3>
+                                <p className="text-slate-300 text-sm md:text-base relative z-10 max-w-lg leading-relaxed">
+                                    Biltillverkarna stryper ofta motorerna från fabrik. Vi låser upp potentialen helt utan mekaniska ingrepp.
                                 </p>
                             </div>
-                        </div>
 
-                        <div className="shrink-0 p-5 sm:p-6 bg-brand-950 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4">
-                            <p className="text-sm font-semibold text-slate-300 text-center sm:text-left">
-                                Skicka in reg-nr för prisförslag.
-                            </p>
-                            <a 
-                                href="#kontakt" 
-                                onClick={() => {
-                                    setShowOptimizationModal(false);
-                                    setTimeout(() => {
-                                        const msgBox = document.getElementById('message');
-                                        if(msgBox) msgBox.focus();
-                                    }, 500);
-                                }}
-                                className="w-full sm:w-auto bg-brand-500 hover:bg-brand-600 text-white px-6 py-3 rounded-lg font-bold transition-all text-sm flex items-center justify-center gap-2"
-                            >
-                                Till kontaktformuläret <window.Icon name="arrow-right" size={16} />
-                            </a>
+                            <div className="p-6 sm:p-8 space-y-8">
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                    <div className="bg-white/5 border border-white/10 p-4 rounded-xl text-center">
+                                        <window.Icon name="zap" className="text-brand-500 mx-auto mb-2" size={24} />
+                                        <div className="font-bold text-white mb-1">Mer Hästkrafter</div>
+                                        <div className="text-xs text-slate-400">Snabbare & roligare</div>
+                                    </div>
+                                    <div className="bg-white/5 border border-white/10 p-4 rounded-xl text-center">
+                                        <window.Icon name="gauge" className="text-brand-500 mx-auto mb-2" size={24} />
+                                        <div className="font-bold text-white mb-1">Ökat Vridmoment</div>
+                                        <div className="text-xs text-slate-400">Säkrare omkörningar</div>
+                                    </div>
+                                    <div className="bg-white/5 border border-white/10 p-4 rounded-xl text-center">
+                                        <window.Icon name="fuel" className="text-brand-500 mx-auto mb-2" size={24} />
+                                        <div className="font-bold text-white mb-1">Lägre Förbrukning</div>
+                                        <div className="text-xs text-slate-400">Upp till 10% besparing</div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <h4 className="text-white font-bold mb-4 flex items-center gap-2">
+                                        <window.Icon name="trending-up" className="text-brand-500" size={18} />
+                                        Typiska resultat (Före ➔ Efter)
+                                    </h4>
+                                    <div className="bg-brand-950 rounded-xl border border-white/5 overflow-hidden">
+                                        <div className="flex justify-between items-center p-3 border-b border-white/5 text-sm">
+                                            <span className="text-slate-300 font-semibold">BMW 520d</span>
+                                            <span className="text-brand-500 font-bold">190 hk ➔ 235 hk</span>
+                                        </div>
+                                        <div className="flex justify-between items-center p-3 border-b border-white/5 text-sm bg-white/[0.02]">
+                                            <span className="text-slate-300 font-semibold">Audi A6 40 TDI</span>
+                                            <span className="text-brand-500 font-bold">204 hk ➔ 245 hk</span>
+                                        </div>
+                                        <div className="flex justify-between items-center p-3 text-sm">
+                                            <span className="text-slate-300 font-semibold">VW Golf 1.4 TSI</span>
+                                            <span className="text-brand-500 font-bold">150 hk ➔ 180 hk</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="bg-brand-500/10 border border-brand-500/20 rounded-lg p-5 flex gap-4">
+                                    <window.Icon name="shield-check" className="text-brand-500 shrink-0" size={24} />
+                                    <div>
+                                        <h4 className="text-white font-bold mb-1 text-sm">100% Säkert & Beprövat</h4>
+                                        <p className="text-xs text-brand-100/80 leading-relaxed">
+                                            Mjukvaran från Dynex Performance skräddarsys för din motor. Bilens inbyggda säkerhetsmarginaler behålls alltid intakta.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="p-6 sm:p-8 bg-brand-950 border-t border-white/5">
+                                <h4 className="text-white font-bold mb-4 text-sm flex items-center gap-2">
+                                    <window.Icon name="calculator" className="text-brand-500" size={18} />
+                                    Kolla vad vi kan göra med din bil:
+                                </h4>
+                                <form 
+                                    className="flex flex-col sm:flex-row gap-3"
+                                    onSubmit={(e) => {
+                                        e.preventDefault();
+                                        const btn = e.target.querySelector('button');
+                                        btn.innerHTML = 'Förfrågan skickad!';
+                                        btn.classList.add('bg-green-600', 'hover:bg-green-700');
+                                        setTimeout(() => setShowOptimizationModal(false), 2000);
+                                    }}
+                                >
+                                    <input 
+                                        type="text" 
+                                        required 
+                                        placeholder="Regnr (T.ex. ABC 123)" 
+                                        className="flex-1 bg-brand-900 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all text-sm uppercase placeholder:normal-case font-bold" 
+                                    />
+                                    <input 
+                                        type="tel" 
+                                        required 
+                                        placeholder="Telefonnummer" 
+                                        className="flex-1 bg-brand-900 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all text-sm" 
+                                    />
+                                    <button type="submit" className="w-full sm:w-auto bg-brand-500 hover:bg-brand-600 text-white px-6 py-3 rounded-lg font-bold transition-all text-sm flex items-center justify-center gap-2 whitespace-nowrap outline-none focus-visible:ring-2 focus-visible:ring-white">
+                                        Få prisförslag <window.Icon name="arrow-right" size={16} />
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* --- MODAL: LÅNEKALKYLATOR --- */}
+            {financeCar && (
+                <div className="fixed inset-0 z-[110] flex items-center justify-center px-4 animate-in fade-in duration-300">
+                    <div className="absolute inset-0 bg-brand-950/90 backdrop-blur-md" onClick={() => setFinanceCar(null)}></div>
+                    <div className="relative bg-brand-900 border border-white/10 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl animate-in zoom-in-95">
+                        <div className="p-6 border-b border-white/5 flex justify-between items-center bg-brand-950">
+                            <h3 className="text-xl font-black text-white">Lånekalkylator</h3>
+                            <button onClick={() => setFinanceCar(null)} className="text-slate-400 hover:text-white"><window.Icon name="x" /></button>
+                        </div>
+                        <div className="p-8 space-y-8">
+                            <div>
+                                <div className="text-brand-500 font-bold mb-1 uppercase text-xs">{financeCar.brand}</div>
+                                <div className="text-2xl font-black text-white">{financeCar.model}</div>
+                                <div className="text-slate-400">Pris: {financeCar.price}</div>
+                            </div>
+
+                            <div className="space-y-6">
+                                <div className="space-y-3">
+                                    <div className="flex justify-between text-sm font-bold text-white">
+                                        <span>Kontantinsats ({calcDownPayment}%)</span>
+                                        <span className="text-brand-500">{Math.round(parseNumber(financeCar.price) * (calcDownPayment/100)).toLocaleString('sv-SE')} kr</span>
+                                    </div>
+                                    <input type="range" min="20" max="100" value={calcDownPayment} onChange={(e) => setCalcDownPayment(e.target.value)} className="w-full accent-brand-500 h-2 bg-brand-950 rounded-lg appearance-none cursor-pointer" />
+                                </div>
+
+                                <div className="space-y-3">
+                                    <div className="flex justify-between text-sm font-bold text-white">
+                                        <span>Löptid</span>
+                                        <span className="text-brand-500">{calcMonths} månader</span>
+                                    </div>
+                                    <input type="range" min="12" max="84" step="12" value={calcMonths} onChange={(e) => setCalcMonths(e.target.value)} className="w-full accent-brand-500 h-2 bg-brand-950 rounded-lg appearance-none cursor-pointer" />
+                                </div>
+                            </div>
+
+                            <div className="bg-brand-950 p-6 rounded-xl border border-brand-500/20 text-center">
+                                <div className="text-xs text-slate-500 uppercase font-bold mb-1">Beräknad månadskostnad</div>
+                                {/* Här kan du använda en förbättrad calculateFinance-funktion om du vill */}
+                                <div className="text-4xl font-black text-brand-500">
+                                    {Math.round((parseNumber(financeCar.price) * (1 - calcDownPayment/100)) * (0.0795/12) / (1 - Math.pow(1 + 0.0795/12, -calcMonths))).toLocaleString('sv-SE')} kr
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
