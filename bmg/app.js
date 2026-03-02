@@ -152,52 +152,66 @@ const App = () => {
     }, []);
 
     useEffect(() => {
-    const loadBytbilCars = async () => {
-        setLoadingCars(true);
-        const API_TOKEN = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczovL2FwaS5ieXRiaWwuY29tIiwic3ViIjoiYXBpLmJ5dGJpbC5jb20vdXNlcnMvYm1nbW90b3JncnVwcCIsImF1ZCI6WyJodHRwczovL2FkbWluLmJ5dGJpbC5jb20iXSwibmJmIjoxNzcyNDY1NDI0LCJpYXQiOjE3NzI0NjU0MjQsImV4cCI6bnVsbCwianRpIjoiMjdmZjk4YzUtNjFiMi00NTA4LWJhODUtNTJkZmI5ODJkNGJhIiwibGltaXQiOi0xLCJzY29wZXMiOnsiZ2V0LnZlaGljbGVzIjoiYm1nbW90b3JncnVwcCJ9fQ.h5khWExjXjaTMUKN9zQnqr0sNkyOEW_uVRbhv5f7630"; 
-        
-        // Vi använder en stabilare proxy för att slippa CORS-blockeringen lokalt
-        const targetUrl = "https://api.bytbil.com/v1/vehicles/bmgmotorgrupp";
-        const proxy = "https://api.allorigins.win/raw?url=";
+        const loadBytbilCars = async () => {
+            setLoadingCars(true);
+            // OBS: Se till att din API_TOKEN är korrekt och aktiv
+            const API_TOKEN = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczovL2FwaS5ieXRiaWwuY29tIiwic3ViIjoiYXBpLmJ5dGJpbC5jb20vdXNlcnMvYm1nbW90b3JncnVwcCIsImF1ZCI6WyJodHRwczovL2FkbWluLmJ5dGJpbC5jb20iXSwibmJmIjoxNzcyNDY1NDI0LCJpYXQiOjE3NzI0NjU0MjQsImV4cCI6bnVsbCwianRpIjoiMjdmZjk4YzUtNjFiMi00NTA4LWJhODUtNTJkZmI5ODJkNGJhIiwibGltaXQiOi0xLCJzY29wZXMiOnsiZ2V0LnZlaGljbGVzIjoiYm1nbW90b3JncnVwcCJ9fQ.h5khWExjXjaTMUKN9zQnqr0sNkyOEW_uVRbhv5f7630"; 
+            const targetUrl = "https://api.bytbil.com/v1/vehicles/bmgmotorgrupp";
 
-        try {
-            const response = await fetch(proxy + encodeURIComponent(targetUrl), {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${API_TOKEN}`,
-                    'Accept': 'application/json'
+            try {
+                // Vi testar att köra direkt utan proxy först, 
+                // om det misslyckas pga CORS måste du använda en dedikerad backend eller en betald proxy (CORS Anywhere etc)
+                const response = await fetch(targetUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${API_TOKEN}`,
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    if (response.status === 401) throw new Error("Ogiltig API-nyckel");
+                    throw new Error(`Serverfel: ${response.status}`);
                 }
-            });
 
-            if (!response.ok) throw new Error(`Fel: ${response.status}`);
-            const data = await response.json();
-            
-            // Vi mappar Bytbils data till din design
-            const rawVehicles = data.vehicles || data || [];
-            const formattedCars = rawVehicles.map(veh => ({
-                id: veh.id || veh.vehicleId,
-                brand: veh.make || 'Okänt märke',
-                model: veh.modelText || veh.model || 'Okänd modell',
-                year: veh.modelYear || '-',
-                mil: veh.mileage ? `${veh.mileage.toLocaleString('sv-SE')} mil` : '0 mil',
-                gear: veh.gearbox || '-',
-                price: veh.price ? `${veh.price.toLocaleString('sv-SE')} kr` : 'Ring för pris',
-                fuel: veh.fuelType || '-',
-                img: veh.images?.[0]?.url || 'https://images.unsplash.com/photo-1555353540-64fd8b01a757?w=800&q=80'
-            }));
+                const data = await response.json();
+                
+                // Bytbil skickar ofta datan i ett fält som heter 'items' eller direkt som en array
+                const rawVehicles = data.items || data.vehicles || (Array.isArray(data) ? data : []);
 
-            setCars(formattedCars);
-            setApiError(false);
-        } catch (error) {
-            console.error("Bytbil API-fel:", error);
-            setApiError(true);
-        } finally {
-            setLoadingCars(false);
-        }
-    };
+                if (rawVehicles.length === 0) {
+                    console.warn("Inga bilar hittades i API-svaret");
+                }
 
-    loadBytbilCars();
-}, []);
+                const formattedCars = rawVehicles.map(veh => ({
+                    id: veh.id || veh.vehicleId || Math.random(),
+                    brand: veh.make || 'Okänt märke',
+                    model: veh.modelText || veh.model || 'Okänd modell',
+                    year: veh.modelYear || '-',
+                    // Vi säkerställer att mil och pris hanteras som strängar för din parseNumber-funktion
+                    mil: veh.mileage ? String(veh.mileage) : '0',
+                    gear: veh.gearbox || '-',
+                    price: veh.price ? String(veh.price) : 'Ring för pris',
+                    fuel: veh.fuelType || '-',
+                    // Bytbil har ofta en specifik struktur för bilder
+                    img: veh.images && veh.images.length > 0 
+                         ? veh.images[0].url 
+                         : 'https://images.unsplash.com/photo-1555353540-64fd8b01a757?w=800&q=80'
+                }));
+
+                setCars(formattedCars);
+                setApiError(false);
+            } catch (error) {
+                console.error("Bytbil API-fel:", error);
+                setApiError(true);
+            } finally {
+                setLoadingCars(false);
+            }
+        };
+
+        loadBytbilCars();
+    }, []);
 
     // Dela-funktion (Web Share API)
     const handleShare = (car) => {
