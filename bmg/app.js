@@ -354,6 +354,8 @@ const App = () => {
 
                 // --- HÄR FORTSÄTTER DIN VANLIGA KOD ---
                 const formattedCars = data.map(car => {
+                    console.log("RÅDATA FRÅN BYTBIL LIVE:", car);
+                    
                     // Hämta ALLA bilder istället för bara en
                     let imageUrls = ["https://images.unsplash.com/photo-1555353540-64fd8b01a757?w=800&q=80"];
                     if (car.images && car.images.length > 0) {
