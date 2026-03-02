@@ -153,34 +153,60 @@ const App = () => {
     }, []);
 
     useEffect(() => {
-        // Vi skapar en asynkron funktion inuti effekten för att tillåta await
-        const loadData = async () => {
-            setLoadingCars(true);
-            try {
-                // Vi anropar api:et. Om du inte har satt upp en proxy än kommer detta ge 404.
-                const response = await fetch('/api/get-cars');
-                
-                // Om vi får 404 (Not Found), faller vi tillbaka på Mock-data så sidan inte är tom
-                if (response.status === 404) {
-                    console.warn("Proxy ej hittad, använder testdata.");
-                    // Här kan du lägga in din gamla mockCars-lista om du vill
-                    setCars([]); 
-                    return;
+    // Vi skapar en intern 'async' funktion för att tillåta 'await' utan syntaxfel
+    const loadBlocketCars = async () => {
+        setLoadingCars(true);
+        const API_TOKEN = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczovL2FwaS5ieXRiaWwuY29tIiwic3ViIjoiYXBpLmJ5dGJpbC5jb20vdXNlcnMvYm1nbW90b3JncnVwcCIsImF1ZCI6WyJodHRwczovL2FkbWluLmJ5dGJpbC5jb20iXSwibmJmIjoxNzcyNDY1NDI0LCJpYXQiOjE3NzI0NjU0MjQsImV4cCI6bnVsbCwianRpIjoiMjdmZjk4YzUtNjFiMi00NTA4LWJhODUtNTJkZmI5ODJkNGJhIiwibGltaXQiOi0xLCJzY29wZXMiOnsiZ2V0LnZlaGljbGVzIjoiYm1nbW90b3JncnVwcCJ9fQ.h5khWExjXjaTMUKN9zQnqr0sNkyOEW_uVRbhv5f7630"; // Klistra in din token här
+        
+        // Vi använder AllOrigins för att lura webbläsarens CORS-spärr på localhost
+        const proxy = "https://api.allorigins.win/raw?url=";
+        const targetUrl = "https://api.blocket.se/v1/accounts/me/ads";
+
+        try {
+            const response = await fetch(proxy + encodeURIComponent(targetUrl), {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${API_TOKEN}`,
+                    'Accept': 'application/json'
                 }
+            });
 
-                const data = await response.json();
-                setCars(data.ads || []);
-                setApiError(false);
-            } catch (error) {
-                console.error("Systemfel vid hämtning:", error);
-                setApiError(true);
-            } finally {
-                setLoadingCars(false);
+            if (!response.ok) throw new Error(`Fel vid hämtning: ${response.status}`);
+
+            const data = await response.json();
+            
+            // Kontrollera att vi faktiskt fick annonser
+            if (!data.ads) {
+                console.warn("Inga annonser hittades på kontot");
+                setCars([]);
+                return;
             }
-        };
 
-        loadData();
-    }, []);
+            // Mappa Blockets data till dina bilkort
+            const formattedCars = data.ads.map(ad => ({
+                id: ad.ad_id,
+                brand: ad.parameter_groups?.find(p => p.label === 'Märke')?.value || 'Okänt märke',
+                model: ad.subject,
+                year: ad.parameter_groups?.find(p => p.label === 'Modellår')?.value || '-',
+                mil: ad.parameter_groups?.find(p => p.label === 'Miltal')?.value || '0 mil',
+                gear: ad.parameter_groups?.find(p => p.label === 'Växellåda')?.value || '-',
+                price: ad.price ? ad.price.value.toLocaleString('sv-SE') + ' kr' : 'Ring för pris',
+                fuel: ad.parameter_groups?.find(p => p.label === 'Drivmedel')?.value || '-',
+                img: ad.images?.[0]?.url || 'https://images.unsplash.com/photo-1555353540-64fd8b01a757?w=800&q=80'
+            }));
+
+            setCars(formattedCars);
+            setApiError(false);
+        } catch (error) {
+            console.error("API-fel:", error);
+            setApiError(true);
+        } finally {
+            setLoadingCars(false);
+        }
+    };
+
+    loadBlocketCars();
+}, []);
 
     // Dela-funktion (Web Share API)
     const handleShare = (car) => {
