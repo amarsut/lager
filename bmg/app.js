@@ -5,13 +5,13 @@ window.Icon = ({ name, size = 24, className = "" }) => {
 
     useEffect(() => {
         if (window.lucide && iconRef.current) {
-            // Rensa gammalt innehåll för att undvika removeChild-fel
+            // Vi rensar och skapar om ikonen manuellt så React inte tappar bort noden
             iconRef.current.innerHTML = ''; 
             const i = document.createElement('i');
             i.setAttribute('data-lucide', name);
+            i.className = className;
             i.style.width = `${size}px`;
             i.style.height = `${size}px`;
-            if (className) i.className = className;
             iconRef.current.appendChild(i);
             
             try {
@@ -22,8 +22,7 @@ window.Icon = ({ name, size = 24, className = "" }) => {
         }
     }, [name, size, className]);
 
-    // Vi mappar name till key för att React ska rendera om korrekt vid sökning
-    return <span ref={iconRef} key={name} className="inline-flex"></span>;
+    return <span ref={iconRef} key={name} className="inline-flex shrink-0"></span>;
 };
 
 // --- STATISK DATA ---
@@ -153,14 +152,13 @@ const App = () => {
     }, []);
 
     useEffect(() => {
-    // Vi skapar en intern 'async' funktion för att tillåta 'await' utan syntaxfel
-    const loadBlocketCars = async () => {
+    const loadBytbilCars = async () => {
         setLoadingCars(true);
-        const API_TOKEN = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczovL2FwaS5ieXRiaWwuY29tIiwic3ViIjoiYXBpLmJ5dGJpbC5jb20vdXNlcnMvYm1nbW90b3JncnVwcCIsImF1ZCI6WyJodHRwczovL2FkbWluLmJ5dGJpbC5jb20iXSwibmJmIjoxNzcyNDY1NDI0LCJpYXQiOjE3NzI0NjU0MjQsImV4cCI6bnVsbCwianRpIjoiMjdmZjk4YzUtNjFiMi00NTA4LWJhODUtNTJkZmI5ODJkNGJhIiwibGltaXQiOi0xLCJzY29wZXMiOnsiZ2V0LnZlaGljbGVzIjoiYm1nbW90b3JncnVwcCJ9fQ.h5khWExjXjaTMUKN9zQnqr0sNkyOEW_uVRbhv5f7630"; // Klistra in din token här
+        const API_TOKEN = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczovL2FwaS5ieXRiaWwuY29tIiwic3ViIjoiYXBpLmJ5dGJpbC5jb20vdXNlcnMvYm1nbW90b3JncnVwcCIsImF1ZCI6WyJodHRwczovL2FkbWluLmJ5dGJpbC5jb20iXSwibmJmIjoxNzcyNDY1NDI0LCJpYXQiOjE3NzI0NjU0MjQsImV4cCI6bnVsbCwianRpIjoiMjdmZjk4YzUtNjFiMi00NTA4LWJhODUtNTJkZmI5ODJkNGJhIiwibGltaXQiOi0xLCJzY29wZXMiOnsiZ2V0LnZlaGljbGVzIjoiYm1nbW90b3JncnVwcCJ9fQ.h5khWExjXjaTMUKN9zQnqr0sNkyOEW_uVRbhv5f7630"; 
         
-        // Vi använder AllOrigins för att lura webbläsarens CORS-spärr på localhost
+        // Vi använder en stabilare proxy för att slippa CORS-blockeringen lokalt
+        const targetUrl = "https://api.bytbil.com/v1/vehicles/bmgmotorgrupp";
         const proxy = "https://api.allorigins.win/raw?url=";
-        const targetUrl = "https://api.blocket.se/v1/accounts/me/ads";
 
         try {
             const response = await fetch(proxy + encodeURIComponent(targetUrl), {
@@ -171,41 +169,34 @@ const App = () => {
                 }
             });
 
-            if (!response.ok) throw new Error(`Fel vid hämtning: ${response.status}`);
-
+            if (!response.ok) throw new Error(`Fel: ${response.status}`);
             const data = await response.json();
             
-            // Kontrollera att vi faktiskt fick annonser
-            if (!data.ads) {
-                console.warn("Inga annonser hittades på kontot");
-                setCars([]);
-                return;
-            }
-
-            // Mappa Blockets data till dina bilkort
-            const formattedCars = data.ads.map(ad => ({
-                id: ad.ad_id,
-                brand: ad.parameter_groups?.find(p => p.label === 'Märke')?.value || 'Okänt märke',
-                model: ad.subject,
-                year: ad.parameter_groups?.find(p => p.label === 'Modellår')?.value || '-',
-                mil: ad.parameter_groups?.find(p => p.label === 'Miltal')?.value || '0 mil',
-                gear: ad.parameter_groups?.find(p => p.label === 'Växellåda')?.value || '-',
-                price: ad.price ? ad.price.value.toLocaleString('sv-SE') + ' kr' : 'Ring för pris',
-                fuel: ad.parameter_groups?.find(p => p.label === 'Drivmedel')?.value || '-',
-                img: ad.images?.[0]?.url || 'https://images.unsplash.com/photo-1555353540-64fd8b01a757?w=800&q=80'
+            // Vi mappar Bytbils data till din design
+            const rawVehicles = data.vehicles || data || [];
+            const formattedCars = rawVehicles.map(veh => ({
+                id: veh.id || veh.vehicleId,
+                brand: veh.make || 'Okänt märke',
+                model: veh.modelText || veh.model || 'Okänd modell',
+                year: veh.modelYear || '-',
+                mil: veh.mileage ? `${veh.mileage.toLocaleString('sv-SE')} mil` : '0 mil',
+                gear: veh.gearbox || '-',
+                price: veh.price ? `${veh.price.toLocaleString('sv-SE')} kr` : 'Ring för pris',
+                fuel: veh.fuelType || '-',
+                img: veh.images?.[0]?.url || 'https://images.unsplash.com/photo-1555353540-64fd8b01a757?w=800&q=80'
             }));
 
             setCars(formattedCars);
             setApiError(false);
         } catch (error) {
-            console.error("API-fel:", error);
+            console.error("Bytbil API-fel:", error);
             setApiError(true);
         } finally {
             setLoadingCars(false);
         }
     };
 
-    loadBlocketCars();
+    loadBytbilCars();
 }, []);
 
     // Dela-funktion (Web Share API)
