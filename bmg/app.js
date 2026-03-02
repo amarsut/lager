@@ -152,83 +152,34 @@ const App = () => {
         return () => document.body.removeChild(script);
     }, []);
 
-    // HÄMTA BILAR (Mock-data)
     useEffect(() => {
-        setLoadingCars(true);
-        setTimeout(() => {
-            const mockCars = [
-                {
-                    id: 1,
-                    brand: "Skoda",
-                    model: "Karoq 2.0 TDI 4x4 DSG",
-                    year: "2022",
-                    mil: "15 100 mil",
-                    gear: "Automatisk",
-                    price: "199 900 kr",
-                    fuel: "Diesel",
-                    img: "https://images.blocketcdn.se/dynamic/1600w/item/20279210/432e4ab7-3d61-4b92-b6db-94c828518bb1"
-                },
-                {
-                    id: 2,
-                    brand: "BMW",
-                    model: "320d Touring Euro 5",
-                    year: "2009",
-                    mil: "25 300 mil",
-                    gear: "Manuell",
-                    price: "69 900 kr",
-                    fuel: "Diesel",
-                    img: "https://images.blocketcdn.se/dynamic/1600w/item/17912152/0bd7be20-7a00-45d4-9cc5-4fcf925d2727"
-                },
-                {
-                    id: 3,
-                    brand: "Ford",
-                    model: "Ranger Dubbelhytt 2.0 EcoBlue",
-                    year: "2019",
-                    mil: "15 900 mil",
-                    gear: "Automatisk",
-                    price: "324 900 kr",
-                    fuel: "Diesel",
-                    img: "https://images.blocketcdn.se/dynamic/1600w/item/20276848/ccf8523b-4120-4cce-9e63-31ef45b905a6"
-                },
-                {
-                    id: 4,
-                    brand: "Seat",
-                    model: "Leon ST 1.4 TSI Excellence/DRAG/Backkamera/SoV",
-                    year: "2017",
-                    mil: "15 600 mil",
-                    gear: "Automatisk",
-                    price: "139 900 kr",
-                    fuel: "Bensin",
-                    img: "https://images.blocketcdn.se/dynamic/1600w/item/18118080/c7dd1444-1882-4b2d-a6d7-4324a576fc18"
-                },
-                {
-                    id: 5,
-                    brand: "Volkswagen",
-                    model: "Polo 5-dörrar 1.4 Comfortline Euro 4",
-                    year: "2008",
-                    mil: "14 000 mil",
-                    gear: "Manuell",
-                    price: "44 500 kr",
-                    fuel: "Bensin",
-                    img: "https://images.blocketcdn.se/dynamic/1600w/item/20140411/e7d7e42a-69a9-44ca-9318-a54c1fa0270c"
-                },
-                {
-                    id: 6,
-                    brand: "Mercedes-Benz",
-                    model: "B 180 CDI BlueEFFICIENCY 7G-DCT Euro 5",
-                    year: "2012",
-                    mil: "9 200 mil",
-                    gear: "Automatisk",
-                    price: "119 900 kr",
-                    fuel: "Diesel",
-                    img: "https://images.blocketcdn.se/dynamic/1600w/item/19977993/51c91093-4aba-496b-bbc6-f8eb9a23e08f"
+        // Vi skapar en asynkron funktion inuti effekten för att tillåta await
+        const loadData = async () => {
+            setLoadingCars(true);
+            try {
+                // Vi anropar api:et. Om du inte har satt upp en proxy än kommer detta ge 404.
+                const response = await fetch('/api/get-cars');
+                
+                // Om vi får 404 (Not Found), faller vi tillbaka på Mock-data så sidan inte är tom
+                if (response.status === 404) {
+                    console.warn("Proxy ej hittad, använder testdata.");
+                    // Här kan du lägga in din gamla mockCars-lista om du vill
+                    setCars([]); 
+                    return;
                 }
-            ];
-            
-            setCars(mockCars);
-            setApiError(false); 
-            setLoadingCars(false);
-        }, 800); 
+
+                const data = await response.json();
+                setCars(data.ads || []);
+                setApiError(false);
+            } catch (error) {
+                console.error("Systemfel vid hämtning:", error);
+                setApiError(true);
+            } finally {
+                setLoadingCars(false);
+            }
+        };
+
+        loadData();
     }, []);
 
     // Dela-funktion (Web Share API)
